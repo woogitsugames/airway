@@ -5,50 +5,91 @@
 @font-face{font-family:'Over';src:url('../fonts/Overpass-400.ttf');font-weight:400;font-style:normal;font-display:block}
 @font-face{font-family:'Atk';src:url('../fonts/AtkinsonHyperlegibleNext-400.ttf');font-weight:400;font-style:normal;font-display:block}
 @font-face{font-family:'Atk';src:url('../fonts/AtkinsonHyperlegibleNext-700.ttf');font-weight:700;font-style:normal;font-display:block}
+@font-face{font-family:'Mono';src:url('../fonts/OverpassMono-700.ttf');font-weight:700;font-style:normal;font-display:block}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:915px;height:412px;overflow:hidden}
 body{position:relative;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}
 
-body{font-family:Atk,sans-serif;color:#F7F3EA;background:linear-gradient(#8CC3D8,#BFE0EA)}
+body{font-family:Atk,sans-serif;color:#2A2420;background:linear-gradient(#8CC3D8,#BFE0EA)}
 canvas.world{position:absolute;inset:0;width:100%;height:100%}
-.panel{position:absolute;background:#13302E;border:1.5px solid #2E5B56;border-radius:12px}
 .hd{font-family:Over,sans-serif;font-weight:800}
-.btn{position:absolute;width:56px;height:56px;border-radius:12px;background:#13302E;border:1.5px solid #2E5B56;display:flex;align-items:center;justify-content:center}
-.chip{display:flex;align-items:center;gap:6px;height:56px;padding:0 12px;border-radius:12px;background:#1C423F;border:1.5px solid #2E5B56;font-family:Over;font-weight:800;font-size:20px}
-.dock.v .chip{width:72px!important;justify-content:center;padding:0;height:58px}
-.dock{position:absolute;display:flex;gap:8px;padding:8px;background:#13302E;border:1.5px solid #2E5B56;border-radius:16px}
-.bubble{position:absolute;transform:translate(-50%,-100%);background:#F7F3EA;color:#13302E;border-radius:10px;padding:5px 7px 4px;display:flex;align-items:center;gap:3px;border:1.5px solid #13302E}
-.bubble:after{content:'';position:absolute;left:50%;bottom:-7px;margin-left:-6px;border:6px solid transparent;border-top-color:#13302E;border-bottom:0}
-.bubble.jam{background:#C8352A;color:#F7F3EA}
+.lab{font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:#7A6F62;font-weight:700}
+.val{font-family:Over;font-weight:800;font-size:21px;line-height:1}
+/* boarding pass: notched where main part meets the stub */
+.pass{position:absolute;display:flex;height:60px;background:#FBF8F1;
+  -webkit-mask:radial-gradient(circle 7px at var(--cut) 0,#0000 98%,#000) top/100% 51% no-repeat,radial-gradient(circle 7px at var(--cut) 100%,#0000 98%,#000) bottom/100% 51% no-repeat}
+.pass .band{width:8px;background:#1E6F6A}
+.pass .cell{display:flex;flex-direction:column;justify-content:center;gap:4px;padding:0 10px}
+.pass .perf{border-left:2px dashed #D8CFBF;margin:9px 0}
+/* luggage tag: die-cut corners + eyelet */
+.tagx{position:relative;display:flex;align-items:center;justify-content:center;gap:5px;background:#D6B88A;color:#2A2420;
+  clip-path:polygon(14px 0,calc(100% - 14px) 0,100% 14px,100% 100%,0 100%,0 14px);font-family:Over;font-weight:800;font-size:21px}
+.tagx:before{content:'';position:absolute;top:6px;left:50%;width:9px;height:9px;margin-left:-4.5px;border-radius:50%;background:#8CC3D8;box-shadow:0 0 0 2px #B8955F}
+.tagx.on{background:#FBF8F1}
+.cord{position:absolute;height:2px;background:#2A2420;opacity:.7}
+.dock{position:absolute;display:flex;gap:8px}
+.dock .tagx{width:64px;height:62px;padding-top:12px}
+.dock.v{flex-direction:column}.dock.v .tagx{width:72px;height:58px}
+.string{position:absolute;width:1.5px;background:#2A2420;opacity:.7}
+/* passenger bubble = small white luggage tag on a string from the airport */
+.bubble{position:absolute;transform:translate(-50%,-100%);display:flex;align-items:center;gap:2px;padding:4px 7px 4px 16px;background:#FBF8F1;color:#2A2420;
+  clip-path:polygon(9px 0,100% 0,100% 100%,9px 100%,0 50%)}
+.bubble:before{content:'';position:absolute;left:7px;top:50%;width:5px;height:5px;margin-top:-2.5px;border-radius:50%;background:#2A2420;opacity:.5}
+.bubble.jam{background:#C8352A;color:#FBF8F1}
 .bubble .t{font-family:Over;font-weight:800;font-size:13px;margin-left:3px}
-.tag{position:absolute;background:#13302E;border:1.5px solid #C8352A;border-radius:10px;padding:6px 9px;font-size:12px;line-height:1.3}
-.tag b{font-family:Over;font-weight:800;color:#FFB23D;font-size:14px}
+/* air-cargo label: kraft, stencil header, field grid, zigzag tear at the bottom */
+.cargo{position:absolute;background:#D6B88A;color:#2A2420;display:flex;
+  clip-path:polygon(0 0,100% 0,100% calc(100% - 8px),96% 100%,92% calc(100% - 8px),88% 100%,84% calc(100% - 8px),80% 100%,76% calc(100% - 8px),72% 100%,68% calc(100% - 8px),64% 100%,60% calc(100% - 8px),56% 100%,52% calc(100% - 8px),48% 100%,44% calc(100% - 8px),40% 100%,36% calc(100% - 8px),32% 100%,28% calc(100% - 8px),24% 100%,20% calc(100% - 8px),16% 100%,12% calc(100% - 8px),8% 100%,4% calc(100% - 8px),0 100%)}
+.cargo .win{flex:none;background:#EADCC2;border:2px solid #2A2420;margin:10px}
+.cargo .head{font-family:Mono;font-weight:700;font-size:11px;letter-spacing:.16em;border-bottom:2px solid #2A2420;padding-bottom:4px;display:flex;justify-content:space-between}
+.cargo .grid{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:13px;margin-top:6px}
+.cargo .grid span:nth-child(odd){font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;padding-top:3px;color:#5E4E3A}
+.cargo .stamp{display:inline-block;margin-top:8px;border:2px solid #C8352A;color:#C8352A;font-family:Mono;font-weight:700;font-size:11px;letter-spacing:.1em;padding:2px 6px;transform:rotate(-3deg)}
+/* split-flap departure board */
+.board{position:absolute;background:#1C1E20;padding:10px 10px 12px}
+.board .bh{display:flex;font-family:Mono;font-weight:700;font-size:10px;letter-spacing:.16em;color:#8B8F93;padding:0 2px 8px}
+.row{display:flex;align-items:center;gap:8px;height:58px;border-top:1px solid #000}
+.row .st{margin-left:auto;font-family:Mono;font-weight:700;font-size:11px;letter-spacing:.08em}
+.fl{display:inline-flex;gap:2px}.fl i{font-style:normal;display:inline-block;width:14px;height:24px;line-height:24px;text-align:center;font-family:Mono;font-weight:700;font-size:15px;color:#F2EFE6;
+  background:linear-gradient(#2C2F32 0 49%,#000 49% 52%,#25282B 52%)}
+.fl.y i{color:#FFC72C}
+.sub{font-size:11.5px;color:#9A9EA2;margin-top:3px}
+/* yellow-on-black airport wayfinding sign with the game title */
+.sign{position:absolute;display:flex;align-items:center;gap:14px;background:#FFC72C;color:#1C1E20;padding:10px 18px 10px 12px}
+.sign .pict{background:#1C1E20;display:flex;align-items:center;justify-content:center}
+/* ATC flight progress strip */
+.strip{position:absolute;display:flex;white-space:nowrap;background:#F4EBC9;font-size:12px;line-height:1.3;border-left:10px solid #C8352A}
+.strip .f{padding:6px 9px;border-right:1px solid #CDBF8F}.strip .f:last-child{border:0}
+.strip b{font-family:Over;font-weight:800;font-size:15px;color:#C8352A}
 
-</style></head><body><canvas class="world"></canvas><div style="position:absolute;inset:0;background:#13302E;opacity:.55"></div>
-  <div style="position:absolute;left:52px;top:14px;display:flex;align-items:baseline;gap:16px"><div class="hd" style="font-size:30px">Tydzień 7</div><div style="font-size:15px">Hangar dostał jedną dostawę. Co bierzesz?</div></div>
-  <div class="panel" style="left:52px;width:265px;top:66px;height:320px;padding:0;overflow:hidden;display:flex;flex-direction:column">
-  <canvas id="m0" width="530" height="340" style="width:265px;height:170px;background:#1C423F;flex:none"></canvas>
-  <div style="padding:10px 14px;display:flex;flex-direction:column;gap:5px">
-    <div style="font-size:11.5px;color:#FFB23D;font-family:Over;font-weight:800;letter-spacing:.06em">+1 SAMOLOT</div>
-    <div class="hd" style="font-size:22px;line-height:1.05">Turbośmigłowiec</div>
-    <div style="font-size:13px;color:#A9BDB8">zasięg 2 500 km<br>48 miejsc</div>
-  </div></div><div class="panel" style="left:331px;width:265px;top:66px;height:320px;padding:0;overflow:hidden;display:flex;flex-direction:column">
-  <canvas id="m1" width="530" height="340" style="width:265px;height:170px;background:#1C423F;flex:none"></canvas>
-  <div style="padding:10px 14px;display:flex;flex-direction:column;gap:5px">
-    <div style="font-size:11.5px;color:#FFB23D;font-family:Over;font-weight:800;letter-spacing:.06em">+1 SAMOLOT</div>
-    <div class="hd" style="font-size:19px;line-height:1.05">Szerokokadłubowiec</div>
-    <div style="font-size:13px;color:#A9BDB8">zasięg 11 000 km<br>300 miejsc</div>
-  </div></div><div class="panel" style="left:610px;width:265px;top:66px;height:320px;padding:0;overflow:hidden;display:flex;flex-direction:column">
-  <canvas id="m2" width="530" height="340" style="width:265px;height:170px;background:#1C423F;flex:none"></canvas>
-  <div style="padding:10px 14px;display:flex;flex-direction:column;gap:5px">
-    <div style="font-size:11.5px;color:#FFB23D;font-family:Over;font-weight:800;letter-spacing:.06em">WYBIERZ HUB</div>
-    <div class="hd" style="font-size:22px;line-height:1.05">Rozbudowa huba</div>
-    <div style="font-size:13px;color:#A9BDB8">+6 miejsc<br>przesiadka 25 → 15 min</div>
+</style></head><body><canvas class="world"></canvas><div style="position:absolute;inset:0;background:#1C1E20;opacity:.6"></div>
+  <div class="sign" style="left:52px;top:10px"><div class="hd" style="font-size:26px">Tydzień 7</div><div style="font-size:14px;font-weight:700">Hangar: przyszły trzy skrzynie. Otwierasz jedną.</div></div>
+  <div class="cargo" style="left:52px;width:265px;top:72px;height:320px;flex-direction:column">
+  <canvas class="win" id="m0" width="482" height="260" style="width:241px;height:130px"></canvas>
+  <div style="padding:0 14px 16px;flex:1;min-width:0">
+    <div class="head"><span>FRACHT · TP-48</span><span>1/3</span></div>
+    <div class="hd" style="font-size:22px;margin-top:7px;line-height:1.05">Turbośmigłowiec</div>
+    <div class="grid"><span>Zasięg</span><span>2 500 km</span><span>Miejsc</span><span>48</span><span>Najlepszy</span><span>krótkie trasy</span></div>
+    
+  </div></div><div class="cargo" style="left:331px;width:265px;top:72px;height:320px;flex-direction:column">
+  <canvas class="win" id="m1" width="482" height="260" style="width:241px;height:130px"></canvas>
+  <div style="padding:0 14px 16px;flex:1;min-width:0">
+    <div class="head"><span>FRACHT · WB-300</span><span>2/3</span></div>
+    <div class="hd" style="font-size:19px;margin-top:7px;line-height:1.05">Szerokokadłubowiec</div>
+    <div class="grid"><span>Zasięg</span><span>11 000 km</span><span>Miejsc</span><span>300</span><span>Najlepszy</span><span>przez ocean</span></div>
+    
+  </div></div><div class="cargo" style="left:610px;width:265px;top:72px;height:320px;flex-direction:column">
+  <canvas class="win" id="m2" width="482" height="260" style="width:241px;height:130px"></canvas>
+  <div style="padding:0 14px 16px;flex:1;min-width:0">
+    <div class="head"><span>FRACHT · HUB+6</span><span>3/3</span></div>
+    <div class="hd" style="font-size:22px;margin-top:7px;line-height:1.05">Rozbudowa huba</div>
+    <div class="grid"><span>Miejsca</span><span>+6 w poczekalni</span><span>Przesiadka</span><span>25 → 15 min</span><span>Dla</span><span>wybranego huba</span></div>
+    <div class="stamp">LONDYN 11/12</div>
   </div></div>
   <script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","d3-geo":"/node_modules/d3-geo/src/index.js","d3-array":"/node_modules/d3-array/src/index.js","internmap":"/node_modules/internmap/src/index.js","topojson-client":"/node_modules/topojson-client/src/index.js"}}</script><script type="module">
 import { buildScene, renderModel, planeModel, airportModel, THREE } from './scene3d.js';
 await buildScene({ canvas: document.querySelector('canvas.world'), ...{"w":915,"h":412,"look":[6,38],"dist":1.9,"tilt":14,"fov":30,"drag":false,"light":0.55} });
-const S = [265,170];
+const S = [241,130];
 const tp = planeModel('turboprop'), wb = planeModel('widebody'); wb.scale.setScalar(.75);
 const hubG = new THREE.Group(); const a = airportModel('LON', true); a.position.set(0,0,0); a.quaternion.identity(); a.scale.setScalar(15); hubG.add(a); hubG.position.y = -.3;
 [tp, wb, hubG].forEach((m, i) => renderModel(document.getElementById('m' + i), S[0], S[1], m, { rotY: [.7, .7, .4][i] }));

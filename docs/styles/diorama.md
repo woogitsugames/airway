@@ -1,4 +1,4 @@
-# Kierunek A — „Diorama” (globus 3D low-poly)
+# Kierunek A — „Diorama” (globus 3D low-poly) — WYBRANY świat gry (D-11)
 
 Makiety: `mockups/diorama/png/` · gra `game-p.png`, `game-l.png` · ulepszenie `upgrade-p.png`, `upgrade-l.png` · menu `menu-p.png`, `menu-l.png`
 · źródło: `mockups/diorama/scene3d.js` (three.js) + `build.mjs` (HUD HTML/SVG).
@@ -48,15 +48,29 @@ po symulacji: protanopia 20,7, deuteranopia 17,9, tritanopia 16,1 (próg bezpiec
 - **Pasażerowie:** w dymku nad miastem — rząd glifów regionu docelowego (szewron, kokarda, półksiężyc, dziurka od klucza, statecznik, kątownik).
 - **Cisza nocna:** biało-czerwony szlaban dookoła płyty zamkniętego lotniska.
 
-## Ekrany
-- **HUD w grze:** u góry tylko tydzień z siedmioma kreskami doby, licznik pasażerów i pauza (56 dp). Na dole dok kciukowy: cofnij,
-  turbośmigłowce, szerokokadłubowce, rozbudowa huba, przyspieszenie (cele 56 dp). Reszta informacji siedzi przy lotniskach.
-- **Ulepszenie tygodnia:** „Hangar dostał jedną dostawę” — trzy karty, na każdej model 3D na postumencie (to ten sam model, który
-  pojawi się w świecie) + zasięg i pojemność + jedno zdanie kontekstu („Londyn ma 11 z 12 miejsc…”).
-- **Porażka (opis, bez makiety):** kamera płynnie dolatuje do zapchanego huba, pierścień miga dwa razy, scena zamiera; od dołu
-  wysuwa się „raport z wieży”: wynik, liczba tygodni, i trzy przyczyny z księgi przyczyn (np. „62% czekających chciało do Ameryki
-  Płn. — jedna trasa szerokokadłubowa nie wystarczyła”). Przyciski: „Jeszcze raz (ten sam świat)”, „Nowy świat”.
-- **Menu:** duży globus z żywą siecią i samolotami w tle, logo nad horyzontem, lista akcji w zasięgu kciuka.
+## Interfejs v2: przedmioty z lotniska (po uwadze właściciela 2.11: „menu zbyt AI slop”)
+Pierwsza wersja miała ciemne zaokrąglone panele i listę przycisków, czyli wygląd szablonu aplikacji. W v2 każdy element interfejsu
+to prawdziwy przedmiot z lotniska, który coś znaczy:
+- **Górny pasek = karta pokładowa:** tydzień, dzień (7 kwadratów doby), godzina; za perforacją odcinek z liczbą pasażerów;
+  pauza jako osobny odcinek. Ostre rogi, wcięcia perforacji, brak cieni.
+- **Dok = przywieszki bagażowe na sznurku** (64×62 dp, cele dotyku ≥ 48 dp): cofnij, turbośmigłowce, szerokokadłubowce,
+  rozbudowa huba, przyspieszenie. Biała przywieszka oznacza typ samolotu wybrany do rysowania, a wyblakła brak zapasu.
+- **Pasażerowie przy lotniskach = białe przywieszki** z dziurką i glifami celów. Przy zatorze przywieszka jest czerwona i ma odliczanie.
+- **Podpowiedź = pasek postępu lotu z wieży kontroli** (ATC flight strip): kremowy, z czerwonym marginesem, w polach
+  „3 788 km · LIS → ACC | za daleko dla turbośmigłowca | wskaż miasto po drodze”.
+- **Ulepszenie tygodnia = etykiety frachtowe** na trzech skrzyniach w hangarze: papier pakowy, nagłówek „FRACHT · TP-48 · 1/3”,
+  okienko z modelem 3D, tabela pól, czerwony stempel kontekstu („LONDYN 11/12”), ząbkowana krawędź od oderwania.
+- **Menu = tablica odlotów split-flap:** każdy tryb to „lot” z bramką i statusem. „LOT BEZ KOŃCA · A1 · WEJŚCIE” na żółtych
+  klapkach, „ZADANIA · B4 · PLANOWO”, „DZIŚ 02.11 · C2 · NOWY”, „USTAWIENIA · D0”. Wiersze mają ≥ 58 dp. Przy zmianie ekranu
+  klapki obracają się w 60–90 ms ze stukotem.
+- **Tytuł = żółto-czarny drogowskaz terminalu** z naszym własnym piktogramem (rzut szerokokadłubowca), zamiast logo na pustym tle.
+- **Paleta UI:** karta `#FBF8F1`, morski pasek linii `#1E6F6A`, papier pakowy `#D6B88A`, tablica `#1C1E20`, klapka `#2C2F32`,
+  żółć drogowskazu `#FFC72C`, czerwień zatoru `#C8352A`, atrament `#2A2420`. Kroje: Overpass 800, Atkinson Hyperlegible Next,
+  **Overpass Mono 700** na klapki i stemple.
+
+## Ekrany (opis)
+- **Porażka:** kamera dolatuje do zapchanego huba, a scena zamiera. Na tablicy odlotów wszystkie loty z tego huba przeskakują na
+  „ODWOŁANY”, wysuwa się pasek ATC z wynikiem, liczbą tygodni i trzema przyczynami z księgi przyczyn. Do wyboru: „Jeszcze raz (ten sam świat)”, „Nowy świat”.
 
 ## Ruch i dźwięk
 Globus obraca się z bezwładnością, ale bez sprężynowania; trasy „wyrastają” z lotniska w 200 ms; samoloty startują i lądują

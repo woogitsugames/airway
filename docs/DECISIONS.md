@@ -46,3 +46,9 @@ Every face is checked for ą ć ę ł ń ó ś ź ż before use. B612 rejected f
 
 ## D-10 — Working title "Hubline" in mockups only (2026-11-02, Claude)
 Cleanest of the checked candidates. Placeholder until the owner chooses (see RESEARCH §7). **Status: placeholder.**
+
+## D-11 — World style A "Diorama" chosen; UI reworked as airport objects (2026-11-02, owner)
+Owner: "the map style of A is great, only the menus are too AI slop". The 3D low-poly globe is the game's world. The first UI
+(dark rounded panels, list menu, orange CTA) is replaced by real airport artefacts: boarding pass (top bar), luggage tags on a
+cord (dock, passenger bubbles), ATC flight strip (hints), air-cargo labels (weekly upgrade), split-flap departure board and
+yellow wayfinding sign (menu). Details: `docs/styles/diorama.md`. **Status: UI v2 waiting for owner's confirmation.**
