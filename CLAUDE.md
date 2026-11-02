@@ -2,13 +2,12 @@
 
 Instructions for AI coding agents working in this repository.
 
-## Current stage: visual direction chosen (D-11), production not started yet
-- Stage 0 (research + visual direction) is done: world style **A "Diorama"** (low-poly three.js globe) with the airport-object
-  UI (boarding pass, luggage tags, ATC strip, cargo labels, split-flap menu) — `docs/styles/diorama.md`.
-- Title decided: **Airway**, domain airway.games (D-12). Start production (MVP plan in `docs/RESEARCH.md` §5) only when the
-  owner says so.
-- Deliverables of this stage: `docs/RESEARCH.md`, `docs/styles/<name>.md` + `mockups/<name>/` (HTML/SVG rendered to PNG
-  at 412×915 and 915×412), `docs/DECISIONS.md`, `docs/ASSETS.md`.
+## Current stage: Production (MVP)
+- Stage 0 is complete: world style **A "Diorama"** (D-11) and title **Airway** (D-12).
+- Task 01 starts production with Vite 6, strict TypeScript, three.js, and Capacitor 8.
+  See `docs/ARCHITECTURE.md` and `docs/TESTING.md` for the boundaries and gates.
+- Implement only the assigned task from `docs/tasks/00-INDEX.md`; the owner merges draft PRs.
+
 
 ## The game in one line
 Premium mobile (Android + iOS, Capacitor) minimalist network builder about **airlines on a globe**: the player designs
@@ -40,13 +39,23 @@ the route network, planes fly by themselves; passengers transfer at hubs; you lo
   Record every decision as D-xx in `docs/DECISIONS.md` with rationale.
 
 ## Git
-- Work on the designated feature branch, never on `main`. Small descriptive commits. No PR until the owner asks.
+- Always branch from `dev` to the assigned `task/NN-...` branch.
+- Open a **draft PR to `dev`** after implementation and checks; only the owner merges.
+- Never push directly to `dev` or `main`, except task 01 creating `dev` from the approved stage-0 branch.
+- Keep commits descriptive in English. PR and owner-facing report must be in Polish.
+
 
 ## Commands
-- `npm ci` — install dev dependencies (mockup tooling only).
-- `npm run mockups` — build every `mockups/<name>/` page (static HTML with inline SVG, generated in Node).
-- `npm run shots` — render all mockups with Playwright to `mockups/<name>/png/*.png` (412×915 and 915×412, DPR 2).
-  `node mockups/shoot.mjs <name>` renders one direction. Pages are served over a local HTTP server (ES modules); pages that set
-  `window.__ready` (three.js) render with SwiftShader WebGL. Inspect every PNG yourself afterwards.
-- `DPR=1 node mockups/shoot.mjs overview` — side-by-side contact sheets in `mockups/overview/png/`.
-- `mockups/fetch-fonts.sh "Family" dir "400;700"` — fetch an OFL font + licence; then add it to `docs/ASSETS.md`.
+- `npm ci` — install dependencies from the lockfile.
+- `npm run dev` — start Vite with the empty Diorama sky canvas.
+- `npm run typecheck` — strict TypeScript.
+- `npm run test:i18n` — PL/EN catalog parity, empty entries, placeholders.
+- `npm run test:arch` — simulation dependency and deterministic-operation boundary.
+- `npm run test:fast` — typecheck, i18n and architecture checks.
+- `npm run build` — TypeScript check and Vite production build.
+- `npm run shots` — game screenshots at 412×915 and 915×412 into `docs/shots/01/`.
+- `npm run mockups` — regenerate existing stage-0 mockups.
+- `npm run shots:mockups` — preserve reference mockup captures.
+- `mockups/fetch-fonts.sh "Family" dir "400;700"` — obtain OFL fonts with licences.
+
+See `docs/TESTING.md` before pushing.
