@@ -4,8 +4,8 @@ import {
   Matrix4, MeshBasicMaterial, MeshStandardMaterial, Object3D,
   Scene, Vector3,
 } from 'three';
+import { setLatLonVec3 } from './globe/geo-math';
 
-const DEG = Math.PI / 180;
 const PAD_ALTITUDE = 1.0055;
 const CLOSED = '#C8352A';
 const BUSY = '#FF9A3D';
@@ -19,9 +19,7 @@ const basis = new Matrix4();
 
 /** Mockup-compatible orientation: local Y is radial up, local -Z is north. */
 export function place(object: Object3D, lon: number, lat: number, altitude = PAD_ALTITUDE): Object3D {
-  const phi = lat * DEG;
-  const lambda = lon * DEG;
-  up.set(Math.cos(phi) * Math.sin(lambda), Math.sin(phi), Math.cos(phi) * Math.cos(lambda));
+  setLatLonVec3(up, lon, lat);
   north.set(0, 1, 0).addScaledVector(up, -up.y);
   if (north.lengthSq() < 1e-10) north.set(0, 0, up.y > 0 ? -1 : 1);
   north.normalize();
@@ -101,6 +99,12 @@ export interface AirportsLayer {
   setCurfew(id: string, on: boolean): void;
   setZoom(zoom: number): void;
   getPosition(id: string, out: Vector3): Vector3 | null;
+  has(id: string): boolean;
+  isHub(id: string): boolean;
+  /** Remove every airport (new game). */
+  clear(): void;
+  /** Rebuild ring/barrier instances once per frame if any load, curfew or zoom changed. */
+  update(): void;
   dispose(): void;
 }
 
@@ -138,6 +142,7 @@ export function createAirports(scene: Scene, options: AirportOptions = {}): Airp
   const color = new Color();
   let zoomScale = 1;
   let disposed = false;
+  let markersDirty = false;
 
   function assertOpen(): void { if (disposed) throw new Error('Airport layer is disposed'); }
   function updateModel(record: AirportRecord): void {
@@ -218,9 +223,11 @@ export function createAirports(scene: Scene, options: AirportOptions = {}): Airp
       if (!Number.isInteger(used) || !Number.isInteger(cap) || cap < 1 || cap > maxHubSeats || used < 0) {
         throw new RangeError('Invalid hub capacity or load');
       }
-      record.used = Math.min(used, cap);
+      const nextUsed = Math.min(used, cap);
+      if (record.used === nextUsed && record.cap === cap) return;
+      record.used = nextUsed;
       record.cap = cap;
-      rebuildMarkers();
+      markersDirty = true;
     },
     setCurfew(id, on): void {
       assertOpen();
@@ -228,18 +235,34 @@ export function createAirports(scene: Scene, options: AirportOptions = {}): Airp
       if (!record) throw new RangeError('Unknown airport: ' + id);
       if (record.curfew === on) return;
       record.curfew = on;
-      rebuildMarkers();
+      markersDirty = true;
     },
     setZoom(zoom): void {
       assertOpen();
       if (!(zoom > 0) || !Number.isFinite(zoom)) throw new RangeError('Invalid zoom');
-      const nextScale = Math.max(.68, Math.min(1.12, 1 / Math.sqrt(zoom)));
+      // Mockup size at the gameplay zoom (~3.3); larger in the overview so pads stay tappable-looking.
+      const nextScale = Math.max(1, Math.min(1.6, 1.8 / Math.sqrt(zoom)));
       if (nextScale === zoomScale) return;
       zoomScale = nextScale;
       for (const record of records.values()) {
         record.pose.scale.setScalar(radius * zoomScale);
         updateModel(record);
       }
+      markersDirty = true;
+    },
+    has: (id) => records.has(id),
+    isHub: (id) => records.get(id)?.hub === true,
+    clear(): void {
+      assertOpen();
+      records.clear();
+      byType[0] = 0;
+      byType[1] = 0;
+      for (const part of [...regular, ...hubs]) part.mesh.count = 0;
+      markersDirty = true;
+    },
+    update(): void {
+      if (!markersDirty || disposed) return;
+      markersDirty = false;
       rebuildMarkers();
     },
     getPosition(id, out): Vector3 | null {

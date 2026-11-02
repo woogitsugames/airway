@@ -276,6 +276,13 @@ export class GlobeOrbitCamera {
     return Math.sign(x - centerPixelX) * depthIntoBand;
   }
 
+  /** Allocation-free accessors for the per-frame render path. */
+  get zoomLevel(): number { return this.zoom; }
+  get longitudeDeg(): number { return this.longitude; }
+  get latitudeDeg(): number { return this.latitude; }
+  get viewportWidth(): number { return this.width; }
+  get viewportHeight(): number { return this.height; }
+
   getState(): OrbitCameraState {
     return {
       longitude: this.longitude,

@@ -16,9 +16,9 @@ const COLORS = {
 };
 const COLOR_TMP = new Color();
 const RESOLUTION: Record<QualityLevel, TerrainQuality> = {
-  low: { detail: 10, coastDepth: 1 },
-  medium: { detail: 21, coastDepth: 2 },
-  high: { detail: 30, coastDepth: 2 },
+  low: { detail: 14, coastDepth: 1 },
+  medium: { detail: 30, coastDepth: 2 },
+  high: { detail: 44, coastDepth: 2 },
 };
 
 function hash(x: number, y: number, z: number): number {
@@ -76,17 +76,19 @@ function height(s: SurfaceSample): number {
   return s.land ? .004 + Math.max(0, s.noise - .56) * .09 * Math.min(1, s.coast * 1.4)
     : -.004 * (1 - s.coast);
 }
-function palette(s: SurfaceSample): Color {
-  const a = Math.abs(s.lat), h = height(s), n = s.noise;
+/** `h` is the facet's mean vertex height (as in the mockup), so single spikes stay grass/sand. */
+function palette(s: SurfaceSample, h: number): Color {
+  const a = Math.abs(s.lat), n = s.noise;
   if (!s.land) {
     const shallow = Math.max(0, Math.min(1, (s.coast - .2) / .6));
     return COLOR_TMP.copy(COLORS.deep).lerp(COLORS.sea, Math.min(1, s.coast * 1.8 + n * .2))
       .lerp(COLORS.shallow, shallow);
   }
-  if (a > 66 || h > .022) return COLORS.snow;
+  const sahara = s.lat > 14 && s.lat < 33 && s.lon > -17 && s.lon < 60;
+  // Snow caps only outside the tropics/deserts; tropical highlands stay rock.
+  if (a > 66 || (h > .022 && a > 28 && !sahara)) return COLORS.snow;
   if (h > .015) return COLORS.rock;
   if (a > 58) return COLORS.tundra;
-  const sahara = s.lat > 14 && s.lat < 33 && s.lon > -17 && s.lon < 60;
   if (sahara) return n > .62 ? COLORS.sand : COLORS.desert;
   if (a < 12) return COLORS.jungle;
   return n > .55 ? COLORS.forest : COLORS.grass;
@@ -110,7 +112,7 @@ export function createTerrain(mask: LandMask, level: QualityLevel): Mesh {
       emit(ca, bc, c, depth + 1); emit(ab, bc, ca, depth + 1);
       return;
     }
-    const biome = palette(center), lightness = .92 + center.noise * .16;
+    const biome = palette(center, (height(sa) + height(sb) + height(sc)) / 3), lightness = .92 + center.noise * .16;
     for (const s of [sa, sb, sc]) {
       const radius = 1 + height(s);
       positions.push(s.point.x * radius, s.point.y * radius, s.point.z * radius);

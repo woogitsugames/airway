@@ -88,3 +88,42 @@ Task 01 intentionally contains an **empty** sky-color WebGL scene, not a playabl
 globe. The globe, geometry, camera, simulation, input, game modes, UI and audio
 belong to the follow-on tasks in `docs/tasks/00-INDEX.md`. Dependencies remain
 one-way so parallel tasks can be merged into `dev` independently.
+
+## Render API
+
+One renderer stack, one entry point: `createWorldRenderer(canvas?, opts)` in
+`src/render/world.ts` (re-exported by `src/render/index.ts`; import from there). It owns the
+single `WebGLRenderer`, `Scene`, light rig (subsolar `DirectionalLight` + sky
+`HemisphereLight`, `globe/createSunLights`), quality profile (`quality.ts`, D-33) and
+`GlobeOrbitCamera`. Layers: globe terrain/decor/atmosphere (`globe/`), airports with hub
+capacity rings and curfew barriers (`airports.ts`), route tubes (`routes.ts`), instanced
+planes (`planes.ts`, `models/planes.ts`), route-drawing ghost (`routePreview.ts`),
+upgrade-card models (`modelPreview.ts`). All lon/lat → cartesian math goes through
+`globe/geo-math.ts` (`setLatLonVec3` writes into a caller vector; `latLonToVec3` allocates).
+
+Inputs are plain read-only view objects; the renderer never imports `src/sim` values (type
+imports only) and never mutates state. The game composition root adapts sim snapshots.
+
+| Call | When | Notes |
+| --- | --- | --- |
+| `setCities(CityView[])` | city spawn / new game | `{id, lon, lat, hub?}`; diffed, a hub flag change or removal rebuilds |
+| `setRoutes(RouteView[], revision?)` | network change | `{id, aircraft, cityIds}` resolved via cities; same revision = no rebuild |
+| `setHubLoad(HubLoadView[])` | tick | `{id, used, cap}`; ring rebuild deferred to the next frame |
+| `setCurfew(closedIds)` | tick / curfew change | full set of closed airports |
+| `setPlanes(previous, current)` | tick boundary | `PlaneView` = `{id, routeId, segment, progress01 (0..10 000), direction?, type?, load, capacity?}` |
+| `setTime(tick, fraction)` / `setSun(lon, lat)` | frame | day/night terminator, city lights, exposure |
+| `setRoutePreview(model \| null)` | pointer move | structurally `RoutePreviewModel` from `src/input/routeTool.ts` |
+| `render(alpha, dtSeconds)` | every frame | `alpha` = tick accumulator fraction; camera inertia, plane interpolation |
+| `pick(x, y)` | tap | `{kind:'city', id}` within 28 dp, else `{kind:'globe', lon, lat}`, else `null` |
+| `pickGlobe(x, y)` | route tool `cursorGeo` | analytic sphere hit |
+| `project(lon, lat, alt, out)` | HTML overlay, per frame | writes `{x, y, visible}` into `out`; no allocation |
+| `orbit` | input | `GlobeOrbitCamera`: pass to `cameraGestureCallbacks(orbit, …)` |
+| `camera` | overlay | three.js camera for `createAirportOverlay(host, camera)` |
+| `resize(w, h, insets)` / `opts.autoResize` | layout | CSS px; insets keep the globe clear of HUD and safe areas |
+| `setQuality(pref)` | settings | `'auto' \| 'low' \| 'medium' \| 'high'`; rebuilds terrain, DPR ≤ 2, shadows on high only |
+| `drawModelPreview(kind, canvas2d)` | upgrade card | renders through the shared context into a 2D canvas |
+| `ready`, `stats()`, `dispose()` | lifecycle | `ready` resolves after the land mask/terrain load |
+
+Screen coordinates are CSS pixels relative to the canvas' top-left corner. Frame pacing:
+`AdaptiveFrameScheduler` (30 FPS idle, full rate while interacting, stopped when hidden).
+Dev pages: `dev/world.html` (full stack, `?frozen&clean&quality=&zoom=`), `dev/globe.html`.

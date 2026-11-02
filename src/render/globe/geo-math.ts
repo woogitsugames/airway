@@ -1,6 +1,7 @@
 // Globe coordinates use +Y north, +Z Greenwich and +X 90 degrees east.
 // Kept independent of three.js so hit-testing can be tested without WebGL.
 export interface Vec3Like { readonly x: number; readonly y: number; readonly z: number }
+export interface MutableVec3 { x: number; y: number; z: number }
 export interface LonLat { readonly lon: number; readonly lat: number }
 export interface MatrixLike { readonly elements: ArrayLike<number> }
 export interface CameraLike {
@@ -22,10 +23,22 @@ export function normalizeLon(lon: number): number {
 export function latLonToVec3(lon: number, lat: number, radius = 1): Vec3Like {
   if (!Number.isFinite(lat) || lat < -90 || lat > 90) throw new RangeError('Invalid latitude');
   if (!Number.isFinite(radius) || radius <= 0) throw new RangeError('Invalid radius');
-  const longitude = normalizeLon(lon) * DEG;
+  return setLatLonVec3({ x: 0, y: 0, z: 0 }, normalizeLon(lon), lat, radius);
+}
+
+/**
+ * The one lon/lat -> cartesian conversion of the renderer, writing into `out`
+ * (a THREE.Vector3 works) so frame and tick paths never allocate. No validation:
+ * callers on hot paths pass already validated coordinates.
+ */
+export function setLatLonVec3<T extends MutableVec3>(out: T, lon: number, lat: number, radius = 1): T {
+  const longitude = lon * DEG;
   const latitude = lat * DEG;
   const c = Math.cos(latitude) * radius;
-  return { x: Math.sin(longitude) * c, y: Math.sin(latitude) * radius, z: Math.cos(longitude) * c };
+  out.x = Math.sin(longitude) * c;
+  out.y = Math.sin(latitude) * radius;
+  out.z = Math.cos(longitude) * c;
+  return out;
 }
 
 export function vec3ToLatLon(vector: Vec3Like): LonLat {

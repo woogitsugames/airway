@@ -23,6 +23,13 @@ for (const [lon, lat] of [[0, 0], [90, 0], [-90, 0], [-180, 0], [180, 0],
   if (Math.abs(lat) < 89.999) assert(longitudeError(q.lon, lon) < epsilon, 'roundtrip longitude ' + lon);
   assert(Math.abs(Math.hypot(p.x, p.y, p.z) - 1) < epsilon, 'unit radius ' + lon);
 }
+{
+  const out = { x: 0, y: 0, z: 0 };
+  const same = geo.setLatLonVec3(out, -9.1393, 38.7223, 1.5);
+  const ref = geo.latLonToVec3(-9.1393, 38.7223, 1.5);
+  assert(same === out && Math.abs(out.x - ref.x) + Math.abs(out.y - ref.y) + Math.abs(out.z - ref.z) < epsilon,
+    'setLatLonVec3 writes into the caller vector and matches latLonToVec3');
+}
 assert(geo.intersectUnitSphere({ x: 0, y: 0, z: 3 }, { x: 0, y: 0, z: -1 })?.z === 1,
   'front-most intersection');
 assert(geo.intersectUnitSphere({ x: 0, y: 0, z: 3 }, { x: 0, y: 1, z: 0 }) === null,

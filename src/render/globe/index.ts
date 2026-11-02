@@ -1,68 +1,32 @@
 import {
-  ACESFilmicToneMapping, BackSide, Color, DirectionalLight, Group, HemisphereLight,
-  Mesh, Points, PCFSoftShadowMap, Scene, ShaderMaterial, SphereGeometry, SRGBColorSpace,
-  Vector3, WebGLRenderer,
+  BackSide, Color, DirectionalLight, Group, HemisphereLight,
+  Mesh, Points, Scene, ShaderMaterial, SphereGeometry, Vector3,
 } from 'three';
-import type { Camera } from 'three';
+import type { QualityProfile } from '../quality';
 import { createDecorations } from './decorations';
-import { latLonToVec3 as cartesian, pickSphereNdc } from './geo-math';
-import type { LonLat } from './geo-math';
+import { setLatLonVec3 } from './geo-math';
 import { loadLandMask } from './land-mask';
 import { createTerrain } from './terrain';
-import type { QualityLevel } from './terrain';
 
-export { vec3ToLatLon, intersectUnitSphere, pickSphereNdc } from './geo-math';
-/** Renderer-friendly cartesian position, with THREE.Vector3 semantics for overlays. */
-export function latLonToVec3(lon: number, lat: number, radius = 1): Vector3 {
-  const p = cartesian(lon, lat, radius);
-  return new Vector3(p.x, p.y, p.z);
-}
-export type { LonLat } from './geo-math';
+export {
+  latLonToVec3, setLatLonVec3, vec3ToLatLon, intersectUnitSphere, pickSphereNdc, normalizeLon,
+} from './geo-math';
+export type { LonLat, Vec3Like, MutableVec3 } from './geo-math';
 export type { QualityLevel } from './terrain';
 
-export type QualitySetting = QualityLevel | 'auto';
 export interface GlobeOptions {
-  readonly canvas?: HTMLCanvasElement;
-  readonly renderer?: WebGLRenderer;
-  readonly quality?: QualitySetting;
+  /** Shared profile from `resolveQualityProfile()`; terrain/decor density follows `preset`. */
+  readonly quality: QualityProfile;
   readonly seed?: number;
   readonly landUrl?: string;
   readonly signal?: AbortSignal;
-  readonly viewport?: () => { readonly left: number; readonly top: number;
-    readonly width: number; readonly height: number };
+  /** `SunLights.direction`; drives the night-side city lights. */
+  readonly sunDirection: Vector3;
 }
 export interface GlobeInstance {
   readonly group: Group;
-  readonly quality: QualityLevel;
-  readonly dpr: number;
-  setSun(lon: number, lat: number): void;
-  pick(screenX: number, screenY: number, camera: Camera): LonLat | null;
+  readonly quality: QualityProfile;
   dispose(): void;
-}
-
-export function chooseGlobeQuality(preference: QualitySetting = 'auto'): QualityLevel {
-  if (preference !== 'auto') return preference;
-  if (typeof navigator === 'undefined') return 'medium';
-  const hardware = navigator as Navigator & { deviceMemory?: number };
-  const memory = hardware.deviceMemory ?? 4;
-  const threads = navigator.hardwareConcurrency ?? 4;
-  if (memory <= 2 || threads <= 2) return 'low';
-  if (memory >= 8 && threads >= 8) return 'high';
-  return 'medium';
-}
-export function qualityDpr(level: QualityLevel, deviceDpr = 1): number {
-  return Math.min(level === 'low' ? 1 : level === 'medium' ? 1.5 : 2,
-    Math.max(1, deviceDpr));
-}
-export function configureGlobeRenderer(renderer: WebGLRenderer, level: QualityLevel): number {
-  const dpr = qualityDpr(level, typeof window === 'undefined' ? 1 : window.devicePixelRatio || 1);
-  renderer.setPixelRatio(dpr);
-  renderer.shadowMap.enabled = level !== 'low';
-  renderer.shadowMap.type = PCFSoftShadowMap;
-  renderer.outputColorSpace = SRGBColorSpace;
-  renderer.toneMapping = ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.05;
-  return dpr;
 }
 
 /** A lightweight atmosphere shell: alpha only at the limb, with no bloom/postprocessing. */
@@ -85,19 +49,21 @@ function createAtmosphere(): Mesh<SphereGeometry, ShaderMaterial> {
   return new Mesh(new SphereGeometry(1.095, 48, 32), material);
 }
 
-export async function createGlobe(scene: Scene, opts: GlobeOptions = {}): Promise<GlobeInstance> {
-  const quality = chooseGlobeQuality(opts.quality);
-  const dpr = opts.renderer ? configureGlobeRenderer(opts.renderer, quality)
-    : qualityDpr(quality, typeof window === 'undefined' ? 1 : window.devicePixelRatio || 1);
-  const landUrl = opts.landUrl ?? `${import.meta.env.BASE_URL}data/land-50m.json`;
-  const mask = await loadLandMask(landUrl, opts.signal);
-  if (opts.signal?.aborted) throw new DOMException('Aborted', 'AbortError');
+/** The scene's only lights: a subsolar sun and a sky fill. Created before the land loads. */
+export interface SunLights {
+  readonly group: Group;
+  /** Unit vector toward the subsolar point; shared with the city-lights shader. */
+  readonly direction: Vector3;
+  setSun(lon: number, lat: number): void;
+  applyQuality(profile: QualityProfile): void;
+  dispose(): void;
+}
+
+export function createSunLights(profile: QualityProfile): SunLights {
   const group = new Group();
-  group.name = 'AirwayDioramaGlobe';
+  group.name = 'AirwaySunLights';
   const sunlight = new DirectionalLight(new Color('#fff4e0'), 3.2);
   sunlight.name = 'SubsolarSun';
-  sunlight.castShadow = quality !== 'low';
-  sunlight.shadow.mapSize.set(quality === 'high' ? 2048 : 1024, quality === 'high' ? 2048 : 1024);
   sunlight.shadow.camera.left = -1.35;
   sunlight.shadow.camera.right = 1.35;
   sunlight.shadow.camera.top = 1.35;
@@ -106,29 +72,47 @@ export async function createGlobe(scene: Scene, opts: GlobeOptions = {}): Promis
   sunlight.shadow.camera.far = 8;
   sunlight.shadow.bias = -0.0004;
   const hemisphere = new HemisphereLight('#bcd6ff', '#26324a', .55);
+  const direction = new Vector3(0, 1, 0);
+  group.add(sunlight, sunlight.target, hemisphere);
+  const lights: SunLights = {
+    group, direction,
+    setSun(lon, lat) {
+      setLatLonVec3(direction, lon, lat);
+      sunlight.position.copy(direction).multiplyScalar(5);
+    },
+    applyQuality(next) {
+      sunlight.castShadow = next.shadowEnabled;
+      if (next.shadowEnabled && sunlight.shadow.mapSize.x !== next.shadowMapSize) {
+        sunlight.shadow.mapSize.set(next.shadowMapSize, next.shadowMapSize);
+        sunlight.shadow.map?.dispose();
+        sunlight.shadow.map = null;
+      }
+    },
+    dispose() {
+      sunlight.shadow.dispose();
+      group.clear();
+    },
+  };
+  lights.applyQuality(profile);
+  lights.setSun(5, 18);
+  return lights;
+}
+
+/** Terrain, decorations and atmosphere. Lighting comes from `createSunLights()`. */
+export async function createGlobe(scene: Scene, opts: GlobeOptions): Promise<GlobeInstance> {
+  const quality = opts.quality.preset;
+  const landUrl = opts.landUrl ?? `${import.meta.env.BASE_URL}data/land-50m.json`;
+  const mask = await loadLandMask(landUrl, opts.signal);
+  if (opts.signal?.aborted) throw new DOMException('Aborted', 'AbortError');
+  const group = new Group();
+  group.name = 'AirwayDioramaGlobe';
   const terrain = createTerrain(mask, quality);
-  const sunDirection = new Vector3(0, 1, 0);
-  group.add(terrain, createDecorations(mask, quality, opts.seed ?? 7, sunDirection),
-    createAtmosphere(), sunlight, hemisphere);
+  group.add(terrain, createDecorations(mask, quality, opts.seed ?? 7, opts.sunDirection),
+    createAtmosphere());
   scene.add(group);
   let disposed = false;
-  const instance: GlobeInstance = {
-    group, quality, dpr,
-    setSun(lon, lat) {
-      const p = cartesian(lon, lat);
-      sunDirection.set(p.x, p.y, p.z);
-      sunlight.position.copy(sunDirection).multiplyScalar(5);
-      sunlight.target.position.set(0, 0, 0);
-      sunlight.target.updateMatrixWorld();
-    },
-    pick(screenX, screenY, camera) {
-      if (disposed) return null;
-      const rect = opts.viewport?.() ?? opts.canvas?.getBoundingClientRect();
-      if (!rect || rect.width <= 0 || rect.height <= 0) return null;
-      const x = (screenX - rect.left) / rect.width * 2 - 1;
-      const y = 1 - (screenY - rect.top) / rect.height * 2;
-      return pickSphereNdc(x, y, camera);
-    },
+  return {
+    group, quality: opts.quality,
     dispose() {
       if (disposed) return;
       disposed = true;
@@ -140,10 +124,7 @@ export async function createGlobe(scene: Scene, opts: GlobeOptions = {}): Promis
           for (const material of materials) material.dispose();
         }
       });
-      sunlight.shadow.dispose();
       group.clear();
     },
   };
-  instance.setSun(5, 18);
-  return instance;
 }

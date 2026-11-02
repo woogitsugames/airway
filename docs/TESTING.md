@@ -22,7 +22,8 @@ npm run build
 | `npm run test:fast` | `typecheck`, then i18n, architecture and all four kernel tests | All test summaries and exit code 0 |
 | `npm run build` | `tsc --noEmit && vite build` | Exit code 0; `dist/` output |
 | `npm run build:land` | Generate 2048×1024 prebuilt RLE Natural Earth 50m raster; `--check` compares tracked file | `SUMMARY build-land seed=0xA1A1 ... failed=0` |
-| `npm run shots:globe` | Standalone Diorama globe visual QA in 412×915 and 915×412, with FPS/draw calls | `SUMMARY shots:globe seed=0xA1A1 captured=2 failed=0` |
+| `npm run shots:globe` | Globe-only lab (`dev/globe.html`, shared world renderer) in 412×915 and 915×412, with FPS/draw calls, into `docs/shots/03/` | `SUMMARY shots:globe seed=0xA1A1 captured=2 failed=0` |
+| `npm run shots:world` | Full world-renderer lab (`dev/world.html?frozen&clean`: globe, airports, hub rings, curfew, routes, planes, preview, overlay) in 412×915 and 915×412 into `docs/shots/render/`; compare with `mockups/diorama/png/game-p.png` | `SUMMARY shots:world seed=0xA1A1 captured=2 failed=0` |
 | `npm run shots` | Browser smoke: game canvas at portrait/landscape dimensions | `SUMMARY shots seed=0xA1A1 captured=2 failed=0`; images in `docs/shots/01/` |
 | `npm run mockups` | Preserve stage-0 Diorama and other reference mockup generation | Exit code 0 |
 | `npm run shots:mockups` | Preserve stage-0 Playwright captures of reference mockups | Existing PNG output under `mockups/*/png/` |
@@ -45,6 +46,7 @@ npm run build
 | `npm run test:fast` | `typecheck`, then `test:i18n`, then `test:arch`, then `test:interp` | Both test summaries and exit code 0 |
 | `npm run test:interp` | <!-- [task-10] --> 17 seeded checks of great-circle geometry, route-boundary interpolation, 40 routes, 100 instanced planes and per-frame route rebuild guard | `SUMMARY test:interp seed=0xA1A1 passed=17 failed=0` |
 | `npm run test:fast` | `typecheck`, then `test:i18n`, then `test:arch`, then `test:daynight` | All test summaries and exit code 0 |
+| `npm run test:render-layers` | Headless (no WebGL) checks: route preview range split on the committed arc, deferred airport ring/curfew rebuild and `clear()`, pooled plane tracks | `SUMMARY test:render-layers seed=0xA1A1 passed=11 failed=0` |
 | `npm run test:daynight` | Fixed-seed local time, demand, weekly curfew, snapshot, sun interpolation and render adapters | `SUMMARY test:daynight seed=0xA1A1 passed=N failed=0` |
 | `npm run shots` | Browser smoke: game canvas and responsive HUD at portrait / landscape / foldable dimensions | `SUMMARY shots seed=0xA1A1 captured=2 failed=0` and `SUMMARY test:hud-targets ... shots=4`; images in `docs/shots/01/` and `docs/shots/13/` |
 | `npm run test:hud-targets` | Playwright: 6 controls, ≥48 dp targets, synthetic safe-area clearance, no overlaps or overflow, live rotation, drag-to-route callback, empty-stock disabling, stable render nodes; saves four review screenshots | `SUMMARY test:hud-targets seed=0xA1A1 passed=N failed=0 shots=4` and PNGs in `docs/shots/13/` <!-- [task-13] --> |
@@ -67,7 +69,7 @@ npm run build
 | `npm run shots:puzzles` | [task-17] Puzzle selector screenshot smoke in two orientations | `SUMMARY shots:puzzles seed=0xA1A1 captured=2 failed=0`; images in `docs/shots/17/` |
 | `npm run test:daily-mode` | [task-18] Warsaw midnight/DST, offline attempts, best scores, streaks and emoji-free ticket (fixed adapter seed) | `SUMMARY test:daily-mode seed=0xA1A1 passed=12 failed=0` |
 | `npm run test:fast` | `typecheck`, then `test:i18n`, then `test:arch`, then `test:daily-mode` | All three test summaries and exit code 0 |
-| `npm run test:perf-scene` / `npm run perf:scene` | [task-21] Synthetic Chromium/SwiftShader fixture: 40 cities, 100 planes, 40 routes, 120 wall seconds at 4x. JSON at `.perf/scene.json`; Playwright and Chromium required. | `SUMMARY perf:scene seed=0xA1A1 frames=N samples=N failed=0` |
+| `npm run test:perf-scene` / `npm run perf:scene` | Production world renderer (`createWorldRenderer`) with a scripted network in Chromium/SwiftShader: 40 cities, 100 planes, 40 routes, 40 DOM tags re-projected each frame, 120 wall seconds at 4x. JSON at `.perf/scene.json`; Playwright and Chromium required. | `SUMMARY perf:scene seed=0xA1A1 frames=N samples=N failed=0` |
 | `npm run test:balance` | Real engine: 10 seeded games, deterministic replay, zero invalid commands, 8–15 minute median, and hub-overflow warning | `SUMMARY test:balance seed=0xA1A1 mode=game seeds=10 ... passed=1 failed=0`; fails until the production adapter exists |
 | `npm run test:balance:fixture` | 10 seeded stand-in sessions and bot-policy assertions; **not production balance** | `SUMMARY test:balance seed=0xA1A1 mode=fixture seeds=10 ... passed=1 failed=0` |
 | `npm run balance:report` | Real engine: 50 seeded sessions to `docs/balance/game-50.csv` and summary | `SUMMARY balance:report seed=0xA1A1 mode=game seeds=50 ... passed=1 failed=0` |
