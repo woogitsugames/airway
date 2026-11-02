@@ -92,3 +92,14 @@ full-screen ads during play, no timers, no dark patterns. Supersedes the recomme
 
 ## D-18 — Store title: "Airway: Globe Route Builder" (PL: "Airway: Buduj siatkę lotów na globusie") (2026-11-02, owner)
 **Status: in force.**
+
+## D-19 — Android native build baseline (2026-11-02, task 24)
+Capacitor 8.5.3 targets Android API 36 (minimum 24) and Java 21. The activity remains
+resizable and orientation-unlocked; Android 15+ draws edge-to-edge, and the host
+forwards Back through the `airway:android-back` event. The menu/lifecycle task owns
+its handling policy. Android launcher/splash PNGs are built from original committed
+SVGs on demand. Release APK/AAB signing requires a keystore stored outside Git and
+supplied exclusively via environment variables.
+**Rationale:** minimal native surface and permissions, repeatable source graphics,
+foldable compatibility and separation of signing secrets. Physical device behaviour
+is pending verification on Android hardware. **Status: task-24 technical baseline.**
