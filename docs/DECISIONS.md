@@ -92,3 +92,11 @@ full-screen ads during play, no timers, no dark patterns. Supersedes the recomme
 
 ## D-18 — Store title: "Airway: Globe Route Builder" (PL: "Airway: Buduj siatkę lotów na globusie") (2026-11-02, owner)
 **Status: in force.**
+
+## D-19 — Versioned saves and background freeze (2026-11-02, task 16)
+The v1 save envelope stores a serializable simulation snapshot, initial seed, simulated tick, parameter version,
+ordered command log, and state hash. v0 records migrate on read. Browser persistence uses IndexedDB;
+native persistence writes the alternate Filesystem/Data file before committing a Preferences pointer,
+so an interrupted write does not replace the previous save. Player settings use separate `aw-settings-v1`.
+Backgrounding pauses the wall-clock scheduler before saving rather than submitting a simulation speed command,
+which avoids changing deterministic replay state. **Status: provisional; requires task 02/08/09 integration.**
