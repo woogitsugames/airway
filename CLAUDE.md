@@ -2,9 +2,11 @@
 
 Instructions for AI coding agents working in this repository.
 
-## Current stage: research, concept and visual direction (NOT production)
-- This stage ends with the **owner choosing a visual direction** (and later a title). Do **not** write game code
-  until the owner has decided (see `docs/DECISIONS.md`).
+## Current stage: visual direction chosen (D-11), production not started yet
+- Stage 0 (research + visual direction) is done: world style **A "Diorama"** (low-poly three.js globe) with the airport-object
+  UI (boarding pass, luggage tags, ATC strip, cargo labels, split-flap menu) — `docs/styles/diorama.md`.
+- Still open: the game title (working title "Hubline", D-10). Start production (MVP plan in `docs/RESEARCH.md` §5) only when
+  the owner says so.
 - Deliverables of this stage: `docs/RESEARCH.md`, `docs/styles/<name>.md` + `mockups/<name>/` (HTML/SVG rendered to PNG
   at 412×915 and 915×412), `docs/DECISIONS.md`, `docs/ASSETS.md`.
 

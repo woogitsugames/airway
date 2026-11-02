@@ -29,7 +29,7 @@ direction is kept only as a record (`docs/styles/chart.md`). **Status: in force.
 ## D-06 — Four directions for the owner's choice (2026-11-02, Claude)
 A Diorama (3D low-poly globe, three.js), B Poczta lotnicza (outlined illustration, family), C Atlas (engraving + watercolour),
 D Mapa pilota (rejected, D-05). Dropped before mockups: split-flap mosaic (even more abstract) and screen-print overprint (too
-close to AirWar's poster style). **Status: waiting for the owner's pick.**
+close to AirWar's poster style). **Status: closed by D-11 (A Diorama).**
 
 ## D-07 — Market reality: Tiny Airline exists (2026-11-02, research)
 Tiny Airline (Steam, coming soon, PC) already has drawn routes, range limits, nightly upgrades and a crowded-airport fail state on
@@ -51,4 +51,4 @@ Cleanest of the checked candidates. Placeholder until the owner chooses (see RES
 Owner: "the map style of A is great, only the menus are too AI slop". The 3D low-poly globe is the game's world. The first UI
 (dark rounded panels, list menu, orange CTA) is replaced by real airport artefacts: boarding pass (top bar), luggage tags on a
 cord (dock, passenger bubbles), ATC flight strip (hints), air-cargo labels (weekly upgrade), split-flap departure board and
-yellow wayfinding sign (menu). Details: `docs/styles/diorama.md`. **Status: UI v2 waiting for owner's confirmation.**
+yellow wayfinding sign (menu). Details: `docs/styles/diorama.md`. **Status: accepted by the owner 2026-11-02 ("to ok"). Final.**
