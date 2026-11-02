@@ -59,9 +59,19 @@ Hubline placeholder. Known trade-offs noted in research (generic search term wit
 mitigate with store subtitle/keywords (e.g. "Airway: route network on a globe"), the distinctive 3D globe look in screenshots,
 and a trademark check (EUIPO/USPTO/UPRP) before release. **Status: in force.**
 
-## D-13 (reserved) — Pure, transcendental-free simulation
-Formalised by task 01 (see `docs/tasks/01-scaffold.md`): `src/sim` imports no renderer/DOM/Capacitor and uses no
-`Math.sin/cos/exp/...`, so replays match across iOS and Android JS engines.
+## D-13 — Pure, transcendental-free simulation (2026-11-02, task 01)
+The authoritative `src/sim/**` imports no three.js, Capacitor, renderer,
+UI, input, audio or platform code and never accesses browser globals.
+`Math.random`, `Date.now` and transcendentals such as
+`Math.sin/cos/tan/exp/pow/atan` (including inverse variants) are forbidden.
+Rendering/input may use projection/trigonometry; the simulation receives
+precomputed integer durations, coordinates and other validated command data.
+Use a fixed simulation step and a serializable seeded RNG in `src/core/rng.ts`.
+**Rationale:** JS engines on iOS and Android need not produce bitwise-identical
+transcendental results, whereas fixed integer simulation allows identical
+replays, undo and daily challenge verification. Enforced by `npm run test:arch`.
+**Status: in force.**
+
 
 ## D-14 — Production is split into 30 agent tasks (2026-11-02, owner request)
 Briefs in `docs/tasks/` (index `00-INDEX.md`, generator `docs/tasks/tools/gen_tasks.py`). Each session branches

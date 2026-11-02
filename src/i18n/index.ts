@@ -32,7 +32,7 @@ function savedLanguage(): Language | null {
 
 function deviceLanguage(): Language | null {
   if (typeof navigator === 'undefined') return null;
-  for (const language of navigator.languages ?? [navigator.language]) {
+  for (const language of [...(navigator.languages ?? []), navigator.language]) {
     const supported = normaliseLanguage(language);
     if (supported) return supported;
   }
