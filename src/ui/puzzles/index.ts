@@ -48,7 +48,7 @@ function goalLine(level: PuzzleLevel): string {
   return t('puzzle.goal.deliver', { passengers: level.goal.targetDelivered });
 }
 function stars(count: number): string { return `${'★'.repeat(count)}${'☆'.repeat(3 - count)}`; }
-function remainingStock(level: PuzzleLevel, session: PuzzleSession): string {
+function remainingStock(session: PuzzleSession): string {
   const supply = session.snapshot.stock;
   return t('puzzle.inventory', { turboprops: supply.turboprops, jets: supply.jets, upgrades: supply.hubUpgrades });
 }
@@ -92,7 +92,7 @@ export function mountPuzzleSelector(host: HTMLElement): PuzzleUI {
         element('span', 'puzzle-flap-title', heading(level)),
         element('span', 'puzzle-flap-gate', `B${level.id}`),
         element('span', `puzzle-flap-stars ${progress[level.id] ? 'is-done' : ''}`,
-          progress[level.id] ? stars(progress[level.id]) : t('puzzle.board.ready')));
+          progress[level.id] ? stars(progress[level.id]) : t('menu.onTime')));
       table.appendChild(flap);
     });
     wrapper.appendChild(table);
@@ -115,7 +115,7 @@ export function mountPuzzleSelector(host: HTMLElement): PuzzleUI {
     const over = snapshot.status !== 'playing';
     const wrapper = element('div', 'puzzle-game');
     const sign = element('header', 'puzzle-game-sign');
-    sign.append(button(t('puzzle.action.back'), 'back', 'puzzle-back'),
+    sign.append(button(t('action.back'), 'back', 'puzzle-back'),
       element('strong', '', t('puzzle.game.title', { number: level.id })),
       element('span', 'puzzle-game-status', t(`puzzle.status.${snapshot.status}` as TranslationKey)));
     wrapper.appendChild(sign);
@@ -146,7 +146,7 @@ export function mountPuzzleSelector(host: HTMLElement): PuzzleUI {
     wrapper.appendChild(ticket);
     const routesPanel = element('section', 'puzzle-route-panel');
     routesPanel.appendChild(element('h2', '', t('puzzle.game.routes')));
-    routesPanel.appendChild(element('p', 'puzzle-supply', remainingStock(level, session)));
+    routesPanel.appendChild(element('p', 'puzzle-supply', remainingStock(session)));
     const routes = element('div', 'puzzle-route-list');
     for (let index = 0; index < level.availableRoutes.length; index++) {
       const edge = level.availableRoutes[index];

@@ -128,7 +128,7 @@ function buildDialog(
   board.setAttribute('aria-label', t('gameover.departures', { hub: snapshot.hubCode }));
   const boardTitle = element('h2', 'airway-go-board-title', t('gameover.departures', { hub: snapshot.hubCode }));
   const columns = element('div', 'airway-go-board-head');
-  for (const text of [t('gameover.flight'), t('gameover.gate'), t('gameover.status')]) {
+  for (const text of [t('gameover.flight'), t('menu.gate'), t('menu.status')]) {
     columns.append(element('span', '', text));
   }
   const flightList = element('div', 'airway-go-flight-list');
