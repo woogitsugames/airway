@@ -47,6 +47,7 @@ export interface RouteToolPorts {
   cursorGeo?(x: number, y: number): GeoPoint | null;
   speed(): number;
   dispatch(command: RouteToolCommand): boolean;
+  /** Undo the last network mutation; transient SetSpeed intents are not network undo steps. */
   undo(): void;
   preview(model: RoutePreviewModel | null): void;
   warning(info: RangeWarning | null): void;
