@@ -61,6 +61,7 @@ export function mountAirportsDemo(host: HTMLElement): () => void {
   const renderer = new WebGLRenderer({ antialias: true, alpha: false });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   const camera = new PerspectiveCamera(42, 1, 0.05, 30);
+  renderer.domElement.setAttribute('aria-label', t('canvas.label'));
   host.appendChild(renderer.domElement);
   const airportLayer = createAirports(scene, { maxAirports: CITIES.length, maxHubSeats: 32 });
   let zoom = Math.max(1, Math.min(2.5, Number(new URLSearchParams(location.search).get('zoom')) || 1));
