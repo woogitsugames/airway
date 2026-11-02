@@ -115,6 +115,11 @@ try {
   const puzzle = new sim.CurfewPlanner('puzzle', cityData, rootRng(seed), ['C02', 'C05']);
   check('puzzle curfew available in week one', puzzle.advance(0)?.cityIds.length === 2 &&
     puzzle.isClosed('C02', 10 * 60));
+  check('puzzle landing across week boundary is blocked', (() => {
+    const departure = params.DAYNIGHT_MINUTES_PER_WEEK - 10;
+    puzzle.advance(departure);
+    return !puzzle.canScheduleLeg('C03', 'C02', departure, 610);
+  })());
   throws('unknown city rejected', () => puzzle.isClosed('UNKNOWN', 30));
   throws('curfew check needs current tick', () => puzzle.isClosed('C02', w4));
 

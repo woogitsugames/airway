@@ -172,7 +172,12 @@ export class CurfewPlanner {
     if (!this.canDepart(fromId, departureTick)) return false;
     const arrivalTick = departureTick + durationTicks;
     if (weekAtTick(arrivalTick) !== this.currentWeek) {
-      // Future-week city selection may change; enforce again when the aircraft lands.
+      // Puzzle levels have stable curfew cities across week boundaries.
+      if (this.mode === 'puzzle') {
+        return !this.selectedSet.has(toId) ||
+          !isLocalCurfewHour(arrivalTick, this.offsets.get(toId)!);
+      }
+      // Endless city selection may change next week; re-check when landing.
       return true;
     }
     return this.canLand(toId, arrivalTick);
