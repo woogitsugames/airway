@@ -483,3 +483,12 @@ starts in the second 3-day week, a hub expansion, a demand that needs a transfer
 divided by 1 + margin, the margin falling from 25 % (16) to 17 % (29–30), so later levels need a near-best network.
 Several levels offer decoy strips (a curfewed hub, a five-spoke star that jams on slots). Data format stays version 1.
 **Status: in force; difficulty is a proposal for the owner to playtest.**
+
+## D-71 — Resonant hubs: region scales, tension, cadence, mix and limiter (2026-11-03, Claude, night N3)
+Each destination region plays its own rotation of one pentatonic collection (`REGION_SCALES`), so every hub stays
+consonant while regions sound different. `src/game/audioCues.ts` feeds the engine: graded hub load once per game hour
+(top 4 hubs drone, a calmed hub is released), dawn blooms when a hub reaches 06:00 local (max 2 per hour), a
+dominant→tonic cadence on the week turn (key moves a fifth), a two-tick "slot wait" effect (once per airport per hour),
+and tag / paper / stamp for route add, route removal and upgrade choice. Mix: bus gains and make-up gain into the
+glue compressor, then a −3 dB limiter and trim; previews peak −7…−9 dBFS and a 4x burst stays under −1 dBFS.
+Previews in `docs/audio/`. **Status: in force; sound character is a proposal until the owner listens on a phone.**

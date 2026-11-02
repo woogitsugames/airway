@@ -1,7 +1,7 @@
 /** Public adapter boundary; can be imported before a user gesture. */
-export { AirwayAudio, createAudio } from './engine';
+export { AirwayAudio, MIX, createAudio } from './engine';
 export { AudioScheduler } from './scheduler';
-export { clamp01, latitudeToHz, latitudeToMidi, stressBeatHz } from './pitch';
+export { REGION_SCALES, clamp01, latitudeToHz, latitudeToMidi, stressBeatHz, weekTonicHz } from './pitch';
 export { DEFAULT_AUDIO_SETTINGS, audioSettingsFromToggles } from './events';
 export type {
   AudioCue, AudioEffect, AudioEventStream, AudioSettings, AudioToggles, HubAudioData,

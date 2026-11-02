@@ -35,6 +35,15 @@ lowers the filter cutoff; `setNight(true)` dims the overall music bus; dawn
 blooms a three-note chord. Menu flap, paper, tag, stamp and new-city bell are
 synthesised locally with deterministic generated noise and oscillators.
 
+## Night N3 additions (D-71)
+
+- Hub cues may carry `regionId`; `REGION_SCALES` gives each region its rotation of the same pentatonic set.
+- `src/game/audioCues.ts` (`AudioCueMapper`) maps run events and hourly hub readings to cues: graded `hub-load`,
+  `dawn` at 06:00 local, `week` cadence, `slot-wait`, and `tag`/`paper`/`stamp` for player commands.
+- Mix: `MIX` bus gains and make-up gain → 55 Hz high-pass → glue compressor → −3 dB limiter → trim.
+- `attachOfflineContext()` + `renderCueAt()` render the same graph offline (`npm run audio:previews`,
+  `npm run test:audio-render`); WAVs in `docs/audio/`.
+
 ## Settings and platform behavior
 
 `setSettings()` takes 0..1 music/effect volumes, `muted`, and
