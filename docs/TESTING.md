@@ -35,6 +35,9 @@ npm run build
 | `npm run test:overlay-layout` | 30-city collisions, jam priority, boundaries, repeatability, overflow | `SUMMARY test:overlay-layout seed=0xA1A1 cases=7 passed=7 failed=0` |
 | `npm run test:fast` | `typecheck`, then `test:i18n`, then `test:arch` | All three test summaries and exit code 0 |
 | `npm run shots` | Browser smoke: game canvas at portrait/landscape dimensions | `SUMMARY shots seed=0xA1A1 captured=6 failed=0`; images in `docs/shots/01/` and `docs/shots/06/` |
+| `npm run test:routing` | Minimum transfers, distance ties, graph edits and stable region destinations | `SUMMARY test:routing seed=0xA1A1 cases=7 passed=7 failed=0` |
+| `npm run test:hubs` | Hub formation, MCT, queue grace, recovery and aircraft passenger conservation | `SUMMARY test:hubs seed=0xA1A1 cases=6 passed=6 failed=0` |
+| `npm run test:sim-week` | Three deterministic seven-day runs, snapshots and expected no-route failure tick | `SUMMARY test:sim-week seeds=3 ... cases=6 passed=6 failed=0` |
 
 Every future test must have a fixed seed (use `0xA1A1` where no gameplay seed
 is needed), terminate with one `SUMMARY ...` line, set a nonzero exit code on

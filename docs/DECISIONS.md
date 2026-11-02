@@ -141,3 +141,15 @@ creation in the render loop. Collision resolution prioritizes jammed hubs, moves
 tags upward, then hides a tag that cannot fit without overlap. The 30-city fixture
 is temporary until tasks 03 and 05 merge. **Status: in force for task 06.**
 _(renumbered from D-19 during integration, branch `origin/task/06-airports-overlay`)_
+
+## D-23 — Aircraft-driven passenger transfers with cached regional routing (2026-11-02, task 08)
+The passenger model generates regional tickets from a dedicated seeded `demand` stream. Each passenger
+stores only its destination region and the current incoming route; a route cache is recomputed only
+when the network changes, minimizing transfers before total precomputed kilometres.
+Aircraft call `boardAt` and `alightAt` at deterministic stops, while transfer queues enforce a global
+25-tick minimum connection time. Ordinary cities have smaller queues, and a sustained full queue
+fails after 450 simulation ticks; clearing the jam resets its countdown. These are versioned
+defaults that may be balanced after integration with aircraft, not independent scheduling.
+**Rationale:** deterministic replay, precise capacity failures, and a narrow adapter between
+passengers, the task-02 command kernel and task-09 aircraft. **Status: proposed pending integration.**
+_(renumbered from D-19 during integration, branch `origin/task/08-sim-passengers-hubs`)_
