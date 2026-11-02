@@ -3,9 +3,8 @@
 Aktualizowane na bieżąco przez sesję koordynatora. Jeśli sesja się skończy, następna zaczyna od tego pliku.
 
 ## Stan (2026-11-02)
-- Na `dev`: zlecenia 01–29, 31, 32, 33, 35 (PR #30, #32, #33, #34, #35). RULES_VERSION=4, test:balance po 32: mediana 12,92 min, 0,86/0,44. PR #34 [33] scalony przez koordynatora po pełnej bramce testów.
-- **34 nocne kadrowanie** — w toku, gałąź `task/34-night-framing` z dev 3be12c9. D-47.
-- **36 prawdziwe zrzuty do sklepów** — nie zaczęte; po scaleniu 32, 33, 34. D-48.
+- Na `dev`: zlecenia 01–29, 31–35 (PR #30, #32, #33, #34, #35, #36). RULES_VERSION=4, test:balance po 32: mediana 12,92 min, 0,86/0,44. PR #34 [33] scalony przez koordynatora po pełnej bramce testów.
+- **36 prawdziwe zrzuty do sklepów** — w toku, gałąź `task/36-store-shots-real` z dev e9908c2. D-48. Po nim: bramka testów i scalenie, koniec kolejki.
 
 ## Jak wznowić
 1. Sprawdź draft PR-y `[32]`, `[33]` na GitHubie (sekcja „Stan / co dalej” w opisie).
@@ -16,6 +15,7 @@ Aktualizowane na bieżąco przez sesję koordynatora. Jeśli sesja się skończy
 3. Po 32 i 34: sprawdź RULES_VERSION i test:balance (mediana 8–15 min, ≥60% / ≥30%).
 
 ## Decyzje czekające na właściciela
+- z 34: dekoracyjna sieć w menu; jasność nocy (MOON_INTENSITY); globus w menu stoi zamiast obracać się 1,2°/s.
 - z 32: limit 2/h miasto, 3/h hub; „+2 sloty” dla jednego lotniska; zlecić przywieszkę „SLOT 0:12” przy lotnisku (render/ui)?
 - z 33: gęstość lądu medium (~200 tys. vs ~350 tys. jak makieta); cienie chmur na low; perf na prawdziwym Mali.
 - z 31: etykieta doby „N/3”; 7,2 min do 1. ulepszenia (vs 4–5 min z D-40); parametry 16 h i 36/24.
