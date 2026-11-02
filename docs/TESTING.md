@@ -45,7 +45,7 @@ Times are measured in the integration container (8 vCPU, SwiftShader); “ci” 
 | `npm run test:land` | fast | ~6 s | `build:land --check`: committed land raster matches Natural Earth 50m; [task-33] builds the terrain for all presets and checks watertight mesh (no T-junction cracks), no folded facets, coast teeth/stray from the smooth coastline, no Sahara terraces, open sea coarser than coasts, triangle budgets, determinism, mountains/snow where they are in reality, seamless Arctic ice, terrain below airport pads, tree/rock counts and placement (`scripts/build-land.check.mjs`) | `SUMMARY build-land … checked=1 checks=59 … failed=0` |
 | `npm run test:geo-math` | fast | 1 s | Globe coordinates, ray–sphere picking (London/Lisbon/Cairo, off-centre) | `… tests=N passed=N failed=0` |
 | `npm run test:gestures` | fast | 1 s | 31 pointer/camera sequences: route edit, orbit, pinch, long press, one-hand zoom, edge pan, DPR | `… cases=31 passed=31 failed=0` |
-| `npm run test:overlay-layout` | fast | <1 s | 30-city tag collisions, jam priority, boundaries, repeatability | `… cases=7 passed=7 failed=0` |
+| `npm run test:overlay-layout` | fast | <1 s | 30-city tag collisions, jam priority, boundaries, repeatability; slot tag stacked under the passenger tag (no overlap, release, h:mm) | `… cases=19 passed=19 failed=0` |
 | `npm run test:routing` | fast | 1 s | Minimum transfers, distance ties, graph edits, region destinations | `… cases=7 passed=7 failed=0` |
 | `npm run test:hubs` | fast | 1 s | Hub formation, MCT, queue grace, recovery, passenger conservation (D-23) | `… cases=6 passed=6 failed=0` |
 | `npm run test:sim-week` | fast | 1 s | Three seeded full-week runs (3 days, D-40), day-1 checkpoint/restore, no-route failure tick | `… seeds=3 weekTicks=4320 cases=6 passed=6 failed=0 …` |
@@ -135,6 +135,8 @@ contrast; luggage tags against the globe under them); every value must be ≥ 4.
 (`CONTRAST …` lines, then `SUMMARY shots:34 seed=0xA1A1 captured=8 expected=8 failed=0`).
 `node scripts/shots-31.mjs` captures the task-31 evidence (`docs/shots/31/`: week-1 board and the day bar at day 2/3).
 `node scripts/shots-32.mjs` captures the task-32 evidence (`docs/shots/32/`: first held departure with the one-time slot strip, week-1 board with the "+2 slots" label and its stamp, airport-pick sign), PL/EN × 412×915 / 915×412; `SUMMARY shots:32 seed=0xA1A1 captured=12 expected=12 failed=0`.
+
+`npm run shots:38` (task 38) captures the departure-slot tag on the real game, seed 0xA1A1, PL/EN × 412×915 / 915×412 × day/night: `docs/shots/38/{day,night}-{pl,en}-{p,l}.png`. Each page jumps the clock to the wanted sun angle (shots-34 formula), draws a route and drags three more turboprops onto it with real gestures, so the slot gate holds aircraft. It checks the localised `SLOT h:mm` text, no overlap with passenger tags, no passenger glyph inside, the paper body's WCAG contrast against the globe ≥ 4.5:1 (`__awWorld.nightContrast('.airport-slot')`; ink stub reported only) and, on day portrait, that the tag disappears after release. A page that sees no hold (wall-clock frames can split the aircraft over two minutes) is retried once. Ends with `SUMMARY shots:38 seed=0xA1A1 captured=8 expected=8 failed=0`.
 
 ## Boundary regression
 

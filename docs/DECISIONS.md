@@ -398,6 +398,18 @@ blank/white, developer text, only the six D-08 passenger glyphs, which also keep
 out of store images) and recorded in `docs/store/shots/manifest.json`. **Status: in force.**
 
 
+## D-50 — Departure-slot tag hangs under the passenger tag (2026-11-02, task 38)
+While aircraft are held for a departure slot (D-46), the airport shows a second luggage tag "SLOT h:mm" — game time to the
+next free slot, from `CityView.nextSlotMinutes` — plus "×N" only when two or more aircraft wait. Shape, not colour, tells
+it from the passenger tag: a squared ticket with a dark stub carrying a clock-over-runway-bar mark (inline SVG), ink outline
+and chamfered right end, against the pointed passenger tag with its punched hole. Placement is deterministic: the
+passenger tag and the slot tag form **one layout box** for `layoutTags` (passenger tag on top, slot tag 2 px below,
+left-aligned, i.e. nearest the apron where the aircraft stand), so no other airport's tag can slide between them; with
+nobody waiting the slot tag fills the box alone. The tag has no countdown animation and disappears as soon as nothing is
+held. Readability: the paper body reaches ≥ 4.81:1 by day and ≥ 14.8:1 at night against the globe behind it
+(`npm run shots:38`); ink on paper inside the tag is 12.7:1. **Status: in force; the tag's wording ("SLOT" in both
+languages) is an owner-visible choice (task-38 PR question).**
+
 <!-- Owner decisions below use D-60+ so they cannot collide with D-49… taken by the parallel task-37…40 session. -->
 
 ## D-60 — First weekly upgrade at ~7.2 min is accepted (2026-11-02, owner)
