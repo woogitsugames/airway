@@ -1,6 +1,6 @@
 // [task-03] Standalone WebGL laboratory, deliberately not coupled to the game bootstrap.
 import { Color, PerspectiveCamera, Scene, Vector3, WebGLRenderer } from 'three';
-import { createGlobe, latLonToVec3 } from '../src/render/globe';
+import { createGlobe } from '../src/render/globe';
 import type { GlobeInstance, QualitySetting } from '../src/render/globe';
 
 declare global {
@@ -89,8 +89,12 @@ canvas.addEventListener('wheel', (event) => {
 
 const loop = (now: number): void => {
   const begin = performance.now();
-  const p = latLonToVec3(lon, lat, zoom);
-  position.set(p.x, p.y, p.z);
+  // Avoid allocating even a temporary vector in the frame loop.
+  const longitude = lon * Math.PI / 180;
+  const latitude = lat * Math.PI / 180;
+  const ring = Math.cos(latitude) * zoom;
+  position.set(ring * Math.sin(longitude), zoom * Math.sin(latitude),
+    ring * Math.cos(longitude));
   camera.position.copy(position);
   camera.up.set(0, 1, 0);
   camera.lookAt(0, 0, 0);
