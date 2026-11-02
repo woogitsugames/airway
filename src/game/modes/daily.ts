@@ -84,11 +84,10 @@ export class DailyChallengeMode<TSimulation extends DailySimulation> {
   finish(session: DailySession<TSimulation>, score: number, weeks: number, regions: readonly number[]): DailyResult | null {
     if (!this.active.has(session)) return null;
     const ticket = dailyTicket(regions);
+    const result = session.kind === 'official'
+      ? (session.reservation ? this.scores.finishOfficial(session.reservation, score, weeks, ticket) : null)
+      : this.scores.recordPractice(session.dateKey, score, weeks, ticket);
     this.active.delete(session);
-    if (session.kind === 'official') {
-      if (!session.reservation) return null;
-      return this.scores.finishOfficial(session.reservation, score, weeks, ticket);
-    }
-    return this.scores.recordPractice(session.dateKey, score, weeks, ticket);
+    return result;
   }
 }
