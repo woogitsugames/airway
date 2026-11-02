@@ -32,7 +32,10 @@
     "test:routing": "node scripts/test-routing.mjs",
     "test:hubs": "node scripts/test-hubs.mjs",
     "test:sim-week": "node scripts/test-sim-week.mjs",
-    "shots:08": "node scripts/shots.mjs"
+    "shots:08": "node scripts/shots.mjs",
+    "test:planes": "node scripts/test-planes.mjs",
+    "test:schedule": "node scripts/test-schedule.mjs",
+    "shots:09": "node scripts/shots.mjs"
   },
   "dependencies": {
     "@capacitor/android": "8.5.3",

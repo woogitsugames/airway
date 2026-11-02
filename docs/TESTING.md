@@ -38,6 +38,8 @@ npm run build
 | `npm run test:routing` | Minimum transfers, distance ties, graph edits and stable region destinations | `SUMMARY test:routing seed=0xA1A1 cases=7 passed=7 failed=0` |
 | `npm run test:hubs` | Hub formation, MCT, queue grace, recovery and aircraft passenger conservation | `SUMMARY test:hubs seed=0xA1A1 cases=6 passed=6 failed=0` |
 | `npm run test:sim-week` | Three deterministic seven-day runs, snapshots and expected no-route failure tick | `SUMMARY test:sim-week seeds=3 ... cases=6 passed=6 failed=0` |
+| `npm run test:planes` | Plane types, reserves, range rejections with exact km, assignment and release | `SUMMARY test:planes seed=0xA1A1 cases=8 passed=8 failed=0` |
+| `npm run test:schedule` | Dwell, back-and-forth movement, capacity, passenger balance and 7-day replay | `SUMMARY test:schedule seed=0xA1A1 cases=7 passed=7 failed=0` |
 
 Every future test must have a fixed seed (use `0xA1A1` where no gameplay seed
 is needed), terminate with one `SUMMARY ...` line, set a nonzero exit code on

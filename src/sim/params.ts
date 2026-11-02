@@ -31,3 +31,16 @@ export const MIN_TRANSFER_TICKS = 25 as const;
 // At 1x the player has 45 real seconds (10 ticks per real second) to clear a jam.
 export const CONGESTION_GRACE_TICKS = 45 * SIM_TICKS_PER_SECOND;
 export const WAIT_TOO_LONG_TICKS = 360 as const;
+// [task-09] Planes: integer kilometres and whole simulation minutes (ticks).
+export const PLANE_TYPES = {
+  turboprop: { rangeKm: 2500, seats: 48, speedKmPerTick: 8 },
+  widebody: { rangeKm: 11000, seats: 300, speedKmPerTick: 14 },
+} as const;
+export type PlaneType = keyof typeof PLANE_TYPES;
+export const MIN_AIRPORT_SERVICE_TICKS = 25 as const;
+export const MAX_ROUTE_SEGMENT_KM = 21000 as const;
+export const PLANE_PROGRESS_SCALE = 10000 as const;
+export const INITIAL_PLANE_RESERVE: Readonly<Record<PlaneType, number>> = {
+  turboprop: 2,
+  widebody: 0,
+};
