@@ -1,24 +1,13 @@
-// [task-08] Deterministic RNG contract fixture until task 02 exports its seeded streams.
-export function rngRoot(seed) {
-  return {
-    fork(label) {
-      if (label !== 'demand') throw new Error('Only the demand stream is used by task 08');
-      let state = ((seed >>> 0) ^ 0x9e3779b9) >>> 0;
-      return {
-        next() {
-          state ^= state << 13;
-          state ^= state >>> 17;
-          state ^= state << 5;
-          return (state >>> 0) / 0x100000000;
-        },
-        snapshot() { return state >>> 0; },
-        restore(value) { state = value >>> 0; },
-      };
-    },
-  };
+// Shared fixtures for the passenger-subsystem tests (task 08).
+import './ts-test-loader.mjs';
+const { Rng } = await import('../src/core/rng.ts');
+
+/** The kernel's real seeded 'demand' stream. */
+export function demandRng(seed) {
+  return new Rng(seed >>> 0).fork('demand');
 }
-export function city(cityId, regionId, population = 0, utcOffsetMinutes = 0) {
-  return { cityId, regionId, population, utcOffsetMinutes };
+export function city(cityId, regionId, population = 0, utcOffsetH = 0) {
+  return { cityId, regionId, population, utcOffsetH };
 }
 export function distances(data) {
   return (a, b) => {

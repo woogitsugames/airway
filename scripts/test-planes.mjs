@@ -82,7 +82,7 @@ harness('planes', SEED, ({ planes, params }, check) => {
 
   check('upgrade reserve increments and input validation is atomic', () => {
     const fleet = planes.createPlaneFleet();
-    assert.deepEqual(fleet.available, { turboprop: 2, widebody: 0 });
+    assert.deepEqual(fleet.available, { ...params.INITIAL_PLANE_RESERVE });
     planes.grantPlanes(fleet, 'widebody', 2);
     assert.equal(fleet.available.widebody, 2);
     assert.throws(() => planes.grantPlanes(fleet, 'widebody', -1), RangeError);

@@ -30,9 +30,11 @@ try {
     starts.add(incremental.activeCityIndices.join(','));
     const anchorIndex = incremental.activeCityIndices[0];
     for (const index of incremental.activeCityIndices) {
-      assert.equal(CITIES[index].region, CITIES[anchorIndex].region);
       assert.ok(distanceKm(index, anchorIndex) <= SPAWNER_START_RADIUS_KM);
     }
+    // Demand only targets other regions, so every start mixes at least two regions.
+    assert.ok(new Set(incremental.activeCityIndices.map((index) => CITIES[index].region)).size >= 2,
+      `single-region start for seed ${seed}`);
     let before = advanceCitySpawner(incremental, SPAWNER_INTERVAL_TICKS - 1);
     assert.equal(before.spawnedCityIndices.length, 0);
     assert.equal(before.state.activeCityIndices.length, incremental.activeCityIndices.length);
