@@ -66,7 +66,7 @@ Sesja pracuje na gałęzi `task/NN-...`, wypycha ją i otwiera **draft PR do `de
 | 24 | [Build Android](24-android-build.md) | `task/24-android-build` | 01, 16 |
 | 25 | [Build iOS](25-ios-build.md) | `task/25-ios-build` | 01, 16 |
 | 26 | [Zrzuty i teksty do sklepów](26-store-assets.md) | `task/26-store-assets` | 13, 14, 12, 15 |
-| 27 | [Demo + odblokowanie (szkielet, decyzja właściciela)](27-monetization-gate.md) | `task/27-monetization-gate` | 14, 17 |
+| 27 | [Monetyzacja: przygotowanie pod reklamy i wersję płatną (wyłączone)](27-monetization-gate.md) | `task/27-monetization-gate` | 14, 17 |
 | 28 | [Testy e2e i macierz ekranów](28-e2e-smoke.md) | `task/28-e2e-smoke` | 13, 14, 15, 16 |
 | 29 | [Strona airway.games](29-landing-page.md) | `task/29-landing-page` | 14 |
 
@@ -83,8 +83,8 @@ Sesja pracuje na gałęzi `task/NN-...`, wypycha ją i otwiera **draft PR do `de
 - Raport po polsku w opisie PR-a: co zrobione, wyniki testów, zrzuty, pytania do właściciela.
 
 ## Decyzje, które należą do właściciela (zlecenia je oznaczą, ale nie rozstrzygają)
-- `appId` aplikacji (propozycja `games.airway.app`) — zlecenie 01.
-- Model biznesowy i wtyczka IAP — zlecenie 27 (domyślnie wyłączone).
-- Podtytuł do sklepów — zlecenie 26.
+- ~~appId~~ → `pl.samsufi.airway` (D-15).
+- ~~Model biznesowy~~ → na razie darmowa, reklamy i wersja płatna później (D-16); wybór wtyczek IAP/reklam — później.
+- ~~Podtytuł~~ → „Airway: Globe Route Builder” (D-18).
 - Polityka prywatności i wdrożenie strony — zlecenie 29.
-- Włączenie ciszy nocnej w trybie bez końca — zlecenie 11 (domyślnie wyłączona).
+- ~~Cisza nocna~~ → od tygodnia 4 w trybie bez końca, zawsze w zadaniach (D-17).

@@ -58,8 +58,9 @@
 1. Skrypt `npm run store:shots`: ustawione sceny (trick przez parametry URL / tryb deweloperski) — gra w Europie o zmierzchu,
    wybór ulepszenia, menu z tablicą, porażka z raportem, widok nocny ze światłami. PL i EN, telefon 1080×1920 (9:16),
    składany i tablet; bez nakładek marketingowych w MVP (albo prosty pasek tekstu w stylu drogowskazu — zaproponuj).
-2. Teksty sklepu PL/EN w `docs/store/` (tytuł „Airway”, podtytuł odróżniający od wyników medycznych i Mini Airways —
-   3 propozycje do wyboru właściciela, opis krótki i długi, słowa kluczowe). **Bez** nazw konkurentów w tekstach sklepu.
+2. Teksty sklepu PL/EN w `docs/store/`: tytuł **„Airway: Globe Route Builder”** (decyzja D-18; PL: „Airway: Buduj siatkę
+   lotów na globusie” tam, gdzie sklep pozwala lokalizować nazwę), opis krótki i długi, słowa kluczowe. **Bez** nazw
+   konkurentów w tekstach sklepu.
 
 ## Pliki, które są Twoje
 `scripts/store-shots.*`, `docs/store/**`

@@ -63,7 +63,7 @@ Zbuduj fundament, na którym pracuje 29 kolejnych sesji. To zlecenie **zakłada 
    nic nie rób z nią.
 2. Na swojej gałęzi: Vite 6 + TypeScript (strict) + three.js (przypnij wersję, np. 0.170.x jak w makietach) + Capacitor 8
    (`@capacitor/core`, `@capacitor/android`, `@capacitor/ios` w zależnościach, ale **bez** generowania katalogów `android/` i
-   `ios/` — to zlecenia 24 i 25). `capacitor.config.ts` z `appId: "games.airway.app"` (zapisz to jako decyzję do potwierdzenia),
+   `ios/` — to zlecenia 24 i 25). `capacitor.config.ts` z `appId: "pl.samsufi.airway"` (decyzja właściciela D-15),
    `appName: "Airway"`, `webDir: "dist"`.
 3. Struktura `src/` jak w „Zasady stałe”, z plikami-zalążkami i jednym zdaniem komentarza „po co ten moduł”. `src/main.ts`
    uruchamia pusty ekran z płótnem three.js (pusta scena, kolor nieba z palety Dioramy) — tylko jako dowód, że build działa.

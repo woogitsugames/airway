@@ -1,6 +1,6 @@
-// Proposed application identifier (D-15): owner confirmation required before store release.
+// Owner-confirmed application identifier (D-15).
 export default {
-  appId: 'games.airway.app',
+  appId: 'pl.samsufi.airway',
   appName: 'Airway',
   webDir: 'dist',
 };
