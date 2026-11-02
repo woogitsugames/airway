@@ -79,6 +79,8 @@ npm run build
 | `npm run test:fast` | `typecheck`, then `test:i18n`, `test:arch`, `test:ios-config` | All three test summaries and exit code 0 |
 | `npm run test:store-shots` | [task-26] Validate PL/EN store copy limits, owner titles and 30-shot matrix (fixed seed) | `SUMMARY test:store-shots seed=0xA1A1 listings=2 fields=12 scenes=5 devices=3 passed=1 failed=0` |
 | `npm run store:shots` | [task-26] Capture 5 actual game scenes in PL/EN on phone, foldable and tablet; requires integrated dev-only fixture | `SUMMARY store:shots seed=0xA1A1 expected=30 captured=30 passed=1 failed=0`; PNGs in `docs/store/shots/` |
+| `npm run test:gating` | Free entitlements, no-op ads, disabled content gate, and no new monetization SDK dependencies | `SUMMARY test:gating seed=0xA1A1 passed=8 failed=0` |
+| `npm run test:fast` | `typecheck`, then `test:i18n`, `test:arch`, and `test:gating` | All three test summaries and exit code 0 |
 
 Every future test must have a fixed seed (use `0xA1A1` where no gameplay seed
 is needed), terminate with one `SUMMARY ...` line, set a nonzero exit code on
