@@ -1,7 +1,7 @@
 // Projection-only UI. The simulation supplies read-only snapshots and navigation is a callback.
 import { Camera, Object3D, Vector3 } from 'three';
 import { t } from '../i18n';
-import { regionGlyph, type DestinationRegion } from './glyphs';
+import { isDestinationRegion as isValidRegion, regionGlyph, type DestinationRegion } from './glyphs';
 import { layoutTags, type TagBounds, type TagSlot } from './overlay-layout';
 import './overlay.css';
 
@@ -62,9 +62,6 @@ export interface AirportOverlay {
   dispose(): void;
 }
 
-function isValidRegion(value: string): value is DestinationRegion {
-  return value === 'NAM' || value === 'SAM' || value === 'EUN' || value === 'EUS' || value === 'AFR' || value === 'ME';
-}
 
 function placeEl(el: HTMLElement, x: number, y: number): void {
   el.style.transform = `translate3d(${x}px,${y}px,0)`;

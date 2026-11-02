@@ -1,7 +1,10 @@
-// [task-15] Read-only diagnostics adapter for the hub ledger owned by task 08.
+// Read-only diagnostics over the sim's hub cause ledger (task 15).
 // The adapter does not infer causes when a counter is absent.
-export const REGION_CODES = ['NAM', 'SAM', 'EUN', 'EUS', 'AFR', 'ME'] as const;
-export type RegionCode = (typeof REGION_CODES)[number];
+import type { RegionId } from '../data/regions';
+
+/** Same order as REGION_IDS in src/data/regions.ts; a literal so tests can load this file standalone. */
+export const REGION_CODES = ['NAM', 'SAM', 'EUN', 'EUS', 'AFR', 'ME', 'ASI', 'OCE'] as const satisfies readonly RegionId[];
+export type RegionCode = RegionId;
 
 export interface HubCauseLedger {
   readonly waiting: number;

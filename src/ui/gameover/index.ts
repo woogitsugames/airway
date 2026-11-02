@@ -53,6 +53,8 @@ const REGION_KEYS: Record<RegionCode, TranslationKey> = {
   EUS: 'gameover.region.EUS',
   AFR: 'gameover.region.AFR',
   ME: 'gameover.region.ME',
+  ASI: 'gameover.region.ASI',
+  OCE: 'gameover.region.OCE',
 };
 const CAUSE_KEYS: Record<CauseKind, TranslationKey> = {
   'regional-demand': 'gameover.cause.regionalDemand',
