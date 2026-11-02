@@ -1,7 +1,11 @@
 // [task-26] Fail-closed Playwright captures of real, deterministic game scenes.
+// [task-36] Every PNG is checked (size, not blank/white, no dev text, passenger glyphs only from the six
+// D-08 shapes) and a contact sheet is rendered. `--validate` re-checks the committed PNGs + manifest.
+// Preview one scene without publishing: `node scripts/store-shots.mjs --only=night --out=/some/dir`.
 import { spawn } from 'node:child_process';
 import { once } from 'node:events';
-import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { inflateSync } from 'node:zlib';
 import { createRequire } from 'node:module';
 import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
@@ -16,13 +20,8 @@ const SEED = 41377; // 0xA1A1
 const WEEK_SEED = SEED;
 const seedFor = (scene) => (scene === 'upgrade' ? WEEK_SEED : SEED);
 const LANGUAGES = ['pl', 'en'];
-const SCENES = [
-  ['game-dusk', '18:30'],
-  ['upgrade', '18:30'],
-  ['menu', '12:00'],
-  ['failure', '18:30'],
-  ['night', '22:30'],
-];
+// [task-36] The light is chosen by the fixture in src/main.ts (sun hour angle over the camera centre).
+const SCENES = ['game-dusk', 'upgrade', 'menu', 'failure', 'night'];
 const DEVICES = [
   { id: 'phone', w: 360, h: 640, dpr: 3 }, // 1080x1920; 9:16
   { id: 'foldable', w: 673, h: 841, dpr: 2 },
@@ -32,6 +31,14 @@ const EXPECTED = LANGUAGES.length * SCENES.length * DEVICES.length;
 const args = process.argv.slice(2);
 const validateOnly = args.includes('--validate');
 const baseArg = args.find((arg) => arg.startsWith('--base-url='));
+const onlyArg = args.find((arg) => arg.startsWith('--only='))?.slice('--only='.length);
+const outArg = args.find((arg) => arg.startsWith('--out='))?.slice('--out='.length);
+const MANIFEST = resolve(OUT, 'manifest.json');
+const CONTACT = resolve(ROOT, 'docs/store/contact-sheet.png');
+// D-08: the six approved passenger glyphs. The provisional Asia/Oceania glyphs must not reach a store image.
+const D08_GLYPHS = ['chevron', 'bowtie', 'crescent', 'keyhole', 'fin', 'bracket'];
+// Developer-only text that must never be visible in a store image (raw i18n keys, debug words, NaN...).
+const DEV_TEXT = /\b(?:DEV|debug|TODO|FIXME|undefined|NaN|null|fps|lorem|storeShot|localhost|127\.0\.0\.1)\b|\{[A-Za-z]+\}|\b[a-z]+\.[a-z]+[A-Z][A-Za-z]*\b|\b(?:hud|menu|action|pause|upgrade|gameover|settings|tutorial|canvas)\.[a-z][A-Za-z.]*\b/;
 let browser, server, stageDir, captured = 0;
 
 function field(markdown, heading) {
@@ -70,7 +77,7 @@ function checkCopy() {
       [...short].length + '/80 keywords=' + Buffer.byteLength(keywords, 'utf8') + '/100bytes');
     fields += 6;
   }
-  if (new Set(SCENES.map((scene) => scene[0])).size !== SCENES.length) throw new Error('Duplicate scenes');
+  if (new Set(SCENES).size !== SCENES.length) throw new Error('Duplicate scenes');
   if (new Set(DEVICES.map((d) => d.id)).size !== DEVICES.length) throw new Error('Duplicate devices');
   if (DEVICES[0].w * DEVICES[0].dpr !== 1080 ||
       DEVICES[0].h * DEVICES[0].dpr !== 1920) throw new Error('Invalid 9:16 phone dimensions');
@@ -110,13 +117,115 @@ async function startVite() {
   throw new Error('Vite startup timeout: ' + output);
 }
 
-async function capture(page, baseUrl, lang, scene, hour, destination) {
+/** Minimal PNG reader (8-bit RGB/RGBA, non-interlaced: what Chromium writes). Returns RGBA pixels. */
+export function readPng(file) {
+  const data = readFileSync(file);
+  if (data.readUInt32BE(0) !== 0x89504e47) throw new Error('Not a PNG: ' + file);
+  let offset = 8, width = 0, height = 0, type = 0;
+  const idat = [];
+  while (offset < data.length) {
+    const length = data.readUInt32BE(offset);
+    const kind = data.toString('latin1', offset + 4, offset + 8);
+    const body = data.subarray(offset + 8, offset + 8 + length);
+    if (kind === 'IHDR') {
+      width = body.readUInt32BE(0); height = body.readUInt32BE(4); type = body[9];
+      if (body[8] !== 8 || (type !== 2 && type !== 6) || body[12] !== 0) {
+        throw new Error('Unsupported PNG format (need 8-bit RGB/RGBA, no interlace): ' + file);
+      }
+    } else if (kind === 'IDAT') idat.push(body);
+    else if (kind === 'IEND') break;
+    offset += 12 + length;
+  }
+  const channels = type === 6 ? 4 : 3;
+  const stride = width * channels;
+  const raw = inflateSync(Buffer.concat(idat));
+  const out = Buffer.alloc(width * height * 4);
+  let previous = Buffer.alloc(stride);
+  for (let y = 0; y < height; y++) {
+    const filter = raw[y * (stride + 1)];
+    const line = Buffer.from(raw.subarray(y * (stride + 1) + 1, (y + 1) * (stride + 1)));
+    for (let x = 0; x < stride; x++) {
+      const a = x >= channels ? line[x - channels] : 0;
+      const b = previous[x];
+      const c = x >= channels ? previous[x - channels] : 0;
+      let add = 0;
+      if (filter === 1) add = a;
+      else if (filter === 2) add = b;
+      else if (filter === 3) add = (a + b) >> 1;
+      else if (filter === 4) {
+        const p = a + b - c, pa = Math.abs(p - a), pb = Math.abs(p - b), pc = Math.abs(p - c);
+        add = pa <= pb && pa <= pc ? a : pb <= pc ? b : c;
+      }
+      line[x] = (line[x] + add) & 255;
+    }
+    for (let x = 0; x < width; x++) {
+      out[(y * width + x) * 4] = line[x * channels];
+      out[(y * width + x) * 4 + 1] = line[x * channels + 1];
+      out[(y * width + x) * 4 + 2] = line[x * channels + 2];
+      out[(y * width + x) * 4 + 3] = channels === 4 ? line[x * channels + 3] : 255;
+    }
+    previous = line;
+  }
+  return { width, height, pixels: out };
+}
+
+/** Pixel statistics on a 4-px grid: luminance spread, white share, dominant colour share, colour count. */
+export function pngStats(file) {
+  const { width, height, pixels } = readPng(file);
+  let n = 0, sum = 0, sq = 0, white = 0;
+  const buckets = new Map();
+  for (let y = 0; y < height; y += 4) {
+    for (let x = 0; x < width; x += 4) {
+      const i = (y * width + x) * 4;
+      const r = pixels[i], g = pixels[i + 1], b = pixels[i + 2];
+      const l = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      n++; sum += l; sq += l * l;
+      if (r > 245 && g > 245 && b > 245) white++;
+      const key = (r >> 4) << 8 | (g >> 4) << 4 | (b >> 4);
+      buckets.set(key, (buckets.get(key) ?? 0) + 1);
+    }
+  }
+  const mean = sum / n;
+  return {
+    width, height,
+    meanLuma: Math.round(mean * 10) / 10,
+    lumaStd: Math.round(Math.sqrt(Math.max(0, sq / n - mean * mean)) * 10) / 10,
+    whiteShare: Math.round(white / n * 1000) / 1000,
+    dominantShare: Math.round(Math.max(...buckets.values()) / n * 1000) / 1000,
+    colours: buckets.size,
+  };
+}
+
+/** Throws unless a captured PNG is a full-size, non-blank, non-white frame. */
+function checkPixels(file, device, where) {
+  const stats = pngStats(file);
+  if (stats.width !== device.w * device.dpr || stats.height !== device.h * device.dpr) {
+    throw new Error(where + ': ' + stats.width + 'x' + stats.height + ' instead of ' +
+      device.w * device.dpr + 'x' + device.h * device.dpr);
+  }
+  if (stats.whiteShare > 0.6) throw new Error(where + ': white frame (' + stats.whiteShare + ' white)');
+  if (stats.dominantShare > 0.85 || stats.lumaStd < 8 || stats.colours < 60) {
+    throw new Error(where + ': empty frame (dominant ' + stats.dominantShare + ', luma std ' + stats.lumaStd +
+      ', colours ' + stats.colours + ')');
+  }
+  return stats;
+}
+
+/** Throws on developer text or a non-D-08 passenger glyph recorded from the page. */
+function checkPageRecord(id, record) {
+  const hit = DEV_TEXT.exec(record.text);
+  if (hit) throw new Error(id + ': developer text visible: "' + hit[0] + '"');
+  const bad = record.glyphs.filter((glyph) => !D08_GLYPHS.includes(glyph));
+  if (bad.length) throw new Error(id + ': passenger glyph outside D-08: ' + bad.join(', '));
+  if (record.devOverlay) throw new Error(id + ': Vite/dev overlay visible');
+}
+
+async function capture(page, baseUrl, lang, scene, destination) {
   const url = new URL(baseUrl);
   url.searchParams.set('storeShot', scene);
   const seed = seedFor(scene);
   url.searchParams.set('seed', String(seed));
   url.searchParams.set('lang', lang);
-  url.searchParams.set('storeHour', hour);
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
   // Use real app i18n settings, not translated HTML injected by this script.
@@ -132,44 +241,138 @@ async function capture(page, baseUrl, lang, scene, hour, destination) {
   await page.waitForFunction(({ id, seed }) =>
     document.documentElement.dataset.storeShotReady === id &&
     document.documentElement.dataset.storeShotSeed === String(seed),
-  { id: scene, seed }, { timeout: 30000 }).catch(() => {
+  { id: scene, seed }, { timeout: 120000 }).catch(() => {
     // [integration-tooling] Name the missing contract instead of a bare Playwright timeout.
     throw new Error('Scene "' + scene + '" never set <html data-store-shot-ready="' + scene +
       '" data-store-shot-seed="' + seed + '"> (scene not reached or ?storeShot fixture missing in src/main.ts)');
   });
   await page.evaluate(() => document.fonts.ready);
-  const state = await page.evaluate(() => ({
-    lang: document.documentElement.lang,
-    overflow: document.documentElement.scrollWidth > innerWidth + 2,
-    canvas: [...document.querySelectorAll('#app canvas')].some((canvas) => {
-      const box = canvas.getBoundingClientRect();
-      return box.width > 150 && box.height > 150;
-    }),
-  }));
+  const state = await page.evaluate(() => {
+    return {
+      lang: document.documentElement.lang,
+      overflow: document.documentElement.scrollWidth > innerWidth + 2,
+      canvas: [...document.querySelectorAll('#app canvas')].some((canvas) => {
+        const box = canvas.getBoundingClientRect();
+        return box.width > 150 && box.height > 150;
+      }),
+      text: document.body.innerText.replace(/\s+/g, ' ').trim(),
+      devOverlay: !!document.querySelector('vite-error-overlay'),
+    };
+  });
+  // A glyph counts only when it is painted on top: hit-test its centre with pointer events forced on.
+  state.glyphs = await page.evaluate(() => {
+    const force = document.createElement('style');
+    force.textContent = '*{pointer-events:auto!important}';
+    document.head.append(force);
+    try {
+      return [...document.querySelectorAll('svg.airport-region-glyph')].filter((svg) => {
+        const box = svg.getBoundingClientRect();
+        if (box.width <= 0 || box.height <= 0) return false;
+        const hit = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+        return !!hit && (svg === hit || svg.contains(hit) || !!hit.closest('.airport-bubble')?.contains(svg));
+      }).map((svg) => svg.dataset.airwayDestination ?? '?');
+    } finally { force.remove(); }
+  });
   if (state.lang !== lang) throw new Error('Incorrect scene language: ' + scene + '/' + lang);
   if (state.overflow) throw new Error('Horizontal overflow: ' + scene);
   if (!state.canvas) throw new Error('No visible globe canvas: ' + scene);
   if (errors.length) throw new Error('Browser errors: ' + errors.join('; '));
   await page.screenshot({ path: destination, animations: 'disabled', fullPage: false });
+  return state;
+}
+
+/** Region id -> glyph name, read from the single source of truth (src/data/regions.ts). */
+function regionGlyphs() {
+  const source = readFileSync(resolve(ROOT, 'src/data/regions.ts'), 'utf8');
+  const map = {};
+  for (const match of source.matchAll(/^\s+([A-Z]{2,3}): \{ glyph: '([a-z]+)'/gm)) map[match[1]] = match[2];
+  if (Object.keys(map).length < 6) throw new Error('Cannot read region glyphs from src/data/regions.ts');
+  return map;
+}
+
+/** Contact sheet: per language one row per device, one column per scene, rendered in Chromium. */
+async function renderContactSheet(browser, dir, target) {
+  const thumbH = 420, gap = 18;
+  const page = await browser.newPage({ viewport: { width: 1200, height: 800 }, deviceScaleFactor: 1 });
+  try {
+    await page.route('http://store.local/**', (route) => {
+      const path = decodeURIComponent(new URL(route.request().url()).pathname.slice(1));
+      return route.fulfill({ path: path.startsWith('fonts/') ? resolve(ROOT, 'public', path) : resolve(dir, path) });
+    });
+    const blocks = LANGUAGES.map((lang) => '<h2>' + lang.toUpperCase() + '</h2>' + DEVICES.map((device) =>
+      '<div class="row"><div class="dev">' + device.id + '<br><small>' + device.w * device.dpr + '×' +
+      device.h * device.dpr + '</small></div>' + SCENES.map((scene) =>
+        '<figure><img style="width:' + Math.round(thumbH * device.w / device.h) + 'px" src="http://store.local/' +
+        lang + '/' + scene + '-' + device.id + '.png"><figcaption>' + scene + '</figcaption></figure>').join('') +
+      '</div>').join('')).join('');
+    await page.setContent('<!doctype html><meta charset="utf-8"><style>' +
+      '@font-face{font-family:Overpass;src:url(http://store.local/fonts/Overpass-800.ttf);font-weight:800}' +
+      '@font-face{font-family:OverpassMono;src:url(http://store.local/fonts/OverpassMono-700.ttf)}' +
+      'body{margin:0;padding:' + gap + 'px 28px;background:#1d2b2a;color:#f3ead8;font-family:OverpassMono,monospace;width:max-content}' +
+      'h1{font:800 30px Overpass;margin:0 0 4px;letter-spacing:.02em}h2{font:800 22px Overpass;margin:' + gap + 'px 0 8px;color:#f2c230}' +
+      '.row{display:flex;gap:' + gap + 'px;align-items:flex-start;margin-bottom:' + gap + 'px}' +
+      '.dev{width:90px;font-size:14px;text-transform:uppercase}small{opacity:.7;font-size:11px}' +
+      'figure{margin:0}img{height:' + thumbH + 'px;display:block;border:1px solid #0b1312}' +
+      'figcaption{font-size:12px;margin-top:4px;text-transform:uppercase;letter-spacing:.06em}</style>' +
+      '<h1>Airway — store screenshots (' + EXPECTED + ')</h1>' + blocks, { waitUntil: 'load' });
+    await page.evaluate(() => Promise.all([document.fonts.ready,
+      ...[...document.images].map((img) => img.decode())]));
+    const size = await page.evaluate(() => ({ w: document.body.scrollWidth, h: document.body.scrollHeight }));
+    await page.setViewportSize({ width: size.w, height: size.h });
+    await page.screenshot({ path: target, fullPage: true });
+  } finally { await page.close(); }
+}
+
+/** `--validate`: committed PNGs, manifest and contact sheet still match the 30-shot contract. */
+function validateShots() {
+  if (!existsSync(MANIFEST)) throw new Error('Missing docs/store/shots/manifest.json; run npm run store:shots');
+  const manifest = JSON.parse(readFileSync(MANIFEST, 'utf8'));
+  if (manifest.shots?.length !== EXPECTED) throw new Error('Manifest lists ' + manifest.shots?.length + '/' + EXPECTED);
+  const seen = new Set();
+  for (const lang of LANGUAGES) for (const scene of SCENES) for (const device of DEVICES) {
+    const id = lang + '/' + scene + '-' + device.id;
+    const record = manifest.shots.find((shot) => shot.id === id);
+    if (!record) throw new Error('Manifest misses ' + id);
+    seen.add(id);
+    const file = resolve(OUT, id + '.png');
+    if (!existsSync(file)) throw new Error('Missing PNG ' + id);
+    checkPixels(file, device, id);
+    checkPageRecord(id, record);
+  }
+  if (seen.size !== EXPECTED) throw new Error('Duplicate manifest entries');
+  for (const lang of LANGUAGES) {
+    const extra = readdirSync(resolve(OUT, lang)).filter((file) => !seen.has(lang + '/' + file.replace(/\.png$/, '')));
+    if (extra.length) throw new Error('Unexpected files in shots/' + lang + ': ' + extra.join(', '));
+  }
+  if (!existsSync(CONTACT)) throw new Error('Missing docs/store/contact-sheet.png');
+  const sheet = pngStats(CONTACT);
+  if (sheet.width < 1200 || sheet.height < 1200 || sheet.lumaStd < 12) throw new Error('Contact sheet looks empty');
+  return EXPECTED;
 }
 
 try {
-  const unknown = args.filter((arg) => arg !== '--validate' && !arg.startsWith('--base-url='));
+  const unknown = args.filter((arg) => arg !== '--validate' && !/^--(base-url|only|out)=/.test(arg));
   if (unknown.length) throw new Error('Unknown options: ' + unknown.join(', '));
+  if (onlyArg && !SCENES.includes(onlyArg)) throw new Error('Unknown scene: ' + onlyArg);
+  if (onlyArg && !outArg) throw new Error('--only needs --out=<dir>: a partial run never publishes');
   const fields = checkCopy();
   if (validateOnly) {
+    const shots = validateShots();
     console.log('SUMMARY test:store-shots seed=0xA1A1 listings=2 fields=' + fields +
-      ' scenes=5 devices=3 passed=1 failed=0');
+      ' scenes=5 devices=3 shots=' + shots + ' passed=1 failed=0');
   } else {
     const require = createRequire(import.meta.url);
     const { chromium } = require('playwright');
+    const glyphOf = regionGlyphs();
     const url = baseArg ? baseArg.slice('--base-url='.length) : await startVite();
     stageDir = mkdtempSync(join(tmpdir(), 'airway-store-shots-'));
     browser = await chromium.launch({ headless: true, args: [
       '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist',
     ] });
+    const records = [];
+    const scenes = onlyArg ? [onlyArg] : SCENES;
     for (const lang of LANGUAGES) {
-      for (const [scene, hour] of SCENES) {
+      for (const scene of scenes) {
         for (const device of DEVICES) {
           const page = await browser.newPage({
             viewport: { width: device.w, height: device.h }, deviceScaleFactor: device.dpr,
@@ -178,24 +381,43 @@ try {
           const filename = scene + '-' + device.id + '.png';
           const target = resolve(stageDir, lang, filename);
           mkdirSync(dirname(target), { recursive: true });
-          try { await capture(page, url, lang, scene, hour, target); }
+          let state;
+          try { state = await capture(page, url, lang, scene, target); }
           finally { await page.close(); }
+          const id = lang + '/' + scene + '-' + device.id;
+          const record = { id, lang, scene, device: device.id, seed: seedFor(scene),
+            glyphs: [...new Set(state.glyphs.map((region) => glyphOf[region] ?? region))].sort(),
+            devOverlay: state.devOverlay, text: state.text };
+          checkPageRecord(id, record);
+          const stats = checkPixels(target, device, id);
+          records.push({ ...record, png: { width: stats.width, height: stats.height, meanLuma: stats.meanLuma,
+            lumaStd: stats.lumaStd, whiteShare: stats.whiteShare, colours: stats.colours } });
           captured++;
-          console.log('shot ' + lang + '/' + filename + ' ' +
-            device.w * device.dpr + 'x' + device.h * device.dpr);
+          console.log('shot ' + id + '.png ' + stats.width + 'x' + stats.height + ' luma=' + stats.meanLuma +
+            '±' + stats.lumaStd + ' glyphs=' + (record.glyphs.join('+') || '-'));
         }
       }
     }
-    if (captured !== EXPECTED) throw new Error('Incomplete capture ' + captured + '/' + EXPECTED);
+    const expected = onlyArg ? LANGUAGES.length * DEVICES.length : EXPECTED;
+    if (captured !== expected) throw new Error('Incomplete capture ' + captured + '/' + expected);
+    const dest = outArg ? resolve(outArg) : OUT;
     // Publish only a complete matrix; do not leave partial store screenshots.
     for (const lang of LANGUAGES) {
-      mkdirSync(resolve(OUT, lang), { recursive: true });
+      mkdirSync(resolve(dest, lang), { recursive: true });
       for (const file of readdirSync(resolve(stageDir, lang))) {
-        copyFileSync(resolve(stageDir, lang, file), resolve(OUT, lang, file));
+        copyFileSync(resolve(stageDir, lang, file), resolve(dest, lang, file));
       }
     }
-    console.log('SUMMARY store:shots seed=0xA1A1 expected=' + EXPECTED +
-      ' captured=' + captured + ' passed=1 failed=0');
+    if (!onlyArg) {
+      writeFileSync(outArg ? resolve(dest, 'manifest.json') : MANIFEST, JSON.stringify({
+        note: 'Generated by scripts/store-shots.mjs; checked by npm run test:store-shots.',
+        allowedGlyphs: D08_GLYPHS, shots: records,
+      }, null, 1) + '\n');
+      await renderContactSheet(browser, dest, outArg ? resolve(dest, 'contact-sheet.png') : CONTACT);
+      console.log('contact sheet ' + (outArg ? resolve(dest, 'contact-sheet.png') : CONTACT.slice(ROOT.length + 1)));
+    }
+    console.log('SUMMARY store:shots seed=0xA1A1 expected=' + expected +
+      ' captured=' + captured + ' checked=' + records.length + ' passed=1 failed=0');
   }
 } catch (error) {
   console.error('FAIL ' + (error instanceof Error ? error.message : String(error)));
