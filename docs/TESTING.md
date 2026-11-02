@@ -75,6 +75,8 @@ npm run build
 | `npm run test:e2e:tutorial` | [task-23] Six training actions, replay/skip/persistence, 412×915 and responsive screenshot matrix | `SUMMARY test:e2e:tutorial seed=0xA1A1 passed=N failed=0 screenshots=10` |
 | `npm run test:android-config` | Fixed-seed, SDK-free checks for Android manifest, foldable, edge-to-edge and signing setup | `SUMMARY test:android-config seed=0xA1A1 checks=14 passed=14 failed=0` |
 | `npm run test:fast` | `typecheck`, `test:i18n`, `test:arch`, then `test:android-config` | Three test summaries and exit code 0 |
+| `npm run test:ios-config` | Verify iOS orientations, permissions, bundle ID, CocoaPods, native audio, safe-area tokens and PNG dimensions | `SUMMARY test:ios-config seed=0xA1A1 checks=N passed=1 failed=0` |
+| `npm run test:fast` | `typecheck`, then `test:i18n`, `test:arch`, `test:ios-config` | All three test summaries and exit code 0 |
 
 Every future test must have a fixed seed (use `0xA1A1` where no gameplay seed
 is needed), terminate with one `SUMMARY ...` line, set a nonzero exit code on

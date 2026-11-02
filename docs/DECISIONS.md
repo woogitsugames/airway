@@ -266,3 +266,12 @@ supplied exclusively via environment variables.
 foldable compatibility and separation of signing secrets. Physical device behaviour
 is pending verification on Android hardware. **Status: task-24 technical baseline.**
 _(renumbered from D-19 during integration, branch `origin/task/24-android-build`)_
+
+## D-36 — iOS uses CocoaPods for Capacitor 8.5.3 (2026-11-02, task 25)
+The native iOS project uses the official Capacitor 8.5.3 `ios-pods-template` with
+CocoaPods, a shared Xcode workspace and iOS 15.0 as the minimum version. Capacitor 8's
+default is SPM, but task 25 explicitly requires CocoaPods documentation and integration.
+The AppDelegate configures an ambient audio session to honor the hardware silent switch.
+**Rationale:** native dependency management matches the requested iOS build workflow.
+**Status: in force for task 25.**
+_(renumbered from D-20 during integration, branch `origin/task/25-ios-build`)_
