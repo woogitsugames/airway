@@ -11,7 +11,8 @@
     "test:i18n": "node scripts/test-i18n.mjs",
     "test:arch": "node scripts/test-arch.mjs",
     "test:fast": "npm run typecheck && npm run test:i18n && npm run test:arch",
-    "shots": "node scripts/shots.mjs",
+    "test:hud-targets": "node scripts/test-hud-targets.mjs",
+    "shots": "node scripts/shots.mjs && node scripts/test-hud-targets.mjs",
     "shots:mockups": "node mockups/shoot.mjs",
     "mockups": "node mockups/build-all.mjs"
   },

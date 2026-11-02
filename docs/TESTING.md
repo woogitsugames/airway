@@ -16,9 +16,10 @@ npm run build
 | `npm run test:arch` | TS-AST guard: simulation imports only pure modules; no DOM, Capacitor, three.js, wall clock or transcendental Math | `SUMMARY test:arch seed=0xA1A1 files=N passed=1 failed=0` |
 | `npm run test:fast` | `typecheck`, then `test:i18n`, then `test:arch` | Both test summaries and exit code 0 |
 | `npm run build` | `tsc --noEmit && vite build` | Exit code 0; `dist/` output |
-| `npm run shots` | Browser smoke: game canvas at portrait/landscape dimensions | `SUMMARY shots seed=0xA1A1 captured=2 failed=0`; images in `docs/shots/01/` |
+| `npm run shots` | Browser smoke: game canvas and responsive HUD at portrait / landscape / foldable dimensions | `SUMMARY shots seed=0xA1A1 captured=2 failed=0` and `SUMMARY test:hud-targets ... shots=4`; images in `docs/shots/01/` and `docs/shots/13/` |
 | `npm run mockups` | Preserve stage-0 Diorama and other reference mockup generation | Exit code 0 |
 | `npm run shots:mockups` | Preserve stage-0 Playwright captures of reference mockups | Existing PNG output under `mockups/*/png/` |
+| `npm run test:hud-targets` | Playwright: 6 controls, ≥48 dp targets, synthetic safe-area clearance, no overlaps or overflow, live rotation, drag-to-route callback, empty-stock disabling, stable render nodes; saves four review screenshots | `SUMMARY test:hud-targets seed=0xA1A1 passed=N failed=0 shots=4` and PNGs in `docs/shots/13/` <!-- [task-13] --> |
 
 Every future test must have a fixed seed (use `0xA1A1` where no gameplay seed
 is needed), terminate with one `SUMMARY ...` line, set a nonzero exit code on

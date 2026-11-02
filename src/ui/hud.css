@@ -1,0 +1,202 @@
+/* Diorama UI v2: paper boarding pass and die-cut luggage tags, never floating app cards. */
+.airway-hud {
+  --hud-ink: #2a2420;
+  --hud-pass: #fbf8f1;
+  --hud-perf: #d8cfbf;
+  --hud-teal: #1e6f6a;
+  --hud-kraft: #d6b88a;
+  --hud-eyelet: #b8955f;
+  --hud-red: #c8352a;
+  --hud-safe-top: env(safe-area-inset-top, 0px);
+  --hud-safe-right: env(safe-area-inset-right, 0px);
+  --hud-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --hud-safe-left: env(safe-area-inset-left, 0px);
+  position: absolute;
+  inset: 0;
+  z-index: 25;
+  pointer-events: none;
+  color: var(--hud-ink);
+  font-family: 'Atkinson Hyperlegible Next', sans-serif;
+  font-size: 14px;
+  line-height: 1.15;
+  -webkit-tap-highlight-color: transparent;
+}
+.airway-hud *, .airway-hud *::before, .airway-hud *::after { box-sizing: border-box; }
+.airway-hud button { cursor: pointer; border: 0; border-radius: 0; color: inherit; font: inherit; pointer-events: auto; touch-action: none; }
+.airway-hud button:focus-visible { outline: 3px solid var(--hud-red); outline-offset: 3px; }
+.airway-hud button:disabled { cursor: not-allowed; }
+.airway-hud__icon { display: block; flex: 0 0 auto; width: 27px; height: 27px; }
+
+/* The ticket's two half masks cut genuine semicircular notches at the perforation. */
+.airway-pass {
+  position: absolute;
+  top: calc(var(--hud-safe-top) + 10px);
+  left: calc(var(--hud-safe-left) + 12px);
+  display: flex;
+  width: min(420px, calc(100% - var(--hud-safe-left) - var(--hud-safe-right) - 24px));
+  height: 60px;
+  gap: 8px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.airway-pass__ticket {
+  --cut: calc(100% - 96px);
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  background: var(--hud-pass);
+  -webkit-mask: radial-gradient(circle 7px at var(--cut) 0, transparent 98%, #000) top / 100% 51% no-repeat,
+    radial-gradient(circle 7px at var(--cut) 100%, transparent 98%, #000) bottom / 100% 51% no-repeat;
+  mask: radial-gradient(circle 7px at var(--cut) 0, transparent 98%, #000) top / 100% 51% no-repeat,
+    radial-gradient(circle 7px at var(--cut) 100%, transparent 98%, #000) bottom / 100% 51% no-repeat;
+}
+.airway-pass__band { width: 7px; flex: 0 0 7px; background: var(--hud-teal); }
+.airway-pass__field { min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 3px; padding: 0 6px; }
+.airway-pass__label { font-size: 9px; font-weight: 700; letter-spacing: .075em; text-transform: uppercase; color: #665f55; }
+.airway-pass__field strong { overflow: hidden; text-overflow: clip; font: 800 17px/1 'Overpass', sans-serif; }
+.airway-pass__week { width: 48px; flex: 0 0 48px; }
+.airway-pass__day { flex: 1 1 76px; min-width: 54px; }
+.airway-pass__time { flex: 0 0 55px; }
+.airway-pass__days { display: flex; gap: 3px; }
+.airway-pass__days i { display: block; width: 6px; height: 6px; background: var(--hud-perf); }
+.airway-pass__days i.is-past { background: var(--hud-ink); }
+.airway-pass__days i.is-current { background: var(--hud-red); }
+.airway-pass__perf { border-left: 2px dashed var(--hud-perf); margin: 9px 0 9px auto; flex: 0 0 2px; }
+.airway-pass__passengers { flex: 0 0 94px; padding: 0 8px; }
+.airway-pass__pause { flex: 0 0 56px; width: 56px; height: 60px; display: flex; align-items: center; justify-content: center; background: var(--hud-pass); border-top: 6px solid var(--hud-teal) !important; }
+.airway-pass__pause .airway-hud__icon { width: 22px; height: 22px; }
+
+/* Five luggage tags hang from one cable in portrait; a side peg rack replaces it in landscape. */
+.airway-dock {
+  position: absolute;
+  left: calc(var(--hud-safe-left) + 14px);
+  right: calc(var(--hud-safe-right) + 14px);
+  bottom: calc(var(--hud-safe-bottom) + 12px);
+  display: grid;
+  grid-template-columns: repeat(5, minmax(48px, 64px));
+  justify-content: space-between;
+  gap: 5px;
+  pointer-events: none;
+}
+.airway-dock::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: -14px;
+  right: -14px;
+  height: 2px;
+  background: var(--hud-ink);
+  opacity: .78;
+}
+.airway-dock__holder { position: relative; min-width: 0; padding-top: 5px; }
+.airway-dock__holder::before { content: ''; position: absolute; left: 50%; top: -5px; height: 14px; width: 2px; background: var(--hud-ink); opacity: .75; }
+.airway-dock__tag, .airway-dock__ghost {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  gap: 2px;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 62px;
+  min-height: 48px;
+  background: var(--hud-kraft);
+  clip-path: polygon(14px 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%, 0 14px);
+  padding: 14px 4px 2px;
+  font-family: 'Overpass', sans-serif !important;
+  font-weight: 800 !important;
+  font-size: 19px !important;
+}
+.airway-dock__eyelet {
+  position: absolute;
+  top: 6px;
+  left: calc(50% - 4.5px);
+  width: 9px;
+  height: 9px;
+  border: 2px solid var(--hud-eyelet);
+  background: #8cc3d8;
+  border-radius: 50%;
+}
+.airway-dock__tag.is-selected { background: var(--hud-pass); }
+.airway-dock__tag.is-empty { opacity: .42; }
+.airway-dock__count { font-size: 17px; font-variant-numeric: tabular-nums; }
+.airway-dock__tag[data-hud-action='undo'] .airway-dock__count { display: none; }
+.airway-dock__tag[data-hud-action='speed'] .airway-dock__count { font-size: 14px; }
+.airway-dock__tag[data-hud-action='hub'] .airway-hud__icon { width: 25px; }
+.airway-dock__ghost {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 30;
+  width: 54px;
+  height: 60px;
+  background: var(--hud-pass);
+  pointer-events: none;
+  will-change: transform;
+}
+.airway-dock__ghost[hidden] { display: none; }
+.airway-dock.is-dragging .airway-dock__tag { cursor: grabbing; }
+
+/* Narrow landscape: slim right-hand peg rack, not the mockup's vertical dangling wire. */
+.airway-hud[data-layout='landscape'] .airway-pass { top: calc(var(--hud-safe-top) + 10px); }
+.airway-hud[data-layout='landscape'] .airway-dock,
+.airway-hud[data-layout='foldable'] .airway-dock {
+  left: auto;
+  right: calc(var(--hud-safe-right) + 12px);
+  top: calc(var(--hud-safe-top) + 14px);
+  bottom: calc(var(--hud-safe-bottom) + 14px);
+  width: 78px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0;
+  padding: 6px 0;
+}
+.airway-hud[data-layout='landscape'] .airway-dock::before,
+.airway-hud[data-layout='foldable'] .airway-dock::before {
+  top: -2px;
+  left: -8px;
+  right: -8px;
+  height: 2px;
+}
+.airway-hud[data-layout='landscape'] .airway-dock__holder,
+.airway-hud[data-layout='foldable'] .airway-dock__holder { padding: 0; height: 58px; flex: 0 1 58px; }
+.airway-hud[data-layout='landscape'] .airway-dock__holder::before,
+.airway-hud[data-layout='foldable'] .airway-dock__holder::before {
+  top: 8px;
+  left: -8px;
+  right: -8px;
+  width: auto;
+  height: 2px;
+}
+.airway-hud[data-layout='landscape'] .airway-dock__tag,
+.airway-hud[data-layout='foldable'] .airway-dock__tag { width: 100%; height: 58px; }
+/* On foldables the rack becomes a permanent side panel; the world has the remaining screen. */
+.airway-hud[data-layout='foldable'] .airway-dock {
+  right: calc(var(--hud-safe-right) + 10px);
+  top: calc(var(--hud-safe-top) + 102px);
+  bottom: calc(var(--hud-safe-bottom) + 22px);
+  width: 88px;
+  border-left: 2px solid #2a24205c;
+  padding: 8px 3px 8px 9px;
+}
+.airway-hud[data-layout='foldable'] .airway-pass {
+  width: min(420px, calc(100% - var(--hud-safe-left) - var(--hud-safe-right) - 128px));
+}
+@media (max-width: 369px) {
+  .airway-pass { width: calc(100% - var(--hud-safe-left) - var(--hud-safe-right) - 12px); left: calc(var(--hud-safe-left) + 6px); gap: 4px; }
+  .airway-pass__week { width: 39px; flex-basis: 39px; }
+  .airway-pass__time { flex-basis: 47px; }
+  .airway-pass__passengers { flex-basis: 74px; padding: 0 3px; }
+  .airway-pass__field { padding-left: 3px; padding-right: 3px; }
+  .airway-pass__field strong { font-size: 14px; }
+  .airway-pass__label { font-size: 8px; }
+  .airway-pass__pause { flex-basis: 52px; width: 52px; }
+  .airway-dock { left: calc(var(--hud-safe-left) + 6px); right: calc(var(--hud-safe-right) + 6px); }
+  .airway-dock__tag { gap: 0; }
+  .airway-dock__count { font-size: 14px; }
+  .airway-hud__icon { width: 24px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .airway-hud *, .airway-hud *::before, .airway-hud *::after { transition: none !important; animation: none !important; }
+}
