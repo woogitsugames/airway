@@ -1,6 +1,8 @@
 import type { HubPressure, UpgradeCommand, UpgradeKind, WeeklyUpgradeState } from '../../sim/upgrades';
 import { mostLoadedHub } from '../../sim/upgrades';
 import './upgrade.css';
+import { en } from '../../i18n/en';
+import { pl } from '../../i18n/pl';
 
 export interface UpgradeCopy {
   week: (n: number) => string;
@@ -24,6 +26,7 @@ export interface UpgradeUIOptions {
   locale: 'pl' | 'en';
   onCommand: (command: UpgradeCommand) => void;
   onHubSelectionMode?: (active: boolean, hubIds: readonly string[]) => void;
+  onPreviewModel?: (container: HTMLElement, kind: UpgradeKind) => void;
 }
 const label = (kind: UpgradeKind, copy: UpgradeCopy) => ({ turboprop: copy.planeTurboprop, widebody: copy.planeWidebody, 'hub-expansion': copy.hub, 'departure-slots': copy.slots })[kind];
 export class WeeklyUpgradeView {
@@ -38,7 +41,18 @@ export class WeeklyUpgradeView {
     this.root.replaceChildren();
     this.root.classList.toggle('airway-upgrade-open', !!state?.paused);
     if (!state?.paused) { this.options.onHubSelectionMode?.(false, []); return; }
-    const copy = upgradeCopy[this.options.locale];
+    const catalog = this.options.locale === 'pl' ? pl : en;
+    const copy: UpgradeCopy = {
+      week: n => catalog['notice.week'].replace('{week}', String(n)),
+      header: catalog['upgrade.freight'],
+      selectHub: catalog['upgrade.selectHub'],
+      choose: '',
+      planeTurboprop: catalog['upgrade.turboprop'],
+      planeWidebody: catalog['upgrade.widebody'],
+      hub: catalog['upgrade.hub'], slots: catalog['upgrade.slots'],
+      hubDetail: catalog['upgrade.hubDetail'], slotsDetail: catalog['upgrade.slotsDetail'],
+      aircraftDetail: catalog['upgrade.aircraftDetail'], pressure: catalog['upgrade.pressure']
+    };
     const wrap = document.createElement('section');
     wrap.className = 'airway-upgrade';
     wrap.setAttribute('role', 'dialog');
@@ -72,6 +86,7 @@ export class WeeklyUpgradeView {
       card.append(heading, model, title, detail, stamp);
       card.addEventListener('click', () => this.options.onCommand({ type: 'ChooseUpgrade', week: state.week, upgrade: offer.id }));
       cards.append(card);
+      this.options.onPreviewModel?.(model, offer.id);
     });
     wrap.append(cards); this.root.append(wrap);
   }
