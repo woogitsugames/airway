@@ -26,3 +26,8 @@ try {
   }
   mount.appendChild(canvas);
 }
+
+// [task-28] QA bridge is loaded only by Vite development builds.
+if (import.meta.env.DEV) {
+  void import('./game/devHandle').then(({ installDevHandle }) => installDevHandle());
+}

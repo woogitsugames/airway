@@ -92,3 +92,12 @@ full-screen ads during play, no timers, no dark patterns. Supersedes the recomme
 
 ## D-18 — Store title: "Airway: Globe Route Builder" (PL: "Airway: Buduj siatkę lotów na globusie") (2026-11-02, owner)
 **Status: in force.**
+
+## D-19 — E2E tests must not silently pass on missing gameplay (2026-11-02, task 28)
+The production smoke suite fails when its real `AwDevAdapter` has not been
+registered. The optional standalone contract fixture is isolated under
+`e2e/fixtures` and reports `mode=fixture` in test summaries. `window.aw`
+is added only in development with a dynamic import and forwards commands to
+the real game instead of retaining a shadow simulation. **Rationale:** missing
+dependencies must never yield false-green gameplay QA; the same harness can
+be connected when the UI and persistence work merges. **Status: in force.**

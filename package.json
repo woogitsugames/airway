@@ -13,7 +13,9 @@
     "test:fast": "npm run typecheck && npm run test:i18n && npm run test:arch",
     "shots": "node scripts/shots.mjs",
     "shots:mockups": "node mockups/shoot.mjs",
-    "mockups": "node mockups/build-all.mjs"
+    "mockups": "node mockups/build-all.mjs",
+    "test:e2e:smoke": "node e2e/smoke.mjs",
+    "ui:matrix": "node scripts/shot.mjs"
   },
   "dependencies": {
     "@capacitor/android": "8.5.3",
