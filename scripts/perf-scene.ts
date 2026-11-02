@@ -116,7 +116,7 @@ try {
   page = await context.newPage();
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
-  await page.goto(url, { waitUntil: 'networkidle' });
+  await page.goto(url + '?perf=scene', { waitUntil: 'networkidle' });
   await page.evaluate(async (preset) => {
     const module = await import('/src/render/perf-fixture.ts');
     const stage = document.createElement('div');
