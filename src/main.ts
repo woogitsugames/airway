@@ -17,7 +17,6 @@ if (new URLSearchParams(location.search).get('dev') === 'airports') {
   try {
     const view = mountEmptyScene(mount);
     view.canvas.setAttribute('aria-label', t('canvas.label'));
-
   } catch (cause) {
     console.error('WebGL is unavailable; using a flat sky canvas.', cause);
     const canvas = document.createElement('canvas');
@@ -29,8 +28,7 @@ if (new URLSearchParams(location.search).get('dev') === 'airports') {
     if (context) {
       context.fillStyle = '#8CC3D8';
       context.fillRect(0, 0, canvas.width, canvas.height);
-  }
+    }
     mount.appendChild(canvas);
-}
-
+  }
 }
