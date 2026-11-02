@@ -41,6 +41,16 @@ check('no background modes', !/<key>UIBackgroundModes<\/key>/.test(plist));
 check('bundle ID in Debug and Release', (project.match(/PRODUCT_BUNDLE_IDENTIFIER = pl\.samsufi\.airway;/g) || []).length === 2);
 check('CocoaPods minimum iOS 15', /platform\s+:ios,\s*'15\.0'/.test(podfile));
 check('Capacitor pods', /pod 'Capacitor'/.test(podfile) && /pod 'CapacitorCordova'/.test(podfile));
+// Every native plugin in package.json has a pod; nothing else (no ad/analytics SDKs, D-16).
+const pkg = JSON.parse(read('package.json'));
+const plugins = Object.keys(pkg.dependencies).filter((name) => /^@capacitor\/(?!core$|android$|ios$|cli$)/.test(name));
+const podName = (name) => 'Capacitor' + name.slice('@capacitor/'.length).replace(/(^|-)([a-z])/g, (_, __, c) => c.toUpperCase());
+check('plugin pods match package.json', plugins.every((name) => podfile.includes("pod '" + podName(name) + "'")) &&
+  (podfile.match(/pod '/g) || []).length === plugins.length + 2);
+check('no ad or tracking SDKs', !Object.keys({ ...pkg.dependencies, ...pkg.devDependencies }).some((name) =>
+  /admob|ads|applovin|unity-ads|ironsource|firebase|analytics|tracking|purchases|billing/i.test(name)));
+const capConfig = read('capacitor.config.ts');
+check('capacitor appId and name', capConfig.includes("appId: 'pl.samsufi.airway'") && capConfig.includes("appName: 'Airway'"));
 check('silent switch respected by ambient session', /setCategory\(\.ambient,\s*mode:\s*\.default\)/.test(delegate));
 check('privacy manifest bundled', project.includes('PrivacyInfo.xcprivacy in Resources') && existsSync(join(IOS, 'PrivacyInfo.xcprivacy')));
 check('shared archive scheme', existsSync(join(ROOT, 'ios/App/App.xcodeproj/xcshareddata/xcschemes/App.xcscheme')));
@@ -61,5 +71,5 @@ check('opaque 2732x2732 splash', opaquePng('Splash.imageset/splash-2732x2732.png
 check('matching procedural SVG sources', existsSync(join(ROOT, 'ios/Brand/app-icon.svg')) && existsSync(join(ROOT, 'ios/Brand/splash.svg')));
 
 console.log('SUMMARY test:ios-config seed=0xA1A1 checks=' + checks +
-  ' passed=' + (failed.length === 0 ? 1 : 0) + ' failed=' + failed.length);
+  ' passed=' + (checks - failed.length) + ' failed=' + failed.length);
 if (failed.length !== 0) process.exitCode = 1;
