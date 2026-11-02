@@ -68,3 +68,9 @@ export const CURFEW_ENDLESS_START_WEEK = 4 as const;
 export const CURFEW_START_CITY_COUNT = 2 as const;
 export const CURFEW_ADDITIONAL_CITY_EVERY_WEEKS = 2 as const;
 export const CURFEW_MAX_CITY_COUNT = 8 as const;
+// [task-32] D-41: departure slots per airport per game hour (UTC game hour, integer minutes).
+// A plane that finished its service waits on the ground until its airport has a free slot.
+export const DEPARTURE_SLOTS_PER_HOUR_CITY = 4 as const;
+export const DEPARTURE_SLOTS_PER_HOUR_HUB = 6 as const;
+/** Weekly "+2 slots" upgrade: extra hourly departures for one chosen airport. */
+export const DEPARTURE_SLOT_UPGRADE = 2 as const;
