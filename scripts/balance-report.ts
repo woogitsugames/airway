@@ -293,3 +293,94 @@ function csv(results: RunResult[]): string {
 
 function report(results: RunResult[], mode: string): string {
   const times = results.map((r) => r.minutes);
+  const scores = results.map((r) => r.score);
+  const counts = new Map<string, number>();
+  for (const result of results) counts.set(result.reason, (counts.get(result.reason) ?? 0) + 1);
+  const causes = [...counts].sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([key, count]) => `- ${key}: ${count}`).join('\n');
+  return `# Airway balance sample — ${mode}\n\n` +
+    `Mode: **${mode}**, seeds: **${results.length}**, starting at **0xA1A1**, deterministic autoplay.\n\n` +
+    (mode === 'fixture' ? '**NOT GAME DATA.** This stand-in has artificial queues, flights, city emergence, and capacity. ' +
+      'It is useful only for testing the bot interface and report pipeline. No real parameter tuning or MVP balance is implied.\n\n' :
+      'Production adapter results; inspect scenario coverage before treating these as player performance.\n\n') +
+    `- Median session: ${median(times).toFixed(2)} min at 1x (target 8–15 min).\n` +
+    `- Session range: ${Math.min(...times).toFixed(2)}–${Math.max(...times).toFixed(2)} min.\n` +
+    `- Median game weeks: ${median(results.map((r) => r.weeks)).toFixed(2)}.\n` +
+    `- Median delivered passengers: ${median(scores).toFixed(0)}.\n` +
+    `- Warnings before failure: ${results.filter((r) => r.reason === 'hubOverflow' && r.warned && r.warningLeadTicks > 0).length} / ${results.filter((r) => r.reason === 'hubOverflow').length} recorded.\n` +
+    `- Rejected commands: ${results.reduce((sum, r) => sum + r.rejected, 0)}.\n\n` +
+    `## Outcomes\n${causes}\n\n` +
+    `## Time-scale caution\n` +
+    `At ${SIM_TICKS_PER_SECOND} ticks per second and one simulated minute per tick, ` +
+    `the first 7-day upgrade arrives after ${(TICKS_PER_WEEK / SIM_TICKS_PER_SECOND / 60).toFixed(2)} real minutes. ` +
+    `This is later than the upper bound of the 8–15-minute session target. ` +
+    `The game-clock design needs an explicit owner decision before balancing weekly upgrades.\n\n` +
+    `## Reproduction\n` +
+    `\`node --experimental-strip-types scripts/balance-report.ts ${mode === 'fixture' ? '--fixture ' : ''}--report\`\n`;
+}
+
+function verifyPolicy(): void {
+  const first: BotCity = { id: 'A', active: true, connectedRoutes: 2, isHub: true,
+    waiting: 18, capacity: 20, warningTicksRemaining: null };
+  const second: BotCity = { id: 'B', active: true, connectedRoutes: 0, isHub: false,
+    waiting: 8, capacity: 12, warningTicksRemaining: null };
+  const third: BotCity = { id: 'C', active: true, connectedRoutes: 1, isHub: false,
+    waiting: 1, capacity: 20, warningTicksRemaining: null };
+  const route: BotRoute = { id: 'r1', stops: ['A', 'C'], distanceKm: 800,
+    waiting: 70, assigned: { turboprop: 0, widebody: 0 } };
+  const base: BotSnapshot = {
+    tick: BASE_SEED, status: 'running', cities: [first, second, third], routes: [route],
+    distancesKm: { A: { B: 1200, C: 800 }, B: { A: 1200, C: 400 }, C: { A: 800, B: 400 } },
+    inventory: { turboprop: 1, widebody: 0 }, offers: [], ledger: [],
+  };
+  assert.deepEqual(chooseBotAction(base)?.command, { type: 'AddRoute', from: 'B', to: 'A' });
+  assert.deepEqual(chooseBotAction({ ...base, cities: [first, third] })?.command,
+    { type: 'AssignPlane', routeId: 'r1', aircraftType: 'turboprop' });
+  assert.equal(chooseBotAction({ ...base, status: 'finished' }), null);
+  const upgrade: BotSnapshot = {
+    ...base, status: 'upgrade', offers: [
+      { id: 'plane', kind: 'turboprop' }, { id: 'hub', kind: 'hub' },
+    ], ledger: [{ kind: 'hubOverflow', cityId: 'A', count: 100 }],
+  };
+  assert.deepEqual(chooseBotAction(upgrade)?.command,
+    { type: 'ChooseUpgrade', offerId: 'hub', cityId: 'A' });
+}
+
+async function main(): Promise<void> {
+  const args = process.argv.slice(2);
+  const fixture = args.includes('--fixture');
+  const test = args.includes('--test');
+  const n = test ? 10 : 50;
+  const mode = fixture ? 'fixture' : 'game';
+  const adapterPath = args.find((arg) => arg.startsWith('--adapter='))?.slice('--adapter='.length)
+    ?? 'scripts/balance-game-adapter.ts';
+  const label = test ? 'test:balance' : 'balance:report';
+  try {
+    if (test) verifyPolicy();
+    const adapter = await loadAdapter(adapterPath, fixture);
+    const results = Array.from({ length: n }, (_, i) => play(adapter, BASE_SEED + i));
+    const med = median(results.map((item) => item.minutes));
+    const invalid = results.filter((item) => item.ticks <= 0 || !Number.isFinite(item.score) ||
+      item.rejected > 0 || (item.reason === 'hubOverflow' && (!item.warned || item.warningLeadTicks <= 0)));
+    if (test) {
+      const replay = play(adapter, BASE_SEED);
+      if (JSON.stringify(results[0]) !== JSON.stringify(replay)) invalid.push(replay);
+    } else {
+      const csvPath = resolve(ROOT, `docs/balance/${mode}-50.csv`);
+      mkdirSync(dirname(csvPath), { recursive: true });
+      writeFileSync(csvPath, csv(results), 'utf8');
+      writeFileSync(resolve(ROOT, `docs/balance/${mode}-summary.md`), report(results, mode), 'utf8');
+    }
+    // The median gate is meaningful only for a real, integrated game adapter.
+    const inRange = fixture || (med >= TARGET_MIN && med <= TARGET_MAX);
+    const passed = invalid.length === 0 && inRange;
+    console.log(`SUMMARY ${label} seed=0xA1A1 mode=${mode} seeds=${n} median_min=${med.toFixed(2)} ` +
+      `passed=${passed ? 1 : 0} failed=${invalid.length + (inRange ? 0 : 1)}`);
+    if (!passed) process.exitCode = 1;
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+    console.log(`SUMMARY ${label} seed=0xA1A1 mode=${mode} seeds=0 passed=0 failed=1`);
+    process.exitCode = 1;
+  }
+}
+await main();
