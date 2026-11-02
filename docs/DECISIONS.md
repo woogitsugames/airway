@@ -92,3 +92,14 @@ full-screen ads during play, no timers, no dark patterns. Supersedes the recomme
 
 ## D-18 — Store title: "Airway: Globe Route Builder" (PL: "Airway: Buduj siatkę lotów na globusie") (2026-11-02, owner)
 **Status: in force.**
+
+## D-19 — Aircraft-driven passenger transfers with cached regional routing (2026-11-02, task 08)
+The passenger model generates regional tickets from a dedicated seeded `demand` stream. Each passenger
+stores only its destination region and the current incoming route; a route cache is recomputed only
+when the network changes, minimizing transfers before total precomputed kilometres.
+Aircraft call `boardAt` and `alightAt` at deterministic stops, while transfer queues enforce a global
+25-tick minimum connection time. Ordinary cities have smaller queues, and a sustained full queue
+fails after 450 simulation ticks; clearing the jam resets its countdown. These are versioned
+defaults that may be balanced after integration with aircraft, not independent scheduling.
+**Rationale:** deterministic replay, precise capacity failures, and a narrow adapter between
+passengers, the task-02 command kernel and task-09 aircraft. **Status: proposed pending integration.**
