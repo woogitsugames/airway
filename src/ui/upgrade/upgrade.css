@@ -1,19 +1,183 @@
-.airway-upgrade-open{position:fixed;inset:0;z-index:70;display:grid;place-items:center;background:rgba(19,48,46,.77);padding:calc(20px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) calc(20px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));overflow:auto}
-.airway-upgrade{width:min(100%,950px);font-family:"Atkinson Hyperlegible Next",sans-serif;color:#2a2420;animation:airway-slip .18s ease-out both}
-.airway-upgrade-sign{font-family:Overpass,sans-serif;text-transform:uppercase;font-weight:800;letter-spacing:.05em;color:#1c1e20;background:#ffc72c;margin:0 auto 16px;padding:12px 24px;width:max-content;max-width:100%;font-size:clamp(20px,4vw,32px);border:3px solid #1c1e20}
-.airway-upgrade-prompt{background:#fbf8f1;padding:12px;font-weight:700;text-align:center}
-.airway-upgrade-labels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-.airway-upgrade-tag{appearance:none;border:0;border-top:8px solid #a78857;min-width:0;min-height:260px;cursor:pointer;display:flex;flex-direction:column;align-items:stretch;text-align:left;gap:9px;padding:14px;background:#d6b88a;color:#2a2420;clip-path:polygon(0 0,100% 0,100% 96%,96% 100%,92% 96%,88% 100%,84% 96%,80% 100%,76% 96%,72% 100%,68% 96%,64% 100%,60% 96%,56% 100%,52% 96%,48% 100%,44% 96%,40% 100%,36% 96%,32% 100%,28% 96%,24% 100%,20% 96%,16% 100%,12% 96%,8% 100%,4% 96%,0 100%)}
-.airway-upgrade-tag:focus-visible{outline:4px solid #ffc72c;outline-offset:3px}
-.airway-upgrade-tag:disabled{opacity:.45;cursor:default}
-.airway-upgrade-heading{font:700 11px "Overpass Mono",monospace;letter-spacing:.05em;border-bottom:1px solid #2a2420;padding-bottom:7px}
-.airway-upgrade-model{display:block;height:88px;background:#eee0c4;border:2px inset #9e7f53;position:relative}
-.airway-upgrade-model::before{content:"";display:block;width:58px;height:12px;background:#1e6f6a;position:absolute;left:50%;top:38px;transform:translateX(-50%);clip-path:polygon(0 30%,35% 30%,48% 0,52% 0,65% 30%,100% 30%,100% 70%,65% 70%,52% 100%,48% 100%,35% 70%,0 70%)}
-.airway-upgrade-model canvas{position:absolute;inset:0;width:100%;height:100%;display:block}.airway-upgrade-model.has-model::before{display:none}
-.model-widebody::before{width:79px;background:#c8352a}.model-hub-expansion::before{width:53px;height:32px;clip-path:none}.model-departure-slots::before{width:70px;height:5px;clip-path:none}
-.airway-upgrade-tag strong{font-family:Overpass,sans-serif;font-size:18px;font-weight:800}
-.airway-upgrade-detail{font-size:13px;flex:1}
-.airway-upgrade-stamp{border:2px solid #c8352a;color:#c8352a;font:700 12px "Overpass Mono",monospace;padding:5px;transform:rotate(-3deg);align-self:flex-start}
-@keyframes airway-slip{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-@media(max-width:700px){.airway-upgrade-labels{grid-template-columns:1fr}.airway-upgrade-tag{min-height:130px;display:grid;grid-template-columns:80px 1fr;gap:5px 12px}.airway-upgrade-heading{grid-column:1/-1}.airway-upgrade-model{height:70px;grid-row:span 3}.airway-upgrade-stamp{margin-top:4px;justify-self:start}}
-@media(prefers-reduced-motion:reduce){.airway-upgrade{animation:none}}
+/* [task-35] Weekly upgrade = air-cargo labels on the crates the hangar received (D-11, mockups/diorama/png/upgrade-*.png).
+   Narrow screens stack the labels (model window on the left); wide screens put them side by side (window on top). */
+.airway-upgrade-open {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  justify-content: center;
+  align-items: safe center;
+  overflow: auto;
+  background: rgba(28, 30, 32, .62);
+  padding: calc(14px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right))
+           calc(14px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left));
+  --upgrade-win: min(34vw, 21vh, 200px);
+}
+.airway-upgrade {
+  width: min(100%, 1000px);
+  display: grid;
+  gap: clamp(12px, 3vh, 28px);
+  align-content: start;
+  font-family: 'Atkinson Hyperlegible Next', sans-serif;
+  color: #2a2420;
+  animation: airway-slip .18s ease-out both;
+}
+
+/* Yellow wayfinding sign: week + one line on what this screen is. */
+.airway-upgrade-sign {
+  display: flex;
+  align-items: center;
+  gap: 8px 20px;
+  background: #ffc72c;
+  color: #1c1e20;
+  padding: 12px 20px 12px 18px;
+}
+.airway-upgrade-week {
+  margin: 0;
+  flex: none;
+  font: 800 clamp(26px, 7.4vw, 34px)/1 Overpass, sans-serif;
+  white-space: nowrap;
+}
+.airway-upgrade-sub {
+  margin: 0;
+  min-width: 0;
+  font: 700 15px/1.3 'Atkinson Hyperlegible Next', sans-serif;
+}
+
+.airway-upgrade-labels {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+
+/* Kraft label with a zig-zag tear at the bottom; the whole label is the touch target. */
+.airway-upgrade-tag {
+  appearance: none;
+  border: 0;
+  margin: 0;
+  min-width: 0;
+  min-height: 48px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 14px 20px 10px;
+  background: #d6b88a;
+  color: #2a2420;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 8px), 96% 100%, 92% calc(100% - 8px), 88% 100%, 84% calc(100% - 8px),
+    80% 100%, 76% calc(100% - 8px), 72% 100%, 68% calc(100% - 8px), 64% 100%, 60% calc(100% - 8px), 56% 100%,
+    52% calc(100% - 8px), 48% 100%, 44% calc(100% - 8px), 40% 100%, 36% calc(100% - 8px), 32% 100%, 28% calc(100% - 8px),
+    24% 100%, 20% calc(100% - 8px), 16% 100%, 12% calc(100% - 8px), 8% 100%, 4% calc(100% - 8px), 0 100%);
+  transition: background-color .12s linear;
+}
+.airway-upgrade-tag:active { background: #c9a874; }
+.airway-upgrade-tag:focus-visible { outline: 4px solid #ffc72c; outline-offset: -4px; }
+.airway-upgrade-tag:disabled { cursor: default; background: #c7b394; }
+.airway-upgrade-tag:disabled .airway-upgrade-model,
+.airway-upgrade-tag:disabled .airway-upgrade-title,
+.airway-upgrade-tag:disabled .airway-upgrade-grid { opacity: .5; }
+
+/* Model window: the real low-poly model on its pedestal (canvas from the renderer, CSS silhouette as fallback). */
+.airway-upgrade-model {
+  flex: none;
+  display: block;
+  position: relative;
+  width: var(--upgrade-win);
+  height: var(--upgrade-win);
+  background: #eadcc2;
+  border: 2px solid #2a2420;
+}
+.airway-upgrade-model canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.airway-upgrade-model::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 46%;
+  height: 10%;
+  transform: translate(-50%, -50%);
+  background: #1e6f6a;
+  clip-path: polygon(0 30%, 35% 30%, 48% 0, 52% 0, 65% 30%, 100% 30%, 100% 70%, 65% 70%, 52% 100%, 48% 100%, 35% 70%, 0 70%);
+}
+.airway-upgrade-model.has-model::before { display: none; }
+.model-widebody::before { width: 62%; background: #c8352a; }
+.model-hub-expansion::before { width: 42%; height: 24%; clip-path: none; }
+.model-departure-slots::before { width: 56%; height: 22%; clip-path: none; background: linear-gradient(90deg, #1e6f6a 0 38%, transparent 38% 62%, #1e6f6a 62%); }
+
+.airway-upgrade-body { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: stretch; padding-top: 2px; }
+.airway-upgrade-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 5px;
+  border-bottom: 2px solid #2a2420;
+  font: 700 12px/1.2 'Overpass Mono', monospace;
+  letter-spacing: .14em;
+  white-space: nowrap;
+}
+.airway-upgrade-code { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.airway-upgrade-count { flex: none; }
+.airway-upgrade-title {
+  margin-top: 8px;
+  font: 800 clamp(18px, 5.2vw, 23px)/1.08 Overpass, sans-serif;
+  overflow-wrap: anywhere;
+}
+.airway-upgrade-grid {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 4px 12px;
+  margin-top: 8px;
+  align-items: baseline;
+}
+.airway-upgrade-key {
+  font: 700 10px/1.2 'Atkinson Hyperlegible Next', sans-serif;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: #5e4e3a;
+}
+.airway-upgrade-value { font-size: 15px; line-height: 1.25; }
+.airway-upgrade-stamp {
+  align-self: flex-start;
+  margin-top: 10px;
+  padding: 2px 7px;
+  border: 2px solid #c8352a;
+  color: #c8352a;
+  font: 700 12px/1.3 'Overpass Mono', monospace;
+  letter-spacing: .1em;
+  transform: rotate(-3deg);
+  white-space: nowrap;
+}
+
+/* Hub pick: only the sign stays, the globe underneath is live and tappable. */
+/* Sits under the boarding pass (HUD top strip ~70 px) so neither covers the other. */
+.airway-upgrade-open.is-picking-hub {
+  background: transparent; align-items: flex-start; justify-content: flex-start; pointer-events: none;
+  padding-top: calc(86px + env(safe-area-inset-top));
+}
+.airway-upgrade-open.is-picking-hub .airway-upgrade { width: auto; }
+
+/* Wide screens: labels side by side, model window across the top. */
+@media (min-width: 720px) {
+  .airway-upgrade-open { --upgrade-win: clamp(96px, calc(100vh - 300px), 230px); }
+  .airway-upgrade-sign { justify-self: start; padding: 10px 22px 10px 20px; }
+  .airway-upgrade-week { font-size: clamp(24px, 4.6vh, 34px); }
+  .airway-upgrade-labels { grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 14px; }
+  .airway-upgrade-tag { flex-direction: column; align-items: stretch; padding: 10px 14px 22px; gap: 10px; }
+  .airway-upgrade-model { width: auto; }
+  .airway-upgrade-title { font-size: clamp(19px, 2.4vw, 25px); }
+}
+/* Phone landscape: keep the sign on one line and the labels short. */
+@media (min-width: 720px) and (max-height: 520px) {
+  .airway-upgrade-open { padding-top: calc(8px + env(safe-area-inset-top)); padding-bottom: calc(8px + env(safe-area-inset-bottom)); }
+  .airway-upgrade { gap: 10px; }
+  .airway-upgrade-sign { padding: 8px 18px 8px 16px; }
+  .airway-upgrade-title { margin-top: 6px; }
+  .airway-upgrade-grid { margin-top: 6px; gap: 2px 12px; }
+  .airway-upgrade-stamp { margin-top: 6px; }
+  .airway-upgrade-open.is-picking-hub { padding-top: calc(86px + env(safe-area-inset-top)); }
+}
+
+@keyframes airway-slip { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { .airway-upgrade { animation: none; } .airway-upgrade-tag { transition: none; } }

@@ -335,3 +335,11 @@ weekday names do not fit a 3-day week. Rebalance: `SPAWNER_INTERVAL_HOURS` 12 �
 (`docs/balance/README.md`). `test:balance` gates the median and both shares on all 50 seeds. `RULES_VERSION` 2 → 3,
 so saves from 7-day builds are rejected. Puzzles are unaffected (no weekly upgrades). **Status: in force;
 the "N/3" day label and the balance values await owner review.**
+## D-45 — Upgrade labels read their numbers from the sim; hub pick keeps only the sign (2026-11-02, task 35)
+The weekly cargo labels (mockup `upgrade-*.png`) show range/seats from `PLANE_TYPES` and the effect of each upgrade
+(+seats, transfer minutes, +slots) read back by a dry run of `chooseUpgrade()` on throwaway adapters — the same probe the
+kernel uses to validate the command — so balance changes in `src/sim` reach the UI without copy edits. The red context
+stamp appears only on the label it is about (hub expansion: busiest hub `CODE waiting/capacity`); the hub label is disabled
+when no hub exists. While the player picks a hub, only the yellow sign stays (below the boarding pass) and the globe is
+undimmed. The "+2 slots" label (task 32) already has its model and field set; it gains a stamp once the sim reports which
+airport waits for slots. **Status: in force.**

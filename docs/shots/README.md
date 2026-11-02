@@ -15,6 +15,7 @@ against the Diorama checklist (`docs/styles/diorama.md`) and the forbidden list 
 | `17/` | `npm run shots -- puzzles` | Puzzle departure board |
 | `23/` | `npm run test:e2e:tutorial` | Onboarding steps + landscape/foldable/wide |
 | `29/` | `npm run shots:site` | Landing page |
+| `35/` | `npm run test:hud-targets` (+ `ui:matrix` copies `game-*`) | Weekly upgrade cargo labels: PL/EN × 4 sizes, `-slots` variant, mockup comparison sheets |
 | `matrix/` | `npm run ui:matrix` | 4 screens × PL/EN × 4 sizes (real game only) |
 | `matrix-fixture/` | `npm run test:e2e:fixture` | Harness self-test images; git-ignored, never game evidence |
 
