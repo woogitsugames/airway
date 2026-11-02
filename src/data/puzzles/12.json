@@ -1,0 +1,119 @@
+{
+  "version": 1,
+  "id": "12",
+  "titleKey": "puzzle.12.title",
+  "durationTicks": 4320,
+  "demandSeed": 2144,
+  "startCities": [
+    {
+      "id": "LON",
+      "continent": "EU",
+      "latitude": 51.5,
+      "longitude": -0.5,
+      "hubCapacity": 100
+    },
+    {
+      "id": "NYC",
+      "continent": "NA",
+      "latitude": 40.6,
+      "longitude": -73.8,
+      "hubCapacity": 100
+    },
+    {
+      "id": "YYZ",
+      "continent": "NA",
+      "latitude": 43.7,
+      "longitude": -79.6,
+      "hubCapacity": 250
+    },
+    {
+      "id": "TYO",
+      "continent": "AS",
+      "latitude": 35.7,
+      "longitude": 139.7,
+      "hubCapacity": 100
+    },
+    {
+      "id": "SIN",
+      "continent": "AS",
+      "latitude": 1.4,
+      "longitude": 103.9,
+      "hubCapacity": 100
+    }
+  ],
+  "stock": {
+    "turboprops": 1,
+    "jets": 3,
+    "hubUpgrades": 0
+  },
+  "goal": {
+    "kind": "continents",
+    "targetDelivered": 180,
+    "continents": 3
+  },
+  "demand": [
+    {
+      "from": "LON",
+      "to": "SIN",
+      "passengers": 25,
+      "firstTick": 16,
+      "everyTicks": 200
+    }
+  ],
+  "availableRoutes": [
+    {
+      "from": "LON",
+      "to": "NYC",
+      "plane": "jet",
+      "flightTicks": 440,
+      "intervalTicks": 120
+    },
+    {
+      "from": "NYC",
+      "to": "YYZ",
+      "plane": "turboprop",
+      "flightTicks": 70,
+      "intervalTicks": 120
+    },
+    {
+      "from": "YYZ",
+      "to": "TYO",
+      "plane": "jet",
+      "flightTicks": 500,
+      "intervalTicks": 120
+    },
+    {
+      "from": "TYO",
+      "to": "SIN",
+      "plane": "jet",
+      "flightTicks": 320,
+      "intervalTicks": 120
+    }
+  ],
+  "referenceCommands": [
+    {
+      "type": "connect",
+      "from": "LON",
+      "to": "NYC",
+      "plane": "jet"
+    },
+    {
+      "type": "connect",
+      "from": "NYC",
+      "to": "YYZ",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "YYZ",
+      "to": "TYO",
+      "plane": "jet"
+    },
+    {
+      "type": "connect",
+      "from": "TYO",
+      "to": "SIN",
+      "plane": "jet"
+    }
+  ]
+}

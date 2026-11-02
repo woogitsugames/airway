@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <!-- [task-24] Safe inset for Android adaptive icon masking. -->
+  <rect x="46" y="70" width="164" height="116" fill="#FFC72C"/>
+  <rect x="46" y="70" width="164" height="5" fill="#1C1E20"/>
+  <rect x="46" y="181" width="164" height="5" fill="#1C1E20"/>
+  <polygon points="128,79 136,104 136,118 179,138 179,150 136,139 136,164 149,171 149,177 128,171 107,177 107,171 120,164 120,139 77,150 77,138 120,118 120,104" fill="#1C1E20"/>
+</svg>

@@ -23,3 +23,10 @@ local.properties
 google-services.json
 GoogleService-Info.plist
 .DS_Store
+
+# [task-21] Local browser performance reports (generated, machine-specific).
+.perf/
+
+# Browser QA scratch output (failure screenshots, harness-only fixture captures)
+.e2e/
+docs/shots/matrix-fixture/

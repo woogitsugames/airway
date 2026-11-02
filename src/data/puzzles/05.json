@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "id": "05",
+  "titleKey": "puzzle.05.title",
+  "durationTicks": 2880,
+  "demandSeed": 1885,
+  "startCities": [
+    {
+      "id": "LON",
+      "continent": "EU",
+      "latitude": 51.5,
+      "longitude": -0.5,
+      "hubCapacity": 100
+    },
+    {
+      "id": "NYC",
+      "continent": "NA",
+      "latitude": 40.6,
+      "longitude": -73.8,
+      "hubCapacity": 100
+    },
+    {
+      "id": "YYZ",
+      "continent": "NA",
+      "latitude": 43.7,
+      "longitude": -79.6,
+      "hubCapacity": 100
+    }
+  ],
+  "stock": {
+    "turboprops": 1,
+    "jets": 1,
+    "hubUpgrades": 0
+  },
+  "goal": {
+    "kind": "deliver",
+    "targetDelivered": 136
+  },
+  "demand": [
+    {
+      "from": "LON",
+      "to": "YYZ",
+      "passengers": 19,
+      "firstTick": 16,
+      "everyTicks": 200
+    }
+  ],
+  "availableRoutes": [
+    {
+      "from": "LON",
+      "to": "NYC",
+      "plane": "jet",
+      "flightTicks": 440,
+      "intervalTicks": 120
+    },
+    {
+      "from": "NYC",
+      "to": "YYZ",
+      "plane": "turboprop",
+      "flightTicks": 70,
+      "intervalTicks": 120
+    }
+  ],
+  "referenceCommands": [
+    {
+      "type": "connect",
+      "from": "LON",
+      "to": "NYC",
+      "plane": "jet"
+    },
+    {
+      "type": "connect",
+      "from": "NYC",
+      "to": "YYZ",
+      "plane": "turboprop"
+    }
+  ]
+}

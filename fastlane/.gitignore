@@ -1,0 +1,6 @@
+report.xml
+Preview.html
+screenshots/
+test_output/
+*.ipa
+*.xcarchive

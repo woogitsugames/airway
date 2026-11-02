@@ -1,0 +1,155 @@
+{
+  "version": 1,
+  "id": "15",
+  "titleKey": "puzzle.15.title",
+  "durationTicks": 5760,
+  "demandSeed": 2255,
+  "startCities": [
+    {
+      "id": "LON",
+      "continent": "EU",
+      "latitude": 51.5,
+      "longitude": -0.5,
+      "hubCapacity": 100,
+      "curfew": {
+        "startMinuteOfDay": 1320,
+        "endMinuteOfDay": 360
+      }
+    },
+    {
+      "id": "NYC",
+      "continent": "NA",
+      "latitude": 40.6,
+      "longitude": -73.8,
+      "hubCapacity": 150
+    },
+    {
+      "id": "YYZ",
+      "continent": "NA",
+      "latitude": 43.7,
+      "longitude": -79.6,
+      "hubCapacity": 250
+    },
+    {
+      "id": "TYO",
+      "continent": "AS",
+      "latitude": 35.7,
+      "longitude": 139.7,
+      "hubCapacity": 90,
+      "curfew": {
+        "startMinuteOfDay": 1320,
+        "endMinuteOfDay": 360
+      }
+    },
+    {
+      "id": "SIN",
+      "continent": "AS",
+      "latitude": 1.4,
+      "longitude": 103.9,
+      "hubCapacity": 300
+    },
+    {
+      "id": "SYD",
+      "continent": "OC",
+      "latitude": -33.9,
+      "longitude": 151.2,
+      "hubCapacity": 100
+    }
+  ],
+  "stock": {
+    "turboprops": 1,
+    "jets": 4,
+    "hubUpgrades": 2
+  },
+  "goal": {
+    "kind": "curfewNights",
+    "targetDelivered": 83,
+    "nights": 3
+  },
+  "demand": [
+    {
+      "from": "LON",
+      "to": "SYD",
+      "passengers": 28,
+      "firstTick": 16,
+      "everyTicks": 240
+    }
+  ],
+  "availableRoutes": [
+    {
+      "from": "LON",
+      "to": "NYC",
+      "plane": "jet",
+      "flightTicks": 440,
+      "intervalTicks": 120
+    },
+    {
+      "from": "NYC",
+      "to": "YYZ",
+      "plane": "turboprop",
+      "flightTicks": 70,
+      "intervalTicks": 120
+    },
+    {
+      "from": "YYZ",
+      "to": "TYO",
+      "plane": "jet",
+      "flightTicks": 500,
+      "intervalTicks": 120
+    },
+    {
+      "from": "TYO",
+      "to": "SIN",
+      "plane": "jet",
+      "flightTicks": 320,
+      "intervalTicks": 120
+    },
+    {
+      "from": "SIN",
+      "to": "SYD",
+      "plane": "jet",
+      "flightTicks": 400,
+      "intervalTicks": 120
+    }
+  ],
+  "referenceCommands": [
+    {
+      "type": "connect",
+      "from": "LON",
+      "to": "NYC",
+      "plane": "jet"
+    },
+    {
+      "type": "connect",
+      "from": "NYC",
+      "to": "YYZ",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "YYZ",
+      "to": "TYO",
+      "plane": "jet"
+    },
+    {
+      "type": "connect",
+      "from": "TYO",
+      "to": "SIN",
+      "plane": "jet"
+    },
+    {
+      "type": "connect",
+      "from": "SIN",
+      "to": "SYD",
+      "plane": "jet"
+    },
+    {
+      "type": "upgradeHub",
+      "city": "NYC"
+    },
+    {
+      "type": "upgradeHub",
+      "city": "TYO"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+.airway-upgrade-open{position:fixed;inset:0;z-index:70;display:grid;place-items:center;background:rgba(19,48,46,.77);padding:calc(20px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) calc(20px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));overflow:auto}
+.airway-upgrade{width:min(100%,950px);font-family:"Atkinson Hyperlegible Next",sans-serif;color:#2a2420;animation:airway-slip .18s ease-out both}
+.airway-upgrade-sign{font-family:Overpass,sans-serif;text-transform:uppercase;font-weight:800;letter-spacing:.05em;color:#1c1e20;background:#ffc72c;margin:0 auto 16px;padding:12px 24px;width:max-content;max-width:100%;font-size:clamp(20px,4vw,32px);border:3px solid #1c1e20}
+.airway-upgrade-prompt{background:#fbf8f1;padding:12px;font-weight:700;text-align:center}
+.airway-upgrade-labels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.airway-upgrade-tag{appearance:none;border:0;border-top:8px solid #a78857;min-width:0;min-height:260px;cursor:pointer;display:flex;flex-direction:column;align-items:stretch;text-align:left;gap:9px;padding:14px;background:#d6b88a;color:#2a2420;clip-path:polygon(0 0,100% 0,100% 96%,96% 100%,92% 96%,88% 100%,84% 96%,80% 100%,76% 96%,72% 100%,68% 96%,64% 100%,60% 96%,56% 100%,52% 96%,48% 100%,44% 96%,40% 100%,36% 96%,32% 100%,28% 96%,24% 100%,20% 96%,16% 100%,12% 96%,8% 100%,4% 96%,0 100%)}
+.airway-upgrade-tag:focus-visible{outline:4px solid #ffc72c;outline-offset:3px}
+.airway-upgrade-tag:disabled{opacity:.45;cursor:default}
+.airway-upgrade-heading{font:700 11px "Overpass Mono",monospace;letter-spacing:.05em;border-bottom:1px solid #2a2420;padding-bottom:7px}
+.airway-upgrade-model{display:block;height:88px;background:#eee0c4;border:2px inset #9e7f53;position:relative}
+.airway-upgrade-model::before{content:"";display:block;width:58px;height:12px;background:#1e6f6a;position:absolute;left:50%;top:38px;transform:translateX(-50%);clip-path:polygon(0 30%,35% 30%,48% 0,52% 0,65% 30%,100% 30%,100% 70%,65% 70%,52% 100%,48% 100%,35% 70%,0 70%)}
+.airway-upgrade-model canvas{position:absolute;inset:0;width:100%;height:100%;display:block}.airway-upgrade-model.has-model::before{display:none}
+.model-widebody::before{width:79px;background:#c8352a}.model-hub-expansion::before{width:53px;height:32px;clip-path:none}.model-departure-slots::before{width:70px;height:5px;clip-path:none}
+.airway-upgrade-tag strong{font-family:Overpass,sans-serif;font-size:18px;font-weight:800}
+.airway-upgrade-detail{font-size:13px;flex:1}
+.airway-upgrade-stamp{border:2px solid #c8352a;color:#c8352a;font:700 12px "Overpass Mono",monospace;padding:5px;transform:rotate(-3deg);align-self:flex-start}
+@keyframes airway-slip{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:700px){.airway-upgrade-labels{grid-template-columns:1fr}.airway-upgrade-tag{min-height:130px;display:grid;grid-template-columns:80px 1fr;gap:5px 12px}.airway-upgrade-heading{grid-column:1/-1}.airway-upgrade-model{height:70px;grid-row:span 3}.airway-upgrade-stamp{margin-top:4px;justify-self:start}}
+@media(prefers-reduced-motion:reduce){.airway-upgrade{animation:none}}

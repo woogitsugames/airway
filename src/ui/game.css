@@ -1,0 +1,37 @@
+/* In-game composition layers (src/game/session.ts). Paper objects only; tokens from theme.css. */
+.airway-world { position: absolute; inset: 0; display: block; width: 100%; height: 100%; touch-action: none; }
+.airway-screen-root { z-index: 10; }
+.airway-screen-root > .airway-game-screen { position: absolute; inset: 0; pointer-events: none; }
+.airway-screen-root > .airway-tutorial-screen,
+.airway-screen-root > .airway-puzzle-screen { position: absolute; inset: 0; overflow: auto; background: var(--airway-sky); }
+.airway-game-layer { position: absolute; inset: 0; z-index: 20; pointer-events: none; overflow: hidden; }
+.airway-game-layer > * { pointer-events: none; }
+.airway-game-layer :is(button, select, input, [role='dialog']) { pointer-events: auto; }
+.airway-upgrade-host { position: absolute; inset: 0; z-index: 40; }
+.airway-upgrade-host:empty { display: none; }
+.airway-game-layer.is-selecting-hub .airway-upgrade-host { pointer-events: none; }
+
+/* Pause: an ATC "holding" paper strip at thumb height, not a modal card. */
+.airway-pause {
+  position: absolute; z-index: 45;
+  left: calc(var(--aw-safe-left) + 12px); right: calc(var(--aw-safe-right) + 12px);
+  bottom: calc(var(--aw-safe-bottom) + 104px);
+  max-width: 420px; margin: 0 auto;
+  display: grid; gap: 8px; padding: 14px 14px 12px 22px;
+  background: var(--airway-strip); color: var(--airway-ink);
+  border-left: 8px solid var(--airway-panel);
+  font: 700 var(--airway-font-body) / 1.25 'Atkinson Hyperlegible Next', sans-serif;
+}
+.airway-pause[hidden] { display: none; }
+.airway-pause h2 { margin: 0 0 4px; font: 800 var(--airway-font-title) / 1.1 'Overpass Mono', monospace; letter-spacing: .08em; }
+.airway-pause__button {
+  min-height: 48px; padding: 10px 14px; text-align: left; cursor: pointer;
+  border: 2px solid var(--airway-ink); border-radius: 0; background: var(--airway-ticket); color: var(--airway-ink);
+  font: 700 var(--airway-font-body) 'Overpass', sans-serif;
+}
+.airway-pause__button--primary { background: var(--airway-sign); border-color: var(--airway-board); color: var(--airway-board); }
+.airway-pause__button:focus-visible { outline: 3px solid var(--airway-jam); outline-offset: 2px; }
+.airway-pause__status { margin: 0; min-height: 1.2em; font-weight: 400; color: var(--airway-label-ink); }
+@media (orientation: landscape) {
+  .airway-pause { left: auto; right: calc(var(--aw-safe-right) + 16px); bottom: calc(var(--aw-safe-bottom) + 16px); width: 320px; }
+}

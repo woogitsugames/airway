@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Airway / World Renderer Laboratory</title>
+  <style>
+    :root { color-scheme: light; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; overflow: hidden; background: #8cc3d8; }
+    #root { position: fixed; inset: 0; }
+    canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+    #stats { position: fixed; left: 8px; bottom: 8px; z-index: 20; padding: 4px 6px; background: #13302e;
+      color: #f7f3ea; font: 11px/1.3 monospace; white-space: pre; pointer-events: none; }
+    body.clean #stats { display: none; }
+  </style>
+</head>
+<body>
+  <main id="root" aria-label="World renderer"></main>
+  <div id="stats" role="status" aria-live="off"></div>
+  <script type="module" src="./world.ts"></script>
+</body>
+</html>

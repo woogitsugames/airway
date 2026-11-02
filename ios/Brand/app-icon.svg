@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <!-- [task-24] Airport wayfinding sign, original vector geometry. -->
+  <rect x="0" y="0" width="256" height="256" fill="#1C1E20"/>
+  <rect x="23" y="48" width="210" height="160" fill="#FFC72C"/>
+  <rect x="23" y="48" width="210" height="7" fill="#1C1E20"/>
+  <rect x="23" y="201" width="210" height="7" fill="#1C1E20"/>
+  <polygon points="128,67 139,98 139,119 196,147 196,163 139,148 139,181 160,191 160,200 128,192 96,200 96,191 117,181 117,148 60,163 60,147 117,119 117,98" fill="#1C1E20"/>
+</svg>

@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Airway E2E Contract Fixture — Not Game UI</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body, #app { width: 100%; height: 100%; margin: 0; }
+  html { font-family: sans-serif; color: #153430; background: #8cc3d8; }
+  body { overflow: hidden; }
+  #app { position: relative; display: flex; flex-direction: column; overflow: hidden; }
+  header { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; padding: max(12px, env(safe-area-inset-top)) 16px 12px; background: #f7f3ea; }
+  #fixture-mark { font: 800 14px sans-serif; letter-spacing: .04em; text-transform: uppercase; }
+  #status { font-size: 13px; }
+  main { position: relative; flex: 1; display: grid; place-content: center; gap: 8px; padding: 16px; text-align: center; }
+  main h1 { font-size: clamp(22px, 5vw, 40px); margin: 0; }
+  main p { margin: 0; }
+  #gesture-surface { position: absolute; z-index: 0; inset: 0; touch-action: none; }
+  #route-line { position: absolute; width: 38%; height: 6px; left: 31%; top: 47%; background: #ffc72c; transform: rotate(-8deg); pointer-events: none; }
+  #route-line[hidden] { display: none; }
+  #game-description { position: relative; z-index: 1; pointer-events: none; }
+  nav { position: relative; z-index: 2; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; background: #13302e; padding: 12px 12px max(12px, env(safe-area-inset-bottom)); }
+  button { min-height: 48px; min-width: 48px; padding: 8px 14px; border: 2px solid #153430; background: #f7f3ea; color: #13302e; font: 700 16px sans-serif; cursor: pointer; }
+  button:focus-visible { outline: 3px solid #ffc72c; }
+  @media (max-height: 500px) { main { padding: 8px; } main h1 { font-size: 22px; } }
+</style>
+</head>
+<body>
+<div id="app"><header><strong id="fixture-mark">E2E contract fixture — NOT GAME UI</strong><span id="status"></span></header><main id="view"></main><nav id="actions"></nav></div>
+<script>
+(() => {
+  const labels = {
+    pl: {menu:'Menu', game:'Gra', upgrade:'Ulepszenie', gameover:'Porażka', newGame:'Nowa gra', continue:'Kontynuuj', save:'Zapisz', back:'Menu', choose:'Wybierz ulepszenie'},
+    en: {menu:'Menu', game:'Game', upgrade:'Upgrade', gameover:'Game over', newGame:'New game', continue:'Continue', save:'Save', back:'Menu', choose:'Choose upgrade'},
+  };
+  let settings;
+  try { settings = JSON.parse(localStorage.getItem('airway.settings') || '{}'); } catch { settings = {}; }
+  const lang = settings.language === 'pl' ? 'pl' : 'en';
+  document.documentElement.lang = lang;
+  const t = labels[lang];
+  let seed = 0xa1a1;
+  let saved = null;
+  let screen = 'menu';
+  let tick = 0;
+  let routeCount = 0;
+  let aircraftAssignments = 0;
+  let upgraded = false;
+  const nextWeekTick = 70;
+  const view = document.getElementById('view');
+  const actions = document.getElementById('actions');
+  const status = document.getElementById('status');
+  const state = () => ({ screen, seed, tick, nextWeekTick, routeCount, aircraftAssignments,
+    snapshotHash: [seed,tick,routeCount,aircraftAssignments,+upgraded].join('-') });
+  function button(testid, label, onClick) {
+    const el = document.createElement('button');
+    el.dataset.testid = testid;
+    el.textContent = label;
+    el.addEventListener('click', onClick);
+    actions.appendChild(el);
+  }
+  function render() {
+    status.textContent = `${screen.toUpperCase()} | SEED ${seed} | TICK ${tick}`;
+    view.replaceChildren();
+    actions.replaceChildren();
+    const title = document.createElement('h1');
+    title.textContent = t[screen];
+    view.appendChild(title);
+    const note = document.createElement('p');
+    note.id = 'game-description';
+    note.textContent = 'E2E contract fixture; never a screenshot of the real game.';
+    view.appendChild(note);
+    if (screen === 'menu') {
+      button('menu-endless', t.newGame, () => {
+        tick = 0; routeCount = 0; aircraftAssignments = 0; upgraded = false;
+        screen = 'game'; render();
+      });
+      if (saved) button('menu-continue', t.continue, () => {
+        ({ tick, routeCount, aircraftAssignments, upgraded, seed } = saved);
+        screen = 'game'; render();
+      });
+    } else if (screen === 'game') {
+      const surface = document.createElement('div');
+      surface.id = 'gesture-surface';
+      let start = null;
+      surface.addEventListener('pointerdown', (event) => { start = { x: event.clientX, y: event.clientY }; });
+      surface.addEventListener('pointerup', (event) => {
+        if (!start || Math.abs(start.x - event.clientX) < 20) return;
+        if (routeCount === 0) routeCount++;
+        else aircraftAssignments++;
+        render();
+      });
+      view.prepend(surface);
+      const line = document.createElement('div');
+      line.id = 'route-line';
+      line.hidden = routeCount === 0;
+      view.appendChild(line);
+      button('action-save', t.save, () => {
+        saved = { seed, tick, routeCount, aircraftAssignments, upgraded };
+      });
+      button('action-menu', t.back, () => { screen = 'menu'; render(); });
+    } else if (screen === 'upgrade') {
+      button('upgrade-option-0', t.choose, () => { upgraded = true; screen = 'game'; render(); });
+    } else if (screen === 'gameover') {
+      const marker = document.createElement('p');
+      marker.dataset.testid = 'game-over';
+      marker.textContent = 'Hub overflow';
+      view.appendChild(marker);
+      button('gameover-menu', t.back, () => { screen = 'menu'; render(); });
+    }
+  }
+  window.aw = {
+    version: 1,
+    ready: true,
+    state,
+    prepareSeed(value) { seed = value; render(); },
+    gesture() {
+      const { width, height } = document.documentElement.getBoundingClientRect();
+      return { from: { x: width * .25, y: height * .46 }, to: { x: width * .75, y: height * .54 } };
+    },
+    advanceTicks(value) { tick += value; if (tick >= nextWeekTick) screen = 'upgrade'; render(); },
+    forceHubOverload() { screen = 'gameover'; render(); },
+  };
+  render();
+})();
+</script>
+</body>
+</html>
+

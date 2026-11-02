@@ -1,0 +1,102 @@
+{
+  "version": 1,
+  "id": "10",
+  "titleKey": "puzzle.10.title",
+  "durationTicks": 4320,
+  "demandSeed": 2070,
+  "startCities": [
+    {
+      "id": "LON",
+      "continent": "EU",
+      "latitude": 51.5,
+      "longitude": -0.5,
+      "hubCapacity": 100
+    },
+    {
+      "id": "NYC",
+      "continent": "NA",
+      "latitude": 40.6,
+      "longitude": -73.8,
+      "hubCapacity": 150
+    },
+    {
+      "id": "GRU",
+      "continent": "SA",
+      "latitude": -23.4,
+      "longitude": -46.5,
+      "hubCapacity": 100
+    },
+    {
+      "id": "LIM",
+      "continent": "SA",
+      "latitude": -12.1,
+      "longitude": -77.1,
+      "hubCapacity": 100
+    }
+  ],
+  "stock": {
+    "turboprops": 0,
+    "jets": 3,
+    "hubUpgrades": 1
+  },
+  "goal": {
+    "kind": "deliver",
+    "targetDelivered": 211
+  },
+  "demand": [
+    {
+      "from": "LON",
+      "to": "LIM",
+      "passengers": 24,
+      "firstTick": 16,
+      "everyTicks": 240
+    }
+  ],
+  "availableRoutes": [
+    {
+      "from": "LON",
+      "to": "NYC",
+      "plane": "jet",
+      "flightTicks": 440,
+      "intervalTicks": 120
+    },
+    {
+      "from": "NYC",
+      "to": "GRU",
+      "plane": "jet",
+      "flightTicks": 370,
+      "intervalTicks": 120
+    },
+    {
+      "from": "GRU",
+      "to": "LIM",
+      "plane": "jet",
+      "flightTicks": 230,
+      "intervalTicks": 120
+    }
+  ],
+  "referenceCommands": [
+    {
+      "type": "connect",
+      "from": "LON",
+      "to": "NYC",
+      "plane": "jet"
+    },
+    {
+      "type": "connect",
+      "from": "NYC",
+      "to": "GRU",
+      "plane": "jet"
+    },
+    {
+      "type": "connect",
+      "from": "GRU",
+      "to": "LIM",
+      "plane": "jet"
+    },
+    {
+      "type": "upgradeHub",
+      "city": "NYC"
+    }
+  ]
+}

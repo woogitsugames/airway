@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 260" role="img" aria-label="Airway airport wayfinding sign">
+  <!-- [task-24] Sign proportions and airplane silhouette match the in-game Diorama direction. -->
+  <rect x="0" y="0" width="960" height="260" fill="#1C1E20"/>
+  <rect x="15" y="15" width="930" height="230" fill="#FFC72C"/>
+  <rect x="15" y="15" width="930" height="8" fill="#1C1E20"/>
+  <rect x="15" y="237" width="930" height="8" fill="#1C1E20"/>
+  <polygon points="123,40 134,69 134,107 212,144 212,166 134,147 134,189 161,203 161,216 123,208 85,216 85,203 112,189 112,147 34,166 34,144 112,107 112,69" fill="#1C1E20"/>
+  <text x="267" y="174" font-family="Overpass, sans-serif" font-size="126" font-weight="800" fill="#1C1E20">AIRWAY</text>
+</svg>
