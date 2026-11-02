@@ -1,4 +1,4 @@
-import { getLanguage, t } from '../../i18n';
+import { localNumber, t } from '../../i18n';
 import { SplitFlap } from '../flap';
 import './menu.css';
 
@@ -39,11 +39,10 @@ function formatDay(day: Date): string {
 function flightRows(data: MenuData): Flight[] {
   const puzzlesTotal=data.totalPuzzles ?? 0;
   const record=data.bestPassengers;
-  const locale=getLanguage()==='pl'?'pl-PL':'en-GB';
   const rows:Flight[]=[];
-  if(data.saved) rows.push({id:'continue',gate:'A0',title:t('menu.continue'),sub:t('menu.continueHint',{week:data.saved.week,count:data.saved.passengers.toLocaleString(locale)}),status:t('menu.boarding'),hot:true});
+  if(data.saved) rows.push({id:'continue',gate:'A0',title:t('menu.continue'),sub:t('menu.continueHint',{week:data.saved.week,count:localNumber(data.saved.passengers)}),status:t('menu.boarding'),hot:true});
   return [...rows,
-    {id:'endless',gate:'A1',title:t('menu.endless'),sub:record==null?t('menu.noRecord'):t('menu.record',{count:record.toLocaleString(locale)}),status:t('menu.boarding'),hot:!data.saved},
+    {id:'endless',gate:'A1',title:t('menu.endless'),sub:record==null?t('menu.noRecord'):t('menu.record',{count:localNumber(record)}),status:t('menu.boarding'),hot:!data.saved},
     {id:'puzzles',gate:'B4',title:t('menu.puzzles'),sub:puzzlesTotal?t('menu.progress',{solved:data.solvedPuzzles ?? 0,total:puzzlesTotal}):t('menu.puzzlesHint'),status:t('menu.onTime')},
     {id:'daily',gate:'C2',title:t('menu.today',{date:formatDay(data.today ?? new Date())}),sub:t('menu.dailyHint'),status:data.dailyNew===false?t('menu.onTime'):t('menu.new')},
     {id:'settings',gate:'D0',title:t('menu.settings'),sub:'',status:''},

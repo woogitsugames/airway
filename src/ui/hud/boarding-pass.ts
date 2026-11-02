@@ -1,4 +1,4 @@
-import { getLanguage, t } from '../../i18n';
+import { getLanguage, localNumber, t } from '../../i18n'; // [task-37] D-61 formatter
 import type { HudState } from './types';
 import { iconSvg } from './icons';
 import { DAYS_PER_WEEK } from '../../sim/clock';
@@ -69,7 +69,7 @@ export function createBoardingPass(root: HTMLElement, onTogglePause?: () => void
       updateText(time, `${String(Math.floor(minute / 60)).padStart(2, '0')}:${String(minute % 60).padStart(2, '0')}`);
       const passengerCount = integer(state.passengers, 0, Number.MAX_SAFE_INTEGER);
       if (lastPassengers !== passengerCount || lastDay === undefined) {
-        updateText(passengers, new Intl.NumberFormat(currentLanguage === 'pl' ? 'pl-PL' : 'en-US').format(passengerCount));
+        updateText(passengers, localNumber(passengerCount));
         lastPassengers = passengerCount;
       }
       if (lastDay !== dayNumber) {
