@@ -44,6 +44,8 @@ npm run build
 | `npm run test:fast` | `typecheck`, `test:i18n`, `test:arch` and `test:route-tool` | All test summaries and exit code 0 |
 | `npm run test:fast` | `typecheck`, then `test:i18n`, then `test:arch`, then `test:interp` | Both test summaries and exit code 0 |
 | `npm run test:interp` | <!-- [task-10] --> 17 seeded checks of great-circle geometry, route-boundary interpolation, 40 routes, 100 instanced planes and per-frame route rebuild guard | `SUMMARY test:interp seed=0xA1A1 passed=17 failed=0` |
+| `npm run test:fast` | `typecheck`, then `test:i18n`, then `test:arch`, then `test:daynight` | All test summaries and exit code 0 |
+| `npm run test:daynight` | Fixed-seed local time, demand, weekly curfew, snapshot, sun interpolation and render adapters | `SUMMARY test:daynight seed=0xA1A1 passed=N failed=0` |
 
 Every future test must have a fixed seed (use `0xA1A1` where no gameplay seed
 is needed), terminate with one `SUMMARY ...` line, set a nonzero exit code on
@@ -79,3 +81,10 @@ portrait and landscape, writing four PNGs under `docs/shots/06/`.
 This temporary sea-sphere fixture exercises the airport/overlay layer;
 it is not a substitute for task 03's production globe.
 // [task-07] Isolated task 07 has no integrated globe or sim. Its screenshot status is in docs/shots/07/README.md.
+### Task 11 integration boundary
+Until tasks 02/03/05/06/08/09 have been merged, the sun, curfew and demand
+adapters are deliberately not connected to the empty baseline scene. The
+production screenshot target `docs/shots/11/` must be captured and reviewed
+after the real globe is available on `dev`. Never present empty-sky captures
+as verified day/night screenshots. The task 08 hourly demand table intentionally
+matches task 11 and must be kept as a single definition when merging.

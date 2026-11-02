@@ -181,3 +181,21 @@ export const CITIES: readonly City[] = [
   { code: 'POM', namePl: "Port Moresby", nameEn: "Port Moresby", lon: 147.2, lat: -9.5, population: 400000, region: 'OCE' },
   { code: 'NOU', namePl: "Numea", nameEn: "Nouméa", lon: 166.5, lat: -22.3, population: 180000, region: 'OCE' },
 ] as const;
+
+// [task-11 via integration] Fictional time zones from longitude (whole hours). Applied once while preparing data, never per tick.
+export interface CityUtcOffset {
+  readonly utcOffsetH: number;
+}
+
+/** Fictional geographic time zones, not real-world UTC or DST rules. */
+export function utcOffsetHFromLongitude(longitude: number): number {
+  if (!Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
+    throw new RangeError('Longitude must be a finite value in [-180, 180]');
+  }
+  return Math.max(-12, Math.min(12, Math.round(longitude / 15)));
+}
+
+/** Apply once while preparing city data; never recalculate in a simulation tick. */
+export function withUtcOffsetH<T extends { readonly lon: number }>(city: T): T & CityUtcOffset {
+  return { ...city, utcOffsetH: utcOffsetHFromLongitude(city.lon) };
+}
