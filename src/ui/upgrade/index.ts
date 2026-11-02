@@ -1,8 +1,7 @@
 import type { HubPressure, UpgradeCommand, UpgradeKind, WeeklyUpgradeState } from '../../sim/upgrades';
 import { mostLoadedHub } from '../../sim/upgrades';
 import './upgrade.css';
-import { en } from '../../i18n/en';
-import { pl } from '../../i18n/pl';
+import { t } from '../../i18n';
 
 export interface UpgradeCopy {
   week: (n: number) => string;
@@ -19,7 +18,6 @@ export interface UpgradeCopy {
   pressure: string;
 }
 export interface UpgradeUIOptions {
-  locale: 'pl' | 'en';
   onCommand: (command: UpgradeCommand) => void;
   onHubSelectionMode?: (active: boolean, hubIds: readonly string[]) => void;
   onPreviewModel?: (container: HTMLElement, kind: UpgradeKind) => void;
@@ -37,17 +35,16 @@ export class WeeklyUpgradeView {
     this.root.replaceChildren();
     this.root.classList.toggle('airway-upgrade-open', !!state?.paused);
     if (!state?.paused) { this.options.onHubSelectionMode?.(false, []); return; }
-    const catalog = this.options.locale === 'pl' ? pl : en;
     const copy: UpgradeCopy = {
-      week: n => catalog['notice.week'].replace('{week}', String(n)),
-      header: catalog['upgrade.freight'],
-      selectHub: catalog['upgrade.selectHub'],
+      week: n => t('notice.week', { week: n }),
+      header: t('upgrade.freight'),
+      selectHub: t('upgrade.selectHub'),
       choose: '',
-      planeTurboprop: catalog['upgrade.turboprop'],
-      planeWidebody: catalog['upgrade.widebody'],
-      hub: catalog['upgrade.hub'], slots: catalog['upgrade.slots'],
-      hubDetail: catalog['upgrade.hubDetail'], slotsDetail: catalog['upgrade.slotsDetail'],
-      aircraftDetail: catalog['upgrade.aircraftDetail'], pressure: catalog['upgrade.pressure']
+      planeTurboprop: t('upgrade.turboprop'),
+      planeWidebody: t('upgrade.widebody'),
+      hub: t('upgrade.hub'), slots: t('upgrade.slots'),
+      hubDetail: t('upgrade.hubDetail'), slotsDetail: t('upgrade.slotsDetail'),
+      aircraftDetail: t('upgrade.aircraftDetail'), pressure: t('upgrade.pressure')
     };
     const wrap = document.createElement('section');
     wrap.className = 'airway-upgrade';
@@ -67,7 +64,7 @@ export class WeeklyUpgradeView {
     const congested = mostLoadedHub(hubs);
     state.offers.forEach((offer, i) => {
       const card = document.createElement('button');
-      card.type = 'button'; card.className = 'airway-upgrade-tag';
+      card.type = 'button'; card.className = 'airway-upgrade-tag'; card.dataset.testid = `upgrade-option-${i}`;
       card.disabled = state.pendingHub;
       card.setAttribute('aria-label', label(offer.id, copy));
       const heading = document.createElement('span'); heading.className = 'airway-upgrade-heading';

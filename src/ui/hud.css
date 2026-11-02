@@ -1,16 +1,16 @@
 /* Diorama UI v2: paper boarding pass and die-cut luggage tags, never floating app cards. */
 .airway-hud {
-  --hud-ink: #2a2420;
-  --hud-pass: #fbf8f1;
+  --hud-ink: var(--airway-ink);
+  --hud-pass: var(--airway-ticket);
   --hud-perf: #d8cfbf;
-  --hud-teal: #1e6f6a;
-  --hud-kraft: #d6b88a;
+  --hud-teal: var(--airway-teal);
+  --hud-kraft: var(--airway-kraft);
   --hud-eyelet: #b8955f;
-  --hud-red: #c8352a;
-  --hud-safe-top: env(safe-area-inset-top, 0px);
-  --hud-safe-right: env(safe-area-inset-right, 0px);
-  --hud-safe-bottom: env(safe-area-inset-bottom, 0px);
-  --hud-safe-left: env(safe-area-inset-left, 0px);
+  --hud-red: var(--airway-jam);
+  --hud-safe-top: var(--aw-safe-top);
+  --hud-safe-right: var(--aw-safe-right);
+  --hud-safe-bottom: var(--aw-safe-bottom);
+  --hud-safe-left: var(--aw-safe-left);
   position: absolute;
   inset: 0;
   z-index: 25;

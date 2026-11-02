@@ -1,4 +1,4 @@
-// [task-20] Accessibility adapters. HUD (13) and airport overlays (06) bind to these APIs on mount.
+// Accessibility adapters (task 20). HUD (13), overlays (06) and the settings screen bind to these APIs.
 import { t, type TranslationKey } from '../i18n';
 
 export type TextScale = 100 | 115 | 130;
@@ -190,40 +190,4 @@ export function bindCityAccessibility(
       if (!nativeButton) element.removeEventListener('keydown', key);
     },
   };
-}
-
-/** Mountable settings fragment for task 14 menu; no synthetic HUD while task 13 is missing. */
-export function createAccessibilityControls(): HTMLElement {
-  const form = document.createElement('fieldset');
-  form.className = 'airway-a11y-controls';
-  const legend = document.createElement('legend');
-  legend.textContent = t('a11y.settingsTitle');
-  form.appendChild(legend);
-  const scaleLabel = document.createElement('label');
-  scaleLabel.textContent = t('a11y.textScale');
-  const scale = document.createElement('select');
-  for (const value of [100, 115, 130] as const) {
-    const option = document.createElement('option');
-    option.value = String(value);
-    option.textContent = value + '%';
-    scale.appendChild(option);
-  }
-  scale.value = String(readAccessibilitySettings().textScale);
-  scale.addEventListener('change', () => {
-    updateAccessibilitySettings({ textScale: validScale(Number(scale.value)) });
-  });
-  scaleLabel.appendChild(scale);
-  form.appendChild(scaleLabel);
-  const addCheck = (key: TranslationKey, field: 'enhancedGlyphs' | 'hapticsEnabled') => {
-    const label = document.createElement('label');
-    const input = document.createElement('input');
-    input.type = 'checkbox';
-    input.checked = readAccessibilitySettings()[field];
-    input.addEventListener('change', () => updateAccessibilitySettings({ [field]: input.checked }));
-    label.append(input, document.createTextNode(t(key)));
-    form.appendChild(label);
-  };
-  addCheck('a11y.enhancedGlyphs', 'enhancedGlyphs');
-  addCheck('a11y.haptics', 'hapticsEnabled');
-  return form;
 }

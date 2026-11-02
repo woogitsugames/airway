@@ -1,4 +1,4 @@
-/* [task-20] Diorama airport-object accessibility variables. Consumed by tasks 06, 13 and 14. */
+/* The one Diorama token sheet (task 20): colours mirror tokens.json (checked by test:contrast/cvd). */
 :root {
   --airway-text-scale: 1;
   --airway-font-label: calc(12px * var(--airway-text-scale));
@@ -15,6 +15,16 @@
   --airway-jam-text: #ba3026;
   --airway-ticket: #fbf8f1;
   --airway-kraft-label: #564532;
+  --airway-kraft: #d6b88a;
+  --airway-label-ink: #7a6f62;
+  --airway-accent: #ff7a3d;
+  --airway-board: #1c1e20;
+  --airway-flap: #2c2f32;
+  --airway-flap-text: #f2efe6;
+  --airway-sign: #ffc72c;
+  --airway-strip: #f4ebc9;
+  --airway-teal: #1e6f6a;
+  --airway-sky: #8cc3d8;
   --airway-dest-nam: #0072b2;
   --airway-dest-eun: #009e73;
   --airway-dest-eus: #e69f00;

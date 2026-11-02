@@ -104,9 +104,9 @@ export function mountTutorialUi(host: HTMLElement, controller: TutorialControlle
         </div>
       </footer>
     </div>
-    <button type="button" class="aw-settings-sign" data-testid="tutorial-settings" data-copy="tutorial.settings"></button>
+    <button type="button" class="aw-settings-sign" data-testid="tutorial-settings" data-copy="menu.settings"></button>
     <div class="aw-settings-dialog" role="dialog" aria-modal="true" aria-labelledby="aw-settings-title" hidden>
-      <h2 id="aw-settings-title" data-copy="tutorial.settings"></h2>
+      <h2 id="aw-settings-title" data-copy="menu.settings"></h2>
       <button type="button" data-testid="tutorial-replay" data-copy="tutorial.replay"></button>
       <button type="button" data-testid="tutorial-settings-close" data-copy="tutorial.action.close"></button>
     </div>`;
