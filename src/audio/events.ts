@@ -29,7 +29,7 @@ export type AudioEffect = 'flap' | 'paper' | 'tag' | 'stamp' | 'new-city';
 export interface AudioSettings {
   /** Master mute; audio is locked until the first trusted user gesture. */
   readonly muted: boolean;
-  /** 0..1, saved and restored by the settings UI (task 14). */
+  /** 0..1, saved and restored by the settings UI. */
   readonly musicVolume: number;
   readonly effectsVolume: number;
   /** false: respect the iOS hardware silent switch (ambient session). */
@@ -42,3 +42,20 @@ export const DEFAULT_AUDIO_SETTINGS: AudioSettings = {
   effectsVolume: 0.8,
   playInSilentMode: false,
 };
+
+/** Shape of the toggles kept by the settings screen (src/ui/settings/settings.ts). */
+export interface AudioToggles {
+  readonly sound: boolean;
+  readonly music: boolean;
+  readonly playInSilentMode?: boolean;
+}
+
+/** Maps the settings screen's on/off switches to engine volumes. */
+export function audioSettingsFromToggles(toggles: AudioToggles): AudioSettings {
+  return {
+    muted: !toggles.sound && !toggles.music,
+    musicVolume: toggles.music ? DEFAULT_AUDIO_SETTINGS.musicVolume : 0,
+    effectsVolume: toggles.sound ? DEFAULT_AUDIO_SETTINGS.effectsVolume : 0,
+    playInSilentMode: toggles.playInSilentMode ?? DEFAULT_AUDIO_SETTINGS.playInSilentMode,
+  };
+}

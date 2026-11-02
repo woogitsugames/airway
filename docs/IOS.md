@@ -39,8 +39,8 @@ If dependencies are stale: `cd ios/App && pod install`. Do not commit `Pods/`, g
 
 - `index.html` sets `viewport-fit=cover`. The sky / 3D world canvas remains edge-to-edge. HUD and interactive controls must use `--aw-safe-top`, `--aw-safe-right`, `--aw-safe-bottom`, `--aw-safe-left` (CSS `env(safe-area-inset-*)`) to avoid the notch, Dynamic Island and home indicator.
 - `Info.plist` allows portrait and both landscape orientations on iPhone and all four on iPad. Full-screen-only mode is not requested; test rotation, iPad Split View and window resizing.
-- `AppDelegate.swift` sets `AVAudioSession.Category.ambient`: the device's Ring/Silent switch mutes the game by default, without stopping other apps' audio. An optional override belongs to task 19's preferences and requires a later reviewed native bridge.
-- No camera, photo library, location, contacts, microphone, tracking or background privileges are requested. Review `PrivacyInfo.xcprivacy` again when task 16 or future plugins are integrated.
+- `AppDelegate.swift` sets `AVAudioSession.Category.ambient`: the device's Ring/Silent switch mutes the game by default, without stopping other apps' audio. The Web Audio engine (`src/audio`) also requests `navigator.audioSession.type = 'ambient'` where WKWebView supports it; a play-in-silent-mode override would need a reviewed native bridge.
+- No camera, photo library, location, contacts, microphone, tracking or background privileges are requested. Native plugins: Haptics, Share, Preferences (UserDefaults, reason CA92.1) and Filesystem (file timestamps, reason C617.1), each with a pod in the `Podfile`; `test:ios-config` checks the pod list against `package.json` and forbids ad/analytics/billing SDKs. Review `PrivacyInfo.xcprivacy` whenever a plugin is added.
 
 ## Original icon and launch art
 
