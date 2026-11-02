@@ -67,3 +67,18 @@ Formalised by task 01 (see `docs/tasks/01-scaffold.md`): `src/sim` imports no re
 Briefs in `docs/tasks/` (index `00-INDEX.md`, generator `docs/tasks/tools/gen_tasks.py`). Each session branches
 `task/NN-slug` from `dev`, pushes it and opens a draft PR to `dev`; the owner merges. Task 01 creates `dev` from this branch.
 **Status: in force.**
+
+## D-15 — App ID: `pl.samsufi.airway` (2026-11-02, owner)
+Used in `capacitor.config.ts`, Android `applicationId` and iOS bundle identifier. Cannot change after the first store release.
+**Status: in force.**
+
+## D-16 — Business model: free for now; ads and a paid version later (2026-11-02, owner)
+MVP ships fully free with no ads, no IAP, no analytics. Code keeps no-op `Entitlements`/`AdService` interfaces and a disabled
+content gate (task 27) so ads/paid can be added later without a rewrite. Brief's rules still apply when they come: no
+full-screen ads during play, no timers, no dark patterns. Supersedes the recommendation in RESEARCH §6. **Status: in force.**
+
+## D-17 — Night curfew: from week 4 in Endless, always available in Puzzles (2026-11-02, owner)
+**Status: in force.**
+
+## D-18 — Store title: "Airway: Globe Route Builder" (PL: "Airway: Buduj siatkę lotów na globusie") (2026-11-02, owner)
+**Status: in force.**

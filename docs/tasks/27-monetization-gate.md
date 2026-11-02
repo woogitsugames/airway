@@ -1,4 +1,4 @@
-# Zlecenie 27 — Demo + odblokowanie (szkielet, decyzja właściciela)
+# Zlecenie 27 — Monetyzacja: przygotowanie pod reklamy i wersję płatną (wyłączone)
 
 > Jedna sesja = jedno zlecenie. Projekt: **Airway** (airway.games). Fala: **6**. Zależy od zleceń: **14, 17**.
 > Gałąź robocza: **`task/27-monetization-gate`** → draft PR do **`dev`**.
@@ -10,7 +10,7 @@
 - Gałąź bazowa: **`dev`**. Zrób `git fetch origin dev && git checkout -b task/27-monetization-gate origin/dev`.
   Zanim zaczniesz, sprawdź, czy zlecenia, od których zależysz, są już scalone do `dev` (PR-y `[NN]` w stanie merged). Jeśli nie — zbuduj na tym, co jest, z cienkim adapterem/atrapą i opisz to w PR.
 - Pracujesz **wyłącznie** na gałęzi **`task/27-monetization-gate`** i tam wypychasz: `git push -u origin task/27-monetization-gate`.
-- Na końcu otwórz **draft PR `task/27-monetization-gate` → `dev`** z tytułem `[27] Demo + unlock (skeleton, owner decision)`. **Nie scalaj** PR-a, nie pushuj do `dev`
+- Na końcu otwórz **draft PR `task/27-monetization-gate` → `dev`** z tytułem `[27] Monetization hooks (disabled)`. **Nie scalaj** PR-a, nie pushuj do `dev`
   ani do `main`, nie przepisuj historii cudzych gałęzi. Scala właściciel.
 - Jeśli przed PR-em `dev` poszedł do przodu: `git fetch origin dev && git rebase origin/dev` (albo merge), rozwiąż
   konflikty tylko w swoich plikach i uruchom testy ponownie.
@@ -55,23 +55,25 @@
 - Znane problemy, ryzyka, „Pytania do właściciela”.
 
 ## Zadanie
-Model biznesowy **nie jest jeszcze zatwierdzony** przez właściciela (RESEARCH §6 rekomenduje: darmowe pobranie + jedno
-odblokowanie 3,99 €, bez reklam i timerów). Twoje zadanie to szkielet, który pozwoli wybrać później bez przebudowy:
+Decyzja właściciela **D-16: na razie gra jest w całości darmowa**, bez reklam i bez zakupów. Reklamy i wersja płatna
+przyjdą później. Twoje zadanie to szkielet, który pozwoli je dodać bez przebudowy — **nic nie może być widoczne dla gracza**.
 
-1. `src/platform/store.ts`: interfejs `Entitlements` (`isUnlocked`, `purchaseUnlock`, `restore`), implementacja testowa
-   (przełącznik w ustawieniach deweloperskich) i szkic adaptera pod natywną wtyczkę IAP (wybór wtyczki zostaw jako pytanie,
-   podaj 2 opcje z licencjami).
-2. Bramka zawartości sterowana konfiguracją `src/game/gating.ts`: np. demo = pierwsze 5 zadań + lot bez końca do tygodnia 3;
-   pełna wersja = wszystko. Ekran odblokowania w języku wizualnym gry (karta pokładowa „upgrade do pierwszej klasy” — bez
-   nachalności, bez timerów, bez dark patterns).
-3. Wszystko wyłączone flagą domyślnie (`GATING_ENABLED=false`), dopóki właściciel nie zdecyduje. Pytanie w PR.
+1. `src/platform/store.ts`: interfejs `Entitlements` (`isUnlocked`, `purchase`, `restore`) z implementacją „wszystko
+   odblokowane” jako domyślną. Szkic adaptera pod natywną wtyczkę IAP tylko w komentarzu/dokumencie (2 opcje z licencjami
+   jako „Pytanie do właściciela”).
+2. `src/platform/ads.ts`: interfejs `AdService` (`isEnabled`, `showRewarded?`, `showInterstitialBetweenRuns?`) z implementacją
+   no-op. **Nie dodawaj żadnego SDK reklamowego ani uprawnień.** Zapisz w `docs/MONETIZATION.md` zasady na przyszłość
+   z briefu: bez reklam pełnoekranowych w trakcie gry, bez timerów, bez dark patterns; miejsca, gdzie reklama byłaby
+   najmniej szkodliwa (np. między partiami, opcjonalna nagroda), do decyzji właściciela.
+3. `src/game/gating.ts`: bramka zawartości sterowana konfiguracją, `GATING_ENABLED=false` na stałe w tej wersji.
+4. Polityka prywatności (wkład do 29): gra nie zbiera danych, nie ma reklam ani analityki — zdanie do `docs/MONETIZATION.md`.
 
 ## Pliki, które są Twoje
-`src/platform/store.ts`, `src/game/gating.ts`, `src/ui/unlock/**`
+`src/platform/store.ts`, `src/platform/ads.ts`, `src/game/gating.ts`, `docs/MONETIZATION.md`
 
 ## Kryteria akceptacji
-- Z wyłączoną flagą gra działa jak pełna wersja.
-- Z włączoną flagą bramka działa w trybie testowym.
+- Gra działa jak pełna wersja, bez żadnych ekranów zakupu czy reklam.
+- Brak nowych zależności natywnych i uprawnień (test sprawdza `package.json`).
 
 ## Testy do dodania
 `test:gating`

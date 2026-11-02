@@ -60,8 +60,9 @@
 2. Sim: lokalna godzina miasta z **prekomputowanej strefy w pełnych godzinach** (z długości geograficznej, liczba całkowita
    w danych miasta) — bez stref czasowych z prawdziwego świata. Fala popytu o świcie i spadek w nocy (tablica 24 wartości
    w `params.ts`), podpięta do popytu z 08.
-3. Cisza nocna (modyfikator **wyłączony domyślnie** w MVP, flaga w params): wybrane miasta zamknięte 23–06 lokalnie;
-   samoloty nie startują/nie lądują; szlaban z 06 włączony.
+3. Cisza nocna (decyzja D-17): w trybie bez końca **włącza się od tygodnia 4** (wybrane miasta, z zapowiedzią na początku
+   tygodnia), w zadaniach dostępna zawsze jako cecha poziomu. Miasta zamknięte 23–06 czasu lokalnego; samoloty nie
+   startują/nie lądują; szlaban z 06 włączony. Parametry w `params.ts`.
 4. Render: światła miast rosną na stronie nocnej, delikatna zmiana ekspozycji; terminator płynny (bez skoków przy 4×).
 
 ## Pliki, które są Twoje

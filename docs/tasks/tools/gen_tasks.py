@@ -76,7 +76,7 @@ Zbuduj fundament, na którym pracuje 29 kolejnych sesji. To zlecenie **zakłada 
    nic nie rób z nią.
 2. Na swojej gałęzi: Vite 6 + TypeScript (strict) + three.js (przypnij wersję, np. 0.170.x jak w makietach) + Capacitor 8
    (`@capacitor/core`, `@capacitor/android`, `@capacitor/ios` w zależnościach, ale **bez** generowania katalogów `android/` i
-   `ios/` — to zlecenia 24 i 25). `capacitor.config.ts` z `appId: "games.airway.app"` (zapisz to jako decyzję do potwierdzenia),
+   `ios/` — to zlecenia 24 i 25). `capacitor.config.ts` z `appId: "pl.samsufi.airway"` (decyzja właściciela D-15),
    `appName: "Airway"`, `webDir: "dist"`.
 3. Struktura `src/` jak w „Zasady stałe”, z plikami-zalążkami i jednym zdaniem komentarza „po co ten moduł”. `src/main.ts`
    uruchamia pusty ekran z płótnem three.js (pusta scena, kolor nieba z palety Dioramy) — tylko jako dowód, że build działa.
@@ -283,8 +283,9 @@ task("11", "day-night", "Dzień i noc: słońce, fale popytu, cisza nocna", "Day
 2. Sim: lokalna godzina miasta z **prekomputowanej strefy w pełnych godzinach** (z długości geograficznej, liczba całkowita
    w danych miasta) — bez stref czasowych z prawdziwego świata. Fala popytu o świcie i spadek w nocy (tablica 24 wartości
    w `params.ts`), podpięta do popytu z 08.
-3. Cisza nocna (modyfikator **wyłączony domyślnie** w MVP, flaga w params): wybrane miasta zamknięte 23–06 lokalnie;
-   samoloty nie startują/nie lądują; szlaban z 06 włączony.
+3. Cisza nocna (decyzja D-17): w trybie bez końca **włącza się od tygodnia 4** (wybrane miasta, z zapowiedzią na początku
+   tygodnia), w zadaniach dostępna zawsze jako cecha poziomu. Miasta zamknięte 23–06 czasu lokalnego; samoloty nie
+   startują/nie lądują; szlaban z 06 włączony. Parametry w `params.ts`.
 4. Render: światła miast rosną na stronie nocnej, delikatna zmiana ekspozycji; terminator płynny (bez skoków przy 4×).
 """,
 "`src/render/sun.ts`, `src/sim/daynight.ts`, `src/sim/params.ts` (sekcja daynight), dane stref w `src/data/cities.ts` (pole `utcOffsetH`, oznaczone `// [task-11]`)",
@@ -501,28 +502,31 @@ task("26", "store-assets", "Zrzuty i teksty do sklepów", "Store screenshots and
 1. Skrypt `npm run store:shots`: ustawione sceny (trick przez parametry URL / tryb deweloperski) — gra w Europie o zmierzchu,
    wybór ulepszenia, menu z tablicą, porażka z raportem, widok nocny ze światłami. PL i EN, telefon 1080×1920 (9:16),
    składany i tablet; bez nakładek marketingowych w MVP (albo prosty pasek tekstu w stylu drogowskazu — zaproponuj).
-2. Teksty sklepu PL/EN w `docs/store/` (tytuł „Airway”, podtytuł odróżniający od wyników medycznych i Mini Airways —
-   3 propozycje do wyboru właściciela, opis krótki i długi, słowa kluczowe). **Bez** nazw konkurentów w tekstach sklepu.
+2. Teksty sklepu PL/EN w `docs/store/`: tytuł **„Airway: Globe Route Builder”** (decyzja D-18; PL: „Airway: Buduj siatkę
+   lotów na globusie” tam, gdzie sklep pozwala lokalizować nazwę), opis krótki i długi, słowa kluczowe. **Bez** nazw
+   konkurentów w tekstach sklepu.
 """,
 "`scripts/store-shots.*`, `docs/store/**`",
 "- Komplet PNG w `docs/store/shots/` obejrzany i zgodny z listą zakazów.\n- Teksty PL/EN gotowe do wklejenia.",
 "`store:shots`")
 
-task("27", "monetization-gate", "Demo + odblokowanie (szkielet, decyzja właściciela)", "Demo + unlock (skeleton, owner decision)", ["14", "17"], 6,
+task("27", "monetization-gate", "Monetyzacja: przygotowanie pod reklamy i wersję płatną (wyłączone)", "Monetization hooks (disabled)", ["14", "17"], 6,
 """\
-Model biznesowy **nie jest jeszcze zatwierdzony** przez właściciela (RESEARCH §6 rekomenduje: darmowe pobranie + jedno
-odblokowanie 3,99 €, bez reklam i timerów). Twoje zadanie to szkielet, który pozwoli wybrać później bez przebudowy:
+Decyzja właściciela **D-16: na razie gra jest w całości darmowa**, bez reklam i bez zakupów. Reklamy i wersja płatna
+przyjdą później. Twoje zadanie to szkielet, który pozwoli je dodać bez przebudowy — **nic nie może być widoczne dla gracza**.
 
-1. `src/platform/store.ts`: interfejs `Entitlements` (`isUnlocked`, `purchaseUnlock`, `restore`), implementacja testowa
-   (przełącznik w ustawieniach deweloperskich) i szkic adaptera pod natywną wtyczkę IAP (wybór wtyczki zostaw jako pytanie,
-   podaj 2 opcje z licencjami).
-2. Bramka zawartości sterowana konfiguracją `src/game/gating.ts`: np. demo = pierwsze 5 zadań + lot bez końca do tygodnia 3;
-   pełna wersja = wszystko. Ekran odblokowania w języku wizualnym gry (karta pokładowa „upgrade do pierwszej klasy” — bez
-   nachalności, bez timerów, bez dark patterns).
-3. Wszystko wyłączone flagą domyślnie (`GATING_ENABLED=false`), dopóki właściciel nie zdecyduje. Pytanie w PR.
+1. `src/platform/store.ts`: interfejs `Entitlements` (`isUnlocked`, `purchase`, `restore`) z implementacją „wszystko
+   odblokowane” jako domyślną. Szkic adaptera pod natywną wtyczkę IAP tylko w komentarzu/dokumencie (2 opcje z licencjami
+   jako „Pytanie do właściciela”).
+2. `src/platform/ads.ts`: interfejs `AdService` (`isEnabled`, `showRewarded?`, `showInterstitialBetweenRuns?`) z implementacją
+   no-op. **Nie dodawaj żadnego SDK reklamowego ani uprawnień.** Zapisz w `docs/MONETIZATION.md` zasady na przyszłość
+   z briefu: bez reklam pełnoekranowych w trakcie gry, bez timerów, bez dark patterns; miejsca, gdzie reklama byłaby
+   najmniej szkodliwa (np. między partiami, opcjonalna nagroda), do decyzji właściciela.
+3. `src/game/gating.ts`: bramka zawartości sterowana konfiguracją, `GATING_ENABLED=false` na stałe w tej wersji.
+4. Polityka prywatności (wkład do 29): gra nie zbiera danych, nie ma reklam ani analityki — zdanie do `docs/MONETIZATION.md`.
 """,
-"`src/platform/store.ts`, `src/game/gating.ts`, `src/ui/unlock/**`",
-"- Z wyłączoną flagą gra działa jak pełna wersja.\n- Z włączoną flagą bramka działa w trybie testowym.",
+"`src/platform/store.ts`, `src/platform/ads.ts`, `src/game/gating.ts`, `docs/MONETIZATION.md`",
+"- Gra działa jak pełna wersja, bez żadnych ekranów zakupu czy reklam.\n- Brak nowych zależności natywnych i uprawnień (test sprawdza `package.json`).",
 "`test:gating`")
 
 task("28", "e2e-smoke", "Testy e2e i macierz ekranów", "E2E smoke tests and screen matrix", ["13", "14", "15", "16"], 6,
@@ -625,10 +629,10 @@ idx += ["## Zasady wspólne (powtórzone w każdym zleceniu)",
         "- Symulacja deterministyczna i czysta (`src/sim`, D-13), testy na stałym seedzie z linią `SUMMARY`.",
         "- Raport po polsku w opisie PR-a: co zrobione, wyniki testów, zrzuty, pytania do właściciela.", "",
         "## Decyzje, które należą do właściciela (zlecenia je oznaczą, ale nie rozstrzygają)",
-        "- `appId` aplikacji (propozycja `games.airway.app`) — zlecenie 01.",
-        "- Model biznesowy i wtyczka IAP — zlecenie 27 (domyślnie wyłączone).",
-        "- Podtytuł do sklepów — zlecenie 26.",
+        "- ~~appId~~ → `pl.samsufi.airway` (D-15).",
+        "- ~~Model biznesowy~~ → na razie darmowa, reklamy i wersja płatna później (D-16); wybór wtyczek IAP/reklam — później.",
+        "- ~~Podtytuł~~ → „Airway: Globe Route Builder” (D-18).",
         "- Polityka prywatności i wdrożenie strony — zlecenie 29.",
-        "- Włączenie ciszy nocnej w trybie bez końca — zlecenie 11 (domyślnie wyłączona)."]
+        "- ~~Cisza nocna~~ → od tygodnia 4 w trybie bez końca, zawsze w zadaniach (D-17)."]
 open(os.path.join(OUT, "00-INDEX.md"), "w").write("\n".join(idx) + "\n")
 print(len(order), "tasks")
