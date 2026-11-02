@@ -40,21 +40,25 @@ interface StartCluster {
 }
 
 // Precomputed once when this data module is loaded, never on a simulation tick.
+// [integration-sim] Passengers only travel to OTHER regions (task 08), so a start needs two regions:
+// members[0] is the anchor, members[1] its nearest foreign-region neighbour, then the nearest others.
 function buildStartClusters(): readonly StartCluster[] {
   const clusters: StartCluster[] = [];
   for (let anchor = 0; anchor < CITIES.length; anchor++) {
     const nearby: number[] = [];
     for (let other = 0; other < CITIES.length; other++) {
-      if (other === anchor || CITIES[other].region !== CITIES[anchor].region) continue;
+      if (other === anchor) continue;
       const km = distanceKm(anchor, other);
       if (km >= SPAWNER_MIN_CITY_DISTANCE_KM && km <= SPAWNER_START_RADIUS_KM) {
         nearby.push(other);
       }
     }
     nearby.sort((a, b) => distanceKm(anchor, a) - distanceKm(anchor, b) || a - b);
-    const members = [anchor];
+    const foreign = nearby.find((other) => CITIES[other].region !== CITIES[anchor].region);
+    if (foreign === undefined) continue;
+    const members = [anchor, foreign];
     for (const other of nearby) {
-      if (isFarEnough(other, members)) members.push(other);
+      if (other !== foreign && isFarEnough(other, members)) members.push(other);
       if (members.length === SPAWNER_START_CITY_MAX) break;
     }
     if (members.length === SPAWNER_START_CITY_MAX) clusters.push({ members });
@@ -69,7 +73,7 @@ export function createCitySpawner(rng: Rng): CitySpawnerState {
   if (START_CLUSTERS.length === 0) throw new Error('City dataset has no viable starting region');
   const cluster = START_CLUSTERS[rng.int(START_CLUSTERS.length)].members;
   const count = SPAWNER_START_CITY_MIN + rng.int(SPAWNER_START_CITY_MAX - SPAWNER_START_CITY_MIN + 1);
-  const options = cluster.slice(1);
+  const options = cluster.slice(2);
   // Fisher–Yates for variable starting groups without breaking pairwise spacing.
   for (let i = options.length - 1; i > 0; i--) {
     const roll = rng.int(i + 1);
@@ -79,7 +83,7 @@ export function createCitySpawner(rng: Rng): CitySpawnerState {
   }
   return {
     paramsVersion: SPAWNER_PARAMS_VERSION,
-    activeCityIndices: [cluster[0], ...options.slice(0, count - 1)],
+    activeCityIndices: [cluster[0], cluster[1], ...options.slice(0, count - 2)],
     nextSpawnTick: SPAWNER_INTERVAL_TICKS,
     lastTick: 0,
   };

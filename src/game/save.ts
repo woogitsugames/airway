@@ -1,4 +1,6 @@
 import { GAME_SAVE_KEY, type KeyValueStorage } from '../platform/storage';
+import { Sim } from '../sim/sim.ts';
+import { RULES_VERSION } from '../sim/state.ts';
 
 export const SAVE_VERSION = 1 as const;
 export const TICKS_PER_DAY = 1440;
@@ -221,4 +223,38 @@ export async function startOrRestore<T extends RestoreTarget>(
     game: createNewGame(), requiresResume: false,
     ...(loaded.status === 'error' ? { issue: loaded.issue } : {}),
   };
+}
+
+/** Save the authoritative Sim: its snapshot (state, RNG streams, journal, checkpoints) plus the journal. */
+export function saveSourceFromSim(sim: Sim): SaveSource {
+  return {
+    seed: sim.seed,
+    tick: sim.tickCount,
+    paramsVersion: RULES_VERSION,
+    commandLog: sim.getCommandLog() as unknown as readonly CommandEntry[],
+    snapshot: () => JSON.parse(sim.snapshot()) as Record<string, unknown>,
+    hash: () => sim.hash(),
+  };
+}
+
+/** Restore target wrapping a Sim; the envelope's journal must match the snapshot's own journal. */
+export class SimRestoreTarget implements RestoreTarget {
+  sim: Sim | null = null;
+  restore(snapshot: Record<string, unknown>, commands: readonly CommandEntry[]): void {
+    const sim = Sim.fromSnapshot(JSON.stringify(snapshot));
+    if (JSON.stringify(sim.getCommandLog()) !== JSON.stringify(commands)) {
+      throw new Error('Save journal does not match the simulation snapshot');
+    }
+    this.sim = sim;
+  }
+  hash(): string {
+    if (!this.sim) throw new Error('Nothing restored');
+    return this.sim.hash();
+  }
+}
+
+/** Validated restore (hash-checked); null for corrupt or incompatible saves. Never throws. */
+export function restoreSimFromSave(save: GameSaveV1): Sim | null {
+  if (save.paramsVersion !== null && save.paramsVersion !== RULES_VERSION) return null;
+  return restoreGame(save, () => new SimRestoreTarget())?.sim ?? null;
 }

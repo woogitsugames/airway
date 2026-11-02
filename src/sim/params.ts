@@ -5,7 +5,7 @@ export const SIM_TICK_MS = 100 as const;
 // [task-05] City spawner (1 simulation tick = 1 game minute, task 01 architecture).
 export const SPAWNER_PARAMS_VERSION = 1 as const;
 export const GAME_TICKS_PER_HOUR = 60 as const;
-export const SPAWNER_INTERVAL_HOURS = 4 as const;
+export const SPAWNER_INTERVAL_HOURS = 12 as const;
 export const SPAWNER_INTERVAL_TICKS = SPAWNER_INTERVAL_HOURS * GAME_TICKS_PER_HOUR;
 export const SPAWNER_START_CITY_MIN = 3 as const;
 export const SPAWNER_START_CITY_MAX = 4 as const;
@@ -18,7 +18,7 @@ export const SPAWNER_MIN_CITY_DISTANCE_KM = 668 as const;
 export const PASSENGER_SIM_VERSION = 1 as const;
 export const SIM_MINUTES_PER_DAY = 1_440 as const;
 export const SIM_DAYS_PER_WEEK = 7 as const;
-export const DEMAND_PASSENGERS_PER_MILLION_PER_DAY = 3 as const;
+export const DEMAND_PASSENGERS_PER_MILLION_PER_DAY = 1 as const;
 // Dawn is intentionally strongest; this 24-element integer profile is in local time.
 // [task-11] One game tick is one UTC minute; day/night balance is versioned.
 export const DAYNIGHT_PARAMS_VERSION = 1 as const;
@@ -31,8 +31,8 @@ export const DEMAND_HOURLY_WEIGHTS = [
   18, 15, 15, 18, 35, 90, 205, 190, 145, 110, 95, 90,
   85, 90, 105, 125, 145, 150, 125, 100, 70, 50, 35, 25,
 ] as const;
-export const HUB_WAITING_CAPACITY = 10 as const;
-export const CITY_WAITING_CAPACITY = 5 as const;
+export const HUB_WAITING_CAPACITY = 30 as const;
+export const CITY_WAITING_CAPACITY = 20 as const;
 // [task-12] One hub upgrade: +6 seats and a 15-minute minimum connection time.
 export const HUB_CAPACITY_UPGRADE = 6 as const;
 export const MIN_TRANSFER_TICKS = 25 as const;
@@ -50,7 +50,7 @@ export const MIN_AIRPORT_SERVICE_TICKS = 25 as const;
 export const MAX_ROUTE_SEGMENT_KM = 21000 as const;
 export const PLANE_PROGRESS_SCALE = 10000 as const;
 export const INITIAL_PLANE_RESERVE: Readonly<Record<PlaneType, number>> = {
-  turboprop: 2,
+  turboprop: 4,
   widebody: 0,
 };
 export const CURFEW_START_HOUR = 23 as const;

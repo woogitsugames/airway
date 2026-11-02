@@ -150,7 +150,8 @@ function connectCity(snapshot: BotSnapshot): BotDecision | null {
 
 function chooseUpgrade(snapshot: BotSnapshot): BotDecision | null {
   if (!snapshot.offers.length) return null;
-  const activeCities = snapshot.cities.filter((city) => city.active && city.connectedRoutes > 0);
+  // Only interchange hubs can be expanded (task 12); rank them by pressure and overflow history.
+  const activeCities = snapshot.cities.filter((city) => city.active && city.isHub);
   const ranked = activeCities.map((city) => ({
     city,
     impact: pressure(city) * 100 + snapshot.ledger
