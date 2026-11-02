@@ -1,0 +1,16 @@
+id,reference_delivered,target,margin_percent,no_action_status
+01,96,76,26,lost
+02,84,67,25,lost
+03,128,102,25,lost
+04,119,95,25,lost
+05,171,136,25,lost
+06,260,208,25,lost
+07,110,88,25,lost
+08,252,201,25,lost
+09,242,193,25,lost
+10,264,211,25,lost
+11,384,307,25,lost
+12,225,180,25,lost
+13,286,228,25,lost
+14,216,172,25,lost
+15,104,83,25,lost
