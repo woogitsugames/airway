@@ -43,8 +43,8 @@ export const pl = {
   // [task-12] Weekly freight labels
   'upgrade.freight': 'FRACHT',
   'upgrade.selectHub': 'Wskaż hub na globusie',
-  'upgrade.turboprop': 'Turbośmigłowiec',
-  'upgrade.widebody': 'Szerokokadłubowiec',
+  'upgrade.turboprop': 'Turbo\u00ADśmigłowiec', // soft hyphens: long titles break only at a hyphen (D-51)
+  'upgrade.widebody': 'Szeroko\u00ADkadłubowiec',
   'upgrade.hub': 'Rozbudowa huba',
   'upgrade.slots': 'Sloty startowe',
   // [task-35] Pola etykiety frachtowej; liczby pochodzą z symulacji.
