@@ -39,3 +39,5 @@ neither is intentionally added as an npm dependency. A missing browser/runtime
 produces a failing summary. Screenshot files are only committed after review.
 The two PNG dimensions are **412×915** and **915×412** at DPR 1 (exact pixel
 size). Foldable 673×841 / 904×1000 checks are part of later UI tasks.
+
+| `npm run test:upgrades` | Fixed-seed weekly offers, selected upgrade effects and congestion tie-breaking | `SUMMARY test:upgrades seed=0xA1A1 cases=5 passed=5 failed=0` |
