@@ -1,12 +1,17 @@
 // Bootstrap the empty Diorama sky scene until the production renderer arrives.
 import './ui/fonts.css';
 import './ui/base.css';
+// [task-20] Apply accessibility tokens without mounting task 13's future HUD.
+import './ui/theme/theme.css';
+import { initializeAccessibility } from './ui/a11y';
 import { getLanguage, t } from './i18n';
 import { mountEmptyScene } from './render/scene';
 
 const mount = document.getElementById('app');
 if (!mount) throw new Error('Missing #app mount point');
 document.documentElement.lang = getLanguage();
+// [task-20] Respect saved text scale and CVD settings at bootstrap.
+initializeAccessibility();
 document.title = t('app.title');
 
 try {
