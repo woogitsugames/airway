@@ -39,3 +39,7 @@ The game ships `public/fonts/Overpass-400.ttf`, `Overpass-800.ttf`,
 are `public/fonts/OFL-Overpass.txt`, `OFL-OverpassMono.txt`,
 and `OFL-AtkinsonHyperlegibleNext.txt`; each is colocated with the
 fonts it covers. No downloaded graphics are included.
+
+<!-- [task-10] -->
+## Procedural production route and aircraft assets
+`src/render/routes.ts` constructs original spherical arc tubes (continuous light widebody, dashed warm turboprop) and horizon ghost materials. `src/render/models/planes.ts` builds original low-poly turboprops and widebodies procedurally: fuselages, wings, tails, propellers and engines. `src/render/planes.ts` adds instanced ground shadows, contrails and five-part occupancy tags. No external binary/image assets or third-party model licences are required.

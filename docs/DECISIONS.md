@@ -92,3 +92,8 @@ full-screen ads during play, no timers, no dark patterns. Supersedes the recomme
 
 ## D-18 — Store title: "Airway: Globe Route Builder" (PL: "Airway: Buduj siatkę lotów na globusie") (2026-11-02, owner)
 **Status: in force.**
+
+<!-- [task-10] -->
+## D-20 — Batched in-world routes and instanced aircraft (2026-11-02, task 10)
+Route tubes are prebuilt from visual-only great-circle interpolation when a network revision changes, batched into one visible and one ghost pass per aircraft type. The different route types remain distinguishable by altitude and continuity as well as colour. Aircraft meshes use three instanced material passes per class, with shared instance passes for shadows, contrails and occupancy tags; no geometry or objects are allocated in the animation frame loop. Render snapshots take the task-09 fixed-point `progress01` scale (10,000) and interpolate cumulative route distance to avoid discontinuity at intermediate cities. This does not change the authoritative simulation or introduce trigonometry into `src/sim`.
+**Status: provisional technical implementation; real device profiling and screenshots depend on task 03 and task 09 integration.**
