@@ -70,7 +70,13 @@ try {
   const page = await browser.newPage({ viewport: { width: 412, height: 915 }, deviceScaleFactor: 1 });
   const errors = [];
   page.on('pageerror', (err) => errors.push(err.message));
-  await page.addInitScript(() => localStorage.removeItem('aw-tutorial'));
+  await page.addInitScript(() => {
+    // Clear once per browser tab, never on the reload that verifies persistence.
+    if (sessionStorage.getItem('aw-e2e-reset') !== '1') {
+      localStorage.removeItem('aw-tutorial');
+      sessionStorage.setItem('aw-e2e-reset', '1');
+    }
+  });
   mkdirSync(OUT, { recursive: true });
   await page.goto(url, { waitUntil: 'networkidle' });
   await step(page, 'route');
