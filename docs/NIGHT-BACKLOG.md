@@ -38,3 +38,4 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
 
 ## Log
 <!-- one line per finished item: date UTC · item · PR · gate summary -->
+- 2026-11-03 · N1 puzzles 16–30 (D-70) · night/01-puzzles · test:fast 42/42, build ok, e2e:smoke 9/9, ui:matrix 32/32, test:puzzles levels=30 cases=168 failed=0 (merged tree with #40, #42)
