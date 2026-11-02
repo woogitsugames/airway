@@ -8,11 +8,14 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const OUTPUT = resolve(ROOT, 'docs/shots/01');
+// [task-15] Keep the scaffold captures and add the failure-screen fixture.
+const OUTPUT = resolve(ROOT, 'docs/shots');
 const require = createRequire(import.meta.url);
 const views = [
-  { file: 'game-p.png', width: 412, height: 915 },
-  { file: 'game-l.png', width: 915, height: 412 },
+  { file: '01/game-p.png', width: 412, height: 915 },
+  { file: '01/game-l.png', width: 915, height: 412 },
+  { file: '15/game-p.png', width: 412, height: 915, query: '?preview=gameover' },
+  { file: '15/game-l.png', width: 915, height: 412, query: '?preview=gameover' },
 ];
 let server;
 let browser;
@@ -65,14 +68,15 @@ try {
     const errors = [];
     page.on('pageerror', (error) => errors.push(error.message));
     try {
-      await page.goto(url, { waitUntil: 'networkidle' });
-      await page.waitForSelector('#app canvas');
+      await page.goto(url + (view.query ?? ''), { waitUntil: 'networkidle' });
+      await page.waitForSelector(view.query ? '[data-gameover-state="open"]' : '#app canvas');
       await page.evaluate(() => document.fonts.ready);
       if (errors.length) throw new Error('Browser errors: ' + errors.join('; '));
       const file = resolve(OUTPUT, view.file);
+      mkdirSync(dirname(file), { recursive: true });
       await page.screenshot({ path: file, animations: 'disabled' });
       captured++;
-      console.log('shot docs/shots/01/' + view.file + ' ' + view.width + 'x' + view.height);
+      console.log('shot docs/shots/' + view.file + ' ' + view.width + 'x' + view.height);
     } finally {
       await page.close();
     }

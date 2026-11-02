@@ -26,3 +26,8 @@ try {
   }
   mount.appendChild(canvas);
 }
+
+// [task-15] A dev-only fixture for game-over screenshots until task 08/13 integration.
+if (import.meta.env.DEV && new URLSearchParams(location.search).get('preview') === 'gameover') {
+  void import('./ui/gameover/preview').then(({ mountGameOverPreview }) => mountGameOverPreview(mount));
+}
