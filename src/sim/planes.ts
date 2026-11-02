@@ -4,9 +4,9 @@ import {
   MIN_AIRPORT_SERVICE_TICKS,
   PLANE_TYPES,
   type PlaneType,
-} from './params';
+} from './params.ts';
 
-export type { PlaneType } from './params';
+export type { PlaneType } from './params.ts';
 
 /** Adapter for task 05's precomputed, integer city-to-city distance table. */
 export type DistanceKm = (fromCityId: string, toCityId: string) => number | undefined;
@@ -71,9 +71,9 @@ export interface PlaneFleet {
   nextPlaneSerial: number;
 }
 
-export type PlaneCommand =
-  | { readonly type: 'AssignPlane'; readonly routeId: string; readonly planeType: PlaneType }
-  | { readonly type: 'UnassignPlane'; readonly planeId: string };
+export function isPlaneType(type: unknown): type is PlaneType {
+  return typeof type === 'string' && Object.prototype.hasOwnProperty.call(PLANE_TYPES, type);
+}
 
 function checkType(type: string): type is PlaneType {
   return Object.prototype.hasOwnProperty.call(PLANE_TYPES, type);
@@ -155,7 +155,7 @@ export function validatePlaneRange(route: ScheduledRoute, type: PlaneType):
   return { ok: true };
 }
 
-/** Called by task 02's command dispatcher, at a simulation tick boundary. */
+/** Called by the kernel's command dispatcher (world.ts), at a simulation tick boundary. */
 export function assignPlane(
   fleet: PlaneFleet, route: ScheduledRoute | undefined, type: PlaneType,
 ): PlaneResult<PlaneState> {
@@ -187,15 +187,41 @@ export function unassignPlane(fleet: PlaneFleet, planeId: string): PlaneResult<P
   return { ok: true, value: plane };
 }
 
-/** Thin task-02 command bridge until its Sim.apply() is merged. */
-export function applyPlaneCommand(
-  fleet: PlaneFleet, routes: readonly ScheduledRoute[], command: PlaneCommand,
-): PlaneResult<PlaneState> {
-  if (command.type === 'UnassignPlane') return unassignPlane(fleet, command.planeId);
-  return assignPlane(fleet, routes.find((route) => route.id === command.routeId), command.planeType);
-}
-
 /** Used by task 08 RemoveRoute validation: never orphan assigned aircraft. */
 export function routeHasAssignedPlanes(fleet: PlaneFleet, routeId: string): boolean {
   return fleet.planes.some((plane) => plane.routeId === routeId);
+}
+
+/**
+ * Re-time a route after ExtendRoute/ShortenRoute. `shift` is the index offset of the old stops in
+ * the new list (+n when n stops were prepended, -1 when the first stop was removed). Aircraft keep
+ * their position and direction; the caller guarantees no aircraft sits on a removed stop or leg.
+ */
+export function reshapeScheduledRoute(
+  fleet: PlaneFleet, previous: ScheduledRoute, cityIds: readonly string[], shift: number,
+  distanceKm: DistanceKm,
+): ScheduledRoute {
+  const next = createScheduledRoute(previous.id, cityIds, distanceKm);
+  for (const plane of fleet.planes) {
+    if (plane.routeId !== previous.id) continue;
+    plane.cityIndex += shift;
+    plane.segment += shift;
+    // A former terminus that is now an intermediate stop keeps the current heading.
+    if (plane.phase === 'ground') {
+      if (plane.cityIndex === cityIds.length - 1) plane.direction = -1;
+      else if (plane.cityIndex === 0) plane.direction = 1;
+      plane.segment = plane.direction === 1 ? plane.cityIndex : plane.cityIndex - 1;
+    }
+    if (plane.cityIndex < 0 || plane.cityIndex >= cityIds.length ||
+        plane.segment < 0 || plane.segment >= next.segments.length) {
+      throw new RangeError(`Aircraft ${plane.id} would leave route ${previous.id}`);
+    }
+  }
+  return next;
+}
+
+/** Stops an aircraft currently occupies: its ground city, or both ends of the leg it flies. */
+export function planeTouchesStop(plane: PlaneState, stopIndex: number): boolean {
+  if (plane.phase === 'ground') return plane.cityIndex === stopIndex;
+  return plane.cityIndex === stopIndex || plane.cityIndex + plane.direction === stopIndex;
 }

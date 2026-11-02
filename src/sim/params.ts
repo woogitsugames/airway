@@ -33,8 +33,10 @@ export const DEMAND_HOURLY_WEIGHTS = [
 ] as const;
 export const HUB_WAITING_CAPACITY = 10 as const;
 export const CITY_WAITING_CAPACITY = 5 as const;
-export const HUB_CAPACITY_UPGRADE = 4 as const;
+// [task-12] One hub upgrade: +6 seats and a 15-minute minimum connection time.
+export const HUB_CAPACITY_UPGRADE = 6 as const;
 export const MIN_TRANSFER_TICKS = 25 as const;
+export const UPGRADED_TRANSFER_TICKS = 15 as const;
 // At 1x the player has 45 real seconds (10 ticks per real second) to clear a jam.
 export const CONGESTION_GRACE_TICKS = 45 * SIM_TICKS_PER_SECOND;
 export const WAIT_TOO_LONG_TICKS = 360 as const;
