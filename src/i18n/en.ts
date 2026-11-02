@@ -13,6 +13,8 @@ export const en = {
   'airport.focus': 'Rotate to {code}',
   'airport.waiting': '{code}: {count} passengers waiting',
   'airport.jammed': '{code}: congestion, {seconds} seconds remaining',
+  'airport.slot.label': 'SLOT', // [task-38]
+  'airport.slotHeld': '{code}: {count} aircraft waiting for a departure slot, next slot in {time}',
   // [task-07] Route drawing, airport-paper ATC hint and route actions.
   'route.aircraft.turboprop': 'turboprop',
   'route.aircraft.widebody': 'widebody aircraft',
@@ -40,8 +42,8 @@ export const en = {
   // [task-12] Weekly freight labels
   'upgrade.freight': 'FREIGHT',
   'upgrade.selectHub': 'Select a hub on the globe',
-  'upgrade.turboprop': 'Turboprop',
-  'upgrade.widebody': 'Widebody',
+  'upgrade.turboprop': 'Turbo\u00ADprop', // soft hyphens: long titles break only at a hyphen (D-51)
+  'upgrade.widebody': 'Wide\u00ADbody',
   'upgrade.hub': 'Expand hub',
   'upgrade.slots': 'Departure slots',
   // [task-35] Cargo-label fields; the numbers come from the simulation.
@@ -219,6 +221,27 @@ export const en = {
   'puzzle.13.title': 'Long connection chain',
   'puzzle.14.title': 'Four continents, one path',
   'puzzle.15.title': 'Three nights on the globe',
+  // [night-01] Puzzles 16-30 (slots D-41, curfew D-17, 3-day week D-40, transfers/MCT).
+  'puzzle.16.title': 'The hourly bank at Frankfurt',
+  'puzzle.17.title': 'Around the closed hub',
+  'puzzle.18.title': 'Too many spokes in Madrid',
+  'puzzle.19.title': 'Second week, new traffic',
+  'puzzle.20.title': 'Two curfews in the north',
+  'puzzle.21.title': 'Bosphorus connection',
+  'puzzle.22.title': 'Gulf crossroads',
+  'puzzle.23.title': 'Southern nights',
+  'puzzle.24.title': 'Accra or Lagos',
+  'puzzle.25.title': 'Across the Tasman',
+  'puzzle.26.title': 'Chicago bank, second week',
+  'puzzle.27.title': 'Two quiet origins',
+  'puzzle.28.title': 'Alpine detour',
+  'puzzle.29.title': 'Atlantic gateway',
+  'puzzle.30.title': 'The night network',
+  'puzzle.game.notes': 'Watch for: {list}',
+  'puzzle.mechanic.slots': 'departure slots (2 per hour, 3 at a hub)',
+  'puzzle.mechanic.curfew': 'night curfew 23:00–06:00',
+  'puzzle.mechanic.week': 'new traffic in the second week',
+  'puzzle.mechanic.mct': 'connection time at a crowded hub',
   // [task-18] Localized offline daily ticket.
   'daily.share.title': 'AIRWAY / DAILY CHALLENGE',
   'daily.share.official': 'OFFICIAL RUN',

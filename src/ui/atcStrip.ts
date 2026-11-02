@@ -1,5 +1,5 @@
 /** Airport-paper route hints and route actions (D-11), independent of game state. */
-import { getLanguage, t } from '../i18n';
+import { localNumber, t } from '../i18n'; // [task-37] D-61 formatter
 import type { RangeWarning, RouteHandle, RouteMenuRequest } from '../input/routeTool';
 import './atcStrip.css';
 
@@ -24,8 +24,7 @@ export function mountAtcStrip(host: HTMLElement): AtcStrip {
   return {
     show(warning) {
       if (!warning) { strip.hidden = true; previous = ''; return; }
-      const locale = getLanguage() === 'pl' ? 'pl-PL' : 'en-GB';
-      const distance = new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(warning.distanceKm);
+      const distance = localNumber(warning.distanceKm);
       const aircraft = t(warning.aircraft === 'turboprop' ? 'route.aircraft.turboprop' : 'route.aircraft.widebody');
       const nextFlight = t('route.atc.distance', { distance, from: warning.from, to: warning.to });
       const nextReason = t('route.atc.overRange', { aircraft });

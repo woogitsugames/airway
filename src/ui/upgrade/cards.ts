@@ -6,7 +6,7 @@ import { PLANE_TYPES } from '../../sim';
 import { MIN_TRANSFER_TICKS } from '../../sim/params';
 import { chooseUpgrade, mostLoadedHub } from '../../sim/upgrades';
 import type { HubPressure, UpgradeKind } from '../../sim/upgrades';
-import { getLanguage, t } from '../../i18n';
+import { localNumber, t } from '../../i18n';
 
 /** What one pick of each upgrade actually does, read back from the simulation. */
 export interface UpgradeFacts {
@@ -74,7 +74,7 @@ export function upgradeFacts(): UpgradeFacts {
   return cached;
 }
 
-const number = (value: number) => new Intl.NumberFormat(getLanguage() === 'pl' ? 'pl-PL' : 'en-US').format(value);
+const number = (value: number) => localNumber(value); // [task-37] D-61
 
 export function upgradeTitle(kind: UpgradeKind): string {
   return t(kind === 'turboprop' ? 'upgrade.turboprop' : kind === 'widebody' ? 'upgrade.widebody'

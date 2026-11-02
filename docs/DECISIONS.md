@@ -414,7 +414,29 @@ D-47 moon grade: darker and no longer blue-grey; moon light (0.6) unchanged. Nig
 (shots:34): routes 9.65, airports 9.0, planes 10.2, tags ≥ 12.3 (threshold 4.5). **Status: in force; the Back
 tile position (top sign, outside thumb reach in portrait) is an owner question in the task-39 PR.**
 
+## D-50 — Departure-slot tag hangs under the passenger tag (2026-11-02, task 38)
+While aircraft are held for a departure slot (D-46), the airport shows a second luggage tag "SLOT h:mm" — game time to the
+next free slot, from `CityView.nextSlotMinutes` — plus "×N" only when two or more aircraft wait. Shape, not colour, tells
+it from the passenger tag: a squared ticket with a dark stub carrying a clock-over-runway-bar mark (inline SVG), ink outline
+and chamfered right end, against the pointed passenger tag with its punched hole. Placement is deterministic: the
+passenger tag and the slot tag form **one layout box** for `layoutTags` (passenger tag on top, slot tag 2 px below,
+left-aligned, i.e. nearest the apron where the aircraft stand), so no other airport's tag can slide between them; with
+nobody waiting the slot tag fills the box alone. The tag has no countdown animation and disappears as soon as nothing is
+held. Readability: the paper body reaches ≥ 4.81:1 by day and ≥ 14.8:1 at night against the globe behind it
+(`npm run shots:38`); ink on paper inside the tag is 12.7:1. **Status: in force; the tag's wording ("SLOT" in both
+languages) is an owner-visible choice (task-38 PR question).**
+
 <!-- Owner decisions below use D-60+ so they cannot collide with D-49… taken by the parallel task-37…40 session. -->
+
+## D-51 — Player text never breaks inside a word without a hyphen (2026-11-02, task 37)
+UI text must not use `overflow-wrap:anywhere` / `word-break` (they produced "Szerokokadłubowie / c" on the 360 px
+store phone). Browser `hyphens:auto` is not relied on: its dictionaries are missing in some WebViews and headless
+Chromium. Instead long single words carry soft hyphens (U+00AD) in the i18n catalogue ("Szeroko\u00ADkadłubowiec"),
+and the upgrade-label title shrinks to fit its longest word (container query, down to 15 px) before the soft hyphen
+is needed. Overpass ships the middle dot U+00B7 with a zero advance, so Overpass text borrows the dot from
+Atkinson Hyperlegible Next via `unicode-range` (same OFL files) and " · " is symmetric. `npm run test:hud-targets`
+checks menu, upgrade labels and game over in PL/EN at 360–915 px for bare mid-word breaks, header gaps ≥ 8 px and
+dot symmetry. **Status: in force.**
 
 ## D-60 — First weekly upgrade at ~7.2 min is accepted (2026-11-02, owner)
 Keeps 1 tick = 1 game minute and the D-43 balance (median 12.9 min, 86% / 44%). Supersedes the "4–5 min" estimate in D-40.
@@ -422,7 +444,9 @@ Keeps 1 tick = 1 game minute and the D-43 balance (median 12.9 min, 86% / 44%). 
 
 ## D-61 — Polish number format uses a space from four digits: "2 500 km" (2026-11-02, owner)
 Player-facing numbers in PL group thousands from 4 digits (as in the mockups), unlike `Intl` pl-PL's default (5 digits).
-One formatter in `src/core/format` / i18n helpers; EN unchanged ("2,500"). **Status: to implement.**
+One formatter in `src/core/format` / i18n helpers; EN unchanged ("2,500"). **Status: in force (task 37)** — `formatNumber()`
+in `src/core/format.ts`, `localNumber()` in `src/i18n`; `t()` formats every numeric parameter with it; separator = the no-break
+space Intl uses for five digits; tested by `npm run test:format`.
 
 ## D-62 — Menu globe rotates slowly (2026-11-02, owner)
 About 1.2°/s, paused with `prefers-reduced-motion` and while the menu is hidden. **Status: in force (task 39).**
@@ -451,3 +475,11 @@ Publish together with the store pre-registration, after the device test. **Statu
 ## D-68 — Hub stamp shows code or city name per player setting (2026-11-03, owner)
 Settings toggle "Lotniska: kod / nazwa" (default: code). Applies to hub stamp and other airport labels that have room.
 **Status: to implement.**
+
+## D-70 — Puzzles 16–30: mechanics tags and a tighter margin curve (2026-11-03, Claude, night N1)
+Puzzles 16–30 carry an optional `mechanics` list (`slots`, `curfew`, `week`, `mct`, `transfer`); the briefing shows the
+non-obvious ones and `test:puzzles` proves every tag on the reference run (a slot wait, a curfew airport, a wave that
+starts in the second 3-day week, a hub expansion, a demand that needs a transfer). Targets are the reference result
+divided by 1 + margin, the margin falling from 25 % (16) to 17 % (29–30), so later levels need a near-best network.
+Several levels offer decoy strips (a curfewed hub, a five-spoke star that jams on slots). Data format stays version 1.
+**Status: in force; difficulty is a proposal for the owner to playtest.**

@@ -14,6 +14,8 @@ export const pl = {
   'airport.focus': 'Obróć do {code}',
   'airport.waiting': '{code}: {count} pasażerów czeka',
   'airport.jammed': '{code}: zator, pozostało {seconds} sekund',
+  'airport.slot.label': 'SLOT', // [task-38]
+  'airport.slotHeld': '{code}: samoloty czekające na slot startowy: {count}, następny slot za {time}',
   // [task-07] Rysowanie tras, pasek ATC i działania na trasach.
   'route.aircraft.turboprop': 'turbośmigłowca',
   'route.aircraft.widebody': 'samolotu szerokokadłubowego',
@@ -41,8 +43,8 @@ export const pl = {
   // [task-12] Weekly freight labels
   'upgrade.freight': 'FRACHT',
   'upgrade.selectHub': 'Wskaż hub na globusie',
-  'upgrade.turboprop': 'Turbośmigłowiec',
-  'upgrade.widebody': 'Szerokokadłubowiec',
+  'upgrade.turboprop': 'Turbo\u00ADśmigłowiec', // soft hyphens: long titles break only at a hyphen (D-51)
+  'upgrade.widebody': 'Szeroko\u00ADkadłubowiec',
   'upgrade.hub': 'Rozbudowa huba',
   'upgrade.slots': 'Sloty startowe',
   // [task-35] Pola etykiety frachtowej; liczby pochodzą z symulacji.
@@ -220,6 +222,27 @@ export const pl = {
   'puzzle.13.title': 'Łańcuch przesiadek',
   'puzzle.14.title': 'Cztery kontynenty, jedna trasa',
   'puzzle.15.title': 'Trzy noce na globusie',
+  // [night-01] Puzzles 16-30 (slots D-41, curfew D-17, 3-day week D-40, transfers/MCT).
+  'puzzle.16.title': 'Godzinna fala we Frankfurcie',
+  'puzzle.17.title': 'Obok zamkniętego węzła',
+  'puzzle.18.title': 'Za dużo ramion w Madrycie',
+  'puzzle.19.title': 'Drugi tydzień, nowy ruch',
+  'puzzle.20.title': 'Dwie cisze nocne na północy',
+  'puzzle.21.title': 'Przesiadka nad Bosforem',
+  'puzzle.22.title': 'Skrzyżowanie nad Zatoką',
+  'puzzle.23.title': 'Południowe noce',
+  'puzzle.24.title': 'Akra czy Lagos',
+  'puzzle.25.title': 'Przez Morze Tasmana',
+  'puzzle.26.title': 'Fala w Chicago, drugi tydzień',
+  'puzzle.27.title': 'Dwa ciche lotniska',
+  'puzzle.28.title': 'Objazd przez Alpy',
+  'puzzle.29.title': 'Brama Atlantyku',
+  'puzzle.30.title': 'Nocna sieć',
+  'puzzle.game.notes': 'Uwaga: {list}',
+  'puzzle.mechanic.slots': 'sloty startowe (2 na godzinę, 3 w węźle)',
+  'puzzle.mechanic.curfew': 'cisza nocna 23:00–06:00',
+  'puzzle.mechanic.week': 'nowy ruch w drugim tygodniu',
+  'puzzle.mechanic.mct': 'czas przesiadki w zatłoczonym węźle',
   // [task-18] Localized offline daily ticket.
   'daily.share.title': 'AIRWAY / WYZWANIE DNIA',
   'daily.share.official': 'PRÓBA OFICJALNA',

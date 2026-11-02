@@ -72,3 +72,49 @@ export function layoutTags(slots: readonly TagSlot[], bounds: TagBounds): number
   }
   return placed;
 }
+
+// [task-38] Departure-slot tag (D-50): hung directly under the passenger tag of the same airport.
+/** Height of the passenger luggage tag (CSS `.airport-bubble`). */
+export const MAIN_TAG_HEIGHT = 30;
+/** Height of the slot tag (CSS `.airport-slot`). */
+export const SLOT_TAG_HEIGHT = 24;
+/** Vertical "string" gap between the passenger tag and the slot tag hanging under it. */
+export const SLOT_TAG_GAP = 2;
+
+/** Screen rectangle of one airport's slot tag; written in place, never reallocated. */
+export interface SlotTagRect {
+  width: number;
+  x: number;
+  y: number;
+  visible: boolean;
+}
+
+/**
+ * Sizes the single layout box shared by an airport's passenger tag and its slot tag, so `layoutTags`
+ * moves both as one group and other airports can never slide between them. `mainWidth <= 0` means the
+ * airport shows no passenger tag (nobody waiting, no jam); `slot.width <= 0` means nothing is held.
+ */
+export function sizeTagGroup(group: TagSlot, mainWidth: number, slot: SlotTagRect): void {
+  const hasMain = mainWidth > 0;
+  const hasSlot = slot.width > 0;
+  group.width = Math.max(hasMain ? mainWidth : 0, hasSlot ? slot.width : 0, 30);
+  group.height = hasMain && hasSlot ? MAIN_TAG_HEIGHT + SLOT_TAG_GAP + SLOT_TAG_HEIGHT
+    : hasSlot ? SLOT_TAG_HEIGHT : MAIN_TAG_HEIGHT;
+}
+
+/**
+ * Places the slot tag inside its group box after `layoutTags`: left-aligned under the passenger tag
+ * (closest to the airport, where the held aircraft stand), or alone in the box when nobody waits.
+ */
+export function attachSlotTag(group: TagSlot, hasMain: boolean, slot: SlotTagRect): void {
+  slot.visible = group.placed && slot.width > 0;
+  if (!slot.visible) return;
+  slot.x = group.x;
+  slot.y = hasMain ? group.y + MAIN_TAG_HEIGHT + SLOT_TAG_GAP : group.y;
+}
+
+/** Game-time countdown to the next free slot as h:mm ("0:12", "1:00"); negatives clamp to 0:00. */
+export function slotCountdownText(minutes: number): string {
+  const total = Math.max(0, Math.ceil(Number.isFinite(minutes) ? minutes : 0));
+  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
+}

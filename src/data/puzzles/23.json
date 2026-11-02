@@ -1,0 +1,157 @@
+{
+  "version": 1,
+  "id": "23",
+  "titleKey": "puzzle.23.title",
+  "durationTicks": 8640,
+  "demandSeed": 3023,
+  "startCities": [
+    {
+      "id": "GRU",
+      "continent": "SA",
+      "latitude": -23.6,
+      "longitude": -46.6,
+      "hubCapacity": 100,
+      "curfew": {
+        "startMinuteOfDay": 1380,
+        "endMinuteOfDay": 360
+      }
+    },
+    {
+      "id": "EZE",
+      "continent": "SA",
+      "latitude": -34.6,
+      "longitude": -58.4,
+      "hubCapacity": 100
+    },
+    {
+      "id": "LIM",
+      "continent": "SA",
+      "latitude": -12,
+      "longitude": -77,
+      "hubCapacity": 150
+    },
+    {
+      "id": "BOG",
+      "continent": "SA",
+      "latitude": 4.7,
+      "longitude": -74.1,
+      "hubCapacity": 150
+    },
+    {
+      "id": "MIA",
+      "continent": "NA",
+      "latitude": 25.8,
+      "longitude": -80.2,
+      "hubCapacity": 100
+    }
+  ],
+  "stock": {
+    "turboprops": 1,
+    "jets": 3,
+    "hubUpgrades": 0
+  },
+  "goal": {
+    "kind": "curfewNights",
+    "targetDelivered": 1353,
+    "nights": 5
+  },
+  "mechanics": [
+    "curfew",
+    "week",
+    "transfer"
+  ],
+  "demand": [
+    {
+      "from": "GRU",
+      "to": "MIA",
+      "passengers": 20,
+      "firstTick": 20,
+      "everyTicks": 200
+    },
+    {
+      "from": "EZE",
+      "to": "MIA",
+      "passengers": 16,
+      "firstTick": 60,
+      "everyTicks": 200
+    },
+    {
+      "from": "EZE",
+      "to": "MIA",
+      "passengers": 20,
+      "firstTick": 4320,
+      "everyTicks": 200
+    }
+  ],
+  "availableRoutes": [
+    {
+      "from": "GRU",
+      "to": "EZE",
+      "plane": "turboprop",
+      "flightTicks": 210,
+      "intervalTicks": 120
+    },
+    {
+      "from": "GRU",
+      "to": "BOG",
+      "plane": "jet",
+      "flightTicks": 310,
+      "intervalTicks": 120
+    },
+    {
+      "from": "EZE",
+      "to": "LIM",
+      "plane": "jet",
+      "flightTicks": 225,
+      "intervalTicks": 120
+    },
+    {
+      "from": "LIM",
+      "to": "MIA",
+      "plane": "jet",
+      "flightTicks": 302,
+      "intervalTicks": 120
+    },
+    {
+      "from": "BOG",
+      "to": "MIA",
+      "plane": "jet",
+      "flightTicks": 174,
+      "intervalTicks": 120
+    },
+    {
+      "from": "GRU",
+      "to": "MIA",
+      "plane": "jet",
+      "flightTicks": 470,
+      "intervalTicks": 120
+    },
+    {
+      "from": "LIM",
+      "to": "BOG",
+      "plane": "turboprop",
+      "flightTicks": 236,
+      "intervalTicks": 120
+    }
+  ],
+  "referenceCommands": [
+    {
+      "type": "connect",
+      "from": "GRU",
+      "to": "EZE",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "EZE",
+      "to": "LIM",
+      "plane": "jet"
+    },
+    {
+      "type": "connect",
+      "from": "LIM",
+      "to": "MIA",
+      "plane": "jet"
+    }
+  ]
+}

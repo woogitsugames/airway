@@ -32,6 +32,7 @@ export interface PuzzleSession {
 /** The first night ends at 06:00 on day 2 (minute 1800); each further day adds one. */
 const FIRST_NIGHT_END = 1_800;
 const DAY = 1_440;
+const MECHANICS: readonly string[] = ['slots', 'curfew', 'week', 'mct', 'transfer'];
 
 function routeId(a: string, b: string): string {
   return a < b ? `${a}-${b}` : `${b}-${a}`;
@@ -75,6 +76,10 @@ export function validatePuzzle(level: PuzzleLevel): void {
   if (!['deliver', 'continents', 'curfewNights'].includes(level.goal.kind)) throw new Error('Invalid goal kind');
   if (level.goal.kind === 'continents') assertInt(level.goal.continents, 'required continents', 2);
   if (level.goal.kind === 'curfewNights') assertInt(level.goal.nights, 'required nights', 1);
+  const mechanics = level.mechanics ?? [];
+  if (!Array.isArray(mechanics) || mechanics.some((tag) => !MECHANICS.includes(tag)) || new Set(mechanics).size !== mechanics.length) {
+    throw new Error('Invalid mechanics tags');
+  }
   for (const command of level.referenceCommands) {
     if (command.type === 'connect') {
       if (!routes.has(routeId(command.from, command.to))) throw new Error('Reference route unavailable');
