@@ -34,7 +34,7 @@
   },
   "goal": {
     "kind": "continents",
-    "targetDelivered": 145,
+    "targetDelivered": 208,
     "continents": 3
   },
   "demand": [

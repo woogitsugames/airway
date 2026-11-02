@@ -34,7 +34,7 @@
   },
   "goal": {
     "kind": "deliver",
-    "targetDelivered": 100
+    "targetDelivered": 95
   },
   "demand": [
     {

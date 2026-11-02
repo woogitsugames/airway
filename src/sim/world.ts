@@ -131,6 +131,28 @@ export interface HubCauseLedgerView {
   readonly congestedSeconds: number;
 }
 
+/** Read-only face of the world handed to UI, render, audio, modes and tools (Sim.world). */
+export interface WorldView {
+  readonly minute: number;
+  readonly status: WorldStatus;
+  readonly score: number;
+  readonly failure: HubFailure | null;
+  readonly offer: Readonly<WeeklyUpgradeState> | null;
+  readonly upgrades: readonly UpgradeRecord[];
+  readonly hubUpgradesInStock: number;
+  readonly departureSlots: number;
+  readonly planes: readonly Readonly<PlaneState>[];
+  readonly reserve: Readonly<Record<PlaneType, number>>;
+  readonly curfewCityIds: readonly string[];
+  readonly totals: Readonly<CauseCounters>;
+  readonly scenario: Scenario;
+  activeCityIds(): string[];
+  cityView(cityId: string): CityView;
+  cities(): CityView[];
+  routes(): RouteView[];
+  hubCauseLedger(cityId: string): HubCauseLedgerView;
+}
+
 function routeDistance(a: string, b: string): number | undefined { return cityDistanceKm(a, b); }
 
 const DEMAND_CITIES: readonly DemandCity[] = CITY_RECORDS.map((city) => ({
@@ -145,7 +167,7 @@ type Plan = { readonly ok: true; readonly run: Mutation } | { readonly ok: false
 const reject = (reason: RejectReason): Plan => ({ ok: false, reason });
 const accept = (run: Mutation): Plan => ({ ok: true, run });
 
-export class World {
+export class World implements WorldView {
   readonly passengers: PassengerSimulation;
   private readonly curfew: CurfewPlanner;
   private readonly streams: Readonly<Record<RngStream, Rng>>;
@@ -197,7 +219,6 @@ export class World {
   /** Live, read-only aircraft states for the renderer (no copy per frame). */
   get planes(): readonly Readonly<PlaneState>[] { return this.fleet.planes; }
   get reserve(): Readonly<Record<PlaneType, number>> { return this.fleet.available; }
-  get schedulesView(): readonly ScheduledRoute[] { return this.schedules; }
   get curfewCityIds(): readonly string[] { return this.curfew.curfewCityIds; }
   get totals(): Readonly<CauseCounters> { return this.passengers.ledger.totals; }
 

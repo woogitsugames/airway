@@ -1,13 +1,25 @@
 # Task 22 — autoplay and balance evidence
 
-## Integration status (2026-11-02)
+## Integration status (2026-11-02, integration/sim)
 
-**Blocked on task 08 (passengers/hubs), 09 (aircraft) and 12 (weekly upgrades).**
-The `dev` branch contains only task 01's scaffold. `src/sim/sim.ts`, the
-passenger ledger, routes, aircraft and upgrades do not exist there yet.
-Consequently **no production balance parameters were changed** and no
-production 50-seed results exist. Do not ship or approve the MVP balance based
-on the fixture outputs below.
+The bot now drives the **real authoritative Sim** through `scripts/balance-game-adapter.ts`
+(commands via `Sim.check/apply`, read-only `sim.world` views). Changes made to reach the
+8–15 min target (all marked `[task-22 balance, integration]` in `src/sim/params.ts`):
+
+| Parameter | Before | After |
+| --- | --- | --- |
+| `SPAWNER_INTERVAL_HOURS` | 4 | 12 |
+| `DEMAND_PASSENGERS_PER_MILLION_PER_DAY` | 3 | 1 |
+| `HUB_WAITING_CAPACITY` / `CITY_WAITING_CAPACITY` | 10 / 5 | 30 / 20 |
+| `INITIAL_PLANE_RESERVE.turboprop` | 2 | 4 |
+| Start cluster | one region | anchor + nearest foreign-region city (passengers only fly to other regions) |
+
+Before (first real run): 10-seed median **1.59 min**, 0 passengers delivered in most runs.
+After: 10-seed median **11.26 min**, 50-seed median **10.09 min** (range 3.01–19.95),
+median 44 delivered, 50/50 failures preceded by a visible jam countdown (`game-50.csv`,
+`game-summary.md`). Median session < 1 game week, so weekly upgrades rarely happen — the
+time-scale question below still needs the owner. Puzzle targets were recalibrated against
+the real Sim: `puzzles-real-sim.csv`.
 
 ## Commands
 

@@ -24,7 +24,7 @@
       "continent": "AF",
       "latitude": 5.6,
       "longitude": -0.2,
-      "hubCapacity": 100
+      "hubCapacity": 200
     },
     {
       "id": "CAI",
@@ -55,7 +55,7 @@
   },
   "goal": {
     "kind": "continents",
-    "targetDelivered": 210,
+    "targetDelivered": 228,
     "continents": 3
   },
   "demand": [

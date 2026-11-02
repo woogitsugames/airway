@@ -16,9 +16,15 @@ export function dailyKey(date: Date = new Date()): string {
   return `${year.padStart(4, '0')}-${month}-${day}`;
 }
 
+/** Seed for a YYYY-MM-DD Warsaw calendar key (as returned by dailyKey). */
+export function dailySeedForKey(key: string): number {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(key)) throw new RangeError('daily key must be YYYY-MM-DD');
+  return seedFromString(`airway/daily/v1/${key}`);
+}
+
 /** Stable daily challenge seed; no RNG state or local time is consulted. */
 export function dailySeed(date: Date = new Date()): number {
-  return seedFromString(`airway/daily/v1/${dailyKey(date)}`);
+  return dailySeedForKey(dailyKey(date));
 }
 
 /** ISO week of the WARSAW calendar day: ISO week-year and W01..W53. */

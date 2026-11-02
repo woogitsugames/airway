@@ -288,3 +288,22 @@ the real game instead of retaining a shadow simulation. **Rationale:** missing
 dependencies must never yield false-green gameplay QA; the same harness can
 be connected when the UI and persistence work merges. **Status: in force.**
 _(renumbered from D-19 during integration, branch `origin/task/28-e2e-smoke`)_
+
+## D-38 — One kernel owns the whole world; puzzles run on it (2026-11-02, integration/sim)
+`Sim` (task 02) is the only simulation. `src/sim/world.ts` composes spawner (05), passengers/
+network/routing/hubs/ledger (08), aircraft (09), curfew (11) and weekly upgrades (12); the world
+snapshot is part of the hashed state, checkpoints and saves (snapshot v2, rules v2). The kernel
+owns all RNG stream states (cities, demand, upgrades); subsystems receive the streams. Commands
+are validated at the tick and rejections are journaled. Puzzle levels became Sim scenarios
+(D-32 completed); HND was replaced by the dataset city TYO, some waiting capacities raised and
+goal targets set to 80% of the real-sim reference result (`docs/balance/puzzles-real-sim.csv`).
+Hub upgrades follow task 12 (+6 seats, MCT 15). Departure slots (D-28) are recorded only, not
+enforced. **Status: in force for integration; puzzle content needs task-17/owner review.**
+
+## D-39 — Mixed-region start and first balance pass (2026-11-02, integration/sim)
+Passengers only travel to other regions (task 08), so the seeded start cluster now always contains
+the anchor plus its nearest foreign-region city (amends D-20). Balance pass in `params.ts` (spawn
+12 h, demand 1/M/day, capacities 30/20, 4 turboprops) gives a bot median of 10.1 min at 1x on 50
+seeds (`docs/balance/`). **Status: provisional; the weekly time scale vs 8–15 min session needs
+an owner decision.**
+
