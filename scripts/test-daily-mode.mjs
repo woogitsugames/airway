@@ -73,6 +73,7 @@ check('unlimited practice runs preserve the daily practice best', () => {
   mode.finish(start(mode, 'practice', date), 70, 4, [2]);
   equal(scores.getProgress('2026-11-02').practiceBest.score, 70);
   equal(scores.getProgress('2026-11-02').officialUsed, false);
+  equal(scores.getProgress('2026-11-02').persistent, false);
 });
 check('a completed official result cannot be overwritten or resubmitted', () => {
   const scores = new LocalScoreService(new MemoryScoreStorage());
