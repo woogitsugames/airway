@@ -75,7 +75,7 @@ export const SUN = { lon: -62, lat: -15 };
 
 export const CLOCK = { week: 6, dayPl: 'Śr', dayEn: 'Wed', time: '16:10', pax: 1284 };
 /** Working title used on menus until the owner picks one (see docs/RESEARCH.md §Titles). */
-export const TITLE = { main: 'HUBLINE', sub: 'airway.games' }; // working title, owner decides
+export const TITLE = { main: 'AIRWAY', sub: 'airway.games' }; // owner decision D-12
 
 /** Weekly upgrade offer (pick one). */
 export const UPGRADES = [

@@ -79,10 +79,10 @@ Business Program: 15%. **Do sprawdzenia w Play Console** przed modelowaniem przy
 30.06.2026 w EOG/UK/US (20% + 5% za rozliczenie dla nowych instalacji). Realistycznie: niski wolumen (Railbound i Mini Airways mają
 po ~120 ocen na iOS). **Decyzja należy do właściciela.**
 
-## 7. Tytuły (wstępne sprawdzenie kolizji: Steam, App Store, Google Play, itch.io, web; to nie jest porada prawna)
+## 7. Tytuły — DECYZJA: gra nazywa się **Airway** (airway.games), D-12. Poniżej zapis wcześniejszych kandydatów (wstępne sprawdzenie kolizji: Steam, App Store, Google Play, itch.io, web; to nie jest porada prawna)
 | Tytuł | Wynik | Uwagi |
 |---|---|---|
-| **Hubline** | czysto | krótki, działa w PL i EN, mówi o hubach; tytuł roboczy w makietach |
+| **Hubline** | czysto | krótki, działa w PL i EN, mówi o hubach (był tytułem roboczym) |
 | **Daywing** | czysto | sprzedaje dzień i noc |
 | **Terminair** | czysto | gra słów terminator + air; sprawdzić znaki towarowe (skojarzenie z „Terminator”) |
 | **Duskport** | czysto / słabo | zmierzch + port lotniczy |
@@ -94,7 +94,7 @@ po ~120 ocen na iOS). **Decyzja należy do właściciela.**
 | **Aeroloop** | słaba–mocna | — |
 
 Odrzucone jako mocne kolizje: Layover, Contrail (gra iOS 06.2026), Skyhub, Arcwise, Great Circle, Redeye, Nightside, Nightfly, Skyloom.
-Szczegóły i linki: [`market.md` §7](research/market.md). **Wybór tytułu należy do właściciela.**
+Szczegóły i linki: [`market.md` §7](research/market.md). Przed wydaniem: sprawdzić znak „Airway” w EUIPO/USPTO/UPRP i dobrać podtytuł do sklepów, który odróżni grę od wyników medycznych i od Mini Airways.
 
 ## 8. Ryzyka (skrót, pełna lista z mitygacjami w raportach)
 1. Tiny Airline albo miniairways.co trafią na telefony pierwsze → wyróżnić się globusem, terminatorem, przesiadkami i wyglądem; nie

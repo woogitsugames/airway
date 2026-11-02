@@ -9,7 +9,7 @@ recommendation. **Status: in force.**
 ## D-02 — Studio brand ≠ game title (2026-11-02, owner)
 "Airway Games" (airway.games) is the studio brand. The game gets its own distinctive title: "airway" search results
 are dominated by medicine and "airways" evokes Mini Airways. Title candidates in `docs/RESEARCH.md`.
-**Status: title open — owner decides.**
+**Status: superseded by D-12 (owner chose "Airway" as the game title).**
 
 ## D-03 — Core direction: design the airline network, planes fly themselves (2026-11-02, proposal)
 Route-network design on a globe, not air traffic control. Addresses Mini Airways' main weakness (per-plane
@@ -44,7 +44,7 @@ Colour only reinforces; every direction's six destination colours keep min ΔE76
 ## D-09 — Fonts must cover Polish (2026-11-02, Claude)
 Every face is checked for ą ć ę ł ń ó ś ź ż before use. B612 rejected for this reason. **Status: in force.**
 
-## D-10 — Working title "Hubline" in mockups only (2026-11-02, Claude)
+## D-10 — Working title "Hubline" in mockups only (2026-11-02, Claude) — superseded by D-12
 Cleanest of the checked candidates. Placeholder until the owner chooses (see RESEARCH §7). **Status: placeholder.**
 
 ## D-11 — World style A "Diorama" chosen; UI reworked as airport objects (2026-11-02, owner)
@@ -52,3 +52,9 @@ Owner: "the map style of A is great, only the menus are too AI slop". The 3D low
 (dark rounded panels, list menu, orange CTA) is replaced by real airport artefacts: boarding pass (top bar), luggage tags on a
 cord (dock, passenger bubbles), ATC flight strip (hints), air-cargo labels (weekly upgrade), split-flap departure board and
 yellow wayfinding sign (menu). Details: `docs/styles/diorama.md`. **Status: accepted by the owner 2026-11-02 ("to ok"). Final.**
+
+## D-12 — Game title: "Airway", domain airway.games (2026-11-02, owner)
+The game is called **Airway** and lives at airway.games (same as the studio brand). Replaces D-02's "own title" and the
+Hubline placeholder. Known trade-offs noted in research (generic search term with medical results; proximity to "Mini Airways"):
+mitigate with store subtitle/keywords (e.g. "Airway: route network on a globe"), the distinctive 3D globe look in screenshots,
+and a trademark check (EUIPO/USPTO/UPRP) before release. **Status: in force.**
