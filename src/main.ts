@@ -9,6 +9,11 @@ if (!mount) throw new Error('Missing #app mount point');
 document.documentElement.lang = getLanguage();
 document.title = t('app.title');
 
+// [task-06] Temporary standalone airport fixture; it does not replace the playable game.
+if (new URLSearchParams(location.search).get('dev') === 'airports') {
+  void import('./render/models/airports-demo').then(({ mountAirportsDemo }) => mountAirportsDemo(mount))
+    .catch((error: unknown) => console.error('Airport demo unavailable', error));
+} else {
 try {
   const view = mountEmptyScene(mount);
   view.canvas.setAttribute('aria-label', t('canvas.label'));
@@ -25,4 +30,6 @@ try {
     context.fillRect(0, 0, canvas.width, canvas.height);
   }
   mount.appendChild(canvas);
+}
+
 }

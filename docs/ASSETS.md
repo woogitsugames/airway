@@ -39,3 +39,10 @@ The game ships `public/fonts/Overpass-400.ttf`, `Overpass-800.ttf`,
 are `public/fonts/OFL-Overpass.txt`, `OFL-OverpassMono.txt`,
 and `OFL-AtkinsonHyperlegibleNext.txt`; each is colocated with the
 fonts it covers. No downloaded graphics are included.
+
+<!-- [task-06] Procedural assets; no additional third-party binary files. -->
+## Task 06 — airport objects and passenger overlay
+The pad, runway, terminal, hub tower, capacity-ring seats, and red-and-white curfew
+barrier are procedural three.js geometries in `src/render/airports.ts`.
+The destination glyph paths in `src/ui/glyphs.ts` are original SVG geometry
+carried over from this repository's `mockups/lib/scene.mjs` (D-08).
