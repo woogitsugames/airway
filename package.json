@@ -75,7 +75,8 @@
     "test:render-layers": "node scripts/test-render-layers.mjs",
     "shots:world": "node dev/shots.mjs world",
     "shots:34": "node scripts/shots-34.mjs",
-    "shots:39": "node scripts/shots-39.mjs"
+    "shots:39": "node scripts/shots-39.mjs",
+    "shots:38": "node scripts/shots-38.mjs"
   },
   "dependencies": {
     "@capacitor/android": "8.5.3",
