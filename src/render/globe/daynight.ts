@@ -12,6 +12,15 @@ export const NIGHT_FULL_DOT = -0.2;
 export const NIGHT_NONE_DOT = 0.06;
 /** Half width of the warm terminator band in the same units. */
 export const DUSK_HALF_WIDTH = 0.16;
+/**
+ * [task-39] D-49: extra night darkening of warm, bright albedo (desert, beach sand). Under the cool
+ * moon grade those read as a pale blue-grey plate brighter than the rest of the land. `r - b` of the
+ * linear albedo (desert 0.56, sand 0.51, grass/forest/rock ≤ 0.14, snow/ice ≈ 0) picks them out.
+ */
+export const NIGHT_SAND_MASK_FROM = 0.25;
+export const NIGHT_SAND_MASK_TO = 0.45;
+/** Night multiplier of a full desert, on top of the common night grade (darker, less blue). */
+export const NIGHT_SAND_GRADE = [0.6, 0.56, 0.48] as const;
 
 const VERTEX_DECL = 'varying vec3 vAwSurface;\n';
 const VERTEX_BODY = `
@@ -30,6 +39,9 @@ const FRAGMENT_BODY = `
     // Night: cool moonlit palette, never black, so land and sea stay apart.
     vec3 awMoon = diffuseColor.rgb * vec3(0.035, 0.055, 0.11);
     outgoingLight = mix(outgoingLight, outgoingLight * vec3(0.42, 0.56, 0.9) + awMoon, awNight);
+    // [task-39] Deserts and sand: darker and less blue at night than the generic grade (D-49).
+    float awSand = smoothstep(${NIGHT_SAND_MASK_FROM.toFixed(3)}, ${NIGHT_SAND_MASK_TO.toFixed(3)}, diffuseColor.r - diffuseColor.b);
+    outgoingLight *= mix(vec3(1.0), vec3(${NIGHT_SAND_GRADE.map((v) => v.toFixed(3)).join(', ')}), awSand * awNight);
     // Terminator: a warm band (low sun) on both sides of the line, strongest on the day side.
     outgoingLight += diffuseColor.rgb * vec3(0.42, 0.16, 0.04) * awDusk * (1.0 - 0.6 * awNight);
   }
