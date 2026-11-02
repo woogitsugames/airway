@@ -1,5 +1,7 @@
 // Own the three.js scene, GPU canvas, and viewport resizing without game simulation.
 import { Color, PerspectiveCamera, Scene, WebGLRenderer } from 'three';
+// [task-21] Apply the shared auto tier even to the current empty bootstrap canvas.
+import { applyQualityProfile, resolveQualityProfile } from './quality';
 
 const DIORAMA_SKY = '#8CC3D8';
 
@@ -7,13 +9,20 @@ export function mountEmptyScene(host: HTMLElement): {
   canvas: HTMLCanvasElement;
   dispose: () => void;
 } {
+  // [task-21] The isolated perf route must not create a second WebGL context.
+  if (new URLSearchParams(window.location.search).get('perf') === 'scene') {
+    const canvas = document.createElement('canvas');
+    host.appendChild(canvas);
+    return { canvas, dispose: () => canvas.remove() };
+  }
   const scene = new Scene();
   scene.background = new Color(DIORAMA_SKY);
   const camera = new PerspectiveCamera(45, 1, 0.1, 100);
   camera.position.z = 2;
 
-  const renderer = new WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  const quality = resolveQualityProfile();
+  const renderer = new WebGLRenderer({ antialias: quality.antialias, alpha: false, powerPreference: 'high-performance' });
+  applyQualityProfile(renderer, quality);
   const canvas = renderer.domElement;
   host.appendChild(canvas);
 

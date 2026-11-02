@@ -67,6 +67,7 @@ npm run build
 | `npm run shots:puzzles` | [task-17] Puzzle selector screenshot smoke in two orientations | `SUMMARY shots:puzzles seed=0xA1A1 captured=2 failed=0`; images in `docs/shots/17/` |
 | `npm run test:daily-mode` | [task-18] Warsaw midnight/DST, offline attempts, best scores, streaks and emoji-free ticket (fixed adapter seed) | `SUMMARY test:daily-mode seed=0xA1A1 passed=12 failed=0` |
 | `npm run test:fast` | `typecheck`, then `test:i18n`, then `test:arch`, then `test:daily-mode` | All three test summaries and exit code 0 |
+| `npm run test:perf-scene` / `npm run perf:scene` | [task-21] Synthetic Chromium/SwiftShader fixture: 40 cities, 100 planes, 40 routes, 120 wall seconds at 4x. JSON at `.perf/scene.json`; Playwright and Chromium required. | `SUMMARY perf:scene seed=0xA1A1 frames=N samples=N failed=0` |
 
 Every future test must have a fixed seed (use `0xA1A1` where no gameplay seed
 is needed), terminate with one `SUMMARY ...` line, set a nonzero exit code on

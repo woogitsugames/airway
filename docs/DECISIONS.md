@@ -232,3 +232,14 @@ When the dependencies merge, replace its tick implementation with calls to the
 `src/sim` kernel while retaining the JSON records, command log, objective checks,
 undo and fixed-seed reference tests. **Status: provisional integration decision.**
 _(renumbered from D-19 during integration, branch `origin/task/17-puzzle-mode`)_
+
+## D-33 — Shared quality profile and render-only pacing (2026-11-02, task 21)
+An automatic low/medium/high quality tier uses browser hardware hints; users may
+explicitly override it. Rendering is capped at 30 FPS while idle, runs every
+available animation frame during interaction, and stops when the document is
+hidden. The simulation clock stays independent. DPR never exceeds 2 and
+shadows are reserved for high quality. Until tasks 03/06/10/11 land, use a
+clearly labelled synthetic fixture; never treat SwiftShader as device evidence.
+**Rationale:** predictable CPU/GPU load, energy use and an honest test contract
+before all rendering components exist. **Status: provisional integration policy.**
+_(renumbered from D-19 during integration, branch `origin/task/21-performance`)_

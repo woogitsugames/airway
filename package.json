@@ -63,7 +63,10 @@
     "shots:17": "node scripts/shots.mjs",
     "shots:puzzles": "node scripts/shots-puzzles.mjs",
     "shots:18": "node scripts/shots.mjs",
-    "test:daily-mode": "node --experimental-strip-types scripts/test-daily-mode.mjs"
+    "test:daily-mode": "node --experimental-strip-types scripts/test-daily-mode.mjs",
+    "shots:21": "node scripts/shots.mjs",
+    "perf:scene": "node --experimental-strip-types scripts/perf-scene.ts",
+    "test:perf-scene": "npm run perf:scene"
   },
   "dependencies": {
     "@capacitor/android": "8.5.3",
