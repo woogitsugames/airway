@@ -157,6 +157,31 @@
   padding-top: calc(86px + env(safe-area-inset-top));
 }
 .airway-upgrade-open.is-picking-hub .airway-upgrade { width: auto; }
+/* [task-39] Back from the airport pick: a black wayfinding tile set into the yellow sign (D-49). The
+   overlay lets taps through to the globe, so the tile takes them back; 48 px minimum target. */
+.airway-upgrade-back {
+  appearance: none;
+  pointer-events: auto;
+  flex: none;
+  align-self: stretch;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 48px;
+  min-height: 48px;
+  margin: -6px 2px -6px -10px;
+  padding: 0 14px 0 10px;
+  border: 0;
+  background: #1c1e20;
+  color: #ffc72c;
+  font: 800 16px/1 Overpass, sans-serif;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.airway-upgrade-back-arrow { width: 24px; height: 24px; flex: none; fill: currentColor; }
+.airway-upgrade-back:active { background: #3a3c3e; }
+.airway-upgrade-back:focus-visible { outline: 3px solid #1c1e20; outline-offset: 3px; }
 
 /* Wide screens: labels side by side, model window across the top. */
 @media (min-width: 720px) {
