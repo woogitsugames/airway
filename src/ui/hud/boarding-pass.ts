@@ -1,11 +1,10 @@
 import { getLanguage, t } from '../../i18n';
 import type { HudState } from './types';
 import { iconSvg } from './icons';
+import { DAYS_PER_WEEK } from '../../sim/clock';
 
-const DAYS = [
-  'hud.monday', 'hud.tuesday', 'hud.wednesday', 'hud.thursday',
-  'hud.friday', 'hud.saturday', 'hud.sunday',
-] as const;
+// [task-31] D-40: a game week has DAYS_PER_WEEK (3) days; the bar shows one square per day and the
+// day is a number ("2/3"), since weekday names no longer fit a 3-day week.
 
 function updateText(node: Element, value: string): void {
   if (node.textContent !== value) node.textContent = value;
@@ -24,7 +23,7 @@ export function createBoardingPass(root: HTMLElement, onTogglePause?: () => void
     <div class="airway-pass__ticket">
       <div class="airway-pass__band" aria-hidden="true"></div>
       <div class="airway-pass__field airway-pass__week"><span data-label="week" class="airway-pass__label"></span><strong data-value="week"></strong></div>
-      <div class="airway-pass__field airway-pass__day"><span data-label="day" class="airway-pass__label"></span><strong data-value="day"></strong><span class="airway-pass__days" aria-hidden="true">${'<i></i>'.repeat(7)}</span></div>
+      <div class="airway-pass__field airway-pass__day"><span data-label="day" class="airway-pass__label"></span><strong data-value="day"></strong><span class="airway-pass__days" aria-hidden="true">${'<i></i>'.repeat(DAYS_PER_WEEK)}</span></div>
       <div class="airway-pass__field airway-pass__time"><span data-label="time" class="airway-pass__label"></span><strong data-value="time"></strong></div>
       <div class="airway-pass__perf" aria-hidden="true"></div>
       <div class="airway-pass__field airway-pass__passengers"><span data-label="passengers" class="airway-pass__label"></span><strong data-value="passengers"></strong></div>
@@ -63,9 +62,9 @@ export function createBoardingPass(root: HTMLElement, onTogglePause?: () => void
         lastDay = undefined;
         lastPassengers = undefined;
       }
-      const dayNumber = integer(state.day, 1, 7);
+      const dayNumber = integer(state.day, 1, DAYS_PER_WEEK);
       updateText(week, String(integer(state.week, 1, 999)).padStart(2, '0'));
-      updateText(day, t(DAYS[dayNumber - 1]));
+      updateText(day, t('hud.dayOfWeek', { day: dayNumber, days: DAYS_PER_WEEK }));
       const minute = integer(state.timeMinutes, 0, 1439);
       updateText(time, `${String(Math.floor(minute / 60)).padStart(2, '0')}:${String(minute % 60).padStart(2, '0')}`);
       const passengerCount = integer(state.passengers, 0, Number.MAX_SAFE_INTEGER);

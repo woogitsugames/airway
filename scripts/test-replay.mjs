@@ -10,8 +10,9 @@ const { saveSourceFromSim, restoreSimFromSave } = await import('../src/game/save
 
 const botModules = { ...(await import('./balance-game-adapter.ts')), ...(await import('./bot.ts')) };
 const SEEDS = [0xA1A1, 0xB2B2, 0xC3C3];
-// A balance-sample seed whose bot run survives past the first week (docs/balance/game-50.csv).
-const UPGRADE_SEED = 0xA1A1 + 9;
+// [task-31] With 3-day weeks (D-40) the bot reaches the weekly board on most seeds, so the first ordinary
+// test seed is used instead of a hand-picked "lucky" one (docs/balance/game-50.csv).
+const UPGRADE_SEED = SEEDS[0];
 const END = 2 * TICKS_PER_WEEK;
 const MID = TICKS_PER_WEEK + 1234;
 let passed = 0;

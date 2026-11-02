@@ -6,7 +6,7 @@ Call `controller.render(snapshot)` after each **authoritative** state change and
 leaves existing text nodes and button elements intact.
 
 `HudState` is a readonly, game-agnostic projection of the simulation snapshot:
-week (1-based), day (1..7, Monday first), minutes since midnight, served
+week (1-based), day of the week (1..DAYS_PER_WEEK = 3, D-40; shown as "N/3"), minutes since midnight, served
 passengers, pause, 1x/2x/4x speed, command undo availability, selected plane,
 and inventory of turboprops / widebodies / hub upgrades.
 

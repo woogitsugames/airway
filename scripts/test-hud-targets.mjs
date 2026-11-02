@@ -21,6 +21,85 @@ const state = Object.freeze({
   stock: { turboprop: 2, widebody: 1, hub: 0 },
 });
 const require = createRequire(import.meta.url);
+// [task-35] Upgrade board fixtures: the mockup's three crates, plus the "+2 slots" variant (task 32).
+const UPGRADE_OUT = resolve(ROOT, 'docs/shots/35');
+const UPGRADE_HUBS = [
+  { hubId: 'LON', waiting: 11, capacity: 12, label: 'LON' },
+  { hubId: 'PAR', waiting: 4, capacity: 30, label: 'PAR' },
+];
+const UPGRADE_VARIANTS = [
+  { suffix: '', offers: ['turboprop', 'widebody', 'hub-expansion'], shot: true },
+  { suffix: '-slots', offers: ['widebody', 'departure-slots', 'hub-expansion'], shot: true },
+];
+async function mountUpgrade(page, language, variant) {
+  await page.evaluate(async ({ language, offers, hubs }) => {
+    // Bare 'three' does not resolve in page scripts: reuse the exact pre-bundled URL modelPreview.ts imports.
+    const threeUrl = (await (await fetch('/src/render/modelPreview.ts')).text()).match(/from\s+["']([^"']*three[^"']*)["']/)?.[1];
+    if (!threeUrl) throw new Error('three.js module URL not found');
+    const [{ WeeklyUpgradeView }, { setLanguage }, THREE, { createModelPreviewRenderer }] = await Promise.all([
+      import('/src/ui/upgrade/index.ts'), import('/src/i18n/index.ts'), import(threeUrl), import('/src/render/modelPreview.ts')]);
+    setLanguage(language);
+    document.querySelector('.test-upgrade-host')?.remove();
+    const host = document.createElement('div');
+    host.className = 'test-upgrade-host';
+    document.body.append(host);
+    window.__previewRenderer ??= createModelPreviewRenderer(new THREE.WebGLRenderer({ alpha: true }));
+    window.__upgradeEvents = [];
+    window.__upgradeState = { week: 7, paused: true, pendingHub: false, offers: offers.map((id) => ({ id, week: 7 })) };
+    window.__upgradeHubs = hubs;
+    const pending = [];
+    window.__upgradeView = new WeeklyUpgradeView(host, {
+      onCommand: (command) => window.__upgradeEvents.push(command.upgrade),
+      onPreviewModel: (container, kind) => pending.push([container, kind]),
+    });
+    window.__upgradeView.render(window.__upgradeState, hubs);
+    await document.fonts.ready;
+    await new Promise((done) => requestAnimationFrame(done));
+    // Same path as src/game/session.ts: measure the window, render the model into a 2D canvas.
+    for (const [container, kind] of pending) {
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(container.clientWidth * devicePixelRatio);
+      canvas.height = Math.round(container.clientHeight * devicePixelRatio);
+      container.append(canvas);
+      if (window.__previewRenderer.draw(kind, canvas)) container.classList.add('has-model');
+    }
+  }, { language, offers: variant.offers, hubs: UPGRADE_HUBS });
+}
+async function upgradeGeometry(page) {
+  return page.evaluate(() => {
+    const violations = [];
+    const box = (el) => el.getBoundingClientRect();
+    const cards = [...document.querySelectorAll('.airway-upgrade-tag')];
+    const sign = document.querySelector('.airway-upgrade-sign');
+    const rects = [sign, ...cards].map(box);
+    rects.forEach((r, i) => {
+      if (i > 0 && (r.width < 48 || r.height < 48)) violations.push(`label ${i}: ${r.width}x${r.height}`);
+      if (r.left < -0.5 || r.top < -0.5 || r.right > innerWidth + 0.5 || r.bottom > innerHeight + 0.5) violations.push(`${i ? 'label ' + i : 'sign'} outside viewport`);
+      for (let j = 0; j < i; j++) {
+        const o = rects[j];
+        if (Math.min(r.right, o.right) - Math.max(r.left, o.left) > 1 && Math.min(r.bottom, o.bottom) - Math.max(r.top, o.top) > 1) violations.push(`${i} overlaps ${j}`);
+      }
+    });
+    for (const el of document.querySelectorAll('.airway-upgrade-week, .airway-upgrade-sub, .airway-upgrade-code, .airway-upgrade-title, .airway-upgrade-key, .airway-upgrade-value, .airway-upgrade-stamp')) {
+      if (el.scrollWidth > el.clientWidth + 1) violations.push(`clipped "${el.textContent}"`);
+      const r = box(el), card = el.closest('.airway-upgrade-tag, .airway-upgrade-sign');
+      const c = card ? box(card) : null;
+      if (c && (r.right > c.right + 1 || r.bottom > c.bottom - 6)) violations.push(`"${el.textContent}" leaves its label`);
+    }
+    const windows = [...document.querySelectorAll('.airway-upgrade-model')];
+    const text = (kind) => document.querySelector(`[data-upgrade="${kind}"]`)?.textContent ?? '';
+    const digits = (value) => value.replace(/[^0-9]/g, '');
+    const tp = text('turboprop'), wb = text('widebody');
+    return {
+      violations, cards: cards.length,
+      minWindow: Math.round(Math.min(...windows.map((w) => Math.min(box(w).width, box(w).height)))),
+      models: windows.filter((w) => w.classList.contains('has-model') && w.querySelector('canvas')).length,
+      stamps: [...document.querySelectorAll('.airway-upgrade-stamp')].map((s) => s.closest('.airway-upgrade-tag')?.dataset.upgrade),
+      facts: (!tp || (digits(tp).includes('2500') && tp.includes('48'))) && (!wb || (digits(wb).includes('11000') && wb.includes('300'))),
+      horizontalOverflow: document.documentElement.scrollWidth > innerWidth,
+    };
+  });
+}
 let server;
 let browser;
 let passed = 0;
@@ -146,6 +225,47 @@ try {
         check(rotated.violations.length === 0 && !rotated.horizontalOverflow, 'live orientation change keeps targets and safe areas');
       }
     } finally { await page.close(); }
+  }
+  // [task-35] Weekly upgrade board (cargo labels) on the same four sizes, PL + EN, with real 3D model windows.
+  mkdirSync(UPGRADE_OUT, { recursive: true });
+  for (const language of ['pl', 'en']) {
+    for (const view of sizes) {
+      const page = await browser.newPage({ viewport: { width: view.w, height: view.h }, deviceScaleFactor: 2 });
+      const pageErrors = [];
+      page.on('pageerror', (error) => pageErrors.push(error.message));
+      try {
+        await page.goto(url, { waitUntil: 'networkidle' });
+        const tag = `upgrade ${language} ${view.label}`;
+        for (const variant of UPGRADE_VARIANTS) {
+          if (variant.portraitOnly && view.label !== 'portrait-412x915') continue;
+          await mountUpgrade(page, language, variant);
+          const board = await upgradeGeometry(page);
+          const name = `${tag}${variant.suffix}`;
+          check(board.cards === 3, `${name}: three cargo labels`);
+          check(board.violations.length === 0, `${name}: ≥48px labels inside the viewport, no overlap or clipped text (${board.violations.join(', ')})`);
+          check(board.minWindow >= (view.w >= 720 ? 96 : 120), `${name}: model window ≥ ${view.w >= 720 ? 96 : 120}px (${board.minWindow})`);
+          check(board.models === 3, `${name}: three rendered 3D models (${board.models})`);
+          check(board.stamps.length === 1 && board.stamps[0] === 'hub-expansion', `${name}: context stamp only on the hub label (${board.stamps.join(',')})`);
+          check(board.facts, `${name}: range and seats from PLANE_TYPES`);
+          check(!board.horizontalOverflow, `${name}: no horizontal overflow`);
+          if (variant.shot) {
+            await page.screenshot({ path: resolve(UPGRADE_OUT, `upgrade-${language}-${view.label}${variant.suffix}.png`), animations: 'disabled' });
+            shots++;
+          }
+        }
+        if (view.label === 'portrait-412x915') {
+          await page.locator('[data-upgrade="widebody"]').click();
+          check(await page.evaluate(() => window.__upgradeEvents.includes('widebody')), `${tag}: label tap emits ChooseUpgrade`);
+          await page.evaluate(() => window.__upgradeView.render({ ...window.__upgradeState, pendingHub: true }, window.__upgradeHubs));
+          const picking = await page.evaluate(() => ({ cards: document.querySelectorAll('.airway-upgrade-tag').length,
+            transparent: getComputedStyle(document.querySelector('.airway-upgrade-open')).backgroundColor === 'rgba(0, 0, 0, 0)' }));
+          check(picking.cards === 0 && picking.transparent, `${tag}: hub pick leaves only the sign over the live globe`);
+          await page.evaluate(() => window.__upgradeView.render(window.__upgradeState, []));
+          check(await page.locator('[data-upgrade="hub-expansion"]').isDisabled(), `${tag}: hub label disabled when there is no hub`);
+        }
+        check(pageErrors.length === 0, `${tag}: no page errors (${pageErrors.join('; ')})`);
+      } finally { await page.close(); }
+    }
   }
 } catch (error) {
   failed++;

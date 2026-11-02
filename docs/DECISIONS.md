@@ -305,13 +305,18 @@ Passengers only travel to other regions (task 08), so the seeded start cluster n
 the anchor plus its nearest foreign-region city (amends D-20). Balance pass in `params.ts` (spawn
 12 h, demand 1/M/day, capacities 30/20, 4 turboprops) gives a bot median of 10.1 min at 1x on 50
 seeds (`docs/balance/`). **Status: provisional; the weekly time scale vs 8–15 min session needs
-an owner decision.**
+an owner decision.** _Task 31: the time scale was decided by D-40; the spawn interval and capacities were
+re-tuned in D-43 (16 h, 36/24) — 50-seed bot median 12.92 min._
 
 
 ## D-40 — A game week lasts 3 in-game days (2026-11-02, owner)
 With 7-day weeks the bot survived week 1 on ~5% of seeds, so players would almost never see the weekly upgrade. The cycle
 keeps its name ("week" / "Tydzień") but is 3 days long, so the first choice lands around minutes 4–5 of a run. Curfew still
 starts in week 4 (D-17), i.e. on day 10. Implemented by task 31. **Status: in force.**
+_Task 31 numbers (50 bot seeds from 0xA1A1, `docs/balance/`): a 3-day week lasts 7.2 real minutes at 1× (not 4–5:
+one tick is one game minute at 10 ticks/s), so the first board opens at 7.2 min and the second at 14.4 min. Bot reaching
+the 1st / 2nd upgrade: 7-day week 6 % / 0 %; 3-day week alone 68 % / 12 %; with the D-43 rebalance 86 % / 44 %,
+median session 12.92 min._
 
 ## D-41 — Departure slots are enforced (2026-11-02, owner)
 The per-city hourly departure limit (D-28) blocks departures: planes wait on the ground for a free slot, and the "+2 slots"
@@ -320,6 +325,16 @@ upgrade is a real choice. Implemented by task 32. **Status: in force.**
 ## D-42 — Visual polish and real store screenshots go through a second task pack (2026-11-02, owner)
 Tasks 31–36 in `docs/tasks/` (wave P). Same workflow as D-14: `task/NN-slug` from `dev`, draft PR to `dev`.
 **Status: in force.**
+
+## D-43 — One week-length source and the 3-day-week rebalance (2026-11-02, task 31)
+`SIM_DAYS_PER_WEEK = 3` in `src/sim/params.ts` is the only definition of the week; `TICKS_PER_WEEK`, `DAYS_PER_WEEK`
+(clock, upgrades, sim facade), `DAYNIGHT_MINUTES_PER_WEEK`, the HUD day bar, save/daily week counts and the balance
+report derive from it (`npm run test:week-source`). The boarding pass shows the day as "N/3" with 3 squares, since
+weekday names do not fit a 3-day week. Rebalance: `SPAWNER_INTERVAL_HOURS` 12 → 16, waiting capacities hub/city
+30/20 → 36/24; bot (rules unchanged) median 12.92 min at 1×, 86 % of seeds reach the 1st upgrade and 44 % the 2nd
+(`docs/balance/README.md`). `test:balance` gates the median and both shares on all 50 seeds. `RULES_VERSION` 2 → 3,
+so saves from 7-day builds are rejected. Puzzles are unaffected (no weekly upgrades). **Status: in force;
+the "N/3" day label and the balance values await owner review.**
 
 ## D-44 — Adaptive, crack-free globe terrain with hand-entered relief (2026-11-02, task 33)
 The globe mesh is an icosphere refined **per edge** (an edge splits when either end or its midpoint
@@ -335,3 +350,11 @@ longer cast map shadows in `high`). Presets (terrain triangles): low 35k, medium
 budgets and measurements in `docs/PERFORMANCE.md`. **Status: in force; medium density is an
 owner-visible trade-off (see the task-33 PR questions).**
 
+## D-45 — Upgrade labels read their numbers from the sim; hub pick keeps only the sign (2026-11-02, task 35)
+The weekly cargo labels (mockup `upgrade-*.png`) show range/seats from `PLANE_TYPES` and the effect of each upgrade
+(+seats, transfer minutes, +slots) read back by a dry run of `chooseUpgrade()` on throwaway adapters — the same probe the
+kernel uses to validate the command — so balance changes in `src/sim` reach the UI without copy edits. The red context
+stamp appears only on the label it is about (hub expansion: busiest hub `CODE waiting/capacity`); the hub label is disabled
+when no hub exists. While the player picks a hub, only the yellow sign stays (below the boarding pass) and the globe is
+undimmed. The "+2 slots" label (task 32) already has its model and field set; it gains a stamp once the sim reports which
+airport waits for slots. **Status: in force.**

@@ -48,8 +48,8 @@ Times are measured in the integration container (8 vCPU, SwiftShader); “ci” 
 | `npm run test:overlay-layout` | fast | <1 s | 30-city tag collisions, jam priority, boundaries, repeatability | `… cases=7 passed=7 failed=0` |
 | `npm run test:routing` | fast | 1 s | Minimum transfers, distance ties, graph edits, region destinations | `… cases=7 passed=7 failed=0` |
 | `npm run test:hubs` | fast | 1 s | Hub formation, MCT, queue grace, recovery, passenger conservation (D-23) | `… cases=6 passed=6 failed=0` |
-| `npm run test:sim-week` | fast | 1 s | Three seeded seven-day runs, snapshots, no-route failure tick | `… seeds=3 … passed=6 failed=0` |
-| `npm run test:replay` | fast | 3 s | 3 seeds × 2 game weeks of scripted commands on the real Sim: mid-run snapshot/restore, journal-only replay, save envelope round trip, undo, a bot run across a weekly upgrade, puzzle scenario | `SUMMARY test:replay seeds=3 ticks=20160 passed=20 failed=0 …` |
+| `npm run test:sim-week` | fast | 1 s | Three seeded full-week runs (3 days, D-40), day-1 checkpoint/restore, no-route failure tick | `… seeds=3 weekTicks=4320 cases=6 passed=6 failed=0 …` |
+| `npm run test:replay` | fast | 3 s | 3 seeds × 2 game weeks of scripted commands on the real Sim: mid-run snapshot/restore, journal-only replay, save envelope round trip, undo, a bot run across a weekly upgrade (ordinary seed 0xA1A1), puzzle scenario | `SUMMARY test:replay seeds=3 ticks=8640 passed=20 failed=0 …` |
 | `npm run test:planes` | fast | 4 s | Plane types, reserves, exact-km range rejections, assign/release (D-24) | `… cases=8 passed=8 failed=0` |
 | `npm run test:schedule` | fast | 3 s | Dwell, back-and-forth legs, capacity, passenger balance, 7-day replay | `… cases=7 passed=7 failed=0` |
 | `npm run test:route-tool` | fast | 1 s | Airport snapping, multi-stop Add/ExtendRoute, range guards, handles, undo | `… passed=17 failed=0` |
@@ -65,7 +65,8 @@ Times are measured in the integration container (8 vCPU, SwiftShader); “ci” 
 | `npm run test:contrast` | fast | <1 s | WCAG contrast ≥ 4.5:1 for declared text/background pairs | `… pairs=16 threshold=4.5 passed=1 failed=0` |
 | `npm run test:puzzles` | fast | 1 s | 15 JSON puzzles: validation, zero-action loss, reference wins ≥ 15 %, replay, undo/reset | `… levels=15 cases=N passed=N failed=0` |
 | `npm run test:daily-mode` | fast | <1 s | Daily mode: Warsaw midnight/DST, offline attempts, best scores, streaks, emoji-free ticket | `… passed=12 failed=0` |
-| `npm run test:balance:fixture` | fast | <1 s | Bot policy on 10 seeded stand-in sessions — **not production balance** | `SUMMARY test:balance … mode=fixture seeds=10 … passed=1 failed=0` |
+| `npm run test:balance:fixture` | fast | <1 s | Bot policy on 50 seeded stand-in sessions — **not production balance** | `SUMMARY test:balance … mode=fixture seeds=50 … passed=1 failed=0` |
+| `npm run test:week-source` | fast | <1 s | The 3-day week (D-40) has one source, `SIM_DAYS_PER_WEEK` in `src/sim/params.ts`: every week constant equals it by import, no literal week length elsewhere in `src/`/`scripts/`, curfew from day 10, calendar/day bar | `SUMMARY test:week-source … days=3 … passed=6 failed=0` |
 | `npm run test:gating` | fast | 1 s | Free entitlements, no-op ads, disabled content gate, no monetization SDKs (D-16) | `… passed=8 failed=0` |
 | `npm run test:android-config` | fast | <1 s | SDK-free Android manifest, foldable, edge-to-edge, signing checks (D-35) | `… checks=14 passed=14 failed=0` |
 | `npm run test:ios-config` | fast | <1 s | iOS orientations, permissions, bundle ID, CocoaPods, audio session, safe-area tokens, PNG sizes (D-36) | `… checks=N passed=1 failed=0` |
@@ -74,12 +75,12 @@ Times are measured in the integration container (8 vCPU, SwiftShader); “ci” 
 | `npm run test:arch` | fast (last) | 1 s | TS-AST guard: `src/sim` imports only pure modules; no DOM, Capacitor, three, wall clock, `Math.random` or transcendentals (D-13) | `… files=N passed=1 failed=0` |
 | `npm run test:fast` | — | 30 s | All rows marked “fast”, in order | `SUMMARY test:fast … steps=36 passed=36 failed=0` |
 | `npm run build` | ci | 10 s | `prebuild` (`build:distances`, `build:land`), `tsc --noEmit`, `vite build` | exit 0; `dist/` |
-| `npm run test:hud-targets` | ci | 12 s | Playwright HUD: 6 controls ≥ 48 dp, safe-area clearance, no overlap/overflow, rotation, drag-to-route; 4 PNGs in `docs/shots/13/` | `… passed=N failed=0 shots=4` |
+| `npm run test:hud-targets` | ci | 40 s | Playwright HUD: 6 controls ≥ 48 dp, safe-area clearance, no overlap/overflow, rotation, drag-to-route; 4 PNGs in `docs/shots/13/`. [task-35] Weekly upgrade board PL/EN × 4 sizes (+ "+2 slots" variant): labels ≥ 48 dp inside the viewport, no overlap or clipped text, model window size, 3 rendered models, stamp only on the hub label, sim numbers, tap → ChooseUpgrade, hub-pick mode, no-hub state; 16 PNGs in `docs/shots/35/` | `… passed=N failed=0 shots=20` |
 | `npm run test:e2e:tutorial` | ci | 35 s | Onboarding: six training actions, replay/skip/persistence; 10 PNGs in `docs/shots/23/` | `… passed=N failed=0 screenshots=10` |
 | `npm run test:e2e:smoke` | ci | 15–40 s | Real gameplay journey, 9 dependent steps (menu → seeded start → route drag → aircraft drag → week → upgrade → save/continue hash → overload → menu). Each step prints PASS/FAIL/SKIP; failure screenshot in `.e2e/` | `SUMMARY test:e2e:smoke … mode=game steps=9 passed=9 failed=0 skipped=0` |
-| `npm run ui:matrix` | ci | 30–90 s | Real menu/game/upgrade/gameover × PL/EN × 412×915, 915×412, 673×841, 904×1000 → `docs/shots/matrix/`; runs on seed 41386 (`WEEK_SEED`) so autoplay reaches week 1 | `… weekSeed=41386 mode=game captured=32 expected=32 failed=0` |
+| `npm run ui:matrix` | ci | 30–90 s | Real menu/game/upgrade/gameover × PL/EN × 412×915, 915×412, 673×841, 904×1000 → `docs/shots/matrix/`; runs on the ordinary seed 0xA1A1; autoplay reaches the week-1 board on it (task 31) | `… weekSeed=41377 mode=game captured=32 expected=32 failed=0` |
 | `npm run test:e2e:fixture` | — | 6 s | Harness self-test against `e2e/fixtures/airway.html` (smoke + matrix); output to ignored `docs/shots/matrix-fixture/`. Does **not** test the game | `… mode=fixture … failed=0` (both) |
-| `npm run test:balance` | ci | 1–5 min | Real engine: 10 seeded bot games, deterministic replay, 0 invalid commands, 8–15 min median, hub-overflow warning | `SUMMARY test:balance … mode=game seeds=10 … passed=1 failed=0` |
+| `npm run test:balance` | fast | ~4 s | Real engine: the same 50 seeded bot games as `balance:report`, deterministic replay, 0 invalid commands, 8–15 min median, ≥ 60 % reach the 1st weekly upgrade and ≥ 30 % the 2nd (task 31), hub-overflow warning | `SUMMARY test:balance … mode=game seeds=50 median_min=12.92 upgrade1=0.86 upgrade2=0.44 passed=1 failed=0` |
 | `npm run perf:scene` / `test:perf-scene` | ci | 2.5 min | SwiftShader scene: 40 cities, 100 planes, 40 routes, 120 wall s at 4×; JSON in `.perf/scene.json` (D-33) | `SUMMARY perf:scene … frames=N samples=N failed=0` |
 | `npm run shots` | ci | 1–2 min | All app/dev-page screenshots (see below) | `SUMMARY shots … expected=N captured=N failed=0` |
 | `npm run shots:site` | ci | 6 s | `build:site`, then landing page at 412×915 / 915×412 → `docs/shots/29/` | `SUMMARY shots:site … captured=2 failed=0` |
@@ -124,10 +125,10 @@ is not actually reached (e.g. the run jams before the weekly board) never sets `
 Reaching the week-1 board: `window.aw.autoplay(untilWeek)` lets the task-22 bot (`src/game/dev/bot-policy.ts` +
 `src/game/dev/autoplay.ts`, shared with `test:balance`) keep playing the visible run through real Commands until the
 board for `untilWeek` opens, and returns `state()`. It is DEV-only (dynamic import behind `import.meta.env.DEV`, absent
-from `dist/`). With the current balance (median run ≈ 11 min at 1x, under one game week) the bot survives week 1 from a
-clean start on only ~5 % of seeds (41386, 41403, 41422, 41438, 41457 in 41370–41469); the smoke reaches it on 0xA1A1
-after its own route + aircraft drags, `ui:matrix` and the store `upgrade` scene use 41386. If a balance change moves
-this, pick a new seed with the bot rather than adding shortcuts.
+from `dist/`). Since task 31 (3-day week, D-40) the bot reaches the week-1 board from a clean start on 86 % of the 50
+balance seeds, including the ordinary test seed 0xA1A1, so the smoke, `ui:matrix` and the store `upgrade` scene all use
+0xA1A1. If a balance change moves this, fix the balance rather than picking a lucky seed or adding shortcuts.
+`node scripts/shots-31.mjs` captures the task-31 evidence (`docs/shots/31/`: week-1 board and the day bar at day 2/3).
 
 ## Boundary regression
 

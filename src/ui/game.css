@@ -33,5 +33,6 @@
 .airway-pause__button:focus-visible { outline: 3px solid var(--airway-jam); outline-offset: 2px; }
 .airway-pause__status { margin: 0; min-height: 1.2em; font-weight: 400; color: var(--airway-label-ink); }
 @media (orientation: landscape) {
-  .airway-pause { left: auto; right: calc(var(--aw-safe-right) + 16px); bottom: calc(var(--aw-safe-bottom) + 16px); width: 320px; }
+  /* [task-35] Keep clear of the right-hand tag dock (78 px tags + cord) instead of covering it. */
+  .airway-pause { left: auto; right: calc(var(--aw-safe-right) + 112px); bottom: calc(var(--aw-safe-bottom) + 16px); width: 320px; }
 }
