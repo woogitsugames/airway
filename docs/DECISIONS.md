@@ -210,3 +210,14 @@ through the silent switch requires explicit player opt-in. **Rationale:** stable
 4x behavior, predictable audio CPU use and user-controlled sound. **Status:
 implementation awaiting event wiring and physical-device audio checks.**
 _(renumbered from D-19 during integration, branch `origin/task/19-audio`)_
+
+## D-31 — Accessibility presentation adapters (2026-11-02, task 20)
+Destination identity remains the six Diorama silhouettes, with the fixed six-colour palette
+verified against full-severity Machado (2009) protan/deutan/tritan simulation using CIE76
+(minimum 15). UI text uses WCAG contrast-tested tokens (minimum 4.5:1).
+Shared `airway.settings` stores text scale (100/115/130%), enhanced glyph outlines, and
+haptics preference alongside the existing language selection. Native haptic events are
+presentation-only and optional. Screen-reader announcements fire only on selection,
+not on simulation ticks. Until tasks 06 and 13 merge, adapters are exported but cannot
+be connected to their absent elements. **Status: technical implementation in task 20.**
+_(renumbered from D-19 during integration, branch `origin/task/20-accessibility`)_

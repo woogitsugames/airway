@@ -59,6 +59,9 @@ npm run build
 | `npm run test:fast` | `typecheck`, `test:i18n`, `test:arch`, then `test:saves` | All three test summaries and exit code 0 |
 | `npm run test:audio-sched` | 125 ms lookahead, stable order, voice cap at 4x, immediate mute, pitch | `SUMMARY test:audio-sched seed=0xA1A1 tests=8 passed=8 failed=0` |
 | `npm run test:fast` | `typecheck`, i18n, architecture and audio scheduler | All test summaries and exit code 0 |
+| `npm run test:fast` | `typecheck`, i18n, architecture, CVD and contrast checks | All four test summaries and exit code 0 |
+| `npm run test:cvd` | Machado 2009 full-severity protan/deutan/tritan; 6 destination colours, minimum pairwise CIE76 ≥ 15; CSS token parity | `SUMMARY test:cvd seed=0xA1A1 modes=3 colours=6 comparisons=45 passed=1 failed=0` |
+| `npm run test:contrast` | WCAG 2.x contrast ratio ≥ 4.5:1 for all declared text/background pairs; CSS token parity | `SUMMARY test:contrast seed=0xA1A1 pairs=16 threshold=4.5 passed=1 failed=0` |
 
 Every future test must have a fixed seed (use `0xA1A1` where no gameplay seed
 is needed), terminate with one `SUMMARY ...` line, set a nonzero exit code on

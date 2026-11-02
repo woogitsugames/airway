@@ -1,0 +1,93 @@
+/* [task-20] Diorama airport-object accessibility variables. Consumed by tasks 06, 13 and 14. */
+:root {
+  --airway-text-scale: 1;
+  --airway-font-label: calc(12px * var(--airway-text-scale));
+  --airway-font-body: calc(16px * var(--airway-text-scale));
+  --airway-font-value: calc(21px * var(--airway-text-scale));
+  --airway-font-title: calc(24px * var(--airway-text-scale));
+  --airway-glyph-size: 16px;
+  --airway-glyph-stroke: 1.5px;
+  --airway-panel: #13302e;
+  --airway-paper: #f7f3ea;
+  --airway-dim: #a9bdb8;
+  --airway-ink: #2a2420;
+  --airway-jam: #c8352a;
+  --airway-jam-text: #ba3026;
+  --airway-ticket: #fbf8f1;
+  --airway-kraft-label: #564532;
+  --airway-dest-nam: #0072b2;
+  --airway-dest-eun: #009e73;
+  --airway-dest-eus: #e69f00;
+  --airway-dest-afr: #13302e;
+  --airway-dest-me: #cc79a7;
+  --airway-dest-sam: #56b4e9;
+}
+:root[data-airway-cvd='enhanced'] {
+  --airway-glyph-size: 21px;
+  --airway-glyph-stroke: 3px;
+}
+/* A destination is a silhouette; stroke weight and size enhance, not replace, the shape. */
+[data-airway-destination], .airway-destination-glyph {
+  width: var(--airway-glyph-size);
+  height: var(--airway-glyph-size);
+  min-width: var(--airway-glyph-size);
+  min-height: var(--airway-glyph-size);
+  flex: 0 0 auto;
+}
+:is([data-airway-destination], .airway-destination-glyph) path {
+  stroke-width: var(--airway-glyph-stroke);
+  paint-order: stroke fill;
+  stroke-linejoin: round;
+}
+/* Provide scalable roles rather than scaling the whole viewport/HUD by transform. */
+.airway-text-label { font-size: var(--airway-font-label); line-height: 1.25; }
+.airway-text-body { font-size: var(--airway-font-body); line-height: 1.35; }
+.airway-text-value { font-size: var(--airway-font-value); line-height: 1.15; }
+.airway-text-title { font-size: var(--airway-font-title); line-height: 1.2; }
+[data-airway-hud], [data-airway-menu] { min-width: 0; max-width: 100%; }
+[data-airway-hud] :is(.airway-text-label, .airway-text-body, .airway-text-value),
+[data-airway-menu] :is(.airway-text-label, .airway-text-body, .airway-text-value) {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+[data-airway-action], .airway-a11y-controls :is(select, input) {
+  min-width: 48px;
+  min-height: 48px;
+  touch-action: manipulation;
+}
+[data-airway-action]:focus-visible, .airway-a11y-controls :focus-visible {
+  outline: 3px solid #13302e;
+  outline-offset: 3px;
+}
+.airway-sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+.airway-a11y-controls {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  max-width: 100%;
+  border: 2px solid var(--airway-panel);
+  color: var(--airway-ink);
+  background: var(--airway-ticket);
+  padding: 12px;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom));
+  font: var(--airway-font-body) / 1.4 'Atkinson Hyperlegible Next', sans-serif;
+}
+.airway-a11y-controls label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.airway-a11y-controls select { font: inherit; padding: 8px; }
+.airway-a11y-controls legend { font: 800 var(--airway-font-title) / 1.2 Overpass, sans-serif; }
