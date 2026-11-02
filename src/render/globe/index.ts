@@ -5,13 +5,18 @@ import {
 } from 'three';
 import type { Camera } from 'three';
 import { createDecorations } from './decorations';
-import { latLonToVec3, pickSphereNdc } from './geo-math';
+import { latLonToVec3 as cartesian, pickSphereNdc } from './geo-math';
 import type { LonLat } from './geo-math';
 import { loadLandMask } from './land-mask';
 import { createTerrain } from './terrain';
 import type { QualityLevel } from './terrain';
 
-export { latLonToVec3, vec3ToLatLon, intersectUnitSphere, pickSphereNdc } from './geo-math';
+export { vec3ToLatLon, intersectUnitSphere, pickSphereNdc } from './geo-math';
+/** Renderer-friendly cartesian position, with THREE.Vector3 semantics for overlays. */
+export function latLonToVec3(lon: number, lat: number, radius = 1): Vector3 {
+  const p = cartesian(lon, lat, radius);
+  return new Vector3(p.x, p.y, p.z);
+}
 export type { LonLat } from './geo-math';
 export type { QualityLevel } from './terrain';
 
@@ -110,7 +115,7 @@ export async function createGlobe(scene: Scene, opts: GlobeOptions = {}): Promis
   const instance: GlobeInstance = {
     group, quality, dpr,
     setSun(lon, lat) {
-      const p = latLonToVec3(lon, lat);
+      const p = cartesian(lon, lat);
       sunDirection.set(p.x, p.y, p.z);
       sunlight.position.copy(sunDirection).multiplyScalar(5);
       sunlight.target.position.set(0, 0, 0);
