@@ -85,11 +85,16 @@ store version bumps in this native file when releasing.
   resizable and declares `orientation|screenSize|smallestScreenSize|screenLayout|density`
   and related `configChanges`, so ordinary changes update the WebView without
   recreating the activity. Game canvas/layout must still handle window resizes.
-- **Back button:** `MainActivity` delivers the platform event
-  `airway:android-back`. `src/platform/back.ts` exports `onAndroidBack(handler)`;
-  the future game/menu lifecycle from tasks 14/16 must register a policy for
-  closing menus, pausing or confirmation. Until then, the adapter consumes the
-  event without guessing the intended menu/exit behaviour.
+- **Back button:** `MainActivity` dispatches the cancelable window event
+  `airway:android-back`. `installBackHandler(onBack)` in `src/platform/back.ts` is the
+  single JS entry point (also Escape and optional `popstate`); a screen that consumes
+  back returns `true` (preventDefault). If nothing consumes it, the activity calls
+  `moveTaskToBack(true)` (the OS owns app exit; the run is saved by the lifecycle).
+- **Native plugins:** `@capacitor/haptics`, `@capacitor/share`, `@capacitor/preferences`,
+  `@capacitor/filesystem` (saves in app-private `Directory.Data`). `capacitor.settings.gradle`
+  and `app/capacitor.build.gradle` list them as `cap sync android` would. The haptics plugin
+  merges the normal-level `android.permission.VIBRATE`; no runtime permission prompts, no ad,
+  analytics or billing SDKs (D-16).
 
 ## Pre-release device checklist (not covered by static tests)
 
