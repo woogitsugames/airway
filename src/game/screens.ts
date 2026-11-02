@@ -52,10 +52,11 @@ export function mountScreens(host:HTMLElement,options:ScreensOptions={}):Screens
       back?.focus({preventScroll:true});
     }
   };
-  const back=():void=>{
-    if(name==='licenses')show('settings');
-    else if(name==='settings')show('menu');
+  const back=():boolean=>{
+    if(name==='licenses'){show('settings');return true;}
+    if(name==='settings'){show('menu');return true;}
     // On the root menu the OS owns app exit.
+    return false;
   };
   const removeBack=installBackHandler(back,options.back);
   return {current:()=>name,show,refresh:()=>menu.refresh(options.getMenuData?.()),dispose:()=>{removeBack();menu.dispose();layer.remove();}};

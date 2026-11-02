@@ -43,7 +43,10 @@ export interface FlapOptions {
 function panel(className: string, letter: string): HTMLSpanElement {
   const node = document.createElement('span');
   node.className = className;
-  node.textContent = letter === ' ' ? '\u00a0' : letter;
+  const ink = document.createElement('span');
+  ink.className = 'flap-ink';
+  ink.textContent = letter === ' ' ? '\u00a0' : letter;
+  node.append(ink);
   return node;
 }
 
@@ -91,8 +94,13 @@ export class SplitFlap {
 
   private putLetter(tile: HTMLSpanElement, letter: string): void {
     const nodes = tile.children;
-    (nodes[0] as HTMLElement).textContent = letter === ' ' ? '\u00a0' : letter;
-    (nodes[1] as HTMLElement).textContent = letter === ' ' ? '\u00a0' : letter;
+    this.putHalfLetter(nodes[0] as HTMLElement, letter);
+    this.putHalfLetter(nodes[1] as HTMLElement, letter);
+  }
+
+  private putHalfLetter(half: HTMLElement, letter: string): void {
+    const ink = half.firstElementChild as HTMLElement;
+    ink.textContent = letter === ' ' ? '\u00a0' : letter;
   }
 
   private ensureTiles(length: number): void {
@@ -112,25 +120,26 @@ export class SplitFlap {
     this.cancel();
     const steps = planFlapChange(previous, normalized, this.maxCells);
     const target = splitFlapCells(normalized, this.maxCells);
-    this.ensureTiles(target.length);
+    const shouldAnimate = animate && !this.isReducedMotion();
+    this.ensureTiles(shouldAnimate ? Math.max(target.length, splitFlapCells(previous, this.maxCells).length) : target.length);
     this.value = normalized;
     this.element.setAttribute('aria-label', normalized);
     this.element.dataset.value = normalized;
-    if (!animate || this.isReducedMotion()) {
+    if (!shouldAnimate) {
       target.forEach((letter, index) => this.putLetter(this.tiles[index], letter));
       return;
     }
     const stepsByIndex = new Map(steps.map((step) => [step.index, step]));
-    for (let i = 0; i < target.length; i++) {
+    for (let i = 0; i < this.tiles.length; i++) {
       const tile = this.tiles[i];
       const step = stepsByIndex.get(i);
-      if (!step) { this.putLetter(tile, target[i]); continue; }
+      if (!step) { this.putLetter(tile, target[i] ?? ' '); continue; }
       this.putLetter(tile, step.from);
       this.schedule(() => {
         const top = tile.children[0] as HTMLElement;
         const bottom = tile.children[1] as HTMLElement;
-        top.textContent = step.to === ' ' ? '\u00a0' : step.to;
-        bottom.textContent = step.from === ' ' ? '\u00a0' : step.from;
+        this.putHalfLetter(top, step.to);
+        this.putHalfLetter(bottom, step.from);
         const foldOut = panel('flap-half flap-fold-out', step.from);
         const foldIn = panel('flap-half flap-fold-in', step.to);
         tile.append(foldOut, foldIn);
@@ -144,6 +153,10 @@ export class SplitFlap {
         this.putLetter(tile, step.to);
         tile.querySelectorAll('.flap-fold-out, .flap-fold-in').forEach((node) => node.remove());
       }, step.delay + step.duration + 12);
+    }
+    if (this.tiles.length > target.length) {
+      const last = steps[steps.length - 1];
+      this.schedule(() => this.ensureTiles(target.length), (last?.delay ?? 0) + FLAP_DURATION_MS + 15);
     }
   }
 

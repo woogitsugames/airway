@@ -23,8 +23,10 @@
 .split-flap--highlight { color:#ffc72c; }
 .flap-tile { width:var(--flap-w, 11px); height:25px; display:inline-block; flex:none; position:relative; perspective:140px; font:700 var(--flap-font, 12px)/25px 'Overpass Mono',monospace; text-align:center; color:inherit; }
 .flap-half { position:absolute; left:0; width:100%; height:12.5px; overflow:hidden; background:#2c2f32; backface-visibility:hidden; }
-.flap-half--top, .flap-fold-out { top:0; line-height:25px; border-bottom:1px solid #090a0a; transform-origin:bottom; }
-.flap-half--bottom, .flap-fold-in { bottom:0; line-height:0; background:#26282b; border-top:1px solid #121416; transform-origin:top; }
+.flap-ink { position:absolute; top:0; left:0; width:100%; height:25px; line-height:25px; text-align:center; }
+.flap-half--top, .flap-fold-out { top:0; border-bottom:1px solid #090a0a; transform-origin:bottom; }
+.flap-half--bottom, .flap-fold-in { bottom:0; background:#26282b; border-top:1px solid #121416; transform-origin:top; }
+.flap-half--bottom .flap-ink, .flap-fold-in .flap-ink { top:-12.5px; }
 .flap-fold-out { z-index:3; }
 .flap-fold-in { z-index:2; transform:rotateX(90deg); }
 .flap-fold-out--active { animation:flap-top 38ms ease-in forwards; }
