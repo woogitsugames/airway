@@ -150,7 +150,9 @@
   font: 700 12px/1.3 'Overpass Mono', monospace;
   letter-spacing: .1em;
   transform: rotate(-3deg);
-  white-space: nowrap;
+  /* [night-05] D-68 city names ("Santa Cruz de la Sierra") wrap at spaces instead of leaving the card. */
+  max-width: 100%;
+  white-space: normal;
 }
 
 /* Hub pick: only the sign stays, the globe underneath is live and tappable. */

@@ -474,7 +474,10 @@ Publish together with the store pre-registration, after the device test. **Statu
 
 ## D-68 — Hub stamp shows code or city name per player setting (2026-11-03, owner)
 Settings toggle "Lotniska: kod / nazwa" (default: code). Applies to hub stamp and other airport labels that have room.
-**Status: to implement.**
+**Status: in force (night N5).** Implemented in `src/ui/airportLabel.ts` (setting `airportLabels` in `airway.settings`):
+the weekly card's hub and slot stamps, the hub/airport pick pressure labels and the game-over departures title use the
+PL/EN city name from `src/data/cities.ts`; the 58 px off-screen edge chips keep the code (no room). Long names wrap
+at spaces inside the stamp.
 
 ## D-70 — Puzzles 16–30: mechanics tags and a tighter margin curve (2026-11-03, Claude, night N1)
 Puzzles 16–30 carry an optional `mechanics` list (`slots`, `curfew`, `week`, `mct`, `transfer`); the briefing shows the
