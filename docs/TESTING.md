@@ -81,6 +81,8 @@ npm run build
 | `npm run store:shots` | [task-26] Capture 5 actual game scenes in PL/EN on phone, foldable and tablet; requires integrated dev-only fixture | `SUMMARY store:shots seed=0xA1A1 expected=30 captured=30 passed=1 failed=0`; PNGs in `docs/store/shots/` |
 | `npm run test:gating` | Free entitlements, no-op ads, disabled content gate, and no new monetization SDK dependencies | `SUMMARY test:gating seed=0xA1A1 passed=8 failed=0` |
 | `npm run test:fast` | `typecheck`, then `test:i18n`, `test:arch`, and `test:gating` | All three test summaries and exit code 0 |
+| `npm run test:e2e:smoke` | Real Playwright gameplay journey: boot, menu, seeded start, route, aircraft, week, upgrade, save/load, overload and return | `SUMMARY test:e2e:smoke seed=0xA1A1 mode=game passed=9 failed=0 durationMs=N` |
+| `npm run ui:matrix` | Real game menu/game/upgrade/gameover in PL/EN at 412×915, 915×412, 673×841, 904×1000 (DPR 1) | `SUMMARY ui:matrix seed=0xA1A1 mode=game captured=32 expected=32 failed=0 durationMs=N` |
 
 Every future test must have a fixed seed (use `0xA1A1` where no gameplay seed
 is needed), terminate with one `SUMMARY ...` line, set a nonzero exit code on
@@ -139,3 +141,18 @@ Chromium, and captures seven portrait steps plus landscape and foldable checks
 into `docs/shots/23/`. The temporary three-city adapter is not a simulation test:
 integration with real route/HUD/upgrade events requires tasks 07/12/13.
 [task-26] Store screenshots are intentionally fail-closed: without a complete deterministic game fixture, `npm run store:shots` exits nonzero and produces no publishable PNGs. The text-only validation command is independent of Playwright. See `docs/store/README.md`.
+### Task 28 browser integration
+The real E2E runner and screen matrix use the environment's Playwright + Chromium,
+start a disposable Vite development server, and exit nonzero on missing features,
+page errors, incomplete snapshots or failed assertions. They never replace real
+gameplay with a mock. Requirements and exact selectors are documented in
+[`e2e/README.md`](../e2e/README.md).
+The dev-only `window.aw` bridge is installed by a DEV-guarded dynamic import.
+It reports `ready=false` until a real `AwDevAdapter` is registered by the game.
+Tasks 13-16 and their upstream dependencies are not yet merged on the task-28
+branch's base; the complete gameplay smoke and production UI matrix are BLOCKED.
+To validate the harness itself without game features, use
+`node e2e/smoke.mjs --fixture` and `node scripts/shot.mjs --fixture`.
+The fixture is a labeled, isolated test double; passing it does **not** satisfy
+the gameplay acceptance criteria, and its 32 images are saved only to
+`docs/shots/matrix-fixture/` (not `docs/shots/matrix/`).

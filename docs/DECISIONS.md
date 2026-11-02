@@ -275,3 +275,13 @@ The AppDelegate configures an ambient audio session to honor the hardware silent
 **Rationale:** native dependency management matches the requested iOS build workflow.
 **Status: in force for task 25.**
 _(renumbered from D-20 during integration, branch `origin/task/25-ios-build`)_
+
+## D-37 — E2E tests must not silently pass on missing gameplay (2026-11-02, task 28)
+The production smoke suite fails when its real `AwDevAdapter` has not been
+registered. The optional standalone contract fixture is isolated under
+`e2e/fixtures` and reports `mode=fixture` in test summaries. `window.aw`
+is added only in development with a dynamic import and forwards commands to
+the real game instead of retaining a shadow simulation. **Rationale:** missing
+dependencies must never yield false-green gameplay QA; the same harness can
+be connected when the UI and persistence work merges. **Status: in force.**
+_(renumbered from D-19 during integration, branch `origin/task/28-e2e-smoke`)_

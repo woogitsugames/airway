@@ -86,7 +86,10 @@
     "store:shots": "node scripts/store-shots.mjs",
     "test:store-shots": "node scripts/store-shots.mjs --validate",
     "test:gating": "node scripts/test-gating.mjs",
-    "shots:27": "node scripts/shots.mjs"
+    "shots:27": "node scripts/shots.mjs",
+    "shots:28": "node scripts/shots.mjs",
+    "test:e2e:smoke": "node e2e/smoke.mjs",
+    "ui:matrix": "node scripts/shot.mjs"
   },
   "dependencies": {
     "@capacitor/android": "8.5.3",
