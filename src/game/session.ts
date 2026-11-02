@@ -276,6 +276,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       const seconds = city.jamTicksLeft === null ? null : Math.ceil(city.jamTicksLeft / SIM_TICKS_PER_SECOND);
       if (jamKeys.get(city.id) !== seconds) { jamKeys.set(city.id, seconds); overlay.setJamCountdown(city.id, seconds); }
       jamHaptics.setJammed(city.id, city.jamTicksLeft !== null);
+      overlay.setSlotHold(city.id, city.slotHeld, city.nextSlotMinutes); // [task-38] deduplicated inside
     }
     if (force || run !== lastRun || run.revision !== lastRunRevision) {
       lastRun = run;
