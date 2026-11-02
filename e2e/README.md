@@ -27,6 +27,8 @@ Adapter methods:
 - `gesture('route'|'plane')`: returns actual viewport pixel points for
   draggable airport-to-airport and dock-to-route interactions; coordinates must
   be visible, actionable, and recalculated for the current camera/viewport.
+- `autoplay(untilWeek)`: the task-22 bot keeps playing the visible run through real Commands until the weekly
+  board for `untilWeek` opens (or the run ends); resolves to `state()`. Used to reach the upgrade screen honestly.
 - `forceHubOverload()`: test-scenario action to trigger the real game-over flow,
   with a real cause report; not a replacement for simulation loss detection.
 
@@ -35,8 +37,8 @@ Stable `data-testid` attributes required on real UI:
 | Screen | Test IDs |
 | --- | --- |
 | Menu | `menu-endless`, `menu-continue` |
-| Game | `action-save`, `action-menu` |
-| Upgrade | `upgrade-option-0` |
+| Game | `action-save`, `action-menu` (on the pause sheet: press Escape / Pause first), `action-resume` |
+| Upgrade | `upgrade-option-0…2` (each card also has `data-upgrade=<kind>`; a `hub-expansion` card waits for a hub tap) |
 | Game over | `game-over`, `gameover-menu` |
 
 The Playwright test uses **actual pointer drags** for drawing routes and

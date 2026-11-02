@@ -43,17 +43,28 @@ const steps = [
     const remaining = before.nextWeekTick - before.tick;
     assert(Number.isSafeInteger(remaining) && remaining > 0 && remaining <= 1_000_000,
       `Invalid remaining ticks until next week: ${remaining}`);
-    await page.evaluate((ticks) => window.aw.advanceTicks(ticks), remaining);
+    // A passive one-route network jams before week 1, so the task-22 bot keeps playing this run
+    // through real Commands (window.aw.autoplay, DEV only) until the week-1 board opens.
+    const reached = await page.evaluate(() => window.aw.autoplay(1));
+    assert(reached.screen === 'upgrade', `Autoplay ended on "${reached.screen}" at tick ${reached.tick}`);
     await waitForScreen(page, 'upgrade');
   }],
   ['select one weekly upgrade', async (page) => {
-    await clickTestId(page, 'upgrade-option-0');
+    // A hub-expansion card waits for a hub tap; take the first card that completes on its own.
+    const option = await page.evaluate(() => document.querySelector(
+      '[data-testid^="upgrade-option-"]:not([data-upgrade="hub-expansion"])')?.getAttribute('data-testid') ?? 'upgrade-option-0');
+    await clickTestId(page, option);
     await waitForScreen(page, 'game');
   }],
   ['save, leave, continue and preserve snapshot hash', async (page) => {
+    // Save and Menu live on the pause sheet; Escape opens it (same path as Android back).
+    await page.keyboard.press('Escape');
+    await page.getByTestId('action-save').waitFor({ timeout: 5000 });
     const before = await state(page);
     assert(Boolean(before.snapshotHash), 'Snapshot hash must not be empty');
     await clickTestId(page, 'action-save');
+    await page.waitForFunction(() => /\S/.test(document.querySelector('.airway-pause__status')?.textContent ?? ''),
+      null, { timeout: 8000 });
     await clickTestId(page, 'action-menu');
     await waitForScreen(page, 'menu');
     await clickTestId(page, 'menu-continue');

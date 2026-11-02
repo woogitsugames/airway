@@ -49,10 +49,12 @@ Times are measured in the integration container (8 vCPU, SwiftShader); “ci” 
 | `npm run test:routing` | fast | 1 s | Minimum transfers, distance ties, graph edits, region destinations | `… cases=7 passed=7 failed=0` |
 | `npm run test:hubs` | fast | 1 s | Hub formation, MCT, queue grace, recovery, passenger conservation (D-23) | `… cases=6 passed=6 failed=0` |
 | `npm run test:sim-week` | fast | 1 s | Three seeded seven-day runs, snapshots, no-route failure tick | `… seeds=3 … passed=6 failed=0` |
+| `npm run test:replay` | fast | 3 s | 3 seeds × 2 game weeks of scripted commands on the real Sim: mid-run snapshot/restore, journal-only replay, save envelope round trip, undo, a bot run across a weekly upgrade, puzzle scenario | `SUMMARY test:replay seeds=3 ticks=20160 passed=20 failed=0 …` |
 | `npm run test:planes` | fast | 4 s | Plane types, reserves, exact-km range rejections, assign/release (D-24) | `… cases=8 passed=8 failed=0` |
 | `npm run test:schedule` | fast | 3 s | Dwell, back-and-forth legs, capacity, passenger balance, 7-day replay | `… cases=7 passed=7 failed=0` |
 | `npm run test:route-tool` | fast | 1 s | Airport snapping, multi-stop Add/ExtendRoute, range guards, handles, undo | `… passed=17 failed=0` |
 | `npm run test:interp` | fast | 1 s | Great-circle geometry, route-boundary interpolation, 40 routes / 100 instanced planes, no per-frame rebuild | `… passed=17 failed=0` |
+| `npm run test:render-layers` | fast | 1 s | Headless (no WebGL): route preview range split on the committed arc, deferred airport ring/curfew rebuild and `clear()`, pooled plane tracks | `… passed=11 failed=0` |
 | `npm run test:daynight` | fast | 1 s | Local time, demand curve, weekly curfew, snapshot, sun interpolation (D-27) | `… passed=N failed=0` |
 | `npm run test:upgrades` | fast | <1 s | Seeded weekly offers, upgrade effects, congestion tie-breaks (D-28) | `… cases=5 passed=5 failed=0` |
 | `npm run test:flap` | fast | <1 s | Split-flap segmentation, Polish diacritics, truncation, 60–90 ms cascade | `… passed=15 failed=0` |
@@ -75,7 +77,7 @@ Times are measured in the integration container (8 vCPU, SwiftShader); “ci” 
 | `npm run test:hud-targets` | ci | 12 s | Playwright HUD: 6 controls ≥ 48 dp, safe-area clearance, no overlap/overflow, rotation, drag-to-route; 4 PNGs in `docs/shots/13/` | `… passed=N failed=0 shots=4` |
 | `npm run test:e2e:tutorial` | ci | 35 s | Onboarding: six training actions, replay/skip/persistence; 10 PNGs in `docs/shots/23/` | `… passed=N failed=0 screenshots=10` |
 | `npm run test:e2e:smoke` | ci | 15–40 s | Real gameplay journey, 9 dependent steps (menu → seeded start → route drag → aircraft drag → week → upgrade → save/continue hash → overload → menu). Each step prints PASS/FAIL/SKIP; failure screenshot in `.e2e/` | `SUMMARY test:e2e:smoke … mode=game steps=9 passed=9 failed=0 skipped=0` |
-| `npm run ui:matrix` | ci | 40–90 s | Real menu/game/upgrade/gameover × PL/EN × 412×915, 915×412, 673×841, 904×1000 → `docs/shots/matrix/` | `… mode=game captured=32 expected=32 failed=0` |
+| `npm run ui:matrix` | ci | 30–90 s | Real menu/game/upgrade/gameover × PL/EN × 412×915, 915×412, 673×841, 904×1000 → `docs/shots/matrix/`; runs on seed 41386 (`WEEK_SEED`) so autoplay reaches week 1 | `… weekSeed=41386 mode=game captured=32 expected=32 failed=0` |
 | `npm run test:e2e:fixture` | — | 6 s | Harness self-test against `e2e/fixtures/airway.html` (smoke + matrix); output to ignored `docs/shots/matrix-fixture/`. Does **not** test the game | `… mode=fixture … failed=0` (both) |
 | `npm run test:balance` | ci | 1–5 min | Real engine: 10 seeded bot games, deterministic replay, 0 invalid commands, 8–15 min median, hub-overflow warning | `SUMMARY test:balance … mode=game seeds=10 … passed=1 failed=0` |
 | `npm run perf:scene` / `test:perf-scene` | ci | 2.5 min | SwiftShader scene: 40 cities, 100 planes, 40 routes, 120 wall s at 4×; JSON in `.perf/scene.json` (D-33) | `SUMMARY perf:scene … frames=N samples=N failed=0` |
@@ -105,8 +107,6 @@ Times are measured in the integration container (8 vCPU, SwiftShader); “ci” 
 | `gameover` | `/?preview=gameover` | `docs/shots/15/game-{p,l}.png` | `[data-gameover-state="open"]` |
 | `puzzles` | `/` → click `[data-mode="puzzles"]` | `docs/shots/17/board-{p,l}.png` | `.puzzle-departures .puzzle-flap` |
 | `npm run shots:world` | Full world-renderer lab (`dev/world.html?frozen&clean`: globe, airports, hub rings, curfew, routes, planes, preview, overlay) in 412×915 and 915×412 into `docs/shots/render/`; compare with `mockups/diorama/png/game-p.png` | `SUMMARY shots:world seed=0xA1A1 captured=2 failed=0` |
-| `npm run test:render-layers` | Headless (no WebGL) checks: route preview range split on the committed arc, deferred airport ring/curfew rebuild and `clear()`, pooled plane tracks | `SUMMARY test:render-layers seed=0xA1A1 passed=11 failed=0` |
-| `npm run test:replay` | [integration-sim] 3 seeds × 2 game weeks of scripted commands on the real Sim: mid-run snapshot/restore, journal-only replay, save envelope round trip, undo, a bot run across a weekly upgrade, puzzle scenario | `SUMMARY test:replay seeds=3 ticks=20160 passed=20 failed=0 ...` |
 
 Options: target names to filter (`npm run shots -- menu globe`), `--fold` (adds 673×841 and 904×1000),
 `--lang=pl|en`, `--dpr=1..3`. Default is 412×915 and 915×412 at DPR 1. Each capture fails independently; the summary
@@ -118,7 +118,16 @@ someone has looked at every image (Diorama checklist in `docs/styles/diorama.md`
 `test:e2e:smoke` and `ui:matrix` drive the real Vite game through the DEV-only `window.aw` handle
 (`src/game/devHandle.ts`) and stable `data-testid`s; the contract is in [`e2e/README.md`](../e2e/README.md). They need
 `src/main.ts` to call `installDevHandle()` in DEV and the composition root to `registerDevGameAdapter()` with the real
-game. `store:shots` additionally needs the DEV-only `?storeShot=<scene>` fixture (`docs/store/README.md`).
+game. `store:shots` additionally needs the DEV-only `?storeShot=<scene>` fixture (`docs/store/README.md`); a scene that
+is not actually reached (e.g. the run jams before the weekly board) never sets `data-store-shot-ready`.
+
+Reaching the week-1 board: `window.aw.autoplay(untilWeek)` lets the task-22 bot (`src/game/dev/bot-policy.ts` +
+`src/game/dev/autoplay.ts`, shared with `test:balance`) keep playing the visible run through real Commands until the
+board for `untilWeek` opens, and returns `state()`. It is DEV-only (dynamic import behind `import.meta.env.DEV`, absent
+from `dist/`). With the current balance (median run ≈ 11 min at 1x, under one game week) the bot survives week 1 from a
+clean start on only ~5 % of seeds (41386, 41403, 41422, 41438, 41457 in 41370–41469); the smoke reaches it on 0xA1A1
+after its own route + aircraft drags, `ui:matrix` and the store `upgrade` scene use 41386. If a balance change moves
+this, pick a new seed with the bot rather than adding shortcuts.
 
 ## Boundary regression
 

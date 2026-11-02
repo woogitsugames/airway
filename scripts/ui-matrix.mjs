@@ -9,6 +9,9 @@ import { withBrowser, newGamePage, waitForScreen, state, assert, clickTestId, RO
 const fixture = process.argv.includes('--fixture');
 const sizes = [[412, 915], [915, 412], [673, 841], [904, 1000]];
 const screens = ['menu', 'game', 'upgrade', 'gameover'];
+// A run must survive week 1 for the weekly board; with the current balance the DEV autoplay bot does
+// so from a clean start only on some seeds (see docs/TESTING.md). 41386 is the nearest to 0xA1A1.
+const WEEK_SEED = 41386;
 const outdir = resolve(ROOT, fixture ? 'docs/shots/matrix-fixture' : 'docs/shots/matrix');
 const expected = sizes.length * screens.length * 2;
 const failures = [];
@@ -26,9 +29,13 @@ async function enter(page, screen) {
     const current = await state(page);
     const remaining = current.nextWeekTick - current.tick;
     assert(Number.isSafeInteger(remaining) && remaining > 0, `Invalid end-of-week transition: ${remaining}`);
-    await page.evaluate((ticks) => window.aw.advanceTicks(ticks), remaining);
+    // The bot plays the run through real Commands until the week-1 board (DEV window.aw.autoplay).
+    await page.evaluate(() => window.aw.autoplay(1));
   } else if (screen === 'gameover') {
-    await clickTestId(page, 'upgrade-option-0');
+    // A hub-expansion card waits for a hub tap; take the first card that completes on its own.
+    const option = await page.evaluate(() => document.querySelector(
+      '[data-testid^="upgrade-option-"]:not([data-upgrade="hub-expansion"])')?.getAttribute('data-testid') ?? 'upgrade-option-0');
+    await clickTestId(page, option);
     await waitForScreen(page, 'game');
     await page.evaluate(() => window.aw.forceHubOverload());
   }
@@ -49,7 +56,7 @@ try {
           assert(await page.evaluate(() => document.documentElement.lang) === language,
             `<html lang> should be ${language}`);
           await waitForScreen(page, 'menu');
-          await page.evaluate((seed) => window.aw.prepareSeed(seed), SEED);
+          await page.evaluate((seed) => window.aw.prepareSeed(seed), WEEK_SEED);
         } catch (error) {
           failures.push(`${run} boot: ${message(error)}`);
           if (page) await page.close();
@@ -86,6 +93,6 @@ try {
 } finally {
   for (const line of failures) console.error('FAIL ' + line);
   const failed = failures.length || (captured === expected ? 0 : 1);
-  console.log(`SUMMARY ui:matrix seed=0x${SEED.toString(16).toUpperCase()} mode=${fixture ? 'fixture' : 'game'} captured=${captured} expected=${expected} failed=${failed} durationMs=${Math.round(performance.now() - started)}`);
+  console.log(`SUMMARY ui:matrix seed=0x${SEED.toString(16).toUpperCase()} weekSeed=${WEEK_SEED} mode=${fixture ? 'fixture' : 'game'} captured=${captured} expected=${expected} failed=${failed} durationMs=${Math.round(performance.now() - started)}`);
   if (failed) process.exitCode = 1;
 }

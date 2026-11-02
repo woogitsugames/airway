@@ -25,6 +25,8 @@ export interface AwDevAdapter {
   advanceTicks(ticks: number): void | Promise<void>;
   gesture(kind: AwGesture): { from: AwPoint; to: AwPoint };
   forceHubOverload(): void | Promise<void>;
+  /** Play with the task-22 bot through real Commands until the weekly board for `untilWeek` opens. */
+  autoplay(untilWeek: number): AwDevState | Promise<AwDevState>;
 }
 
 export interface AwDevHandle extends AwDevAdapter {
@@ -72,6 +74,10 @@ export function installDevHandle(): void {
       return requireAdapter().gesture(kind);
     },
     forceHubOverload: () => requireAdapter().forceHubOverload(),
+    autoplay(untilWeek) {
+      validInteger(untilWeek, 'untilWeek', 1, 520);
+      return requireAdapter().autoplay(untilWeek);
+    },
   };
   Object.defineProperty(window, 'aw', { value: Object.freeze(handle), configurable: true });
 }

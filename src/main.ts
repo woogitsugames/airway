@@ -8,7 +8,7 @@ import './ui/game.css';
 import { bootAudio, audioSettingsFromToggles } from './audio';
 import { dailyKey } from './core/daily';
 import { PUZZLES } from './data/puzzles';
-import { registerDevGameAdapter, type AwScreen } from './game/devHandle';
+import { registerDevGameAdapter, type AwDevState, type AwScreen } from './game/devHandle';
 import { createDailyMode } from './game/modes/daily';
 import { EndlessRun } from './game/run';
 import { readGame, restoreSimFromSave, saveSourceFromSim, writeGame } from './game/save';
@@ -228,21 +228,42 @@ async function boot(): Promise<void> {
     screens.open('puzzles', { element: host, back: () => ui.back(), dispose: () => ui.dispose() });
   }
 
+  function devState(): AwDevState {
+    const run = session?.run;
+    return {
+      screen: session ? screenName : (screens.current() === 'settings' || screens.current() === 'licenses' ? 'settings' : 'menu'),
+      seed: run?.seed ?? pendingSeed ?? 0,
+      tick: run?.tick ?? 0,
+      nextWeekTick: run?.nextWeekTick ?? 0,
+      routeCount: run?.routeList().length ?? 0,
+      aircraftAssignments: run?.assignments ?? 0,
+      snapshotHash: run?.hash() ?? '',
+    };
+  }
+
+  /** DEV/QA only: the task-22 bot plays the visible session through real Commands. */
+  async function autoplayUntil(untilWeek: number): Promise<void> {
+    // The ternary lets Vite drop the bot from production bundles entirely.
+    const bot = import.meta.env.DEV ? await import('./game/dev/autoplay') : null;
+    if (!bot) return;
+    const { nextAutoplayCommand, AUTOPLAY_ACTION_INTERVAL } = bot;
+    const active = session;
+    if (!active) throw new Error('autoplay needs a running game');
+    for (let guard = 0; guard < 200_000; guard++) {
+      const run = active.run;
+      if (run.failed) break;
+      const offer = run.weeklyUpgrade;
+      if (offer && offer.week >= untilWeek && !offer.lastChoice) break;
+      const command = nextAutoplayCommand(run.sim);
+      if (command) run.queue(command);
+      active.advance(AUTOPLAY_ACTION_INTERVAL);
+    }
+  }
+
   // QA bridge for e2e (Vite dev builds only). It drives the production session, never a copy.
   if (import.meta.env.DEV) {
     registerDevGameAdapter({
-      state: () => {
-        const run = session?.run;
-        return {
-          screen: session ? screenName : (screens.current() === 'settings' || screens.current() === 'licenses' ? 'settings' : 'menu'),
-          seed: run?.seed ?? pendingSeed ?? 0,
-          tick: run?.tick ?? 0,
-          nextWeekTick: run?.nextWeekTick ?? 0,
-          routeCount: run?.routeList().length ?? 0,
-          aircraftAssignments: run?.assignments ?? 0,
-          snapshotHash: run?.hash() ?? '',
-        };
-      },
+      state: () => devState(),
       prepareSeed: (seed) => { pendingSeed = seed >>> 0; skipTutorialOnce = true; },
       advanceTicks: (ticks) => session?.advance(ticks),
       gesture: (kind) => {
@@ -253,6 +274,7 @@ async function boot(): Promise<void> {
         return { from: { x: drag.from.x + rect.left, y: drag.from.y + rect.top }, to: { x: drag.to.x + rect.left, y: drag.to.y + rect.top } };
       },
       forceHubOverload: () => session?.forceOverload(),
+      autoplay: async (untilWeek) => { await autoplayUntil(untilWeek); return devState(); },
     });
   }
 
@@ -283,7 +305,7 @@ async function boot(): Promise<void> {
     }
     const target = ((hh || 0) * 60 + (mm || 0)) % 1440;
     if (scene === 'failure') active.forceOverload();
-    else if (scene === 'upgrade') active.advance(Math.max(1, run.nextWeekTick - run.tick));
+    else if (scene === 'upgrade') await autoplayUntil(1);
     else {
       const local = ((run.localMinute % 1440) + 1440) % 1440;
       active.advance(((target - local + 1440) % 1440) || 1440);

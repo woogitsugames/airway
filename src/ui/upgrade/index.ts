@@ -64,7 +64,7 @@ export class WeeklyUpgradeView {
     const congested = mostLoadedHub(hubs);
     state.offers.forEach((offer, i) => {
       const card = document.createElement('button');
-      card.type = 'button'; card.className = 'airway-upgrade-tag'; card.dataset.testid = `upgrade-option-${i}`;
+      card.type = 'button'; card.className = 'airway-upgrade-tag'; card.dataset.testid = `upgrade-option-${i}`; card.dataset.upgrade = offer.id;
       card.disabled = state.pendingHub;
       card.setAttribute('aria-label', label(offer.id, copy));
       const heading = document.createElement('span'); heading.className = 'airway-upgrade-heading';
@@ -76,7 +76,9 @@ export class WeeklyUpgradeView {
       detail.textContent = offer.id === 'hub-expansion' ? copy.hubDetail : offer.id === 'departure-slots' ? copy.slotsDetail : copy.aircraftDetail;
       const stamp = document.createElement('span'); stamp.className = 'airway-upgrade-stamp';
       stamp.textContent = congested ? `${congested.label.toUpperCase()} ${congested.waiting}/${congested.capacity}` : copy.pressure;
-      card.append(heading, model, title, detail, stamp);
+      // Only the hub card names the congested terminal it would relieve.
+      if (offer.id === 'hub-expansion') card.append(heading, model, title, detail, stamp);
+      else card.append(heading, model, title, detail);
       card.addEventListener('click', () => this.options.onCommand({ type: 'ChooseUpgrade', week: state.week, upgrade: offer.id }));
       cards.append(card);
       this.options.onPreviewModel?.(model, offer.id);

@@ -11,6 +11,10 @@ import { fileURLToPath } from 'node:url';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = resolve(ROOT, 'docs/store/shots');
 const SEED = 41377; // 0xA1A1
+// The weekly board needs a run that survives week 1. With the current balance the DEV autoplay bot
+// (src/game/dev/autoplay.ts) does so from a clean start only on some seeds; 41386 is the nearest one.
+const WEEK_SEED = 41386;
+const seedFor = (scene) => (scene === 'upgrade' ? WEEK_SEED : SEED);
 const LANGUAGES = ['pl', 'en'];
 const SCENES = [
   ['game-dusk', '18:30'],
@@ -109,7 +113,8 @@ async function startVite() {
 async function capture(page, baseUrl, lang, scene, hour, destination) {
   const url = new URL(baseUrl);
   url.searchParams.set('storeShot', scene);
-  url.searchParams.set('seed', String(SEED));
+  const seed = seedFor(scene);
+  url.searchParams.set('seed', String(seed));
   url.searchParams.set('lang', lang);
   url.searchParams.set('storeHour', hour);
   const errors = [];
@@ -127,10 +132,10 @@ async function capture(page, baseUrl, lang, scene, hour, destination) {
   await page.waitForFunction(({ id, seed }) =>
     document.documentElement.dataset.storeShotReady === id &&
     document.documentElement.dataset.storeShotSeed === String(seed),
-  { id: scene, seed: SEED }, { timeout: 15000 }).catch(() => {
+  { id: scene, seed }, { timeout: 30000 }).catch(() => {
     // [integration-tooling] Name the missing contract instead of a bare Playwright timeout.
     throw new Error('Scene "' + scene + '" never set <html data-store-shot-ready="' + scene +
-      '" data-store-shot-seed="' + SEED + '"> (dev-only ?storeShot fixture missing in src/main.ts)');
+      '" data-store-shot-seed="' + seed + '"> (scene not reached or ?storeShot fixture missing in src/main.ts)');
   });
   await page.evaluate(() => document.fonts.ready);
   const state = await page.evaluate(() => ({

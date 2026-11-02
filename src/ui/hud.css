@@ -56,7 +56,7 @@
 .airway-pass__field strong { overflow: hidden; text-overflow: clip; font: 800 17px/1 'Overpass', sans-serif; }
 .airway-pass__week { width: 48px; flex: 0 0 48px; }
 .airway-pass__day { flex: 1 1 76px; min-width: 54px; }
-.airway-pass__time { flex: 0 0 55px; }
+.airway-pass__time { flex: 0 0 60px; }
 .airway-pass__days { display: flex; gap: 3px; }
 .airway-pass__days i { display: block; width: 6px; height: 6px; background: var(--hud-perf); }
 .airway-pass__days i.is-past { background: var(--hud-ink); }

@@ -127,6 +127,20 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       run.resolveBoundary();
       syncUpgrade(true);
     },
+    onPreviewModel: (container, kind) => {
+      // The real low-poly model, rendered through the shared WebGL context into a 2D canvas.
+      // Measured on the next frame, once the board is in the document.
+      requestAnimationFrame(() => {
+        if (!container.isConnected) return;
+        const canvas = document.createElement('canvas');
+        const dpr = Math.min(2, window.devicePixelRatio || 1);
+        canvas.width = Math.round(Math.max(64, container.clientWidth) * dpr);
+        canvas.height = Math.round(Math.max(64, container.clientHeight) * dpr);
+        container.append(canvas);
+        if (world.renderer.drawModelPreview(kind, canvas)) container.classList.add('has-model');
+        else canvas.remove();
+      });
+    },
     onHubSelectionMode: (active, hubIds) => { hubSelection = active ? hubIds : []; layer.classList.toggle('is-selecting-hub', active); },
   });
   let upgradeWeek = 0;
@@ -275,7 +289,8 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     const clock = run.localMinute;
     const stock = run.inventory;
     hud.render({
-      week: Math.floor(run.tick / TICKS_PER_WEEK) + 1,
+      // The calendar week; at a weekly board (minute = n·week) it still shows the week just finished.
+      week: Math.max(1, Math.ceil(run.clockMinute / TICKS_PER_WEEK)),
       day: ((Math.floor(clock / 1440) % 7) + 7) % 7 + 1,
       timeMinutes: ((clock % 1440) + 1440) % 1440,
       passengers: run.passengers,

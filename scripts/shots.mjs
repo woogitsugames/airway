@@ -36,9 +36,10 @@ const TARGETS = [
       if (!m || m.drawCalls > 60 || m.triangles < 1000) throw new Error('Invalid globe telemetry: ' + JSON.stringify(m));
       return `fps=${m.fps} calls=${m.drawCalls} triangles=${m.triangles} renderCpuMs=${m.frameMs}`;
     } },
-  { id: 'airports', dir: '06', file: 'airports', suffix: '-1x', path: '?dev=airports&zoom=1',
+  { id: 'airports', dir: '06', file: 'airports', suffix: '-1x', path: 'dev/world.html?frozen&clean&zoom=1', // [integration-ui] ?dev=airports moved to dev/world.html
+   
     ready: { selector: '.airport-bubble', state: 'attached' }, note: 'airport/overlay fixture at 1x' },
-  { id: 'airports-zoom', dir: '06', file: 'airports', suffix: '-2_5x', path: '?dev=airports&zoom=2.5',
+  { id: 'airports-zoom', dir: '06', file: 'airports', suffix: '-2_5x', path: 'dev/world.html?frozen&clean&zoom=2.5',
     ready: { selector: '.airport-bubble', state: 'attached' }, note: 'airport/overlay fixture at 2.5x' },
   { id: 'menu', dir: '14', file: 'menu', path: '', lang: 'pl',
     ready: { selector: '.airway-board .airway-flight' }, settle: 1100, note: 'split-flap main menu' },
