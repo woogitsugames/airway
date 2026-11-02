@@ -92,3 +92,13 @@ full-screen ads during play, no timers, no dark patterns. Supersedes the recomme
 
 ## D-18 — Store title: "Airway: Globe Route Builder" (PL: "Airway: Buduj siatkę lotów na globusie") (2026-11-02, owner)
 **Status: in force.**
+
+## D-20 — Weekly departure slot upgrade contract (2026-11-02, task 12)
+Departure slots are a **per-city per-simulated-hour departure limit**, not an aircraft
+or runway count. The +2 upgrade increases the available departure allowance by two
+through the authoritative simulation adapter. The host scheduler must enforce the
+limit using integer elapsed simulation ticks, preserving the deterministic replay log.
+The default baseline limit and whether the bonus applies globally or to one selected
+city need owner confirmation before activating the upgrade in the game.
+Until then, the UI and offer generator remain adapter-only and must not silently
+modify a scheduler. **Status: provisional, requires integration decision.**
