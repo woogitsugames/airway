@@ -28,6 +28,7 @@ type AudioSessionNavigator = Navigator & {
 /** Web Audio is instantiated only in unlock(), called by a user gesture. */
 export class AirwayAudio {
   private readonly scheduler = new AudioScheduler();
+  private readonly playScheduled = (cue: AudioCue, at: number): void => { this.play(cue, at); };
   private readonly voices = new Set<LiveVoice>();
   private readonly stress = new Map<string, StressVoice>();
   private settings: AudioSettings = { ...DEFAULT_AUDIO_SETTINGS };
@@ -291,7 +292,7 @@ export class AirwayAudio {
   private pump(): void {
     const ctx = this.context;
     if (!ctx || ctx.state !== 'running' || this.settings.muted) return;
-    this.scheduler.pump(ctx.currentTime, (cue, at) => { this.play(cue, at); });
+    this.scheduler.pump(ctx.currentTime, this.playScheduled);
   }
 
   private durationOf(cue: AudioCue): number {

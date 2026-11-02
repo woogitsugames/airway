@@ -27,7 +27,7 @@ export type AudioEventStream = {
 export type AudioEffect = 'flap' | 'paper' | 'tag' | 'stamp' | 'new-city';
 
 export interface AudioSettings {
-  /** Master mute; true is also the default until first user interaction. */
+  /** Master mute; audio is locked until the first trusted user gesture. */
   readonly muted: boolean;
   /** 0..1, saved and restored by the settings UI (task 14). */
   readonly musicVolume: number;
