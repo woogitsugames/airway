@@ -13,7 +13,8 @@
     "test:fast": "npm run typecheck && npm run test:i18n && npm run test:arch",
     "shots": "node scripts/shots.mjs",
     "shots:mockups": "node mockups/shoot.mjs",
-    "mockups": "node mockups/build-all.mjs"
+    "mockups": "node mockups/build-all.mjs",
+    "test:upgrades": "node --experimental-strip-types scripts/test-upgrades.mjs"
   },
   "dependencies": {
     "@capacitor/android": "8.5.3",
