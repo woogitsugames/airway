@@ -65,6 +65,8 @@ npm run build
 | `npm run test:puzzles` | Task-17 JSON puzzle validation, zero-action loss, 15 reference wins at ≥15%, deterministic replay, unlimited undo/reset, rejected commands | `SUMMARY test:puzzles seed=0xA1A1 levels=15 cases=N passed=N failed=0` |
 | `npm run test:fast` | `typecheck`, then `test:i18n`, `test:arch`, `test:puzzles` | All test summaries and exit code 0 |
 | `npm run shots:puzzles` | [task-17] Puzzle selector screenshot smoke in two orientations | `SUMMARY shots:puzzles seed=0xA1A1 captured=2 failed=0`; images in `docs/shots/17/` |
+| `npm run test:daily-mode` | [task-18] Warsaw midnight/DST, offline attempts, best scores, streaks and emoji-free ticket (fixed adapter seed) | `SUMMARY test:daily-mode seed=0xA1A1 passed=12 failed=0` |
+| `npm run test:fast` | `typecheck`, then `test:i18n`, then `test:arch`, then `test:daily-mode` | All three test summaries and exit code 0 |
 
 Every future test must have a fixed seed (use `0xA1A1` where no gameplay seed
 is needed), terminate with one `SUMMARY ...` line, set a nonzero exit code on

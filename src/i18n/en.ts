@@ -207,4 +207,13 @@ export const en = {
   'puzzle.13.title': 'Long connection chain',
   'puzzle.14.title': 'Four continents, one path',
   'puzzle.15.title': 'Three nights on the globe',
+  // [task-18] Localized offline daily ticket.
+  'daily.share.title': 'AIRWAY / DAILY CHALLENGE',
+  'daily.share.official': 'OFFICIAL RUN',
+  'daily.share.practice': 'PRACTICE RUN',
+  'daily.share.date': 'DATE {date}',
+  'daily.share.score': 'SCORE {score}',
+  'daily.share.weeks': 'WEEKS {weeks}',
+  'daily.share.ticket': 'ROUTE {ticket}',
+  'daily.share.dialog': 'Share flight ticket',
 } as const;

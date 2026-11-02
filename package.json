@@ -14,7 +14,7 @@
     "test:sim-kernel": "node --experimental-strip-types scripts/test-sim-kernel.ts",
     "test:undo": "node --experimental-strip-types scripts/test-undo.ts",
     "test:daily": "node --experimental-strip-types scripts/test-daily.ts",
-    "test:fast": "npm run typecheck && npm run test:i18n && npm run test:arch && npm run test:rng && npm run test:sim-kernel && npm run test:undo && npm run test:daily && npm run test:cities && npm run test:spawner && npm run test:geo-math && npm run test:gestures && npm run test:overlay-layout && npm run test:routing && npm run test:hubs && npm run test:sim-week && npm run test:route-tool && npm run test:interp && npm run test:daynight && npm run test:flap && npm run test:causes && npm run test:saves && npm run test:audio-sched && npm run test:cvd && npm run test:contrast && npm run test:puzzles",
+    "test:fast": "npm run typecheck && npm run test:i18n && npm run test:arch && npm run test:rng && npm run test:sim-kernel && npm run test:undo && npm run test:daily && npm run test:cities && npm run test:spawner && npm run test:geo-math && npm run test:gestures && npm run test:overlay-layout && npm run test:routing && npm run test:hubs && npm run test:sim-week && npm run test:route-tool && npm run test:interp && npm run test:daynight && npm run test:flap && npm run test:causes && npm run test:saves && npm run test:audio-sched && npm run test:cvd && npm run test:contrast && npm run test:puzzles && npm run test:daily-mode",
     "shots": "node scripts/shots.mjs && node dev/shots.mjs",
     "shots:mockups": "node mockups/shoot.mjs",
     "mockups": "node mockups/build-all.mjs",
@@ -61,14 +61,17 @@
     "test:contrast": "node scripts/check-contrast.mjs",
     "test:puzzles": "node scripts/test-puzzles.mjs",
     "shots:17": "node scripts/shots.mjs",
-    "shots:puzzles": "node scripts/shots-puzzles.mjs"
+    "shots:puzzles": "node scripts/shots-puzzles.mjs",
+    "shots:18": "node scripts/shots.mjs",
+    "test:daily-mode": "node --experimental-strip-types scripts/test-daily-mode.mjs"
   },
   "dependencies": {
     "@capacitor/android": "8.5.3",
     "@capacitor/core": "8.5.3",
     "@capacitor/ios": "8.5.3",
     "three": "0.170.0",
-    "@capacitor/haptics": "8.0.2"
+    "@capacitor/haptics": "8.0.2",
+    "@capacitor/share": "8.0.1"
   },
   "devDependencies": {
     "@types/three": "0.170.0",
