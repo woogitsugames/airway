@@ -132,6 +132,9 @@ export function mountPerformanceFixture(
   }
   host.appendChild(overlay);
   const projected: ScreenPoint = { x: 0, y: 0, visible: false };
+  // Last written pixel position per tag: skip DOM writes (and string garbage) when unchanged.
+  const lastX = new Int32Array(CITY_COUNT).fill(-1 << 30);
+  const lastY = new Int32Array(CITY_COUNT).fill(-1 << 30);
 
   const cpuHistory = new Float32Array(HISTORY);
   const intervalHistory = new Float32Array(HISTORY);
@@ -170,7 +173,12 @@ export function mountPerformanceFixture(
         continue;
       }
       if (tag.style.display !== 'block') tag.style.display = 'block';
-      tag.style.transform = 'translate(' + Math.round(projected.x) + 'px,' + Math.round(projected.y) + 'px)';
+      const x = Math.round(projected.x);
+      const y = Math.round(projected.y);
+      if (x === lastX[i] && y === lastY[i]) continue;
+      lastX[i] = x;
+      lastY[i] = y;
+      tag.style.transform = 'translate(' + x + 'px,' + y + 'px)';
     }
     lastRenderCpuMs = performance.now() - start;
     lastFrameIntervalMs = elapsedMs;

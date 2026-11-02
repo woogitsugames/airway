@@ -80,7 +80,7 @@ export function createSunController(
   };
 }
 
-/** Adapter for task 06's AirportsLayer.setCurfew(id, on). No sim -> render import. */
+/** Pushes curfew changes from a read model into a barrier layer (e.g. AirportsLayer). No sim import. */
 export interface CurfewBarrierLayer {
   setCurfew(cityId: string, closed: boolean): void;
 }

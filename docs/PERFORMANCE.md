@@ -28,30 +28,24 @@ pooled DOM and shared materials. Do not rebuild route geometry each frame.
 
 ## Shared quality API
 
-`src/render/quality.ts` provides:
+`src/render/quality.ts` is the only quality system; `createWorldRenderer` resolves one
+profile and hands it to every layer:
 
-- `chooseQualityPreset()`: auto-detect from hardware concurrency and reported
-  device memory; missing hints default to medium. Manual values low/medium/high
-  override auto through `readQualityPreference()` / `saveQualityPreference()`.
-- `resolveQualityProfile()`: capped DPR, globe geometry density, route sampling,
-  cloud instances, plane detail, overlay allowance and shadows.
-- `applyQualityProfile(renderer, profile)`: apply DPR and shadow-map policy.
-  WebGL antialiasing is a **context creation** option and must be applied when
-  constructing `WebGLRenderer`.
+- `chooseQualityPreset(pref, hints)`: auto-detect from hardware concurrency and reported
+  device memory; missing hints default to medium. Persisting a manual choice belongs to
+  the settings screen, which passes it to `world.setQuality(pref)`.
+- `resolveQualityProfile()`: preset (drives terrain subdivision and tree/rock/cloud/light
+  counts in `globe/`), capped DPR (1 / 1.5 / 2), antialias, shadows (high only, 2048 map),
+  overlay allowance.
+- `applyQualityProfile(renderer, profile)`: the single place that sets DPR, shadow map,
+  colour space and tone mapping. Antialiasing is fixed at context creation.
 - `AdaptiveFrameScheduler`: 30 rendered frames/sec at rest; each display RAF
   during pointer/keyboard interaction and for 350 ms after input. Cancels RAF
   on `document.hidden`, resumes with no background time accumulation, and
   disposes all listeners. It controls *rendering*, not the authoritative
   simulation clock (task 16 owns simulation lifecycle).
 
-The task-01 empty sky canvas uses automatic DPR/shadow settings. The
-synthetic benchmark uses every relevant quality parameter. Integration with
-the actual globe (03), routes/planes (10), overlays (06), and sunlight (11)
-is **pending their arrival**. Do not claim a production quality preset exists
-until these modules consume the profile. The next integration PR must pass a
-single profile from the composition root to all render layers.
-
-## Reproducible synthetic SwiftShader run
+## Reproducible SwiftShader run (production world renderer)
 
 Prerequisites: Node >= 22, `npm ci`, environment-provided Playwright package
 and Chromium. Set `CHROMIUM_PATH` if Playwright does not manage the browser.
@@ -64,14 +58,19 @@ npm run perf:scene -- --duration-ms 5000 --preset low
 npm run perf:scene -- --viewport 915x412 --preset medium
 ```
 
-Default test: fixed spatial lattice, **40 cities, 40 routes, 100 instanced
+Default test: `createWorldRenderer` with the real terrain, airports (8 hubs with
+capacity rings, 2 curfews), route tubes, instanced planes, day/night and a scripted
+(non-simulated) plane schedule on a fixed lattice: **40 cities, 40 routes, 100
 planes, 120 seconds wall clock at 4x animation speed**, medium preset,
 412x915 viewport, DPR 1, Chromium forced to ANGLE SwiftShader. The first
 half is idle (30 FPS scheduling), the second half sustained interactive
 rendering (every display RAF). Meshes/materials/geometry and the 40 DOM
 overlay tags are allocated once; aircraft transforms reuse an `Object3D`
 and `Vector3` instances, with a preallocated `Float32Array` history.
-DOM labels are projected only on initialization/resize (stationary camera).
+During the active half the camera orbits slowly and the 40 DOM tags are re-projected
+every frame with `world.project()` (DOM writes only when a pixel position changes).
+Note: the page also mounts the menu (`src/main.ts`), whose `src/ui/menu/demo-globe.ts`
+still creates a second WebGL context; numbers include that until the menu uses the world.
 
 The output is `.perf/scene.json` (or `--output <path>`), including
 CPU render-submit mean/p95/max, frame-interval mean/p95, sample-time draw
