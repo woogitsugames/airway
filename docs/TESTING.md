@@ -19,6 +19,8 @@ npm run build
 | `npm run shots` | Browser smoke: game canvas at portrait/landscape dimensions | `SUMMARY shots seed=0xA1A1 captured=2 failed=0`; images in `docs/shots/01/` |
 | `npm run mockups` | Preserve stage-0 Diorama and other reference mockup generation | Exit code 0 |
 | `npm run shots:mockups` | Preserve stage-0 Playwright captures of reference mockups | Existing PNG output under `mockups/*/png/` |
+| `npm run test:store-shots` | [task-26] Validate PL/EN store copy limits, owner titles and 30-shot matrix (fixed seed) | `SUMMARY test:store-shots seed=0xA1A1 listings=2 fields=12 scenes=5 devices=3 passed=1 failed=0` |
+| `npm run store:shots` | [task-26] Capture 5 actual game scenes in PL/EN on phone, foldable and tablet; requires integrated dev-only fixture | `SUMMARY store:shots seed=0xA1A1 expected=30 captured=30 passed=1 failed=0`; PNGs in `docs/store/shots/` |
 
 Every future test must have a fixed seed (use `0xA1A1` where no gameplay seed
 is needed), terminate with one `SUMMARY ...` line, set a nonzero exit code on
@@ -37,5 +39,7 @@ Never commit the negative-control file.
 `npm run shots` uses the environment-provided **Playwright and Chromium**;
 neither is intentionally added as an npm dependency. A missing browser/runtime
 produces a failing summary. Screenshot files are only committed after review.
+[task-26] Store screenshots are intentionally fail-closed: without a complete deterministic game fixture, `npm run store:shots` exits nonzero and produces no publishable PNGs. The text-only validation command is independent of Playwright. See `docs/store/README.md`.
+
 The two PNG dimensions are **412×915** and **915×412** at DPR 1 (exact pixel
 size). Foldable 673×841 / 904×1000 checks are part of later UI tasks.
