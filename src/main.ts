@@ -3,6 +3,8 @@ import './ui/fonts.css';
 import './ui/base.css';
 import { getLanguage, t } from './i18n';
 import { mountEmptyScene } from './render/scene';
+// [task-14] Mount the departure-board menu over the scene.
+import { mountScreens } from './game/screens';
 
 const mount = document.getElementById('app');
 if (!mount) throw new Error('Missing #app mount point');
@@ -26,3 +28,5 @@ try {
   }
   mount.appendChild(canvas);
 }
+// [task-14] The router owns menu and settings; gameplay handlers are injected later.
+mountScreens(mount);

@@ -10,8 +10,10 @@
     "typecheck": "tsc --noEmit",
     "test:i18n": "node scripts/test-i18n.mjs",
     "test:arch": "node scripts/test-arch.mjs",
-    "test:fast": "npm run typecheck && npm run test:i18n && npm run test:arch",
+    "test:flap": "node scripts/test-flap.mjs",
+    "test:fast": "npm run typecheck && npm run test:i18n && npm run test:arch && npm run test:flap",
     "shots": "node scripts/shots.mjs",
+    "shots:14": "node scripts/shots-14.mjs",
     "shots:mockups": "node mockups/shoot.mjs",
     "mockups": "node mockups/build-all.mjs"
   },
