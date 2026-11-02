@@ -397,3 +397,24 @@ clock. The failure scene stops building and lets real demand jam a hub. Every PN
 blank/white, developer text, only the six D-08 passenger glyphs, which also keeps the provisional Asia/Oceania glyphs
 out of store images) and recorded in `docs/store/shots/manifest.json`. **Status: in force.**
 
+
+<!-- Owner decisions below use D-60+ so they cannot collide with D-49… taken by the parallel task-37…40 session. -->
+
+## D-60 — First weekly upgrade at ~7.2 min is accepted (2026-11-02, owner)
+Keeps 1 tick = 1 game minute and the D-43 balance (median 12.9 min, 86% / 44%). Supersedes the "4–5 min" estimate in D-40.
+**Status: in force.**
+
+## D-61 — Polish number format uses a space from four digits: "2 500 km" (2026-11-02, owner)
+Player-facing numbers in PL group thousands from 4 digits (as in the mockups), unlike `Intl` pl-PL's default (5 digits).
+One formatter in `src/core/format` / i18n helpers; EN unchanged ("2,500"). **Status: to implement.**
+
+## D-62 — Menu globe rotates slowly (2026-11-02, owner)
+About 1.2°/s, paused with `prefers-reduced-motion` and while the menu is hidden. **Status: to implement.**
+
+## D-63 — Store screenshot order: night, game, upgrade, failure, menu; dusk must read as dusk (2026-11-02, owner)
+The "game" scene uses clearly golden low-sun light (not daylight). **Status: to implement.**
+
+## D-64 — `main` follows green `dev` (2026-11-02, owner)
+`dev` stays the integration branch for all task PRs. The coordinator regularly fast-forwards `main` to `dev` after the
+full gate passes on `dev` (`test:fast`, `build`, `test:e2e:smoke`). Nobody commits to `main` directly. `main` is the
+GitHub default branch. **Status: in force.**
