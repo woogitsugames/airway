@@ -15,7 +15,8 @@ test('offers are deterministic with unique ids and guaranteed plane', () => {
     assert.ok(a.some(x => x.id === 'turboprop' || x.id === 'widebody'));
   }
 });
-test('week boundary pauses exactly once per 7 days', () => {
+test('week boundary pauses exactly once per 3-day week (D-40)', () => {
+  assert.equal(TICKS_PER_WEEK, 3 * 24 * 60); // [task-31]
   assert.equal(startWeeklyUpgrade(TICKS_PER_WEEK - 1, rng(SEED)), null);
   assert.equal(startWeeklyUpgrade(0, rng(SEED)), null);
   assert.equal(startWeeklyUpgrade(TICKS_PER_WEEK, rng(SEED))?.week, 1);

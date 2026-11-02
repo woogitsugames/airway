@@ -10,6 +10,7 @@ import {
 import { createJamHaptics, routeHaptics } from '../platform';
 import { PLANE_TYPES, SIM_TICKS_PER_SECOND } from '../sim/params';
 import { TICKS_PER_WEEK } from '../sim/upgrades';
+import { calendarDayAt, calendarWeekAt } from '../sim/clock'; // [task-31]
 import type { PlaneView as PlaneRenderSnapshot } from '../render';
 import type { AudioCue } from '../audio/events';
 import { mountAtcStrip, mountRouteContextMenu, mountRouteHandles } from '../ui/atcStrip';
@@ -289,9 +290,10 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     const clock = run.localMinute;
     const stock = run.inventory;
     hud.render({
-      // The calendar week; at a weekly board (minute = n·week) it still shows the week just finished.
-      week: Math.max(1, Math.ceil(run.clockMinute / TICKS_PER_WEEK)),
-      day: ((Math.floor(clock / 1440) % 7) + 7) % 7 + 1,
+      // [task-31] Calendar week/day from the sim clock (D-40, 3-day week); at a weekly board it still
+      // shows the week just finished with a full day bar.
+      week: calendarWeekAt(run.clockMinute),
+      day: calendarDayAt(run.clockMinute),
       timeMinutes: ((clock % 1440) + 1440) % 1440,
       passengers: run.passengers,
       paused, speed, canUndo: run.networkUndoable,

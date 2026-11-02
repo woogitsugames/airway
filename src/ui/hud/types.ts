@@ -3,7 +3,7 @@ export type PlaneType = 'turboprop' | 'widebody';
 export type GameSpeed = 1 | 2 | 4;
 
 export interface HudState {
-  /** One-based week and day; day 1 is Monday. */
+  /** One-based week and day of the week (1..DAYS_PER_WEEK, D-40). */
   readonly week: number;
   readonly day: number;
   /** Minutes since midnight, clamped to 0..1439 for presentation. */

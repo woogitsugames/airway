@@ -6,7 +6,8 @@ export const SIM_TICK_MS = 100 as const;
 export const SPAWNER_PARAMS_VERSION = 1 as const;
 export const GAME_TICKS_PER_HOUR = 60 as const;
 // [task-22 balance, integration] 4 h -> 12 h; see docs/balance/README.md (bot median 10.1 min at 1x).
-export const SPAWNER_INTERVAL_HOURS = 12 as const;
+// [task-31 balance] 12 h -> 16 h with the 3-day week (D-40): 4.5 new cities per week; docs/balance/README.md.
+export const SPAWNER_INTERVAL_HOURS = 16 as const;
 export const SPAWNER_INTERVAL_TICKS = SPAWNER_INTERVAL_HOURS * GAME_TICKS_PER_HOUR;
 export const SPAWNER_START_CITY_MIN = 3 as const;
 export const SPAWNER_START_CITY_MAX = 4 as const;
@@ -18,15 +19,18 @@ export const SPAWNER_MIN_CITY_DISTANCE_KM = 668 as const;
 // [task-08] Passenger-network simulation parameters. One tick is one game minute.
 export const PASSENGER_SIM_VERSION = 1 as const;
 export const SIM_MINUTES_PER_DAY = 1_440 as const;
-export const SIM_DAYS_PER_WEEK = 7 as const;
+// [task-31] D-40: the ONLY definition of the week length. The clock, weekly upgrade board, HUD day bar,
+// curfew start (week 4, D-17) and daily/puzzle modes all derive from it; test:week-source enforces this.
+export const SIM_DAYS_PER_WEEK = 3 as const;
+export const SIM_MINUTES_PER_WEEK = SIM_MINUTES_PER_DAY * SIM_DAYS_PER_WEEK;
 // [task-22 balance, integration] 3 -> 1 passenger per million inhabitants per day.
 export const DEMAND_PASSENGERS_PER_MILLION_PER_DAY = 1 as const;
 // Dawn is intentionally strongest; this 24-element integer profile is in local time.
 // [task-11] One game tick is one UTC minute; day/night balance is versioned.
 export const DAYNIGHT_PARAMS_VERSION = 1 as const;
-export const DAYNIGHT_MINUTES_PER_DAY = 1_440 as const;
-export const DAYNIGHT_DAYS_PER_WEEK = 7 as const;
-export const DAYNIGHT_MINUTES_PER_WEEK = DAYNIGHT_MINUTES_PER_DAY * DAYNIGHT_DAYS_PER_WEEK;
+export const DAYNIGHT_MINUTES_PER_DAY = SIM_MINUTES_PER_DAY;
+// [task-31] Alias of the single week length above (kept for the task-11 day/night module).
+export const DAYNIGHT_MINUTES_PER_WEEK = SIM_MINUTES_PER_WEEK;
 // The single local-time demand profile, shared by demand.ts and daynight.ts.
 // Local 06:00 dawn is deliberately stronger than local 02:00 night.
 export const DEMAND_HOURLY_WEIGHTS = [
@@ -34,8 +38,9 @@ export const DEMAND_HOURLY_WEIGHTS = [
   85, 90, 105, 125, 145, 150, 125, 100, 70, 50, 35, 25,
 ] as const;
 // [task-22 balance, integration] hub 10 -> 30, ordinary city 5 -> 20 waiting passengers.
-export const HUB_WAITING_CAPACITY = 30 as const;
-export const CITY_WAITING_CAPACITY = 20 as const;
+// [task-31 balance] hub 30 -> 36, ordinary city 20 -> 24 (D-40 rebalance; docs/balance/README.md).
+export const HUB_WAITING_CAPACITY = 36 as const;
+export const CITY_WAITING_CAPACITY = 24 as const;
 // [task-12] One hub upgrade: +6 seats and a 15-minute minimum connection time.
 export const HUB_CAPACITY_UPGRADE = 6 as const;
 export const MIN_TRANSFER_TICKS = 25 as const;

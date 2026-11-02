@@ -24,6 +24,7 @@ import { initializeAccessibility } from './ui/a11y';
 import { readBestRecord } from './ui/gameover/storage';
 import { mountPuzzleSelector, readPuzzleProgress } from './ui/puzzles';
 import { onSettingsChange, readSettings } from './ui/settings/settings';
+import { TICKS_PER_WEEK } from './sim/clock'; // [task-31] single week length (D-40)
 
 const mount = document.getElementById('app');
 if (!mount) throw new Error('Missing #app mount point');
@@ -81,7 +82,7 @@ async function boot(): Promise<void> {
   }
 
   function summary(run: EndlessRun): SavedSummary {
-    return { mode: run.mode === 'daily' ? 'daily' : 'endless', week: Math.floor(run.clockMinute / (7 * 1440)) + 1, passengers: run.passengers };
+    return { mode: run.mode === 'daily' ? 'daily' : 'endless', week: Math.floor(run.clockMinute / TICKS_PER_WEEK) + 1, /* [task-31] */ passengers: run.passengers };
   }
 
   let screenName: AwScreen = 'menu';
@@ -155,7 +156,7 @@ async function boot(): Promise<void> {
       onSave: saveRun,
       onFailure: (failed) => {
         if (mode === 'daily' && dailySession?.status === 'started') {
-          daily.finish(dailySession.session, failed.passengers, Math.floor(failed.tick / (7 * 1440)), []);
+          daily.finish(dailySession.session, failed.passengers, Math.floor(failed.tick / TICKS_PER_WEEK), []); // [task-31]
           dailySession = null;
         }
         saved = null;

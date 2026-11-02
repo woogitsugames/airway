@@ -11,9 +11,9 @@ import { fileURLToPath } from 'node:url';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = resolve(ROOT, 'docs/store/shots');
 const SEED = 41377; // 0xA1A1
-// The weekly board needs a run that survives week 1. With the current balance the DEV autoplay bot
-// (src/game/dev/autoplay.ts) does so from a clean start only on some seeds; 41386 is the nearest one.
-const WEEK_SEED = 41386;
+// [task-31] The weekly board needs a run that survives week 1; with 3-day weeks (D-40) the DEV autoplay bot
+// (src/game/dev/autoplay.ts) does so from a clean start on the ordinary seed 0xA1A1.
+const WEEK_SEED = SEED;
 const seedFor = (scene) => (scene === 'upgrade' ? WEEK_SEED : SEED);
 const LANGUAGES = ['pl', 'en'];
 const SCENES = [
