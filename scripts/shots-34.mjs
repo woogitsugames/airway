@@ -11,7 +11,7 @@ import { withBrowser, newGamePage, waitForScreen, clickTestId, dragGesture, asse
 const OUT = resolve(ROOT, process.argv[2] ?? 'docs/shots/34');
 const VIEWS = [['p', 412, 915], ['l', 915, 412]];
 // Hour angle of the sun east of the view centre, in degrees (0 = local noon at the centre).
-const MOMENTS = [['day', 0], ['dusk', -82], ['night', 180]];
+const MOMENTS = [['day', 0], ['dusk', -88], ['night', 180]];
 const THRESHOLD = 4.5;
 let captured = 0;
 const failures = [];

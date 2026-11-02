@@ -221,6 +221,7 @@ export function createWorldRenderer(
     setTime(tick, fraction = 0) {
       sun.setViewCenter(orbit.longitudeDeg, orbit.latitudeDeg);
       sun.update(tick, fraction);
+      planes.setDaylight(sun.daylight); // [task-34]
     },
     setCities(views) {
       let reset = false;

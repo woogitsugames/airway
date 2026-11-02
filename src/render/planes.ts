@@ -295,6 +295,12 @@ export class PlaneLayer {
     };
   }
 
+  /** [task-34] No sun, no cast shadow: fade plane shadows with view-centre daylight (0..1). */
+  setDaylight(daylight: number): void {
+    this.shadowMaterial.opacity = 0.25 * Math.max(0, Math.min(1, daylight));
+    this.shadow.visible = daylight > 0.02;
+  }
+
   dispose(): void {
     this.turboprops.dispose();
     this.widebodies.dispose();

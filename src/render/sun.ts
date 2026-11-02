@@ -14,6 +14,8 @@ export interface SunController {
   update(tick: number, fraction?: number): void;
   setViewCenter(longitudeDeg: number, latitudeDeg: number): void;
   setSeasonDeclination(latitudeDeg: number): void;
+  /** [task-34] Daylight at the view centre after the last `update()`: 0 night … 1 day. */
+  readonly daylight: number;
 }
 
 function validTick(tick: number): void {
@@ -49,6 +51,7 @@ export function createSunController(
   let viewLon = 0;
   let viewSinLat = 0;
   let viewCosLat = 1;
+  let daylight = 1;
   const baseExposure = renderer?.toneMappingExposure ?? 1.05;
   function setDeclination(lat: number): void {
     if (!Number.isFinite(lat) || lat < -23.5 || lat > 23.5) {
@@ -61,13 +64,14 @@ export function createSunController(
     update(tick, fraction = 0) {
       const lon = subsolarLongitudeAt(tick, fraction);
       globe.setSun(lon, declination);
-      if (renderer) {
-        const sunLat = declination * DEG;
-        const dot = viewSinLat * Math.sin(sunLat) +
-          viewCosLat * Math.cos(sunLat) * Math.cos((viewLon - lon) * DEG);
-        const day = Math.max(0, Math.min(1, (dot + 0.25) / 1.25));
-        renderer.toneMappingExposure = baseExposure * (0.94 + 0.08 * day);
-      }
+      const sunLat = declination * DEG;
+      const dot = viewSinLat * Math.sin(sunLat) +
+        viewCosLat * Math.cos(sunLat) * Math.cos((viewLon - lon) * DEG);
+      const day = Math.max(0, Math.min(1, (dot + 0.25) / 1.25));
+      // [task-34] Smooth 0..1 around the terminator (plane shadows fade out at night).
+      const t = Math.max(0, Math.min(1, (dot + 0.15) / 0.35));
+      daylight = t * t * (3 - 2 * t);
+      if (renderer) renderer.toneMappingExposure = baseExposure * (0.94 + 0.08 * day);
     },
     setViewCenter(lon, lat) {
       validLon(lon);
@@ -77,6 +81,7 @@ export function createSunController(
       viewCosLat = Math.cos(lat * DEG);
     },
     setSeasonDeclination: setDeclination,
+    get daylight() { return daylight; },
   };
 }
 
