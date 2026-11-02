@@ -34,6 +34,7 @@ function field(markdown, heading) {
   const key = '## ' + heading + '\n';
   const index = markdown.indexOf(key);
   if (index < 0) throw new Error('Missing listing field: ' + heading);
+  if (markdown.indexOf(key, index + key.length) >= 0) throw new Error('Duplicate listing field: ' + heading);
   const value = markdown.slice(index + key.length).split(/\n## /, 1)[0].trim();
   if (!value) throw new Error('Empty listing field: ' + heading);
   return value;
