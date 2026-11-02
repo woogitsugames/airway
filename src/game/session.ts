@@ -87,7 +87,13 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
 
   world.reset();
   world.setIdleSpin(0);
-  world.setInsets({ top: 84, bottom: 96 });
+  // Keep the globe clear of the boarding pass and the tag dock (bottom in portrait, right in landscape).
+  const applyInsets = (): void => {
+    const landscape = host.clientWidth > host.clientHeight;
+    world.setInsets(landscape ? { top: 40, right: 110 } : { top: 84, bottom: 96 });
+  };
+  applyInsets();
+  window.addEventListener('resize', applyInsets);
 
   // ---- presentation layers -------------------------------------------------------------
   const overlay: AirportOverlay = createAirportOverlay(layer, world.camera, {
@@ -266,12 +272,12 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     renderHud();
   }
   function renderHud(): void {
-    const clock = run.clockMinute;
+    const clock = run.localMinute;
     const stock = run.inventory;
     hud.render({
       week: Math.floor(run.tick / TICKS_PER_WEEK) + 1,
-      day: Math.floor(clock / 1440) % 7 + 1,
-      timeMinutes: clock % 1440,
+      day: ((Math.floor(clock / 1440) % 7) + 7) % 7 + 1,
+      timeMinutes: ((clock % 1440) + 1440) % 1440,
       passengers: run.passengers,
       paused, speed, canUndo: run.networkUndoable,
       selectedPlane,
@@ -364,7 +370,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
   });
   const cities = run.cityList();
   world.orbit.fitNetwork(cities.map((city) => ({ lon: city.lon, lat: city.lat })));
-  world.orbit.setZoom(1.6);
+  world.orbit.setZoom(3);
   syncWorld(true);
   syncUpgrade();
   callbacks.onScreen('game');
@@ -414,6 +420,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       if (disposed) return;
       disposed = true;
       world.onFrame(null);
+      window.removeEventListener('resize', applyInsets);
       world.preview(null);
       gestures.dispose();
       routeMenu.dispose();

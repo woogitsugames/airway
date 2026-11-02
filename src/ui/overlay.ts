@@ -26,7 +26,7 @@ export interface AirportOverlayOptions {
   reservedBottom?: number;
   globeTransform?: Object3D;
   onNavigate?: (id: string) => void;
-  /** The render facade's projection (WorldRenderer.project); preferred over the local fallback. */
+  /** The render facade's projection (WorldRenderer.project; altitude is a radius); preferred over the local fallback. */
   project?: (lon: number, lat: number, altitude: number, out: { x: number; y: number; visible: boolean }) => unknown;
 }
 
@@ -266,7 +266,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
         let y: number;
         let front: boolean;
         if (options.project && !transform) {
-          options.project(entry.airport.lon, entry.airport.lat, entry.airport.hub ? 0.075 : 0.045, projected);
+          options.project(entry.airport.lon, entry.airport.lat, entry.airport.hub ? 1.075 : 1.045, projected);
           x = projected.x;
           y = projected.y;
           front = projected.visible;

@@ -91,7 +91,7 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
     setRoutes: (routes, revision) => renderer.setRoutes(routes, revision),
     setPlanes: (previous, current) => renderer.setPlanes(previous, current),
     preview: (model) => renderer.setRoutePreview(model),
-    project: (lon, lat, out) => renderer.project(lon, lat, 0, out),
+    project: (lon, lat, out) => renderer.project(lon, lat, 1.01, out),
     pickGlobe: (x, y) => renderer.pickGlobe(x, y),
     setQuality(preference) { void renderer.setQuality(preference).catch((error: unknown) => console.warn('Quality change failed', error)); },
     reset() {

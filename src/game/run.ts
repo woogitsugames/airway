@@ -73,7 +73,8 @@ interface PlaneState {
 interface RouteState { id: string; cityIds: string[]; aircraft: AircraftType }
 
 const CITY_INDEX = new Map(CITIES.map((city, index) => [city.code, index]));
-const START_MINUTE = 6 * 60;
+/** Runs open at 08:00 local time at the home airport, so the first view is in daylight. */
+const START_LOCAL_MINUTE = 8 * 60;
 
 export function cityDistanceKm(a: string, b: string): number {
   const i = CITY_INDEX.get(a);
@@ -115,6 +116,8 @@ export class EndlessRun {
   private networkRevision = 0;
   private hops = new Map<RegionId, Map<string, number>>();
   private events: RunEvent[] = [];
+  private readonly startMinute: number;
+  private readonly homeOffset: number;
 
   constructor(seed: number) {
     this.seed = seed >>> 0;
@@ -130,6 +133,8 @@ export class EndlessRun {
       }),
     }, []);
     for (const index of this.spawner.activeCityIndices) this.activate(index);
+    this.homeOffset = demandCity(this.spawner.activeCityIndices[0] ?? 0).utcOffsetMinutes;
+    this.startMinute = ((START_LOCAL_MINUTE - this.homeOffset) % 1440 + 1440) % 1440;
   }
 
   /** Rebuild a run from its journal; used by undo and by save/load. */
@@ -150,7 +155,10 @@ export class EndlessRun {
   }
 
   get tick(): number { return this.tickValue; }
-  get clockMinute(): number { return this.tickValue + START_MINUTE; }
+  /** UTC minute for the sun/terminator (always >= 0). */
+  get clockMinute(): number { return this.tickValue + this.startMinute; }
+  /** Wall-clock minute at the home airport, for the boarding pass. */
+  get localMinute(): number { return this.clockMinute + this.homeOffset; }
   get nextWeekTick(): number { return (Math.floor(this.tickValue / TICKS_PER_WEEK) + 1) * TICKS_PER_WEEK; }
   get passengers(): number { return this.delivered; }
   get revision(): number { return this.networkRevision; }
