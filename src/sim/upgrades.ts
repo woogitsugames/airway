@@ -71,3 +71,12 @@ export function chooseUpgrade(state: WeeklyUpgradeState, command: UpgradeCommand
   }
   return { ...state, paused: false, pendingHub: false, selected: command.upgrade, lastChoice: command };
 }
+/**
+ * [task-39] D-49: undo the first half of a two-step targeted choice (hub expansion, "+2 slots") before
+ * the airport is picked. Returns exactly the state the week's offer had before the card was chosen
+ * (no `selected` key), so pick -> cancel -> choose another card equals choosing that card directly.
+ */
+export function cancelUpgradePick(state: WeeklyUpgradeState, week: number): WeeklyUpgradeState {
+  if (!state.paused || state.lastChoice || !state.pendingHub || week !== state.week) throw new Error('No airport pick to cancel');
+  return { week: state.week, paused: true, offers: state.offers.map((offer) => ({ ...offer })), pendingHub: false };
+}

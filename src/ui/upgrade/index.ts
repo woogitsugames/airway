@@ -9,6 +9,8 @@ export interface UpgradeUIOptions {
   onCommand: (command: UpgradeCommand) => void;
   onHubSelectionMode?: (active: boolean, hubIds: readonly string[]) => void;
   onPreviewModel?: (container: HTMLElement, kind: UpgradeKind) => void;
+  /** [task-39] "Back" in the airport pick: the host queues CancelUpgradePick for `week` (D-49). */
+  onCancelPick?: (week: number) => void;
 }
 
 const span = (className: string, text?: string): HTMLSpanElement => {
@@ -39,6 +41,27 @@ function cargoLabel(model: CardModel, index: number): { card: HTMLButtonElement;
   card.setAttribute('aria-label', [model.title, ...model.rows.map((row) => `${row.label}: ${row.value}`), model.stamp]
     .filter(Boolean).join('. '));
   return { card, window };
+}
+
+/** [task-39] Black wayfinding tile with a yellow arrow, set into the yellow sign: back to the crates. */
+function backTile(onBack: () => void): HTMLButtonElement {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'airway-upgrade-back';
+  button.dataset.testid = 'upgrade-pick-back';
+  button.setAttribute('aria-label', t('upgrade.backLabel'));
+  const svgNs = 'http://www.w3.org/2000/svg';
+  const arrow = document.createElementNS(svgNs, 'svg');
+  arrow.setAttribute('viewBox', '0 0 24 24');
+  arrow.setAttribute('aria-hidden', 'true');
+  arrow.classList.add('airway-upgrade-back-arrow');
+  const path = document.createElementNS(svgNs, 'path');
+  // Wayfinding arrow (ISO 7001 proportions): square shaft, 90° head.
+  path.setAttribute('d', 'M3 12 12 3v6h9v6h-9v6z');
+  arrow.append(path);
+  button.append(arrow, span('airway-upgrade-back-text', t('upgrade.back')));
+  button.addEventListener('click', onBack);
+  return button;
 }
 
 export class WeeklyUpgradeView {
@@ -77,6 +100,7 @@ export class WeeklyUpgradeView {
     wrap.append(sign);
     if (state.pendingHub) {
       // The globe must stay readable while the player taps a hub: only the sign remains.
+      if (this.options.onCancelPick) sign.prepend(backTile(() => this.options.onCancelPick?.(state.week))); // [task-39]
       this.options.onHubSelectionMode?.(true, pickingSlots ? this.airports.map(a => a.cityId) : this.hubs.map(h => h.hubId));
       this.root.append(wrap);
       return;

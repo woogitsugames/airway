@@ -166,7 +166,8 @@ sim.hash(); sim.snapshot(); Sim.fromSnapshot(json); Sim.replay(seed, journal, ti
   the sim, announced by `RouteAdded`; `aircraft` also assigns a spare plane), `ExtendRoute {routeId,
   end, cityIds}` (full resulting list, route-tool format), `ShortenRoute {routeId, end}`, `RemoveRoute`,
   `AssignPlane {routeId, aircraft}`, `UnassignPlane {planeId}`, `UpgradeHub {hubId}` (stocked, puzzles),
-  `ChooseUpgrade {week, upgrade, hubId?}` (task 12 UI shape), `SetSpeed`. City ids are
+  `ChooseUpgrade {week, upgrade, hubId?}` (task 12 UI shape), `CancelUpgradePick {week}` (task 39, D-49: back
+  from the hub/airport pick of a targeted upgrade to the week's offers), `SetSpeed`. City ids are
   `src/data/cities.ts` codes; distances/flight times come from the generated table, never from callers.
   Unknown extra fields (e.g. `legDistancesKm`) are dropped. Rejected commands are journaled too.
 - **Time**: `tick` = kernel step (journal index); `world.minute` = game minute. They differ only if

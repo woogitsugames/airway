@@ -95,7 +95,7 @@ export class EndlessRun {
   get commandLog(): readonly JournalEntry[] { return this.sim.getCommandLog(); }
   get assignments(): number { return this.sim.world.planes.length; }
   get networkUndoable(): boolean {
-    return this.sim.pendingCount > 0 || this.sim.getCommandLog().some(([, command]) => command.type !== 'ChooseUpgrade' && command.type !== 'SetSpeed');
+    return this.sim.pendingCount > 0 || this.sim.getCommandLog().some(([, command]) => command.type !== 'ChooseUpgrade' && command.type !== 'CancelUpgradePick' && command.type !== 'SetSpeed'); // [task-39]
   }
   get failed(): RunFailure | null {
     if (this.sim.world.status !== 'over') return null;

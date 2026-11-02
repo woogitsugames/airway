@@ -173,7 +173,8 @@ export class Sim {
     const status = this.worldValue.status;
     if (status === 'over' || status === 'won') return 0;
     if (status === 'upgrade') {
-      return this.pending.some((cmd) => cmd.type === 'ChooseUpgrade') ? (speed === 0 ? 1 : speed) : 0;
+      // [task-39] CancelUpgradePick is an offer command too: it needs its tick while the world is frozen.
+      return this.pending.some((cmd) => cmd.type === 'ChooseUpgrade' || cmd.type === 'CancelUpgradePick') ? (speed === 0 ? 1 : speed) : 0;
     }
     return speed;
   }

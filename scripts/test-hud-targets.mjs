@@ -50,6 +50,7 @@ async function mountUpgrade(page, language, variant) {
     const pending = [];
     window.__upgradeView = new WeeklyUpgradeView(host, {
       onCommand: (command) => window.__upgradeEvents.push(command.upgrade),
+      onCancelPick: (week) => window.__upgradeEvents.push(`cancel:${week}`), // [task-39]
       onPreviewModel: (container, kind) => pending.push([container, kind]),
     });
     window.__upgradeView.render(window.__upgradeState, hubs);
@@ -260,6 +261,17 @@ try {
           const picking = await page.evaluate(() => ({ cards: document.querySelectorAll('.airway-upgrade-tag').length,
             transparent: getComputedStyle(document.querySelector('.airway-upgrade-open')).backgroundColor === 'rgba(0, 0, 0, 0)' }));
           check(picking.cards === 0 && picking.transparent, `${tag}: hub pick leaves only the sign over the live globe`);
+          // [task-39] Back tile in the pick sign: ≥48 px, inside the viewport, translated, tap emits CancelUpgradePick.
+          const back = await page.evaluate(() => {
+            const el = document.querySelector('[data-testid="upgrade-pick-back"]');
+            const r = el?.getBoundingClientRect();
+            return el && r ? { w: r.width, h: r.height, inside: r.left >= 0 && r.top >= 0 && r.right <= innerWidth && r.bottom <= innerHeight,
+              text: el.textContent, label: el.getAttribute('aria-label'), hit: document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2)?.closest('[data-testid="upgrade-pick-back"]') === el } : null;
+          });
+          check(!!back && back.w >= 48 && back.h >= 48 && back.inside && back.hit, `${tag}: back tile ≥48px and tappable (${JSON.stringify(back)})`);
+          check(!!back && back.text === (language === 'pl' ? 'Wróć' : 'Back') && !!back.label, `${tag}: back tile text from i18n`);
+          await page.getByTestId('upgrade-pick-back').click();
+          check(await page.evaluate(() => window.__upgradeEvents.includes('cancel:7')), `${tag}: back tile emits CancelUpgradePick`);
           await page.evaluate(() => window.__upgradeView.render(window.__upgradeState, []));
           check(await page.locator('[data-upgrade="hub-expansion"]').isDisabled(), `${tag}: hub label disabled when there is no hub`);
         }

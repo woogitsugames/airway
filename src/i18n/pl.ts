@@ -71,6 +71,8 @@ export const pl = {
   'upgrade.stamp': '{hub} {waiting}/{capacity}',
   'upgrade.noHub': 'Brak huba',
   'upgrade.selectAirport': 'Wskaż lotnisko na globusie',
+  'upgrade.back': 'Wróć', // [task-39]
+  'upgrade.backLabel': 'Wróć do skrzyń',
   'upgrade.slotStamp': '{airport} {minutes} min',
   'upgrade.value.slotsFor': 'wybranego lotniska',
   // [task-14] Main menu, preferences and licence notice.
