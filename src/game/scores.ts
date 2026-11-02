@@ -23,6 +23,7 @@ export interface DailyProgress {
 }
 
 export interface ScoreStorage {
+  readonly durable?: boolean;
   getItem(key: string): string | null;
   setItem(key: string, value: string): void;
 }
@@ -128,6 +129,7 @@ function better(candidate: DailyResult, previous: DailyResult | null | undefined
 
 /** Storage injection makes the service testable and replaceable by task-16's platform storage. */
 export class MemoryScoreStorage implements ScoreStorage {
+  readonly durable = false;
   private readonly entries = new Map<string, string>();
   getItem(key: string): string | null { return this.entries.get(key) ?? null; }
   setItem(key: string, value: string): void { this.entries.set(key, value); }
@@ -222,7 +224,7 @@ export class LocalScoreService implements ScoreService {
       bestOfficial: bestOfficial ? { ...bestOfficial } : null,
       currentStreak,
       longestStreak,
-      persistent: this.storage !== null,
+      persistent: this.storage !== null && this.storage.durable !== false,
     };
   }
 }
