@@ -181,7 +181,11 @@ export class AirwayAudio {
     if (this.context?.state === 'running') void this.context.suspend().catch(() => {});
   }
 
-  resume(): Promise<boolean> { return this.unlock(); }
+  resume(): Promise<boolean> {
+    // Visibility/pageshow may fire before the first gesture. Do not create an
+    // AudioContext from lifecycle notifications; only unlock() may do that.
+    return this.context ? this.unlock() : Promise.resolve(false);
+  }
 
   /** Browser fallback until task 16 wires @capacitor/app lifecycle. */
   attachBrowserLifecycle(): () => void {
