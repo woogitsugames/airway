@@ -29,7 +29,7 @@ const FRAGMENT_BODY = `
     float awDusk = 1.0 - smoothstep(0.0, ${DUSK_HALF_WIDTH.toFixed(3)}, abs(awSun - 0.01));
     // Night: cool moonlit palette, never black, so land and sea stay apart.
     vec3 awMoon = diffuseColor.rgb * vec3(0.035, 0.055, 0.11);
-    outgoingLight = mix(outgoingLight, outgoingLight * vec3(0.5, 0.64, 0.98) + awMoon, awNight);
+    outgoingLight = mix(outgoingLight, outgoingLight * vec3(0.42, 0.56, 0.9) + awMoon, awNight);
     // Terminator: a warm band (low sun) on both sides of the line, strongest on the day side.
     outgoingLight += diffuseColor.rgb * vec3(0.42, 0.16, 0.04) * awDusk * (1.0 - 0.6 * awNight);
   }
