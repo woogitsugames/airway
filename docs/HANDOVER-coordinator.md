@@ -6,6 +6,13 @@ Aktualizowane na bieżąco przez sesję koordynatora. Jeśli sesja się skończy
 - Na `dev`: zlecenia 01–29, 31–35 (PR #30, #32, #33, #34, #35, #36). RULES_VERSION=4, test:balance po 32: mediana 12,92 min, 0,86/0,44. PR #34 [33] scalony przez koordynatora po pełnej bramce testów.
 - **36 prawdziwe zrzuty do sklepów** — w toku, gałąź `task/36-store-shots-real` z dev e9908c2. D-48. Po nim: bramka testów i scalenie, koniec kolejki.
 
+## Przerwa na limit (2026-11-02, ~21:00 UTC)
+Limit 5 h osiągnął 92%, reset we wtorek 01:10. Jedyna otwarta praca: **zlecenie 36** na gałęzi
+`task/36-store-shots-real` (draft PR `[36]`, sekcja „Stan / co dalej” w opisie). Nowa sesja:
+1. `git fetch origin && git worktree add -b task/36-store-shots-real-wt ../wt36 origin/task/36-store-shots-real`
+   (albo checkout gałęzi), przeczytaj docs/tasks/36-store-shots-real.md i „Stan / co dalej” z PR, dokończ.
+2. Bramka scalenia jak niżej, potem merge commit do `dev`. Po tym kolejka P1–P3 (31–36) jest zamknięta.
+
 ## Jak wznowić
 1. Sprawdź draft PR-y `[32]`, `[33]` na GitHubie (sekcja „Stan / co dalej” w opisie).
 2. Scalanie: świeży worktree z origin/dev → merge gałęzi zlecenia → konflikty w DECISIONS/TESTING/package.json
