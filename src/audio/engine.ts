@@ -292,8 +292,8 @@ export class AirwayAudio {
 
   private durationOf(cue: AudioCue): number {
     switch (cue.type) {
-      case 'arrival': return 0.62;
-      case 'transfer': return 0.29;
+      case 'arrival': return 0.72;
+      case 'transfer': return 0.48;
       case 'dawn': return 1.5;
       case 'week': return 0.9;
       case 'new-city': return 1.25;
@@ -514,6 +514,7 @@ export class AirwayAudio {
     const ratio = clamp01(cue.loadRatio);
     if (ratio < 0.68) { this.stopStress(cue.hubId); return; }
     let drone = this.stress.get(cue.hubId);
+    if (!drone && ratio < 0.75) return; // Hysteresis prevents drone churn.
     if (!drone) {
       if (this.stress.size >= MAX_STRESS_HUBS) return;
       const fundamental = ctx.createOscillator();
