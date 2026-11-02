@@ -26,7 +26,7 @@ function near(a, b, tolerance = 1e-7) { return Math.abs(a - b) <= tolerance; }
 const folder = mkdtempSync(resolve(ROOT, 'node_modules/.interp-'));
 try {
   writeFileSync(join(folder, 'package.json'), JSON.stringify({ type: 'module' }));
-  for (const path of ['src/render/routes.ts', 'src/render/models/planes.ts', 'src/render/planes.ts']) {
+  for (const path of ['src/render/globe/geo-math.ts', 'src/render/routes.ts', 'src/render/models/planes.ts', 'src/render/planes.ts']) {
     const file = resolve(ROOT, path);
     const target = join(folder, path.slice('src/render/'.length).replace(/\.ts$/, '.js'));
     mkdirSync(dirname(target), { recursive: true });
@@ -50,9 +50,10 @@ try {
   const wb = prepareRoute({ id: 'test-wb', type: 'widebody', waypoints: lonLat });
   const tp = prepareRoute({ id: 'test-tp', type: 'turboprop', waypoints: lonLat });
   check(wb !== null && tp !== null, 'both route types prepare');
-  const bridged = routes.adaptScheduledRoute({ id: 'from-sim', cityIds: ['LIS', 'LON'] },
-    'widebody', (id) => id === 'LIS' ? lonLat[0] : id === 'LON' ? lonLat[1] : undefined);
-  check(bridged?.waypoints.length === 2 && bridged.id === 'from-sim', 'scheduled-route adapter resolves city IDs');
+  const reused = { from: new Vector3(), side: new Vector3(), angle: 0, lift: 0, liftFactor: 0 };
+  const arcOut = routes.makeGreatCircleArc(lonLat[0], lonLat[1], 'turboprop', reused);
+  check(arcOut === reused && near(arcOut.angle, wb.arcs[0].angle, 1e-12) &&
+    arcOut.lift === routes.CRUISE_LIFT.turboprop, 'preview arc reuses caller storage with identical geometry');
   const a = new Vector3(); const b = new Vector3(); const tang = new Vector3();
   sampleGreatCircleArc(wb.arcs[0], 1, a, tang);
   sampleGreatCircleArc(wb.arcs[1], 0, b, tang);

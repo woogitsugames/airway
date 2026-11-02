@@ -1,4 +1,4 @@
-// [task-21] Browser performance runner: 120 wall-clock seconds at 4x, fixed scene and seed.
+// [task-21] Browser performance runner for the production world renderer: 120 s at 4x, fixed seed.
 // Node >=22 with type stripping; Playwright is supplied by the development environment.
 import { spawn } from 'node:child_process';
 import { once } from 'node:events';
@@ -124,6 +124,7 @@ try {
     stage.style.cssText = 'position:fixed;inset:0;overflow:hidden;background:#8CC3D8';
     document.body.appendChild(stage);
     window.__airwayPerf = module.mountPerformanceFixture(stage, preset);
+    await window.__airwayPerf.ready;
   }, options.preset);
   await page.waitForFunction(() => window.__airwayPerf?.read().renderedFrames > 4, null, {
     timeout: 20_000,
@@ -187,8 +188,8 @@ try {
   const memory = samples.map((entry) => entry.jsHeapBytes).filter((value) => value !== null);
   const report = {
     schema: 1,
-    kind: 'synthetic-render-fixture',
-    warning: 'NOT an integrated game benchmark. SwiftShader is NOT comparable to mobile GPU results.',
+    kind: 'world-renderer-fixture',
+    warning: 'Real render stack with a scripted (non-simulated) network. SwiftShader is NOT comparable to mobile GPU results.',
     ...config,
     durationRequestedMs: options.durationMs,
     durationMeasuredMs: Math.round(performance.now() - started),

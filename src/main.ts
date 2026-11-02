@@ -16,11 +16,8 @@ document.documentElement.lang = getLanguage();
 initializeAccessibility();
 document.title = t('app.title');
 
-// [task-06] Temporary standalone airport fixture; it does not replace the playable game.
-if (new URLSearchParams(location.search).get('dev') === 'airports') {
-  void import('./render/models/airports-demo').then(({ mountAirportsDemo }) => mountAirportsDemo(mount))
-    .catch((error: unknown) => console.error('Airport demo unavailable', error));
-} else {
+// [integration-render] The airport fixture moved to dev/world.html (shared world renderer).
+{
   try {
     const view = mountEmptyScene(mount);
     view.canvas.setAttribute('aria-label', t('canvas.label'));

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import type { UpgradeKind } from '../sim/upgrades';
+import type { UpgradeKind } from '../sim/upgrades'; // type-only: render never calls the sim
 /** Small procedural meshes for the model window; no network assets or simulation dependencies. */
 export function renderModel(kind: UpgradeKind): THREE.Group {
   const group = new THREE.Group();
@@ -27,4 +27,75 @@ export function renderModel(kind: UpgradeKind): THREE.Group {
     tail.position.set(0, 0.08, -length / 2 + 0.09); group.add(tail);
   }
   return group;
+}
+
+/**
+ * Draws a model on a pedestal into a 2D canvas using the world's WebGLRenderer
+ * (one WebGL context for the whole game; upgrade cards get a still image).
+ */
+export interface ModelPreviewRenderer {
+  draw(kind: UpgradeKind, target: HTMLCanvasElement): boolean;
+  dispose(): void;
+}
+
+export function createModelPreviewRenderer(renderer: THREE.WebGLRenderer): ModelPreviewRenderer {
+  const scene = new THREE.Scene();
+  const key = new THREE.DirectionalLight('#fff4e0', 3);
+  key.position.set(2, 4, 3);
+  scene.add(key, new THREE.HemisphereLight('#cfe3ff', '#3a3f4a', 0.9));
+  const camera = new THREE.PerspectiveCamera(28, 1, 0.1, 20);
+  camera.position.set(0, 2.1, 4.6);
+  camera.lookAt(0, -0.15, 0);
+  let target: THREE.WebGLRenderTarget | null = null;
+  let pixels = new Uint8Array(0);
+  const clear = new THREE.Color();
+  return {
+    draw(kind, canvas) {
+      const width = Math.max(1, canvas.width);
+      const height = Math.max(1, canvas.height);
+      const context = canvas.getContext('2d');
+      if (!context) return false;
+      if (!target || target.width !== width || target.height !== height) {
+        target?.dispose();
+        target = new THREE.WebGLRenderTarget(width, height, { colorSpace: THREE.SRGBColorSpace });
+        pixels = new Uint8Array(width * height * 4);
+      }
+      const model = renderModel(kind);
+      model.rotation.y = 0.8;
+      model.scale.setScalar(1.25);
+      scene.add(model);
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+      const previousTarget = renderer.getRenderTarget();
+      const previousAlpha = renderer.getClearAlpha();
+      renderer.getClearColor(clear);
+      renderer.setRenderTarget(target);
+      renderer.setClearColor(0x000000, 0);
+      renderer.clear();
+      renderer.render(scene, camera);
+      renderer.readRenderTargetPixels(target, 0, 0, width, height, pixels);
+      renderer.setRenderTarget(previousTarget);
+      renderer.setClearColor(clear, previousAlpha);
+      scene.remove(model);
+      model.traverse((object) => {
+        if (object instanceof THREE.Mesh) {
+          object.geometry.dispose();
+          (object.material as THREE.Material).dispose();
+        }
+      });
+      // WebGL rows are bottom-up; ImageData is top-down.
+      const image = context.createImageData(width, height);
+      const row = width * 4;
+      for (let y = 0; y < height; y++) {
+        image.data.set(pixels.subarray((height - 1 - y) * row, (height - y) * row), y * row);
+      }
+      context.putImageData(image, 0, 0);
+      return true;
+    },
+    dispose() {
+      target?.dispose();
+      target = null;
+      scene.clear();
+    },
+  };
 }

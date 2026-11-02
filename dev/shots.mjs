@@ -1,4 +1,5 @@
-// [task-03] Exact-size screenshots and basic SwiftShader geometry telemetry.
+// Exact-size screenshots and SwiftShader telemetry of the render labs.
+// `node dev/shots.mjs` = globe lab (docs/shots/03); `node dev/shots.mjs world` = full world lab (docs/shots/render).
 import { spawn } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { createServer } from 'node:net';
@@ -11,6 +12,8 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const require = createRequire(import.meta.url);
 const views = [{ name: 'game-p.png', width: 412, height: 915 },
   { name: 'game-l.png', width: 915, height: 412 }];
+const lab = process.argv[2] === 'world' ? 'world' : 'globe';
+const outDir = resolve(root, lab === 'world' ? 'docs/shots/render' : 'docs/shots/03');
 let server, browser, passed = 0, failed = 0;
 try {
   const { chromium } = require('playwright');
@@ -23,7 +26,8 @@ try {
   await new Promise((done) => probe.close(done));
   server = spawn(process.execPath, [resolve(root, 'node_modules/vite/bin/vite.js'),
     '--host', '127.0.0.1', '--port', String(port), '--strictPort'], { cwd: root, stdio: 'inherit' });
-  const url = 'http://127.0.0.1:' + port + '/dev/globe.html?quality=medium';
+  const url = 'http://127.0.0.1:' + port + (lab === 'world'
+    ? '/dev/world.html?quality=medium&frozen&clean' : '/dev/globe.html?quality=medium');
   let ready = false;
   for (let i = 0; i < 150; i++) {
     if (server.exitCode !== null) throw new Error('Vite exited during startup');
@@ -33,7 +37,7 @@ try {
   if (!ready) throw new Error('Vite startup timeout');
   browser = await chromium.launch({ headless: true, args: ['--use-angle=swiftshader',
     '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
-  mkdirSync(resolve(root, 'docs/shots/03'), { recursive: true });
+  mkdirSync(outDir, { recursive: true });
   for (const v of views) {
     const page = await browser.newPage({ viewport: { width: v.width, height: v.height },
       deviceScaleFactor: 1 });
@@ -41,15 +45,16 @@ try {
     page.on('pageerror', (error) => pageErrors.push(error.message));
     try {
       await page.goto(url, { waitUntil: 'domcontentloaded' });
-      await page.waitForFunction(() => window.__globeReady && window.__globeMetrics,
+      await page.waitForFunction(() => (window.__globeReady || window.__ready) &&
+        (window.__globeMetrics || window.__worldMetrics),
         undefined, { timeout: 90000 });
       await page.waitForTimeout(700);
       if (pageErrors.length) throw new Error(pageErrors.join('; '));
-      const metrics = await page.evaluate(() => window.__globeMetrics);
-      if (!metrics || metrics.drawCalls > 60 || metrics.triangles < 1000) {
+      const metrics = await page.evaluate(() => window.__globeMetrics || window.__worldMetrics);
+      if (!metrics || metrics.drawCalls > (lab === 'world' ? 90 : 60) || metrics.triangles < 1000) {
         throw new Error('Invalid globe telemetry: ' + JSON.stringify(metrics));
       }
-      await page.screenshot({ path: resolve(root, 'docs/shots/03', v.name),
+      await page.screenshot({ path: resolve(outDir, v.name),
         animations: 'disabled' });
       console.log(v.name + ' ' + v.width + 'x' + v.height + ' fps=' + metrics.fps +
         ' calls=' + metrics.drawCalls + ' triangles=' + metrics.triangles +
@@ -68,6 +73,6 @@ try {
 } finally {
   if (browser) await browser.close();
   if (server && server.exitCode === null) server.kill('SIGTERM');
-  console.log('SUMMARY shots:globe seed=0xA1A1 captured=' + passed + ' failed=' + failed);
+  console.log('SUMMARY shots:' + lab + ' seed=0xA1A1 captured=' + passed + ' failed=' + failed);
   if (failed) process.exitCode = 1;
 }

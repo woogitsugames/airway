@@ -83,6 +83,7 @@ export class PlaneLayer {
   private readonly trails: InstancedMesh;
   private readonly bars: InstancedMesh;
   private readonly tracks: PlaneTrack[] = [];
+  private readonly pool: PlaneTrack[] = [];
   private readonly prior = new Map<string, PlaneRenderSnapshot>();
   private readonly position = new Vector3();
   private readonly forward = new Vector3();
@@ -187,8 +188,21 @@ export class PlaneLayer {
       }
       const capacity = Math.max(1, now.capacity ?? (type === 'widebody' ? 300 : 48));
       const load = Math.max(0, Math.min(capacity, Number.isFinite(now.load) ? now.load : 0));
-      this.tracks.push({ route, type, slot, fromDistance, toDistance,
-        direction: now.direction === -1 ? -1 : 1, load, capacity });
+      // Track records are pooled: a tick boundary reuses them instead of allocating.
+      let track = this.pool[this.tracks.length];
+      if (!track) {
+        track = { route, type, slot, fromDistance, toDistance, direction: 1, load, capacity };
+        this.pool.push(track);
+      }
+      track.route = route;
+      track.type = type;
+      track.slot = slot;
+      track.fromDistance = fromDistance;
+      track.toDistance = toDistance;
+      track.direction = now.direction === -1 ? -1 : 1;
+      track.load = load;
+      track.capacity = capacity;
+      this.tracks.push(track);
       for (let step = 0; step < BAR_STEPS; step++) {
         const active = (step + 0.5) / BAR_STEPS <= load / capacity;
         this.bars.setColorAt((this.tracks.length - 1) * BAR_STEPS + step,
