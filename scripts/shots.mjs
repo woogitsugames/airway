@@ -41,6 +41,19 @@ const TARGETS = [
     ready: { selector: '.airport-bubble', state: 'attached' }, note: 'airport/overlay fixture at 1x' },
   { id: 'airports-zoom', dir: '06', file: 'airports', suffix: '-2_5x', path: 'dev/world.html?frozen&clean&zoom=2.5',
     ready: { selector: '.airport-bubble', state: 'attached' }, note: 'airport/overlay fixture at 2.5x' },
+  // [task-33] Globe detail vs the mockup: world lab at 1x / 2.5x per preset and the menu globe.
+  ...['low', 'medium', 'high'].flatMap((q) => [1, 2.5].map((zoom) => ({
+    id: `globe-${q}-${zoom === 1 ? '1x' : '2_5x'}`, dir: '33', file: `world-${q}`,
+    suffix: zoom === 1 ? '-1x' : '-2_5x', path: `dev/world.html?frozen&clean&quality=${q}&zoom=${zoom}`,
+    ready: { fn: 'window.__ready && window.__worldMetrics' }, timeout: 90000, settle: 700,
+    note: `globe detail, ${q} preset at ${zoom}x`,
+    check: async (page) => {
+      const m = await page.evaluate(() => window.__worldMetrics);
+      return `calls=${m.drawCalls} triangles=${m.triangles}`;
+    },
+  }))),
+  { id: 'globe-menu', dir: '33', file: 'menu', path: '', lang: 'pl',
+    ready: { selector: '.airway-board .airway-flight' }, settle: 1500, note: 'menu globe' },
   { id: 'menu', dir: '14', file: 'menu', path: '', lang: 'pl',
     ready: { selector: '.airway-board .airway-flight' }, settle: 1100, note: 'split-flap main menu' },
   { id: 'gameover', dir: '15', file: 'game', path: '?preview=gameover',

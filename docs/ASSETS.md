@@ -51,6 +51,12 @@ fonts it covers. No downloaded graphics are included.
   downloaded or rasterized by a running browser.
 - Terrain, forests, rock formations, cloud puffs, city-light points and the
   atmosphere are custom procedural meshes/shaders in `src/render/globe/`.
+<!-- [task-33] -->
+- Relief and biome regions (`src/render/globe/relief.ts`): ~45 mountain-range ridge lines
+  (Alps, Atlas, Scandes, Himalaya, Andes, Rockies, …) and ~16 desert/steppe regions, typed in
+  by hand as rounded lon/lat polylines and ellipses from general geographic knowledge (facts,
+  not copied map data; no external dataset). Coast distance is derived at runtime from the
+  same Natural Earth raster above. Own work.
 <!-- [task-06] Procedural assets; no additional third-party binary files. -->
 ## Task 06 — airport objects and passenger overlay
 The pad, runway, terminal, hub tower, capacity-ring seats, and red-and-white curfew
