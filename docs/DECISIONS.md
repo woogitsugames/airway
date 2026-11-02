@@ -307,3 +307,16 @@ the anchor plus its nearest foreign-region city (amends D-20). Balance pass in `
 seeds (`docs/balance/`). **Status: provisional; the weekly time scale vs 8–15 min session needs
 an owner decision.**
 
+
+## D-40 — A game week lasts 3 in-game days (2026-11-02, owner)
+With 7-day weeks the bot survived week 1 on ~5% of seeds, so players would almost never see the weekly upgrade. The cycle
+keeps its name ("week" / "Tydzień") but is 3 days long, so the first choice lands around minutes 4–5 of a run. Curfew still
+starts in week 4 (D-17), i.e. on day 10. Implemented by task 31. **Status: in force.**
+
+## D-41 — Departure slots are enforced (2026-11-02, owner)
+The per-city hourly departure limit (D-28) blocks departures: planes wait on the ground for a free slot, and the "+2 slots"
+upgrade is a real choice. Implemented by task 32. **Status: in force.**
+
+## D-42 — Visual polish and real store screenshots go through a second task pack (2026-11-02, owner)
+Tasks 31–36 in `docs/tasks/` (wave P). Same workflow as D-14: `task/NN-slug` from `dev`, draft PR to `dev`.
+**Status: in force.**
