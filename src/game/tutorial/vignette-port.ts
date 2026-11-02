@@ -1,9 +1,9 @@
 import type { TutorialAction, TutorialPort } from './controller';
 
-/** [task-23] Temporary deterministic demonstration port until tasks 07/12/13 are merged.
- *  Does not mutate the authoritative simulation; replace via mountTutorial's `port` option.
+/** Port for the isolated three-city training vignette (task 23). It deliberately never touches
+ *  a real run: the tutorial is a self-contained illustrated flight before the first Endless game.
  */
-export class DemoTutorialPort implements TutorialPort {
+export class VignetteTutorialPort implements TutorialPort {
   readonly accepted: TutorialAction[] = [];
   paused = false;
   perform(action: TutorialAction): boolean {

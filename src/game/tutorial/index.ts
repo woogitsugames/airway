@@ -1,9 +1,9 @@
-// [task-23] Task-07/12/13 may inject a real game port without changing tutorial UI.
+// First-run training flight (task 23). The UI is a vignette screen opened by the router.
 import { TutorialController, browserTutorialStorage, type TutorialPort } from './controller';
-import { DemoTutorialPort } from './demo-adapter';
+import { VignetteTutorialPort } from './vignette-port';
 import { mountTutorialUi } from '../../ui/tutorial';
 
-export function mountTutorial(host: HTMLElement, port: TutorialPort = new DemoTutorialPort()): {
+export function mountTutorial(host: HTMLElement, port: TutorialPort = new VignetteTutorialPort()): {
   controller: TutorialController;
   dispose(): void;
 } {

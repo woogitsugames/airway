@@ -1,15 +1,16 @@
 import { getLanguage, t } from '../../i18n';
 import { SplitFlap } from '../flap';
-import { mountMenuDemo } from './demo-globe';
 import './menu.css';
 
-export type MenuMode = 'endless' | 'puzzles' | 'daily';
+export type MenuMode = 'continue' | 'endless' | 'puzzles' | 'daily';
 export interface MenuData {
   readonly bestPassengers?: number | null;
   readonly solvedPuzzles?: number;
   readonly totalPuzzles?: number;
   readonly today?: Date;
   readonly dailyNew?: boolean;
+  /** A resumable saved flight; adds the CONTINUE row on top of the board. */
+  readonly saved?: { readonly week: number; readonly passengers: number } | null;
 }
 export interface MenuHandle {
   readonly element: HTMLElement;
@@ -38,8 +39,11 @@ function formatDay(day: Date): string {
 function flightRows(data: MenuData): Flight[] {
   const puzzlesTotal=data.totalPuzzles ?? 0;
   const record=data.bestPassengers;
-  return [
-    {id:'endless',gate:'A1',title:t('menu.endless'),sub:record==null?t('menu.noRecord'):t('menu.record',{count:record.toLocaleString(getLanguage()==='pl'?'pl-PL':'en-GB')}),status:t('menu.boarding'),hot:true},
+  const locale=getLanguage()==='pl'?'pl-PL':'en-GB';
+  const rows:Flight[]=[];
+  if(data.saved) rows.push({id:'continue',gate:'A0',title:t('menu.continue'),sub:t('menu.continueHint',{week:data.saved.week,count:data.saved.passengers.toLocaleString(locale)}),status:t('menu.boarding'),hot:true});
+  return [...rows,
+    {id:'endless',gate:'A1',title:t('menu.endless'),sub:record==null?t('menu.noRecord'):t('menu.record',{count:record.toLocaleString(locale)}),status:t('menu.boarding'),hot:!data.saved},
     {id:'puzzles',gate:'B4',title:t('menu.puzzles'),sub:puzzlesTotal?t('menu.progress',{solved:data.solvedPuzzles ?? 0,total:puzzlesTotal}):t('menu.puzzlesHint'),status:t('menu.onTime')},
     {id:'daily',gate:'C2',title:t('menu.today',{date:formatDay(data.today ?? new Date())}),sub:t('menu.dailyHint'),status:data.dailyNew===false?t('menu.onTime'):t('menu.new')},
     {id:'settings',gate:'D0',title:t('menu.settings'),sub:'',status:''},
@@ -57,13 +61,12 @@ function makeSign():HTMLElement {
   return sign;
 }
 
-/** Presentation-only home screen. Its handlers are explicit integration points for task 17. */
+/** Presentation-only departure board; the router in src/game/screens.ts handles each row. */
 export function createMenu(onFlight:(mode:MenuMode|'settings')=>void,initial:MenuData={}):MenuHandle {
   const root=el('section','airway-menu');
   root.setAttribute('aria-label',t('menu.departures'));
-  const background=el('div','airway-demo');
-  background.setAttribute('aria-hidden','true');
-  root.append(background,makeSign());
+  // The shared world canvas (src/game/world.ts) is the backdrop; the menu owns no WebGL context.
+  root.append(makeSign());
   const board=el('nav','airway-board');
   board.setAttribute('aria-label',t('menu.departures'));
   const header=el('div','airway-board__header');
@@ -78,6 +81,7 @@ export function createMenu(onFlight:(mode:MenuMode|'settings')=>void,initial:Men
     const button=el('button','airway-flight');
     button.type='button';
     button.dataset.mode=flight.id;
+    button.dataset.testid='menu-'+flight.id;
     const main=el('span','airway-flight__main');
     const title=new SplitFlap(flight.title,{highlight:flight.hot,initialAnimation:true,maxCells:20});
     const gate=new SplitFlap(flight.gate,{initialAnimation:true,maxCells:2});
@@ -95,7 +99,6 @@ export function createMenu(onFlight:(mode:MenuMode|'settings')=>void,initial:Men
     items.set(flight.id,{title,gate,status,sub});
   }
   root.append(board,notice);
-  const demo=mountMenuDemo(background);
   return {
     element:root,
     refresh(data:MenuData=initial):void {
@@ -118,6 +121,6 @@ export function createMenu(onFlight:(mode:MenuMode|'settings')=>void,initial:Men
       }
     },
     announce(message:string):void { notice.textContent=message; notice.hidden=false; },
-    dispose():void { demo?.dispose();flaps.forEach(f=>f.dispose());root.remove(); },
+    dispose():void { flaps.forEach(f=>f.dispose());root.remove(); },
   };
 }

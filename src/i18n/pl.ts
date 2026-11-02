@@ -250,4 +250,11 @@ export const pl = {
   'tutorial.hint.upgrade': 'Wybierz jedną etykietę frachtową.',
   'tutorial.hint.congestion': 'Narysuj bezpośrednią trasę Londyn–Rzym.',
   'tutorial.hint.complete': 'Możesz powtórzyć samouczek w ustawieniach.',
+  'action.save': 'Zapisz lot',
+  'action.menu': 'Menu główne',
+  'pause.title': 'KRĄŻENIE',
+  'save.done': 'Lot zapisany',
+  'save.failed': 'Nie udało się zapisać lotu',
+  'menu.continue': 'KONTYNUUJ',
+  'menu.continueHint': 'tydzień {week} · {count} pasażerów',
 } as const satisfies Record<keyof typeof en, string>;

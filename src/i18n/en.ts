@@ -249,4 +249,11 @@ export const en = {
   'tutorial.hint.upgrade': 'Pick one cargo label to improve your network.',
   'tutorial.hint.congestion': 'Draw a direct London–Rome relief route.',
   'tutorial.hint.complete': 'Replay any time from Settings.',
+  'action.save': 'Save flight',
+  'action.menu': 'Main menu',
+  'pause.title': 'HOLDING PATTERN',
+  'save.done': 'Flight saved',
+  'save.failed': 'The flight could not be saved',
+  'menu.continue': 'CONTINUE',
+  'menu.continueHint': 'week {week} · {count} passengers',
 } as const;

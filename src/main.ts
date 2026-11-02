@@ -1,43 +1,257 @@
-// Bootstrap the empty Diorama sky scene until the production renderer arrives.
+// Composition root: boot → split-flap departures menu → Endless / Daily / Puzzles / Settings.
+// It wires modules through their public APIs only; rules live in src/sim (via src/game/run.ts),
+// drawing in src/render (via src/game/world.ts) and presentation in src/ui.
 import './ui/fonts.css';
 import './ui/base.css';
-// [task-20] Apply accessibility tokens without mounting task 13's future HUD.
 import './ui/theme/theme.css';
-import { initializeAccessibility } from './ui/a11y';
+import './ui/game.css';
+import { bootAudio, audioSettingsFromToggles } from './audio';
+import { dailyKey } from './core/daily';
+import { seedFromString } from './core/rng';
+import { PUZZLES } from './data/puzzles';
+import { registerDevGameAdapter, type AwScreen } from './game/devHandle';
+import { DailyChallengeMode } from './game/modes/daily';
+import { EndlessRun } from './game/run';
+import { readGame, writeGame, type CommandEntry } from './game/save';
+import { LocalScoreService } from './game/scores';
+import { mountScreens, type ScreenName } from './game/screens';
+import { startSession, type GameSession, type RunMode, type SessionScreen } from './game/session';
+import { mountTutorial } from './game/tutorial';
+import { createWorld, type World } from './game/world';
 import { getLanguage, t } from './i18n';
-import { mountEmptyScene } from './render/scene';
-// [task-14] Mount the departure-board menu over the scene.
-import { mountScreens } from './game/screens';
+import { configureHaptics, createDefaultStorage, GameLifecycle, type KeyValueStorage } from './platform';
+import { initializeAccessibility } from './ui/a11y';
+import { readBestRecord } from './ui/gameover/storage';
+import { mountPuzzleSelector, readPuzzleProgress } from './ui/puzzles';
+import { onSettingsChange, readSettings } from './ui/settings/settings';
+import type { JournalEntry } from './game/run';
 
 const mount = document.getElementById('app');
 if (!mount) throw new Error('Missing #app mount point');
+const app: HTMLElement = mount;
 document.documentElement.lang = getLanguage();
-// [task-20] Respect saved text scale and CVD settings at bootstrap.
 initializeAccessibility();
 document.title = t('app.title');
+const query = new URLSearchParams(location.search);
 
-// [task-06] Temporary standalone airport fixture; it does not replace the playable game.
-if (new URLSearchParams(location.search).get('dev') === 'airports') {
-  void import('./render/models/airports-demo').then(({ mountAirportsDemo }) => mountAirportsDemo(mount))
-    .catch((error: unknown) => console.error('Airport demo unavailable', error));
+if (query.get('dev') === 'airports') {
+  // Standalone airport-model fixture used by the task-06 screenshot script.
+  void import('./render/models/airports-demo').then(({ mountAirportsDemo }) => mountAirportsDemo(app));
+} else if (import.meta.env.DEV && query.get('preview') === 'gameover') {
+  void import('./ui/gameover/preview').then(({ mountGameOverPreview }) => mountGameOverPreview(app));
+} else if (query.get('perf') === 'scene') {
+  // scripts/perf-scene.ts mounts its own fixture; the game must not open a second WebGL context.
 } else {
+  void boot();
+}
+
+interface SavedSummary { readonly mode: RunMode; readonly week: number; readonly passengers: number }
+
+async function boot(): Promise<void> {
+  configureHaptics({ isEnabled: () => readSettings().haptics });
+  const { audio } = bootAudio({ toggles: readSettings() });
+  onSettingsChange((settings) => {
+    audio.setSettings(audioSettingsFromToggles(settings));
+    document.title = t('app.title');
+  });
+
+  let world: World | null = null;
   try {
-    const view = mountEmptyScene(mount);
-    view.canvas.setAttribute('aria-label', t('canvas.label'));
-  } catch (cause) {
-    console.error('WebGL is unavailable; using a flat sky canvas.', cause);
-    const canvas = document.createElement('canvas');
-    canvas.setAttribute('role', 'img');
-    canvas.setAttribute('aria-label', t('canvas.label'));
-    canvas.width = Math.max(1, mount.clientWidth);
-    canvas.height = Math.max(1, mount.clientHeight);
-    const context = canvas.getContext('2d');
-    if (context) {
-      context.fillStyle = '#8CC3D8';
-      context.fillRect(0, 0, canvas.width, canvas.height);
+    world = createWorld(app, t('canvas.label'));
+    world.setIdleSpin(2.5);
+  } catch (error) {
+    console.error('WebGL is unavailable; the menu stays on the flat sky.', error);
+  }
+
+  const storage: KeyValueStorage = await createDefaultStorage();
+  const scores = new LocalScoreService();
+  const daily = new DailyChallengeMode(
+    { dailyKey, dailySeed: (key) => seedFromString(`airway/daily/v1/${key}`) },
+    scores, (seed) => new EndlessRun(seed),
+  );
+  let saved: SavedSummary | null = null;
+  let session: GameSession | null = null;
+  let sessionMode: RunMode = 'endless';
+  let pendingSeed: number | null = null;
+  let skipTutorialOnce = false;
+  let dailySession: ReturnType<typeof daily.start> | null = null;
+
+  const loaded = await readGame(storage);
+  if (loaded.status === 'ok') saved = summary(loaded.save.snapshot, loaded.save.tick);
+
+  function summary(snapshot: Record<string, unknown>, tick: number): SavedSummary {
+    return {
+      mode: snapshot.mode === 'daily' ? 'daily' : 'endless',
+      week: Math.floor(tick / (7 * 1440)) + 1,
+      passengers: typeof snapshot.passengers === 'number' ? snapshot.passengers : 0,
+    };
+  }
+
+  let screenName: AwScreen = 'menu';
+  const screens = mountScreens(app, {
+    getMenuData: () => {
+      const progress = readPuzzleProgress();
+      let best: number | null = null;
+      try { best = readBestRecord(globalThis.localStorage)?.score ?? null; } catch { /* Storage blocked. */ }
+      return {
+        bestPassengers: best,
+        solvedPuzzles: Object.keys(progress).length,
+        totalPuzzles: PUZZLES.length,
+        dailyNew: !scores.getProgress(dailyKey()).officialUsed,
+        saved: saved ? { week: saved.week, passengers: saved.passengers } : null,
+      };
+    },
+    onMode: (mode) => {
+      if (mode === 'continue') void continueSaved();
+      else if (mode === 'endless') startEndless(pendingSeed ?? freshSeed());
+      else if (mode === 'daily') startDaily();
+      else openPuzzles();
+    },
+    onScreen: (name: ScreenName) => {
+      if (name !== 'game') {
+        endSession();
+        world?.setIdleSpin(2.5);
+        screenName = name === 'settings' || name === 'licenses' ? 'settings' : 'menu';
+      }
+    },
+    onLanguageChanged: () => { document.title = t('app.title'); },
+  });
+
+  function freshSeed(): number {
+    const random = new Uint32Array(1);
+    globalThis.crypto.getRandomValues(random);
+    return random[0] ?? 1;
+  }
+  function endSession(): void {
+    session?.dispose();
+    session = null;
+  }
+
+  const lifecycle = new GameLifecycle({
+    getTick: () => session?.run.tick ?? 0,
+    pause: () => session?.setPaused(true),
+    save: async () => { if (session && !session.run.failed) await saveRun(session.run); },
+    requireResume: () => session?.setPaused(true),
+    onError: (error) => console.warn('Lifecycle save failed', error),
+  });
+  void lifecycle.attach();
+
+  async function saveRun(run: EndlessRun): Promise<boolean> {
+    const result = await writeGame(storage, {
+      seed: run.seed, tick: run.tick,
+      commandLog: run.commandLog as unknown as readonly CommandEntry[],
+      snapshot: () => ({ format: 'endless-journal-v1', mode: sessionMode, tick: run.tick, passengers: run.passengers }),
+      hash: () => run.hash(),
+    });
+    if (result.ok) saved = summary(result.save.snapshot, run.tick);
+    return result.ok;
+  }
+
+  function openGame(run: EndlessRun, mode: RunMode): void {
+    if (!world) return;
+    endSession();
+    sessionMode = mode;
+    const view = document.createElement('div');
+    view.className = 'airway-game-screen';
+    screens.open('game', { element: view, back: () => session?.back() ?? false });
+    // The router's onScreen('game') does not tear down; build the session after it.
+    session = startSession(app, world, run, {
+      mode,
+      onScreen: (next: SessionScreen) => { screenName = next; },
+      onMenu: () => screens.show('menu'),
+      onRestart: (seed) => { if (mode === 'daily') screens.show('menu'); else startEndless(seed); },
+      onSave: saveRun,
+      onFailure: (failed) => {
+        if (mode === 'daily' && dailySession?.status === 'started') {
+          daily.finish(dailySession.session, failed.passengers, Math.floor(failed.tick / (7 * 1440)), []);
+          dailySession = null;
+        }
+        saved = null;
+        void storage.remove('aw-save-v1').catch(() => undefined);
+      },
+      onTick: (current, speed) => {
+        audio.setSimClock(current.clockMinute, speed);
+        lifecycle.onTick(current.tick);
+      },
+      cue: (cue) => { audio.emit(cue); },
+    });
+    world.setIdleSpin(0);
+  }
+
+  function startEndless(seed: number): void {
+    pendingSeed = null;
+    const tutorialHost = document.createElement('div');
+    tutorialHost.className = 'airway-tutorial-screen';
+    const tutorial = mountTutorial(tutorialHost);
+    if (skipTutorialOnce || !tutorial.controller.getState().visible) {
+      skipTutorialOnce = false;
+      tutorial.dispose();
+      openGame(new EndlessRun(seed), 'endless');
+      return;
     }
-    mount.appendChild(canvas);
+    let started = false;
+    const unsubscribe = tutorial.controller.subscribe((state) => {
+      if (state.visible || started) return;
+      started = true;
+      queueMicrotask(() => { unsubscribe(); openGame(new EndlessRun(seed), 'endless'); });
+    });
+    screens.open('tutorial', { element: tutorialHost, dispose: () => { unsubscribe(); tutorial.dispose(); } });
+    screenName = 'menu';
+  }
+
+  function startDaily(): void {
+    const kind = scores.getProgress(dailyKey()).officialUsed ? 'practice' : 'official';
+    dailySession = daily.start(kind);
+    if (dailySession.status === 'started') openGame(dailySession.session.simulation, 'daily');
+  }
+
+  async function continueSaved(): Promise<void> {
+    const result = await readGame(storage);
+    if (result.status !== 'ok') { saved = null; screens.show('menu'); return; }
+    const save = result.save;
+    const run = EndlessRun.replay(save.seed, save.commands as unknown as JournalEntry[], save.tick);
+    if (save.stateHash !== null && run.hash() !== save.stateHash) {
+      console.warn('Saved flight failed verification; starting fresh.');
+      saved = null;
+      screens.show('menu');
+      return;
+    }
+    openGame(run, save.snapshot.mode === 'daily' ? 'daily' : 'endless');
+    session?.setPaused(true);
+  }
+
+  function openPuzzles(): void {
+    const host = document.createElement('div');
+    host.className = 'airway-puzzle-screen';
+    const ui = mountPuzzleSelector(host, () => screens.show('menu'));
+    screens.open('puzzles', { element: host, back: () => ui.back(), dispose: () => ui.dispose() });
+  }
+
+  // QA bridge for e2e (Vite dev builds only). It drives the production session, never a copy.
+  if (import.meta.env.DEV) {
+    registerDevGameAdapter({
+      state: () => {
+        const run = session?.run;
+        return {
+          screen: session ? screenName : (screens.current() === 'settings' || screens.current() === 'licenses' ? 'settings' : 'menu'),
+          seed: run?.seed ?? pendingSeed ?? 0,
+          tick: run?.tick ?? 0,
+          nextWeekTick: run?.nextWeekTick ?? 0,
+          routeCount: run?.routeList().length ?? 0,
+          aircraftAssignments: run?.assignments ?? 0,
+          snapshotHash: run?.hash() ?? '',
+        };
+      },
+      prepareSeed: (seed) => { pendingSeed = seed >>> 0; skipTutorialOnce = true; },
+      advanceTicks: (ticks) => session?.advance(ticks),
+      gesture: (kind) => {
+        const drag = kind === 'route' ? session?.routeGesture() : session?.planeGesture();
+        if (!drag) throw new Error('No gesture available for ' + kind);
+        if (kind === 'plane') return drag;
+        const rect = world!.canvas.getBoundingClientRect();
+        return { from: { x: drag.from.x + rect.left, y: drag.from.y + rect.top }, to: { x: drag.to.x + rect.left, y: drag.to.y + rect.top } };
+      },
+      forceHubOverload: () => session?.forceOverload(),
+    });
   }
 }
-// [task-14] The router owns menu and settings; gameplay handlers are injected later.
-mountScreens(mount);

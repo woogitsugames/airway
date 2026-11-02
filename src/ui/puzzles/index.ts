@@ -1,12 +1,12 @@
-// Task 17: airport departure-board puzzle selector and temporary flight-strip editor.
+// Task 17: airport departure-board puzzle selector and flight-strip editor (a router screen).
 import { PUZZLES, type PuzzleLevel, type PuzzleCommand } from '../../data/puzzles';
 import { dispatchPuzzle, resetPuzzle, startPuzzle, undoPuzzle, type PuzzleSession } from '../../game/modes/puzzle';
-import { getLanguage, setLanguage, t, type TranslationKey } from '../../i18n';
+import { t, type TranslationKey } from '../../i18n';
 import './board.css';
 
 const PROGRESS_KEY = 'airway.puzzles.v1';
 type Progress = Record<string, number>;
-function readProgress(): Progress {
+export function readPuzzleProgress(): Progress {
   try {
     const raw = localStorage.getItem(PROGRESS_KEY);
     if (!raw) return {};
@@ -52,16 +52,21 @@ function remainingStock(session: PuzzleSession): string {
   const supply = session.snapshot.stock;
   return t('puzzle.inventory', { turboprops: supply.turboprops, jets: supply.jets, upgrades: supply.hubUpgrades });
 }
-export interface PuzzleUI { dispose(): void }
-/** Mount once. Later the task-14 menu will use this view as a standalone route. */
-export function mountPuzzleSelector(host: HTMLElement): PuzzleUI {
+export interface PuzzleUI {
+  readonly element: HTMLElement;
+  /** Level → board; returns false on the board so the router can return to the menu. */
+  back(): boolean;
+  dispose(): void;
+}
+/** Mounted by the screen router; onExit returns to the departures menu. */
+export function mountPuzzleSelector(host: HTMLElement, onExit: () => void = () => undefined): PuzzleUI {
   const root = element('section', 'puzzle-shell');
   root.setAttribute('aria-label', t('puzzle.board.title'));
   const live = element('div', 'puzzle-live');
   live.setAttribute('aria-live', 'polite');
   root.appendChild(live);
   host.appendChild(root);
-  const progress = readProgress();
+  const progress = readPuzzleProgress();
   let current: PuzzleLevel | null = null;
   let session: PuzzleSession | null = null;
   let error = '';
@@ -97,8 +102,8 @@ export function mountPuzzleSelector(host: HTMLElement): PuzzleUI {
     });
     wrapper.appendChild(table);
     const bottom = element('footer', 'puzzle-board-footer');
-    bottom.append(element('span', '', t('puzzle.board.caption')),
-      button(getLanguage().toUpperCase(), 'language', 'puzzle-language'));
+    bottom.append(button(t('action.back'), 'exit', 'puzzle-exit'),
+      element('span', '', t('puzzle.board.caption')));
     wrapper.appendChild(bottom);
     root.replaceChildren(wrapper, live);
   }
@@ -191,7 +196,7 @@ export function mountPuzzleSelector(host: HTMLElement): PuzzleUI {
     const control = target.closest<HTMLButtonElement>('button[data-action]');
     if (!control || !root.contains(control) || control.disabled) return;
     const [name, value] = (control.dataset.action ?? '').split(':');
-    if (name === 'language') { setLanguage(getLanguage() === 'pl' ? 'en' : 'pl'); renderBoard(); return; }
+    if (name === 'exit') { onExit(); return; }
     if (name === 'back') { renderBoard(); return; }
     if (name === 'open') {
       const level = PUZZLES.find((item) => item.id === value);
@@ -229,5 +234,9 @@ export function mountPuzzleSelector(host: HTMLElement): PuzzleUI {
   };
   root.addEventListener('click', onClick);
   renderBoard();
-  return { dispose(): void { root.removeEventListener('click', onClick); root.remove(); } };
+  return {
+    element: root,
+    back(): boolean { if (!current) return false; renderBoard(); return true; },
+    dispose(): void { root.removeEventListener('click', onClick); root.remove(); },
+  };
 }

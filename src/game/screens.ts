@@ -1,63 +1,95 @@
-// [task-14] Accessible menu/settings screen router. Game modes are callback-only until task 17.
-import { t } from '../i18n';
-import { installBackHandler, type BackOptions } from '../platform/back';
-import { createMenu, type MenuData, type MenuMode } from '../ui/menu/menu';
+// The single screen router (task 14): menu, settings, licences and every mode screen that the
+// composition root registers. Back/Escape is handled once here via src/platform/back.
+import { installBackHandler, type BackOptions } from '../platform';
+import { createMenu, type MenuData, type MenuHandle, type MenuMode } from '../ui/menu/menu';
 import { createSettings, createLicenses } from '../ui/settings/settings';
 
-export type ScreenName='menu'|'settings'|'licenses';
-export interface ScreensOptions {
-  readonly getMenuData?:()=>MenuData;
-  readonly onMode?: (mode:MenuMode)=>void;
-  readonly back?:BackOptions;
-}
-export interface ScreensHandle {
-  readonly current:()=>ScreenName;
-  show:(screen:ScreenName)=>void;
-  refresh:()=>void;
-  dispose:()=>void;
+export type ScreenName = 'menu' | 'settings' | 'licenses' | 'puzzles' | 'tutorial' | 'game';
+export type ModeScreen = Exclude<ScreenName, 'menu' | 'settings' | 'licenses'>;
+
+/** A registered screen. back() returns true when it consumed the press (e.g. closed a sheet). */
+export interface ScreenView {
+  readonly element: HTMLElement;
+  readonly focus?: HTMLElement | null;
+  back?(): boolean;
+  dispose?(): void;
 }
 
-export function mountScreens(host:HTMLElement,options:ScreensOptions={}):ScreensHandle {
-  const layer=document.createElement('div');
-  layer.className='airway-screen-root';
+export interface ScreensOptions {
+  readonly getMenuData?: () => MenuData;
+  readonly onMode?: (mode: MenuMode) => void;
+  readonly onScreen?: (screen: ScreenName) => void;
+  readonly onLanguageChanged?: () => void;
+  readonly back?: BackOptions;
+}
+export interface ScreensHandle {
+  readonly current: () => ScreenName;
+  show(screen: 'menu' | 'settings' | 'licenses'): void;
+  /** Replace the active screen with a mode screen built by the caller. */
+  open(screen: ModeScreen, view: ScreenView): void;
+  refresh(): void;
+  dispose(): void;
+}
+
+export function mountScreens(host: HTMLElement, options: ScreensOptions = {}): ScreensHandle {
+  const layer = document.createElement('div');
+  layer.className = 'airway-screen-root';
   host.append(layer);
-  const menu=createMenu((mode)=>{
-    if(mode==='settings')return show('settings');
-    if(options.onMode)options.onMode(mode);
-    else menu.announce(t('menu.unavailable'));
-  },options.getMenuData?.());
-  let name:ScreenName='menu';
-  let active:HTMLElement=menu.element;
-  layer.append(active);
-  let previousFocus:HTMLElement|null=null;
-  const show=(screen:ScreenName, force=false):void=>{
-    if(screen===name && !force)return;
-    if(name==='menu')previousFocus=document.activeElement instanceof HTMLElement?document.activeElement:null;
-    const old=active;
-    name=screen;
-    if(screen==='menu'){
-      menu.refresh(options.getMenuData?.());
-      active=menu.element;
-    } else if(screen==='settings'){
-      const view=createSettings(()=>show('menu'),()=>show('licenses'),()=>show('settings',true));
-      active=view.element;
-    } else {
-      active=createLicenses(()=>show('settings')).element;
-    }
-    old.remove();layer.append(active);
-    if(screen==='menu'){
-      previousFocus?.focus({preventScroll:true});
-    }else{
-      const back=active.querySelector<HTMLElement>('.airway-settings__back');
-      back?.focus({preventScroll:true});
-    }
-  };
-  const back=():boolean=>{
-    if(name==='licenses'){show('settings');return true;}
-    if(name==='settings'){show('menu');return true;}
+  let name: ScreenName = 'menu';
+  let menu: MenuHandle | null = null;
+  let active: ScreenView = buildMenu();
+  layer.append(active.element);
+  let menuFocus: HTMLElement | null = null;
+
+  function buildMenu(): ScreenView {
+    menu = createMenu((mode) => {
+      if (mode === 'settings') show('settings');
+      else options.onMode?.(mode);
+    }, options.getMenuData?.());
+    const handle = menu;
+    return { element: handle.element, dispose: () => handle.dispose() };
+  }
+  function replace(next: ScreenName, view: ScreenView): void {
+    if (name === 'menu') menuFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    active.element.remove();
+    active.dispose?.();
+    if (name === 'menu') menu = null;
+    name = next;
+    active = view;
+    layer.dataset.screen = next;
+    layer.append(view.element);
+    const focus = view.focus ?? view.element.querySelector<HTMLElement>('.airway-settings__back');
+    if (next === 'menu') {
+      const target = menuFocus && document.contains(menuFocus) ? menuFocus
+        : view.element.querySelector<HTMLElement>('button');
+      target?.focus({ preventScroll: true });
+    } else focus?.focus({ preventScroll: true });
+    options.onScreen?.(next);
+  }
+  function show(screen: 'menu' | 'settings' | 'licenses', force = false): void {
+    if (screen === name && !force) return;
+    if (screen === 'menu') replace('menu', buildMenu());
+    else if (screen === 'settings') {
+      replace('settings', createSettings(() => show('menu'), () => show('licenses'), () => {
+        options.onLanguageChanged?.();
+        show('settings', true);
+      }));
+    } else replace('licenses', createLicenses(() => show('settings')));
+  }
+  const back = (): boolean => {
+    if (active.back?.()) return true;
+    if (name === 'licenses') { show('settings'); return true; }
+    if (name !== 'menu') { show('menu'); return true; }
     // On the root menu the OS owns app exit.
     return false;
   };
-  const removeBack=installBackHandler(back,options.back);
-  return {current:()=>name,show,refresh:()=>menu.refresh(options.getMenuData?.()),dispose:()=>{removeBack();menu.dispose();layer.remove();}};
+  const removeBack = installBackHandler(back, options.back);
+  layer.dataset.screen = name;
+  return {
+    current: () => name,
+    show,
+    open: (screen, view) => replace(screen, view),
+    refresh: () => menu?.refresh(options.getMenuData?.()),
+    dispose: () => { removeBack(); active.dispose?.(); layer.remove(); },
+  };
 }

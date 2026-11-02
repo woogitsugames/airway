@@ -114,6 +114,7 @@ function buildDialog(
 ): { overlay: HTMLDivElement; firstButton: HTMLButtonElement } {
   const overlay = element('div', 'airway-go-overlay');
   overlay.dataset.gameoverState = 'open';
+  overlay.dataset.testid = 'game-over';
   overlay.setAttribute('role', 'dialog');
   overlay.setAttribute('aria-modal', 'true');
   overlay.setAttribute('aria-labelledby', 'airway-gameover-heading');
@@ -170,6 +171,9 @@ function buildDialog(
   const next = element('button', 'airway-go-button airway-go-new', t('gameover.newWorld'));
   const menu = element('button', 'airway-go-button airway-go-menu', t('gameover.menu'));
   same.type = next.type = menu.type = 'button';
+  same.dataset.testid = 'gameover-same';
+  next.dataset.testid = 'gameover-new';
+  menu.dataset.testid = 'gameover-menu';
   same.addEventListener('click', onSame);
   next.addEventListener('click', onNew);
   menu.addEventListener('click', onMenu);
@@ -224,7 +228,7 @@ export function createGameOverController(adapters: GameOverAdapters): GameOverCo
         await focusOnFailure(snapshot.hubId);
       } catch (error) {
         // A missing camera implementation must not hide the game-over report.
-        console.error('[task-15] Hub camera focus failed', error);
+        console.error('Hub camera focus failed', error);
       } finally {
         adapters.freezeScene();
       }
