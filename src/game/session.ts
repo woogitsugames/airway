@@ -10,8 +10,7 @@ import {
 import { createJamHaptics, routeHaptics } from '../platform';
 import { PLANE_TYPES, SIM_TICKS_PER_SECOND } from '../sim/params';
 import { TICKS_PER_WEEK } from '../sim/upgrades';
-import type { PlaneRenderSnapshot } from '../render/planes';
-import type { RouteRenderSpec } from '../render/routes';
+import type { PlaneView as PlaneRenderSnapshot } from '../render';
 import type { AudioCue } from '../audio/events';
 import { mountAtcStrip, mountRouteContextMenu, mountRouteHandles } from '../ui/atcStrip';
 import { createGameOverController, type GameOverController } from '../ui/gameover';
@@ -76,6 +75,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
   let lastRun: EndlessRun | null = null;
   let previousPlanes: PlaneRenderSnapshot[] = [];
   const knownAirports = new Set<string>();
+  let lastHubKey = '';
   const waitingKeys = new Map<string, string>();
   const jamKeys = new Map<string, number | null>();
   const jamHaptics = createJamHaptics();
@@ -92,6 +92,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
   // ---- presentation layers -------------------------------------------------------------
   const overlay: AirportOverlay = createAirportOverlay(layer, world.camera, {
     reservedTop: 84, reservedBottom: 96,
+    project: (lon, lat, altitude, out) => world.renderer.project(lon, lat, altitude, out),
     onNavigate: (id) => {
       const city = run.cityList().find((item) => item.id === id);
       if (city) world.orbit.setTarget(city.lon, city.lat);
@@ -188,7 +189,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     selectedAircraft: () => selectedPlane,
     aircraft: (type) => ({ type, rangeKm: PLANE_TYPES[type].rangeKm }),
     distanceKm: cityDistanceKm,
-    cursorGeo: (x, y) => world.pick(x, y),
+    cursorGeo: (x, y) => world.pickGlobe(x, y),
     speed: () => (paused ? 0 : slow),
     dispatch: (command) => {
       if (command.type === 'SetSpeed') { slow = command.speed === 0 ? slow : command.speed; return true; }
@@ -233,22 +234,20 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
   }));
 
   // ---- read-only sync -----------------------------------------------------------------------
-  function routeSpecs(): RouteRenderSpec[] {
-    const cities = new Map(run.cityList().map((city) => [city.id, city]));
-    return run.routeList().map((route) => ({
-      id: route.id, type: route.aircraft,
-      waypoints: route.cityIds.map((id) => { const c = cities.get(id)!; return { lon: c.lon, lat: c.lat }; }),
-    }));
-  }
   function syncWorld(force = false): void {
     const cities = run.cityList();
+    const hubKey = cities.map((city) => city.id + (city.hub ? '*' : '')).join(',');
+    if (hubKey !== lastHubKey) {
+      lastHubKey = hubKey;
+      world.setCities(cities.map((city) => ({ id: city.id, lon: city.lon, lat: city.lat, hub: city.hub })));
+    }
+    world.setHubLoad(cities.filter((city) => city.hub)
+      .map((city) => ({ id: city.id, used: Math.min(city.waiting.length, city.capacity), cap: city.capacity })));
     for (const city of cities) {
       if (!knownAirports.has(city.id)) {
         knownAirports.add(city.id);
-        world.addAirport({ id: city.id, lon: city.lon, lat: city.lat, hub: city.hub });
         overlay.addAirport({ id: city.id, code: city.id, lon: city.lon, lat: city.lat, hub: city.hub });
       }
-      world.setHubLoad(city.id, Math.min(city.waiting.length, city.capacity), city.capacity);
       const key = city.waiting.join(',');
       if (waitingKeys.get(city.id) !== key) { waitingKeys.set(city.id, key); overlay.setPassengers(city.id, city.waiting); }
       const seconds = city.jamTicksLeft === null ? null : Math.ceil(city.jamTicksLeft / SIM_TICKS_PER_SECOND);
@@ -258,7 +257,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     if (force || run !== lastRun || run.revision !== lastRunRevision) {
       lastRun = run;
       lastRunRevision = run.revision;
-      world.setRoutes(routeSpecs(), ++renderRevision);
+      world.setRoutes(run.routeList(), ++renderRevision);
       tool.refreshHandles();
     }
     const planes: PlaneRenderSnapshot[] = run.planeList();

@@ -14,8 +14,6 @@ export const pl = {
   'airport.focus': 'Obróć do {code}',
   'airport.waiting': '{code}: {count} pasażerów czeka',
   'airport.jammed': '{code}: zator, pozostało {seconds} sekund',
-  'airport.demo.zoom': 'Przybliżenie',
-  'airport.demo.pool': 'Elementy nakładki: {count}',
   // [task-07] Rysowanie tras, pasek ATC i działania na trasach.
   'route.aircraft.turboprop': 'turbośmigłowca',
   'route.aircraft.widebody': 'samolotu szerokokadłubowego',

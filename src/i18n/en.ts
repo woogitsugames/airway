@@ -13,8 +13,6 @@ export const en = {
   'airport.focus': 'Rotate to {code}',
   'airport.waiting': '{code}: {count} passengers waiting',
   'airport.jammed': '{code}: congestion, {seconds} seconds remaining',
-  'airport.demo.zoom': 'Zoom',
-  'airport.demo.pool': 'Overlay nodes: {count}',
   // [task-07] Route drawing, airport-paper ATC hint and route actions.
   'route.aircraft.turboprop': 'turboprop',
   'route.aircraft.widebody': 'widebody aircraft',

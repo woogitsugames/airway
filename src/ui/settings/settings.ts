@@ -1,7 +1,8 @@
-// Settings screen (task 14). One store per concern: language → i18n, graphics → render/quality,
-// text scale / glyphs / haptics → ui/a11y (task 20). Only audio toggles live in this module.
+// Settings screen (task 14). One store per concern: language → i18n, text scale / glyphs / haptics →
+// ui/a11y (task 20). Graphics and audio toggles live here; the composition root applies them
+// (world.setQuality, audio.setSettings) through onSettingsChange.
 import { getLanguage, setLanguage, t, type Language, type TranslationKey } from '../../i18n';
-import { readQualityPreference, saveQualityPreference, type QualityPreference } from '../../render/quality';
+import type { QualityPreference } from '../../render';
 import { readAccessibilitySettings, updateAccessibilitySettings, type TextScale } from '../a11y';
 import '../menu/menu.css';
 
@@ -15,7 +16,8 @@ export interface UserSettings {
   textScale: TextScale;
 }
 const KEY='airway.settings';
-type AudioField='sound'|'music';
+type LocalField='sound'|'music'|'graphics';
+const QUALITY:readonly QualityPreference[]=['auto','low','medium','high'];
 const listeners=new Set<(settings:UserSettings)=>void>();
 
 function storedRecord():Record<string,unknown> {
@@ -31,7 +33,7 @@ export function readSettings():UserSettings {
   const a11y=readAccessibilitySettings();
   return {
     language:getLanguage(),
-    graphics:readQualityPreference(),
+    graphics:QUALITY.includes(record.graphics as QualityPreference)?record.graphics as QualityPreference:'auto',
     sound:typeof record.sound==='boolean'?record.sound:true,
     music:typeof record.music==='boolean'?record.music:true,
     haptics:a11y.hapticsEnabled,
@@ -43,22 +45,20 @@ export function readSettings():UserSettings {
 /** Route each change to the module that owns it, then notify the composition root (audio). */
 export function saveSettings(change:Partial<UserSettings>):UserSettings {
   if(change.language) setLanguage(change.language);
-  if(change.graphics) saveQualityPreference(change.graphics);
   const a11y:Parameters<typeof updateAccessibilitySettings>[0]={};
   if(change.haptics!==undefined) a11y.hapticsEnabled=change.haptics;
   if(change.colorblind!==undefined) a11y.enhancedGlyphs=change.colorblind;
   if(change.textScale!==undefined) a11y.textScale=change.textScale;
   if(Object.keys(a11y).length) updateAccessibilitySettings(a11y);
-  const audio:Partial<Record<AudioField,boolean>>={};
-  if(change.sound!==undefined) audio.sound=change.sound;
-  if(change.music!==undefined) audio.music=change.music;
-  if(Object.keys(audio).length){
-    try { globalThis.localStorage?.setItem(KEY,JSON.stringify({...storedRecord(),...audio})); }
+  const local:Partial<Record<LocalField,boolean|QualityPreference>>={};
+  if(change.sound!==undefined) local.sound=change.sound;
+  if(change.music!==undefined) local.music=change.music;
+  if(change.graphics!==undefined) local.graphics=change.graphics;
+  if(Object.keys(local).length){
+    try { globalThis.localStorage?.setItem(KEY,JSON.stringify({...storedRecord(),...local})); }
     catch { /* Preferences still apply to this session via the listeners. */ }
   }
-  const settings=readSettings();
-  if(change.sound!==undefined) settings.sound=change.sound;
-  if(change.music!==undefined) settings.music=change.music;
+  const settings={...readSettings(),...local} as UserSettings;
   listeners.forEach((listener)=>listener(settings));
   return settings;
 }

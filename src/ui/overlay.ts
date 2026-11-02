@@ -26,6 +26,8 @@ export interface AirportOverlayOptions {
   reservedBottom?: number;
   globeTransform?: Object3D;
   onNavigate?: (id: string) => void;
+  /** The render facade's projection (WorldRenderer.project); preferred over the local fallback. */
+  project?: (lon: number, lat: number, altitude: number, out: { x: number; y: number; visible: boolean }) => unknown;
 }
 
 interface BubbleEntry {
@@ -95,6 +97,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
   const transformedNormal = new Vector3();
   const cameraPosition = new Vector3();
   const toCamera = new Vector3();
+  const projected = { x: 0, y: 0, visible: false };
   const bounds: TagBounds = { width: host.clientWidth, height: host.clientHeight, top: 0, bottom: 0, gap: 4 };
   const radius = options.radius ?? 1;
   let disposed = false;
@@ -259,12 +262,24 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
           marker.applyMatrix4(transform.matrixWorld);
           transformedNormal.transformDirection(transform.matrixWorld);
         }
-        toCamera.subVectors(cameraPosition, marker);
-        const front = transformedNormal.dot(toCamera) > 0;
-        marker.project(camera);
-        const x = (marker.x + 1) * width / 2;
-        const y = (1 - marker.y) * height / 2;
-        const inView = front && marker.z >= -1 && marker.z <= 1 && x >= 10 && x <= width - 10 && y >= bounds.top + 8 && y <= height - bounds.bottom - 8;
+        let x: number;
+        let y: number;
+        let front: boolean;
+        if (options.project && !transform) {
+          options.project(entry.airport.lon, entry.airport.lat, entry.airport.hub ? 0.075 : 0.045, projected);
+          x = projected.x;
+          y = projected.y;
+          front = projected.visible;
+        } else {
+          toCamera.subVectors(cameraPosition, marker);
+          front = transformedNormal.dot(toCamera) > 0;
+          marker.project(camera);
+          x = (marker.x + 1) * width / 2;
+          y = (1 - marker.y) * height / 2;
+          front = front && marker.z >= -1 && marker.z <= 1;
+        }
+        // Only the viewport edge hides a tag; HUD clearance is handled by layoutTags(bounds).
+        const inView = front && x >= 10 && x <= width - 10 && y >= 10 && y <= height - 10;
         entry.tag.active = inView && (entry.waiting.length > 0 || entry.jamSeconds !== null);
         entry.tag.anchorX = x;
         entry.tag.anchorY = y;
@@ -288,7 +303,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
             entry.lastBubbleX = tag.x;
             entry.lastBubbleY = tag.y;
           }
-          const fade = Math.max(.2, Math.min(1, (tag.anchorX - 10) / 28, (width - 10 - tag.anchorX) / 28, (tag.anchorY - bounds.top) / 28, (height - bounds.bottom - tag.anchorY) / 28));
+          const fade = Math.max(.2, Math.min(1, (tag.anchorX - 10) / 28, (width - 10 - tag.anchorX) / 28, (tag.anchorY - 10) / 28, (height - 10 - tag.anchorY) / 28));
           const opacity = Math.round(fade * 10) / 10;
           if (opacity !== entry.lastOpacity) { entry.bubble.style.opacity = String(opacity); entry.lastOpacity = opacity; }
         }

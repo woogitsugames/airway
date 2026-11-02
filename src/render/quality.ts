@@ -1,5 +1,7 @@
-// [task-21] Shared, render-only quality controls. The simulation never reads device capabilities.
-import { PCFSoftShadowMap, type WebGLRenderer } from 'three';
+// The single render-only quality system (task 21). The simulation never reads device capabilities.
+import {
+  ACESFilmicToneMapping, PCFSoftShadowMap, SRGBColorSpace, type WebGLRenderer,
+} from 'three';
 
 export type QualityPreset = 'low' | 'medium' | 'high';
 export type QualityPreference = QualityPreset | 'auto';
@@ -10,21 +12,17 @@ export interface DeviceHints {
   devicePixelRatio?: number;
 }
 
+/** Everything a render layer may vary by device tier; terrain/decor density keys off `preset`. */
 export interface QualityProfile {
-  preset: QualityPreset;
-  pixelRatio: number;
-  antialias: boolean;
-  globeWidthSegments: number;
-  globeHeightSegments: number;
-  routeSegments: number;
-  cloudInstances: number;
-  planeDetail: 0 | 1 | 2;
-  shadowEnabled: boolean;
-  shadowMapSize: number;
-  maxOverlayItems: number;
+  readonly preset: QualityPreset;
+  readonly pixelRatio: number;
+  readonly antialias: boolean;
+  readonly shadowEnabled: boolean;
+  readonly shadowMapSize: number;
+  readonly maxOverlayItems: number;
 }
 
-export const QUALITY_STORAGE_KEY = 'airway.quality';
+export const TONE_MAPPING_EXPOSURE = 1.05;
 
 export function getDeviceHints(): DeviceHints {
   if (typeof navigator === 'undefined') return {};
@@ -36,27 +34,8 @@ export function getDeviceHints(): DeviceHints {
   };
 }
 
-export function readQualityPreference(): QualityPreference {
-  try {
-    const value = localStorage.getItem(QUALITY_STORAGE_KEY);
-    if (value === 'low' || value === 'medium' || value === 'high') return value;
-  } catch {
-    // Storage can be blocked in private modes; automatic selection remains available.
-  }
-  return 'auto';
-}
-
-export function saveQualityPreference(preference: QualityPreference): void {
-  try {
-    if (preference === 'auto') localStorage.removeItem(QUALITY_STORAGE_KEY);
-    else localStorage.setItem(QUALITY_STORAGE_KEY, preference);
-  } catch {
-    // The active session can still use the chosen profile without persistence.
-  }
-}
-
 export function chooseQualityPreset(
-  preference: QualityPreference = readQualityPreference(),
+  preference: QualityPreference = 'auto',
   hints: DeviceHints = getDeviceHints(),
 ): QualityPreset {
   if (preference !== 'auto') return preference;
@@ -67,44 +46,35 @@ export function chooseQualityPreset(
   return 'medium';
 }
 
+/** Persisting the preference belongs to the settings screen; pass it in here (D-33). */
 export function resolveQualityProfile(
-  preference: QualityPreference = readQualityPreference(),
+  preference: QualityPreference = 'auto',
   hints: DeviceHints = getDeviceHints(),
 ): QualityProfile {
   const preset = chooseQualityPreset(preference, hints);
   const cap = preset === 'high' ? 2 : preset === 'medium' ? 1.5 : 1;
   const reportedDpr = hints.devicePixelRatio ?? 1;
   const pixelRatio = Math.max(1, Math.min(2, cap, Number.isFinite(reportedDpr) ? reportedDpr : 1));
-
   if (preset === 'low') {
-    return {
-      preset, pixelRatio, antialias: false,
-      globeWidthSegments: 128, globeHeightSegments: 64,
-      routeSegments: 12, cloudInstances: 16, planeDetail: 0,
-      shadowEnabled: false, shadowMapSize: 0, maxOverlayItems: 40,
-    };
+    return { preset, pixelRatio, antialias: false, shadowEnabled: false, shadowMapSize: 0, maxOverlayItems: 40 };
   }
   if (preset === 'high') {
-    return {
-      preset, pixelRatio, antialias: true,
-      globeWidthSegments: 384, globeHeightSegments: 192,
-      routeSegments: 36, cloudInstances: 64, planeDetail: 2,
-      shadowEnabled: true, shadowMapSize: 1024, maxOverlayItems: 80,
-    };
+    return { preset, pixelRatio, antialias: true, shadowEnabled: true, shadowMapSize: 2048, maxOverlayItems: 80 };
   }
-  return {
-    preset, pixelRatio, antialias: true,
-    globeWidthSegments: 256, globeHeightSegments: 128,
-    routeSegments: 24, cloudInstances: 36, planeDetail: 1,
-    shadowEnabled: false, shadowMapSize: 0, maxOverlayItems: 60,
-  };
+  return { preset, pixelRatio, antialias: true, shadowEnabled: false, shadowMapSize: 0, maxOverlayItems: 60 };
 }
 
-// Context antialiasing must be chosen at WebGLRenderer construction time.
+/**
+ * The only place that configures a WebGLRenderer: DPR (never above 2), shadows, colour
+ * pipeline. Context antialiasing must be chosen at WebGLRenderer construction time.
+ */
 export function applyQualityProfile(renderer: WebGLRenderer, profile: QualityProfile): void {
   renderer.setPixelRatio(Math.min(2, profile.pixelRatio));
   renderer.shadowMap.enabled = profile.shadowEnabled;
-  if (profile.shadowEnabled) renderer.shadowMap.type = PCFSoftShadowMap;
+  renderer.shadowMap.type = PCFSoftShadowMap;
+  renderer.outputColorSpace = SRGBColorSpace;
+  renderer.toneMapping = ACESFilmicToneMapping;
+  renderer.toneMappingExposure = TONE_MAPPING_EXPOSURE;
 }
 
 export type FrameCallback = (timestampMs: number, elapsedMs: number) => void;

@@ -1,46 +1,30 @@
-/** Fixed-buffer 3D great-circle route ghost, in local globe coordinates. */
+/** Fixed-buffer 3D great-circle route ghost while the finger draws, in globe coordinates. */
 import { BufferAttribute, BufferGeometry, DynamicDrawUsage, Group, LineBasicMaterial, LineSegments, Vector3 } from 'three';
-import type { GeoPoint, RoutePreviewModel } from '../input/routeTool';
+import {
+  makeGreatCircleArc, sampleGreatCircleArc, type AircraftKind, type GeoWaypoint,
+  type MutableGreatCircleArc,
+} from './routes';
 
 const SAMPLES_PER_LEG = 64;
 const MAX_PREVIEW_LEGS = 32;
-const CRUISE_BASE_RADIUS = 1.008;
-const CRUISE_LIFT = { turboprop: 0.035, widebody: 0.09 } as const;
 const VALID_RGB: readonly [number, number, number] = [1, 0.97, 0.88];
 const INVALID_RGB: readonly [number, number, number] = [0.78, 0.13, 0.10];
 
+/** Structurally identical to `RoutePreviewModel` from `src/input/routeTool.ts`. */
 export interface RoutePreviewView {
+  readonly points: readonly GeoWaypoint[];
+  readonly legDistancesKm: readonly number[];
+  readonly rangeKm: number;
+  readonly aircraft: AircraftKind;
+}
+
+export interface RoutePreviewLayer {
   readonly object: Group;
-  update(model: RoutePreviewModel | null): void;
+  update(model: RoutePreviewView | null): void;
   dispose(): void;
 }
 
-/** Matches Diorama scene3d.js: vec(lon, lat) and routeCurve()'s sinusoidal cruise lift. */
-function unitVector(point: GeoPoint, result: Vector3): void {
-  const lon = point.lon * Math.PI / 180;
-  const lat = point.lat * Math.PI / 180;
-  const y = Math.sin(lat);
-  const horizontal = Math.cos(lat);
-  result.set(horizontal * Math.sin(lon), y, horizontal * Math.cos(lon));
-}
-
-/** No temporary allocations; robust when endpoints are coincident or antipodal. */
-function greatCircleAt(a: Vector3, b: Vector3, angle: number, sinAngle: number,
-  perpendicular: Vector3, fraction: number, lift: number, result: Vector3): void {
-  if (angle < 1e-7) {
-    result.copy(a);
-  } else if (Math.abs(sinAngle) < 1e-7) {
-    result.copy(a).multiplyScalar(Math.cos(angle * fraction))
-      .addScaledVector(perpendicular, Math.sin(angle * fraction));
-  } else {
-    result.copy(a).multiplyScalar(Math.sin((1 - fraction) * angle) / sinAngle)
-      .addScaledVector(b, Math.sin(fraction * angle) / sinAngle);
-  }
-  const altitude = CRUISE_BASE_RADIUS + lift * Math.sin(Math.PI * fraction) * Math.min(1, angle / 0.9);
-  result.normalize().multiplyScalar(altitude);
-}
-
-export function createRoutePreview(parent?: Group): RoutePreviewView {
+export function createRoutePreview(parent?: Group): RoutePreviewLayer {
   // At most one split per leg at the range boundary. Never recreate geometry on pointer movement.
   const segmentBudget = MAX_PREVIEW_LEGS * (SAMPLES_PER_LEG + 1);
   const positions = new Float32Array(segmentBudget * 2 * 3);
@@ -57,13 +41,12 @@ export function createRoutePreview(parent?: Group): RoutePreviewView {
     depthTest: true, depthWrite: false });
   const line = new LineSegments(geometry, material);
   line.frustumCulled = false;
+  line.visible = false;
   const object = new Group();
   object.name = 'airway-route-preview';
   object.add(line);
   parent?.add(object);
-  const from = new Vector3();
-  const to = new Vector3();
-  const perp = new Vector3();
+  const arc: MutableGreatCircleArc = { from: new Vector3(), side: new Vector3(), angle: 0, lift: 0, liftFactor: 0 };
   const p0 = new Vector3();
   const p1 = new Vector3();
   let count = 0;
@@ -81,40 +64,36 @@ export function createRoutePreview(parent?: Group): RoutePreviewView {
     colors.set(rgb, offset + 3);
     count++;
   };
-  const update = (model: RoutePreviewModel | null): void => {
+  const update = (model: RoutePreviewView | null): void => {
     count = 0;
     if (!model || model.points.length < 2 || !Number.isFinite(model.rangeKm) || model.rangeKm <= 0) {
       geometry.setDrawRange(0, 0);
       line.visible = false;
       return;
     }
-    const lift = CRUISE_LIFT[model.aircraft];
     const legs = Math.min(MAX_PREVIEW_LEGS, model.points.length - 1, model.legDistancesKm.length);
     for (let leg = 0; leg < legs; leg++) {
       const km = model.legDistancesKm[leg];
       if (!Number.isFinite(km) || km < 0) continue;
-      unitVector(model.points[leg], from);
-      unitVector(model.points[leg + 1], to);
-      const dot = Math.max(-1, Math.min(1, from.dot(to)));
-      const angle = Math.acos(dot);
-      const sinAngle = Math.sin(angle);
-      perp.set(0, Math.abs(from.y) < 0.9 ? 1 : 0, Math.abs(from.y) < 0.9 ? 0 : 1);
-      perp.addScaledVector(from, -perp.dot(from)).normalize();
+      // Same arc (and cruise lift) the committed route tube will use.
+      makeGreatCircleArc(model.points[leg], model.points[leg + 1], model.aircraft, arc);
       const cutoff = km === 0 ? 1 : Math.max(0, Math.min(1, model.rangeKm / km));
       for (let segment = 0; segment < SAMPLES_PER_LEG; segment++) {
         if (model.aircraft === 'turboprop' && segment % 4 === 3) continue; // dashed lower-altitude ghost
         const t0 = segment / SAMPLES_PER_LEG;
         const t1 = (segment + 1) / SAMPLES_PER_LEG;
-        greatCircleAt(from, to, angle, sinAngle, perp, t0, lift, p0);
-        greatCircleAt(from, to, angle, sinAngle, perp, t1, lift, p1);
+        sampleGreatCircleArc(arc, t0, p0);
         if (cutoff > t0 && cutoff < t1) {
           // The exact part beyond the plane range is red, not merely a whole sample.
-          greatCircleAt(from, to, angle, sinAngle, perp, cutoff, lift, p1);
+          sampleGreatCircleArc(arc, cutoff, p1);
           emit(p0, p1, true);
           p0.copy(p1);
-          greatCircleAt(from, to, angle, sinAngle, perp, t1, lift, p1);
+          sampleGreatCircleArc(arc, t1, p1);
           emit(p0, p1, false);
-        } else emit(p0, p1, t1 <= cutoff);
+        } else {
+          sampleGreatCircleArc(arc, t1, p1);
+          emit(p0, p1, t1 <= cutoff);
+        }
       }
     }
     position.needsUpdate = true;

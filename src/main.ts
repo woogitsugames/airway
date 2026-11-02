@@ -34,10 +34,8 @@ initializeAccessibility();
 document.title = t('app.title');
 const query = new URLSearchParams(location.search);
 
-if (query.get('dev') === 'airports') {
-  // Standalone airport-model fixture used by the task-06 screenshot script.
-  void import('./render/models/airports-demo').then(({ mountAirportsDemo }) => mountAirportsDemo(app));
-} else if (import.meta.env.DEV && query.get('preview') === 'gameover') {
+// The airport-model fixture lives in dev/world.html (render agent, shared world renderer).
+if (import.meta.env.DEV && query.get('preview') === 'gameover') {
   void import('./ui/gameover/preview').then(({ mountGameOverPreview }) => mountGameOverPreview(app));
 } else if (query.get('perf') === 'scene') {
   // scripts/perf-scene.ts mounts its own fixture; the game must not open a second WebGL context.
@@ -50,14 +48,16 @@ interface SavedSummary { readonly mode: RunMode; readonly week: number; readonly
 async function boot(): Promise<void> {
   configureHaptics({ isEnabled: () => readSettings().haptics });
   const { audio } = bootAudio({ toggles: readSettings() });
+  let appliedQuality = readSettings().graphics;
   onSettingsChange((settings) => {
     audio.setSettings(audioSettingsFromToggles(settings));
+    if (settings.graphics !== appliedQuality) { appliedQuality = settings.graphics; world?.setQuality(settings.graphics); }
     document.title = t('app.title');
   });
 
   let world: World | null = null;
   try {
-    world = createWorld(app, t('canvas.label'));
+    world = createWorld(app, t('canvas.label'), readSettings().graphics);
     world.showMenuBackdrop();
   } catch (error) {
     console.error('WebGL is unavailable; the menu stays on the flat sky.', error);

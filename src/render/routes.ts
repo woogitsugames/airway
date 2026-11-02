@@ -1,8 +1,9 @@
-/** Diorama route geometry. Authoritative route data is adapted at the game boundary. */
+/** Diorama route geometry: the renderer's one great-circle arc model (routes, planes, preview). */
 import {
   BufferGeometry, DoubleSide, Float32BufferAttribute, Group, Mesh,
   MeshStandardMaterial, ShaderMaterial, Vector3,
 } from 'three';
+import { setLatLonVec3 } from './globe/geo-math';
 
 export type AircraftKind = 'turboprop' | 'widebody';
 
@@ -18,21 +19,6 @@ export interface RouteRenderSpec {
   readonly waypoints: readonly GeoWaypoint[];
 }
 
-/** Thin bridge for task 09's ScheduledRoute.cityIds and task 05's city coordinates. */
-export function adaptScheduledRoute(
-  source: { readonly id: string; readonly cityIds: readonly string[] },
-  type: AircraftKind,
-  locate: (cityId: string) => GeoWaypoint | undefined,
-): RouteRenderSpec | null {
-  const waypoints: GeoWaypoint[] = [];
-  for (let i = 0; i < source.cityIds.length; i++) {
-    const point = locate(source.cityIds[i]);
-    if (!point) return null;
-    waypoints.push(point);
-  }
-  return waypoints.length >= 2 ? { id: source.id, type, waypoints } : null;
-}
-
 export interface GreatCircleArc {
   readonly from: Vector3;
   readonly side: Vector3;
@@ -40,6 +26,17 @@ export interface GreatCircleArc {
   readonly lift: number;
   readonly liftFactor: number;
 }
+/** Reusable arc storage for per-pointer-move paths such as the route preview. */
+export interface MutableGreatCircleArc {
+  from: Vector3;
+  side: Vector3;
+  angle: number;
+  lift: number;
+  liftFactor: number;
+}
+
+/** Cruise uplift: widebodies fly visibly higher than turboprops (shape, not only colour). */
+export const CRUISE_LIFT: Readonly<Record<AircraftKind, number>> = { turboprop: 0.035, widebody: 0.09 };
 
 export interface PreparedRoute {
   readonly id: string;
@@ -57,7 +54,6 @@ export interface RouteGeometryStats {
   readonly rebuilds: number;
 }
 
-const DEG = Math.PI / 180;
 const BASE_RADIUS = 1.008;
 const SIDES = 6;
 const MIN_ARC = 1e-7;
@@ -85,31 +81,25 @@ const HORIZON_FRAGMENT = `
   }
 `;
 
-/** Same spherical orientation as the selected Diorama mockup, radius one. */
-export function latLonToUnit(lon: number, lat: number, target: Vector3): Vector3 {
-  const phi = lat * DEG;
-  const theta = lon * DEG;
-  const cosLat = Math.cos(phi);
-  return target.set(cosLat * Math.sin(theta), Math.sin(phi), cosLat * Math.cos(theta));
-}
-
-export function makeGreatCircleArc(a: GeoWaypoint, b: GeoWaypoint, type: AircraftKind): GreatCircleArc {
-  const from = latLonToUnit(a.lon, a.lat, new Vector3());
-  const end = latLonToUnit(b.lon, b.lat, new Vector3());
-  const cosine = Math.max(-1, Math.min(1, from.dot(end)));
+export function makeGreatCircleArc(
+  a: GeoWaypoint, b: GeoWaypoint, type: AircraftKind,
+  out: MutableGreatCircleArc = { from: new Vector3(), side: new Vector3(), angle: 0, lift: 0, liftFactor: 0 },
+): GreatCircleArc {
+  const from = setLatLonVec3(out.from, a.lon, a.lat);
+  const side = setLatLonVec3(out.side, b.lon, b.lat);
+  const cosine = Math.max(-1, Math.min(1, from.dot(side)));
   const angle = Math.acos(cosine);
-  const side = end.addScaledVector(from, -cosine);
+  side.addScaledVector(from, -cosine);
   if (side.lengthSq() < 1e-12) {
     // Antipodes have infinitely many arcs: choose a stable local north/east basis.
     side.set(0, Math.abs(from.y) < 0.9 ? 1 : 0, Math.abs(from.y) < 0.9 ? 0 : 1);
     side.addScaledVector(from, -side.dot(from));
   }
   side.normalize();
-  return {
-    from, side, angle,
-    lift: type === 'widebody' ? 0.09 : 0.035,
-    liftFactor: Math.min(1, angle / 0.9),
-  };
+  out.angle = angle;
+  out.lift = CRUISE_LIFT[type];
+  out.liftFactor = Math.min(1, angle / 0.9);
+  return out;
 }
 
 /** Evaluate position and optional forward tangent without allocating any vectors. */
