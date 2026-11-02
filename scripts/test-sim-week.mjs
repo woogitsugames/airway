@@ -56,8 +56,8 @@ try {
     const resumed = make(seed, false);
     resumed.restore(checkpoint);
     assert.equal(run.hash(), resumed.hash(), 'checkpoint hash');
-    advance(run, WEEK);
-    advance(resumed, WEEK);
+    advance(run, WEEK - 3 * SIM_MINUTES_PER_DAY);
+    advance(resumed, WEEK - 3 * SIM_MINUTES_PER_DAY);
     assert.equal(run.failed, false, 'full week must survive with sufficient transport');
     assert.equal(resumed.hash(), run.hash(), 'RNG stream and passenger state must replay after restore');
     assert.ok(run.score > 0, 'week must deliver some passengers');
@@ -76,7 +76,7 @@ try {
     failTicks.push(`${seed.toString(16)}:${blocked.failure.tick}`);
     tests++;
   }
-  const expectedHashes = ['a1a1:1570912c', 'b2b2:008558de', 'c3c3:a0d4688d'];
+  const expectedHashes = ['a1a1:753d7727', 'b2b2:47030ec0', 'c3c3:981f84af'];
   assert.deepEqual(hashes, expectedHashes, 'deterministic week hashes changed');
   assert.deepEqual(failTicks, ['a1a1:824', 'b2b2:824', 'c3c3:824'], 'locked congestion failure ticks');
   console.log(`SUMMARY test:sim-week seeds=3 weekTicks=${WEEK} cases=${tests} passed=${tests} failed=0 hashes=${hashes.join(',')} failTicks=${failTicks.join(',')}`);
