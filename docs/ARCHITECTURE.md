@@ -111,7 +111,8 @@ One renderer stack, one entry point: `createWorldRenderer(canvas?, opts)` in
 single `WebGLRenderer`, `Scene`, light rig (subsolar `DirectionalLight` + sky
 `HemisphereLight`, `globe/createSunLights`), quality profile (`quality.ts`, D-33) and
 `GlobeOrbitCamera`. Layers: globe terrain/decor/atmosphere (`globe/`), airports with hub
-capacity rings and curfew barriers (`airports.ts`), route tubes (`routes.ts`), instanced
+capacity rings and curfew barriers (`airports.ts`; regional look, palms/snow and landmarks from
+`models/airportStyle.ts` on the shared instanced kit `models/airportKit.ts`, D-53), route tubes (`routes.ts`), instanced
 planes (`planes.ts`, `models/planes.ts`), route-drawing ghost (`routePreview.ts`),
 upgrade-card models (`modelPreview.ts`). All lon/lat → cartesian math goes through
 `globe/geo-math.ts` (`setLatLonVec3` writes into a caller vector; `latLonToVec3` allocates).
