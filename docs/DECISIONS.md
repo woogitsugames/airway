@@ -92,3 +92,14 @@ full-screen ads during play, no timers, no dark patterns. Supersedes the recomme
 
 ## D-18 — Store title: "Airway: Globe Route Builder" (PL: "Airway: Buduj siatkę lotów na globusie") (2026-11-02, owner)
 **Status: in force.**
+
+
+<!-- [task-02] -->
+## D-19 — Canonical replay and checkpoint undo contract (2026-11-02, task 02)
+The simulation journals commands in FIFO order as `[executionTick, command]`; `apply()` only queues for the next tick.
+Save schema v1 includes integer state, named RNG stream states, command journal, pending inputs and up to 64 checkpoints
+at 600-tick intervals. The state hash is UTF-8 FNV-1a of recursively sorted-key JSON; command history has a rolling
+fingerprint until gameplay models are introduced. Undo removes the newest player command and replays to the original
+current tick from a checkpoint strictly before that command. A queued positive `SetSpeed` exposes
+`schedulingSpeed` to wake a paused scheduler without applying a command outside a tick.
+**Status: in force; domain command validation remains with later gameplay tasks.**
