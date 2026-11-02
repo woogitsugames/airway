@@ -202,7 +202,10 @@
   .airway-go-flight-list { max-height: 200px; }
 }
 @media (max-height: 550px) and (min-width: 620px) {
-  .airway-go-overlay { padding-top: 5px; padding-bottom: 5px; }
+  .airway-go-overlay {
+    padding-top: calc(env(safe-area-inset-top, 0px) + 5px);
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 5px);
+  }
   .airway-go-content {
     width: min(100%, 910px);
     grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
