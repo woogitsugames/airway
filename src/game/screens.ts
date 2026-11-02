@@ -20,6 +20,7 @@ export interface ScreensOptions {
   readonly onMode?: (mode: MenuMode) => void;
   readonly onScreen?: (screen: ScreenName) => void;
   readonly onLanguageChanged?: () => void;
+  readonly onReplayTutorial?: () => void;
   readonly back?: BackOptions;
 }
 export interface ScreensHandle {
@@ -73,7 +74,7 @@ export function mountScreens(host: HTMLElement, options: ScreensOptions = {}): S
       replace('settings', createSettings(() => show('menu'), () => show('licenses'), () => {
         options.onLanguageChanged?.();
         show('settings', true);
-      }));
+      }, options.onReplayTutorial));
     } else replace('licenses', createLicenses(() => show('settings')));
   }
   const back = (): boolean => {

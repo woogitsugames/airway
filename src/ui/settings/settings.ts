@@ -90,7 +90,7 @@ function header(title:string,onBack:()=>void):HTMLElement {
 
 export interface SettingsHandle { readonly element:HTMLElement; readonly firstFocus:HTMLElement; }
 
-export function createSettings(onBack:()=>void,onLicenses:()=>void,onLanguageChanged:()=>void):SettingsHandle {
+export function createSettings(onBack:()=>void,onLicenses:()=>void,onLanguageChanged:()=>void,onReplayTutorial?:()=>void):SettingsHandle {
   const values=readSettings();
   const root=e('section','airway-settings');
   const paper=e('div','airway-settings__paper');
@@ -132,6 +132,12 @@ export function createSettings(onBack:()=>void,onLicenses:()=>void,onLanguageCha
   switchField(t('settings.haptics'),values.haptics,'haptics','settings-haptics');
   switchField(t('settings.colorblind'),values.colorblind,'colorblind','settings-colorblind');
   paper.append(e('p','airway-setting__hint',t('a11y.enhancedGlyphs')));
+  if(onReplayTutorial){
+    const replay=e('button','airway-settings__licenses',t('tutorial.replay'));
+    replay.type='button';replay.dataset.testid='settings-tutorial-replay';
+    replay.addEventListener('click',onReplayTutorial);
+    paper.append(replay);
+  }
   const licences=e('button','airway-settings__licenses',t('settings.licenses'));
   licences.type='button';licences.addEventListener('click',onLicenses);
   paper.append(licences);root.append(paper);

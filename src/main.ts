@@ -17,6 +17,7 @@ import { LocalScoreService } from './game/scores';
 import { mountScreens, type ScreenName } from './game/screens';
 import { startSession, type GameSession, type RunMode, type SessionScreen } from './game/session';
 import { mountTutorial } from './game/tutorial';
+import { TUTORIAL_KEY } from './game/tutorial/controller';
 import { createWorld, type World } from './game/world';
 import { getLanguage, t } from './i18n';
 import { configureHaptics, createDefaultStorage, GameLifecycle, type KeyValueStorage } from './platform';
@@ -115,6 +116,7 @@ async function boot(): Promise<void> {
       }
     },
     onLanguageChanged: () => { document.title = t('app.title'); },
+    onReplayTutorial: () => openTutorial(() => screens.show('menu'), true),
   });
 
   function freshSeed(): number {
@@ -172,25 +174,33 @@ async function boot(): Promise<void> {
     world.setIdleSpin(0);
   }
 
-  function startEndless(seed: number): void {
-    pendingSeed = null;
+  /** Training vignette; `then` runs once after it is completed or skipped. */
+  function openTutorial(then: () => void, replay = false): void {
     const tutorialHost = document.createElement('div');
     tutorialHost.className = 'airway-tutorial-screen';
     const tutorial = mountTutorial(tutorialHost);
-    if (skipTutorialOnce || !tutorial.controller.getState().visible) {
-      skipTutorialOnce = false;
-      tutorial.dispose();
-      openGame(EndlessRun.create(seed), 'endless');
-      return;
-    }
-    let started = false;
+    if (replay) tutorial.controller.replay();
+    let done = false;
     const unsubscribe = tutorial.controller.subscribe((state) => {
-      if (state.visible || started) return;
-      started = true;
-      queueMicrotask(() => { unsubscribe(); openGame(EndlessRun.create(seed), 'endless'); });
+      if (state.visible || done) return;
+      done = true;
+      queueMicrotask(() => { unsubscribe(); then(); });
     });
     screens.open('tutorial', { element: tutorialHost, dispose: () => { unsubscribe(); tutorial.dispose(); } });
     screenName = 'menu';
+  }
+
+  function startEndless(seed: number): void {
+    pendingSeed = null;
+    const firstRun = (() => {
+      try { return !globalThis.localStorage?.getItem(TUTORIAL_KEY); } catch { return false; }
+    })();
+    if (skipTutorialOnce || !firstRun) {
+      skipTutorialOnce = false;
+      openGame(EndlessRun.create(seed), 'endless');
+      return;
+    }
+    openTutorial(() => openGame(EndlessRun.create(seed), 'endless'));
   }
 
   function startDaily(): void {

@@ -79,6 +79,8 @@ try {
   });
   mkdirSync(OUT, { recursive: true });
   await page.goto(url, { waitUntil: 'networkidle' });
+  // [integration-ui] The training flight opens before the first Endless run, from the menu.
+  await page.getByTestId('menu-endless').click();
   await step(page, 'route');
   for (const id of ['city-lon', 'city-par', 'city-rom', 'tutorial-skip']) {
     const size = await page.getByTestId(id).boundingBox();
@@ -106,18 +108,26 @@ try {
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('aw-tutorial') || 'null'));
   assert(saved?.status === 'completed', 'Completed state was not persisted');
   await page.getByTestId('tutorial-continue').click();
-  assert(await page.getByTestId('tutorial-settings').isVisible(), 'Settings replay entry missing');
+  // [integration-ui] Completing the training flight starts the Endless run; replay lives in Settings.
+  await page.locator('.airway-hud').waitFor();
   await page.reload({ waitUntil: 'networkidle' });
+  await page.getByTestId('menu-endless').click();
+  await page.locator('.airway-hud').waitFor();
   assert(!(await page.locator('.aw-tutorial-stage').isVisible()), 'Completed tutorial unexpectedly reopened');
-  await page.getByTestId('tutorial-settings').click();
-  await page.getByTestId('tutorial-replay').click();
+  const replayFromSettings = async () => {
+    await page.keyboard.press('Escape'); // pause sheet
+    await page.getByTestId('action-menu').click();
+    await page.getByTestId('menu-settings').click();
+    await page.getByTestId('settings-tutorial-replay').click();
+  };
+  await replayFromSettings();
   await step(page, 'route');
   await page.getByTestId('tutorial-skip').click();
   assert(!(await page.locator('.aw-tutorial-stage').isVisible()), 'Skip did not close tutorial');
   const skipped = await page.evaluate(() => JSON.parse(localStorage.getItem('aw-tutorial') || 'null'));
   assert(skipped?.status === 'skipped', 'Skipped state was not persisted');
-  await page.getByTestId('tutorial-settings').click();
-  await page.getByTestId('tutorial-replay').click();
+  await page.getByTestId('menu-settings').click();
+  await page.getByTestId('settings-tutorial-replay').click();
   await step(page, 'route');
   for (const viewport of [{ width: 915, height: 412, name: '08-route-l' },
     { width: 673, height: 841, name: '09-route-fold' }, { width: 904, height: 1000, name: '10-route-wide' }]) {
