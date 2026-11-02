@@ -43,7 +43,9 @@
     "test:daynight": "node scripts/test-daynight.mjs",
     "shots:11": "node scripts/shots.mjs",
     "test:hud-targets": "node scripts/test-hud-targets.mjs",
-    "shots:13": "node scripts/shots.mjs && node scripts/test-hud-targets.mjs"
+    "shots:13": "node scripts/shots.mjs && node scripts/test-hud-targets.mjs",
+    "shots:12": "node scripts/shots.mjs",
+    "test:upgrades": "node --experimental-strip-types scripts/test-upgrades.mjs"
   },
   "dependencies": {
     "@capacitor/android": "8.5.3",

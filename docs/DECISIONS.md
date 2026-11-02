@@ -180,3 +180,14 @@ _(renumbered from D-20 during integration, branch `origin/task/10-render-routes-
 ## D-27 — Deterministic day/night and curfew adapters (2026-11-02, task 11)
 One UTC game day is 1,440 integer-minute ticks. City clock offsets are fixed whole hours derived from geographic longitude, without real time-zone or DST rules. The local 24-entry demand table is shared with task 08. The November-only subsolar latitude is -18.5 degrees; trigonometry and fractional-tick interpolation belong exclusively to the renderer. Endless curfew begins in week 4, selecting a sorted seeded subset of active cities from a dedicated `Rng.fork('daynight/curfew/week/N')`; puzzle curfew is an explicit level feature. The closure interval is local 23:00–06:00. A versioned curfew snapshot retains the cities eligible at the weekly boundary so later city spawns cannot change past selections. Rationale: deterministic replay without any browser clock or simulation transcendental functions. **Status: technical adapter pending integration of tasks 02/03/05/06/08/09; city-count balance remains tunable.**
 _(renumbered from D-19 during integration, branch `origin/task/11-day-night`)_
+
+## D-28 — Weekly departure slot upgrade contract (2026-11-02, task 12)
+Departure slots are a **per-city per-simulated-hour departure limit**, not an aircraft
+or runway count. The +2 upgrade increases the available departure allowance by two
+through the authoritative simulation adapter. The host scheduler must enforce the
+limit using integer elapsed simulation ticks, preserving the deterministic replay log.
+The default baseline limit and whether the bonus applies globally or to one selected
+city need owner confirmation before activating the upgrade in the game.
+Until then, the UI and offer generator remain adapter-only and must not silently
+modify a scheduler. **Status: provisional, requires integration decision.**
+_(renumbered from D-20 during integration, branch `origin/task/12-weekly-upgrade`)_

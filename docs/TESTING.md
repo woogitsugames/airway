@@ -48,6 +48,7 @@ npm run build
 | `npm run test:daynight` | Fixed-seed local time, demand, weekly curfew, snapshot, sun interpolation and render adapters | `SUMMARY test:daynight seed=0xA1A1 passed=N failed=0` |
 | `npm run shots` | Browser smoke: game canvas and responsive HUD at portrait / landscape / foldable dimensions | `SUMMARY shots seed=0xA1A1 captured=2 failed=0` and `SUMMARY test:hud-targets ... shots=4`; images in `docs/shots/01/` and `docs/shots/13/` |
 | `npm run test:hud-targets` | Playwright: 6 controls, ≥48 dp targets, synthetic safe-area clearance, no overlaps or overflow, live rotation, drag-to-route callback, empty-stock disabling, stable render nodes; saves four review screenshots | `SUMMARY test:hud-targets seed=0xA1A1 passed=N failed=0 shots=4` and PNGs in `docs/shots/13/` <!-- [task-13] --> |
+| `npm run test:upgrades` | Fixed-seed weekly offers, selected upgrade effects and congestion tie-breaking | `SUMMARY test:upgrades seed=0xA1A1 cases=5 passed=5 failed=0` |
 
 Every future test must have a fixed seed (use `0xA1A1` where no gameplay seed
 is needed), terminate with one `SUMMARY ...` line, set a nonzero exit code on

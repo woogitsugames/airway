@@ -45,4 +45,15 @@ export const en = {
   'hud.widebodyCount': 'Widebody aircraft: {count}. Select or drag onto a route',
   'hud.hubCount': 'Hub upgrades available: {count}',
   'hud.speed': 'Simulation speed: {speed} times. Change speed',
+  // [task-12] Weekly freight labels
+  'upgrade.freight': 'FREIGHT',
+  'upgrade.selectHub': 'Select a hub on the globe',
+  'upgrade.turboprop': 'Turboprop',
+  'upgrade.widebody': 'Widebody',
+  'upgrade.hub': 'Expand hub',
+  'upgrade.slots': 'Departure slots',
+  'upgrade.hubDetail': '+6 seats · 15 min transfer',
+  'upgrade.slotsDetail': '+2 departures per hour',
+  'upgrade.aircraftDetail': '+1 aircraft',
+  'upgrade.pressure': 'Busiest hub',
 } as const;

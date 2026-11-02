@@ -47,4 +47,15 @@ export const pl = {
   'hud.widebodyCount': 'Szerokokadłubowce: {count}. Wybierz lub przeciągnij na trasę',
   'hud.hubCount': 'Dostępne rozbudowy hubów: {count}',
   'hud.speed': 'Prędkość symulacji: {speed} razy. Zmień prędkość',
+  // [task-12] Weekly freight labels
+  'upgrade.freight': 'FRACHT',
+  'upgrade.selectHub': 'Wskaż hub na globusie',
+  'upgrade.turboprop': 'Turbośmigłowiec',
+  'upgrade.widebody': 'Szerokokadłubowiec',
+  'upgrade.hub': 'Rozbudowa huba',
+  'upgrade.slots': 'Sloty startowe',
+  'upgrade.hubDetail': '+6 miejsc · przesiadka 15 min',
+  'upgrade.slotsDetail': '+2 odloty na godzinę',
+  'upgrade.aircraftDetail': '+1 samolot',
+  'upgrade.pressure': 'Największy ruch',
 } as const satisfies Record<keyof typeof en, string>;
