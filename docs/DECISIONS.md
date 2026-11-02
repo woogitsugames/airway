@@ -418,3 +418,20 @@ The "game" scene uses clearly golden low-sun light (not daylight). **Status: to 
 `dev` stays the integration branch for all task PRs. The coordinator regularly fast-forwards `main` to `dev` after the
 full gate passes on `dev` (`test:fast`, `build`, `test:e2e:smoke`). Nobody commits to `main` directly. `main` is the
 GitHub default branch. **Status: in force.**
+
+## D-65 — Overnight continuous development by one coordinator agent (2026-11-03, owner)
+Scope chosen by the owner: low-end performance, 15 new puzzles, audio and music, code quality and tests. Work queue and
+log in `docs/NIGHT-BACKLOG.md`. **Status: in force.**
+
+## D-66 — Online leaderboards are in the MVP (2026-11-03, owner)
+Daily-challenge and weekly leaderboards on Firebase (pattern: cebulak-express `src/net/*`, server-side replay
+validation). Until the owner provides a Firebase project the feature is built against the emulator and is disabled
+when no config is present; privacy policy must be updated before release. Supersedes "post-MVP" in RESEARCH §5 and
+task 18's note. **Status: to implement.**
+
+## D-67 — airway.games site is not published yet (2026-11-03, owner)
+Publish together with the store pre-registration, after the device test. **Status: in force.**
+
+## D-68 — Hub stamp shows code or city name per player setting (2026-11-03, owner)
+Settings toggle "Lotniska: kod / nazwa" (default: code). Applies to hub stamp and other airport labels that have room.
+**Status: to implement.**
