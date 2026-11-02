@@ -335,6 +335,21 @@ weekday names do not fit a 3-day week. Rebalance: `SPAWNER_INTERVAL_HOURS` 12 �
 (`docs/balance/README.md`). `test:balance` gates the median and both shares on all 50 seeds. `RULES_VERSION` 2 → 3,
 so saves from 7-day builds are rejected. Puzzles are unaffected (no weekly upgrades). **Status: in force;
 the "N/3" day label and the balance values await owner review.**
+
+## D-44 — Adaptive, crack-free globe terrain with hand-entered relief (2026-11-02, task 33)
+The globe mesh is an icosphere refined **per edge** (an edge splits when either end or its midpoint
+asks for more detail, so the two facets sharing it always agree: no T-junction cracks). Coasts,
+mountain ranges and the pack-ice edge get the full depth, other land one level less, the open sea
+stays coarse and is coloured per vertex (smooth depth gradient); land facets keep one flat colour.
+Coast vertices snap onto the zero level of a signed-distance field (chamfer on the Natural Earth
+raster, bilinear), which removes the raster "teeth". Mountains come from ~45 hand-typed ridge lines
+(`src/render/globe/relief.ts`), deserts from superellipse regions; biome colours are smooth weights,
+not thresholds (no terraces). Terrain is flattened under every dataset city so airport pads (1.0055)
+never sink. Cloud shadows are a sun-projected instanced blob (works without shadow maps; clouds no
+longer cast map shadows in `high`). Presets (terrain triangles): low 35k, medium 200k, high 279k;
+budgets and measurements in `docs/PERFORMANCE.md`. **Status: in force; medium density is an
+owner-visible trade-off (see the task-33 PR questions).**
+
 ## D-45 — Upgrade labels read their numbers from the sim; hub pick keeps only the sign (2026-11-02, task 35)
 The weekly cargo labels (mockup `upgrade-*.png`) show range/seats from `PLANE_TYPES` and the effect of each upgrade
 (+seats, transfer minutes, +slots) read back by a dry run of `chooseUpgrade()` on throwaway adapters — the same probe the

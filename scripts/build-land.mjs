@@ -79,7 +79,9 @@ export function rasterizeLand(topo, width = WIDTH, height = HEIGHT) {
   geometry(topo.objects.land);
   // At the South Pole Natural Earth's antimeridian closure needs an explicit
   // polar cap in planar raster coordinates (the spherical fill does this implicitly).
-  bits.fill(1, Math.floor(175 / 180 * height) * width);
+  // [task-33] From 84.4°S: the three rows just north of 85°S came out as sea (XOR closure artefact),
+  // which drew a ring around the South Pole on the terrain.
+  bits.fill(1, Math.floor(174.4 / 180 * height) * width);
   const rows = [], stats = { land: 0, runs: 0 };
   for (let y = 0; y < height; y++) {
     const row = [];
@@ -108,9 +110,23 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
       mkdirSync(dirname(DEST), { recursive: true });
       writeFileSync(DEST, contents, 'utf8');
     }
+    // [task-33] --check also builds the adaptive terrain and decorations and measures them.
+    let terrain = '';
+    let failed = 0;
+    if (check) {
+      await import('./ts-test-loader.mjs');
+      const { checkTerrain } = await import('./build-land.check.mjs');
+      const result = await checkTerrain();
+      failed = result.failed;
+      for (const [level, s] of Object.entries(result.stats)) console.log(`terrain ${level} ${JSON.stringify(s)}`);
+      const m = result.stats.medium;
+      terrain = ` checks=${result.passed + result.failed} tris=${result.stats.low.triangles}/${m.triangles}/` +
+        `${result.stats.high.triangles} teethPct=${m.teethPct} saharaStepP99=${m.saharaStepP99} trees=${m.trees}`;
+    }
     console.log('SUMMARY build-land seed=0xA1A1 width=' + WIDTH + ' height=' + HEIGHT +
       ' land=' + stats.land + ' runs=' + stats.runs + ' bytes=' + Buffer.byteLength(contents) +
-      ' checked=' + (check ? 1 : 0) + ' failed=0');
+      ' checked=' + (check ? 1 : 0) + terrain + ' failed=' + failed);
+    if (failed) process.exitCode = 1;
   } catch (error) {
     console.error(error);
     console.log('SUMMARY build-land seed=0xA1A1 failed=1');
