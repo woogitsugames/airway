@@ -11,4 +11,15 @@ export const pl = {
   'action.resume': 'Wznów',
   'action.pause': 'Pauza',
   'notice.week': 'Tydzień {week}',
+  // [task-07] Rysowanie tras, pasek ATC i działania na trasach.
+  'route.aircraft.turboprop': 'turbośmigłowca',
+  'route.aircraft.widebody': 'samolotu szerokokadłubowego',
+  'route.atc.distance': '{distance} km · {from} → {to}',
+  'route.atc.overRange': 'Za daleko dla {aircraft}',
+  'route.atc.stopover': 'Wskaż miasto po drodze',
+  'route.menu.label': 'Działania na trasie',
+  'route.menu.remove': 'Usuń',
+  'route.menu.shorten': 'Skróć',
+  'route.menu.cancel': 'Anuluj',
+  'route.undo': 'Cofnij ostatnią zmianę trasy',
 } as const satisfies Record<keyof typeof en, string>;
