@@ -93,7 +93,7 @@ full-screen ads during play, no timers, no dark patterns. Supersedes the recomme
 ## D-18 — Store title: "Airway: Globe Route Builder" (PL: "Airway: Buduj siatkę lotów na globusie") (2026-11-02, owner)
 **Status: in force.**
 
-## D-19 — iOS uses CocoaPods for Capacitor 8.5.3 (2026-11-02, task 25)
+## D-20 — iOS uses CocoaPods for Capacitor 8.5.3 (2026-11-02, task 25)
 The native iOS project uses the official Capacitor 8.5.3 `ios-pods-template` with
 CocoaPods, a shared Xcode workspace and iOS 15.0 as the minimum version. Capacitor 8's
 default is SPM, but task 25 explicitly requires CocoaPods documentation and integration.

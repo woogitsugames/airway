@@ -1,1 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2732 2732"><rect width="2732" height="2732" fill="#8cc3d8"/><g transform="translate(854 854)"><rect width="1024" height="1024" fill="#13302e"/><rect x="124" y="180" width="776" height="664" fill="#f3c33e"/><path d="M124 180H900V844H124Z M142 198V826H882V198Z" fill="#13302e" fill-rule="evenodd"/><polygon points="512,278 542,328 542,470 756,565 756,623 542,558 542,710 620,758 620,794 512,764 404,794 404,758 482,710 482,558 268,623 268,565 482,470 482,328" fill="#13302e"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 288 288">
+  <!-- [task-24] Transparent mark. Splash background comes from Android theme. -->
+  <rect x="47" y="86" width="194" height="116" fill="#FFC72C"/>
+  <rect x="47" y="86" width="194" height="6" fill="#1C1E20"/>
+  <rect x="47" y="196" width="194" height="6" fill="#1C1E20"/>
+  <polygon points="144,97 155,122 155,135 207,151 207,164 155,155 155,179 171,184 171,191 144,184 117,191 117,184 133,179 133,155 81,164 81,151 133,135 133,122" fill="#1C1E20"/>
+</svg>

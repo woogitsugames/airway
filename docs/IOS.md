@@ -6,7 +6,7 @@ Status: task 25. Bundle ID: `pl.samsufi.airway` (owner decision D-15). Store tit
 
 - macOS with **Xcode 26.0+**, iOS Simulator and command-line tools (`xcode-select --install`).
 - Node.js 22+ and npm (`npm ci` uses the checked-in lockfile).
-- **CocoaPods** (`brew install cocoapods`), required for this platform's Pods integration. Capacitor 8 uses SPM by default; this project deliberately uses its official CocoaPods template (D-19).
+- **CocoaPods** (`brew install cocoapods`), required for this platform's Pods integration. Capacitor 8 uses SPM by default; this project deliberately uses its official CocoaPods template (D-20).
 - Ruby and Bundler; `bundle install` from the repository root installs the Fastlane version pinned by `Gemfile`.
 - For distribution: Apple Developer Program account, App Store Connect app record, signing certificate and provisioning profile for `pl.samsufi.airway`. App Store Connect API key authorization alone is insufficient for signing.
 
@@ -44,9 +44,9 @@ If dependencies are stale: `cd ios/App && pod install`. Do not commit `Pods/`, g
 
 ## Original icon and launch art
 
-`ios/Brand/app-icon.svg` is a procedural airport-style yellow/black sign with a plane silhouette. `ios/Brand/splash.svg` reuses it on the Diorama sky blue background. The opaque, native PNGs are in `AppIcon.appiconset` (1024×1024) and `Splash.imageset` (2732×2732; identical art at 1×/2×/3×, matching the source template). No third-party artwork.
+`ios/Brand/app-icon.svg` and `ios/Brand/splash.svg` are exact copies of task 24's original `resources/icon.svg` and `resources/splash.svg` (PR #12). The shared wayfinding mark uses black `#1C1E20` and yellow `#FFC72C`. The iOS icon is opaque 1024×1024; the 2732×2732 iOS launch PNG composites the shared transparent splash SVG over the **same black launch background used by Android**. All PNGs are procedural, with identical 1×/2×/3× splash image slots matching the Capacitor template. No third-party artwork.
 
-Task 24 has not yet been merged. Compare and consolidate these task-25 SVGs with task-24 Android `brand/` and `resources/` artwork once available; both platforms should use a single source of truth.
+Task 24 exists as draft PR #12 and is not yet merged. The two iOS SVG copies are currently **byte-identical** to its asset sources; after merge, decide whether to generate both platforms from the common `resources/` SVGs rather than maintaining copies.
 
 ## TestFlight
 
