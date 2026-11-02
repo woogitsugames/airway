@@ -130,6 +130,7 @@ from `dist/`). Since task 31 (3-day week, D-40) the bot reaches the week-1 board
 balance seeds, including the ordinary test seed 0xA1A1, so the smoke, `ui:matrix` and the store `upgrade` scene all use
 0xA1A1. If a balance change moves this, fix the balance rather than picking a lucky seed or adding shortcuts.
 `node scripts/shots-31.mjs` captures the task-31 evidence (`docs/shots/31/`: week-1 board and the day bar at day 2/3).
+`node scripts/shots-32.mjs` captures the task-32 evidence (`docs/shots/32/`: first held departure with the one-time slot strip, week-1 board with the "+2 slots" label and its stamp, airport-pick sign), PL/EN × 412×915 / 915×412; `SUMMARY shots:32 seed=0xA1A1 captured=12 expected=12 failed=0`.
 
 ## Boundary regression
 

@@ -329,6 +329,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
         callbacks.cue?.({ type: 'hub-load', tick: run.tick, hubId: event.cityId, latitude, loadRatio: 1, capacity: city.capacity });
       } else if (event.type === 'week') {
         callbacks.cue?.({ type: 'week', tick: run.tick, week: event.week });
+        slotHint.hide(); // [task-32] the weekly board replaces the hint
       } else if (event.type === 'slot-held') { // [task-32]
         slotHint.held(event.cityId, event.limit, event.minutesToSlot);
       } else if (event.type === 'new-city') {

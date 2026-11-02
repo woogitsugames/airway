@@ -12,6 +12,8 @@ export interface SlotHint {
   /** An aircraft is held at `airport`; shows the hint only if it was never shown before. */
   held(airport: string, limit: number, minutesToSlot: number): void;
   readonly visible: boolean;
+  /** Hide early (e.g. when the weekly board opens). */
+  hide(): void;
   dispose(): void;
 }
 
@@ -60,6 +62,7 @@ export function mountSlotHint(host: HTMLElement, storage: TutorialStorage | null
       timer = setTimeout(hide, VISIBLE_MS);
     },
     get visible() { return !strip.hidden; },
+    hide,
     dispose() { hide(); strip.remove(); },
   };
 }
