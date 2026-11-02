@@ -145,7 +145,7 @@ export class AirwayAudio {
     }
   }
 
-  /** Settings are pushed in from the owner of UI/persistence (task 14). */
+  /** Settings are pushed in by the settings screen; audio never persists them. */
   setSettings(next: Partial<AudioSettings>): void {
     const wasMuted = this.settings.muted;
     this.settings = {
@@ -188,7 +188,7 @@ export class AirwayAudio {
     return this.context ? this.unlock() : Promise.resolve(false);
   }
 
-  /** Browser fallback until task 16 wires @capacitor/app lifecycle. */
+  /** visibilitychange/pagehide also fire in Capacitor WebViews on app pause/resume. */
   attachBrowserLifecycle(): () => void {
     this.lifecycleCleanup?.();
     if (typeof document === 'undefined' || typeof window === 'undefined') return () => {};
