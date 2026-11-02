@@ -66,9 +66,11 @@ export const pl = {
   'upgrade.value.transfer': '{from} → {to} min',
   'upgrade.value.hubFor': 'wybranego huba',
   'upgrade.value.slots': '+{count} na godzinę',
-  'upgrade.value.slotsBest': 'zatłoczone lotniska',
   'upgrade.stamp': '{hub} {waiting}/{capacity}',
   'upgrade.noHub': 'Brak huba',
+  'upgrade.selectAirport': 'Wskaż lotnisko na globusie',
+  'upgrade.slotStamp': '{airport} {minutes} min',
+  'upgrade.value.slotsFor': 'wybranego lotniska',
   // [task-14] Main menu, preferences and licence notice.
   'action.back': 'WRÓĆ',
   'menu.terminal': 'AIRWAY.GAMES · TERMINAL 1',
@@ -142,6 +144,7 @@ export const pl = {
   'gameover.cause.longWait': '{count} pasażerów czekało dłużej niż dopuszczalny czas.',
   'gameover.cause.capacity': 'Poczekalnia osiągnęła limit: {waiting} z {capacity} miejsc.',
   'gameover.cause.congestionDuration': 'Zator utrzymywał się przez {seconds} sekund.',
+  'gameover.cause.slotWait': 'Samoloty czekały na ziemi {minutes} min na slot startowy.',
   'gameover.cause.unavailable': 'Brakuje danych, aby wskazać kolejną przyczynę.',
   // [task-16] Save/load issue messages.
   'save.error.corrupt': 'Zapis gry jest uszkodzony. Rozpoczęto nową grę.',

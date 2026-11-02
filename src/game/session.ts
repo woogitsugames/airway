@@ -305,7 +305,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     const state = run.weeklyUpgrade;
     if (state && (force || state.week !== upgradeWeek || state.pendingHub)) {
       upgradeWeek = state.week;
-      upgrade.render(state, run.hubPressure());
+      upgrade.render(state, run.hubPressure(), run.slotPressure()); // [task-32] airports for "+2 slots"
       setScreen('upgrade');
     } else if (!state && screen === 'upgrade') {
       upgrade.render(null, []);

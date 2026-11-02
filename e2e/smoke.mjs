@@ -52,7 +52,7 @@ const steps = [
   ['select one weekly upgrade', async (page) => {
     // A hub-expansion card waits for a hub tap; take the first card that completes on its own.
     const option = await page.evaluate(() => document.querySelector(
-      '[data-testid^="upgrade-option-"]:not([data-upgrade="hub-expansion"])')?.getAttribute('data-testid') ?? 'upgrade-option-0');
+      '[data-testid^="upgrade-option-"]:not([data-upgrade="hub-expansion"]):not([data-upgrade="departure-slots"])') /* [task-32] targeted picks wait for a globe tap */?.getAttribute('data-testid') ?? 'upgrade-option-0');
     await clickTestId(page, option);
     await waitForScreen(page, 'game');
   }],

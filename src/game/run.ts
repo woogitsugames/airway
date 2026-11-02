@@ -8,6 +8,7 @@ import {
 } from '../sim';
 import type { Sim } from '../sim';
 import type { HubPressure } from '../sim/upgrades';
+import type { SlotPressure } from '../ui/upgrade/cards'; // [task-32]
 import type { HubCauseLedger } from './causes';
 
 export type AircraftType = 'turboprop' | 'widebody';
@@ -188,6 +189,14 @@ export class EndlessRun {
   hubPressure(): HubPressure[] {
     return this.sim.world.cities().filter((city) => city.isHub)
       .map((city) => ({ hubId: city.id, waiting: city.waiting, capacity: city.capacity, label: city.id }));
+  }
+
+  // [task-32] Departure-slot pressure of every active airport (upgrade stamp + "+2 slots" airport pick).
+  slotPressure(): SlotPressure[] {
+    const world = this.sim.world;
+    return world.cities().map((city) => ({
+      cityId: city.id, label: city.id, held: city.slotHeldPlanes, waitMinutes: world.hubCauseLedger(city.id).slotWaitMinutes,
+    }));
   }
 
   hash(): string { return this.sim.hash(); }

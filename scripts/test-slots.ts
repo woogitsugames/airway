@@ -5,6 +5,7 @@ import { tickPlaneSchedule, type DepartureSlotGate } from '../src/sim/schedule.t
 import { Sim } from '../src/sim/index.ts';
 import { cityDistanceKm } from '../src/data/index.ts';
 import { PLANE_TYPES, DEPARTURE_SLOT_UPGRADE } from '../src/sim/params.ts';
+import { buildCauseReport } from '../src/game/causes.ts';
 
 const SEED = 0xA1A1;
 let passed = 0;
@@ -164,6 +165,15 @@ test('"+2 slots" on the chosen airport raises its hourly throughput', () => {
   assert.ok(firstHour(boostedHours) > firstHour(baseHours),
     `boosted ${firstHour(boostedHours)} vs base ${firstHour(baseHours)} departures in hour 0`);
   assert.equal(firstHour(boostedHours), Math.min(4, baseLimit + DEPARTURE_SLOT_UPGRADE));
+});
+
+test('game-over cause ledger reports "aircraft waited for a slot" only with evidence', () => {
+  const none = buildCauseReport({ waiting: 10, capacity: 36 });
+  assert.ok(!none.some((fact) => fact.kind === 'slot-wait'));
+  const facts = buildCauseReport({ waiting: 36, capacity: 36, slotWaitMinutes: 140 });
+  const slot = facts.find((fact) => fact.kind === 'slot-wait');
+  assert.ok(slot, 'slot-wait cause present');
+  assert.deepEqual(slot.params, { minutes: 140 });
 });
 
 console.log(`SUMMARY test:slots seed=0xA1A1 passed=${passed} failed=${failed}`);

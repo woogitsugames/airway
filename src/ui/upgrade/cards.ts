@@ -15,6 +15,22 @@ export interface UpgradeFacts {
   readonly slots: { readonly count: number };
 }
 
+/** [task-32] Live departure-slot pressure of one airport (from CityView / hubCauseLedger). */
+export interface SlotPressure {
+  readonly cityId: string;
+  readonly label: string;
+  /** Aircraft held for a slot right now. */
+  readonly held: number;
+  /** Aircraft-minutes waited for a slot so far this run. */
+  readonly waitMinutes: number;
+}
+
+/** Stable pick for the slot stamp: most waiting minutes, then most held aircraft, then lexical id. */
+export function mostSlotStarved(airports: readonly SlotPressure[]): SlotPressure | undefined {
+  return [...airports].filter((a) => a.waitMinutes > 0 || a.held > 0).sort((a, b) =>
+    b.waitMinutes - a.waitMinutes || b.held - a.held || (a.cityId < b.cityId ? -1 : a.cityId > b.cityId ? 1 : 0))[0];
+}
+
 export interface CardRow { readonly label: string; readonly value: string }
 export interface CardModel {
   readonly kind: UpgradeKind;
@@ -38,11 +54,12 @@ export function upgradeFacts(): UpgradeFacts {
   const probe = (upgrade: UpgradeKind) => {
     const seen = { planeCount: 0, hubExtra: 0, hubMct: 0, slots: 0 };
     const state = { week: 1, paused: true, offers: [{ id: upgrade, week: 1 }], pendingHub: false } as const;
-    chooseUpgrade(state, { type: 'ChooseUpgrade', week: 1, upgrade, ...(upgrade === 'hub-expansion' ? { hubId: 'probe' } : {}) }, {
+    const targeted = upgrade === 'hub-expansion' || upgrade === 'departure-slots'; // [task-32]
+    chooseUpgrade(state, { type: 'ChooseUpgrade', week: 1, upgrade, ...(targeted ? { hubId: 'probe' } : {}) }, {
       grantPlane: (_type, count) => { seen.planeCount = count; },
       expandHub: (_hub, extra, mct) => { seen.hubExtra = extra; seen.hubMct = mct; },
       addDepartureSlots: (count) => { seen.slots = count; },
-    }, ['probe']);
+    }, ['probe'], ['probe']);
     return seen;
   };
   const hub = probe('hub-expansion');
@@ -66,7 +83,7 @@ export function upgradeTitle(kind: UpgradeKind): string {
 
 /** Builds the label for offer `index` of `total`; `hubs` is the live hub pressure for the context stamp. */
 export function cardModel(kind: UpgradeKind, index: number, total: number, hubs: readonly HubPressure[],
-  facts: UpgradeFacts = upgradeFacts()): CardModel {
+  facts: UpgradeFacts = upgradeFacts(), airports: readonly SlotPressure[] = []): CardModel {
   const counter = t('upgrade.counter', { index: index + 1, total });
   const title = upgradeTitle(kind);
   if (kind === 'turboprop' || kind === 'widebody') {
@@ -96,14 +113,16 @@ export function cardModel(kind: UpgradeKind, index: number, total: number, hubs:
         : t('upgrade.noHub'),
     };
   }
-  // Departure slots (D-28/D-41, task 32): same label grid; a context stamp can be added once the sim
-  // reports which airport is waiting for slots.
+  // Departure slots (D-28/D-41, task 32): same label grid; the stamp names the airport whose aircraft
+  // waited longest for a slot (only when one did).
+  const starved = mostSlotStarved(airports);
   return {
     kind, counter, title, unavailable: false,
+    ...(starved ? { stamp: t('upgrade.slotStamp', { airport: starved.label.toUpperCase(), minutes: number(starved.waitMinutes) }) } : {}),
     code: t('upgrade.code.slots', { count: facts.slots.count }),
     rows: [
       { label: t('upgrade.field.departures'), value: t('upgrade.value.slots', { count: facts.slots.count }) },
-      { label: t('upgrade.field.best'), value: t('upgrade.value.slotsBest') },
+      { label: t('upgrade.field.for'), value: t('upgrade.value.slotsFor') },
     ],
   };
 }

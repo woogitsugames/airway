@@ -65,6 +65,7 @@ const CAUSE_KEYS: Record<CauseKind, TranslationKey> = {
   'long-wait': 'gameover.cause.longWait',
   'capacity': 'gameover.cause.capacity',
   'congestion-duration': 'gameover.cause.congestionDuration',
+  'slot-wait': 'gameover.cause.slotWait', // [task-32]
   'unavailable': 'gameover.cause.unavailable',
 };
 

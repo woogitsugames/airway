@@ -65,9 +65,11 @@ export const en = {
   'upgrade.value.transfer': '{from} → {to} min',
   'upgrade.value.hubFor': 'a hub you pick',
   'upgrade.value.slots': '+{count} per hour',
-  'upgrade.value.slotsBest': 'busy airports',
   'upgrade.stamp': '{hub} {waiting}/{capacity}',
   'upgrade.noHub': 'No hub yet',
+  'upgrade.selectAirport': 'Select an airport on the globe',
+  'upgrade.slotStamp': '{airport} {minutes} min',
+  'upgrade.value.slotsFor': 'an airport you pick',
   // [task-14] Main menu, preferences and licence notice.
   'action.back': 'BACK',
   'menu.terminal': 'AIRWAY.GAMES · TERMINAL 1',
@@ -141,6 +143,7 @@ export const en = {
   'gameover.cause.longWait': '{count} passengers waited longer than the permitted time.',
   'gameover.cause.capacity': 'The waiting area reached {waiting} of {capacity} places.',
   'gameover.cause.congestionDuration': 'The hub remained congested for {seconds} seconds.',
+  'gameover.cause.slotWait': 'Aircraft waited {minutes} minutes on the ground for a departure slot.',
   'gameover.cause.unavailable': 'There is not enough recorded data to identify another cause.',
   // [task-16] Save/load issues are translated by the composition root.
   'save.error.corrupt': 'The saved game is damaged. A new game has been started.',
