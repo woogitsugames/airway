@@ -135,6 +135,81 @@ check('bot-driven run crosses a weekly upgrade and replays exactly', () => {
   notes.push(`bot${UPGRADE_SEED.toString(16)}:min${sim.world.minute}:upgrades=${sim.world.upgrades.map((u) => u.upgrade).join('+')}`);
 });
 
+// [task-39] D-49: back out of the airport pick. For each targeted card (hub expansion, "+2 slots"):
+// pick it (no airport) -> CancelUpgradePick -> choose another card. The live run, its journal-only replay
+// and its snapshot agree; the world equals choosing the other card directly; a stray cancel is rejected.
+function reachUpgrade(seed, wanted) {
+  const sim = createGame(seed);
+  while (sim.tickCount < 6 * TICKS_PER_WEEK) {
+    const world = sim.world;
+    if (world.status === 'upgrade' && world.offer && !sim.pendingCount) {
+      const ids = world.offer.offers.map((o) => o.id);
+      const ready = ids.includes(wanted) && ids.some((id) => id !== wanted)
+        && (wanted !== 'hub-expansion' || world.cities().some((c) => c.isHub));
+      if (ready) return sim;
+    }
+    if (world.status === 'over' || world.status === 'won') return null;
+    drive(sim);
+    sim.tick();
+    sim.drainEvents();
+  }
+  return null;
+}
+const worldOf = (sim) => { const s = sim.getState(); return JSON.stringify({ world: s.world, rng: s.rng }); };
+for (const targeted of ['hub-expansion', 'departure-slots']) {
+  check(`cancel ${targeted} pick, choose another card, replay identical`, () => {
+    const seed = [...SEEDS, 0xD4D4, 0xE5E5, 0xF6F6].find((s) => reachUpgrade(s, targeted));
+    assert.ok(seed !== undefined, `no seed offers ${targeted} with a valid target`);
+    const live = reachUpgrade(seed, targeted);
+    const before = Sim.fromSnapshot(live.snapshot());
+    const offer = live.world.offer;
+    const offerBefore = JSON.stringify(offer);
+    const other = offer.offers.find((o) => o.id !== targeted && o.id !== 'hub-expansion' && o.id !== 'departure-slots')
+      ?? offer.offers.find((o) => o.id !== targeted);
+    const otherCommand = other.id === 'hub-expansion'
+      ? { type: 'ChooseUpgrade', week: offer.week, upgrade: other.id, hubId: live.world.cities().find((c) => c.isHub).id }
+      : other.id === 'departure-slots'
+        ? { type: 'ChooseUpgrade', week: offer.week, upgrade: other.id, hubId: live.world.activeCityIds().sort()[0] }
+        : { type: 'ChooseUpgrade', week: offer.week, upgrade: other.id };
+    // Cancel without a pending pick is journaled as a rejection and changes nothing.
+    live.apply({ type: 'CancelUpgradePick', week: offer.week });
+    live.tick();
+    assert.ok(live.drainEvents().some((e) => e.type === 'CommandRejected' && e.command.type === 'CancelUpgradePick'));
+    assert.equal(JSON.stringify(live.world.offer), offerBefore);
+    live.apply({ type: 'ChooseUpgrade', week: offer.week, upgrade: targeted });
+    assert.notEqual(live.schedulingSpeed, 0);
+    live.tick();
+    assert.equal(live.world.offer.pendingHub, true);
+    assert.equal(live.world.offer.selected, targeted);
+    live.apply({ type: 'CancelUpgradePick', week: offer.week + 1 }); // wrong week: rejected
+    live.tick();
+    assert.equal(live.world.offer.pendingHub, true);
+    live.apply({ type: 'CancelUpgradePick', week: offer.week });
+    assert.notEqual(live.schedulingSpeed, 0, 'a queued cancel must get its tick on the frozen board');
+    live.tick();
+    assert.equal(live.world.status, 'upgrade');
+    assert.equal(JSON.stringify(live.world.offer), offerBefore, 'cancel restores the untouched offer');
+    live.drainEvents();
+    live.apply(otherCommand);
+    live.tick();
+    assert.equal(live.world.status, 'running');
+    assert.equal(live.world.upgrades.at(-1).upgrade, other.id);
+    // Direct choice of the same card from the same board: same world after the same game minutes.
+    before.apply(otherCommand);
+    before.tick();
+    assert.equal(worldOf(before), worldOf(live));
+    // Same world minutes with no further input (the scripted policy keys off kernel ticks, which differ by 3).
+    live.advance(600);
+    before.advance(600);
+    assert.equal(worldOf(before), worldOf(live));
+    const journal = live.getCommandLog();
+    assert.equal(journal.filter(([, c]) => c.type === 'CancelUpgradePick').length, 3, 'cancels are journaled');
+    assert.equal(Sim.replay(seed, journal, live.tickCount).hash(), live.hash());
+    assert.equal(Sim.fromSnapshot(live.snapshot()).hash(), live.hash());
+    notes.push(`cancel-${targeted}:${seed.toString(16)}:w${offer.week}:${other.id}`);
+  });
+}
+
 check('puzzle scenario runs on the real Sim', () => {
   const sim = createGame(1, 'puzzle', '01');
   assert.deepEqual(sim.world.activeCityIds().sort(), ['LON', 'PAR']);

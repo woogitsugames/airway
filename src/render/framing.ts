@@ -101,3 +101,14 @@ export function solveZoomForRadius(radiusAt: (zoom: number) => number, target: n
   }
   return hi;
 }
+
+/** [task-39] D-62: the menu globe turns slowly, about 1.2° per second (camera orbit; routes stay on their cities). */
+export const MENU_SPIN_DEG_PER_S = 1.2;
+
+/** [task-39] Menu rotation rate: 0 outside the menu, while it is hidden, or with reduced motion. */
+export function menuSpinRate(state: {
+  readonly menuActive: boolean; readonly menuShown: boolean; readonly reducedMotion: boolean; readonly hidden?: boolean;
+}): number {
+  if (!state.menuActive || !state.menuShown || state.reducedMotion || state.hidden) return 0;
+  return MENU_SPIN_DEG_PER_S;
+}

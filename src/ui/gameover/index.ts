@@ -1,6 +1,6 @@
 // [task-15] Airport departure-board failure presentation; all gameplay effects use injected adapters.
 import { buildCauseReport, type CauseFact, type CauseKind, type HubCauseLedger, type RegionCode } from '../../game/causes';
-import { getLanguage, t, type TranslationKey } from '../../i18n';
+import { localNumber, t, type TranslationKey } from '../../i18n';
 import { nextWorldSeed, sameWorldIdentity, type WorldIdentity } from './seed';
 import { persistBestRecord, type BestStorage } from './storage';
 import './gameover.css';
@@ -155,7 +155,7 @@ function buildDialog(
   const stripHeader = element('h2', 'airway-go-strip-title', t('gameover.report'));
   const scoreRow = element('div', 'airway-go-score-row');
   scoreRow.append(
-    element('p', 'airway-go-score', t('gameover.score', { score: snapshot.delivered.toLocaleString(getLanguage()) })),
+    element('p', 'airway-go-score', t('gameover.score', { score: localNumber(snapshot.delivered) })),
     element('p', 'airway-go-weeks', t('gameover.weeks', { weeks: snapshot.completedWeeks })),
   );
   const causesTitle = element('h3', 'airway-go-causes-title', t('gameover.causes'));

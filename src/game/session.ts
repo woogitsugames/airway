@@ -130,6 +130,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       run.resolveBoundary();
       syncUpgrade(true);
     },
+    onCancelPick: (week) => cancelPick(week), // [task-39]
     onPreviewModel: (container, kind) => {
       // The real low-poly model, rendered through the shared WebGL context into a 2D canvas.
       // Measured on the next frame, once the board is in the document.
@@ -276,6 +277,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       const seconds = city.jamTicksLeft === null ? null : Math.ceil(city.jamTicksLeft / SIM_TICKS_PER_SECOND);
       if (jamKeys.get(city.id) !== seconds) { jamKeys.set(city.id, seconds); overlay.setJamCountdown(city.id, seconds); }
       jamHaptics.setJammed(city.id, city.jamTicksLeft !== null);
+      overlay.setSlotHold(city.id, city.slotHeld, city.nextSlotMinutes); // [task-38] deduplicated inside
     }
     if (force || run !== lastRun || run.revision !== lastRunRevision) {
       lastRun = run;
@@ -302,6 +304,12 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       selectedPlane,
       stock: { turboprop: stock.turboprop, widebody: stock.widebody, hub: stock.hub },
     });
+  }
+  /** [task-39] Back from the hub/airport pick to the week's crates: one journaled sim command (D-49). */
+  function cancelPick(week: number): void {
+    run.queue({ type: 'CancelUpgradePick', week });
+    run.resolveBoundary();
+    syncUpgrade(true);
   }
   function syncUpgrade(force = false): void {
     const state = run.weeklyUpgrade;
@@ -443,7 +451,12 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     },
     back() {
       if (screen === 'gameover') { callbacks.onMenu(); return true; }
-      if (screen === 'upgrade') return true; // The weekly board must be answered.
+      if (screen === 'upgrade') {
+        // The weekly board must be answered; from the airport pick, back returns to the crates. [task-39]
+        const offer = run.weeklyUpgrade;
+        if (offer?.pendingHub) cancelPick(offer.week);
+        return true;
+      }
       setPaused(!paused);
       return true;
     },

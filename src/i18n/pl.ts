@@ -14,6 +14,8 @@ export const pl = {
   'airport.focus': 'Obróć do {code}',
   'airport.waiting': '{code}: {count} pasażerów czeka',
   'airport.jammed': '{code}: zator, pozostało {seconds} sekund',
+  'airport.slot.label': 'SLOT', // [task-38]
+  'airport.slotHeld': '{code}: samoloty czekające na slot startowy: {count}, następny slot za {time}',
   // [task-07] Rysowanie tras, pasek ATC i działania na trasach.
   'route.aircraft.turboprop': 'turbośmigłowca',
   'route.aircraft.widebody': 'samolotu szerokokadłubowego',
@@ -41,8 +43,8 @@ export const pl = {
   // [task-12] Weekly freight labels
   'upgrade.freight': 'FRACHT',
   'upgrade.selectHub': 'Wskaż hub na globusie',
-  'upgrade.turboprop': 'Turbośmigłowiec',
-  'upgrade.widebody': 'Szerokokadłubowiec',
+  'upgrade.turboprop': 'Turbo\u00ADśmigłowiec', // soft hyphens: long titles break only at a hyphen (D-51)
+  'upgrade.widebody': 'Szeroko\u00ADkadłubowiec',
   'upgrade.hub': 'Rozbudowa huba',
   'upgrade.slots': 'Sloty startowe',
   // [task-35] Pola etykiety frachtowej; liczby pochodzą z symulacji.
@@ -69,6 +71,8 @@ export const pl = {
   'upgrade.stamp': '{hub} {waiting}/{capacity}',
   'upgrade.noHub': 'Brak huba',
   'upgrade.selectAirport': 'Wskaż lotnisko na globusie',
+  'upgrade.back': 'Wróć', // [task-39]
+  'upgrade.backLabel': 'Wróć do skrzyń',
   'upgrade.slotStamp': '{airport} {minutes} min',
   'upgrade.value.slotsFor': 'wybranego lotniska',
   // [task-14] Main menu, preferences and licence notice.

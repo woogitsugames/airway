@@ -25,6 +25,8 @@ export type Command =
   | { readonly type: 'UpgradeHub'; readonly hubId: string }
   /** Task 12 offer choice; `hubId` completes a 'hub-expansion' choice (may arrive in a second command). */
   | { readonly type: 'ChooseUpgrade'; readonly week: number; readonly upgrade: UpgradeKind; readonly hubId?: string }
+  /** [task-39] Back out of a pending airport pick (hub expansion / "+2 slots") to the week's offers (D-49). */
+  | { readonly type: 'CancelUpgradePick'; readonly week: number }
   | { readonly type: 'SetSpeed'; readonly speed: SimSpeed };
 
 /** The command journal uses the [executionTick, command] replay format. */
@@ -33,7 +35,7 @@ export type CommandEntry = readonly [tick: number, command: Command];
 export type CommandType = Command['type'];
 const TYPES: readonly CommandType[] = [
   'AddRoute', 'ExtendRoute', 'ShortenRoute', 'RemoveRoute', 'AssignPlane', 'UnassignPlane',
-  'UpgradeHub', 'ChooseUpgrade', 'SetSpeed',
+  'UpgradeHub', 'ChooseUpgrade', 'CancelUpgradePick', 'SetSpeed',
 ];
 const PLANES: readonly string[] = ['turboprop', 'widebody'];
 const UPGRADES: readonly string[] = ['turboprop', 'widebody', 'hub-expansion', 'departure-slots'];
@@ -93,6 +95,9 @@ export function normalizeCommand(value: unknown): Command {
       const base = { type: 'ChooseUpgrade' as const, week: input.week as number, upgrade: input.upgrade as UpgradeKind };
       return input.hubId === undefined ? base : { ...base, hubId: id(input.hubId, 'hubId') };
     }
+    case 'CancelUpgradePick': // [task-39]
+      if (!Number.isSafeInteger(input.week) || (input.week as number) < 1) throw new TypeError('invalid upgrade week');
+      return { type: 'CancelUpgradePick', week: input.week as number };
     case 'SetSpeed':
       if (!isSimSpeed(input.speed)) throw new RangeError('invalid SetSpeed value');
       return { type: 'SetSpeed', speed: input.speed };

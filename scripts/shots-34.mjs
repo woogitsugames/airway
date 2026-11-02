@@ -16,6 +16,7 @@ const THRESHOLD = 4.5;
 let captured = 0;
 const failures = [];
 const contrasts = [];
+const framings = []; // [task-39]
 mkdirSync(OUT, { recursive: true });
 
 /** Ticks to advance so that the subsolar longitude is `centerLon + hourAngle` (sun.ts formula). */
@@ -36,6 +37,10 @@ await withBrowser(async ({ browser, url }) => {
       await page.waitForTimeout(1500);
       await page.screenshot({ path: resolve(OUT, `menu-${tag}.png`), animations: 'disabled' });
       captured++;
+      // [task-39] The first rendered menu frame already used the final (measured) framing: no jump.
+      const framing = await page.evaluate(() => window.__awWorld.framing());
+      framings.push(`${tag}: first=${framing.first === framing.now ? 'final' : framing.first} spin=${framing.menuSpin}`);
+      if (!framing.first || framing.first !== framing.now) failures.push(`${tag}: first menu frame ${framing.first} != final ${framing.now}`);
       await page.evaluate((seed) => window.aw.prepareSeed(seed), SEED);
       await clickTestId(page, 'menu-endless');
       await waitForScreen(page, 'game');
@@ -68,6 +73,7 @@ await withBrowser(async ({ browser, url }) => {
   }
 });
 for (const line of contrasts) console.log('CONTRAST ' + line);
+for (const line of framings) console.log('FRAMING ' + line);
 for (const line of failures) console.error('FAIL ' + line);
 console.log(`SUMMARY shots:34 seed=0xA1A1 captured=${captured} expected=8 failed=${failures.length}`);
 if (failures.length || captured !== 8) process.exitCode = 1;

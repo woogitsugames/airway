@@ -12,6 +12,7 @@
   padding: calc(14px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right))
            calc(14px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left));
   --upgrade-win: min(34vw, 21vh, 200px);
+  --title-size: clamp(18px, 5.2vw, 23px);
 }
 .airway-upgrade {
   width: min(100%, 1000px);
@@ -106,7 +107,7 @@
 .model-hub-expansion::before { width: 42%; height: 24%; clip-path: none; }
 .model-departure-slots::before { width: 56%; height: 22%; clip-path: none; background: linear-gradient(90deg, #1e6f6a 0 38%, transparent 38% 62%, #1e6f6a 62%); }
 
-.airway-upgrade-body { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: stretch; padding-top: 2px; }
+.airway-upgrade-body { flex: 1; min-width: 0; container-type: inline-size; display: flex; flex-direction: column; align-items: stretch; padding-top: 2px; }
 .airway-upgrade-heading {
   display: flex;
   justify-content: space-between;
@@ -121,8 +122,10 @@
 .airway-upgrade-count { flex: none; }
 .airway-upgrade-title {
   margin-top: 8px;
-  font: 800 clamp(18px, 5.2vw, 23px)/1.08 Overpass, sans-serif;
-  overflow-wrap: anywhere;
+  font: 800 var(--title-size)/1.08 Overpass, sans-serif;
+  /* [task-37] Words never break without a hyphen (D-51): no overflow-wrap:anywhere; long words carry
+     soft hyphens in i18n and the font shrinks to fit the longest word (see @supports below). */
+  hyphens: manual;
 }
 .airway-upgrade-grid {
   display: grid;
@@ -157,6 +160,31 @@
   padding-top: calc(86px + env(safe-area-inset-top));
 }
 .airway-upgrade-open.is-picking-hub .airway-upgrade { width: auto; }
+/* [task-39] Back from the airport pick: a black wayfinding tile set into the yellow sign (D-49). The
+   overlay lets taps through to the globe, so the tile takes them back; 48 px minimum target. */
+.airway-upgrade-back {
+  appearance: none;
+  pointer-events: auto;
+  flex: none;
+  align-self: stretch;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 48px;
+  min-height: 48px;
+  margin: -6px 2px -6px -10px;
+  padding: 0 14px 0 10px;
+  border: 0;
+  background: #1c1e20;
+  color: #ffc72c;
+  font: 800 16px/1 Overpass, sans-serif;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.airway-upgrade-back-arrow { width: 24px; height: 24px; flex: none; fill: currentColor; }
+.airway-upgrade-back:active { background: #3a3c3e; }
+.airway-upgrade-back:focus-visible { outline: 3px solid #1c1e20; outline-offset: 3px; }
 
 /* Wide screens: labels side by side, model window across the top. */
 @media (min-width: 720px) {
@@ -166,7 +194,7 @@
   .airway-upgrade-labels { grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 14px; }
   .airway-upgrade-tag { flex-direction: column; align-items: stretch; padding: 10px 14px 22px; gap: 10px; }
   .airway-upgrade-model { width: auto; }
-  .airway-upgrade-title { font-size: clamp(19px, 2.4vw, 25px); }
+  .airway-upgrade-open { --title-size: clamp(19px, 2.4vw, 25px); }
 }
 /* Phone landscape: keep the sign on one line and the labels short. */
 @media (min-width: 720px) and (max-height: 520px) {
@@ -177,6 +205,12 @@
   .airway-upgrade-grid { margin-top: 6px; gap: 2px 12px; }
   .airway-upgrade-stamp { margin-top: 6px; }
   .airway-upgrade-open.is-picking-hub { padding-top: calc(86px + env(safe-area-inset-top)); }
+}
+
+/* [task-37] Fit-to-width: the longest word of the title (--title-chars, set in index.ts; Overpass 800
+   averages ≤ .6em per letter) fits the label's text column, down to 15px; below that the soft hyphen breaks it. */
+@supports (container-type: inline-size) {
+  .airway-upgrade-title { font-size: min(var(--title-size), max(15px, calc(100cqi / (var(--title-chars, 1) * .6)))); }
 }
 
 @keyframes airway-slip { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
