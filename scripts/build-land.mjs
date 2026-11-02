@@ -108,9 +108,23 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
       mkdirSync(dirname(DEST), { recursive: true });
       writeFileSync(DEST, contents, 'utf8');
     }
+    // [task-33] --check also builds the adaptive terrain and decorations and measures them.
+    let terrain = '';
+    let failed = 0;
+    if (check) {
+      await import('./ts-test-loader.mjs');
+      const { checkTerrain } = await import('./build-land.check.mjs');
+      const result = await checkTerrain();
+      failed = result.failed;
+      for (const [level, s] of Object.entries(result.stats)) console.log(`terrain ${level} ${JSON.stringify(s)}`);
+      const m = result.stats.medium;
+      terrain = ` checks=${result.passed + result.failed} tris=${result.stats.low.triangles}/${m.triangles}/` +
+        `${result.stats.high.triangles} teethPct=${m.teethPct} saharaStepP99=${m.saharaStepP99} trees=${m.trees}`;
+    }
     console.log('SUMMARY build-land seed=0xA1A1 width=' + WIDTH + ' height=' + HEIGHT +
       ' land=' + stats.land + ' runs=' + stats.runs + ' bytes=' + Buffer.byteLength(contents) +
-      ' checked=' + (check ? 1 : 0) + ' failed=0');
+      ' checked=' + (check ? 1 : 0) + terrain + ' failed=' + failed);
+    if (failed) process.exitCode = 1;
   } catch (error) {
     console.error(error);
     console.log('SUMMARY build-land seed=0xA1A1 failed=1');
