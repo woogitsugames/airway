@@ -52,6 +52,9 @@ npm run build
 | `npm run test:flap` | Unicode split-flap segmentation, Polish diacritics, truncation, 60–90 ms cascade plan | `SUMMARY test:flap seed=0xA1A1 passed=15 failed=0` |
 | `npm run test:fast` | `typecheck`, then `test:i18n`, then `test:arch`, then `test:flap` | All test summaries and exit code 0 |
 | `npm run shots:14` | Actual menu screenshot at 412×915 and 915×412 | `SUMMARY shots:14 seed=0xA1A1 captured=2 failed=0`; images in `docs/shots/14/` |
+| `npm run test:causes` | Six fixed-seed checks for hub-ledger cause ranking, missing evidence, world identity and local records | `SUMMARY test:causes seed=0xA1A1 scenarios=3 passed=6 failed=0` |
+| `npm run test:fast` | `typecheck`, then `test:i18n`, then `test:arch` | Three test summaries and exit code 0 |
+| `npm run shots` | Browser smoke: game canvas at portrait/landscape dimensions | `SUMMARY shots seed=0xA1A1 captured=4 failed=0`; images in `docs/shots/01/` and `docs/shots/15/` |
 
 Every future test must have a fixed seed (use `0xA1A1` where no gameplay seed
 is needed), terminate with one `SUMMARY ...` line, set a nonzero exit code on
@@ -94,3 +97,10 @@ production screenshot target `docs/shots/11/` must be captured and reviewed
 after the real globe is available on `dev`. Never present empty-sky captures
 as verified day/night screenshots. The task 08 hourly demand table intentionally
 matches task 11 and must be kept as a single definition when merging.
+<!-- [task-15] Failure-screen visual fixture and camera adapter. -->
+Task 15 screenshots use `npm run shots` with `?preview=gameover` (development-only)
+to capture `docs/shots/15/game-p.png` and `docs/shots/15/game-l.png`. This fixture
+does not replace an integration test with task 08's real ledger or task 04's
+camera. The game-over controller pauses simulation immediately and drives an
+injected renderer focus callback for 700ms with cubic ease-out, then freezes
+the scene and presents the report. It never mutates the simulation.

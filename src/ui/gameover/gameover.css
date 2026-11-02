@@ -1,0 +1,229 @@
+/* [task-15] Airport objects only: wayfinding sign, split-flap board and ATC paper strip. */
+.airway-go-overlay {
+  position: absolute;
+  z-index: 100;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: auto;
+  background: rgba(17, 35, 33, .63);
+  padding: calc(env(safe-area-inset-top, 0px) + 12px)
+           calc(env(safe-area-inset-right, 0px) + 12px)
+           calc(env(safe-area-inset-bottom, 0px) + 12px)
+           calc(env(safe-area-inset-left, 0px) + 12px);
+  color: #2a2420;
+  font-family: 'Atkinson Hyperlegible Next', sans-serif;
+}
+.airway-go-content {
+  display: grid;
+  width: min(100%, 740px);
+  max-height: 100%;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 9px;
+  align-content: start;
+}
+.airway-go-sign {
+  display: flex;
+  align-items: center;
+  min-height: 52px;
+  background: #ffc72c;
+  color: #1c1e20;
+  padding: 7px 13px 7px 7px;
+  gap: 12px;
+}
+.airway-go-sign-mark {
+  flex: 0 0 39px;
+  width: 39px;
+  height: 37px;
+  background: #1c1e20;
+  position: relative;
+}
+.airway-go-sign-mark::before {
+  content: '';
+  position: absolute;
+  left: 9px;
+  top: 15px;
+  width: 20px;
+  height: 7px;
+  background: #ffc72c;
+  clip-path: polygon(0 18%, 64% 18%, 64% 0, 100% 50%, 64% 100%, 64% 82%, 0 82%);
+}
+.airway-go-heading {
+  margin: 0;
+  font: 800 clamp(19px, 4.4vw, 28px)/1.1 'Overpass', sans-serif;
+  letter-spacing: .045em;
+  text-transform: uppercase;
+}
+.airway-go-board {
+  min-width: 0;
+  padding: 12px;
+  background: #1c1e20;
+  color: #f2efe6;
+}
+.airway-go-board-title {
+  margin: 0 0 10px;
+  color: #ffc72c;
+  font: 700 12px/1.3 'Overpass Mono', monospace;
+  text-transform: uppercase;
+  letter-spacing: .075em;
+}
+.airway-go-board-head,
+.airway-go-flight {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 54px minmax(95px, .75fr);
+  column-gap: 7px;
+  align-items: center;
+}
+.airway-go-board-head {
+  border-bottom: 1px solid #53565a;
+  padding: 0 5px 7px;
+  font: 700 10px/1.2 'Overpass Mono', monospace;
+  color: #a6a8aa;
+}
+.airway-go-flight-list {
+  max-height: 186px;
+  overflow: auto;
+  scrollbar-width: thin;
+}
+.airway-go-flight {
+  min-height: 39px;
+  padding: 4px 5px;
+  border-bottom: 1px solid #36393b;
+  font: 700 clamp(11px, 2.4vw, 14px)/1.3 'Overpass Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+.airway-go-flight-number { overflow-wrap: anywhere; }
+.airway-go-flight-gate { color: #d6b88a; }
+.airway-go-flap {
+  display: grid;
+  min-height: 29px;
+  place-items: center;
+  padding: 3px;
+  color: #fff0e9;
+  background: #862a27;
+  border-top: 1px solid #bd5147;
+  border-bottom: 2px solid #491818;
+  text-align: center;
+  font: 700 clamp(10px, 2.2vw, 13px)/1.2 'Overpass Mono', monospace;
+  text-transform: uppercase;
+  animation: airway-go-flip 90ms ease-out both;
+  transform-origin: center center;
+}
+.airway-go-flight:nth-child(2) .airway-go-flap { animation-delay: 65ms; }
+.airway-go-flight:nth-child(3) .airway-go-flap { animation-delay: 120ms; }
+.airway-go-flight:nth-child(n+4) .airway-go-flap { animation-delay: 180ms; }
+.airway-go-none { margin: 12px 4px; font-size: 13px; color: #a6a8aa; }
+.airway-go-strip {
+  min-width: 0;
+  padding: 14px 16px 13px 20px;
+  background: #fbf8f1;
+  border-left: 6px solid #c8352a;
+  position: relative;
+}
+.airway-go-strip::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 8px;
+  bottom: 8px;
+  border-left: 1px dashed #cc6e62;
+}
+.airway-go-strip-title {
+  margin: 0 0 8px;
+  font: 800 15px/1.2 'Overpass', sans-serif;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: #13302e;
+}
+.airway-go-score-row { display: flex; flex-wrap: wrap; gap: 5px 16px; }
+.airway-go-score, .airway-go-weeks {
+  margin: 0;
+  font: 700 13px/1.35 'Atkinson Hyperlegible Next', sans-serif;
+  color: #1e6f6a;
+}
+.airway-go-causes-title {
+  margin: 14px 0 5px;
+  padding-top: 8px;
+  border-top: 1px dashed #beb4a4;
+  font: 800 12px/1.3 'Overpass', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+.airway-go-causes { padding-left: 23px; margin: 0; }
+.airway-go-causes li {
+  padding: 3px 0 3px 2px;
+  font-size: clamp(12px, 2.5vw, 14px);
+  line-height: 1.3;
+}
+.airway-go-causes li::marker {
+  font: 700 12px 'Overpass Mono', monospace;
+  color: #c8352a;
+}
+.airway-go-record {
+  margin: 8px 0 0;
+  font: 700 11px 'Overpass Mono', monospace;
+  color: #a32b25;
+  text-transform: uppercase;
+}
+.airway-go-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.airway-go-button {
+  min-width: 48px;
+  min-height: 52px;
+  border: 2px solid #1c1e20;
+  border-radius: 0;
+  padding: 9px;
+  font: 800 13px/1.2 'Overpass', sans-serif;
+  cursor: pointer;
+  touch-action: manipulation;
+  text-transform: uppercase;
+}
+.airway-go-button:focus-visible { outline: 3px solid #ffc72c; outline-offset: 2px; }
+.airway-go-button:active { translate: 0 1px; }
+.airway-go-same { grid-column: 1 / -1; background: #ffc72c; color: #1c1e20; }
+.airway-go-new { background: #fbf8f1; color: #1c1e20; }
+.airway-go-menu { background: #1c1e20; color: #fbf8f1; }
+@keyframes airway-go-flip {
+  from { transform: rotateX(-72deg); opacity: .4; }
+  to { transform: rotateX(0); opacity: 1; }
+}
+@media (min-width: 700px) {
+  .airway-go-content {
+    width: min(100%, 900px);
+    grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+  }
+  .airway-go-sign, .airway-go-actions { grid-column: 1 / -1; }
+  .airway-go-actions { grid-template-columns: 1.6fr 1fr .7fr; }
+  .airway-go-same { grid-column: auto; }
+  .airway-go-board, .airway-go-strip { min-height: 270px; }
+  .airway-go-flight-list { max-height: 200px; }
+}
+@media (max-height: 550px) and (min-width: 620px) {
+  .airway-go-overlay {
+    padding-top: calc(env(safe-area-inset-top, 0px) + 5px);
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 5px);
+  }
+  .airway-go-content {
+    width: min(100%, 910px);
+    grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+    gap: 5px 9px;
+  }
+  .airway-go-sign { min-height: 40px; padding-block: 2px; grid-column: 1 / -1; }
+  .airway-go-sign-mark { height: 32px; }
+  .airway-go-heading { font-size: 19px; }
+  .airway-go-board, .airway-go-strip { min-height: 0; padding-block: 8px; }
+  .airway-go-board-title { margin-bottom: 4px; }
+  .airway-go-flight-list { max-height: 145px; }
+  .airway-go-causes-title { margin-top: 7px; padding-top: 5px; }
+  .airway-go-causes li { padding-block: 1px; font-size: 12px; }
+  .airway-go-actions { grid-column: 1 / -1; grid-template-columns: 1.6fr 1fr .7fr; }
+  .airway-go-same { grid-column: auto; }
+  .airway-go-button { min-height: 48px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .airway-go-flap { animation: none; }
+  .airway-go-button:active { translate: none; }
+}
