@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 288 288">
+  <!-- [task-24] Transparent mark. Splash background comes from Android theme. -->
+  <rect x="47" y="86" width="194" height="116" fill="#FFC72C"/>
+  <rect x="47" y="86" width="194" height="6" fill="#1C1E20"/>
+  <rect x="47" y="196" width="194" height="6" fill="#1C1E20"/>
+  <polygon points="144,97 155,122 155,135 207,151 207,164 155,155 155,179 171,184 171,191 144,184 117,191 117,184 133,179 133,155 81,164 81,151 133,135 133,122" fill="#1C1E20"/>
+</svg>
