@@ -412,7 +412,13 @@ One formatter in `src/core/format` / i18n helpers; EN unchanged ("2,500"). **Sta
 About 1.2°/s, paused with `prefers-reduced-motion` and while the menu is hidden. **Status: to implement.**
 
 ## D-63 — Store screenshot order: night, game, upgrade, failure, menu; dusk must read as dusk (2026-11-02, owner)
-The "game" scene uses clearly golden low-sun light (not daylight). **Status: to implement.**
+The "game" scene uses clearly golden low-sun light (not daylight). Implemented in task 40: the scene `game-dusk` is
+renamed `game`; `SCENES`, contact-sheet columns, manifest order (checked by `--validate`) and the captions in
+`docs/store/{pl,en}.md` follow the new order. The fixture puts the sun at elevation 0.05 (daynight.ts units) over the
+network centroid in the evening instead of a fixed −95° from the camera centre (which left the network past the
+terminator); `test:store-shots` requires a golden-pixel share ≥ 0.045 on the `game` globe and D-47 contrast ≥ 4.5:1
+in `game` and `night`. **Status: in force (task 40); a stronger warm band in `daynight.ts` is proposed for the
+render owner (task-40 PR).**
 
 ## D-64 — `main` follows green `dev` (2026-11-02, owner)
 `dev` stays the integration branch for all task PRs. The coordinator regularly fast-forwards `main` to `dev` after the

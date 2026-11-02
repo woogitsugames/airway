@@ -21,7 +21,14 @@ const WEEK_SEED = SEED;
 const seedFor = (scene) => (scene === 'upgrade' ? WEEK_SEED : SEED);
 const LANGUAGES = ['pl', 'en'];
 // [task-36] The light is chosen by the fixture in src/main.ts (sun hour angle over the camera centre).
-const SCENES = ['game-dusk', 'upgrade', 'menu', 'failure', 'night'];
+// [task-40] D-63: store order night, game, upgrade, failure, menu (SCENES order = contact sheet columns,
+// manifest order, listing order in docs/store/{pl,en}.md). `game` is lit by golden low sun (was game-dusk).
+const SCENES = ['night', 'game', 'upgrade', 'failure', 'menu'];
+// [task-40] D-63 warmth gate for the `game` scene: share of golden pixels on the globe (see globeWarmth).
+// Measured on seed 0xA1A1, phone: noon 0.005, mid-afternoon 0.029, old −95° shot 0.015, golden 0.079.
+const WARM_SCENE = 'game';
+const GOLD_MIN = 0.045;
+const CONTRAST_MIN = 4.5; // D-47
 const DEVICES = [
   { id: 'phone', w: 360, h: 640, dpr: 3 }, // 1080x1920; 9:16
   { id: 'foldable', w: 673, h: 841, dpr: 2 },
@@ -211,6 +218,24 @@ function checkPixels(file, device, where) {
   return stats;
 }
 
+/**
+ * [task-40] D-63: the `game` scene must read as golden low sun, not daylight; D-47: in the lit `game` and
+ * `night` scenes routes, airports and planes keep >= 4.5:1 against the globe behind them.
+ */
+function checkWarmth(id, scene, record) {
+  if (scene === 'game' || scene === 'night') {
+    for (const layer of ['routes', 'airports', 'planes']) {
+      const ratio = record.contrast?.[layer];
+      if (typeof ratio !== 'number') throw new Error(id + ': no ' + layer + ' contrast recorded');
+      if (ratio < CONTRAST_MIN) throw new Error(id + ': ' + layer + ' contrast ' + ratio + ' < ' + CONTRAST_MIN);
+    }
+  }
+  if (scene !== WARM_SCENE) return;
+  const gold = record.warmth?.gold;
+  if (typeof gold !== 'number') throw new Error(id + ': no globe warmth recorded (DEV world probe missing?)');
+  if (gold < GOLD_MIN) throw new Error(id + ': globe does not read as golden low sun (gold ' + gold + ' < ' + GOLD_MIN + ')');
+}
+
 /** Throws on developer text or a non-D-08 passenger glyph recorded from the page. */
 function checkPageRecord(id, record) {
   const hit = DEV_TEXT.exec(record.text);
@@ -277,8 +302,45 @@ async function capture(page, baseUrl, lang, scene, destination) {
   if (state.overflow) throw new Error('Horizontal overflow: ' + scene);
   if (!state.canvas) throw new Error('No visible globe canvas: ' + scene);
   if (errors.length) throw new Error('Browser errors: ' + errors.join('; '));
+  // [task-40] Sun hour angle@camera latitude chosen by the fixture (game and night scenes).
+  state.sun = await page.evaluate(() => document.documentElement.dataset.storeShotSun ?? null);
   await page.screenshot({ path: destination, animations: 'disabled', fullPage: false });
+  if (scene !== 'menu') {
+    // [task-40] D-47 contrast probe (src/render/contrast.ts via the DEV world probe) and D-63 warmth of the
+    // globe alone (DOM overlay hidden), both recorded in the manifest.
+    state.contrast = await page.evaluate(() => window.__awWorld?.nightContrast?.() ?? null);
+    const disc = await page.evaluate(() => window.__awWorld?.disc?.() ?? null);
+    const hide = await page.addStyleTag({ content: '#app *:not(canvas){visibility:hidden!important}' });
+    const probe = resolve(stageDir, 'globe-probe.png');
+    try { await page.screenshot({ path: probe, animations: 'disabled', fullPage: false }); }
+    finally { await hide.evaluate((node) => node.remove()); }
+    state.warmth = disc ? globeWarmth(probe, disc, page.viewportSize().width) : null;
+    rmSync(probe, { force: true });
+  }
   return state;
+}
+
+/**
+ * [task-40] Globe light of a PNG with the DOM overlay hidden, inside the projected disc (rim excluded):
+ * `gold` = share of clearly orange pixels (R > 1.3 G, G > 1.05 B, R > 50), which daylight sand and green
+ * land do not reach but the warm terminator band does; `ratio` = mean R / mean B (recorded only).
+ */
+export function globeWarmth(file, disc, cssWidth) {
+  const { width, height, pixels } = readPng(file);
+  const scale = width / cssWidth;
+  const cx = disc.x * scale, cy = disc.y * scale, radius = disc.radius * scale * 0.96;
+  let red = 0, blue = 0, gold = 0, n = 0;
+  for (let y = 0; y < height; y += 3) {
+    for (let x = 0; x < width; x += 3) {
+      if ((x - cx) ** 2 + (y - cy) ** 2 > radius * radius) continue;
+      const i = (y * width + x) * 4;
+      const r = pixels[i], g = pixels[i + 1], b = pixels[i + 2];
+      red += r; blue += b; n++;
+      if (r > g * 1.3 && g > b * 1.05 && r > 50) gold++;
+    }
+  }
+  if (n < 1000) return null;
+  return { gold: Math.round(gold / n * 1000) / 1000, ratio: Math.round(red / Math.max(1, blue) * 1000) / 1000 };
 }
 
 /** Region id -> glyph name, read from the single source of truth (src/data/regions.ts). */
@@ -303,7 +365,8 @@ async function renderContactSheet(browser, dir, target) {
       '<div class="row"><div class="dev">' + device.id + '<br><small>' + device.w * device.dpr + '×' +
       device.h * device.dpr + '</small></div>' + SCENES.map((scene) =>
         '<figure><img style="width:' + Math.round(thumbH * device.w / device.h) + 'px" src="http://store.local/' +
-        lang + '/' + scene + '-' + device.id + '.png"><figcaption>' + scene + '</figcaption></figure>').join('') +
+        lang + '/' + scene + '-' + device.id + '.png"><figcaption>' + (SCENES.indexOf(scene) + 1) + ' · ' + scene +
+        '</figcaption></figure>').join('') +
       '</div>').join('')).join('');
     await page.setContent('<!doctype html><meta charset="utf-8"><style>' +
       '@font-face{font-family:Overpass;src:url(http://store.local/fonts/Overpass-800.ttf);font-weight:800}' +
@@ -324,28 +387,34 @@ async function renderContactSheet(browser, dir, target) {
 }
 
 /** `--validate`: committed PNGs, manifest and contact sheet still match the 30-shot contract. */
-function validateShots() {
-  if (!existsSync(MANIFEST)) throw new Error('Missing docs/store/shots/manifest.json; run npm run store:shots');
-  const manifest = JSON.parse(readFileSync(MANIFEST, 'utf8'));
+// [task-40] `--validate --out=<dir>` checks a fresh full run in a scratch dir (manifest + sheet inside it).
+function validateShots(dir = OUT, manifestFile = MANIFEST, contactFile = CONTACT) {
+  if (!existsSync(manifestFile)) throw new Error('Missing ' + manifestFile + '; run npm run store:shots');
+  const manifest = JSON.parse(readFileSync(manifestFile, 'utf8'));
   if (manifest.shots?.length !== EXPECTED) throw new Error('Manifest lists ' + manifest.shots?.length + '/' + EXPECTED);
+  // [task-40] D-63: the manifest follows the store order (language, then SCENES, then DEVICES).
+  const order = LANGUAGES.flatMap((lang) => SCENES.flatMap((scene) => DEVICES.map((d) => lang + '/' + scene + '-' + d.id)));
+  const listed = manifest.shots.map((shot) => shot.id);
+  if (listed.join() !== order.join()) throw new Error('Manifest is not in store order (' + SCENES.join(', ') + ')');
   const seen = new Set();
   for (const lang of LANGUAGES) for (const scene of SCENES) for (const device of DEVICES) {
     const id = lang + '/' + scene + '-' + device.id;
     const record = manifest.shots.find((shot) => shot.id === id);
     if (!record) throw new Error('Manifest misses ' + id);
     seen.add(id);
-    const file = resolve(OUT, id + '.png');
+    const file = resolve(dir, id + '.png');
     if (!existsSync(file)) throw new Error('Missing PNG ' + id);
     checkPixels(file, device, id);
     checkPageRecord(id, record);
+    checkWarmth(id, scene, record);
   }
   if (seen.size !== EXPECTED) throw new Error('Duplicate manifest entries');
   for (const lang of LANGUAGES) {
-    const extra = readdirSync(resolve(OUT, lang)).filter((file) => !seen.has(lang + '/' + file.replace(/\.png$/, '')));
+    const extra = readdirSync(resolve(dir, lang)).filter((file) => !seen.has(lang + '/' + file.replace(/\.png$/, '')));
     if (extra.length) throw new Error('Unexpected files in shots/' + lang + ': ' + extra.join(', '));
   }
-  if (!existsSync(CONTACT)) throw new Error('Missing docs/store/contact-sheet.png');
-  const sheet = pngStats(CONTACT);
+  if (!existsSync(contactFile)) throw new Error('Missing ' + contactFile);
+  const sheet = pngStats(contactFile);
   if (sheet.width < 1200 || sheet.height < 1200 || sheet.lumaStd < 12) throw new Error('Contact sheet looks empty');
   return EXPECTED;
 }
@@ -357,7 +426,8 @@ try {
   if (onlyArg && !outArg) throw new Error('--only needs --out=<dir>: a partial run never publishes');
   const fields = checkCopy();
   if (validateOnly) {
-    const shots = validateShots();
+    const shots = outArg ? validateShots(resolve(outArg), resolve(outArg, 'manifest.json'),
+      resolve(outArg, 'contact-sheet.png')) : validateShots();
     console.log('SUMMARY test:store-shots seed=0xA1A1 listings=2 fields=' + fields +
       ' scenes=5 devices=3 shots=' + shots + ' passed=1 failed=0');
   } else {
@@ -388,13 +458,20 @@ try {
           const record = { id, lang, scene, device: device.id, seed: seedFor(scene),
             glyphs: [...new Set(state.glyphs.map((region) => glyphOf[region] ?? region))].sort(),
             devOverlay: state.devOverlay, text: state.text };
+          // [task-40] Light and readability measurements (game/night/failure/upgrade; not the menu).
+          if (state.sun) record.sun = state.sun;
+          if (state.contrast) record.contrast = state.contrast;
+          if (state.warmth) record.warmth = state.warmth;
+          checkWarmth(id, scene, record);
           checkPageRecord(id, record);
           const stats = checkPixels(target, device, id);
           records.push({ ...record, png: { width: stats.width, height: stats.height, meanLuma: stats.meanLuma,
             lumaStd: stats.lumaStd, whiteShare: stats.whiteShare, colours: stats.colours } });
           captured++;
           console.log('shot ' + id + '.png ' + stats.width + 'x' + stats.height + ' luma=' + stats.meanLuma +
-            '±' + stats.lumaStd + ' glyphs=' + (record.glyphs.join('+') || '-'));
+            '±' + stats.lumaStd + ' glyphs=' + (record.glyphs.join('+') || '-') +
+            (record.sun ? ' sun=' + record.sun : '') + (record.warmth ? ' gold=' + record.warmth.gold + ' r/b=' + record.warmth.ratio : '') +
+            (record.contrast ? ' contrast=' + JSON.stringify(record.contrast) : ''));
         }
       }
     }

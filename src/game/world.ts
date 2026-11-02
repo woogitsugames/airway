@@ -201,6 +201,13 @@ function installWorldProbe(renderer: WorldRenderer): void {
   const probe = {
     ready: false,
     longitude: () => renderer.orbit.longitudeDeg,
+    /** [task-40] Globe disc on screen (CSS px, page coordinates) for the store-shot warmth check. */
+    disc(): { x: number; y: number; radius: number } | null {
+      const disc = renderer.orbit.getScreenDisc();
+      if (!disc) return null;
+      const canvas = renderer.canvas.getBoundingClientRect();
+      return { x: disc.x + canvas.left, y: disc.y + canvas.top, radius: disc.radius };
+    },
     /** Median WCAG contrast per layer; `tags` is the worst luggage tag against the globe under it. */
     nightContrast(): Record<string, number | null> {
       const out: Record<string, number | null> = {};
