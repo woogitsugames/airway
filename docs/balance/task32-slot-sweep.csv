@@ -1,0 +1,5 @@
+city_slots,hub_slots,held_events,runs_with_holds,slot_wait_minutes,bot_slot_picks,median_min,upgrade1,upgrade2
+4,6,0,0/50,0,0,12.92,0.86,0.44
+3,4,0,0/50,0,0,12.92,0.86,0.44
+2,3,16,9/50,225,0,12.92,0.86,0.44
+1,2,102,32/50,1600,14,12.92,0.86,0.40

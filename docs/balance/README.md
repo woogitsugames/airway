@@ -1,5 +1,25 @@
 # Task 22 — autoplay and balance evidence
 
+## Task 32 — departure slots enforced (2026-11-02, D-41, D-46)
+
+Ready aircraft now wait on the ground until their airport has a free departure slot in the current game hour.
+The base allowance was picked with the task-22 bot on the same 50 seeds (from 0xA1A1, 30 min cap, actions every
+30 ticks); `task32-slot-sweep.csv` has the sweep:
+
+| City / hub slots per hour | Held departures | Runs with a hold | Slot-wait aircraft-min | Bot "+2 slots" picks | Median | 1st / 2nd upgrade |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 4 / 6 (task suggestion) | 0 | 0/50 | 0 | 0 | 12.92 min | 86 % / 44 % |
+| 3 / 4 | 0 | 0/50 | 0 | 0 | 12.92 min | 86 % / 44 % |
+| **2 / 3 (chosen)** | 16 | 9/50 | 225 | 0 | 12.92 min | 86 % / 44 % |
+| 1 / 2 | 102 | 32/50 | 1600 | 14 | 12.92 min | 86 % / 40 % |
+
+The bot runs 4–6 aircraft, so at 4/6 or 3/4 slots never bind and the rule would be invisible. 2/3 is the
+largest allowance that the bot still meets (mostly when two aircraft share a stop or after curfew), without
+moving any task-31 target; a human player who stacks several aircraft on one airport meets it sooner, which is
+when "+2 slots" becomes a real choice. 1/2 starts to cost the 2nd upgrade. `game-50.csv` was regenerated with
+2/3: only two seeds deliver one more passenger (the first-ready-first-out queue), session times are unchanged.
+`npm run test:balance`: `median_min=12.92 upgrade1=0.86 upgrade2=0.44 passed=1`.
+
 ## Task 31 — 3-day week and rebalance (2026-11-02, D-40, D-43)
 
 A game week now lasts **3 in-game days** (`SIM_DAYS_PER_WEEK` in `src/sim/params.ts`, the only definition).
