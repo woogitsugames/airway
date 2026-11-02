@@ -59,6 +59,11 @@ an import or audio side effect inside `src/sim`.
 reserved UI capacity, mute, stale events and pentatonic mapping without
 `AudioContext`. Test uses Node 22 built-in TypeScript stripping and seed 0xA1A1.
 
+For a reproducible **illustrative** 30-second audio sketch run
+`npm run audio:demo -- /path/to/audio-demo.wav` (Node 22). This offline PCM
+renderer reuses the pitch/beat rules but is *not* a capture of the Web Audio
+engine or proof of browser/device performance. It generates no stored assets.
+
 Manual listening protocol for iOS/Android browsers and WKWebView:
 1. Trigger one arrival and a transfer at a latitude around 50 degrees.
 2. Drive `hub-load` from 0.6 to 0.9 and 1.0; confirm the ~4/6 Hz beating,
@@ -69,5 +74,5 @@ Manual listening protocol for iOS/Android browsers and WKWebView:
 5. Mute mid-note; listen for immediate fade without a crack/pop. Test both
    settings sliders, app background/foreground and iOS physical silent switch.
 
-No physical listening verification or WAV export is implied by this document;
-those require a browser/device audio output check before merge.
+A 30-second illustrative WAV can be generated offline, but actual Web Audio
+listening and physical-device checks remain required before merge.
