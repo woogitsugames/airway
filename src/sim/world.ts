@@ -26,7 +26,7 @@ import {
 import { advanceCitySpawner, createCitySpawner, type CitySpawnerState } from './spawner.ts';
 import type { RngStream } from './state.ts';
 import {
-  chooseUpgrade, startWeeklyUpgrade, type UpgradeCommand, type UpgradeKind, type WeeklyUpgradeState,
+  cancelUpgradePick, chooseUpgrade, startWeeklyUpgrade, type UpgradeCommand, type UpgradeKind, type WeeklyUpgradeState,
 } from './upgrades.ts';
 
 export const WORLD_VERSION = 1 as const;
@@ -318,7 +318,7 @@ export class World implements WorldView {
   private plan(command: Command): Plan {
     if (command.type === 'SetSpeed') return accept(() => undefined);
     if (this.statusValue === 'over' || this.statusValue === 'won') return reject('GAME_OVER');
-    if (this.statusValue === 'upgrade' && command.type !== 'ChooseUpgrade') return reject('UPGRADE_PENDING');
+    if (this.statusValue === 'upgrade' && command.type !== 'ChooseUpgrade' && command.type !== 'CancelUpgradePick') return reject('UPGRADE_PENDING'); // [task-39]
     switch (command.type) {
       case 'AddRoute': return this.planAddRoute(command.cityIds, command.aircraft);
       case 'ExtendRoute': return this.planExtend(command.routeId, command.end, command.cityIds);
@@ -328,6 +328,7 @@ export class World implements WorldView {
       case 'UnassignPlane': return this.planUnassign(command.planeId);
       case 'UpgradeHub': return this.planUpgradeHub(command.hubId);
       case 'ChooseUpgrade': return this.planChooseUpgrade(command);
+      case 'CancelUpgradePick': return this.planCancelUpgradePick(command.week); // [task-39]
     }
   }
 
@@ -512,6 +513,15 @@ export class World implements WorldView {
       this.upgradeHistory.push(record);
       this.events.push({ type: 'UpgradeChosen', minute: this.minuteValue, ...record });
     });
+  }
+
+  /** [task-39] Back from the airport pick to the offers (D-49); the world stays frozen on the board. */
+  private planCancelUpgradePick(week: number): Plan {
+    const offer = this.upgrade;
+    if (this.statusValue !== 'upgrade' || !offer) return reject('NO_UPGRADE_PENDING');
+    let next: WeeklyUpgradeState;
+    try { next = cancelUpgradePick(offer, week); } catch { return reject('UPGRADE_INVALID'); }
+    return accept(() => { this.upgrade = next; });
   }
 
   // ---------------------------------------------------------------- time
