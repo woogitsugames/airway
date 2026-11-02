@@ -10,10 +10,15 @@
     "typecheck": "tsc --noEmit",
     "test:i18n": "node scripts/test-i18n.mjs",
     "test:arch": "node scripts/test-arch.mjs",
-    "test:fast": "npm run typecheck && npm run test:i18n && npm run test:arch",
+    "test:fast": "npm run typecheck && npm run test:i18n && npm run test:arch && npm run test:android-config",
     "shots": "node scripts/shots.mjs",
     "shots:mockups": "node mockups/shoot.mjs",
-    "mockups": "node mockups/build-all.mjs"
+    "mockups": "node mockups/build-all.mjs",
+    "android": "node scripts/build-android.mjs",
+    "android:assets": "node scripts/build-android.mjs --assets-only",
+    "android:release": "node scripts/build-android.mjs --release-apk",
+    "android:aab": "node scripts/build-android.mjs --release-aab",
+    "test:android-config": "node scripts/test-android-config.mjs"
   },
   "dependencies": {
     "@capacitor/android": "8.5.3",

@@ -39,3 +39,8 @@ The game ships `public/fonts/Overpass-400.ttf`, `Overpass-800.ttf`,
 are `public/fonts/OFL-Overpass.txt`, `OFL-OverpassMono.txt`,
 and `OFL-AtkinsonHyperlegibleNext.txt`; each is colocated with the
 fonts it covers. No downloaded graphics are included.
+
+## Task 24 — Android launcher and splash
+
+- `resources/icon.svg`, `resources/icon-foreground.svg`, `resources/splash.svg` — original SVG geometry (yellow `#FFC72C` / black `#1C1E20`) authored for Airway, no third-party licence. Node script `scripts/build-android.mjs` generates Android launcher/splash PNG raster assets; no network graphics are used.
+- `brand/wayfinding.svg` — matching original airport wayfinding sign/wordmark; Overpass 800 (OFL licence already listed above).
