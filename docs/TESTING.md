@@ -61,6 +61,7 @@ Times are measured in the integration container (8 vCPU, SwiftShader); “ci” 
 | `npm run test:flap` | fast | <1 s | Split-flap segmentation, Polish diacritics, truncation, 60–90 ms cascade | `… passed=15 failed=0` |
 | `npm run test:causes` | fast | 1 s | Hub-ledger cause ranking, missing evidence, world identity, local records | `… scenarios=3 passed=6 failed=0` |
 | `npm run test:saves` | fast | <1 s | Save/load hash, v0 migration, corrupt JSON, IndexedDB, native dual slot, background pause (D-29) | `… passed=11 failed=0` |
+| `npm run test:save-golden` | fast | 2 s | [night-02] Golden real-Sim save (`scripts/fixtures/save-golden.json`, seed 0xA1A1, week 2 after a "+2 slots" pick): exact restore hash, identical continuation, journal-only replay, a fresh run still reproduces it, an older-rules (v3) save/snapshot is refused, tampering caught. Fails when rules change without a `RULES_VERSION` bump; regenerate with `node scripts/test-save-golden.mjs --write` only after an intentional bump | `SUMMARY test:save-golden seed=0xA1A1 rules=4 passed=9 failed=0` |
 | `npm run test:audio-sched` | fast | <1 s | 125 ms lookahead, stable order, voice cap at 4×, immediate mute, pitch (D-30) | `… tests=8 passed=8 failed=0` |
 | `npm run test:cvd` | fast | <1 s | Machado 2009 protan/deutan/tritan, 6 destination colours, min ΔE76 ≥ 15, CSS token parity (D-08) | `… comparisons=45 passed=1 failed=0` |
 | `npm run test:contrast` | fast | <1 s | WCAG contrast ≥ 4.5:1 for declared text/background pairs | `… pairs=16 threshold=4.5 passed=1 failed=0` |
