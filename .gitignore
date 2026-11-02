@@ -1,4 +1,25 @@
+# Node and Vite
 node_modules/
 dist/
+*.tsbuildinfo
+# Native platform build outputs (projects added in tasks 24/25)
+android/app/build/
+android/.gradle/
+ios/App/Pods/
+ios/DerivedData/
+# Local configuration and signing secrets
+.env
+.env.*
+!.env.example
+*.keystore
+*.jks
+*.p8
+*.p12
+*.mobileprovision
+*.pem
+*.key
+key.properties
+local.properties
+google-services.json
+GoogleService-Info.plist
 .DS_Store
-*.log

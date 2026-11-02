@@ -1,17 +1,32 @@
 {
   "name": "airway-network-game",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
-  "description": "Stage 0: research and visual-direction mockups (no game code yet).",
+  "description": "Airway — deterministic airline-network game on a 3D globe.",
   "scripts": {
-    "mockups": "node mockups/build-all.mjs",
-    "shots": "node mockups/shoot.mjs"
+    "dev": "vite --host 0.0.0.0",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "test:i18n": "node scripts/test-i18n.mjs",
+    "test:arch": "node scripts/test-arch.mjs",
+    "test:fast": "npm run typecheck && npm run test:i18n && npm run test:arch",
+    "shots": "node scripts/shots.mjs",
+    "shots:mockups": "node mockups/shoot.mjs",
+    "mockups": "node mockups/build-all.mjs"
+  },
+  "dependencies": {
+    "@capacitor/android": "8.5.3",
+    "@capacitor/core": "8.5.3",
+    "@capacitor/ios": "8.5.3",
+    "three": "0.170.0"
   },
   "devDependencies": {
-    "d3-geo": "^3.1.1",
-    "three": "^0.170.0",
-    "topojson-client": "^3.1.0",
-    "world-atlas": "^2.0.2"
+    "@types/three": "0.170.0",
+    "d3-geo": "3.1.1",
+    "topojson-client": "3.1.0",
+    "typescript": "5.9.3",
+    "vite": "6.3.6",
+    "world-atlas": "2.0.2"
   }
 }
