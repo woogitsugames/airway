@@ -19,6 +19,9 @@ npm run build
 | `npm run shots` | Browser smoke: game canvas at portrait/landscape dimensions | `SUMMARY shots seed=0xA1A1 captured=2 failed=0`; images in `docs/shots/01/` |
 | `npm run mockups` | Preserve stage-0 Diorama and other reference mockup generation | Exit code 0 |
 | `npm run shots:mockups` | Preserve stage-0 Playwright captures of reference mockups | Existing PNG output under `mockups/*/png/` |
+| `npm run test:site` | Local links, 3 preview alt texts, PL/EN catalog parity, privacy page and no trackers | `SUMMARY test:site seed=0xA1A1 assertions=N passed=N failed=0` |
+| `npm run build:site` | Copies framework-free page into ignored `site/dist` | `SUMMARY build:site seed=0xA1A1 files=6 assetFolders=2 failed=0` |
+| `npm run shots:site` | Captures landing page 412×915 and 915×412 with Playwright | `SUMMARY shots:site seed=0xA1A1 captured=2 failed=0` |
 
 Every future test must have a fixed seed (use `0xA1A1` where no gameplay seed
 is needed), terminate with one `SUMMARY ...` line, set a nonzero exit code on
@@ -39,3 +42,6 @@ neither is intentionally added as an npm dependency. A missing browser/runtime
 produces a failing summary. Screenshot files are only committed after review.
 The two PNG dimensions are **412×915** and **915×412** at DPR 1 (exact pixel
 size). Foldable 673×841 / 904×1000 checks are part of later UI tasks.
+
+<!-- [task-29] -->
+Task 29 adds `test:site` to `test:fast`, a standalone `build:site` command and a `shots:site` capture command. `npm run shots` continues to capture the game shell.

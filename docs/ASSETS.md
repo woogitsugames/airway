@@ -39,3 +39,7 @@ The game ships `public/fonts/Overpass-400.ttf`, `Overpass-800.ttf`,
 are `public/fonts/OFL-Overpass.txt`, `OFL-OverpassMono.txt`,
 and `OFL-AtkinsonHyperlegibleNext.txt`; each is colocated with the
 fonts it covers. No downloaded graphics are included.
+
+<!-- [task-29] Existing local licensed assets reused by the landing page. -->
+## Site assets (task 29)
+`site/assets/` reuses byte-identical Stage 0 Diorama mockups `game-p.png`, `upgrade-p.png`, `menu-p.png` from `mockups/diorama/png/`, labeled as concept previews. The five `site/fonts/*.ttf` files and three neighboring OFL notices are byte-identical to the existing files in `public/fonts/`. The new SVG favicon, illustrated fallback globe and Canvas 2D globe are project-authored procedural artwork. No external image or font source is loaded by the deployed site.
