@@ -1,13 +1,17 @@
-// Daily mode composition: game state is seeded by task 02, never by the device RNG.
+// Daily mode composition: the run is seeded from the Warsaw calendar day, never by the device RNG.
+import { dailyKey, dailySeedForKey } from '../../core/daily.ts';
+import { createGame, type Sim } from '../../sim/index.ts';
 import type { DailyResult, OfficialReservation, ScoreService } from '../scores';
 
-/** Inject dailyKey/dailySeed from src/core/daily.ts when task 02 lands. */
 export interface DailySeedSource {
   dailyKey(date: Date): string;
   dailySeed(dateKey: string): number;
 }
 
-/** The authoritative simulation must expose the deterministic hash from task 02. */
+/** Production seed source (src/core/daily.ts). */
+export const DAILY_SEEDS: DailySeedSource = { dailyKey, dailySeed: dailySeedForKey };
+
+/** Anything with the kernel's deterministic state hash; the production simulation is Sim. */
 export interface DailySimulation {
   hash(): string;
 }
@@ -90,4 +94,9 @@ export class DailyChallengeMode<TSimulation extends DailySimulation> {
     this.active.delete(session);
     return result;
   }
+}
+
+/** Daily challenge on the real simulation: same Endless rules, the day's seed, mode 'daily'. */
+export function createDailyMode(scores: ScoreService, now?: () => Date): DailyChallengeMode<Sim> {
+  return new DailyChallengeMode(DAILY_SEEDS, scores, (seed) => createGame(seed, 'daily'), now);
 }

@@ -52,7 +52,7 @@
   },
   "goal": {
     "kind": "curfewNights",
-    "targetDelivered": 205,
+    "targetDelivered": 307,
     "nights": 2
   },
   "demand": [

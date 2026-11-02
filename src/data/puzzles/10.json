@@ -17,7 +17,7 @@
       "continent": "NA",
       "latitude": 40.6,
       "longitude": -73.8,
-      "hubCapacity": 18
+      "hubCapacity": 150
     },
     {
       "id": "GRU",
@@ -41,7 +41,7 @@
   },
   "goal": {
     "kind": "deliver",
-    "targetDelivered": 160
+    "targetDelivered": 211
   },
   "demand": [
     {
