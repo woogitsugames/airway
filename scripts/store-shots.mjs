@@ -127,7 +127,11 @@ async function capture(page, baseUrl, lang, scene, hour, destination) {
   await page.waitForFunction(({ id, seed }) =>
     document.documentElement.dataset.storeShotReady === id &&
     document.documentElement.dataset.storeShotSeed === String(seed),
-  { id: scene, seed: SEED }, { timeout: 15000 });
+  { id: scene, seed: SEED }, { timeout: 15000 }).catch(() => {
+    // [integration-tooling] Name the missing contract instead of a bare Playwright timeout.
+    throw new Error('Scene "' + scene + '" never set <html data-store-shot-ready="' + scene +
+      '" data-store-shot-seed="' + SEED + '"> (dev-only ?storeShot fixture missing in src/main.ts)');
+  });
   await page.evaluate(() => document.fonts.ready);
   const state = await page.evaluate(() => ({
     lang: document.documentElement.lang,

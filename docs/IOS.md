@@ -6,7 +6,7 @@ Status: task 25. Bundle ID: `pl.samsufi.airway` (owner decision D-15). Store tit
 
 - macOS with **Xcode 26.0+**, iOS Simulator and command-line tools (`xcode-select --install`).
 - Node.js 22+ and npm (`npm ci` uses the checked-in lockfile).
-- **CocoaPods** (`brew install cocoapods`), required for this platform's Pods integration. Capacitor 8 uses SPM by default; this project deliberately uses its official CocoaPods template (D-20).
+- **CocoaPods** (`brew install cocoapods`), required for this platform's Pods integration. Capacitor 8 uses SPM by default; this project deliberately uses its official CocoaPods template (D-36).
 - Ruby and Bundler; `bundle install` from the repository root installs the Fastlane version pinned by `Gemfile`.
 - For distribution: Apple Developer Program account, App Store Connect app record, signing certificate and provisioning profile for `pl.samsufi.airway`. App Store Connect API key authorization alone is insufficient for signing.
 

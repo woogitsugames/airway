@@ -4,11 +4,10 @@
 features or the adapter are missing; it never reports a successful gameplay run
 because of a mock. `npm run ui:matrix` likewise captures *real* UI only.
 
-The current `dev` scaffold (task 01) has no gameplay. Tasks 13-16 and their
-upstream simulation, input and renderer work must be integrated before the real
-smoke or matrix can pass. `--fixture` can independently validate the **test
+The real smoke and matrix pass only once the integrated app shell installs the
+handle and registers a production adapter (see below). `--fixture` can independently validate the **test
 harness contract**: `node e2e/smoke.mjs --fixture` and
-`node scripts/shot.mjs --fixture`. Fixture images go to
+`node scripts/ui-matrix.mjs --fixture`. Fixture images go to
 `docs/shots/matrix-fixture/`, never `docs/shots/matrix/`.
 
 ## Development-only integration
@@ -53,9 +52,14 @@ weekly upgrade, persistence hash and failure/menu transitions.
 npm run test:e2e:smoke
 npm run ui:matrix
 # Harness-only validation; does NOT test the shipped game:
-node e2e/smoke.mjs --fixture
-node scripts/shot.mjs --fixture
+npm run test:e2e:fixture   # = node e2e/smoke.mjs --fixture && node scripts/ui-matrix.mjs --fixture
 ```
+
+The smoke prints one `PASS`/`FAIL`/`SKIP` line per step. Steps depend on each other, so everything after
+the first failure is reported as `SKIP` with the step it waited for; a screenshot of the failing state is
+saved to the git-ignored `.e2e/` folder. `ui:matrix` runs each language/size independently and stops early
+when the dev adapter is missing altogether (every run would hit the same timeout).
+Server and browser lifecycle is shared with `npm run shots` in `scripts/lib/harness.mjs`.
 
 By default a temporary Vite dev server is started on localhost. Set
 `AIRWAY_E2E_URL=http://127.0.0.1:5173/` to reuse a running **development**

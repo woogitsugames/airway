@@ -35,7 +35,7 @@ game's `src/i18n` catalog.
 ```sh
 npm run test:site       # local paths, alt texts, translated keys, privacy links
 npm run build:site      # copy the static site into site/dist
-npm run shots:site      # Playwright must be available in the environment
+npm run shots:site      # builds site/dist first; Playwright must be available
 npm run typecheck
 npm run test:fast
 npm run build            # game build; does NOT deploy the site

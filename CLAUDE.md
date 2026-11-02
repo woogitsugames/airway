@@ -2,12 +2,13 @@
 
 Instructions for AI coding agents working in this repository.
 
-## Current stage: Production (MVP)
+## Current stage: Production — integration of tasks 01–29
 - Stage 0 is complete: world style **A "Diorama"** (D-11) and title **Airway** (D-12).
-- Task 01 starts production with Vite 6, strict TypeScript, three.js, and Capacitor 8.
-  See `docs/ARCHITECTURE.md` and `docs/TESTING.md` for the boundaries and gates.
-- Implement only the assigned task from `docs/tasks/00-INDEX.md`; the owner merges draft PRs.
-
+- All 29 task branches (`docs/tasks/00-INDEX.md`) are merged; the code is being unified per area (sim, render, ui,
+  platform, tooling) on `integration/*` branches. Decisions D-19…D-37 were renumbered during the merge
+  (`docs/integration/RENUMBERING.md`); new decisions start at D-38. Conflicting file versions that were not taken
+  are kept in `docs/integration/pending/`.
+- Read `docs/ARCHITECTURE.md` (module map, boundaries) and `docs/TESTING.md` (every command, runtime, summary).
 
 ## The game in one line
 Premium mobile (Android + iOS, Capacitor) minimalist network builder about **airlines on a globe**: the player designs
@@ -39,23 +40,26 @@ the route network, planes fly by themselves; passengers transfer at hubs; you lo
   Record every decision as D-xx in `docs/DECISIONS.md` with rationale.
 
 ## Git
-- Always branch from `dev` to the assigned `task/NN-...` branch.
+- Work on your assigned branch (`task/NN-...` or `integration/<area>`); never push directly to `dev` or `main`.
 - Open a **draft PR to `dev`** after implementation and checks; only the owner merges.
-- Never push directly to `dev` or `main`, except task 01 creating `dev` from the approved stage-0 branch.
 - Keep commits descriptive in English. PR and owner-facing report must be in Polish.
 
-
 ## Commands
-- `npm ci` — install dependencies from the lockfile.
-- `npm run dev` — start Vite with the empty Diorama sky canvas.
-- `npm run typecheck` — strict TypeScript.
-- `npm run test:i18n` — PL/EN catalog parity, empty entries, placeholders.
-- `npm run test:arch` — simulation dependency and deterministic-operation boundary.
-- `npm run test:fast` — typecheck, i18n and architecture checks.
-- `npm run build` — TypeScript check and Vite production build.
-- `npm run shots` — game screenshots at 412×915 and 915×412 into `docs/shots/01/`.
-- `npm run mockups` — regenerate existing stage-0 mockups.
-- `npm run shots:mockups` — preserve reference mockup captures.
-- `mockups/fetch-fonts.sh "Family" dir "400;700"` — obtain OFL fonts with licences.
-
-See `docs/TESTING.md` before pushing.
+- `npm ci` — install dependencies from the lockfile. Playwright 1.63 + Chromium come from the environment
+  (`npm install --no-save playwright@1.63.0`), never from `package.json`.
+- `npm run dev` — Vite dev server. `npm run build` — distance/land generators, `tsc`, Vite production build.
+- `npm run test:fast` — typecheck + every headless unit test, ending with `test:arch` (~30 s); one PASS/FAIL line per
+  step and a final `SUMMARY`. Run before every push. Add new fast tests to its step list.
+- `npm run test:ci` — `test:fast`, build, HUD/tutorial/E2E smoke, UI matrix, balance, perf scene, all screenshots
+  (~6–8 min).
+- `npm run test:<name>` — a single suite (list and expected summaries in `docs/TESTING.md`).
+- `npm run test:e2e:smoke` / `npm run ui:matrix` — real-game Playwright journey and the PL/EN × 4-size screen matrix;
+  need the DEV-only `window.aw` adapter (`e2e/README.md`). `npm run test:e2e:fixture` self-tests the harness only.
+- `npm run shots` — every app/dev-page screenshot into `docs/shots/<task>/`; `npm run shots -- menu globe --fold`
+  for a subset (`-- --list` shows targets). `npm run shots:site` (landing page), `npm run store:shots`
+  (30 store PNGs, `docs/store/shots/`). Inspect every PNG before committing it.
+- `npm run perf:scene` — SwiftShader scene benchmark (`.perf/scene.json`); never compare with devices.
+- `npm run build:site` — static landing page into `site/dist/` (`docs/SITE.md`).
+- `npm run android` / `android:release` / `android:aab` — native builds (`docs/ANDROID.md`); iOS: `docs/IOS.md`.
+- `npm run mockups` / `npm run shots:mockups` — stage-0 reference mockups; `mockups/fetch-fonts.sh "Family" dir
+  "400;700"` — obtain OFL fonts with licences (then `docs/ASSETS.md`).

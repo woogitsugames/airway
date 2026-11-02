@@ -1,163 +1,124 @@
 # Airway — test and build contract
 
-The canonical smoke sequence, before each push:
+Before each push:
 
 ```sh
 npm ci
-npm run typecheck
-npm run test:fast
+npm run test:fast     # typecheck + every headless unit test, ends with test:arch (~30 s)
 npm run build
 ```
 
-| Command | What it checks | Expected final summary |
-| --- | --- | --- |
-| `npm run typecheck` | Strict TypeScript on app and config | Exit code 0 (tsc is intentionally silent on success) |
-| `npm run test:i18n` | PL/EN dictionary key parity, duplicates, empty values, interpolation placeholders | `SUMMARY test:i18n seed=0xA1A1 files=2 keys=N passed=1 failed=0` |
-| `npm run test:geo-math` | Globe coordinates, analytic sphere intersection, London/Lisbon/Cairo picking (including off-center) at fixed seed | `SUMMARY test:geo-math seed=0xA1A1 tests=N passed=N failed=0` |
-| `npm run test:arch` | TS-AST guard: simulation imports only pure modules; no DOM, Capacitor, three.js, wall clock or transcendental Math | `SUMMARY test:arch seed=0xA1A1 files=N passed=1 failed=0` |
-| `npm run test:rng` | [task-02] mulberry32 vectors, RNG state, independent streams, UTF-8 FNV, bounds | `SUMMARY test:rng seed=0xA1A1 passed=6 failed=0` |
-| `npm run test:sim-kernel` | [task-02] 50,000-tick replay, clock, command queue, JSON restore and hash | `SUMMARY test:sim-kernel seed=0xA1A1 passed=7 failed=0` |
-| `npm run test:undo` | [task-02] exact rollback, same-tick ordering, checkpoint boundaries, ring eviction, restore | `SUMMARY test:undo seed=0xA1A1 passed=7 failed=0` |
-| `npm run test:daily` | [task-02] Warsaw midnight in CET/CEST, DST transitions, stable daily seed, ISO weeks | `SUMMARY test:daily seed=0xA1A1 passed=7 failed=0` |
-| `npm run test:fast` | `typecheck`, then i18n, architecture and all four kernel tests | All test summaries and exit code 0 |
-| `npm run build` | `tsc --noEmit && vite build` | Exit code 0; `dist/` output |
-| `npm run build:land` | Generate 2048×1024 prebuilt RLE Natural Earth 50m raster; `--check` compares tracked file | `SUMMARY build-land seed=0xA1A1 ... failed=0` |
-| `npm run shots:globe` | Standalone Diorama globe visual QA in 412×915 and 915×412, with FPS/draw calls | `SUMMARY shots:globe seed=0xA1A1 captured=2 failed=0` |
-| `npm run shots` | Browser smoke: game canvas at portrait/landscape dimensions | `SUMMARY shots seed=0xA1A1 captured=2 failed=0`; images in `docs/shots/01/` |
-| `npm run mockups` | Preserve stage-0 Diorama and other reference mockup generation | Exit code 0 |
-| `npm run shots:mockups` | Preserve stage-0 Playwright captures of reference mockups | Existing PNG output under `mockups/*/png/` |
-| `npm run test:fast` | Typecheck, i18n, architecture, cities and city spawner regression | Four test summaries and exit code 0 |
-| `npm run build:distances` | Regenerate the integer distance table from rounded city coordinates | `SUMMARY distances seed=0xA1A1 cities=165 pairs=13530 passed=1 failed=0` |
-| `npm run test:cities` | Validate bilingual names, codes, regions, table freshness and all 13,530 great-circle pairs within 1 km | `SUMMARY test:cities seed=0xA1A1 cities=165 pairs=13530 passed=1 failed=0` |
-| `npm run test:spawner` | Test 16 seeded replays, 6-degree spacing, startup locality, game-hour timing and 40-city cap | `SUMMARY test:spawner seed=0xA1A1 seeds=16 pairsChecked=278076 passed=1 failed=0` |
-| `npm run test:gestures` | 31 pointer/camera sequences: route/edit, orbit, pinch, long press, one-hand zoom, fit, edge pan, DPR and layouts | `SUMMARY test:gestures seed=0xA1A1 cases=31 passed=31 failed=0` |
-| `npm run test:fast` | `typecheck`, `test:i18n`, `test:arch` and `test:gestures` | All test summaries and exit code 0 |
-| `npm run test:overlay-layout` | 30-city collisions, jam priority, boundaries, repeatability, overflow | `SUMMARY test:overlay-layout seed=0xA1A1 cases=7 passed=7 failed=0` |
-| `npm run test:fast` | `typecheck`, then `test:i18n`, then `test:arch` | All three test summaries and exit code 0 |
-| `npm run shots` | Browser smoke: game canvas at portrait/landscape dimensions | `SUMMARY shots seed=0xA1A1 captured=6 failed=0`; images in `docs/shots/01/` and `docs/shots/06/` |
-| `npm run test:routing` | Minimum transfers, distance ties, graph edits and stable region destinations | `SUMMARY test:routing seed=0xA1A1 cases=7 passed=7 failed=0` |
-| `npm run test:hubs` | Hub formation, MCT, queue grace, recovery and aircraft passenger conservation | `SUMMARY test:hubs seed=0xA1A1 cases=6 passed=6 failed=0` |
-| `npm run test:sim-week` | Three deterministic seven-day runs, snapshots and expected no-route failure tick | `SUMMARY test:sim-week seeds=3 ... cases=6 passed=6 failed=0` |
-| `npm run test:planes` | Plane types, reserves, range rejections with exact km, assignment and release | `SUMMARY test:planes seed=0xA1A1 cases=8 passed=8 failed=0` |
-| `npm run test:schedule` | Dwell, back-and-forth movement, capacity, passenger balance and 7-day replay | `SUMMARY test:schedule seed=0xA1A1 cases=7 passed=7 failed=0` |
-| `npm run test:route-tool` | Fixed-seed airport snapping, multi-stop AddRoute/ExtendRoute, range guards, endpoint handles, menu, speed restore and undo | `SUMMARY test:route-tool seed=0xA1A1 passed=17 failed=0` |
-| `npm run test:fast` | `typecheck`, `test:i18n`, `test:arch` and `test:route-tool` | All test summaries and exit code 0 |
-| `npm run test:fast` | `typecheck`, then `test:i18n`, then `test:arch`, then `test:interp` | Both test summaries and exit code 0 |
-| `npm run test:interp` | <!-- [task-10] --> 17 seeded checks of great-circle geometry, route-boundary interpolation, 40 routes, 100 instanced planes and per-frame route rebuild guard | `SUMMARY test:interp seed=0xA1A1 passed=17 failed=0` |
-| `npm run test:fast` | `typecheck`, then `test:i18n`, then `test:arch`, then `test:daynight` | All test summaries and exit code 0 |
-| `npm run test:daynight` | Fixed-seed local time, demand, weekly curfew, snapshot, sun interpolation and render adapters | `SUMMARY test:daynight seed=0xA1A1 passed=N failed=0` |
-| `npm run shots` | Browser smoke: game canvas and responsive HUD at portrait / landscape / foldable dimensions | `SUMMARY shots seed=0xA1A1 captured=2 failed=0` and `SUMMARY test:hud-targets ... shots=4`; images in `docs/shots/01/` and `docs/shots/13/` |
-| `npm run test:hud-targets` | Playwright: 6 controls, ≥48 dp targets, synthetic safe-area clearance, no overlaps or overflow, live rotation, drag-to-route callback, empty-stock disabling, stable render nodes; saves four review screenshots | `SUMMARY test:hud-targets seed=0xA1A1 passed=N failed=0 shots=4` and PNGs in `docs/shots/13/` <!-- [task-13] --> |
-| `npm run test:upgrades` | Fixed-seed weekly offers, selected upgrade effects and congestion tie-breaking | `SUMMARY test:upgrades seed=0xA1A1 cases=5 passed=5 failed=0` |
-| `npm run test:flap` | Unicode split-flap segmentation, Polish diacritics, truncation, 60–90 ms cascade plan | `SUMMARY test:flap seed=0xA1A1 passed=15 failed=0` |
-| `npm run test:fast` | `typecheck`, then `test:i18n`, then `test:arch`, then `test:flap` | All test summaries and exit code 0 |
-| `npm run shots:14` | Actual menu screenshot at 412×915 and 915×412 | `SUMMARY shots:14 seed=0xA1A1 captured=2 failed=0`; images in `docs/shots/14/` |
-| `npm run test:causes` | Six fixed-seed checks for hub-ledger cause ranking, missing evidence, world identity and local records | `SUMMARY test:causes seed=0xA1A1 scenarios=3 passed=6 failed=0` |
-| `npm run test:fast` | `typecheck`, then `test:i18n`, then `test:arch` | Three test summaries and exit code 0 |
-| `npm run shots` | Browser smoke: game canvas at portrait/landscape dimensions | `SUMMARY shots seed=0xA1A1 captured=4 failed=0`; images in `docs/shots/01/` and `docs/shots/15/` |
-| `npm run test:saves` | [task-16] Fixed-seed save/load hash, v0 migration, corrupt JSON, IndexedDB, native dual-slot saves, background pause | `SUMMARY test:saves seed=0xA1A1 passed=11 failed=0` |
-| `npm run test:fast` | `typecheck`, `test:i18n`, `test:arch`, then `test:saves` | All three test summaries and exit code 0 |
-| `npm run test:audio-sched` | 125 ms lookahead, stable order, voice cap at 4x, immediate mute, pitch | `SUMMARY test:audio-sched seed=0xA1A1 tests=8 passed=8 failed=0` |
-| `npm run test:fast` | `typecheck`, i18n, architecture and audio scheduler | All test summaries and exit code 0 |
-| `npm run test:fast` | `typecheck`, i18n, architecture, CVD and contrast checks | All four test summaries and exit code 0 |
-| `npm run test:cvd` | Machado 2009 full-severity protan/deutan/tritan; 6 destination colours, minimum pairwise CIE76 ≥ 15; CSS token parity | `SUMMARY test:cvd seed=0xA1A1 modes=3 colours=6 comparisons=45 passed=1 failed=0` |
-| `npm run test:contrast` | WCAG 2.x contrast ratio ≥ 4.5:1 for all declared text/background pairs; CSS token parity | `SUMMARY test:contrast seed=0xA1A1 pairs=16 threshold=4.5 passed=1 failed=0` |
-| `npm run test:puzzles` | Task-17 JSON puzzle validation, zero-action loss, 15 reference wins at ≥15%, deterministic replay, unlimited undo/reset, rejected commands | `SUMMARY test:puzzles seed=0xA1A1 levels=15 cases=N passed=N failed=0` |
-| `npm run test:fast` | `typecheck`, then `test:i18n`, `test:arch`, `test:puzzles` | All test summaries and exit code 0 |
-| `npm run shots:puzzles` | [task-17] Puzzle selector screenshot smoke in two orientations | `SUMMARY shots:puzzles seed=0xA1A1 captured=2 failed=0`; images in `docs/shots/17/` |
-| `npm run test:daily-mode` | [task-18] Warsaw midnight/DST, offline attempts, best scores, streaks and emoji-free ticket (fixed adapter seed) | `SUMMARY test:daily-mode seed=0xA1A1 passed=12 failed=0` |
-| `npm run test:fast` | `typecheck`, then `test:i18n`, then `test:arch`, then `test:daily-mode` | All three test summaries and exit code 0 |
-| `npm run test:perf-scene` / `npm run perf:scene` | [task-21] Synthetic Chromium/SwiftShader fixture: 40 cities, 100 planes, 40 routes, 120 wall seconds at 4x. JSON at `.perf/scene.json`; Playwright and Chromium required. | `SUMMARY perf:scene seed=0xA1A1 frames=N samples=N failed=0` |
-| `npm run test:balance` | Real engine: 10 seeded games, deterministic replay, zero invalid commands, 8–15 minute median, and hub-overflow warning | `SUMMARY test:balance seed=0xA1A1 mode=game seeds=10 ... passed=1 failed=0`; fails until the production adapter exists |
-| `npm run test:balance:fixture` | 10 seeded stand-in sessions and bot-policy assertions; **not production balance** | `SUMMARY test:balance seed=0xA1A1 mode=fixture seeds=10 ... passed=1 failed=0` |
-| `npm run balance:report` | Real engine: 50 seeded sessions to `docs/balance/game-50.csv` and summary | `SUMMARY balance:report seed=0xA1A1 mode=game seeds=50 ... passed=1 failed=0` |
-| `npm run balance:fixture` | Stand-in: 50 synthetic runs in `docs/balance/fixture-50.csv` | `SUMMARY balance:report seed=0xA1A1 mode=fixture seeds=50 ... passed=1 failed=0` |
-| `npm run test:e2e:tutorial` | [task-23] Six training actions, replay/skip/persistence, 412×915 and responsive screenshot matrix | `SUMMARY test:e2e:tutorial seed=0xA1A1 passed=N failed=0 screenshots=10` |
-| `npm run test:android-config` | Fixed-seed, SDK-free checks for Android manifest, foldable, edge-to-edge and signing setup | `SUMMARY test:android-config seed=0xA1A1 checks=14 passed=14 failed=0` |
-| `npm run test:fast` | `typecheck`, `test:i18n`, `test:arch`, then `test:android-config` | Three test summaries and exit code 0 |
-| `npm run test:ios-config` | Verify iOS orientations, permissions, bundle ID, CocoaPods, native audio, safe-area tokens and PNG dimensions | `SUMMARY test:ios-config seed=0xA1A1 checks=N passed=1 failed=0` |
-| `npm run test:fast` | `typecheck`, then `test:i18n`, `test:arch`, `test:ios-config` | All three test summaries and exit code 0 |
-| `npm run test:store-shots` | [task-26] Validate PL/EN store copy limits, owner titles and 30-shot matrix (fixed seed) | `SUMMARY test:store-shots seed=0xA1A1 listings=2 fields=12 scenes=5 devices=3 passed=1 failed=0` |
-| `npm run store:shots` | [task-26] Capture 5 actual game scenes in PL/EN on phone, foldable and tablet; requires integrated dev-only fixture | `SUMMARY store:shots seed=0xA1A1 expected=30 captured=30 passed=1 failed=0`; PNGs in `docs/store/shots/` |
-| `npm run test:gating` | Free entitlements, no-op ads, disabled content gate, and no new monetization SDK dependencies | `SUMMARY test:gating seed=0xA1A1 passed=8 failed=0` |
-| `npm run test:fast` | `typecheck`, then `test:i18n`, `test:arch`, and `test:gating` | All three test summaries and exit code 0 |
-| `npm run test:e2e:smoke` | Real Playwright gameplay journey: boot, menu, seeded start, route, aircraft, week, upgrade, save/load, overload and return | `SUMMARY test:e2e:smoke seed=0xA1A1 mode=game passed=9 failed=0 durationMs=N` |
-| `npm run ui:matrix` | Real game menu/game/upgrade/gameover in PL/EN at 412×915, 915×412, 673×841, 904×1000 (DPR 1) | `SUMMARY ui:matrix seed=0xA1A1 mode=game captured=32 expected=32 failed=0 durationMs=N` |
-| `npm run test:site` | Local links, 3 preview alt texts, PL/EN catalog parity, privacy page and no trackers | `SUMMARY test:site seed=0xA1A1 assertions=N passed=N failed=0` |
-| `npm run build:site` | Copies framework-free page into ignored `site/dist` | `SUMMARY build:site seed=0xA1A1 files=6 assetFolders=2 failed=0` |
-| `npm run shots:site` | Captures landing page 412×915 and 915×412 with Playwright | `SUMMARY shots:site seed=0xA1A1 captured=2 failed=0` |
+`npm run test:ci` runs `test:fast`, the build and every browser/perf/screenshot suite (~6–8 min). Both suites use
+`scripts/run-suite.mjs`: every step runs even after a failure, one `PASS|FAIL <step> <seconds> <SUMMARY>` line is
+printed per step (with the output tail on failure), and the run ends with
+`SUMMARY <suite> seed=0xA1A1 steps=N passed=N failed=N durationS=N [failing=…]` and a nonzero exit if any step failed.
+Add a new fast test by appending its script name to the `test:fast` step list in `package.json` (before `test:arch`).
 
-Every future test must have a fixed seed (use `0xA1A1` where no gameplay seed
-is needed), terminate with one `SUMMARY ...` line, set a nonzero exit code on
-failure, expose a `test:<name>` npm command and have a row in this table.
+## Rules for tests
 
-Kernel tests use Node.js 22+ TypeScript type stripping (`node --experimental-strip-types`).
-The game uses `*.ts` module imports so the same source is executed by Node tests
-and bundled by Vite; `tsconfig.json` enables `allowImportingTsExtensions` with `noEmit`.
-The game scheduler reads `sim.schedulingSpeed` to wake a paused sim from a queued
-`SetSpeed` resume command; the committed `sim.speed` changes only on the next tick.
+- Fixed seed (`0xA1A1` where no gameplay seed is needed), nonzero exit on failure, exactly one final
+  `SUMMARY <name> seed=… passed=N failed=N` line, an npm script `test:*` / `perf:*` / `shots*`, and one row below.
+- Node tests use Node 22+ type stripping (`node --experimental-strip-types`); sources import `*.ts` so the same modules
+  run under Node and Vite (`allowImportingTsExtensions` + `noEmit`).
+- Browser suites use the **environment's** Playwright 1.63 + Chromium (CI: `npm install --no-save playwright@1.63.0`);
+  neither is an npm dependency. They start a disposable Vite dev server (`AIRWAY_E2E_URL` reuses a running one) and
+  launch Chromium with `--use-angle=swiftshader --enable-unsafe-swiftshader --ignore-gpu-blocklist`
+  (`scripts/lib/harness.mjs`). `CHROMIUM_PATH` overrides the browser binary. SwiftShader FPS is never device evidence.
+- Fail closed (D-37): a missing screen, adapter or fixture is a FAIL, never a skipped pass. Harness-only fixtures
+  report `mode=fixture` and write only to ignored folders.
 
-### Boundary regression
+## Commands
 
-To verify the guard itself, temporarily add
-`import { Scene } from 'three';` to `src/sim/__arch-negative.ts`,
-run `npm run test:arch`, verify exit code nonzero and a `forbidden
-dependency` line, **delete the temporary file**, and rerun the test clean.
-Never commit the negative-control file.
+Times are measured in the integration container (8 vCPU, SwiftShader); “ci” = part of `test:ci`, “fast” = part of
+`test:fast`.
 
-### Screenshot prerequisites
+| Command | Suite | ~Time | What it checks | Expected summary |
+| --- | --- | --- | --- | --- |
+| `npm run typecheck` | fast | 4 s | Strict `tsc --noEmit` on app and config | exit 0 (silent) |
+| `npm run test:i18n` | fast | 1 s | PL/EN key parity, duplicates, empty values, interpolation placeholders | `SUMMARY test:i18n … files=2 keys=N passed=1 failed=0` |
+| `npm run test:rng` | fast | <1 s | mulberry32 vectors, RNG state, independent streams, UTF-8 FNV, bounds | `… passed=6 failed=0` |
+| `npm run test:sim-kernel` | fast | <1 s | 50 000-tick replay, clock, command queue, JSON restore and hash (D-19) | `… passed=7 failed=0` |
+| `npm run test:undo` | fast | <1 s | Exact rollback, same-tick ordering, checkpoint boundaries, ring eviction | `… passed=7 failed=0` |
+| `npm run test:daily` | fast | <1 s | Warsaw midnight CET/CEST, DST, stable daily seed, ISO weeks | `… passed=7 failed=0` |
+| `npm run test:cities` | fast | 2 s | 165 bilingual cities, codes, regions, distance-table freshness (`build:distances --check`), 13 530 pairs ≤ 1 km | `… cities=165 pairs=13530 passed=1 failed=0` |
+| `npm run test:spawner` | fast | 1 s | 16 seeded replays, 6° spacing, start cluster, 4-game-hour cadence, 40-city cap (D-20) | `… seeds=16 … passed=1 failed=0` |
+| `npm run test:land` | fast | <1 s | `build:land --check`: committed land raster matches Natural Earth 50m | `SUMMARY build-land … checked=1 failed=0` |
+| `npm run test:geo-math` | fast | 1 s | Globe coordinates, ray–sphere picking (London/Lisbon/Cairo, off-centre) | `… tests=N passed=N failed=0` |
+| `npm run test:gestures` | fast | 1 s | 31 pointer/camera sequences: route edit, orbit, pinch, long press, one-hand zoom, edge pan, DPR | `… cases=31 passed=31 failed=0` |
+| `npm run test:overlay-layout` | fast | <1 s | 30-city tag collisions, jam priority, boundaries, repeatability | `… cases=7 passed=7 failed=0` |
+| `npm run test:routing` | fast | 1 s | Minimum transfers, distance ties, graph edits, region destinations | `… cases=7 passed=7 failed=0` |
+| `npm run test:hubs` | fast | 1 s | Hub formation, MCT, queue grace, recovery, passenger conservation (D-23) | `… cases=6 passed=6 failed=0` |
+| `npm run test:sim-week` | fast | 1 s | Three seeded seven-day runs, snapshots, no-route failure tick | `… seeds=3 … passed=6 failed=0` |
+| `npm run test:planes` | fast | 4 s | Plane types, reserves, exact-km range rejections, assign/release (D-24) | `… cases=8 passed=8 failed=0` |
+| `npm run test:schedule` | fast | 3 s | Dwell, back-and-forth legs, capacity, passenger balance, 7-day replay | `… cases=7 passed=7 failed=0` |
+| `npm run test:route-tool` | fast | 1 s | Airport snapping, multi-stop Add/ExtendRoute, range guards, handles, undo | `… passed=17 failed=0` |
+| `npm run test:interp` | fast | 1 s | Great-circle geometry, route-boundary interpolation, 40 routes / 100 instanced planes, no per-frame rebuild | `… passed=17 failed=0` |
+| `npm run test:daynight` | fast | 1 s | Local time, demand curve, weekly curfew, snapshot, sun interpolation (D-27) | `… passed=N failed=0` |
+| `npm run test:upgrades` | fast | <1 s | Seeded weekly offers, upgrade effects, congestion tie-breaks (D-28) | `… cases=5 passed=5 failed=0` |
+| `npm run test:flap` | fast | <1 s | Split-flap segmentation, Polish diacritics, truncation, 60–90 ms cascade | `… passed=15 failed=0` |
+| `npm run test:causes` | fast | 1 s | Hub-ledger cause ranking, missing evidence, world identity, local records | `… scenarios=3 passed=6 failed=0` |
+| `npm run test:saves` | fast | <1 s | Save/load hash, v0 migration, corrupt JSON, IndexedDB, native dual slot, background pause (D-29) | `… passed=11 failed=0` |
+| `npm run test:audio-sched` | fast | <1 s | 125 ms lookahead, stable order, voice cap at 4×, immediate mute, pitch (D-30) | `… tests=8 passed=8 failed=0` |
+| `npm run test:cvd` | fast | <1 s | Machado 2009 protan/deutan/tritan, 6 destination colours, min ΔE76 ≥ 15, CSS token parity (D-08) | `… comparisons=45 passed=1 failed=0` |
+| `npm run test:contrast` | fast | <1 s | WCAG contrast ≥ 4.5:1 for declared text/background pairs | `… pairs=16 threshold=4.5 passed=1 failed=0` |
+| `npm run test:puzzles` | fast | 1 s | 15 JSON puzzles: validation, zero-action loss, reference wins ≥ 15 %, replay, undo/reset | `… levels=15 cases=N passed=N failed=0` |
+| `npm run test:daily-mode` | fast | <1 s | Daily mode: Warsaw midnight/DST, offline attempts, best scores, streaks, emoji-free ticket | `… passed=12 failed=0` |
+| `npm run test:balance:fixture` | fast | <1 s | Bot policy on 10 seeded stand-in sessions — **not production balance** | `SUMMARY test:balance … mode=fixture seeds=10 … passed=1 failed=0` |
+| `npm run test:gating` | fast | 1 s | Free entitlements, no-op ads, disabled content gate, no monetization SDKs (D-16) | `… passed=8 failed=0` |
+| `npm run test:android-config` | fast | <1 s | SDK-free Android manifest, foldable, edge-to-edge, signing checks (D-35) | `… checks=14 passed=14 failed=0` |
+| `npm run test:ios-config` | fast | <1 s | iOS orientations, permissions, bundle ID, CocoaPods, audio session, safe-area tokens, PNG sizes (D-36) | `… checks=N passed=1 failed=0` |
+| `npm run test:store-shots` | fast | <1 s | PL/EN store copy limits, D-18 titles, no competitor names, 30-shot matrix definition | `… listings=2 fields=12 scenes=5 devices=3 passed=1 failed=0` |
+| `npm run test:site` | fast | <1 s | Landing page: local links, preview alt texts, PL/EN parity, privacy page, no trackers | `… assertions=N passed=N failed=0` |
+| `npm run test:arch` | fast (last) | 1 s | TS-AST guard: `src/sim` imports only pure modules; no DOM, Capacitor, three, wall clock, `Math.random` or transcendentals (D-13) | `… files=N passed=1 failed=0` |
+| `npm run test:fast` | — | 30 s | All rows marked “fast”, in order | `SUMMARY test:fast … steps=36 passed=36 failed=0` |
+| `npm run build` | ci | 10 s | `prebuild` (`build:distances`, `build:land`), `tsc --noEmit`, `vite build` | exit 0; `dist/` |
+| `npm run test:hud-targets` | ci | 12 s | Playwright HUD: 6 controls ≥ 48 dp, safe-area clearance, no overlap/overflow, rotation, drag-to-route; 4 PNGs in `docs/shots/13/` | `… passed=N failed=0 shots=4` |
+| `npm run test:e2e:tutorial` | ci | 35 s | Onboarding: six training actions, replay/skip/persistence; 10 PNGs in `docs/shots/23/` | `… passed=N failed=0 screenshots=10` |
+| `npm run test:e2e:smoke` | ci | 15–40 s | Real gameplay journey, 9 dependent steps (menu → seeded start → route drag → aircraft drag → week → upgrade → save/continue hash → overload → menu). Each step prints PASS/FAIL/SKIP; failure screenshot in `.e2e/` | `SUMMARY test:e2e:smoke … mode=game steps=9 passed=9 failed=0 skipped=0` |
+| `npm run ui:matrix` | ci | 40–90 s | Real menu/game/upgrade/gameover × PL/EN × 412×915, 915×412, 673×841, 904×1000 → `docs/shots/matrix/` | `… mode=game captured=32 expected=32 failed=0` |
+| `npm run test:e2e:fixture` | — | 6 s | Harness self-test against `e2e/fixtures/airway.html` (smoke + matrix); output to ignored `docs/shots/matrix-fixture/`. Does **not** test the game | `… mode=fixture … failed=0` (both) |
+| `npm run test:balance` | ci | 1–5 min | Real engine: 10 seeded bot games, deterministic replay, 0 invalid commands, 8–15 min median, hub-overflow warning | `SUMMARY test:balance … mode=game seeds=10 … passed=1 failed=0` |
+| `npm run perf:scene` / `test:perf-scene` | ci | 2.5 min | SwiftShader scene: 40 cities, 100 planes, 40 routes, 120 wall s at 4×; JSON in `.perf/scene.json` (D-33) | `SUMMARY perf:scene … frames=N samples=N failed=0` |
+| `npm run shots` | ci | 1–2 min | All app/dev-page screenshots (see below) | `SUMMARY shots … expected=N captured=N failed=0` |
+| `npm run shots:site` | ci | 6 s | `build:site`, then landing page at 412×915 / 915×412 → `docs/shots/29/` | `SUMMARY shots:site … captured=2 failed=0` |
+| `npm run store:shots` | ci | 1–3 min | 5 scenes × PL/EN × phone/foldable/tablet → `docs/store/shots/{pl,en}/`; staged, published only when all 30 succeed | `… expected=30 captured=30 passed=1 failed=0` |
+| `npm run test:ci` | — | 6–8 min | `test:fast`, `build` and every “ci” row | `SUMMARY test:ci … failed=0` |
+| `npm run build:distances` | — | 1 s | Regenerate `src/data/generated/distances.ts` (`--check` compares) | `SUMMARY distances … pairs=13530 passed=1 failed=0` |
+| `npm run build:land` | — | <1 s | Regenerate `public/data/land-50m.json` (D-21) | `SUMMARY build-land … failed=0` |
+| `npm run build:site` | — | <1 s | Copy the framework-free landing page into ignored `site/dist/` | `SUMMARY build:site … files=6 assetFolders=2 failed=0` |
+| `npm run balance:report` | — | 5–15 min | Real engine: 50 seeded sessions → `docs/balance/game-50.csv` | `SUMMARY balance:report … mode=game seeds=50 … failed=0` |
+| `npm run balance:fixture` | — | 1 s | Stand-in: 50 synthetic runs → `docs/balance/fixture-50.csv` | `… mode=fixture seeds=50 … failed=0` |
+| `npm run audio:demo` | — | 1 s | Render a WAV demo of the hub audio scheduler (listening check, no assertion) | WAV path |
+| `npm run mockups` / `shots:mockups` | — | 30 s | Stage-0 reference mockups (HTML/SVG → `mockups/*/png/`) | exit 0 |
+| `npm run android` / `android:assets` / `android:release` / `android:aab` | — | minutes | Android debug/release builds; needs `ANDROID_HOME` (docs/ANDROID.md) | APK/AAB path |
 
-`npm run shots` uses the environment-provided **Playwright and Chromium**;
-neither is intentionally added as an npm dependency. A missing browser/runtime
-produces a failing summary. Screenshot files are only committed after review.
-The two PNG dimensions are **412×915** and **915×412** at DPR 1 (exact pixel
-size). Foldable 673×841 / 904×1000 checks are part of later UI tasks.
-<!-- [task-05] Generated geography and seeded city-spawner regressions. -->
-Task 05: the production `prebuild` step regenerates the checked-in distance matrix. The `test:cities` step also runs the generator in `--check` mode to detect stale generated output. These tests use a temporary, isolated CommonJS transpilation of the production modules to avoid changes to the app build tooling.
-<!-- [task-04] Standalone gesture scenarios, tested at a fixed seed. -->
-<!-- [task-06] Screenshot coverage pending fixture execution. -->
-The `npm run shots` command also captures `?dev=airports` at 1× and 2.5× in
-portrait and landscape, writing four PNGs under `docs/shots/06/`.
-This temporary sea-sphere fixture exercises the airport/overlay layer;
-it is not a substitute for task 03's production globe.
-// [task-07] Isolated task 07 has no integrated globe or sim. Its screenshot status is in docs/shots/07/README.md.
-### Task 11 integration boundary
-Until tasks 02/03/05/06/08/09 have been merged, the sun, curfew and demand
-adapters are deliberately not connected to the empty baseline scene. The
-production screenshot target `docs/shots/11/` must be captured and reviewed
-after the real globe is available on `dev`. Never present empty-sky captures
-as verified day/night screenshots. The task 08 hourly demand table intentionally
-matches task 11 and must be kept as a single definition when merging.
-<!-- [task-15] Failure-screen visual fixture and camera adapter. -->
-Task 15 screenshots use `npm run shots` with `?preview=gameover` (development-only)
-to capture `docs/shots/15/game-p.png` and `docs/shots/15/game-l.png`. This fixture
-does not replace an integration test with task 08's real ledger or task 04's
-camera. The game-over controller pauses simulation immediately and drives an
-injected renderer focus callback for 700ms with cubic ease-out, then freezes
-the scene and presents the report. It never mutates the simulation.
-<!-- [task-19] Audio scheduling regression: no browser or AudioContext required. -->
-<!-- [task-17] The additional puzzle-board screenshots are captured as docs/shots/17/board-p.png
-and docs/shots/17/board-l.png after opening the puzzle selector. -->
-<!-- [task-22] Balance harness: production test intentionally fails until 08/09/12 are integrated. -->
-[task-23] The onboarding test also expects environment-provided Playwright and
-Chromium, and captures seven portrait steps plus landscape and foldable checks
-into `docs/shots/23/`. The temporary three-city adapter is not a simulation test:
-integration with real route/HUD/upgrade events requires tasks 07/12/13.
-[task-26] Store screenshots are intentionally fail-closed: without a complete deterministic game fixture, `npm run store:shots` exits nonzero and produces no publishable PNGs. The text-only validation command is independent of Playwright. See `docs/store/README.md`.
-### Task 28 browser integration
-The real E2E runner and screen matrix use the environment's Playwright + Chromium,
-start a disposable Vite development server, and exit nonzero on missing features,
-page errors, incomplete snapshots or failed assertions. They never replace real
-gameplay with a mock. Requirements and exact selectors are documented in
-[`e2e/README.md`](../e2e/README.md).
-The dev-only `window.aw` bridge is installed by a DEV-guarded dynamic import.
-It reports `ready=false` until a real `AwDevAdapter` is registered by the game.
-Tasks 13-16 and their upstream dependencies are not yet merged on the task-28
-branch's base; the complete gameplay smoke and production UI matrix are BLOCKED.
-To validate the harness itself without game features, use
-`node e2e/smoke.mjs --fixture` and `node scripts/shot.mjs --fixture`.
-The fixture is a labeled, isolated test double; passing it does **not** satisfy
-the gameplay acceptance criteria, and its 32 images are saved only to
-`docs/shots/matrix-fixture/` (not `docs/shots/matrix/`).
-<!-- [task-29] -->
-Task 29 adds `test:site` to `test:fast`, a standalone `build:site` command and a `shots:site` capture command. `npm run shots` continues to capture the game shell.
+## Screenshots (`npm run shots`)
+
+`scripts/shots.mjs` is the single screenshot pipeline for the app and dev pages. Targets (`npm run shots -- --list`):
+
+| Target | URL | Output | Ready when |
+| --- | --- | --- | --- |
+| `game` | `/` | `docs/shots/01/game-{p,l}.png` | `#app canvas` |
+| `globe` | `/dev/globe.html?quality=medium` | `docs/shots/03/game-{p,l}.png` | `window.__globeReady`; also asserts ≤ 60 draw calls, ≥ 1000 triangles |
+| `airports`, `airports-zoom` | `/?dev=airports&zoom=1` / `2.5` | `docs/shots/06/airports-{p,l}-{1x,2_5x}.png` | `.airport-bubble` |
+| `menu` | `/` (PL) | `docs/shots/14/menu-{p,l}.png` | `.airway-board .airway-flight` + 1.1 s flap settle |
+| `gameover` | `/?preview=gameover` | `docs/shots/15/game-{p,l}.png` | `[data-gameover-state="open"]` |
+| `puzzles` | `/` → click `[data-mode="puzzles"]` | `docs/shots/17/board-{p,l}.png` | `.puzzle-departures .puzzle-flap` |
+
+Options: target names to filter (`npm run shots -- menu globe`), `--fold` (adds 673×841 and 904×1000),
+`--lang=pl|en`, `--dpr=1..3`. Default is 412×915 and 915×412 at DPR 1. Each capture fails independently; the summary
+lists every failed target/size. Add a view by appending one entry to `TARGETS`. Screenshot PNGs are committed only after
+someone has looked at every image (Diorama checklist in `docs/styles/diorama.md`). Folder layout: `docs/shots/README.md`.
+
+## E2E contract
+
+`test:e2e:smoke` and `ui:matrix` drive the real Vite game through the DEV-only `window.aw` handle
+(`src/game/devHandle.ts`) and stable `data-testid`s; the contract is in [`e2e/README.md`](../e2e/README.md). They need
+`src/main.ts` to call `installDevHandle()` in DEV and the composition root to `registerDevGameAdapter()` with the real
+game. `store:shots` additionally needs the DEV-only `?storeShot=<scene>` fixture (`docs/store/README.md`).
+
+## Boundary regression
+
+To verify the architecture guard itself, temporarily add `import { Scene } from 'three';` to
+`src/sim/__arch-negative.ts`, run `npm run test:arch`, confirm a nonzero exit with a `forbidden dependency` line,
+**delete the file** and rerun clean. Never commit the negative-control file.
