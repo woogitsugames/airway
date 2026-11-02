@@ -7,6 +7,8 @@ import { mkdirSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+// [task-37] --text-only runs just the text-break section (fast local loop).
+const TEXT_ONLY = process.argv.includes('--text-only');
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = resolve(ROOT, 'docs/shots/13');
 const sizes = [
@@ -101,6 +103,82 @@ async function upgradeGeometry(page) {
     };
   });
 }
+// [task-37] Text-break regression: menu, upgrade labels and game over at phone, foldable and landscape sizes.
+const TEXT_SIZES = [
+  { w: 360, h: 800, label: 'portrait-360x800' },
+  { w: 412, h: 915, label: 'portrait-412x915' },
+  { w: 673, h: 841, label: 'foldable-673x841' },
+  { w: 904, h: 1000, label: 'foldable-904x1000' },
+  { w: 915, h: 412, label: 'landscape-915x412' },
+  { w: 800, h: 360, label: 'landscape-800x360' },
+];
+/** Every visible word that wraps between two characters must end its first line with a hyphen
+ *  (a hyphen, soft hyphen or slash); a bare mid-word break ("Szerokokadłubowie / c") is a failure. */
+async function midWordBreaks(page, selector) {
+  return page.evaluate((selector) => {
+    const breaks = [];
+    const allowed = new Set(['-', '­', '‐', '/']);
+    for (const root of document.querySelectorAll(selector)) {
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+      for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+        const owner = node.parentElement;
+        if (!owner || !owner.getClientRects().length || getComputedStyle(owner).visibility === 'hidden') continue;
+        for (const match of node.data.matchAll(/\S+/g)) {
+          let previous = null;
+          for (let i = 0; i < match[0].length; i++) {
+            const range = document.createRange();
+            range.setStart(node, match.index + i);
+            range.setEnd(node, match.index + i + 1);
+            const rect = range.getClientRects()[0];
+            if (!rect || rect.height === 0) continue;
+            if (previous && Math.abs(rect.top + rect.height / 2 - previous.mid) > previous.height / 2
+              && !allowed.has(previous.char)) {
+              breaks.push(`"${match[0].replace(/­/g, '')}" breaks after "${match[0].slice(0, i).replace(/­/g, '')}"`);
+              break;
+            }
+            previous = { mid: rect.top + rect.height / 2, height: rect.height, char: match[0][i] };
+          }
+        }
+      }
+    }
+    return breaks;
+  }, selector);
+}
+/** Horizontal gap between the visible ink boxes of two header labels (text ranges, not grid cells). */
+async function headerGaps(page, selector) {
+  return page.evaluate((selector) => [...document.querySelectorAll(selector)].map((header) => {
+    const boxes = [...header.children].map((child) => {
+      const range = document.createRange();
+      range.selectNodeContents(child);
+      return range.getBoundingClientRect();
+    });
+    return boxes.slice(1).map((box, i) => ({ left: header.children[i].textContent, right: header.children[i + 1].textContent,
+      gap: Math.round((box.left - boxes[i].right) * 10) / 10 }));
+  }).flat(), selector);
+}
+/** The middle dot (" · ") must have equal space on both sides and a real advance (Overpass ships it with 0). */
+async function middleDots(page, selector) {
+  return page.evaluate((selector) => {
+    const uneven = [];
+    for (const root of document.querySelectorAll(selector)) {
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+      for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+        if (!node.parentElement?.getClientRects().length) continue;
+        for (const match of node.data.matchAll(/\S · \S/g)) {
+          const box = (from, to) => { const r = document.createRange(); r.setStart(node, match.index + from); r.setEnd(node, match.index + to); return r.getBoundingClientRect(); };
+          // Ink edges approximated by advance boxes: char before, dot, char after.
+          const before = box(0, 1), dot = box(2, 3), after = box(4, 5);
+          const size = parseFloat(getComputedStyle(node.parentElement).fontSize);
+          const left = dot.left - before.right, right = after.left - dot.right;
+          if (dot.width < size * 0.15 || Math.abs(left - right) > Math.max(1.5, size * 0.08)) {
+            uneven.push(`"${node.data.trim()}" dot ${dot.width.toFixed(1)}px, gaps ${left.toFixed(1)}/${right.toFixed(1)}`);
+          }
+        }
+      }
+    }
+    return uneven;
+  }, selector);
+}
 let server;
 let browser;
 let passed = 0;
@@ -158,7 +236,7 @@ try {
   const url = await ready(p);
   browser = await chromium.launch({ headless: true, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
   mkdirSync(OUT, { recursive: true });
-  for (const view of sizes) {
+  for (const view of TEXT_ONLY ? [] : sizes) {
     const page = await browser.newPage({ viewport: { width: view.w, height: view.h }, deviceScaleFactor: 1 });
     const pageErrors = [];
     page.on('pageerror', (error) => pageErrors.push(error.message));
@@ -229,7 +307,7 @@ try {
   }
   // [task-35] Weekly upgrade board (cargo labels) on the same four sizes, PL + EN, with real 3D model windows.
   mkdirSync(UPGRADE_OUT, { recursive: true });
-  for (const language of ['pl', 'en']) {
+  for (const language of TEXT_ONLY ? [] : ['pl', 'en']) {
     for (const view of sizes) {
       const page = await browser.newPage({ viewport: { width: view.w, height: view.h }, deviceScaleFactor: 2 });
       const pageErrors = [];
@@ -275,6 +353,60 @@ try {
           await page.evaluate(() => window.__upgradeView.render(window.__upgradeState, []));
           check(await page.locator('[data-upgrade="hub-expansion"]').isDisabled(), `${tag}: hub label disabled when there is no hub`);
         }
+        check(pageErrors.length === 0, `${tag}: no page errors (${pageErrors.join('; ')})`);
+      } finally { await page.close(); }
+    }
+  }
+  // [task-37] No mid-word breaks, header gaps and symmetric middle dots: menu, upgrade labels, game over (PL + EN).
+  const TEXT_OUT = resolve(ROOT, 'docs/shots/37');
+  mkdirSync(TEXT_OUT, { recursive: true });
+  for (const language of ['pl', 'en']) {
+    for (const view of TEXT_SIZES) {
+      const page = await browser.newPage({ viewport: { width: view.w, height: view.h }, deviceScaleFactor: 2, reducedMotion: 'reduce' });
+      const pageErrors = [];
+      page.on('pageerror', (error) => pageErrors.push(error.message));
+      const tag = `text ${language} ${view.label}`;
+      try {
+        // ?perf=scene boots no game: each screen is mounted alone through its public API.
+        await page.goto(url + '?perf=scene', { waitUntil: 'networkidle' });
+        await page.evaluate(async (language) => {
+          const [{ createMenu }, { setLanguage }] = await Promise.all([import('/src/ui/menu/menu.ts'), import('/src/i18n/index.ts')]);
+          setLanguage(language);
+          document.getElementById('app').append(createMenu(() => {}, { bestPassengers: 1284, solvedPuzzles: 3, totalPuzzles: 15, today: new Date(2026, 10, 2) }).element);
+          await document.fonts.ready;
+        }, language);
+        const menuBreaks = await midWordBreaks(page, '.airway-menu');
+        check(menuBreaks.length === 0, `${tag} menu: no mid-word breaks (${menuBreaks.join('; ')})`);
+        const gaps = await headerGaps(page, '.airway-board__header');
+        const tight = gaps.filter((g) => g.gap < 8);
+        check(gaps.length === 2 && tight.length === 0, `${tag} menu: board headers ≥ 8px apart (${gaps.map((g) => `${g.left}|${g.right} ${g.gap}`).join(', ')})`);
+        const menuDots = await middleDots(page, '.airway-menu');
+        check(menuDots.length === 0, `${tag} menu: symmetric middle dots (${menuDots.join('; ')})`);
+        if (view.w === 360) { await page.screenshot({ path: resolve(TEXT_OUT, `menu-${language}-${view.label}.png`) }); shots++; }
+
+        await page.evaluate(() => document.querySelector('.airway-menu')?.remove());
+        await mountUpgrade(page, language, UPGRADE_VARIANTS[0]);
+        const cardBreaks = await midWordBreaks(page, '.airway-upgrade');
+        check(cardBreaks.length === 0, `${tag} upgrade: no mid-word breaks (${cardBreaks.join('; ')})`);
+        const titles = await page.evaluate(() => [...document.querySelectorAll('.airway-upgrade-title')]
+          .filter((el) => el.scrollWidth > el.clientWidth + 1).map((el) => el.textContent));
+        check(titles.length === 0, `${tag} upgrade: titles fit their label (${titles.join(', ')})`);
+        const cardDots = await middleDots(page, '.airway-upgrade');
+        check(cardDots.length === 0, `${tag} upgrade: symmetric middle dots (${cardDots.join('; ')})`);
+        if (view.w === 360 || view.w === 412) { await page.screenshot({ path: resolve(TEXT_OUT, `upgrade-${language}-${view.label}.png`) }); shots++; }
+
+        await page.evaluate(async () => {
+          document.querySelector('.test-upgrade-host')?.remove();
+          const { mountGameOverPreview } = await import('/src/ui/gameover/preview.ts');
+          mountGameOverPreview(document.getElementById('app'));
+        });
+        await page.waitForSelector('[data-gameover-state="open"]');
+        await page.evaluate(() => document.fonts.ready);
+        const overBreaks = await midWordBreaks(page, '.airway-go-overlay');
+        check(overBreaks.length === 0, `${tag} game over: no mid-word breaks (${overBreaks.join('; ')})`);
+        const overDots = await middleDots(page, '.airway-go-overlay');
+        check(overDots.length === 0, `${tag} game over: symmetric middle dots (${overDots.join('; ')})`);
+        if (view.w === 360 && view.h === 800) { await page.screenshot({ path: resolve(TEXT_OUT, `gameover-${language}-${view.label}.png`) }); shots++; }
         check(pageErrors.length === 0, `${tag}: no page errors (${pageErrors.join('; ')})`);
       } finally { await page.close(); }
     }

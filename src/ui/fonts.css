@@ -34,3 +34,22 @@
   font-style: normal;
   font-display: swap;
 }
+/* [task-37] Overpass ships U+00B7 (middle dot) with a zero advance, so " · " renders lopsided
+   ("ATC ·RAPORT"). Overpass text borrows the dot from Atkinson Hyperlegible Next (same OFL files,
+   centred ink, real advance) through unicode-range; faces declared later win for their range. */
+@font-face {
+  font-family: 'Overpass';
+  src: url('/fonts/AtkinsonHyperlegibleNext-400.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+00B7;
+}
+@font-face {
+  font-family: 'Overpass';
+  src: url('/fonts/AtkinsonHyperlegibleNext-700.ttf') format('truetype');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+00B7;
+}

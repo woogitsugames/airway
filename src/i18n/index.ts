@@ -1,4 +1,5 @@
 // Resolve saved settings before device language and fall back to English.
+import { formatNumber } from '../core/format';
 import { en } from './en';
 import { pl } from './pl';
 
@@ -59,6 +60,12 @@ export function setLanguage(language: Language): void {
 export function t(key: TranslationKey, params?: TranslationParams): string {
   const template = catalogs[getLanguage()][key] ?? en[key];
   return template.replace(/\{([A-Za-z][A-Za-z0-9_]*)\}/g, (token, name: string) =>
-    params?.[name] === undefined ? token : String(params?.[name]),
+    params?.[name] === undefined ? token : typeof params[name] === 'number' ? localNumber(params[name]) : String(params[name]),
   );
+}
+
+/** [task-37] D-61: the player-facing number format of the active language ("2 500" PL, "2,500" EN).
+ *  t() applies it to every numeric parameter; pass a string to show a number verbatim (codes, seeds). */
+export function localNumber(value: number, maximumFractionDigits = 0): string {
+  return formatNumber(value, getLanguage(), maximumFractionDigits);
 }
