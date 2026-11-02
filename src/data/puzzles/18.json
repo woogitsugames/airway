@@ -1,0 +1,178 @@
+{
+  "version": 1,
+  "id": "18",
+  "titleKey": "puzzle.18.title",
+  "durationTicks": 2160,
+  "demandSeed": 2518,
+  "startCities": [
+    {
+      "id": "MAD",
+      "continent": "EU",
+      "latitude": 40.4,
+      "longitude": -3.7,
+      "hubCapacity": 120
+    },
+    {
+      "id": "LIS",
+      "continent": "EU",
+      "latitude": 38.7,
+      "longitude": -9.1,
+      "hubCapacity": 60
+    },
+    {
+      "id": "BCN",
+      "continent": "EU",
+      "latitude": 41.4,
+      "longitude": 2.2,
+      "hubCapacity": 60
+    },
+    {
+      "id": "SVQ",
+      "continent": "EU",
+      "latitude": 37.4,
+      "longitude": -6,
+      "hubCapacity": 60
+    },
+    {
+      "id": "VLC",
+      "continent": "EU",
+      "latitude": 39.5,
+      "longitude": -0.4,
+      "hubCapacity": 60
+    },
+    {
+      "id": "CMN",
+      "continent": "AF",
+      "latitude": 33.6,
+      "longitude": -7.6,
+      "hubCapacity": 100
+    }
+  ],
+  "stock": {
+    "turboprops": 5,
+    "jets": 0,
+    "hubUpgrades": 0
+  },
+  "goal": {
+    "kind": "continents",
+    "targetDelivered": 377,
+    "continents": 2
+  },
+  "mechanics": [
+    "slots",
+    "transfer"
+  ],
+  "demand": [
+    {
+      "from": "LIS",
+      "to": "CMN",
+      "passengers": 10,
+      "firstTick": 15,
+      "everyTicks": 150
+    },
+    {
+      "from": "BCN",
+      "to": "CMN",
+      "passengers": 10,
+      "firstTick": 35,
+      "everyTicks": 150
+    },
+    {
+      "from": "SVQ",
+      "to": "CMN",
+      "passengers": 10,
+      "firstTick": 55,
+      "everyTicks": 150
+    },
+    {
+      "from": "VLC",
+      "to": "CMN",
+      "passengers": 10,
+      "firstTick": 75,
+      "everyTicks": 150
+    }
+  ],
+  "availableRoutes": [
+    {
+      "from": "MAD",
+      "to": "LIS",
+      "plane": "turboprop",
+      "flightTicks": 63,
+      "intervalTicks": 120
+    },
+    {
+      "from": "MAD",
+      "to": "BCN",
+      "plane": "turboprop",
+      "flightTicks": 64,
+      "intervalTicks": 120
+    },
+    {
+      "from": "MAD",
+      "to": "SVQ",
+      "plane": "turboprop",
+      "flightTicks": 49,
+      "intervalTicks": 120
+    },
+    {
+      "from": "MAD",
+      "to": "VLC",
+      "plane": "turboprop",
+      "flightTicks": 38,
+      "intervalTicks": 120
+    },
+    {
+      "from": "MAD",
+      "to": "CMN",
+      "plane": "turboprop",
+      "flightTicks": 104,
+      "intervalTicks": 120
+    },
+    {
+      "from": "SVQ",
+      "to": "CMN",
+      "plane": "turboprop",
+      "flightTicks": 56,
+      "intervalTicks": 120
+    },
+    {
+      "from": "BCN",
+      "to": "VLC",
+      "plane": "turboprop",
+      "flightTicks": 39,
+      "intervalTicks": 120
+    }
+  ],
+  "referenceCommands": [
+    {
+      "type": "connect",
+      "from": "MAD",
+      "to": "LIS",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "MAD",
+      "to": "BCN",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "MAD",
+      "to": "SVQ",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "MAD",
+      "to": "VLC",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "SVQ",
+      "to": "CMN",
+      "plane": "turboprop"
+    }
+  ]
+}

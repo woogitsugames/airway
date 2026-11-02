@@ -1,0 +1,177 @@
+{
+  "version": 1,
+  "id": "24",
+  "titleKey": "puzzle.24.title",
+  "durationTicks": 2880,
+  "demandSeed": 3124,
+  "startCities": [
+    {
+      "id": "LOS",
+      "continent": "AF",
+      "latitude": 6.5,
+      "longitude": 3.4,
+      "hubCapacity": 80,
+      "curfew": {
+        "startMinuteOfDay": 1380,
+        "endMinuteOfDay": 360
+      }
+    },
+    {
+      "id": "ACC",
+      "continent": "AF",
+      "latitude": 5.6,
+      "longitude": -0.2,
+      "hubCapacity": 140
+    },
+    {
+      "id": "ABJ",
+      "continent": "AF",
+      "latitude": 5.3,
+      "longitude": -4,
+      "hubCapacity": 60
+    },
+    {
+      "id": "ABV",
+      "continent": "AF",
+      "latitude": 9.1,
+      "longitude": 7.4,
+      "hubCapacity": 60
+    },
+    {
+      "id": "DKR",
+      "continent": "AF",
+      "latitude": 14.7,
+      "longitude": -17.4,
+      "hubCapacity": 60
+    },
+    {
+      "id": "LON",
+      "continent": "EU",
+      "latitude": 51.5,
+      "longitude": -0.1,
+      "hubCapacity": 100
+    }
+  ],
+  "stock": {
+    "turboprops": 4,
+    "jets": 1,
+    "hubUpgrades": 0
+  },
+  "goal": {
+    "kind": "curfewNights",
+    "targetDelivered": 450,
+    "nights": 1
+  },
+  "mechanics": [
+    "slots",
+    "curfew",
+    "transfer"
+  ],
+  "demand": [
+    {
+      "from": "ABJ",
+      "to": "LON",
+      "passengers": 12,
+      "firstTick": 15,
+      "everyTicks": 150
+    },
+    {
+      "from": "ABV",
+      "to": "LON",
+      "passengers": 12,
+      "firstTick": 35,
+      "everyTicks": 150
+    },
+    {
+      "from": "DKR",
+      "to": "LON",
+      "passengers": 12,
+      "firstTick": 55,
+      "everyTicks": 150
+    }
+  ],
+  "availableRoutes": [
+    {
+      "from": "ACC",
+      "to": "ABJ",
+      "plane": "turboprop",
+      "flightTicks": 53,
+      "intervalTicks": 120
+    },
+    {
+      "from": "ACC",
+      "to": "ABV",
+      "plane": "turboprop",
+      "flightTicks": 116,
+      "intervalTicks": 120
+    },
+    {
+      "from": "ACC",
+      "to": "DKR",
+      "plane": "turboprop",
+      "flightTicks": 267,
+      "intervalTicks": 120
+    },
+    {
+      "from": "ACC",
+      "to": "LON",
+      "plane": "jet",
+      "flightTicks": 365,
+      "intervalTicks": 120
+    },
+    {
+      "from": "LOS",
+      "to": "ABV",
+      "plane": "turboprop",
+      "flightTicks": 66,
+      "intervalTicks": 120
+    },
+    {
+      "from": "LOS",
+      "to": "ABJ",
+      "plane": "turboprop",
+      "flightTicks": 104,
+      "intervalTicks": 120
+    },
+    {
+      "from": "LOS",
+      "to": "LON",
+      "plane": "jet",
+      "flightTicks": 359,
+      "intervalTicks": 120
+    },
+    {
+      "from": "ACC",
+      "to": "LOS",
+      "plane": "turboprop",
+      "flightTicks": 52,
+      "intervalTicks": 120
+    }
+  ],
+  "referenceCommands": [
+    {
+      "type": "connect",
+      "from": "ACC",
+      "to": "ABJ",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "ACC",
+      "to": "ABV",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "ACC",
+      "to": "DKR",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "ACC",
+      "to": "LON",
+      "plane": "jet"
+    }
+  ]
+}

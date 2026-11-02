@@ -1,0 +1,171 @@
+{
+  "version": 1,
+  "id": "27",
+  "titleKey": "puzzle.27.title",
+  "durationTicks": 5760,
+  "demandSeed": 3427,
+  "startCities": [
+    {
+      "id": "PAR",
+      "continent": "EU",
+      "latitude": 48.9,
+      "longitude": 2.4,
+      "hubCapacity": 100,
+      "curfew": {
+        "startMinuteOfDay": 1380,
+        "endMinuteOfDay": 360
+      }
+    },
+    {
+      "id": "MUC",
+      "continent": "EU",
+      "latitude": 48.1,
+      "longitude": 11.6,
+      "hubCapacity": 80,
+      "curfew": {
+        "startMinuteOfDay": 1380,
+        "endMinuteOfDay": 360
+      }
+    },
+    {
+      "id": "IST",
+      "continent": "AS",
+      "latitude": 41,
+      "longitude": 28.9,
+      "hubCapacity": 60
+    },
+    {
+      "id": "DXB",
+      "continent": "AS",
+      "latitude": 25.2,
+      "longitude": 55.3,
+      "hubCapacity": 100
+    },
+    {
+      "id": "DEL",
+      "continent": "AS",
+      "latitude": 28.6,
+      "longitude": 77.2,
+      "hubCapacity": 100
+    },
+    {
+      "id": "BKK",
+      "continent": "AS",
+      "latitude": 13.8,
+      "longitude": 100.5,
+      "hubCapacity": 100
+    }
+  ],
+  "stock": {
+    "turboprops": 1,
+    "jets": 4,
+    "hubUpgrades": 1
+  },
+  "goal": {
+    "kind": "curfewNights",
+    "targetDelivered": 800,
+    "nights": 3
+  },
+  "mechanics": [
+    "curfew",
+    "transfer"
+  ],
+  "demand": [
+    {
+      "from": "PAR",
+      "to": "BKK",
+      "passengers": 24,
+      "firstTick": 20,
+      "everyTicks": 200
+    },
+    {
+      "from": "MUC",
+      "to": "DEL",
+      "passengers": 16,
+      "firstTick": 60,
+      "everyTicks": 200
+    }
+  ],
+  "availableRoutes": [
+    {
+      "from": "PAR",
+      "to": "MUC",
+      "plane": "turboprop",
+      "flightTicks": 86,
+      "intervalTicks": 120
+    },
+    {
+      "from": "PAR",
+      "to": "IST",
+      "plane": "jet",
+      "flightTicks": 161,
+      "intervalTicks": 120
+    },
+    {
+      "from": "MUC",
+      "to": "IST",
+      "plane": "jet",
+      "flightTicks": 113,
+      "intervalTicks": 120
+    },
+    {
+      "from": "IST",
+      "to": "DXB",
+      "plane": "jet",
+      "flightTicks": 215,
+      "intervalTicks": 120
+    },
+    {
+      "from": "DXB",
+      "to": "DEL",
+      "plane": "jet",
+      "flightTicks": 158,
+      "intervalTicks": 120
+    },
+    {
+      "from": "DXB",
+      "to": "BKK",
+      "plane": "jet",
+      "flightTicks": 349,
+      "intervalTicks": 120
+    },
+    {
+      "from": "IST",
+      "to": "DEL",
+      "plane": "jet",
+      "flightTicks": 326,
+      "intervalTicks": 120
+    },
+    {
+      "from": "DEL",
+      "to": "BKK",
+      "plane": "jet",
+      "flightTicks": 209,
+      "intervalTicks": 120
+    }
+  ],
+  "referenceCommands": [
+    {
+      "type": "connect",
+      "from": "PAR",
+      "to": "IST",
+      "plane": "jet"
+    },
+    {
+      "type": "connect",
+      "from": "MUC",
+      "to": "IST",
+      "plane": "jet"
+    },
+    {
+      "type": "connect",
+      "from": "IST",
+      "to": "DEL",
+      "plane": "jet"
+    },
+    {
+      "type": "upgradeHub",
+      "city": "IST"
+    }
+  ]
+}
