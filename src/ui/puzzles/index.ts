@@ -47,6 +47,12 @@ function goalLine(level: PuzzleLevel): string {
   });
   return t('puzzle.goal.deliver', { passengers: level.goal.targetDelivered });
 }
+/** [night-01] Briefing note naming the newer mechanics a level is built around (transfers are implicit). */
+function notesLine(level: PuzzleLevel): string | null {
+  const list = (level.mechanics ?? []).filter((tag) => tag !== 'transfer')
+    .map((tag) => t(`puzzle.mechanic.${tag}` as TranslationKey));
+  return list.length ? t('puzzle.game.notes', { list: list.join(' · ') }) : null;
+}
 function stars(count: number): string { return `${'★'.repeat(count)}${'☆'.repeat(3 - count)}`; }
 function remainingStock(session: PuzzleSession): string {
   const supply = session.snapshot.stock;
@@ -127,6 +133,8 @@ export function mountPuzzleSelector(host: HTMLElement, onExit: () => void = () =
     const ticket = element('section', 'puzzle-ticket');
     ticket.append(element('p', 'puzzle-kicker', t('puzzle.game.brief')),
       element('h1', '', heading(level)), element('p', 'puzzle-goal', goalLine(level)));
+    const notes = notesLine(level);
+    if (notes) ticket.appendChild(element('p', 'puzzle-notes', notes));
     const statGrid = element('div', 'puzzle-stats');
     const stats = [
       [t('puzzle.stat.time'), t('puzzle.time', { current: Math.floor(snapshot.tick / 60), total: Math.floor(level.durationTicks / 60) })],

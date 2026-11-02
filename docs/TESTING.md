@@ -65,7 +65,7 @@ Times are measured in the integration container (8 vCPU, SwiftShader); “ci” 
 | `npm run test:audio-sched` | fast | <1 s | 125 ms lookahead, stable order, voice cap at 4×, immediate mute, pitch (D-30) | `… tests=8 passed=8 failed=0` |
 | `npm run test:cvd` | fast | <1 s | Machado 2009 protan/deutan/tritan, 6 destination colours, min ΔE76 ≥ 15, CSS token parity (D-08) | `… comparisons=45 passed=1 failed=0` |
 | `npm run test:contrast` | fast | <1 s | WCAG contrast ≥ 4.5:1 for declared text/background pairs | `… pairs=16 threshold=4.5 passed=1 failed=0` |
-| `npm run test:puzzles` | fast | 1 s | 15 JSON puzzles: validation, zero-action loss, reference wins ≥ 15 %, replay, undo/reset | `… levels=15 cases=N passed=N failed=0` |
+| `npm run test:puzzles` | fast | 10 s | 30 JSON puzzles: validation, zero-action loss, reference wins ≥ 15 %, replay, undo/reset; 16–30 each prove their `mechanics` tags on the reference run (slot waits, curfew airport, second-week wave, hub expansion, a needed transfer) | `… levels=30 cases=168 passed=168 failed=0` |
 | `npm run test:daily-mode` | fast | <1 s | Daily mode: Warsaw midnight/DST, offline attempts, best scores, streaks, emoji-free ticket | `… passed=12 failed=0` |
 | `npm run test:balance:fixture` | fast | <1 s | Bot policy on 50 seeded stand-in sessions — **not production balance** | `SUMMARY test:balance … mode=fixture seeds=50 … passed=1 failed=0` |
 | `npm run test:week-source` | fast | <1 s | The 3-day week (D-40) has one source, `SIM_DAYS_PER_WEEK` in `src/sim/params.ts`: every week constant equals it by import, no literal week length elsewhere in `src/`/`scripts/`, curfew from day 10, calendar/day bar | `SUMMARY test:week-source … days=3 … passed=6 failed=0` |

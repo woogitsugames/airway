@@ -1,0 +1,182 @@
+{
+  "version": 1,
+  "id": "26",
+  "titleKey": "puzzle.26.title",
+  "durationTicks": 8640,
+  "demandSeed": 3326,
+  "startCities": [
+    {
+      "id": "CHI",
+      "continent": "NA",
+      "latitude": 41.9,
+      "longitude": -87.6,
+      "hubCapacity": 220
+    },
+    {
+      "id": "DEN",
+      "continent": "NA",
+      "latitude": 39.7,
+      "longitude": -104.9,
+      "hubCapacity": 60
+    },
+    {
+      "id": "ATL",
+      "continent": "NA",
+      "latitude": 33.7,
+      "longitude": -84.4,
+      "hubCapacity": 60
+    },
+    {
+      "id": "YYZ",
+      "continent": "NA",
+      "latitude": 43.7,
+      "longitude": -79.4,
+      "hubCapacity": 60
+    },
+    {
+      "id": "DFW",
+      "continent": "NA",
+      "latitude": 32.8,
+      "longitude": -96.8,
+      "hubCapacity": 90
+    },
+    {
+      "id": "LON",
+      "continent": "EU",
+      "latitude": 51.5,
+      "longitude": -0.1,
+      "hubCapacity": 100
+    }
+  ],
+  "stock": {
+    "turboprops": 4,
+    "jets": 1,
+    "hubUpgrades": 1
+  },
+  "goal": {
+    "kind": "deliver",
+    "targetDelivered": 1472
+  },
+  "mechanics": [
+    "slots",
+    "week",
+    "transfer"
+  ],
+  "demand": [
+    {
+      "from": "DEN",
+      "to": "LON",
+      "passengers": 12,
+      "firstTick": 15,
+      "everyTicks": 180
+    },
+    {
+      "from": "ATL",
+      "to": "LON",
+      "passengers": 12,
+      "firstTick": 35,
+      "everyTicks": 180
+    },
+    {
+      "from": "YYZ",
+      "to": "LON",
+      "passengers": 12,
+      "firstTick": 55,
+      "everyTicks": 180
+    },
+    {
+      "from": "DFW",
+      "to": "LON",
+      "passengers": 14,
+      "firstTick": 4320,
+      "everyTicks": 180
+    }
+  ],
+  "availableRoutes": [
+    {
+      "from": "CHI",
+      "to": "DEN",
+      "plane": "turboprop",
+      "flightTicks": 185,
+      "intervalTicks": 120
+    },
+    {
+      "from": "CHI",
+      "to": "ATL",
+      "plane": "turboprop",
+      "flightTicks": 120,
+      "intervalTicks": 120
+    },
+    {
+      "from": "CHI",
+      "to": "YYZ",
+      "plane": "turboprop",
+      "flightTicks": 88,
+      "intervalTicks": 120
+    },
+    {
+      "from": "CHI",
+      "to": "DFW",
+      "plane": "turboprop",
+      "flightTicks": 162,
+      "intervalTicks": 120
+    },
+    {
+      "from": "CHI",
+      "to": "LON",
+      "plane": "jet",
+      "flightTicks": 454,
+      "intervalTicks": 120
+    },
+    {
+      "from": "YYZ",
+      "to": "LON",
+      "plane": "jet",
+      "flightTicks": 408,
+      "intervalTicks": 120
+    },
+    {
+      "from": "ATL",
+      "to": "DFW",
+      "plane": "turboprop",
+      "flightTicks": 145,
+      "intervalTicks": 120
+    }
+  ],
+  "referenceCommands": [
+    {
+      "type": "connect",
+      "from": "CHI",
+      "to": "DEN",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "CHI",
+      "to": "ATL",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "CHI",
+      "to": "YYZ",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "CHI",
+      "to": "DFW",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "CHI",
+      "to": "LON",
+      "plane": "jet"
+    },
+    {
+      "type": "upgradeHub",
+      "city": "CHI"
+    }
+  ]
+}

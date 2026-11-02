@@ -1,0 +1,233 @@
+{
+  "version": 1,
+  "id": "30",
+  "titleKey": "puzzle.30.title",
+  "durationTicks": 8640,
+  "demandSeed": 3730,
+  "startCities": [
+    {
+      "id": "FRA",
+      "continent": "EU",
+      "latitude": 50.1,
+      "longitude": 8.7,
+      "hubCapacity": 120
+    },
+    {
+      "id": "LON",
+      "continent": "EU",
+      "latitude": 51.5,
+      "longitude": -0.1,
+      "hubCapacity": 100,
+      "curfew": {
+        "startMinuteOfDay": 1380,
+        "endMinuteOfDay": 360
+      }
+    },
+    {
+      "id": "AMS",
+      "continent": "EU",
+      "latitude": 52.4,
+      "longitude": 4.9,
+      "hubCapacity": 60
+    },
+    {
+      "id": "BRU",
+      "continent": "EU",
+      "latitude": 50.9,
+      "longitude": 4.4,
+      "hubCapacity": 60
+    },
+    {
+      "id": "IST",
+      "continent": "AS",
+      "latitude": 41,
+      "longitude": 28.9,
+      "hubCapacity": 150
+    },
+    {
+      "id": "DXB",
+      "continent": "AS",
+      "latitude": 25.2,
+      "longitude": 55.3,
+      "hubCapacity": 200
+    },
+    {
+      "id": "SIN",
+      "continent": "AS",
+      "latitude": 1.3,
+      "longitude": 103.8,
+      "hubCapacity": 200
+    },
+    {
+      "id": "SYD",
+      "continent": "OC",
+      "latitude": -33.9,
+      "longitude": 151.2,
+      "hubCapacity": 100
+    }
+  ],
+  "stock": {
+    "turboprops": 3,
+    "jets": 4,
+    "hubUpgrades": 2
+  },
+  "goal": {
+    "kind": "curfewNights",
+    "targetDelivered": 1569,
+    "nights": 5
+  },
+  "mechanics": [
+    "slots",
+    "curfew",
+    "week",
+    "mct",
+    "transfer"
+  ],
+  "demand": [
+    {
+      "from": "LON",
+      "to": "SIN",
+      "passengers": 14,
+      "firstTick": 15,
+      "everyTicks": 180
+    },
+    {
+      "from": "AMS",
+      "to": "SIN",
+      "passengers": 14,
+      "firstTick": 35,
+      "everyTicks": 180
+    },
+    {
+      "from": "BRU",
+      "to": "DXB",
+      "passengers": 12,
+      "firstTick": 55,
+      "everyTicks": 180
+    },
+    {
+      "from": "LON",
+      "to": "SYD",
+      "passengers": 16,
+      "firstTick": 4320,
+      "everyTicks": 180
+    }
+  ],
+  "availableRoutes": [
+    {
+      "from": "FRA",
+      "to": "LON",
+      "plane": "turboprop",
+      "flightTicks": 80,
+      "intervalTicks": 120
+    },
+    {
+      "from": "FRA",
+      "to": "AMS",
+      "plane": "turboprop",
+      "flightTicks": 46,
+      "intervalTicks": 120
+    },
+    {
+      "from": "FRA",
+      "to": "BRU",
+      "plane": "turboprop",
+      "flightTicks": 40,
+      "intervalTicks": 120
+    },
+    {
+      "from": "FRA",
+      "to": "IST",
+      "plane": "jet",
+      "flightTicks": 133,
+      "intervalTicks": 120
+    },
+    {
+      "from": "IST",
+      "to": "DXB",
+      "plane": "jet",
+      "flightTicks": 215,
+      "intervalTicks": 120
+    },
+    {
+      "from": "DXB",
+      "to": "SIN",
+      "plane": "jet",
+      "flightTicks": 417,
+      "intervalTicks": 120
+    },
+    {
+      "from": "SIN",
+      "to": "SYD",
+      "plane": "jet",
+      "flightTicks": 451,
+      "intervalTicks": 120
+    },
+    {
+      "from": "LON",
+      "to": "DXB",
+      "plane": "jet",
+      "flightTicks": 391,
+      "intervalTicks": 120
+    },
+    {
+      "from": "FRA",
+      "to": "DXB",
+      "plane": "jet",
+      "flightTicks": 346,
+      "intervalTicks": 120
+    }
+  ],
+  "referenceCommands": [
+    {
+      "type": "connect",
+      "from": "FRA",
+      "to": "LON",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "FRA",
+      "to": "AMS",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "FRA",
+      "to": "BRU",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "FRA",
+      "to": "IST",
+      "plane": "jet"
+    },
+    {
+      "type": "connect",
+      "from": "FRA",
+      "to": "DXB",
+      "plane": "jet"
+    },
+    {
+      "type": "connect",
+      "from": "DXB",
+      "to": "SIN",
+      "plane": "jet"
+    },
+    {
+      "type": "connect",
+      "from": "SIN",
+      "to": "SYD",
+      "plane": "jet"
+    },
+    {
+      "type": "upgradeHub",
+      "city": "FRA"
+    },
+    {
+      "type": "upgradeHub",
+      "city": "DXB"
+    }
+  ]
+}

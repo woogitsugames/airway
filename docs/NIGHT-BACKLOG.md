@@ -15,7 +15,7 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
 `--use-angle=swiftshader --enable-unsafe-swiftshader --ignore-gpu-blocklist`. Look at every PNG you produce.
 
 ## Queue
-- [ ] N1 **15 new puzzles (16–30)** — `src/data/puzzles/**`, puzzle tests. Curve of difficulty; each uses at least one
+- [x] N1 **15 new puzzles (16–30)** — `src/data/puzzles/**`, puzzle tests. Curve of difficulty; each uses at least one
       newer mechanic (slots D-41, curfew D-17, 3-day week D-40, transfers/MCT). Rule from task 17: no action → loss,
       reference solution wins with ≥15% margin; `test:puzzles` covers all 30. Puzzle select screen shows 30.
 - [ ] N2 **Code quality after integration** — remove `docs/integration/pending/` leftovers that are no longer needed,
@@ -38,3 +38,4 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
 
 ## Log
 <!-- one line per finished item: date UTC · item · PR · gate summary -->
+- 2026-11-03 · N1 puzzles 16–30 (D-70) · night/01-puzzles · test:fast 42/42, build ok, e2e:smoke 9/9, ui:matrix 32/32, test:puzzles levels=30 cases=168 failed=0 (merged tree with #40, #42)

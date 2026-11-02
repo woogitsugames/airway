@@ -1,0 +1,182 @@
+{
+  "version": 1,
+  "id": "28",
+  "titleKey": "puzzle.28.title",
+  "durationTicks": 2880,
+  "demandSeed": 3528,
+  "startCities": [
+    {
+      "id": "MUC",
+      "continent": "EU",
+      "latitude": 48.1,
+      "longitude": 11.6,
+      "hubCapacity": 50
+    },
+    {
+      "id": "PRG",
+      "continent": "EU",
+      "latitude": 50.1,
+      "longitude": 14.4,
+      "hubCapacity": 60
+    },
+    {
+      "id": "VIE",
+      "continent": "EU",
+      "latitude": 48.2,
+      "longitude": 16.4,
+      "hubCapacity": 60
+    },
+    {
+      "id": "BUD",
+      "continent": "EU",
+      "latitude": 47.5,
+      "longitude": 19,
+      "hubCapacity": 60
+    },
+    {
+      "id": "ROM",
+      "continent": "EU",
+      "latitude": 41.9,
+      "longitude": 12.5,
+      "hubCapacity": 100
+    },
+    {
+      "id": "TUN",
+      "continent": "AF",
+      "latitude": 36.8,
+      "longitude": 10.2,
+      "hubCapacity": 100
+    }
+  ],
+  "stock": {
+    "turboprops": 6,
+    "jets": 0,
+    "hubUpgrades": 1
+  },
+  "goal": {
+    "kind": "continents",
+    "targetDelivered": 518,
+    "continents": 2
+  },
+  "mechanics": [
+    "mct",
+    "transfer"
+  ],
+  "demand": [
+    {
+      "from": "PRG",
+      "to": "TUN",
+      "passengers": 12,
+      "firstTick": 15,
+      "everyTicks": 150
+    },
+    {
+      "from": "VIE",
+      "to": "ROM",
+      "passengers": 12,
+      "firstTick": 30,
+      "everyTicks": 150
+    },
+    {
+      "from": "BUD",
+      "to": "TUN",
+      "passengers": 12,
+      "firstTick": 45,
+      "everyTicks": 150
+    }
+  ],
+  "availableRoutes": [
+    {
+      "from": "MUC",
+      "to": "PRG",
+      "plane": "turboprop",
+      "flightTicks": 38,
+      "intervalTicks": 120
+    },
+    {
+      "from": "MUC",
+      "to": "VIE",
+      "plane": "turboprop",
+      "flightTicks": 45,
+      "intervalTicks": 120
+    },
+    {
+      "from": "MUC",
+      "to": "BUD",
+      "plane": "turboprop",
+      "flightTicks": 70,
+      "intervalTicks": 120
+    },
+    {
+      "from": "MUC",
+      "to": "ROM",
+      "plane": "turboprop",
+      "flightTicks": 87,
+      "intervalTicks": 120
+    },
+    {
+      "from": "ROM",
+      "to": "TUN",
+      "plane": "turboprop",
+      "flightTicks": 76,
+      "intervalTicks": 120
+    },
+    {
+      "from": "VIE",
+      "to": "BUD",
+      "plane": "turboprop",
+      "flightTicks": 27,
+      "intervalTicks": 120
+    },
+    {
+      "from": "VIE",
+      "to": "ROM",
+      "plane": "turboprop",
+      "flightTicks": 96,
+      "intervalTicks": 120
+    },
+    {
+      "from": "MUC",
+      "to": "TUN",
+      "plane": "turboprop",
+      "flightTicks": 158,
+      "intervalTicks": 120
+    }
+  ],
+  "referenceCommands": [
+    {
+      "type": "connect",
+      "from": "MUC",
+      "to": "PRG",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "VIE",
+      "to": "BUD",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "VIE",
+      "to": "ROM",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "ROM",
+      "to": "TUN",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "MUC",
+      "to": "TUN",
+      "plane": "turboprop"
+    },
+    {
+      "type": "upgradeHub",
+      "city": "VIE"
+    }
+  ]
+}
