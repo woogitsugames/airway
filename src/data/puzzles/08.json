@@ -1,0 +1,103 @@
+{
+  "version": 1,
+  "id": "08",
+  "titleKey": "puzzle.08.title",
+  "durationTicks": 3480,
+  "demandSeed": 1996,
+  "startCities": [
+    {
+      "id": "LON",
+      "continent": "EU",
+      "latitude": 51.5,
+      "longitude": -0.5,
+      "hubCapacity": 100,
+      "curfew": {
+        "startMinuteOfDay": 1320,
+        "endMinuteOfDay": 360
+      }
+    },
+    {
+      "id": "PAR",
+      "continent": "EU",
+      "latitude": 49,
+      "longitude": 2.5,
+      "hubCapacity": 100
+    },
+    {
+      "id": "ROM",
+      "continent": "EU",
+      "latitude": 41.9,
+      "longitude": 12.5,
+      "hubCapacity": 100
+    },
+    {
+      "id": "CAI",
+      "continent": "AF",
+      "latitude": 30.1,
+      "longitude": 31.4,
+      "hubCapacity": 100
+    }
+  ],
+  "stock": {
+    "turboprops": 2,
+    "jets": 1,
+    "hubUpgrades": 0
+  },
+  "goal": {
+    "kind": "curfewNights",
+    "targetDelivered": 145,
+    "nights": 1
+  },
+  "demand": [
+    {
+      "from": "LON",
+      "to": "CAI",
+      "passengers": 18,
+      "firstTick": 16,
+      "everyTicks": 200
+    }
+  ],
+  "availableRoutes": [
+    {
+      "from": "LON",
+      "to": "PAR",
+      "plane": "turboprop",
+      "flightTicks": 75,
+      "intervalTicks": 120
+    },
+    {
+      "from": "PAR",
+      "to": "ROM",
+      "plane": "turboprop",
+      "flightTicks": 120,
+      "intervalTicks": 120
+    },
+    {
+      "from": "ROM",
+      "to": "CAI",
+      "plane": "jet",
+      "flightTicks": 230,
+      "intervalTicks": 120
+    }
+  ],
+  "referenceCommands": [
+    {
+      "type": "connect",
+      "from": "LON",
+      "to": "PAR",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "PAR",
+      "to": "ROM",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "ROM",
+      "to": "CAI",
+      "plane": "jet"
+    }
+  ]
+}

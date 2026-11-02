@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "id": "02",
+  "titleKey": "puzzle.02.title",
+  "durationTicks": 1440,
+  "demandSeed": 1774,
+  "startCities": [
+    {
+      "id": "LON",
+      "continent": "EU",
+      "latitude": 51.5,
+      "longitude": -0.5,
+      "hubCapacity": 100
+    },
+    {
+      "id": "PAR",
+      "continent": "EU",
+      "latitude": 49,
+      "longitude": 2.5,
+      "hubCapacity": 100
+    },
+    {
+      "id": "MAD",
+      "continent": "EU",
+      "latitude": 40.5,
+      "longitude": -3.5,
+      "hubCapacity": 100
+    }
+  ],
+  "stock": {
+    "turboprops": 2,
+    "jets": 0,
+    "hubUpgrades": 0
+  },
+  "goal": {
+    "kind": "deliver",
+    "targetDelivered": 55
+  },
+  "demand": [
+    {
+      "from": "LON",
+      "to": "MAD",
+      "passengers": 12,
+      "firstTick": 16,
+      "everyTicks": 180
+    }
+  ],
+  "availableRoutes": [
+    {
+      "from": "LON",
+      "to": "PAR",
+      "plane": "turboprop",
+      "flightTicks": 75,
+      "intervalTicks": 120
+    },
+    {
+      "from": "PAR",
+      "to": "MAD",
+      "plane": "turboprop",
+      "flightTicks": 125,
+      "intervalTicks": 120
+    }
+  ],
+  "referenceCommands": [
+    {
+      "type": "connect",
+      "from": "LON",
+      "to": "PAR",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "PAR",
+      "to": "MAD",
+      "plane": "turboprop"
+    }
+  ]
+}

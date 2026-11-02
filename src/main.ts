@@ -3,6 +3,8 @@ import './ui/fonts.css';
 import './ui/base.css';
 import { getLanguage, t } from './i18n';
 import { mountEmptyScene } from './render/scene';
+// [task-17] Temporary entry to puzzles while task-14 menu is unavailable on dev.
+import { mountPuzzleSelector } from './ui/puzzles';
 
 const mount = document.getElementById('app');
 if (!mount) throw new Error('Missing #app mount point');
@@ -26,3 +28,5 @@ try {
   }
   mount.appendChild(canvas);
 }
+// [task-17] Replace with task-14 menu navigation once that PR is merged.
+mountPuzzleSelector(mount);

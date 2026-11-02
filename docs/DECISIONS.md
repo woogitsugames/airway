@@ -92,3 +92,13 @@ full-screen ads during play, no timers, no dark patterns. Supersedes the recomme
 
 ## D-18 — Store title: "Airway: Globe Route Builder" (PL: "Airway: Buduj siatkę lotów na globusie") (2026-11-02, owner)
 **Status: in force.**
+
+## D-19 — Task-17 puzzles use an isolated deterministic adapter before the sim merge (2026-11-02, task 17)
+Tasks 07, 08, 09 and 12 are not yet merged into `dev`, so 15 versioned puzzle records
+are playable against a strictly deterministic command/replay adapter in
+`src/game/modes/puzzle.ts`. The adapter includes only the puzzle-specific traffic,
+route, curfew and hub-capacity mechanics needed to prove solvability; it is **not**
+the authoritative Endless simulation and does not model physical aircraft rotation.
+When the dependencies merge, replace its tick implementation with calls to the
+`src/sim` kernel while retaining the JSON records, command log, objective checks,
+undo and fixed-seed reference tests. **Status: provisional integration decision.**
