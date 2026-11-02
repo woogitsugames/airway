@@ -106,6 +106,7 @@ export function mountPerformanceFixture(
   applyQualityProfile(renderer, profile);
   renderer.setClearColor('#8CC3D8');
   host.appendChild(renderer.domElement);
+  renderer.domElement.style.cssText = 'display:block;width:100%;height:100%';
 
   const ambient = new AmbientLight('#ffffff', 1.45);
   scene.add(ambient);
@@ -190,7 +191,9 @@ export function mountPerformanceFixture(
   routes.frustumCulled = false;
   scene.add(routes);
 
-  const planeGeometry = new BoxGeometry(0.036, 0.013, 0.075);
+  const planeGeometry = new BoxGeometry(
+    0.036, 0.013, 0.075, 1 + profile.planeDetail, 1, 1 + profile.planeDetail,
+  );
   geometries.push(planeGeometry);
   const planes = new InstancedMesh(planeGeometry, materials[2], PLANE_COUNT);
   planes.frustumCulled = false;
@@ -221,7 +224,7 @@ export function mountPerformanceFixture(
   overlay.dataset.perfOverlay = 'true';
   overlay.style.cssText = 'position:absolute;inset:0;pointer-events:none;overflow:hidden';
   const tags: HTMLSpanElement[] = [];
-  for (let i = 0; i < CITY_COUNT; i++) {
+  for (let i = 0; i < Math.min(CITY_COUNT, profile.maxOverlayItems); i++) {
     const tag = document.createElement('span');
     tag.dataset.perfOverlayItem = 'true';
     tag.textContent = String(i + 1);
