@@ -1,7 +1,10 @@
+import { SIM_DAYS_PER_WEEK, SIM_MINUTES_PER_DAY, SIM_MINUTES_PER_WEEK } from './params.ts';
+
 /** Simulation time is counted exclusively in integer game-minute ticks. */
-export const TICKS_PER_DAY = 1_440;
-export const DAYS_PER_WEEK = 7;
-export const TICKS_PER_WEEK = TICKS_PER_DAY * DAYS_PER_WEEK;
+export const TICKS_PER_DAY: number = SIM_MINUTES_PER_DAY;
+// [task-31] Re-exports of the single week length in params.ts (D-40); never redefine it here.
+export const DAYS_PER_WEEK: number = SIM_DAYS_PER_WEEK;
+export const TICKS_PER_WEEK: number = SIM_MINUTES_PER_WEEK;
 export const TICKS_PER_SECOND_1X = 10;
 export type SimSpeed = 0 | 1 | 2 | 4;
 
@@ -39,4 +42,18 @@ export function clockAt(tick: number): ClockTime {
     minute: minuteOfDay % 60,
     minuteOfDay,
   };
+}
+
+/**
+ * [task-31] The calendar shown to the player (boarding pass). Weeks are one-based; at an exact week boundary
+ * (the weekly board is open) it still shows the week just finished, with its last day, so the day bar is full.
+ * Two scalar functions so the per-frame HUD path allocates nothing.
+ */
+export function calendarWeekAt(minute: number): number {
+  if (!Number.isSafeInteger(minute) || minute < 0) throw new RangeError('minute must be a nonnegative safe integer');
+  return Math.max(1, Math.ceil(minute / TICKS_PER_WEEK));
+}
+export function calendarDayAt(minute: number): number {
+  const week = calendarWeekAt(minute);
+  return Math.min(DAYS_PER_WEEK, Math.floor((minute - (week - 1) * TICKS_PER_WEEK) / TICKS_PER_DAY) + 1);
 }
