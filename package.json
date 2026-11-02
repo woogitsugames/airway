@@ -10,7 +10,11 @@
     "typecheck": "tsc --noEmit",
     "test:i18n": "node scripts/test-i18n.mjs",
     "test:arch": "node scripts/test-arch.mjs",
-    "test:fast": "npm run typecheck && npm run test:i18n && npm run test:arch",
+    "test:rng": "node --experimental-strip-types scripts/test-rng.ts",
+    "test:sim-kernel": "node --experimental-strip-types scripts/test-sim-kernel.ts",
+    "test:undo": "node --experimental-strip-types scripts/test-undo.ts",
+    "test:daily": "node --experimental-strip-types scripts/test-daily.ts",
+    "test:fast": "npm run typecheck && npm run test:i18n && npm run test:arch && npm run test:rng && npm run test:sim-kernel && npm run test:undo && npm run test:daily",
     "shots": "node scripts/shots.mjs",
     "shots:mockups": "node mockups/shoot.mjs",
     "mockups": "node mockups/build-all.mjs"
