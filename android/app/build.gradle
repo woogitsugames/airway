@@ -5,9 +5,12 @@ def awKeystore = System.getenv('AW_KEYSTORE')
 def awKeystorePass = System.getenv('AW_KEYSTORE_PASS')
 def awKeyAlias = System.getenv('AW_KEY_ALIAS') ?: 'upload'
 def awKeyPass = System.getenv('AW_KEY_PASS') ?: awKeystorePass
+def awRepoRoot = rootProject.projectDir.parentFile.canonicalFile
+def awKeyFile = awKeystore ? new File(awKeystore).canonicalFile : null
+def awInsideRepository = awKeyFile && (awKeyFile == awRepoRoot || awKeyFile.path.startsWith(awRepoRoot.path + File.separator))
 def releaseRequested = gradle.startParameter.taskNames.any { it.toLowerCase(java.util.Locale.ROOT).contains('release') }
-if (releaseRequested && (!awKeystore || !new File(awKeystore).isAbsolute() || !file(awKeystore).isFile() || !awKeystorePass || !awKeyAlias || !awKeyPass)) {
-    throw new GradleException('Signed release requires absolute AW_KEYSTORE, AW_KEYSTORE_PASS and optional AW_KEY_ALIAS/AW_KEY_PASS')
+if (releaseRequested && (!awKeyFile || !awKeyFile.isAbsolute() || !awKeyFile.isFile() || !awKeystorePass || !awKeyAlias || !awKeyPass || awInsideRepository)) {
+    throw new GradleException('Signed release requires external absolute AW_KEYSTORE, AW_KEYSTORE_PASS and optional AW_KEY_ALIAS/AW_KEY_PASS')
 }
 
 android {
@@ -28,8 +31,8 @@ android {
 
     signingConfigs {
         release {
-            if (awKeystore && awKeystorePass && new File(awKeystore).isAbsolute() && file(awKeystore).isFile()) {
-                storeFile = file(awKeystore)
+            if (awKeyFile && awKeystorePass && awKeyFile.isAbsolute() && awKeyFile.isFile() && !awInsideRepository) {
+                storeFile = awKeyFile
                 storePassword = awKeystorePass
                 keyAlias = awKeyAlias
                 keyPassword = awKeyPass
