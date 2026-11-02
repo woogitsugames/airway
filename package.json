@@ -14,7 +14,7 @@
     "test:sim-kernel": "node --experimental-strip-types scripts/test-sim-kernel.ts",
     "test:undo": "node --experimental-strip-types scripts/test-undo.ts",
     "test:daily": "node --experimental-strip-types scripts/test-daily.ts",
-    "test:fast": "npm run typecheck && npm run test:i18n && npm run test:arch && npm run test:rng && npm run test:sim-kernel && npm run test:undo && npm run test:daily && npm run test:cities && npm run test:spawner && npm run test:geo-math && npm run test:gestures && npm run test:overlay-layout && npm run test:routing && npm run test:hubs && npm run test:sim-week",
+    "test:fast": "npm run typecheck && npm run test:i18n && npm run test:arch && npm run test:rng && npm run test:sim-kernel && npm run test:undo && npm run test:daily && npm run test:cities && npm run test:spawner && npm run test:geo-math && npm run test:gestures && npm run test:overlay-layout && npm run test:routing && npm run test:hubs && npm run test:sim-week && npm run test:route-tool",
     "shots": "node scripts/shots.mjs && node dev/shots.mjs",
     "shots:mockups": "node mockups/shoot.mjs",
     "mockups": "node mockups/build-all.mjs",
@@ -35,7 +35,9 @@
     "shots:08": "node scripts/shots.mjs",
     "test:planes": "node scripts/test-planes.mjs",
     "test:schedule": "node scripts/test-schedule.mjs",
-    "shots:09": "node scripts/shots.mjs"
+    "shots:09": "node scripts/shots.mjs",
+    "test:route-tool": "node scripts/test-route-tool.mjs",
+    "shots:07": "node scripts/shots.mjs"
   },
   "dependencies": {
     "@capacitor/android": "8.5.3",

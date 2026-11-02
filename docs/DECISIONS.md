@@ -167,3 +167,7 @@ route deletion must refuse routes with assigned aircraft. Initial reserve is
 **Rationale:** deterministic replay, conservation, and parallel-task integration.
 **Status: technical choice in task 09; initial reserve subject to balance review.**
 _(renumbered from D-19 during integration, branch `origin/task/09-sim-planes`)_
+
+## D-25 — Route-edit adapter contract (2026-11-02, task 07)
+Until tasks 04/06/08 are merged, the finger editor communicates through ports for projected city hit tests, integer intercity distances, read-only route snapshots, command dispatch, undo, and native haptics. `AddRoute` and `ExtendRoute` carry ordered city IDs and integer per-leg distances; all authoritative network edits remain simulation commands, with great-circle trigonometry restricted to input/render. `ShortenRoute` is an adapter intent awaiting mapping to the final simulation network schema. The game composition root will connect these ports after the dependency tasks arrive. **Rationale:** keep the simulation pure (D-13), allow parallel PRs, and avoid inventing ownership of upstream modules. **Status: provisional, validate on integration.**
+_(renumbered from D-19 during integration, branch `origin/task/07-route-drawing`)_

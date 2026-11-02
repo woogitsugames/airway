@@ -1,0 +1,106 @@
+/* D-11: ATC paper flight-strip, never a rounded floating notification card. */
+.airway-atc-strip {
+  position: absolute;
+  z-index: 40;
+  bottom: calc(92px + env(safe-area-inset-bottom, 0px));
+  left: max(12px, env(safe-area-inset-left, 0px));
+  max-width: min(740px, calc(100% - 24px));
+  display: flex;
+  flex-wrap: wrap;
+  border-left: 10px solid #c8352a;
+  background: #fbf8f1;
+  color: #2a2420;
+  font: 700 13px/1.35 'Atkinson Hyperlegible Next', sans-serif;
+  box-shadow: 0 2px 0 #9e916c;
+  pointer-events: none;
+}
+.airway-atc-strip[hidden], .airway-route-menu[hidden] { display: none; }
+.airway-atc-field { padding: 8px 10px; border-right: 1px solid #cdbf8f; }
+.airway-atc-field:last-child { border-right: 0; }
+.airway-atc-flight { font-family: 'Overpass Mono', monospace; font-size: 12px; }
+.airway-atc-error { color: #ae2d23; font: 800 14px/1.3 'Overpass', sans-serif; }
+.airway-route-undo {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 62px;
+  min-width: 48px;
+  min-height: 48px;
+  border: 2px solid #2a2420;
+  border-radius: 0;
+  background: #fbf8f1;
+  color: #13302e;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.airway-route-undo::before {
+  content: '';
+  position: absolute;
+  left: calc(50% - 4px);
+  top: 3px;
+  width: 8px;
+  height: 8px;
+  border: 1.5px solid #2a2420;
+  border-radius: 50%;
+  background: #d6b88a;
+}
+.airway-route-undo:focus-visible, .airway-route-menu button:focus-visible { outline: 3px solid #ffc72c; outline-offset: 2px; }
+.airway-route-menu {
+  position: absolute;
+  z-index: 50;
+  width: 216px;
+  padding: 4px;
+  background: #fbf8f1;
+  color: #2a2420;
+  border: 2px solid #13302e;
+  box-shadow: 3px 3px 0 #2a2420;
+  display: grid;
+}
+.airway-route-menu button {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  padding: 8px 12px;
+  color: inherit;
+  font: 800 14px/1.2 'Overpass', sans-serif;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px dashed #baa985;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.airway-route-menu button:last-child { border-bottom: 0; }
+.airway-route-menu button:disabled { opacity: .45; cursor: not-allowed; }
+.airway-route-menu .airway-route-menu-danger { color: #ae2d23; }
+@media (orientation: landscape) and (max-height: 540px) {
+  .airway-atc-strip {
+    bottom: max(14px, env(safe-area-inset-bottom, 0px));
+    left: calc(84px + env(safe-area-inset-left, 0px));
+    max-width: calc(100% - 100px - env(safe-area-inset-right, 0px));
+  }
+}
+
+.airway-route-handles { position: absolute; inset: 0; z-index: 18; pointer-events: none; }
+.airway-route-handle {
+  position: absolute;
+  width: 48px;
+  height: 48px;
+  border: 0;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.airway-route-handle[hidden] { display: none; }
+.airway-route-handle::before {
+  content: '';
+  position: absolute;
+  left: 14px;
+  top: 14px;
+  width: 20px;
+  height: 20px;
+  border: 3px solid #13302e;
+  outline: 2px solid #fbf8f1;
+  background: #ffc72c;
+  transform: rotate(45deg);
+}

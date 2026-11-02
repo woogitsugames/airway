@@ -40,6 +40,8 @@ npm run build
 | `npm run test:sim-week` | Three deterministic seven-day runs, snapshots and expected no-route failure tick | `SUMMARY test:sim-week seeds=3 ... cases=6 passed=6 failed=0` |
 | `npm run test:planes` | Plane types, reserves, range rejections with exact km, assignment and release | `SUMMARY test:planes seed=0xA1A1 cases=8 passed=8 failed=0` |
 | `npm run test:schedule` | Dwell, back-and-forth movement, capacity, passenger balance and 7-day replay | `SUMMARY test:schedule seed=0xA1A1 cases=7 passed=7 failed=0` |
+| `npm run test:route-tool` | Fixed-seed airport snapping, multi-stop AddRoute/ExtendRoute, range guards, endpoint handles, menu, speed restore and undo | `SUMMARY test:route-tool seed=0xA1A1 passed=17 failed=0` |
+| `npm run test:fast` | `typecheck`, `test:i18n`, `test:arch` and `test:route-tool` | All test summaries and exit code 0 |
 
 Every future test must have a fixed seed (use `0xA1A1` where no gameplay seed
 is needed), terminate with one `SUMMARY ...` line, set a nonzero exit code on
@@ -74,3 +76,4 @@ The `npm run shots` command also captures `?dev=airports` at 1× and 2.5× in
 portrait and landscape, writing four PNGs under `docs/shots/06/`.
 This temporary sea-sphere fixture exercises the airport/overlay layer;
 it is not a substitute for task 03's production globe.
+// [task-07] Isolated task 07 has no integrated globe or sim. Its screenshot status is in docs/shots/07/README.md.

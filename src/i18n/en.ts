@@ -15,4 +15,15 @@ export const en = {
   'airport.jammed': '{code}: congestion, {seconds} seconds remaining',
   'airport.demo.zoom': 'Zoom',
   'airport.demo.pool': 'Overlay nodes: {count}',
+  // [task-07] Route drawing, airport-paper ATC hint and route actions.
+  'route.aircraft.turboprop': 'turboprop',
+  'route.aircraft.widebody': 'widebody aircraft',
+  'route.atc.distance': '{distance} km · {from} → {to}',
+  'route.atc.overRange': 'Too far for {aircraft}',
+  'route.atc.stopover': 'Choose a city along the way',
+  'route.menu.label': 'Route actions',
+  'route.menu.remove': 'Remove',
+  'route.menu.shorten': 'Shorten',
+  'route.menu.cancel': 'Cancel',
+  'route.undo': 'Undo last route change',
 } as const;
