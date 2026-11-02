@@ -289,6 +289,13 @@ async function boot(): Promise<void> {
       active.advance(((target - local + 1440) % 1440) || 1440);
     }
     active.setPaused(false);
+    // Fail closed: never label a different situation (e.g. an early jam) as the requested scene.
+    const reached = scene === 'failure' ? active.screen === 'gameover'
+      : scene === 'upgrade' ? active.screen === 'upgrade' : active.screen === 'game';
+    if (!reached) {
+      console.warn(`storeShot "${scene}" not reached; run ended on "${active.screen}" at tick ${run.tick}`);
+      return;
+    }
     requestAnimationFrame(() => requestAnimationFrame(done));
   }
 }
