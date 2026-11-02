@@ -24,8 +24,8 @@ interface Position { readonly x: number; readonly y: number; readonly z: number 
 
 export const TERRAIN_QUALITY: Record<QualityLevel, TerrainQuality> = {
   low: { detail: 17, depth: 2, sea: 0 },
-  medium: { detail: 23, depth: 3, sea: 1 },
-  high: { detail: 28, depth: 3, sea: 1 },
+  medium: { detail: 27, depth: 3, sea: 0 },
+  high: { detail: 33, depth: 3, sea: 0 },
 };
 
 const PALETTE = {
@@ -112,11 +112,13 @@ export interface SurfaceSample {
   dry: number;
   /** 0..1 sea-ice / ice-sheet weight. */
   ice: number;
+  /** High-frequency 0..1 noise for pressure ridges / floe shading (only polewards of 55°). */
+  detail: number;
   /** Height above the unit sphere. */
   height: number;
 }
 export function createSample(): SurfaceSample {
-  return { lon: 0, lat: 0, dist: 0, noise: 0, mountain: 0, dry: 0, ice: 0, height: 0 };
+  return { lon: 0, lat: 0, dist: 0, noise: 0, mountain: 0, dry: 0, ice: 0, detail: 0, height: 0 };
 }
 
 /** Sample the terrain fields at a unit vector (writes into `out`). */
@@ -127,6 +129,7 @@ export function sampleSurface(x: number, y: number, z: number, mask: LandMask, o
   const n = terrainNoise({ x, y, z });
   out.lon = lon; out.lat = lat; out.dist = dist; out.noise = n;
   const a = Math.abs(lat);
+  out.detail = a > 55 ? noise(x * 47 + 11, y * 47, z * 47) : .5;
   if (dist > 0) {
     const flat = airportFlatten(lon, lat);
     const relief = mountainAt(lon, lat);
@@ -141,12 +144,15 @@ export function sampleSurface(x: number, y: number, z: number, mask: LandMask, o
     out.height = H.coast + (hills - H.coast + mountain * H.mountain + sheet * .006) * shore;
     if (flat > 0) out.height += (Math.min(out.height, H.airport) - out.height) * flat;
   } else {
-    // Pack ice: a frayed northern cap and the Antarctic fringe; floes break up the edge.
-    const fray = (noise(x * 11, y * 11, z * 11) - .5) * 9;
-    const ice = lat > 0 ? smooth(77.5, 80.5, lat + fray) : smooth(-66.5, -69.5, lat - fray);
+    // Pack ice: a frayed northern cap and the Antarctic fringe, with loose floes beyond the
+    // edge and pressure ridges inside. A 3D noise field, so there is no seam or polar pinch.
+    const fray = (noise(x * 11, y * 11, z * 11) - .5) * 8 + (noise(x * 29 + 5, y * 29, z * 29) - .5) * 4;
+    const pack = lat > 0 ? smooth(78, 80.5, lat + fray) : smooth(-66.5, -69, lat - fray);
+    const floes = lat > 0 ? smooth(72.5, 76.5, lat + fray) : smooth(-62.5, -65.5, lat - fray);
+    const ice = Math.max(pack, out.detail > .6 - floes * .12 ? floes : 0);
     out.mountain = 0; out.dry = 0; out.ice = ice;
     const sea = H.coast + (H.deep - H.coast) * smooth(0, 3, -dist);
-    out.height = sea + (H.ice - sea) * smooth(.35, .6, ice);
+    out.height = sea + (H.ice + (out.detail - .5) * .0022 * pack - sea) * smooth(.35, .6, ice);
   }
   return out;
 }
@@ -166,9 +172,13 @@ const OUT = new Color();
 export function biomeColor(s: SurfaceSample, h: number): Color {
   const a = Math.abs(s.lat), n = s.noise;
   if (s.dist <= 0) {
-    if (s.ice > .5) return OUT.copy(PALETTE.ice).lerp(PALETTE.iceShadow, smooth(.5, .9, 1.25 - s.ice + (n - .5) * .5));
-    const shelf = smooth(-1.3, -.1, s.dist);
-    OUT.copy(PALETTE.deep).lerp(PALETTE.sea, Math.min(1, smooth(-3.5, -.8, s.dist) * .8 + (n - .5) * .1));
+    if (s.ice > .5) {
+      // Ice reads as broken plates: brighter ridges, bluish hollows, never one flat disc.
+      OUT.copy(PALETTE.ice).lerp(PALETTE.snow, smooth(.55, .8, s.detail));
+      return OUT.lerp(PALETTE.iceShadow, smooth(.45, .2, s.detail) * .8 + (1 - s.ice) * .5);
+    }
+    const shelf = smooth(-.85, -.05, s.dist);
+    OUT.copy(PALETTE.deep).lerp(PALETTE.sea, Math.min(1, smooth(-2.8, -.5, s.dist) * .65 + (n - .5) * .1));
     return OUT.lerp(PALETTE.shallow, shelf * .9);
   }
   // Base vegetation by latitude, then dryness, then altitude.
@@ -336,7 +346,19 @@ export function buildTerrainArrays(mask: LandMask, level: QualityLevel): Terrain
     }
     if (!folded) break;
   }
-  for (let i = 0; i < vertexCount; i++) if (used[i]) fh[i] = sampleSurface(fx[i], fy[i], fz[i], mask, tmp).height;
+  // Open water is coloured per vertex (smooth depth gradient across the coarse sea facets, so no
+  // blocky shelf patches); land and ice keep one flat colour per facet.
+  const seaColor = new Uint16Array(vertexCount * 3);
+  for (let i = 0; i < vertexCount; i++) {
+    if (!used[i]) continue;
+    fh[i] = sampleSurface(fx[i], fy[i], fz[i], mask, tmp).height;
+    if (tmp.dist > 0) tmp.dist = 0;
+    tmp.ice = 0;
+    const c = biomeColor(tmp, fh[i]);
+    seaColor[i * 3] = Math.round(Math.max(0, Math.min(1, c.r)) * 65535);
+    seaColor[i * 3 + 1] = Math.round(Math.max(0, Math.min(1, c.g)) * 65535);
+    seaColor[i * 3 + 2] = Math.round(Math.max(0, Math.min(1, c.b)) * 65535);
+  }
 
   const triangles = tris.length / 3;
   const positions = new Float32Array(tris.length * 3);
@@ -357,7 +379,9 @@ export function buildTerrainArrays(mask: LandMask, level: QualityLevel): Terrain
     for (let j = 0; j < 3; j++) {
       const v = tris[t * 3 + j], o = (t * 3 + j) * 3, radius = 1 + fh[v];
       positions[o] = fx[v] * radius; positions[o + 1] = fy[v] * radius; positions[o + 2] = fz[v] * radius;
-      colors[o] = r; colors[o + 1] = g; colors[o + 2] = bl;
+      if (land[t] || center.ice > .5) { colors[o] = r; colors[o + 1] = g; colors[o + 2] = bl; } else {
+        colors[o] = seaColor[v * 3]; colors[o + 1] = seaColor[v * 3 + 1]; colors[o + 2] = seaColor[v * 3 + 2];
+      }
     }
   }
   return { positions, colors, land, finestDeg: finest,

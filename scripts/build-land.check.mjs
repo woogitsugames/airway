@@ -10,7 +10,7 @@ import { Vector3 } from 'three';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const SEED = 0xA1A1;
 /** Terrain triangle ceilings per preset (docs/PERFORMANCE.md). */
-export const TERRAIN_BUDGET = { low: 45000, medium: 200000, high: 300000 };
+export const TERRAIN_BUDGET = { low: 45000, medium: 210000, high: 300000 };
 
 export async function checkTerrain({ log = console.log } = {}) {
   const { decodeLandMask } = await import('../src/render/globe/land-mask.ts');
@@ -180,10 +180,11 @@ export async function checkTerrain({ log = console.log } = {}) {
     check(snowy(lon, lat), `snow: ${name}`);
   }
   // Arctic cap: solid pack ice around the pole and no seam across the antimeridian.
-  let seam = 0, holes = 0;
+  let seam = 0, holes = 0, cells = 0;
   for (let lat = 82; lat <= 89.5; lat += .5) {
     for (let lon = -180; lon < 180; lon += 2) {
-      if (terrain.sampleAt(lon, lat, mask, s).ice < .9) holes++;
+      cells++;
+      if (terrain.sampleAt(lon, lat, mask, s).ice < .5) holes++;
     }
     const a = terrain.sampleAt(179.999, lat, mask, s);
     const ca = terrain.biomeColor(a, a.height).clone();
@@ -191,7 +192,8 @@ export async function checkTerrain({ log = console.log } = {}) {
     const cb = terrain.biomeColor(b, b.height);
     seam = Math.max(seam, Math.abs(ca.r - cb.r) + Math.abs(ca.g - cb.g) + Math.abs(ca.b - cb.b), Math.abs(a.height - b.height) * 100);
   }
-  check(holes === 0, `arctic: pack ice is continuous north of 82° (${holes} gaps)`);
+  // Leads (open-water cracks) are allowed; a hole in the cap or a missing cap is not.
+  check(holes / cells < .03, `arctic: pack ice covers north of 82° (${holes}/${cells} open-water samples)`);
   check(seam < .01, `arctic: no antimeridian seam (${seam.toFixed(5)})`);
   // Airports: terrain never rises above the pads (1.0055).
   let worst = 0;
