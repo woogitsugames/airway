@@ -320,3 +320,12 @@ upgrade is a real choice. Implemented by task 32. **Status: in force.**
 ## D-42 — Visual polish and real store screenshots go through a second task pack (2026-11-02, owner)
 Tasks 31–36 in `docs/tasks/` (wave P). Same workflow as D-14: `task/NN-slug` from `dev`, draft PR to `dev`.
 **Status: in force.**
+
+## D-45 — Upgrade labels read their numbers from the sim; hub pick keeps only the sign (2026-11-02, task 35)
+The weekly cargo labels (mockup `upgrade-*.png`) show range/seats from `PLANE_TYPES` and the effect of each upgrade
+(+seats, transfer minutes, +slots) read back by a dry run of `chooseUpgrade()` on throwaway adapters — the same probe the
+kernel uses to validate the command — so balance changes in `src/sim` reach the UI without copy edits. The red context
+stamp appears only on the label it is about (hub expansion: busiest hub `CODE waiting/capacity`); the hub label is disabled
+when no hub exists. While the player picks a hub, only the yellow sign stays (below the boarding pass) and the globe is
+undimmed. The "+2 slots" label (task 32) already has its model and field set; it gains a stamp once the sim reports which
+airport waits for slots. **Status: in force.**
