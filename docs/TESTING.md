@@ -30,6 +30,8 @@ npm run build
 | `npm run build:distances` | Regenerate the integer distance table from rounded city coordinates | `SUMMARY distances seed=0xA1A1 cities=165 pairs=13530 passed=1 failed=0` |
 | `npm run test:cities` | Validate bilingual names, codes, regions, table freshness and all 13,530 great-circle pairs within 1 km | `SUMMARY test:cities seed=0xA1A1 cities=165 pairs=13530 passed=1 failed=0` |
 | `npm run test:spawner` | Test 16 seeded replays, 6-degree spacing, startup locality, game-hour timing and 40-city cap | `SUMMARY test:spawner seed=0xA1A1 seeds=16 pairsChecked=278076 passed=1 failed=0` |
+| `npm run test:gestures` | 31 pointer/camera sequences: route/edit, orbit, pinch, long press, one-hand zoom, fit, edge pan, DPR and layouts | `SUMMARY test:gestures seed=0xA1A1 cases=31 passed=31 failed=0` |
+| `npm run test:fast` | `typecheck`, `test:i18n`, `test:arch` and `test:gestures` | All test summaries and exit code 0 |
 
 Every future test must have a fixed seed (use `0xA1A1` where no gameplay seed
 is needed), terminate with one `SUMMARY ...` line, set a nonzero exit code on
@@ -58,3 +60,4 @@ The two PNG dimensions are **412×915** and **915×412** at DPR 1 (exact pixel
 size). Foldable 673×841 / 904×1000 checks are part of later UI tasks.
 <!-- [task-05] Generated geography and seeded city-spawner regressions. -->
 Task 05: the production `prebuild` step regenerates the checked-in distance matrix. The `test:cities` step also runs the generator in `--check` mode to detect stale generated output. These tests use a temporary, isolated CommonJS transpilation of the production modules to avoid changes to the app build tooling.
+<!-- [task-04] Standalone gesture scenarios, tested at a fixed seed. -->

@@ -14,7 +14,7 @@
     "test:sim-kernel": "node --experimental-strip-types scripts/test-sim-kernel.ts",
     "test:undo": "node --experimental-strip-types scripts/test-undo.ts",
     "test:daily": "node --experimental-strip-types scripts/test-daily.ts",
-    "test:fast": "npm run typecheck && npm run test:i18n && npm run test:arch && npm run test:rng && npm run test:sim-kernel && npm run test:undo && npm run test:daily && npm run test:cities && npm run test:spawner && npm run test:geo-math",
+    "test:fast": "npm run typecheck && npm run test:i18n && npm run test:arch && npm run test:rng && npm run test:sim-kernel && npm run test:undo && npm run test:daily && npm run test:cities && npm run test:spawner && npm run test:geo-math && npm run test:gestures",
     "shots": "node scripts/shots.mjs && node dev/shots.mjs",
     "shots:mockups": "node mockups/shoot.mjs",
     "mockups": "node mockups/build-all.mjs",
@@ -24,7 +24,9 @@
     "test:spawner": "node scripts/test-spawner.mjs",
     "build:land": "node scripts/build-land.mjs",
     "test:geo-math": "node src/render/globe/test-geo-math.mjs",
-    "shots:globe": "node dev/shots.mjs"
+    "shots:globe": "node dev/shots.mjs",
+    "test:gestures": "node scripts/test-gestures.mjs",
+    "shots:04": "node scripts/shots.mjs"
   },
   "dependencies": {
     "@capacitor/android": "8.5.3",
