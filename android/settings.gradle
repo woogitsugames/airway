@@ -1,0 +1,3 @@
+// [task-24] Generated from the Capacitor 8 Android template.
+include ':app'
+apply from: 'capacitor.settings.gradle'
