@@ -58,3 +58,12 @@ The game is called **Airway** and lives at airway.games (same as the studio bran
 Hubline placeholder. Known trade-offs noted in research (generic search term with medical results; proximity to "Mini Airways"):
 mitigate with store subtitle/keywords (e.g. "Airway: route network on a globe"), the distinctive 3D globe look in screenshots,
 and a trademark check (EUIPO/USPTO/UPRP) before release. **Status: in force.**
+
+## D-13 (reserved) — Pure, transcendental-free simulation
+Formalised by task 01 (see `docs/tasks/01-scaffold.md`): `src/sim` imports no renderer/DOM/Capacitor and uses no
+`Math.sin/cos/exp/...`, so replays match across iOS and Android JS engines.
+
+## D-14 — Production is split into 30 agent tasks (2026-11-02, owner request)
+Briefs in `docs/tasks/` (index `00-INDEX.md`, generator `docs/tasks/tools/gen_tasks.py`). Each session branches
+`task/NN-slug` from `dev`, pushes it and opens a draft PR to `dev`; the owner merges. Task 01 creates `dev` from this branch.
+**Status: in force.**
