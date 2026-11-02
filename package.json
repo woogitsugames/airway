@@ -72,7 +72,8 @@
     "android:release": "node scripts/build-android.mjs --release-apk",
     "android:aab": "node scripts/build-android.mjs --release-aab",
     "test:render-layers": "node scripts/test-render-layers.mjs",
-    "shots:world": "node dev/shots.mjs world"
+    "shots:world": "node dev/shots.mjs world",
+    "shots:34": "node scripts/shots-34.mjs"
   },
   "dependencies": {
     "@capacitor/android": "8.5.3",

@@ -134,7 +134,7 @@ imports only) and never mutates state. The game composition root adapts sim snap
 | `project(lon, lat, alt, out)` | HTML overlay, per frame | writes `{x, y, visible}` into `out`; no allocation |
 | `orbit` | input | `GlobeOrbitCamera`: pass to `cameraGestureCallbacks(orbit, …)` |
 | `camera` | overlay | three.js camera for `createAirportOverlay(host, camera)` |
-| `resize(w, h, insets)` / `opts.autoResize` | layout | CSS px; insets keep the globe clear of HUD and safe areas |
+| `resize(w, h, insets)` / `opts.autoResize` | layout | CSS px; insets keep the globe clear of HUD and safe areas. [task-34] `src/game/world.ts` measures them from the HUD/menu boxes (`insetsFromLayout`, `menuFraming` in `framing.ts`, D-47) |
 | `setQuality(pref)` | settings | `'auto' \| 'low' \| 'medium' \| 'high'`; rebuilds terrain, DPR ≤ 2, shadows on high only |
 | `drawModelPreview(kind, canvas2d)` | upgrade card | renders through the shared context into a 2D canvas |
 | `ready`, `stats()`, `dispose()` | lifecycle | `ready` resolves after the land mask/terrain load |

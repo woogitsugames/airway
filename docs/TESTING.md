@@ -54,7 +54,7 @@ Times are measured in the integration container (8 vCPU, SwiftShader); “ci” 
 | `npm run test:schedule` | fast | 3 s | Dwell, back-and-forth legs, capacity, passenger balance, 7-day replay | `… cases=7 passed=7 failed=0` |
 | `npm run test:route-tool` | fast | 1 s | Airport snapping, multi-stop Add/ExtendRoute, range guards, handles, undo | `… passed=17 failed=0` |
 | `npm run test:interp` | fast | 1 s | Great-circle geometry, route-boundary interpolation, 40 routes / 100 instanced planes, no per-frame rebuild | `… passed=17 failed=0` |
-| `npm run test:render-layers` | fast | 1 s | Headless (no WebGL): route preview range split on the committed arc, deferred airport ring/curfew rebuild and `clear()`, pooled plane tracks | `… passed=11 failed=0` |
+| `npm run test:render-layers` | fast | 1 s | Headless (no WebGL): route preview range split on the committed arc, deferred airport ring/curfew rebuild and `clear()`, pooled plane tracks; [task-34] camera insets measured from HUD/menu boxes (pass → top, tag rail → right, dock → bottom), disc clear of the panels, menu horizon/disc framing, WCAG contrast helpers, menu demo network, plane shadows off at night | `… passed=33 failed=0` |
 | `npm run test:daynight` | fast | 1 s | Local time, demand curve, weekly curfew, snapshot, sun interpolation (D-27) | `… passed=N failed=0` |
 | `npm run test:upgrades` | fast | <1 s | Seeded weekly offers, upgrade effects, congestion tie-breaks (D-28) | `… cases=5 passed=5 failed=0` |
 | `npm run test:flap` | fast | <1 s | Split-flap segmentation, Polish diacritics, truncation, 60–90 ms cascade | `… passed=15 failed=0` |
@@ -128,6 +128,10 @@ board for `untilWeek` opens, and returns `state()`. It is DEV-only (dynamic impo
 from `dist/`). Since task 31 (3-day week, D-40) the bot reaches the week-1 board from a clean start on 86 % of the 50
 balance seeds, including the ordinary test seed 0xA1A1, so the smoke, `ui:matrix` and the store `upgrade` scene all use
 0xA1A1. If a balance change moves this, fix the balance rather than picking a lucky seed or adding shortcuts.
+`npm run shots:34` (task 34) captures the real game, seed 0xA1A1, PL: `docs/shots/34/{menu,day,dusk,night}-{p,l}.png`
+and measures night readability in the browser (each gameplay layer rendered with/without itself, median WCAG
+contrast; luggage tags against the globe under them); every value must be ≥ 4.5:1
+(`CONTRAST …` lines, then `SUMMARY shots:34 seed=0xA1A1 captured=8 expected=8 failed=0`).
 `node scripts/shots-31.mjs` captures the task-31 evidence (`docs/shots/31/`: week-1 board and the day bar at day 2/3).
 
 ## Boundary regression
