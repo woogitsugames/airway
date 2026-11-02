@@ -82,12 +82,16 @@ CDP memory metrics are represented as `null`, not zero.
 
 ### Results
 
-| Measurement | SwiftShader synthetic fixture | Integrated game | Physical device |
-| --- | --- | --- | --- |
-| CPU render frame p95 | **NOT RUN in this environment** | Not available (06/10/11 absent) | Not measured |
-| Draw calls / triangles | **NOT RUN in this environment** | Not available | Not measured |
-| JS heap / overlay elements | **NOT RUN in this environment** | Not available | Not measured |
-| FPS / frame pacing | **NOT RUN in this environment** | Not available | Not measured |
+Integration run, 2026-11-02, `npm run perf:scene` (defaults: medium, 412x915, DPR 1, 120 s),
+ANGLE SwiftShader (Vulkan/Subzero), production world renderer:
+
+| Measurement | SwiftShader (world renderer) | Physical device |
+| --- | --- | --- |
+| CPU render submit mean / p95 | 2.14 ms / 2.90 ms | Not measured |
+| Draw calls / triangles (max) | 33 / 228 837 | Not measured |
+| JS heap start / end / max | 6.5 MB / 7.1 MB / 11.0 MB (no growth trend) | Not measured |
+| Overlay DOM elements | 40 (stable) | Not measured |
+| Delivered FPS idle / active | 2.7 / 2.3 (software rasteriser; also hosts the menu's second WebGL context) | Not measured |
 
 **SwiftShader figures are orientation-only**; they must never be compared
 directly against mobile GPU acceptance targets. A working script, by itself,
