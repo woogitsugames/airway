@@ -433,7 +433,8 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       for (let guard = 0; guard < 400 && !run.failed; guard++) {
         const offer = run.weeklyUpgrade;
         if (offer && !offer.pendingHub) {
-          const pick = offer.offers.find((item) => item.id !== 'hub-expansion') ?? offer.offers[0];
+          // [task-32] '+2 slots' also waits for an airport pick, so take an aircraft (always offered).
+          const pick = offer.offers.find((item) => item.id !== 'hub-expansion' && item.id !== 'departure-slots') ?? offer.offers[0];
           if (pick) run.queue({ type: 'ChooseUpgrade', week: offer.week, upgrade: pick.id });
         }
         advance(500);
