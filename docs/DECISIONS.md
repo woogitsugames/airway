@@ -92,3 +92,14 @@ full-screen ads during play, no timers, no dark patterns. Supersedes the recomme
 
 ## D-18 — Store title: "Airway: Globe Route Builder" (PL: "Airway: Buduj siatkę lotów na globusie") (2026-11-02, owner)
 **Status: in force.**
+
+<!-- [task-21] Performance-tier policy; provisional until real render layers merge. -->
+## D-19 — Shared quality profile and render-only pacing (2026-11-02, task 21)
+An automatic low/medium/high quality tier uses browser hardware hints; users may
+explicitly override it. Rendering is capped at 30 FPS while idle, runs every
+available animation frame during interaction, and stops when the document is
+hidden. The simulation clock stays independent. DPR never exceeds 2 and
+shadows are reserved for high quality. Until tasks 03/06/10/11 land, use a
+clearly labelled synthetic fixture; never treat SwiftShader as device evidence.
+**Rationale:** predictable CPU/GPU load, energy use and an honest test contract
+before all rendering components exist. **Status: provisional integration policy.**
