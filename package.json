@@ -14,14 +14,17 @@
     "test:sim-kernel": "node --experimental-strip-types scripts/test-sim-kernel.ts",
     "test:undo": "node --experimental-strip-types scripts/test-undo.ts",
     "test:daily": "node --experimental-strip-types scripts/test-daily.ts",
-    "test:fast": "npm run typecheck && npm run test:i18n && npm run test:arch && npm run test:rng && npm run test:sim-kernel && npm run test:undo && npm run test:daily && npm run test:cities && npm run test:spawner",
-    "shots": "node scripts/shots.mjs",
+    "test:fast": "npm run typecheck && npm run test:i18n && npm run test:arch && npm run test:rng && npm run test:sim-kernel && npm run test:undo && npm run test:daily && npm run test:cities && npm run test:spawner && npm run test:geo-math",
+    "shots": "node scripts/shots.mjs && node dev/shots.mjs",
     "shots:mockups": "node mockups/shoot.mjs",
     "mockups": "node mockups/build-all.mjs",
-    "prebuild": "npm run build:distances",
+    "prebuild": "npm run build:distances && npm run build:land",
     "build:distances": "node scripts/build-distances.mjs",
     "test:cities": "node scripts/test-cities.mjs",
-    "test:spawner": "node scripts/test-spawner.mjs"
+    "test:spawner": "node scripts/test-spawner.mjs",
+    "build:land": "node scripts/build-land.mjs",
+    "test:geo-math": "node src/render/globe/test-geo-math.mjs",
+    "shots:globe": "node dev/shots.mjs"
   },
   "dependencies": {
     "@capacitor/android": "8.5.3",

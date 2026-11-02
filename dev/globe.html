@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Airway / Diorama Globe Laboratory</title>
+  <style>
+    @font-face { font-family: Overpass; src: url("/fonts/Overpass-800.ttf"); font-weight: 800; }
+    @font-face { font-family: Atkinson; src: url("/fonts/AtkinsonHyperlegibleNext-400.ttf"); }
+    :root { color-scheme: light; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; overflow: hidden; background: #8cc3d8; }
+    canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+    #lab { position: fixed; top: max(12px, env(safe-area-inset-top));
+      left: max(12px, env(safe-area-inset-left)); z-index: 10; padding: 10px 12px;
+      background: #13302e; color: #f7f3ea; font: 14px/1.45 Atkinson, sans-serif;
+      min-width: 210px; max-width: calc(100vw - 24px); }
+    h1 { font: 800 15px/1.1 Overpass, sans-serif; margin: 0 0 6px; letter-spacing: .04em; }
+    #stats { white-space: pre; font-variant-numeric: tabular-nums; margin: 8px 0; }
+    label { display: inline-flex; gap: 8px; align-items: center; }
+    select { min-height: 48px; border: 2px solid #86b35a; background: #f7f3ea;
+      color: #13302e; font: 700 14px Atkinson, sans-serif; padding: 0 8px; }
+    #hint { font-size: 12px; opacity: .75; margin-top: 5px; }
+    #error { color: #ffc72c; white-space: normal; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <main id="root" aria-label="Diorama globe"></main>
+  <aside id="lab">
+    <h1>DIORAMA / GLOBE 03</h1>
+    <label>Quality <select id="quality" aria-label="Globe quality">
+      <option value="auto">Auto</option><option value="low">Low</option>
+      <option value="medium" selected>Medium</option><option value="high">High</option>
+    </select></label>
+    <div id="stats" role="status" aria-live="off">Loading terrain…</div>
+    <div id="hint">Drag to orbit · scroll to zoom</div>
+    <div id="error" role="alert"></div>
+  </aside>
+  <script type="module" src="./globe.ts"></script>
+</body>
+</html>

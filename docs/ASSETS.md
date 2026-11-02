@@ -39,3 +39,15 @@ The game ships `public/fonts/Overpass-400.ttf`, `Overpass-800.ttf`,
 are `public/fonts/OFL-Overpass.txt`, `OFL-OverpassMono.txt`,
 and `OFL-AtkinsonHyperlegibleNext.txt`; each is colocated with the
 fonts it covers. No downloaded graphics are included.
+
+<!-- [task-03] -->
+## Production land raster (task 03)
+- `public/data/land-50m.json`: compact RLE land texture pre-generated with
+  `npm run build:land` from the **Natural Earth land 50m** TopoJSON distributed
+  in `world-atlas@2.0.2` (ISC; underlying Natural Earth geography is public domain).
+- Regeneration: `node scripts/build-land.mjs`; CI can verify the committed copy
+  with `node scripts/build-land.mjs --check`. Reproducible source requires the
+  version pinned in `package-lock.json`. No map polygons or external images are
+  downloaded or rasterized by a running browser.
+- Terrain, forests, rock formations, cloud puffs, city-light points and the
+  atmosphere are custom procedural meshes/shaders in `src/render/globe/`.

@@ -119,3 +119,16 @@ additional Asia (`ASI`, wing) and Oceania (`OCE`, hook) glyphs/colours are provi
 until the owner approves the visual extension; neither replaces a D-08 glyph.
 **Status: technical implementation proposed; new region visuals require approval.**
 _(renumbered from D-19 during integration, branch `origin/task/05-cities-data`)_
+
+## D-21 — Build-time RLE raster from Natural Earth land 50m (2026-11-02, task 03)
+Generate `public/data/land-50m.json` using `scripts/build-land.mjs` at
+build time, using the already pinned `world-atlas@2.0.2` Natural Earth 50m
+land TopoJSON (ISC/public domain). Raster is equirectangular 2048×1024,
+row-oriented land runs; the browser only decodes it and computes a small
+coastal smoothing field once. The flat-shaded terrain mesh subdivides triangles
+only around coasts, with explicit `low/medium/high` levels.
+**Rationale:** no TopoJSON/d3 dependency in the mobile runtime, predictable
+startup and bundle size, fine coast sampling without copying the stage-0
+over-tessellated mesh. The build script corrects South Pole scanline closure.
+**Status: implementation decision for task 03, owner may revise.**
+_(renumbered from D-19 during integration, branch `origin/task/03-globe-renderer`)_
