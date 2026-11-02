@@ -398,6 +398,34 @@ blank/white, developer text, only the six D-08 passenger glyphs, which also keep
 out of store images) and recorded in `docs/store/shots/manifest.json`. **Status: in force.**
 
 
+## D-49 — Back from the airport pick, framed first menu frame, darker night deserts (2026-11-02, task 39)
+**Back from the pick.** A targeted weekly upgrade (hub expansion, "+2 slots") is two `ChooseUpgrade` commands; between
+them the player can now go back with a new sim command `CancelUpgradePick {week}`. It is journaled and replayed like
+every command, needs a pending pick of that week (otherwise `UPGRADE_INVALID`, or `NO_UPGRADE_PENDING` without a
+board), and restores exactly the offer the board had before the label was taken (`pendingHub: false`, no
+`selected`), so pick → back → another label ends in the same world as taking that label directly (`test:replay`).
+The snapshot shape is unchanged, so `RULES_VERSION` stays 4 (old saves never contain the command). UI: a black
+wayfinding tile with a yellow arrow and "Wróć"/"Back" set into the yellow pick sign (≥ 48 dp); Android back / Escape
+on the pick does the same. **Menu first frame:** the frame loop applies a pending layout measurement before it
+draws, and the first menu show holds the globe (≤ 1.5 s) until the sign and board are laid out, so the first
+rendered menu frame already has its final framing (`shots:34` checks it). **Night deserts:** warm, bright albedo
+(desert, beach sand; linear `r − b` mask 0.25 → 0.45) gets an extra night grade ×(0.60, 0.56, 0.48) on top of the
+D-47 moon grade: darker and no longer blue-grey; moon light (0.6) unchanged. Night contrast after the change
+(shots:34): routes 9.65, airports 9.0, planes 10.2, tags ≥ 12.3 (threshold 4.5). **Status: in force; the Back
+tile position (top sign, outside thumb reach in portrait) is an owner question in the task-39 PR.**
+
+## D-50 — Departure-slot tag hangs under the passenger tag (2026-11-02, task 38)
+While aircraft are held for a departure slot (D-46), the airport shows a second luggage tag "SLOT h:mm" — game time to the
+next free slot, from `CityView.nextSlotMinutes` — plus "×N" only when two or more aircraft wait. Shape, not colour, tells
+it from the passenger tag: a squared ticket with a dark stub carrying a clock-over-runway-bar mark (inline SVG), ink outline
+and chamfered right end, against the pointed passenger tag with its punched hole. Placement is deterministic: the
+passenger tag and the slot tag form **one layout box** for `layoutTags` (passenger tag on top, slot tag 2 px below,
+left-aligned, i.e. nearest the apron where the aircraft stand), so no other airport's tag can slide between them; with
+nobody waiting the slot tag fills the box alone. The tag has no countdown animation and disappears as soon as nothing is
+held. Readability: the paper body reaches ≥ 4.81:1 by day and ≥ 14.8:1 at night against the globe behind it
+(`npm run shots:38`); ink on paper inside the tag is 12.7:1. **Status: in force; the tag's wording ("SLOT" in both
+languages) is an owner-visible choice (task-38 PR question).**
+
 <!-- Owner decisions below use D-60+ so they cannot collide with D-49… taken by the parallel task-37…40 session. -->
 
 ## D-51 — Player text never breaks inside a word without a hyphen (2026-11-02, task 37)
@@ -421,7 +449,7 @@ in `src/core/format.ts`, `localNumber()` in `src/i18n`; `t()` formats every nume
 space Intl uses for five digits; tested by `npm run test:format`.
 
 ## D-62 — Menu globe rotates slowly (2026-11-02, owner)
-About 1.2°/s, paused with `prefers-reduced-motion` and while the menu is hidden. **Status: to implement.**
+About 1.2°/s, paused with `prefers-reduced-motion` and while the menu is hidden. **Status: in force (task 39).**
 
 ## D-63 — Store screenshot order: night, game, upgrade, failure, menu; dusk must read as dusk (2026-11-02, owner)
 The "game" scene uses clearly golden low-sun light (not daylight). **Status: to implement.**
@@ -430,3 +458,20 @@ The "game" scene uses clearly golden low-sun light (not daylight). **Status: to 
 `dev` stays the integration branch for all task PRs. The coordinator regularly fast-forwards `main` to `dev` after the
 full gate passes on `dev` (`test:fast`, `build`, `test:e2e:smoke`). Nobody commits to `main` directly. `main` is the
 GitHub default branch. **Status: in force.**
+
+## D-65 — Overnight continuous development by one coordinator agent (2026-11-03, owner)
+Scope chosen by the owner: low-end performance, 15 new puzzles, audio and music, code quality and tests. Work queue and
+log in `docs/NIGHT-BACKLOG.md`. **Status: in force.**
+
+## D-66 — Online leaderboards are in the MVP (2026-11-03, owner)
+Daily-challenge and weekly leaderboards on Firebase (pattern: cebulak-express `src/net/*`, server-side replay
+validation). Until the owner provides a Firebase project the feature is built against the emulator and is disabled
+when no config is present; privacy policy must be updated before release. Supersedes "post-MVP" in RESEARCH §5 and
+task 18's note. **Status: to implement.**
+
+## D-67 — airway.games site is not published yet (2026-11-03, owner)
+Publish together with the store pre-registration, after the device test. **Status: in force.**
+
+## D-68 — Hub stamp shows code or city name per player setting (2026-11-03, owner)
+Settings toggle "Lotniska: kod / nazwa" (default: code). Applies to hub stamp and other airport labels that have room.
+**Status: to implement.**

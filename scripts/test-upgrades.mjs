@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { chooseUpgrade, drawUpgradeOffers, mostLoadedHub, startWeeklyUpgrade, TICKS_PER_WEEK } from '../src/sim/upgrades.ts';
+import { cancelUpgradePick, chooseUpgrade, drawUpgradeOffers, mostLoadedHub, startWeeklyUpgrade, TICKS_PER_WEEK } from '../src/sim/upgrades.ts';
 
 const SEED = 0xA1A1;
 function rng(seed) {
@@ -45,5 +45,17 @@ test('aircraft and slot effects fire only on valid choices', () => {
   chooseUpgrade(s('departure-slots'), { type: 'ChooseUpgrade', week: 2, upgrade: 'departure-slots', hubId: 'WAW' }, effects, [], ['WAW']);
   assert.deepEqual(calls, [['turboprop', 1], ['slots', 2, 'WAW']]);
 });
-console.log(`SUMMARY test:upgrades seed=0xA1A1 cases=5 passed=${passed} failed=${5-passed}`);
-if (passed !== 5) process.exitCode = 1;
+test('[task-39] cancelling the airport pick restores the untouched offer (D-49)', () => {
+  const state = { week: 3, paused: true, offers: [{ id: 'hub-expansion', week: 3 }, { id: 'turboprop', week: 3 }], pendingHub: false };
+  assert.throws(() => cancelUpgradePick(state, 3), /No airport pick/);
+  for (const upgrade of ['hub-expansion']) {
+    const picking = chooseUpgrade(state, { type: 'ChooseUpgrade', week: 3, upgrade }, {}, ['LHR']);
+    assert.throws(() => cancelUpgradePick(picking, 2));
+    const back = cancelUpgradePick(picking, 3);
+    assert.deepEqual(back, state); assert.equal('selected' in back, false);
+    const chosen = chooseUpgrade(back, { type: 'ChooseUpgrade', week: 3, upgrade: 'turboprop' }, { grantPlane: () => undefined }, []);
+    assert.throws(() => cancelUpgradePick(chosen, 3));
+  }
+});
+console.log(`SUMMARY test:upgrades seed=0xA1A1 cases=6 passed=${passed} failed=${6-passed}`);
+if (passed !== 6) process.exitCode = 1;

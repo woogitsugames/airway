@@ -24,6 +24,9 @@ export interface RunCity {
   readonly capacity: number;
   readonly hub: boolean;
   readonly jamTicksLeft: number | null;
+  /** [task-38] Aircraft held on the ground for a departure slot, and game minutes to the next slot. */
+  readonly slotHeld: number;
+  readonly nextSlotMinutes: number;
 }
 export interface RunRoute { readonly id: string; readonly cityIds: readonly string[]; readonly aircraft: AircraftType }
 export interface RunPlane {
@@ -92,7 +95,7 @@ export class EndlessRun {
   get commandLog(): readonly JournalEntry[] { return this.sim.getCommandLog(); }
   get assignments(): number { return this.sim.world.planes.length; }
   get networkUndoable(): boolean {
-    return this.sim.pendingCount > 0 || this.sim.getCommandLog().some(([, command]) => command.type !== 'ChooseUpgrade' && command.type !== 'SetSpeed');
+    return this.sim.pendingCount > 0 || this.sim.getCommandLog().some(([, command]) => command.type !== 'ChooseUpgrade' && command.type !== 'CancelUpgradePick' && command.type !== 'SetSpeed'); // [task-39]
   }
   get failed(): RunFailure | null {
     if (this.sim.world.status !== 'over') return null;
@@ -173,6 +176,7 @@ export class EndlessRun {
         id: view.id, lon: data?.lon ?? 0, lat: data?.lat ?? 0,
         region: isRegion(view.regionId) ? view.regionId : 'NAM',
         waiting, capacity: view.capacity, hub: view.isHub, jamTicksLeft: view.jamTicksRemaining,
+        slotHeld: view.slotHeldPlanes, nextSlotMinutes: view.nextSlotMinutes, // [task-38]
       };
     });
   }

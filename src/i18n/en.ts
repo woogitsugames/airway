@@ -13,6 +13,8 @@ export const en = {
   'airport.focus': 'Rotate to {code}',
   'airport.waiting': '{code}: {count} passengers waiting',
   'airport.jammed': '{code}: congestion, {seconds} seconds remaining',
+  'airport.slot.label': 'SLOT', // [task-38]
+  'airport.slotHeld': '{code}: {count} aircraft waiting for a departure slot, next slot in {time}',
   // [task-07] Route drawing, airport-paper ATC hint and route actions.
   'route.aircraft.turboprop': 'turboprop',
   'route.aircraft.widebody': 'widebody aircraft',
@@ -68,6 +70,8 @@ export const en = {
   'upgrade.stamp': '{hub} {waiting}/{capacity}',
   'upgrade.noHub': 'No hub yet',
   'upgrade.selectAirport': 'Select an airport on the globe',
+  'upgrade.back': 'Back', // [task-39]
+  'upgrade.backLabel': 'Back to the crates',
   'upgrade.slotStamp': '{airport} {minutes} min',
   'upgrade.value.slotsFor': 'an airport you pick',
   // [task-14] Main menu, preferences and licence notice.
