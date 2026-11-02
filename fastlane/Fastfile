@@ -1,0 +1,64 @@
+default_platform(:ios)
+
+platform :ios do
+  desc 'Build a signed Airway IPA and upload it to TestFlight using an App Store Connect API key'
+  lane :beta do
+    # [task-25] No credentials, provisioning profiles or Apple private keys are committed.
+    required = %w[ASC_KEY_ID ASC_ISSUER_ID ASC_KEY_PATH APPLE_TEAM_ID]
+    missing = required.select { |name| ENV[name].to_s.strip.empty? }
+    UI.user_error!("Missing environment variables: #{missing.join(', ')}") unless missing.empty?
+
+    root = File.expand_path('..', __dir__)
+    key_path = File.expand_path(ENV.fetch('ASC_KEY_PATH'))
+    UI.user_error!('ASC_KEY_PATH must point to an existing .p8 file') unless File.file?(key_path) && File.extname(key_path) == '.p8'
+    UI.user_error!('Store Connect .p8 must be outside this repository') if File.realpath(key_path).start_with?("#{File.realpath(root)}/")
+
+    team_id = ENV.fetch('APPLE_TEAM_ID')
+    UI.user_error!('APPLE_TEAM_ID must be a 10-character alphanumeric Team ID') unless team_id.match?(/\A[A-Z0-9]{10}\z/)
+
+    api_key = app_store_connect_api_key(
+      key_id: ENV.fetch('ASC_KEY_ID'),
+      issuer_id: ENV.fetch('ASC_ISSUER_ID'),
+      key_filepath: key_path
+    )
+
+    require 'json'
+    version = JSON.parse(File.read(File.join(root, 'package.json'))).fetch('version')
+    provided_build = ENV['IOS_BUILD_NUMBER']
+    UI.user_error!('IOS_BUILD_NUMBER must be a positive integer') if provided_build && !provided_build.match?(/\A[1-9][0-9]*\z/)
+    build_number = provided_build || (
+      latest_testflight_build_number(
+        api_key: api_key,
+        app_identifier: 'pl.samsufi.airway',
+        version: version,
+        initial_build_number: 0
+      ) + 1
+    ).to_s
+
+    Dir.chdir(root) do
+      sh('npm ci')
+      sh('npm run build')
+      # Task 01 has no @capacitor/cli in its lockfile; pin npx explicitly.
+      sh('npx --yes @capacitor/cli@8.5.3 sync ios')
+
+      build_app(
+        workspace: File.join(root, 'ios/App/App.xcworkspace'),
+        scheme: 'App',
+        configuration: 'Release',
+        export_method: 'app-store',
+        output_directory: File.join(root, 'ios/App/output'),
+        output_name: 'Airway.ipa',
+        clean: true,
+        xcargs: "DEVELOPMENT_TEAM=#{team_id} MARKETING_VERSION=#{version} CURRENT_PROJECT_VERSION=#{build_number}",
+        export_options: { method: 'app-store', teamID: team_id, signingStyle: 'automatic' }
+      )
+    end
+
+    upload_to_testflight(
+      api_key: api_key,
+      app_identifier: 'pl.samsufi.airway',
+      ipa: File.join(root, 'ios/App/output/Airway.ipa'),
+      skip_waiting_for_build_processing: true
+    )
+  end
+end
