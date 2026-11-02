@@ -57,6 +57,8 @@ npm run build
 | `npm run shots` | Browser smoke: game canvas at portrait/landscape dimensions | `SUMMARY shots seed=0xA1A1 captured=4 failed=0`; images in `docs/shots/01/` and `docs/shots/15/` |
 | `npm run test:saves` | [task-16] Fixed-seed save/load hash, v0 migration, corrupt JSON, IndexedDB, native dual-slot saves, background pause | `SUMMARY test:saves seed=0xA1A1 passed=11 failed=0` |
 | `npm run test:fast` | `typecheck`, `test:i18n`, `test:arch`, then `test:saves` | All three test summaries and exit code 0 |
+| `npm run test:audio-sched` | 125 ms lookahead, stable order, voice cap at 4x, immediate mute, pitch | `SUMMARY test:audio-sched seed=0xA1A1 tests=8 passed=8 failed=0` |
+| `npm run test:fast` | `typecheck`, i18n, architecture and audio scheduler | All test summaries and exit code 0 |
 
 Every future test must have a fixed seed (use `0xA1A1` where no gameplay seed
 is needed), terminate with one `SUMMARY ...` line, set a nonzero exit code on
@@ -106,3 +108,4 @@ does not replace an integration test with task 08's real ledger or task 04's
 camera. The game-over controller pauses simulation immediately and drives an
 injected renderer focus callback for 700ms with cubic ease-out, then freezes
 the scene and presents the report. It never mutates the simulation.
+<!-- [task-19] Audio scheduling regression: no browser or AudioContext required. -->

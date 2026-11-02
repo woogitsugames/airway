@@ -60,3 +60,9 @@ carried over from this repository's `mockups/lib/scene.mjs` (D-08).
 <!-- [task-10] -->
 ## Procedural production route and aircraft assets
 `src/render/routes.ts` constructs original spherical arc tubes (continuous light widebody, dashed warm turboprop) and horizon ghost materials. `src/render/models/planes.ts` builds original low-poly turboprops and widebodies procedurally: fuselages, wings, tails, propellers and engines. `src/render/planes.ts` adds instanced ground shadows, contrails and five-part occupancy tags. No external binary/image assets or third-party model licences are required.
+<!-- [task-19] Runtime audio is procedural, with no external sound files. -->
+## Procedural audio (task 19)
+All hub tones, congestion drones, departure-board clicks, paper rustle, luggage-tag
+clicks, stamps and city bells are synthesized at runtime via Web Audio in
+`src/audio/`. The noise buffer is generated from a fixed local seed. No recorded
+samples, licensed sound libraries or downloadable audio files are included.

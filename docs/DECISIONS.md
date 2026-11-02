@@ -200,3 +200,13 @@ so an interrupted write does not replace the previous save. Player settings use 
 Backgrounding pauses the wall-clock scheduler before saving rather than submitting a simulation speed command,
 which avoids changing deterministic replay state. **Status: provisional; requires task 02/08/09 integration.**
 _(renumbered from D-19 during integration, branch `origin/task/16-save-lifecycle`)_
+
+## D-30 — Event-driven hub audio is bounded and non-authoritative (2026-11-02, task 19)
+The presentation layer maps read-only simulation events to latitude-tuned pentatonic
+Web Audio resonators. A 125 ms lookahead queue is capped at 20 transient voices
+(with four effect-reserved slots) plus four congestion drones. It never reads or
+writes simulation RNG or state. Default iOS audio session is `ambient`; playback
+through the silent switch requires explicit player opt-in. **Rationale:** stable
+4x behavior, predictable audio CPU use and user-controlled sound. **Status:
+implementation awaiting event wiring and physical-device audio checks.**
+_(renumbered from D-19 during integration, branch `origin/task/19-audio`)_
