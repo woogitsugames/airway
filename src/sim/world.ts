@@ -11,7 +11,8 @@ import type { DemandCity } from './demand.ts';
 import type { HubFailure } from './hubs.ts';
 import type { CauseCounters } from './ledger.ts';
 import {
-  CONGESTION_GRACE_TICKS, INITIAL_PLANE_RESERVE, PLANE_TYPES, type PlaneType,
+  CONGESTION_GRACE_TICKS, DEPARTURE_SLOTS_PER_HOUR_CITY, DEPARTURE_SLOTS_PER_HOUR_HUB, GAME_TICKS_PER_HOUR,
+  INITIAL_PLANE_RESERVE, PLANE_TYPES, type PlaneType,
 } from './params.ts';
 import { PassengerSimulation, type PassengerSimulationSnapshot } from './passengers.ts';
 import {
@@ -19,7 +20,9 @@ import {
   reshapeScheduledRoute, unassignPlane, validatePlaneRange, type PlaneFleet, type PlaneState,
   type ScheduledRoute,
 } from './planes.ts';
-import { tickPlaneSchedule, type PlaneCurfewGate, type PlanePassengerPort } from './schedule.ts';
+import {
+  tickPlaneSchedule, type DepartureSlotGate, type PlaneCurfewGate, type PlanePassengerPort,
+} from './schedule.ts';
 import { advanceCitySpawner, createCitySpawner, type CitySpawnerState } from './spawner.ts';
 import type { RngStream } from './state.ts';
 import {
@@ -78,8 +81,21 @@ export interface WorldSnapshot {
   readonly upgrade: WeeklyUpgradeState | null;
   readonly upgradeHistory: readonly UpgradeRecord[];
   readonly hubUpgradeStock: number;
-  /** D-28 departure slots: recorded only; enforcement awaits the owner's decision. */
-  readonly departureSlotBonus: number;
+  /** [task-32] D-41 departure slots (D-28 per-airport hourly limit), enforced. */
+  readonly slots: DepartureSlotsSnapshot;
+}
+
+/** [task-32] Departure-slot bookkeeping; every record is keyed by city id and sorted on save. */
+export interface DepartureSlotsSnapshot {
+  /** Game hour (floor(minute / 60)) that `used` counts. */
+  readonly hour: number;
+  readonly used: Record<string, number>;
+  /** Extra hourly departures from "+2 slots" upgrades. */
+  readonly bonus: Record<string, number>;
+  /** Aircraft-minutes spent waiting for a slot (cause ledger, task 15). */
+  readonly waitMinutes: Record<string, number>;
+  /** True once any aircraft was held for a slot (one-time tutorial hint). */
+  readonly everHeld: boolean;
 }
 
 /** Non-authoritative notifications for UI/audio; drained by the caller, never hashed or saved. */
@@ -98,6 +114,8 @@ export type SimEvent =
   | { readonly type: 'UpgradeChosen'; readonly minute: number; readonly week: number; readonly upgrade: UpgradeKind; readonly hubId?: string }
   | { readonly type: 'HubJamStarted'; readonly minute: number; readonly cityId: string }
   | { readonly type: 'HubJamCleared'; readonly minute: number; readonly cityId: string }
+  /** [task-32] An aircraft became ready but its airport had no departure slot left this hour. */
+  | { readonly type: 'DepartureHeld'; readonly minute: number; readonly cityId: string; readonly planeId: string; readonly first: boolean }
   | { readonly type: 'GameOver'; readonly minute: number; readonly failure: HubFailure | null; readonly status: 'won' | 'over' };
 
 /** Read-only per-city view for HUD, overlay, render and audio. */
@@ -118,6 +136,14 @@ export interface CityView {
   readonly curfewCity: boolean;
   readonly curfewClosed: boolean;
   readonly routes: number;
+  /** [task-32] Hourly departure allowance (base for city/hub + upgrades). */
+  readonly departureSlots: number;
+  /** [task-32] Departures already used in the current game hour. */
+  readonly departuresThisHour: number;
+  /** [task-32] Ready aircraft held on the ground for a slot right now. */
+  readonly slotHeldPlanes: number;
+  /** [task-32] Minutes until the next game hour frees the slots (meaningful when slotHeldPlanes > 0). */
+  readonly nextSlotMinutes: number;
 }
 export interface RouteView { readonly id: string; readonly cityIds: readonly string[]; readonly legKm: readonly number[]; readonly planeIds: readonly string[] }
 
@@ -129,6 +155,8 @@ export interface HubCauseLedgerView {
   readonly noRoute: number;
   readonly waitingTooLong: number;
   readonly congestedSeconds: number;
+  /** [task-32] Aircraft-minutes spent waiting for a departure slot at this airport. */
+  readonly slotWaitMinutes: number;
 }
 
 /** Read-only face of the world handed to UI, render, audio, modes and tools (Sim.world). */
@@ -140,7 +168,10 @@ export interface WorldView {
   readonly offer: Readonly<WeeklyUpgradeState> | null;
   readonly upgrades: readonly UpgradeRecord[];
   readonly hubUpgradesInStock: number;
+  /** Total extra hourly departures granted by "+2 slots" upgrades (all airports). */
   readonly departureSlots: number;
+  /** [task-32] Hourly departure allowance of one airport. */
+  departureSlotLimit(cityId: string): number;
   readonly planes: readonly Readonly<PlaneState>[];
   readonly reserve: Readonly<Record<PlaneType, number>>;
   readonly curfewCityIds: readonly string[];
@@ -151,6 +182,24 @@ export interface WorldView {
   cities(): CityView[];
   routes(): RouteView[];
   hubCauseLedger(cityId: string): HubCauseLedgerView;
+}
+
+function sortedRecord(values: ReadonlyMap<string, number>): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const key of [...values.keys()].sort()) out[key] = values.get(key)!;
+  return out;
+}
+function validRecord(value: unknown): value is Record<string, number> {
+  return !!value && typeof value === 'object' && !Array.isArray(value) &&
+    Object.values(value).every((n) => Number.isSafeInteger(n) && (n as number) >= 0);
+}
+function validSlots(value: DepartureSlotsSnapshot | undefined): boolean {
+  return !!value && Number.isSafeInteger(value.hour) && value.hour >= 0 && validRecord(value.used) &&
+    validRecord(value.bonus) && validRecord(value.waitMinutes) && typeof value.everHeld === 'boolean';
+}
+function loadRecord(target: Map<string, number>, values: Record<string, number>): void {
+  target.clear();
+  for (const key of Object.keys(values)) target.set(key, values[key]);
 }
 
 function routeDistance(a: string, b: string): number | undefined { return cityDistanceKm(a, b); }
@@ -181,7 +230,11 @@ export class World implements WorldView {
   private statusValue: WorldStatus = 'running';
   private nextRouteSerial = 1;
   private hubUpgradeStock: number;
-  private departureSlotBonus = 0;
+  private slotHour = 0;
+  private readonly slotsUsed = new Map<string, number>();
+  private readonly slotBonus = new Map<string, number>();
+  private readonly slotWait = new Map<string, number>();
+  private slotEverHeld = false;
   private readonly jammed = new Set<string>();
   private events: SimEvent[] = [];
 
@@ -215,7 +268,16 @@ export class World implements WorldView {
   get offer(): Readonly<WeeklyUpgradeState> | null { return this.upgrade; }
   get upgrades(): readonly UpgradeRecord[] { return this.upgradeHistory; }
   get hubUpgradesInStock(): number { return this.hubUpgradeStock; }
-  get departureSlots(): number { return this.departureSlotBonus; }
+  get departureSlots(): number {
+    let total = 0;
+    for (const value of this.slotBonus.values()) total += value;
+    return total;
+  }
+
+  departureSlotLimit(cityId: string): number {
+    return (this.isHub(cityId) ? DEPARTURE_SLOTS_PER_HOUR_HUB : DEPARTURE_SLOTS_PER_HOUR_CITY) +
+      (this.slotBonus.get(cityId) ?? 0);
+  }
   /** Live, read-only aircraft states for the renderer (no copy per frame). */
   get planes(): readonly Readonly<PlaneState>[] { return this.fleet.planes; }
   get reserve(): Readonly<Record<PlaneType, number>> { return this.fleet.available; }
@@ -432,7 +494,7 @@ export class World implements WorldView {
     // Dry-run on a throwaway effect set to validate without mutating anything.
     try {
       chooseUpgrade(offer, choice, { grantPlane: () => undefined, expandHub: () => undefined,
-        addDepartureSlots: () => undefined }, this.hubIds());
+        addDepartureSlots: () => undefined }, this.hubIds(), this.activeCityIds());
     } catch {
       return reject('UPGRADE_INVALID');
     }
@@ -440,8 +502,8 @@ export class World implements WorldView {
       const next = chooseUpgrade(offer, choice, {
         grantPlane: (type, count) => grantPlanes(this.fleet, type, count),
         expandHub: (hubId, extra, mct) => this.passengers.upgradeHub(hubId, extra, mct),
-        addDepartureSlots: (count) => { this.departureSlotBonus += count; },
-      }, this.hubIds());
+        addDepartureSlots: (count, cityId) => { this.slotBonus.set(cityId, (this.slotBonus.get(cityId) ?? 0) + count); },
+      }, this.hubIds(), this.activeCityIds());
       if (next.paused) { this.upgrade = next; return; }
       this.upgrade = null;
       this.statusValue = 'running';
@@ -479,6 +541,23 @@ export class World implements WorldView {
     canLand: (cityId) => this.curfew.canLand(cityId, this.minuteValue),
   };
 
+  // [task-32] D-41: per-airport hourly departure allowance; slots reset at every game hour.
+  private readonly slotGate: DepartureSlotGate = {
+    tryTake: (cityId) => {
+      const used = this.slotsUsed.get(cityId) ?? 0;
+      if (used >= this.departureSlotLimit(cityId)) return false;
+      this.slotsUsed.set(cityId, used + 1);
+      return true;
+    },
+    held: (cityId, plane) => {
+      this.slotWait.set(cityId, (this.slotWait.get(cityId) ?? 0) + 1);
+      if (plane.slotWaitTicks === 1) {
+        this.events.push({ type: 'DepartureHeld', minute: this.minuteValue, cityId, planeId: plane.id, first: !this.slotEverHeld });
+        this.slotEverHeld = true;
+      }
+    },
+  };
+
   /** Advance one world minute. Frozen while an upgrade is pending or after the run ended. */
   step(): void {
     if (this.statusValue !== 'running') return;
@@ -503,7 +582,9 @@ export class World implements WorldView {
         for (let i = 0; i < wave.passengers; i++) this.passengers.seedPassenger(wave.fromCityId, wave.toRegion);
       }
     }
-    tickPlaneSchedule(this.fleet, this.schedules, this.port, this.gate);
+    const hour = Math.floor(minute / GAME_TICKS_PER_HOUR);
+    if (hour !== this.slotHour) { this.slotHour = hour; this.slotsUsed.clear(); }
+    tickPlaneSchedule(this.fleet, this.schedules, this.port, this.gate, this.slotGate);
     const failure = this.passengers.endMinute();
     this.trackJams(minute);
     if (failure) {
@@ -554,7 +635,22 @@ export class World implements WorldView {
       localHour: localHourAt(this.minuteValue, offset), curfewCity,
       curfewClosed: curfewCity && isLocalCurfewHour(this.minuteValue, offset),
       routes: this.passengers.network.routesAt(cityId),
+      departureSlots: this.departureSlotLimit(cityId),
+      departuresThisHour: Math.floor(this.minuteValue / GAME_TICKS_PER_HOUR) === this.slotHour
+        ? this.slotsUsed.get(cityId) ?? 0 : 0,
+      slotHeldPlanes: this.slotHeldAt(cityId),
+      nextSlotMinutes: GAME_TICKS_PER_HOUR - (this.minuteValue % GAME_TICKS_PER_HOUR),
     };
+  }
+
+  private slotHeldAt(cityId: string): number {
+    let count = 0;
+    for (const plane of this.fleet.planes) {
+      if (plane.phase !== 'ground' || plane.slotWaitTicks === 0) continue;
+      const route = this.route(plane.routeId);
+      if (route && route.cityIds[plane.cityIndex] === cityId) count++;
+    }
+    return count;
   }
 
   cities(): CityView[] { return this.activeCityIds().map((id) => this.cityView(id)); }
@@ -575,6 +671,7 @@ export class World implements WorldView {
       noRoute: counters.noRoute, waitingTooLong: counters.longWait,
       // One tick is 1/10 s at 1x; whole seconds only.
       congestedSeconds: Math.floor(queue.fullTicks / 10),
+      slotWaitMinutes: this.slotWait.get(cityId) ?? 0,
     };
   }
 
@@ -592,7 +689,9 @@ export class World implements WorldView {
       curfew: this.curfew.snapshot(),
       upgrade: this.upgrade ? JSON.parse(JSON.stringify(this.upgrade)) as WeeklyUpgradeState : null,
       upgradeHistory: this.upgradeHistory.map((item) => ({ ...item })),
-      hubUpgradeStock: this.hubUpgradeStock, departureSlotBonus: this.departureSlotBonus,
+      hubUpgradeStock: this.hubUpgradeStock,
+      slots: { hour: this.slotHour, used: sortedRecord(this.slotsUsed), bonus: sortedRecord(this.slotBonus),
+        waitMinutes: sortedRecord(this.slotWait), everHeld: this.slotEverHeld },
     };
   }
 
@@ -600,7 +699,7 @@ export class World implements WorldView {
     const count = (value: unknown): value is number => Number.isSafeInteger(value) && (value as number) >= 0;
     if (!saved || saved.version !== WORLD_VERSION || !count(saved.minute) || !count(saved.nextRouteSerial) ||
         !['running', 'upgrade', 'won', 'over'].includes(saved.status) || !count(saved.hubUpgradeStock) ||
-        !count(saved.departureSlotBonus) || !saved.fleet || !Array.isArray(saved.fleet.planes) ||
+        !validSlots(saved.slots) || !saved.fleet || !Array.isArray(saved.fleet.planes) ||
         !saved.manifests || typeof saved.manifests !== 'object' || !Array.isArray(saved.upgradeHistory) ||
         (saved.spawner === null) !== (this.scenario.startCityIds !== null)) {
       throw new TypeError('invalid or incompatible world snapshot');
@@ -625,7 +724,8 @@ export class World implements WorldView {
       const manifest = saved.manifests[plane.id];
       const route = this.route(plane.routeId);
       if (!Array.isArray(manifest) || manifest.length !== plane.load || !route || !isPlaneType(plane.type) ||
-          plane.cityIndex < 0 || plane.cityIndex >= route.cityIds.length) {
+          plane.cityIndex < 0 || plane.cityIndex >= route.cityIds.length ||
+          !Number.isSafeInteger(plane.slotWaitTicks) || plane.slotWaitTicks < 0) {
         throw new TypeError('aircraft does not match its manifest or route');
       }
       this.manifests.set(plane.id, [...manifest]);
@@ -638,7 +738,11 @@ export class World implements WorldView {
     if ((this.upgrade !== null) !== (saved.status === 'upgrade')) throw new TypeError('upgrade state mismatch');
     this.upgradeHistory = saved.upgradeHistory.map((item) => ({ ...item }));
     this.hubUpgradeStock = saved.hubUpgradeStock;
-    this.departureSlotBonus = saved.departureSlotBonus;
+    loadRecord(this.slotsUsed, saved.slots.used);
+    loadRecord(this.slotBonus, saved.slots.bonus);
+    loadRecord(this.slotWait, saved.slots.waitMinutes);
+    this.slotHour = saved.slots.hour;
+    this.slotEverHeld = saved.slots.everHeld;
     this.jammed.clear();
     for (const queue of this.passengers.hubs.all()) if (queue.fullTicks > 0) this.jammed.add(queue.cityId);
     this.events = [];

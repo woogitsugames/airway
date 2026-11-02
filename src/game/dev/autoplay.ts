@@ -35,6 +35,7 @@ export function botSnapshot(sim: Sim): BotSnapshot {
     if (city.fullTicks > 0) ledger.push({ kind: 'hubOverflow', cityId: city.id, count: city.waiting });
     if (causes.noRoute) ledger.push({ kind: 'unrouted', cityId: city.id, count: causes.noRoute });
     if (causes.waitingTooLong) ledger.push({ kind: 'longWait', cityId: city.id, count: causes.waitingTooLong });
+    if (causes.slotWaitMinutes) ledger.push({ kind: 'slots', cityId: city.id, count: causes.slotWaitMinutes }); // [task-32]
   }
   const status = world.status === 'running' ? 'running' : world.status === 'upgrade' ? 'upgrade' : 'finished';
   return {
@@ -63,7 +64,7 @@ export function botCommandToSim(sim: Sim, command: BotCommand): Command {
   if (command.type === 'AssignPlane') return { type: 'AssignPlane', routeId: command.routeId, aircraft: command.aircraftType };
   const week = sim.world.offer?.week ?? 0;
   const upgrade = command.offerId as UpgradeKind;
-  return command.cityId && upgrade === 'hub-expansion'
+  return command.cityId && (upgrade === 'hub-expansion' || upgrade === 'departure-slots') // [task-32]
     ? { type: 'ChooseUpgrade', week, upgrade, hubId: command.cityId }
     : { type: 'ChooseUpgrade', week, upgrade };
 }

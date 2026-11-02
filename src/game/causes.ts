@@ -16,6 +16,8 @@ export interface HubCauseLedger {
   readonly transferNotReady?: number;
   readonly waitingTooLong?: number;
   readonly congestedSeconds?: number;
+  /** [task-32] Aircraft-minutes spent on the ground waiting for a departure slot (D-41). */
+  readonly slotWaitMinutes?: number;
 }
 
 export type CauseKind =
@@ -27,6 +29,7 @@ export type CauseKind =
   | 'long-wait'
   | 'capacity'
   | 'congestion-duration'
+  | 'slot-wait'
   | 'unavailable';
 
 export interface CauseFact {
@@ -114,6 +117,12 @@ export function buildCauseReport(ledger: HubCauseLedger): readonly CauseFact[] {
     add('congestion-duration', 30 + Math.min(30, Math.floor(congestedSeconds / 2)), {
       seconds: congestedSeconds,
     });
+  }
+
+  // [task-32] Aircraft held for departure slots left passengers waiting on the ground.
+  const slotWaitMinutes = nonnegative(ledger.slotWaitMinutes);
+  if (slotWaitMinutes > 0) {
+    add('slot-wait', 46 + Math.min(30, Math.floor(slotWaitMinutes / 10)), { minutes: slotWaitMinutes });
   }
 
   candidates.sort((a, b) => b.severity - a.severity || a.order - b.order);

@@ -19,6 +19,7 @@ import { mountHud, type GameSpeed, type HudController, type PlaneType } from '..
 import { createAirportOverlay, type AirportOverlay } from '../ui/overlay';
 import { WeeklyUpgradeView } from '../ui/upgrade';
 import { EndlessRun, cityDistanceKm, type RunCommand, type RunEvent } from './run';
+import { mountSlotHint } from './tutorial/slot-hint'; // [task-32]
 import type { World, ScreenPoint } from './world';
 
 export type SessionScreen = 'game' | 'upgrade' | 'gameover';
@@ -106,6 +107,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     },
   });
   const atc = mountAtcStrip(layer);
+  const slotHint = mountSlotHint(layer); // [task-32] one-time departure-slot step
   const handles = mountRouteHandles(layer);
   const hud: HudController = mountHud(layer, {
     onUndo: () => tool.undo(),
@@ -305,7 +307,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     const state = run.weeklyUpgrade;
     if (state && (force || state.week !== upgradeWeek || state.pendingHub)) {
       upgradeWeek = state.week;
-      upgrade.render(state, run.hubPressure());
+      upgrade.render(state, run.hubPressure(), run.slotPressure()); // [task-32] airports for "+2 slots"
       setScreen('upgrade');
     } else if (!state && screen === 'upgrade') {
       upgrade.render(null, []);
@@ -327,6 +329,9 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
         callbacks.cue?.({ type: 'hub-load', tick: run.tick, hubId: event.cityId, latitude, loadRatio: 1, capacity: city.capacity });
       } else if (event.type === 'week') {
         callbacks.cue?.({ type: 'week', tick: run.tick, week: event.week });
+        slotHint.hide(); // [task-32] the weekly board replaces the hint
+      } else if (event.type === 'slot-held') { // [task-32]
+        slotHint.held(event.cityId, event.limit, event.minutesToSlot);
       } else if (event.type === 'new-city') {
         callbacks.cue?.({ type: 'new-city', tick: run.tick, latitude });
       }
@@ -429,7 +434,8 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       for (let guard = 0; guard < 400 && !run.failed; guard++) {
         const offer = run.weeklyUpgrade;
         if (offer && !offer.pendingHub) {
-          const pick = offer.offers.find((item) => item.id !== 'hub-expansion') ?? offer.offers[0];
+          // [task-32] '+2 slots' also waits for an airport pick, so take an aircraft (always offered).
+          const pick = offer.offers.find((item) => item.id !== 'hub-expansion' && item.id !== 'departure-slots') ?? offer.offers[0];
           if (pick) run.queue({ type: 'ChooseUpgrade', week: offer.week, upgrade: pick.id });
         }
         advance(500);
@@ -451,6 +457,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       routeMenu.dispose();
       handles.dispose();
       atc.dispose();
+      slotHint.dispose();
       overlay.dispose();
       hud.destroy();
       gameOver.dispose();

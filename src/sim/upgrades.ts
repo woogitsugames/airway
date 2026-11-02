@@ -4,14 +4,20 @@
  * All random numbers come from the kernel's 'upgrades' RNG stream.
  */
 import { TICKS_PER_WEEK } from './clock.ts';
+import { DEPARTURE_SLOT_UPGRADE } from './params.ts';
 // [task-31] The week length comes from params.ts via clock.ts (D-40).
 export { TICKS_PER_WEEK };
 export type UpgradeKind = 'turboprop' | 'widebody' | 'hub-expansion' | 'departure-slots';
 export interface UpgradeOffer { readonly id: UpgradeKind; readonly week: number }
 export interface UpgradeRng { nextInt(maxExclusive: number): number }
 export interface HubPressure { readonly hubId: string; readonly waiting: number; readonly capacity: number; readonly label: string }
+/**
+ * `hubId` names the target airport of a targeted upgrade: the hub for 'hub-expansion' and (task 32,
+ * D-41) any active airport for 'departure-slots'. It may arrive in a second command.
+ */
 export interface UpgradeCommand { readonly type: 'ChooseUpgrade'; readonly week: number; readonly upgrade: UpgradeKind; readonly hubId?: string }
-export interface UpgradeEffects { grantPlane?: (type: 'turboprop' | 'widebody', count: number) => void; expandHub?: (hubId: string, extraCapacity: number, minimumConnectionMinutes: number) => void; addDepartureSlots?: (count: number) => void }
+export interface UpgradeEffects { grantPlane?: (type: 'turboprop' | 'widebody', count: number) => void; expandHub?: (hubId: string, extraCapacity: number, minimumConnectionMinutes: number) => void; addDepartureSlots?: (count: number, cityId: string) => void }
+/** `pendingHub` = an airport pick is pending; `selected` tells which upgrade it is for. */
 export interface WeeklyUpgradeState { readonly week: number; readonly paused: boolean; readonly offers: readonly UpgradeOffer[]; readonly pendingHub: boolean; readonly selected?: UpgradeKind; readonly lastChoice?: UpgradeCommand }
 const POOL: readonly UpgradeKind[] = ['turboprop', 'widebody', 'hub-expansion', 'departure-slots'];
 export function drawUpgradeOffers(week: number, rng: UpgradeRng): UpgradeOffer[] {
@@ -44,18 +50,22 @@ export function mostLoadedHub(hubs: readonly HubPressure[]): HubPressure | undef
     b.waiting * a.capacity - a.waiting * b.capacity || b.waiting - a.waiting ||
     (a.hubId < b.hubId ? -1 : a.hubId > b.hubId ? 1 : 0))[0];
 }
-export function chooseUpgrade(state: WeeklyUpgradeState, command: UpgradeCommand, effects: UpgradeEffects, validHubIds: readonly string[]): WeeklyUpgradeState {
+export function chooseUpgrade(state: WeeklyUpgradeState, command: UpgradeCommand, effects: UpgradeEffects, validHubIds: readonly string[],
+  validSlotCityIds: readonly string[] = validHubIds): WeeklyUpgradeState {
   if (!state.paused || state.lastChoice || command.week !== state.week || !state.offers.some(o => o.id === command.upgrade)) throw new Error('Upgrade choice rejected');
   if (command.upgrade === 'hub-expansion') {
     if (!command.hubId) return { ...state, pendingHub: true, selected: command.upgrade };
     if (!validHubIds.includes(command.hubId)) throw new Error('Unknown hub');
     if (!effects.expandHub) throw new Error('Hub upgrade adapter unavailable');
     effects.expandHub(command.hubId, 6, 15);
-  } else if (command.hubId !== undefined) throw new Error('Unexpected hub');
-  else if (command.upgrade === 'departure-slots') {
+  } else if (command.upgrade === 'departure-slots') {
+    // [task-32] D-41: +2 hourly departures for one airport the player picks (same flow as the hub pick).
+    if (!command.hubId) return { ...state, pendingHub: true, selected: command.upgrade };
+    if (!validSlotCityIds.includes(command.hubId)) throw new Error('Unknown airport');
     if (!effects.addDepartureSlots) throw new Error('Departure slot adapter unavailable');
-    effects.addDepartureSlots(2);
-  } else {
+    effects.addDepartureSlots(DEPARTURE_SLOT_UPGRADE, command.hubId);
+  } else if (command.hubId !== undefined) throw new Error('Unexpected hub');
+  else {
     if (!effects.grantPlane) throw new Error('Plane upgrade adapter unavailable');
     effects.grantPlane(command.upgrade, 1);
   }

@@ -57,6 +57,7 @@ Times are measured in the integration container (8 vCPU, SwiftShader); “ci” 
 | `npm run test:render-layers` | fast | 1 s | Headless (no WebGL): route preview range split on the committed arc, deferred airport ring/curfew rebuild and `clear()`, pooled plane tracks | `… passed=11 failed=0` |
 | `npm run test:daynight` | fast | 1 s | Local time, demand curve, weekly curfew, snapshot, sun interpolation (D-27) | `… passed=N failed=0` |
 | `npm run test:upgrades` | fast | <1 s | Seeded weekly offers, upgrade effects, congestion tie-breaks (D-28) | `… cases=5 passed=5 failed=0` |
+| `npm run test:slots` | fast | 1 s | Departure slots (D-41, task 32): limit 1/h never lets two aircraft leave one city in the same game hour, first-ready-first-out queue, real Sim hold/cause/event/snapshot/replay, "+2 slots" airport pick raises hourly throughput, "slot-wait" game-over cause | `SUMMARY test:slots seed=0xA1A1 passed=5 failed=0` |
 | `npm run test:flap` | fast | <1 s | Split-flap segmentation, Polish diacritics, truncation, 60–90 ms cascade | `… passed=15 failed=0` |
 | `npm run test:causes` | fast | 1 s | Hub-ledger cause ranking, missing evidence, world identity, local records | `… scenarios=3 passed=6 failed=0` |
 | `npm run test:saves` | fast | <1 s | Save/load hash, v0 migration, corrupt JSON, IndexedDB, native dual slot, background pause (D-29) | `… passed=11 failed=0` |
@@ -129,6 +130,7 @@ from `dist/`). Since task 31 (3-day week, D-40) the bot reaches the week-1 board
 balance seeds, including the ordinary test seed 0xA1A1, so the smoke, `ui:matrix` and the store `upgrade` scene all use
 0xA1A1. If a balance change moves this, fix the balance rather than picking a lucky seed or adding shortcuts.
 `node scripts/shots-31.mjs` captures the task-31 evidence (`docs/shots/31/`: week-1 board and the day bar at day 2/3).
+`node scripts/shots-32.mjs` captures the task-32 evidence (`docs/shots/32/`: first held departure with the one-time slot strip, week-1 board with the "+2 slots" label and its stamp, airport-pick sign), PL/EN × 412×915 / 915×412; `SUMMARY shots:32 seed=0xA1A1 captured=12 expected=12 failed=0`.
 
 ## Boundary regression
 

@@ -36,11 +36,14 @@ test('hub choice requires real hub and applies capacity plus MCT', () => {
   assert.throws(() => chooseUpgrade(chosen, { type: 'ChooseUpgrade', week: 1, upgrade: 'hub-expansion', hubId: 'LHR' }, effects, ['LHR']));
 });
 test('aircraft and slot effects fire only on valid choices', () => {
-  const calls = [], effects = { grantPlane: (...args) => calls.push(args), addDepartureSlots: n => calls.push(['slots', n]) };
+  const calls = [], effects = { grantPlane: (...args) => calls.push(args), addDepartureSlots: (n, city) => calls.push(['slots', n, city]) };
   const s = (id) => ({ week: 2, paused: true, offers: [{ id, week: 2 }], pendingHub: false });
   chooseUpgrade(s('turboprop'), { type: 'ChooseUpgrade', week: 2, upgrade: 'turboprop' }, effects, []);
-  chooseUpgrade(s('departure-slots'), { type: 'ChooseUpgrade', week: 2, upgrade: 'departure-slots' }, effects, []);
-  assert.deepEqual(calls, [['turboprop', 1], ['slots', 2]]);
+  // [task-32] "+2 slots" first asks for an airport (any active city), then applies to it.
+  assert.equal(chooseUpgrade(s('departure-slots'), { type: 'ChooseUpgrade', week: 2, upgrade: 'departure-slots' }, effects, [], ['WAW']).pendingHub, true);
+  assert.throws(() => chooseUpgrade(s('departure-slots'), { type: 'ChooseUpgrade', week: 2, upgrade: 'departure-slots', hubId: 'XXX' }, effects, [], ['WAW']));
+  chooseUpgrade(s('departure-slots'), { type: 'ChooseUpgrade', week: 2, upgrade: 'departure-slots', hubId: 'WAW' }, effects, [], ['WAW']);
+  assert.deepEqual(calls, [['turboprop', 1], ['slots', 2, 'WAW']]);
 });
 console.log(`SUMMARY test:upgrades seed=0xA1A1 cases=5 passed=${passed} failed=${5-passed}`);
 if (passed !== 5) process.exitCode = 1;

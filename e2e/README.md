@@ -38,7 +38,7 @@ Stable `data-testid` attributes required on real UI:
 | --- | --- |
 | Menu | `menu-endless`, `menu-continue` |
 | Game | `action-save`, `action-menu` (on the pause sheet: press Escape / Pause first), `action-resume` |
-| Upgrade | `upgrade-option-0…2` (each card also has `data-upgrade=<kind>`; a `hub-expansion` card waits for a hub tap) |
+| Upgrade | `upgrade-option-0…2` (each card also has `data-upgrade=<kind>`; a `hub-expansion` card waits for a hub tap, a `departure-slots` card (task 32) for an airport tap) |
 | Game over | `game-over`, `gameover-menu` |
 
 The Playwright test uses **actual pointer drags** for drawing routes and
