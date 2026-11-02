@@ -114,18 +114,19 @@ export function labelAirportActions(container: ParentNode): number {
   }
   return count;
 }
-function cityCondition(city: CityStatus): string {
+function cityCondition(city: CityStatus, waiting: number): string {
+  if (city.jammed) return t('a11y.cityJammed');
   const capacity = city.hubCapacity;
   if (capacity === undefined || !Number.isFinite(capacity) || capacity <= 0) {
     return t('a11y.cityAirport');
   }
-  if (city.jammed || city.waiting >= capacity) return t('a11y.cityJammed');
-  if (city.waiting >= capacity * 0.8) return t('a11y.cityBusy');
+  if (waiting >= capacity) return t('a11y.cityJammed');
+  if (waiting >= capacity * 0.8) return t('a11y.cityBusy');
   return t('a11y.cityNormal');
 }
 export function describeCity(city: CityStatus): string {
   const waiting = Number.isSafeInteger(city.waiting) ? Math.max(0, city.waiting) : 0;
-  return t('a11y.cityDescription', { city: city.name, waiting, state: cityCondition(city) });
+  return t('a11y.cityDescription', { city: city.name, waiting, state: cityCondition(city, waiting) });
 }
 
 /** Polite status region; only announce on user selection, never during each render frame. */
@@ -179,6 +180,8 @@ export function bindCityAccessibility(
   if (!nativeButton) element.addEventListener('keydown', key);
   return {
     update(city) {
+      if (city.name === current.name && city.waiting === current.waiting &&
+        city.hubCapacity === current.hubCapacity && city.jammed === current.jammed) return;
       current = city;
       element.setAttribute('aria-label', describeCity(current));
     },
