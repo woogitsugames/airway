@@ -13,7 +13,11 @@
     "test:fast": "npm run typecheck && npm run test:i18n && npm run test:arch",
     "shots": "node scripts/shots.mjs",
     "shots:mockups": "node mockups/shoot.mjs",
-    "mockups": "node mockups/build-all.mjs"
+    "mockups": "node mockups/build-all.mjs",
+    "test:balance": "node --experimental-strip-types scripts/balance-report.ts --test",
+    "test:balance:fixture": "node --experimental-strip-types scripts/balance-report.ts --test --fixture",
+    "balance:report": "node --experimental-strip-types scripts/balance-report.ts --report",
+    "balance:fixture": "node --experimental-strip-types scripts/balance-report.ts --report --fixture"
   },
   "dependencies": {
     "@capacitor/android": "8.5.3",
