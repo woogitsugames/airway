@@ -131,4 +131,8 @@ export const en = {
   'gameover.cause.capacity': 'The waiting area reached {waiting} of {capacity} places.',
   'gameover.cause.congestionDuration': 'The hub remained congested for {seconds} seconds.',
   'gameover.cause.unavailable': 'There is not enough recorded data to identify another cause.',
+  // [task-16] Save/load issues are translated by the composition root.
+  'save.error.corrupt': 'The saved game is damaged. A new game has been started.',
+  'save.error.unsupported': 'The save is from a newer game version. A new game has been started.',
+  'save.error.storage-unavailable': 'The saved game could not be read. A new game has been started.',
 } as const;

@@ -133,4 +133,8 @@ export const pl = {
   'gameover.cause.capacity': 'Poczekalnia osiągnęła limit: {waiting} z {capacity} miejsc.',
   'gameover.cause.congestionDuration': 'Zator utrzymywał się przez {seconds} sekund.',
   'gameover.cause.unavailable': 'Brakuje danych, aby wskazać kolejną przyczynę.',
+  // [task-16] Save/load issue messages.
+  'save.error.corrupt': 'Zapis gry jest uszkodzony. Rozpoczęto nową grę.',
+  'save.error.unsupported': 'Zapis pochodzi z nowszej wersji gry. Rozpoczęto nową grę.',
+  'save.error.storage-unavailable': 'Nie udało się odczytać zapisu gry. Rozpoczęto nową grę.',
 } as const satisfies Record<keyof typeof en, string>;

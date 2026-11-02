@@ -55,6 +55,8 @@ npm run build
 | `npm run test:causes` | Six fixed-seed checks for hub-ledger cause ranking, missing evidence, world identity and local records | `SUMMARY test:causes seed=0xA1A1 scenarios=3 passed=6 failed=0` |
 | `npm run test:fast` | `typecheck`, then `test:i18n`, then `test:arch` | Three test summaries and exit code 0 |
 | `npm run shots` | Browser smoke: game canvas at portrait/landscape dimensions | `SUMMARY shots seed=0xA1A1 captured=4 failed=0`; images in `docs/shots/01/` and `docs/shots/15/` |
+| `npm run test:saves` | [task-16] Fixed-seed save/load hash, v0 migration, corrupt JSON, IndexedDB, native dual-slot saves, background pause | `SUMMARY test:saves seed=0xA1A1 passed=11 failed=0` |
+| `npm run test:fast` | `typecheck`, `test:i18n`, `test:arch`, then `test:saves` | All three test summaries and exit code 0 |
 
 Every future test must have a fixed seed (use `0xA1A1` where no gameplay seed
 is needed), terminate with one `SUMMARY ...` line, set a nonzero exit code on
