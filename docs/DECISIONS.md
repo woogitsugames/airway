@@ -67,3 +67,10 @@ Formalised by task 01 (see `docs/tasks/01-scaffold.md`): `src/sim` imports no re
 Briefs in `docs/tasks/` (index `00-INDEX.md`, generator `docs/tasks/tools/gen_tasks.py`). Each session branches
 `task/NN-slug` from `dev`, pushes it and opens a draft PR to `dev`; the owner merges. Task 01 creates `dev` from this branch.
 **Status: in force.**
+
+## D-15 — Proposed Android/iOS application identifier (2026-11-02, task 01)
+Use `games.airway.app` as the provisional Capacitor `appId` with app name
+`Airway` and distribution directory `dist`. The identifier has not been
+checked against either app store or signing credentials and can be changed
+before native projects are generated (tasks 24/25).
+**Status: proposed; owner confirmation required before store submission.**

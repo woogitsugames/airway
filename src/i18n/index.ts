@@ -59,6 +59,6 @@ export function setLanguage(language: Language): void {
 export function t(key: TranslationKey, params?: TranslationParams): string {
   const template = catalogs[getLanguage()][key] ?? en[key];
   return template.replace(/\{([A-Za-z][A-Za-z0-9_]*)\}/g, (token, name: string) =>
-    params?.[name] === undefined ? token : String(params[name]),
+    params?.[name] === undefined ? token : String(params?.[name]),
   );
 }

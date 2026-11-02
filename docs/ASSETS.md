@@ -29,3 +29,13 @@ Rejected: **B612 / B612 Mono** (OFL, Airbus cockpit face) — no Polish diacriti
 ## Graphics
 All mockup graphics (globes, terrain, planes, glyphs, stamps, medallions, icons, 3D models) are drawn procedurally in code in this
 repository. No third-party images, icon packs or stock art. No CC0 assets used yet.
+
+<!-- [task-01] Runtime font provenance: existing stage-0 font binaries are reused unchanged. -->
+## Production font copies (task 01)
+The game ships `public/fonts/Overpass-400.ttf`, `Overpass-800.ttf`,
+`OverpassMono-700.ttf`, `AtkinsonHyperlegibleNext-400.ttf`, and
+`AtkinsonHyperlegibleNext-700.ttf`. All five are byte-identical copies of
+`mockups/fonts/` in this repository. The corresponding SIL OFL 1.1 texts
+are `public/fonts/OFL-Overpass.txt`, `OFL-OverpassMono.txt`,
+and `OFL-AtkinsonHyperlegibleNext.txt`; each is colocated with the
+fonts it covers. No downloaded graphics are included.
