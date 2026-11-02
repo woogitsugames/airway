@@ -73,6 +73,7 @@ Times are measured in the integration container (8 vCPU, SwiftShader); “ci” 
 | `npm run test:ios-config` | fast | <1 s | iOS orientations, permissions, bundle ID, CocoaPods, audio session, safe-area tokens, PNG sizes (D-36) | `… checks=N passed=1 failed=0` |
 | `npm run test:store-shots` | fast | ~3 s | PL/EN store copy limits, D-18 titles, no competitor names; [task-36] the 30 committed PNGs: size, not blank/white, manifest without dev text, glyphs only D-08, contact sheet | `… listings=2 fields=12 scenes=5 devices=3 shots=30 passed=1 failed=0` |
 | `npm run test:site` | fast | <1 s | Landing page: local links, preview alt texts, PL/EN parity, privacy page, no trackers | `… assertions=N passed=N failed=0` |
+| `npm run test:format` | fast | 1 s | [task-37] D-61 number format: PL 999 / 2 500 / 11 000 / 1 234 567 (four-digit groups, same no-break space as Intl), EN unchanged, `t()` formats numeric params | `SUMMARY test:format seed=0xA1A1 passed=8 failed=0` |
 | `npm run test:arch` | fast (last) | 1 s | TS-AST guard: `src/sim` imports only pure modules; no DOM, Capacitor, three, wall clock, `Math.random` or transcendentals (D-13) | `… files=N passed=1 failed=0` |
 | `npm run test:fast` | — | 30 s | All rows marked “fast”, in order | `SUMMARY test:fast … steps=36 passed=36 failed=0` |
 | `npm run build` | ci | 10 s | `prebuild` (`build:distances`, `build:land`), `tsc --noEmit`, `vite build` | exit 0; `dist/` |
