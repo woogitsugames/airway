@@ -81,7 +81,10 @@
     "android:aab": "node scripts/build-android.mjs --release-aab",
     "test:android-config": "node scripts/test-android-config.mjs",
     "shots:25": "node scripts/shots.mjs",
-    "test:ios-config": "node ios/scripts/test-ios-config.mjs"
+    "test:ios-config": "node ios/scripts/test-ios-config.mjs",
+    "shots:26": "node scripts/shots.mjs",
+    "store:shots": "node scripts/store-shots.mjs",
+    "test:store-shots": "node scripts/store-shots.mjs --validate"
   },
   "dependencies": {
     "@capacitor/android": "8.5.3",

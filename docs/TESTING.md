@@ -77,6 +77,8 @@ npm run build
 | `npm run test:fast` | `typecheck`, `test:i18n`, `test:arch`, then `test:android-config` | Three test summaries and exit code 0 |
 | `npm run test:ios-config` | Verify iOS orientations, permissions, bundle ID, CocoaPods, native audio, safe-area tokens and PNG dimensions | `SUMMARY test:ios-config seed=0xA1A1 checks=N passed=1 failed=0` |
 | `npm run test:fast` | `typecheck`, then `test:i18n`, `test:arch`, `test:ios-config` | All three test summaries and exit code 0 |
+| `npm run test:store-shots` | [task-26] Validate PL/EN store copy limits, owner titles and 30-shot matrix (fixed seed) | `SUMMARY test:store-shots seed=0xA1A1 listings=2 fields=12 scenes=5 devices=3 passed=1 failed=0` |
+| `npm run store:shots` | [task-26] Capture 5 actual game scenes in PL/EN on phone, foldable and tablet; requires integrated dev-only fixture | `SUMMARY store:shots seed=0xA1A1 expected=30 captured=30 passed=1 failed=0`; PNGs in `docs/store/shots/` |
 
 Every future test must have a fixed seed (use `0xA1A1` where no gameplay seed
 is needed), terminate with one `SUMMARY ...` line, set a nonzero exit code on
@@ -134,3 +136,4 @@ and docs/shots/17/board-l.png after opening the puzzle selector. -->
 Chromium, and captures seven portrait steps plus landscape and foldable checks
 into `docs/shots/23/`. The temporary three-city adapter is not a simulation test:
 integration with real route/HUD/upgrade events requires tasks 07/12/13.
+[task-26] Store screenshots are intentionally fail-closed: without a complete deterministic game fixture, `npm run store:shots` exits nonzero and produces no publishable PNGs. The text-only validation command is independent of Playwright. See `docs/store/README.md`.
