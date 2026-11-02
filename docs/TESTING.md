@@ -62,6 +62,9 @@ npm run build
 | `npm run test:fast` | `typecheck`, i18n, architecture, CVD and contrast checks | All four test summaries and exit code 0 |
 | `npm run test:cvd` | Machado 2009 full-severity protan/deutan/tritan; 6 destination colours, minimum pairwise CIE76 ≥ 15; CSS token parity | `SUMMARY test:cvd seed=0xA1A1 modes=3 colours=6 comparisons=45 passed=1 failed=0` |
 | `npm run test:contrast` | WCAG 2.x contrast ratio ≥ 4.5:1 for all declared text/background pairs; CSS token parity | `SUMMARY test:contrast seed=0xA1A1 pairs=16 threshold=4.5 passed=1 failed=0` |
+| `npm run test:puzzles` | Task-17 JSON puzzle validation, zero-action loss, 15 reference wins at ≥15%, deterministic replay, unlimited undo/reset, rejected commands | `SUMMARY test:puzzles seed=0xA1A1 levels=15 cases=N passed=N failed=0` |
+| `npm run test:fast` | `typecheck`, then `test:i18n`, `test:arch`, `test:puzzles` | All test summaries and exit code 0 |
+| `npm run shots:puzzles` | [task-17] Puzzle selector screenshot smoke in two orientations | `SUMMARY shots:puzzles seed=0xA1A1 captured=2 failed=0`; images in `docs/shots/17/` |
 
 Every future test must have a fixed seed (use `0xA1A1` where no gameplay seed
 is needed), terminate with one `SUMMARY ...` line, set a nonzero exit code on
@@ -112,3 +115,5 @@ camera. The game-over controller pauses simulation immediately and drives an
 injected renderer focus callback for 700ms with cubic ease-out, then freezes
 the scene and presents the report. It never mutates the simulation.
 <!-- [task-19] Audio scheduling regression: no browser or AudioContext required. -->
+<!-- [task-17] The additional puzzle-board screenshots are captured as docs/shots/17/board-p.png
+and docs/shots/17/board-l.png after opening the puzzle selector. -->

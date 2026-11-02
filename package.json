@@ -14,7 +14,7 @@
     "test:sim-kernel": "node --experimental-strip-types scripts/test-sim-kernel.ts",
     "test:undo": "node --experimental-strip-types scripts/test-undo.ts",
     "test:daily": "node --experimental-strip-types scripts/test-daily.ts",
-    "test:fast": "npm run typecheck && npm run test:i18n && npm run test:arch && npm run test:rng && npm run test:sim-kernel && npm run test:undo && npm run test:daily && npm run test:cities && npm run test:spawner && npm run test:geo-math && npm run test:gestures && npm run test:overlay-layout && npm run test:routing && npm run test:hubs && npm run test:sim-week && npm run test:route-tool && npm run test:interp && npm run test:daynight && npm run test:flap && npm run test:causes && npm run test:saves && npm run test:audio-sched && npm run test:cvd && npm run test:contrast",
+    "test:fast": "npm run typecheck && npm run test:i18n && npm run test:arch && npm run test:rng && npm run test:sim-kernel && npm run test:undo && npm run test:daily && npm run test:cities && npm run test:spawner && npm run test:geo-math && npm run test:gestures && npm run test:overlay-layout && npm run test:routing && npm run test:hubs && npm run test:sim-week && npm run test:route-tool && npm run test:interp && npm run test:daynight && npm run test:flap && npm run test:causes && npm run test:saves && npm run test:audio-sched && npm run test:cvd && npm run test:contrast && npm run test:puzzles",
     "shots": "node scripts/shots.mjs && node dev/shots.mjs",
     "shots:mockups": "node mockups/shoot.mjs",
     "mockups": "node mockups/build-all.mjs",
@@ -58,7 +58,10 @@
     "shots:19": "node scripts/shots.mjs",
     "shots:20": "node scripts/shots.mjs",
     "test:cvd": "node scripts/check-cvd.mjs",
-    "test:contrast": "node scripts/check-contrast.mjs"
+    "test:contrast": "node scripts/check-contrast.mjs",
+    "test:puzzles": "node scripts/test-puzzles.mjs",
+    "shots:17": "node scripts/shots.mjs",
+    "shots:puzzles": "node scripts/shots-puzzles.mjs"
   },
   "dependencies": {
     "@capacitor/android": "8.5.3",

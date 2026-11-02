@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "id": "03",
+  "titleKey": "puzzle.03.title",
+  "durationTicks": 2160,
+  "demandSeed": 1811,
+  "startCities": [
+    {
+      "id": "MAD",
+      "continent": "EU",
+      "latitude": 40.5,
+      "longitude": -3.5,
+      "hubCapacity": 100
+    },
+    {
+      "id": "LIS",
+      "continent": "EU",
+      "latitude": 38.7,
+      "longitude": -9.1,
+      "hubCapacity": 100
+    },
+    {
+      "id": "ACC",
+      "continent": "AF",
+      "latitude": 5.6,
+      "longitude": -0.2,
+      "hubCapacity": 100
+    }
+  ],
+  "stock": {
+    "turboprops": 1,
+    "jets": 1,
+    "hubUpgrades": 0
+  },
+  "goal": {
+    "kind": "deliver",
+    "targetDelivered": 90
+  },
+  "demand": [
+    {
+      "from": "MAD",
+      "to": "ACC",
+      "passengers": 16,
+      "firstTick": 16,
+      "everyTicks": 200
+    }
+  ],
+  "availableRoutes": [
+    {
+      "from": "MAD",
+      "to": "LIS",
+      "plane": "turboprop",
+      "flightTicks": 70,
+      "intervalTicks": 120
+    },
+    {
+      "from": "LIS",
+      "to": "ACC",
+      "plane": "jet",
+      "flightTicks": 285,
+      "intervalTicks": 120
+    }
+  ],
+  "referenceCommands": [
+    {
+      "type": "connect",
+      "from": "MAD",
+      "to": "LIS",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "LIS",
+      "to": "ACC",
+      "plane": "jet"
+    }
+  ]
+}
