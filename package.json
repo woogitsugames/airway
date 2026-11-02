@@ -1,0 +1,16 @@
+{
+  "name": "airway-network-game",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Stage 0: research and visual-direction mockups (no game code yet).",
+  "scripts": {
+    "mockups": "node mockups/build-all.mjs",
+    "shots": "node mockups/shoot.mjs"
+  },
+  "devDependencies": {
+    "d3-geo": "^3.1.1",
+    "topojson-client": "^3.1.0",
+    "world-atlas": "^2.0.2"
+  }
+}
