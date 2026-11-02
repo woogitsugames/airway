@@ -5,6 +5,7 @@ import {
   type RouteView, type SafeAreaInsets, type ScreenPoint, type WorldRenderer,
 } from '../render';
 import type { RoutePreviewModel } from '../input/routeTool';
+import { contrastRatio, relativeLuminance } from '../render'; // [task-34]
 
 export type { ScreenPoint } from '../render';
 
@@ -56,6 +57,7 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
   const loop = (now: number): void => {
     if (disposed) return;
     raf = requestAnimationFrame(loop);
+  if (import.meta.env.DEV) installWorldProbe(renderer); // [task-34] screenshot/contrast probe (scripts/shots-34.mjs)
     const dt = Math.min(0.1, Math.max(0, (now - last) / 1000));
     last = now;
     if (spin) {
@@ -110,4 +112,41 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
       renderer.dispose();
     },
   };
+}
+
+// [task-34] DEV-only probe for scripts/shots-34.mjs: camera centre and night readability measurements.
+function installWorldProbe(renderer: WorldRenderer): void {
+  const probe = {
+    ready: false,
+    longitude: () => renderer.orbit.longitudeDeg,
+    /** Median WCAG contrast per layer; `tags` is the worst luggage tag against the globe under it. */
+    nightContrast(): Record<string, number | null> {
+      const out: Record<string, number | null> = {};
+      for (const [name, value] of Object.entries(renderer.measureLayerContrast())) out[name] = value ? value.ratio : null;
+      const canvas = renderer.canvas.getBoundingClientRect();
+      const tags = [...document.querySelectorAll<HTMLElement>('.airport-bubble')].filter((tag) => !tag.hidden && tag.offsetParent);
+      const rects = tags.map((tag) => {
+        const r = tag.getBoundingClientRect();
+        return { x: r.left - canvas.left, y: r.top - canvas.top, width: r.width, height: r.height };
+      });
+      const under = renderer.sampleLuminance(rects);
+      let worst: number | null = null;
+      tags.forEach((tag, i) => {
+        const globe = under[i];
+        const paper = parseRgb(getComputedStyle(tag).backgroundColor);
+        if (globe === null || !paper) return;
+        const ratio = Math.round(contrastRatio(relativeLuminance(paper[0], paper[1], paper[2]), globe) * 100) / 100;
+        worst = worst === null ? ratio : Math.min(worst, ratio);
+      });
+      out.tags = worst;
+      return out;
+    },
+  };
+  void renderer.ready.then(() => { probe.ready = true; });
+  (window as unknown as { __awWorld: typeof probe }).__awWorld = probe;
+}
+
+function parseRgb(css: string): [number, number, number] | null {
+  const m = /rgba?\((\d+),\s*(\d+),\s*(\d+)/.exec(css);
+  return m ? [Number(m[1]), Number(m[2]), Number(m[3])] : null;
 }

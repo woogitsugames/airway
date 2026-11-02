@@ -20,6 +20,7 @@ import {
 import { createRoutePreview, type RoutePreviewView } from './routePreview';
 import { RouteLayer, type AircraftKind, type GeoWaypoint, type RouteRenderSpec } from './routes';
 import { createSunController, type SunController } from './sun';
+import { measureLayerContrast, sampleLuminance, type LayerContrast, type PixelRect } from './contrast';
 import type { UpgradeKind } from '../sim/upgrades';
 
 export const DIORAMA_SKY = '#8CC3D8';
@@ -115,6 +116,10 @@ export interface WorldRenderer {
   /** Paint an upgrade-card model into a 2D canvas through the shared WebGL context. */
   drawModelPreview(kind: UpgradeKind, target: HTMLCanvasElement): boolean;
   stats(): WorldStats;
+  /** [task-34] Diagnostic: median WCAG contrast of routes/airports/planes against the globe behind them. */
+  measureLayerContrast(): Record<string, LayerContrast | null>;
+  /** [task-34] Diagnostic: median relative luminance of the rendered frame inside CSS-pixel rects. */
+  sampleLuminance(rects: readonly PixelRect[]): (number | null)[];
   dispose(): void;
 }
 
@@ -315,6 +320,15 @@ export function createWorldRenderer(
         geometries: info.memory.geometries, textures: info.memory.textures,
         planes: planes.stats.planes, routes: routes.stats.routes, airports: cities.size,
       };
+    },
+    measureLayerContrast() {
+      camera.updateMatrixWorld();
+      return measureLayerContrast(renderer, scene, camera,
+        { routes: routes.group, airports: airports.group, planes: planes.group });
+    },
+    sampleLuminance(rects) {
+      camera.updateMatrixWorld();
+      return sampleLuminance(renderer, scene, camera, rects, orbit.viewportWidth);
     },
     dispose() {
       if (disposed) return;

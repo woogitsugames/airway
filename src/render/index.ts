@@ -14,3 +14,4 @@ export { subsolarLongitudeAt, NOVEMBER_SUBSOLAR_LATITUDE_DEG } from './sun';
 export { latLonToVec3, vec3ToLatLon, normalizeLon, type LonLat } from './globe/geo-math';
 export type { AircraftKind } from './routes';
 export { renderModel } from './modelPreview';
+export { contrastRatio, relativeLuminance, type LayerContrast, type PixelRect } from './contrast'; // [task-34]
