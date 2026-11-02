@@ -125,10 +125,10 @@ export function createTagDock(root: HTMLElement, actions: HudActions): { render(
         const disabled = (name === 'undo' && !state.canUndo)
           || ((isPlane || name === 'hub') && (!Number.isFinite(stock) || stock <= 0));
         if (button.disabled !== disabled) button.disabled = disabled;
-        button.classList.toggle('is-empty', disabled);
+        if (button.classList.contains('is-empty') !== disabled) button.classList.toggle('is-empty', disabled);
         const chosen = isPlane && !disabled && name === state.selectedPlane;
-        button.classList.toggle('is-selected', chosen);
-        if (isPlane) button.setAttribute('aria-pressed', String(chosen));
+        if (button.classList.contains('is-selected') !== chosen) button.classList.toggle('is-selected', chosen);
+        if (isPlane && button.getAttribute('aria-pressed') !== String(chosen)) button.setAttribute('aria-pressed', String(chosen));
         const label = name === 'undo' ? t('hud.undo')
           : name === 'hub' ? t('hud.hubCount', { count: nextCount })
           : name === 'turboprop' ? t('hud.turbopropCount', { count: nextCount })
