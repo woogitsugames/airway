@@ -1,8 +1,25 @@
 // [task-15] Fixed-seed regression for three independent congestion scenarios.
 import assert from 'node:assert/strict';
-import { buildCauseReport } from '../src/game/causes.ts';
-import { sameWorldIdentity, nextWorldSeed } from '../src/ui/gameover/seed.ts';
-import { persistBestRecord, readBestRecord } from '../src/ui/gameover/storage.ts';
+import { readFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import ts from 'typescript';
+
+// [task-15] Load these pure TS modules on Node 18+ without a custom loader.
+async function loadPureTypeScript(relative) {
+  const file = resolve(dirname(fileURLToPath(import.meta.url)), relative);
+  const source = readFileSync(file, 'utf8');
+  const compiled = ts.transpileModule(source, {
+    compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
+  });
+  return import('data:text/javascript;base64,' + Buffer.from(compiled.outputText).toString('base64'));
+}
+const [{ buildCauseReport }, { sameWorldIdentity, nextWorldSeed },
+  { persistBestRecord, readBestRecord }] = await Promise.all([
+  loadPureTypeScript('../src/game/causes.ts'),
+  loadPureTypeScript('../src/ui/gameover/seed.ts'),
+  loadPureTypeScript('../src/ui/gameover/storage.ts'),
+]);
 
 const SEED = '0xA1A1';
 let passed = 0;

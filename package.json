@@ -14,7 +14,7 @@
     "shots": "node scripts/shots.mjs",
     "shots:mockups": "node mockups/shoot.mjs",
     "mockups": "node mockups/build-all.mjs",
-    "test:causes": "node --experimental-strip-types scripts/test-causes.mjs"
+    "test:causes": "node scripts/test-causes.mjs"
   },
   "dependencies": {
     "@capacitor/android": "8.5.3",
