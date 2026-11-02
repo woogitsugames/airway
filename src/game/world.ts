@@ -27,6 +27,8 @@ export interface World {
   setInsets(insets: SafeAreaInsets): void;
   /** Slow decorative rotation for the menu; stops as soon as the player touches the globe. */
   setIdleSpin(degreesPerSecond: number): void;
+  /** Menu framing: North Atlantic close-up behind the departures board, slowly turning. */
+  showMenuBackdrop(): void;
   addAirport(airport: WorldAirport): void;
   setHubLoad(id: string, used: number, capacity: number): void;
   setRoutes(routes: readonly RouteRenderSpec[], revision: number | string): void;
@@ -63,6 +65,7 @@ export function createWorld(host: HTMLElement, label: string): World {
   const routePreview: RoutePreviewView = createRoutePreview();
   scene.add(routePreview.object);
 
+  const hubIds = new Set<string>();
   let globe: GlobeInstance | null = null;
   let sun: SunController | null = null;
   let disposed = false;
@@ -112,7 +115,9 @@ export function createWorld(host: HTMLElement, label: string): World {
     const state = orbit.getState();
     if (sun) {
       sun.setViewCenter(state.longitude, state.latitude);
-      sun.update(frame ? frame.tick : 16 * 60, frame ? Math.max(0, Math.min(1, frame.alpha)) : 0);
+      // Without a run (menu), keep the sun ahead of the view so the backdrop is daylit.
+      const idleMinute = Math.round(((180 - (state.longitude + 25)) * 4 % 1440 + 1440) % 1440);
+      sun.update(frame ? frame.tick : idleMinute, frame ? Math.max(0, Math.min(1, frame.alpha)) : 0);
     }
     airports.setZoom(state.zoom);
     planes.update(frame ? frame.alpha : 1, camera);
@@ -127,8 +132,19 @@ export function createWorld(host: HTMLElement, label: string): World {
     canvas, camera, orbit, ready,
     setInsets(next) { insets = next; orbit.setViewport(width, height, insets); },
     setIdleSpin(degreesPerSecond) { spin = degreesPerSecond; },
-    addAirport(airport) { airports.addAirport({ id: airport.id, lon: airport.lon, lat: airport.lat, hub: airport.hub }); },
-    setHubLoad(id, used, capacity) { airports.setHubLoad(id, used, capacity); },
+    showMenuBackdrop() {
+      insets = width > height ? { left: Math.min(440, width * 0.45), top: 70 } : { top: 120, bottom: Math.round(height * 0.3) };
+      orbit.setViewport(width, height, insets);
+      orbit.setTarget(-18, 40);
+      orbit.setZoom(width > height ? 1.7 : 2.2);
+      spin = 1.2;
+    },
+    addAirport(airport) {
+      airports.addAirport({ id: airport.id, lon: airport.lon, lat: airport.lat, hub: airport.hub });
+      if (airport.hub) hubIds.add(airport.id);
+    },
+    // AirportsLayer fixes the hub model at creation; a city promoted later keeps its small model.
+    setHubLoad(id, used, capacity) { if (hubIds.has(id)) airports.setHubLoad(id, used, capacity); },
     setRoutes(routes, revision) { routeLayer.setRoutes(routes, revision); },
     setPlanes(previous, current) { planes.setSnapshots(previous, current); },
     preview(model) { routePreview.update(model); },
@@ -155,6 +171,7 @@ export function createWorld(host: HTMLElement, label: string): World {
       planes.dispose();
       routeLayer.dispose();
       airports.dispose();
+      hubIds.clear();
       airports = createAirports(scene, { maxAirports: 64, maxHubSeats: 32 });
       routeLayer = new RouteLayer();
       planes = new PlaneLayer(routeLayer, { maxPlanes: 120 });

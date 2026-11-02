@@ -58,7 +58,7 @@ async function boot(): Promise<void> {
   let world: World | null = null;
   try {
     world = createWorld(app, t('canvas.label'));
-    world.setIdleSpin(2.5);
+    world.showMenuBackdrop();
   } catch (error) {
     console.error('WebGL is unavailable; the menu stays on the flat sky.', error);
   }
@@ -109,8 +109,8 @@ async function boot(): Promise<void> {
     },
     onScreen: (name: ScreenName) => {
       if (name !== 'game') {
-        endSession();
-        world?.setIdleSpin(2.5);
+        if (session) { endSession(); world?.reset(); }
+        world?.showMenuBackdrop();
         screenName = name === 'settings' || name === 'licenses' ? 'settings' : 'menu';
       }
     },
