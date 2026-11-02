@@ -382,7 +382,10 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     advance,
     setPaused,
     routeGesture() {
-      const list = projectedCities().filter((c) => c.visible);
+      // Only airports clear of the boarding pass, the dock and the screen edge are actionable.
+      const w = world.canvas.clientWidth;
+      const h = world.canvas.clientHeight;
+      const list = projectedCities().filter((c) => c.visible && c.x > 40 && c.x < w - 120 && c.y > 100 && c.y < h - 120);
       const rangeKm = PLANE_TYPES[selectedPlane].rangeKm;
       for (const a of list) for (const b of list) {
         const km = cityDistanceKm(a.id, b.id);
