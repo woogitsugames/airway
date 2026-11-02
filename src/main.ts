@@ -7,10 +7,9 @@ import './ui/theme/theme.css';
 import './ui/game.css';
 import { bootAudio, audioSettingsFromToggles } from './audio';
 import { dailyKey } from './core/daily';
-import { seedFromString } from './core/rng';
 import { PUZZLES } from './data/puzzles';
 import { registerDevGameAdapter, type AwScreen } from './game/devHandle';
-import { DailyChallengeMode } from './game/modes/daily';
+import { createDailyMode } from './game/modes/daily';
 import { EndlessRun } from './game/run';
 import { readGame, restoreSimFromSave, saveSourceFromSim, writeGame } from './game/save';
 import { LocalScoreService } from './game/scores';
@@ -65,10 +64,7 @@ async function boot(): Promise<void> {
 
   const storage: KeyValueStorage = await createDefaultStorage();
   const scores = new LocalScoreService();
-  const daily = new DailyChallengeMode(
-    { dailyKey, dailySeed: (key) => seedFromString(`airway/daily/v1/${key}`) },
-    scores, (seed) => EndlessRun.create(seed, 'daily'),
-  );
+  const daily = createDailyMode(scores);
   let saved: SavedSummary | null = null;
   let session: GameSession | null = null;
   let pendingSeed: number | null = null;
@@ -206,7 +202,7 @@ async function boot(): Promise<void> {
   function startDaily(): void {
     const kind = scores.getProgress(dailyKey()).officialUsed ? 'practice' : 'official';
     dailySession = daily.start(kind);
-    if (dailySession.status === 'started') openGame(dailySession.session.simulation, 'daily');
+    if (dailySession.status === 'started') openGame(new EndlessRun(dailySession.session.simulation), 'daily');
   }
 
   async function continueSaved(): Promise<void> {
@@ -258,5 +254,41 @@ async function boot(): Promise<void> {
       },
       forceHubOverload: () => session?.forceOverload(),
     });
+  }
+
+  // Store screenshots (scripts/store-shots.mjs, DEV only): drive the real session to a scene through
+  // real Commands, then flag <html data-store-shot-ready>. Never a static mock.
+  const storeShot = import.meta.env.DEV ? query.get('storeShot') : null;
+  if (storeShot) void runStoreShot(storeShot);
+
+  async function runStoreShot(scene: string): Promise<void> {
+    const seed = Number(query.get('seed') ?? '41377') >>> 0;
+    const [hh, mm] = (query.get('storeHour') ?? '18:30').split(':').map(Number);
+    await world?.ready.catch(() => undefined);
+    const done = (): void => {
+      document.documentElement.dataset.storeShotSeed = String(seed);
+      document.documentElement.dataset.storeShotReady = scene;
+    };
+    if (scene === 'menu') { done(); return; }
+    skipTutorialOnce = true;
+    startEndless(seed);
+    const active = session as GameSession | null;
+    if (!active) return;
+    const run = active.run;
+    // The same AddRoute the route tool sends, between the first reachable pair.
+    const cities = run.cityList();
+    let queued = false;
+    for (const a of cities) for (const b of cities) {
+      if (!queued && a.id < b.id) queued = run.queue({ type: 'AddRoute', cityIds: [a.id, b.id], aircraft: 'turboprop' });
+    }
+    const target = ((hh || 0) * 60 + (mm || 0)) % 1440;
+    if (scene === 'failure') active.forceOverload();
+    else if (scene === 'upgrade') active.advance(Math.max(1, run.nextWeekTick - run.tick));
+    else {
+      const local = ((run.localMinute % 1440) + 1440) % 1440;
+      active.advance(((target - local + 1440) % 1440) || 1440);
+    }
+    active.setPaused(false);
+    requestAnimationFrame(() => requestAnimationFrame(done));
   }
 }
