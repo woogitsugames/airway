@@ -31,6 +31,8 @@ function cargoLabel(model: CardModel, index: number): { card: HTMLButtonElement;
   const heading = span('airway-upgrade-heading');
   heading.append(span('airway-upgrade-code', `${t('upgrade.freight')} · ${model.code}`), span('airway-upgrade-count', model.counter));
   const title = span('airway-upgrade-title', model.title);
+  // [task-37] Longest word (soft hyphens excluded) drives the fit-to-width font size in upgrade.css.
+  title.style.setProperty('--title-chars', String(Math.max(...model.title.replace(/\u00AD/g, '').split(/\s+/).map((w) => w.length))));
   const grid = span('airway-upgrade-grid');
   for (const row of model.rows) grid.append(span('airway-upgrade-key', row.label), span('airway-upgrade-value', row.value));
   body.append(heading, title, grid);

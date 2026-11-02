@@ -40,8 +40,8 @@ export const en = {
   // [task-12] Weekly freight labels
   'upgrade.freight': 'FREIGHT',
   'upgrade.selectHub': 'Select a hub on the globe',
-  'upgrade.turboprop': 'Turboprop',
-  'upgrade.widebody': 'Widebody',
+  'upgrade.turboprop': 'Turbo\u00ADprop', // soft hyphens: long titles break only at a hyphen (D-51)
+  'upgrade.widebody': 'Wide\u00ADbody',
   'upgrade.hub': 'Expand hub',
   'upgrade.slots': 'Departure slots',
   // [task-35] Cargo-label fields; the numbers come from the simulation.
