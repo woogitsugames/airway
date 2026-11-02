@@ -23,3 +23,6 @@ local.properties
 google-services.json
 GoogleService-Info.plist
 .DS_Store
+
+# [task-21] Local browser performance reports (generated, machine-specific).
+.perf/
