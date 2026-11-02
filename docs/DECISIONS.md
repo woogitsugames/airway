@@ -398,6 +398,22 @@ blank/white, developer text, only the six D-08 passenger glyphs, which also keep
 out of store images) and recorded in `docs/store/shots/manifest.json`. **Status: in force.**
 
 
+## D-49 — Back from the airport pick, framed first menu frame, darker night deserts (2026-11-02, task 39)
+**Back from the pick.** A targeted weekly upgrade (hub expansion, "+2 slots") is two `ChooseUpgrade` commands; between
+them the player can now go back with a new sim command `CancelUpgradePick {week}`. It is journaled and replayed like
+every command, needs a pending pick of that week (otherwise `UPGRADE_INVALID`, or `NO_UPGRADE_PENDING` without a
+board), and restores exactly the offer the board had before the label was taken (`pendingHub: false`, no
+`selected`), so pick → back → another label ends in the same world as taking that label directly (`test:replay`).
+The snapshot shape is unchanged, so `RULES_VERSION` stays 4 (old saves never contain the command). UI: a black
+wayfinding tile with a yellow arrow and "Wróć"/"Back" set into the yellow pick sign (≥ 48 dp); Android back / Escape
+on the pick does the same. **Menu first frame:** the frame loop applies a pending layout measurement before it
+draws, and the first menu show holds the globe (≤ 1.5 s) until the sign and board are laid out, so the first
+rendered menu frame already has its final framing (`shots:34` checks it). **Night deserts:** warm, bright albedo
+(desert, beach sand; linear `r − b` mask 0.25 → 0.45) gets an extra night grade ×(0.60, 0.56, 0.48) on top of the
+D-47 moon grade: darker and no longer blue-grey; moon light (0.6) unchanged. Night contrast after the change
+(shots:34): routes 9.65, airports 9.0, planes 10.2, tags ≥ 12.3 (threshold 4.5). **Status: in force; the Back
+tile position (top sign, outside thumb reach in portrait) is an owner question in the task-39 PR.**
+
 <!-- Owner decisions below use D-60+ so they cannot collide with D-49… taken by the parallel task-37…40 session. -->
 
 ## D-60 — First weekly upgrade at ~7.2 min is accepted (2026-11-02, owner)
@@ -409,7 +425,7 @@ Player-facing numbers in PL group thousands from 4 digits (as in the mockups), u
 One formatter in `src/core/format` / i18n helpers; EN unchanged ("2,500"). **Status: to implement.**
 
 ## D-62 — Menu globe rotates slowly (2026-11-02, owner)
-About 1.2°/s, paused with `prefers-reduced-motion` and while the menu is hidden. **Status: to implement.**
+About 1.2°/s, paused with `prefers-reduced-motion` and while the menu is hidden. **Status: in force (task 39).**
 
 ## D-63 — Store screenshot order: night, game, upgrade, failure, menu; dusk must read as dusk (2026-11-02, owner)
 The "game" scene uses clearly golden low-sun light (not daylight). **Status: to implement.**

@@ -94,7 +94,7 @@ try {
   routes.dispose();
 
   // [task-34] Camera insets measured from the HUD/menu boxes, not fixed numbers.
-  const { insetsFromLayout, menuFraming, solveZoomForRadius } = await load('framing.js');
+  const { insetsFromLayout, menuFraming, solveZoomForRadius, menuSpinRate, MENU_SPIN_DEG_PER_S } = await load('framing.js'); // [task-39]
   const { GlobeOrbitCamera } = await load('camera.js');
   const { contrastRatio, relativeLuminance, layerContrast } = await load('contrast.js');
   const { createMenuNetwork } = await load('menuNetwork.js');
@@ -152,6 +152,22 @@ try {
   camMenuL.setViewport(915, 412, menuL.insets);
   const dml = camMenuL.getScreenDisc();
   check(dml.x - dml.radius >= 426, 'landscape menu disc does not slide under the board');
+
+  // [task-39] D-62 menu rotation: ~1.2°/s on the shown menu, 0 with reduced motion, hidden menu or in a run.
+  const shown = { menuActive: true, menuShown: true, reducedMotion: false };
+  check(Math.abs(menuSpinRate(shown) - 1.2) < 0.05 && MENU_SPIN_DEG_PER_S === menuSpinRate(shown), 'menu globe turns ~1.2°/s');
+  check(menuSpinRate({ ...shown, reducedMotion: true }) === 0, 'menu rotation stops with prefers-reduced-motion');
+  check(menuSpinRate({ ...shown, menuShown: false }) === 0 && menuSpinRate({ ...shown, hidden: true }) === 0,
+    'menu rotation stops while the menu is hidden');
+  check(menuSpinRate({ ...shown, menuActive: false }) === 0, 'no menu rotation during a run');
+  // Rotating the orbit keeps the menu disc (and the horizon under the sign) where the framing put it.
+  const spinCam = new GlobeOrbitCamera(new three.PerspectiveCamera(30, 1, 0.05, 30), { zoom: 1 });
+  spinCam.setViewport(915, 412, menuL.insets);
+  const d0 = spinCam.getScreenDisc();
+  spinCam.setTarget(-16 + MENU_SPIN_DEG_PER_S * 60, 40);
+  const d1 = spinCam.getScreenDisc();
+  check(Math.abs(d0.x - d1.x) < 0.5 && Math.abs(d0.y - d1.y) < 0.5 && Math.abs(d0.radius - d1.radius) < 0.5,
+    'a minute of menu rotation leaves the framed disc in place');
 
   // Contrast helpers (WCAG) and the layer-diff median used by scripts/shots-34.mjs.
   check(Math.abs(contrastRatio(relativeLuminance(255, 255, 255), relativeLuminance(0, 0, 0)) - 21) < 1e-9,

@@ -6,8 +6,8 @@ import {
 } from '../render';
 import type { RoutePreviewModel } from '../input/routeTool';
 import {
-  contrastRatio, relativeLuminance, insetsFromLayout, menuFraming, solveZoomForRadius, type LayoutRect,
-} from '../render'; // [task-34]
+  contrastRatio, relativeLuminance, insetsFromLayout, menuFraming, solveZoomForRadius, menuSpinRate, type LayoutRect,
+} from '../render'; // [task-34] [task-39] menuSpinRate
 import { cityByCode } from '../data'; // [task-34]
 
 // [task-34] HTML panels the globe must stay clear of. Their boxes become camera insets (D-47).
@@ -47,11 +47,17 @@ export interface World {
 /** [task-34] Menu camera target: North Atlantic between New York and Europe (mockup menu-p). */
 const MENU_TARGET = { lon: -16, lat: 40 };
 
+/** [task-39] First menu show only: longest wait for the sign/board before the globe renders anyway. */
+const MENU_HOLD_MS = 1500;
+
 export function createWorld(host: HTMLElement, label: string, quality: QualityPreference): World {
   let insets: SafeAreaInsets = {};
+  // [task-39] Insets last applied by the framing; the renderer's own resize observer reuses them
+  // instead of falling back to the bare safe-area insets between two measurements.
+  let appliedInsets: SafeAreaInsets = {};
   let disposed = false;
   const renderer = createWorldRenderer(undefined, {
-    quality, seed: 0xA1A1, autoResize: host, insets: () => insets,
+    quality, seed: 0xA1A1, autoResize: host, insets: () => appliedInsets,
     camera: { longitude: -18, latitude: 40, zoom: 2 }, maxAirports: 64, maxPlanes: 120,
   });
   const canvas = renderer.canvas;
@@ -62,6 +68,12 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
 
   // [task-34] Insets are the larger of the caller's (safe area) and the measured HUD/menu boxes.
   let menuActive = false;
+  let menuShown = false; // [task-39] the menu sign is on screen (not settings, not mid-transition)
+  let menuFramed = false; // [task-39] the first menu framing with a measured sign/board has been applied
+  let menuShownAt = 0;
+  const reducedMotion = typeof matchMedia === 'function' ? matchMedia('(prefers-reduced-motion: reduce)') : null;
+  // [task-39] Store shots and screenshot harnesses need a still menu (D-62).
+  const frozenSpin = import.meta.env.DEV && new URLSearchParams(location.search).has('storeShot');
   let measureRaf = 0;
   let lastFrame = ''; // last applied framing; unchanged layout never resizes the drawing buffer
   const panelObserver = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(() => scheduleMeasure()) : null;
@@ -80,11 +92,15 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
     const h = host.clientHeight || window.innerHeight;
     const origin = host.getBoundingClientRect();
     if (menuActive) {
-      const framing = menuFraming(w, h, boxOf(host.querySelector(MENU_SIGN), origin),
-        boxOf(host.querySelector(MENU_BOARD), origin), insets);
+      const sign = boxOf(host.querySelector(MENU_SIGN), origin);
+      const board = boxOf(host.querySelector(MENU_BOARD), origin);
+      menuShown = sign !== null; // [task-39]
+      if (sign && board) menuFramed = true;
+      const framing = menuFraming(w, h, sign, board, insets);
       const key = `menu ${w} ${h} ${JSON.stringify(framing)}`;
       if (key === lastFrame) return;
       lastFrame = key;
+      appliedInsets = framing.insets; // [task-39]
       renderer.resize(w, h, framing.insets);
       const orbit = renderer.orbit;
       orbit.setViewShift(0, 0);
@@ -108,6 +124,7 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
     if (key === lastFrame) return;
     lastFrame = key;
     renderer.orbit.setViewShift(0, 0);
+    appliedInsets = gameInsets; // [task-39]
     renderer.resize(w, h, gameInsets);
   };
   function scheduleMeasure(): void {
@@ -115,8 +132,11 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
   }
   const resize = (): void => {
     lastFrame = '';
+    appliedInsets = insets; // [task-39]
     renderer.resize(host.clientWidth || window.innerWidth, host.clientHeight || window.innerHeight, insets);
-    scheduleMeasure();
+    // [task-39] Measure now, not on the next frame: the next rendered frame already has the framing.
+    if (measureRaf) cancelAnimationFrame(measureRaf);
+    measure();
   };
   window.addEventListener('resize', scheduleMeasure);
   // The menu mounts its sign/board after showMenuBackdrop(); watch the DOM only while the menu shows.
@@ -127,15 +147,28 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
   let frameCallback: ((dt: number) => FrameState | void) | null = null;
   let last = performance.now();
   let raf = 0;
+  // [task-39] What the first rendered menu frame used vs. the framing now (scripts/shots-34.mjs).
+  let firstMenuFrame: string | null = null;
+  const framingKey = (): string => `${lastFrame} zoom=${renderer.orbit.zoomLevel.toFixed(4)}`;
+  if (import.meta.env.DEV) installWorldProbe(renderer, () => ({ first: firstMenuFrame, now: framingKey(), menuSpin: menuSpin() })); // [task-34]
+  /** [task-39] D-62: degrees per second the menu globe turns right now. */
+  const menuSpin = (): number => menuSpinRate({
+    menuActive, menuShown, reducedMotion: !!reducedMotion?.matches || frozenSpin,
+    hidden: typeof document !== 'undefined' && document.hidden,
+  });
   const loop = (now: number): void => {
     if (disposed) return;
     raf = requestAnimationFrame(loop);
-  if (import.meta.env.DEV) installWorldProbe(renderer); // [task-34] screenshot/contrast probe (scripts/shots-34.mjs)
     const dt = Math.min(0.1, Math.max(0, (now - last) / 1000));
     last = now;
-    if (spin) {
+    // [task-39] A layout change since the last frame is framed before drawing, never one frame late.
+    if (measureRaf) { cancelAnimationFrame(measureRaf); measure(); }
+    // [task-39] First menu show: hold the globe until the sign and board are laid out (bounded).
+    if (menuActive && !menuFramed && now - menuShownAt < MENU_HOLD_MS) return;
+    const turn = spin || menuSpin(); // [task-39] D-62 slow menu rotation; routes ride along (world space)
+    if (turn) {
       const state = renderer.orbit.getState();
-      renderer.orbit.setTarget(state.longitude + spin * dt, state.latitude);
+      renderer.orbit.setTarget(state.longitude + turn * dt, state.latitude);
     }
     const frame = frameCallback?.(dt);
     const demoAlpha = frameCallback ? null : demo.frame(dt); // [task-34] menu planes
@@ -145,13 +178,14 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
       const lon = renderer.orbit.getState().longitude + 25;
       renderer.setTime(Math.round(((180 - lon) * 4 % 1440 + 1440) % 1440), 0);
     }
+    if (menuActive && firstMenuFrame === null) firstMenuFrame = framingKey(); // [task-39]
     renderer.render(frame ? frame.alpha : demoAlpha ?? 1, dt);
   };
   raf = requestAnimationFrame(loop);
 
   return {
     renderer, canvas, camera: renderer.camera, orbit: renderer.orbit, ready: renderer.ready,
-    setInsets(next) { insets = next; menuActive = false; menuWatcher?.disconnect(); demo.stop(); resize(); }, // [task-34]
+    setInsets(next) { insets = next; menuActive = false; menuShown = false; menuWatcher?.disconnect(); demo.stop(); resize(); }, // [task-34] [task-39]
     setIdleSpin(degreesPerSecond) { spin = degreesPerSecond; },
     showMenuBackdrop() {
       // [task-34] Mockup menu framing: horizon under the sign (portrait) or the whole disc beside the
@@ -159,6 +193,7 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
       // decorative network so routes and planes read above the board.
       insets = {};
       menuActive = true;
+      menuShownAt = performance.now(); // [task-39]
       spin = 0;
       renderer.orbit.setTarget(MENU_TARGET.lon, MENU_TARGET.lat);
       demo.start();
@@ -197,9 +232,10 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
 }
 
 // [task-34] DEV-only probe for scripts/shots-34.mjs: camera centre and night readability measurements.
-function installWorldProbe(renderer: WorldRenderer): void {
+function installWorldProbe(renderer: WorldRenderer, framing: () => { first: string | null; now: string; menuSpin: number }): void {
   const probe = {
     ready: false,
+    framing, // [task-39]
     longitude: () => renderer.orbit.longitudeDeg,
     /** Median WCAG contrast per layer; `tags` is the worst luggage tag against the globe under it. */
     nightContrast(): Record<string, number | null> {
