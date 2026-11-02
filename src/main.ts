@@ -33,6 +33,8 @@ document.documentElement.lang = getLanguage();
 initializeAccessibility();
 document.title = t('app.title');
 const query = new URLSearchParams(location.search);
+/** [task-36] Ticks of autoplay before a store scene is lit (game-dusk, night, failure). */
+const STORE_SHOT_PLAY_TICKS = 1500;
 
 // The airport-model fixture lives in dev/world.html (render agent, shared world renderer).
 if (import.meta.env.DEV && query.get('preview') === 'gameover') {
@@ -281,35 +283,61 @@ async function boot(): Promise<void> {
 
   // Store screenshots (scripts/store-shots.mjs, DEV only): drive the real session to a scene through
   // real Commands, then flag <html data-store-shot-ready>. Never a static mock.
+  // [task-36] Scenes are played by the DEV autoplay bot (the same Commands as the route tool, dock and
+  // weekly board), so the stores show a grown network; the light is set by the sun's hour angle over the
+  // camera centre (sun.ts formula), not by the boarding-pass clock of the home airport.
   const storeShot = import.meta.env.DEV ? query.get('storeShot') : null;
   if (storeShot) void runStoreShot(storeShot);
 
   async function runStoreShot(scene: string): Promise<void> {
     const seed = Number(query.get('seed') ?? '41377') >>> 0;
-    const [hh, mm] = (query.get('storeHour') ?? '18:30').split(':').map(Number);
     await world?.ready.catch(() => undefined);
     const done = (): void => {
       document.documentElement.dataset.storeShotSeed = String(seed);
       document.documentElement.dataset.storeShotReady = scene;
     };
-    if (scene === 'menu') { done(); return; }
+    const frames = (n: number): Promise<void> => new Promise((resolve) => {
+      const step = (): void => { if (--n <= 0) resolve(); else requestAnimationFrame(step); };
+      requestAnimationFrame(step);
+    });
+    if (scene === 'menu') { await frames(30); done(); return; }
     skipTutorialOnce = true;
     startEndless(seed);
     const active = session as GameSession | null;
-    if (!active) return;
+    if (!active || !world) return;
     const run = active.run;
-    // The same AddRoute the route tool sends, between the first reachable pair.
-    const cities = run.cityList();
-    let queued = false;
-    for (const a of cities) for (const b of cities) {
-      if (!queued && a.id < b.id) queued = run.queue({ type: 'AddRoute', cityIds: [a.id, b.id], aircraft: 'turboprop' });
-    }
-    const target = ((hh || 0) * 60 + (mm || 0)) % 1440;
-    if (scene === 'failure') active.forceOverload();
-    else if (scene === 'upgrade') await autoplayUntil(1);
+    // The ternary lets Vite drop the bot from production bundles entirely.
+    const bot = import.meta.env.DEV ? await import('./game/dev/autoplay') : null;
+    if (!bot) return;
+    /** The bot plays `ticks` more ticks (it also answers weekly boards) or until the run ends. */
+    const play = (ticks: number): void => {
+      for (let left = ticks; left > 0 && !run.failed;) {
+        const command = bot.nextAutoplayCommand(run.sim);
+        if (command) run.queue(command);
+        const step = Math.min(left, bot.AUTOPLAY_ACTION_INTERVAL);
+        active.advance(step);
+        left -= step;
+      }
+    };
+    /** Ticks until the sun stands `hourAngle` degrees east of the camera centre (0 = noon, 180 = midnight). */
+    const ticksToSun = (hourAngle: number): number => {
+      const sunLon = world!.orbit.longitudeDeg + hourAngle;
+      const minuteOfDay = ((180 - sunLon) * 4 % 1440 + 1440) % 1440;
+      return Math.round((minuteOfDay - (run.clockMinute % 1440) + 1440) % 1440);
+    };
+    if (scene === 'upgrade') await autoplayUntil(1);
     else {
-      const local = ((run.localMinute % 1440) + 1440) % 1440;
-      active.advance(((target - local + 1440) % 1440) || 1440);
+      // About one game day of real play grows the network before the light is chosen.
+      play(STORE_SHOT_PLAY_TICKS);
+      if (scene === 'failure') active.forceOverload(); // The player stops building; real demand jams a hub.
+      else {
+        await frames(20); // Let the layout-measured framing settle before reading the camera centre.
+        const angle = scene === 'night' ? 180 : -95;
+        // Stay on the game screen: never let the dusk/night setup run into the weekly board.
+        let ticks = ticksToSun(angle);
+        if (run.tick + ticks >= run.nextWeekTick) ticks = Math.max(0, ticks - 1440);
+        play(ticks);
+      }
     }
     active.setPaused(false);
     // Fail closed: never label a different situation (e.g. an early jam) as the requested scene.
@@ -319,6 +347,7 @@ async function boot(): Promise<void> {
       console.warn(`storeShot "${scene}" not reached; run ended on "${active.screen}" at tick ${run.tick}`);
       return;
     }
-    requestAnimationFrame(() => requestAnimationFrame(done));
+    await frames(30);
+    done();
   }
 }
