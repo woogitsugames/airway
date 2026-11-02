@@ -1,0 +1,99 @@
+/* [task-23] An ATC flight strip, boarding pass and luggage tags: no generic modal. */
+.aw-tutorial { position: absolute; inset: 0; z-index: 30; font-family: 'Atkinson Hyperlegible Next', sans-serif; color: #13302e; pointer-events: none; }
+.aw-tutorial *, .aw-tutorial *::before, .aw-tutorial *::after { box-sizing: border-box; }
+.aw-tutorial [hidden] { display: none !important; }
+.aw-tutorial button { cursor: pointer; font: inherit; -webkit-tap-highlight-color: transparent; }
+.aw-tutorial button:focus-visible { outline: 3px solid #ff7a3d; outline-offset: 3px; }
+.aw-tutorial button:disabled { opacity: .55; cursor: wait; }
+.aw-tutorial-stage { display: none; position: absolute; inset: 0; pointer-events: auto; background: #8cc3d8; padding: calc(env(safe-area-inset-top, 0px) + 9px) calc(env(safe-area-inset-right, 0px) + 10px) calc(env(safe-area-inset-bottom, 0px) + 9px) calc(env(safe-area-inset-left, 0px) + 10px); grid-template-rows: 70px minmax(0,1fr) auto; gap: 5px; }
+.aw-tutorial.is-active .aw-tutorial-stage { display: grid; }
+.aw-tutorial-ticket { display: flex; min-width: 0; align-items: stretch; background: #fbf8f1; color: #2a2420; border: 2px solid #1e6f6a; height: 68px; }
+.aw-tutorial-ticket-id { min-width: 0; padding: 10px 13px 6px; display: flex; flex: 1; flex-direction: column; justify-content: space-between; }
+.aw-tutorial-kicker { font-family: Overpass,sans-serif; font-weight: 800; font-size: 14px; letter-spacing: .08em; }
+.aw-tutorial-ticket-id strong { font-family: 'Overpass Mono', monospace; font-size: 14px; font-weight: 700; }
+.aw-ticket-perf { width: 1px; border-left: 2px dashed #789b94; margin: 6px 0; }
+.aw-ticket-skip { border: 0; min-width: 80px; padding: 7px 12px; background: #fbf8f1; font-weight: 700; font-size: 14px; color: #1e6f6a; }
+.aw-tutorial-center { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 0; min-width: 0; gap: 8px; }
+.aw-tutorial-world { position: relative; flex: none; width: min(100%, 430px, calc((100dvh - 308px) * 0.792)); min-width: 225px; aspect-ratio: 412 / 520; overflow: visible; background: #8cc3d8; transition: background-color 200ms linear; touch-action: none; }
+.aw-world-art { position: absolute; width: 100%; height: 100%; inset: 0; display: block; overflow: visible; pointer-events: none; }
+.aw-route { fill: none; stroke: #f4f0db; stroke-width: 6; stroke-linecap: round; opacity: 0; stroke-dasharray: 2 1; }
+.aw-route-feeder { opacity: .95; stroke: #e6b666; stroke-width: 5; stroke-dasharray: 11 8; }
+.aw-route-primary, .aw-route-relief { stroke: #fbf8f1; stroke-width: 7; stroke-dasharray: 1 0; }
+.aw-tutorial.has-primary .aw-route-primary, .aw-tutorial.has-relief .aw-route-relief { opacity: 1; }
+.aw-guide { opacity: 0; fill: none; stroke: #ff7a3d; stroke-width: 6; stroke-dasharray: 10 12; stroke-linecap: round; }
+.aw-tutorial[data-step="route"] .aw-guide-primary, .aw-tutorial[data-step="congestion"] .aw-guide-relief { opacity: 1; animation: aw-route-guide 1000ms linear infinite; }
+.aw-tutorial.is-dragging .aw-guide { opacity: .3; }
+.aw-live-path { stroke: #ff7a3d; stroke-width: 7; stroke-linecap: round; fill: none; }
+.aw-aircraft-symbol { opacity: 0; }
+.aw-tutorial.has-plane .aw-aircraft-symbol { opacity: 1; }
+.aw-night-wash { opacity: 0; transition: opacity 200ms linear; }
+.aw-tutorial.is-night .aw-night-wash { opacity: .78; }
+.aw-tutorial.is-night .aw-tutorial-world { background: #133e57; }
+.aw-wave-awakening { opacity: 0; }
+.aw-tutorial[data-step="upgrade"] .aw-wave-awakening { opacity: 1; }
+.aw-congestion-ring { opacity: 0; }
+.aw-tutorial.is-jammed .aw-congestion-ring { opacity: 1; }
+.aw-city { position: absolute; width: 77px; min-height: 65px; padding: 2px 0; display: flex; flex-direction: column; gap: 2px; align-items: center; justify-content: center; transform: translate(-50%,-47%); background: transparent; border: none; color: #f7f3ea; font-weight: 700; text-shadow: 0 1px 1px #13302e; user-select: none; touch-action: none; }
+.aw-city-lon { left: 32.28%; top: 33.46%; }
+.aw-city-par { left: 62.38%; top: 44.04%; }
+.aw-city-rom { left: 56.31%; top: 69.04%; }
+.aw-city-pin { width: 28px; height: 28px; border: 4px solid #f7f3ea; background: #ff7a3d; outline: 2px solid #13302e; transform: rotate(45deg); display: block; border-radius: 2px; }
+.aw-city-hub { width: 33px; height: 33px; border-radius: 50%; border-width: 5px; background: #1e6f6a; }
+.aw-city-name { display: block; padding: 2px 5px; background: #13302e; font-size: 12px; white-space: nowrap; text-shadow: none; letter-spacing: .02em; }
+.aw-tutorial[data-step="route"] .aw-city-lon .aw-city-pin, .aw-tutorial[data-step="route"] .aw-city-par .aw-city-pin, .aw-tutorial[data-step="congestion"] .aw-city-lon .aw-city-pin, .aw-tutorial[data-step="congestion"] .aw-city-rom .aw-city-pin, .aw-tutorial[data-step="transfer"] .aw-city-par .aw-city-pin { outline: 5px solid #ffc72c; }
+.aw-route-drop { display: none; position: absolute; left: 49.75%; top: 37.5%; transform: translate(-50%,-50%); width: 60px; height: 60px; border: 0; background: transparent; color: #ffc72c; padding: 9px; touch-action: none; }
+.aw-route-drop svg { width: 100%; height: 100%; }
+.aw-tutorial[data-step="aircraft"] .aw-route-drop { display: block; }
+.aw-passenger-card { display: none; position: absolute; left: 67%; top: 51%; padding: 6px 10px; border-left: 4px solid #ff7a3d; background: #fbf8f1; gap: 7px; align-items: center; font-size: 18px; color: #1e6f6a; }
+.aw-tutorial[data-step="transfer"] .aw-passenger-card, .aw-tutorial[data-step="dawn"] .aw-passenger-card { display: flex; }
+.aw-passenger-arrow { font-family: 'Overpass Mono',monospace; font-size: 16px; color: #2a2420; }
+.aw-jam-label { display: none; position: absolute; left: 68%; top: 34%; padding: 6px 8px; background: #c8352a; color: #fff; font: 700 12px 'Overpass Mono', monospace; }
+.aw-tutorial.is-jammed .aw-jam-label { display: block; }
+.aw-tutorial-strip { width: min(100%, 540px); min-height: 64px; display: flex; flex-direction: column; justify-content: center; gap: 5px; padding: 8px 13px; background: #f7f3ea; border-left: 7px solid #c8352a; color: #2a2420; }
+.aw-strip-index { font: 800 12px Overpass,sans-serif; color: #1e6f6a; letter-spacing: .05em; }
+.aw-strip-copy { font: 700 16px 'Atkinson Hyperlegible Next',sans-serif; line-height: 1.2; }
+.aw-tutorial-controls { width: 100%; max-width: 540px; justify-self: center; align-self: end; min-height: 44px; display: flex; flex-direction: column; gap: 7px; }
+.aw-tutorial-hint { min-height: 30px; margin: 0; display: flex; align-items: center; justify-content: center; text-align: center; color: #13302e; font-weight: 700; font-size: 13px; line-height: 1.25; }
+.aw-tutorial-dock { min-height: 80px; border-top: 5px solid #1e6f6a; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 7px 2px; background: #13302e; }
+.aw-plane-tag, .aw-action-tag { min-height: 58px; padding: 8px 16px; color: #2a2420; background: #f7f3ea; font-weight: 700; border: 0; clip-path: polygon(0 0, 90% 0, 90% 12%, 100% 12%, 100% 100%, 0 100%); }
+.aw-plane-tag { display: none; width: 120px; flex-direction: column; align-items: center; gap: 1px; touch-action: none; }
+.aw-plane-tag svg { width: 38px; height: 29px; color: #1e6f6a; }
+.aw-plane-tag span { font-size: 12px; }
+.aw-dawn-action, .aw-complete-action { display: none; background: #ffc72c; }
+.aw-tutorial[data-step="aircraft"] .aw-plane-tag { display: flex; }
+.aw-tutorial[data-step="dawn"] .aw-dawn-action, .aw-tutorial[data-step="complete"] .aw-complete-action { display: block; }
+.aw-upgrades { display: none; width: 100%; gap: 6px; justify-content: center; }
+.aw-tutorial[data-step="upgrade"] .aw-upgrades { display: flex; }
+.aw-upgrade { min-height: 68px; min-width: 0; flex: 1; padding: 5px; border: 2px dashed #5b4834; background: #d6b88a; color: #2a2420; font-family: 'Overpass Mono', monospace !important; font-weight: 700 !important; font-size: 12px !important; line-height: 1.25; text-align: center; }
+.aw-upgrade:first-child { border-top: 6px solid #ff7a3d; }
+.aw-upgrade:active { background: #ffc72c; }
+.aw-settings-sign { display: none; position: absolute; right: calc(env(safe-area-inset-right,0px) + 12px); bottom: calc(env(safe-area-inset-bottom,0px) + 16px); background: #ffc72c; color: #1c1e20; border: 3px solid #1c1e20; font: 800 15px Overpass,sans-serif !important; min-width: 124px; min-height: 50px; pointer-events: auto; }
+.aw-tutorial:not(.is-active) .aw-settings-sign { display: block; }
+.aw-settings-dialog { position: absolute; z-index: 5; pointer-events: auto; bottom: calc(env(safe-area-inset-bottom,0px) + 80px); right: 12px; width: min(290px,calc(100% - 24px)); padding: 14px; background: #1c1e20; color: #fbf8f1; border: 3px solid #ffc72c; }
+.aw-settings-dialog h2 { font: 800 20px Overpass,sans-serif; margin: 0 0 12px; }
+.aw-settings-dialog button { min-height: 50px; display: block; width: 100%; background: #2c2f32; border: 1px solid #9ba19e; color: #fbf8f1; margin-top: 7px; font-weight: 700; }
+@keyframes aw-route-guide { to { stroke-dashoffset: -44; } }
+@media (prefers-reduced-motion: reduce) { .aw-guide { animation: none !important; } .aw-night-wash, .aw-tutorial-world { transition: none !important; } }
+@media (max-height: 590px) and (min-width: 660px) {
+ .aw-tutorial-stage { grid-template-columns: minmax(180px, 220px) minmax(220px, 1fr) minmax(160px, 215px); grid-template-rows: minmax(0,1fr); gap: 7px; padding: calc(env(safe-area-inset-top, 0px) + 5px) calc(env(safe-area-inset-right, 0px) + 7px) calc(env(safe-area-inset-bottom, 0px) + 5px) calc(env(safe-area-inset-left, 0px) + 7px); }
+ .aw-tutorial-ticket { grid-column: 1; flex-direction: column; height: auto; max-height: 168px; align-self: start; }
+ .aw-tutorial-ticket-id { min-height: 72px; padding: 10px; gap: 12px; }
+ .aw-ticket-perf { height: 1px; width: auto; border-left: 0; border-top: 2px dashed #789b94; margin: 0 6px; }
+ .aw-ticket-skip { min-height: 54px; }
+ .aw-tutorial-center { grid-column: 2; grid-row: 1; gap: 3px; }
+ .aw-tutorial-world { width: min(100%, calc((100dvh - 95px)*0.792)); min-width: 195px; }
+ .aw-tutorial-strip { min-height: 54px; padding: 5px 8px; }
+ .aw-strip-index { font-size: 11px; }
+ .aw-strip-copy { font-size: 13px; }
+ .aw-tutorial-controls { grid-column: 3; grid-row: 1; align-self: stretch; justify-self: stretch; min-height: 0; justify-content: flex-end; }
+ .aw-tutorial-hint { font-size: 12px; }
+ .aw-tutorial-dock { min-height: 85px; border-top: 0; border-left: 5px solid #1e6f6a; padding: 9px 5px; }
+ .aw-upgrades { flex-direction: column; }
+ .aw-upgrade { flex: none; min-height: 57px; }
+ .aw-plane-tag { width: 120px; }
+}
+
+/* [task-23] No empty luggage rack when the player has no action tag to use. */
+.aw-tutorial[data-step="route"] .aw-tutorial-dock,
+.aw-tutorial[data-step="transfer"] .aw-tutorial-dock,
+.aw-tutorial[data-step="congestion"] .aw-tutorial-dock { display: none; }

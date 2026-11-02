@@ -71,7 +71,9 @@
     "test:balance": "node --experimental-strip-types scripts/balance-report.ts --test",
     "test:balance:fixture": "node --experimental-strip-types scripts/balance-report.ts --test --fixture",
     "balance:report": "node --experimental-strip-types scripts/balance-report.ts --report",
-    "balance:fixture": "node --experimental-strip-types scripts/balance-report.ts --report --fixture"
+    "balance:fixture": "node --experimental-strip-types scripts/balance-report.ts --report --fixture",
+    "test:e2e:tutorial": "node scripts/test-e2e-tutorial.mjs",
+    "shots:23": "node scripts/shots.mjs"
   },
   "dependencies": {
     "@capacitor/android": "8.5.3",

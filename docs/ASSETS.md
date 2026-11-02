@@ -66,3 +66,9 @@ All hub tones, congestion drones, departure-board clicks, paper rustle, luggage-
 clicks, stamps and city bells are synthesized at runtime via Web Audio in
 `src/audio/`. The noise buffer is generated from a fixed local seed. No recorded
 samples, licensed sound libraries or downloadable audio files are included.
+<!-- [task-23] Original procedural art for the temporary first-run vignette. -->
+## Onboarding artwork (task 23)
+`src/ui/tutorial/index.ts` contains an original SVG-only illustrated globe, three airport terminals,
+aircraft and route glyphs; `src/ui/tutorial/tutorial.css` contains the ATC flight strip and
+luggage-tag styling. No downloaded imagery, packs, binaries or third-party artwork are used.
+The production three.js world will replace this demo illustration after tasks 07/12/13 merge.

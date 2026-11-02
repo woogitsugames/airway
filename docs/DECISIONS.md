@@ -243,3 +243,14 @@ clearly labelled synthetic fixture; never treat SwiftShader as device evidence.
 **Rationale:** predictable CPU/GPU load, energy use and an honest test contract
 before all rendering components exist. **Status: provisional integration policy.**
 _(renumbered from D-19 during integration, branch `origin/task/21-performance`)_
+
+## D-34 — Separate onboarding choreography from live game adapters (2026-11-02, task 23)
+The tutorial is an event-validated step controller with a versioned `aw-tutorial` first-run
+setting (resume/skip/complete/replay). A deterministic three-city demo port and procedural
+SVG flight-school scene are **temporary adapters** because tasks 07, 12 and 13 are not yet
+merged; they do not write to `src/sim` or claim to represent real game simulation.
+The composition root can inject a live `TutorialPort` once the authoritative route, aircraft,
+transfer, dawn and upgrade APIs land. The port pauses authoritative ticks until each expected
+action has been accepted. **Rationale:** prevent fabricated game state and parallel-task conflicts.
+**Status: provisional integration decision; replace demo port after dependencies merge.**
+_(renumbered from D-19 during integration, branch `origin/task/23-onboarding`)_

@@ -72,6 +72,7 @@ npm run build
 | `npm run test:balance:fixture` | 10 seeded stand-in sessions and bot-policy assertions; **not production balance** | `SUMMARY test:balance seed=0xA1A1 mode=fixture seeds=10 ... passed=1 failed=0` |
 | `npm run balance:report` | Real engine: 50 seeded sessions to `docs/balance/game-50.csv` and summary | `SUMMARY balance:report seed=0xA1A1 mode=game seeds=50 ... passed=1 failed=0` |
 | `npm run balance:fixture` | Stand-in: 50 synthetic runs in `docs/balance/fixture-50.csv` | `SUMMARY balance:report seed=0xA1A1 mode=fixture seeds=50 ... passed=1 failed=0` |
+| `npm run test:e2e:tutorial` | [task-23] Six training actions, replay/skip/persistence, 412×915 and responsive screenshot matrix | `SUMMARY test:e2e:tutorial seed=0xA1A1 passed=N failed=0 screenshots=10` |
 
 Every future test must have a fixed seed (use `0xA1A1` where no gameplay seed
 is needed), terminate with one `SUMMARY ...` line, set a nonzero exit code on
@@ -125,3 +126,7 @@ the scene and presents the report. It never mutates the simulation.
 <!-- [task-17] The additional puzzle-board screenshots are captured as docs/shots/17/board-p.png
 and docs/shots/17/board-l.png after opening the puzzle selector. -->
 <!-- [task-22] Balance harness: production test intentionally fails until 08/09/12 are integrated. -->
+[task-23] The onboarding test also expects environment-provided Playwright and
+Chromium, and captures seven portrait steps plus landscape and foldable checks
+into `docs/shots/23/`. The temporary three-city adapter is not a simulation test:
+integration with real route/HUD/upgrade events requires tasks 07/12/13.
