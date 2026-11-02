@@ -1,0 +1,150 @@
+{
+  "version": 1,
+  "id": "16",
+  "titleKey": "puzzle.16.title",
+  "durationTicks": 1440,
+  "demandSeed": 2316,
+  "startCities": [
+    {
+      "id": "FRA",
+      "continent": "EU",
+      "latitude": 50.1,
+      "longitude": 8.7,
+      "hubCapacity": 100
+    },
+    {
+      "id": "LON",
+      "continent": "EU",
+      "latitude": 51.5,
+      "longitude": -0.1,
+      "hubCapacity": 60
+    },
+    {
+      "id": "AMS",
+      "continent": "EU",
+      "latitude": 52.4,
+      "longitude": 4.9,
+      "hubCapacity": 60
+    },
+    {
+      "id": "BRU",
+      "continent": "EU",
+      "latitude": 50.9,
+      "longitude": 4.4,
+      "hubCapacity": 60
+    },
+    {
+      "id": "MIL",
+      "continent": "EU",
+      "latitude": 45.5,
+      "longitude": 9.2,
+      "hubCapacity": 100
+    }
+  ],
+  "stock": {
+    "turboprops": 4,
+    "jets": 0,
+    "hubUpgrades": 0
+  },
+  "goal": {
+    "kind": "deliver",
+    "targetDelivered": 240
+  },
+  "mechanics": [
+    "slots",
+    "transfer"
+  ],
+  "demand": [
+    {
+      "from": "LON",
+      "to": "MIL",
+      "passengers": 12,
+      "firstTick": 10,
+      "everyTicks": 150
+    },
+    {
+      "from": "AMS",
+      "to": "MIL",
+      "passengers": 12,
+      "firstTick": 30,
+      "everyTicks": 150
+    },
+    {
+      "from": "BRU",
+      "to": "MIL",
+      "passengers": 12,
+      "firstTick": 50,
+      "everyTicks": 150
+    }
+  ],
+  "availableRoutes": [
+    {
+      "from": "FRA",
+      "to": "LON",
+      "plane": "turboprop",
+      "flightTicks": 80,
+      "intervalTicks": 120
+    },
+    {
+      "from": "FRA",
+      "to": "AMS",
+      "plane": "turboprop",
+      "flightTicks": 46,
+      "intervalTicks": 120
+    },
+    {
+      "from": "FRA",
+      "to": "BRU",
+      "plane": "turboprop",
+      "flightTicks": 40,
+      "intervalTicks": 120
+    },
+    {
+      "from": "FRA",
+      "to": "MIL",
+      "plane": "turboprop",
+      "flightTicks": 65,
+      "intervalTicks": 120
+    },
+    {
+      "from": "LON",
+      "to": "MIL",
+      "plane": "turboprop",
+      "flightTicks": 120,
+      "intervalTicks": 120
+    },
+    {
+      "from": "AMS",
+      "to": "BRU",
+      "plane": "turboprop",
+      "flightTicks": 22,
+      "intervalTicks": 120
+    }
+  ],
+  "referenceCommands": [
+    {
+      "type": "connect",
+      "from": "FRA",
+      "to": "LON",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "FRA",
+      "to": "AMS",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "FRA",
+      "to": "BRU",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "FRA",
+      "to": "MIL",
+      "plane": "turboprop"
+    }
+  ]
+}

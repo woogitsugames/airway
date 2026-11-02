@@ -451,3 +451,11 @@ Publish together with the store pre-registration, after the device test. **Statu
 ## D-68 — Hub stamp shows code or city name per player setting (2026-11-03, owner)
 Settings toggle "Lotniska: kod / nazwa" (default: code). Applies to hub stamp and other airport labels that have room.
 **Status: to implement.**
+
+## D-70 — Puzzles 16–30: mechanics tags and a tighter margin curve (2026-11-03, Claude, night N1)
+Puzzles 16–30 carry an optional `mechanics` list (`slots`, `curfew`, `week`, `mct`, `transfer`); the briefing shows the
+non-obvious ones and `test:puzzles` proves every tag on the reference run (a slot wait, a curfew airport, a wave that
+starts in the second 3-day week, a hub expansion, a demand that needs a transfer). Targets are the reference result
+divided by 1 + margin, the margin falling from 25 % (16) to 17 % (29–30), so later levels need a near-best network.
+Several levels offer decoy strips (a curfewed hub, a five-spoke star that jams on slots). Data format stays version 1.
+**Status: in force; difficulty is a proposal for the owner to playtest.**

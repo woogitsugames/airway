@@ -1,0 +1,151 @@
+{
+  "version": 1,
+  "id": "22",
+  "titleKey": "puzzle.22.title",
+  "durationTicks": 2880,
+  "demandSeed": 2922,
+  "startCities": [
+    {
+      "id": "DXB",
+      "continent": "AS",
+      "latitude": 25.2,
+      "longitude": 55.3,
+      "hubCapacity": 160
+    },
+    {
+      "id": "DEL",
+      "continent": "AS",
+      "latitude": 28.6,
+      "longitude": 77.2,
+      "hubCapacity": 80
+    },
+    {
+      "id": "BOM",
+      "continent": "AS",
+      "latitude": 19.1,
+      "longitude": 72.9,
+      "hubCapacity": 80
+    },
+    {
+      "id": "LON",
+      "continent": "EU",
+      "latitude": 51.5,
+      "longitude": -0.1,
+      "hubCapacity": 100
+    },
+    {
+      "id": "NBO",
+      "continent": "AF",
+      "latitude": -1.3,
+      "longitude": 36.8,
+      "hubCapacity": 100
+    }
+  ],
+  "stock": {
+    "turboprops": 0,
+    "jets": 4,
+    "hubUpgrades": 0
+  },
+  "goal": {
+    "kind": "continents",
+    "targetDelivered": 615,
+    "continents": 3
+  },
+  "mechanics": [
+    "slots",
+    "transfer"
+  ],
+  "demand": [
+    {
+      "from": "DEL",
+      "to": "LON",
+      "passengers": 30,
+      "firstTick": 20,
+      "everyTicks": 180
+    },
+    {
+      "from": "BOM",
+      "to": "NBO",
+      "passengers": 30,
+      "firstTick": 50,
+      "everyTicks": 180
+    },
+    {
+      "from": "DEL",
+      "to": "NBO",
+      "passengers": 20,
+      "firstTick": 80,
+      "everyTicks": 240
+    }
+  ],
+  "availableRoutes": [
+    {
+      "from": "DXB",
+      "to": "DEL",
+      "plane": "jet",
+      "flightTicks": 158,
+      "intervalTicks": 120
+    },
+    {
+      "from": "DXB",
+      "to": "BOM",
+      "plane": "jet",
+      "flightTicks": 139,
+      "intervalTicks": 120
+    },
+    {
+      "from": "DXB",
+      "to": "LON",
+      "plane": "jet",
+      "flightTicks": 391,
+      "intervalTicks": 120
+    },
+    {
+      "from": "DXB",
+      "to": "NBO",
+      "plane": "jet",
+      "flightTicks": 255,
+      "intervalTicks": 120
+    },
+    {
+      "from": "DEL",
+      "to": "LON",
+      "plane": "jet",
+      "flightTicks": 480,
+      "intervalTicks": 120
+    },
+    {
+      "from": "BOM",
+      "to": "NBO",
+      "plane": "jet",
+      "flightTicks": 325,
+      "intervalTicks": 120
+    }
+  ],
+  "referenceCommands": [
+    {
+      "type": "connect",
+      "from": "DXB",
+      "to": "DEL",
+      "plane": "jet"
+    },
+    {
+      "type": "connect",
+      "from": "DXB",
+      "to": "BOM",
+      "plane": "jet"
+    },
+    {
+      "type": "connect",
+      "from": "DXB",
+      "to": "LON",
+      "plane": "jet"
+    },
+    {
+      "type": "connect",
+      "from": "DXB",
+      "to": "NBO",
+      "plane": "jet"
+    }
+  ]
+}
