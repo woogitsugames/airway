@@ -9,6 +9,8 @@ export interface HubAudioData {
   readonly loadRatio?: number;
   readonly capacity?: number;
   readonly night?: boolean;
+  /** [night-03] Destination region of the hub; picks its rotation of the pentatonic (REGION_SCALES). */
+  readonly regionId?: string;
 }
 
 export type AudioCue =
@@ -17,14 +19,14 @@ export type AudioCue =
   | ({ readonly type: 'dawn'; readonly tick: number } & HubAudioData)
   | ({ readonly type: 'hub-load'; readonly tick: number; readonly loadRatio: number } & HubAudioData)
   | { readonly type: 'week'; readonly tick: number; readonly week: number }
-  | { readonly type: 'new-city'; readonly tick: number; readonly latitude?: number }
-  | { readonly type: 'flap' | 'paper' | 'tag' | 'stamp'; readonly tick?: number };
+  | { readonly type: 'new-city'; readonly tick: number; readonly latitude?: number; readonly regionId?: string }
+  | { readonly type: 'flap' | 'paper' | 'tag' | 'stamp' | 'slot-wait'; readonly tick?: number };
 
 export type AudioEventStream = {
   subscribe(listener: (event: AudioCue) => void): () => void;
 };
 
-export type AudioEffect = 'flap' | 'paper' | 'tag' | 'stamp' | 'new-city';
+export type AudioEffect = 'flap' | 'paper' | 'tag' | 'stamp' | 'slot-wait' | 'new-city';
 
 export interface AudioSettings {
   /** Master mute; audio is locked until the first trusted user gesture. */

@@ -21,7 +21,7 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
 - [x] N2 **Code quality after integration** — remove `docs/integration/pending/` leftovers that are no longer needed,
       stale `[task-NN] adapter` / "until task" stubs, dead exports (check with a script), duplicate helpers; add
       regression tests where coverage is thin (save migration v3→v4, replay across upgrades and slots). No behaviour change.
-- [ ] N3 **Audio & music** — `src/audio/**`: mix levels, "Resonant hubs" musicality (scale per region, tension at hub
+- [x] N3 **Audio & music** — `src/audio/**`: mix levels, "Resonant hubs" musicality (scale per region, tension at hub
       load, dawn bloom, week key change), UI SFX set (flap, tag, stamp, slot wait), limiter; offline render of 3 × 30 s WAV
       previews into `docs/audio/` for the owner to listen to.
 - [ ] N4 **Low-end performance** — globe LOD (distance/zoom-based mesh levels; medium now 424k tris/frame), "battery
