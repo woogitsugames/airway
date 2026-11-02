@@ -81,3 +81,6 @@ The production three.js world will replace this demo illustration after tasks 07
 - `ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png`: opaque 1024×1024 rendering of the original icon SVG.
 - `ios/App/App/Assets.xcassets/Splash.imageset/splash-2732x2732*.png`: opaque 2732×2732 compositing of the shared transparent splash SVG over Android's black launch background, same PNG bytes across scale slots.
 No external images or fonts were used. Sources match task 24 PR #12 as of this commit. After merging task 24, generate from one shared SVG source to avoid drift.
+<!-- [task-29] Existing local licensed assets reused by the landing page. -->
+## Site assets (task 29)
+`site/assets/` reuses byte-identical Stage 0 Diorama mockups `game-p.png`, `upgrade-p.png`, `menu-p.png` from `mockups/diorama/png/`, labeled as concept previews. The five `site/fonts/*.ttf` files and three neighboring OFL notices are byte-identical to the existing files in `public/fonts/`. The new SVG favicon, illustrated fallback globe and Canvas 2D globe are project-authored procedural artwork. No external image or font source is loaded by the deployed site.

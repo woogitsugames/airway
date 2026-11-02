@@ -83,6 +83,9 @@ npm run build
 | `npm run test:fast` | `typecheck`, then `test:i18n`, `test:arch`, and `test:gating` | All three test summaries and exit code 0 |
 | `npm run test:e2e:smoke` | Real Playwright gameplay journey: boot, menu, seeded start, route, aircraft, week, upgrade, save/load, overload and return | `SUMMARY test:e2e:smoke seed=0xA1A1 mode=game passed=9 failed=0 durationMs=N` |
 | `npm run ui:matrix` | Real game menu/game/upgrade/gameover in PL/EN at 412×915, 915×412, 673×841, 904×1000 (DPR 1) | `SUMMARY ui:matrix seed=0xA1A1 mode=game captured=32 expected=32 failed=0 durationMs=N` |
+| `npm run test:site` | Local links, 3 preview alt texts, PL/EN catalog parity, privacy page and no trackers | `SUMMARY test:site seed=0xA1A1 assertions=N passed=N failed=0` |
+| `npm run build:site` | Copies framework-free page into ignored `site/dist` | `SUMMARY build:site seed=0xA1A1 files=6 assetFolders=2 failed=0` |
+| `npm run shots:site` | Captures landing page 412×915 and 915×412 with Playwright | `SUMMARY shots:site seed=0xA1A1 captured=2 failed=0` |
 
 Every future test must have a fixed seed (use `0xA1A1` where no gameplay seed
 is needed), terminate with one `SUMMARY ...` line, set a nonzero exit code on
@@ -156,3 +159,5 @@ To validate the harness itself without game features, use
 The fixture is a labeled, isolated test double; passing it does **not** satisfy
 the gameplay acceptance criteria, and its 32 images are saved only to
 `docs/shots/matrix-fixture/` (not `docs/shots/matrix/`).
+<!-- [task-29] -->
+Task 29 adds `test:site` to `test:fast`, a standalone `build:site` command and a `shots:site` capture command. `npm run shots` continues to capture the game shell.
