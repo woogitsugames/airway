@@ -1,4 +1,5 @@
 // Diorama airport objects. Rendering-only state; no authoritative simulation mutations.
+import { UI_SELF_LIGHT } from './models/planes'; // [task-34]
 import {
   BoxGeometry, Color, CylinderGeometry, DoubleSide, Group, InstancedMesh,
   Matrix4, MeshBasicMaterial, MeshStandardMaterial, Object3D,
@@ -58,7 +59,8 @@ interface AirportRecord {
 type Part = { mesh: InstancedMesh; geometry: BoxGeometry | CylinderGeometry; material: MeshStandardMaterial };
 
 function surfaceMaterial(color: string): MeshStandardMaterial {
-  return new MeshStandardMaterial({ color, flatShading: true, roughness: 0.88 });
+  // [task-34] Self-lit share keeps airports readable on the night side (D-47).
+  return new MeshStandardMaterial({ color, emissive: color, emissiveIntensity: UI_SELF_LIGHT, flatShading: true, roughness: 0.88 });
 }
 
 function block(x: number, y: number, z: number, tx: number, ty: number, tz: number, angle = 0): BoxGeometry {

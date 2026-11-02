@@ -47,6 +47,8 @@ const RAD = 180 / Math.PI;
 const MIN_ZOOM = 1;
 const MAX_ZOOM = 4;
 const MAX_LATITUDE = 78;
+/** [task-34] Largest share of the viewport one inset may take (a landscape menu board is ~48 %). */
+const MAX_INSET_SHARE = 0.6;
 const MAX_FRAME_SECONDS = 0.05;
 const FRICTION_PER_SECOND = 7;
 const NORTH_ALIGN_PER_SECOND = 3.2;
@@ -74,6 +76,8 @@ export class GlobeOrbitCamera {
   private pointerActive = false;
   private rotated = false;
   private safeTop = 0;
+  private shiftX = 0;
+  private shiftY = 0;
   private safeRight = 0;
   private safeBottom = 0;
   private safeLeft = 0;
@@ -101,24 +105,35 @@ export class GlobeOrbitCamera {
   setViewport(width: number, height: number, insets: SafeAreaInsets = {}): void {
     this.width = Math.max(1, Number.isFinite(width) ? width : 1);
     this.height = Math.max(1, Number.isFinite(height) ? height : 1);
-    this.safeTop = clamp(insets.top ?? 0, 0, this.height * 0.4);
-    this.safeBottom = clamp(insets.bottom ?? 0, 0, this.height * 0.4);
-    this.safeLeft = clamp(insets.left ?? 0, 0, this.width * 0.4);
-    this.safeRight = clamp(insets.right ?? 0, 0, this.width * 0.4);
+    this.safeTop = clamp(insets.top ?? 0, 0, this.height * MAX_INSET_SHARE); // [task-34]
+    this.safeBottom = clamp(insets.bottom ?? 0, 0, this.height * MAX_INSET_SHARE); // [task-34]
+    this.safeLeft = clamp(insets.left ?? 0, 0, this.width * MAX_INSET_SHARE); // [task-34]
+    this.safeRight = clamp(insets.right ?? 0, 0, this.width * MAX_INSET_SHARE); // [task-34]
     this.camera.aspect = this.width / this.height;
     const freeWidth = this.width - this.safeLeft - this.safeRight;
     const freeHeight = this.height - this.safeTop - this.safeBottom;
     const halfFieldTangent = Math.tan((this.camera.fov * DEG) / 2);
     const fitTangent = Math.max(0.001, halfFieldTangent * 0.87 * Math.min(freeWidth, freeHeight) / this.height);
     this.fitDistance = this.radius * Math.sqrt(1 + 1 / (fitTangent * fitTangent));
+    this.applyViewOffset();
+    this.apply();
+  }
+
+  /** [task-34] Extra screen shift of the look-at point (CSS px, +y = down), on top of the inset centring. */
+  setViewShift(x: number, y: number): void {
+    this.shiftX = Number.isFinite(x) ? x : 0;
+    this.shiftY = Number.isFinite(y) ? y : 0;
+    this.applyViewOffset();
+  }
+
+  private applyViewOffset(): void {
     // three.js view offsets are CSS-pixel sub-frustum shifts, NOT device pixels.
     this.camera.setViewOffset(
       this.width, this.height,
-      -(this.safeLeft - this.safeRight) / 2,
-      -(this.safeTop - this.safeBottom) / 2,
+      -((this.safeLeft - this.safeRight) / 2 + this.shiftX),
+      -((this.safeTop - this.safeBottom) / 2 + this.shiftY),
       this.width, this.height,
     );
-    this.apply();
   }
 
   /** Called on every pointer-down: inertia stops, including when an edit begins. */
@@ -237,6 +252,22 @@ export class GlobeOrbitCamera {
   /** Signed factor of a finger near the globe silhouette (40 CSS-pixel band). */
   getLimbEdgeFactor(x: number, y: number): number {
     if (!Number.isFinite(x) || !Number.isFinite(y)) return 0;
+    if (!this.computeDisc()) return 0;
+    const fromCenter = Math.hypot(x - this.disc.x, y - this.disc.y);
+    const discRadius = this.disc.radius;
+    if (fromCenter > discRadius + 40 || fromCenter < discRadius - 40) return 0;
+    const depthIntoBand = clamp((fromCenter - discRadius + 40) / 40, 0, 1);
+    return Math.sign(x - this.disc.x) * depthIntoBand;
+  }
+
+  /** [task-34] Screen circle of the globe silhouette (CSS px); `null` when the eye is inside it. */
+  getScreenDisc(): { x: number; y: number; radius: number } | null {
+    return this.computeDisc() ? { x: this.disc.x, y: this.disc.y, radius: this.disc.radius } : null;
+  }
+
+  private readonly disc = { x: 0, y: 0, radius: 0 };
+
+  private computeDisc(): boolean {
     // Camera-space axes for the oblique view, without a three.js allocation.
     const vx = this.centerX - this.eyeX;
     const vy = this.centerY - this.eyeY;
@@ -259,21 +290,21 @@ export class GlobeOrbitCamera {
     const oy = -this.eyeY;
     const oz = -this.eyeZ;
     const depth = ox * fx + oy * fy + oz * fz;
-    if (depth <= this.radius) return 0;
+    if (depth <= this.radius) return false;
     const tanHalfY = Math.tan(this.camera.fov * DEG / 2);
     const projectedX = (ox * rx + oy * ry + oz * rz) / (depth * tanHalfY);
     const projectedY = (ox * ux + oy * uy + oz * uz) / (depth * tanHalfY);
-    const shiftX = (this.safeLeft - this.safeRight) / 2;
-    const shiftY = (this.safeTop - this.safeBottom) / 2;
+    const shiftX = (this.safeLeft - this.safeRight) / 2 + this.shiftX;
+    const shiftY = (this.safeTop - this.safeBottom) / 2 + this.shiftY;
     const centerPixelX = this.width / 2 + projectedX * this.height / 2 + shiftX;
     const centerPixelY = this.height / 2 - projectedY * this.height / 2 + shiftY;
     const distance = Math.hypot(this.eyeX, this.eyeY, this.eyeZ);
     const discRadius = this.height / (2 * tanHalfY) * this.radius /
       Math.sqrt(Math.max(0.0001, distance * distance - this.radius * this.radius));
-    const fromCenter = Math.hypot(x - centerPixelX, y - centerPixelY);
-    if (fromCenter > discRadius + 40 || fromCenter < discRadius - 40) return 0;
-    const depthIntoBand = clamp((fromCenter - discRadius + 40) / 40, 0, 1);
-    return Math.sign(x - centerPixelX) * depthIntoBand;
+    this.disc.x = centerPixelX;
+    this.disc.y = centerPixelY;
+    this.disc.radius = discRadius;
+    return true;
   }
 
   /** Allocation-free accessors for the per-frame render path. */

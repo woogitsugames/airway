@@ -54,8 +54,12 @@ function unite(parts: readonly Part[]): BufferGeometry {
   return geometry;
 }
 
+/** [task-34] Emissive share of gameplay materials (planes, airports, routes); lighting-independent floor. */
+export const UI_SELF_LIGHT = 0.5;
+
 function standard(color: string): MeshStandardMaterial {
-  return new MeshStandardMaterial({ color, flatShading: true, roughness: 0.6 });
+  // [task-34] Self-lit share keeps planes readable on the night side (D-47).
+  return new MeshStandardMaterial({ color, emissive: color, emissiveIntensity: UI_SELF_LIGHT, flatShading: true, roughness: 0.6 });
 }
 
 function wingWidebody(): BufferGeometry {

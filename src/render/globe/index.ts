@@ -3,6 +3,7 @@ import {
   Mesh, Points, Scene, ShaderMaterial, SphereGeometry, Vector3,
 } from 'three';
 import type { QualityProfile } from '../quality';
+import { applyDayNightGrading } from './daynight';
 import { createDecorations } from './decorations';
 import { setLatLonVec3 } from './geo-math';
 import { loadLandMask } from './land-mask';
@@ -59,6 +60,9 @@ export interface SunLights {
   dispose(): void;
 }
 
+/** [task-34] Intensity of the anti-solar fill light (sun is 3.2). */
+export const MOON_INTENSITY = 0.6;
+
 export function createSunLights(profile: QualityProfile): SunLights {
   const group = new Group();
   group.name = 'AirwaySunLights';
@@ -72,13 +76,18 @@ export function createSunLights(profile: QualityProfile): SunLights {
   sunlight.shadow.camera.far = 8;
   sunlight.shadow.bias = -0.0004;
   const hemisphere = new HemisphereLight('#bcd6ff', '#26324a', .55);
+  // [task-34] Moonlight from the anti-solar side: cool, weak, no shadows. Gives the night hemisphere
+  // relief shading and keeps land and sea apart without lifting the night to day brightness.
+  const moonlight = new DirectionalLight(new Color('#9db4e6'), MOON_INTENSITY);
+  moonlight.name = 'AntisolarMoon';
   const direction = new Vector3(0, 1, 0);
-  group.add(sunlight, sunlight.target, hemisphere);
+  group.add(sunlight, sunlight.target, hemisphere, moonlight, moonlight.target);
   const lights: SunLights = {
     group, direction,
     setSun(lon, lat) {
       setLatLonVec3(direction, lon, lat);
       sunlight.position.copy(direction).multiplyScalar(5);
+      moonlight.position.copy(direction).multiplyScalar(-5);
     },
     applyQuality(next) {
       sunlight.castShadow = next.shadowEnabled;
@@ -109,6 +118,13 @@ export async function createGlobe(scene: Scene, opts: GlobeOptions): Promise<Glo
   const terrain = createTerrain(mask, quality);
   group.add(terrain, createDecorations(mask, quality, opts.seed ?? 7, opts.sunDirection),
     createAtmosphere());
+  // [task-34] Warm terminator and cool night palette on the world (not on gameplay layers).
+  group.traverse((object) => {
+    if (object instanceof Mesh) {
+      const materials = Array.isArray(object.material) ? object.material : [object.material];
+      for (const material of materials) applyDayNightGrading(material, opts.sunDirection);
+    }
+  });
   scene.add(group);
   let disposed = false;
   return {

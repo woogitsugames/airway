@@ -374,3 +374,17 @@ slot-wait aircraft-minutes in the hub cause ledger ("aircraft waited for a slot"
 `DepartureHeld` event, which opens a one-time ATC strip (training step "SLOTS 07", not part of the first-run
 vignette). `RULES_VERSION` 3 → 4 (aircraft and world snapshots carry slot state). **Status: in force; the base
 allowance and the per-airport (not global) bonus await owner review.**
+
+## D-47 — Readable night and layout-measured camera framing (2026-11-02, task 34)
+Night: an anti-solar "moon" light (cool, 0.6 vs sun 3.2, no shadows) plus a colour grade on the world's lit
+materials only (`src/render/globe/daynight.ts`: cool palette where the sun is below the horizon, a soft warm band
+±0.16 around the terminator). Gameplay layers are lighting-independent: routes, airports and planes carry an
+emissive copy of their colour (routes 0.72, airports/planes 0.5) and plane shadows fade out at night. No bloom,
+no post-processing. Measured on the real game at local midnight (`npm run shots:34`): routes 9.4:1, airports 8.6:1,
+planes 9.9:1, luggage tags ≥ 11.6:1 against the globe behind them (threshold 4.5:1). Framing: camera insets are the
+larger of the caller's safe-area insets and the measured boxes of the boarding pass and tag dock (each box goes to
+the edge where it costs least free area), so landscape keeps the globe clear of the right rail. The menu follows
+the mockups: portrait = a globe wider than the phone with its horizon 18 % below the sign and a still camera over a
+small decorative network (routes, hubs, moving planes; visual only, cleared when a run starts); landscape = the whole
+disc beside the departures board. **Status: in force; the menu network content and the night brightness are
+owner-visible choices (task-34 PR questions).**

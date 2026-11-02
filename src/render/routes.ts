@@ -229,8 +229,9 @@ function geometryFor(data: TubeData): BufferGeometry {
 export class RouteLayer {
   readonly group = new Group();
   private readonly routes = new Map<string, PreparedRoute>();
-  private readonly litMaterial = new MeshStandardMaterial({ color: LIGHT_TUBE, emissive: '#6b6458', roughness: 0.5 });
-  private readonly dashedMaterial = new MeshStandardMaterial({ color: GOLD_DASH, emissive: '#6b4a10', roughness: 0.5 });
+  // [task-34] Mostly self-lit: routes keep their colour on the night side (D-47).
+  private readonly litMaterial = new MeshStandardMaterial({ color: LIGHT_TUBE, emissive: LIGHT_TUBE, emissiveIntensity: 0.72, roughness: 0.5 });
+  private readonly dashedMaterial = new MeshStandardMaterial({ color: GOLD_DASH, emissive: GOLD_DASH, emissiveIntensity: 0.72, roughness: 0.5 });
   private readonly ghosts = [
     new ShaderMaterial({ vertexShader: HORIZON_VERTEX, fragmentShader: HORIZON_FRAGMENT,
       uniforms: { tint: { value: new Vector3(0.97, 0.96, 0.88) } },
