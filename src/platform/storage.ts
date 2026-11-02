@@ -72,7 +72,7 @@ export function createBrowserStorage(factory: IDBFactory | undefined = globalThi
   };
 }
 
-/** Structural Capacitor plugin ports avoid importing plugins before task 01 is merged. */
+/** Structural plugin ports keep this module testable in Node without Capacitor. */
 export interface PreferencesPort {
   get(options: { key: string }): Promise<{ value: string | null }>;
   set(options: { key: string; value: string }): Promise<unknown>;
@@ -140,6 +140,32 @@ export function createPlatformStorage(options?: {
   return options?.native
     ? createNativeStorage(options.native.preferences, options.native.filesystem)
     : createBrowserStorage(options?.indexedDB);
+}
+
+/**
+ * Boot helper for the composition root: on Android/iOS loads @capacitor/preferences and
+ * @capacitor/filesystem (WebView IndexedDB may be evicted by the OS); on the web uses IndexedDB.
+ */
+export async function createDefaultStorage(): Promise<KeyValueStorage> {
+  try {
+    const { Capacitor } = await import('@capacitor/core');
+    if (Capacitor.isNativePlatform() && Capacitor.isPluginAvailable('Preferences') &&
+      Capacitor.isPluginAvailable('Filesystem')) {
+      const [{ Preferences }, { Filesystem, Directory, Encoding }] = await Promise.all([
+        import('@capacitor/preferences'), import('@capacitor/filesystem'),
+      ]);
+      const filesystem: FilesystemPort = {
+        readFile: (o) => Filesystem.readFile({ path: o.path, directory: Directory.Data, encoding: Encoding.UTF8 }),
+        writeFile: (o) => Filesystem.writeFile({ path: o.path, data: o.data, directory: Directory.Data,
+          encoding: Encoding.UTF8 }),
+        deleteFile: (o) => Filesystem.deleteFile({ path: o.path, directory: Directory.Data }),
+      };
+      return createNativeStorage(Preferences, filesystem);
+    }
+  } catch {
+    // Plugins missing from this shell: fall back to the browser store below.
+  }
+  return createBrowserStorage();
 }
 
 /** Settings have an independent key, lifecycle and update frequency from game saves. */

@@ -1,4 +1,4 @@
-// [task-16] One simulated day is 1,440 completed minute-ticks.
+// One simulated day is 1,440 completed minute-ticks.
 const TICKS_PER_DAY = 1440;
 
 export interface AppListenerHandle { remove(): Promise<void>; }
