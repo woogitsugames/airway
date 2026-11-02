@@ -27,7 +27,7 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
 - [ ] N4 **Low-end performance** — globe LOD (distance/zoom-based mesh levels; medium now 424k tris/frame), "battery
       saver" preset (30 fps cap, no shadows, fewer decorations), adaptive quality from frame time, budgets in
       `docs/PERFORMANCE.md`, `perf:scene` before/after. Needs 37–40 merged first (render files).
-- [ ] N5 **Hub label setting (D-68)** — settings toggle code/name, applied to hub stamp and airport labels; PL/EN city
+- [x] N5 **Hub label setting (D-68)** — settings toggle code/name, applied to hub stamp and airport labels; PL/EN city
       names from `src/data/cities.ts`; test. Needs task 37 merged (upgrade card).
 - [ ] N6 **Online leaderboards (D-66)** — `src/net/**` + `functions/` (or equivalent) on the Firebase emulator:
       anonymous auth, daily + ISO-week boards, score submission with command journal, server-side replay validation using

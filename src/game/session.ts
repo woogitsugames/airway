@@ -20,6 +20,7 @@ import { createAirportOverlay, type AirportOverlay } from '../ui/overlay';
 import { WeeklyUpgradeView } from '../ui/upgrade';
 import { EndlessRun, cityDistanceKm, type RunCommand, type RunEvent } from './run';
 import { mountSlotHint } from './tutorial/slot-hint'; // [task-32]
+import { airportLabel } from '../ui/airportLabel'; // [night-05] D-68
 import { AudioCueMapper, cueRun } from './audioCues'; // [night-03]
 import type { World, ScreenPoint } from './world';
 
@@ -275,6 +276,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     for (const city of cities) {
       if (!knownAirports.has(city.id)) {
         knownAirports.add(city.id);
+        // D-68: the 58 px edge chip has no room for a city name, so it always shows the code.
         overlay.addAirport({ id: city.id, code: city.id, lon: city.lon, lat: city.lat, hub: city.hub });
       }
       const key = city.waiting.join(',');
@@ -357,7 +359,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
         destinationCode: departure.destination, gate: String.fromCharCode(65 + (i % 6)) + String(1 + i),
       }));
       void gameOver.show({
-        seed: run.seed, initialHash: '', hubId: failure.cityId, hubCode: failure.cityId,
+        seed: run.seed, initialHash: '', hubId: failure.cityId, hubCode: airportLabel(failure.cityId),
         delivered: run.passengers, completedWeeks: Math.floor(failure.tick / TICKS_PER_WEEK),
         ledger: failure.ledger, departures: flights,
       });

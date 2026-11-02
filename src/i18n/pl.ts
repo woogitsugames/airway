@@ -94,6 +94,10 @@ export const pl = {
   'menu.dailyHint': 'ten sam świat dla wszystkich',
   'settings.language': 'Język',
   'settings.graphics': 'Jakość grafiki',
+  // [night-05] D-68 airport label setting.
+  'settings.airportLabels': 'Lotniska',
+  'settings.airportLabels.code': 'Kod',
+  'settings.airportLabels.name': 'Nazwa miasta',
   'settings.auto': 'Automatyczna',
   'settings.low': 'Niska',
   'settings.medium': 'Średnia',
