@@ -26,7 +26,6 @@ export const pl = {
   'route.menu.remove': 'Usuń',
   'route.menu.shorten': 'Skróć',
   'route.menu.cancel': 'Anuluj',
-  'route.undo': 'Cofnij ostatnią zmianę trasy',
   // [task-13] Airport-object HUD labels and accessible control descriptions.
   'hud.boardingPass': 'Karta pokładowa',
   'hud.dock': 'Sterowanie przywieszkami bagażowymi',

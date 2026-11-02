@@ -18,7 +18,7 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
 - [x] N1 **15 new puzzles (16–30)** — `src/data/puzzles/**`, puzzle tests. Curve of difficulty; each uses at least one
       newer mechanic (slots D-41, curfew D-17, 3-day week D-40, transfers/MCT). Rule from task 17: no action → loss,
       reference solution wins with ≥15% margin; `test:puzzles` covers all 30. Puzzle select screen shows 30.
-- [ ] N2 **Code quality after integration** — remove `docs/integration/pending/` leftovers that are no longer needed,
+- [x] N2 **Code quality after integration** — remove `docs/integration/pending/` leftovers that are no longer needed,
       stale `[task-NN] adapter` / "until task" stubs, dead exports (check with a script), duplicate helpers; add
       regression tests where coverage is thin (save migration v3→v4, replay across upgrades and slots). No behaviour change.
 - [ ] N3 **Audio & music** — `src/audio/**`: mix levels, "Resonant hubs" musicality (scale per region, tension at hub
@@ -39,3 +39,4 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
 ## Log
 <!-- one line per finished item: date UTC · item · PR · gate summary -->
 - 2026-11-03 · N1 puzzles 16–30 (D-70) · night/01-puzzles · test:fast 42/42, build ok, e2e:smoke 9/9, ui:matrix 32/32, test:puzzles levels=30 cases=168 failed=0 (merged tree with #40, #42)
+- 2026-11-03 · N2 code quality · night/02-code-quality · test:fast 43/43, build ok, e2e:smoke 9/9, ui:matrix 32/32, test:save-golden 9/9, test:replay 23/23

@@ -42,22 +42,6 @@ export function mountAtcStrip(host: HTMLElement): AtcStrip {
   };
 }
 
-/** Mount this button into the luggage-tag dock from task 13 when it exists. */
-export function mountRouteUndo(host: HTMLElement, onUndo: () => void): () => void {
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.className = 'airway-route-undo';
-  button.setAttribute('aria-label', t('route.undo'));
-  button.title = t('route.undo');
-  // Procedural icon; no emoji or third-party SVG asset.
-  button.innerHTML = '<svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true" focusable="false">' +
-    '<path d="M26 22A11 11 0 1 1 14 5" fill="none" stroke="currentColor" stroke-width="3"/>' +
-    '<path d="M4 2v12h12L4 2Z" fill="currentColor"/></svg>';
-  button.addEventListener('click', onUndo);
-  host.appendChild(button);
-  return () => { button.removeEventListener('click', onUndo); button.remove(); };
-}
-
 /** Route hit testing/long-press timing are delegated to tasks 04 and 10. */
 export function mountRouteContextMenu(host: HTMLElement, callbacks: {
   remove(): void;
