@@ -1,0 +1,61 @@
+<!doctype html><html lang="pl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><meta name="viewport-size" content="412x915">
+<title>Diorama — gra</title><style>
+@font-face{font-family:'Over';src:url('../fonts/Overpass-800.ttf');font-weight:800;font-style:normal;font-display:block}
+@font-face{font-family:'Over';src:url('../fonts/Overpass-400.ttf');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Atk';src:url('../fonts/AtkinsonHyperlegibleNext-400.ttf');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Atk';src:url('../fonts/AtkinsonHyperlegibleNext-700.ttf');font-weight:700;font-style:normal;font-display:block}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:412px;height:915px;overflow:hidden}
+body{position:relative;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}
+
+body{font-family:Atk,sans-serif;color:#F7F3EA;background:linear-gradient(#8CC3D8,#BFE0EA)}
+canvas.world{position:absolute;inset:0;width:100%;height:100%}
+.panel{position:absolute;background:#13302E;border:1.5px solid #2E5B56;border-radius:12px}
+.hd{font-family:Over,sans-serif;font-weight:800}
+.btn{position:absolute;width:56px;height:56px;border-radius:12px;background:#13302E;border:1.5px solid #2E5B56;display:flex;align-items:center;justify-content:center}
+.chip{display:flex;align-items:center;gap:6px;height:56px;padding:0 12px;border-radius:12px;background:#1C423F;border:1.5px solid #2E5B56;font-family:Over;font-weight:800;font-size:20px}
+.dock.v .chip{width:72px!important;justify-content:center;padding:0;height:58px}
+.dock{position:absolute;display:flex;gap:8px;padding:8px;background:#13302E;border:1.5px solid #2E5B56;border-radius:16px}
+.bubble{position:absolute;transform:translate(-50%,-100%);background:#F7F3EA;color:#13302E;border-radius:10px;padding:5px 7px 4px;display:flex;align-items:center;gap:3px;border:1.5px solid #13302E}
+.bubble:after{content:'';position:absolute;left:50%;bottom:-7px;margin-left:-6px;border:6px solid transparent;border-top-color:#13302E;border-bottom:0}
+.bubble.jam{background:#E5483B;color:#F7F3EA}
+.bubble .t{font-family:Over;font-weight:800;font-size:13px;margin-left:3px}
+.tag{position:absolute;background:#13302E;border:1.5px solid #E5483B;border-radius:10px;padding:6px 9px;font-size:12px;line-height:1.3}
+.tag b{font-family:Over;font-weight:800;color:#FFB23D;font-size:14px}
+
+</style></head><body><canvas class="world" width="824" height="1830"></canvas><div id="bubbles"></div><div class="tag" id="tag" style="display:none"><b>3 788 km</b> · za daleko dla turbośmigłowca<br>puść na mieście po drodze, aby dodać międzylądowanie</div>
+  
+<div class="panel" style="left:12px;top:40px;height:56px;padding:6px 14px;display:flex;flex-direction:column;justify-content:center">
+  <div class="hd" style="font-size:19px;line-height:1">Tydzień 6 <span style="color:#A9BDB8;font-size:15px">· Śr 16:10</span></div>
+  <div style="display:flex;gap:3px;margin-top:6px"><div style="width:18px;height:5px;border-radius:3px;background:#F7F3EA"></div><div style="width:18px;height:5px;border-radius:3px;background:#F7F3EA"></div><div style="width:18px;height:5px;border-radius:3px;background:#FF7A3D"></div><div style="width:18px;height:5px;border-radius:3px;background:#2E5B56"></div><div style="width:18px;height:5px;border-radius:3px;background:#2E5B56"></div><div style="width:18px;height:5px;border-radius:3px;background:#2E5B56"></div><div style="width:18px;height:5px;border-radius:3px;background:#2E5B56"></div></div>
+</div>
+<div class="panel" style="left:218px;top:40px;width:118px;height:56px;display:flex;align-items:center;gap:8px;padding:0 12px">
+  <svg width="22" height="22" viewBox="-7 -7 14 14"><path d="M0 -6.2 A3.4 3.4 0 1 1 0 0.6 A3.4 3.4 0 1 1 0 -6.2Z M-1.7 -1 L1.7 -1 L3.4 6 L-3.4 6Z" fill="#F7F3EA"/></svg>
+  <div><div class="hd" style="font-size:19px;line-height:1">1 284</div><div style="font-size:10.5px;color:#A9BDB8">pasażerów</div></div></div>
+<div class="btn" style="left:344px;top:40px"><svg width="24" height="24" viewBox="0 0 24 24"><rect x="5" y="4" width="5" height="16" rx="1.5" fill="#F7F3EA"/><rect x="14" y="4" width="5" height="16" rx="1.5" fill="#F7F3EA"/></svg></div>
+  <div class="dock" style="left:12px;right:12px;bottom:32px;justify-content:space-between;">
+  <div class="chip" style="width:56px;justify-content:center;padding:0"><svg width="28" height="28" viewBox="-14 -14 28 28"><path d="M8 7 A8 8 0 1 0 -6 -2" fill="none" stroke="#F7F3EA" stroke-width="2.6" stroke-linecap="round"/><path d="M-11 -8 L-5 1 L0 -7Z" fill="#F7F3EA"/></svg></div>
+  <div class="chip"><svg width="34" height="34" viewBox="-13 -13 26 26"><g transform="rotate(-90)" fill="#FFD166"><path d="M1.2 -10 L3.4 -10 L3.4 10 L1.2 10Z"/><path d="M-8 -3.8 L-6.6 -3.8 L-6.6 3.8 L-8 3.8Z"/><path d="M9 0 L7 -1.3 L-7.5 -1.1 L-9 0 L-7.5 1.1 L7 1.3Z"/><path d="M5 -7.6 L5.6 -7.6 L5.6 -3.4 L5 -3.4Z M5 3.4 L5.6 3.4 L5.6 7.6 L5 7.6Z"/></g></svg><span>2</span></div>
+  <div class="chip"><svg width="36" height="36" viewBox="-13 -13 26 26"><g transform="rotate(-90)" fill="#F7F3EA"><path d="M3.5 -1.6 L-3.5 -12 L-5.6 -12 L-1.6 -1.6Z M3.5 1.6 L-3.5 12 L-5.6 12 L-1.6 1.6Z"/><path d="M-7.2 -1.2 L-10 -5 L-11.2 -5 L-9.6 -1.2Z M-7.2 1.2 L-10 5 L-11.2 5 L-9.6 1.2Z"/><path d="M11 0 L9 -1.7 L-9.5 -1.4 L-11 0 L-9.5 1.4 L9 1.7Z"/><path d="M1 -5.4 L3 -5.4 L3 -4.2 L1 -4.2Z M1 4.2 L3 4.2 L3 5.4 L1 5.4Z M-1.4 -8.6 L0.6 -8.6 L0.6 -7.4 L-1.4 -7.4Z M-1.4 7.4 L0.6 7.4 L0.6 8.6 L-1.4 8.6Z"/></g></svg><span>1</span></div>
+  <div class="chip" style="color:#A9BDB8"><svg width="26" height="26" viewBox="-13 -13 26 26"><path d="M6 0 L11 0" stroke="#A9BDB8" stroke-width="3" stroke-linecap="round"/><path d="M4.242640687119286 4.242640687119285 L7.778174593052023 7.778174593052022" stroke="#A9BDB8" stroke-width="3" stroke-linecap="round"/><path d="M3.6739403974420594e-16 6 L6.735557395310443e-16 11" stroke="#A9BDB8" stroke-width="3" stroke-linecap="round"/><path d="M-4.242640687119285 4.242640687119286 L-7.778174593052022 7.778174593052023" stroke="#A9BDB8" stroke-width="3" stroke-linecap="round"/><path d="M-6 7.347880794884119e-16 L-11 1.3471114790620886e-15" stroke="#A9BDB8" stroke-width="3" stroke-linecap="round"/><path d="M-4.242640687119286 -4.242640687119285 L-7.778174593052024 -7.778174593052022" stroke="#A9BDB8" stroke-width="3" stroke-linecap="round"/><path d="M-1.102182119232618e-15 -6 L-2.0206672185931327e-15 -11" stroke="#A9BDB8" stroke-width="3" stroke-linecap="round"/><path d="M4.242640687119284 -4.242640687119286 L7.778174593052021 -7.778174593052024" stroke="#A9BDB8" stroke-width="3" stroke-linecap="round"/></svg><span>0</span></div>
+  <div class="chip" style="width:56px;justify-content:center;padding:0"><svg width="28" height="28" viewBox="-14 -14 28 28"><path d="M-12 -8 L0 0 L-12 8Z M0 -8 L12 0 L0 8Z" fill="#F7F3EA"/></svg></div></div>
+  <script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","d3-geo":"/node_modules/d3-geo/src/index.js","d3-array":"/node_modules/d3-array/src/index.js","internmap":"/node_modules/internmap/src/index.js","topojson-client":"/node_modules/topojson-client/src/index.js"}}</script><script type="module">
+import { buildScene } from './scene3d.js';
+import { CITIES } from '../lib/cities.mjs';
+const cfg = {"w":412,"h":915,"look":[7,35],"dist":2.6,"tilt":21,"fov":30,"offset":[0,70]};
+const B = {"LON":{"list":["NAM","NAM","EUS","NAM","ME","EUN","NAM","AFR","SAM","NAM","EUS"],"cap":12,"jam":true},"LIS":{"list":["SAM","AFR","EUN"],"cap":8,"jam":false},"IST":{"list":["EUN","ME","EUN","EUN","AFR"],"cap":8,"jam":false},"WAW":{"list":["EUS","NAM"]},"NYC":{"list":["EUN","EUN","ME"]},"MTL":{"list":["EUS"]},"OSL":{"list":["NAM"]},"CAI":{"list":["EUN","EUN"]},"DKR":{"list":["SAM"]},"CMN":{"list":["EUN"]},"MAD":{"list":["NAM","AFR"]},"KIV":{"list":["ME"]},"REC":{"list":["EUN"]},"ROM":{"list":["NAM","ME","EUN"]},"LOS":{"list":["EUN","NAM"]}}, G = {"NAM":"<svg width=\"15\" height=\"15\" viewBox=\"-7 -7 14 14\"><path d=\"M-6 6 L6 6 L6 2.5 L-1 -6 L-6 -6Z\" fill=\"#2F7FD0\" stroke=\"#F7F3EA\" stroke-width=\"1.2\" paint-order=\"stroke\"/></svg>","EUN":"<svg width=\"15\" height=\"15\" viewBox=\"-7 -7 14 14\"><path d=\"M-6 -5 L0 1 L6 -5 L6 0 L0 6 L-6 0Z\" fill=\"#2FA36B\" stroke=\"#F7F3EA\" stroke-width=\"1.2\" paint-order=\"stroke\"/></svg>","EUS":"<svg width=\"15\" height=\"15\" viewBox=\"-7 -7 14 14\"><path d=\"M2.5 -5.45 A6 6 0 1 0 2.5 5.45 A6.6 6.6 0 0 1 2.5 -5.45Z\" fill=\"#F0A21B\" stroke=\"#F7F3EA\" stroke-width=\"1.2\" paint-order=\"stroke\"/></svg>","AFR":"<svg width=\"15\" height=\"15\" viewBox=\"-7 -7 14 14\"><path d=\"M0 -6.2 A3.4 3.4 0 1 1 0 0.6 A3.4 3.4 0 1 1 0 -6.2Z M-1.7 -1 L1.7 -1 L3.4 6 L-3.4 6Z\" fill=\"#7A4CC2\" stroke=\"#F7F3EA\" stroke-width=\"1.2\" paint-order=\"stroke\"/></svg>","ME":"<svg width=\"15\" height=\"15\" viewBox=\"-7 -7 14 14\"><path d=\"M-6 -5.5 L0 0 L-6 5.5Z M6 -5.5 L0 0 L6 5.5Z\" fill=\"#E06AA0\" stroke=\"#F7F3EA\" stroke-width=\"1.2\" paint-order=\"stroke\"/></svg>","SAM":"<svg width=\"15\" height=\"15\" viewBox=\"-7 -7 14 14\"><path d=\"M-6 -6 L-1.5 -6 L-1.5 1.5 L6 1.5 L6 6 L-6 6Z\" fill=\"#17A7B8\" stroke=\"#F7F3EA\" stroke-width=\"1.2\" paint-order=\"stroke\"/></svg>"};
+const { project } = await buildScene({ canvas: document.querySelector('canvas.world'), ...cfg });
+const layer = document.getElementById('bubbles');
+for (const [code, b] of Object.entries(B)) {
+  const c = CITIES[code], pt = project(c.lon, c.lat, b.cap ? 1.075 : 1.045);
+  if (!pt.front || pt.x < 10 || pt.x > cfg.w - 10 || pt.y < (cfg.top ?? 90) || pt.y > cfg.h - (cfg.top ? 20 : 110)) continue;
+  const el = document.createElement('div'); el.className = 'bubble' + (b.jam ? ' jam' : '');
+  const show = b.list.slice(0, 6).map((r) => G[r]).join('');
+  el.innerHTML = show + (b.list.length > 6 ? '<span class="t">+' + (b.list.length - 6) + '</span>' : '') + (b.jam ? '<span class="t">0:42</span>' : '');
+  el.style.left = pt.x + 'px'; el.style.top = pt.y + 'px'; layer.appendChild(el);
+}
+const tag = {"at":"ACC","dx":-190,"dy":-90};
+if (tag) { const c = CITIES[tag.at], pt = project(c.lon, c.lat, 1.02); const el = document.getElementById('tag'); el.style.left = Math.max(12, Math.min(cfg.w - 300, pt.x + tag.dx)) + 'px'; el.style.top = (pt.y + tag.dy) + 'px'; el.style.display = 'block'; }
+window.__ready = true;
+</script></body></html>

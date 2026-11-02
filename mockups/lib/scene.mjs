@@ -70,12 +70,12 @@ export const CITIES_WAITING = {
 export const NEW_CITY = 'ACC';
 /** Curfew: these cities are inside the night zone and closed 23:00–06:00 local. */
 export const CURFEW = ['CAI', 'KIV'];
-/** Subsolar point for the frozen moment (UTC ~17:40, November). */
-export const SUN = { lon: -85, lat: -15 };
+/** Subsolar point for the frozen moment (UTC ~16:10, November). */
+export const SUN = { lon: -62, lat: -15 };
 
-export const CLOCK = { week: 6, dayPl: 'Śr', dayEn: 'Wed', time: '17:40', pax: 1284 };
+export const CLOCK = { week: 6, dayPl: 'Śr', dayEn: 'Wed', time: '16:10', pax: 1284 };
 /** Working title used on menus until the owner picks one (see docs/RESEARCH.md §Titles). */
-export const TITLE = { main: 'TRANSFER', sub: 'airway.games' };
+export const TITLE = { main: 'HUBLINE', sub: 'airway.games' }; // working title, owner decides
 
 /** Weekly upgrade offer (pick one). */
 export const UPGRADES = [
