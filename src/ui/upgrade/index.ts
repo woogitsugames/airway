@@ -18,10 +18,6 @@ export interface UpgradeCopy {
   aircraftDetail: string;
   pressure: string;
 }
-export const upgradeCopy: Record<'pl' | 'en', UpgradeCopy> = {
-  pl: { week: n => `Tydzień ${n}`, header: 'FRACHT', selectHub: 'Wskaż hub na globusie', choose: 'Wybierz', planeTurboprop: 'Turbośmigłowiec', planeWidebody: 'Szerokokadłubowiec', hub: 'Rozbudowa huba', slots: 'Sloty startowe', hubDetail: '+6 miejsc · przesiadka 15 min', slotsDetail: '+2 odloty na godzinę', aircraftDetail: '+1 samolot', pressure: 'Największy ruch' },
-  en: { week: n => `Week ${n}`, header: 'FREIGHT', selectHub: 'Select a hub on the globe', choose: 'Choose', planeTurboprop: 'Turboprop', planeWidebody: 'Widebody', hub: 'Expand hub', slots: 'Departure slots', hubDetail: '+6 seats · 15 min transfer', slotsDetail: '+2 departures per hour', aircraftDetail: '+1 aircraft', pressure: 'Busiest hub' }
-};
 export interface UpgradeUIOptions {
   locale: 'pl' | 'en';
   onCommand: (command: UpgradeCommand) => void;
