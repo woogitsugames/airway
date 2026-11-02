@@ -15,7 +15,7 @@ const C = {
   ink: '#2E2B28', paper: '#FBF4E4', cream: '#F3EAD7', red: '#C8332B', blue: '#1F3F8F', mustard: '#D9A21B', snow: '#FFFFFF', rock: '#B7A98F',
   night: '#1B2440', tree: '#5E9A4C', tree2: '#7DB35A', trunk: '#8A5A36', roof: '#D9653B',
 };
-const DEST = { NAM: '#1F3F8F', EUN: '#2E8B57', EUS: '#D9A21B', AFR: '#C8332B', ME: '#B05AA8', SAM: '#3FA7C9' };
+const DEST = { NAM: '#1F3F8F', EUN: '#2E8B57', EUS: '#D9A21B', AFR: '#C8332B', ME: '#B05AA8', SAM: '#8AD3E6' }; // CVD-checked (min ΔE ≥ 16)
 const FONTS = [
   { family: 'Young', file: 'YoungSerif-400.ttf', weight: 400 },
   { family: 'Fam', file: 'FamiljenGrotesk-400.ttf', weight: 400 }, { family: 'Fam', file: 'FamiljenGrotesk-700.ttf', weight: 700 },

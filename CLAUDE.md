@@ -13,7 +13,8 @@ Premium mobile (Android + iOS, Capacitor) minimalist network builder about **air
 the route network, planes fly by themselves; passengers transfer at hubs; you lose when a hub jams. Not ATC.
 
 ## Language
-- Talk to the owner in **Polish**. Code, comments, commit messages and technical docs in **English**.
+- Talk to the owner in **Polish**. Code, comments, commit messages and technical docs in **English**; owner-facing
+  deliverables (`docs/RESEARCH.md`, `docs/styles/*.md`) in Polish.
 - Every player-facing string goes through i18n (PL + EN). Never hardcode player text.
 
 ## Hard rules
@@ -24,6 +25,7 @@ the route network, planes fly by themselves; passengers transfer at hubs; you lo
 - **No AI slop** in mockups/UI: no purple-blue gradients, glassmorphism, gratuitous neon glow, generic SaaS rounded
   cards with default shadows, emoji icons, single-pack stock icons, Inter/Roboto/system font as the only typeface,
   centred "Welcome!/Get Started", dashboard charts, clipart planes/globes.
+- **Not minimal (owner, D-05):** no flat diagram look. The world is rich and illustrated; gameplay info is drawn into it.
 - Required: one authorial visual idea where **graphics explain gameplay**; types distinguishable by **shape**, not only
   colour; minimal in-world HUD; touch targets ≥ 48 dp; thumb-reach actions; safe areas; portrait + landscape +
   foldables; short matter-of-fact motion (no bouncy springs).
@@ -42,4 +44,7 @@ the route network, planes fly by themselves; passengers transfer at hubs; you lo
 - `npm ci` — install dev dependencies (mockup tooling only).
 - `npm run mockups` — build every `mockups/<name>/` page (static HTML with inline SVG, generated in Node).
 - `npm run shots` — render all mockups with Playwright to `mockups/<name>/png/*.png` (412×915 and 915×412, DPR 2).
-  Inspect every PNG yourself afterwards.
+  `node mockups/shoot.mjs <name>` renders one direction. Pages are served over a local HTTP server (ES modules); pages that set
+  `window.__ready` (three.js) render with SwiftShader WebGL. Inspect every PNG yourself afterwards.
+- `DPR=1 node mockups/shoot.mjs overview` — side-by-side contact sheets in `mockups/overview/png/`.
+- `mockups/fetch-fonts.sh "Family" dir "400;700"` — fetch an OFL font + licence; then add it to `docs/ASSETS.md`.

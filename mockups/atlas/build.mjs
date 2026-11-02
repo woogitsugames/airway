@@ -13,7 +13,7 @@ const C = {
   paper: '#EBDDBB', paper2: '#E2CFA4', sea: '#C9D6C2', seaLine: '#8FA592', land: '#EFE2BF', green: '#B9C48D', sand: '#E6C98C',
   ink: '#3B2A1E', red: '#A3312A', indigo: '#2D3E6B', gold: '#B8862F', night: '#24304F',
 };
-const DEST = { NAM: '#2D3E6B', EUN: '#4E7A3A', EUS: '#B8862F', AFR: '#A3312A', ME: '#7C4A7A', SAM: '#2F7A7A' };
+const DEST = { NAM: '#2D5DA8', EUN: '#4E7A3A', EUS: '#C9962F', AFR: '#3B2A1E', ME: '#B0559A', SAM: '#6FB3C0' }; // CVD-checked (min ΔE ≥ 15)
 const FONTS = [
   { family: 'AlSC', file: 'AlegreyaSC-800.ttf', weight: 800 }, { family: 'AlSC', file: 'AlegreyaSC-500.ttf', weight: 500 },
   { family: 'Al', file: 'Alegreya-400.ttf', weight: 400 }, { family: 'Al', file: 'Alegreya-700.ttf', weight: 700 },

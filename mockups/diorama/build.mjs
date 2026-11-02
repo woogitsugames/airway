@@ -6,8 +6,8 @@ import { writePage, SAFE } from '../lib/page.mjs';
 import { GLYPHS, PLANES, REGIONS, HUBS, CITIES_WAITING, CLOCK, TITLE, UPGRADES } from '../lib/scene.mjs';
 
 const dir = dirname(fileURLToPath(import.meta.url));
-export const C = { panel: '#13302E', panel2: '#1C423F', line: '#2E5B56', paper: '#F7F3EA', dim: '#A9BDB8', accent: '#FF7A3D', warn: '#FFB23D', jam: '#E5483B', sky: '#BFE0EA', skyTop: '#8CC3D8' };
-const DEST = { NAM: '#2F7FD0', EUN: '#2FA36B', EUS: '#F0A21B', AFR: '#7A4CC2', ME: '#E06AA0', SAM: '#17A7B8' };
+export const C = { panel: '#13302E', panel2: '#1C423F', line: '#2E5B56', paper: '#F7F3EA', dim: '#A9BDB8', accent: '#FF7A3D', warn: '#FFB23D', jam: '#C8352A', sky: '#BFE0EA', skyTop: '#8CC3D8' };
+const DEST = { NAM: '#0072B2', EUN: '#009E73', EUS: '#E69F00', AFR: '#13302E', ME: '#CC79A7', SAM: '#56B4E9' }; // CVD-checked (min ΔE ≥ 16 in all three simulations)
 const FONTS = [
   { family: 'Over', file: 'Overpass-800.ttf', weight: 800 }, { family: 'Over', file: 'Overpass-400.ttf', weight: 400 },
   { family: 'Atk', file: 'AtkinsonHyperlegibleNext-400.ttf', weight: 400 }, { family: 'Atk', file: 'AtkinsonHyperlegibleNext-700.ttf', weight: 700 },

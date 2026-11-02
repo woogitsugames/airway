@@ -180,7 +180,7 @@ function hubRing(code) {
   const h = HUBS[code], g = new THREE.Group(), n = h.cap, w = h.waiting.length, load = w / n;
   for (let i = 0; i < n; i++) {
     const a0 = i / n * Math.PI * 2, seg = new THREE.Mesh(new THREE.RingGeometry(.052, .064, 6, 1, a0 + .05, Math.PI * 2 / n - .1).rotateX(-Math.PI / 2),
-      new THREE.MeshBasicMaterial({ color: i < w ? (load > .8 ? '#e5483b' : '#ff9a3d') : '#f2efe6', transparent: true, opacity: i < w ? 1 : .55, side: THREE.DoubleSide }));
+      new THREE.MeshBasicMaterial({ color: i < w ? (load > .8 ? '#c8352a' : '#ff9a3d') : '#f2efe6', transparent: true, opacity: i < w ? 1 : .55, side: THREE.DoubleSide }));
     seg.position.y = .004; g.add(seg);
   }
   const c = CITIES[code]; return place(g, c.lon, c.lat, 1.0058);
