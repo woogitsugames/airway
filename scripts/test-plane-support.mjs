@@ -1,47 +1,15 @@
-import { createRequire } from 'node:module';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { resolve, join } from 'node:path';
-import ts from 'typescript';
+// Load the task-09 pure modules through the shared TypeScript test loader.
+import './ts-test-loader.mjs';
 
-/** Compile exactly the task-09 pure TS modules, without Vite or browser APIs. */
-export function withPlaneModules(run) {
-  const output = mkdtempSync(join(tmpdir(), 'airway-planes-'));
-  try {
-    const inputs = ['params.ts', 'planes.ts', 'schedule.ts']
-      .map((name) => resolve('src/sim', name));
-    const compiler = ts.createProgram(inputs, {
-      target: ts.ScriptTarget.ES2022,
-      module: ts.ModuleKind.CommonJS,
-      moduleResolution: ts.ModuleResolutionKind.Node10,
-      strict: true,
-      noUnusedLocals: true,
-      noUnusedParameters: true,
-      outDir: output,
-    });
-    const diagnostics = ts.getPreEmitDiagnostics(compiler);
-    const emission = compiler.emit();
-    diagnostics.push(...emission.diagnostics);
-    if (diagnostics.length) {
-      throw new Error(ts.formatDiagnosticsWithColorAndContext(diagnostics, {
-        getCanonicalFileName: (value) => value,
-        getCurrentDirectory: process.cwd,
-        getNewLine: () => '\n',
-      }));
-    }
-    writeFileSync(join(output, 'package.json'), '{"type":"commonjs"}\n');
-    const require = createRequire(import.meta.url);
-    return run({
-      params: require(join(output, 'params.js')),
-      planes: require(join(output, 'planes.js')),
-      schedule: require(join(output, 'schedule.js')),
-    });
-  } finally {
-    rmSync(output, { recursive: true, force: true });
-  }
+async function planeModules() {
+  return {
+    params: await import('../src/sim/params.ts'),
+    planes: await import('../src/sim/planes.ts'),
+    schedule: await import('../src/sim/schedule.ts'),
+  };
 }
 
-export function harness(name, seed, testSuite) {
+export async function harness(name, seed, testSuite) {
   let passed = 0;
   let failed = 0;
   const check = (label, run) => {
@@ -54,10 +22,10 @@ export function harness(name, seed, testSuite) {
     }
   };
   try {
-    withPlaneModules((modules) => testSuite(modules, check));
+    testSuite(await planeModules(), check);
   } catch (error) {
     failed++;
-    console.error('FAIL compilation:', error);
+    console.error('FAIL load:', error);
   }
   console.log(`SUMMARY test:${name} seed=${seed} cases=${passed + failed} passed=${passed} failed=${failed}`);
   if (failed) process.exitCode = 1;

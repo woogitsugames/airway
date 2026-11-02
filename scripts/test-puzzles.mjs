@@ -1,10 +1,8 @@
-// Fixed-seed goal, fairness, replay and undo checks for the task-17 adapter.
+// Fixed-seed goal, fairness, replay and undo checks for task-17 puzzles on the real simulation.
 import { readFileSync, readdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createRequire } from 'node:module';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const require = createRequire(import.meta.url);
 let checked = 0;
 let passed = 0;
 const failures = [];
@@ -18,14 +16,9 @@ function check(name, fn) {
 }
 function assert(condition, message) { if (!condition) throw new Error(message); }
 try {
-  const ts = require('typescript');
-  const source = readFileSync(resolve(ROOT, 'src/game/modes/puzzle.ts'), 'utf8');
-  const { outputText, diagnostics } = ts.transpileModule(source, {
-    fileName: 'puzzle.ts', reportDiagnostics: true,
-    compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
-  });
-  assert(!diagnostics?.length, 'TypeScript parser rejected puzzle.ts');
-  const engine = await import('data:text/javascript;charset=utf-8,' + encodeURIComponent(outputText));
+  await import('./ts-test-loader.mjs');
+  // The production engine: puzzle levels run on the authoritative Sim (src/sim/puzzles.ts).
+  const engine = await import('../src/game/modes/puzzle.ts');
   const folder = resolve(ROOT, 'src/data/puzzles');
   const files = readdirSync(folder).filter((name) => /^\d{2}\.json$/.test(name)).sort();
   check('level count', () => assert(files.length === 15, `expected 15, got ${files.length}`));

@@ -1,12 +1,4 @@
 // Fixed-seed, dependency-free unit test of the independent task 11 adapters.
-import { readFileSync, mkdirSync, writeFileSync, mkdtempSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { resolve, dirname, join } from 'node:path';
-import { pathToFileURL, fileURLToPath } from 'node:url';
-import ts from 'typescript';
-
-const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const scratch = mkdtempSync(join(tmpdir(), 'airway-daynight-'));
 const seed = 0xA1A1;
 let passed = 0;
 let failed = 0;
@@ -34,25 +26,14 @@ function rootRng(gameSeed) {
 }
 
 try {
-  // Transpile only this task's TypeScript; the rest of dev is deliberately still a scaffold.
-  for (const file of ['src/sim/params.ts', 'src/sim/daynight.ts', 'src/data/cities.ts', 'src/render/sun.ts']) {
-    const source = readFileSync(resolve(root, file), 'utf8');
-    const js = ts.transpileModule(source, {
-      fileName: file,
-      compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
-      reportDiagnostics: true,
-    });
-    if (js.diagnostics?.length) throw new Error(`Transpile errors in ${file}`);
-    const target = resolve(scratch, file.replace(/\.ts$/, '.js'));
-    mkdirSync(dirname(target), { recursive: true });
-    writeFileSync(target, js.outputText);
-  }
-  writeFileSync(resolve(scratch, 'package.json'), '{"type":"module"}');
-  const load = async (file) => import(pathToFileURL(resolve(scratch, file)).href);
-  const sim = await load('src/sim/daynight.js');
-  const params = await load('src/sim/params.js');
-  const cities = await load('src/data/cities.js');
-  const sun = await load('src/render/sun.js');
+  // Load the production modules through the shared TypeScript test loader.
+  await import('./ts-test-loader.mjs');
+  const sim = await import('../src/sim/daynight.ts');
+  const params = await import('../src/sim/params.ts');
+  const cities = await import('../src/data/cities.ts');
+  const sun = await import('../src/render/sun.ts');
+  const { Rng } = await import('../src/core/rng.ts');
+  check('kernel Rng satisfies the curfew RNG root', sim.selectEndlessCurfewCities(4, ['A', 'B', 'C'], new Rng(seed)).length === 2);
   const cityData = Array.from({ length: 24 }, (_, i) => ({ cityId: `C${String(i).padStart(2, '0')}`, utcOffsetH: i - 12 }));
   const cityIds = cityData.map((city) => city.cityId);
   const w4 = 3 * params.DAYNIGHT_MINUTES_PER_WEEK;
@@ -160,7 +141,6 @@ try {
   failed++;
   failures.push(error instanceof Error ? error.stack ?? error.message : String(error));
 } finally {
-  rmSync(scratch, { recursive: true, force: true });
   for (const failure of failures) console.error('FAIL ' + failure);
   console.log(`SUMMARY test:daynight seed=0x${seed.toString(16).toUpperCase()} passed=${passed} failed=${failed}`);
   if (failed) process.exitCode = 1;

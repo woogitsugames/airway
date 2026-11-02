@@ -21,20 +21,20 @@
       "continent": "NA",
       "latitude": 40.6,
       "longitude": -73.8,
-      "hubCapacity": 30
+      "hubCapacity": 150
     },
     {
       "id": "YYZ",
       "continent": "NA",
       "latitude": 43.7,
       "longitude": -79.6,
-      "hubCapacity": 100
+      "hubCapacity": 250
     },
     {
-      "id": "HND",
+      "id": "TYO",
       "continent": "AS",
-      "latitude": 35.6,
-      "longitude": 139.8,
+      "latitude": 35.7,
+      "longitude": 139.7,
       "hubCapacity": 90,
       "curfew": {
         "startMinuteOfDay": 1320,
@@ -46,7 +46,7 @@
       "continent": "AS",
       "latitude": 1.4,
       "longitude": 103.9,
-      "hubCapacity": 100
+      "hubCapacity": 300
     },
     {
       "id": "SYD",
@@ -63,7 +63,7 @@
   },
   "goal": {
     "kind": "curfewNights",
-    "targetDelivered": 225,
+    "targetDelivered": 83,
     "nights": 3
   },
   "demand": [
@@ -92,13 +92,13 @@
     },
     {
       "from": "YYZ",
-      "to": "HND",
+      "to": "TYO",
       "plane": "jet",
       "flightTicks": 500,
       "intervalTicks": 120
     },
     {
-      "from": "HND",
+      "from": "TYO",
       "to": "SIN",
       "plane": "jet",
       "flightTicks": 320,
@@ -128,12 +128,12 @@
     {
       "type": "connect",
       "from": "YYZ",
-      "to": "HND",
+      "to": "TYO",
       "plane": "jet"
     },
     {
       "type": "connect",
-      "from": "HND",
+      "from": "TYO",
       "to": "SIN",
       "plane": "jet"
     },
@@ -149,7 +149,7 @@
     },
     {
       "type": "upgradeHub",
-      "city": "HND"
+      "city": "TYO"
     }
   ]
 }

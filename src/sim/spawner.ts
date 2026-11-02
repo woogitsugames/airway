@@ -1,7 +1,8 @@
-// Pure, serializable city spawning: no geometry/trigonometry or platform clock calls.
-import { nextRngUint32 } from '../core/rng';
-import { CITIES } from '../data/cities';
-import { distanceKm } from '../data/generated/distances';
+// Pure, serializable city spawning (task 05): no geometry/trigonometry or platform clock calls.
+// Randomness comes from the kernel's 'cities' stream; the kernel persists that stream's state.
+import type { Rng } from '../core/rng.ts';
+import { CITIES } from '../data/cities.ts';
+import { distanceKm } from '../data/generated/distances.ts';
 import {
   SPAWNER_INTERVAL_TICKS,
   SPAWNER_MAX_CITIES,
@@ -10,11 +11,10 @@ import {
   SPAWNER_START_CITY_MAX,
   SPAWNER_START_CITY_MIN,
   SPAWNER_START_RADIUS_KM,
-} from './params';
+} from './params.ts';
 
 export interface CitySpawnerState {
   readonly paramsVersion: typeof SPAWNER_PARAMS_VERSION;
-  readonly rngState: number;
   readonly activeCityIndices: readonly number[];
   readonly nextSpawnTick: number | null;
   readonly lastTick: number;
@@ -40,21 +40,25 @@ interface StartCluster {
 }
 
 // Precomputed once when this data module is loaded, never on a simulation tick.
+// [integration-sim] Passengers only travel to OTHER regions (task 08), so a start needs two regions:
+// members[0] is the anchor, members[1] its nearest foreign-region neighbour, then the nearest others.
 function buildStartClusters(): readonly StartCluster[] {
   const clusters: StartCluster[] = [];
   for (let anchor = 0; anchor < CITIES.length; anchor++) {
     const nearby: number[] = [];
     for (let other = 0; other < CITIES.length; other++) {
-      if (other === anchor || CITIES[other].region !== CITIES[anchor].region) continue;
+      if (other === anchor) continue;
       const km = distanceKm(anchor, other);
       if (km >= SPAWNER_MIN_CITY_DISTANCE_KM && km <= SPAWNER_START_RADIUS_KM) {
         nearby.push(other);
       }
     }
     nearby.sort((a, b) => distanceKm(anchor, a) - distanceKm(anchor, b) || a - b);
-    const members = [anchor];
+    const foreign = nearby.find((other) => CITIES[other].region !== CITIES[anchor].region);
+    if (foreign === undefined) continue;
+    const members = [anchor, foreign];
     for (const other of nearby) {
-      if (isFarEnough(other, members)) members.push(other);
+      if (other !== foreign && isFarEnough(other, members)) members.push(other);
       if (members.length === SPAWNER_START_CITY_MAX) break;
     }
     if (members.length === SPAWNER_START_CITY_MAX) clusters.push({ members });
@@ -64,34 +68,22 @@ function buildStartClusters(): readonly StartCluster[] {
 
 const START_CLUSTERS = buildStartClusters();
 
-function nextRoll(state: number, exclusiveMax: number): { readonly state: number; readonly roll: number } {
-  const step = nextRngUint32(state);
-  return { state: step.state, roll: step.value % exclusiveMax };
-}
-
-export function createCitySpawner(seed: number): CitySpawnerState {
-  if (!Number.isSafeInteger(seed)) throw new RangeError('Seed must be an integer');
+/** Seeded start: one 3-4 city cluster. `rng` is the kernel's 'cities' stream. */
+export function createCitySpawner(rng: Rng): CitySpawnerState {
   if (START_CLUSTERS.length === 0) throw new Error('City dataset has no viable starting region');
-  let rng = seed >>> 0;
-  let draw = nextRoll(rng, START_CLUSTERS.length);
-  rng = draw.state;
-  const cluster = START_CLUSTERS[draw.roll].members;
-  draw = nextRoll(rng, SPAWNER_START_CITY_MAX - SPAWNER_START_CITY_MIN + 1);
-  rng = draw.state;
-  const count = SPAWNER_START_CITY_MIN + draw.roll;
-  const options = cluster.slice(1);
+  const cluster = START_CLUSTERS[rng.int(START_CLUSTERS.length)].members;
+  const count = SPAWNER_START_CITY_MIN + rng.int(SPAWNER_START_CITY_MAX - SPAWNER_START_CITY_MIN + 1);
+  const options = cluster.slice(2);
   // Fisher–Yates for variable starting groups without breaking pairwise spacing.
   for (let i = options.length - 1; i > 0; i--) {
-    draw = nextRoll(rng, i + 1);
-    rng = draw.state;
+    const roll = rng.int(i + 1);
     const tmp = options[i];
-    options[i] = options[draw.roll];
-    options[draw.roll] = tmp;
+    options[i] = options[roll];
+    options[roll] = tmp;
   }
   return {
     paramsVersion: SPAWNER_PARAMS_VERSION,
-    rngState: rng,
-    activeCityIndices: [cluster[0], ...options.slice(0, count - 1)],
+    activeCityIndices: [cluster[0], cluster[1], ...options.slice(0, count - 2)],
     nextSpawnTick: SPAWNER_INTERVAL_TICKS,
     lastTick: 0,
   };
@@ -104,10 +96,7 @@ function proximityWeight(nearestKm: number): number {
   return 1; // A small global escape probability prevents regional dead ends.
 }
 
-function chooseNextCity(active: readonly number[], state: number): {
-  readonly index: number | null;
-  readonly rngState: number;
-} {
+function chooseNextCity(active: readonly number[], rng: Rng): number | null {
   const candidates: number[] = [];
   const weights: number[] = [];
   let totalWeight = 0;
@@ -124,18 +113,17 @@ function chooseNextCity(active: readonly number[], state: number): {
     weights.push(weight);
     totalWeight += weight;
   }
-  if (candidates.length === 0) return { index: null, rngState: state };
-  const draw = nextRoll(state, totalWeight);
-  let ticket = draw.roll;
+  if (candidates.length === 0) return null;
+  let ticket = rng.int(totalWeight);
   for (let i = 0; i < candidates.length; i++) {
     ticket -= weights[i];
-    if (ticket < 0) return { index: candidates[i], rngState: draw.state };
+    if (ticket < 0) return candidates[i];
   }
   throw new Error('Invalid weighted city selection');
 }
 
 // Call with the authoritative integer game tick; skipping ticks catches up identically.
-export function advanceCitySpawner(state: CitySpawnerState, gameTick: number): SpawnResult {
+export function advanceCitySpawner(state: CitySpawnerState, gameTick: number, rng: Rng): SpawnResult {
   if (!Number.isSafeInteger(gameTick) || gameTick < state.lastTick) {
     throw new RangeError('Game tick must be a nondecreasing safe integer');
   }
@@ -147,7 +135,6 @@ export function advanceCitySpawner(state: CitySpawnerState, gameTick: number): S
     return { state: { ...state, lastTick: gameTick }, spawnedCityIndices: NO_CITIES };
   }
 
-  let rngState = state.rngState;
   let nextSpawnTick: number | null = state.nextSpawnTick;
   const active = [...state.activeCityIndices];
   const spawned: number[] = [];
@@ -156,21 +143,19 @@ export function advanceCitySpawner(state: CitySpawnerState, gameTick: number): S
       nextSpawnTick = null;
       break;
     }
-    const result = chooseNextCity(active, rngState);
-    rngState = result.rngState;
-    if (result.index === null) {
+    const index = chooseNextCity(active, rng);
+    if (index === null) {
       nextSpawnTick = null; // Dataset exhausted under the 6-degree restriction.
       break;
     }
-    active.push(result.index);
-    spawned.push(result.index);
+    active.push(index);
+    spawned.push(index);
     nextSpawnTick += SPAWNER_INTERVAL_TICKS;
     if (active.length >= SPAWNER_MAX_CITIES) nextSpawnTick = null;
   }
   return {
     state: {
       paramsVersion: state.paramsVersion,
-      rngState,
       activeCityIndices: active,
       nextSpawnTick,
       lastTick: gameTick,

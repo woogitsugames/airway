@@ -316,7 +316,7 @@ function report(results: RunResult[], mode: string): string {
     `This is later than the upper bound of the 8–15-minute session target. ` +
     `The game-clock design needs an explicit owner decision before balancing weekly upgrades.\n\n` +
     `## Reproduction\n` +
-    `\`node --experimental-strip-types scripts/balance-report.ts ${mode === 'fixture' ? '--fixture ' : ''}--report\`\n`;
+    `\`npm run ${mode === 'fixture' ? 'balance:fixture' : 'balance:report'}\`\n`;
 }
 
 function verifyPolicy(): void {

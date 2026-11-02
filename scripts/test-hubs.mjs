@@ -1,13 +1,13 @@
 import './ts-test-loader.mjs';
 import assert from 'node:assert/strict';
-const { PassengerSimulation } = await import('../src/sim/sim.ts');
-const { MIN_TRANSFER_TICKS, CONGESTION_GRACE_TICKS } = await import('../src/sim/params.ts');
-import { rngRoot, city, fullyConnectedDistances, assertBalance } from './sim-fixtures.mjs';
+const { PassengerSimulation } = await import('../src/sim/passengers.ts');
+const { MIN_TRANSFER_TICKS, CONGESTION_GRACE_TICKS, HUB_CAPACITY_UPGRADE, HUB_WAITING_CAPACITY: HUB, CITY_WAITING_CAPACITY: CITY } = await import('../src/sim/params.ts');
+import { demandRng, city, fullyConnectedDistances, assertBalance } from './sim-fixtures.mjs';
 
 const SEED = 0xA1A1;
 const cities = [city('A', 'EUS'), city('B', 'NAM'), city('C', 'AFR'), city('D', 'ME')];
 const distance = fullyConnectedDistances(cities.map((c) => c.cityId));
-const sim = () => new PassengerSimulation(cities, distance, rngRoot(SEED));
+const sim = () => new PassengerSimulation(cities, distance, demandRng(SEED));
 const routes = (s) => {
   s.apply({ type: 'AddRoute', routeId: 'R1', cities: ['A', 'B'] });
   s.apply({ type: 'AddRoute', routeId: 'R2', cities: ['B', 'C'] });
@@ -18,13 +18,15 @@ try {
   test(() => {
     const s = sim(); routes(s);
     assert.equal(s.hubs.city('B').isHub, true);
-    assert.equal(s.hubs.city('B').capacity, 10);
-    assert.equal(s.hubs.city('A').capacity, 5);
+    assert.equal(s.hubs.city('B').capacity, HUB);
+    assert.equal(s.hubs.city('A').capacity, CITY);
     s.upgradeHub('B');
-    assert.equal(s.hubs.city('B').capacity, 14);
+    assert.equal(HUB_CAPACITY_UPGRADE, 6);
+    assert.equal(s.hubs.city('B').capacity, HUB + 6);
+    assert.equal(s.hubs.city('B').transferTicks, 15, 'upgraded hub has a shorter connection time');
     s.apply({ type: 'RemoveRoute', routeId: 'R2' });
     assert.equal(s.hubs.city('B').isHub, false);
-    assert.equal(s.hubs.city('B').capacity, 9);
+    assert.equal(s.hubs.city('B').capacity, CITY + 6);
   });
   test(() => {
     const s = sim(); routes(s);
@@ -48,24 +50,24 @@ try {
   });
   test(() => {
     const s = sim(); routes(s);
-    for (let i = 0; i < 10; i++) s.seedPassenger('B', 'ME');
+    for (let i = 0; i < HUB; i++) s.seedPassenger('B', 'ME');
     assert.equal(s.hubs.city('B').fullTicks, 0);
     for (let i = 0; i < CONGESTION_GRACE_TICKS - 1; i++) assert.equal(s.step(), null);
     const fail = s.step();
     assert.equal(fail.tick, CONGESTION_GRACE_TICKS);
     assert.equal(fail.cityId, 'B');
-    assert.equal(fail.waiting, 10);
+    assert.equal(fail.waiting, HUB);
     assert.equal(fail.leadingRegion, 'ME');
     assert.equal(fail.leadingRegionPercent, 100);
-    assert.equal(s.ledger.hub('B').noRoute, 10);
-    assert.equal(s.ledger.hub('B').longWait, 10);
-    assert.equal(s.ledger.hub('B').full, 10);
+    assert.equal(s.ledger.hub('B').noRoute, HUB);
+    assert.equal(s.ledger.hub('B').longWait, HUB);
+    assert.equal(s.ledger.hub('B').full, HUB);
     assertBalance(assert, s);
     assert.equal(s.step().tick, CONGESTION_GRACE_TICKS, 'finished games freeze time');
   });
   test(() => {
     const s = sim(); routes(s);
-    for (let i = 0; i < 10; i++) s.seedPassenger('B', 'AFR');
+    for (let i = 0; i < HUB; i++) s.seedPassenger('B', 'AFR');
     for (let i = 0; i < 250; i++) s.step();
     assert.equal(s.hubs.city('B').fullTicks, 250);
     assert.equal(s.boardAt('B', 'R2', 1, 'C').length, 1);
@@ -86,14 +88,14 @@ try {
   });
   test(() => {
     const populationCities = [city('A', 'EUS', 20_000_000), city('B', 'NAM', 20_000_000)];
-    const s = new PassengerSimulation(populationCities, fullyConnectedDistances(['A', 'B']), rngRoot(SEED), ['A']);
+    const s = new PassengerSimulation(populationCities, fullyConnectedDistances(['A', 'B']), demandRng(SEED), ['A']);
     for (let i = 0; i < 1_440; i++) s.step();
     assert.equal(s.passengerBalance().created, 0, 'inactive regions create no demand');
     s.activateCity('B');
     for (let i = 0; i < 500 && !s.failed; i++) s.step();
     assert.ok(s.passengerBalance().created > 0, 'new active region participates in demand');
     const snap = JSON.parse(JSON.stringify(s.snapshot()));
-    const resumed = new PassengerSimulation(populationCities, fullyConnectedDistances(['A', 'B']), rngRoot(SEED), ['A']);
+    const resumed = new PassengerSimulation(populationCities, fullyConnectedDistances(['A', 'B']), demandRng(SEED), ['A']);
     resumed.restore(snap);
     assert.equal(resumed.hash(), s.hash());
   });

@@ -3,7 +3,7 @@ import {
   CURFEW_ADDITIONAL_CITY_EVERY_WEEKS, CURFEW_END_HOUR, CURFEW_ENDLESS_START_WEEK,
   CURFEW_MAX_CITY_COUNT, CURFEW_START_CITY_COUNT, CURFEW_START_HOUR,
   DAYNIGHT_MINUTES_PER_DAY, DAYNIGHT_MINUTES_PER_WEEK, DEMAND_HOURLY_WEIGHTS,
-} from './params.js';
+} from './params.ts';
 
 export type DayNightMode = 'endless' | 'puzzle';
 export interface DayNightCity {

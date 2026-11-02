@@ -24,13 +24,13 @@
       "continent": "NA",
       "latitude": 43.7,
       "longitude": -79.6,
-      "hubCapacity": 100
+      "hubCapacity": 250
     },
     {
-      "id": "HND",
+      "id": "TYO",
       "continent": "AS",
-      "latitude": 35.6,
-      "longitude": 139.8,
+      "latitude": 35.7,
+      "longitude": 139.7,
       "hubCapacity": 100
     },
     {
@@ -48,7 +48,7 @@
   },
   "goal": {
     "kind": "continents",
-    "targetDelivered": 185,
+    "targetDelivered": 180,
     "continents": 3
   },
   "demand": [
@@ -77,13 +77,13 @@
     },
     {
       "from": "YYZ",
-      "to": "HND",
+      "to": "TYO",
       "plane": "jet",
       "flightTicks": 500,
       "intervalTicks": 120
     },
     {
-      "from": "HND",
+      "from": "TYO",
       "to": "SIN",
       "plane": "jet",
       "flightTicks": 320,
@@ -106,12 +106,12 @@
     {
       "type": "connect",
       "from": "YYZ",
-      "to": "HND",
+      "to": "TYO",
       "plane": "jet"
     },
     {
       "type": "connect",
-      "from": "HND",
+      "from": "TYO",
       "to": "SIN",
       "plane": "jet"
     }

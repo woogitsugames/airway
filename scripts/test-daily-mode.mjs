@@ -1,5 +1,6 @@
 // Fixed-seed contract checks with a thin task-02 seed/simulation adapter.
-import { DailyChallengeMode, dailyTicket, TICKET_GLYPHS } from '../src/game/modes/daily.ts';
+import { DailyChallengeMode, createDailyMode, dailyTicket, TICKET_GLYPHS } from '../src/game/modes/daily.ts';
+import { dailySeed } from '../src/core/daily.ts';
 import { LocalScoreService, MemoryScoreStorage, dateIndex } from '../src/game/scores.ts';
 import { formatDailyShare } from '../src/platform/share.ts';
 
@@ -137,6 +138,19 @@ check('shared ticket is short, localized, and emoji-free', () => {
   const text = formatDailyShare({ dateKey: '2026-11-02', kind: 'official', score: 320, weeks: 5, ticket }, translator);
   assert(text.includes('02.11.2026') && text.includes('320') && text.includes('5'), 'missing values');
   assert(!/\p{Extended_Pictographic}/u.test(text), 'emoji in ticket');
+});
+check('production daily mode runs the real Sim with the Warsaw seed', () => {
+  const mode = createDailyMode(new LocalScoreService(new MemoryScoreStorage()));
+  const a = start(mode, 'practice', '2026-11-02T06:00:00Z');
+  const b = start(mode, 'practice', '2026-11-02T22:30:00Z');
+  equal(a.seed, dailySeed(now('2026-11-02T06:00:00Z')));
+  equal(a.seed, b.seed);
+  equal(a.simulation.config.mode, 'daily');
+  equal(a.initialHash, b.initialHash);
+  a.simulation.advance(500); b.simulation.advance(500);
+  equal(a.simulation.hash(), b.simulation.hash());
+  const other = start(mode, 'practice', '2026-11-03T12:00:00Z');
+  assert(other.initialHash !== a.initialHash, 'next day must differ');
 });
 
 for (const error of errors) console.error('FAIL ' + error);

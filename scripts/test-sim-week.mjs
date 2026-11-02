@@ -1,18 +1,21 @@
 import './ts-test-loader.mjs';
 import assert from 'node:assert/strict';
-import { rngRoot, city, fullyConnectedDistances, assertBalance } from './sim-fixtures.mjs';
-const { PassengerSimulation } = await import('../src/sim/sim.ts');
+import { demandRng, city, fullyConnectedDistances, assertBalance } from './sim-fixtures.mjs';
+const { PassengerSimulation } = await import('../src/sim/passengers.ts');
 const { SIM_MINUTES_PER_DAY, SIM_DAYS_PER_WEEK } = await import('../src/sim/params.ts');
 
 const WEEK = SIM_MINUTES_PER_DAY * SIM_DAYS_PER_WEEK;
 const SEEDS = [0xA1A1, 0xB2B2, 0xC3C3];
 const cities = [
-  city('A', 'EUS', 4_000_000, 60), city('B', 'NAM', 3_000_000, -300),
-  city('C', 'AFR', 2_000_000, 120), city('D', 'ME', 5_000_000, 180),
+  city('A', 'EUS', 12_000_000, 1), city('B', 'NAM', 9_000_000, -5),
+  city('C', 'AFR', 6_000_000, 2), city('D', 'ME', 15_000_000, 3),
 ];
 const distances = fullyConnectedDistances(cities.map((c) => c.cityId));
+const streams = new WeakMap();
 const make = (seed, network) => {
-  const s = new PassengerSimulation(cities, distances, rngRoot(seed));
+  const rng = demandRng(seed);
+  const s = new PassengerSimulation(cities, distances, rng);
+  streams.set(s, rng);
   if (network) {
     s.apply({ type: 'AddRoute', routeId: 'R1', cities: ['A', 'B', 'C'] });
     s.apply({ type: 'AddRoute', routeId: 'R2', cities: ['C', 'D'] });
@@ -55,6 +58,8 @@ try {
     const checkpoint = JSON.parse(JSON.stringify(run.snapshot()));
     const resumed = make(seed, false);
     resumed.restore(checkpoint);
+    // The kernel persists the demand stream state next to the world snapshot.
+    streams.get(resumed).setState(streams.get(run).state);
     assert.equal(run.hash(), resumed.hash(), 'checkpoint hash');
     advance(run, WEEK - 3 * SIM_MINUTES_PER_DAY);
     advance(resumed, WEEK - 3 * SIM_MINUTES_PER_DAY);
@@ -76,9 +81,9 @@ try {
     failTicks.push(`${seed.toString(16)}:${blocked.failure.tick}`);
     tests++;
   }
-  const expectedHashes = ['a1a1:753d7727', 'b2b2:47030ec0', 'c3c3:981f84af'];
+  const expectedHashes = ['a1a1:97dab3bb', 'b2b2:7bbf1bff', 'c3c3:3b649a70'];
   assert.deepEqual(hashes, expectedHashes, 'deterministic week hashes changed');
-  assert.deepEqual(failTicks, ['a1a1:824', 'b2b2:824', 'c3c3:824'], 'locked congestion failure ticks');
+  assert.deepEqual(failTicks, ['a1a1:2264', 'b2b2:2264', 'c3c3:2264'], 'locked congestion failure ticks');
   console.log(`SUMMARY test:sim-week seeds=3 weekTicks=${WEEK} cases=${tests} passed=${tests} failed=0 hashes=${hashes.join(',')} failTicks=${failTicks.join(',')}`);
 } catch (e) {
   console.error(e);
