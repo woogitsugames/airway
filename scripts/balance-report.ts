@@ -149,4 +149,147 @@ class FixtureSession implements BalanceSession {
           this.routes.some((route) => route.stops.includes(from.id) && route.stops.includes(to.id))) return false;
       const distanceKm = this.distances[from.id][to.id];
       if (distanceKm > 11_000) return false;
-      this.routes.push
+      this.routes.push({
+        id: `R${this.routes.length.toString().padStart(2, '0')}`,
+        stops: [from.id, to.id], distanceKm,
+        assigned: { turboprop: 0, widebody: 0 },
+      });
+      from.connectedRoutes++;
+      to.connectedRoutes++;
+      return true;
+    }
+    if (command.type === 'AssignPlane' && this.phase === 'running') {
+      const route = this.routes.find((item) => item.id === command.routeId);
+      if (!route || this.inventory[command.aircraftType] < 1 ||
+          route.distanceKm > (command.aircraftType === 'turboprop' ? 2_500 : 11_000)) return false;
+      route.assigned[command.aircraftType]++;
+      this.inventory[command.aircraftType]--;
+      return true;
+    }
+    if (command.type === 'ChooseUpgrade' && this.phase === 'upgrade') {
+      const offer = this.offers.find((item) => item.id === command.offerId);
+      if (!offer) return false;
+      if (offer.kind === 'hub') {
+        const city = this.cities.find((item) => item.id === command.cityId && item.connectedRoutes > 0);
+        if (!city) return false;
+        city.capacity += 6;
+      } else if (offer.kind === 'turboprop' || offer.kind === 'widebody') {
+        this.inventory[offer.kind]++;
+      }
+      this.phase = 'running';
+      return true;
+    }
+    return false;
+  }
+
+  advance(ticks: number): void {
+    for (let n = 0; n < ticks && this.phase === 'running'; n++) {
+      this.tick++;
+      if (this.tick % this.emergenceInterval === 0 && this.nextCity < this.cities.length) {
+        this.cities[this.nextCity++].active = true;
+      }
+      if (this.tick % 45 === 0) {
+        for (const city of this.cities) {
+          if (city.active) city.waiting += 1 + this.rng.next(3);
+        }
+      }
+      if (this.tick % 160 === 0) {
+        for (const route of this.routes) {
+          const seats = 10 * route.assigned.turboprop + 25 * route.assigned.widebody;
+          for (const cityId of route.stops) {
+            const city = this.cities.find((item) => item.id === cityId);
+            if (!city) continue;
+            const boarded = Math.min(seats, city.waiting);
+            city.waiting -= boarded;
+            this.score += boarded;
+          }
+        }
+      }
+      for (const city of this.cities) {
+        if (!city.active) continue;
+        const limit = city.capacity + (city.connectedRoutes > 1 ? 15 : 0);
+        if (city.waiting >= limit) {
+          if (city.warningStart === null) {
+            city.warningStart = this.tick;
+            if (!this.warningEver) this.firstWarningTick = this.tick;
+            this.warningEver = true;
+            this.ledger.push({ kind: 'hubOverflow', cityId: city.id, count: 1 });
+          } else if (this.tick - city.warningStart >= WARNING_TICKS) {
+            this.warningLeadTicks = this.tick - city.warningStart;
+            this.endReason = 'hubOverflow';
+            this.phase = 'finished';
+            break;
+          }
+        } else {
+          city.warningStart = null;
+        }
+      }
+      if (this.tick % TICKS_PER_WEEK === 0 && this.phase === 'running') this.phase = 'upgrade';
+    }
+  }
+
+  outcome(): BalanceOutcome {
+    return {
+      reason: this.endReason,
+      score: this.score,
+      warned: this.warningEver && this.firstWarningTick >= 0,
+      warningLeadTicks: this.warningLeadTicks,
+    };
+  }
+}
+
+function median(values: number[]): number {
+  const sorted = [...values].sort((a, b) => a - b);
+  const middle = sorted.length >> 1;
+  return sorted.length % 2 === 1 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2;
+}
+
+async function loadAdapter(path: string, fixture: boolean): Promise<BalanceAdapter> {
+  if (fixture) return { createBalanceSession: (seed) => new FixtureSession(seed) };
+  const filename = resolve(ROOT, path);
+  if (!existsSync(filename)) {
+    throw new Error(`Production simulation adapter missing: ${path}. ` +
+      'Tasks 08/09/12 must be merged and the adapter must implement createBalanceSession(seed).');
+  }
+  const module: Record<string, unknown> = await import(pathToFileURL(filename).href);
+  if (typeof module.createBalanceSession !== 'function') {
+    throw new Error(`Missing named export createBalanceSession(seed) in ${path}`);
+  }
+  return { createBalanceSession: module.createBalanceSession as BalanceAdapter['createBalanceSession'] };
+}
+
+function play(adapter: BalanceAdapter, seed: number): RunResult {
+  const session = adapter.createBalanceSession(seed);
+  let commands = 0;
+  let rejected = 0;
+  for (let attempts = 0; attempts <= MAX_TICKS / ACTION_INTERVAL; attempts++) {
+    const snapshot = session.snapshot();
+    if (snapshot.status === 'finished' || snapshot.tick >= MAX_TICKS) break;
+    const decision = chooseBotAction(snapshot);
+    if (decision) {
+      if (session.dispatch(decision.command)) commands++;
+      else rejected++;
+    }
+    session.advance(Math.min(ACTION_INTERVAL, MAX_TICKS - snapshot.tick));
+  }
+  const snapshot = session.snapshot();
+  const end = session.outcome();
+  return {
+    seed, ticks: snapshot.tick,
+    minutes: snapshot.tick / (SIM_TICKS_PER_SECOND * 60),
+    weeks: snapshot.tick / TICKS_PER_WEEK,
+    score: end.score, reason: snapshot.status === 'finished' ? end.reason : 'censored',
+    warned: end.warned, warningLeadTicks: end.warningLeadTicks, commands, rejected,
+  };
+}
+
+function csv(results: RunResult[]): string {
+  const header = 'seed,ticks,game_weeks,wall_minutes_1x,score,reason,warning_seen,warning_lead_ticks,commands,rejected';
+  return header + '\n' + results.map((item) => [
+    item.seed, item.ticks, item.weeks.toFixed(3), item.minutes.toFixed(3), item.score,
+    item.reason, item.warned ? 1 : 0, item.warningLeadTicks, item.commands, item.rejected,
+  ].join(',')).join('\n') + '\n';
+}
+
+function report(results: RunResult[], mode: string): string {
+  const times = results.map((r) => r.minutes);
