@@ -42,6 +42,8 @@ npm run build
 | `npm run test:schedule` | Dwell, back-and-forth movement, capacity, passenger balance and 7-day replay | `SUMMARY test:schedule seed=0xA1A1 cases=7 passed=7 failed=0` |
 | `npm run test:route-tool` | Fixed-seed airport snapping, multi-stop AddRoute/ExtendRoute, range guards, endpoint handles, menu, speed restore and undo | `SUMMARY test:route-tool seed=0xA1A1 passed=17 failed=0` |
 | `npm run test:fast` | `typecheck`, `test:i18n`, `test:arch` and `test:route-tool` | All test summaries and exit code 0 |
+| `npm run test:fast` | `typecheck`, then `test:i18n`, then `test:arch`, then `test:interp` | Both test summaries and exit code 0 |
+| `npm run test:interp` | <!-- [task-10] --> 17 seeded checks of great-circle geometry, route-boundary interpolation, 40 routes, 100 instanced planes and per-frame route rebuild guard | `SUMMARY test:interp seed=0xA1A1 passed=17 failed=0` |
 
 Every future test must have a fixed seed (use `0xA1A1` where no gameplay seed
 is needed), terminate with one `SUMMARY ...` line, set a nonzero exit code on

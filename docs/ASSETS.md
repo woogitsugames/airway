@@ -57,3 +57,6 @@ The pad, runway, terminal, hub tower, capacity-ring seats, and red-and-white cur
 barrier are procedural three.js geometries in `src/render/airports.ts`.
 The destination glyph paths in `src/ui/glyphs.ts` are original SVG geometry
 carried over from this repository's `mockups/lib/scene.mjs` (D-08).
+<!-- [task-10] -->
+## Procedural production route and aircraft assets
+`src/render/routes.ts` constructs original spherical arc tubes (continuous light widebody, dashed warm turboprop) and horizon ghost materials. `src/render/models/planes.ts` builds original low-poly turboprops and widebodies procedurally: fuselages, wings, tails, propellers and engines. `src/render/planes.ts` adds instanced ground shadows, contrails and five-part occupancy tags. No external binary/image assets or third-party model licences are required.
