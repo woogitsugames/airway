@@ -204,6 +204,7 @@ export function mountPerformanceFixture(
   geometries.push(cloudGeometry);
   const clouds = new InstancedMesh(cloudGeometry, materials[3], profile.cloudInstances);
   clouds.frustumCulled = false;
+  clouds.castShadow = profile.shadowEnabled; // [task-21] One shared high-tier shadow draw.
   for (let i = 0; i < profile.cloudInstances; i++) {
     const latitude = (((i * 37) % 138) - 69) * Math.PI / 180;
     const longitude = (((i * 81) % 360) - 180) * Math.PI / 180;
