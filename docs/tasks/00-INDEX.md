@@ -88,3 +88,18 @@ Sesja pracuje na gałęzi `task/NN-...`, wypycha ją i otwiera **draft PR do `de
 - ~~Podtytuł~~ → „Airway: Globe Route Builder” (D-18).
 - Polityka prywatności i wdrożenie strony — zlecenie 29.
 - ~~Cisza nocna~~ → od tygodnia 4 w trybie bez końca, zawsze w zadaniach (D-17).
+
+## Paczka poprawkowa (D-42) — po integracji #30
+
+Uruchamiaj falami; w jednej fali równolegle. Każda sesja: gałąź `task/NN-...` z `dev`, draft PR do `dev`.
+
+| Fala | Nr | Zlecenie | Gałąź | Zależy od |
+|---|---|---|---|---|
+| P1 | 31 | [Tydzień = 3 doby gry i ponowny balans](31-week-3-days.md) | `task/31-week-3-days` | — |
+| P1 | 33 | [Globus jak na makiecie](33-globe-detail.md) | `task/33-globe-detail` | — |
+| P1 | 35 | [Karta ulepszenia jak na makiecie + drobiazgi UI](35-upgrade-card.md) | `task/35-upgrade-card` | — |
+| P2 | 32 | [Egzekwowanie slotów startów](32-departure-slots.md) | `task/32-departure-slots` | 31 |
+| P2 | 34 | [Czytelna noc i kadrowanie kamery](34-night-framing.md) | `task/34-night-framing` | 33 |
+| P3 | 36 | [Prawdziwe zrzuty do sklepów](36-store-shots-real.md) | `task/36-store-shots-real` | 31–35 |
+
+Zlecenie 30 (integracja) zostało wykonane w sesji koordynatora (PR #30) — nie uruchamiaj go.
