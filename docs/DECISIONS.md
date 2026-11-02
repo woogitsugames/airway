@@ -92,3 +92,16 @@ full-screen ads during play, no timers, no dark patterns. Supersedes the recomme
 
 ## D-18 — Store title: "Airway: Globe Route Builder" (PL: "Airway: Buduj siatkę lotów na globusie") (2026-11-02, owner)
 **Status: in force.**
+
+## D-19 — Integer route legs and guarded plane lifecycle (2026-11-02, task 09)
+At route creation, resolve each city pair through task 05's precomputed integer-
+kilometre table and store both aircraft types' integer travel durations. The
+scheduler never recalculates geographic distances and uses 10,000 units for
+renderer-facing progress. Aircraft traverse waypoints in both directions, allow
+at least 25 ticks of ground service, and board after the dwell window. Task 08
+provides the passenger adapter; task 02 wires the command bridge. To prevent
+passenger loss, unassignment is refused in flight or with passengers aboard;
+route deletion must refuse routes with assigned aircraft. Initial reserve is
+**provisionally** 2 turboprops and 0 widebodies pending owner confirmation.
+**Rationale:** deterministic replay, conservation, and parallel-task integration.
+**Status: technical choice in task 09; initial reserve subject to balance review.**
