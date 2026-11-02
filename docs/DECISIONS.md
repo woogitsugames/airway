@@ -388,3 +388,12 @@ the mockups: portrait = a globe wider than the phone with its horizon 18 % below
 small decorative network (routes, hubs, moving planes; visual only, cleared when a run starts); landscape = the whole
 disc beside the departures board. **Status: in force; the menu network content and the night brightness are
 owner-visible choices (task-34 PR questions).**
+
+## D-48 — Store screenshots are played by the autoplay bot and lit by the sun angle (2026-11-02, task 36)
+Store scenes (`?storeShot`, DEV only) run the real game on seed 0xA1A1 and let the DEV autoplay bot play about one
+game day through real Commands before the shot, so the stores show a grown network. Dusk and night are chosen by the
+sun's hour angle over the camera centre (−95° and 180°, the `sun.ts` formula used by task 34), not by the home-airport
+clock. The failure scene stops building and lets real demand jam a hub. Every PNG is checked automatically (size,
+blank/white, developer text, only the six D-08 passenger glyphs, which also keeps the provisional Asia/Oceania glyphs
+out of store images) and recorded in `docs/store/shots/manifest.json`. **Status: in force.**
+

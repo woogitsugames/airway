@@ -31,3 +31,11 @@ Airway is a strategy puzzle game about networks, connections and the changing rh
 
 ## App Store keywords
 airline,airport,globe,routes,network,strategy,hub,transfer,aircraft,puzzle,flight
+
+## Screenshot order and captions
+Store-console captions only (never drawn into the images); files in `shots/en/`.
+1. game-dusk — Draw routes; the planes fly on their own.
+2. night — Night falls, the network keeps flying.
+3. upgrade — Every week: open one of three crates.
+4. failure — A jammed hub ends the run; the report shows why.
+5. menu — Endless, puzzles and the daily world.

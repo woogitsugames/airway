@@ -1,4 +1,4 @@
-# Airway store deliverables — task 26
+# Airway store deliverables — tasks 26 and 36
 
 The Polish and English copy is ready to paste from [pl.md](pl.md) and [en.md](en.md). Verify every described feature against the integrated release build before publishing.
 
@@ -44,16 +44,30 @@ The expected output is **30 genuine game screenshots** in docs/store/shots/{pl,e
 
 The phone profile matches the Google Play 9:16 minimum game screenshot dimensions. App Store Connect can require different exact sizes for selected iPhone/iPad device classes; capture the appropriate Apple sizes before submitting, rather than treating generic 1080×1920 as an iPhone slot.
 
-## Development-only integration contract
+## Development-only integration contract (task 36, D-48)
 
-The application composition root, once the dependencies are merged, must support URL-driven deterministic scene setup on development builds ONLY. Example:
+`src/main.ts` serves `/?storeShot=<scene>&seed=41377&lang=<pl|en>` on DEV builds only. Every scene starts a real
+endless run on seed 0xA1A1 and is played by the DEV autoplay bot through real Commands (route tool, dock, weekly
+board); nothing writes game state directly:
 
-- /?storeShot=game-dusk&seed=41377&lang=pl&storeHour=18%3A30
-- /?storeShot=night&seed=41377&lang=en&storeHour=22%3A30
+- **game-dusk / night**: about one game day of autoplay, then the bot keeps playing until the sun stands 95° west
+  of the camera centre (terminator crossing the view) or 180° away (midnight under the camera).
+- **upgrade**: autoplay until the first weekly board.
+- **failure**: one game day of autoplay, then the player stops building and real demand jams a hub.
+- **menu**: the real departures board over the turning globe.
 
-The capture script writes the chosen language to the existing airway.settings localStorage key before page startup. Scene setup must use real renderer/game modules and a stable seeded game state. After the globe, lighting, translated UI and fonts are fully ready, it must mark the HTML root element with the dataset fields **storeShotReady = sceneId** and **storeShotSeed = '41377'**. The capture script checks these markers along with language, visible canvas, horizontal overflow and uncaught page errors; absent or incomplete scenarios cause a nonzero exit. A sky-only scaffold must not pass.
+When the scene is reached the root element gets `data-store-shot-ready` and `data-store-shot-seed`; a scene that is
+not reached (e.g. an early jam) never sets them and the capture fails.
 
-This branch intentionally does not alter src/main.ts or app logic owned by other task PRs. Tasks 13, 14, 12 and 15, as well as the production renderer/simulation, were not merged into dev at implementation time. The real fixtures and completed PNGs are therefore **blocked on integration**: docs/store/shots/ remains empty until the actual gameplay can be captured. npm run test:store-shots validates listing fields and the matrix but does not imply that screenshots already exist.
+## Automatic checks
+
+`npm run store:shots` stages all 30 PNGs and publishes them only when every one passes:
+exact pixel size; not blank or white (pixel statistics from a built-in PNG reader); no developer text in the visible
+page text (raw i18n keys, `{param}` placeholders, DEV/debug/NaN/undefined/localhost); no Vite overlay; passenger
+glyphs painted on top only from the six D-08 shapes (chevron, bow-tie, crescent, keyhole, tail-fin, bracket — never
+the provisional Asia/Oceania glyphs). Results go to `shots/manifest.json`; the contact sheet is
+[contact-sheet.png](contact-sheet.png). `npm run test:store-shots` re-checks the committed PNGs, manifest and sheet.
+Preview one scene without publishing: `node scripts/store-shots.mjs --only=night --out=/tmp/x`.
 
 ## Publication visual checklist
 

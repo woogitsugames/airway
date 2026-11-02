@@ -31,3 +31,11 @@ Airway to gra strategiczno-logiczna o połączeniach, przesiadkach i planowaniu 
 
 ## App Store keywords
 loty,lotnisko,globus,trasy,sieć,strategia,hub,przesiadki,samoloty,zagadki
+
+## Kolejność zrzutów i podpisy
+Podpisy tylko do konsoli sklepu (nigdy nie są rysowane na obrazach); pliki w `shots/pl/`.
+1. game-dusk — Rysujesz trasy, samoloty latają same.
+2. night — Zapada noc, siatka lata dalej.
+3. upgrade — Co tydzień otwierasz jedną z trzech skrzyń.
+4. failure — Zapchany hub kończy grę, a raport mówi dlaczego.
+5. menu — Gra bez końca, zadania i świat dnia.
