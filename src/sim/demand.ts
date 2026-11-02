@@ -1,21 +1,14 @@
-// [task-08] Local-time regional demand. All arithmetic is integral except seeded RNG.next().
-import {
-  DEMAND_HOURLY_WEIGHTS, DEMAND_PASSENGERS_PER_MILLION_PER_DAY,
-  SIM_MINUTES_PER_DAY,
-} from './params.js';
-import type { DistanceLookup, RoutingCity } from './routing.js';
+// Local-time regional demand (task 08). All arithmetic is integral except the seeded RNG draw.
+import { DEMAND_HOURLY_WEIGHTS, DEMAND_PASSENGERS_PER_MILLION_PER_DAY } from './params.ts';
+import { localHourAt } from './daynight.ts';
+import type { DistanceLookup, RoutingCity } from './routing.ts';
 
-/** Adapter for task 02's forked 'demand' RNG stream; never use ambient randomness. */
-export interface DemandRandom {
-  next(): number;
-  snapshot(): number;
-  restore(state: number): void;
-}
-export interface DemandRandomRoot { fork(label: 'demand'): DemandRandom }
+/** The kernel's 'demand' stream (src/core/rng.ts Rng). Its state is persisted by the kernel. */
+export interface DemandRandom { next(): number }
 export interface DemandCity extends RoutingCity {
   readonly population: number;
-  /** Fixed UTC offset in minutes. Zone/DST rules can be supplied by task 11 later. */
-  readonly utcOffsetMinutes: number;
+  /** Fictional whole-hour offset from src/data/cities.ts utcOffsetHFromLongitude (D-27). */
+  readonly utcOffsetH: number;
 }
 export interface GeneratedPassenger {
   readonly originCityId: string;
@@ -23,7 +16,6 @@ export interface GeneratedPassenger {
 }
 export interface DemandSnapshot {
   readonly credit: Record<string, number>;
-  readonly randomState: number;
 }
 interface RegionChoice { readonly regionId: string; readonly weight: number }
 const PROFILE_SUM = DEMAND_HOURLY_WEIGHTS.reduce((sum, weight) => sum + weight, 0);
@@ -44,18 +36,15 @@ export class RegionalDemand {
   private readonly active = new Set<string>();
   private readonly rng: DemandRandom;
 
-  constructor(cities: readonly DemandCity[], distanceKm: DistanceLookup, root: DemandRandomRoot,
+  constructor(cities: readonly DemandCity[], distanceKm: DistanceLookup, rng: DemandRandom,
       initiallyActive?: readonly string[]) {
     this.cities = cities;
     this.distanceKm = distanceKm;
-    this.rng = root.fork('demand');
-    if (!this.rng || typeof this.rng.next !== 'function' ||
-        typeof this.rng.snapshot !== 'function' || typeof this.rng.restore !== 'function') {
-      throw new Error("Task 02 must supply a serializable fork('demand') RNG adapter");
-    }
+    this.rng = rng;
+    if (!rng || typeof rng.next !== 'function') throw new Error('Demand needs the seeded demand stream');
     for (const city of cities) {
       if (!Number.isSafeInteger(city.population) || city.population < 0 ||
-          !Number.isInteger(city.utcOffsetMinutes) || city.utcOffsetMinutes < -720 || city.utcOffsetMinutes > 840) {
+          !Number.isInteger(city.utcOffsetH) || city.utcOffsetH < -12 || city.utcOffsetH > 12) {
         throw new Error(`Invalid demand data for city: ${city.cityId}`);
       }
       this.credit[city.cityId] = 0;
@@ -105,8 +94,8 @@ export class RegionalDemand {
       if (!this.active.has(city.cityId)) continue;
       const options = this.choices.get(city.cityId)!;
       if (!options.length) continue;
-      const localMinute = ((tick + city.utcOffsetMinutes) % SIM_MINUTES_PER_DAY + SIM_MINUTES_PER_DAY) % SIM_MINUTES_PER_DAY;
-      const hour = Math.floor(localMinute / 60);
+      // Shared day/night clock (task 11): the dawn wave follows each city's local hour.
+      const hour = localHourAt(tick, city.utcOffsetH);
       let balance = this.credit[city.cityId] +
         city.population * DEMAND_PASSENGERS_PER_MILLION_PER_DAY * DEMAND_HOURLY_WEIGHTS[hour];
       while (balance >= CREDIT_THRESHOLD) {
@@ -128,15 +117,14 @@ export class RegionalDemand {
     }
   }
 
-  snapshot(): DemandSnapshot { return { credit: { ...this.credit }, randomState: this.rng.snapshot() }; }
+  snapshot(): DemandSnapshot { return { credit: { ...this.credit } }; }
   restore(saved: DemandSnapshot): void {
-    if (!saved || !saved.credit || !Number.isSafeInteger(saved.randomState)) throw new Error('Invalid demand snapshot');
+    if (!saved || !saved.credit) throw new Error('Invalid demand snapshot');
     if (Object.keys(saved.credit).length !== this.cities.length) throw new Error('Demand city set changed');
     for (const city of this.cities) {
       const n = saved.credit[city.cityId];
       if (!Number.isSafeInteger(n) || n < 0 || n >= CREDIT_THRESHOLD) throw new Error('Invalid demand credit');
       this.credit[city.cityId] = n;
     }
-    this.rng.restore(saved.randomState);
   }
 }

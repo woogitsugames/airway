@@ -1,11 +1,11 @@
-// [task-08] Terminal queues, minimum connection time, congestion countdown and failure.
+// Terminal queues, minimum connection time, congestion countdown and failure (task 08).
 import {
   CITY_WAITING_CAPACITY, HUB_WAITING_CAPACITY, HUB_CAPACITY_UPGRADE,
-  CONGESTION_GRACE_TICKS, WAIT_TOO_LONG_TICKS,
-} from './params.js';
-import type { CauseLedger } from './ledger.js';
-import type { RouteNetwork } from './network.js';
-import type { RouteRouter } from './routing.js';
+  CONGESTION_GRACE_TICKS, MIN_TRANSFER_TICKS, UPGRADED_TRANSFER_TICKS, WAIT_TOO_LONG_TICKS,
+} from './params.ts';
+import type { CauseLedger } from './ledger.ts';
+import type { RouteNetwork } from './network.ts';
+import type { RouteRouter } from './routing.ts';
 
 export interface WaitingPassenger {
   id: number;
@@ -22,6 +22,10 @@ export interface CityQueue {
   capacity: number;
   isHub: boolean;
   upgradeLevels: number;
+  /** Extra seats from hub upgrades; kept when the city stops being an interchange. */
+  bonusCapacity: number;
+  /** Minimum connection time at this terminal (task 12 hub upgrade shortens it). */
+  transferTicks: number;
   fullTicks: number;
   fullNoted: boolean;
 }
@@ -38,11 +42,20 @@ export interface HubsSnapshot { readonly cities: CityQueue[] }
 
 export class TerminalQueues {
   private readonly queues = new Map<string, CityQueue>();
+  /** Scenario-specific base waiting capacity (puzzles); replaces the ordinary/hub default. */
+  private readonly baseCapacity = new Map<string, number>();
 
-  constructor(cityIds: readonly string[]) {
+  constructor(cityIds: readonly string[], baseCapacity: Readonly<Record<string, number>> = {}) {
+    for (const [cityId, capacity] of Object.entries(baseCapacity)) {
+      if (!cityIds.includes(cityId) || !Number.isSafeInteger(capacity) || capacity < 1) {
+        throw new Error(`Invalid base capacity for ${cityId}`);
+      }
+      this.baseCapacity.set(cityId, capacity);
+    }
     for (const cityId of cityIds) {
-      this.queues.set(cityId, { cityId, waiting: [], capacity: CITY_WAITING_CAPACITY,
-        isHub: false, upgradeLevels: 0, fullTicks: 0, fullNoted: false });
+      this.queues.set(cityId, { cityId, waiting: [], capacity: this.baseCapacity.get(cityId) ?? CITY_WAITING_CAPACITY,
+        isHub: false, upgradeLevels: 0, bonusCapacity: 0, transferTicks: MIN_TRANSFER_TICKS,
+        fullTicks: 0, fullNoted: false });
     }
   }
 
@@ -57,16 +70,22 @@ export class TerminalQueues {
   syncNetwork(network: RouteNetwork): void {
     for (const queue of this.queues.values()) {
       queue.isHub = network.routesAt(queue.cityId) >= 2;
-      queue.capacity = (queue.isHub ? HUB_WAITING_CAPACITY : CITY_WAITING_CAPACITY) +
-        queue.upgradeLevels * HUB_CAPACITY_UPGRADE;
+      queue.capacity = (this.baseCapacity.get(queue.cityId) ??
+        (queue.isHub ? HUB_WAITING_CAPACITY : CITY_WAITING_CAPACITY)) + queue.bonusCapacity;
     }
   }
 
-  upgrade(cityId: string): void {
+  /** One hub upgrade: more seats and a shorter connection time (task 12: +6 seats, MCT 25 -> 15). */
+  upgrade(cityId: string, extraCapacity: number = HUB_CAPACITY_UPGRADE,
+      transferTicks: number = UPGRADED_TRANSFER_TICKS): void {
     const queue = this.city(cityId);
     if (!queue.isHub) throw new Error('Only an interchange hub can be upgraded');
+    if (!Number.isSafeInteger(extraCapacity) || extraCapacity <= 0 ||
+        !Number.isSafeInteger(transferTicks) || transferTicks < 0) throw new Error('Invalid hub upgrade');
     queue.upgradeLevels++;
-    queue.capacity += HUB_CAPACITY_UPGRADE;
+    queue.bonusCapacity += extraCapacity;
+    queue.capacity += extraCapacity;
+    if (transferTicks < queue.transferTicks) queue.transferTicks = transferTicks;
     queue.fullTicks = 0;
     queue.fullNoted = false;
   }
@@ -122,24 +141,37 @@ export class TerminalQueues {
     return null;
   }
 
+  /** Compact: only terminals that differ from a fresh, empty, ordinary city are stored. */
   snapshot(): HubsSnapshot {
-    return { cities: [...this.queues.values()].sort((a, b) => a.cityId < b.cityId ? -1 : a.cityId > b.cityId ? 1 : 0)
+    return { cities: [...this.queues.values()]
+      .filter((queue) => queue.waiting.length > 0 || queue.isHub || queue.upgradeLevels > 0 || queue.fullTicks > 0)
+      .sort((a, b) => a.cityId < b.cityId ? -1 : a.cityId > b.cityId ? 1 : 0)
       .map((queue) => ({ ...queue, waiting: queue.waiting.map((passenger) => ({ ...passenger })) })) };
   }
 
   restore(saved: HubsSnapshot): void {
-    if (!saved || !Array.isArray(saved.cities) || saved.cities.length !== this.queues.size) {
+    if (!saved || !Array.isArray(saved.cities) || saved.cities.length > this.queues.size) {
       throw new Error('Invalid terminal snapshot');
+    }
+    for (const queue of this.queues.values()) {
+      queue.waiting = []; queue.capacity = this.baseCapacity.get(queue.cityId) ?? CITY_WAITING_CAPACITY; queue.isHub = false;
+      queue.upgradeLevels = 0; queue.bonusCapacity = 0; queue.transferTicks = MIN_TRANSFER_TICKS;
+      queue.fullTicks = 0; queue.fullNoted = false;
     }
     for (const input of saved.cities) {
       const queue = this.city(input.cityId);
       if (!Array.isArray(input.waiting) || !Number.isSafeInteger(input.fullTicks) || input.fullTicks < 0 ||
-          !Number.isSafeInteger(input.upgradeLevels) || input.upgradeLevels < 0) {
+          !Number.isSafeInteger(input.upgradeLevels) || input.upgradeLevels < 0 ||
+          !Number.isSafeInteger(input.bonusCapacity) || input.bonusCapacity < 0 ||
+          !Number.isSafeInteger(input.transferTicks) || input.transferTicks < 0 ||
+          !Number.isSafeInteger(input.capacity) || input.capacity < 1) {
         throw new Error('Invalid terminal queue state');
       }
       queue.capacity = input.capacity;
       queue.isHub = input.isHub;
       queue.upgradeLevels = input.upgradeLevels;
+      queue.bonusCapacity = input.bonusCapacity;
+      queue.transferTicks = input.transferTicks;
       queue.fullTicks = input.fullTicks;
       queue.fullNoted = input.fullNoted;
       queue.waiting = input.waiting.map((passenger) => ({ ...passenger }));

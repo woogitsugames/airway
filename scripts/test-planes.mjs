@@ -52,20 +52,12 @@ harness('planes', SEED, ({ planes, params }, check) => {
 
   check('command dispatcher validates stock, route, type and stable IDs', () => {
     const fleet = planes.createPlaneFleet({ turboprop: 2, widebody: 0 });
-    assert.equal(planes.applyPlaneCommand(fleet, [shortRoute], {
-      type: 'AssignPlane', routeId: 'missing', planeType: 'turboprop',
-    }).reason, 'UNKNOWN_ROUTE');
-    assert.equal(planes.applyPlaneCommand(fleet, [shortRoute], {
-      type: 'AssignPlane', routeId: 'R2', planeType: 'bogus',
-    }).reason, 'INVALID_PLANE_TYPE');
-    const first = planes.applyPlaneCommand(fleet, [shortRoute], {
-      type: 'AssignPlane', routeId: 'R2', planeType: 'turboprop',
-    });
+    assert.equal(planes.assignPlane(fleet, undefined, 'turboprop').reason, 'UNKNOWN_ROUTE');
+    assert.equal(planes.assignPlane(fleet, shortRoute, 'bogus').reason, 'INVALID_PLANE_TYPE');
+    const first = planes.assignPlane(fleet, shortRoute, 'turboprop');
     assert.equal(first.ok, true);
     assert.equal(fleet.planes[0].id, 'plane-1');
-    planes.applyPlaneCommand(fleet, [shortRoute], {
-      type: 'AssignPlane', routeId: 'R2', planeType: 'turboprop',
-    });
+    planes.assignPlane(fleet, shortRoute, 'turboprop');
     assert.equal(fleet.planes[1].id, 'plane-2');
     assert.equal(planes.assignPlane(fleet, shortRoute, 'turboprop').reason, 'NO_SPARE_PLANE');
     assert.equal(planes.assignPlane(fleet, route, 'widebody').reason, 'NO_SPARE_PLANE');
@@ -82,9 +74,7 @@ harness('planes', SEED, ({ planes, params }, check) => {
     plane.phase = 'flight';
     assert.equal(planes.unassignPlane(fleet, plane.id).reason, 'PLANE_IN_FLIGHT');
     plane.phase = 'ground';
-    assert.equal(planes.applyPlaneCommand(fleet, [shortRoute], {
-      type: 'UnassignPlane', planeId: plane.id,
-    }).ok, true);
+    assert.equal(planes.unassignPlane(fleet, plane.id).ok, true);
     assert.equal(fleet.available.turboprop, 1);
     assert.equal(fleet.planes.length, 0);
     assert.equal(planes.unassignPlane(fleet, plane.id).reason, 'UNKNOWN_PLANE');
