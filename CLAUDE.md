@@ -2,13 +2,11 @@
 
 Instructions for AI coding agents working in this repository.
 
-## Current stage: Production — integration of tasks 01–29
+## Current stage: Production — MVP polish (after integration)
 - Stage 0 is complete: world style **A "Diorama"** (D-11) and title **Airway** (D-12).
-- All 29 task branches (`docs/tasks/00-INDEX.md`) are merged; the code is being unified per area (sim, render, ui,
-  platform, tooling) on `integration/*` branches. Decisions D-19…D-37 were renumbered during the merge
-  (`docs/integration/RENUMBERING.md`); new decisions start at D-38. Conflicting file versions that were not taken
-  are kept in `docs/integration/pending/`.
-- Read `docs/ARCHITECTURE.md` (module map, boundaries) and `docs/TESTING.md` (every command, runtime, summary).
+- Tasks 01–36 (`docs/tasks/00-INDEX.md`) are merged and integrated on `dev` (PR #30, #33–#37). Decisions are in
+  `docs/DECISIONS.md` (renumbering of the first merge: `docs/integration/RENUMBERING.md`).
+- Read `docs/ARCHITECTURE.md` (module map, Sim API, Render API) and `docs/TESTING.md` (every command, runtime, summary).
 
 ## The game in one line
 Premium mobile (Android + iOS, Capacitor) minimalist network builder about **airlines on a globe**: the player designs
@@ -40,6 +38,7 @@ the route network, planes fly by themselves; passengers transfer at hubs; you lo
   Record every decision as D-xx in `docs/DECISIONS.md` with rationale.
 
 ## Git
+- `main` is the default branch and follows green `dev` (D-64); only the coordinator fast-forwards it.
 - Work on your assigned branch (`task/NN-...` or `integration/<area>`); never push directly to `dev` or `main`.
 - Open a **draft PR to `dev`** after implementation and checks; only the owner merges.
 - Keep commits descriptive in English. PR and owner-facing report must be in Polish.
