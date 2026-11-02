@@ -3,7 +3,9 @@
  * The kernel world (world.ts) calls it at each week boundary and on ChooseUpgrade commands.
  * All random numbers come from the kernel's 'upgrades' RNG stream.
  */
-export const TICKS_PER_WEEK = 7 * 24 * 60;
+import { TICKS_PER_WEEK } from './clock.ts';
+// [task-31] The week length comes from params.ts via clock.ts (D-40).
+export { TICKS_PER_WEEK };
 export type UpgradeKind = 'turboprop' | 'widebody' | 'hub-expansion' | 'departure-slots';
 export interface UpgradeOffer { readonly id: UpgradeKind; readonly week: number }
 export interface UpgradeRng { nextInt(maxExclusive: number): number }

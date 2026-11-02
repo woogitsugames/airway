@@ -11,16 +11,20 @@ import { dirname, resolve } from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import { chooseBotAction } from './bot.ts';
 import type { AircraftType, BotCity, BotCommand, BotRoute, BotSnapshot, LedgerCause, UpgradeOffer } from './bot.ts';
-import { SIM_TICKS_PER_SECOND } from '../src/sim/params.ts';
+import { SIM_DAYS_PER_WEEK, SIM_MINUTES_PER_WEEK, SIM_TICKS_PER_SECOND } from '../src/sim/params.ts';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const BASE_SEED = 0xa1a1;
-const TICKS_PER_WEEK = 7 * 24 * 60; // 1 simulation minute per tick (architecture task 01).
+// [task-31] The week length comes from the single source in params.ts (D-40); 1 sim minute per tick.
+const TICKS_PER_WEEK = SIM_MINUTES_PER_WEEK;
 const MAX_TICKS = 30 * 60 * SIM_TICKS_PER_SECOND; // 30 minutes at 1x.
 const ACTION_INTERVAL = 30; // one command opportunity every 3 seconds at 1x.
 const WARNING_TICKS = 45 * SIM_TICKS_PER_SECOND; // fixture only; not a gameplay parameter.
 const TARGET_MIN = 8;
 const TARGET_MAX = 15;
+// [task-31] Share of bot runs that must reach the first / second weekly upgrade choice.
+const TARGET_FIRST_UPGRADE = 0.6;
+const TARGET_SECOND_UPGRADE = 0.3;
 
 interface BalanceOutcome {
   readonly reason: 'hubOverflow' | 'timeLimit';
@@ -52,6 +56,7 @@ interface RunResult {
   warningLeadTicks: number;
   commands: number;
   rejected: number;
+  upgrades: number;
 }
 
 // LCG exists only inside the isolated fixture; the real sim must use src/core/rng.ts.
@@ -238,6 +243,13 @@ class FixtureSession implements BalanceSession {
   }
 }
 
+function reachedShare(results: readonly RunResult[], upgrades: number): number {
+  return results.length ? results.filter((r) => r.upgrades >= upgrades).length / results.length : 0;
+}
+function share(results: readonly RunResult[], upgrades: number): string {
+  return `${results.filter((r) => r.upgrades >= upgrades).length}/${results.length} (${Math.round(reachedShare(results, upgrades) * 100)}%)`;
+}
+
 function median(values: number[]): number {
   const sorted = [...values].sort((a, b) => a - b);
   const middle = sorted.length >> 1;
@@ -262,13 +274,16 @@ function play(adapter: BalanceAdapter, seed: number): RunResult {
   const session = adapter.createBalanceSession(seed);
   let commands = 0;
   let rejected = 0;
+  let upgrades = 0;
   for (let attempts = 0; attempts <= MAX_TICKS / ACTION_INTERVAL; attempts++) {
     const snapshot = session.snapshot();
     if (snapshot.status === 'finished' || snapshot.tick >= MAX_TICKS) break;
     const decision = chooseBotAction(snapshot);
     if (decision) {
-      if (session.dispatch(decision.command)) commands++;
-      else rejected++;
+      if (session.dispatch(decision.command)) {
+        commands++;
+        if (decision.command.type === 'ChooseUpgrade') upgrades++;
+      } else rejected++;
     }
     session.advance(Math.min(ACTION_INTERVAL, MAX_TICKS - snapshot.tick));
   }
@@ -279,15 +294,15 @@ function play(adapter: BalanceAdapter, seed: number): RunResult {
     minutes: snapshot.tick / (SIM_TICKS_PER_SECOND * 60),
     weeks: snapshot.tick / TICKS_PER_WEEK,
     score: end.score, reason: snapshot.status === 'finished' ? end.reason : 'censored',
-    warned: end.warned, warningLeadTicks: end.warningLeadTicks, commands, rejected,
+    warned: end.warned, warningLeadTicks: end.warningLeadTicks, commands, rejected, upgrades,
   };
 }
 
 function csv(results: RunResult[]): string {
-  const header = 'seed,ticks,game_weeks,wall_minutes_1x,score,reason,warning_seen,warning_lead_ticks,commands,rejected';
+  const header = 'seed,ticks,game_weeks,wall_minutes_1x,score,reason,warning_seen,warning_lead_ticks,commands,rejected,upgrades';
   return header + '\n' + results.map((item) => [
     item.seed, item.ticks, item.weeks.toFixed(3), item.minutes.toFixed(3), item.score,
-    item.reason, item.warned ? 1 : 0, item.warningLeadTicks, item.commands, item.rejected,
+    item.reason, item.warned ? 1 : 0, item.warningLeadTicks, item.commands, item.rejected, item.upgrades,
   ].join(',')).join('\n') + '\n';
 }
 
@@ -308,13 +323,14 @@ function report(results: RunResult[], mode: string): string {
     `- Median game weeks: ${median(results.map((r) => r.weeks)).toFixed(2)}.\n` +
     `- Median delivered passengers: ${median(scores).toFixed(0)}.\n` +
     `- Warnings before failure: ${results.filter((r) => r.reason === 'hubOverflow' && r.warned && r.warningLeadTicks > 0).length} / ${results.filter((r) => r.reason === 'hubOverflow').length} recorded.\n` +
-    `- Rejected commands: ${results.reduce((sum, r) => sum + r.rejected, 0)}.\n\n` +
+    `- Rejected commands: ${results.reduce((sum, r) => sum + r.rejected, 0)}.\n` +
+    `- Reached the 1st weekly upgrade: ${share(results, 1)} (target ≥ ${TARGET_FIRST_UPGRADE * 100}%); ` +
+    `2nd: ${share(results, 2)} (target ≥ ${TARGET_SECOND_UPGRADE * 100}%); 3rd: ${share(results, 3)}.\n\n` +
     `## Outcomes\n${causes}\n\n` +
-    `## Time-scale caution\n` +
-    `At ${SIM_TICKS_PER_SECOND} ticks per second and one simulated minute per tick, ` +
-    `the first 7-day upgrade arrives after ${(TICKS_PER_WEEK / SIM_TICKS_PER_SECOND / 60).toFixed(2)} real minutes. ` +
-    `This is later than the upper bound of the 8–15-minute session target. ` +
-    `The game-clock design needs an explicit owner decision before balancing weekly upgrades.\n\n` +
+    `## Time scale\n` +
+    `At ${SIM_TICKS_PER_SECOND} ticks per second and one simulated minute per tick, a ${SIM_DAYS_PER_WEEK}-day week (D-40) ` +
+    `lasts ${(TICKS_PER_WEEK / SIM_TICKS_PER_SECOND / 60).toFixed(2)} real minutes at 1x, so the first weekly upgrade ` +
+    `opens at that point of a run and the second at ${(2 * TICKS_PER_WEEK / SIM_TICKS_PER_SECOND / 60).toFixed(2)} min.\n\n` +
     `## Reproduction\n` +
     `\`npm run ${mode === 'fixture' ? 'balance:fixture' : 'balance:report'}\`\n`;
 }
@@ -350,7 +366,8 @@ async function main(): Promise<void> {
   const args = process.argv.slice(2);
   const fixture = args.includes('--fixture');
   const test = args.includes('--test');
-  const n = test ? 10 : 50;
+  // [task-31] The 50-seed sample runs in seconds, so the gate checks the same sample as the report.
+  const n = 50;
   const mode = fixture ? 'fixture' : 'game';
   const adapterPath = args.find((arg) => arg.startsWith('--adapter='))?.slice('--adapter='.length)
     ?? 'scripts/balance-game-adapter.ts';
@@ -373,9 +390,14 @@ async function main(): Promise<void> {
     }
     // The median gate is meaningful only for a real, integrated game adapter.
     const inRange = fixture || (med >= TARGET_MIN && med <= TARGET_MAX);
-    const passed = invalid.length === 0 && inRange;
+    // [task-31] The weekly upgrade must be a common sight, not a lucky-seed event (D-40).
+    const first = reachedShare(results, 1);
+    const second = reachedShare(results, 2);
+    const upgradesOk = fixture || (first >= TARGET_FIRST_UPGRADE && second >= TARGET_SECOND_UPGRADE);
+    const passed = invalid.length === 0 && inRange && upgradesOk;
     console.log(`SUMMARY ${label} seed=0xA1A1 mode=${mode} seeds=${n} median_min=${med.toFixed(2)} ` +
-      `passed=${passed ? 1 : 0} failed=${invalid.length + (inRange ? 0 : 1)}`);
+      `upgrade1=${first.toFixed(2)} upgrade2=${second.toFixed(2)} ` +
+      `passed=${passed ? 1 : 0} failed=${invalid.length + (inRange ? 0 : 1) + (upgradesOk ? 0 : 1)}`);
     if (!passed) process.exitCode = 1;
   } catch (error) {
     console.error(error instanceof Error ? error.message : String(error));

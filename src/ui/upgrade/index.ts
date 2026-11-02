@@ -1,28 +1,46 @@
 import type { HubPressure, UpgradeCommand, UpgradeKind, WeeklyUpgradeState } from '../../sim/upgrades';
-import { mostLoadedHub } from '../../sim/upgrades';
 import './upgrade.css';
 import { t } from '../../i18n';
+import { cardModel, type CardModel } from './cards';
 
-export interface UpgradeCopy {
-  week: (n: number) => string;
-  header: string;
-  selectHub: string;
-  choose: string;
-  planeTurboprop: string;
-  planeWidebody: string;
-  hub: string;
-  slots: string;
-  hubDetail: string;
-  slotsDetail: string;
-  aircraftDetail: string;
-  pressure: string;
-}
+export { cardModel, upgradeFacts, type CardModel, type UpgradeFacts } from './cards';
+
 export interface UpgradeUIOptions {
   onCommand: (command: UpgradeCommand) => void;
   onHubSelectionMode?: (active: boolean, hubIds: readonly string[]) => void;
   onPreviewModel?: (container: HTMLElement, kind: UpgradeKind) => void;
 }
-const label = (kind: UpgradeKind, copy: UpgradeCopy) => ({ turboprop: copy.planeTurboprop, widebody: copy.planeWidebody, 'hub-expansion': copy.hub, 'departure-slots': copy.slots })[kind];
+
+const span = (className: string, text?: string): HTMLSpanElement => {
+  const element = document.createElement('span');
+  element.className = className;
+  if (text !== undefined) element.textContent = text;
+  return element;
+};
+
+/** [task-35] One air-cargo label (mockups/diorama/png/upgrade-*.png): model window, stencil header, field grid, stamp. */
+function cargoLabel(model: CardModel, index: number): { card: HTMLButtonElement; window: HTMLElement } {
+  const card = document.createElement('button');
+  card.type = 'button';
+  card.className = 'airway-upgrade-tag';
+  card.dataset.testid = `upgrade-option-${index}`;
+  card.dataset.upgrade = model.kind;
+  const window = span(`airway-upgrade-model model-${model.kind}`);
+  window.setAttribute('aria-hidden', 'true');
+  const body = span('airway-upgrade-body');
+  const heading = span('airway-upgrade-heading');
+  heading.append(span('airway-upgrade-code', `${t('upgrade.freight')} · ${model.code}`), span('airway-upgrade-count', model.counter));
+  const title = span('airway-upgrade-title', model.title);
+  const grid = span('airway-upgrade-grid');
+  for (const row of model.rows) grid.append(span('airway-upgrade-key', row.label), span('airway-upgrade-value', row.value));
+  body.append(heading, title, grid);
+  if (model.stamp) body.append(span('airway-upgrade-stamp', model.stamp));
+  card.append(window, body);
+  card.setAttribute('aria-label', [model.title, ...model.rows.map((row) => `${row.label}: ${row.value}`), model.stamp]
+    .filter(Boolean).join('. '));
+  return { card, window };
+}
+
 export class WeeklyUpgradeView {
   private readonly root: HTMLElement;
   private readonly options: UpgradeUIOptions;
@@ -34,56 +52,45 @@ export class WeeklyUpgradeView {
     this.hubs = hubs;
     this.root.replaceChildren();
     this.root.classList.toggle('airway-upgrade-open', !!state?.paused);
+    this.root.classList.toggle('is-picking-hub', !!state?.paused && state.pendingHub);
     if (!state?.paused) { this.options.onHubSelectionMode?.(false, []); return; }
-    const copy: UpgradeCopy = {
-      week: n => t('notice.week', { week: n }),
-      header: t('upgrade.freight'),
-      selectHub: t('upgrade.selectHub'),
-      choose: '',
-      planeTurboprop: t('upgrade.turboprop'),
-      planeWidebody: t('upgrade.widebody'),
-      hub: t('upgrade.hub'), slots: t('upgrade.slots'),
-      hubDetail: t('upgrade.hubDetail'), slotsDetail: t('upgrade.slotsDetail'),
-      aircraftDetail: t('upgrade.aircraftDetail'), pressure: t('upgrade.pressure')
-    };
+    const week = t('notice.week', { week: state.week });
     const wrap = document.createElement('section');
     wrap.className = 'airway-upgrade';
     wrap.setAttribute('role', 'dialog');
     wrap.setAttribute('aria-modal', 'true');
-    wrap.setAttribute('aria-label', copy.week(state.week));
-    const sign = document.createElement('h2');
+    wrap.setAttribute('aria-label', week);
+    // Yellow wayfinding sign: week number + what this screen is.
+    const sign = document.createElement('header');
     sign.className = 'airway-upgrade-sign';
-    sign.textContent = copy.week(state.week);
+    const heading = document.createElement('h2');
+    heading.className = 'airway-upgrade-week';
+    heading.textContent = week;
+    const subtitle = document.createElement('p');
+    subtitle.className = 'airway-upgrade-sub';
+    subtitle.textContent = state.pendingHub ? t('upgrade.selectHub') : t('upgrade.subtitle');
+    sign.append(heading, subtitle);
     wrap.append(sign);
     if (state.pendingHub) {
-      const notice = document.createElement('p'); notice.className = 'airway-upgrade-prompt';
-      notice.textContent = copy.selectHub; wrap.append(notice);
+      // The globe must stay readable while the player taps a hub: only the sign remains.
       this.options.onHubSelectionMode?.(true, this.hubs.map(h => h.hubId));
-    } else this.options.onHubSelectionMode?.(false, []);
-    const cards = document.createElement('div'); cards.className = 'airway-upgrade-labels';
-    const congested = mostLoadedHub(hubs);
+      this.root.append(wrap);
+      return;
+    }
+    this.options.onHubSelectionMode?.(false, []);
+    const cards = document.createElement('div');
+    cards.className = 'airway-upgrade-labels';
+    cards.dataset.count = String(state.offers.length);
     state.offers.forEach((offer, i) => {
-      const card = document.createElement('button');
-      card.type = 'button'; card.className = 'airway-upgrade-tag'; card.dataset.testid = `upgrade-option-${i}`; card.dataset.upgrade = offer.id;
-      card.disabled = state.pendingHub;
-      card.setAttribute('aria-label', label(offer.id, copy));
-      const heading = document.createElement('span'); heading.className = 'airway-upgrade-heading';
-      heading.textContent = `${copy.header} · ${offer.id === 'turboprop' ? 'TP-48' : offer.id === 'widebody' ? 'WB-300' : offer.id === 'hub-expansion' ? 'HUB-06' : 'SL-02'} · ${i + 1}/3`;
-      const model = document.createElement('span'); model.className = `airway-upgrade-model model-${offer.id}`;
-      model.setAttribute('aria-hidden', 'true');
-      const title = document.createElement('strong'); title.textContent = label(offer.id, copy);
-      const detail = document.createElement('span'); detail.className = 'airway-upgrade-detail';
-      detail.textContent = offer.id === 'hub-expansion' ? copy.hubDetail : offer.id === 'departure-slots' ? copy.slotsDetail : copy.aircraftDetail;
-      const stamp = document.createElement('span'); stamp.className = 'airway-upgrade-stamp';
-      stamp.textContent = congested ? `${congested.label.toUpperCase()} ${congested.waiting}/${congested.capacity}` : copy.pressure;
-      // Only the hub card names the congested terminal it would relieve.
-      if (offer.id === 'hub-expansion') card.append(heading, model, title, detail, stamp);
-      else card.append(heading, model, title, detail);
+      const model = cardModel(offer.id, i, state.offers.length, hubs);
+      const { card, window } = cargoLabel(model, i);
+      card.disabled = model.unavailable;
       card.addEventListener('click', () => this.options.onCommand({ type: 'ChooseUpgrade', week: state.week, upgrade: offer.id }));
       cards.append(card);
-      this.options.onPreviewModel?.(model, offer.id);
+      this.options.onPreviewModel?.(window, offer.id);
     });
-    wrap.append(cards); this.root.append(wrap);
+    wrap.append(cards);
+    this.root.append(wrap);
   }
   /** Called by the globe hit-test when the hub highlight mode is active. */
   selectHub(hubId: string): void {

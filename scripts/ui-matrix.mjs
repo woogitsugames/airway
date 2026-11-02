@@ -9,9 +9,9 @@ import { withBrowser, newGamePage, waitForScreen, state, assert, clickTestId, RO
 const fixture = process.argv.includes('--fixture');
 const sizes = [[412, 915], [915, 412], [673, 841], [904, 1000]];
 const screens = ['menu', 'game', 'upgrade', 'gameover'];
-// A run must survive week 1 for the weekly board; with the current balance the DEV autoplay bot does
-// so from a clean start only on some seeds (see docs/TESTING.md). 41386 is the nearest to 0xA1A1.
-const WEEK_SEED = 41386;
+// [task-31] With 3-day weeks (D-40) the DEV autoplay bot reaches the week-1 board from a clean start on the
+// ordinary test seed 0xA1A1, so no hand-picked "lucky" seed is needed any more.
+const WEEK_SEED = SEED;
 const outdir = resolve(ROOT, fixture ? 'docs/shots/matrix-fixture' : 'docs/shots/matrix');
 const expected = sizes.length * screens.length * 2;
 const failures = [];
