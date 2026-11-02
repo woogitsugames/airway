@@ -11,4 +11,10 @@ export const pl = {
   'action.resume': 'Wznów',
   'action.pause': 'Pauza',
   'notice.week': 'Tydzień {week}',
+  // [task-06] Airport overlays and developer fixture.
+  'airport.focus': 'Obróć do {code}',
+  'airport.waiting': '{code}: {count} pasażerów czeka',
+  'airport.jammed': '{code}: zator, pozostało {seconds} sekund',
+  'airport.demo.zoom': 'Przybliżenie',
+  'airport.demo.pool': 'Elementy nakładki: {count}',
 } as const satisfies Record<keyof typeof en, string>;

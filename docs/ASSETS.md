@@ -51,3 +51,9 @@ fonts it covers. No downloaded graphics are included.
   downloaded or rasterized by a running browser.
 - Terrain, forests, rock formations, cloud puffs, city-light points and the
   atmosphere are custom procedural meshes/shaders in `src/render/globe/`.
+<!-- [task-06] Procedural assets; no additional third-party binary files. -->
+## Task 06 — airport objects and passenger overlay
+The pad, runway, terminal, hub tower, capacity-ring seats, and red-and-white curfew
+barrier are procedural three.js geometries in `src/render/airports.ts`.
+The destination glyph paths in `src/ui/glyphs.ts` are original SVG geometry
+carried over from this repository's `mockups/lib/scene.mjs` (D-08).

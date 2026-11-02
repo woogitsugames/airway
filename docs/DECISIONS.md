@@ -132,3 +132,12 @@ startup and bundle size, fine coast sampling without copying the stage-0
 over-tessellated mesh. The build script corrects South Pole scanline closure.
 **Status: implementation decision for task 03, owner may revise.**
 _(renumbered from D-19 during integration, branch `origin/task/03-globe-renderer`)_
+
+## D-22 — Airport and passenger tags are view-only pooled layers (2026-11-02, task 06)
+Airport meshes use shared geometries and InstancedMesh per model component, with one
+instanced capacity segment per hub seat. Passenger bubbles and edge markers are
+created once per city, updated from read-only snapshots, and projected without DOM
+creation in the render loop. Collision resolution prioritizes jammed hubs, moves
+tags upward, then hides a tag that cannot fit without overlap. The 30-city fixture
+is temporary until tasks 03 and 05 merge. **Status: in force for task 06.**
+_(renumbered from D-19 during integration, branch `origin/task/06-airports-overlay`)_
