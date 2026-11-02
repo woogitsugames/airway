@@ -92,3 +92,13 @@ full-screen ads during play, no timers, no dark patterns. Supersedes the recomme
 
 ## D-18 — Store title: "Airway: Globe Route Builder" (PL: "Airway: Buduj siatkę lotów na globusie") (2026-11-02, owner)
 **Status: in force.**
+
+## D-19 — Separate onboarding choreography from live game adapters (2026-11-02, task 23)
+The tutorial is an event-validated step controller with a versioned `aw-tutorial` first-run
+setting (resume/skip/complete/replay). A deterministic three-city demo port and procedural
+SVG flight-school scene are **temporary adapters** because tasks 07, 12 and 13 are not yet
+merged; they do not write to `src/sim` or claim to represent real game simulation.
+The composition root can inject a live `TutorialPort` once the authoritative route, aircraft,
+transfer, dawn and upgrade APIs land. The port pauses authoritative ticks until each expected
+action has been accepted. **Rationale:** prevent fabricated game state and parallel-task conflicts.
+**Status: provisional integration decision; replace demo port after dependencies merge.**

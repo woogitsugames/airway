@@ -17,6 +17,7 @@ npm run build
 | `npm run test:fast` | `typecheck`, then `test:i18n`, then `test:arch` | Both test summaries and exit code 0 |
 | `npm run build` | `tsc --noEmit && vite build` | Exit code 0; `dist/` output |
 | `npm run shots` | Browser smoke: game canvas at portrait/landscape dimensions | `SUMMARY shots seed=0xA1A1 captured=2 failed=0`; images in `docs/shots/01/` |
+| `npm run test:e2e:tutorial` | [task-23] Six training actions, replay/skip/persistence, 412×915 and responsive screenshot matrix | `SUMMARY test:e2e:tutorial seed=0xA1A1 passed=N failed=0 screenshots=10` |
 | `npm run mockups` | Preserve stage-0 Diorama and other reference mockup generation | Exit code 0 |
 | `npm run shots:mockups` | Preserve stage-0 Playwright captures of reference mockups | Existing PNG output under `mockups/*/png/` |
 
@@ -39,3 +40,8 @@ neither is intentionally added as an npm dependency. A missing browser/runtime
 produces a failing summary. Screenshot files are only committed after review.
 The two PNG dimensions are **412×915** and **915×412** at DPR 1 (exact pixel
 size). Foldable 673×841 / 904×1000 checks are part of later UI tasks.
+
+[task-23] The onboarding test also expects environment-provided Playwright and
+Chromium, and captures seven portrait steps plus landscape and foldable checks
+into `docs/shots/23/`. The temporary three-city adapter is not a simulation test:
+integration with real route/HUD/upgrade events requires tasks 07/12/13.

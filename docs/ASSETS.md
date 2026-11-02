@@ -39,3 +39,10 @@ The game ships `public/fonts/Overpass-400.ttf`, `Overpass-800.ttf`,
 are `public/fonts/OFL-Overpass.txt`, `OFL-OverpassMono.txt`,
 and `OFL-AtkinsonHyperlegibleNext.txt`; each is colocated with the
 fonts it covers. No downloaded graphics are included.
+
+<!-- [task-23] Original procedural art for the temporary first-run vignette. -->
+## Onboarding artwork (task 23)
+`src/ui/tutorial/index.ts` contains an original SVG-only illustrated globe, three airport terminals,
+aircraft and route glyphs; `src/ui/tutorial/tutorial.css` contains the ATC flight strip and
+luggage-tag styling. No downloaded imagery, packs, binaries or third-party artwork are used.
+The production three.js world will replace this demo illustration after tasks 07/12/13 merge.

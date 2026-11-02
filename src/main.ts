@@ -3,6 +3,7 @@ import './ui/fonts.css';
 import './ui/base.css';
 import { getLanguage, t } from './i18n';
 import { mountEmptyScene } from './render/scene';
+import { mountTutorial } from './game/tutorial'; // [task-23] Replace demo port when tasks 07/12/13 land.
 
 const mount = document.getElementById('app');
 if (!mount) throw new Error('Missing #app mount point');
@@ -26,3 +27,5 @@ try {
   }
   mount.appendChild(canvas);
 }
+
+mountTutorial(mount); // [task-23] Isolated deterministic three-city onboarding adapter.
