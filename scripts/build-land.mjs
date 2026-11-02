@@ -79,7 +79,9 @@ export function rasterizeLand(topo, width = WIDTH, height = HEIGHT) {
   geometry(topo.objects.land);
   // At the South Pole Natural Earth's antimeridian closure needs an explicit
   // polar cap in planar raster coordinates (the spherical fill does this implicitly).
-  bits.fill(1, Math.floor(175 / 180 * height) * width);
+  // [task-33] From 84.4°S: the three rows just north of 85°S came out as sea (XOR closure artefact),
+  // which drew a ring around the South Pole on the terrain.
+  bits.fill(1, Math.floor(174.4 / 180 * height) * width);
   const rows = [], stats = { land: 0, runs: 0 };
   for (let y = 0; y < height; y++) {
     const row = [];

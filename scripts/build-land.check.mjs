@@ -195,6 +195,10 @@ export async function checkTerrain({ log = console.log } = {}) {
   // Leads (open-water cracks) are allowed; a hole in the cap or a missing cap is not.
   check(holes / cells < .03, `arctic: pack ice covers north of 82° (${holes}/${cells} open-water samples)`);
   check(seam < .01, `arctic: no antimeridian seam (${seam.toFixed(5)})`);
+  // South Pole: solid land, no ring of raster-artefact sea around the pole.
+  let polarSea = 0;
+  for (let lat = -84.6; lat > -90; lat -= .3) for (let lon = -180; lon < 180; lon += 3) if (mask.distanceAt(lon, lat) <= 0) polarSea++;
+  check(polarSea === 0, `antarctica: no sea south of 84.6°S (${polarSea} samples)`);
   // Airports: terrain never rises above the pads (1.0055).
   let worst = 0;
   for (const city of CITIES) worst = Math.max(worst, terrain.terrainHeight(city.lon, city.lat, mask));
