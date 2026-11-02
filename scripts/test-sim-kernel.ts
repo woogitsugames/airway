@@ -13,10 +13,11 @@ function check(name: string, fn: () => void): void {
 }
 
 function schedule(sim: Sim, tick: number): void {
-  if (tick % 733 === 0) sim.apply({
-    type: 'AddRoute', routeId: `r${tick}`, fromCityId: 'WAW', toCityId: 'BRU', flightTicks: 102,
-  });
-  if (tick % 997 === 0) sim.apply({ type: 'AssignPlane', planeId: `p${tick}`, routeId: `r${tick - (tick % 733)}` });
+  if (tick % 733 === 0) {
+    const [a, b] = sim.world.activeCityIds();
+    sim.apply({ type: 'AddRoute', cityIds: tick % 2 ? [a, b] : ['WAW', 'BRU'], aircraft: 'turboprop' });
+  }
+  if (tick % 997 === 0) sim.apply({ type: 'AssignPlane', routeId: `R${1 + (tick % 3)}`, aircraft: 'turboprop' });
   if (tick % 1111 === 0) sim.apply({ type: 'SetSpeed', speed: tick % 2 === 0 ? 2 : 4 });
 }
 function advance(sim: Sim, start: number, last: number): void {
@@ -97,9 +98,10 @@ check('restore rejects incompatible and tampered save', () => {
   const sim = new Sim(SEED);
   sim.apply({ type: 'SetSpeed', speed: 2 }); sim.tick();
   const save = JSON.parse(sim.snapshot());
-  save.version = 2;
+  const version = save.version;
+  save.version = 99;
   assert.throws(() => Sim.fromSnapshot(JSON.stringify(save)), /unsupported/);
-  save.version = 1; save.state.commandDigest++;
+  save.version = version; save.state.commandDigest++;
   assert.throws(() => Sim.fromSnapshot(JSON.stringify(save)), /digest mismatch/);
 });
 console.log(`SUMMARY test:sim-kernel seed=0xA1A1 passed=${passed} failed=${failed}`);

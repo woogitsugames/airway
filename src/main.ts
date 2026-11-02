@@ -12,7 +12,7 @@ import { PUZZLES } from './data/puzzles';
 import { registerDevGameAdapter, type AwScreen } from './game/devHandle';
 import { DailyChallengeMode } from './game/modes/daily';
 import { EndlessRun } from './game/run';
-import { readGame, writeGame, type CommandEntry } from './game/save';
+import { readGame, restoreSimFromSave, saveSourceFromSim, writeGame } from './game/save';
 import { LocalScoreService } from './game/scores';
 import { mountScreens, type ScreenName } from './game/screens';
 import { startSession, type GameSession, type RunMode, type SessionScreen } from './game/session';
@@ -24,7 +24,6 @@ import { initializeAccessibility } from './ui/a11y';
 import { readBestRecord } from './ui/gameover/storage';
 import { mountPuzzleSelector, readPuzzleProgress } from './ui/puzzles';
 import { onSettingsChange, readSettings } from './ui/settings/settings';
-import type { JournalEntry } from './game/run';
 
 const mount = document.getElementById('app');
 if (!mount) throw new Error('Missing #app mount point');
@@ -67,24 +66,25 @@ async function boot(): Promise<void> {
   const scores = new LocalScoreService();
   const daily = new DailyChallengeMode(
     { dailyKey, dailySeed: (key) => seedFromString(`airway/daily/v1/${key}`) },
-    scores, (seed) => new EndlessRun(seed),
+    scores, (seed) => EndlessRun.create(seed, 'daily'),
   );
   let saved: SavedSummary | null = null;
   let session: GameSession | null = null;
-  let sessionMode: RunMode = 'endless';
   let pendingSeed: number | null = null;
   let skipTutorialOnce = false;
   let dailySession: ReturnType<typeof daily.start> | null = null;
 
   const loaded = await readGame(storage);
-  if (loaded.status === 'ok') saved = summary(loaded.save.snapshot, loaded.save.tick);
+  if (loaded.status === 'ok') {
+    const sim = restoreSimFromSave(loaded.save);
+    if (sim) {
+      const run = new EndlessRun(sim);
+      saved = summary(run);
+    }
+  }
 
-  function summary(snapshot: Record<string, unknown>, tick: number): SavedSummary {
-    return {
-      mode: snapshot.mode === 'daily' ? 'daily' : 'endless',
-      week: Math.floor(tick / (7 * 1440)) + 1,
-      passengers: typeof snapshot.passengers === 'number' ? snapshot.passengers : 0,
-    };
+  function summary(run: EndlessRun): SavedSummary {
+    return { mode: run.mode === 'daily' ? 'daily' : 'endless', week: Math.floor(run.clockMinute / (7 * 1440)) + 1, passengers: run.passengers };
   }
 
   let screenName: AwScreen = 'menu';
@@ -137,20 +137,14 @@ async function boot(): Promise<void> {
   void lifecycle.attach();
 
   async function saveRun(run: EndlessRun): Promise<boolean> {
-    const result = await writeGame(storage, {
-      seed: run.seed, tick: run.tick,
-      commandLog: run.commandLog as unknown as readonly CommandEntry[],
-      snapshot: () => ({ format: 'endless-journal-v1', mode: sessionMode, tick: run.tick, passengers: run.passengers }),
-      hash: () => run.hash(),
-    });
-    if (result.ok) saved = summary(result.save.snapshot, run.tick);
+    const result = await writeGame(storage, saveSourceFromSim(run.sim));
+    if (result.ok) saved = summary(run);
     return result.ok;
   }
 
   function openGame(run: EndlessRun, mode: RunMode): void {
     if (!world) return;
     endSession();
-    sessionMode = mode;
     const view = document.createElement('div');
     view.className = 'airway-game-screen';
     screens.open('game', { element: view, back: () => session?.back() ?? false });
@@ -186,14 +180,14 @@ async function boot(): Promise<void> {
     if (skipTutorialOnce || !tutorial.controller.getState().visible) {
       skipTutorialOnce = false;
       tutorial.dispose();
-      openGame(new EndlessRun(seed), 'endless');
+      openGame(EndlessRun.create(seed), 'endless');
       return;
     }
     let started = false;
     const unsubscribe = tutorial.controller.subscribe((state) => {
       if (state.visible || started) return;
       started = true;
-      queueMicrotask(() => { unsubscribe(); openGame(new EndlessRun(seed), 'endless'); });
+      queueMicrotask(() => { unsubscribe(); openGame(EndlessRun.create(seed), 'endless'); });
     });
     screens.open('tutorial', { element: tutorialHost, dispose: () => { unsubscribe(); tutorial.dispose(); } });
     screenName = 'menu';
@@ -209,14 +203,15 @@ async function boot(): Promise<void> {
     const result = await readGame(storage);
     if (result.status !== 'ok') { saved = null; screens.show('menu'); return; }
     const save = result.save;
-    const run = EndlessRun.replay(save.seed, save.commands as unknown as JournalEntry[], save.tick);
-    if (save.stateHash !== null && run.hash() !== save.stateHash) {
+    const sim = restoreSimFromSave(save);
+    if (!sim) {
       console.warn('Saved flight failed verification; starting fresh.');
       saved = null;
       screens.show('menu');
       return;
     }
-    openGame(run, save.snapshot.mode === 'daily' ? 'daily' : 'endless');
+    const run = new EndlessRun(sim);
+    openGame(run, run.mode === 'daily' ? 'daily' : 'endless');
     session?.setPaused(true);
   }
 

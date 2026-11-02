@@ -1,4 +1,4 @@
-// [task-08] Pure, serializable route graph. A route is an ordered sequence of cities.
+// Pure, serializable route graph (task 08). A route is an ordered sequence of cities.
 export interface AirlineRoute {
   readonly id: string;
   readonly cities: readonly string[];
@@ -7,7 +7,8 @@ export interface AirlineRoute {
 export type RouteCommand =
   | { readonly type: 'AddRoute'; readonly routeId: string; readonly cities: readonly string[] }
   | { readonly type: 'ExtendRoute'; readonly routeId: string; readonly cityId: string; readonly end?: 'start' | 'end' }
-  | { readonly type: 'RemoveRoute'; readonly routeId: string };
+  | { readonly type: 'RemoveRoute'; readonly routeId: string }
+  | { readonly type: 'ShortenRoute'; readonly routeId: string; readonly end: 'start' | 'end' };
 
 export interface NetworkSnapshot {
   readonly routes: AirlineRoute[];
@@ -63,6 +64,7 @@ export class RouteNetwork {
       case 'AddRoute': this.addRoute(command.routeId, command.cities); break;
       case 'ExtendRoute': this.extendRoute(command.routeId, command.cityId, command.end ?? 'end'); break;
       case 'RemoveRoute': this.removeRoute(command.routeId); break;
+      case 'ShortenRoute': this.shortenRoute(command.routeId, command.end); break;
     }
   }
 
@@ -81,6 +83,17 @@ export class RouteNetwork {
     if (!previous || !this.knownCities.has(cityId) || previous.cities.includes(cityId) ||
         (end !== 'start' && end !== 'end')) throw new Error('Invalid route extension');
     const cities = end === 'start' ? [cityId, ...previous.cities] : [...previous.cities, cityId];
+    this.routesById.set(id, { id, cities });
+    this.revisionValue++;
+  }
+
+  /** Drop one terminal stop; a route always keeps at least two cities. */
+  shortenRoute(id: string, end: 'start' | 'end'): void {
+    const previous = this.routesById.get(id);
+    if (!previous || previous.cities.length <= 2 || (end !== 'start' && end !== 'end')) {
+      throw new Error('Invalid route shortening');
+    }
+    const cities = end === 'start' ? previous.cities.slice(1) : previous.cities.slice(0, -1);
     this.routesById.set(id, { id, cities });
     this.revisionValue++;
   }

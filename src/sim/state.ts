@@ -1,9 +1,11 @@
 import { Rng, seedFromString } from '../core/rng.ts';
 import type { SimSpeed } from './clock.ts';
 import type { CommandEntry } from './commands.ts';
+import type { GameMode, WorldSnapshot } from './world.ts';
 
-export const RULES_VERSION = 1;
-export const SNAPSHOT_VERSION = 1;
+/** v2: the kernel state carries the whole game world (tasks 05/08/09/11/12). */
+export const RULES_VERSION = 2;
+export const SNAPSHOT_VERSION = 2;
 export const INITIAL_COMMAND_DIGEST = 0x811c9dc5;
 
 export type RngStream = 'cities' | 'demand' | 'events' | 'upgrades';
@@ -14,10 +16,17 @@ export interface RngStates {
   upgrades: number;
 }
 
-/** Task 02 intentionally contains no routes, aircraft or passenger-world state. */
-export interface SimState {
+/** What kind of run this is; a puzzle also names its level. Part of every snapshot and hash. */
+export interface GameConfig {
+  readonly mode: GameMode;
+  readonly puzzleId?: string;
+}
+
+/** Kernel bookkeeping. `tick` counts kernel steps (journal index); the world keeps game minutes. */
+export interface KernelState {
   readonly rulesVersion: number;
   readonly seed: number;
+  readonly config: GameConfig;
   tick: number;
   speed: SimSpeed;
   commandCount: number;
@@ -25,11 +34,17 @@ export interface SimState {
   rng: RngStates;
 }
 
-export function initialState(seed: number): SimState {
+/** The complete authoritative state: kernel fields plus the serialized world. */
+export interface SimState extends KernelState {
+  readonly world: WorldSnapshot;
+}
+
+export function initialKernelState(seed: number, config: GameConfig): KernelState {
   const base = new Rng(seed);
   return {
     rulesVersion: RULES_VERSION,
     seed,
+    config: config.puzzleId === undefined ? { mode: config.mode } : { mode: config.mode, puzzleId: config.puzzleId },
     tick: 0,
     speed: 1,
     commandCount: 0,
@@ -43,8 +58,14 @@ export function initialState(seed: number): SimState {
   };
 }
 
+export function copyKernel(state: KernelState): KernelState {
+  return { rulesVersion: state.rulesVersion, seed: state.seed, config: { ...state.config }, tick: state.tick,
+    speed: state.speed, commandCount: state.commandCount, commandDigest: state.commandDigest, rng: { ...state.rng } };
+}
+
+/** Deep, JSON-normalised copy (drops `undefined` optionals so hashing is canonical). */
 export function copyState(state: SimState): SimState {
-  return { ...state, rng: { ...state.rng } };
+  return JSON.parse(JSON.stringify(state)) as SimState;
 }
 
 /** Stable recursive key ordering; rejects non-JSON values and numbers. */
@@ -73,7 +94,7 @@ export function hashState(state: SimState): string {
   return seedFromString(canonicalJson(state)).toString(16).padStart(8, '0');
 }
 
-/** Rolling command history fingerprint until domain-specific state exists. */
+/** Rolling command history fingerprint (also distinguishes rejected commands in the hash). */
 export function foldCommandDigest(prior: number, entry: CommandEntry): number {
   return seedFromString(`${prior.toString(16)}:${canonicalJson(entry)}`);
 }

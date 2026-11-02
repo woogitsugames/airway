@@ -14,7 +14,6 @@ const MODULES = [
   'src/data/cities.ts',
   'src/data/generated/distances.ts',
   'src/sim/params.ts',
-  'src/sim/spawner.ts',
 ];
 
 export function loadTask05Modules() {
@@ -39,7 +38,6 @@ export function loadTask05Modules() {
       regions: require(join(dir, 'src/data/regions.js')),
       distances: require(join(dir, 'src/data/generated/distances.js')),
       params: require(join(dir, 'src/sim/params.js')),
-      spawner: require(join(dir, 'src/sim/spawner.js')),
       dispose() { rmSync(dir, { recursive: true, force: true }); },
     };
   } catch (error) {

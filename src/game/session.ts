@@ -123,7 +123,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
   let hubSelection: readonly string[] = [];
   const upgrade = new WeeklyUpgradeView(upgradeHost, {
     onCommand: (command) => {
-      run.queue({ type: 'ChooseUpgrade', upgrade: command.upgrade, hubId: command.hubId });
+      run.queue({ type: 'ChooseUpgrade', week: command.week, upgrade: command.upgrade, ...(command.hubId ? { hubId: command.hubId } : {}) });
       run.resolveBoundary();
       syncUpgrade(true);
     },
@@ -177,7 +177,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
   function toRunCommand(command: RouteToolCommand): RunCommand | null {
     switch (command.type) {
       case 'AddRoute': return { type: 'AddRoute', cityIds: command.cityIds, aircraft: command.aircraft };
-      case 'ExtendRoute': return { type: 'ExtendRoute', routeId: command.routeId, cityIds: command.cityIds };
+      case 'ExtendRoute': return { type: 'ExtendRoute', routeId: command.routeId, end: command.end, cityIds: command.cityIds };
       case 'RemoveRoute': return { type: 'RemoveRoute', routeId: command.routeId };
       case 'ShortenRoute': return { type: 'ShortenRoute', routeId: command.routeId, end: command.end };
       case 'SetSpeed': return null;
@@ -404,11 +404,16 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
         to: { x: canvas.left + (a.x + b.x) / 2, y: canvas.top + (a.y + b.y) / 2 } };
     },
     forceOverload() {
-      const target = run.cityList()[0];
-      if (target) run.queue({ type: 'DevOverload', cityId: target.id });
-      advance(1);
-      const grace = run.cityList().find((c) => c.id === target?.id)?.jamTicksLeft ?? 0;
-      advance(grace + 1);
+      // QA: let real demand overflow a terminal with no new routes; answer weekly boards with a
+      // real ChooseUpgrade so the clock keeps running. No state is written outside Commands.
+      for (let guard = 0; guard < 400 && !run.failed; guard++) {
+        const offer = run.weeklyUpgrade;
+        if (offer && !offer.pendingHub) {
+          const pick = offer.offers.find((item) => item.id !== 'hub-expansion') ?? offer.offers[0];
+          if (pick) run.queue({ type: 'ChooseUpgrade', week: offer.week, upgrade: pick.id });
+        }
+        advance(500);
+      }
     },
     back() {
       if (screen === 'gameover') { callbacks.onMenu(); return true; }

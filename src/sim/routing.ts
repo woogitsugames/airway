@@ -1,5 +1,5 @@
 // [task-08] Cached lexicographic 0/1-transfer shortest paths over ordered flight routes.
-import type { AirlineRoute } from './network.js';
+import type { AirlineRoute } from './network.ts';
 
 export interface RoutingCity { readonly cityId: string; readonly regionId: string }
 /** Integer great-circle distance provided by task 05's generated distance table. */
