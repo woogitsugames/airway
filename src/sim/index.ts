@@ -7,6 +7,7 @@ export type { Command, CommandEntry, CommandCheck, RejectReason, RouteEnd } from
 export type { GameConfig, SimState } from './state.ts';
 export type {
   CityView, RouteView, HubCauseLedgerView, SimEvent, GameMode, WorldStatus, UpgradeRecord, Scenario,
+  WorldView, DemandWave,
 } from './world.ts';
 export type { PlaneState } from './planes.ts';
 export type { PlaneType } from './params.ts';

@@ -29,6 +29,7 @@ npm run build
 | `npm run test:fast` | Typecheck, i18n, architecture, cities and city spawner regression | Four test summaries and exit code 0 |
 | `npm run build:distances` | Regenerate the integer distance table from rounded city coordinates | `SUMMARY distances seed=0xA1A1 cities=165 pairs=13530 passed=1 failed=0` |
 | `npm run test:cities` | Validate bilingual names, codes, regions, table freshness and all 13,530 great-circle pairs within 1 km | `SUMMARY test:cities seed=0xA1A1 cities=165 pairs=13530 passed=1 failed=0` |
+| `npm run test:replay` | [integration-sim] 3 seeds × 2 game weeks of scripted commands on the real Sim: mid-run snapshot/restore, journal-only replay, save envelope round trip, undo, a bot run across a weekly upgrade, puzzle scenario | `SUMMARY test:replay seeds=3 ticks=20160 passed=20 failed=0 ...` |
 | `npm run test:spawner` | Test 16 seeded replays, 6-degree spacing, startup locality, game-hour timing and 40-city cap | `SUMMARY test:spawner seed=0xA1A1 seeds=16 pairsChecked=278076 passed=1 failed=0` |
 | `npm run test:gestures` | 31 pointer/camera sequences: route/edit, orbit, pinch, long press, one-hand zoom, fit, edge pan, DPR and layouts | `SUMMARY test:gestures seed=0xA1A1 cases=31 passed=31 failed=0` |
 | `npm run test:fast` | `typecheck`, `test:i18n`, `test:arch` and `test:gestures` | All test summaries and exit code 0 |

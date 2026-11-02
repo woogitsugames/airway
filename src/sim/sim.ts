@@ -12,7 +12,7 @@ import {
   type GameConfig, type KernelState, type RngStream, type SimState,
 } from './state.ts';
 import { CHECKPOINT_EVERY_TICKS, CheckpointRing, MAX_CHECKPOINTS, type Checkpoint } from './undo.ts';
-import { World, type GameMode, type SimEvent } from './world.ts';
+import { World, type GameMode, type SimEvent, type WorldView } from './world.ts';
 
 const STREAM_NAMES: readonly RngStream[] = ['cities', 'demand', 'events', 'upgrades'];
 const UINT32_MAX = 0xffff_ffff;
@@ -157,7 +157,7 @@ export class Sim {
   /** Game calendar (world minutes). Stops while a weekly upgrade is pending or the run ended. */
   get clock(): ClockTime { return clockAt(this.worldValue.minute); }
   /** Read-only access to world views (cities, routes, planes, offer, ledger). Never mutate. */
-  get world(): World { return this.worldValue; }
+  get world(): WorldView { return this.worldValue; }
 
   /**
    * The rate src/game should tick at. A queued positive SetSpeed wakes a paused scheduler; a pending

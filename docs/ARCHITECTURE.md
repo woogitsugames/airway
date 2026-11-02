@@ -82,6 +82,41 @@ challenges. Never generate simulation randomness outside `src/core/rng.ts`.
 - Respect the Diorama palette, SIL OFL fonts, 48 dp targets, safe areas, portrait,
   landscape and foldable layouts. Use procedural or documented CC0 assets only.
 
+## Sim API
+
+One authoritative simulation: `Sim` (`src/sim/sim.ts`), facade `src/sim/index.ts`. Everything
+else (UI, render, audio, input, modes, bot) reads views and submits commands; nothing writes state.
+
+```ts
+import { createGame, Sim, type Command } from './sim';
+const sim = createGame(seed, 'endless');            // 'endless' | 'daily' | 'puzzle' (+ puzzleId)
+sim.check(cmd);          // { ok } | { ok: false, reason: RejectReason } — instant UI feedback, no side effect
+sim.apply(cmd);          // queue for the next tick; false only for malformed input
+sim.tick();              // ONE game minute: commands -> spawner -> curfew -> demand -> planes -> hubs/jam -> game over -> week end
+sim.schedulingSpeed;     // ticks/s multiplier src/game should use (0 while paused, at an upgrade offer, after game over)
+sim.drainEvents();       // SimEvent[] since last call (CitySpawned, Delivered, HubJamStarted, UpgradeOffered, GameOver, CommandRejected…)
+sim.world;               // WorldView (read-only): minute, status, score, failure, offer, reserve, planes (live array),
+                         //   cities(), cityView(id), routes(), hubCauseLedger(id), curfewCityIds, upgrades
+sim.clock;               // calendar of the world minute (frozen while an upgrade is pending)
+sim.hash(); sim.snapshot(); Sim.fromSnapshot(json); Sim.replay(seed, journal, ticks, config); sim.undo();
+```
+
+- **Commands** (`src/sim/commands.ts`): `AddRoute {cityIds, aircraft?}` (route id `R<n>` assigned by
+  the sim, announced by `RouteAdded`; `aircraft` also assigns a spare plane), `ExtendRoute {routeId,
+  end, cityIds}` (full resulting list, route-tool format), `ShortenRoute {routeId, end}`, `RemoveRoute`,
+  `AssignPlane {routeId, aircraft}`, `UnassignPlane {planeId}`, `UpgradeHub {hubId}` (stocked, puzzles),
+  `ChooseUpgrade {week, upgrade, hubId?}` (task 12 UI shape), `SetSpeed`. City ids are
+  `src/data/cities.ts` codes; distances/flight times come from the generated table, never from callers.
+  Unknown extra fields (e.g. `legDistancesKm`) are dropped. Rejected commands are journaled too.
+- **Time**: `tick` = kernel step (journal index); `world.minute` = game minute. They differ only if
+  someone ticks while an upgrade offer is pending (the world is frozen then).
+- **Renderer**: `world.planes[i]` has `routeId, segment, progress01 (0..10000), direction, phase, load`;
+  `world.routes()` gives `cityIds` and `legKm` per route.
+- **Saves**: `saveSourceFromSim(sim)` / `restoreSimFromSave(save)` in `src/game/save.ts`.
+- **Modes**: Daily = `createDailyMode(scores)` (`src/game/modes/daily.ts`, Warsaw seed); Puzzles =
+  `src/game/modes/puzzle.ts` sessions on `createGame(level.demandSeed, 'puzzle', level.id)`.
+- **Distances for input/UI**: `cityDistanceKm(a, b)` from `src/data/index.ts`.
+
 ## Ownership and next steps
 
 Task 01 intentionally contains an **empty** sky-color WebGL scene, not a playable

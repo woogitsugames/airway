@@ -1,7 +1,7 @@
 /**
  * Weekly upgrade selection is independent of the host simulation.
- * The game adapter owns the authoritative tick and issues ChooseUpgrade commands.
- * All random numbers must come from the caller-provided 'upgrades' RNG stream.
+ * The kernel world (world.ts) calls it at each week boundary and on ChooseUpgrade commands.
+ * All random numbers come from the kernel's 'upgrades' RNG stream.
  */
 export const TICKS_PER_WEEK = 7 * 24 * 60;
 export type UpgradeKind = 'turboprop' | 'widebody' | 'hub-expansion' | 'departure-slots';
