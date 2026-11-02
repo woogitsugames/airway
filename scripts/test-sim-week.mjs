@@ -53,7 +53,9 @@ const failTicks = [];
 try {
   for (const seed of SEEDS) {
     const run = make(seed, true);
-    advance(run, 3 * SIM_MINUTES_PER_DAY);
+    // [task-31] Checkpoint after day 1 and run both copies to the end of the (3-day, D-40) week. The old
+    // `WEEK - 3 days` target was an absolute tick, so with 7-day weeks the "full week" only reached day 4.
+    advance(run, SIM_MINUTES_PER_DAY);
     assert.equal(run.failed, false, `seed ${seed}: sufficient network must stay alive`);
     const checkpoint = JSON.parse(JSON.stringify(run.snapshot()));
     const resumed = make(seed, false);
@@ -61,8 +63,9 @@ try {
     // The kernel persists the demand stream state next to the world snapshot.
     streams.get(resumed).setState(streams.get(run).state);
     assert.equal(run.hash(), resumed.hash(), 'checkpoint hash');
-    advance(run, WEEK - 3 * SIM_MINUTES_PER_DAY);
-    advance(resumed, WEEK - 3 * SIM_MINUTES_PER_DAY);
+    advance(run, WEEK);
+    advance(resumed, WEEK);
+    assert.equal(run.tick, WEEK, 'the run must reach the end of the week');
     assert.equal(run.failed, false, 'full week must survive with sufficient transport');
     assert.equal(resumed.hash(), run.hash(), 'RNG stream and passenger state must replay after restore');
     assert.ok(run.score > 0, 'week must deliver some passengers');
@@ -81,9 +84,10 @@ try {
     failTicks.push(`${seed.toString(16)}:${blocked.failure.tick}`);
     tests++;
   }
-  const expectedHashes = ['a1a1:97dab3bb', 'b2b2:7bbf1bff', 'c3c3:3b649a70'];
+  // [task-31] Re-locked for the 3-day week (D-40) and waiting capacities 36/24 (end-of-week state, day 3).
+  const expectedHashes = ['a1a1:1a6df881', 'b2b2:c28b2b35', 'c3c3:77123733'];
   assert.deepEqual(hashes, expectedHashes, 'deterministic week hashes changed');
-  assert.deepEqual(failTicks, ['a1a1:2264', 'b2b2:2264', 'c3c3:2264'], 'locked congestion failure ticks');
+  assert.deepEqual(failTicks, ['a1a1:2619', 'b2b2:2619', 'c3c3:2619'], 'locked congestion failure ticks');
   console.log(`SUMMARY test:sim-week seeds=3 weekTicks=${WEEK} cases=${tests} passed=${tests} failed=0 hashes=${hashes.join(',')} failTicks=${failTicks.join(',')}`);
 } catch (e) {
   console.error(e);
