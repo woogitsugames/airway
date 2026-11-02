@@ -254,3 +254,15 @@ transfer, dawn and upgrade APIs land. The port pauses authoritative ticks until 
 action has been accepted. **Rationale:** prevent fabricated game state and parallel-task conflicts.
 **Status: provisional integration decision; replace demo port after dependencies merge.**
 _(renumbered from D-19 during integration, branch `origin/task/23-onboarding`)_
+
+## D-35 — Android native build baseline (2026-11-02, task 24)
+Capacitor 8.5.3 targets Android API 36 (minimum 24) and Java 21. The activity remains
+resizable and orientation-unlocked; Android 15+ draws edge-to-edge, and the host
+forwards Back through the `airway:android-back` event. The menu/lifecycle task owns
+its handling policy. Android launcher/splash PNGs are built from original committed
+SVGs on demand. Release APK/AAB signing requires a keystore stored outside Git and
+supplied exclusively via environment variables.
+**Rationale:** minimal native surface and permissions, repeatable source graphics,
+foldable compatibility and separation of signing secrets. Physical device behaviour
+is pending verification on Android hardware. **Status: task-24 technical baseline.**
+_(renumbered from D-19 during integration, branch `origin/task/24-android-build`)_
