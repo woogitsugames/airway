@@ -1,4 +1,4 @@
-import { t } from '../../i18n';
+import { getLanguage, t } from '../../i18n';
 import { SplitFlap } from '../flap';
 import { mountMenuDemo } from './demo-globe';
 import './menu.css';
@@ -39,7 +39,7 @@ function flightRows(data: MenuData): Flight[] {
   const puzzlesTotal=data.totalPuzzles ?? 0;
   const record=data.bestPassengers;
   return [
-    {id:'endless',gate:'A1',title:t('menu.endless'),sub:record==null?t('menu.noRecord'):t('menu.record',{count:record.toLocaleString()}),status:t('menu.boarding'),hot:true},
+    {id:'endless',gate:'A1',title:t('menu.endless'),sub:record==null?t('menu.noRecord'):t('menu.record',{count:record.toLocaleString(getLanguage()==='pl'?'pl-PL':'en-GB')}),status:t('menu.boarding'),hot:true},
     {id:'puzzles',gate:'B4',title:t('menu.puzzles'),sub:puzzlesTotal?t('menu.progress',{solved:data.solvedPuzzles ?? 0,total:puzzlesTotal}):t('menu.puzzlesHint'),status:t('menu.onTime')},
     {id:'daily',gate:'C2',title:t('menu.today',{date:formatDay(data.today ?? new Date())}),sub:t('menu.dailyHint'),status:data.dailyNew===false?t('menu.onTime'):t('menu.new')},
     {id:'settings',gate:'D0',title:t('menu.settings'),sub:'',status:''},

@@ -140,7 +140,8 @@ export function mountMenuDemo(host: HTMLElement): DemoHandle | null {
     if (visible && host.isConnected && document.visibilityState !== 'hidden') {
       if (!reduced) clock+=.00072;
       world.rotation.y=-.12 + (reduced ? 0 : Math.sin(clock*.25)*.1);
-      for (const {model,coords,offset} of planes) {
+      for (let index=0;index<planes.length;index++) {
+        const {model,coords,offset}=planes[index];
         const t=(clock+offset)%1;
         const at=Math.min(coords.length-2,Math.floor(t*(coords.length-1)));
         const alpha=t*(coords.length-1)-at;
