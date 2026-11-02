@@ -155,7 +155,7 @@ sim.check(cmd);          // { ok } | { ok: false, reason: RejectReason } — ins
 sim.apply(cmd);          // queue for the next tick; false only for malformed input
 sim.tick();              // ONE game minute: commands -> spawner -> curfew -> demand -> planes -> hubs/jam -> game over -> week end
 sim.schedulingSpeed;     // ticks/s multiplier src/game should use (0 while paused, at an upgrade offer, after game over)
-sim.drainEvents();       // SimEvent[] since last call (CitySpawned, Delivered, HubJamStarted, UpgradeOffered, GameOver, CommandRejected…)
+sim.drainEvents();       // SimEvent[] since last call (CitySpawned, Delivered, HubJamStarted, DepartureHeld (task 32), UpgradeOffered, GameOver, CommandRejected…)
 sim.world;               // WorldView (read-only): minute, status, score, failure, offer, reserve, planes (live array),
                          //   cities(), cityView(id), routes(), hubCauseLedger(id), curfewCityIds, upgrades
 sim.clock;               // calendar of the world minute (frozen while an upgrade is pending)

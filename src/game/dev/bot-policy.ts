@@ -177,9 +177,21 @@ function chooseUpgrade(snapshot: BotSnapshot): BotDecision | null {
     command: {
       type: 'ChooseUpgrade', offerId: choice.offer.id,
       ...(choice.offer.kind === 'hub' && worst ? { cityId: worst.city.id } : {}),
+      // [task-32] "+2 slots" targets the airport whose aircraft waited longest for a slot.
+      ...(choice.offer.kind === 'slots' ? { cityId: slotTarget(snapshot) } : {}),
     },
     reason: 'Upgrade selected by congestion ledger and current network demand',
   };
+}
+
+// [task-32] Airport with the most slot-wait minutes, else the busiest hub, else the busiest city.
+function slotTarget(snapshot: BotSnapshot): string | undefined {
+  const waits = new Map<string, number>();
+  for (const entry of snapshot.ledger) if (entry.kind === 'slots' && entry.cityId) waits.set(entry.cityId, (waits.get(entry.cityId) ?? 0) + entry.count);
+  const cities = snapshot.cities.filter((city) => city.active)
+    .sort((a, b) => (waits.get(b.id) ?? 0) - (waits.get(a.id) ?? 0) || Number(b.isHub) - Number(a.isHub) ||
+      b.connectedRoutes - a.connectedRoutes || compareId(a.id, b.id));
+  return cities[0]?.id;
 }
 
 /** Return at most one deterministic command; never mutate the snapshot. */

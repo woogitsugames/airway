@@ -63,6 +63,8 @@ export interface PlaneState {
   phase: 'ground' | 'flight';
   elapsedFlightTicks: number;
   remainingServiceTicks: number;
+  /** [task-32] D-41: minutes this ready aircraft has waited on the ground for a departure slot. */
+  slotWaitTicks: number;
 }
 
 export interface PlaneFleet {
@@ -168,7 +170,7 @@ export function assignPlane(
     id: `plane-${fleet.nextPlaneSerial++}`,
     type, routeId: route.id, segment: 0, progress01: 0, load: 0,
     direction: 1, cityIndex: 0, phase: 'ground', elapsedFlightTicks: 0,
-    remainingServiceTicks: MIN_AIRPORT_SERVICE_TICKS,
+    remainingServiceTicks: MIN_AIRPORT_SERVICE_TICKS, slotWaitTicks: 0,
   };
   fleet.available[type]--;
   fleet.planes.push(plane);

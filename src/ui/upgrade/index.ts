@@ -1,9 +1,9 @@
 import type { HubPressure, UpgradeCommand, UpgradeKind, WeeklyUpgradeState } from '../../sim/upgrades';
 import './upgrade.css';
 import { t } from '../../i18n';
-import { cardModel, type CardModel } from './cards';
+import { cardModel, upgradeFacts, type CardModel, type SlotPressure } from './cards';
 
-export { cardModel, upgradeFacts, type CardModel, type UpgradeFacts } from './cards';
+export { cardModel, upgradeFacts, mostSlotStarved, type CardModel, type UpgradeFacts, type SlotPressure } from './cards';
 
 export interface UpgradeUIOptions {
   onCommand: (command: UpgradeCommand) => void;
@@ -46,10 +46,14 @@ export class WeeklyUpgradeView {
   private readonly options: UpgradeUIOptions;
   private state: WeeklyUpgradeState | null = null;
   private hubs: readonly HubPressure[] = [];
+  private airports: readonly SlotPressure[] = [];
   constructor(root: HTMLElement, options: UpgradeUIOptions) { this.root = root; this.options = options; }
-  render(state: WeeklyUpgradeState | null, hubs: readonly HubPressure[]): void {
+  /** `airports` (task 32): every active airport, for the "+2 slots" stamp and airport pick. */
+  render(state: WeeklyUpgradeState | null, hubs: readonly HubPressure[], airports: readonly SlotPressure[] = []): void {
     this.state = state;
     this.hubs = hubs;
+    this.airports = airports;
+    const pickingSlots = !!state?.pendingHub && state.selected === 'departure-slots';
     this.root.replaceChildren();
     this.root.classList.toggle('airway-upgrade-open', !!state?.paused);
     this.root.classList.toggle('is-picking-hub', !!state?.paused && state.pendingHub);
@@ -68,12 +72,12 @@ export class WeeklyUpgradeView {
     heading.textContent = week;
     const subtitle = document.createElement('p');
     subtitle.className = 'airway-upgrade-sub';
-    subtitle.textContent = state.pendingHub ? t('upgrade.selectHub') : t('upgrade.subtitle');
+    subtitle.textContent = pickingSlots ? t('upgrade.selectAirport') : state.pendingHub ? t('upgrade.selectHub') : t('upgrade.subtitle');
     sign.append(heading, subtitle);
     wrap.append(sign);
     if (state.pendingHub) {
       // The globe must stay readable while the player taps a hub: only the sign remains.
-      this.options.onHubSelectionMode?.(true, this.hubs.map(h => h.hubId));
+      this.options.onHubSelectionMode?.(true, pickingSlots ? this.airports.map(a => a.cityId) : this.hubs.map(h => h.hubId));
       this.root.append(wrap);
       return;
     }
@@ -82,7 +86,7 @@ export class WeeklyUpgradeView {
     cards.className = 'airway-upgrade-labels';
     cards.dataset.count = String(state.offers.length);
     state.offers.forEach((offer, i) => {
-      const model = cardModel(offer.id, i, state.offers.length, hubs);
+      const model = cardModel(offer.id, i, state.offers.length, hubs, upgradeFacts(), airports);
       const { card, window } = cargoLabel(model, i);
       card.disabled = model.unavailable;
       card.addEventListener('click', () => this.options.onCommand({ type: 'ChooseUpgrade', week: state.week, upgrade: offer.id }));
@@ -95,7 +99,14 @@ export class WeeklyUpgradeView {
   /** Called by the globe hit-test when the hub highlight mode is active. */
   selectHub(hubId: string): void {
     const state = this.state;
-    if (!state?.paused || !state.pendingHub || !this.hubs.some(h => h.hubId === hubId)) return;
+    if (!state?.paused || !state.pendingHub) return;
+    // [task-32] The same globe pick completes "+2 slots" for any active airport.
+    if (state.selected === 'departure-slots') {
+      if (!this.airports.some(a => a.cityId === hubId)) return;
+      this.options.onCommand({ type: 'ChooseUpgrade', week: state.week, upgrade: 'departure-slots', hubId });
+      return;
+    }
+    if (!this.hubs.some(h => h.hubId === hubId)) return;
     this.options.onCommand({ type: 'ChooseUpgrade', week: state.week, upgrade: 'hub-expansion', hubId });
   }
 }

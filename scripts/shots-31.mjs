@@ -22,7 +22,7 @@ await withBrowser(async ({ browser, url }) => {
         await page.screenshot({ path: resolve(OUT, `board-${language}-${tag}.png`), animations: 'disabled' });
         captured++;
         const option = await page.evaluate(() => document.querySelector(
-          '[data-testid^="upgrade-option-"]:not([data-upgrade="hub-expansion"])')?.getAttribute('data-testid') ?? 'upgrade-option-0');
+          '[data-testid^="upgrade-option-"]:not([data-upgrade="hub-expansion"]):not([data-upgrade="departure-slots"])') /* [task-32] targeted picks wait for a globe tap */?.getAttribute('data-testid') ?? 'upgrade-option-0');
         await clickTestId(page, option);
         await waitForScreen(page, 'game');
         await page.evaluate(() => window.aw.advanceTicks(1440 + 600));

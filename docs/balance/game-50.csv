@@ -1,6 +1,6 @@
 seed,ticks,game_weeks,wall_minutes_1x,score,reason,warning_seen,warning_lead_ticks,commands,rejected,upgrades
 41377,14624,3.385,24.373,177,hubOverflow,1,450,9,0,3
-41378,10304,2.385,17.173,201,hubOverflow,1,450,8,0,2
+41378,10304,2.385,17.173,202,hubOverflow,1,450,8,0,2
 41379,9499,2.199,15.832,57,hubOverflow,1,450,8,0,2
 41380,4855,1.124,8.092,188,hubOverflow,1,450,6,0,1
 41381,7639,1.768,12.732,63,hubOverflow,1,450,6,0,1
@@ -25,7 +25,7 @@ seed,ticks,game_weeks,wall_minutes_1x,score,reason,warning_seen,warning_lead_tic
 41400,4186,0.969,6.977,8,hubOverflow,1,450,4,0,0
 41401,6815,1.578,11.358,25,hubOverflow,1,450,6,0,1
 41402,4922,1.139,8.203,0,hubOverflow,1,450,3,0,1
-41403,14462,3.348,24.103,99,hubOverflow,1,450,10,0,3
+41403,14462,3.348,24.103,100,hubOverflow,1,450,10,0,3
 41404,9578,2.217,15.963,146,hubOverflow,1,450,8,0,2
 41405,9550,2.211,15.917,19,hubOverflow,1,450,8,0,2
 41406,5158,1.194,8.597,3,hubOverflow,1,450,5,0,1

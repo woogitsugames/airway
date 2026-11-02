@@ -193,6 +193,7 @@ The default baseline limit and whether the bonus applies globally or to one sele
 city need owner confirmation before activating the upgrade in the game.
 Until then, the UI and offer generator remain adapter-only and must not silently
 modify a scheduler. **Status: provisional, requires integration decision.**
+_Task 32: superseded by D-41/D-46 (enforced; base 2/3 per hour, +2 for one picked airport)._
 _(renumbered from D-20 during integration, branch `origin/task/12-weekly-upgrade`)_
 
 ## D-29 — Versioned saves and background freeze (2026-11-02, task 16)
@@ -358,6 +359,21 @@ stamp appears only on the label it is about (hub expansion: busiest hub `CODE wa
 when no hub exists. While the player picks a hub, only the yellow sign stays (below the boarding pass) and the globe is
 undimmed. The "+2 slots" label (task 32) already has its model and field set; it gains a stamp once the sim reports which
 airport waits for slots. **Status: in force.**
+
+## D-46 — Departure-slot rules: hourly allowance, queue order, targeted "+2 slots" (2026-11-02, task 32)
+Implements D-41 and closes D-28. A slot is one departure from one airport in one UTC game hour
+(`floor(minute / 60)`); the counters reset at every hour. Base allowance `DEPARTURE_SLOTS_PER_HOUR_CITY = 2`,
+`DEPARTURE_SLOTS_PER_HOUR_HUB = 3` (`src/sim/params.ts`, bot sweep in `docs/balance/README.md`: 4/6 never binds).
+An aircraft that finished its 25-min service and passes the curfew check takes a slot or waits on the ground
+(`slotWaitTicks`); passengers still board only at departure. Order is first ready, first out: held aircraft go
+first by longest wait, equal waits and newly ready aircraft by fleet order (= plane serial). "+2 slots"
+(`DEPARTURE_SLOT_UPGRADE`) applies to **one airport the player picks** on the globe, with the same two-step
+`ChooseUpgrade` as the hub expansion (`hubId` carries the target airport; any active city is valid). The world
+reports per-airport allowance, used slots, held aircraft and minutes to the next slot (`CityView`), the
+slot-wait aircraft-minutes in the hub cause ledger ("aircraft waited for a slot" on the game-over report) and a
+`DepartureHeld` event, which opens a one-time ATC strip (training step "SLOTS 07", not part of the first-run
+vignette). `RULES_VERSION` 3 → 4 (aircraft and world snapshots carry slot state). **Status: in force; the base
+allowance and the per-airport (not global) bonus await owner review.**
 
 ## D-47 — Readable night and layout-measured camera framing (2026-11-02, task 34)
 Night: an anti-solar "moon" light (cool, 0.6 vs sun 3.2, no shadows) plus a colour grade on the world's lit

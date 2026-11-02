@@ -5,7 +5,8 @@ import type { GameMode, WorldSnapshot } from './world.ts';
 
 /** v2: the kernel state carries the whole game world (tasks 05/08/09/11/12). */
 // [task-31] 3 -> 3-day weeks (D-40) change the rules; older saves are rejected.
-export const RULES_VERSION = 3;
+// [task-32] 3 -> 4: departure slots are enforced (D-41); aircraft and world snapshots gained slot state.
+export const RULES_VERSION = 4;
 export const SNAPSHOT_VERSION = 2;
 export const INITIAL_COMMAND_DIGEST = 0x811c9dc5;
 

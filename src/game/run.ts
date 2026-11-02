@@ -8,6 +8,7 @@ import {
 } from '../sim';
 import type { Sim } from '../sim';
 import type { HubPressure } from '../sim/upgrades';
+import type { SlotPressure } from '../ui/upgrade/cards'; // [task-32]
 import type { HubCauseLedger } from './causes';
 
 export type AircraftType = 'turboprop' | 'widebody';
@@ -41,7 +42,9 @@ export type RunEvent =
   | { readonly type: 'new-city'; readonly cityId: string }
   | { readonly type: 'week'; readonly week: number }
   | { readonly type: 'jam'; readonly cityId: string; readonly jammed: boolean }
-  | { readonly type: 'failure'; readonly cityId: string };
+  | { readonly type: 'failure'; readonly cityId: string }
+  /** [task-32] An aircraft is held on the ground for a departure slot (D-41). */
+  | { readonly type: 'slot-held'; readonly cityId: string; readonly limit: number; readonly minutesToSlot: number };
 
 /** Integer table distance from src/data; -1 for unknown pairs (route tool contract). */
 export function cityDistanceKm(a: string, b: string): number {
@@ -146,6 +149,11 @@ export class EndlessRun {
         case 'UpgradeOffered': out.push({ type: 'week', week: event.week }); break;
         case 'HubJamStarted': out.push({ type: 'jam', cityId: event.cityId, jammed: true }); break;
         case 'HubJamCleared': out.push({ type: 'jam', cityId: event.cityId, jammed: false }); break;
+        case 'DepartureHeld': { // [task-32]
+          const view = this.sim.world.cityView(event.cityId);
+          out.push({ type: 'slot-held', cityId: event.cityId, limit: view.departureSlots, minutesToSlot: view.nextSlotMinutes });
+          break;
+        }
         case 'GameOver': if (event.failure) out.push({ type: 'failure', cityId: event.failure.cityId }); break;
         default: break;
       }
@@ -188,6 +196,14 @@ export class EndlessRun {
   hubPressure(): HubPressure[] {
     return this.sim.world.cities().filter((city) => city.isHub)
       .map((city) => ({ hubId: city.id, waiting: city.waiting, capacity: city.capacity, label: city.id }));
+  }
+
+  // [task-32] Departure-slot pressure of every active airport (upgrade stamp + "+2 slots" airport pick).
+  slotPressure(): SlotPressure[] {
+    const world = this.sim.world;
+    return world.cities().map((city) => ({
+      cityId: city.id, label: city.id, held: city.slotHeldPlanes, waitMinutes: world.hubCauseLedger(city.id).slotWaitMinutes,
+    }));
   }
 
   hash(): string { return this.sim.hash(); }
