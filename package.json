@@ -41,7 +41,9 @@
     "test:interp": "node scripts/test-interp.mjs",
     "shots:10": "node scripts/shots.mjs",
     "test:daynight": "node scripts/test-daynight.mjs",
-    "shots:11": "node scripts/shots.mjs"
+    "shots:11": "node scripts/shots.mjs",
+    "test:hud-targets": "node scripts/test-hud-targets.mjs",
+    "shots:13": "node scripts/shots.mjs && node scripts/test-hud-targets.mjs"
   },
   "dependencies": {
     "@capacitor/android": "8.5.3",
