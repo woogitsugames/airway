@@ -39,7 +39,16 @@ const ROUTES: RouteView[] = [
   { id: 'r6', aircraft: 'turboprop', cityIds: ['IST', 'KIV'] },
   { id: 'r7', aircraft: 'turboprop', cityIds: ['MAD', 'LIS', 'CMN', 'DKR'] },
 ];
-const codes = [...Object.keys(HUBS), ...Object.keys(WAITING)];
+// [M1] `?add=PAR,SIN,...` adds airports (`CODE*` = hub) for close-up shots of regional styles/landmarks.
+const added = (params.get('add') ?? '').split(',').filter(Boolean);
+for (const entry of added) {
+  const code = entry.replace('*', '');
+  if (entry.endsWith('*')) { HUBS[code] ??= { cap: 8, waiting: WAITING[code] ?? [] }; delete WAITING[code]; }
+  else if (!(code in HUBS)) WAITING[code] ??= [];
+}
+// `?only=1` keeps just the `add` list (close-ups without the mockup network around).
+const codes = params.has('only') ? added.map((entry) => entry.replace('*', ''))
+  : [...Object.keys(HUBS), ...Object.keys(WAITING)];
 const cities = codes.map((code) => {
   const city = CITIES.find((entry) => entry.code === code);
   if (!city) throw new Error('Unknown city ' + code);
@@ -51,15 +60,16 @@ const world = createWorldRenderer(undefined, {
   autoResize: host,
   // HUD reservations: boarding pass on top and tag dock below (portrait) or at the side (landscape).
   insets: () => (host.clientWidth > host.clientHeight ? { top: 64, right: 96 } : { top: 96, bottom: 96 }),
-  camera: { longitude: 7, latitude: 35, zoom: Number(params.get('zoom')) || 3.3 },
+  camera: { longitude: Number(params.get('lon') ?? 7), latitude: Number(params.get('lat') ?? 35), zoom: Number(params.get('zoom')) || 3.3 },
 });
 host.appendChild(world.canvas);
 world.setCities(cities);
 world.setRoutes(ROUTES, 1);
 world.setHubLoad(Object.entries(HUBS).map(([id, hub]) => ({ id, used: hub.waiting.length, cap: hub.cap })));
 world.setCurfew(['CAI', 'KIV']);
-world.setRoutePreview({
-  points: [cities.find((c) => c.id === 'LIS')!, { lon: -0.2, lat: 5.6 }],
+const lis = cities.find((c) => c.id === 'LIS');
+if (lis) world.setRoutePreview({
+  points: [lis, { lon: -0.2, lat: 5.6 }],
   legDistancesKm: [3788], rangeKm: 2500, aircraft: 'turboprop',
 });
 const overlay = createAirportOverlay(host, world.camera, { reservedTop: 96, reservedBottom: 96 });
@@ -67,7 +77,7 @@ for (const city of cities) {
   overlay.addAirport(city);
   overlay.setPassengers(city.id, HUBS[city.id]?.waiting ?? WAITING[city.id] ?? []);
 }
-overlay.setJamCountdown('LON', HUBS.LON.jam ?? null);
+if (codes.includes('LON')) overlay.setJamCountdown('LON', HUBS.LON.jam ?? null);
 
 // Scripted visual planes (not a simulation): one per route leg, ping-ponging.
 const SCALE = 10_000;
@@ -82,7 +92,7 @@ const place = (list: typeof current, tick: number): void => {
 };
 // Frozen moment of the mockup: UTC ~16:10 (tick 970 of the day).
 const frozen = params.has('frozen');
-let tick = 970;
+let tick = Number(params.get('tick')) || 970;
 place(previous, tick);
 place(current, tick + 1);
 world.setPlanes(previous, current);

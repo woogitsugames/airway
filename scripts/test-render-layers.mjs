@@ -14,10 +14,12 @@ const check = (condition, label) => { if (condition) passed++; else { failed++; 
 const folder = mkdtempSync(resolve(ROOT, 'node_modules/.render-layers-'));
 try {
   writeFileSync(join(folder, 'package.json'), JSON.stringify({ type: 'module' }));
+  // [M1] Render files go to <tmp>/render, the read-only dataset they import to <tmp>/data.
   for (const path of ['globe/geo-math.ts', 'routes.ts', 'models/planes.ts', 'planes.ts', 'routePreview.ts', 'airports.ts',
-    'camera.ts', 'framing.ts', 'contrast.ts', 'menuNetwork.ts', 'sun.ts'] /* [task-34] */) {
+    'camera.ts', 'framing.ts', 'contrast.ts', 'menuNetwork.ts', 'sun.ts' /* [task-34] */,
+    'models/airportStyle.ts', 'models/airportKit.ts', 'globe/land-mask.ts', '../data/cities.ts' /* [M1] */]) {
     const file = resolve(ROOT, 'src/render', path);
-    const target = join(folder, path.replace(/\.ts$/, '.js'));
+    const target = join(folder, 'render', path.replace(/\.ts$/, '.js'));
     mkdirSync(dirname(target), { recursive: true });
     const { outputText } = ts.transpileModule(readFileSync(file, 'utf8'), {
       fileName: file, compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
@@ -25,7 +27,7 @@ try {
     writeFileSync(target, outputText.replace(/from (['"])(\.\.?\/[^'"]+)\1/g, (_, q, spec) => `from ${q}${spec}.js${q}`));
   }
   const three = await import('three');
-  const load = (name) => import(pathToFileURL(join(folder, name)).href);
+  const load = (name) => import(pathToFileURL(join(folder, 'render', name)).href);
   const { createRoutePreview } = await load('routePreview.js');
   const { createAirports } = await load('airports.js');
   const { RouteLayer, sampleGreatCircleArc, makeGreatCircleArc } = await load('routes.js');
@@ -92,6 +94,135 @@ try {
   check(planes.shadow.visible && planes.shadowMaterial.opacity > 0.2, 'plane shadows back by day');
   planes.dispose();
   routes.dispose();
+
+  // [M1] Richer world: regional airport styles, hubs, landmarks and plane bank.
+  {
+    const style = await load('models/airportStyle.js');
+    const kitMod = await load('models/airportKit.js');
+    const { airportPieces } = await load('airports.js');
+    const { decodeLandMask } = await load('globe/land-mask.js');
+    const { CITIES } = await import(pathToFileURL(join(folder, 'data/cities.js')).href);
+    const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+    check(same(style.airportStyle('LIS', -9.1, 38.7), style.airportStyle('LIS', -9.1, 38.7)) &&
+      same(style.airportStyle('C7', 20, 10), style.airportStyle('C7', 20, 10)), 'airport style is deterministic per id');
+    const lis = style.airportStyle('LIS', -9.1, 38.7), osl = style.airportStyle('OSL', 10.75, 59.9);
+    const sin = style.airportStyle('SIN', 103.8, 1.3), nyc = style.airportStyle('NYC', -74, 40.7);
+    check(lis.region === 'EUS' && lis.roof === 'hip' && nyc.region === 'NAM' && nyc.roof === 'flat',
+      'region comes from the dataset and picks the regional roof');
+    check(osl.climate === 'snow' && osl.roofColor === style.SNOW && osl.palms === 0, 'northern airports get snow, no palms');
+    check(sin.climate === 'tropical' && sin.palms >= 3 && sin.palms <= 5 && lis.palms === 0, 'tropical airports get 3-5 palms');
+    const roofs = new Set(CITIES.map((c) => style.airportStyle(c.code, c.lon, c.lat).roof));
+    check(roofs.size === 5, 'five roof archetypes across the dataset (' + [...roofs] + ')');
+    check(style.regionFromLonLat(-74, 40) === 'NAM' && style.regionFromLonLat(139, 35) === 'ASI' &&
+      style.regionFromLonLat(150, -33) === 'OCE', 'unknown ids fall back to a coarse lon/lat region');
+    const palms = style.palmBearings(sin, 180);
+    check(palms.length === sin.palms && palms.every((b) => Math.abs(((b - 180 + 540) % 360) - 180) >= 45),
+      'palms keep out of the landmark sector');
+
+    // Hubs are visibly larger: bigger pad, more pieces (apron, pier, tower).
+    const hubLayout = airportPieces('LIS', -9.1, 38.7, true), cityLayout = airportPieces('LIS', -9.1, 38.7, false);
+    check(hubLayout.pieces.length >= cityLayout.pieces.length + 3 && hubLayout.pieces.some((p) => p.piece === 'tower') &&
+      !cityLayout.pieces.some((p) => p.piece === 'tower'), 'hub adds apron, second terminal and tower');
+    const sizeScene = new three.Scene();
+    const sized = createAirports(sizeScene, { maxAirports: 4, maxHubSeats: 8 });
+    sized.addAirport({ id: 'LIS', lon: -9.1, lat: 38.7, hub: true });
+    sized.addAirport({ id: 'MAD', lon: -3.7, lat: 40.4 });
+    const field = sized.group.children.find((c) => c.name === 'airport-airfield');
+    const scaleOf = (i) => { const m = new three.Matrix4(); field.getMatrixAt(i, m); return new three.Vector3().setFromMatrixScale(m).x; };
+    check(field.count === 2 && scaleOf(0) / scaleOf(1) > 1.35, 'hub pad is ~1.4x the city pad');
+    const lattice = sized.group.children.find((c) => c.name === 'airport-lattice');
+    check(lattice.count === 0, 'no landmark without its city');
+    sized.addAirport({ id: 'PAR', lon: 2.35, lat: 48.86 });
+    check(lattice.count === 1, 'landmark appears with its active city');
+    sized.clear();
+    check(lattice.count === 0 && field.count === 0, 'clear() removes airports, decor and landmarks');
+    sized.dispose();
+
+    // Landmarks: off the pads (own barrier and every other dataset hub pad), on land, inside their footprint.
+    const mask = decodeLandMask(JSON.parse(readFileSync(resolve(ROOT, 'public/data/land-50m.json'), 'utf8')));
+    const F = style.AIRPORT_FOOTPRINT;
+    let landmarkIssues = [];
+    const geometryCache = new Map();
+    const v = new three.Vector3();
+    for (const id of Object.keys(style.LANDMARKS)) {
+      const city = CITIES.find((c) => c.code === id);
+      const place = style.landmarkFor(id);
+      if (!city || !place) { landmarkIssues.push(id + ' missing'); continue; }
+      const r = style.LANDMARK_RADIUS[place.kind];
+      const own = style.angularDistance(city.lon, city.lat, place.lon, place.lat);
+      if (own - r < F.barrierRadius) landmarkIssues.push(id + ' touches its own pad/barrier');
+      for (const other of CITIES) {
+        if (other.code !== id && style.angularDistance(place.lon, place.lat, other.lon, other.lat) - r < F.padRadius * F.hubScale) {
+          landmarkIssues.push(id + ' overlaps ' + other.code);
+        }
+      }
+      if (mask.distanceAt(place.lon, place.lat) < 0.3) landmarkIssues.push(id + ' is not on land');
+      const layout = airportPieces(id, city.lon, city.lat, false);
+      let reach = 0;
+      for (const piece of layout.pieces.filter((p) => p.anchor === 0 && layout.anchors[0].bearing === place.bearing)) {
+        if (!geometryCache.has(piece.piece)) geometryCache.set(piece.piece, kitMod.kitGeometry(piece.piece));
+        const pos = geometryCache.get(piece.piece).getAttribute('position');
+        for (let i = 0; i < pos.count; i++) {
+          v.fromBufferAttribute(pos, i).applyMatrix4(piece.local);
+          reach = Math.max(reach, Math.hypot(v.x, v.z));
+        }
+      }
+      if (!(reach > 0) || reach > r + 1e-6) landmarkIssues.push(id + ' geometry reach ' + reach.toFixed(4) + ' > ' + r.toFixed(4));
+    }
+    check(landmarkIssues.length === 0, 'landmarks clear of pads, on land, within footprint ' + landmarkIssues.join('; '));
+    for (const g of geometryCache.values()) g.dispose();
+
+    // Bank: exactly level on a straight great circle, bounded and smooth in a turn, level on the ground.
+    const { stepBank, createBankState, MAX_BANK } = await load('planes.js');
+    const arcState = createBankState();
+    const axis = new three.Vector3(0.3, 1, 0.2).normalize();
+    const p0 = new three.Vector3().crossVectors(axis, new three.Vector3(1, 0, 0)).normalize();
+    const pos = new three.Vector3(), fwd = new three.Vector3(), upv = new three.Vector3();
+    let straightMax = 0;
+    for (let i = 0; i < 300; i++) {
+      pos.copy(p0).applyAxisAngle(axis, i * 0.004);
+      upv.copy(pos).normalize();
+      fwd.crossVectors(axis, upv).normalize();
+      straightMax = Math.max(straightMax, Math.abs(stepBank(arcState, fwd, upv, 1 / 60, 1)));
+    }
+    check(straightMax < 1e-6, 'zero bank on straight (great-circle) flight: ' + straightMax);
+    const turn = createBankState();
+    const north = new three.Vector3(0, 0, -1), east = new three.Vector3(1, 0, 0), y = new three.Vector3(0, 1, 0);
+    stepBank(turn, north, y, 1 / 60, 1);
+    let peak = 0, flips = 0, last = 0;
+    for (let i = 0; i < 240; i++) {
+      const b = stepBank(turn, east, y, 1 / 60, 1);
+      if (Math.abs(b) > Math.abs(peak)) peak = b;
+      if (last !== 0 && Math.sign(b) !== Math.sign(last) && b !== 0) flips++;
+      last = b;
+    }
+    check(Math.abs(peak) > 0.05 && Math.abs(peak) <= MAX_BANK + 1e-9, 'bank in a turn is visible and bounded: ' + peak.toFixed(3));
+    check(flips === 0 && Math.abs(last) < Math.abs(peak) * 0.05, 'bank settles without overshoot after the turn');
+    const ground = createBankState();
+    stepBank(ground, north, y, 1 / 60, 0);
+    let groundMax = 0;
+    for (let i = 0; i < 60; i++) groundMax = Math.max(groundMax, Math.abs(stepBank(ground, east, y, 1 / 60, 0)));
+    check(groundMax === 0, 'no bank on the ground');
+
+    // Through the layer: a straight single-leg route keeps every plane level.
+    const levelRoutes = new RouteLayer();
+    levelRoutes.setRoutes([{ id: 'S', type: 'widebody', waypoints: [LIS, { lon: 37.6, lat: 55.8 }] }], 1);
+    const levelPlanes = new PlaneLayer(levelRoutes, { maxPlanes: 4 });
+    const cam = new three.PerspectiveCamera(30, 1, 0.05, 30);
+    cam.position.set(0, 0, 4);
+    const levelSnap = (t) => [0, 1, 2].map((i) => ({ id: 'L' + i, routeId: 'S', segment: 0, progress01: 2000 + i * 2000 + t * 15, load: 1 }));
+    let levelMax = 0;
+    for (let t = 0; t < 40; t++) {
+      levelPlanes.setSnapshots(levelSnap(t), levelSnap(t + 1));
+      for (let f = 0; f < 3; f++) {
+        levelPlanes.update(f / 3, cam, 1 / 30);
+        for (const track of levelPlanes.tracks) levelMax = Math.max(levelMax, Math.abs(track.bank.bank));
+      }
+    }
+    check(levelMax < 1e-6, 'plane layer: straight leg stays level');
+    levelPlanes.dispose();
+    levelRoutes.dispose();
+  }
 
   // [task-34] Camera insets measured from the HUD/menu boxes, not fixed numbers.
   const { insetsFromLayout, menuFraming, solveZoomForRadius, menuSpinRate, MENU_SPIN_DEG_PER_S } = await load('framing.js'); // [task-39]
