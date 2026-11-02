@@ -6,27 +6,24 @@ simulation imports. Engine uses a 25 ms scheduler loop, bounded 125 ms lookahead
 four two-oscillator congestion drones. A compressor, 55 Hz high-pass and short
 attack/release envelopes prevent clipping and clicks during 4x simulation.
 
-## Composition root integration (tasks 08/09/14/16)
+## Composition root integration
 
 ```ts
-import { createAudio, type AudioCue } from '../audio';
+import { bootAudio, audioSettingsFromToggles, type AudioCue } from './audio';
+import { readSettings } from './ui/settings/settings';
 
-const audio = createAudio();
-audio.unlockOnFirstGesture(document); // user gesture: pointerup/touchend/keydown
-audio.attachBrowserLifecycle();        // use audio.pause/resume for Capacitor App
-// Restore values from task 14's settings UI; store them there, not in audio.
-audio.setSettings({ musicVolume: 0.65, effectsVolume: 0.8, muted: false });
+// No AudioContext is created here; the first pointerup/touchend/keydown unlocks it.
+const { audio, dispose } = bootAudio({ toggles: readSettings() });
 
-// During game ticks, never modify the simulation in response to audio:
-audio.setSimClock(simTick, gameSpeed); // valid gameSpeed: 0.25..4
-// Translate immutable sim events to AudioCue in the composition root.
-// e.g. on arrival: audio.emit({type:'arrival', tick, hubId, latitude,
-//                             capacity, loadRatio, night});
-// on MCT completion: type 'transfer'; hub occupancy: 'hub-load';
-// on sunrise: type 'dawn'; new week: {type:'week',tick,week}.
-// Alternatively, audio.subscribe({subscribe(listener) { ...; return unsubscribe; }})
-// Menu/UI (task 14): audio.playEffect('flap'|'paper'|'tag'|'stamp'|'new-city');
-// On exit: await audio.dispose();
+// After each completed sim step (timestamps only, never authoritative):
+audio.setSimClock(simTick, gameSpeed);           // gameSpeed 0.25..4
+// Map immutable sim events to cues in src/game, never inside src/sim:
+audio.emit({ type: 'arrival', tick, hubId, latitude, capacity, loadRatio, night });
+// 'transfer' on MCT completion, 'hub-load' on occupancy change, 'dawn', {type:'week',tick,week}.
+// Or pass a read-only stream: bootAudio({ toggles, cues: { subscribe(listener) { ...; return off; } } }).
+// Menu/UI: audio.playEffect('flap' | 'paper' | 'tag' | 'stamp' | 'new-city');
+// Settings screen change: audio.setSettings(audioSettingsFromToggles(next));
+// On teardown: await dispose();
 ```
 
 Hub latitude `[-60, +70]` maps onto ten pentatonic degrees across two octaves;
@@ -49,9 +46,10 @@ verify on physical iOS hardware before release. Mute ramps master output to
 zero within 6 ms, drops the queued events and stops active notes. It never
 alters the simulation or its random number generator.
 
-Until tasks 08/09 provide a finalized event union, the read-only `AudioCue`
-is the integration boundary. Feed these cues from `src/game` rather than adding
-an import or audio side effect inside `src/sim`.
+The read-only `AudioCue` union is the integration boundary. Feed cues from
+`src/game` rather than adding an import or audio side effect inside `src/sim`.
+iOS: `AppDelegate.swift` sets the native `.ambient` session at launch, so the
+hardware silent switch is respected unless the player opts in.
 
 ## Validation and listening
 
