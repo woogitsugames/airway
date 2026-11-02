@@ -42,7 +42,7 @@ Times are measured in the integration container (8 vCPU, SwiftShader); “ci” 
 | `npm run test:daily` | fast | <1 s | Warsaw midnight CET/CEST, DST, stable daily seed, ISO weeks | `… passed=7 failed=0` |
 | `npm run test:cities` | fast | 2 s | 165 bilingual cities, codes, regions, distance-table freshness (`build:distances --check`), 13 530 pairs ≤ 1 km | `… cities=165 pairs=13530 passed=1 failed=0` |
 | `npm run test:spawner` | fast | 1 s | 16 seeded replays, 6° spacing, start cluster, 4-game-hour cadence, 40-city cap (D-20) | `… seeds=16 … passed=1 failed=0` |
-| `npm run test:land` | fast | <1 s | `build:land --check`: committed land raster matches Natural Earth 50m | `SUMMARY build-land … checked=1 failed=0` |
+| `npm run test:land` | fast | ~6 s | `build:land --check`: committed land raster matches Natural Earth 50m; [task-33] builds the terrain for all presets and checks watertight mesh (no T-junction cracks), no folded facets, coast teeth/stray from the smooth coastline, no Sahara terraces, open sea coarser than coasts, triangle budgets, determinism, mountains/snow where they are in reality, seamless Arctic ice, terrain below airport pads, tree/rock counts and placement (`scripts/build-land.check.mjs`) | `SUMMARY build-land … checked=1 checks=59 … failed=0` |
 | `npm run test:geo-math` | fast | 1 s | Globe coordinates, ray–sphere picking (London/Lisbon/Cairo, off-centre) | `… tests=N passed=N failed=0` |
 | `npm run test:gestures` | fast | 1 s | 31 pointer/camera sequences: route edit, orbit, pinch, long press, one-hand zoom, edge pan, DPR | `… cases=31 passed=31 failed=0` |
 | `npm run test:overlay-layout` | fast | <1 s | 30-city tag collisions, jam priority, boundaries, repeatability | `… cases=7 passed=7 failed=0` |

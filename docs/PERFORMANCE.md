@@ -97,6 +97,40 @@ ANGLE SwiftShader (Vulkan/Subzero), production world renderer:
 directly against mobile GPU acceptance targets. A working script, by itself,
 does not establish that the performance budget is met.
 
+## Globe detail budget (task 33, D-44)
+
+Terrain triangles come from `buildTerrainArrays()` (`npm run test:land` prints them); frame
+triangles and draw calls from `renderer.info` in `dev/world.html?frozen&clean` at 2.5x
+(`npm run shots -- globe-<preset>-2_5x`, 412x915, no shadow pass except `high`). Build times are
+Node 22 on the CI container (desktop-class CPU; expect roughly 3-4x on a mid-range phone). All
+numbers measured 2026-11-02.
+
+| Preset | Terrain triangles before → after (budget) | Trees / rocks / clouds before → after | Frame triangles before → after | Draw calls | Terrain build before → after |
+| --- | --- | --- | --- | --- | --- |
+| low | 8 283 → 34 904 (≤ 45 000) | 450 / 48 / 28 → 3 500 / 260 / 30 | 35 707 → 86 414 | 34 → 36 | 161 → ~160 ms |
+| medium | 67 781 → 200 066 (≤ 210 000) | 2 200 / 160 / 58 → 11 000 / 700 / 60 | 119 317 → 314 398 | 34 → 36 | 494 → ~450-570 ms |
+| high | 133 662 → 279 154 (≤ 300 000) | 5 100 / 300 / 95 → 18 000 / 1 200 / 90 | 222 278 → 436 042 | 34 → 36 | 485 → ~650-900 ms |
+
+The two extra draw calls are the second tree shape (broadleaf crowns) and the instanced
+cloud-shadow blobs. Mesh quality, also printed by `test:land` (before = `dev` mesh measured
+with the same metrics): open (cracked) edges 13 225 → 0 on medium; coast teeth (land facets
+with two sea neighbours) 6.8% → 2.3%; Sahara neighbour luminance step p99 0.365 → 0.029.
+The land raster decode is ~60 → ~110-150 ms (adds the signed-distance field).
+
+`perf:scene` (medium, 412x915, DPR 1, 120 s, SwiftShader), two runs each:
+
+| Run | CPU submit mean / p95 | Median / 95%-trimmed mean of 1 s samples | Frames rendered | Triangles (max) | Draw calls |
+| --- | --- | --- | --- | --- | --- |
+| before #1 / #2 | 1.42 / 2.40 ms, 1.41 / 2.20 ms | 0.80 / 0.87 ms, 0.90 / 0.96 ms | 535, 526 | 228 837 | 33 |
+| after #1 / #2 | 1.94 / 2.30 ms, 1.81 / 2.90 ms | 0.90 / 1.07 ms, 0.90 / 0.97 ms | 255, 255 | 423 918 | 35 |
+
+Reading: p95 and the per-sample median/trimmed mean move by ≤ ~10%, inside run-to-run noise.
+The summary *mean* rises ~30% because the one-off geometry upload spike on the first frame
+(~90-120 ms, both before and after) is averaged over half as many frames: SwiftShader rasterises
+~1.85x the triangles in software, so it delivers half the frames. That frame-rate drop is a
+software-GPU effect and says nothing about a mobile GPU; it must be re-measured on the
+hardware checklist below (the frame-triangle count is the number to watch on low-end Mali).
+
 ## Allocation validation and hardware test checklist
 
 1. Run `perf:scene` and save JSON; check stable DOM node count (=40),
