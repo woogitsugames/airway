@@ -1,0 +1,105 @@
+// Shared browser harness for screenshots, E2E and the UI matrix.
+// Playwright + Chromium come from the environment (CI: `npm install --no-save playwright@1.63.0`);
+// they are intentionally not npm dependencies of the game.
+import { spawn } from 'node:child_process';
+import { createServer as createTcpServer } from 'node:net';
+import { createRequire } from 'node:module';
+import { existsSync } from 'node:fs';
+import { once } from 'node:events';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
+export const SEED = 0xa1a1;
+// SwiftShader WebGL works in headless containers without a GPU. Never compare its FPS with devices.
+export const CHROMIUM_ARGS = ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'];
+
+const require = createRequire(import.meta.url);
+
+export async function freePort() {
+  const socket = createTcpServer();
+  socket.listen(0, '127.0.0.1');
+  await once(socket, 'listening');
+  const address = socket.address();
+  if (!address || typeof address === 'string') throw new Error('No free local TCP port');
+  await new Promise((done) => socket.close(done));
+  return address.port;
+}
+
+/** Polls `url` until it answers 2xx; aborts early if `child` exits. */
+export async function waitForHttp(url, child, timeoutMs = 30000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    if (child && child.exitCode !== null) throw new Error('Server exited before responding');
+    try {
+      const response = await fetch(url);
+      if (response.ok) return;
+    } catch { /* still starting */ }
+    await new Promise((done) => setTimeout(done, 200));
+  }
+  throw new Error(`Server did not respond within ${timeoutMs} ms: ${url}`);
+}
+
+/**
+ * Starts a disposable Vite dev server on a free port (or reuses AIRWAY_E2E_URL).
+ * Returns { url, stop }. Server output is kept as a tail for error messages only.
+ */
+export async function startVite({ reuseEnv = true } = {}) {
+  const external = reuseEnv ? process.env.AIRWAY_E2E_URL : undefined;
+  if (external) return { url: external.endsWith('/') ? external : external + '/', stop: async () => {} };
+  const bin = resolve(ROOT, 'node_modules/vite/bin/vite.js');
+  if (!existsSync(bin)) throw new Error('Vite is not installed; run npm ci');
+  const port = await freePort();
+  const url = `http://127.0.0.1:${port}/`;
+  const child = spawn(process.execPath, [bin, '--host', '127.0.0.1', '--port', String(port), '--strictPort'],
+    { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'] });
+  let tail = '';
+  for (const stream of [child.stdout, child.stderr]) {
+    stream.on('data', (chunk) => { tail = (tail + chunk.toString()).slice(-4000); });
+  }
+  child.on('error', (error) => { tail += String(error); });
+  try {
+    await waitForHttp(url, child);
+  } catch (error) {
+    child.kill('SIGTERM');
+    throw new Error(`${error.message}\n${tail}`);
+  }
+  const stop = async () => {
+    if (child.exitCode !== null) return;
+    child.kill('SIGTERM');
+    await Promise.race([once(child, 'exit'), new Promise((done) => setTimeout(done, 3000).unref())]);
+  };
+  return { url, stop, tail: () => tail };
+}
+
+export function loadChromium() {
+  try {
+    return require('playwright').chromium;
+  } catch {
+    throw new Error('Playwright is not available. Install it outside package.json: npm install --no-save playwright@1.63.0');
+  }
+}
+
+export async function launchChromium() {
+  return await loadChromium().launch({
+    headless: true,
+    ...(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {}),
+    args: CHROMIUM_ARGS,
+  });
+}
+
+/** Writes PL/EN into the app's settings key before any page script runs. */
+export async function presetLanguage(page, language, { clear = false } = {}) {
+  await page.addInitScript(({ lang, wipe }) => {
+    try {
+      if (wipe) localStorage.clear();
+      const key = 'airway.settings';
+      const value = JSON.parse(localStorage.getItem(key) || '{}');
+      localStorage.setItem(key, JSON.stringify({ ...value, language: lang }));
+    } catch { /* storage can be blocked in private mode */ }
+  }, { lang: language, wipe: clear });
+}
+
+export function errorText(error) {
+  return error instanceof Error ? error.message : String(error);
+}

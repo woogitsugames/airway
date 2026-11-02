@@ -115,7 +115,8 @@ await check('package has no advertising, IAP, or tracking SDK dependencies', () 
   const unexpected = Object.keys(allDeps).filter((name) => monetizationSdk.test(name));
   assert.deepEqual(unexpected, []);
   assert.equal(pkg.scripts['test:gating'], 'node scripts/test-gating.mjs');
-  assert.ok(pkg.scripts['test:fast'].includes('npm run test:gating'));
+  // [integration-tooling] test:fast is a run-suite step list, not an `npm run` chain.
+  assert.ok(pkg.scripts['test:fast'].split(/\s+/).includes('test:gating'));
 });
 
 console.log(`SUMMARY test:gating seed=${SEED} passed=${passed} failed=${failures.length}`);

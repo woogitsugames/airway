@@ -26,3 +26,7 @@ GoogleService-Info.plist
 
 # [task-21] Local browser performance reports (generated, machine-specific).
 .perf/
+
+# Browser QA scratch output (failure screenshots, harness-only fixture captures)
+.e2e/
+docs/shots/matrix-fixture/
