@@ -72,7 +72,6 @@ transcendental results, whereas fixed integer simulation allows identical
 replays, undo and daily challenge verification. Enforced by `npm run test:arch`.
 **Status: in force.**
 
-
 ## D-14 — Production is split into 30 agent tasks (2026-11-02, owner request)
 Briefs in `docs/tasks/` (index `00-INDEX.md`, generator `docs/tasks/tools/gen_tasks.py`). Each session branches
 `task/NN-slug` from `dev`, pushes it and opens a draft PR to `dev`; the owner merges. Task 01 creates `dev` from this branch.
@@ -93,8 +92,12 @@ full-screen ads during play, no timers, no dark patterns. Supersedes the recomme
 ## D-18 — Store title: "Airway: Globe Route Builder" (PL: "Airway: Buduj siatkę lotów na globusie") (2026-11-02, owner)
 **Status: in force.**
 
+## Production decisions from the parallel tasks (integration, 2026-11-02)
+Tasks 02–28 were developed in parallel and each picked the next free number (D-19 or D-20). During integration they
+were renumbered D-19…D-37 in task order of the merge; each renumbered entry keeps its
+_"renumbered from D-xx during integration"_ note. Mapping and the references that were updated:
+[`docs/integration/RENUMBERING.md`](integration/RENUMBERING.md). New decisions continue at **D-38**.
 
-<!-- [task-02] -->
 ## D-19 — Canonical replay and checkpoint undo contract (2026-11-02, task 02)
 The simulation journals commands in FIFO order as `[executionTick, command]`; `apply()` only queues for the next tick.
 Save schema v1 includes integer state, named RNG stream states, command journal, pending inputs and up to 64 checkpoints
