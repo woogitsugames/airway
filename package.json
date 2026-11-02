@@ -66,7 +66,12 @@
     "test:daily-mode": "node --experimental-strip-types scripts/test-daily-mode.mjs",
     "shots:21": "node scripts/shots.mjs",
     "perf:scene": "node --experimental-strip-types scripts/perf-scene.ts",
-    "test:perf-scene": "npm run perf:scene"
+    "test:perf-scene": "npm run perf:scene",
+    "shots:22": "node scripts/shots.mjs",
+    "test:balance": "node --experimental-strip-types scripts/balance-report.ts --test",
+    "test:balance:fixture": "node --experimental-strip-types scripts/balance-report.ts --test --fixture",
+    "balance:report": "node --experimental-strip-types scripts/balance-report.ts --report",
+    "balance:fixture": "node --experimental-strip-types scripts/balance-report.ts --report --fixture"
   },
   "dependencies": {
     "@capacitor/android": "8.5.3",

@@ -68,6 +68,10 @@ npm run build
 | `npm run test:daily-mode` | [task-18] Warsaw midnight/DST, offline attempts, best scores, streaks and emoji-free ticket (fixed adapter seed) | `SUMMARY test:daily-mode seed=0xA1A1 passed=12 failed=0` |
 | `npm run test:fast` | `typecheck`, then `test:i18n`, then `test:arch`, then `test:daily-mode` | All three test summaries and exit code 0 |
 | `npm run test:perf-scene` / `npm run perf:scene` | [task-21] Synthetic Chromium/SwiftShader fixture: 40 cities, 100 planes, 40 routes, 120 wall seconds at 4x. JSON at `.perf/scene.json`; Playwright and Chromium required. | `SUMMARY perf:scene seed=0xA1A1 frames=N samples=N failed=0` |
+| `npm run test:balance` | Real engine: 10 seeded games, deterministic replay, zero invalid commands, 8–15 minute median, and hub-overflow warning | `SUMMARY test:balance seed=0xA1A1 mode=game seeds=10 ... passed=1 failed=0`; fails until the production adapter exists |
+| `npm run test:balance:fixture` | 10 seeded stand-in sessions and bot-policy assertions; **not production balance** | `SUMMARY test:balance seed=0xA1A1 mode=fixture seeds=10 ... passed=1 failed=0` |
+| `npm run balance:report` | Real engine: 50 seeded sessions to `docs/balance/game-50.csv` and summary | `SUMMARY balance:report seed=0xA1A1 mode=game seeds=50 ... passed=1 failed=0` |
+| `npm run balance:fixture` | Stand-in: 50 synthetic runs in `docs/balance/fixture-50.csv` | `SUMMARY balance:report seed=0xA1A1 mode=fixture seeds=50 ... passed=1 failed=0` |
 
 Every future test must have a fixed seed (use `0xA1A1` where no gameplay seed
 is needed), terminate with one `SUMMARY ...` line, set a nonzero exit code on
@@ -120,3 +124,4 @@ the scene and presents the report. It never mutates the simulation.
 <!-- [task-19] Audio scheduling regression: no browser or AudioContext required. -->
 <!-- [task-17] The additional puzzle-board screenshots are captured as docs/shots/17/board-p.png
 and docs/shots/17/board-l.png after opening the puzzle selector. -->
+<!-- [task-22] Balance harness: production test intentionally fails until 08/09/12 are integrated. -->
