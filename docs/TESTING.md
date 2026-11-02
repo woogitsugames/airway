@@ -104,6 +104,8 @@ Times are measured in the integration container (8 vCPU, SwiftShader); “ci” 
 | `menu` | `/` (PL) | `docs/shots/14/menu-{p,l}.png` | `.airway-board .airway-flight` + 1.1 s flap settle |
 | `gameover` | `/?preview=gameover` | `docs/shots/15/game-{p,l}.png` | `[data-gameover-state="open"]` |
 | `puzzles` | `/` → click `[data-mode="puzzles"]` | `docs/shots/17/board-{p,l}.png` | `.puzzle-departures .puzzle-flap` |
+| `npm run shots:world` | Full world-renderer lab (`dev/world.html?frozen&clean`: globe, airports, hub rings, curfew, routes, planes, preview, overlay) in 412×915 and 915×412 into `docs/shots/render/`; compare with `mockups/diorama/png/game-p.png` | `SUMMARY shots:world seed=0xA1A1 captured=2 failed=0` |
+| `npm run test:render-layers` | Headless (no WebGL) checks: route preview range split on the committed arc, deferred airport ring/curfew rebuild and `clear()`, pooled plane tracks | `SUMMARY test:render-layers seed=0xA1A1 passed=11 failed=0` |
 
 Options: target names to filter (`npm run shots -- menu globe`), `--fold` (adds 673×841 and 904×1000),
 `--lang=pl|en`, `--dpr=1..3`. Default is 412×915 and 915×412 at DPR 1. Each capture fails independently; the summary
