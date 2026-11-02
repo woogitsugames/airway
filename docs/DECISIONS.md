@@ -103,3 +103,19 @@ fingerprint until gameplay models are introduced. Undo removes the newest player
 current tick from a checkpoint strictly before that command. A queued positive `SetSpeed` exposes
 `schedulingSpeed` to wake a paused scheduler without applying a command outside a tick.
 **Status: in force; domain command validation remains with later gameplay tasks.**
+
+## D-20 — Indexed city geography and seeded spawning (2026-11-02, task 05)
+Use a stable, versioned list of 165 real cities. City coordinates are rounded to 0.1 degree;
+population figures are approximate demand weights, not authoritative census totals.
+The build-time generator creates a triangular table of 13,530 integer kilometres
+(great-circle haversine, Earth radius 6,371 km), stored in a `Uint16Array` and checked
+against the city source hash. In the simulation, a conservative 668 km threshold
+ensures no two active city coordinates are closer than 6 degrees without requiring
+trigonometric calculations (D-13). A seed determines an initial 3–4-city cluster
+in one destination region within 3,000 km of its anchor; a new city arrives every
+four game hours, favouring existing nearby nodes until the 40-city MVP cap.
+The original six Diorama destination glyphs and colours remain unchanged. The
+additional Asia (`ASI`, wing) and Oceania (`OCE`, hook) glyphs/colours are provisional
+until the owner approves the visual extension; neither replaces a D-08 glyph.
+**Status: technical implementation proposed; new region visuals require approval.**
+_(renumbered from D-19 during integration, branch `origin/task/05-cities-data`)_

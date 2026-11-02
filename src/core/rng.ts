@@ -105,3 +105,24 @@ export class Rng {
     return new Rng(seedFromString(`airway/rng/v1/${this.initialSeed}/${label.length}:${label}`));
   }
 }
+
+// [integration] Pure helpers used by task 05 (spawner) and task 03 (decorations); same mulberry32 stream as Rng.
+export interface RngStep {
+  readonly value: number;
+  readonly state: number;
+}
+
+/** One mulberry32 step on an explicit state: returns the raw uint32 output and the next state. */
+export function nextRngUint32(state: number): RngStep {
+  const nextState = (state + STEP) >>> 0;
+  let t = nextState;
+  t = Math.imul(t ^ (t >>> 15), t | 1);
+  t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+  return { value: (t ^ (t >>> 14)) >>> 0, state: nextState };
+}
+
+/** Render-time decorative randomness (never used by the simulation). */
+export function createDecorativeRng(seed: number): () => number {
+  const rng = new Rng(seed >>> 0);
+  return () => rng.next();
+}
