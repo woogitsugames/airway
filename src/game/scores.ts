@@ -62,7 +62,7 @@ function emptyState(): StoreState {
 /** A UTC calendar index avoids DST-induced 23/25-hour streak errors. */
 export function dateIndex(dateKey: string): number {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) throw new RangeError('Invalid daily date key');
-  const date = new Date(\`\${dateKey}T00:00:00.000Z\`);
+  const date = new Date(`${dateKey}T00:00:00.000Z`);
   if (!Number.isFinite(date.getTime()) || date.toISOString().slice(0, 10) !== dateKey) {
     throw new RangeError('Invalid daily calendar date');
   }
