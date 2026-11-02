@@ -220,5 +220,23 @@ check('puzzle scenario runs on the real Sim', () => {
   notes.push(`puzzle01:score${sim.world.score}`);
 });
 
+// [night-02] A snapshot taken while aircraft are held for a departure slot (D-41) must resume the hold
+// identically. Puzzle 18's five-spoke Madrid star queues departures every hour on the real Sim.
+check('snapshot during a slot hold restores and continues identically', () => {
+  const routes = [['MAD', 'LIS'], ['MAD', 'BCN'], ['MAD', 'SVQ'], ['MAD', 'VLC'], ['MAD', 'CMN']];
+  const live = createGame(2518, 'puzzle', '18');
+  for (const cityIds of routes) { live.apply({ type: 'AddRoute', cityIds, aircraft: 'turboprop' }); live.tick(); }
+  while (live.world.status === 'running' && live.world.cityView('MAD').slotHeldPlanes === 0) live.tick();
+  assert.ok(live.world.cityView('MAD').slotHeldPlanes > 0, 'no slot hold reached');
+  const heldAt = live.tickCount;
+  const resumed = Sim.fromSnapshot(live.snapshot());
+  assert.equal(resumed.world.cityView('MAD').slotHeldPlanes, live.world.cityView('MAD').slotHeldPlanes);
+  for (let i = 0; i < 600 && live.world.status === 'running'; i++) { live.tick(); resumed.tick(); }
+  assert.equal(resumed.hash(), live.hash());
+  assert.equal(resumed.world.hubCauseLedger('MAD').slotWaitMinutes, live.world.hubCauseLedger('MAD').slotWaitMinutes);
+  assert.equal(Sim.replay(2518, live.getCommandLog(), live.tickCount, { mode: 'puzzle', puzzleId: '18' }).hash(), live.hash());
+  notes.push(`slothold:t${heldAt}:wait${live.world.hubCauseLedger('MAD').slotWaitMinutes}`);
+});
+
 console.log(`SUMMARY test:replay seeds=${SEEDS.length} ticks=${END} passed=${passed} failed=${failed} ${notes.join(' ')}`);
 if (failed) process.exitCode = 1;
