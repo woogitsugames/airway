@@ -238,11 +238,11 @@ function installWorldProbe(renderer: WorldRenderer, framing: () => { first: stri
     framing, // [task-39]
     longitude: () => renderer.orbit.longitudeDeg,
     /** Median WCAG contrast per layer; `tags` is the worst luggage tag against the globe under it. */
-    nightContrast(): Record<string, number | null> {
+    nightContrast(selector = '.airport-bubble'): Record<string, number | null> { // [task-38] selector: slot tags too
       const out: Record<string, number | null> = {};
       for (const [name, value] of Object.entries(renderer.measureLayerContrast())) out[name] = value ? value.ratio : null;
       const canvas = renderer.canvas.getBoundingClientRect();
-      const tags = [...document.querySelectorAll<HTMLElement>('.airport-bubble')].filter((tag) => !tag.hidden && tag.offsetParent);
+      const tags = [...document.querySelectorAll<HTMLElement>(selector)].filter((tag) => !tag.hidden && tag.offsetParent);
       const rects = tags.map((tag) => {
         const r = tag.getBoundingClientRect();
         return { x: r.left - canvas.left, y: r.top - canvas.top, width: r.width, height: r.height };

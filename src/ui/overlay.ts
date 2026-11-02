@@ -2,7 +2,9 @@
 import { Camera, Object3D, Vector3 } from 'three';
 import { t } from '../i18n';
 import { isDestinationRegion as isValidRegion, regionGlyph, type DestinationRegion } from './glyphs';
-import { layoutTags, type TagBounds, type TagSlot } from './overlay-layout';
+import {
+  attachSlotTag, layoutTags, sizeTagGroup, slotCountdownText, type SlotTagRect, type TagBounds, type TagSlot,
+} from './overlay-layout'; // [task-38] slot tag
 import './overlay.css';
 
 const DEG = Math.PI / 180;
@@ -38,6 +40,18 @@ interface BubbleEntry {
   edge: HTMLButtonElement;
   timer: HTMLSpanElement;
   tag: TagSlot;
+  /** [task-38] Departure-slot tag hung under the passenger tag (D-50). */
+  slot: HTMLDivElement;
+  slotLabel: HTMLSpanElement;
+  slotTime: HTMLSpanElement;
+  slotCount: HTMLSpanElement;
+  slotRect: SlotTagRect;
+  slotHeld: number;
+  slotMinutes: number;
+  mainWidth: number;
+  slotVisible: boolean;
+  lastSlotX: number;
+  lastSlotY: number;
   waiting: readonly DestinationRegion[];
   jamSeconds: number | null;
   edgeSide: 0 | 1 | 2 | 3;
@@ -59,8 +73,10 @@ export interface AirportOverlay {
   addAirport(airport: OverlayAirport): void;
   setPassengers(id: string, waiting: readonly DestinationRegion[]): void;
   setJamCountdown(id: string, seconds: number | null): void;
+  /** [task-38] Aircraft held for a departure slot and game minutes to the next slot; held 0 hides the tag. */
+  setSlotHold(id: string, held: number, minutes: number): void;
   update(): void;
-  getPoolStats(): { airports: number; bubbles: number; edgeButtons: number; domElements: number };
+  getPoolStats(): { airports: number; bubbles: number; slotTags: number; edgeButtons: number; domElements: number };
   dispose(): void;
 }
 
@@ -85,6 +101,34 @@ function arrow(): SVGSVGElement {
   svg.appendChild(path);
   return svg;
 }
+
+/** [task-38] Slot mark: a clock face over a runway threshold bar, drawn in currentColor (no emoji). */
+function slotClock(): SVGSVGElement {
+  const svg = document.createElementNS(SVG, 'svg');
+  svg.setAttribute('viewBox', '0 0 16 16');
+  svg.setAttribute('aria-hidden', 'true');
+  svg.classList.add('airport-slot__mark');
+  const face = document.createElementNS(SVG, 'circle');
+  face.setAttribute('cx', '8');
+  face.setAttribute('cy', '7');
+  face.setAttribute('r', '5.2');
+  face.setAttribute('fill', 'none');
+  face.setAttribute('stroke', 'currentColor');
+  face.setAttribute('stroke-width', '1.8');
+  const hands = document.createElementNS(SVG, 'path');
+  hands.setAttribute('d', 'M8 4 V7 H10.6 M2 15 H14');
+  hands.setAttribute('fill', 'none');
+  hands.setAttribute('stroke', 'currentColor');
+  hands.setAttribute('stroke-width', '1.8');
+  hands.setAttribute('stroke-linecap', 'square');
+  svg.append(face, hands);
+  return svg;
+}
+
+/** [task-38] Fixed glyph widths (px) so the layout box matches the CSS width exactly. */
+const SLOT_STUB = 22;
+const SLOT_LABEL_CHAR = 7.4;
+const SLOT_DIGIT = 7.4;
 
 export function createAirportOverlay(host: HTMLElement, camera: Camera, options: AirportOverlayOptions = {}): AirportOverlay {
   const layer = document.createElement('div');
@@ -133,13 +177,37 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
     bubble.classList.toggle('airport-bubble--jam', jammed);
     entry.edge.classList.toggle('airport-edge--jam', jammed);
     entry.tag.jammed = jammed;
-    entry.tag.width = Math.max(30, 23 + limit * 18 + (entry.waiting.length > MAX_GLYPHS ? 27 : 0) + (jammed ? 53 : 0));
+    // [task-38] mainWidth 0 = no passenger tag; the group box also holds the slot tag.
+    entry.mainWidth = entry.waiting.length > 0 || jammed
+      ? Math.max(30, 23 + limit * 18 + (entry.waiting.length > MAX_GLYPHS ? 27 : 0) + (jammed ? 53 : 0)) : 0;
+    sizeTagGroup(entry.tag, entry.mainWidth, entry.slotRect);
     entry.timer.hidden = !jammed;
     if (jammed) {
       const seconds = Math.max(0, Math.ceil(entry.jamSeconds ?? 0));
       entry.timer.textContent = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
     }
     bubble.setAttribute('aria-label', jammed ? t('airport.jammed', { code: entry.airport.code, seconds: Math.ceil(entry.jamSeconds ?? 0) }) : t('airport.waiting', { code: entry.airport.code, count: entry.waiting.length }));
+  }
+
+  /** [task-38] Rebuild the slot tag text only when the held count or the countdown changes. */
+  function rebuildSlot(entry: BubbleEntry): void {
+    const held = entry.slotHeld > 0;
+    if (held) {
+      const label = t('airport.slot.label');
+      const time = slotCountdownText(entry.slotMinutes);
+      const count = entry.slotHeld > 1 ? '\u00d7' + entry.slotHeld : '';
+      entry.slotLabel.textContent = label;
+      entry.slotTime.textContent = time;
+      entry.slotCount.textContent = count;
+      entry.slotCount.hidden = count === '';
+      entry.slotRect.width = Math.ceil(SLOT_STUB + 6 + label.length * SLOT_LABEL_CHAR + 5 + time.length * SLOT_DIGIT +
+        (count ? 4 + count.length * SLOT_DIGIT : 0) + 9);
+      entry.slot.style.width = entry.slotRect.width + 'px';
+      entry.slot.setAttribute('aria-label', t('airport.slotHeld', { code: entry.airport.code, count: entry.slotHeld, time }));
+    } else {
+      entry.slotRect.width = 0;
+    }
+    sizeTagGroup(entry.tag, entry.mainWidth, entry.slotRect);
   }
 
   function edgeLayout(entry: BubbleEntry, dx: number, dy: number): void {
@@ -219,10 +287,29 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       edge.setAttribute('aria-label', t('airport.focus', { code: airport.code }));
       edge.append(arrow(), document.createTextNode(airport.code));
       edge.addEventListener('click', () => options.onNavigate?.(airport.id));
-      layer.append(bubble, edge);
+      // [task-38] Slot tag: stub with the clock mark, "SLOT" label, h:mm countdown, optional ×N.
+      const slot = document.createElement('div');
+      slot.className = 'airport-slot';
+      slot.hidden = true;
+      slot.setAttribute('role', 'img');
+      const stub = document.createElement('span');
+      stub.className = 'airport-slot__stub';
+      stub.appendChild(slotClock());
+      const slotLabel = document.createElement('span');
+      slotLabel.className = 'airport-slot__label';
+      const slotTime = document.createElement('span');
+      slotTime.className = 'airport-slot__time';
+      const slotCount = document.createElement('span');
+      slotCount.className = 'airport-slot__count';
+      slotCount.hidden = true;
+      slot.append(stub, slotLabel, slotTime, slotCount);
+      layer.append(bubble, slot, edge);
       const tag: TagSlot = { id: airport.id, anchorX: 0, anchorY: 0, width: 30, height: 30, active: false, jammed: false, x: 0, y: 0, placed: false };
       const entry: BubbleEntry = {
-        airport, normal, anchor, bubble, edge, timer, tag, waiting: [], jamSeconds: null,
+        airport, normal, anchor, bubble, edge, timer, tag,
+        slot, slotLabel, slotTime, slotCount, slotRect: { width: 0, x: 0, y: 0, visible: false }, slotHeld: 0, slotMinutes: 0,
+        mainWidth: 0, slotVisible: false, lastSlotX: NaN, lastSlotY: NaN,
+        waiting: [], jamSeconds: null,
         edgeSide: 0, edgeX: 0, edgeY: 0, edgePlaced: false, bubbleVisible: false, edgeVisible: false,
         lastBubbleX: NaN, lastBubbleY: NaN, lastEdgeX: NaN, lastEdgeY: NaN, lastEdgeSide: -1, lastOpacity: NaN,
       };
@@ -243,6 +330,15 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       if (entry.jamSeconds === seconds) return;
       entry.jamSeconds = seconds;
       rebuildBubble(entry);
+    },
+    setSlotHold(id, held, minutes): void {
+      const entry = get(id);
+      if (!Number.isSafeInteger(held) || held < 0 || !Number.isFinite(minutes) || minutes < 0) throw new RangeError('Invalid slot hold');
+      const nextMinutes = held > 0 ? Math.ceil(minutes) : 0;
+      if (entry.slotHeld === held && entry.slotMinutes === nextMinutes) return;
+      entry.slotHeld = held;
+      entry.slotMinutes = nextMinutes;
+      rebuildSlot(entry);
     },
     update(): void {
       if (disposed) return;
@@ -280,7 +376,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
         }
         // Only the viewport edge hides a tag; HUD clearance is handled by layoutTags(bounds).
         const inView = front && x >= 10 && x <= width - 10 && y >= 10 && y <= height - 10;
-        entry.tag.active = inView && (entry.waiting.length > 0 || entry.jamSeconds !== null);
+        entry.tag.active = inView && (entry.mainWidth > 0 || entry.slotRect.width > 0); // [task-38]
         entry.tag.anchorX = x;
         entry.tag.anchorY = y;
         entry.edgeVisible = !inView;
@@ -295,17 +391,29 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       distributeEdges();
       for (const entry of entries) {
         const tag = entry.tag;
-        const showBubble = tag.placed;
+        const showBubble = tag.placed && entry.mainWidth > 0; // [task-38] the box may hold only a slot tag
+        attachSlotTag(tag, entry.mainWidth > 0, entry.slotRect);
+        const showSlot = entry.slotRect.visible;
+        if (entry.slotVisible !== showSlot) { updateVisibility(entry.slot, showSlot); entry.slotVisible = showSlot; }
+        if (showSlot && (entry.slotRect.x !== entry.lastSlotX || entry.slotRect.y !== entry.lastSlotY)) {
+          placeEl(entry.slot, entry.slotRect.x, entry.slotRect.y);
+          entry.lastSlotX = entry.slotRect.x;
+          entry.lastSlotY = entry.slotRect.y;
+        }
         if (entry.bubbleVisible !== showBubble) { updateVisibility(entry.bubble, showBubble); entry.bubbleVisible = showBubble; }
-        if (showBubble) {
-          if (tag.x !== entry.lastBubbleX || tag.y !== entry.lastBubbleY) {
+        if (tag.placed) {
+          if (showBubble && (tag.x !== entry.lastBubbleX || tag.y !== entry.lastBubbleY)) {
             placeEl(entry.bubble, tag.x, tag.y);
             entry.lastBubbleX = tag.x;
             entry.lastBubbleY = tag.y;
           }
           const fade = Math.max(.2, Math.min(1, (tag.anchorX - 10) / 28, (width - 10 - tag.anchorX) / 28, (tag.anchorY - 10) / 28, (height - 10 - tag.anchorY) / 28));
           const opacity = Math.round(fade * 10) / 10;
-          if (opacity !== entry.lastOpacity) { entry.bubble.style.opacity = String(opacity); entry.lastOpacity = opacity; }
+          if (opacity !== entry.lastOpacity) {
+            entry.bubble.style.opacity = String(opacity);
+            entry.slot.style.opacity = String(opacity); // [task-38]
+            entry.lastOpacity = opacity;
+          }
         }
         const showEdge = entry.edgeVisible && entry.edgePlaced;
         if (showEdge !== (entry.edge.hidden === false)) updateVisibility(entry.edge, showEdge);
@@ -322,7 +430,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       }
     },
     getPoolStats() {
-      return { airports: entries.length, bubbles: entries.length, edgeButtons: entries.length, domElements: layer.querySelectorAll('*').length };
+      return { airports: entries.length, bubbles: entries.length, slotTags: entries.length, edgeButtons: entries.length, domElements: layer.querySelectorAll('*').length };
     },
     dispose(): void {
       if (disposed) return;

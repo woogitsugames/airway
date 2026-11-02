@@ -13,6 +13,8 @@ export const en = {
   'airport.focus': 'Rotate to {code}',
   'airport.waiting': '{code}: {count} passengers waiting',
   'airport.jammed': '{code}: congestion, {seconds} seconds remaining',
+  'airport.slot.label': 'SLOT', // [task-38]
+  'airport.slotHeld': '{code}: {count} aircraft waiting for a departure slot, next slot in {time}',
   // [task-07] Route drawing, airport-paper ATC hint and route actions.
   'route.aircraft.turboprop': 'turboprop',
   'route.aircraft.widebody': 'widebody aircraft',
