@@ -94,8 +94,9 @@ function eased(progress: number): number {
 
 function entropySeed(): number {
   try {
+    if (!globalThis.crypto?.getRandomValues) return Number.NaN;
     const random = new Uint32Array(1);
-    globalThis.crypto?.getRandomValues(random);
+    globalThis.crypto.getRandomValues(random);
     return random[0] ?? Number.NaN;
   } catch {
     return Number.NaN;
