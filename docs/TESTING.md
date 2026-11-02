@@ -14,7 +14,9 @@ npm run build
 | `npm run typecheck` | Strict TypeScript on app and config | Exit code 0 (tsc is intentionally silent on success) |
 | `npm run test:i18n` | PL/EN dictionary key parity, duplicates, empty values, interpolation placeholders | `SUMMARY test:i18n seed=0xA1A1 files=2 keys=N passed=1 failed=0` |
 | `npm run test:arch` | TS-AST guard: simulation imports only pure modules; no DOM, Capacitor, three.js, wall clock or transcendental Math | `SUMMARY test:arch seed=0xA1A1 files=N passed=1 failed=0` |
-| `npm run test:fast` | `typecheck`, then `test:i18n`, then `test:arch` | Both test summaries and exit code 0 |
+<!-- [task-19] Audio scheduling regression: no browser or AudioContext required. -->
+| `npm run test:audio-sched` | 125 ms lookahead, stable order, voice cap at 4x, immediate mute, pitch | `SUMMARY test:audio-sched seed=0xA1A1 tests=8 passed=8 failed=0` |
+| `npm run test:fast` | `typecheck`, i18n, architecture and audio scheduler | All test summaries and exit code 0 |
 | `npm run build` | `tsc --noEmit && vite build` | Exit code 0; `dist/` output |
 | `npm run shots` | Browser smoke: game canvas at portrait/landscape dimensions | `SUMMARY shots seed=0xA1A1 captured=2 failed=0`; images in `docs/shots/01/` |
 | `npm run mockups` | Preserve stage-0 Diorama and other reference mockup generation | Exit code 0 |

@@ -39,3 +39,10 @@ The game ships `public/fonts/Overpass-400.ttf`, `Overpass-800.ttf`,
 are `public/fonts/OFL-Overpass.txt`, `OFL-OverpassMono.txt`,
 and `OFL-AtkinsonHyperlegibleNext.txt`; each is colocated with the
 fonts it covers. No downloaded graphics are included.
+
+<!-- [task-19] Runtime audio is procedural, with no external sound files. -->
+## Procedural audio (task 19)
+All hub tones, congestion drones, departure-board clicks, paper rustle, luggage-tag
+clicks, stamps and city bells are synthesized at runtime via Web Audio in
+`src/audio/`. The noise buffer is generated from a fixed local seed. No recorded
+samples, licensed sound libraries or downloadable audio files are included.
