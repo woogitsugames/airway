@@ -99,6 +99,7 @@ export const pl = {
   'settings.airportLabels.code': 'Kod',
   'settings.airportLabels.name': 'Nazwa miasta',
   'settings.auto': 'Automatyczna',
+  'settings.saver': 'Oszczędna',
   'settings.low': 'Niska',
   'settings.medium': 'Średnia',
   'settings.high': 'Wysoka',

@@ -81,7 +81,32 @@ export class DailyChallengeMode<TSimulation extends DailySimulation> {
       dateKey, seed, kind, initialHash, simulation, reservation,
     };
     this.active.add(session);
+    this.scores.setActiveRun({ dateKey, kind, attemptId: reservation?.attemptId });
     return { status: 'started', session };
+  }
+
+  /**
+   * [night-07a] Re-attach a daily run restored from the save slot. It stays official only when
+   * the run that was saved is the day's open official attempt (same date, seed and attempt);
+   * otherwise it continues as practice. Null when the seed belongs to neither today nor yesterday.
+   */
+  resume(simulation: TSimulation, seed: number, instant: Date = this.now()): DailySession<TSimulation> | null {
+    const active = this.scores.activeRun();
+    const today = this.seeds.dailyKey(instant);
+    const yesterday = this.seeds.dailyKey(new Date(instant.getTime() - 86_400_000));
+    let dateKey: string | null = null;
+    if (active && this.seeds.dailySeed(active.dateKey) === seed) dateKey = active.dateKey;
+    else dateKey = [today, yesterday].find((key) => this.seeds.dailySeed(key) === seed) ?? null;
+    if (!dateKey) return null;
+    const pending = this.scores.pendingOfficial(dateKey);
+    const official = active?.kind === 'official' && active.dateKey === dateKey && pending !== null &&
+      pending.attemptId === active.attemptId;
+    const session: DailySession<TSimulation> = {
+      dateKey, seed, kind: official ? 'official' : 'practice', initialHash: simulation.hash(), simulation,
+      reservation: official ? pending : null,
+    };
+    this.active.add(session);
+    return session;
   }
 
   /** Accept one result per session; an official result requires its durable reservation. */
@@ -92,6 +117,7 @@ export class DailyChallengeMode<TSimulation extends DailySimulation> {
       ? (session.reservation ? this.scores.finishOfficial(session.reservation, score, weeks, ticket) : null)
       : this.scores.recordPractice(session.dateKey, score, weeks, ticket);
     this.active.delete(session);
+    this.scores.setActiveRun(null);
     return result;
   }
 }

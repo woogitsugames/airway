@@ -48,6 +48,29 @@ await check('an honest finished daily run is accepted with the replayed score', 
   assert.equal(verdict.ok, true, JSON.stringify(verdict));
   assert.equal(verdict.score, honest.claimedScore);
 });
+// [night-07a] A daily run saved mid-game and resumed after an app restart submits the same journal.
+await check('a daily saved and restored mid-run submits the uninterrupted journal', async () => {
+  const { Sim } = await import('../src/sim/sim.ts');
+  const save = await import('../src/game/save.ts');
+  const half = Math.floor(honest.endTick / 2);
+  let sim = Sim.replay(honest.seed, honest.journal.filter(([tick]) => tick <= half), half, { mode: 'daily' });
+  const text = JSON.stringify(save.encodeSave(save.saveSourceFromSim(sim)));
+  const loaded = save.decodeSave(text);
+  assert.equal(loaded.status, 'ok');
+  sim = save.restoreSimFromSave(loaded.save);
+  assert.ok(sim, 'restore failed');
+  let index = honest.journal.findIndex(([tick]) => tick > half);
+  if (index < 0) index = honest.journal.length;
+  while (sim.tickCount < honest.endTick) {
+    const next = sim.tickCount + 1;
+    while (index < honest.journal.length && honest.journal[index][0] === next) sim.apply(honest.journal[index++][1]);
+    sim.tick();
+  }
+  sim.worldValue.clearEvents();
+  const resumed = buildDailySubmission(sim, DAY);
+  assert.deepEqual(JSON.parse(JSON.stringify(resumed)), JSON.parse(JSON.stringify(honest)));
+  assert.equal(verifyDailySubmission(JSON.parse(JSON.stringify(resumed)), [DAY]).ok, true);
+});
 await check('tampering is rejected: score, seed, day, rules, journal, unfinished run', () => {
   const reject = (patch, days = [DAY]) => verifyDailySubmission({ ...honest, ...patch }, days);
   assert.deepEqual(reject({ claimedScore: honest.claimedScore + 1 }), { ok: false, reason: 'score_mismatch' });

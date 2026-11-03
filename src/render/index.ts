@@ -8,7 +8,8 @@ export { GlobeOrbitCamera, clampCameraDpr } from './camera';
 export type { OrbitCameraOptions, OrbitCameraState, SafeAreaInsets, GeoPoint } from './camera';
 export {
   AdaptiveFrameScheduler, chooseQualityPreset, resolveQualityProfile,
-  type QualityPreference, type QualityPreset, type QualityProfile, type FrameCallback,
+  AdaptiveQualityMonitor, adaptiveSteps, frameDue, QUALITY_PREFERENCES, SAVER_MAX_FPS,
+  type AdaptiveStep, type QualityPreference, type QualityPreset, type QualityProfile, type FrameCallback,
 } from './quality';
 export { subsolarLongitudeAt, NOVEMBER_SUBSOLAR_LATITUDE_DEG } from './sun';
 export { latLonToVec3, vec3ToLatLon, normalizeLon, type LonLat } from './globe/geo-math';

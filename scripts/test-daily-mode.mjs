@@ -153,6 +153,57 @@ check('production daily mode runs the real Sim with the Warsaw seed', () => {
   assert(other.initialHash !== a.initialHash, 'next day must differ');
 });
 
+// [night-07a] A daily restored from the save slot keeps its kind.
+check('resumed official run stays official and finishes the reservation', () => {
+  const storage = new MemoryScoreStorage();
+  const s1 = start(game(new LocalScoreService(storage)), 'official', '2026-11-02T08:00:00Z');
+  // App restart: fresh services over the same storage.
+  const scores = new LocalScoreService(storage);
+  const mode = game(scores);
+  const resumed = mode.resume(sim(s1.seed), s1.seed, now('2026-11-02T18:00:00Z'));
+  assert(resumed && resumed.kind === 'official', 'not official');
+  equal(resumed.dateKey, s1.dateKey);
+  equal(resumed.reservation.attemptId, s1.reservation.attemptId);
+  const result = mode.finish(resumed, 210, 3, [0, 1]);
+  assert(result && result.kind === 'official' && result.score === 210, 'official result not recorded');
+  equal(scores.getProgress(s1.dateKey).officialResult.score, 210);
+  equal(scores.activeRun(), null);
+  equal(scores.pendingOfficial(s1.dateKey), null);
+});
+check('practice saved after an abandoned official attempt resumes as practice', () => {
+  const storage = new MemoryScoreStorage();
+  const mode = game(new LocalScoreService(storage));
+  start(mode, 'official', '2026-11-02T08:00:00Z');
+  const practice = start(mode, 'practice', '2026-11-02T09:00:00Z');
+  const resumed = game(new LocalScoreService(storage)).resume(sim(practice.seed), practice.seed, now('2026-11-02T10:00:00Z'));
+  assert(resumed && resumed.kind === 'practice' && resumed.reservation === null, 'practice became official');
+});
+check('resume after midnight still finds yesterday; unknown seeds are not dailies', () => {
+  const storage = new MemoryScoreStorage();
+  const s1 = start(game(new LocalScoreService(storage)), 'official', '2026-11-02T21:00:00Z');
+  const resumed = game(new LocalScoreService(storage)).resume(sim(s1.seed), s1.seed, now('2026-11-03T07:00:00Z'));
+  assert(resumed && resumed.kind === 'official' && resumed.dateKey === s1.dateKey, 'yesterday lost');
+  const empty = game(new LocalScoreService(new MemoryScoreStorage()));
+  equal(empty.resume(sim(12345), 12345, now('2026-11-02T10:00:00Z')), null);
+  // No active record (older save): the day's seed resumes as practice, never ranked.
+  const fresh = new MemoryScoreStorage();
+  const t = start(game(new LocalScoreService(fresh)), 'official', '2026-11-02T08:00:00Z');
+  const scores = new LocalScoreService(fresh);
+  scores.setActiveRun(null);
+  const old = game(scores).resume(sim(t.seed), t.seed, now('2026-11-02T09:00:00Z'));
+  assert(old && old.kind === 'practice', 'unmarked save became official');
+});
+check('a finished official attempt cannot be resumed as official', () => {
+  const storage = new MemoryScoreStorage();
+  const mode = game(new LocalScoreService(storage));
+  const s1 = start(mode, 'official', '2026-11-02T08:00:00Z');
+  mode.finish(s1, 100, 2, []);
+  const scores = new LocalScoreService(storage);
+  scores.setActiveRun({ dateKey: s1.dateKey, kind: 'official', attemptId: s1.reservation.attemptId });
+  const again = game(scores).resume(sim(s1.seed), s1.seed, now('2026-11-02T09:00:00Z'));
+  assert(again && again.kind === 'practice', 'second official result possible');
+});
+
 for (const error of errors) console.error('FAIL ' + error);
 console.log('SUMMARY test:daily-mode seed=0xA1A1 passed=' + passed + ' failed=' + errors.length);
 if (errors.length) process.exitCode = 1;

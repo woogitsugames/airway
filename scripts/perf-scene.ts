@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const require = createRequire(import.meta.url);
 const SEED = '0xA1A1';
-const VALID_PRESETS = new Set(['auto', 'low', 'medium', 'high']);
+const VALID_PRESETS = new Set(['auto', 'saver', 'low', 'medium', 'high']);
 let server;
 let browser;
 let page;
