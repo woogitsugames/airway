@@ -4,12 +4,20 @@ import { boardsForDaily, parseBoardId } from '../../src/net/boards.ts';
 import { verifyDailySubmission, type Verdict } from '../../src/net/submission.ts';
 
 export const TOP_ENTRIES = 50;
+/** [night-09a] D-77: Firestore TTL deletes a board entry this many days after its last write. */
+export const RETENTION_DAYS = 90;
+const DAY_MS = 86_400_000;
+
+/** [night-09a] D-77: the `expireAt` a board entry written at `nowMs` carries (the TTL policy field). */
+export function expiresAt(nowMs: number): number {
+  return nowMs + RETENTION_DAYS * DAY_MS;
+}
 /** Hard request cap before any parsing: a 30-week journal is far below this. */
 export const MAX_REQUEST_BYTES = 512 * 1024;
 
 /** Warsaw days a run may be filed under now: today, and yesterday for late finishes / the offline queue. */
 export function allowedDays(nowMs: number): string[] {
-  return [dailyKey(new Date(nowMs)), dailyKey(new Date(nowMs - 86_400_000))];
+  return [dailyKey(new Date(nowMs)), dailyKey(new Date(nowMs - DAY_MS))];
 }
 
 /** Public, non-identifying call sign from the anonymous uid (FNV-1a, 4 hex digits). */

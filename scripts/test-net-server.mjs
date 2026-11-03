@@ -2,7 +2,8 @@
 // Warsaw midnight, request size cap and the boards an accepted run counts for.
 import './ts-test-loader.mjs';
 import assert from 'node:assert/strict';
-const { allowedDays, callSign, reviewSubmission, validBoardId, MAX_REQUEST_BYTES } = await import('../functions/src/logic.ts');
+import { readFileSync } from 'node:fs';
+const { allowedDays, callSign, reviewSubmission, validBoardId, MAX_REQUEST_BYTES, RETENTION_DAYS, expiresAt } = await import('../functions/src/logic.ts');
 
 let passed = 0;
 let failed = 0;
@@ -28,6 +29,14 @@ check('oversized and malformed requests are refused before replay', () => {
 check('only daily/weekly board ids are valid', () => {
   assert.ok(validBoardId('d-2026-11-03') && validBoardId('w-2026-W45'));
   assert.ok(!validBoardId('boards') && !validBoardId(42) && !validBoardId('d-2026-11-03/../x'));
+});
+// [night-09a] D-77: 90-day retention through a Firestore TTL policy on entries.expireAt.
+check('entries expire 90 days after their write, and the TTL policy is declared', () => {
+  assert.equal(RETENTION_DAYS, 90);
+  assert.equal(expiresAt(Date.UTC(2026, 10, 3)), Date.UTC(2027, 1, 1));
+  const indexes = JSON.parse(readFileSync(new URL('../firestore.indexes.json', import.meta.url), 'utf8'));
+  const ttl = indexes.fieldOverrides.find((item) => item.collectionGroup === 'entries' && item.fieldPath === 'expireAt');
+  assert.ok(ttl?.ttl === true && Array.isArray(ttl.indexes) && ttl.indexes.length === 0, JSON.stringify(ttl));
 });
 console.log(`SUMMARY test:net-server seed=0xA1A1 passed=${passed} failed=${failed}`);
 if (failed) process.exitCode = 1;

@@ -70,6 +70,20 @@ await check('unknown boards and unauthenticated calls are refused', async () => 
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ data: { daily: ids.daily, weekly: ids.weekly } }) });
   assert.equal(response.status, 401);
 });
+// [night-09a] D-77: both board entries carry the TTL field, 90 days after the write (the emulator does not run
+// TTL deletion itself; the policy is declared in firestore.indexes.json). `Bearer owner` is the emulator admin.
+await check('board entries carry expireAt 90 days ahead (TTL, D-77)', async () => {
+  const session = await raw.signIn();
+  const base = 'http://127.0.0.1:8080/v1/projects/demo-airway/databases/(default)/documents';
+  for (const board of [ids.daily, ids.weekly]) {
+    const response = await fetch(`${base}/boards/${board}/entries/${session.uid}`, { headers: { Authorization: 'Bearer owner' } });
+    assert.equal(response.status, 200, `${board} entry readable as admin`);
+    const doc = await response.json();
+    const expireAt = Date.parse(doc.fields?.expireAt?.timestampValue ?? '');
+    const days = (expireAt - Date.now()) / 86_400_000;
+    assert.ok(days > 89.9 && days <= 90, `${board} expireAt ${doc.fields?.expireAt?.timestampValue} (${days.toFixed(3)} d)`);
+  }
+});
 await check('Firestore rules deny direct client reads and writes', async () => {
   const session = await raw.signIn();
   const base = 'http://127.0.0.1:8080/v1/projects/demo-airway/databases/(default)/documents';
