@@ -418,6 +418,68 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
       that copies a plain-text summary (runs, lengths, weeks reached, tutorial finished, dailies played) for the tester
       to paste into feedback — no network, no analytics (D-16). **Area:** `docs/`, `src/ui/logbook/**`, i18n.
 
+### R2 (2026-11-03) — store page & ASO, launch marketing, gameplay depth
+- [ ] R2a **Store shots in Apple and 16:9 sizes** — Apple requires iPhone 1320×2868 (or 1206×2622) and iPad 13"
+      2064×2752; Play's large-screen promotion wants 9:16 or 16:9 (our foldable 4:5 and tablet 3:4 do not qualify).
+      Add device profiles to `scripts/store-shots.mjs`: `iphone` 440×956 @3, `ipad` 1032×1376 @2, `landscape`
+      960×540 @2 (1920×1080, game in landscape HUD); keep the existing three. Update the manifest, contact sheet,
+      `test:store-shots` count and `docs/store/README.md` (which file goes to which console slot). Inspect every PNG.
+      **Area:** platform/scripts (`scripts/store-shots.mjs`, `docs/store/`).
+- [ ] R2b **Store preview video from real play** — `npm run store:video`: the DEV autoplay bot on seed 0xA1A1 played
+      through deterministic steps, frames captured with Playwright screenshots (not screen recording) at 30 fps and
+      encoded with ffmpeg to H.264: iPhone 886×1920, iPad 1200×1600, Play 1080×1920; 20–28 s; gameplay in the first
+      second (route drawn, plane departs, dusk crosses the network, weekly crates, a hub near jam); no text, no music
+      bed beyond game audio (optional), poster frame at 5 s. Output in `docs/store/video/` (git-ignored if > 10 MB,
+      recorded in a manifest). **Area:** platform/scripts. Owner uploads to YouTube (*needs Q-49*).
+- [ ] R2c **Keywords without repeats + Play alt texts** — App Store indexes name + subtitle + keywords together, so
+      `globe`, `routes`, `hub` (EN) and `globus`, `trasy`, `hub` (PL) are wasted. Proposed EN (96 chars):
+      `airline,airport,flight,plane,aircraft,network,transfer,strategy,puzzle,logistics,travel,earth,3d`; PL (≤ 100,
+      check byte vs char count in App Store Connect): `linie lotnicze,lotnisko,lot,samolot,sieć,przesiadka,strategia,logiczna,zagadka,ziemia,podróż,3d`.
+      Rename "captions" in `en.md`/`pl.md` to **Play alt text** (one unique line per screenshot, ≤ 140 chars, no "image
+      of"); note that App Store has no caption field. Consider "puzzle" in the Play short description (80 chars).
+      **Area:** docs (`docs/store/`).
+- [ ] R2d **Play feature graphic 1024×500** — required to publish on Google Play; also the cover of the preview
+      video (play button drawn in the centre). Render it from the real game (store-shot `game` scene at dusk, network
+      centred, wide landscape viewport 1024×500 @1 and @2 then downscale) with the "Airway" wordmark in the game font
+      on the left third; avoid pure black/dark-grey fields (Google's rule — the night scene is unsuitable). Add to
+      `store:shots` checks (exact size, no alpha, centre band not empty) and an alt text (≤ 140 chars) PL/EN.
+      **Area:** platform/scripts + docs (`scripts/store-shots.mjs`, `docs/store/`, `docs/ASSETS.md` if the wordmark is new art).
+- [ ] R2e **Press page on the site** — `site/press.html` (PL/EN, same build and tests as `site/`): fact sheet
+      (developer, platforms, release date placeholder, price "no ads, no purchases" wording, languages, contact),
+      short and long description from `docs/store/`, 8–10 store shots, the R2b video file, logo/wordmark, one ZIP
+      built by `build:site`; no trackers, no forms (D-67 still keeps the site unpublished). `test:site` checks links
+      and that the ZIP exists. **Area:** site (`site/`, `docs/SITE.md`).
+- [ ] R2f **Launch plan document** — `docs/LAUNCH.md` (Polish, owner-facing): timeline from RESEARCH R2 (T−12 weeks
+      closed test + press page; T−10 Apple featuring nomination; T−8 iOS pre-order and Play pre-registration ≤ 90 days,
+      no reward because D-16 has no IAP; T−4 builds to creators under embargo; T launch "Opening week" Apple in-app
+      event; T+6 puzzle update + second event), showcase dates (Big Indie Pitch Mobile 18.01.2027, Digital Dragons
+      2027 TBC), creator list template (name, channel, audience, contact, status), and the rule "never write free/
+      price in event or graphic text". Link it from `docs/RELEASE.md` once R1l exists. **Area:** docs. *Needs Q-48.*
+- [ ] R2g **Choose the home region in Endless** — menu option on the Endless entry: Random (default, today's
+      behaviour) or one of the regions; maps to `Scenario.startCityIds`/spawner centre for the start cluster only.
+      Daily and leaderboards unchanged; the choice is stored in `GameConfig` (save version bump, D-76 replay) and
+      shown on the game-over report and logbook. Bot check: `test:balance` per region, flag regions whose median
+      leaves 10–18 min (D-79). **Area:** sim/content (`src/sim/scenarios.ts`, `src/sim/world.ts`) + UI (menu), i18n.
+      *Needs Q-50.*
+- [ ] R2h **Licence classes (difficulty tiers) for Endless** — class I = today; class II unlocks after reaching week 5
+      once (curfew from week 2, reserve 3 turboprops); class III after week 5 in class II (hub capacity −6, curfew city
+      count +2). Only scenario knobs, no new rules; logbook stores the best week per class; the menu shows the class as a
+      licence stamp. `test:balance` per class (II/III medians reported, not gated). **Area:** sim/content
+      (`src/sim/scenarios.ts`, params) + UI (menu, logbook), i18n. *Needs Q-50.*
+- [ ] R2i **Announced demand surge** — from week 3, one open city per week announces a surge a game day ahead
+      (e.g. ×2 demand from that city for 6 local hours); drawn in the world as a pennant/board at the airport with the
+      local time, and on the edge chip when off-screen. Deterministic via a new RNG stream; versioned params; replay and
+      save-golden tests; bot medians stay in 10–18 min. **Area:** sim (`src/sim/demand.ts`, `spawner.ts`, params) +
+      render/HUD overlay, i18n. *Needs Q-50.*
+- [ ] R2j **Weather front** (post-launch update candidate) — a slow cloud band crossing the globe lowers departure
+      slots by 1 for airports under it; visible hours ahead as a darker deck of the existing Diorama clouds with a
+      shape-coded edge (not colour only). Sim owns the front path (deterministic), render only draws it. Needs perf
+      check on low preset (D-73). **Area:** sim (`src/sim/schedule.ts`, new `weather.ts`) + render (clouds). *Needs Q-50.*
+- [ ] R2k **Weekly contract** — the weekly board shows, beside the three crates, one optional contract (deliver N
+      passengers between two named regions this week); fulfilling it adds a fourth crate next week. Sim tracks it from
+      the ledger; drawn as a freight waybill on the board, progress on the pause sheet. Do after the closed test if
+      testers report "no goal". **Area:** sim (`src/sim/upgrades.ts`, ledger) + UI (weekly board), i18n. *Needs Q-50.*
+
 ## Log
 <!-- one line per finished item: date UTC · item · PR · gate summary -->
 - 2026-11-03 · N1 puzzles 16–30 (D-70) · night/01-puzzles · test:fast 42/42, build ok, e2e:smoke 9/9, ui:matrix 32/32, test:puzzles levels=30 cases=168 failed=0 (merged tree with #40, #42)
