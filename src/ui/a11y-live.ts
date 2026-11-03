@@ -31,7 +31,7 @@ export interface LiveAnnouncer {
   dispose(): void;
 }
 
-/** A hub is "nearly full" from this load; the warning re-arms when it drops below RESET. */
+/** An airport is "nearly full" from this load; the warning re-arms when it drops below RESET. */
 const WARN_RATIO = 0.8;
 const RESET_RATIO = 0.6;
 /** At most one slot-hold message per this many game minutes (one game hour). */
@@ -67,7 +67,7 @@ export function createLiveAnnouncer(host: HTMLElement): LiveAnnouncer {
   function write(target: HTMLElement, text: string): void {
     // Clearing first makes an identical message count as a change for every screen reader.
     target.textContent = '';
-    requestAnimationFrame(() => { if (!disposed) target.textContent = text; });
+    setTimeout(() => { if (!disposed) target.textContent = text; }, 60); // not rAF: frames may stall
   }
   function flush(): void {
     timer = null;
@@ -75,7 +75,7 @@ export function createLiveAnnouncer(host: HTMLElement): LiveAnnouncer {
     for (const priority of ['assertive', 'polite'] as const) {
       const lines = pending[priority].splice(0);
       if (!lines.length) continue;
-      const text = lines.join(' ');
+      const text = lines.map((line) => (/[.!?…]$/.test(line) ? line : line + '.')).join(' ');
       write(priority === 'assertive' ? assertive : polite, text);
       log.push({ priority, text });
       if (log.length > MAX_LOG) log.shift();
@@ -104,7 +104,7 @@ export function createLiveAnnouncer(host: HTMLElement): LiveAnnouncer {
         } else if (jammed.delete(city.id)) {
           say(t('a11y.live.jamCleared', { hub: label }));
         }
-        if (city.hub && city.jamTicksLeft === null) {
+        if (city.capacity > 0 && city.jamTicksLeft === null) {
           if (ratio >= WARN_RATIO && !warned.has(city.id)) {
             warned.add(city.id);
             say(t('a11y.live.busy', { hub: label, waiting: city.waiting.length, capacity: city.capacity }));
@@ -125,7 +125,6 @@ export function createLiveAnnouncer(host: HTMLElement): LiveAnnouncer {
       say(t('a11y.live.upgrade', { week, offers: titles.map(plain).join(', ') }));
     },
     gameOver(hubId, delivered) {
-      pending.assertive.length = 0;
       say(t('a11y.live.gameOver', { hub: airportLabel(hubId, 'name'), score: delivered }));
     },
     get log() { return log; },

@@ -130,15 +130,14 @@
 }
 
 /* [m3] D-55: prefers-reduced-motion stops every CSS animation and transition (incl. screens owned by other
-   modules); end states still apply because the 1 ms run keeps fill-mode `forwards`. JS motion (menu globe,
+   modules); animation end states still apply because the 1 ms run keeps fill-mode `forwards`; transitions are off. JS motion (menu globe,
    split-flap, game-over camera) reads the same media query in its own module. */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 1ms !important;
     animation-delay: 0s !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 1ms !important;
-    transition-delay: 0s !important;
+    transition: none !important; /* not a short duration: `transition-property` defaults to `all` */
     scroll-behavior: auto !important;
   }
 }

@@ -177,7 +177,7 @@ export const en = {
   'a11y.pick': 'Choose {airport}',
   'a11y.live.jam': 'Hub {hub} is jammed. It closes in {seconds} s unless passengers fly out.',
   'a11y.live.jamCleared': 'Hub {hub} is clear again.',
-  'a11y.live.busy': 'Hub {hub} nearly full: {waiting} of {capacity} places taken.',
+  'a11y.live.busy': '{hub} is nearly full: {waiting} of {capacity} places taken.',
   'a11y.live.slotHold': 'Aircraft waiting for a departure slot at {airports}.',
   'a11y.live.upgrade': 'Week {week} complete. Choose one upgrade: {offers}.',
   'a11y.live.upgradeChosen': 'Chosen: {upgrade}.',

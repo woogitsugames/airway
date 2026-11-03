@@ -61,8 +61,11 @@ export function mountScreens(host: HTMLElement, options: ScreensOptions = {}): S
     layer.append(view.element);
     const focus = view.focus ?? view.element.querySelector<HTMLElement>('.airway-settings__back');
     if (next === 'menu') {
+      // [m3] D-55: the menu is rebuilt on return; focus the row with the same test id (e.g. Settings).
+      const sameRow = menuFocus?.dataset.testid
+        ? view.element.querySelector<HTMLElement>(`[data-testid="${menuFocus.dataset.testid}"]`) : null;
       const target = menuFocus && document.contains(menuFocus) ? menuFocus
-        : view.element.querySelector<HTMLElement>('button');
+        : sameRow ?? view.element.querySelector<HTMLElement>('button');
       target?.focus({ preventScroll: true });
     } else focus?.focus({ preventScroll: true });
     options.onScreen?.(next);
