@@ -17,7 +17,7 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 23:52 PASAŻERÓW 29 0 0 0 1×",
+   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 23:48 PASAŻERÓW 29 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
     "routes": 9.38,
@@ -35,7 +35,7 @@
     "meanLuma": 90.5,
     "lumaStd": 79.6,
     "whiteShare": 0,
-    "colours": 335
+    "colours": 340
    }
   },
   {
@@ -46,25 +46,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 23:48 PASAŻERÓW 29 0 0 0 1×",
+   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 23:47 PASAŻERÓW 29 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
     "routes": 9.36,
     "airports": 9.04,
     "planes": 9.5,
-    "tags": 3.48
+    "tags": 1.58
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.474
+    "ratio": 0.475
    },
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 74.2,
+    "meanLuma": 74.3,
     "lumaStd": 67.7,
     "whiteShare": 0,
-    "colours": 337
+    "colours": 330
    }
   },
   {
@@ -79,13 +79,13 @@
    "sun": "180@camera",
    "contrast": {
     "routes": 9.36,
-    "airports": 9.04,
-    "planes": 9.56,
+    "airports": 9.05,
+    "planes": 9.6,
     "tags": 1.56
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.465
+    "ratio": 0.464
    },
    "png": {
     "width": 1536,
@@ -93,7 +93,7 @@
     "meanLuma": 72.3,
     "lumaStd": 65.8,
     "whiteShare": 0,
-    "colours": 331
+    "colours": 335
    }
   },
   {
@@ -104,25 +104,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 16:43 PASAŻERÓW 25 0 0 0 1×",
+   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 16:42 PASAŻERÓW 25 0 0 0 1×",
    "sun": "-70.7@31.2,38.2",
    "contrast": {
-    "routes": 7.52,
+    "routes": 7.53,
     "airports": 6.87,
-    "planes": 7.35,
+    "planes": 7.34,
     "tags": 9.18
    },
    "warmth": {
     "gold": 0.085,
-    "ratio": 1.064
+    "ratio": 1.063
    },
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 107.6,
-    "lumaStd": 73.5,
+    "meanLuma": 107.9,
+    "lumaStd": 73.4,
     "whiteShare": 0,
-    "colours": 604
+    "colours": 606
    }
   },
   {
@@ -133,17 +133,17 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 16:44 PASAŻERÓW 25 0 0 0 1×",
+   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 16:43 PASAŻERÓW 25 0 0 0 1×",
    "sun": "-70.7@31.2,38.2",
    "contrast": {
-    "routes": 7.69,
-    "airports": 7.1,
-    "planes": 7.27,
+    "routes": 7.73,
+    "airports": 7.14,
+    "planes": 7.29,
     "tags": 1.66
    },
    "warmth": {
     "gold": 0.077,
-    "ratio": 1.07
+    "ratio": 1.066
    },
    "png": {
     "width": 1346,
@@ -151,7 +151,7 @@
     "meanLuma": 96.1,
     "lumaStd": 64.5,
     "whiteShare": 0,
-    "colours": 609
+    "colours": 606
    }
   },
   {
@@ -177,7 +177,7 @@
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 93.9,
+    "meanLuma": 93.8,
     "lumaStd": 63,
     "whiteShare": 0,
     "colours": 606
@@ -200,7 +200,7 @@
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.45
+    "ratio": 0.451
    },
    "png": {
     "width": 1080,
@@ -236,7 +236,7 @@
     "meanLuma": 158,
     "lumaStd": 61.5,
     "whiteShare": 0,
-    "colours": 137
+    "colours": 136
    }
   },
   {
@@ -251,7 +251,7 @@
    "contrast": {
     "routes": 9.5,
     "airports": 9.1,
-    "planes": 9.95,
+    "planes": 9.94,
     "tags": 1.58
    },
    "warmth": {
@@ -264,7 +264,7 @@
     "meanLuma": 105.6,
     "lumaStd": 76.4,
     "whiteShare": 0,
-    "colours": 142
+    "colours": 143
    }
   },
   {
@@ -289,10 +289,10 @@
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 148.8,
-    "lumaStd": 92,
+    "meanLuma": 145.9,
+    "lumaStd": 90.6,
     "whiteShare": 0,
-    "colours": 203
+    "colours": 205
    }
   },
   {
@@ -317,10 +317,10 @@
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 124.4,
-    "lumaStd": 85.6,
+    "meanLuma": 123.5,
+    "lumaStd": 86.2,
     "whiteShare": 0,
-    "colours": 201
+    "colours": 199
    }
   },
   {
@@ -345,10 +345,10 @@
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 98.4,
-    "lumaStd": 72.6,
+    "meanLuma": 98.3,
+    "lumaStd": 72.7,
     "whiteShare": 0,
-    "colours": 205
+    "colours": 210
    }
   },
   {
@@ -384,7 +384,7 @@
     "meanLuma": 91.9,
     "lumaStd": 69.8,
     "whiteShare": 0,
-    "colours": 638
+    "colours": 637
    }
   },
   {
@@ -402,7 +402,7 @@
     "meanLuma": 93.4,
     "lumaStd": 69.5,
     "whiteShare": 0,
-    "colours": 666
+    "colours": 668
    }
   },
   {
@@ -418,7 +418,7 @@
    "contrast": {
     "routes": 9.38,
     "airports": 9.03,
-    "planes": 9.61,
+    "planes": 9.6,
     "tags": 11.83
    },
    "warmth": {
@@ -431,7 +431,7 @@
     "meanLuma": 90.5,
     "lumaStd": 79.6,
     "whiteShare": 0,
-    "colours": 339
+    "colours": 340
    }
   },
   {
@@ -446,9 +446,9 @@
    "sun": "180@camera",
    "contrast": {
     "routes": 9.36,
-    "airports": 9.03,
+    "airports": 9.04,
     "planes": 9.5,
-    "tags": 11.33
+    "tags": 3.48
    },
    "warmth": {
     "gold": 0.002,
@@ -457,10 +457,10 @@
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 74.3,
+    "meanLuma": 74.2,
     "lumaStd": 67.7,
     "whiteShare": 0,
-    "colours": 329
+    "colours": 334
    }
   },
   {
@@ -476,7 +476,7 @@
    "contrast": {
     "routes": 9.36,
     "airports": 9.04,
-    "planes": 9.5,
+    "planes": 9.6,
     "tags": 1.56
    },
    "warmth": {
@@ -489,7 +489,7 @@
     "meanLuma": 72.3,
     "lumaStd": 65.8,
     "whiteShare": 0,
-    "colours": 334
+    "colours": 332
    }
   },
   {
@@ -500,17 +500,17 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "WEEK 01 DAY 2/3 TIME 16:43 PASSENGERS 25 0 0 0 1×",
+   "text": "WEEK 01 DAY 2/3 TIME 16:44 PASSENGERS 25 0 0 0 1×",
    "sun": "-70.7@31.2,38.2",
    "contrast": {
-    "routes": 7.38,
-    "airports": 6.77,
-    "planes": 7.37,
+    "routes": 7.54,
+    "airports": 6.89,
+    "planes": 7.34,
     "tags": 9.18
    },
    "warmth": {
-    "gold": 0.086,
-    "ratio": 1.07
+    "gold": 0.085,
+    "ratio": 1.062
    },
    "png": {
     "width": 1080,
@@ -518,7 +518,7 @@
     "meanLuma": 107.7,
     "lumaStd": 73.5,
     "whiteShare": 0,
-    "colours": 606
+    "colours": 604
    }
   },
   {
@@ -532,22 +532,22 @@
    "text": "WEEK 01 DAY 2/3 TIME 16:43 PASSENGERS 25 0 0 0 1×",
    "sun": "-70.7@31.2,38.2",
    "contrast": {
-    "routes": 7.72,
-    "airports": 7.14,
-    "planes": 7.29,
+    "routes": 7.62,
+    "airports": 7,
+    "planes": 7.34,
     "tags": 1.66
    },
    "warmth": {
-    "gold": 0.077,
-    "ratio": 1.068
+    "gold": 0.078,
+    "ratio": 1.073
    },
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 96,
-    "lumaStd": 64.6,
+    "meanLuma": 96.4,
+    "lumaStd": 64.5,
     "whiteShare": 0,
-    "colours": 606
+    "colours": 607
    }
   },
   {
@@ -561,22 +561,22 @@
    "text": "WEEK 01 DAY 2/3 TIME 16:44 PASSENGERS 25 0 0 0 1×",
    "sun": "-70.7@31.2,38.2",
    "contrast": {
-    "routes": 7.88,
-    "airports": 7.26,
+    "routes": 7.84,
+    "airports": 7.25,
     "planes": 7.25,
     "tags": 1.66
    },
    "warmth": {
-    "gold": 0.077,
-    "ratio": 1.061
+    "gold": 0.078,
+    "ratio": 1.059
    },
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 93.7,
+    "meanLuma": 94.1,
     "lumaStd": 63,
     "whiteShare": 0,
-    "colours": 604
+    "colours": 602
    }
   },
   {
@@ -591,7 +591,7 @@
    "contrast": {
     "routes": 9.52,
     "airports": 9.04,
-    "planes": 10.01,
+    "planes": 10,
     "tags": 12.13
    },
    "warmth": {
@@ -619,12 +619,12 @@
    "contrast": {
     "routes": 9.49,
     "airports": 9.09,
-    "planes": 9.96,
-    "tags": 12.26
+    "planes": 9.98,
+    "tags": 12.29
    },
    "warmth": {
     "gold": 0.003,
-    "ratio": 0.48
+    "ratio": 0.479
    },
    "png": {
     "width": 1346,
@@ -632,7 +632,7 @@
     "meanLuma": 158.5,
     "lumaStd": 61.2,
     "whiteShare": 0,
-    "colours": 138
+    "colours": 139
    }
   },
   {
@@ -647,12 +647,12 @@
    "contrast": {
     "routes": 9.5,
     "airports": 9.1,
-    "planes": 9.95,
+    "planes": 10.01,
     "tags": 1.58
    },
    "warmth": {
     "gold": 0.003,
-    "ratio": 0.47
+    "ratio": 0.469
    },
    "png": {
     "width": 1536,
@@ -660,7 +660,7 @@
     "meanLuma": 105.1,
     "lumaStd": 76.3,
     "whiteShare": 0,
-    "colours": 143
+    "colours": 144
    }
   },
   {
@@ -685,10 +685,10 @@
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 144.4,
-    "lumaStd": 90.6,
+    "meanLuma": 141.1,
+    "lumaStd": 89.1,
     "whiteShare": 0,
-    "colours": 202
+    "colours": 205
    }
   },
   {
@@ -713,10 +713,10 @@
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 124.6,
-    "lumaStd": 85.6,
+    "meanLuma": 123.7,
+    "lumaStd": 86.2,
     "whiteShare": 0,
-    "colours": 195
+    "colours": 193
    }
   },
   {
@@ -741,10 +741,10 @@
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 98.6,
-    "lumaStd": 72.7,
+    "meanLuma": 98.5,
+    "lumaStd": 72.8,
     "whiteShare": 0,
-    "colours": 201
+    "colours": 206
    }
   },
   {
@@ -762,7 +762,7 @@
     "meanLuma": 83.1,
     "lumaStd": 69,
     "whiteShare": 0,
-    "colours": 621
+    "colours": 623
    }
   },
   {

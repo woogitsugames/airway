@@ -7,7 +7,9 @@
   place-items: center;
   overflow: auto;
   background: rgba(17, 35, 33, .63);
-  padding: calc(env(safe-area-inset-top, 0px) + 12px)
+  /* [night-07p] Top padding clears the boarding pass (top 10 px + 60 px tall): the final week, day, time and
+     passenger count stay readable under the report instead of being cut by the sign. */
+  padding: calc(env(safe-area-inset-top, 0px) + 80px)
            calc(env(safe-area-inset-right, 0px) + 12px)
            calc(env(safe-area-inset-bottom, 0px) + 12px)
            calc(env(safe-area-inset-left, 0px) + 12px);
@@ -203,7 +205,7 @@
 }
 @media (max-height: 550px) and (min-width: 620px) {
   .airway-go-overlay {
-    padding-top: calc(env(safe-area-inset-top, 0px) + 5px);
+    padding-top: calc(env(safe-area-inset-top, 0px) + 78px);
     padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 5px);
   }
   .airway-go-content {
@@ -222,6 +224,14 @@
   .airway-go-actions { grid-column: 1 / -1; grid-template-columns: 1.6fr 1fr .7fr; }
   .airway-go-same { grid-column: auto; }
   .airway-go-button { min-height: 48px; }
+}
+/* [night-07p] Short portrait phones (360×640): the report still fits below the boarding pass without scrolling. */
+@media (max-height: 700px) and (max-width: 619px) {
+  .airway-go-content { gap: 7px; }
+  .airway-go-sign { min-height: 46px; padding-block: 4px; }
+  .airway-go-board { padding-block: 9px; }
+  .airway-go-strip { padding-block: 10px; }
+  .airway-go-causes-title { margin-top: 10px; padding-top: 6px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .airway-go-flap { animation: none; }
