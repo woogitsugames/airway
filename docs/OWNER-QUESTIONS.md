@@ -18,7 +18,7 @@ Priorytet: **P1** — blokuje wydanie albo sklep, **P2** — warto zdecydować p
 | ID | P | Pytanie | Opcje | Obecnie w grze | Rekomendacja | Źródło |
 |---|---|---|---|---|---|---|
 | Q-01 | P1 | Kto jest administratorem danych (pełna nazwa, adres, kontakt) w polityce prywatności rankingów? | — (dane właściciela) | Puste pole w szkicu `docs/legal/leaderboards-privacy.md` | Podać dane firmy/osoby, która publikuje grę w sklepach | #49, `docs/legal/` |
-| Q-02 | P1 | Jak długo przechowywać wpisy rankingu i jak je usuwać na żądanie? | A: 90 dni + e-mail; B: 90 dni + przycisk „Usuń mój wpis” w ustawieniach; C: bez limitu | Brak automatycznego usuwania (serwer nie ma TTL); szkic mówi „propozycja 90 dni” | A na start (TTL w Firestore to kilka linii), B po wydaniu | #49, `docs/legal/` |
+| Q-02 ✅ D-77 | P1 | Jak długo przechowywać wpisy rankingu i jak je usuwać na żądanie? | A: 90 dni + e-mail; B: 90 dni + przycisk „Usuń mój wpis” w ustawieniach; C: bez limitu | Brak automatycznego usuwania (serwer nie ma TTL); szkic mówi „propozycja 90 dni” | A na start (TTL w Firestore to kilka linii), B po wydaniu | #49, `docs/legal/` |
 | Q-03 | P1 | Co deklarujemy w Data Safety (Google Play) i App Privacy (App Store)? | A: „Identyfikatory: User ID (anonimowy)” + „Dane o grze”; B: nic (gdy rankingi wyłączone w buildzie) | Rankingi wyłączone bez konfiguracji Firebase — build nic nie wysyła | A, gdy rankingi wejdą do wydania | `docs/legal/` |
 | Q-04 | P2 | Ranking tygodniowy: suma wyników dziennych z tygodnia czy najlepszy jeden dzień? | A: suma (nagradza codzienne granie); B: najlepszy dzień | A — suma (D-72, N6b) | A | #48, #49 |
 | Q-05 | P2 | Gracze jako znak wywoławczy z anonimowego id (`AW-7F3A`) czy własny nick? | A: tylko znak; B: nick (wymaga moderacji i filtrów) | A — tylko znak, bez nicków | A w MVP | #48 |
@@ -33,8 +33,8 @@ Priorytet: **P1** — blokuje wydanie albo sklep, **P2** — warto zdecydować p
 | Q-09 | P2 | Ulepszenie „+2 sloty” dla jednego wybranego lotniska czy dla wszystkich? | A: jedno lotnisko (realny wybór); B: globalnie | A — jedno wybrane lotnisko | A | #35 |
 | Q-10 | P3 | Karta „Rozbudowa huba”, gdy nie ma jeszcze huba | A: wyłączona ze stemplem „Brak huba”; B: ukryta i zastąpiona inną kartą | A | A (zawsze zostaje co najmniej samolot do wyboru) | #33 |
 | Q-11 | P2 | Trudność zagadek 16–30: marginesy 25 % → 17 % ponad rozwiązanie wzorcowe — dobre po zagraniu na telefonie? | Łagodniej / tak zostaje / trudniej (liczby w JSON, `targetDelivered`) | Margines maleje od 25 % (16) do 17 % (29–30), D-70 | Zostawić do pierwszego testu na telefonie | #44 |
-| Q-35 | P2 | Szerokokadłubowiec w 1. tygodniu wyraźnie najsilniejszy: bot (N7w) z wymuszonym wyborem przeżywa średnio 21,8 min (WB-300) wobec 15,8 (TP-48), 16,4 („+2 sloty”) i 17,9 (huba) | A: zostawić; B: osłabić WB-300 na start (np. mniej miejsc / dłuższy postój); C: rzadziej w 1. tygodniu | A — parametry bez zmian | A do testu na ludziach; B, jeśli gracze zawsze biorą WB-300 | #76, `npm run test:bot-policy` |
-| Q-36 | P3 | Lepszy bot (wydłuża trasy, gdy brak wolnych samolotów) podniósł medianę sesji z 12,9 do 14,6 min — blisko górnej granicy celu 8–15 min z zadania 31 | A: zostawić cel 8–15; B: cel 10–18 (bot gra już rozsądniej); C: przestroić popyt | A — cel bez zmian, bramka zielona | B (cel mierzy bota, nie gracza) | #76, `docs/balance/game-summary.md` |
+| Q-35 ✅ D-78 | P2 | Szerokokadłubowiec w 1. tygodniu wyraźnie najsilniejszy: bot (N7w) z wymuszonym wyborem przeżywa średnio 21,8 min (WB-300) wobec 15,8 (TP-48), 16,4 („+2 sloty”) i 17,9 (huba) | A: zostawić; B: osłabić WB-300 na start (np. mniej miejsc / dłuższy postój); C: rzadziej w 1. tygodniu | A — parametry bez zmian | A do testu na ludziach; B, jeśli gracze zawsze biorą WB-300 | #76, `npm run test:bot-policy` |
+| Q-36 ✅ D-79 | P3 | Lepszy bot (wydłuża trasy, gdy brak wolnych samolotów) podniósł medianę sesji z 12,9 do 14,6 min — blisko górnej granicy celu 8–15 min z zadania 31 | A: zostawić cel 8–15; B: cel 10–18 (bot gra już rozsądniej); C: przestroić popyt | A — cel bez zmian, bramka zielona | B (cel mierzy bota, nie gracza) | #76, `docs/balance/game-summary.md` |
 
 ## C. Wygląd świata i interfejs
 
@@ -54,7 +54,7 @@ Priorytet: **P1** — blokuje wydanie albo sklep, **P2** — warto zdecydować p
 | Q-23 | P3 | Dzielenie wyrazów: ręczne miękkie dywizy w i18n zamiast `hyphens:auto` | Zostawić / `hyphens:auto` | Ręczne dywizy (D-51) | Zostawić (słowniki w WebView zawodzą) | #40 |
 | Q-24 | P3 | Kropka „·” pożyczona z Atkinson w tekście Overpass zamiast poprawiania fontu | Zostawić / poprawiony TTF (zmiana nazwy fontu, OFL RFN) | Pożyczona kropka (D-51) | Zostawić | #40 |
 | Q-25 | P2 | Glify i kolory regionów Azja (`ASI`, skrzydło) i Oceania (`OCE`, hak) | Akceptuję / do zmiany | Tymczasowe glify z zadania 05 | Akceptować, poprawki po obejrzeniu na telefonie | DECISIONS (task 05, „require approval”) |
-| Q-26 | P2 | Własny kolor linii gracza (statecznik samolotu w kolorze linii)? | A: tak, osobne zadanie z paletą CVD; B: statecznik w kolorze typu | B (PR M1 otwarty) | A w osobnym zadaniu | #52 (otwarty) |
+| Q-26 ✅ D-80 | P2 | Własny kolor linii gracza (statecznik samolotu w kolorze linii)? | A: tak, osobne zadanie z paletą CVD; B: statecznik w kolorze typu | B (PR M1 otwarty) | A w osobnym zadaniu | #52 (otwarty) |
 | Q-27 | P3 | Lista 15 zabytków miast; mniejsze archetypy dla Europy (Rzym, Stambuł)? | Zostawić / dodać | 15 miast (PR M1 otwarty) | Zostawić | #52 (otwarty) |
 | Q-28 | P3 | Kolory dachów lotnisk według regionu | Akceptuję / poprawki | Mapowanie z PR M1 (otwarty) | Akceptować, poprawki po telefonie | #52 (otwarty) |
 

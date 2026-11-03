@@ -138,6 +138,11 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
 - [ ] N7 When the queue is empty: pick the most valuable next improvement from `docs/HANDOVER*.md`, PR "Known issues"
       sections and the forbidden list review of current screenshots; add it here first, then do it.
 
+## Owner decisions 2026-11-03 morning (do these before other N8 polish)
+- [ ] N9a **Leaderboard TTL 90 days (D-77)** — Firestore TTL policy/field + emulator test; privacy draft `docs/legal/` updated (retention + e-mail deletion); `docs/FIREBASE.md` step for enabling TTL.
+- [ ] N9b **Balance target 10–18 min (D-79)** — `test:balance` thresholds and docs.
+- [ ] N9c **Airline colour (D-80)** — settings palette (CVD min ΔE ≥ 15, check with `test:cvd`), applied to tail fin/livery accents. Plane render files belong to the parallel session's M1: check `git log origin/dev -- src/render/planes*` — if M1 is merged, proceed; otherwise do only the settings/palette part and leave a clear render hook.
+
 ## Log
 <!-- one line per finished item: date UTC · item · PR · gate summary -->
 - 2026-11-03 · N1 puzzles 16–30 (D-70) · night/01-puzzles · test:fast 42/42, build ok, e2e:smoke 9/9, ui:matrix 32/32, test:puzzles levels=30 cases=168 failed=0 (merged tree with #40, #42)
