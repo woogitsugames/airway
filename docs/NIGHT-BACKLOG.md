@@ -819,6 +819,60 @@ Evidence: `docs/RESEARCH.md` "R5 — …", PNGs in `docs/research/r5/`.
       `src/platform/install.ts` / `storage.ts` (Vite warns: it is statically imported elsewhere). Optional: serve the
       three fonts as WOFF2 (−~40 %, OFL allows format conversion; update `docs/ASSETS.md`). **Area:** platform/scripts.
 
+### R6 (2026-11-03) — content roadmap, first session on rules v5, haptics/audio on phones
+Evidence: `docs/RESEARCH.md` "R6 — …".
+- [ ] R6a **First-time cards in the real game** — today only the departure slot has a one-time in-game hint
+      (`src/game/tutorial/slot-hint.ts`). Generalise it into a small "first time" registry (one storage key, one
+      flag per card, versioned) and add four cards, each shown once per install, never stopping time except where the
+      game already pauses: first hub ≥ 70 % full ("bypass it or expand it"), first airport beyond turboprop range
+      ("widebody from a crate"), first curfew night (week 4), first weekly board (what a crate is). Text PL/EN,
+      ≤ 2 short sentences, Diorama paper style of the slot hint, 48 dp dismiss, aria-live polite, reduced motion
+      respected. E2E with a seed that triggers every card + a second run that shows none; shots portrait/landscape.
+      **Area:** UI (`src/game/tutorial/**`, `src/game/session.ts`, `src/ui/tutorial/**`), i18n.
+- [ ] R6b **Shorter pre-run training** — the vignette teaches 7 steps before the first real run; upgrade and congestion
+      happen only after 7.2 min (week 1 at 1×). Keep route → aircraft → transfer in the vignette (dawn becomes one
+      sentence on the "Start flying" step), move upgrade and congestion to R6a cards. Bump `TUTORIAL_VERSION` only if
+      the stored step list needs it (completed players must not see it again). `test:e2e:tutorial` and its shots
+      updated; do it in the same PR as R5b (both redraw the tutorial). **Area:** UI (`src/game/tutorial/**`,
+      `src/ui/tutorial/**`), i18n. *Needs Q-63 (B).* Depends on R6a.
+- [ ] R6c **Empty dock tag counts down to the crates** — in week 1 the dock shows "0 / 0 / 0" for 7 minutes. While
+      a tag is empty, its count line reads the arrival of the next weekly board ("crates day 3" / "skrzynie: dzień 3",
+      or "tomorrow"/"jutro" on the last day) from the existing week/day clock; aria text the same. No sim change.
+      Combine with R5d (opaque empty tags). DOM test + shots night/day. **Area:** UI (`src/ui/hud/**`, `hud.css`), i18n.
+- [ ] R6d **Snap haptic actually fires** — `haptic('snap')` calls `Haptics.selectionChanged()` without
+      `selectionStart()`; in `@capacitor/haptics` 8.0.2 both Android (`selectionStarted` guard) and iOS (generator
+      created only by `selectionStart`) ignore it, so the route snap never vibrates. Call `selectionStart()` when a
+      route drag begins and `selectionEnd()` when it ends/cancels (add both to `NativeHapticDriver` and
+      `RouteHaptics`, wire from `src/input/routeTool.ts`), or fall back to `impactLight` outside a drag. Unit test
+      with a recording driver: start → changed×n → end order, toggle off = no calls. Check on one Android + one iPhone.
+      **Area:** platform/input (`src/platform/haptics.ts`, `src/input/routeTool.ts`, test script).
+- [ ] R6e **Android haptics through system constants** (after a budget-phone check) — the plugin plays raw
+      `Vibrator` waveforms (light 50 ms @110, heavy 60 ms @255); Android guidance prefers `HapticFeedbackConstants`
+      and warns that long one-shots feel buzzy. Add a tiny local Capacitor plugin in `android/app` that calls
+      `View.performHapticFeedback`: snap → `CLOCK_TICK`, confirm → `CONFIRM` (API 30+, else `VIRTUAL_KEY`),
+      jam/closed → `REJECT` (API 30+, else `LONG_PRESS`); inject it as the Android `NativeHapticDriver`, iOS
+      unchanged. `test:android-config` asserts the plugin is registered; `docs/ANDROID.md` note. **Area:** platform
+      (native Android, `src/platform/haptics.ts`).
+- [ ] R6f **Puzzle packs without hand-kept lists** — `src/data/puzzles/index.ts` imports 30 JSON files by hand and
+      `scripts/test-puzzles.mjs` hard-codes `LEVELS = 30`. Use `import.meta.glob` (or a generated index) and derive
+      the count from the folder (ids stay contiguous 01…NN, ≤ 99); add `npm run puzzle:report` printing per level:
+      duration at 1×, goal, mechanics, reference margin and star thresholds, so a 5-level pack PR shows its
+      difficulty curve. Board scroll e2e with 35 fake levels. **Area:** content/scripts (`src/data/puzzles/**`,
+      `scripts/test-puzzles.mjs`, `src/ui/puzzles/**` only if a count is hard-coded).
+- [ ] R6g **Content roadmap and store-event texts** — add a "Content after launch" section to `docs/LAUNCH.md`
+      (with R2f; Polish): the T / T+4 / T+8 / T+12 weeks table from RESEARCH R6, one new mechanic per update with its
+      teaching puzzles, and draft PL/EN texts for an Apple In-App Event (name ≤ 30, short ≤ 50, long ≤ 120 chars) and
+      a Play "Major update" promotion (28 days, submit ≤ 60 days ahead, unique art). **Area:** docs. *Needs Q-64.*
+- [ ] R6h **Puzzle pack 31–35 "Long haul"** (then 36–40 in a second PR) — five levels outside Europe that teach
+      widebody range and ocean legs with today's rules only (no new mechanic tags): start cities in the Pacific /
+      South Atlantic, stock with 1–2 widebodies, a `continents` goal in the last one. Each with `referenceCommands`,
+      PL/EN titles, `test:puzzles` green, shots. **Area:** content (`src/data/puzzles/**`, i18n). *Needs Q-64; after R6f.*
+- [ ] R6i **First-session observation sheet** — extends R1o/R3k in `docs/PLAYTEST.md`: what the observer notes in
+      a tester's first 10 minutes (seconds to the first own route on the real globe, did they find the dock, first
+      "nothing to do" moment, what the glyph means, did they open the weekly board without help) plus two device
+      checks: Android — music from another app keeps playing when Airway opens (WebView audio focus, unknown), and
+      the snap/jam vibration on a budget phone (R6d/R6e). **Area:** docs.
+
 ## Log
 <!-- one line per finished item: date UTC · item · PR · gate summary -->
 - 2026-11-03 · N1 puzzles 16–30 (D-70) · night/01-puzzles · test:fast 42/42, build ok, e2e:smoke 9/9, ui:matrix 32/32, test:puzzles levels=30 cases=168 failed=0 (merged tree with #40, #42)

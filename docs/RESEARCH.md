@@ -846,3 +846,143 @@ ryzyka. → R5k (strażnik budżetu zamiast refaktoru).
 ### Czego nie proponuję
 Rozbijanie `startSession` / `boot` / `createAirportOverlay` „dla porządku”: to duże przesunięcia kodu bez testu
 jednostkowego, które zwiększają ryzyko przed testem zamkniętym. Wyjątek to R5h (wydzielenie czystej funkcji z testem).
+
+## R6 — Plan treści na premierę i pierwsze 3 miesiące (stan 2026-11-03)
+
+### Ustalenia
+- **Nie ma wiarygodnego benchmarku „ile poziomów na start”** dla płatnych gier logicznych/strategicznych na
+  telefon. Dostępne są pojedyncze postmortemy: jedna gra wystartowała z 500 poziomami i opisuje typowy model
+  mobilny jako „część treści na premierę, reszta w aktualizacjach, jeśli gra się sprzedaje”
+  ([ModDB, Bardadum](https://www.moddb.com/games/bardadum-the-kingdom-roads/news/500-levels-and-1-teaser)), inna
+  wydała ok. 30 aktualizacji w 2 lata ([Medium, Cinderella Free Fall](https://medium.com/amber-log/cinderella-free-fall-86d4297a3aef)),
+  a postmortem Wolf Toss radzi zaplanować kilka miesięcy pracy po premierze
+  ([Game Developer](https://www.gamedeveloper.com/business/business-post-mortem-wolf-toss-post-launch-tlc-and-tuning)).
+  Wniosek: liczby z innych gier nie przenoszą się na Airway. **NIEPEWNE**; planuję w czasie gry, nie w liczbie
+  poziomów.
+- **Sklepy nagradzają rytm około 4 tygodni.** Apple In-App Events: wydarzenie trwa do 31 dni, promocja do 14 dni
+  przed startem, do 10 opublikowanych naraz, plakietki m.in. *Major Update*, *Challenge*, *Competition*; Apple nie
+  przyjmuje „powtarzalnych aktywności (codzienne zadania)”, więc samo wyzwanie dnia nie wystarczy na wydarzenie
+  ([Apple, In-App Events](https://developer.apple.com/app-store/in-app-events/), dostęp 2026-11-03). Google Play
+  *Promotional content* (dla gier dostępny bez progów): *Major update* trwa stałe 28 dni, zgłoszenie najwcześniej
+  60 dni przed startem, akceptacja do 4 dni, grafiki nie mogą się powtarzać między zgłoszeniami
+  ([Play Console Help](https://support.google.com/googleplay/android-developer/answer/12932541),
+  [Premium growth tools](https://play.google.com/console/about/guides/premium-growth-tools/), dostęp 2026-11-03).
+  Jedna aktualizacja z treścią co ok. 4 tygodnie wystarcza, żeby w obu sklepach zawsze trwało jedno wydarzenie.
+
+### Ile treści Airway ma dziś (stan `dev`)
+- **Zagadki 1–30**: suma `durationTicks` = 128 760 ticków = **ok. 3,6 h przy 1×** dla jednego przejścia bez
+  powtórek (przy 2–4× mniej, z powtórkami i gwiazdkami więcej). 1–15 uczą rdzenia (bez znaczników mechanik),
+  16–30 łączą sloty, ciszę nocną, tydzień i MCT. Na 2–4 sesje po 15–20 min dziennie to ok. 1–2 tygodnie gry.
+- **Wyzwanie dnia**: nieskończone (seed z daty), ale zawsze ten sam scenariusz i reguły.
+- **Endless**: jeden scenariusz (`ENDLESS_SCENARIO`); głębię po 3. godzinie omawia R2 (R2g–R2k, Q-50).
+- Ograniczenia techniczne dla nowych paczek: id zagadki ma 2 cyfry (`/^\d{2}$/`, maks. 99), lista JSON jest
+  importowana ręcznie w `src/data/puzzles/index.ts`, a `scripts/test-puzzles.mjs` ma na sztywno `LEVELS = 30`.
+  Każda zagadka potrzebuje `referenceCommands`, tytułu PL/EN i zrzutów, więc **5 zagadek to rozsądny PR**.
+
+### Proponowana mapa treści (T = premiera; wymaga Q-64, kierunek mechanik z Q-50)
+| Kiedy | Treść | Mapuje się na | Wydarzenie w sklepie |
+|---|---|---|---|
+| T | 30 zagadek, wyzwanie dnia, Endless + region startowy (R2g) + klasy licencji (R2h); przy Q-50 = B także R2i | dziś + R2g/R2h | Premiere / pre-order |
+| T+4 tyg. | Paczka zagadek 31–40 „Daleki zasięg” (szerokokadłubowce, oceany, start poza Europą), poprawki z recenzji | R6h, R6f | Major Update (28/31 dni) |
+| T+8 tyg. | Front pogodowy (R2j) + 5 zagadek, które go uczą (41–45) | R2j | Major Update |
+| T+12 tyg. | Kontrakt tygodnia (R2k) + „niedziela z licencją II” w wyzwaniu dnia (jeden dzień tygodnia z ostrzejszymi pokrętłami scenariusza, ten sam dla wszystkich) | R2k, R2h | Challenge |
+
+Zasady: jedna nowa mechanika na aktualizację i zawsze razem z zagadkami, które jej uczą (uczenie w kontekście,
+patrz R6 — onboarding); żadnych sezonów płatnych ani FOMO (D-16); każda zmiana reguł ma wersję parametrów,
+zapis i powtórkę starych biegów (D-76). Wariant wyzwania dnia zmienia replay po stronie serwera, więc to zmiana
+w `functions/` — dlatego dopiero w T+12, po sprawdzeniu kosztów z R3.
+
+### Rekomendacja
+Rytm „co 4 tygodnie, jedna mechanika + 5–10 zagadek” przez pierwsze 3 miesiące (Q-64 → A). Przed premierą tylko
+narzędzia: R6f (paczki zagadek bez ręcznych list i z raportem trudności) i R6g (plan w `docs/LAUNCH.md`, teksty
+wydarzeń). Pierwsza paczka (R6h) może powstać przed premierą i czekać w gałęzi — daje zapas, gdy premiera
+przyniesie pilne poprawki.
+
+## R6 — Pierwsza sesja przy regułach v5: samouczek i pierwsze 10 minut (stan 2026-11-03)
+
+### Zasady (źródła ogólne, bez kopiowania innych gier)
+- Gracze uczą się najlepiej przez działanie w znaczącym kontekście, a samouczki **wyzwalane przy pierwszym
+  zetknięciu z mechaniką** działają lepiej niż wykład na starcie
+  ([Roblox Creator Docs, Onboarding techniques](https://create.roblox.com/docs/production/game-design/onboarding-techniques),
+  dostęp 2026-11-03: „When players practice actions while learning them, they retain knowledge better”), a
+  odłożenie rzeczy nieistotnych na kolejne sesje zmniejsza to, co trzeba zapamiętać w pierwszej (to samo źródło). Wykład
+  C. Hodent z GDC 2016 o onboardingu ([GDC Vault](https://gdcvault.com/play/1022951/contactUs)) omawia te same
+  błędy, ale jego tekstu nie udało się przeczytać — cytuję tylko temat (**NIEPEWNE**).
+
+### Jak wygląda dziś (kod `dev`)
+1. Pierwsze „Graj” w Endless otwiera **lot szkoleniowy przed biegiem**: winieta 3 miast, 7 kroków
+   (`TUTORIAL_STEPS`: trasa, samolot, przesiadka, świt, ulepszenie, przeciążenie, koniec), potem prawdziwy bieg.
+   Pominięcie i powtórka z ustawień działają.
+2. W prawdziwej grze jest **jedna** podpowiedź „przy pierwszym razie”: slot (`slot-hint.ts`, task 32). Nowe
+   lotnisko ma znacznik NEW (N10a), cisza nocna ma szlaban (N10g/N10h), za daleka trasa — komunikat ATC.
+3. Reguły v5: dzień = 2,4 min przy 1×, tydzień = 7,2 min, nowe lotnisko co 72 s, rezerwa 4 turbośmigłowce.
+   Start w Europie wypada ok. 01:00–02:00 lokalnie (zegar zaczyna od 00:00 UTC; wagi popytu o 02:00 = 15,
+   o 06:00 = 205), czyli pierwsze ~30 s to cicha noc, potem fala świtu.
+
+### Ocena wobec zasad
+- **Krok 5 (ulepszenie) i 6 (przeciążenie) są uczone za wcześnie.** Pierwsza tablica tygodnia przychodzi po
+  7,2 min, a pierwszy hub ≥ 70 % zwykle jeszcze później; w tym czasie gracz rysuje trasy na prawdziwym globusie,
+  który wygląda inaczej niż winieta (R5, Q-62). Uczenie tych kroków na winiecie to wykład przed kontekstem.
+- **Krok 4 (świt) pasuje do startu w Europie** — w prawdziwym biegu fala świtu przychodzi po ok. 30 s, więc to,
+  co samouczek pokazał, od razu się powtarza. Nocny początek nie jest więc wadą rozgrywki, tylko obrazu
+  (pierwszy kadr jest ciemny). Nie proponuję zmiany zegara (to zmiana symulacji i replayu).
+- **Tydzień 1 nie pokazuje, na co gracz czeka.** Dok ma „0 / 0 / 0” przez 7 minut, a jedyna zapowiedź nagrody
+  to licznik dnia „1/3”. Brakuje obrazu „skrzynie przylecą za …” w miejscu, na które gracz patrzy, gdy szuka
+  samolotu.
+- **Mechaniki bez podpowiedzi w grze:** pierwsze lotnisko poza zasięgiem turbośmigłowca (od tygodnia 2), pierwsza
+  cisza nocna (tydzień 4, ok. 22 min — poza medianą sesji, więc w drugiej lub trzeciej sesji), pierwszy hub
+  blisko pełnego. Jest gotowy wzorzec (`slot-hint`) do powielenia.
+
+### Propozycje (testowalne)
+- **R6a** — karty „pierwszy raz” w prawdziwej grze (ten sam mechanizm co slot): pierwszy hub ≥ 70 %, pierwsze
+  lotnisko poza zasięgiem, pierwsza cisza nocna, pierwsza tablica tygodnia. Raz na instalację, nie zatrzymują
+  czasu (poza tablicą, która i tak pauzuje), znikają po akcji. Test: E2E z ziarnem, które wywołuje każdą kartę,
+  i drugi bieg bez kart.
+- **R6b** — krótszy lot szkoleniowy (3 kroki: trasa, samolot, przesiadka + „świt” jako jedno zdanie w biegu);
+  ulepszenie i przeciążenie uczone kartami R6a w chwili, gdy się zdarzają. Mierzalne: liczba wymaganych akcji przed
+  pierwszą trasą na prawdziwym globusie spada z 7 kroków do 3. Wymaga Q-63.
+- **R6c** — pusta przywieszka doku pokazuje odliczanie do skrzyń („skrzynie: dzień 3” / „crates: day 3”) zamiast
+  samego „0”, razem z R5d (nieprzezroczyste puste przywieszki).
+- **R6i** — arkusz obserwacji pierwszej sesji do testu zamkniętego (czas do pierwszej własnej trasy, czy gracz
+  znalazł dok, pierwsza chwila „nie mam nic do roboty”, co znaczy glif) — rozszerza R1o/R3k.
+
+### Rekomendacja
+R6a teraz (UI, bez zmian reguł). R6b po decyzji Q-63 i razem z R5b (oba przerabiają samouczek — jeden PR, nie
+dwa). R6c razem z R5d. Reguł tempa (D-113) nie ruszać przed danymi z testu zamkniętego.
+
+## R6 — Haptyka i dźwięk na telefonie: co robi gra, czego brakuje (stan 2026-11-03)
+
+### Co już jest dobrze (stan `dev`)
+- iOS: `AVAudioSession` w kategorii `.ambient` (`ios/App/App/AppDelegate.swift`) i `navigator.audioSession.type`
+  = `ambient` / `playback` wg ustawienia „graj przy wyciszeniu” (`src/audio/engine.ts`). To zgodne z zachowaniem
+  WebKit: domyślnie Web Audio jest wyciszane przełącznikiem dzwonka, a `playback` je omija
+  ([WebKit Bugzilla 237322](https://bugs.webkit.org/show_bug.cgi?id=237322), [264473](https://bugs.webkit.org/show_bug.cgi?id=264473)).
+- `AudioContext` jest wstrzymywany przy `visibilitychange`/`pagehide`, scheduler nie odtwarza starych zdarzeń po
+  powrocie; haptyka ma przełącznik, jest tylko w warstwie prezentacji (D-13), przeciążenie wibruje raz na
+  przejście, a nie co tick.
+- Słownik zdarzeń jest krótki (zatrzask, potwierdzenie, przeciążenie, koniec sieci) — zgodny z zaleceniem Apple,
+  by haptyka była krótka, spójna i powiązana z dźwiękiem, i nie nadużywana
+  ([Apple HIG, Playing haptics](https://developer.apple.com/design/human-interface-guidelines/playing-haptics), dostęp 2026-11-03).
+
+### Ustalenia — błędy i luki
+1. **Zatrzask (`snap`) nie wibruje na żadnej platformie.** `src/platform/haptics.ts` woła
+   `Haptics.selectionChanged()` bez `selectionStart()`. W `@capacitor/haptics` 8.0.2 Android ignoruje
+   `selectionChanged`, gdy `selectionStarted == false` (`Haptics.java`), a iOS woła generator tylko, jeśli
+   `selectionStart` go utworzył (`Haptics.swift`: `if let generator = self.selectionFeedbackGenerator`). Czyli
+   najczęstsza haptyka gry (dociągnięcie trasy do lotniska) dziś nie działa; test jednostkowy z wstrzykniętym
+   sterownikiem tego nie widzi. → R6d.
+2. **Android: wibracje z surowego `Vibrator`, nie ze stałych systemowych.** Wtyczka gra `LIGHT` = 50 ms przy
+   amplitudzie 110 i `HEAVY` = 60 ms przy 255 (`HapticsImpactType.java`). Wytyczne Androida: preferować
+   `HapticFeedbackConstants` (spójność z systemem, zachowanie zastępcze na słabszych silnikach), unikać
+   jednostrzałowych wibracji, a „mając wybór między brzęczącą haptyką a żadną — wybierz żadną”; dobre kliknięcie
+   trwa 10–20 ms ([Android Developers, Haptics design principles](https://developer.android.com/develop/ui/views/haptics/haptics-principles),
+   dostęp 2026-11-03). Na tanich telefonach z listy R3 60 ms przy pełnej mocy prawdopodobnie brzęczy
+   (**NIEPEWNE**, sprawdzić na urządzeniu). → R6e.
+3. Android i inne aplikacje audio: czy Web Audio w WebView przerywa muzykę z innej aplikacji (audio focus), nie
+   znalazłem w dokumentacji (**NIEPEWNE**). Do sprawdzenia ręcznie w teście zamkniętym (R6i): Spotify gra →
+   otwórz Airway → muzyka powinna grać dalej, jak na iOS (`.ambient`).
+
+### Rekomendacja
+R6d przed testem zamkniętym (mały, pewny błąd). R6e po pierwszym teście na tanim Androidzie — jeśli wibracje
+brzęczą, natywny most do `performHapticFeedback`. Nowych zdarzeń haptycznych nie dodawać (zasada „mniej znaczy
+więcej” obu platform).
