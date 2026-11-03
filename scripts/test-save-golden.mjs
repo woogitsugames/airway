@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 const { createGame, Sim, TICKS_PER_WEEK } = await import('../src/sim/index.ts');
 const { RULES_VERSION } = await import('../src/sim/state.ts');
 const { cityDistanceKm } = await import('../src/data/index.ts');
-const { encodeSave, decodeSave, saveSourceFromSim, restoreSimFromSave, restoreSimDetailed, loadSavedSim, readGame, MAX_REPLAY_TICKS } = await import('../src/game/save.ts');
+const { encodeSave, decodeSave, saveSourceFromSim, restoreSimFromSave, restoreSimDetailed, loadSavedSim, loadSavedSimChecked, readGame, MAX_REPLAY_TICKS } = await import('../src/game/save.ts');
 const { GAME_SAVE_KEY } = await import('../src/platform/storage.ts');
 
 const SEED = 0xA1A1;
@@ -171,6 +171,28 @@ check('loading a migrated save writes it back under the current rules', () => {
 const second = await loadSavedSim(store);
 check('the next load restores directly, without a second replay', () => {
   assert(second && !second.replayed && second.sim.hash() === first.sim.hash(), 'second load must be a plain restore');
+});
+// [night-10c] Why an existing save cannot be continued (menu notice).
+const issueOf = async (text, throwing = false) => {
+  const s = { values: new Map(), async get(k) { if (throwing) throw new Error('blocked'); return this.values.get(k) ?? null; }, async set(k, v) { this.values.set(k, v); }, async remove() {} };
+  if (text !== null) await s.set(GAME_SAVE_KEY, text);
+  return loadSavedSimChecked(s);
+};
+const noSave = await issueOf(null);
+const damaged = await issueOf('{"v":1,"broken');
+const newerEnvelope = await issueOf(JSON.stringify({ v: 99 }));
+const newerRules = await issueOf(JSON.stringify(encodeSave({ ...saveSourceFromSim(restoreSimFromSave(save)), paramsVersion: RULES_VERSION + 1 }, 0)));
+const blocked = await issueOf(null, true);
+const good = await issueOf(golden.save);
+check('save notice: none without a save or with unreadable storage, none for a good save', () => {
+  assert(noSave.restored === null && noSave.issue === null, 'missing save');
+  assert(blocked.restored === null && blocked.issue === null, 'blocked storage must not claim a broken save');
+  assert(good.restored && good.issue === null, 'good save');
+});
+check('save notice: damaged → corrupt, newer envelope or rules → unsupported', () => {
+  assert(damaged.restored === null && damaged.issue === 'corrupt', `damaged ${damaged.issue}`);
+  assert(newerEnvelope.issue === 'unsupported', `newer envelope ${newerEnvelope.issue}`);
+  assert(newerRules.restored === null && newerRules.issue === 'unsupported', `newer rules ${newerRules.issue}`);
 });
 check('tampered golden save is rejected by the checksum', () => {
   const tampered = JSON.parse(golden.save);

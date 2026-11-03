@@ -163,9 +163,8 @@ export const en = {
   'gameover.cause.slotWait': 'Aircraft waited {minutes} {minutes|minute|minutes} on the ground for a departure slot.',
   'gameover.cause.unavailable': 'There is not enough recorded data to identify another cause.',
   // [task-16] Save/load issues are translated by the composition root.
-  'save.error.corrupt': 'The saved game is damaged. A new game has been started.',
-  'save.error.unsupported': 'The save is from a newer game version. A new game has been started.',
-  'save.error.storage-unavailable': 'The saved game could not be read. A new game has been started.',
+  'save.error.corrupt': 'The saved flight is damaged and cannot be continued.', // [night-10c] menu notice
+  'save.error.unsupported': 'The saved flight comes from a newer version of Airway. Update the game to continue it.',
   // [task-20] Accessibility settings, controls and city announcements.
   'a11y.textScale': 'Text size',
   'a11y.enhancedGlyphs': 'Larger destination symbols with thicker outlines',

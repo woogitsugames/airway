@@ -180,6 +180,10 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       one puzzle; "Arrived" vs "Delivered"; PL "Tryb daltonistów" → "Tryb dla daltonistów", "Rozbudowy" → "Rozbudowy
       huba"; the speed button read "Simulation speed: 2x" / "2 razy" → "Game speed: 2×" / "Prędkość gry: 2×".
       Tutorial strings left alone (parallel M2 #88 owns them).
+- [x] N10c **Say why a saved flight vanished** — a damaged save, or one from a newer version, silently lost its
+      Continue row (the `save.error.*` strings existed but were never shown, and claimed "a new game has been
+      started"). The menu now shows a one-line paper notice until the next flight starts; unreadable storage (private
+      window) stays silent, the save itself is kept untouched. `loadSavedSimChecked` in `src/game/save.ts`.
 
 ## Log
 <!-- one line per finished item: date UTC · item · PR · gate summary -->
@@ -228,3 +232,4 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
 - 2026-11-03 · N8f long play-throughs round 3 (2 × 21 min, landscape foldables) · night/08f-long-play-3 · no code; issues=0 in both runs
 - 2026-11-03 · N10a new airport mark · night/10a-new-airport · test:fast 52/52, build ok, e2e:smoke 9/9, ui:matrix 32/32, test:new-airports 5/5, test:e2e:new-airport 4/4 (EN+PL)
 - 2026-11-03 · N10b PL/EN text review · night/10b-text-review · test:fast 52/52, build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:puzzles 34/34, e2e:screens-fit 18/18, e2e:screens-fit-320 12/12
+- 2026-11-03 · N10c saved-flight notice · night/10c-save-notice · test:fast 52/52, build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:daily-continue 7/7, test:save-golden 19/19, test:e2e:save-notice 4/4

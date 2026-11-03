@@ -164,9 +164,8 @@ export const pl = {
   'gameover.cause.slotWait': 'Samoloty czekały na ziemi {minutes} min na slot startowy.',
   'gameover.cause.unavailable': 'Brakuje danych, aby wskazać kolejną przyczynę.',
   // [task-16] Save/load issue messages.
-  'save.error.corrupt': 'Zapis gry jest uszkodzony. Rozpoczęto nową grę.',
-  'save.error.unsupported': 'Zapis pochodzi z nowszej wersji gry. Rozpoczęto nową grę.',
-  'save.error.storage-unavailable': 'Nie udało się odczytać zapisu gry. Rozpoczęto nową grę.',
+  'save.error.corrupt': 'Zapisany lot jest uszkodzony i nie da się go kontynuować.', // [night-10c] menu notice
+  'save.error.unsupported': 'Zapisany lot pochodzi z nowszej wersji Airway. Zaktualizuj grę, aby go kontynuować.',
   // [task-20] Accessibility settings, controls and city announcements.
   'a11y.textScale': 'Rozmiar tekstu',
   'a11y.enhancedGlyphs': 'Większe symbole celów z grubszym konturem',

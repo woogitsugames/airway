@@ -11,6 +11,8 @@ export interface MenuData {
   readonly dailyNew?: boolean;
   /** A resumable saved flight; adds the CONTINUE row on top of the board. */
   readonly saved?: { readonly week: number; readonly passengers: number } | null;
+  /** [night-10c] One-line paper notice under the sign (e.g. a saved flight that cannot be continued). */
+  readonly notice?: string | null;
 }
 export interface MenuHandle {
   readonly element: HTMLElement;
@@ -98,10 +100,17 @@ export function createMenu(onFlight:(mode:MenuMode|'settings')=>void,initial:Men
     items.set(flight.id,{title,gate,status,sub});
   }
   root.append(board,notice);
+  const applyNotice=(data:MenuData):void => {
+    if(data.notice===undefined) return;
+    notice.textContent=data.notice ?? '';
+    notice.hidden=!data.notice;
+  };
+  applyNotice(initial);
   return {
     element:root,
     refresh(data:MenuData=initial):void {
       initial=data;
+      applyNotice(data);
       root.setAttribute('aria-label',t('menu.departures'));
       const headers=header.children;
       (headers[0] as HTMLElement).textContent=t('menu.departures');
