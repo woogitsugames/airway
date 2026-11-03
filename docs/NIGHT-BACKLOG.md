@@ -378,6 +378,15 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       `test:ci`, 0/3 on the old settings), `test:e2e:settings-groups` counts the new row; `test:flap` now loads
       `flap.ts` through the TS test loader. E2E pages keep emulating a reduce-motion system, so their PNGs are
       unchanged except the settings shots.
+- [x] N11h **WebGL context loss and "no WebGL 2" page (R3g, D-118)** — nothing listened to `webglcontextlost`: on a
+      GPU reset the globe froze or went blank while the run kept going underneath. `src/render/contextGuard.ts` keeps
+      the lost state (`preventDefault`, so the browser restores); while lost the renderer draws nothing, the world
+      loop does not call the run's frame hook (same tick and state hash), the blank canvas is hidden and one paper
+      notice (`role="status"`, PL/EN "Graphics are restarting…") stands over the sky; on restore the quality profile,
+      lights and size are re-applied, the notice goes and the run carries on. No WebGL 2 → a plain settings-paper page
+      ("This device's graphics are not supported" + the renderer string for a support mail) instead of a blank sky.
+      `test:webgl-context` (in `test:fast`, 4/8 with the wiring reverted), `e2e/webgl-context.mjs`
+      (`test:e2e:webgl-context`, in `test:ci`, 0/4 on the old code), shots `docs/shots/n11h/`.
 
 ## Continuous development round N12 (agent 2)
 - [x] N12a **Balance bot plays for reach (D-90)** — the handover gap "the DEV bot rarely connects new airports; long
@@ -669,7 +678,7 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
       `src/render/quality.ts` maps Mali-G52/G57/G68 MC1–MC2, Mali-T8xx, PowerVR GE83xx, Adreno 5xx/610/613 to `low`
       (explicit choice and remembered adaptation still win). Unit cases in the quality test for each family plus
       "unknown string → today's rule". **Area:** render (`src/render/quality.ts`).
-- [ ] R3g **WebGL context loss and "no WebGL 2" screen** — no `webglcontextlost`/`webglcontextrestored` handling exists.
+- [x] R3g → N11h **WebGL context loss and "no WebGL 2" screen** — no `webglcontextlost`/`webglcontextrestored` handling exists.
       On loss: pause the game clock (as on `document.hidden`), keep the sim, show a short in-world notice; on restore:
       re-apply the quality profile and redraw. If `WebGLRenderer` cannot be created (no WebGL 2), show a plain PL/EN page
       ("This device's graphics are not supported", with the device's renderer string) instead of a blank canvas. E2E:
@@ -827,4 +836,5 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
 - 2026-11-03 · N12l Android per-app language (R1d, D-115) · night/12l-android-locales · test:android-config 22/22 (21/22 on the old manifest), aapt2 link ok (android-36, minSdk 24), test:fast 66/66, build ok; no device run (WebView `navigator.languages` under a per-app locale unverified); e2e/ui:matrix not run (no web code changed)
 - 2026-11-03 · N12m budget GPUs start on the low preset (R3f, D-116) · night/12m-gpu-preset · test:quality 95/95 (57 before; on the old quality.ts 19 of the new checks fail and the probe check throws: no `readGpuRenderer`), renderer probe checked in headless Chromium (SwiftShader string read, probe context lost after), test:fast 66/66, build ok; perf:scene not run (it forces `--preset`, SwiftShader is not in the table), e2e/ui:matrix/store:shots not run (SwiftShader keeps the old rule); table not verified on the phones themselves
 - 2026-11-03 · N12n Play feature graphic 1024×500 (R2d, D-117) · night/12n-feature-graphic · store:feature 1/1 (centre luma std 62.1, 506 colours, dark share 0.038, 297,787 bytes; PNG inspected), test:store-shots fields 12 → 14 + feature=1 (fails on the old repo state: no feature graphic, no alt-text field), test:fast 66/66, build ok; store:shots not re-run (store scenes unchanged), e2e/ui:matrix not run (DEV probe only); PNG not byte-identical between runs (SwiftShader)
+- 2026-11-03 · N11h WebGL context loss + no-WebGL-2 page (D-118) · night/11h-webgl-loss · test:fast 67/67 (test:webgl-context 8/8, 4/8 with the wiring reverted), build ok, test:e2e:webgl-context 4/4 (0/4 on the old code); e2e:smoke/ui:matrix not run (game screens unchanged unless the context is lost)
 - 2026-11-03 · N12p Play OpenGL ES 3.0 device filter (R3h, D-124) · night/12p-gles3-filter · test:android-config 23/23 (22/23 on the old manifest), aapt2 link ok + `dump badging` uses-gl-es 0x30000 (android-36, minSdk 24, manifest without resource refs), test:fast 66/66, build ok; minSdk unchanged (Q-54); no Play Console device-catalogue check; e2e/ui:matrix/store:shots not run (no web code changed)

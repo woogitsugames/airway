@@ -131,6 +131,7 @@ imports only) and never mutates state. The game composition root adapts sim snap
 | `setTime(tick, fraction)` / `setSun(lon, lat)` | frame | day/night terminator, city lights, exposure |
 | `setRoutePreview(model \| null)` | pointer move | structurally `RoutePreviewModel` from `src/input/routeTool.ts` |
 | `render(alpha, dtSeconds)` | every frame | `alpha` = tick accumulator fraction; camera inertia, plane interpolation; [night-04] terrain LOD/chunk culling, battery-saver 30 fps cap (returns `false` on a skipped frame, dt carries over), adaptive quality (D-73) |
+| `contextLost()` / `onContextChange(fn)` | [night-11h] D-118 | true while the WebGL context is lost (`render` and `drawModelPreview` draw nothing); listeners get `true` on loss and `false` after the restore re-applied quality and size; `game/world.ts` holds the run's frame hook and shows the notice |
 | `pick(x, y)` | tap | `{kind:'city', id}` within 28 dp, else `{kind:'globe', lon, lat}`, else `null` |
 | `pickGlobe(x, y)` | route tool `cursorGeo` | analytic sphere hit |
 | `project(lon, lat, alt, out)` | HTML overlay, per frame | writes `{x, y, visible}` into `out`; no allocation |

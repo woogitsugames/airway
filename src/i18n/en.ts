@@ -2,6 +2,11 @@
 export const en = {
   'app.title': 'Airway',
   'canvas.label': 'Airway game world',
+  'gl.lost': 'Graphics are restarting. The game waits and carries on by itself.',
+  'gl.unsupported.title': 'This device’s graphics are not supported',
+  'gl.unsupported.body': 'Airway draws its globe with WebGL 2, which this device or its web view does not offer. Updating the system and Android System WebView (or Chrome) may help.',
+  'gl.unsupported.renderer': 'Graphics: {renderer}',
+  'gl.unsupported.mail': 'If you write to us, please quote that line.',
   'status.loading': 'Loading',
   'status.ready': 'Ready',
   'language.english': 'English',
