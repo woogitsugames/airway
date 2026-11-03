@@ -1,12 +1,6 @@
 // [task-14] Reproducible Unicode split-flap regression tests, fixed seed 0xA1A1.
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
-import { createRequire } from 'node:module';
-const require=createRequire(import.meta.url);
-const ts=require('typescript');
-const source=readFileSync(resolve('src/ui/flap.ts'),'utf8');
-const compiled=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText;
-const { splitFlapCells,planFlapChange,FLAP_DURATION_MS }=await import('data:text/javascript;charset=utf-8,'+encodeURIComponent(compiled));
+// [night-11g] flap.ts imports ./motion now, so it loads through the TS test loader instead of a data: URL.
+const { splitFlapCells,planFlapChange,FLAP_DURATION_MS }=await import('../src/ui/flap.ts');
 let passed=0,failed=0;
 const check=(name,condition)=>{if(condition){passed++;}else{failed++;console.error('FAIL '+name);}};
 try {

@@ -127,6 +127,8 @@ export const pl = {
   'settings.music': 'Muzyka',
   'settings.haptics': 'Wibracje',
   'settings.colorblind': 'Tryb dla daltonistów',
+  'settings.reduceMotion': 'Ogranicz ruch',
+  'settings.reduceMotion.hint': 'Globus w menu stoi, kamera przeskakuje zamiast płynąć, tablice zmieniają się bez klapek. Dopóki tego nie zmienisz, działa jak w systemie.',
   'settings.on': 'WŁ.',
   'settings.off': 'WYŁ.',
   'settings.licenses': 'ZASOBY I LICENCJE',

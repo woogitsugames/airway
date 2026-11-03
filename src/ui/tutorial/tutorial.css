@@ -73,7 +73,7 @@
 .aw-settings-dialog h2 { font: 800 20px Overpass,sans-serif; margin: 0 0 12px; }
 .aw-settings-dialog button { min-height: 50px; display: block; width: 100%; background: #2c2f32; border: 1px solid #9ba19e; color: #fbf8f1; margin-top: 7px; font-weight: 700; }
 @keyframes aw-route-guide { to { stroke-dashoffset: -44; } }
-@media (prefers-reduced-motion: reduce) { .aw-guide { animation: none !important; } .aw-night-wash, .aw-tutorial-world { transition: none !important; } }
+:root[data-airway-motion="reduce"] .aw-guide { animation: none !important; } :root[data-airway-motion="reduce"] .aw-night-wash, :root[data-airway-motion="reduce"] .aw-tutorial-world { transition: none !important; } /* [night-11g] D-88 */
 @media (max-height: 590px) and (min-width: 660px) {
  .aw-tutorial-stage { grid-template-columns: minmax(180px, 220px) minmax(220px, 1fr) minmax(160px, 215px); grid-template-rows: minmax(0,1fr); gap: 7px; padding: calc(env(safe-area-inset-top, 0px) + 5px) calc(env(safe-area-inset-right, 0px) + 7px) calc(env(safe-area-inset-bottom, 0px) + 5px) calc(env(safe-area-inset-left, 0px) + 7px); }
  .aw-tutorial-ticket { grid-column: 1; flex-direction: column; height: auto; max-height: 168px; align-self: start; }

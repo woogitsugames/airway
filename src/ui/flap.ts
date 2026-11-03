@@ -1,4 +1,5 @@
 // Airport split-flap mechanics. All calculations are made on Unicode code points.
+import { reducedMotion } from './motion'; // [night-11g] D-88
 export const FLAP_DURATION_MS = 76;
 export const FLAP_STAGGER_MS = 24;
 
@@ -75,7 +76,7 @@ export class SplitFlap {
   }
 
   private isReducedMotion(): boolean {
-    return typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    return reducedMotion(); // [night-11g] D-88: the game's switch, defaulting to the system
   }
 
   private schedule(action: () => void, delay: number): void {

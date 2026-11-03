@@ -323,10 +323,9 @@
   .airway-go-strip { padding-block: 8px; }
   .airway-go-causes-title { margin-top: 6px; padding-top: 4px; }
 }
-@media (prefers-reduced-motion: reduce) {
-  .airway-go-flap { animation: none; }
-  .airway-go-button:active { translate: none; }
-}
+/* [night-11g] D-88: the game's "Reduce motion" switch (default: the system). */
+:root[data-airway-motion="reduce"] .airway-go-flap { animation: none; }
+:root[data-airway-motion="reduce"] .airway-go-button:active { translate: none; }
 /* [night-10e] Daily share: a punch-through button on the paper strip, the outcome beside it. */
 .airway-go-share {
   display: flex;

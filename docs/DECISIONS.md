@@ -663,3 +663,19 @@ portrait phones, ≤ 550 px landscape) the tip keeps only the leading cause, so 
 scrolling. Rationale: the report said why the network closed, not what to change (RESEARCH R1, R1j); ten flights
 teach the four upgrades, after that the tip would be noise. **Status: in force (N11f, `test:gameover-tip`,
 `test:e2e:gameover-tip`).**
+
+## D-88 — "Reduce motion" is a game setting that starts at the system's (2026-11-03, Claude, night N11g)
+Settings → Display gains "Reduce motion / Ogranicz ruch" (switch, ≥ 48 px, one hint line). Until the player touches it
+the game follows the system `prefers-reduced-motion` (and later system changes); the first touch stores
+`reduceMotion` in `airway.settings` and from then on the player's choice wins both ways. One helper,
+`reducedMotion()` in `src/ui/motion.ts`, answers for everything that moves on its own: the split-flap cascade
+(boards change at once), the game-over camera (cuts to the jammed hub instead of the 0.6 s pan), the menu globe
+turn (D-62: 0°/s), and every CSS animation and transition through the root attribute
+`data-airway-motion="reduce|full"` (stamp-ins, NEW stub, jam pulse, upgrade slip, tutorial guide, HUD transitions).
+No other module or stylesheet reads the media query (`test:motion`), otherwise an explicit "off" on a reduce-motion
+system could not bring a flap back. Direct manipulation stays: the globe still follows the finger and keeps the
+short flick inertia, planes still fly (they are the game state, not decoration). Rationale: R1h; Apple's "Reduced
+Motion" label needs an in-app control or full system support, and a player whose phone has no such switch (many
+Android skins hide it) can now still the game. Rejected: a three-way "system / on / off" select (one more control
+for a choice the hint explains), a catch-all `* { animation: none }` rule (changes the timing of every screen and
+e2e suite at once). **Status: in force (N11g, `test:motion` 8 cases, `test:e2e:reduce-motion` 3 cases).**

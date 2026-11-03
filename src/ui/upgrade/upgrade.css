@@ -272,4 +272,4 @@
 }
 
 @keyframes airway-slip { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
-@media (prefers-reduced-motion: reduce) { .airway-upgrade { animation: none; } .airway-upgrade-tag { transition: none; } }
+:root[data-airway-motion="reduce"] .airway-upgrade { animation: none; } :root[data-airway-motion="reduce"] .airway-upgrade-tag { transition: none; } /* [night-11g] D-88 */

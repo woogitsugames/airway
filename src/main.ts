@@ -28,6 +28,7 @@ import { createWorld, type World } from './game/world';
 import { getLanguage, setPseudoLocale, t } from './i18n';
 import { configureHaptics, createDefaultStorage, createNativeInstallMarker, forgetIdentityOnNewInstall, GameLifecycle, shareDailyResult, type KeyValueStorage } from './platform';
 import { initializeAccessibility } from './ui/a11y';
+import { initializeMotion } from './ui/motion';
 import { readBestRecord } from './ui/gameover/storage';
 import { mountPuzzleSelector, readPuzzleProgress } from './ui/puzzles';
 import { onSettingsChange, readSettings } from './ui/settings/settings';
@@ -40,6 +41,7 @@ if (!mount) throw new Error('Missing #app mount point');
 const app: HTMLElement = mount;
 document.documentElement.lang = getLanguage();
 initializeAccessibility();
+initializeMotion(); // [night-11g] D-88
 document.title = t('app.title');
 const query = new URLSearchParams(location.search);
 /** [task-36] Ticks of autoplay before a store scene is lit (game, night, failure). */

@@ -4,6 +4,7 @@
 import { getLanguage, setLanguage, t, type Language, type TranslationKey } from '../../i18n';
 import { QUALITY_PREFERENCES, type QualityPreference } from '../../render';
 import { readAccessibilitySettings, updateAccessibilitySettings, type TextScale } from '../a11y';
+import { reducedMotion, setReducedMotion } from '../motion';
 import { readAirportLabelMode, type AirportLabelMode } from '../airportLabel';
 import { AIRLINE_COLOURS, airlineColourHex, applyAirlineColour, isAirlineColour, readAirlineColour, type AirlineColourId } from '../airlineColour';
 import '../menu/menu.css';
@@ -20,6 +21,8 @@ export interface UserSettings {
   airportLabels: AirportLabelMode;
   /** [night-09c] D-80: the player's airline colour (tail fin, livery accents, boarding pass band). */
   airlineColour: AirlineColourId;
+  /** [night-11g] D-88: still the game's own motion; the system setting until the player changes it. */
+  reduceMotion: boolean;
 }
 const KEY='airway.settings';
 type LocalField='sound'|'music'|'graphics'|'airportLabels'|'airlineColour';
@@ -47,6 +50,7 @@ export function readSettings():UserSettings {
     textScale:a11y.textScale,
     airportLabels:readAirportLabelMode(),
     airlineColour:readAirlineColour(),
+    reduceMotion:reducedMotion(),
   };
 }
 
@@ -58,6 +62,7 @@ export function saveSettings(change:Partial<UserSettings>):UserSettings {
   if(change.colorblind!==undefined) a11y.enhancedGlyphs=change.colorblind;
   if(change.textScale!==undefined) a11y.textScale=change.textScale;
   if(Object.keys(a11y).length) updateAccessibilitySettings(a11y);
+  if(change.reduceMotion!==undefined) setReducedMotion(change.reduceMotion);
   const local:Partial<Record<LocalField,boolean|QualityPreference|AirportLabelMode|AirlineColourId>>={};
   if(change.sound!==undefined) local.sound=change.sound;
   if(change.music!==undefined) local.music=change.music;
@@ -130,7 +135,7 @@ export function createSettings(onBack:()=>void,onLicenses:()=>void,onLanguageCha
     controlHost.append(select);host.append(outer);
     return outer;
   }
-  function switchField(label:string,value:boolean,setting:'sound'|'music'|'haptics'|'colorblind',testId:string):void {
+  function switchField(label:string,value:boolean,setting:'sound'|'music'|'haptics'|'colorblind'|'reduceMotion',testId:string):void {
     const {outer,controlHost}=row(label);
     const wrap=e('label','airway-setting__switch');
     const input=e('input','');input.type='checkbox';input.checked=value;
@@ -170,6 +175,8 @@ export function createSettings(onBack:()=>void,onLicenses:()=>void,onLanguageCha
   });
   switchField(t('settings.colorblind'),values.colorblind,'colorblind','settings-colorblind');
   host.append(e('p','airway-setting__hint',t('a11y.enhancedGlyphs')));
+  switchField(t('settings.reduceMotion'),values.reduceMotion,'reduceMotion','settings-reduce-motion');
+  host.append(e('p','airway-setting__hint',t('settings.reduceMotion.hint')));
   group(t('settings.group.sound'),'settings-group-sound');
   switchField(t('settings.sound'),values.sound,'sound','settings-sound');
   switchField(t('settings.music'),values.music,'music','settings-music');

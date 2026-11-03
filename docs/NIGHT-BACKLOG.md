@@ -366,6 +366,19 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       48–64 px otherwise). Pure `src/game/gameoverTip.ts` + `test:gameover-tip` (in `test:fast`), DEV preview shows the
       tip, `e2e/gameover-tip.mjs` (`test:e2e:gameover-tip`, in `test:ci`; 1/4 on the old report).
 
+- [x] N11g **"Reduce motion" setting in the game (R1h, D-88)** — only the split-flap, the game-over board and a few
+      stylesheets read `prefers-reduced-motion`, each on its own, and a player could not choose. Settings → Display
+      gains "Reduce motion / Ogranicz ruch" (switch ≥ 48 px + one hint line). It starts at the system setting (and
+      follows system changes) until the player touches it; the choice is saved in `airway.settings` and wins both
+      ways. One helper `reducedMotion()` (`src/ui/motion.ts`) now drives the split-flap cascade, the game-over camera
+      (cut instead of the pan), the menu globe turn (D-62 → 0°/s) and, through the root attribute
+      `data-airway-motion`, every CSS animation (stamp-in, NEW stub, jam pulse, upgrade slip, tutorial guide, HUD
+      transitions); no stylesheet reads the media query itself any more. Globe drag/flick and flying planes stay.
+      `test:motion` (in `test:fast`, 0/8 on the old code), `e2e/reduce-motion.mjs` (`test:e2e:reduce-motion`, in
+      `test:ci`, 0/3 on the old settings), `test:e2e:settings-groups` counts the new row; `test:flap` now loads
+      `flap.ts` through the TS test loader. E2E pages keep emulating a reduce-motion system, so their PNGs are
+      unchanged except the settings shots.
+
 ## Continuous development round N12 (agent 2)
 - [x] N12a **Balance bot plays for reach (D-90)** — the handover gap "the DEV bot rarely connects new airports; long
       plays end in weeks 1–3": measured, 34 of 44 bot game overs (50 seeds) were at an airport no route served, 20 of
@@ -436,7 +449,7 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
       first launch to preset `textScale` (explicit choice still wins), add a 150% step where layouts allow; run
       `ui:matrix` and `screens-fit` at 150% and fix overflow. Do not claim Apple's "Larger Text" label (needs ≥ 200%).
       **Area:** `src/ui/settings/**`, `src/ui/a11y.ts`, `src/platform/**`, CSS.
-- [ ] R1h **"Reduce motion" setting in the game** — today only the flap and game-over read
+- [x] R1h → N11g **"Reduce motion" setting in the game** — today only the flap and game-over read
       `prefers-reduced-motion`. A settings switch (default from the OS) that also stills the menu globe rotation, camera
       fly-tos (cut instead of pan), stamp-ins and the new-airport stub; one `reducedMotion()` helper used everywhere.
       Prerequisite for declaring Apple's "Reduced Motion" label. **Area:** `src/ui/**`, `src/render/camera*`, settings,
