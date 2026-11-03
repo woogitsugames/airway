@@ -9,6 +9,7 @@ import {
   contrastRatio, relativeLuminance, insetsFromLayout, menuFraming, solveZoomForRadius, menuSpinRate, type LayoutRect,
 } from '../render'; // [task-34] [task-39] menuSpinRate
 import { cityByCode } from '../data'; // [task-34]
+import { t } from '../i18n'; // [night-11h]
 import { forgetAdaptiveSteps, readAdaptiveSteps, writeAdaptiveSteps } from './adaptiveMemory'; // [night-07b]
 import { reducedMotion } from '../ui/motion'; // [night-11g] D-88
 
@@ -47,6 +48,8 @@ export interface World {
   reset(): void;
   /** [night-11a] An opaque full-screen page (settings, logbook, puzzles, tutorial) hides the globe: stop drawing it. */
   setCovered(covered: boolean): void;
+  /** [night-11h] D-118: the WebGL context is lost; the run is held and a notice says so. */
+  contextLost(): boolean;
   /** Per-frame hook: advance the run, return the authoritative tick and accumulator fraction. */
   onFrame(callback: ((dtSeconds: number) => FrameState | void) | null): void;
   dispose(): void;
@@ -176,6 +179,9 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
     const dt = Math.min(0.1, Math.max(0, (now - last) / 1000));
     last = now;
     if (covered && !frameCallback) return; // a running game always draws (no page covers it)
+    // [night-11h] D-118: no GPU context, no frame. The run is not advanced either (same as a hidden tab): the frame
+    // hook is the run's only clock, so the network waits under the notice instead of jamming unseen.
+    if (renderer.contextLost()) return;
     // [task-39] A layout change since the last frame is framed before drawing, never one frame late.
     if (measureRaf) { cancelAnimationFrame(measureRaf); measure(); }
     // [task-39] First menu show: hold the globe until the sign and board are laid out (bounded).
@@ -198,12 +204,33 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
     drawn++;
   };
   raf = requestAnimationFrame(loop);
+  // [night-11h] D-118: one paper strip over the globe while the graphics restart; the HUD stays readable.
+  let glNotice: HTMLElement | null = null;
+  const stopContextWatch = renderer.onContextChange((lost) => {
+    // The lost drawing buffer paints blank white; hide it so the sky behind the canvas shows under the notice.
+    canvas.style.visibility = lost ? 'hidden' : '';
+    if (lost && !glNotice) {
+      glNotice = document.createElement('div');
+      glNotice.className = 'airway-notice airway-gl-notice';
+      glNotice.dataset.testid = 'gl-lost-notice';
+      glNotice.setAttribute('role', 'status');
+      glNotice.textContent = t('gl.lost');
+      host.append(glNotice);
+    } else if (!lost) {
+      glNotice?.remove();
+      glNotice = null;
+      last = performance.now(); // the gap is not game time
+      lastFrame = ''; // re-measure the framing on the restored drawing buffer
+      scheduleMeasure();
+    }
+  });
 
   return {
     renderer, canvas, camera: renderer.camera, orbit: renderer.orbit, ready: renderer.ready,
     setInsets(next) { insets = next; menuActive = false; menuShown = false; menuWatcher?.disconnect(); demo.stop(); resize(); }, // [task-34] [task-39]
     setIdleSpin(degreesPerSecond) { spin = degreesPerSecond; },
     setCovered(next) { covered = next; },
+    contextLost: () => renderer.contextLost(), // [night-11h]
     showMenuBackdrop() {
       // [task-34] Mockup menu framing: horizon under the sign (portrait) or the whole disc beside the
       // board (landscape), measured from the live sign/board boxes; a still camera over a small
@@ -243,6 +270,8 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
     dispose() {
       if (disposed) return;
       disposed = true;
+      stopContextWatch();
+      glNotice?.remove();
       cancelAnimationFrame(raf);
       cancelAnimationFrame(measureRaf); // [task-34]
       panelObserver?.disconnect();

@@ -73,6 +73,10 @@
 .airway-privacy__section { padding:8px 0 4px; border-bottom:1px dashed #c2b5a6; }
 .airway-privacy__section h2 { margin:0 0 4px; font:800 16px/1.25 'Overpass',sans-serif; }
 .airway-privacy__section p { margin:0 0 6px; overflow-wrap:anywhere; }
+/* [night-11h] D-118: no-WebGL-2 page (src/ui/unsupported.ts). */
+.airway-unsupported { position:fixed; inset:0; }
+.airway-unsupported__title { margin:0 0 10px !important; overflow-wrap:anywhere; }
+.airway-unsupported__gpu { margin:12px 0 6px; padding:8px 10px; border-left:6px solid #1e6f6a; background:#efe8da; font:700 13px/1.4 'Overpass Mono',monospace; overflow-wrap:anywhere; }
 .airway-privacy__date { margin:12px 0 2px; font:400 12px/1.4 'Overpass Mono',monospace; color:#55514a; }
 @media (orientation:landscape) { .airway-sign { top:calc(env(safe-area-inset-top, 0px) + 12px); left:calc(env(safe-area-inset-left, 0px) + 16px); } .airway-sign__pictogram {width:42px;height:42px;} .airway-sign__title {font-size:39px;} .airway-board { left:calc(env(safe-area-inset-left,0px) + 16px); bottom:calc(env(safe-area-inset-bottom,0px) + 7px); right:auto; width:min(410px, calc(100% - env(safe-area-inset-left,0px) - env(safe-area-inset-right,0px) - 30px)); padding:8px 9px; } .airway-flight {min-height:59px;padding:5px 0;} .airway-notice {top:76px;left:auto;right:20px;} .airway-settings__paper {max-width:730px;} }
 @media (max-width:370px) { .airway-board {left:4px;right:4px;padding:6px;} .flap-tile{--flap-w:9px;--flap-font:11px;} .airway-board__header, .airway-flight { grid-template-columns:minmax(0,1fr) 46px 80px;gap:6px;} /* [task-37] BRAMKA (≈42px) needs ≥8px before STATUS */ }

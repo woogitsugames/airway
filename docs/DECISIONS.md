@@ -858,3 +858,27 @@ languages (the only word is the brand name). Checked by `test:store-shots`: size
 empty, ≤ 20 % dark unsaturated pixels (Google's rule — so not the night scene), plus PL/EN alt text ≤ 140 chars.
 Rejected: a hand-made illustration (a second art style next to the game) and a tagline in the image (localised text,
 risk of price/"free" wording; the store title already carries it). **Status: in force (N12n).**
+
+## D-118 — WebGL context loss holds the run; no WebGL 2 gets a plain page (2026-11-03, Claude, night N11h)
+A phone drops the GPU context under memory pressure, after a driver reset or when another app takes the GPU; until
+now nothing listened, so the globe froze or went blank while the run kept going underneath. `src/render/contextGuard.ts`
+listens to `webglcontextlost` (with `preventDefault`, otherwise the browser never restores) and
+`webglcontextrestored`. While lost the renderer draws nothing and the world loop does not call the run's frame hook
+(the frame hook is the run's only clock, as with a hidden tab), so the state hash stays the same; the blank canvas is
+hidden so the sky shows, and one paper notice (`role="status"`, PL/EN) says the graphics are restarting and the game
+waits. On restore three.js re-uploads its buffers on the next draw, the quality profile, lights and size are re-applied
+and the frame cap restarts (the gap is not read as a slow frame); the run then carries on by itself — the loss is not
+the player's doing, so no extra tap. If `createWorld` throws and `getContext('webgl2')` is null, a plain settings-paper
+page ("This device's graphics are not supported", the device's renderer string for a support mail, no buttons)
+replaces the blank sky whose Play led nowhere. Rejected: re-creating the whole `WebGLRenderer` on restore (three.js
+restores its own state; a second renderer leaks the first context), and a WebGL 1 fallback (three.js r170 is
+WebGL 2 only; Play filter is R3h). **Status: in force (N11h, `test:webgl-context` 8 cases,
+`test:e2e:webgl-context` 4 cases).**
+
+## D-124 — Play device filter: OpenGL ES 3.0 required (2026-11-03, Claude, night N12p)
+R3h: three r170 has no WebGL 1 renderer, and Android WebView offers WebGL 2 only on OpenGL ES 3.0 GPUs, so on an
+ES 2.0 phone the game is a blank globe. The manifest now requires `glEsVersion 0x00030000`, so Play hides the game
+from those devices instead of selling them a broken install. Both owner options that change anything in Q-54 (A and
+B) include this filter, so it is done now; only the minSdk choice (24 vs 29) still waits for Q-54. Guarded by
+`test:android-config` (`play-gles3-filter`, also ties the filter to three ≥ r163). Not covered: ES 3.0 devices whose
+WebView blocklists WebGL 2 (R3g fallback page). **Status: in force (N12p); minSdk part open (Q-54).**
