@@ -56,7 +56,7 @@ the route network, planes fly by themselves; passengers transfer at hubs; you lo
   need the DEV-only `window.aw` adapter (`e2e/README.md`). `npm run test:e2e:fixture` self-tests the harness only.
 - `npm run shots` — every app/dev-page screenshot into `docs/shots/<task>/`; `npm run shots -- menu globe --fold`
   for a subset (`-- --list` shows targets). `npm run shots:site` (landing page), `npm run store:shots`
-  (30 store PNGs, `docs/store/shots/`). Inspect every PNG before committing it.
+  (60 store PNGs, `docs/store/shots/`). Inspect every PNG before committing it.
 - `npm run perf:scene` — SwiftShader scene benchmark (`.perf/scene.json`); never compare with devices.
 - `npm run build:site` — static landing page into `site/dist/` (`docs/SITE.md`).
 - `npm run android` / `android:release` / `android:aab` — native builds (`docs/ANDROID.md`); iOS: `docs/IOS.md`.

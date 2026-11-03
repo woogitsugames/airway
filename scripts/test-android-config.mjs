@@ -38,7 +38,9 @@ check('foldable-resize', manifest.includes('android:resizeableActivity="true"'))
 check('single-activity-launch', manifest.includes('android:launchMode="singleTask"') && manifest.includes('android:exported="true"'));
 const permissions = [...manifest.matchAll(/<uses-permission\s+android:name="([^"]+)"/g)].map((match) => match[1]);
 check('minimal-permissions', permissions.length === 1 && permissions[0] === 'android.permission.INTERNET');
-check('sdk-versions', variables.includes('minSdkVersion = 24')); // target/compile: play-target-sdk-floor (D-98)
+// [night-12q] D-133 (Q-54 → B): minSdk 29 (Android 10) — older WebViews no longer get Chrome updates (Chrome 139+
+// needs Android 10) and are not tested; target/compile: play-target-sdk-floor (D-98).
+check('sdk-versions', /minSdkVersion = 29\b/.test(variables) && !/minSdk(Version)?\s*[= ]\s*\d/.test(appGradle));
 // [night-12e] D-98 store-requirement guards (R1m): Play requires targetSdk ≥ 36 for new apps and updates from
 // 31.08.2026 (raise PLAY_MIN_TARGET_SDK every August), and release builds check 16 KB native-library alignment.
 const PLAY_MIN_TARGET_SDK = 36;
@@ -94,12 +96,12 @@ check('per-app-locale-config', manifest.includes('android:localeConfig="@xml/loc
   declaredLocales.join() === gameLanguages.join() && declaredLocales.join() === iosLocales.join());
 // [night-12p] D-124: three r163+ has no WebGL 1 path, and Android WebView's WebGL 2 needs OpenGL ES 3.0, so the
 // manifest declares exactly one required glEsVersion of 0x00030000 (Play device filter). ES 3.0 exists from API 18,
-// so it never conflicts with minSdk; the minSdk itself waits for the owner (Q-54).
+// so it never conflicts with minSdk (29 since D-133).
 const glEs = [...manifest.matchAll(/<uses-feature\b[^>]*android:glEsVersion="([^"]+)"[^>]*>/g)];
 const threeVersion = JSON.parse(read('package.json')).dependencies?.three ?? '';
 const threeMinor = Number(threeVersion.match(/^\D*0\.(\d+)/)?.[1] ?? NaN);
 check('play-gles3-filter', glEs.length === 1 && Number(glEs[0][1]) === 0x30000 &&
-  /android:required="true"/.test(glEs[0][0]) && threeMinor >= 163 && sdk('minSdkVersion') >= 18);
+  /android:required="true"/.test(glEs[0][0]) && threeMinor >= 163 && sdk('minSdkVersion') >= 29);
 const i18nSource = read('src/i18n/index.ts');
 check('in-game-language-wins', /savedLanguage\(\) \?\? deviceLanguage\(\)/.test(i18nSource) && i18nSource.includes('navigator.languages'));
 console.log('SUMMARY test:android-config seed=0xA1A1 checks=' + (passed + failed) + ' passed=' + passed + ' failed=' + failed);

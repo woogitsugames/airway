@@ -1,4 +1,5 @@
 /** Storage is deliberately outside src/sim. All persistent keys use the aw- namespace. */
+import { Capacitor } from '@capacitor/core';
 export const GAME_SAVE_KEY = 'aw-save-v1';
 export const SETTINGS_KEY = 'aw-settings-v1';
 const DB_NAME = 'aw-airway';
@@ -148,7 +149,6 @@ export function createPlatformStorage(options?: {
  */
 export async function createDefaultStorage(): Promise<KeyValueStorage> {
   try {
-    const { Capacitor } = await import('@capacitor/core');
     if (Capacitor.isNativePlatform() && Capacitor.isPluginAvailable('Preferences') &&
       Capacitor.isPluginAvailable('Filesystem')) {
       const [{ Preferences }, { Filesystem, Directory, Encoding }] = await Promise.all([

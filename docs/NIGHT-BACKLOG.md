@@ -513,6 +513,15 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       ES 2.0 phones (blank globe). `aapt2 dump badging` of the linked manifest shows `uses-gl-es: '0x30000'`.
       `test:android-config` check `play-gles3-filter` (one required declaration, three ≥ r163, minSdk ≥ 18).
       minSdk stays 24 until Q-54 (both A and B include the filter); note in `docs/ANDROID.md`.
+- [x] N12q **Bundle budget, dead code and unused keys, minSdk 29 (R5k, R5i, Q-54 → B; D-133…D-135)** — new
+      `test:bundle` (in `test:ci` after `build`) holds the main chunk ≤ 1,150 kB raw / 340 kB gzip, CSS ≤ 90 kB and
+      `dist/` ≤ 2,200 kB (`docs/PERFORMANCE.md` "Bundle budget"; today 1,033.8 / 306.2 / 70.2 / 1,804.8) and prints the
+      largest files; `test:bundle:static` (in `test:fast`) forbids a module imported both statically and with
+      `import()` — the dynamic `@capacitor/core` imports in `platform/install.ts` / `storage.ts` became static (Vite
+      warning gone). R5i: the four never-wired a11y adapters, their 13 keys and `status.loading/ready` removed, plus
+      `mountEmptyScene`, `createTerrain`, `AIRPORT_LABEL_MODES`, `dailyGame`; `test:i18n` fails on a catalog key not
+      referenced from `src/`. Owner D-133: `minSdkVersion` 24 → 29, guarded by `test:android-config`, `docs/ANDROID.md`.
+      CLAUDE.md "30 store PNGs" → 60.
 
 ## Research proposals (R-agent)
 Proposals from the research agent (findings and sources: `docs/RESEARCH.md`, sections "R1 — …"). Each item is
@@ -697,7 +706,7 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
       ("This device's graphics are not supported", with the device's renderer string) instead of a blank canvas. E2E:
       `WEBGL_lose_context.loseContext()`/`restoreContext()` mid-run → game resumes with the same state hash. **Area:**
       render (`src/render/world.ts`) + UI (`src/game/world.ts`, i18n).
-- [x] R3h → N12p (filter; the minSdk part still waits for Q-54) **Play device filter for OpenGL ES 3.0** — Three r170 needs WebGL 2; declare
+- [x] R3h → N12p (filter), minSdk 29 → N12q (Q-54 → B, D-133) **Play device filter for OpenGL ES 3.0** — Three r170 needs WebGL 2; declare
       `<uses-feature android:glEsVersion="0x00030000" android:required="true"/>` so Play hides the game from devices
       that cannot run it, and make `test:android-config` assert it (and the minSdk chosen in Q-54). **Area:** platform
       (`android/app/src/main/AndroidManifest.xml`, `scripts/`). *minSdk part needs Q-54.*
@@ -801,7 +810,7 @@ Evidence: `docs/RESEARCH.md` "R5 — …", PNGs in `docs/research/r5/`.
       when there is room (N10z), deterministic output; a 150-airport case under a time budget (today O(n²·k) per
       frame). No visual change: e2e `edge-chip-*` and shots identical. **Area:** UI (`src/ui/overlay.ts`,
       `src/ui/overlay-layout.ts`, `scripts/test-overlay-layout.mjs`).
-- [ ] R5i **Remove dead code and unused keys** — `describeCity`, `createCityAnnouncer`, `bindCityAccessibility`,
+- [x] R5i → N12q **Remove dead code and unused keys** — `describeCity`, `createCityAnnouncer`, `bindCityAccessibility`,
       `labelAirportActions` (`src/ui/a11y.ts`, documented only in `src/ui/theme/README.md`) and their 13
       `a11y.city*` / `a11y.action.*` keys; unused exports `createTerrain`, `mountEmptyScene`, `SIM_TICK_MS`,
       `DAYNIGHT_PARAMS_VERSION`, `AIRPORT_LABEL_MODES`, `dailyGame` (check `functions/` first), keys
@@ -813,7 +822,7 @@ Evidence: `docs/RESEARCH.md` "R5 — …", PNGs in `docs/research/r5/`.
       `notch` profile to `ui:matrix` / `screens-fit` that sets the tokens to iPhone-like values (59/0/34/0 portrait,
       0/59/21/59 landscape) and fails on any button inside an inset. **Area:** UI CSS + platform/scripts
       (`scripts/ui-matrix.mjs`, `e2e/screens-fit.mjs`).
-- [ ] R5k **Bundle budget guard** — after `npm run build`, a small `test:bundle` reads `dist/assets`: main JS
+- [x] R5k → N12q (WOFF2 fonts not done) **Bundle budget guard** — after `npm run build`, a small `test:bundle` reads `dist/assets`: main JS
       ≤ 1,150 kB raw / 340 kB gzip (today 1,031.9 / 306.2), CSS ≤ 90 kB, total `dist/` ≤ 2.2 MB; prints the top
       chunks. Run it in `test:ci` after the build step. Also drop the useless dynamic `import('@capacitor/core')` in
       `src/platform/install.ts` / `storage.ts` (Vite warns: it is statically imported elsewhere). Optional: serve the
