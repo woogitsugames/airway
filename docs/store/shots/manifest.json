@@ -10,57 +10,177 @@
  ],
  "shots": [
   {
-   "id": "pl/game-dusk-phone",
+   "id": "pl/night-phone",
    "lang": "pl",
-   "scene": "game-dusk",
+   "scene": "night",
    "device": "phone",
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 18:20 PASAŻERÓW 25 0 0 0 1×",
+   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 00:04 PASAŻERÓW 29 0 0 0 1×",
+   "sun": "180@camera",
+   "contrast": {
+    "routes": 9.39,
+    "airports": 9.04,
+    "planes": 9.18,
+    "tags": 11.88
+   },
+   "warmth": {
+    "gold": 0.002,
+    "ratio": 0.446
+   },
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 95,
-    "lumaStd": 78.7,
+    "meanLuma": 90.4,
+    "lumaStd": 79.6,
     "whiteShare": 0,
-    "colours": 545
+    "colours": 338
    }
   },
   {
-   "id": "pl/game-dusk-foldable",
+   "id": "pl/night-foldable",
    "lang": "pl",
-   "scene": "game-dusk",
+   "scene": "night",
    "device": "foldable",
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 18:14 PASAŻERÓW 25 0 0 0 1×",
+   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 00:01 PASAŻERÓW 29 0 0 0 1×",
+   "sun": "180@camera",
+   "contrast": {
+    "routes": 9.37,
+    "airports": 9.04,
+    "planes": 9.18,
+    "tags": 1.56
+   },
+   "warmth": {
+    "gold": 0.002,
+    "ratio": 0.476
+   },
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 81.4,
-    "lumaStd": 70.1,
+    "meanLuma": 74.2,
+    "lumaStd": 67.7,
     "whiteShare": 0,
-    "colours": 529
+    "colours": 325
    }
   },
   {
-   "id": "pl/game-dusk-tablet",
+   "id": "pl/night-tablet",
    "lang": "pl",
-   "scene": "game-dusk",
+   "scene": "night",
    "device": "tablet",
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 18:17 PASAŻERÓW 25 0 0 0 1×",
+   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 23:58 PASAŻERÓW 29 0 0 0 1×",
+   "sun": "180@camera",
+   "contrast": {
+    "routes": 9.37,
+    "airports": 9.03,
+    "planes": 9.39,
+    "tags": 1.56
+   },
+   "warmth": {
+    "gold": 0.002,
+    "ratio": 0.465
+   },
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 79.1,
-    "lumaStd": 68.4,
+    "meanLuma": 72.3,
+    "lumaStd": 65.7,
     "whiteShare": 0,
-    "colours": 526
+    "colours": 329
+   }
+  },
+  {
+   "id": "pl/game-phone",
+   "lang": "pl",
+   "scene": "game",
+   "device": "phone",
+   "seed": 41377,
+   "glyphs": [],
+   "devOverlay": false,
+   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 17:06 PASAŻERÓW 25 0 0 0 1×",
+   "sun": "-70.7@31.2,38.2",
+   "contrast": {
+    "routes": 10.13,
+    "airports": 8.85,
+    "planes": 7.65,
+    "tags": 13.26
+   },
+   "warmth": {
+    "gold": 0.081,
+    "ratio": 0.966
+   },
+   "png": {
+    "width": 1080,
+    "height": 1920,
+    "meanLuma": 103.3,
+    "lumaStd": 75.2,
+    "whiteShare": 0,
+    "colours": 574
+   }
+  },
+  {
+   "id": "pl/game-foldable",
+   "lang": "pl",
+   "scene": "game",
+   "device": "foldable",
+   "seed": 41377,
+   "glyphs": [],
+   "devOverlay": false,
+   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 17:02 PASAŻERÓW 25 0 0 0 1×",
+   "sun": "-70.7@31.2,38.2",
+   "contrast": {
+    "routes": 10.15,
+    "airports": 9,
+    "planes": 7.6,
+    "tags": 13.25
+   },
+   "warmth": {
+    "gold": 0.101,
+    "ratio": 1.021
+   },
+   "png": {
+    "width": 1346,
+    "height": 1682,
+    "meanLuma": 90.8,
+    "lumaStd": 65.5,
+    "whiteShare": 0,
+    "colours": 569
+   }
+  },
+  {
+   "id": "pl/game-tablet",
+   "lang": "pl",
+   "scene": "game",
+   "device": "tablet",
+   "seed": 41377,
+   "glyphs": [],
+   "devOverlay": false,
+   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 17:04 PASAŻERÓW 25 0 0 0 1×",
+   "sun": "-70.7@31.2,38.2",
+   "contrast": {
+    "routes": 10.26,
+    "airports": 9.04,
+    "planes": 7.68,
+    "tags": 1.65
+   },
+   "warmth": {
+    "gold": 0.105,
+    "ratio": 1.008
+   },
+   "png": {
+    "width": 1536,
+    "height": 2048,
+    "meanLuma": 88.2,
+    "lumaStd": 64.1,
+    "whiteShare": 0,
+    "colours": 588
    }
   },
   {
@@ -71,14 +191,24 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "+5 ULN BKO TYDZIEŃ 01 DZIEŃ 3/3 GODZ. 02:00 PASAŻERÓW 37 0 0 0 1× Tydzień 1 Hangar: przyszły trzy skrzynie. Otwierasz jedną. FRACHT · TP-48 1/3 Turbośmigłowiec ZASIĘG 2500 km MIEJSC 48 NAJLEPSZY krótkie trasy FRACHT · WB-300 2/3 Szerokokadłubowiec ZASIĘG 11 000 km MIEJSC 300 NAJLEPSZY przez ocean FRACHT · SLOT+2 3/3 Sloty startowe ODLOTY +2 na godzinę DLA wybranego lotniska",
+   "text": "+5 ULN BKO TYDZIEŃ 01 DZIEŃ 3/3 GODZ. 02:00 PASAŻERÓW 37 0 0 0 1× Tydzień 1 Hangar: przyszły trzy skrzynie. Otwierasz jedną. FRACHT · TP-48 1/3 Turbo­śmigłowiec ZASIĘG 2 500 km MIEJSC 48 NAJLEPSZY krótkie trasy FRACHT · WB-300 2/3 Szeroko­kadłubowiec ZASIĘG 11 000 km MIEJSC 300 NAJLEPSZY przez ocean FRACHT · SLOT+2 3/3 Sloty startowe ODLOTY +2 na godzinę DLA wybranego lotniska",
+   "contrast": {
+    "routes": 9.52,
+    "airports": 9.04,
+    "planes": 9.96,
+    "tags": 12.13
+   },
+   "warmth": {
+    "gold": 0.002,
+    "ratio": 0.451
+   },
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 159.3,
-    "lumaStd": 63.2,
+    "meanLuma": 156.2,
+    "lumaStd": 65,
     "whiteShare": 0,
-    "colours": 178
+    "colours": 175
    }
   },
   {
@@ -89,12 +219,22 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "+5 ULN BKO TYDZIEŃ 01 DZIEŃ 3/3 GODZ. 02:00 PASAŻERÓW 37 0 0 0 1× Tydzień 1 Hangar: przyszły trzy skrzynie. Otwierasz jedną. FRACHT · TP-48 1/3 Turbośmigłowiec ZASIĘG 2500 km MIEJSC 48 NAJLEPSZY krótkie trasy FRACHT · WB-300 2/3 Szerokokadłubowiec ZASIĘG 11 000 km MIEJSC 300 NAJLEPSZY przez ocean FRACHT · SLOT+2 3/3 Sloty startowe ODLOTY +2 na godzinę DLA wybranego lotniska",
+   "text": "+5 ULN BKO TYDZIEŃ 01 DZIEŃ 3/3 GODZ. 02:00 PASAŻERÓW 37 0 0 0 1× Tydzień 1 Hangar: przyszły trzy skrzynie. Otwierasz jedną. FRACHT · TP-48 1/3 Turbo­śmigłowiec ZASIĘG 2 500 km MIEJSC 48 NAJLEPSZY krótkie trasy FRACHT · WB-300 2/3 Szeroko­kadłubowiec ZASIĘG 11 000 km MIEJSC 300 NAJLEPSZY przez ocean FRACHT · SLOT+2 3/3 Sloty startowe ODLOTY +2 na godzinę DLA wybranego lotniska",
+   "contrast": {
+    "routes": 9.49,
+    "airports": 9.09,
+    "planes": 9.84,
+    "tags": 12.32
+   },
+   "warmth": {
+    "gold": 0.003,
+    "ratio": 0.479
+   },
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 156.9,
-    "lumaStd": 63.1,
+    "meanLuma": 156.3,
+    "lumaStd": 63.9,
     "whiteShare": 0,
     "colours": 138
    }
@@ -107,14 +247,108 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "+5 ULN BKO TYDZIEŃ 01 DZIEŃ 3/3 GODZ. 02:00 PASAŻERÓW 37 0 0 0 1× Tydzień 1 Hangar: przyszły trzy skrzynie. Otwierasz jedną. FRACHT · TP-48 1/3 Turbośmigłowiec ZASIĘG 2500 km MIEJSC 48 NAJLEPSZY krótkie trasy FRACHT · WB-300 2/3 Szerokokadłubowiec ZASIĘG 11 000 km MIEJSC 300 NAJLEPSZY przez ocean FRACHT · SLOT+2 3/3 Sloty startowe ODLOTY +2 na godzinę DLA wybranego lotniska",
+   "text": "+5 ULN BKO TYDZIEŃ 01 DZIEŃ 3/3 GODZ. 02:00 PASAŻERÓW 37 0 0 0 1× Tydzień 1 Hangar: przyszły trzy skrzynie. Otwierasz jedną. FRACHT · TP-48 1/3 Turbo­śmigłowiec ZASIĘG 2 500 km MIEJSC 48 NAJLEPSZY krótkie trasy FRACHT · WB-300 2/3 Szeroko­kadłubowiec ZASIĘG 11 000 km MIEJSC 300 NAJLEPSZY przez ocean FRACHT · SLOT+2 3/3 Sloty startowe ODLOTY +2 na godzinę DLA wybranego lotniska",
+   "contrast": {
+    "routes": 9.5,
+    "airports": 9.1,
+    "planes": 10.01,
+    "tags": 1.58
+   },
+   "warmth": {
+    "gold": 0.003,
+    "ratio": 0.469
+   },
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 107.1,
-    "lumaStd": 75.5,
+    "meanLuma": 105.3,
+    "lumaStd": 76.6,
     "whiteShare": 0,
-    "colours": 144
+    "colours": 142
+   }
+  },
+  {
+   "id": "pl/failure-phone",
+   "lang": "pl",
+   "scene": "failure",
+   "device": "phone",
+   "seed": 41377,
+   "glyphs": [],
+   "devOverlay": false,
+   "text": "TYDZIEŃ 02 DZIEŃ 3/3 GODZ. 14:38 PASAŻERÓW 59 1 0 0 1× SIATKA WSTRZYMANA ODLOTY · BGW LOT / CEL BRAMKA STATUS AW101 · AMM A1 ODWOŁANY ATC · RAPORT ZDARZENIA Dowiezieni pasażerowie: 59 Ukończone tygodnie: 1 TRZY GŁÓWNE PRZYCZYNY 25 pasażerów nie miało trasy do regionu docelowego. 62% oczekujących chciało dotrzeć do Europy Północnej (16 osób). Poczekalnia osiągnęła limit: 26 z 24 miejsc. NOWY REKORD LOKALNY JESZCZE RAZ · TEN SAM ŚWIAT NOWY ŚWIAT MENU",
+   "contrast": {
+    "routes": 4.42,
+    "airports": 4.14,
+    "planes": 3.02,
+    "tags": null
+   },
+   "warmth": {
+    "gold": 0.005,
+    "ratio": 0.982
+   },
+   "png": {
+    "width": 1080,
+    "height": 1920,
+    "meanLuma": 148.9,
+    "lumaStd": 92,
+    "whiteShare": 0,
+    "colours": 203
+   }
+  },
+  {
+   "id": "pl/failure-foldable",
+   "lang": "pl",
+   "scene": "failure",
+   "device": "foldable",
+   "seed": 41377,
+   "glyphs": [],
+   "devOverlay": false,
+   "text": "TYDZIEŃ 02 DZIEŃ 3/3 GODZ. 14:38 PASAŻERÓW 59 1 0 0 1× SIATKA WSTRZYMANA ODLOTY · BGW LOT / CEL BRAMKA STATUS AW101 · AMM A1 ODWOŁANY ATC · RAPORT ZDARZENIA Dowiezieni pasażerowie: 59 Ukończone tygodnie: 1 TRZY GŁÓWNE PRZYCZYNY 25 pasażerów nie miało trasy do regionu docelowego. 62% oczekujących chciało dotrzeć do Europy Północnej (16 osób). Poczekalnia osiągnęła limit: 26 z 24 miejsc. NOWY REKORD LOKALNY JESZCZE RAZ · TEN SAM ŚWIAT NOWY ŚWIAT MENU",
+   "contrast": {
+    "routes": 4.39,
+    "airports": 4.09,
+    "planes": 3.01,
+    "tags": null
+   },
+   "warmth": {
+    "gold": 0.007,
+    "ratio": 1.08
+   },
+   "png": {
+    "width": 1346,
+    "height": 1682,
+    "meanLuma": 124.4,
+    "lumaStd": 85.6,
+    "whiteShare": 0,
+    "colours": 201
+   }
+  },
+  {
+   "id": "pl/failure-tablet",
+   "lang": "pl",
+   "scene": "failure",
+   "device": "tablet",
+   "seed": 41377,
+   "glyphs": [],
+   "devOverlay": false,
+   "text": "TYDZIEŃ 02 DZIEŃ 3/3 GODZ. 14:38 PASAŻERÓW 59 1 0 0 1× SIATKA WSTRZYMANA ODLOTY · BGW LOT / CEL BRAMKA STATUS AW101 · AMM A1 ODWOŁANY ATC · RAPORT ZDARZENIA Dowiezieni pasażerowie: 59 Ukończone tygodnie: 1 TRZY GŁÓWNE PRZYCZYNY 25 pasażerów nie miało trasy do regionu docelowego. 62% oczekujących chciało dotrzeć do Europy Północnej (16 osób). Poczekalnia osiągnęła limit: 26 z 24 miejsc. NOWY REKORD LOKALNY JESZCZE RAZ · TEN SAM ŚWIAT NOWY ŚWIAT MENU",
+   "contrast": {
+    "routes": 4.39,
+    "airports": 4.09,
+    "planes": 2.98,
+    "tags": null
+   },
+   "warmth": {
+    "gold": 0.007,
+    "ratio": 1.075
+   },
+   "png": {
+    "width": 1536,
+    "height": 2048,
+    "meanLuma": 98.4,
+    "lumaStd": 72.6,
+    "whiteShare": 0,
+    "colours": 205
    }
   },
   {
@@ -125,14 +359,14 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Airway AIRWAY.GAMES · TERMINAL 1 ODLOTY BRAMKA STATUS L L O O T T B B E E Z Z K K O O Ń Ń C C A A brak rekordu A A 1 1 W W E E J J Ś Ś C C I I E E Z Z A A D D A A N N I I A A 0 z 15 rozwiązanych B B 4 4 P P L L A A N N O O W W O O D D Z Z I I Ś Ś 0 0 2 2 . . 1 1 1 1 ten sam świat dla wszystkich C C 2 2 N N O O W W Y Y U U S S T T A A W W I I E E N N I I A A D D 0 0",
+   "text": "Airway AIRWAY.GAMES · TERMINAL 1 ODLOTY BRAMKA STATUS L L O O T T B B E E Z Z K K O O Ń Ń C C A A brak rekordu A A 1 1 W W E E J J Ś Ś C C I I E E Z Z A A D D A A N N I I A A 0 z 30 rozwiązanych B B 4 4 P P L L A A N N O O W W O O D D Z Z I I Ś Ś 0 0 3 3 . . 1 1 1 1 ten sam świat dla wszystkich C C 2 2 N N O O W W Y Y U U S S T T A A W W I I E E N N I I A A D D 0 0",
    "png": {
     "width": 1080,
     "height": 1920,
     "meanLuma": 83.2,
     "lumaStd": 69,
     "whiteShare": 0,
-    "colours": 627
+    "colours": 625
    }
   },
   {
@@ -143,7 +377,7 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Airway AIRWAY.GAMES · TERMINAL 1 ODLOTY BRAMKA STATUS L L O O T T B B E E Z Z K K O O Ń Ń C C A A brak rekordu A A 1 1 W W E E J J Ś Ś C C I I E E Z Z A A D D A A N N I I A A 0 z 15 rozwiązanych B B 4 4 P P L L A A N N O O W W O O D D Z Z I I Ś Ś 0 0 2 2 . . 1 1 1 1 ten sam świat dla wszystkich C C 2 2 N N O O W W Y Y U U S S T T A A W W I I E E N N I I A A D D 0 0",
+   "text": "Airway AIRWAY.GAMES · TERMINAL 1 ODLOTY BRAMKA STATUS L L O O T T B B E E Z Z K K O O Ń Ń C C A A brak rekordu A A 1 1 W W E E J J Ś Ś C C I I E E Z Z A A D D A A N N I I A A 0 z 30 rozwiązanych B B 4 4 P P L L A A N N O O W W O O D D Z Z I I Ś Ś 0 0 3 3 . . 1 1 1 1 ten sam świat dla wszystkich C C 2 2 N N O O W W Y Y U U S S T T A A W W I I E E N N I I A A D D 0 0",
    "png": {
     "width": 1346,
     "height": 1682,
@@ -161,176 +395,188 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Airway AIRWAY.GAMES · TERMINAL 1 ODLOTY BRAMKA STATUS L L O O T T B B E E Z Z K K O O Ń Ń C C A A brak rekordu A A 1 1 W W E E J J Ś Ś C C I I E E Z Z A A D D A A N N I I A A 0 z 15 rozwiązanych B B 4 4 P P L L A A N N O O W W O O D D Z Z I I Ś Ś 0 0 2 2 . . 1 1 1 1 ten sam świat dla wszystkich C C 2 2 N N O O W W Y Y U U S S T T A A W W I I E E N N I I A A D D 0 0",
+   "text": "Airway AIRWAY.GAMES · TERMINAL 1 ODLOTY BRAMKA STATUS L L O O T T B B E E Z Z K K O O Ń Ń C C A A brak rekordu A A 1 1 W W E E J J Ś Ś C C I I E E Z Z A A D D A A N N I I A A 0 z 30 rozwiązanych B B 4 4 P P L L A A N N O O W W O O D D Z Z I I Ś Ś 0 0 3 3 . . 1 1 1 1 ten sam świat dla wszystkich C C 2 2 N N O O W W Y Y U U S S T T A A W W I I E E N N I I A A D D 0 0",
    "png": {
     "width": 1536,
     "height": 2048,
     "meanLuma": 93.4,
     "lumaStd": 69.5,
     "whiteShare": 0,
-    "colours": 666
+    "colours": 667
    }
   },
   {
-   "id": "pl/failure-phone",
-   "lang": "pl",
-   "scene": "failure",
-   "device": "phone",
-   "seed": 41377,
-   "glyphs": [],
-   "devOverlay": false,
-   "text": "TYDZIEŃ 02 DZIEŃ 3/3 GODZ. 14:38 PASAŻERÓW 58 1 0 0 1× SIATKA WSTRZYMANA ODLOTY · BGW LOT / CEL BRAMKA STATUS AW101 · AMM A1 ODWOŁANY ATC · RAPORT ZDARZENIA Dowiezieni pasażerowie: 58 Ukończone tygodnie: 1 TRZY GŁÓWNE PRZYCZYNY 25 pasażerów nie miało trasy do regionu docelowego. 62% oczekujących chciało dotrzeć do Europy Północnej (16 osób). Poczekalnia osiągnęła limit: 26 z 24 miejsc. NOWY REKORD LOKALNY JESZCZE RAZ · TEN SAM ŚWIAT NOWY ŚWIAT MENU",
-   "png": {
-    "width": 1080,
-    "height": 1920,
-    "meanLuma": 148.8,
-    "lumaStd": 92,
-    "whiteShare": 0,
-    "colours": 204
-   }
-  },
-  {
-   "id": "pl/failure-foldable",
-   "lang": "pl",
-   "scene": "failure",
-   "device": "foldable",
-   "seed": 41377,
-   "glyphs": [],
-   "devOverlay": false,
-   "text": "TYDZIEŃ 02 DZIEŃ 3/3 GODZ. 14:38 PASAŻERÓW 58 1 0 0 1× SIATKA WSTRZYMANA ODLOTY · BGW LOT / CEL BRAMKA STATUS AW101 · AMM A1 ODWOŁANY ATC · RAPORT ZDARZENIA Dowiezieni pasażerowie: 58 Ukończone tygodnie: 1 TRZY GŁÓWNE PRZYCZYNY 25 pasażerów nie miało trasy do regionu docelowego. 62% oczekujących chciało dotrzeć do Europy Północnej (16 osób). Poczekalnia osiągnęła limit: 26 z 24 miejsc. NOWY REKORD LOKALNY JESZCZE RAZ · TEN SAM ŚWIAT NOWY ŚWIAT MENU",
-   "png": {
-    "width": 1346,
-    "height": 1682,
-    "meanLuma": 124.7,
-    "lumaStd": 85.4,
-    "whiteShare": 0,
-    "colours": 202
-   }
-  },
-  {
-   "id": "pl/failure-tablet",
-   "lang": "pl",
-   "scene": "failure",
-   "device": "tablet",
-   "seed": 41377,
-   "glyphs": [],
-   "devOverlay": false,
-   "text": "TYDZIEŃ 02 DZIEŃ 3/3 GODZ. 14:38 PASAŻERÓW 58 1 0 0 1× SIATKA WSTRZYMANA ODLOTY · BGW LOT / CEL BRAMKA STATUS AW101 · AMM A1 ODWOŁANY ATC · RAPORT ZDARZENIA Dowiezieni pasażerowie: 58 Ukończone tygodnie: 1 TRZY GŁÓWNE PRZYCZYNY 25 pasażerów nie miało trasy do regionu docelowego. 62% oczekujących chciało dotrzeć do Europy Północnej (16 osób). Poczekalnia osiągnęła limit: 26 z 24 miejsc. NOWY REKORD LOKALNY JESZCZE RAZ · TEN SAM ŚWIAT NOWY ŚWIAT MENU",
-   "png": {
-    "width": 1536,
-    "height": 2048,
-    "meanLuma": 98.1,
-    "lumaStd": 72.8,
-    "whiteShare": 0,
-    "colours": 202
-   }
-  },
-  {
-   "id": "pl/night-phone",
-   "lang": "pl",
+   "id": "en/night-phone",
+   "lang": "en",
    "scene": "night",
    "device": "phone",
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 23:54 PASAŻERÓW 29 0 0 0 1×",
+   "text": "WEEK 01 DAY 2/3 TIME 00:05 PASSENGERS 29 0 0 0 1×",
+   "sun": "180@camera",
+   "contrast": {
+    "routes": 9.4,
+    "airports": 9.04,
+    "planes": 9.08,
+    "tags": 11.95
+   },
+   "warmth": {
+    "gold": 0.002,
+    "ratio": 0.446
+   },
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 94.6,
-    "lumaStd": 77.7,
+    "meanLuma": 91.2,
+    "lumaStd": 80.1,
     "whiteShare": 0,
-    "colours": 337
+    "colours": 348
    }
   },
   {
-   "id": "pl/night-foldable",
-   "lang": "pl",
+   "id": "en/night-foldable",
+   "lang": "en",
    "scene": "night",
    "device": "foldable",
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 23:56 PASAŻERÓW 29 0 0 0 1×",
+   "text": "WEEK 01 DAY 2/3 TIME 00:06 PASSENGERS 29 0 0 0 1×",
+   "sun": "180@camera",
+   "contrast": {
+    "routes": 9.37,
+    "airports": 9.04,
+    "planes": 8.88,
+    "tags": 1.61
+   },
+   "warmth": {
+    "gold": 0.002,
+    "ratio": 0.475
+   },
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 80.4,
-    "lumaStd": 68.7,
+    "meanLuma": 74.5,
+    "lumaStd": 68,
     "whiteShare": 0,
-    "colours": 337
+    "colours": 329
    }
   },
   {
-   "id": "pl/night-tablet",
-   "lang": "pl",
+   "id": "en/night-tablet",
+   "lang": "en",
    "scene": "night",
    "device": "tablet",
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 23:57 PASAŻERÓW 29 0 0 0 1×",
+   "text": "WEEK 01 DAY 2/3 TIME 00:10 PASSENGERS 29 0 0 0 1×",
+   "sun": "180@camera",
+   "contrast": {
+    "routes": 9.39,
+    "airports": 9.05,
+    "planes": 9.04,
+    "tags": 1.56
+   },
+   "warmth": {
+    "gold": 0.002,
+    "ratio": 0.466
+   },
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 78.5,
-    "lumaStd": 66.9,
+    "meanLuma": 72.5,
+    "lumaStd": 66,
     "whiteShare": 0,
-    "colours": 331
+    "colours": 336
    }
   },
   {
-   "id": "en/game-dusk-phone",
+   "id": "en/game-phone",
    "lang": "en",
-   "scene": "game-dusk",
+   "scene": "game",
    "device": "phone",
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "WEEK 01 DAY 2/3 TIME 18:10 PASSENGERS 25 0 0 0 1×",
+   "text": "WEEK 01 DAY 2/3 TIME 17:04 PASSENGERS 25 0 0 0 1×",
+   "sun": "-70.7@31.2,38.2",
+   "contrast": {
+    "routes": 10.13,
+    "airports": 8.86,
+    "planes": 7.6,
+    "tags": 13.26
+   },
+   "warmth": {
+    "gold": 0.081,
+    "ratio": 0.965
+   },
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 96.5,
-    "lumaStd": 78.4,
+    "meanLuma": 103.8,
+    "lumaStd": 75,
     "whiteShare": 0,
-    "colours": 553
+    "colours": 583
    }
   },
   {
-   "id": "en/game-dusk-foldable",
+   "id": "en/game-foldable",
    "lang": "en",
-   "scene": "game-dusk",
+   "scene": "game",
    "device": "foldable",
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "WEEK 01 DAY 2/3 TIME 18:13 PASSENGERS 25 0 0 0 1×",
+   "text": "WEEK 01 DAY 2/3 TIME 17:04 PASSENGERS 25 0 0 0 1×",
+   "sun": "-70.7@31.2,38.2",
+   "contrast": {
+    "routes": 10.21,
+    "airports": 9.03,
+    "planes": 7.79,
+    "tags": 13.35
+   },
+   "warmth": {
+    "gold": 0.104,
+    "ratio": 1.018
+   },
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 81.4,
-    "lumaStd": 70.2,
+    "meanLuma": 90.4,
+    "lumaStd": 65.7,
     "whiteShare": 0,
-    "colours": 528
+    "colours": 573
    }
   },
   {
-   "id": "en/game-dusk-tablet",
+   "id": "en/game-tablet",
    "lang": "en",
-   "scene": "game-dusk",
+   "scene": "game",
    "device": "tablet",
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "WEEK 01 DAY 2/3 TIME 18:09 PASSENGERS 25 0 0 0 1×",
+   "text": "WEEK 01 DAY 2/3 TIME 17:04 PASSENGERS 25 0 0 0 1×",
+   "sun": "-70.7@31.2,38.2",
+   "contrast": {
+    "routes": 10.19,
+    "airports": 9.03,
+    "planes": 7.75,
+    "tags": 1.65
+   },
+   "warmth": {
+    "gold": 0.107,
+    "ratio": 1.006
+   },
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 80.1,
-    "lumaStd": 68.4,
+    "meanLuma": 88.6,
+    "lumaStd": 64,
     "whiteShare": 0,
-    "colours": 533
+    "colours": 580
    }
   },
   {
@@ -341,14 +587,24 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "+5 ULN BKO WEEK 01 DAY 3/3 TIME 02:00 PASSENGERS 37 0 0 0 1× Week 1 Hangar: three crates arrived. You open one. FREIGHT · TP-48 1/3 Turboprop RANGE 2,500 km SEATS 48 BEST FOR short hops FREIGHT · WB-300 2/3 Widebody RANGE 11,000 km SEATS 300 BEST FOR ocean crossings FREIGHT · SLOT+2 3/3 Departure slots DEPARTURES +2 per hour FOR an airport you pick",
+   "text": "+5 ULN BKO WEEK 01 DAY 3/3 TIME 02:00 PASSENGERS 37 0 0 0 1× Week 1 Hangar: three crates arrived. You open one. FREIGHT · TP-48 1/3 Turbo­prop RANGE 2,500 km SEATS 48 BEST FOR short hops FREIGHT · WB-300 2/3 Wide­body RANGE 11,000 km SEATS 300 BEST FOR ocean crossings FREIGHT · SLOT+2 3/3 Departure slots DEPARTURES +2 per hour FOR an airport you pick",
+   "contrast": {
+    "routes": 9.52,
+    "airports": 9.04,
+    "planes": 9.97,
+    "tags": 12.13
+   },
+   "warmth": {
+    "gold": 0.002,
+    "ratio": 0.451
+   },
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 154,
-    "lumaStd": 64.6,
+    "meanLuma": 153.7,
+    "lumaStd": 65.1,
     "whiteShare": 0,
-    "colours": 179
+    "colours": 177
    }
   },
   {
@@ -359,12 +615,22 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "+5 ULN BKO WEEK 01 DAY 3/3 TIME 02:00 PASSENGERS 37 0 0 0 1× Week 1 Hangar: three crates arrived. You open one. FREIGHT · TP-48 1/3 Turboprop RANGE 2,500 km SEATS 48 BEST FOR short hops FREIGHT · WB-300 2/3 Widebody RANGE 11,000 km SEATS 300 BEST FOR ocean crossings FREIGHT · SLOT+2 3/3 Departure slots DEPARTURES +2 per hour FOR an airport you pick",
+   "text": "+5 ULN BKO WEEK 01 DAY 3/3 TIME 02:00 PASSENGERS 37 0 0 0 1× Week 1 Hangar: three crates arrived. You open one. FREIGHT · TP-48 1/3 Turbo­prop RANGE 2,500 km SEATS 48 BEST FOR short hops FREIGHT · WB-300 2/3 Wide­body RANGE 11,000 km SEATS 300 BEST FOR ocean crossings FREIGHT · SLOT+2 3/3 Departure slots DEPARTURES +2 per hour FOR an airport you pick",
+   "contrast": {
+    "routes": 9.49,
+    "airports": 9.09,
+    "planes": 9.87,
+    "tags": 12.32
+   },
+   "warmth": {
+    "gold": 0.003,
+    "ratio": 0.479
+   },
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 157.3,
-    "lumaStd": 62.8,
+    "meanLuma": 156.7,
+    "lumaStd": 63.6,
     "whiteShare": 0,
     "colours": 139
    }
@@ -377,68 +643,24 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "+5 ULN BKO WEEK 01 DAY 3/3 TIME 02:00 PASSENGERS 37 0 0 0 1× Week 1 Hangar: three crates arrived. You open one. FREIGHT · TP-48 1/3 Turboprop RANGE 2,500 km SEATS 48 BEST FOR short hops FREIGHT · WB-300 2/3 Widebody RANGE 11,000 km SEATS 300 BEST FOR ocean crossings FREIGHT · SLOT+2 3/3 Departure slots DEPARTURES +2 per hour FOR an airport you pick",
+   "text": "+5 ULN BKO WEEK 01 DAY 3/3 TIME 02:00 PASSENGERS 37 0 0 0 1× Week 1 Hangar: three crates arrived. You open one. FREIGHT · TP-48 1/3 Turbo­prop RANGE 2,500 km SEATS 48 BEST FOR short hops FREIGHT · WB-300 2/3 Wide­body RANGE 11,000 km SEATS 300 BEST FOR ocean crossings FREIGHT · SLOT+2 3/3 Departure slots DEPARTURES +2 per hour FOR an airport you pick",
+   "contrast": {
+    "routes": 9.5,
+    "airports": 9.1,
+    "planes": 9.94,
+    "tags": 1.58
+   },
+   "warmth": {
+    "gold": 0.003,
+    "ratio": 0.47
+   },
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 106.5,
-    "lumaStd": 75.4,
+    "meanLuma": 104.7,
+    "lumaStd": 76.5,
     "whiteShare": 0,
-    "colours": 143
-   }
-  },
-  {
-   "id": "en/menu-phone",
-   "lang": "en",
-   "scene": "menu",
-   "device": "phone",
-   "seed": 41377,
-   "glyphs": [],
-   "devOverlay": false,
-   "text": "Airway AIRWAY.GAMES · TERMINAL 1 DEPARTURES GATE STATUS E E N N D D L L E E S S S S F F L L I I G G H H T T no record yet A A 1 1 B B O O A A R R D D I I N N G G P P U U Z Z Z Z L L E E S S 0 of 15 solved B B 4 4 O O N N T T I I M M E E T T O O D D A A Y Y 0 0 2 2 . . 1 1 1 1 same world for everyone C C 2 2 N N E E W W S S E E T T T T I I N N G G S S D D 0 0",
-   "png": {
-    "width": 1080,
-    "height": 1920,
-    "meanLuma": 83.1,
-    "lumaStd": 69,
-    "whiteShare": 0,
-    "colours": 625
-   }
-  },
-  {
-   "id": "en/menu-foldable",
-   "lang": "en",
-   "scene": "menu",
-   "device": "foldable",
-   "seed": 41377,
-   "glyphs": [],
-   "devOverlay": false,
-   "text": "Airway AIRWAY.GAMES · TERMINAL 1 DEPARTURES GATE STATUS E E N N D D L L E E S S S S F F L L I I G G H H T T no record yet A A 1 1 B B O O A A R R D D I I N N G G P P U U Z Z Z Z L L E E S S 0 of 15 solved B B 4 4 O O N N T T I I M M E E T T O O D D A A Y Y 0 0 2 2 . . 1 1 1 1 same world for everyone C C 2 2 N N E E W W S S E E T T T T I I N N G G S S D D 0 0",
-   "png": {
-    "width": 1346,
-    "height": 1682,
-    "meanLuma": 91.9,
-    "lumaStd": 69.9,
-    "whiteShare": 0,
-    "colours": 639
-   }
-  },
-  {
-   "id": "en/menu-tablet",
-   "lang": "en",
-   "scene": "menu",
-   "device": "tablet",
-   "seed": 41377,
-   "glyphs": [],
-   "devOverlay": false,
-   "text": "Airway AIRWAY.GAMES · TERMINAL 1 DEPARTURES GATE STATUS E E N N D D L L E E S S S S F F L L I I G G H H T T no record yet A A 1 1 B B O O A A R R D D I I N N G G P P U U Z Z Z Z L L E E S S 0 of 15 solved B B 4 4 O O N N T T I I M M E E T T O O D D A A Y Y 0 0 2 2 . . 1 1 1 1 same world for everyone C C 2 2 N N E E W W S S E E T T T T I I N N G G S S D D 0 0",
-   "png": {
-    "width": 1536,
-    "height": 2048,
-    "meanLuma": 93.4,
-    "lumaStd": 69.5,
-    "whiteShare": 0,
-    "colours": 666
+    "colours": 142
    }
   },
   {
@@ -449,14 +671,24 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "WEEK 02 DAY 3/3 TIME 14:38 PASSENGERS 58 1 0 0 1× NETWORK CLOSED DEPARTURES · BGW FLIGHT / DEST. GATE STATUS AW101 · AMM A1 CANCELLED ATC · INCIDENT REPORT Passengers delivered: 58 Weeks completed: 1 THREE KEY CAUSES 25 passengers had no available route to their destination region. 62% of waiting passengers were headed to Northern Europe (16 people). The waiting area reached 26 of 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
+   "text": "WEEK 02 DAY 3/3 TIME 14:38 PASSENGERS 59 1 0 0 1× NETWORK CLOSED DEPARTURES · BGW FLIGHT / DEST. GATE STATUS AW101 · AMM A1 CANCELLED ATC · INCIDENT REPORT Passengers delivered: 59 Weeks completed: 1 THREE KEY CAUSES 25 passengers had no available route to their destination region. 62% of waiting passengers were headed to Northern Europe (16 people). The waiting area reached 26 of 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
+   "contrast": {
+    "routes": 4.42,
+    "airports": 4.14,
+    "planes": 3.02,
+    "tags": null
+   },
+   "warmth": {
+    "gold": 0.005,
+    "ratio": 0.982
+   },
    "png": {
     "width": 1080,
     "height": 1920,
     "meanLuma": 144.6,
     "lumaStd": 90.6,
     "whiteShare": 0,
-    "colours": 204
+    "colours": 202
    }
   },
   {
@@ -467,12 +699,22 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "WEEK 02 DAY 3/3 TIME 14:38 PASSENGERS 58 1 0 0 1× NETWORK CLOSED DEPARTURES · BGW FLIGHT / DEST. GATE STATUS AW101 · AMM A1 CANCELLED ATC · INCIDENT REPORT Passengers delivered: 58 Weeks completed: 1 THREE KEY CAUSES 25 passengers had no available route to their destination region. 62% of waiting passengers were headed to Northern Europe (16 people). The waiting area reached 26 of 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
+   "text": "WEEK 02 DAY 3/3 TIME 14:38 PASSENGERS 59 1 0 0 1× NETWORK CLOSED DEPARTURES · BGW FLIGHT / DEST. GATE STATUS AW101 · AMM A1 CANCELLED ATC · INCIDENT REPORT Passengers delivered: 59 Weeks completed: 1 THREE KEY CAUSES 25 passengers had no available route to their destination region. 62% of waiting passengers were headed to Northern Europe (16 people). The waiting area reached 26 of 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
+   "contrast": {
+    "routes": 4.39,
+    "airports": 4.09,
+    "planes": 3.01,
+    "tags": null
+   },
+   "warmth": {
+    "gold": 0.007,
+    "ratio": 1.08
+   },
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 125,
-    "lumaStd": 85.4,
+    "meanLuma": 124.7,
+    "lumaStd": 85.6,
     "whiteShare": 0,
     "colours": 195
    }
@@ -485,68 +727,78 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "WEEK 02 DAY 3/3 TIME 14:38 PASSENGERS 58 1 0 0 1× NETWORK CLOSED DEPARTURES · BGW FLIGHT / DEST. GATE STATUS AW101 · AMM A1 CANCELLED ATC · INCIDENT REPORT Passengers delivered: 58 Weeks completed: 1 THREE KEY CAUSES 25 passengers had no available route to their destination region. 62% of waiting passengers were headed to Northern Europe (16 people). The waiting area reached 26 of 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
+   "text": "WEEK 02 DAY 3/3 TIME 14:38 PASSENGERS 59 1 0 0 1× NETWORK CLOSED DEPARTURES · BGW FLIGHT / DEST. GATE STATUS AW101 · AMM A1 CANCELLED ATC · INCIDENT REPORT Passengers delivered: 59 Weeks completed: 1 THREE KEY CAUSES 25 passengers had no available route to their destination region. 62% of waiting passengers were headed to Northern Europe (16 people). The waiting area reached 26 of 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
+   "contrast": {
+    "routes": 4.39,
+    "airports": 4.09,
+    "planes": 4.21,
+    "tags": null
+   },
+   "warmth": {
+    "gold": 0.007,
+    "ratio": 1.075
+   },
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 98.4,
-    "lumaStd": 72.9,
+    "meanLuma": 98.6,
+    "lumaStd": 72.7,
     "whiteShare": 0,
-    "colours": 203
+    "colours": 201
    }
   },
   {
-   "id": "en/night-phone",
+   "id": "en/menu-phone",
    "lang": "en",
-   "scene": "night",
+   "scene": "menu",
    "device": "phone",
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "WEEK 01 DAY 2/3 TIME 23:52 PASSENGERS 29 0 0 0 1×",
+   "text": "Airway AIRWAY.GAMES · TERMINAL 1 DEPARTURES GATE STATUS E E N N D D L L E E S S S S F F L L I I G G H H T T no record yet A A 1 1 B B O O A A R R D D I I N N G G P P U U Z Z Z Z L L E E S S 0 of 30 solved B B 4 4 O O N N T T I I M M E E T T O O D D A A Y Y 0 0 3 3 . . 1 1 1 1 same world for everyone C C 2 2 N N E E W W S S E E T T T T I I N N G G S S D D 0 0",
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 94.6,
-    "lumaStd": 77.8,
+    "meanLuma": 83.1,
+    "lumaStd": 69,
     "whiteShare": 0,
-    "colours": 345
+    "colours": 628
    }
   },
   {
-   "id": "en/night-foldable",
+   "id": "en/menu-foldable",
    "lang": "en",
-   "scene": "night",
+   "scene": "menu",
    "device": "foldable",
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "WEEK 01 DAY 2/3 TIME 23:58 PASSENGERS 29 0 0 0 1×",
+   "text": "Airway AIRWAY.GAMES · TERMINAL 1 DEPARTURES GATE STATUS E E N N D D L L E E S S S S F F L L I I G G H H T T no record yet A A 1 1 B B O O A A R R D D I I N N G G P P U U Z Z Z Z L L E E S S 0 of 30 solved B B 4 4 O O N N T T I I M M E E T T O O D D A A Y Y 0 0 3 3 . . 1 1 1 1 same world for everyone C C 2 2 N N E E W W S S E E T T T T I I N N G G S S D D 0 0",
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 80.4,
-    "lumaStd": 68.7,
+    "meanLuma": 91.9,
+    "lumaStd": 69.8,
     "whiteShare": 0,
-    "colours": 335
+    "colours": 640
    }
   },
   {
-   "id": "en/night-tablet",
+   "id": "en/menu-tablet",
    "lang": "en",
-   "scene": "night",
+   "scene": "menu",
    "device": "tablet",
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "WEEK 01 DAY 2/3 TIME 23:55 PASSENGERS 29 0 0 0 1×",
+   "text": "Airway AIRWAY.GAMES · TERMINAL 1 DEPARTURES GATE STATUS E E N N D D L L E E S S S S F F L L I I G G H H T T no record yet A A 1 1 B B O O A A R R D D I I N N G G P P U U Z Z Z Z L L E E S S 0 of 30 solved B B 4 4 O O N N T T I I M M E E T T O O D D A A Y Y 0 0 3 3 . . 1 1 1 1 same world for everyone C C 2 2 N N E E W W S S E E T T T T I I N N G G S S D D 0 0",
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 78.5,
-    "lumaStd": 67,
+    "meanLuma": 93.4,
+    "lumaStd": 69.5,
     "whiteShare": 0,
-    "colours": 332
+    "colours": 661
    }
   }
  ]

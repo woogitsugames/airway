@@ -1,4 +1,4 @@
-# Airway store deliverables — tasks 26 and 36
+# Airway store deliverables — tasks 26, 36 and 40
 
 The Polish and English copy is ready to paste from [pl.md](pl.md) and [en.md](en.md). Verify every described feature against the integrated release build before publishing.
 
@@ -25,12 +25,14 @@ When the gameplay is integrated, run these commands:
 
 The capture uses the environment-provided Playwright/Chromium and launches Vite. A running server can be selected with the option --base-url=http://127.0.0.1:5173/ (after the npm run store:shots -- separator).
 
-Five deterministic scenes are captured for both Polish and English:
-- **game-dusk**: Europe at dusk, active routes and in-world HUD.
-- **upgrade**: three weekly freight-label upgrades.
-- **menu**: split-flap departures board and airport sign.
-- **failure**: overloaded hub, cancelled flights and cause report.
-- **night**: night-side globe with real city and airport lights.
+Five deterministic scenes are captured for both Polish and English, in the store order of D-63 (the same order
+as `SCENES` in `scripts/store-shots.mjs`, the contact-sheet columns, the manifest and the captions in pl.md/en.md):
+1. **night**: night-side globe with real city and airport lights.
+2. **game**: the network in golden low-sun light just before sunset, active routes and in-world HUD
+   (called `game-dusk` before task 40).
+3. **upgrade**: three weekly freight-label upgrades.
+4. **failure**: overloaded hub, cancelled flights and cause report.
+5. **menu**: split-flap departures board and airport sign.
 
 Each is captured at three viewport sizes:
 
@@ -50,8 +52,14 @@ The phone profile matches the Google Play 9:16 minimum game screenshot dimension
 endless run on seed 0xA1A1 and is played by the DEV autoplay bot through real Commands (route tool, dock, weekly
 board); nothing writes game state directly:
 
-- **game-dusk / night**: about one game day of autoplay, then the bot keeps playing until the sun stands 95° west
-  of the camera centre (terminator crossing the view) or 180° away (midnight under the camera).
+- **night**: about one game day of autoplay, then the bot keeps playing until the sun stands 180° from the camera
+  centre (midnight under the camera).
+- **game** ([task-40], D-63): the same day of autoplay, then the bot plays on until the sun elevation over the network
+  centroid (spherical mean of the open airports) is 0.05 (`STORE_GAME_SUN_DOT`, daynight.ts units) in the evening:
+  just on the sunny side of the terminator, inside the warm band. On seed 0xA1A1 that is hour angle −70.7° at
+  31.2°E 38.2°N (≈17:05 on the boarding pass). The old fixed −95° from the camera centre left the network past the
+  terminator (the oblique camera centre lies far south of the network). The chosen angle is written to
+  `data-store-shot-sun` and recorded in the manifest.
 - **upgrade**: autoplay until the first weekly board.
 - **failure**: one game day of autoplay, then the player stops building and real demand jams a hub.
 - **menu**: the real departures board over the turning globe.
@@ -68,6 +76,14 @@ glyphs painted on top only from the six D-08 shapes (chevron, bow-tie, crescent,
 the provisional Asia/Oceania glyphs). Results go to `shots/manifest.json`; the contact sheet is
 [contact-sheet.png](contact-sheet.png). `npm run test:store-shots` re-checks the committed PNGs, manifest and sheet.
 Preview one scene without publishing: `node scripts/store-shots.mjs --only=night --out=/tmp/x`.
+
+[task-40] Light checks, recorded per shot in the manifest (`sun`, `contrast`, `warmth`) and re-checked by
+`--validate`: the manifest must list the shots in store order; in `game` and `night` routes, airports and planes keep
+≥ 4.5:1 against the globe (D-47 probe, `src/render/contrast.ts` via the DEV `window.__awWorld`); in `game` the globe
+alone (DOM overlay hidden, inside the projected disc) must have a golden-pixel share ≥ 0.045 (R > 1.3 G, G > 1.05 B;
+seed 0xA1A1 phone: noon 0.005, mid-afternoon 0.029, the old −95° shot 0.015, the new golden shot ≈ 0.08).
+A full fresh run can be checked outside the repo: `node scripts/store-shots.mjs --out=/tmp/x` then
+`node scripts/store-shots.mjs --validate --out=/tmp/x`.
 
 ## Publication visual checklist
 
