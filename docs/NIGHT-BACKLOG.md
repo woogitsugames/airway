@@ -199,6 +199,10 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       starting; dropping an aircraft on a route, picking the weekly card and the network closing were silent, and no
       test covered haptics at all. Light impact on an accepted aircraft drop and weekly pick, one heavy impact when
       the network closes; still behind the "Haptic feedback" switch, presentation only (D-13). `test:haptics`.
+- [ ] N10g **Draw the curfew barrier in the game** — the renderer has a red-white barrier ring for an airport closed
+      by the night curfew (task 11), but the game never called `setCurfew` (only `reset` cleared it): from Endless
+      week 4 and in the curfew puzzles a closed airport looked open while planes held. Session sync feeds the
+      sim's `curfewClosed` per city to the world on change only.
 
 ## Log
 <!-- one line per finished item: date UTC · item · PR · gate summary -->
