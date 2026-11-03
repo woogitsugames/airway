@@ -29,6 +29,8 @@ import { getLanguage, setPseudoLocale, t } from './i18n';
 import { configureHaptics, createDefaultStorage, createNativeInstallMarker, forgetIdentityOnNewInstall, GameLifecycle, shareDailyResult, type KeyValueStorage } from './platform';
 import { initializeAccessibility } from './ui/a11y';
 import { initializeMotion } from './ui/motion';
+import { mountUnsupported } from './ui/unsupported'; // [night-11h]
+import { gpuRendererString, webgl2Available } from './render/contextGuard'; // [night-11h]
 import { readBestRecord } from './ui/gameover/storage';
 import { mountPuzzleSelector, readPuzzleProgress } from './ui/puzzles';
 import { onSettingsChange, readSettings } from './ui/settings/settings';
@@ -85,7 +87,13 @@ async function boot(): Promise<void> {
     world = createWorld(app, t('canvas.label'), readSettings().graphics);
     world.showMenuBackdrop();
   } catch (error) {
-    console.error('WebGL is unavailable; the menu stays on the flat sky.', error);
+    // [night-11h] D-89: no WebGL 2 (three.js r170 needs it). A plain page says so instead of a blank sky whose
+    // Play button led nowhere; the renderer string is what a support mail needs.
+    console.error('WebGL 2 is unavailable.', error);
+    if (!webgl2Available(() => document.createElement('canvas'))) {
+      mountUnsupported(app, gpuRendererString(() => document.createElement('canvas')));
+      return;
+    }
   }
   // [night-09c] D-80: the boarding pass band reads the CSS variable; the plane liveries paint through this hook
   // once the renderer offers `setAirlineColour` (the livery models belong to the parallel M1 task).

@@ -8,6 +8,7 @@
  * canvas' top-left corner, matching `GlobeOrbitCamera` and the gesture recognizer.
  */
 import { Color, PerspectiveCamera, Scene, Vector3, WebGLRenderer } from 'three';
+import { createContextGuard } from './contextGuard'; // [night-11h]
 import { createAirports, type AirportsLayer } from './airports';
 import { GlobeOrbitCamera, type OrbitCameraOptions, type SafeAreaInsets } from './camera';
 import { createGlobe, createSunLights, type GlobeInstance } from './globe';
@@ -120,6 +121,10 @@ export interface WorldRenderer {
   readonly quality: QualityProfile;
   /** Resolves when the land mask, terrain and decorations are in the scene. */
   readonly ready: Promise<void>;
+  /** [night-11h] D-89: true while the WebGL context is lost (nothing draws; the caller pauses the run). */
+  contextLost(): boolean;
+  /** [night-11h] Called with true on context loss and false once it is restored and the quality re-applied. */
+  onContextChange(listener: (lost: boolean) => void): () => void;
   setSun(lon: number, lat: number): void;
   /** Day/night from the authoritative tick plus render interpolation fraction. */
   setTime(tick: number, fraction?: number): void;
@@ -240,6 +245,16 @@ export function createWorldRenderer(
   if (observed) onResize();
   else resize(element.clientWidth || 412, element.clientHeight || 915);
 
+  // [night-11h] D-89: on restore three.js re-creates its GL state and re-uploads buffers and textures on the next
+  // draw; the quality profile (DPR, shadows, size) is re-applied and the frame cap / adaptive monitor restart, so the
+  // loss gap is never read as a slow frame.
+  const guard = createContextGuard(element, () => {
+    applyQualityProfile(renderer, quality);
+    lights.applyQuality(quality);
+    resize(orbit.viewportWidth, orbit.viewportHeight);
+    lastPaintAt = 0;
+    pendingDt = 0;
+  });
   const ready = loadGlobe();
   ready.catch(() => { /* surfaced to the caller through `ready` */ });
 
@@ -290,6 +305,8 @@ export function createWorldRenderer(
 
   const world: WorldRenderer = {
     canvas: element, scene, camera, orbit, ready,
+    contextLost: () => guard.lost(),
+    onContextChange: (listener) => guard.onChange(listener),
     get quality() { return quality; },
     setSun: (lon, lat) => lights.setSun(lon, lat),
     setTime(tick, fraction = 0) {
@@ -344,7 +361,7 @@ export function createWorldRenderer(
     setRoutePreview: (model) => preview.update(model),
     setPlanes: (previous, current) => planes.setSnapshots(previous, current),
     render(alpha, dtSeconds) {
-      if (disposed) return false;
+      if (disposed || guard.lost()) return false;
       const now = performance.now();
       pendingDt += dtSeconds;
       if (lastPaintAt !== 0 && !frameDue(now - lastPaintAt, quality.maxFps)) return false;
@@ -407,7 +424,7 @@ export function createWorldRenderer(
       if (rebuild) await loadGlobe();
     },
     drawModelPreview(kind, target) {
-      if (disposed) return false;
+      if (disposed || guard.lost()) return false;
       models ??= createModelPreviewRenderer(renderer);
       return models.draw(kind, target);
     },
@@ -436,6 +453,7 @@ export function createWorldRenderer(
     dispose() {
       if (disposed) return;
       disposed = true;
+      guard.dispose();
       observer?.disconnect();
       globe?.dispose();
       globe = null;

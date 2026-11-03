@@ -18,3 +18,4 @@ export { renderModel } from './modelPreview';
 export { contrastRatio, relativeLuminance, type LayerContrast, type PixelRect } from './contrast'; // [task-34]
 export { insetsFromLayout, menuFraming, solveZoomForRadius, menuSpinRate, MENU_SPIN_DEG_PER_S, type LayoutRect, type MenuFraming } from './framing'; // [task-34] [task-39]
 export { createMenuNetwork, type MenuNetwork } from './menuNetwork'; // [task-34]
+export { gpuRendererString, webgl2Available } from './contextGuard'; // [night-11h] D-89

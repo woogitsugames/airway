@@ -3,6 +3,11 @@ import type { en } from './en';
 export const pl = {
   'app.title': 'Airway',
   'canvas.label': 'Świat gry Airway',
+  'gl.lost': 'Grafika uruchamia się ponownie. Gra czeka i ruszy sama.',
+  'gl.unsupported.title': 'Grafika tego urządzenia nie jest obsługiwana',
+  'gl.unsupported.body': 'Airway rysuje globus przez WebGL 2, którego to urządzenie albo jego przeglądarka nie oferuje. Może pomóc aktualizacja systemu i Android System WebView (albo Chrome).',
+  'gl.unsupported.renderer': 'Grafika: {renderer}',
+  'gl.unsupported.mail': 'Jeśli do nas piszesz, podaj ten wiersz.',
   'status.loading': 'Wczytywanie',
   'status.ready': 'Gotowe',
   'language.english': 'Angielski',
