@@ -120,6 +120,8 @@
 }
 .airway-upgrade-code { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .airway-upgrade-count { flex: none; }
+/* [task-40] Narrow phones (EN "FREIGHT · WB-300" at 360 dp): tighter tracking instead of an ellipsis. */
+@container (max-width: 220px) { .airway-upgrade-heading { letter-spacing: .04em; gap: 6px; } }
 .airway-upgrade-title {
   margin-top: 8px;
   font: 800 var(--title-size)/1.08 Overpass, sans-serif;
