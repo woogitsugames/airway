@@ -6,6 +6,8 @@ import './ui/base.css';
 import './ui/theme/theme.css';
 import './ui/game.css';
 import { bootAudio, audioSettingsFromToggles } from './audio';
+import { createFlapRattle } from './game/flapSound'; // [night-07e]
+import { onSplitFlapAnimate } from './ui/flap'; // [night-07e]
 import { dailyKey } from './core/daily';
 import { PUZZLES } from './data/puzzles';
 import { registerDevGameAdapter, type AwDevState, type AwScreen } from './game/devHandle';
@@ -60,6 +62,9 @@ interface SavedSummary { readonly mode: RunMode; readonly week: number; readonly
 async function boot(): Promise<void> {
   configureHaptics({ isEnabled: () => readSettings().haptics });
   const { audio } = bootAudio({ toggles: readSettings() });
+  // [night-07e] Departure boards rattle when they flip (menu, puzzles, game over, ranking).
+  const rattle = createFlapRattle(() => { audio.emit({ type: 'flap' }); });
+  onSplitFlapAnimate((cells, durationMs) => rattle.animate(cells, durationMs));
   let appliedQuality = readSettings().graphics;
   onSettingsChange((settings) => {
     audio.setSettings(audioSettingsFromToggles(settings));

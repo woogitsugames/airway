@@ -35,6 +35,12 @@ lowers the filter cutoff; `setNight(true)` dims the overall music bus; dawn
 blooms a three-note chord. Menu flap, paper, tag, stamp and new-city bell are
 synthesised locally with deterministic generated noise and oscillators.
 
+## Night N7e: split-flap rattle
+
+`src/ui/flap.ts` reports every board animation through `onSplitFlapAnimate`; `src/game/flapSound.ts` merges the
+rows that start together (a whole departures board) into one rattle of at most 8 `flap` clicks, 45 ms apart, wired
+in `src/main.ts`. Reduced motion means no flip and therefore no rattle; the Sound toggle mutes it like every effect.
+
 ## Night N3 additions (D-71)
 
 - Hub cues may carry `regionId`; `REGION_SCALES` gives each region its rotation of the same pentatonic set.

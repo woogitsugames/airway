@@ -40,6 +40,12 @@ export interface FlapOptions {
   initialAnimation?: boolean;
 }
 
+/** [night-07e] Called when a board starts flipping `cells` tiles over `durationMs` (sound hook, D-71). */
+export type SplitFlapListener = (cells: number, durationMs: number) => void;
+let flapListener: SplitFlapListener | null = null;
+/** [night-07e] One listener for every SplitFlap; the UI layer stays free of audio imports. */
+export function onSplitFlapAnimate(listener: SplitFlapListener | null): void { flapListener = listener; }
+
 function panel(className: string, letter: string): HTMLSpanElement {
   const node = document.createElement('span');
   node.className = className;
@@ -129,6 +135,7 @@ export class SplitFlap {
       target.forEach((letter, index) => this.putLetter(this.tiles[index], letter));
       return;
     }
+    if (steps.length) flapListener?.(steps.length, steps[steps.length - 1].delay + FLAP_DURATION_MS);
     const stepsByIndex = new Map(steps.map((step) => [step.index, step]));
     for (let i = 0; i < this.tiles.length; i++) {
       const tile = this.tiles[i];
