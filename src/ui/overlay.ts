@@ -48,6 +48,14 @@ interface BubbleEntry {
   /** [night-10a] Ink "NEW" stub at the front of the tag while the airport is newly opened. */
   fresh: HTMLSpanElement;
   isNew: boolean;
+  /**
+   * [night-10u] Glyph nodes kept per kind ("EUN", "EUN~" hollow) and reused on every rebuild, plus the "+N" count
+   * and the children last written, so a passenger change edits only the nodes that differ.
+   */
+  glyphPool: Map<string, SVGSVGElement[]>;
+  more: HTMLSpanElement;
+  children: Node[];
+  ariaLabel: string;
   /** [night-10h] Red-white boom-barrier stub while the night curfew closes the airport. */
   barrier: HTMLSpanElement;
   closed: boolean;
@@ -206,32 +214,58 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
     return entry;
   }
 
+  /** [night-10u] The nth glyph of one kind in this rebuild: an existing node from the pool, or a new one. */
+  function pooledGlyph(entry: BubbleEntry, region: DestinationRegion, hollow: boolean, used: Map<string, number>): SVGSVGElement {
+    const key = hollow ? region + '~' : region;
+    const n = used.get(key) ?? 0;
+    used.set(key, n + 1);
+    let list = entry.glyphPool.get(key);
+    if (!list) { list = []; entry.glyphPool.set(key, list); }
+    return list[n] ??= hollow ? connectingGlyph(region) : regionGlyph(region);
+  }
+
+  const usedKinds = new Map<string, number>();
+  const nextChildren: Node[] = [];
+
   function rebuildBubble(entry: BubbleEntry): void {
     const bubble = entry.bubble;
-    bubble.replaceChildren();
+    const want = nextChildren;
+    want.length = 0;
+    usedKinds.clear();
     const limit = Math.min(MAX_GLYPHS, entry.waiting.length);
     let freshWidth = 0;
     if (entry.isNew) {
       const label = t('airport.new');
-      entry.fresh.textContent = label;
+      if (entry.fresh.textContent !== label) entry.fresh.textContent = label;
       freshWidth = Math.ceil(NEW_PAD + label.length * NEW_CHAR);
       entry.fresh.style.width = freshWidth + 'px';
-      bubble.appendChild(entry.fresh);
+      want.push(entry.fresh);
     }
-    if (entry.closed) bubble.appendChild(entry.barrier);
+    if (entry.closed) want.push(entry.barrier);
     // [night-10i] Transfers still inside the connection time are drawn hollow: the same shape, not yet "boardable".
     // When the tag overflows, at most half of the shown glyphs are hollow so ready passengers stay visible.
     const total = entry.waiting.length;
     const hollow = Math.min(entry.connecting, total > MAX_GLYPHS ? Math.ceil(limit / 2) : limit);
-    for (let i = 0; i < limit - hollow; i++) bubble.appendChild(regionGlyph(entry.waiting[i]));
-    for (let i = total - hollow; i < total; i++) bubble.appendChild(connectingGlyph(entry.waiting[i]));
+    for (let i = 0; i < limit - hollow; i++) want.push(pooledGlyph(entry, entry.waiting[i], false, usedKinds));
+    for (let i = total - hollow; i < total; i++) want.push(pooledGlyph(entry, entry.waiting[i], true, usedKinds));
     if (entry.waiting.length > MAX_GLYPHS) {
-      const more = document.createElement('span');
-      more.className = 'airport-bubble__count';
-      more.textContent = '+' + (entry.waiting.length - MAX_GLYPHS);
-      bubble.appendChild(more);
+      const more = '+' + (entry.waiting.length - MAX_GLYPHS);
+      if (entry.more.textContent !== more) entry.more.textContent = more;
+      want.push(entry.more);
     }
-    bubble.appendChild(entry.timer);
+    want.push(entry.timer);
+    // [night-10u] Write only where the child list differs from the last rebuild (most changes touch one glyph).
+    const last = entry.children;
+    let same = last.length === want.length;
+    for (let i = 0; same && i < want.length; i++) same = last[i] === want[i];
+    if (!same) {
+      for (let i = 0; i < want.length; i++) {
+        const current = bubble.childNodes[i] ?? null;
+        if (current !== want[i]) bubble.insertBefore(want[i]!, current);
+      }
+      while (bubble.childNodes.length > want.length) bubble.lastChild!.remove();
+      entry.children = want.slice();
+    }
     const jammed = entry.jamSeconds !== null;
     bubble.classList.toggle('airport-bubble--jam', jammed);
     entry.edge.classList.toggle('airport-edge--jam', jammed);
@@ -243,8 +277,9 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
     bubble.classList.toggle('airport-bubble--new', entry.isNew);
     entry.edge.classList.toggle('airport-edge--new', entry.isNew && !jammed);
     entry.edge.classList.toggle('airport-edge--curfew', entry.closed && !jammed); // [night-10h]
-    entry.edge.setAttribute('aria-label', t('airport.focus', { code: entry.airport.code }) +
-      (entry.closed ? ' ' + t('airport.curfewAria', { code: entry.airport.code }) : ''));
+    const edgeAria = t('airport.focus', { code: entry.airport.code }) +
+      (entry.closed ? ' ' + t('airport.curfewAria', { code: entry.airport.code }) : '');
+    if (entry.edge.getAttribute('aria-label') !== edgeAria) entry.edge.setAttribute('aria-label', edgeAria);
     sizeTagGroup(entry.tag, entry.mainWidth, entry.slotRect);
     entry.timer.hidden = !jammed;
     if (jammed) {
@@ -252,9 +287,10 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       entry.timer.textContent = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
     }
     const label = jammed ? t('airport.jammed', { code: entry.airport.code, seconds: Math.ceil(entry.jamSeconds ?? 0) }) : t('airport.waiting', { code: entry.airport.code, count: entry.waiting.length });
-    bubble.setAttribute('aria-label', (entry.isNew ? t('airport.newAria', { code: entry.airport.code }) + ' ' : '') +
+    const aria = (entry.isNew ? t('airport.newAria', { code: entry.airport.code }) + ' ' : '') +
       (entry.closed ? t('airport.curfewAria', { code: entry.airport.code }) + ' ' : '') + label +
-      (entry.connecting > 0 ? ' ' + t('airport.connectingAria', { count: entry.connecting }) : ''));
+      (entry.connecting > 0 ? ' ' + t('airport.connectingAria', { count: entry.connecting }) : '');
+    if (aria !== entry.ariaLabel) { bubble.setAttribute('aria-label', aria); entry.ariaLabel = aria; }
     bubble.classList.toggle('airport-bubble--connecting', entry.connecting > 0);
   }
 
@@ -356,6 +392,8 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       const barrier = document.createElement('span');
       barrier.className = 'airport-bubble__curfew';
       barrier.innerHTML = BARRIER_SVG;
+      const more = document.createElement('span');
+      more.className = 'airport-bubble__count';
       const edge = document.createElement('button');
       edge.type = 'button';
       edge.className = 'airport-edge';
@@ -383,6 +421,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       const tag: TagSlot = { id: airport.id, anchorX: 0, anchorY: 0, width: 30, height: 30, active: false, jammed: false, x: 0, y: 0, placed: false };
       const entry: BubbleEntry = {
         airport, normal, anchor, bubble, edge, timer, fresh, isNew: false, barrier, closed: false, tag,
+        glyphPool: new Map(), more, children: [], ariaLabel: '',
         slot, slotLabel, slotTime, slotCount, slotRect: { width: 0, x: 0, y: 0, visible: false }, slotHeld: 0, slotMinutes: 0,
         mainWidth: 0, slotVisible: false, lastSlotX: NaN, lastSlotY: NaN,
         waiting: [], connecting: 0, jamSeconds: null,
