@@ -50,7 +50,7 @@
   mask: radial-gradient(circle 7px at var(--cut) 0, transparent 98%, #000) top / 100% 51% no-repeat,
     radial-gradient(circle 7px at var(--cut) 100%, transparent 98%, #000) bottom / 100% 51% no-repeat;
 }
-.airway-pass__band { width: 7px; flex: 0 0 7px; background: var(--hud-teal); }
+.airway-pass__band { width: 7px; flex: 0 0 7px; background: var(--airway-airline, var(--hud-teal)); } /* [night-09c] D-80 */
 .airway-pass__field { min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 3px; padding: 0 6px; }
 .airway-pass__label { font-size: 9px; font-weight: 700; letter-spacing: .075em; text-transform: uppercase; color: #665f55; }
 .airway-pass__field strong { overflow: hidden; text-overflow: clip; font: 800 17px/1 'Overpass', sans-serif; }

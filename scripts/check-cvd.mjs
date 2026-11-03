@@ -84,6 +84,39 @@ for (const [name, matrix] of Object.entries(MATRICES)) {
     failed++;
   }
 }
-console.log('SUMMARY test:cvd seed=' + SEED + ' modes=3 colours=' + entries.length +
+// [night-09c] D-80: the player's airline colours must stay apart from each other in normal vision and in all
+// three simulations, and every one must stand out from the cream aircraft body it accents.
+const airline = Object.entries(JSON.parse(readFileSync(new URL('../src/data/airline-colours.json', import.meta.url), 'utf8')));
+const AIRCRAFT_BODY = '#f7f3ea';
+const MIN_BODY_DELTA_E = 40;
+if (airline.length < 4 || airline.some(([, hex]) => !/^#[0-9a-fA-F]{6}$/.test(hex))) {
+  console.error('FAIL Expected at least four airline colours as #rrggbb');
+  failed++;
+}
+const IDENTITY = [[1, 0, 0], [0, 1, 0], [0, 0, 1]];
+for (const [name, matrix] of Object.entries({ normal: IDENTITY, ...MATRICES })) {
+  let minimum = Number.POSITIVE_INFINITY;
+  let worstPair = '';
+  for (let i = 0; i < airline.length; i++) {
+    for (let j = i + 1; j < airline.length; j++) {
+      const distance = deltaE(simulate(airline[i][1], matrix), simulate(airline[j][1], matrix));
+      comparisons++;
+      if (distance < minimum) { minimum = distance; worstPair = airline[i][0] + '/' + airline[j][0]; }
+    }
+  }
+  console.log('airline ' + name + ': min DeltaE76=' + minimum.toFixed(2) + ' (' + worstPair + ')');
+  if (!(minimum >= MIN_DELTA_E)) {
+    console.error('FAIL airline ' + name + ' minimum below ' + MIN_DELTA_E);
+    failed++;
+  }
+}
+for (const [id, hex] of airline) {
+  const distance = deltaE(simulate(hex, IDENTITY), simulate(AIRCRAFT_BODY, IDENTITY));
+  if (!(distance >= MIN_BODY_DELTA_E)) {
+    console.error('FAIL airline ' + id + ' too close to the aircraft body: ' + distance.toFixed(2));
+    failed++;
+  }
+}
+console.log('SUMMARY test:cvd seed=' + SEED + ' modes=3 colours=' + entries.length + ' airline=' + airline.length +
   ' comparisons=' + comparisons + ' passed=' + (failed ? 0 : 1) + ' failed=' + failed);
 if (failed) process.exitCode = 1;

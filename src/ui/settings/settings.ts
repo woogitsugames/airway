@@ -5,6 +5,7 @@ import { getLanguage, setLanguage, t, type Language, type TranslationKey } from 
 import { QUALITY_PREFERENCES, type QualityPreference } from '../../render';
 import { readAccessibilitySettings, updateAccessibilitySettings, type TextScale } from '../a11y';
 import { readAirportLabelMode, type AirportLabelMode } from '../airportLabel';
+import { AIRLINE_COLOURS, airlineColourHex, applyAirlineColour, isAirlineColour, readAirlineColour, type AirlineColourId } from '../airlineColour';
 import '../menu/menu.css';
 
 export interface UserSettings {
@@ -17,9 +18,11 @@ export interface UserSettings {
   textScale: TextScale;
   /** [night-05] D-68: airport code or city name on stamps and airport labels. */
   airportLabels: AirportLabelMode;
+  /** [night-09c] D-80: the player's airline colour (tail fin, livery accents, boarding pass band). */
+  airlineColour: AirlineColourId;
 }
 const KEY='airway.settings';
-type LocalField='sound'|'music'|'graphics'|'airportLabels';
+type LocalField='sound'|'music'|'graphics'|'airportLabels'|'airlineColour';
 const QUALITY:readonly QualityPreference[]=QUALITY_PREFERENCES;
 const listeners=new Set<(settings:UserSettings)=>void>();
 
@@ -43,6 +46,7 @@ export function readSettings():UserSettings {
     colorblind:a11y.enhancedGlyphs,
     textScale:a11y.textScale,
     airportLabels:readAirportLabelMode(),
+    airlineColour:readAirlineColour(),
   };
 }
 
@@ -54,16 +58,18 @@ export function saveSettings(change:Partial<UserSettings>):UserSettings {
   if(change.colorblind!==undefined) a11y.enhancedGlyphs=change.colorblind;
   if(change.textScale!==undefined) a11y.textScale=change.textScale;
   if(Object.keys(a11y).length) updateAccessibilitySettings(a11y);
-  const local:Partial<Record<LocalField,boolean|QualityPreference|AirportLabelMode>>={};
+  const local:Partial<Record<LocalField,boolean|QualityPreference|AirportLabelMode|AirlineColourId>>={};
   if(change.sound!==undefined) local.sound=change.sound;
   if(change.music!==undefined) local.music=change.music;
   if(change.graphics!==undefined) local.graphics=change.graphics;
   if(change.airportLabels!==undefined) local.airportLabels=change.airportLabels==='name'?'name':'code';
+  if(change.airlineColour!==undefined && isAirlineColour(change.airlineColour)) local.airlineColour=change.airlineColour;
   if(Object.keys(local).length){
     try { globalThis.localStorage?.setItem(KEY,JSON.stringify({...storedRecord(),...local})); }
     catch { /* Preferences still apply to this session via the listeners. */ }
   }
   const settings={...readSettings(),...local} as UserSettings;
+  if(change.airlineColour!==undefined && isAirlineColour(change.airlineColour)) applyAirlineColour(change.airlineColour);
   listeners.forEach((listener)=>listener(settings));
   return settings;
 }
@@ -132,6 +138,17 @@ export function createSettings(onBack:()=>void,onLicenses:()=>void,onLanguageCha
   selectField(t('settings.airportLabels'),values.airportLabels,[['code',t('settings.airportLabels.code')],['name',t('settings.airportLabels.name')]],(v)=>{
     saveSettings({airportLabels:v==='name'?'name':'code'});
   });
+  // [night-09c] D-80: the swatch beside the label shows the chosen colour; names come from i18n.
+  selectField(t('settings.airline'),values.airlineColour,AIRLINE_COLOURS.map((id)=>[id,t(`settings.airline.${id}` as TranslationKey)] as const),(v)=>{
+    if(isAirlineColour(v)) saveSettings({airlineColour:v});
+    swatch.style.background=airlineColourHex(readAirlineColour());
+  });
+  const airlineRow=paper.lastElementChild as HTMLElement;
+  airlineRow.dataset.testid='settings-airline';
+  const swatch=e('i','airway-setting__swatch');
+  swatch.setAttribute('aria-hidden','true');
+  swatch.style.background=airlineColourHex(values.airlineColour);
+  airlineRow.firstElementChild?.prepend(swatch);
   selectField(t('a11y.textScale'),String(values.textScale),[['100','100%'],['115','115%'],['130','130%']],(v)=>{
     saveSettings({textScale:v==='115'?115:v==='130'?130:100});
   });
