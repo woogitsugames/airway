@@ -231,6 +231,13 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       the stars on the departure flap ("best +26%") and as "Your best" on the level ticket; beating it adds "new
       best" to the result. `src/game/puzzleBest.ts`, `test:puzzle-best`, `e2e/puzzle-best.mjs`, `e2e/puzzles.mjs`
       checks the margin on every level.
+- [x] N10m **Long play at unusual sizes: game-over actions on short phones** — `ui:long-play` 14 min each, EN
+      1280×800 4× (4 runs, issues=0) and PL 360×640 2× (2 runs, 4 issues). Found: the game-over report of a week-2
+      jam (four cancelled departures, three PL causes, a new record) put "New world" and "Menu" below a 360×640
+      screen (N7p fitted only the short fixture). Short portrait screens now put the three actions in one row and
+      show 2½ (≤ 700 px tall) or 1½ (≤ 600 px) departure rows before the list scrolls. The other three issues were
+      the long-play script clicking a disabled "Expand hub" crate (no hub yet); it now picks only enabled crates.
+      `e2e/gameover-short.mjs`.
 
 ## Log
 <!-- one line per finished item: date UTC · item · PR · gate summary -->
