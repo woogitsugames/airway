@@ -310,9 +310,11 @@ export async function loadSavedSim(storage: KeyValueStorage): Promise<RestoredSi
 
 /**
  * [night-10c] Saved flights the player is told about: a save exists but is damaged, or it comes from newer rules.
+ * [night-11j] A save from older rules that the current rules cannot continue (its replay already ends the run, or
+ * it is longer than the replay cap) is not damaged: it says so ('old-rules').
  * Unreadable storage is not reported — there may be no save at all (private window, blocked storage).
  */
-export type SaveNotice = 'corrupt' | 'unsupported';
+export type SaveNotice = 'corrupt' | 'unsupported' | 'old-rules';
 
 /** loadSavedSim plus why an existing save could not be continued (null: no save, or it restored). */
 export async function loadSavedSimChecked(storage: KeyValueStorage): Promise<{ restored: RestoredSim | null; issue: SaveNotice | null }> {
@@ -321,8 +323,9 @@ export async function loadSavedSimChecked(storage: KeyValueStorage): Promise<{ r
   if (loaded.status === 'error') return { restored: null, issue: loaded.issue === 'storage-unavailable' ? null : loaded.issue };
   const restored = restoreSimDetailed(loaded.save);
   if (!restored) {
-    const newer = loaded.save.paramsVersion !== null && loaded.save.paramsVersion > RULES_VERSION;
-    return { restored: null, issue: newer ? 'unsupported' : 'corrupt' };
+    const version = loaded.save.paramsVersion;
+    const issue = version === null || version === RULES_VERSION ? 'corrupt' : version > RULES_VERSION ? 'unsupported' : 'old-rules';
+    return { restored: null, issue };
   }
   if (restored.replayed) await writeGame(storage, saveSourceFromSim(restored.sim));
   return { restored, issue: null };

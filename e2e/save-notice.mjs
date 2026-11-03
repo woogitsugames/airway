@@ -1,12 +1,13 @@
 // [night-10c] A saved flight that cannot be continued is said so on the menu instead of vanishing silently:
 // a damaged save and a save from newer rules each show their notice (PL + EN), the Continue row is absent, and
-// the notice goes once a new flight starts. 412×915, fails closed; shots into docs/shots/n10c/.
-import { mkdirSync } from 'node:fs';
+// the notice goes once a new flight starts. [night-11j] A rules-v4 save the v5 rules cannot continue says
+// "older rules version" (PL), not "damaged". 412×915, fails closed; shots into docs/shots/n10c/.
+import { mkdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { withBrowser, newGamePage, waitForScreen, assert, clickTestId, saveDiagnostics, ROOT, SEED } from './browser.mjs';
 
-const STEPS = 4;
+const STEPS = 6;
 const started = performance.now();
 const SHOTS = resolve(ROOT, 'docs/shots/n10c');
 const results = [];
@@ -37,6 +38,9 @@ try {
     const cases = [
       ['pl', 'damaged', '{"v":1,"broken', 'Zapisany lot jest uszkodzony'],
       ['en', 'newer', JSON.stringify({ v: 99, future: true }), 'newer version of Airway'],
+      // [night-11j] The frozen rules-v4 save: rules v5 end that run, so it is an old-rules save, not a damaged one.
+      ['pl', 'older', JSON.parse(readFileSync(resolve(ROOT, 'scripts/fixtures/save-golden-v4.json'), 'utf8')).save,
+        'Zapisany lot ze starszej wersji zasad'],
     ];
     for (const [language, kind, raw, expected] of cases) {
       const { page, errors } = await newGamePage(browser, url, language, { width: 412, height: 915 });
@@ -51,7 +55,7 @@ try {
           results.push({ label, status: 'FAIL', why: String(error?.message ?? error).split('\n')[0] + (shot ? ` (${shot})` : '') });
         }
       };
-      await step(`${language}: a ${kind} save shows its notice and no Continue row`, async () => {
+      await step(`${language}: ${kind === "older" ? "an" : "a"} ${kind} save shows its notice and no Continue row`, async () => {
         await waitForScreen(page, 'menu');
         assert(await page.locator('.airway-notice').isHidden(), 'notice shown without a save');
         await putSave(page, raw);

@@ -236,6 +236,7 @@ export const en = {
   // [task-16] Save/load issues are translated by the composition root.
   'save.error.corrupt': 'The saved flight is damaged and cannot be continued.', // [night-10c] menu notice
   'save.error.unsupported': 'The saved flight comes from a newer version of Airway. Update the game to continue it.',
+  'save.error.oldRules': 'Saved flight from an older rules version: the current rules cannot continue it.', // [night-11j]
   // [task-20] Accessibility settings, controls and city announcements.
   'a11y.textScale': 'Text size',
   'a11y.enhancedGlyphs': 'Larger destination symbols with thicker outlines',

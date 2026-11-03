@@ -237,6 +237,7 @@ export const pl = {
   // [task-16] Save/load issue messages.
   'save.error.corrupt': 'Zapisany lot jest uszkodzony i nie da się go kontynuować.', // [night-10c] menu notice
   'save.error.unsupported': 'Zapisany lot pochodzi z nowszej wersji Airway. Zaktualizuj grę, aby go kontynuować.',
+  'save.error.oldRules': 'Zapisany lot ze starszej wersji zasad: obecne zasady nie pozwalają go kontynuować.', // [night-11j]
   // [task-20] Accessibility settings, controls and city announcements.
   'a11y.textScale': 'Rozmiar tekstu',
   'a11y.enhancedGlyphs': 'Większe symbole celów z grubszym konturem',
