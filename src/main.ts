@@ -156,6 +156,7 @@ async function boot(): Promise<void> {
       else openPuzzles();
     },
     onScreen: (name: ScreenName) => {
+      world?.setCovered(name !== 'menu' && name !== 'game'); // [night-11a] opaque pages hide the globe
       if (name !== 'game') {
         if (session) { endSession(); world?.reset(); }
         world?.showMenuBackdrop();

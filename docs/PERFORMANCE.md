@@ -263,3 +263,13 @@ their glyph nodes per kind and only insert/remove the children that differ, and 
 |---|---|---|---|
 | before | 0.24–0.25 | 0.96–1.03 | 3.81–3.84 |
 | after | 0.16–0.19 | 0.76–0.81 | 2.58–2.88 |
+
+## N11a — no globe frames behind opaque pages (2026-11-03)
+
+Settings, licences, logbook, the puzzle board/levels and the tutorial replay cover the whole canvas with an opaque
+paper or sky page, but `src/game/world.ts` kept drawing the menu globe (spin, demo planes, terrain) under them: on
+SwiftShader 36 frames in 1.2 s behind settings, on a phone the full 60–120 Hz for as long as a puzzle takes. The
+screen router now calls `world.setCovered(name !== 'menu' && name !== 'game')`; while covered and no run is attached,
+the rAF loop returns before any camera, demo or render work (the loop itself stays, so the first frame after Back is
+drawn on the next vsync). `test:e2e:covered-pages` reads the DEV probe `__awWorld.frames()`: 0 frames behind every
+page, ≥ 3 per 1.2 s on the menu and in a game.

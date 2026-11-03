@@ -44,6 +44,8 @@ export interface World {
   setQuality(preference: QualityPreference): void;
   /** Clear all game layers (menu ↔ new run). */
   reset(): void;
+  /** [night-11a] An opaque full-screen page (settings, logbook, puzzles, tutorial) hides the globe: stop drawing it. */
+  setCovered(covered: boolean): void;
   /** Per-frame hook: advance the run, return the authoritative tick and accumulator fraction. */
   onFrame(callback: ((dtSeconds: number) => FrameState | void) | null): void;
   dispose(): void;
@@ -155,10 +157,14 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
   let frameCallback: ((dt: number) => FrameState | void) | null = null;
   let last = performance.now();
   let raf = 0;
+  // [night-11a] Settings, licences, logbook, puzzles and the tutorial cover the canvas with an opaque page; the globe
+  // (menu spin, demo planes, terrain) kept drawing at full rate behind them, minutes of GPU work on a phone for nothing.
+  let covered = false;
+  let drawn = 0;
   // [task-39] What the first rendered menu frame used vs. the framing now (scripts/shots-34.mjs).
   let firstMenuFrame: string | null = null;
   const framingKey = (): string => `${lastFrame} zoom=${renderer.orbit.zoomLevel.toFixed(4)}`;
-  if (import.meta.env.DEV) installWorldProbe(renderer, () => ({ first: firstMenuFrame, now: framingKey(), menuSpin: menuSpin() })); // [task-34]
+  if (import.meta.env.DEV) installWorldProbe(renderer, () => ({ first: firstMenuFrame, now: framingKey(), menuSpin: menuSpin() }), () => drawn); // [task-34]
   /** [task-39] D-62: degrees per second the menu globe turns right now. */
   const menuSpin = (): number => menuSpinRate({
     menuActive, menuShown, reducedMotion: !!reducedMotion?.matches || frozenSpin,
@@ -169,6 +175,7 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
     raf = requestAnimationFrame(loop);
     const dt = Math.min(0.1, Math.max(0, (now - last) / 1000));
     last = now;
+    if (covered && !frameCallback) return; // a running game always draws (no page covers it)
     // [task-39] A layout change since the last frame is framed before drawing, never one frame late.
     if (measureRaf) { cancelAnimationFrame(measureRaf); measure(); }
     // [task-39] First menu show: hold the globe until the sign and board are laid out (bounded).
@@ -188,6 +195,7 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
     }
     if (menuActive && firstMenuFrame === null) firstMenuFrame = framingKey(); // [task-39]
     renderer.render(frame ? frame.alpha : demoAlpha ?? 1, dt);
+    drawn++;
   };
   raf = requestAnimationFrame(loop);
 
@@ -195,6 +203,7 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
     renderer, canvas, camera: renderer.camera, orbit: renderer.orbit, ready: renderer.ready,
     setInsets(next) { insets = next; menuActive = false; menuShown = false; menuWatcher?.disconnect(); demo.stop(); resize(); }, // [task-34] [task-39]
     setIdleSpin(degreesPerSecond) { spin = degreesPerSecond; },
+    setCovered(next) { covered = next; },
     showMenuBackdrop() {
       // [task-34] Mockup menu framing: horizon under the sign (portrait) or the whole disc beside the
       // board (landscape), measured from the live sign/board boxes; a still camera over a small
@@ -245,10 +254,12 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
 }
 
 // [task-34] DEV-only probe for scripts/shots-34.mjs: camera centre and night readability measurements.
-function installWorldProbe(renderer: WorldRenderer, framing: () => { first: string | null; now: string; menuSpin: number }): void {
+function installWorldProbe(renderer: WorldRenderer, framing: () => { first: string | null; now: string; menuSpin: number },
+  frames: () => number): void {
   const probe = {
     ready: false,
     framing, // [task-39]
+    frames, // [night-11a] globe frames drawn so far
     longitude: () => renderer.orbit.longitudeDeg,
     /** [task-40] Globe disc on screen (CSS px, page coordinates) for the store-shot warmth check. */
     disc(): { x: number; y: number; radius: number } | null {
