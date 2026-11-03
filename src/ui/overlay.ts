@@ -5,6 +5,7 @@ import { isDestinationRegion as isValidRegion, regionGlyph, type DestinationRegi
 import {
   attachSlotTag, layoutTags, sizeTagGroup, slotCountdownText, type SlotTagRect, type TagBounds, type TagSlot,
 } from './overlay-layout'; // [task-38] slot tag
+import { REGIONS } from '../data/regions';
 import './overlay.css';
 
 const DEG = Math.PI / 180;
@@ -64,6 +65,8 @@ interface BubbleEntry {
   lastSlotX: number;
   lastSlotY: number;
   waiting: readonly DestinationRegion[];
+  /** [night-10i] Tail of `waiting` still inside the minimum connection time (drawn as hollow glyphs). */
+  connecting: number;
   jamSeconds: number | null;
   edgeSide: 0 | 1 | 2 | 3;
   edgeX: number;
@@ -82,7 +85,8 @@ interface BubbleEntry {
 export interface AirportOverlay {
   readonly layer: HTMLDivElement;
   addAirport(airport: OverlayAirport): void;
-  setPassengers(id: string, waiting: readonly DestinationRegion[]): void;
+  /** `connecting`: how many of the last `waiting` entries are transfers still making their connection. */
+  setPassengers(id: string, waiting: readonly DestinationRegion[], connecting?: number): void;
   setJamCountdown(id: string, seconds: number | null): void;
   /** [task-38] Aircraft held for a departure slot and game minutes to the next slot; held 0 hides the tag. */
   setSlotHold(id: string, held: number, minutes: number): void;
@@ -155,6 +159,21 @@ const BARRIER_SVG = '<svg viewBox="0 0 22 12" width="26" height="14" aria-hidden
   '<path d="M7 3h3l-2 4H5zM13 3h3l-2 4h-3zM19 3h2v1.6L20 7h-3z" fill="#b8322a"/></svg>';
 const NEW_PAD = 10;
 
+/** [night-10i] A transfer passenger still inside the minimum connection time: the region glyph drawn hollow. */
+function connectingGlyph(region: DestinationRegion): SVGSVGElement {
+  const svg = regionGlyph(region);
+  svg.classList.add('airport-region-glyph--connecting');
+  const path = svg.firstElementChild;
+  if (path) {
+    path.setAttribute('fill', '#FBF8F1');
+    path.setAttribute('stroke', REGIONS[region].color);
+    path.setAttribute('stroke-width', '2');
+    path.setAttribute('stroke-linejoin', 'round');
+    path.removeAttribute('paint-order');
+  }
+  return svg;
+}
+
 export function createAirportOverlay(host: HTMLElement, camera: Camera, options: AirportOverlayOptions = {}): AirportOverlay {
   const layer = document.createElement('div');
   layer.className = 'airport-overlay';
@@ -200,7 +219,12 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       bubble.appendChild(entry.fresh);
     }
     if (entry.closed) bubble.appendChild(entry.barrier);
-    for (let i = 0; i < limit; i++) bubble.appendChild(regionGlyph(entry.waiting[i]));
+    // [night-10i] Transfers still inside the connection time are drawn hollow: the same shape, not yet "boardable".
+    // When the tag overflows, at most half of the shown glyphs are hollow so ready passengers stay visible.
+    const total = entry.waiting.length;
+    const hollow = Math.min(entry.connecting, total > MAX_GLYPHS ? Math.ceil(limit / 2) : limit);
+    for (let i = 0; i < limit - hollow; i++) bubble.appendChild(regionGlyph(entry.waiting[i]));
+    for (let i = total - hollow; i < total; i++) bubble.appendChild(connectingGlyph(entry.waiting[i]));
     if (entry.waiting.length > MAX_GLYPHS) {
       const more = document.createElement('span');
       more.className = 'airport-bubble__count';
@@ -229,7 +253,9 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
     }
     const label = jammed ? t('airport.jammed', { code: entry.airport.code, seconds: Math.ceil(entry.jamSeconds ?? 0) }) : t('airport.waiting', { code: entry.airport.code, count: entry.waiting.length });
     bubble.setAttribute('aria-label', (entry.isNew ? t('airport.newAria', { code: entry.airport.code }) + ' ' : '') +
-      (entry.closed ? t('airport.curfewAria', { code: entry.airport.code }) + ' ' : '') + label);
+      (entry.closed ? t('airport.curfewAria', { code: entry.airport.code }) + ' ' : '') + label +
+      (entry.connecting > 0 ? ' ' + t('airport.connectingAria', { count: entry.connecting }) : ''));
+    bubble.classList.toggle('airport-bubble--connecting', entry.connecting > 0);
   }
 
   /** [task-38] Rebuild the slot tag text only when the held count or the countdown changes. */
@@ -359,7 +385,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
         airport, normal, anchor, bubble, edge, timer, fresh, isNew: false, barrier, closed: false, tag,
         slot, slotLabel, slotTime, slotCount, slotRect: { width: 0, x: 0, y: 0, visible: false }, slotHeld: 0, slotMinutes: 0,
         mainWidth: 0, slotVisible: false, lastSlotX: NaN, lastSlotY: NaN,
-        waiting: [], jamSeconds: null,
+        waiting: [], connecting: 0, jamSeconds: null,
         edgeSide: 0, edgeX: 0, edgeY: 0, edgePlaced: false, bubbleVisible: false, edgeVisible: false,
         lastBubbleX: NaN, lastBubbleY: NaN, lastEdgeX: NaN, lastEdgeY: NaN, lastEdgeSide: -1, lastOpacity: NaN,
       };
@@ -368,10 +394,14 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       byId.set(airport.id, entry);
       rebuildBubble(entry);
     },
-    setPassengers(id, waiting): void {
+    setPassengers(id, waiting, connecting = 0): void {
       const entry = get(id);
       for (const region of waiting) if (!isValidRegion(region)) throw new RangeError('Invalid destination region: ' + region);
+      if (!Number.isSafeInteger(connecting) || connecting < 0 || connecting > waiting.length) {
+        throw new RangeError('Invalid connecting count');
+      }
       entry.waiting = waiting.slice();
+      entry.connecting = connecting;
       rebuildBubble(entry);
     },
     setJamCountdown(id, seconds): void {

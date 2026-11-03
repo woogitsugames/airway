@@ -297,8 +297,11 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
         // D-68: the 58 px edge chip has no room for a city name, so it always shows the code.
         overlay.addAirport({ id: city.id, code: city.id, lon: city.lon, lat: city.lat, hub: city.hub });
       }
-      const key = city.waiting.join(',');
-      if (waitingKeys.get(city.id) !== key) { waitingKeys.set(city.id, key); overlay.setPassengers(city.id, city.waiting); }
+      const key = city.waiting.join(',') + '/' + city.connecting; // [night-10i] hollow transfer glyphs
+      if (waitingKeys.get(city.id) !== key) {
+        waitingKeys.set(city.id, key);
+        overlay.setPassengers(city.id, city.waiting, city.connecting);
+      }
       const seconds = city.jamTicksLeft === null ? null : Math.ceil(city.jamTicksLeft / SIM_TICKS_PER_SECOND);
       if (jamKeys.get(city.id) !== seconds) { jamKeys.set(city.id, seconds); overlay.setJamCountdown(city.id, seconds); }
       jamHaptics.setJammed(city.id, city.jamTicksLeft !== null);

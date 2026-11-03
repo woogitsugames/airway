@@ -208,6 +208,12 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       closes an airport, its luggage tag gets the red-white boom-barrier stub (the same mark as the puzzle strips,
       N7d: a shape, not only colour) and its edge chip a striped barrier bar; screen-reader labels say it is closed.
       Also removes a `node_modules` symlink committed by N10f (`.gitignore` matched only the directory).
+- [x] N10i **Transfers visibly make their connection** — a passenger dropped at a hub waits the minimum connection
+      time (25 min, 15 after a hub upgrade) before it can board, but its tag looked the same as a ready passenger, so
+      the MCT and the hub upgrade that shortens it were invisible. The sim view gains `connectingByRegion` (read-only,
+      no state change); the luggage tag draws those passengers as hollow region glyphs (same shape, outline only) at
+      its tail, at most half the shown glyphs when the tag overflows, and they fill in when the time runs out; the
+      screen-reader label adds "Making a connection: N". `test:transfers`, `e2e/transfer-glyphs.mjs`.
 
 ## Log
 <!-- one line per finished item: date UTC · item · PR · gate summary -->
