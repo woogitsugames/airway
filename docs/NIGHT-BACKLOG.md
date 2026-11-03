@@ -954,6 +954,49 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
       in the site style; footer links to terms (R7b) and publisher block (R7c). No newsletter (Q-70 → A).
       `test:site` and `shots:site` updated. **Area:** `site/`, `docs/SITE.md`. After D-67's publish decision.
 
+### R8 (2026-11-03) — gameplay-depth and balance audit, rules v5 (data: `docs/RESEARCH.md` "R8", `scripts/research/r8-audit.ts`)
+- [ ] R8a **Weekly board offers only cards that can matter** — 200 bot seeds: "+2 slots" picked 0 % of the 239 times
+      it was offered, hub expansion 3 % of 235; forcing either costs ~1 min median and 12–14 % score, because every
+      board has at least one of them (a third have both) and the fleet is the bottleneck (99 % of losses with 0 spare
+      aircraft). Rule: "+2 slots" enters the draw only after the run's first `DepartureHeld`, hub expansion only while a
+      hub exists (Q-10's "disabled" stamp becomes rare); otherwise the slot is filled by the other aircraft card. Draw
+      stays on the `upgrades` RNG stream; `RULES_VERSION` bump, save/daily golden updates. Metric (r8-audit
+      `--policy=bot`): boards showing a card with no effect yet (no hub / no slot hold) 100 % → < 30 %; median stays in 10–18 (`test:balance`); slot holds
+      still counted. **Area:** `src/sim/upgrades.ts`, `src/sim/world.ts`, tests. *Needs Q-71.*
+- [ ] R8b **"No spare aircraft" game-over hint** — 56 of 200 losses are at an airport with no route, and in 99 % of
+      all losses the reserve was empty, yet `gameover.unservedHint` says "Connect a new airport before its waiting area
+      fills up". When the failed airport had 0 routes and the reserve was 0, show "No spare aircraft: drag a route end
+      to it or take a plane off a quieter route" (PL + EN, i18n); keep the old line when a plane was free. Pure choice
+      in `src/game/gameoverTip.ts`/game-over report, `test:gameover-tip` cases for both. Metric: share of unserved
+      losses whose hint names an action the player could take 0 → 100 %. **Area:** `src/game/`, `src/ui/gameover/`,
+      `src/i18n/`.
+- [ ] R8c **Curfew from week 3 in Endless** — only 29 of 200 bot runs (15 %) reach week 4, so the curfew (D-17), one
+      of the D-07 differentiators, is unseen in most runs; 66 % reach week 3. `CURFEW_ENDLESS_START_WEEK` 4 → 3,
+      rules/params version bump, `test:daynight`/`test:balance`/goldens. Metric (r8-audit): runs with a curfew hold
+      15 % → ≥ 50 %; median stays in 10–18 min (expect a small drop); week-1/2 untouched. **Area:** `src/sim/params.ts`,
+      tests, `docs/balance/README.md`. *Needs Q-72 (D-17 is the owner's).*
+- [ ] R8d **Balance report shows spread and mechanic use** — `balance:report`/`game-summary.md` print p10/p25/p75/p90,
+      a loss-week histogram, hub/spoke/unserved losses, spare aircraft at the loss, cards offered vs picked, runs with
+      curfew / slot holds and the transfer share (port the counters of `scripts/research/r8-audit.ts`, without
+      prototype wrapping: read `DepartureHeld`/`Delivered` events and `hubCauseLedger` in the adapter). No new gate.
+      Metric: the next balance PR can quote the tail, not only the median. **Area:** `scripts/balance-*.ts`,
+      `docs/balance/`.
+- [ ] R8e **Bot moves aircraft** — the bot never uses `UnassignPlane`/`RemoveRoute`, so with an empty reserve an
+      unserved airport is lost unless a route end is within range (56 / 200 losses). Add one step: when an active
+      airport has no route, no spare aircraft and no extendable route, take the plane from the route with the lowest
+      waiting per plane (keep ≥ 1 per route) and open the new route with it. `test:bot-policy` cases; report the new
+      median before touching any gate (if it leaves 10–18 min, ask the owner, D-79). Metric: unserved losses 56 → lower;
+      median and spread reported. **Area:** `src/game/dev/bot-policy.ts`, `scripts/`.
+- [ ] R8f **Prepared late-ramp sweep (apply only after the closed test, D-113)** — 0 of 200 runs see a 5th board;
+      p90 22.4 min, max 31.6; the network grows 6 airports/week, the fleet 1 plane/week. Script variant (no rule
+      change merged): sweep spawn interval after week 3 (12 → 14/16 h) and "aircraft card gives 2 turboprops from
+      week 3", reporting p50/p90/max and week-4/5 reach, so the owner can pick with tester data (Q-73). **Area:**
+      `scripts/research/`, `docs/balance/`.
+- [ ] R8g **R8 questions in the closed-test sheet** — add the seven R8 questions (hint understood? planes moved?
+      card that felt useless? SLOT stamp seen? curfew reached? run-length spread from the logbook, "anything to do in
+      the last minutes?") to the survey/observation sheet with the thresholds from RESEARCH R8. **Area:** docs
+      (`docs/PLAYTEST.md` with R3k/R6i).
+
 ## Log
 <!-- one line per finished item: date UTC · item · PR · gate summary -->
 - 2026-11-03 · N1 puzzles 16–30 (D-70) · night/01-puzzles · test:fast 42/42, build ok, e2e:smoke 9/9, ui:matrix 32/32, test:puzzles levels=30 cases=168 failed=0 (merged tree with #40, #42)

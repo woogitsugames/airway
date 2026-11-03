@@ -1,5 +1,21 @@
 # Task 22 — autoplay and balance evidence
 
+## R8 — gameplay-depth audit script (research, 2026-11-03, no parameter change)
+
+`scripts/research/r8-audit.ts` is a read-only measurement tool, not a test (not in `test:fast`/`test:ci`). It plays
+the same bot through `balance-game-adapter.ts` at the same cadence as `balance:report`, with a longer cap, and
+prints the session-length spread, loss week × cause (`buildCauseReport`), hub / spoke / unserved losses, spare
+aircraft at the loss, weekly cards offered vs picked, curfew and slot holds, and the share of delivered passengers
+who transferred. `--policy=turboprop|widebody|hub|slots|all` makes the bot take that card whenever offered.
+Counting wraps `PassengerSimulation.prototype.alightAt` and `CurfewPlanner` gate methods inside its own process and
+returns their results unchanged. Check: `--seeds=50 --cap-min=30` gives p50 17.03 min, equal to `test:balance`.
+Results and tables: `docs/RESEARCH.md` "R8"; per-run data `r8-audit-200.csv`.
+
+```sh
+node --import ./scripts/ts-test-loader.mjs scripts/research/r8-audit.ts --seeds=200 --cap-min=60 --policy=all \
+  --csv=docs/balance/r8-audit-200.csv
+```
+
 ## N9b — bot session target 10–18 min (2026-11-03, D-79)
 
 The owner moved the `test:balance` median gate from 8–15 to 10–18 min: the target measures the DEV bot, which plays
