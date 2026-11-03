@@ -44,6 +44,9 @@ interface BubbleEntry {
   bubble: HTMLDivElement;
   edge: HTMLButtonElement;
   timer: HTMLSpanElement;
+  /** [night-10a] Ink "NEW" stub at the front of the tag while the airport is newly opened. */
+  fresh: HTMLSpanElement;
+  isNew: boolean;
   tag: TagSlot;
   /** [task-38] Departure-slot tag hung under the passenger tag (D-50). */
   slot: HTMLDivElement;
@@ -80,6 +83,8 @@ export interface AirportOverlay {
   setJamCountdown(id: string, seconds: number | null): void;
   /** [task-38] Aircraft held for a departure slot and game minutes to the next slot; held 0 hides the tag. */
   setSlotHold(id: string, held: number, minutes: number): void;
+  /** [night-10a] Newly opened airport: ink "NEW" stub on its tag and an ink edge chip. */
+  setNew(id: string, isNew: boolean): void;
   update(): void;
   getPoolStats(): { airports: number; bubbles: number; slotTags: number; edgeButtons: number; domElements: number };
   dispose(): void;
@@ -134,6 +139,9 @@ function slotClock(): SVGSVGElement {
 const SLOT_STUB = 22;
 const SLOT_LABEL_CHAR = 7.4;
 const SLOT_DIGIT = 7.4;
+/** [night-10a] "NEW" stub: fixed per-letter width plus padding, so the layout box matches the CSS width. */
+const NEW_CHAR = 7.6;
+const NEW_PAD = 10;
 
 export function createAirportOverlay(host: HTMLElement, camera: Camera, options: AirportOverlayOptions = {}): AirportOverlay {
   const layer = document.createElement('div');
@@ -171,6 +179,14 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
     const bubble = entry.bubble;
     bubble.replaceChildren();
     const limit = Math.min(MAX_GLYPHS, entry.waiting.length);
+    let freshWidth = 0;
+    if (entry.isNew) {
+      const label = t('airport.new');
+      entry.fresh.textContent = label;
+      freshWidth = Math.ceil(NEW_PAD + label.length * NEW_CHAR);
+      entry.fresh.style.width = freshWidth + 'px';
+      bubble.appendChild(entry.fresh);
+    }
     for (let i = 0; i < limit; i++) bubble.appendChild(regionGlyph(entry.waiting[i]));
     if (entry.waiting.length > MAX_GLYPHS) {
       const more = document.createElement('span');
@@ -184,15 +200,19 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
     entry.edge.classList.toggle('airport-edge--jam', jammed);
     entry.tag.jammed = jammed;
     // [task-38] mainWidth 0 = no passenger tag; the group box also holds the slot tag.
-    entry.mainWidth = entry.waiting.length > 0 || jammed
-      ? Math.max(30, 23 + limit * 18 + (entry.waiting.length > MAX_GLYPHS ? 27 : 0) + (jammed ? 53 : 0)) : 0;
+    entry.mainWidth = entry.waiting.length > 0 || jammed || entry.isNew
+      ? Math.max(30, 23 + limit * 18 + (entry.waiting.length > MAX_GLYPHS ? 27 : 0) + (jammed ? 53 : 0) +
+        (freshWidth ? freshWidth + (limit || jammed ? 4 : 0) : 0)) : 0;
+    bubble.classList.toggle('airport-bubble--new', entry.isNew);
+    entry.edge.classList.toggle('airport-edge--new', entry.isNew && !jammed);
     sizeTagGroup(entry.tag, entry.mainWidth, entry.slotRect);
     entry.timer.hidden = !jammed;
     if (jammed) {
       const seconds = Math.max(0, Math.ceil(entry.jamSeconds ?? 0));
       entry.timer.textContent = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
     }
-    bubble.setAttribute('aria-label', jammed ? t('airport.jammed', { code: entry.airport.code, seconds: Math.ceil(entry.jamSeconds ?? 0) }) : t('airport.waiting', { code: entry.airport.code, count: entry.waiting.length }));
+    const label = jammed ? t('airport.jammed', { code: entry.airport.code, seconds: Math.ceil(entry.jamSeconds ?? 0) }) : t('airport.waiting', { code: entry.airport.code, count: entry.waiting.length });
+    bubble.setAttribute('aria-label', entry.isNew ? t('airport.newAria', { code: entry.airport.code }) + ' ' + label : label);
   }
 
   /** [task-38] Rebuild the slot tag text only when the held count or the countdown changes. */
@@ -288,6 +308,8 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       bubble.setAttribute('role', 'img');
       const timer = document.createElement('span');
       timer.className = 'airport-bubble__timer';
+      const fresh = document.createElement('span');
+      fresh.className = 'airport-bubble__new';
       const edge = document.createElement('button');
       edge.type = 'button';
       edge.className = 'airport-edge';
@@ -314,7 +336,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       layer.append(bubble, slot, edge);
       const tag: TagSlot = { id: airport.id, anchorX: 0, anchorY: 0, width: 30, height: 30, active: false, jammed: false, x: 0, y: 0, placed: false };
       const entry: BubbleEntry = {
-        airport, normal, anchor, bubble, edge, timer, tag,
+        airport, normal, anchor, bubble, edge, timer, fresh, isNew: false, tag,
         slot, slotLabel, slotTime, slotCount, slotRect: { width: 0, x: 0, y: 0, visible: false }, slotHeld: 0, slotMinutes: 0,
         mainWidth: 0, slotVisible: false, lastSlotX: NaN, lastSlotY: NaN,
         waiting: [], jamSeconds: null,
@@ -347,6 +369,12 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       entry.slotHeld = held;
       entry.slotMinutes = nextMinutes;
       rebuildSlot(entry);
+    },
+    setNew(id, isNew): void {
+      const entry = get(id);
+      if (entry.isNew === isNew) return;
+      entry.isNew = isNew;
+      rebuildBubble(entry);
     },
     update(): void {
       if (disposed) return;

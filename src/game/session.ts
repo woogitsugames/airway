@@ -24,6 +24,7 @@ import { mountSlotHint } from './tutorial/slot-hint'; // [task-32]
 import { airportLabel } from '../ui/airportLabel'; // [night-05] D-68
 import { AudioCueMapper, cueRun } from './audioCues'; // [night-03]
 import type { World, ScreenPoint } from './world';
+import { NewAirportMarks } from './newAirports'; // [night-10a]
 
 export type SessionScreen = 'game' | 'upgrade' | 'gameover';
 export type RunMode = 'endless' | 'daily';
@@ -83,6 +84,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
   let lastRun: EndlessRun | null = null;
   let previousPlanes: PlaneRenderSnapshot[] = [];
   const knownAirports = new Set<string>();
+  const newMarks = new NewAirportMarks(); // [night-10a]
   const audioCues = callbacks.cue ? new AudioCueMapper(callbacks.cue) : null; // [night-03]
   let lastHubKey = '';
   const waitingKeys = new Map<string, string>();
@@ -301,6 +303,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       world.setRoutes(run.routeList(), ++renderRevision);
       tool.refreshHandles();
     }
+    for (const [id, on] of newMarks.update(run.tick, renderRevision, () => run.routeList(), (id) => knownAirports.has(id))) overlay.setNew(id, on);
     const planes: PlaneRenderSnapshot[] = run.planeList();
     world.setPlanes(previousPlanes.length ? previousPlanes : planes, planes);
     previousPlanes = planes;
@@ -348,6 +351,8 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     for (const event of events) {
       if (event.type === 'week') {
         slotHint.hide(); // [task-32] the weekly board replaces the hint
+      } else if (event.type === 'new-city') {
+        newMarks.opened(event.cityId, run.tick); // [night-10a]
       } else if (event.type === 'slot-held') { // [task-32]
         slotHint.held(event.cityId, event.limit, event.minutesToSlot);
       }
