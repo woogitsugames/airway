@@ -130,14 +130,15 @@ imports only) and never mutates state. The game composition root adapts sim snap
 | `setPlanes(previous, current)` | tick boundary | `PlaneView` = `{id, routeId, segment, progress01 (0..10 000), direction?, type?, load, capacity?}` |
 | `setTime(tick, fraction)` / `setSun(lon, lat)` | frame | day/night terminator, city lights, exposure |
 | `setRoutePreview(model \| null)` | pointer move | structurally `RoutePreviewModel` from `src/input/routeTool.ts` |
-| `render(alpha, dtSeconds)` | every frame | `alpha` = tick accumulator fraction; camera inertia, plane interpolation |
+| `render(alpha, dtSeconds)` | every frame | `alpha` = tick accumulator fraction; camera inertia, plane interpolation; [night-04] terrain LOD/chunk culling, battery-saver 30 fps cap (returns `false` on a skipped frame, dt carries over), adaptive quality (D-73) |
 | `pick(x, y)` | tap | `{kind:'city', id}` within 28 dp, else `{kind:'globe', lon, lat}`, else `null` |
 | `pickGlobe(x, y)` | route tool `cursorGeo` | analytic sphere hit |
 | `project(lon, lat, alt, out)` | HTML overlay, per frame | writes `{x, y, visible}` into `out`; no allocation |
 | `orbit` | input | `GlobeOrbitCamera`: pass to `cameraGestureCallbacks(orbit, …)` |
 | `camera` | overlay | three.js camera for `createAirportOverlay(host, camera)` |
 | `resize(w, h, insets)` / `opts.autoResize` | layout | CSS px; insets keep the globe clear of HUD and safe areas. [task-34] `src/game/world.ts` measures them from the HUD/menu boxes (`insetsFromLayout`, `menuFraming` in `framing.ts`, D-47) |
-| `setQuality(pref)` | settings | `'auto' \| 'low' \| 'medium' \| 'high'`; rebuilds terrain, DPR ≤ 2, shadows on high only |
+| `setQuality(pref)` | settings | `'auto' \| 'saver' \| 'low' \| 'medium' \| 'high'`; rebuilds terrain only when the preset changes, DPR ≤ 2, shadows on high only; `saver` = low terrain, DPR 1, 30 fps, 60 % decorations (D-73) |
+| `forceTerrainLevel(n \| null)` | tests, shots | pins the terrain LOD level (0 = preset mesh, 1 = far mesh) |
 | `drawModelPreview(kind, canvas2d)` | upgrade card | renders through the shared context into a 2D canvas |
 | `ready`, `stats()`, `dispose()` | lifecycle | `ready` resolves after the land mask/terrain load |
 
