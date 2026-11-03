@@ -203,6 +203,11 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       by the night curfew (task 11), but the game never called `setCurfew` (only `reset` cleared it): from Endless
       week 4 and in the curfew puzzles a closed airport looked open while planes held. Session sync feeds the
       sim's `curfewClosed` per city to the world on change only. The ring is small at gameplay zoom → N10h.
+- [ ] N10h **Readable curfew sign on the tag and edge chip** — after N10g the globe draws the barrier ring, but at
+      gameplay zoom it is a few pixels and an off-screen closed airport's edge chip said nothing. While the sim
+      closes an airport, its luggage tag gets the red-white boom-barrier stub (the same mark as the puzzle strips,
+      N7d: a shape, not only colour) and its edge chip a striped barrier bar; screen-reader labels say it is closed.
+      Also removes a `node_modules` symlink committed by N10f (`.gitignore` matched only the directory).
 
 ## Log
 <!-- one line per finished item: date UTC · item · PR · gate summary -->

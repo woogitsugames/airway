@@ -1,5 +1,6 @@
 # Node and Vite
 node_modules/
+node_modules
 dist/
 *.tsbuildinfo
 # Native platform build outputs (projects added in tasks 24/25)
