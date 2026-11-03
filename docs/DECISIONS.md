@@ -1087,7 +1087,8 @@ owner asked for). **Status: accepted by the owner 2026-11-03; implementation pen
 B ships ~1.8 MB of textures (day 4096 + 2048, night 2048 + 1024, elevation, clouds) and the Mapa mode (D-172) ~0.55 MB more. The D-143 `total` budget
 (2 200 kB, measured 1 805 kB) is raised to 4 300 kB in G1; main JS and CSS budgets are unchanged (the look adds
 code, not a chunk). Rejected: streaming the 4096 texture from the network (the app must work offline, Capacitor
-loads from disk) and shipping only 2048 (visibly soft at Fold zoom 2). **Status: proposed; applies with G1.**
+loads from disk) and shipping only 2048 (visibly soft at Fold zoom 2). **Status: in force (G1: `public/data/globe/`,
+`test:globe-assets`, `scripts/test-bundle.mjs` `total` = 4 300 kB).**
 
 ## D-172 — Two globe modes, "Satelita" and "Mapa", like a maps app (2026-11-03, owner)
 Owner, after choosing B: "Może zrobić dwa tryby jak w Google Maps. Realistyczny i taki jak mapa." The globe gets two
