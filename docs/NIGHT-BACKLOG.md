@@ -299,6 +299,14 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       board now centres the first departure not yet cleared, and coming back from a level (Back, "All puzzles",
       hardware back/Escape) centres that level's flap and focuses it. Only the list scrolls.
       `e2e/puzzle-board-scroll.mjs` (`test:e2e:puzzle-board-scroll`, in `test:ci`; 3/12 on the old board).
+- [x] N10x **Long play 800×1280 PL 4× + edge buttons on the portrait Fold dock** — `ui:long-play` 12 min: 2 runs,
+      max week 3, issues=0, but its shots showed edge buttons for off-screen airports inside the right-hand dock
+      column. Every screen ≥ 600 × 600 uses the HUD's 'foldable' layout (dock as a right column) — the unfolded Fold
+      in portrait (673×841), 904×1000 and tablets — yet the session reserved the right band only for width > height:
+      on 673×841 "JED" sat on the aircraft tag and "JNB" under the hub tag, and the globe centred behind the dock.
+      Overlay reservation and world insets now follow `resolveHudLayout`. `test:e2e:edge-dock` adds both portrait
+      foldables and a dock-column check (2/5 fail on the old session); matrix fold game shots and the 30 store
+      PNGs (foldable/tablet framing) refreshed.
 
 ## Log
 <!-- one line per finished item: date UTC · item · PR · gate summary -->
@@ -369,3 +377,4 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
 - 2026-11-03 · N10v long play 1280×800 PL / 412×915 EN 4× + edge chips clear of airports · night/10v-edge-chips · ui:long-play PL runs=4 maxWeek=1 issues=0, EN runs=2 maxWeek=3 issues=1 (fixed); test:fast 58/58, build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:edge-dock 3/3, e2e:upgrade-picks 10/10, e2e:new-airport 4/4, test:e2e:edge-chip-airports 2/2 (1/2 on the old overlay)
 - 2026-11-03 · N10w next puzzle after a clear · night/10w-next-puzzle · test:fast 58/58, build ok, test:e2e:puzzles 34/34 (3/34 passed, failing at puzzle 01, on the old screen), test:i18n keys=378; e2e:smoke/ui:matrix not run (puzzle screen only)
 - 2026-11-03 · N10y puzzle board opens where the player is · night/10y-board-scroll · test:fast 58/58, build ok, test:e2e:puzzle-board-scroll 12/12 (3 runs; 3/12 on the old board), e2e:puzzles 34/34; e2e:smoke/ui:matrix not run (puzzle board only)
+- 2026-11-03 · N10x long play 800×1280 PL 4× + edge buttons on the portrait Fold dock · night/10x-fold-dock · ui:long-play runs=2 maxWeek=3 issues=0; test:fast 58/58, build ok, e2e:smoke 9/9, ui:matrix 32/32, test:e2e:edge-dock 5/5 (3/5 on the old session), e2e:edge-chip-airports 2/2, e2e:continue-framing 2/2, store:shots 30 (test:store-shots 30/30)
