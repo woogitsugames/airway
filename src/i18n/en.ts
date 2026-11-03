@@ -253,7 +253,9 @@ export const en = {
   'rank.practice': 'Practice run: only the first game of the day is ranked.',
   'puzzle.game.notes': 'Watch for: {list}',
   'puzzle.mechanic.slots': 'departure slots (2 per hour, 3 at a hub)',
-  'puzzle.mechanic.curfew': 'night curfew 23:00–06:00',
+  'puzzle.mechanic.curfew': 'night curfew (no take-offs or landings)',
+  'puzzle.curfew.line': 'Night curfew:',
+  'puzzle.curfew.mark': '{city} closed at night {hours}',
   'puzzle.mechanic.week': 'new traffic in the second week',
   'puzzle.mechanic.mct': 'connection time at a crowded hub',
   // [task-18] Localized offline daily ticket.

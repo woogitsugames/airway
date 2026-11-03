@@ -53,6 +53,41 @@ function notesLine(level: PuzzleLevel): string | null {
     .map((tag) => t(`puzzle.mechanic.${tag}` as TranslationKey));
   return list.length ? t('puzzle.game.notes', { list: list.join(' · ') }) : null;
 }
+/** [night-07d] Minute of day as HH:MM (curfew windows come from the level data, not from copy). */
+function clock(minute: number): string {
+  const m = ((minute % 1440) + 1440) % 1440;
+  return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
+}
+/** [night-07d] Curfew hours per airport, e.g. LON → "22:00–06:00". */
+function curfews(level: PuzzleLevel): Map<string, string> {
+  const map = new Map<string, string>();
+  for (const city of level.startCities) {
+    if (city.curfew) map.set(city.id, `${clock(city.curfew.startMinuteOfDay)}–${clock(city.curfew.endMinuteOfDay)}`);
+  }
+  return map;
+}
+/**
+ * [night-07d] The red-and-white boom barrier the globe draws on a closed airport (src/render/airports.ts),
+ * repeated next to the code so the strip reads the same as the world: shape, not only colour.
+ */
+function curfewMark(code: string, hours: string): HTMLElement {
+  const mark = element('span', 'puzzle-curfew-mark');
+  mark.setAttribute('role', 'img');
+  mark.setAttribute('aria-label', t('puzzle.curfew.mark', { city: code, hours }));
+  mark.title = t('puzzle.curfew.mark', { city: code, hours });
+  mark.innerHTML = '<svg viewBox="0 0 22 12" width="26" height="14" aria-hidden="true" focusable="false">' +
+    '<rect x="1" y="2" width="3" height="9" fill="#13302e"/>' +
+    '<rect x="4" y="3" width="17" height="4" fill="#fbf8f1" stroke="#13302e" stroke-width="1"/>' +
+    '<path d="M7 3h3l-2 4H5zM13 3h3l-2 4h-3zM19 3h2v1.6L20 7h-3z" fill="#b8322a"/></svg>';
+  return mark;
+}
+/** [night-07d] Airport code followed by the curfew barrier when that airport closes at night. */
+function codeWithCurfew(code: string, closed: Map<string, string>): HTMLElement {
+  const span = element('span', 'puzzle-code', code);
+  const hours = closed.get(code);
+  if (hours) span.appendChild(curfewMark(code, hours));
+  return span;
+}
 function stars(count: number): string { return `${'★'.repeat(count)}${'☆'.repeat(3 - count)}`; }
 function remainingStock(session: PuzzleSession): string {
   const supply = session.snapshot.stock;
@@ -135,6 +170,19 @@ export function mountPuzzleSelector(host: HTMLElement, onExit: () => void = () =
       element('h1', '', heading(level)), element('p', 'puzzle-goal', goalLine(level)));
     const notes = notesLine(level);
     if (notes) ticket.appendChild(element('p', 'puzzle-notes', notes));
+    // [night-07d] Which airports close at night, and when (was only in the airport data).
+    const closed = curfews(level);
+    if (closed.size) {
+      const line = element('p', 'puzzle-curfews');
+      line.dataset.testid = 'puzzle-curfews';
+      line.appendChild(element('span', '', t('puzzle.curfew.line')));
+      for (const [code, hours] of closed) {
+        const item = codeWithCurfew(code, closed);
+        item.appendChild(element('span', 'puzzle-curfew-hours', hours));
+        line.appendChild(item);
+      }
+      ticket.appendChild(line);
+    }
     const statGrid = element('div', 'puzzle-stats');
     const stats = [
       [t('puzzle.stat.time'), t('puzzle.time', { current: Math.floor(snapshot.tick / 60), total: Math.floor(level.durationTicks / 60) })],
@@ -165,10 +213,12 @@ export function mountPuzzleSelector(host: HTMLElement, onExit: () => void = () =
       const edge = level.availableRoutes[index];
       const id = [edge.from, edge.to].sort().join('-');
       const selected = snapshot.routes.includes(id);
-      const label = `${edge.from}  —  ${edge.to}`;
+      const codes = element('span', 'puzzle-route-codes');
+      codes.append(codeWithCurfew(edge.from, closed), element('span', 'puzzle-route-dash', '—'),
+        codeWithCurfew(edge.to, closed));
       const route = button('', `connect:${index}`, `puzzle-route ${selected ? 'is-active' : ''}`,
         over || selected || (edge.plane === 'jet' ? snapshot.stock.jets : snapshot.stock.turboprops) <= 0);
-      route.append(element('span', 'puzzle-route-codes', label),
+      route.append(codes,
         element('span', 'puzzle-route-detail', t(edge.plane === 'jet' ? 'puzzle.plane.jet' : 'puzzle.plane.turboprop')),
         element('span', 'puzzle-route-cta', selected ? t('puzzle.action.connected') : t('puzzle.action.connect')));
       routes.appendChild(route);
@@ -182,7 +232,9 @@ export function mountPuzzleSelector(host: HTMLElement, onExit: () => void = () =
         const count = snapshot.waiting[city.id] ?? 0;
         const item = button('', `upgrade:${city.id}`, 'puzzle-hub',
           over || selected || snapshot.stock.hubUpgrades === 0);
-        item.append(element('span', '', `${city.id} · ${count}/${city.hubCapacity + (selected ? 32 : 0)}`),
+        const load = codeWithCurfew(city.id, closed);
+        load.append(` · ${count}/${city.hubCapacity + (selected ? 32 : 0)}`);
+        item.append(load,
           element('span', '', selected ? t('puzzle.action.upgraded') : t('puzzle.action.upgrade')));
         hubs.appendChild(item);
       }
