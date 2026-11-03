@@ -162,7 +162,8 @@ sim.drainEvents();       // SimEvent[] since last call (CitySpawned, Delivered, 
 sim.world;               // WorldView (read-only): minute, status, score, failure, offer, reserve, planes (live array),
                          //   cities(), cityView(id), routes(), hubCauseLedger(id), curfewCityIds, upgrades
 sim.clock;               // calendar of the world minute (frozen while an upgrade is pending)
-sim.hash(); sim.snapshot(); Sim.fromSnapshot(json); Sim.replay(seed, journal, ticks, config); sim.undo();
+sim.hash(); sim.snapshot(); Sim.fromSnapshot(json); Sim.replay(seed, journal, ticks, config, stopAtEnd?); sim.undo();
+// Sim.replay stopAtEnd: stop on the game-over tick (server verification, D-93)
 ```
 
 - **Commands** (`src/sim/commands.ts`): `AddRoute {cityIds, aircraft?}` (route id `R<n>` assigned by
