@@ -195,9 +195,11 @@ async function boot(): Promise<void> {
 
   const lifecycle = new GameLifecycle({
     getTick: () => session?.run.tick ?? 0,
-    pause: () => session?.setPaused(true),
+    // [night-11i] D-119: only a running flight gets the pause sheet; the upgrade picker and the game-over board
+    // already hold the clock and stay as they are (a blur over the picker must not cover it).
+    pause: () => { if (session?.screen === 'game') session.setPaused(true); },
     save: async () => { if (session && !session.run.failed) await saveRun(session.run); },
-    requireResume: () => session?.setPaused(true),
+    requireResume: () => { if (session?.screen === 'game') session.setPaused(true); },
     onError: (error) => console.warn('Lifecycle save failed', error),
   });
   void lifecycle.attach();

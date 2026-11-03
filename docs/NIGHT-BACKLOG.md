@@ -387,6 +387,13 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       ("This device's graphics are not supported" + the renderer string for a support mail) instead of a blank sky.
       `test:webgl-context` (in `test:fast`, 4/8 with the wiring reverted), `e2e/webgl-context.mjs`
       (`test:e2e:webgl-context`, in `test:ci`, 0/4 on the old code), shots `docs/shots/n11h/`.
+- [x] N11i **Pause when the window loses focus (D-99 / Q-59 → B, D-119)** — in split screen or a floating window the
+      page stays visible, so the run kept going (and a hub could jam) while the player typed in the other app.
+      `GameLifecycle` now treats a window `blur` like a hidden tab: pause sheet + save, the globe keeps drawing; focus
+      coming back leaves the sheet up until the player taps Resume. One pause and one save for blur + hidden, focus
+      while hidden ignored. The lifecycle hooks pause only the `game` screen (the upgrade picker is not covered).
+      `test:saves` +2 cases (11/13 on the old code), `e2e/focus-pause.mjs` (`test:e2e:focus-pause`, in `test:ci`,
+      1/3 on the old code), shots `docs/shots/n11i/`.
 
 ## Continuous development round N12 (agent 2)
 - [x] N12a **Balance bot plays for reach (D-90)** — the handover gap "the DEV bot rarely connects new airports; long
@@ -748,7 +755,69 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
 - [ ] R4g **Keyboard and mouse basics** — Space pause/resume, 1/2/3 game speed, +/- zoom, existing Escape/Back;
       `@media (hover: hover)` hover state on HUD buttons and airports; no browser context menu on right-click over the
       globe; shortcuts listed in settings → help (PL/EN). E2E with Playwright keyboard. **Area:** input/UI
-      (`src/input/`, `src/ui/`, CSS, i18n). Auto-pause on focus loss *needs Q-59*.
+      (`src/input/`, `src/ui/`, CSS, i18n). Auto-pause on focus loss done in N11i (D-99, D-119).
+
+### R5 (2026-11-03) — quality audit: first-time player, store reviewer, code health
+Evidence: `docs/RESEARCH.md` "R5 — …", PNGs in `docs/research/r5/`.
+- [ ] R5a **Airport code plates on the globe** — on-screen airports have no code or name (only off-screen edge chips
+      do), yet the pause summary ("Fullest hub JED 3/36"), crate stamps ("BEG 9/36") and the game-over board speak in
+      codes. Draw a small Diorama signboard (code, or name per the D-68 setting) beside the airport disc for the
+      airports chosen in Q-61, placed with the existing `layoutTags` collision pass (never over a passenger tag or a
+      48 dp target); aria unchanged. Overlay DOM test + shots portrait/landscape/320 wide, PL/EN. **Area:** UI
+      (`src/ui/overlay.ts`, `overlay-layout.ts`, `src/game/session.ts`). *Needs Q-61.*
+- [ ] R5b **Tutorial speaks the game's visual language** — the vignette uses orange diamonds for cities and a teal ring
+      for the hub, while in the game airports are runway discs and yellow diamonds are route-end handles
+      (`tutorial-vs-game-diamonds.png`); region glyphs are never taught and the game has no legend. Redraw the
+      vignette's cities as the game's airport disc, the hub with the game's ring, passengers as the real glyph tag;
+      step 3 (transfer) names the glyph's region once ("bow tie = Middle East"); the settings help gains a one-line
+      glyph legend (8 glyph + region rows, shape not colour). `test:e2e:tutorial` and its shots updated.
+      **Area:** UI (`src/ui/tutorial/**`, `src/ui/settings/**`), i18n. *Needs Q-62 (B).*
+- [ ] R5c **Route-end handles quieter at rest** — the yellow 20 px diamonds on every route end are the loudest marks
+      on the map. At rest draw them as a small hollow marker inside the same 48 dp hit area; full diamond only while
+      a route is selected, being drawn, or under the finger. Hit testing in `routeTool` unchanged. Shots; `test:hud-targets`
+      / `test:route-tool` unchanged. **Area:** UI (`src/ui/atcStrip.ts`, `atcStrip.css`).
+- [ ] R5d **Opaque disabled dock tags** — `.airway-dock__tag.is-empty { opacity: .42 }` lets the world show through;
+      at night a cloud hides the turboprop icon (`dock-disabled-night.png`). Use an opaque muted fill plus a dashed
+      outline (shape cue for "empty"), keep the count ≥ 4.5:1 against the tag; add the pair to `check-contrast`.
+      **Area:** UI (`src/ui/hud.css`, `scripts/check-contrast.mjs`).
+- [ ] R5e **Stamps say what they measure** — crate stamps "BEG 13 min" / "BEG 9/36" get a short caption line
+      ("longest slot wait" / "fullest hub", PL "najdłuższe czekanie na slot" / "najpełniejszy hub") and the aria
+      text; the pause summary shows "none yet" (`pause.summary.noHub`) when the fullest hub has 0 waiting
+      (`pause-fullest-hub-0.png`). `test:pause-summary` +1, `test:format`, shots. **Area:** UI
+      (`src/ui/upgrade/**`, `src/game/pauseSummary.ts`), i18n.
+- [ ] R5f **Clean game-over board** — while the report is open hide edge chips, route handles and the dock (they stay
+      on the "Map" view); drop the "FLIGHT / DEST · GATE · STATUS" column header when the departures board has no
+      rows (unserved-airport cause shows only a sentence). E2E `gameover-unserved` asserts both; shots PL/EN.
+      **Area:** UI (`src/ui/gameover/**`, `src/game/session.ts`).
+- [ ] R5g **One word per concept in PL/EN** — weekly reward = "crates / skrzynie" (not "cargo label / etykieta
+      frachtowa"; "upgrade / ulepszenie" stays the generic word for what a crate holds), hub = "hub" (not "węzeł", "terminal"),
+      network = "sieć" (not "siatka"; game-over title "Sieć zamknięta" to match "Network closed"), "Simulation
+      paused" → "Time is stopped / Czas stoi". Add a glossary table to `src/i18n/README.md` (or the top of `en.ts`)
+      and a `test:i18n` check that fails on the banned synonyms. Puzzle titles may keep "węzeł" only if the owner
+      prefers (say so in the PR). **Area:** i18n (`src/i18n/**`), `scripts/test-i18n.mjs`.
+- [ ] R5h **Edge-chip placement as a pure, tested function** — move `distributeEdges` (+ the edge projection) from
+      `createAirportOverlay` into `overlay-layout.ts` as `placeEdgeChips(entries, bounds)` with no DOM; unit tests in
+      `test:overlay-layout`: jammed chips win space, a chip never covers an on-screen airport (N10v), avoids tags
+      when there is room (N10z), deterministic output; a 150-airport case under a time budget (today O(n²·k) per
+      frame). No visual change: e2e `edge-chip-*` and shots identical. **Area:** UI (`src/ui/overlay.ts`,
+      `src/ui/overlay-layout.ts`, `scripts/test-overlay-layout.mjs`).
+- [ ] R5i **Remove dead code and unused keys** — `describeCity`, `createCityAnnouncer`, `bindCityAccessibility`,
+      `labelAirportActions` (`src/ui/a11y.ts`, documented only in `src/ui/theme/README.md`) and their 13
+      `a11y.city*` / `a11y.action.*` keys; unused exports `createTerrain`, `mountEmptyScene`, `SIM_TICK_MS`,
+      `DAYNIGHT_PARAMS_VERSION`, `AIRPORT_LABEL_MODES`, `dailyGame` (check `functions/` first), keys
+      `status.loading` / `status.ready`. Add an "every catalog key is referenced" check to `test:i18n` (allow
+      template prefixes such as `privacy.s${n}`). `test:fast`, build. **Area:** UI/sim/net cleanup, i18n, docs.
+- [ ] R5j **Safe-area tokens everywhere + notch profile** — 56 direct `env(safe-area-inset-*)` uses in menu, upgrade,
+      game-over, tutorial, settings, puzzles and ATC strip CSS bypass the `--aw-safe-*` tokens, so only the HUD is
+      tested with insets. Replace them with the tokens (menu notice gets a left/right inset in landscape) and add a
+      `notch` profile to `ui:matrix` / `screens-fit` that sets the tokens to iPhone-like values (59/0/34/0 portrait,
+      0/59/21/59 landscape) and fails on any button inside an inset. **Area:** UI CSS + platform/scripts
+      (`scripts/ui-matrix.mjs`, `e2e/screens-fit.mjs`).
+- [ ] R5k **Bundle budget guard** — after `npm run build`, a small `test:bundle` reads `dist/assets`: main JS
+      ≤ 1,150 kB raw / 340 kB gzip (today 1,031.9 / 306.2), CSS ≤ 90 kB, total `dist/` ≤ 2.2 MB; prints the top
+      chunks. Run it in `test:ci` after the build step. Also drop the useless dynamic `import('@capacitor/core')` in
+      `src/platform/install.ts` / `storage.ts` (Vite warns: it is statically imported elsewhere). Optional: serve the
+      three fonts as WOFF2 (−~40 %, OFL allows format conversion; update `docs/ASSETS.md`). **Area:** platform/scripts.
 
 ## Log
 <!-- one line per finished item: date UTC · item · PR · gate summary -->
@@ -844,3 +913,5 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
 - 2026-11-03 · N12n Play feature graphic 1024×500 (R2d, D-117) · night/12n-feature-graphic · store:feature 1/1 (centre luma std 62.1, 506 colours, dark share 0.038, 297,787 bytes; PNG inspected), test:store-shots fields 12 → 14 + feature=1 (fails on the old repo state: no feature graphic, no alt-text field), test:fast 66/66, build ok; store:shots not re-run (store scenes unchanged), e2e/ui:matrix not run (DEV probe only); PNG not byte-identical between runs (SwiftShader)
 - 2026-11-03 · N11h WebGL context loss + no-WebGL-2 page (D-118) · night/11h-webgl-loss · test:fast 67/67 (test:webgl-context 8/8, 4/8 with the wiring reverted), build ok, test:e2e:webgl-context 4/4 (0/4 on the old code); e2e:smoke/ui:matrix not run (game screens unchanged unless the context is lost)
 - 2026-11-03 · N12p Play OpenGL ES 3.0 device filter (R3h, D-124) · night/12p-gles3-filter · test:android-config 23/23 (22/23 on the old manifest), aapt2 link ok + `dump badging` uses-gl-es 0x30000 (android-36, minSdk 24, manifest without resource refs), test:fast 66/66, build ok; minSdk unchanged (Q-54); no Play Console device-catalogue check; e2e/ui:matrix/store:shots not run (no web code changed)
+- 2026-11-03 · N11i pause on window focus loss (D-99, D-119) · night/11i-focus-pause · test:fast 67/67 (test:saves 13/13, 11/13 on the old code), build ok, test:e2e:focus-pause 3/3 (1/3 on the old code), e2e:save-notice 4/4; e2e:pause-summary 0/4 on this branch and on origin/dev alike (rules v5: `autoplay(2)` ends in a game over before week 2 — pre-existing, not this change); e2e:smoke/ui:matrix not run (no layout change)
+- 2026-11-03 · N12o store shots in the exact Apple sizes and 16:9 (R2a, D-123) · night/12o-store-sizes · store:shots 60/60 (30 → 60: + iphone 1320×2868, ipad 2064×2752, landscape 1920×1080; contact sheet 2556×5361; new device PNGs and the sheet inspected), test:store-shots devices=6 shots=60 (new validator on the old 30-shot set: FAIL "Manifest lists 30/60"), test:fast 67/67, build ok; e2e/ui:matrix not run (no game code changed); App Store Connect / Play Console upload not tried; dev merged mid-run (N11h, docs only for the scenes), so the set mixes two equivalent dev states

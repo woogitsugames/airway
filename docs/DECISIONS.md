@@ -748,7 +748,7 @@ cross-checks our verdict against `zipalign -c -P 16` when the SDK is present.
 - **Q-59 → B:** the game pauses when its window loses focus in split screen / multi-window and shows the pause screen
   on return (the picture keeps refreshing, so multi-resume is still honoured). UI item for the UI agent, not done yet.
 **Status: Q-57 in force (no change); Q-58 in force (N12f, rules v5, `CITY_DATA_VERSION` 2, `test:week1-reach`);
-Q-59 to implement (UI).**
+Q-59 in force (N11i, D-119).**
 
 ## D-105 — The start group also sits within turboprop range (2026-11-03, Claude, night N12f)
 `SPAWNER_START_RADIUS_KM` 3,000 → 2,500: every start airport is within turboprop range of the start anchor, so the
@@ -874,6 +874,20 @@ replaces the blank sky whose Play led nowhere. Rejected: re-creating the whole `
 restores its own state; a second renderer leaks the first context), and a WebGL 1 fallback (three.js r170 is
 WebGL 2 only; Play filter is R3h). **Status: in force (N11h, `test:webgl-context` 8 cases,
 `test:e2e:webgl-context` 4 cases).**
+
+## D-119 — Focus loss pauses the flight; only Resume restarts it (2026-11-03, Claude, night N11i)
+Implements D-99 (Q-59 → B). `GameLifecycle` now also listens to the window's `blur` and `focus`: a blur (split
+screen or a floating window on Android/iPad, a click into another desktop window) takes the same path as a hidden
+tab — pause, open the pause sheet and save — while the page stays visible, so the globe keeps drawing (multi-resume).
+Focus coming back only asks for the explicit Resume (the sheet stays, the clock does not restart by itself); a blur
+followed by `visibilitychange` pauses and saves once, and a focus while the page is still hidden is ignored. The
+lifecycle hooks in `main.ts` now pause only a flight on the `game` screen: the weekly upgrade picker and the
+game-over board already hold the clock, and a pause sheet over the picker would only add a tap (this also applies
+to a hidden tab). Rejected: auto-resume on focus (the owner chose the pause screen on return; a run that restarts
+while the player still looks at the other app can jam a hub), pausing only when `document.hasFocus()` stays false for
+a while (a delay before the pause is time the hub fills unseen), and option C "only in multi-window mode" (no
+reliable web signal for it). Known: the first-launch tutorial keeps its own controller and is not paused on blur.
+**Status: in force (N11i, `test:saves` 13 cases, `test:e2e:focus-pause` 3 cases).**
 
 ## D-123 — Store shots in the exact Apple sizes and 16:9 (2026-11-03, Claude, night N12o)
 R2a: App Store Connect requires iPhone 6.9" (1320×2868) and iPad 13" (2064×2752) screenshots, and Play's large-screen

@@ -723,3 +723,126 @@ oczekują Chromebooki, tablety z klawiaturą i iPad z Magic Keyboard. Zrzuty do 
 ### Rekomendacja
 R4f (macierz rozmiarów + zmiana rozmiaru w trakcie runu) przed testem zamkniętym, R4g (skróty, hover) przed
 wydaniem; zgłoszenie po odznakę Google dopiero po przejściu listy Tier 2 na prawdziwym tablecie.
+
+## R5 — Audyt jakości: gra oczami nowego gracza i recenzenta sklepu (stan 2026-11-03)
+
+### Jak sprawdzone
+Trzy krótkie przejścia prawdziwej gry (`npm run ui:long-play`, Chromium + SwiftShader, bot DEV podejmuje decyzje,
+przeciągania i stuknięcia idą przez prawdziwe UI): PL 412×915 4× 5 min, EN 390×844 4× 5 min, EN 915×412 (poziomo)
+4× 6 min, każde z obrotem, pauzą, zapisem → wczytaniem → „Kontynuuj” i tablicą tygodnia 1. Wynik: 0 problemów
+zgłoszonych przez skrypt w grze (jeden „unexpected menu” w przejściu poziomym to przeładowanie strony przez mój
+`npm run build` uruchomiony w trakcie — nie błąd gry). Do tego obejrzane świeże zrzuty `docs/shots/matrix/`
+(ui:matrix z 2026-11-03) i samouczka `docs/shots/23/`. SwiftShader był bardzo wolny (4 rdzenie), więc tempa w
+sekundach nie oceniam z tych przejść, tylko z reguł (niżej). Dowody: `docs/research/r5/`.
+
+### Co działa dobrze (dla recenzenta)
+- Żadnego elementu z listy zakazanej: brak gradientów fioletowo-niebieskich, szkła, neonu, emoji, kart SaaS; trzy
+  kroje OFL (Overpass, Overpass Mono, Atkinson Hyperlegible Next); świat jest bogaty (Diorama), a informacje
+  narysowane w świecie (przywieszki z glifami, ring huba, chip przy krawędzi, stemple).
+- Typy rozróżnione kształtem: glify regionów, ikony samolotów, puste glify przesiadki.
+- Pauza „KRĄŻENIE / HOLDING PATTERN” z podsumowaniem sieci, tablica odlotów w menu i raport porażki z przyczynami i
+  wskazówką są spójne i czytelne w obu językach; zapis → wczytanie zachowuje hash stanu.
+- Cele dotykowe ≥ 48 dp i bezpieczne obszary HUD są pilnowane testami (`test:hud-targets`, `screens-fit`).
+
+### Niejasne momenty dla nowego gracza (od najważniejszego)
+1. **Lotniska na globusie nie mają nazw ani kodów.** Kod widać tylko na chipie przy krawędzi (lotnisko poza ekranem).
+   Tymczasem pauza („Najpełniejszy hub JED 3/36”), stemple na skrzyniach („BEG 9/36”, „BEG 13 min”) i raport
+   porażki mówią kodami, których gracz nigdy nie zobaczył przy żadnym krążku. Samouczek z kolei podpisuje miasta
+   („Londyn”, „Paryż · HUB”), więc gra uczy podpisów, których potem nie ma. → **Q-61**, R5a.
+2. **Samouczek mówi innym językiem obrazów niż gra.** Winieta samouczka to płaski, jasny globus z pomarańczowymi
+   rombami miast i kółkiem huba; w grze lotnisko to szary krążek z pasem startowym, a **żółte romby to uchwyty
+   końców tras** — najjaśniejsze, największe znaki na mapie (`tutorial-vs-game-diamonds.png`). Samouczek nie uczy
+   też glifów regionów (muszka = Bliski Wschód, półksiężyc = Europa Płd. itd.), a to podstawowa informacja z
+   przywieszek; w grze nie ma żadnej legendy. Winieta jest też najbliżej zakazanego „płaskiego diagramu” (D-05).
+   → **Q-62**, R5b, R5c.
+3. **Nieaktywne przywieszki w doku są przezroczyste** (`opacity: .42`): przez „0” prześwituje świat — nocą chmura
+   i światła miast zlewają się z ikoną turbośmigłowca (`dock-disabled-night.png`). To jedyne miejsce HUD, gdzie
+   czytelność zależy od tła. → R5d.
+4. **Stemple na skrzyniach bez opisu**: „BEG 13 min” (najdłuższe czekanie na slot) i „BEG 9/36” (najpełniejszy hub)
+   to kod + liczba bez słowa, co znaczą (`board-stamps-390x844.png`). W pauzie „Najpełniejszy hub MAD 0/36”, gdy
+   nikt nie czeka (`pause-fullest-hub-0.png`) — powinno być „jeszcze brak”. → R5e.
+5. **Raport porażki — szum**: nad raportem zostają chipy krawędzi (REK, DUB, VLC…) i aktywnie wyglądający dok; w
+   tablicy „ODLOTY · REC” są nagłówki kolumn „LOT / CEL · BRAMKA · STATUS” nad zdaniem bez wierszy, co wygląda
+   na niedokończoną tabelę (`docs/shots/matrix/gameover-pl-412x915.png`). → R5f.
+6. Po „Kontynuuj” gra wraca w pauzie (dobrze) i z prędkością 1× (było 4×) — drobiazg, do decyzji UI.
+
+### Teksty PL/EN
+- **Jedno pojęcie, kilka słów.** Tygodniowa nagroda to „skrzynie” (tablica, pauza), „etykieta frachtowa / cargo label”
+  (podpowiedź samouczka), „ulepszenie / upgrade” (wskazówki, samouczek) i „FRACHT”. Hub to „hub”, „węzeł”
+  (zadania: „3 w węźle”, „Obok zamkniętego węzła”) i „terminal” („Pojemność terminali”, „terminal {city} jest
+  przepełniony”). Sieć to „sieć” (pauza) i „siatka” (raport). → R5g.
+- **PL ≠ EN w tytule porażki:** „Siatka wstrzymana” (sugeruje pauzę, z której się wraca) vs „Network closed”
+  (koniec). Propozycja: „Siatka zamknięta” albo „Sieć zamknięta” (razem z R5g).
+- „Symulacja w pauzie” / „Simulation paused” w samouczku — słowo techniczne; lepiej „Czas stoi” / „Time is stopped”.
+- Ekran polityki prywatności w grze pokazuje „Projekt informacyjny — wymaga potwierdzenia przez właściciela” i
+  „Airway jest grą na etapie produkcji”. Przed wysłaniem do recenzji sklepu to musi zniknąć (zależy od Q-01, R1l).
+- Polszczyzna poza tym poprawna, formy liczebników działają (sprawdzone w zrzutach: „24 osoby na 24 miejsca”,
+  „11 osób”, „2 trasy · 4 samoloty”).
+
+### Tempo reguł v5 (D-95, D-106, D-113) oczami pierwszej sesji
+Z reguł: 1 tick = 1 minuta gry, 10 ticków/s, więc przy 1× dzień gry trwa 2,4 min, tydzień (3 dni) **7,2 min**, nowe
+lotnisko co 12 h gry = **co 72 s**. W tygodniu 1 gracz dostaje ok. 6 nowych lotnisk i nie dostaje żadnego
+samolotu — dok pokazuje „0 / 0 / 0” przez całe 7 minut (widać to na każdym zrzucie z tygodnia 1). Pierwsza nagroda
+po 7,2 min przy 1× (3,6 min przy 2×) to długo jak na pierwszą sesję mobilną; z drugiej strony pierwsze minuty są
+zajęte rysowaniem i wydłużaniem tras. Bot tego nie mierzy (D-113). Dodatkowo start w Europie wypada o ok. 02:00
+czasu lokalnego, więc pierwszy obraz runu to noc. Rekomendacja: **nie zmieniać reguł teraz** (D-113), ale w
+ankiecie testu zamkniętego (R3k) dodać pytanie „kiedy pierwszy raz nie miałeś nic do zrobienia?”, a w eksporcie
+dziennika (R1o) — czas do pierwszej tablicy tygodnia.
+
+### Rekomendacja
+Przed testem zamkniętym: R5a (po Q-61), R5b (po Q-62), R5d, R5e, R5f, R5g — wszystkie to zmiany UI/i18n bez
+dotykania symulacji. R5c razem z R5b (ten sam słownik znaków).
+
+## R5 — Zdrowie kodu: największe moduły, ścieżki bez testów, martwy kod, paczka (stan 2026-11-03)
+
+### Rozmiar i złożoność
+`src/` ma 142 pliki TS, ok. 21,8 tys. linii; brak TODO/FIXME/HACK w `src/`, `scripts/`, `functions/src/`.
+Najdłuższe funkcje (linie, złożoność cyklomatyczna liczona z AST):
+
+| Funkcja | Linie | Uwagi |
+|---|---|---|
+| `startSession` (`src/game/session.ts`) | 496 | jedno domknięcie z całą grą; testy tylko przez e2e |
+| `createAirportOverlay` (`src/ui/overlay.ts`) | 448 | w środku `update` (złożoność 45), `rebuildBubble` (40), `distributeEdges` (37) |
+| `boot` (`src/main.ts`) | 416 | korzeń kompozycji |
+| `createWorldRenderer` (`src/render/world.ts`) | 298 | |
+| `normaliseAndValidate` (`src/game/save.ts`) | 32 | złożoność 43, ale pokryta `test:saves` / `test:save-golden` |
+
+### Ścieżki ryzykowne bez testu jednostkowego
+Spośród 142 plików 95 jest osiąganych przez testy Node (import lub transpilacja w teście); reszta tylko przez e2e.
+Najważniejsza luka: **rozmieszczanie chipów przy krawędzi** (`distributeEdges` w `overlay.ts`). To czysta geometria,
+w której nocne rundy trzy razy łatały błędy (N10v: chip na lotnisku zabierał stuknięcie; N10z: przywieszka
+zakrywała kod; N11d: wskaźnik), a pilnują jej tylko e2e `edge-chip-*`. Do tego pętla jest O(n² · k) na klatkę
+(wpisy × przesunięcia × wpisy) — przy ~150 lotniskach późnego runu to do ~10⁶ porównań na klatkę na słabym
+telefonie. Sąsiedni `overlay-layout.ts` ma już czyste funkcje i `test:overlay-layout`, więc przeniesienie jest
+naturalne. → R5h. `src/audio/engine.ts` (675 linii) nie ma testu, ale ryzyko małe (dźwięk nie wpływa na stan).
+
+### Martwy kod
+- `src/ui/a11y.ts`: `describeCity`, `createCityAnnouncer`, `bindCityAccessibility`, `labelAirportActions` nie są
+  nigdzie wołane (opisuje je tylko `src/ui/theme/README.md`); razem z nimi 13 kluczy i18n `a11y.city*` /
+  `a11y.action.*`. Nakładka lotnisk ma własne etykiety ARIA (`airport.waiting`, `airport.jammed`), więc to
+  dubel, nie brak dostępności.
+- Nieużywane eksporty: `createTerrain` (`render/globe/terrain.ts`), `mountEmptyScene` (`render/scene.ts`),
+  `SIM_TICK_MS`, `DAYNIGHT_PARAMS_VERSION` (`sim/params.ts`), `AIRPORT_LABEL_MODES`, `dailyGame`
+  (`net/submission.ts` — sprawdzić `functions/` przed usunięciem), klucze `status.loading` / `status.ready`.
+  → R5i.
+- 540 znaczników pochodzenia `[task-NN]` / `[night-NN]` w komentarzach — nie szkodzą, nie proponuję sprzątania.
+
+### Bezpieczne obszary
+HUD ma syntetyczny test wcięć (`test:hud-targets` ustawia `--hud-safe-*`), ale menu, tablica tygodnia, raport,
+samouczek, ustawienia i zadania używają `env(safe-area-inset-*)` wprost (56 wystąpień poza definicją tokenów w `base.css`, tylko 7 użyć tokenów
+`--aw-safe-*`), więc żadna macierz nie sprawdza ich z wycięciem ekranu. Przykład: komunikat w menu ma na sztywno
+`left:16px` w poziomie. → R5j.
+
+### Paczka (`npm run build`, Vite 6)
+Jeden główny chunk **1 031,9 kB (306,2 kB gzip)** + CSS 69,9 kB (14,2 kB gzip) + kilka małych chunków Capacitor
+(< 9 kB). Z mapy źródeł (szacunek): three.js ok. 494 kB, `src/data` ok. 88 kB (z czego tablica odległości ok. 70 kB),
+`src/ui` 86 kB, `src/render` 78 kB, `src/sim` 60 kB, `src/game` 54 kB, `src/i18n` 43 kB. Fonty TTF 624 kB (WOFF2
+dałby ok. −40 %, ale w aplikacji pliki są lokalne). Dla aplikacji Capacitor (pliki z dysku) to **nie jest problem
+sieci**; ryzykiem jest tylko niekontrolowany wzrost i czas parsowania na tanim Androidzie. Ostrzeżenie Vite: dynamiczny
+`import('@capacitor/core')` w `platform/install.ts` i `platform/storage.ts` nic nie daje, bo ten moduł jest też
+importowany statycznie. Dzielenie na chunki (puzzle, dziennik, ranking, samouczek to razem < 40 kB) nie jest warte
+ryzyka. → R5k (strażnik budżetu zamiast refaktoru).
+
+### Czego nie proponuję
+Rozbijanie `startSession` / `boot` / `createAirportOverlay` „dla porządku”: to duże przesunięcia kodu bez testu
+jednostkowego, które zwiększają ryzyko przed testem zamkniętym. Wyjątek to R5h (wydzielenie czystej funkcji z testem).
