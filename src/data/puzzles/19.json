@@ -1,0 +1,151 @@
+{
+  "version": 1,
+  "id": "19",
+  "titleKey": "puzzle.19.title",
+  "durationTicks": 8640,
+  "demandSeed": 2619,
+  "startCities": [
+    {
+      "id": "CPH",
+      "continent": "EU",
+      "latitude": 55.7,
+      "longitude": 12.6,
+      "hubCapacity": 100
+    },
+    {
+      "id": "OSL",
+      "continent": "EU",
+      "latitude": 59.9,
+      "longitude": 10.7,
+      "hubCapacity": 60
+    },
+    {
+      "id": "STO",
+      "continent": "EU",
+      "latitude": 59.3,
+      "longitude": 18.1,
+      "hubCapacity": 60
+    },
+    {
+      "id": "HEL",
+      "continent": "EU",
+      "latitude": 60.2,
+      "longitude": 24.9,
+      "hubCapacity": 60
+    },
+    {
+      "id": "ROM",
+      "continent": "EU",
+      "latitude": 41.9,
+      "longitude": 12.5,
+      "hubCapacity": 100
+    }
+  ],
+  "stock": {
+    "turboprops": 3,
+    "jets": 1,
+    "hubUpgrades": 1
+  },
+  "goal": {
+    "kind": "deliver",
+    "targetDelivered": 1235
+  },
+  "mechanics": [
+    "week",
+    "transfer"
+  ],
+  "demand": [
+    {
+      "from": "OSL",
+      "to": "ROM",
+      "passengers": 12,
+      "firstTick": 20,
+      "everyTicks": 200
+    },
+    {
+      "from": "HEL",
+      "to": "ROM",
+      "passengers": 12,
+      "firstTick": 50,
+      "everyTicks": 200
+    },
+    {
+      "from": "STO",
+      "to": "ROM",
+      "passengers": 18,
+      "firstTick": 4320,
+      "everyTicks": 150
+    }
+  ],
+  "availableRoutes": [
+    {
+      "from": "CPH",
+      "to": "OSL",
+      "plane": "turboprop",
+      "flightTicks": 60,
+      "intervalTicks": 120
+    },
+    {
+      "from": "CPH",
+      "to": "STO",
+      "plane": "turboprop",
+      "flightTicks": 65,
+      "intervalTicks": 120
+    },
+    {
+      "from": "CPH",
+      "to": "ROM",
+      "plane": "jet",
+      "flightTicks": 110,
+      "intervalTicks": 120
+    },
+    {
+      "from": "STO",
+      "to": "HEL",
+      "plane": "turboprop",
+      "flightTicks": 50,
+      "intervalTicks": 120
+    },
+    {
+      "from": "OSL",
+      "to": "STO",
+      "plane": "turboprop",
+      "flightTicks": 53,
+      "intervalTicks": 120
+    },
+    {
+      "from": "HEL",
+      "to": "ROM",
+      "plane": "jet",
+      "flightTicks": 158,
+      "intervalTicks": 120
+    },
+    {
+      "from": "CPH",
+      "to": "HEL",
+      "plane": "turboprop",
+      "flightTicks": 110,
+      "intervalTicks": 120
+    }
+  ],
+  "referenceCommands": [
+    {
+      "type": "connect",
+      "from": "STO",
+      "to": "HEL",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "OSL",
+      "to": "STO",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "HEL",
+      "to": "ROM",
+      "plane": "jet"
+    }
+  ]
+}

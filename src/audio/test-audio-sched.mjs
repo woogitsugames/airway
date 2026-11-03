@@ -1,7 +1,7 @@
 // [task-19] AudioContext-free scheduling regression; Node 22 type stripping.
 import assert from 'node:assert/strict';
 import { AudioScheduler } from './scheduler.ts';
-import { latitudeToHz, latitudeToMidi, stressBeatHz } from './pitch.ts';
+import { REGION_SCALES, latitudeToHz, latitudeToMidi, stressBeatHz, weekTonicHz } from './pitch.ts';
 
 const SEED = '0xA1A1';
 const tests = [];
@@ -89,6 +89,23 @@ run('latitude pitch is bounded, pentatonic and transposed by week', () => {
   assert.equal(stressBeatHz(0.70), 0);
   assert.equal(stressBeatHz(1), 6);
   assert.ok(stressBeatHz(0.90) > stressBeatHz(0.80));
+});
+
+run('[night-03] region scales are rotations of one pentatonic, inside the speaker band', () => {
+  const pitchClasses = new Set([0, 2, 4, 7, 9]);
+  for (const [region, scale] of Object.entries(REGION_SCALES)) {
+    assert.equal(scale.length, 5, region);
+    for (const step of scale) assert.ok(pitchClasses.has(step % 12), `${region} step ${step} leaves the pentatonic`);
+    for (let week = 1; week <= 8; week++) {
+      for (const latitude of [-60, -20, 0, 35, 70]) {
+        const hz = latitudeToHz(latitude, week, region);
+        assert.ok(hz >= 200 && hz <= 3000, `${region} w${week} ${latitude}: ${hz.toFixed(0)} Hz outside 200 Hz-3 kHz`);
+      }
+    }
+  }
+  assert.notEqual(latitudeToMidi(30, 1, 'EUN'), latitudeToMidi(30, 1, 'ASI'), 'regions must sound distinct');
+  assert.equal(latitudeToMidi(30, 1, 'XXX'), latitudeToMidi(30, 1), 'unknown region falls back to the default scale');
+  assert.ok(Math.abs(weekTonicHz(2) / weekTonicHz(1) - 2 ** (7 / 12)) < 1e-9, 'week 2 moves up a fifth');
 });
 
 let failed = 0;

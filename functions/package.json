@@ -1,0 +1,20 @@
+{
+  "name": "airway-functions",
+  "version": "0.1.0",
+  "private": true,
+  "description": "D-66 leaderboards: callable Cloud Functions that replay daily runs on the game's own Sim.",
+  "main": "index.js",
+  "engines": { "node": "22" },
+  "scripts": {
+    "build": "esbuild src/index.ts --bundle --platform=node --target=node22 --format=cjs --outfile=lib/index.js --packages=external",
+    "emulator:test": "node ../scripts/test-firebase-emulator.mjs"
+  },
+  "dependencies": {
+    "firebase-admin": "13.4.0",
+    "firebase-functions": "6.4.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.5",
+    "firebase-tools": "14.12.0"
+  }
+}

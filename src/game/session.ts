@@ -21,6 +21,8 @@ import { WeeklyUpgradeView } from '../ui/upgrade';
 import { EndlessRun, cityDistanceKm, type RunCommand, type RunEvent } from './run';
 import { mountRunHints } from './tutorial/run-hints'; // [task-32] [m2] one-time contextual ATC hints
 import { readSettings } from '../ui/settings/settings'; // [m2]
+import { airportLabel } from '../ui/airportLabel'; // [night-05] D-68
+import { AudioCueMapper, cueRun } from './audioCues'; // [night-03]
 import type { World, ScreenPoint } from './world';
 
 export type SessionScreen = 'game' | 'upgrade' | 'gameover';
@@ -34,7 +36,8 @@ export interface SessionCallbacks {
   onMenu(): void;
   onRestart(seed: number): void;
   onSave(run: EndlessRun): Promise<boolean>;
-  onFailure?(run: EndlessRun): void;
+  /** May return an extra board for the game-over screen (daily ranking, D-66). */
+  onFailure?(run: EndlessRun): HTMLElement | void;
   onTick?(run: EndlessRun, speed: number): void;
   cue?(cue: AudioCue): void;
 }
@@ -78,6 +81,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
   let lastRun: EndlessRun | null = null;
   let previousPlanes: PlaneRenderSnapshot[] = [];
   const knownAirports = new Set<string>();
+  const audioCues = callbacks.cue ? new AudioCueMapper(callbacks.cue) : null; // [night-03]
   let lastHubKey = '';
   const waitingKeys = new Map<string, string>();
   const jamKeys = new Map<string, number | null>();
@@ -129,6 +133,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
   const upgrade = new WeeklyUpgradeView(upgradeHost, {
     onCommand: (command) => {
       run.queue({ type: 'ChooseUpgrade', week: command.week, upgrade: command.upgrade, ...(command.hubId ? { hubId: command.hubId } : {}) });
+      audioCues?.command('ChooseUpgrade'); // [night-03]
       run.resolveBoundary();
       syncUpgrade(true);
     },
@@ -220,7 +225,9 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     dispatch: (command) => {
       if (command.type === 'SetSpeed') { slow = command.speed === 0 ? slow : command.speed; return true; }
       const mapped = toRunCommand(command);
-      return mapped ? run.queue(mapped) : false;
+      const accepted = mapped ? run.queue(mapped) : false;
+      if (accepted && mapped) audioCues?.command(mapped.type); // [night-03]
+      return accepted;
     },
     undo: () => {
       const previous = run.undo();
@@ -272,6 +279,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     for (const city of cities) {
       if (!knownAirports.has(city.id)) {
         knownAirports.add(city.id);
+        // D-68: the 58 px edge chip has no room for a city name, so it always shows the code.
         overlay.addAirport({ id: city.id, code: city.id, lon: city.lon, lat: city.lat, hub: city.hub });
       }
       const key = city.waiting.join(',');
@@ -334,27 +342,21 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     callbacks.onScreen(next);
   }
   function emit(events: readonly RunEvent[]): void {
+    audioCues?.events(events, cueRun(run)); // [night-03]
     for (const event of events) {
-      const city = 'cityId' in event ? run.cityList().find((item) => item.id === event.cityId) : undefined;
-      const latitude = city?.lat ?? 0;
-      if (event.type === 'arrival' || event.type === 'transfer') {
-        callbacks.cue?.({ type: event.type, tick: run.tick, hubId: event.cityId, latitude });
-      } else if (event.type === 'jam' && event.jammed && city) {
-        callbacks.cue?.({ type: 'hub-load', tick: run.tick, hubId: event.cityId, latitude, loadRatio: 1, capacity: city.capacity });
+      if (event.type === 'jam' && event.jammed) {
         const jammed = event.cityId; // [m2] first overload warning, before game over
         hints.jam(jammed, () => run.cityList().some((item) => item.id === jammed && item.jamTicksLeft !== null));
       } else if (event.type === 'week') {
-        callbacks.cue?.({ type: 'week', tick: run.tick, week: event.week });
         hints.setContext('board'); // [task-32] [m2] the weekly board replaces the hint
       } else if (event.type === 'slot-held') { // [task-32]
         hints.slots(event.cityId, event.limit, event.minutesToSlot); // [m2] same queue
-      } else if (event.type === 'new-city') {
-        callbacks.cue?.({ type: 'new-city', tick: run.tick, latitude });
       }
     }
   }
   function afterTicks(): void {
     emit(run.drainEvents());
+    audioCues?.hourly(cueRun(run)); // [night-03]
     syncWorld();
     syncUpgrade();
     const failure = run.failed;
@@ -362,15 +364,15 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       setScreen('gameover');
       hints.setContext('over'); // [m2]
       tool.pointerCancel(ROUTE_POINTER);
-      callbacks.onFailure?.(run);
+      const extra = callbacks.onFailure?.(run) ?? undefined; // [night-06c]
       const flights = failure.departures.map((departure, i) => ({
         originHubId: failure.cityId, flightNumber: 'AW' + String(101 + i),
         destinationCode: departure.destination, gate: String.fromCharCode(65 + (i % 6)) + String(1 + i),
       }));
       void gameOver.show({
-        seed: run.seed, initialHash: '', hubId: failure.cityId, hubCode: failure.cityId,
+        seed: run.seed, initialHash: '', hubId: failure.cityId, hubCode: airportLabel(failure.cityId),
         delivered: run.passengers, completedWeeks: Math.floor(failure.tick / TICKS_PER_WEEK),
-        ledger: failure.ledger, departures: flights,
+        ledger: failure.ledger, departures: flights, ...(extra ? { extra } : {}),
       });
     }
   }

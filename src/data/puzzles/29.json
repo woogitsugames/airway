@@ -1,0 +1,185 @@
+{
+  "version": 1,
+  "id": "29",
+  "titleKey": "puzzle.29.title",
+  "durationTicks": 8640,
+  "demandSeed": 3629,
+  "startCities": [
+    {
+      "id": "NYC",
+      "continent": "NA",
+      "latitude": 40.7,
+      "longitude": -74,
+      "hubCapacity": 100,
+      "curfew": {
+        "startMinuteOfDay": 1380,
+        "endMinuteOfDay": 360
+      }
+    },
+    {
+      "id": "MIA",
+      "continent": "NA",
+      "latitude": 25.8,
+      "longitude": -80.2,
+      "hubCapacity": 80
+    },
+    {
+      "id": "LIS",
+      "continent": "EU",
+      "latitude": 38.7,
+      "longitude": -9.1,
+      "hubCapacity": 100
+    },
+    {
+      "id": "MAD",
+      "continent": "EU",
+      "latitude": 40.4,
+      "longitude": -3.7,
+      "hubCapacity": 80,
+      "curfew": {
+        "startMinuteOfDay": 1380,
+        "endMinuteOfDay": 360
+      }
+    },
+    {
+      "id": "CMN",
+      "continent": "AF",
+      "latitude": 33.6,
+      "longitude": -7.6,
+      "hubCapacity": 100
+    },
+    {
+      "id": "GRU",
+      "continent": "SA",
+      "latitude": -23.6,
+      "longitude": -46.6,
+      "hubCapacity": 100
+    }
+  ],
+  "stock": {
+    "turboprops": 2,
+    "jets": 4,
+    "hubUpgrades": 1
+  },
+  "goal": {
+    "kind": "continents",
+    "targetDelivered": 1487,
+    "continents": 4
+  },
+  "mechanics": [
+    "curfew",
+    "week",
+    "transfer"
+  ],
+  "demand": [
+    {
+      "from": "NYC",
+      "to": "CMN",
+      "passengers": 20,
+      "firstTick": 20,
+      "everyTicks": 200
+    },
+    {
+      "from": "GRU",
+      "to": "MAD",
+      "passengers": 20,
+      "firstTick": 60,
+      "everyTicks": 200
+    },
+    {
+      "from": "MIA",
+      "to": "CMN",
+      "passengers": 20,
+      "firstTick": 4320,
+      "everyTicks": 200
+    }
+  ],
+  "availableRoutes": [
+    {
+      "from": "NYC",
+      "to": "MIA",
+      "plane": "turboprop",
+      "flightTicks": 220,
+      "intervalTicks": 120
+    },
+    {
+      "from": "NYC",
+      "to": "LIS",
+      "plane": "jet",
+      "flightTicks": 388,
+      "intervalTicks": 120
+    },
+    {
+      "from": "NYC",
+      "to": "MAD",
+      "plane": "jet",
+      "flightTicks": 413,
+      "intervalTicks": 120
+    },
+    {
+      "from": "MIA",
+      "to": "LIS",
+      "plane": "jet",
+      "flightTicks": 477,
+      "intervalTicks": 120
+    },
+    {
+      "from": "LIS",
+      "to": "CMN",
+      "plane": "turboprop",
+      "flightTicks": 73,
+      "intervalTicks": 120
+    },
+    {
+      "from": "MAD",
+      "to": "CMN",
+      "plane": "turboprop",
+      "flightTicks": 104,
+      "intervalTicks": 120
+    },
+    {
+      "from": "GRU",
+      "to": "LIS",
+      "plane": "jet",
+      "flightTicks": 568,
+      "intervalTicks": 120
+    },
+    {
+      "from": "GRU",
+      "to": "MIA",
+      "plane": "jet",
+      "flightTicks": 470,
+      "intervalTicks": 120
+    }
+  ],
+  "referenceCommands": [
+    {
+      "type": "connect",
+      "from": "NYC",
+      "to": "LIS",
+      "plane": "jet"
+    },
+    {
+      "type": "connect",
+      "from": "MIA",
+      "to": "LIS",
+      "plane": "jet"
+    },
+    {
+      "type": "connect",
+      "from": "LIS",
+      "to": "CMN",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "GRU",
+      "to": "LIS",
+      "plane": "jet"
+    },
+    {
+      "type": "upgradeHub",
+      "city": "LIS"
+    }
+  ]
+}

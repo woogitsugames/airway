@@ -446,13 +446,25 @@ owner-visible choices (M2 PR questions).**
 
 <!-- Owner decisions below use D-60+ so they cannot collide with D-49… taken by the parallel task-37…40 session. -->
 
+## D-51 — Player text never breaks inside a word without a hyphen (2026-11-02, task 37)
+UI text must not use `overflow-wrap:anywhere` / `word-break` (they produced "Szerokokadłubowie / c" on the 360 px
+store phone). Browser `hyphens:auto` is not relied on: its dictionaries are missing in some WebViews and headless
+Chromium. Instead long single words carry soft hyphens (U+00AD) in the i18n catalogue ("Szeroko\u00ADkadłubowiec"),
+and the upgrade-label title shrinks to fit its longest word (container query, down to 15 px) before the soft hyphen
+is needed. Overpass ships the middle dot U+00B7 with a zero advance, so Overpass text borrows the dot from
+Atkinson Hyperlegible Next via `unicode-range` (same OFL files) and " · " is symmetric. `npm run test:hud-targets`
+checks menu, upgrade labels and game over in PL/EN at 360–915 px for bare mid-word breaks, header gaps ≥ 8 px and
+dot symmetry. **Status: in force.**
+
 ## D-60 — First weekly upgrade at ~7.2 min is accepted (2026-11-02, owner)
 Keeps 1 tick = 1 game minute and the D-43 balance (median 12.9 min, 86% / 44%). Supersedes the "4–5 min" estimate in D-40.
 **Status: in force.**
 
 ## D-61 — Polish number format uses a space from four digits: "2 500 km" (2026-11-02, owner)
 Player-facing numbers in PL group thousands from 4 digits (as in the mockups), unlike `Intl` pl-PL's default (5 digits).
-One formatter in `src/core/format` / i18n helpers; EN unchanged ("2,500"). **Status: to implement.**
+One formatter in `src/core/format` / i18n helpers; EN unchanged ("2,500"). **Status: in force (task 37)** — `formatNumber()`
+in `src/core/format.ts`, `localNumber()` in `src/i18n`; `t()` formats every numeric parameter with it; separator = the no-break
+space Intl uses for five digits; tested by `npm run test:format`.
 
 ## D-62 — Menu globe rotates slowly (2026-11-02, owner)
 About 1.2°/s, paused with `prefers-reduced-motion` and while the menu is hidden. **Status: in force (task 39).**
@@ -480,4 +492,41 @@ Publish together with the store pre-registration, after the device test. **Statu
 
 ## D-68 — Hub stamp shows code or city name per player setting (2026-11-03, owner)
 Settings toggle "Lotniska: kod / nazwa" (default: code). Applies to hub stamp and other airport labels that have room.
-**Status: to implement.**
+**Status: in force (night N5).** Implemented in `src/ui/airportLabel.ts` (setting `airportLabels` in `airway.settings`):
+the weekly card's hub and slot stamps, the hub/airport pick pressure labels and the game-over departures title use the
+PL/EN city name from `src/data/cities.ts`; the 58 px off-screen edge chips keep the code (no room). Long names wrap
+at spaces inside the stamp.
+
+## D-70 — Puzzles 16–30: mechanics tags and a tighter margin curve (2026-11-03, Claude, night N1)
+Puzzles 16–30 carry an optional `mechanics` list (`slots`, `curfew`, `week`, `mct`, `transfer`); the briefing shows the
+non-obvious ones and `test:puzzles` proves every tag on the reference run (a slot wait, a curfew airport, a wave that
+starts in the second 3-day week, a hub expansion, a demand that needs a transfer). Targets are the reference result
+divided by 1 + margin, the margin falling from 25 % (16) to 17 % (29–30), so later levels need a near-best network.
+Several levels offer decoy strips (a curfewed hub, a five-spoke star that jams on slots). Data format stays version 1.
+**Status: in force; difficulty is a proposal for the owner to playtest.**
+
+## D-71 — Resonant hubs: region scales, tension, cadence, mix and limiter (2026-11-03, Claude, night N3)
+Each destination region plays its own rotation of one pentatonic collection (`REGION_SCALES`), so every hub stays
+consonant while regions sound different. `src/game/audioCues.ts` feeds the engine: graded hub load once per game hour
+(top 4 hubs drone, a calmed hub is released), dawn blooms when a hub reaches 06:00 local (max 2 per hour), a
+dominant→tonic cadence on the week turn (key moves a fifth), a two-tick "slot wait" effect (once per airport per hour),
+and tag / paper / stamp for route add, route removal and upgrade choice. Mix: bus gains and make-up gain into the
+glue compressor, then a −3 dB limiter and trim; previews peak −7…−9 dBFS and a 4x burst stays under −1 dBFS.
+Previews in `docs/audio/`. **Status: in force; sound character is a proposal until the owner listens on a phone.**
+
+## D-72 — Leaderboard client: journal submissions, server replay, no Firebase SDK (2026-11-03, Claude, night N6)
+Implements D-66 on the client side. Only the **official** daily run (one per Warsaw day) is submitted: seed, day key,
+rules version, end tick, claimed score and the full command journal. The server replays it with the same Sim
+(`src/net/submission.ts`, shared code, D-13) and stores the replayed score; a mismatch, wrong seed/day, older rules,
+unfinished run or a run longer than 30 game weeks is rejected. The client talks to Firebase over REST (anonymous
+Identity Toolkit sign-up, callable functions) so the bundle carries no Firebase SDK; without `VITE_FIREBASE_API_KEY`
+and `VITE_FIREBASE_PROJECT_ID` the feature is off and makes no request. Finished runs wait in a bounded local queue
+(one per day, backoff) until the server answers. Players appear under a call sign derived from the anonymous uid, no
+names or e-mail. **Status: in force (client, server N6b, UI N6c).**
+_N6b:_ server in `functions/` — first accepted run per player and Warsaw day counts; the weekly board is the **sum** of a
+player's accepted daily scores in the ISO week (proposal for the owner; alternative: best single day). Accepted days
+are today and yesterday (late finishes, offline queue). Firestore is closed to clients. Owner steps: `docs/FIREBASE.md`.
+_N6c:_ the official daily game-over screen shows a second split-flap board "Ranking · date" (today / this week, top 3
++ own rank, call sign marked "Ty/You"), or a status line: sending, offline-queued, rejected, practice run (not ranked).
+Without Firebase config nothing is shown. Queued runs are retried at app start. A daily run resumed from a save is not
+submitted (known gap, the journal is complete, so it can be added later).

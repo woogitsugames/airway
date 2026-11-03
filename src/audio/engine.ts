@@ -1,5 +1,5 @@
 import { AudioScheduler } from './scheduler';
-import { clamp01, latitudeToHz, stressBeatHz } from './pitch';
+import { clamp01, latitudeToHz, stressBeatHz, weekTonicHz } from './pitch';
 import {
   DEFAULT_AUDIO_SETTINGS,
   type AudioCue, type AudioEffect, type AudioEventStream, type AudioSettings,
@@ -10,11 +10,30 @@ const SCHEDULE_INTERVAL_MS = 25;
 const SIM_LATENCY_SECONDS = 0.125;
 const MAX_STRESS_HUBS = 4;
 const FADE_SECONDS = 0.006;
+/**
+ * [night-03] Mix levels (D-71). Bus gains sit under the player's volume settings; the limiter after the
+ * glue compressor keeps a 4x burst plus UI effects below -1 dBFS on phone speakers.
+ */
+export const MIX = Object.freeze({
+  musicBus: 0.85,
+  effectsBus: 0.9,
+  /** Make-up gain into the glue compressor: the voice peaks above were tuned 2026-11 for quiet sketches. */
+  makeup: 3.2,
+  masterTrim: 0.89,
+  arrivalPeak: 0.05,
+  transferPeak: 0.026,
+  dawnPeak: 0.03,
+  weekPeak: 0.034,
+  bellPeak: 0.036,
+  stressPeak: 0.014,
+  limiterThresholdDb: -3,
+});
 
 type SourceNode = OscillatorNode | AudioBufferSourceNode;
 interface LiveVoice { readonly sources: SourceNode[]; readonly nodes: AudioNode[] }
 interface StressVoice extends LiveVoice {
   readonly latitude: number;
+  readonly regionId?: string;
   readonly fundamental: OscillatorNode;
   readonly beating: OscillatorNode;
   readonly gain: GainNode;
@@ -32,7 +51,8 @@ export class AirwayAudio {
   private readonly voices = new Set<LiveVoice>();
   private readonly stress = new Map<string, StressVoice>();
   private settings: AudioSettings = { ...DEFAULT_AUDIO_SETTINGS };
-  private context: AudioContext | null = null;
+  private context: BaseAudioContext | null = null;
+  private offline = false;
   private master: GainNode | null = null;
   private music: GainNode | null = null;
   private effects: GainNode | null = null;
@@ -47,7 +67,7 @@ export class AirwayAudio {
   private night = false;
   private destroyed = false;
 
-  get unlocked(): boolean { return this.context?.state === 'running'; }
+  get unlocked(): boolean { return this.offline || this.context?.state === 'running'; }
   get schedulerStats(): Readonly<{ pending: number; scheduled: number; dropped: number }> {
     return {
       pending: this.scheduler.pending,
@@ -90,7 +110,7 @@ export class AirwayAudio {
     const ctx = this.context;
     if (!ctx) return false;
     const isUI = cue.type === 'flap' || cue.type === 'paper' ||
-      cue.type === 'tag' || cue.type === 'stamp';
+      cue.type === 'tag' || cue.type === 'stamp' || cue.type === 'slot-wait';
     const deltaTicks = cue.tick === undefined ? 0 : Math.max(0, cue.tick - this.tick);
     const when = ctx.currentTime + (isUI ? 0.008 : SIM_LATENCY_SECONDS) +
       deltaTicks / (TICKS_PER_SECOND * this.speed);
@@ -98,6 +118,23 @@ export class AirwayAudio {
     const added = this.scheduler.enqueue(cue, when, duration, isUI ? 'effects' : 'music');
     if (isUI) this.pump();
     return added;
+  }
+
+  /**
+   * [night-03] Offline rendering (docs/audio previews, test:audio-render): build the same graph on a
+   * caller-owned OfflineAudioContext and place cues at absolute context times, bypassing the scheduler.
+   */
+  attachOfflineContext(ctx: BaseAudioContext): void {
+    if (this.context) throw new Error('Audio graph already exists');
+    this.offline = true;
+    this.setup(ctx);
+  }
+
+  renderCueAt(cue: AudioCue, at: number): void {
+    if (!this.offline || !this.context) throw new Error('renderCueAt needs an offline context');
+    if (cue.type === 'week' && Number.isSafeInteger(cue.week) && cue.week > 0) { this.week = cue.week; this.retuneStress(at); }
+    if (cue.type === 'hub-load') { this.updateStress(cue, at); return; }
+    this.play(cue, at);
   }
 
   playEffect(effect: AudioEffect): boolean {
@@ -127,13 +164,13 @@ export class AirwayAudio {
   }
 
   unlock(): Promise<boolean> {
-    if (this.destroyed || typeof AudioContext === 'undefined') return Promise.resolve(false);
+    if (this.destroyed || this.offline || typeof AudioContext === 'undefined') return Promise.resolve(false);
     try {
       if (!this.context) this.setup();
       const ctx = this.context;
       if (!ctx) return Promise.resolve(false);
       this.applyIOSAudioSession();
-      const resume = ctx.resume();
+      const resume = (ctx as AudioContext).resume();
       return resume.then(() => {
         if (this.destroyed || ctx.state !== 'running') return false;
         this.startScheduler();
@@ -179,7 +216,7 @@ export class AirwayAudio {
     this.stopScheduler();
     this.scheduler.clear();
     this.stopVoices();
-    if (this.context?.state === 'running') void this.context.suspend().catch(() => {});
+    if (!this.offline && this.context?.state === 'running') void (this.context as AudioContext).suspend().catch(() => {});
   }
 
   resume(): Promise<boolean> {
@@ -221,11 +258,11 @@ export class AirwayAudio {
     this.stress.clear();
     const ctx = this.context;
     this.context = null;
-    if (ctx && ctx.state !== 'closed') await ctx.close().catch(() => {});
+    if (ctx && !this.offline && ctx.state !== 'closed') await (ctx as AudioContext).close().catch(() => {});
   }
 
-  private setup(): void {
-    const ctx = new AudioContext({ latencyHint: 'interactive' });
+  private setup(given?: BaseAudioContext): void {
+    const ctx = given ?? new AudioContext({ latencyHint: 'interactive' });
     this.context = ctx;
     const master = ctx.createGain();
     const hipass = ctx.createBiquadFilter();
@@ -237,14 +274,29 @@ export class AirwayAudio {
     compressor.ratio.value = 7;
     compressor.attack.value = 0.004;
     compressor.release.value = 0.17;
-    master.connect(hipass).connect(compressor).connect(ctx.destination);
+    // [night-03] Brick-wall-style limiter and trim after the glue compressor (D-71).
+    const limiter = ctx.createDynamicsCompressor();
+    limiter.threshold.value = MIX.limiterThresholdDb;
+    limiter.knee.value = 0;
+    limiter.ratio.value = 20;
+    limiter.attack.value = 0.001;
+    limiter.release.value = 0.06;
+    const trim = ctx.createGain();
+    trim.gain.value = MIX.masterTrim;
+    const makeup = ctx.createGain();
+    makeup.gain.value = MIX.makeup;
+    master.connect(makeup).connect(hipass).connect(compressor).connect(limiter).connect(trim).connect(ctx.destination);
+    const musicMix = ctx.createGain();
+    musicMix.gain.value = MIX.musicBus;
+    const effectsMix = ctx.createGain();
+    effectsMix.gain.value = MIX.effectsBus;
     const music = ctx.createGain();
     const effects = ctx.createGain();
     const filter = ctx.createBiquadFilter();
     filter.type = 'lowpass';
     filter.frequency.value = this.night ? 1300 : 5500;
-    music.connect(filter).connect(master);
-    effects.connect(master);
+    music.connect(musicMix).connect(filter).connect(master);
+    effects.connect(effectsMix).connect(master);
     this.master = master;
     this.music = music;
     this.effects = effects;
@@ -291,7 +343,7 @@ export class AirwayAudio {
 
   private pump(): void {
     const ctx = this.context;
-    if (!ctx || ctx.state !== 'running' || this.settings.muted) return;
+    if (!ctx || this.offline || ctx.state !== 'running' || this.settings.muted) return;
     this.scheduler.pump(ctx.currentTime, this.playScheduled);
   }
 
@@ -299,13 +351,14 @@ export class AirwayAudio {
     switch (cue.type) {
       case 'arrival': return 0.72;
       case 'transfer': return 0.48;
-      case 'dawn': return 1.5;
-      case 'week': return 0.9;
+      case 'dawn': return 2.1;
+      case 'week': return 1.6;
       case 'new-city': return 1.25;
       case 'flap': return 0.095;
       case 'paper': return 0.29;
       case 'tag': return 0.21;
       case 'stamp': return 0.18;
+      case 'slot-wait': return 0.42;
       case 'hub-load': return 0.5;
     }
   }
@@ -317,13 +370,16 @@ export class AirwayAudio {
         this.hubStrike(cue, at);
         break;
       case 'dawn':
-        this.chord(latitudeToHz(cue.latitude, this.week), at, 1.5);
+        this.dawnBloom(cue, at);
         break;
       case 'week':
-        this.chord(latitudeToHz(0, this.week) / 2, at, 0.9);
+        this.weekCadence(at);
         break;
       case 'new-city':
-        this.bell(latitudeToHz(cue.latitude ?? 0, this.week) * 2, at);
+        this.bell(latitudeToHz(cue.latitude ?? 0, this.week, cue.regionId) * 2, at);
+        break;
+      case 'slot-wait':
+        this.slotWait(at);
         break;
       case 'flap':
         this.flap(at);
@@ -348,10 +404,10 @@ export class AirwayAudio {
     const bus = this.music;
     if (!ctx || !bus) return;
     const isArrival = cue.type === 'arrival';
-    const frequency = latitudeToHz(cue.latitude, this.week);
+    const frequency = latitudeToHz(cue.latitude, this.week, cue.regionId);
     const decay = (isArrival ? 0.43 : 0.19) + 0.001 * Math.min(170, Math.max(0, cue.capacity ?? 0));
     const end = at + decay + 0.08;
-    const envelope = this.envelope(bus, at, end, isArrival ? 0.048 : 0.025, 0.008);
+    const envelope = this.envelope(bus, at, end, isArrival ? MIX.arrivalPeak : MIX.transferPeak, 0.008);
     const filter = ctx.createBiquadFilter();
     filter.type = 'lowpass';
     filter.frequency.value = cue.night ?? this.night ? 1100 : 3300;
@@ -363,17 +419,49 @@ export class AirwayAudio {
     this.track(sources, [filter, envelope]);
   }
 
-  private chord(base: number, at: number, duration: number): void {
+  private chord(frequencies: readonly number[], at: number, duration: number, peak: number, spread = 0): void {
     const ctx = this.context;
     const bus = this.music;
     if (!ctx || !bus) return;
     const end = at + duration;
-    const env = this.envelope(bus, at, end, 0.025, 0.085);
+    const env = this.envelope(bus, at, end, peak, 0.085);
     const sources: SourceNode[] = [];
-    for (const ratio of [1, 5 / 4, 3 / 2]) {
-      sources.push(this.oscillator('sine', base * ratio, at, end, env));
-    }
+    // A short upward spread turns the block chord into a bloom; all notes still stop together.
+    frequencies.forEach((frequency, index) => {
+      sources.push(this.oscillator('sine', frequency, at + index * spread, end, env));
+    });
     this.track(sources, [env]);
+  }
+
+  /** [night-03] Dawn reaching a hub: its region's scale blooms upward from the hub's own note. */
+  private dawnBloom(cue: Extract<AudioCue, { type: 'dawn' }>, at: number): void {
+    const root = latitudeToHz(cue.latitude, this.week, cue.regionId);
+    this.chord([root, root * 3 / 2, root * 2, root * 3], at, 2.1, MIX.dawnPeak, 0.07);
+  }
+
+  /** [night-03] Week change: dominant then tonic of the new key, the game's chapter mark. */
+  private weekCadence(at: number): void {
+    const tonic = weekTonicHz(this.week);
+    const dominant = tonic * 3 / 2;
+    this.chord([dominant, dominant * 5 / 4, dominant * 3 / 2], at, 0.7, MIX.weekPeak);
+    this.chord([tonic, tonic * 5 / 4, tonic * 3 / 2, tonic * 2], at + 0.55, 1.05, MIX.weekPeak, 0.03);
+  }
+
+  /** [night-03] A held departure: two soft wooden ticks, the second lower, like a clock waiting. */
+  private slotWait(at: number): void {
+    const ctx = this.context;
+    const bus = this.effects;
+    if (!ctx || !bus) return;
+    for (const [offset, frequency] of [[0, 1320], [0.21, 990]] as const) {
+      const start = at + offset;
+      const env = this.envelope(bus, start, start + 0.2, 0.05, 0.002);
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.value = frequency;
+      filter.Q.value = 6;
+      filter.connect(env);
+      this.track([this.oscillator('triangle', frequency / 2, start, start + 0.2, filter)], [filter, env]);
+    }
   }
 
   private bell(frequency: number, at: number): void {
@@ -381,7 +469,7 @@ export class AirwayAudio {
     const bus = this.music;
     if (!ctx || !bus) return;
     const end = at + 1.25;
-    const env = this.envelope(bus, at, end, 0.037, 0.005);
+    const env = this.envelope(bus, at, end, MIX.bellPeak, 0.005);
     this.track([
       this.oscillator('sine', frequency, at, end, env),
       this.oscillator('sine', frequency * 2.01, at, end, env),
@@ -470,7 +558,7 @@ export class AirwayAudio {
     return source;
   }
 
-  private createNoise(ctx: AudioContext): AudioBuffer {
+  private createNoise(ctx: BaseAudioContext): AudioBuffer {
     const length = Math.ceil(ctx.sampleRate * 0.35);
     const buffer = ctx.createBuffer(1, length, ctx.sampleRate);
     const samples = buffer.getChannelData(0);
@@ -512,12 +600,13 @@ export class AirwayAudio {
     for (const hubId of this.stress.keys()) this.stopStress(hubId);
   }
 
-  private updateStress(cue: Extract<AudioCue, { type: 'hub-load' }>): void {
+  private updateStress(cue: Extract<AudioCue, { type: 'hub-load' }>, at?: number): void {
     const ctx = this.context;
     const bus = this.music;
     if (!ctx || !bus) return;
+    const now = at ?? ctx.currentTime;
     const ratio = clamp01(cue.loadRatio);
-    if (ratio < 0.68) { this.stopStress(cue.hubId); return; }
+    if (ratio < 0.68) { this.stopStress(cue.hubId, now); return; }
     let drone = this.stress.get(cue.hubId);
     if (!drone && ratio < 0.75) return; // Hysteresis prevents drone churn.
     if (!drone) {
@@ -534,29 +623,30 @@ export class AirwayAudio {
       fundamental.connect(filter);
       beating.connect(filter);
       filter.connect(gain).connect(bus);
-      fundamental.start();
-      beating.start();
+      fundamental.start(now);
+      beating.start(now);
       drone = {
-        latitude: cue.latitude,
+        latitude: cue.latitude, regionId: cue.regionId,
         fundamental, beating, gain, filter,
         sources: [fundamental, beating], nodes: [filter, gain],
       };
       this.stress.set(cue.hubId, drone);
     }
-    const frequency = latitudeToHz(cue.latitude, this.week);
-    drone.fundamental.frequency.setTargetAtTime(frequency, ctx.currentTime, 0.05);
-    drone.beating.frequency.setTargetAtTime(frequency + stressBeatHz(ratio), ctx.currentTime, 0.05);
-    drone.filter.frequency.setTargetAtTime(cue.night ?? this.night ? 950 : 2200, ctx.currentTime, 0.08);
-    const amplitude = 0.012 * clamp01((ratio - 0.68) / 0.32);
-    drone.gain.gain.setTargetAtTime(amplitude, ctx.currentTime, 0.06);
+    // Same pitch as the hub's strikes, so its arrivals audibly beat against the drone (phone speakers lack bass).
+    const frequency = latitudeToHz(cue.latitude, this.week, cue.regionId);
+    drone.fundamental.frequency.setTargetAtTime(frequency, now, 0.05);
+    drone.beating.frequency.setTargetAtTime(frequency + stressBeatHz(ratio), now, 0.05);
+    drone.filter.frequency.setTargetAtTime(cue.night ?? this.night ? 950 : 2200, now, 0.08);
+    const amplitude = MIX.stressPeak * clamp01((ratio - 0.68) / 0.32);
+    drone.gain.gain.setTargetAtTime(amplitude, now, 0.06);
   }
 
-  private stopStress(hubId: string): void {
+  private stopStress(hubId: string, when?: number): void {
     const voice = this.stress.get(hubId);
     const ctx = this.context;
     if (!voice || !ctx) return;
     this.stress.delete(hubId);
-    const at = ctx.currentTime;
+    const at = when ?? ctx.currentTime;
     voice.gain.gain.cancelScheduledValues(at);
     voice.gain.gain.setValueAtTime(voice.gain.gain.value, at);
     voice.gain.gain.linearRampToValueAtTime(0, at + 0.065);
@@ -569,14 +659,15 @@ export class AirwayAudio {
     };
   }
 
-  private retuneStress(): void {
+  private retuneStress(when?: number): void {
     const ctx = this.context;
     if (!ctx) return;
+    const now = when ?? ctx.currentTime;
     for (const voice of this.stress.values()) {
-      const frequency = latitudeToHz(voice.latitude, this.week);
+      const frequency = latitudeToHz(voice.latitude, this.week, voice.regionId);
       const currentBeat = Math.abs(voice.beating.frequency.value - voice.fundamental.frequency.value);
-      voice.fundamental.frequency.setTargetAtTime(frequency, ctx.currentTime, 0.12);
-      voice.beating.frequency.setTargetAtTime(frequency + currentBeat, ctx.currentTime, 0.12);
+      voice.fundamental.frequency.setTargetAtTime(frequency, now, 0.12);
+      voice.beating.frequency.setTargetAtTime(frequency + currentBeat, now, 0.12);
     }
   }
 }

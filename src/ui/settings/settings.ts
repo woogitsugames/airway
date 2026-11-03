@@ -4,6 +4,7 @@
 import { getLanguage, setLanguage, t, type Language, type TranslationKey } from '../../i18n';
 import type { QualityPreference } from '../../render';
 import { readAccessibilitySettings, updateAccessibilitySettings, type TextScale } from '../a11y';
+import { readAirportLabelMode, type AirportLabelMode } from '../airportLabel';
 import '../menu/menu.css';
 
 export interface UserSettings {
@@ -14,10 +15,12 @@ export interface UserSettings {
   haptics: boolean;
   colorblind: boolean;
   textScale: TextScale;
+  /** [night-05] D-68: airport code or city name on stamps and airport labels. */
+  airportLabels: AirportLabelMode;
   hints: boolean; // [m2] contextual ATC hints in a run (D-54)
 }
 const KEY='airway.settings';
-type LocalField='sound'|'music'|'graphics'|'hints'; // [m2] hints
+type LocalField='sound'|'music'|'graphics'|'airportLabels'|'hints'; // [m2] hints
 const QUALITY:readonly QualityPreference[]=['auto','low','medium','high'];
 const listeners=new Set<(settings:UserSettings)=>void>();
 
@@ -40,6 +43,7 @@ export function readSettings():UserSettings {
     haptics:a11y.hapticsEnabled,
     colorblind:a11y.enhancedGlyphs,
     textScale:a11y.textScale,
+    airportLabels:readAirportLabelMode(),
     hints:typeof record.hints==='boolean'?record.hints:true, // [m2]
   };
 }
@@ -52,10 +56,11 @@ export function saveSettings(change:Partial<UserSettings>):UserSettings {
   if(change.colorblind!==undefined) a11y.enhancedGlyphs=change.colorblind;
   if(change.textScale!==undefined) a11y.textScale=change.textScale;
   if(Object.keys(a11y).length) updateAccessibilitySettings(a11y);
-  const local:Partial<Record<LocalField,boolean|QualityPreference>>={};
+  const local:Partial<Record<LocalField,boolean|QualityPreference|AirportLabelMode>>={};
   if(change.sound!==undefined) local.sound=change.sound;
   if(change.music!==undefined) local.music=change.music;
   if(change.graphics!==undefined) local.graphics=change.graphics;
+  if(change.airportLabels!==undefined) local.airportLabels=change.airportLabels==='name'?'name':'code';
   if(change.hints!==undefined) local.hints=change.hints; // [m2]
   if(Object.keys(local).length){
     try { globalThis.localStorage?.setItem(KEY,JSON.stringify({...storedRecord(),...local})); }
@@ -126,6 +131,9 @@ export function createSettings(onBack:()=>void,onLicenses:()=>void,onLanguageCha
   });
   selectField(t('settings.graphics'),values.graphics,[['auto',t('settings.auto')],['low',t('settings.low')],['medium',t('settings.medium')],['high',t('settings.high')]],(v)=>{
     saveSettings({graphics:v==='low'||v==='medium'||v==='high'?v:'auto'});
+  });
+  selectField(t('settings.airportLabels'),values.airportLabels,[['code',t('settings.airportLabels.code')],['name',t('settings.airportLabels.name')]],(v)=>{
+    saveSettings({airportLabels:v==='name'?'name':'code'});
   });
   selectField(t('a11y.textScale'),String(values.textScale),[['100','100%'],['115','115%'],['130','130%']],(v)=>{
     saveSettings({textScale:v==='115'?115:v==='130'?130:100});

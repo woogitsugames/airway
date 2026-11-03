@@ -11,7 +11,7 @@ class GameSession {
   private warned = false;
   private leadTicks = 0;
 
-  constructor(seed: number) { this.sim = createGame(seed); }
+  constructor(seed: number, mode: 'endless' | 'daily' = 'endless') { this.sim = createGame(seed, mode); }
 
   /** The underlying authoritative Sim (tests replay its journal). */
   get simulation(): Sim { return this.sim; }
@@ -48,6 +48,6 @@ class GameSession {
   }
 }
 
-export function createBalanceSession(seed: number): GameSession {
-  return new GameSession(seed >>> 0);
+export function createBalanceSession(seed: number, mode: 'endless' | 'daily' = 'endless'): GameSession {
+  return new GameSession(seed >>> 0, mode);
 }

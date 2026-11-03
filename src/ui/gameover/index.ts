@@ -1,6 +1,6 @@
 // [task-15] Airport departure-board failure presentation; all gameplay effects use injected adapters.
 import { buildCauseReport, type CauseFact, type CauseKind, type HubCauseLedger, type RegionCode } from '../../game/causes';
-import { getLanguage, t, type TranslationKey } from '../../i18n';
+import { localNumber, t, type TranslationKey } from '../../i18n';
 import { nextWorldSeed, sameWorldIdentity, type WorldIdentity } from './seed';
 import { persistBestRecord, type BestStorage } from './storage';
 import './gameover.css';
@@ -22,6 +22,8 @@ export interface GameOverSnapshot extends WorldIdentity {
   readonly completedWeeks: number;
   readonly ledger: HubCauseLedger;
   readonly departures: readonly FailedDeparture[];
+  /** [night-06c] Optional extra board under the report (daily ranking, D-66). */
+  readonly extra?: HTMLElement;
 }
 
 export interface GameOverAdapters {
@@ -155,7 +157,7 @@ function buildDialog(
   const stripHeader = element('h2', 'airway-go-strip-title', t('gameover.report'));
   const scoreRow = element('div', 'airway-go-score-row');
   scoreRow.append(
-    element('p', 'airway-go-score', t('gameover.score', { score: snapshot.delivered.toLocaleString(getLanguage()) })),
+    element('p', 'airway-go-score', t('gameover.score', { score: localNumber(snapshot.delivered) })),
     element('p', 'airway-go-weeks', t('gameover.weeks', { weeks: snapshot.completedWeeks })),
   );
   const causesTitle = element('h3', 'airway-go-causes-title', t('gameover.causes'));
@@ -179,7 +181,7 @@ function buildDialog(
   next.addEventListener('click', onNew);
   menu.addEventListener('click', onMenu);
   actions.append(same, next, menu);
-  content.append(sign, board, strip, actions);
+  content.append(sign, board, strip, ...(snapshot.extra ? [snapshot.extra] : []), actions);
   overlay.append(content);
   return { overlay, firstButton: same };
 }
