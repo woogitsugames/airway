@@ -249,3 +249,122 @@ końca gry z przyczyną, osią czasu i mapą (N10r, N11c), kontynuacja zapisu. T
 ### Rekomendacja
 R1j i R1n jako małe PR-y przed testem zamkniętym; R1o razem z ustawieniem testu; powiadomienia — nie (Q-45).
 Mierzyć cel 10–18 min (D-79) na ludziach w teście zamkniętym, nie tylko botem.
+
+## R2 — Strona w sklepie i ASO (stan 2026-11-03)
+
+### Ustalenia
+| Temat | Wymóg / praktyka (źródło) | Airway dziś (`docs/store/**`) | Luka |
+|---|---|---|---|
+| **Zrzuty gry — Google Play** | Do publikacji min. 2 zrzuty, maks. 8 na typ urządzenia, bok 320–3840 px, dłuższy bok ≤ 2× krótszy. Do **rekomendacji gier**: co najmniej **3 zrzuty 9:16 (min. 1080×1920) albo 16:9 (min. 1920×1080)** z rozgrywki; duże ekrany (tablety, Chromebooki): 1080–7680 px, **16:9 lub 9:16**, min. 4 ([Google Play Help](https://support.google.com/googleplay/android-developer/answer/9866151), odczyt 2026-11-03) | telefon 1080×1920 (9:16) — **spełnia**; „foldable” 1346×1682 (4:5) i „tablet” 1536×2048 (3:4) | tablet/foldable **nie mają proporcji 9:16 ani 16:9** → nie kwalifikują się do promocji na dużych ekranach (czy konsola je odrzuci — **NIEPEWNE**); brak zrzutów poziomych 16:9 |
+| **Zrzuty — App Store** | Wymagany iPhone „Dynamic Island, medium” **1206×2622 / 1179×2556** albo duży **1320×2868** (sklep skaluje w dół z największego); iPad 13" **2064×2752**; do 10 zrzutów, bez kanału alfa ([Apple](https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications/)) | brak rozmiarów Apple (README to zaznacza) | do zrobienia profil 440×956 @3 i 1032×1376 @2 (R2a) |
+| **Podpisy pod zrzutami** | Ani Google Play, ani App Store **nie mają pola podpisu** pod zrzutem. Play ma **tekst alternatywny** dla każdego zrzutu (Google zaleca unikalny; limit 140 zn. podają poradniki — **NIEPEWNE**) ([Google Play Help](https://support.google.com/googleplay/android-developer/answer/9866151); [przegląd zewn.](https://theapplaunchpad.com/blog/google-play-store-screenshot-guidelines)). Tekst na obrazie dozwolony, na Play ≤ 20% kadru, bez „Pobierz teraz”, „#1”, „Najlepsza”, „Nowość” | `en.md`/`pl.md`: „podpisy tylko do konsoli, nigdy na obrazach” | podpisy nie mają gdzie trafić: na Play → alt text; na App Store tylko tekst na obrazie albo nic (Q-46) |
+| **Feature graphic (Play)** | **Wymagana do publikacji**: 1024×500, JPEG/PNG 24-bit; główny motyw w środku; **unikać czystej bieli, czerni i ciemnej szarości**; alt text ≤ 140 zn.; gdy jest wideo, grafika staje się jego okładką z przyciskiem odtwarzania pośrodku ([Google Play Help](https://support.google.com/googleplay/android-developer/answer/9866151)) | **brak** | blokuje publikację na Play (R2d); nocny globus na ciemnym tle łamie zalecenie „bez ciemnej szarości” — lepiej scena zmierzchu |
+| **Wideo — Google Play** | Link YouTube (publiczny lub niepubliczny, bez reklam, osadzalny); „gra **wymaga wideo**, by pojawić się w niektórych miejscach Google Play”; rozgrywka w pierwszych 10 s, ≥ 80% materiału reprezentatywne, **autoodtwarzane jest tylko pierwsze 30 s**, napisy zalecane, pion bez czarnych pasów ([Google Play Help](https://support.google.com/googleplay/android-developer/answer/9866151)) | **brak** | potrzebny kanał YouTube właściciela (Q-48) i plik wideo (R2b) |
+| **Wideo — App Store (App Preview)** | 15–30 s, do 3 na rozmiar i język, H.264 ≤ 30 kl./s; iPhone (duży): **886×1920** pion; iPad 13": **1200×1600**; klatka-plakat domyślnie z 5. sekundy ([Apple](https://developer.apple.com/help/app-store-connect/reference/app-information/app-preview-specifications/)). Na stronie produktu odtwarzane bez dźwięku (poradniki ASO, np. [AppFollow 2026](https://www.appfollow.io/blog/app-store-video-strategy)) | brak | nagranie z autoplay-bota (deterministyczne) — ffmpeg jest w środowisku |
+| **Czy wideo podnosi konwersję** | Dane sprzeczne: poradniki podają +12–25% (StoreMaven 2025, cytowane z drugiej ręki) albo brak wyraźnego efektu ([AppScreenshotStudio](https://appscreenshotstudio.com/blog/app-preview-videos-vs-screenshots-2026-conversion-data)) — **NIEPEWNE**. Zgodne: pierwsze 3 s decydują, wideo działa bez dźwięku. Apple PPO pozwala testować do 3 wariantów; Play „Store listing experiments” testuje grafiki i opisy (nie tytuł) | — | testować, nie zakładać (Q-47) |
+| **Słowa kluczowe App Store** | 100 znaków, przecinki bez spacji; Apple łączy słowa z nazwy, podtytułu i pola słów kluczowych, więc **powtórki marnują miejsce**; liczba pojedyncza/mnoga — poradniki się różnią ([AppTweak](https://www.apptweak.com/en/aso-blog/how-to-optimize-your-ios-keyword-field), [Appalize](https://www.appalize.com/blog/keyword-research/ios-keyword-field-rules-character-limits-optimization)); nazwy konkurencji zabronione (wytyczna 2.3.7) | EN 81 zn.: `globe`, `routes`, `hub` powtarzają tytuł/podtytuł; PL: `globus`, `trasy`, `hub` — to samo | R2c: wymiana powtórek na nowe słowa |
+| **Google Play — tekst** | Brak pola słów kluczowych; indeksowane są tytuł (30), krótki opis (80) i długi opis; krótkiego opisu nie da się przetestować z tytułem, ale da się w eksperymencie ([AppFollow](https://appfollow.io/blog/google-play-aso-keywords)) | krótki opis zawiera „globe/routes/hubs” — dobrze | słowa „airline”, „airport”, „strategy” tylko w długim opisie; brak „puzzle” w krótkim |
+
+### Wzorce stron udanych gier premium strategia/łamigłówka (opis wzorców, bez kopiowania)
+- **Kadr 1 = najczytelniejsza chwila rozgrywki**, nie widoczek: cała pętla w jednym obrazie (sieć, ruch, napięcie).
+  Kadr 2 pokazuje *wybór* (karta ulepszenia, decyzja), kadr 3 — *stawkę* (porażka, presja). Tryby i menu na końcu.
+- Krótki tekst na obrazie (2–5 słów) nad kadrem albo pod nim, w kroju gry — nie w generycznym — i bez obietnic.
+  Dla nas: tekst jako element świata (tabliczka lotniskowa), co jest zgodne z D-05 i z regułą „grafika tłumaczy grę”.
+- Kadr nocny jako pierwszy (D-63) jest ładny, ale na małej miniaturze w wynikach wyszukiwania pokazuje głównie
+  światła miast, a mniej mechaniki. To hipoteza do sprawdzenia eksperymentem, nie powód do zmiany decyzji (Q-47).
+
+### Rekomendacja
+1. Przed publikacją Play: **feature graphic** (R2d) — jest wymagana. 2. Przed iOS: zrzuty w rozmiarach Apple (R2a).
+3. Wideo 20–30 s z prawdziwej rozgrywki (R2b) do obu sklepów; ten sam materiał jako zwiastun na stronę i dla prasy.
+4. Słowa kluczowe bez powtórek (R2c). 5. Po wydaniu: eksperyment Play „kolejność / tabliczka z tekstem” (Q-46, Q-47).
+
+## R2 — Marketing wydania niezależnej gry mobilnej (stan 2026-11-03)
+
+### Ustalenia
+- **Przedrejestracja Google Play:** maks. **90 dni** na kraj (licząc od pierwszego otwarcia), potem trzeba wydać;
+  wymaga wypełnionych deklaracji treści; Google zaleca wcześniej wydanie testowe. W dniu premiery zapisani dostają
+  powiadomienie i **automatyczną instalację** (Android 6+, aplikacja ≤ 200 MB przez sieć komórkową; konta dzieci < 13
+  wyłączone). Statystyki: liczba zapisanych i konwersje w 14 dni ([Google Play Help](https://support.google.com/googleplay/android-developer/answer/9859047)).
+  Czy nowe konto osobiste może otworzyć przedrejestrację **przed** zaliczeniem testu 12 × 14 (R1) — **NIEPEWNE**.
+- **Nagroda za przedrejestrację wymaga produktu jednorazowego (IAP)** w Play Billing, raz utworzonej nie da się
+  zmienić ani usunąć, a niewydanie nagrody grozi zawieszeniem ([Google Play Help](https://support.google.com/googleplay/android-developer/answer/9859047)).
+  Przy D-16 (zero IAP) **nagrody nie robimy**; zamiast tego wszystko jest dla wszystkich.
+- **Pre-order App Store** działa także dla gier darmowych: data premiery 2–180 dni od publikacji zamówienia
+  ([Apple](https://developer.apple.com/app-store/pre-orders/)). Strona produktu zbiera wtedy ruch z prasy przed premierą.
+- **Nominacje do wyróżnienia (App Store Connect → Featuring Nominations):** minimum 2 tygodnie przed datą,
+  Apple zaleca **do 3 miesięcy** wcześniej dla szerszego rozważenia ([Apple](https://developer.apple.com/app-store/getting-featured/)).
+  Dotyczy premiery, dużych aktualizacji i wydarzeń w aplikacji.
+- **In-App Events (Apple):** wydarzenia ograniczone w czasie (typy „Challenge”, „Competition”, „Major update”) widoczne
+  w wyszukiwaniu, na stronie produktu i w zakładce Today; nazwa 30 zn., krótki opis 50 zn.; odrzucane m.in. za ceny i
+  słowo „free” w treści ([AppTweak](https://www.apptweak.com/en/aso-blog/strategies-best-practices-for-ios-15-in-app-events), [Phiture](https://phiture.com/mobilegrowthstack/in-app-events-how-to-get-approved/)) —
+  szczegóły z poradników, **NIEPEWNE**. Dla nas naturalne: „Tydzień otwarcia” (wyzwanie dnia + ranking tygodniowy),
+  potem wydarzenie przy każdej aktualizacji z nowymi zagadkami.
+- **Prasa mobilna się skurczyła:** TouchArcade zamknął serwis 09.2024 (archiwum i podcast zostają)
+  ([TouchArcade](https://toucharcade.com/2024/09/24/toucharcade-is-shutting-down/)). Aktualnej listy redakcji przyjmujących
+  zgłoszenia gier mobilnych nie znaleziono — wybór (Pocket Gamer, Pocket Tactics, polskie serwisy) **NIEPEWNE**, do
+  ręcznego sprawdzenia. Stąd większa waga twórców wideo i wyróżnień w sklepach.
+- **Press kit:** szablon presskit() jest nieutrzymywany od ok. 2022; praktyka 2026 to jedna publiczna strona bez logowania:
+  karta faktów, zwiastun do pobrania, 8–15 zrzutów, key art, logo, jedno archiwum ZIP ([StraySpark](https://www.strayspark.studio/blog/indie-game-press-kit-2026-presskit-replacement),
+  [presskit.gg](https://presskit.gg/blog/indie-game-press-kit-guide) — blogi narzędzi, opinia). Mamy statyczną stronę
+  (`site/`, D-67 nieopublikowana) — strona prasowa to mały dodatek.
+- **Pokazy dla gier mobilnych:** *The Big Indie Pitch — Mobile Edition* na **PG Connects London 18.01.2027**
+  (rejestracja na konferencję wymagana; nagroda: bilety i stoisko) ([Big Indie Pitch](https://www.bigindiepitch.com/event/the-big-indie-pitch-mobile-edition-at-pocket-gamer-connects-london-2027/));
+  **Digital Dragons** w Krakowie (2026: 17–19.05; zgłoszenia do Indie Showcase w 2024 zamykano 1.03 — termin 2027
+  **NIEPEWNE**) ([KPT](https://media.kpt.krakow.pl/431298-another-year-with-digital-dragons-krakow-awaits-game-creators));
+  *Google Play Indie Games Festival* — nie znaleziono edycji 2026 (ostatnie potwierdzone 2022) — **NIEPEWNE**.
+- **Apple Arcade / Netflix Games:** nie mają publicznego formularza; Arcade w 2026 dodaje głównie znane gry z PC
+  (np. Dredge+, Unpacking+, 04.2026, [9to5Mac](https://9to5mac.com/2026/03/11/apple-arcades-april-lineup-adding-two-of-the-most-acclaimed-recent-indie-games/)).
+  Realne tylko po sukcesie wydania; nie planować.
+- **Konkurencja w czasie:** *Tiny Airline* (PC, Steam „coming soon” wg R1) — daty premiery nie znaleziono (**NIEPEWNE**).
+  Komunikat Airway ma opierać się na tym, czego oni nie mają: globus i terminator dnia/nocy, przesiadki, telefon w pionie.
+
+### Co to znaczy dla Airway
+Gra darmowa bez reklam to w marketingu atut („bez reklam, bez zakupów, bez konta”), ale **słowa „free/darmowa” nie
+wolno** dawać w tekstach wydarzeń Apple ani w grafikach Play (zakaz cen i promocji). Najtańsze dźwignie: feature graphic
++ wideo (R2b, R2d), nominacja Apple 6–12 tygodni przed datą, przedrejestracja/pre-order zsynchronizowane z testem
+zamkniętym, strona prasowa (R2e) i 20–30 spersonalizowanych wiadomości do twórców wideo (lotnictwo, strategia mobilna).
+
+### Rekomendacja — oś czasu (T = premiera)
+T−12 tyg.: test zamknięty (R1) + strona prasowa i zwiastun; T−10 tyg.: nominacja Apple; T−8 tyg.: pre-order iOS i
+przedrejestracja Play (≤ 90 dni); T−4 tyg.: wysyłka kluczy/buildów do twórców z datą embarga; T: wydarzenie „Tydzień
+otwarcia”; T+6 tyg.: aktualizacja z nowymi zagadkami + drugie wydarzenie i nominacja. Pokazy: zgłosić Big Indie Pitch
+(18.01.2027), jeśli build jest grywalny, i Digital Dragons 2027. Plan w jednym pliku (R2f), decyzje: Q-48, Q-49.
+
+## R2 — Głębia rozgrywki po 3. godzinie (stan 2026-11-03)
+
+### Ustalenia
+- W gatunku późna gra męczy, gdy **odpowiedź na presję jest zawsze ta sama** (kolejny samolot, kolejne ulepszenie):
+  recenzje wskazują powtarzalność końcówki ([GameGrin, Railgrade](https://gamegrin.com/reviews/railgrade-review)) i nudę
+  trybu bez presji („dobry jako wygaszacz ekranu”, zbiorczo [RAWG](https://rawg.io/games/2666)); jako lek gracze chwalą
+  **różnorodność map i wyzwań do odblokowania** oraz stopniowany poziom trudności (zbiorcze streszczenia recenzji,
+  [Vaporlens](https://vaporlens.app/app/1127500/mini_motorways.md) — źródło automatyczne, kierunkowe). Spójne z RESEARCH §2.
+- Airway ma już dźwignie, których inni nie mają, ale używa ich jednolicie: **sloty** (D-41: 2/h miasto, 3/h hub),
+  **cisza nocna** (D-17: od tygodnia 4, +1 miasto co 2 tygodnie do 8), **przesiadki** z MCT 25/15 min, **terminator**
+  (fala popytu o świcie lokalnym), **zasięg** (turboprop 2 500 km, szerokokadłubowiec 11 000 km) i 4 karty
+  ulepszeń (`src/sim/upgrades.ts`). `Scenario` (`src/sim/world.ts`) ma już pokrętła: miasta startowe, fale popytu,
+  rezerwa samolotów, miasta z ciszą nocną, pojemności per miasto — czyli część wariantów da się zrobić **bez nowych reguł**.
+- Endless ma jeden scenariusz (`ENDLESS_SCENARIO`), Daily różni się tylko seedem. Po kilku biegach start i krzywa są
+  takie same — to luka w „scenario variety”.
+
+### Propozycje (własne, bez kopiowania; od najtańszych)
+1. **Region startowy** — wybór kontynentu dla Endless (domyślnie losowy jak dziś). Te same reguły, inna geografia:
+   Pacyfik wymusza szerokokadłubowce, Europa — sloty i ciszę nocną. Ranking tylko dla Daily (bez zmian). (R2g)
+2. **Klasy licencji** — po dotarciu do tygodnia 5 odblokowuje się klasa II (cisza nocna od tygodnia 2, mniej rezerwy),
+   potem III (pojemność huba −6, sloty miast 1/h w nocy lokalnej). Tylko pokrętła scenariusza; cel dla graczy po 3 h
+   i powód, by wrócić do Endless. (R2h)
+3. **Zapowiedziane fale** — od tygodnia 3 jedno miasto zapowiada dzień wcześniej szczyt popytu (targi, święto) —
+   rysowane w świecie jako proporczyk/tablica przy lotnisku z godziną. Nagradza planowanie, nie refleks; deterministyczne
+   z osobnego strumienia RNG. (R2i)
+4. **Front pogodowy** — wolno sunący pas chmur (rysowany jako ciemniejsza warstwa chmur Dioramy) obniża o 1 sloty
+   odlotów lotnisk pod sobą. Widać go z wyprzedzeniem, więc gracz przenosi ruch na inny hub. Najlepiej realizuje zasadę
+   „grafika tłumaczy grę”; największy koszt (sim + render). (R2j)
+5. **Kontrakt tygodnia** — na tablicy tygodnia obok trzech skrzyń opcjonalny cel (np. „40 pasażerów Europa→Azja do
+   końca tygodnia”); wykonanie daje dodatkową skrzynię w następnym tygodniu. Cel pośredni w biegu (uzupełnia R1n). (R2k)
+
+Każda zmiana reguł wymaga wersji parametrów, zapisu (D-76) i przebiegu `test:balance`/`test:bot-policy`; R2g i R2h nie
+zmieniają symulacji domyślnego Endless ani Daily.
+
+### Rekomendacja
+Najpierw **R2g + R2h** (tanie, tylko scenariusze i menu, dają cel po 3 h), potem **R2i** (pierwsza nowa reguła,
+mała), **R2j** jako „duża” funkcja pierwszej aktualizacji po wydaniu (dobry temat wydarzenia Apple i wideo),
+R2k po teście zamkniętym, jeśli testerzy kończą biegi bez celu. Wybór kierunku: Q-50.
