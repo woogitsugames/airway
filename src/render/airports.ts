@@ -102,7 +102,7 @@ function roof(out: Piece[], shape: RoofShape, color: string, x: number, y: numbe
   else if (shape === 'hip') out.push({ piece: 'hip', local: localMatrix(x, y, z, w * 1.08, .0042, d * 1.16), color, anchor });
   else if (shape === 'tiered') out.push({ piece: 'tiered', local: localMatrix(x, y, z, w * .92, .0072, d * .98), color, anchor });
   else {
-    out.push({ piece: 'block', local: localMatrix(x, y, z, w * 1.04, .0012, d * 1.08), color: '#E3D6B8', anchor });
+    out.push({ piece: 'block', local: localMatrix(x, y, z, w * 1.04, .0012, d * 1.08), color: color === HUB_ROOF ? HUB_ROOF : '#C29A62', anchor });
     out.push({ piece: 'dome', local: localMatrix(x, y + .0012, z, d * .8, .0044, d * .8), color, anchor });
   }
 }

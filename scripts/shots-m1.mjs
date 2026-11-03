@@ -9,12 +9,12 @@ import { ROOT, SEED, startVite, launchChromium } from './lib/harness.mjs';
 const OUT = resolve(ROOT, process.argv[2] ?? 'docs/shots/m1');
 // name, viewport, crop (CSS px) or null, query for dev/world.html (?only keeps just the `add` list)
 const VIEWS = [
-  ['zoom-europe', [412, 915], [70, 380, 280, 260], 'tick=720&add=PAR,LON*,OSL,STO*,MAD,ROM'],
+  ['zoom-europe', [412, 915], [70, 290, 280, 280], 'tick=720&lon=6&lat=47&add=PAR,LON*,OSL,STO*,MAD,ROM'],
   ['zoom-asia', [412, 915], [60, 330, 300, 300], 'tick=200&lon=105&lat=10&add=BKK*,SIN,KUL,HCM,HAN'],
   ['zoom-east-asia', [412, 915], [40, 300, 340, 340], 'tick=120&lon=125&lat=33&add=TYO*,SEL,PEK,SHA,HKG'],
   ['zoom-americas', [412, 915], [40, 300, 340, 340], 'tick=1060&lon=-95&lat=30&add=CHI*,DCA,MEX,HOU,MIA'],
-  ['zoom-mideast', [915, 412], [300, 120, 420, 260], 'tick=600&lon=40&lat=26&add=CAI*,DXB,DEL,RUH,IST'],
-  ['zoom-night', [412, 915], [70, 380, 280, 260], 'tick=1440&add=PAR,LON*,OSL,STO*,MAD,ROM'],
+  ['zoom-mideast', [915, 412], [250, 130, 500, 210], 'tick=600&lon=40&lat=26&add=CAI*,DXB,DEL,RUH,IST'],
+  ['zoom-night', [412, 915], [70, 290, 280, 280], 'tick=1440&lon=6&lat=47&add=PAR,LON*,OSL,STO*,MAD,ROM'],
 ];
 let host, browser, passed = 0, failed = 0;
 try {

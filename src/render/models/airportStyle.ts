@@ -48,7 +48,7 @@ export const REGION_LOOK: Readonly<Record<RegionId, RegionLook>> = {
   EUN: { roof: 'gable', wall: '#E6E3DA', roofColor: '#4F5B66' },
   EUS: { roof: 'hip', wall: '#F4EEE1', roofColor: '#C96F4A' },
   AFR: { roof: 'flat', wall: '#E8D6B0', roofColor: '#B9853F' },
-  ME: { roof: 'dome', wall: '#EFE2C6', roofColor: '#CFA866' },
+  ME: { roof: 'dome', wall: '#E6CFA4', roofColor: '#A86B3C' },
   ASI: { roof: 'tiered', wall: '#F2EFE6', roofColor: '#B5483A' },
   OCE: { roof: 'gable', wall: '#F2EFE6', roofColor: '#D99A4E' },
 };
