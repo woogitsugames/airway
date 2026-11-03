@@ -1,0 +1,153 @@
+{
+  "version": 1,
+  "id": "20",
+  "titleKey": "puzzle.20.title",
+  "durationTicks": 4320,
+  "demandSeed": 2720,
+  "startCities": [
+    {
+      "id": "TYO",
+      "continent": "AS",
+      "latitude": 35.7,
+      "longitude": 139.7,
+      "hubCapacity": 100,
+      "curfew": {
+        "startMinuteOfDay": 1380,
+        "endMinuteOfDay": 360
+      }
+    },
+    {
+      "id": "SEL",
+      "continent": "AS",
+      "latitude": 37.6,
+      "longitude": 127,
+      "hubCapacity": 100,
+      "curfew": {
+        "startMinuteOfDay": 1380,
+        "endMinuteOfDay": 360
+      }
+    },
+    {
+      "id": "HKG",
+      "continent": "AS",
+      "latitude": 22.3,
+      "longitude": 114.2,
+      "hubCapacity": 100
+    },
+    {
+      "id": "MNL",
+      "continent": "AS",
+      "latitude": 14.6,
+      "longitude": 121,
+      "hubCapacity": 100
+    },
+    {
+      "id": "SYD",
+      "continent": "OC",
+      "latitude": -33.9,
+      "longitude": 151.2,
+      "hubCapacity": 100
+    }
+  ],
+  "stock": {
+    "turboprops": 0,
+    "jets": 3,
+    "hubUpgrades": 0
+  },
+  "goal": {
+    "kind": "curfewNights",
+    "targetDelivered": 463,
+    "nights": 2
+  },
+  "mechanics": [
+    "curfew",
+    "transfer"
+  ],
+  "demand": [
+    {
+      "from": "TYO",
+      "to": "SYD",
+      "passengers": 20,
+      "firstTick": 20,
+      "everyTicks": 200
+    },
+    {
+      "from": "SEL",
+      "to": "SYD",
+      "passengers": 16,
+      "firstTick": 60,
+      "everyTicks": 200
+    }
+  ],
+  "availableRoutes": [
+    {
+      "from": "TYO",
+      "to": "HKG",
+      "plane": "jet",
+      "flightTicks": 206,
+      "intervalTicks": 120
+    },
+    {
+      "from": "SEL",
+      "to": "HKG",
+      "plane": "jet",
+      "flightTicks": 150,
+      "intervalTicks": 120
+    },
+    {
+      "from": "HKG",
+      "to": "SYD",
+      "plane": "jet",
+      "flightTicks": 527,
+      "intervalTicks": 120
+    },
+    {
+      "from": "TYO",
+      "to": "MNL",
+      "plane": "jet",
+      "flightTicks": 214,
+      "intervalTicks": 120
+    },
+    {
+      "from": "MNL",
+      "to": "SYD",
+      "plane": "jet",
+      "flightTicks": 448,
+      "intervalTicks": 120
+    },
+    {
+      "from": "TYO",
+      "to": "SYD",
+      "plane": "jet",
+      "flightTicks": 560,
+      "intervalTicks": 120
+    },
+    {
+      "from": "SEL",
+      "to": "TYO",
+      "plane": "jet",
+      "flightTicks": 83,
+      "intervalTicks": 120
+    }
+  ],
+  "referenceCommands": [
+    {
+      "type": "connect",
+      "from": "SEL",
+      "to": "TYO",
+      "plane": "jet"
+    },
+    {
+      "type": "connect",
+      "from": "SEL",
+      "to": "HKG",
+      "plane": "jet"
+    },
+    {
+      "type": "connect",
+      "from": "HKG",
+      "to": "SYD",
+      "plane": "jet"
+    }
+  ]
+}

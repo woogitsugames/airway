@@ -3,6 +3,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const LEVELS = 30;
 let checked = 0;
 let passed = 0;
 const failures = [];
@@ -19,9 +20,13 @@ try {
   await import('./ts-test-loader.mjs');
   // The production engine: puzzle levels run on the authoritative Sim (src/sim/puzzles.ts).
   const engine = await import('../src/game/modes/puzzle.ts');
+  const { createGame } = await import('../src/sim/index.ts');
+  const { cityByCode } = await import('../src/data/index.ts');
+  const { SIM_MINUTES_PER_WEEK } = await import('../src/sim/params.ts');
+
   const folder = resolve(ROOT, 'src/data/puzzles');
   const files = readdirSync(folder).filter((name) => /^\d{2}\.json$/.test(name)).sort();
-  check('level count', () => assert(files.length === 15, `expected 15, got ${files.length}`));
+  check('level count', () => assert(files.length === LEVELS, `expected ${LEVELS}, got ${files.length}`));
   const levels = files.map((file) => JSON.parse(readFileSync(resolve(folder, file), 'utf8')));
   for (const [index, level] of levels.entries()) {
     const id = level.id;
@@ -58,6 +63,41 @@ try {
       session = engine.resetPuzzle(level);
       assert(session.history.length === 0 && session.snapshot.tick === 0, 'reset failed');
     });
+    // [night-01] Levels 16-30 must each be built around a newer mechanic, proven on the reference run.
+    if (Number(id) >= 16) check(`${id} mechanics proven`, () => {
+      const tags = level.mechanics ?? [];
+      assert(tags.some((tag) => tag === 'slots' || tag === 'curfew' || tag === 'week' || tag === 'mct'), 'no newer mechanic');
+      const sim = createGame(level.demandSeed, 'puzzle', id);
+      for (const command of level.referenceCommands) {
+        sim.apply(command.type === 'connect'
+          ? { type: 'AddRoute', cityIds: [command.from, command.to], aircraft: command.plane === 'jet' ? 'widebody' : 'turboprop' }
+          : { type: 'UpgradeHub', hubId: command.city });
+        sim.tick();
+      }
+      while (sim.world.status === 'running') sim.tick();
+      assert(sim.world.status === 'won', 'reference must reach the deadline');
+      const links = level.referenceCommands.filter((command) => command.type === 'connect');
+      for (const tag of tags) {
+        if (tag === 'slots') {
+          const held = level.startCities.reduce((sum, city) => sum + sim.world.hubCauseLedger(city.id).slotWaitMinutes, 0);
+          assert(held > 0, 'slots: no aircraft ever waited for a departure slot');
+        } else if (tag === 'curfew') {
+          assert(level.startCities.some((city) => city.curfew), 'curfew: no curfew airport');
+        } else if (tag === 'week') {
+          assert(level.durationTicks > SIM_MINUTES_PER_WEEK && level.demand.some((wave) => wave.firstTick >= SIM_MINUTES_PER_WEEK),
+            'week: no new traffic in the second 3-day week');
+        } else if (tag === 'mct') {
+          assert(level.referenceCommands.some((command) => command.type === 'upgradeHub'), 'mct: reference expands no hub');
+        } else if (tag === 'transfer') {
+          const needsTransfer = level.demand.some((wave) => {
+            const region = cityByCode(wave.to).region;
+            return !links.some((link) => (link.from === wave.from && cityByCode(link.to).region === region) ||
+              (link.to === wave.from && cityByCode(link.from).region === region));
+          });
+          assert(needsTransfer, 'transfer: every passenger flies direct');
+        }
+      }
+    });
     check(`${id} invalid route rejected`, () => {
       let rejected = false;
       try { engine.dispatchPuzzle(level, engine.startPuzzle(level), { type: 'connect', from: 'BAD', to: 'ZZZ', plane: 'jet' }); }
@@ -84,5 +124,5 @@ try {
   failures.push(error instanceof Error ? error.message : String(error));
   console.error('FAIL setup:', failures.at(-1));
 }
-console.log(`SUMMARY test:puzzles seed=0xA1A1 levels=15 cases=${checked} passed=${passed} failed=${failures.length}`);
+console.log(`SUMMARY test:puzzles seed=0xA1A1 levels=${LEVELS} cases=${checked} passed=${passed} failed=${failures.length}`);
 if (failures.length) process.exitCode = 1;

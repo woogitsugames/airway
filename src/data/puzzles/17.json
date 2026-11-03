@@ -1,0 +1,108 @@
+{
+  "version": 1,
+  "id": "17",
+  "titleKey": "puzzle.17.title",
+  "durationTicks": 2880,
+  "demandSeed": 2417,
+  "startCities": [
+    {
+      "id": "WAW",
+      "continent": "EU",
+      "latitude": 52.2,
+      "longitude": 21,
+      "hubCapacity": 80
+    },
+    {
+      "id": "FRA",
+      "continent": "EU",
+      "latitude": 50.1,
+      "longitude": 8.7,
+      "hubCapacity": 50,
+      "curfew": {
+        "startMinuteOfDay": 1380,
+        "endMinuteOfDay": 360
+      }
+    },
+    {
+      "id": "VIE",
+      "continent": "EU",
+      "latitude": 48.2,
+      "longitude": 16.4,
+      "hubCapacity": 100
+    },
+    {
+      "id": "MAD",
+      "continent": "EU",
+      "latitude": 40.4,
+      "longitude": -3.7,
+      "hubCapacity": 100
+    }
+  ],
+  "stock": {
+    "turboprops": 1,
+    "jets": 1,
+    "hubUpgrades": 0
+  },
+  "goal": {
+    "kind": "curfewNights",
+    "targetDelivered": 300,
+    "nights": 1
+  },
+  "mechanics": [
+    "curfew",
+    "transfer"
+  ],
+  "demand": [
+    {
+      "from": "WAW",
+      "to": "MAD",
+      "passengers": 22,
+      "firstTick": 20,
+      "everyTicks": 150
+    }
+  ],
+  "availableRoutes": [
+    {
+      "from": "WAW",
+      "to": "FRA",
+      "plane": "turboprop",
+      "flightTicks": 111,
+      "intervalTicks": 120
+    },
+    {
+      "from": "FRA",
+      "to": "MAD",
+      "plane": "jet",
+      "flightTicks": 104,
+      "intervalTicks": 120
+    },
+    {
+      "from": "WAW",
+      "to": "VIE",
+      "plane": "turboprop",
+      "flightTicks": 69,
+      "intervalTicks": 120
+    },
+    {
+      "from": "VIE",
+      "to": "MAD",
+      "plane": "jet",
+      "flightTicks": 130,
+      "intervalTicks": 120
+    }
+  ],
+  "referenceCommands": [
+    {
+      "type": "connect",
+      "from": "WAW",
+      "to": "VIE",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "VIE",
+      "to": "MAD",
+      "plane": "jet"
+    }
+  ]
+}

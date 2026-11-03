@@ -1,0 +1,154 @@
+{
+  "version": 1,
+  "id": "21",
+  "titleKey": "puzzle.21.title",
+  "durationTicks": 2880,
+  "demandSeed": 2821,
+  "startCities": [
+    {
+      "id": "IST",
+      "continent": "AS",
+      "latitude": 41,
+      "longitude": 28.9,
+      "hubCapacity": 75
+    },
+    {
+      "id": "SOF",
+      "continent": "EU",
+      "latitude": 42.7,
+      "longitude": 23.3,
+      "hubCapacity": 60
+    },
+    {
+      "id": "BUH",
+      "continent": "EU",
+      "latitude": 44.4,
+      "longitude": 26.1,
+      "hubCapacity": 60
+    },
+    {
+      "id": "ATH",
+      "continent": "EU",
+      "latitude": 38,
+      "longitude": 23.7,
+      "hubCapacity": 60
+    },
+    {
+      "id": "DEL",
+      "continent": "AS",
+      "latitude": 28.6,
+      "longitude": 77.2,
+      "hubCapacity": 100
+    }
+  ],
+  "stock": {
+    "turboprops": 3,
+    "jets": 1,
+    "hubUpgrades": 1
+  },
+  "goal": {
+    "kind": "deliver",
+    "targetDelivered": 420
+  },
+  "mechanics": [
+    "mct",
+    "transfer"
+  ],
+  "demand": [
+    {
+      "from": "SOF",
+      "to": "DEL",
+      "passengers": 12,
+      "firstTick": 15,
+      "everyTicks": 150
+    },
+    {
+      "from": "BUH",
+      "to": "DEL",
+      "passengers": 12,
+      "firstTick": 35,
+      "everyTicks": 150
+    },
+    {
+      "from": "ATH",
+      "to": "DEL",
+      "passengers": 12,
+      "firstTick": 55,
+      "everyTicks": 150
+    }
+  ],
+  "availableRoutes": [
+    {
+      "from": "IST",
+      "to": "SOF",
+      "plane": "turboprop",
+      "flightTicks": 63,
+      "intervalTicks": 120
+    },
+    {
+      "from": "IST",
+      "to": "BUH",
+      "plane": "turboprop",
+      "flightTicks": 56,
+      "intervalTicks": 120
+    },
+    {
+      "from": "IST",
+      "to": "ATH",
+      "plane": "turboprop",
+      "flightTicks": 70,
+      "intervalTicks": 120
+    },
+    {
+      "from": "IST",
+      "to": "DEL",
+      "plane": "jet",
+      "flightTicks": 326,
+      "intervalTicks": 120
+    },
+    {
+      "from": "ATH",
+      "to": "DEL",
+      "plane": "jet",
+      "flightTicks": 358,
+      "intervalTicks": 120
+    },
+    {
+      "from": "SOF",
+      "to": "BUH",
+      "plane": "turboprop",
+      "flightTicks": 37,
+      "intervalTicks": 120
+    }
+  ],
+  "referenceCommands": [
+    {
+      "type": "connect",
+      "from": "IST",
+      "to": "SOF",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "IST",
+      "to": "BUH",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "IST",
+      "to": "ATH",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "IST",
+      "to": "DEL",
+      "plane": "jet"
+    },
+    {
+      "type": "upgradeHub",
+      "city": "IST"
+    }
+  ]
+}

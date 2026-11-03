@@ -34,6 +34,7 @@
 .puzzle-kicker { margin: 0 0 4px; color: #1e6f6a; font-size: 11px; text-transform: uppercase; font-weight: 700; letter-spacing: .1em; }
 .puzzle-ticket h1 { font-family: 'Overpass', sans-serif; font-weight: 800; font-size: clamp(20px, 3.5vw, 27px); margin: 0 0 6px; }
 .puzzle-goal { margin: 0; font-size: 13px; }
+.puzzle-notes { margin: 0; font-size: 12px; opacity: 0.8; }
 .puzzle-stats { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 1px; margin-top: 12px; background: #b8c9bd; border: 1px solid #b8c9bd; }
 .puzzle-stat { display: flex; flex-direction: column; gap: 3px; padding: 8px 6px; background: #fbf8f1; }
 .puzzle-stat span { text-transform: uppercase; letter-spacing: .03em; font-size: 9px; line-height: 1.1; }
