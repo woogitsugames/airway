@@ -135,12 +135,20 @@ function freshStreams(seed: number): Record<RngStream, Rng> {
  * Only tick() executes queued commands and advances time; elapsed real time belongs to src/game.
  * One tick = one game minute at every speed (SetSpeed only changes how often src/game calls tick()).
  */
+/** [night-10t] The game minute a journal entry ran at and whether the world accepted it (CommandRejected if not). */
+export interface CommandOutcome { readonly minute: number; readonly accepted: boolean }
+
 export class Sim {
   private kernel: KernelState;
   /** Stream objects are stable for the world's lifetime; restore only rewinds their states. */
   private streams: Record<RngStream, Rng>;
   private worldValue: World;
   private journal: CommandEntry[] = [];
+  /**
+   * [night-10t] What became of each journal entry at its tick (game minute, accepted), parallel to the journal.
+   * Not part of the state, hash or snapshot: a restored journal's outcomes are unknown (null) until re-simulated.
+   */
+  private outcomes: (CommandOutcome | null)[] = [];
   private pending: Command[] = [];
   private readonly checkpoints = new CheckpointRing();
 
@@ -186,6 +194,8 @@ export class Sim {
 
   getState(): Readonly<SimState> { return this.fullState(); }
   getCommandLog(): CommandEntry[] { return this.journal.map(copyEntry); }
+  /** [night-10t] Outcome of each journal entry, same order as getCommandLog(); null where not known (restored). */
+  getCommandOutcomes(): (CommandOutcome | null)[] { return this.outcomes.map((o) => (o ? { ...o } : null)); }
   drainEvents(): SimEvent[] { return this.worldValue.drainEvents(); }
 
   /** Pre-flight check against the current world, for immediate UI feedback. Does not queue. */
@@ -211,10 +221,13 @@ export class Sim {
     this.kernel.tick++;
     for (let i = 0; i < this.pending.length; i++) {
       const cmd = this.pending[i];
+      const minute = this.worldValue.minute;
+      let accepted = true;
       if (cmd.type === 'SetSpeed') this.kernel.speed = cmd.speed;
-      else this.worldValue.apply(cmd);
+      else accepted = this.worldValue.apply(cmd).ok;
       const entry: CommandEntry = [this.kernel.tick, cmd];
       this.journal.push(entry);
+      this.outcomes.push({ minute, accepted });
       this.kernel.commandCount++;
       this.kernel.commandDigest = foldCommandDigest(this.kernel.commandDigest, entry);
     }
@@ -256,6 +269,7 @@ export class Sim {
     const points = readCheckpoints(saved.checkpoints, state, journal);
     this.loadState(state);
     this.journal = journal;
+    this.outcomes = journal.map(() => null);
     this.pending = pending;
     this.checkpoints.replace(points);
   }
@@ -317,6 +331,7 @@ export class Sim {
       { tick: 0, commandCount: 0, state: new Sim(this.kernel.seed, this.kernel.config).fullState() };
     this.loadState(checkpoint.state);
     this.journal = retained.slice(0, checkpoint.commandCount);
+    this.outcomes = this.outcomes.slice(0, checkpoint.commandCount); // checkpoint tick < removedTick: all before it
     this.pending.length = 0;
     this.checkpoints.truncateAfter(checkpoint.tick);
 

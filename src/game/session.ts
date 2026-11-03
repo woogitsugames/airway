@@ -568,13 +568,16 @@ function runTimelineLoader(run: EndlessRun): () => Promise<RunTimeline | null> {
   const input = {
     seed: run.seed, config: run.sim.config, journal: run.sim.getCommandLog(), endTick: run.sim.tickCount,
     endMinute: run.sim.world.minute, upgrades: run.sim.world.upgrades.map((record) => ({ ...record })),
+    outcomes: run.sim.getCommandOutcomes(), // [night-10t] only a resumed save's prefix is replayed
   };
-  return async () => {
+  // [night-10t] Built once per report: reopening the tab must not replay the run again.
+  let built: Promise<RunTimeline | null> | null = null;
+  return () => built ??= (async () => {
     const weeks = await buildRunTimeline(input, () => new Promise((resolve) => setTimeout(resolve, 0)));
     if (!weeks) return null;
     return {
       weeks: weeks.map((week) => week.pick?.hubId ? { ...week, pick: { ...week.pick, hubId: airportLabel(week.pick.hubId) } } : week),
       endDay: calendarDayAt(input.endMinute),
     };
-  };
+  })();
 }

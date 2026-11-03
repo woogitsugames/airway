@@ -272,6 +272,12 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       `src/game/runTimeline.ts`, `test:run-timeline`, `e2e/run-timeline.mjs`.
 - [x] N10s **Store shots refreshed (game-over tabs)** — the 30 store PNGs' `failure` scene still showed the old
       "Three key causes" heading after N10r; `store:shots` regenerated, `test:store-shots` checks them.
+- [x] N10t **Timeline without replaying the run** — the N10r timeline re-simulated the whole run from its seed
+      (~6–7 µs per tick on the dev machine with 4 weeks; a 30-week run is ~130 000 ticks, so seconds of slices on
+      a slow phone). The live Sim now records each journal entry's outcome (game minute, accepted) as it ticks,
+      outside its state, hash and snapshot (`getCommandOutcomes()`; undo truncates and re-simulates them). The
+      timeline is then read directly (0.13 ms instead of 84 ms for the 4-week test run); only a run continued
+      from a save replays the prefix before the resume, and no further. Built once per report.
 
 ## Log
 <!-- one line per finished item: date UTC · item · PR · gate summary -->
@@ -337,3 +343,4 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
 - 2026-11-03 · N10q pseudo-locale on the in-game HUD + pass label/board head wrap · night/10q-pseudo-hud · test:fast 57/57, build ok, e2e:smoke 9/9, ui:matrix 32/32, test:hud-targets 300/300, test:e2e:pseudo-locale 27/27 (21/27 before the wrap)
 - 2026-11-03 · N10r end-of-run timeline tab · night/10r-run-timeline · test:fast 58/58 (test:run-timeline 5/5, 4/5 with the rejection filter off), build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:gameover-short 4/4, e2e:pseudo-locale 27/27, test:e2e:run-timeline 4/4
 - 2026-11-03 · N10s store shots refreshed (game-over tabs) · night/10s-store-shots · store:shots captured=30 failed=0, test:fast 58/58 (test:store-shots 30/30), build ok
+- 2026-11-03 · N10t timeline from live command outcomes · night/10t-timeline-cache · test:fast 58/58 (test:run-timeline 9/9), build ok, e2e:smoke 9/9, test:e2e:run-timeline 4/4; ui:matrix not run (no visual change)
