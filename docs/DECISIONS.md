@@ -908,3 +908,29 @@ from those devices instead of selling them a broken install. Both owner options 
 B) include this filter, so it is done now; only the minSdk choice (24 vs 29) still waits for Q-54. Guarded by
 `test:android-config` (`play-gles3-filter`, also ties the filter to three ≥ r163). Not covered: ES 3.0 devices whose
 WebView blocklists WebGL 2 (R3g fallback page). **Status: in force (N12p); minSdk part open (Q-54).**
+
+## D-128 — Airport code plates at hubs and named airports; all when zoomed in (2026-11-03, owner, Q-61 → C)
+R5 found that an on-screen airport shows neither code nor name, while the pause summary, crate stamps and the
+game-over board speak in codes ("BEG 9/36"). The owner chose C: a small Diorama code plate (or name, per the D-68
+setting) beside the airport disc at every hub and at every airport the UI currently names (pause summary, stamps,
+game-over board), and at all airports once the camera is zoomed in. Plates go through the existing `layoutTags`
+collision pass and never cover a passenger tag or a 48 dp target. Rejected: A (no plates — the code ↔ disc link is
+never taught), D (always all — clutters the whole-network view). **Status: decided; implementation R5a.**
+
+## D-129 — Tutorial vignette in the game's own marks + glyph legend (2026-11-03, owner, Q-62 → B)
+The tutorial vignette draws cities as orange diamonds and the hub as a teal ring, while in the game an airport is a
+runway disc and yellow diamonds are route-end handles; region glyphs are never taught and the game has no legend.
+The owner chose B: redraw the vignette with the game's own marks (airport disc, hub ring, real glyph tag), one
+sentence naming a glyph's region in the transfer step, and a glyph legend (shape, not colour) in settings → help,
+in one PR. Rejected for now: A (keep), C (a new tutorial on the real globe) — reconsidered after the closed test.
+**Status: decided; implementation R5b.**
+
+## D-130 — A save the new rules cannot continue says "older rules version", not "damaged" (2026-11-03, Claude, night N11j)
+Rules v5 (N12f) replay a v4 save from its journal (D-76); when the replay already ends the run, or the save is longer
+than the replay cap, nothing can be offered. The menu said "The saved flight is damaged", which is untrue and reads
+like a bug. `loadSavedSimChecked` now reports `old-rules` for any save with a rules version below `RULES_VERSION`
+that cannot be continued, and the menu shows "Saved flight from an older rules version: the current rules cannot
+continue it." / "Zapisany lot ze starszej wersji zasad: obecne zasady nie pozwalają go kontynuować." A save without a
+rules version (legacy) or with the current version that fails stays `corrupt`: there it really is damage. The save
+is still not deleted. Rejected: silently dropping the notice (the Continue row would vanish without a word, N10c).
+**Status: in force (N11j, `test:save-golden` 21 checks, `test:e2e:save-notice` 6 steps).**

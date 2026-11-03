@@ -67,6 +67,9 @@ if (import.meta.env.DEV && query.get('preview') === 'gameover') {
   void boot();
 }
 
+/** [night-10c, night-11j] Menu notice for a saved flight that cannot be continued. */
+const SAVE_NOTICE_KEY = { corrupt: 'save.error.corrupt', unsupported: 'save.error.unsupported', 'old-rules': 'save.error.oldRules' } as const;
+
 interface SavedSummary { readonly mode: RunMode; readonly week: number; readonly passengers: number }
 
 async function boot(): Promise<void> {
@@ -143,7 +146,7 @@ async function boot(): Promise<void> {
         dailyNew: !scores.getProgress(dailyKey()).officialUsed,
         dailyHint: dailyRowHint(scores.getProgress(dailyKey())), // [night-10d]
         saved: saved ? { week: saved.week, passengers: saved.passengers } : null,
-        notice: saveNotice ? t(saveNotice === 'unsupported' ? 'save.error.unsupported' : 'save.error.corrupt') : null,
+        notice: saveNotice ? t(SAVE_NOTICE_KEY[saveNotice]) : null,
       };
     },
     // [night-10n] Logbook: its own store plus the best record, daily scores and puzzle stars already kept.
