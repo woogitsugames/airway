@@ -473,7 +473,8 @@ log in `docs/NIGHT-BACKLOG.md`. **Status: in force.**
 Daily-challenge and weekly leaderboards on Firebase (pattern: cebulak-express `src/net/*`, server-side replay
 validation). Until the owner provides a Firebase project the feature is built against the emulator and is disabled
 when no config is present; privacy policy must be updated before release. Supersedes "post-MVP" in RESEARCH §5 and
-task 18's note. **Status: to implement.**
+task 18's note. **Status: in force (implemented in night N6, D-72; open owner questions Q-01…Q-07 in
+`docs/OWNER-QUESTIONS.md`).**
 
 ## D-67 — airway.games site is not published yet (2026-11-03, owner)
 Publish together with the store pre-registration, after the device test. **Status: in force.**
