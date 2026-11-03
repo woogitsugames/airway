@@ -118,8 +118,17 @@ function connectCity(snapshot: BotSnapshot): BotDecision | null {
   if (!disconnected.length) return null;
   const connected = cities.filter((city) => city.connectedRoutes > 0);
   let best: { from: string; to: string; distance: number; hubPenalty: number; overload: number; backlog: number } | null = null;
+  // [night-12a] A city out of reach of the served network may still pair with another unserved city (a new
+  // island of the network, as a player would draw it), but only when no served city is eligible at all.
+  const eligible = (from: BotCity, to: BotCity): boolean => {
+    const distance = snapshot.distancesKm[from.id]?.[to.id];
+    return from.id !== to.id && Number.isFinite(distance) && distance > 0 && distance <= WIDEBODY_RANGE_KM &&
+      availableForDistance(snapshot, distance);
+  };
   for (const city of disconnected) {
-    const candidates = connected.length ? connected : cities.filter((other) => other.id !== city.id);
+    const served = connected.filter((other) => eligible(city, other));
+    const candidates = !connected.length ? cities.filter((other) => other.id !== city.id)
+      : served.length ? served : disconnected.filter((other) => eligible(city, other));
     for (const candidate of candidates) {
       if (city.id === candidate.id) continue;
       const distance = snapshot.distancesKm[city.id]?.[candidate.id];
@@ -197,11 +206,15 @@ function chooseUpgrade(snapshot: BotSnapshot): BotDecision | null {
     .filter((entry) => entry.kind === kind).reduce((sum, entry) => sum + entry.count, 0);
   const routeLoad = snapshot.routes.reduce((sum, route) => sum + route.waiting, 0);
   const hasLongRoute = snapshot.routes.some((route) => route.distanceKm > TURBOPROP_RANGE_KM);
+  // [night-12a] A turboprop-only network never had a "long route", so the bot never took a widebody and lost
+  // every run in which an airport opened beyond turboprop range of all others. Count those airports.
+  const outOfReach = unreachableByTurboprop(snapshot).length;
+  const ownsWidebody = snapshot.inventory.widebody > 0 || snapshot.routes.some((route) => route.assigned.widebody > 0);
   const rankedOffers = snapshot.offers.map((offer) => {
     let value = 0;
     if (offer.kind === 'hub') value = worst ? 30 + worst.impact + loadByKind('hubOverflow') : -Infinity;
     if (offer.kind === 'turboprop') value = 40 + routeLoad / 4 + loadByKind('longWait');
-    if (offer.kind === 'widebody') value = 35 + (hasLongRoute ? 80 : 0) + routeLoad / 6 + loadByKind('range');
+    if (offer.kind === 'widebody') value = 35 + (hasLongRoute || outOfReach > 0 || !ownsWidebody ? 80 : 0) + routeLoad / 6 + loadByKind('range');
     if (offer.kind === 'slots') value = 20 + loadByKind('slots') * 2;
     return { offer, value };
   }).sort((a, b) => b.value - a.value || compareId(a.offer.id, b.offer.id));
@@ -216,6 +229,15 @@ function chooseUpgrade(snapshot: BotSnapshot): BotDecision | null {
     },
     reason: 'Upgrade selected by congestion ledger and current network demand',
   };
+}
+
+/** [night-12a] Active airports without a route whose every other active airport lies beyond turboprop range. */
+export function unreachableByTurboprop(snapshot: BotSnapshot): string[] {
+  const active = snapshot.cities.filter((city) => city.active);
+  return active.filter((city) => city.connectedRoutes === 0 && !active.some((other) => {
+    const distance = snapshot.distancesKm[city.id]?.[other.id];
+    return other.id !== city.id && Number.isFinite(distance) && distance > 0 && distance <= TURBOPROP_RANGE_KM;
+  })).map((city) => city.id).sort(compareId);
 }
 
 // [task-32] Airport with the most slot-wait minutes, else the busiest hub, else the busiest city.

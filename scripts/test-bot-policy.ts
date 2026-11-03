@@ -1,6 +1,8 @@
 // [night-07w] The DEV/balance bot (src/game/dev/bot-policy.ts) as a fair balance signal: with no spare
 // aircraft it extends a served route to an unserved city instead of waiting for the hub to jam, and a run that
 // takes "+2 slots" (no aircraft) in week 1 is no longer an automatic loss. Fixed seed.
+// [night-12a] It also takes a widebody when its fleet has none or an airport is out of turboprop reach, and pairs
+// two unserved airports beyond the network with each other.
 import assert from 'node:assert/strict';
 import { chooseBotAction, type BotSnapshot, type BotCity, type BotRoute } from '../src/game/dev/bot-policy.ts';
 import { createBalanceSession } from './balance-game-adapter.ts';
@@ -90,6 +92,63 @@ test(`seed 0x${SEED.toString(16).toUpperCase()}: "+2 slots" in week 1 still reac
   assert.equal(slots.rejected + turboprop.rejected, 0, 'the Sim refused bot commands');
   assert.ok(slots.upgrades >= 3, `"+2 slots" run took ${slots.upgrades} boards`);
   assert.ok(turboprop.upgrades >= 3, `turboprop run took ${turboprop.upgrades} boards`);
+});
+
+// [night-12a] Reach: the bot used to answer every board with a turboprop (a turboprop-only network has no
+// "long route"), so an airport opening beyond 2,500 km of every other one always jammed unserved.
+function board(offers: Array<'turboprop' | 'widebody' | 'hub' | 'slots'>, extra: Partial<BotSnapshot> = {}): BotSnapshot {
+  return { ...snapshot(930, 880), status: 'upgrade', offers: offers.map((kind) => ({ id: kind, kind })), ...extra };
+}
+
+test('an airport out of turboprop reach of all others makes the bot take another widebody', () => {
+  const far = snapshot(6200, 6000);
+  const decision = chooseBotAction({ ...far, status: 'upgrade', offers: [{ id: 'turboprop', kind: 'turboprop' }, { id: 'widebody', kind: 'widebody' }],
+    routes: [route('r1', ['LON', 'PAR'], 1), { ...route('r2', ['PAR', 'LON'], 0, 1), waiting: 400 }] });
+  assert.deepEqual(decision?.command, { type: 'ChooseUpgrade', offerId: 'widebody' });
+});
+
+test('a fleet without any widebody takes one when offered; a fleet with one keeps adding turboprops', () => {
+  assert.deepEqual(chooseBotAction(board(['turboprop', 'widebody', 'slots']))?.command, { type: 'ChooseUpgrade', offerId: 'widebody' });
+  const owned = board(['turboprop', 'widebody', 'slots'], { routes: [route('r1', ['LON', 'PAR'], 1, 1)] });
+  assert.deepEqual(chooseBotAction(owned)?.command, { type: 'ChooseUpgrade', offerId: 'turboprop' });
+});
+
+test('two unserved airports beyond the network but close to each other are paired by a new route', () => {
+  const km: Record<string, Record<string, number>> = {
+    LON: { LON: 0, PAR: 340, LOS: 5000, ABV: 5200 }, PAR: { LON: 340, PAR: 0, LOS: 4800, ABV: 4900 },
+    LOS: { LON: 5000, PAR: 4800, LOS: 0, ABV: 520 }, ABV: { LON: 5200, PAR: 4900, LOS: 520, ABV: 0 },
+  };
+  const decision = chooseBotAction({
+    tick: 100, status: 'running', cities: [city('LON', 1), city('PAR', 1), city('LOS', 0), city('ABV', 0)],
+    routes: [route('r1', ['LON', 'PAR'], 1)], distancesKm: km, inventory: { turboprop: 1, widebody: 0 }, offers: [], ledger: [],
+  });
+  assert.deepEqual(decision?.command, { type: 'AddRoute', from: 'ABV', to: 'LOS' });
+});
+
+/** Real Sim, bot only: how many of `n` seeds end jammed at an airport that no route served. */
+function unservedJams(n: number): { over: number; unserved: number } {
+  let over = 0;
+  let unserved = 0;
+  for (let i = 0; i < n; i++) {
+    const session = createBalanceSession(SEED + i);
+    for (let step = 0; step < 600 && session.snapshot().status !== 'finished'; step++) {
+      const decision = chooseBotAction(session.snapshot());
+      if (decision) session.dispatch(decision.command);
+      session.advance(30);
+    }
+    const world = session.simulation.world;
+    if (world.status !== 'over') continue;
+    over++;
+    const jam = [...world.cities()].sort((a, b) => b.fullTicks - a.fullTicks)[0];
+    if (jam && jam.routes === 0) unserved++;
+  }
+  return { over, unserved };
+}
+
+test('20 seeds: at most 4 runs end at an airport no route served (old bot: 14 of 18)', () => {
+  const { over, unserved } = unservedJams(20);
+  console.log(`  seeds=20 game_over=${over} unserved_jam=${unserved}`);
+  assert.ok(unserved <= 4, `${unserved} of ${over} game overs at an unserved airport`);
 });
 
 console.log(`SUMMARY test:bot-policy seed=0xA1A1 passed=${passed} failed=${failed}`);
