@@ -239,6 +239,16 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       the long-play script clicking a disabled "Expand hub" crate (no hub yet); it now picks only enabled crates.
       `e2e/gameover-short.mjs`.
 
+- [x] N10n **Logbook (run statistics)** — nothing in the game said how much had been played: the menu showed only
+      the record. A pilot's logbook page, opened from the departure board's service row (Settings D0 and Logbook D1
+      now share the last line, so the board keeps its height on 915×412 and 320×568): totals (flights, passengers
+      carried, weeks in the air, longest flight), records (best flight from the existing best record, favourite hub,
+      best official daily and longest streak from the daily scores, puzzles solved and stars) and the last six
+      flights as ruled logbook lines (date, Endless/daily with the teal stub, hub code, weeks, passengers). One line
+      per finished Endless or daily flight in a new device-local store (`airway.logbook.v1`, written at game over;
+      older flights are not known). The run's hub is the hub on most routes, else the busiest airport.
+      `src/game/logbook.ts`, `src/ui/logbook/`, `test:logbook`, `e2e/logbook.mjs`.
+
 ## Log
 <!-- one line per finished item: date UTC · item · PR · gate summary -->
 - 2026-11-03 · N1 puzzles 16–30 (D-70) · night/01-puzzles · test:fast 42/42, build ok, e2e:smoke 9/9, ui:matrix 32/32, test:puzzles levels=30 cases=168 failed=0 (merged tree with #40, #42)
