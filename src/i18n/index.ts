@@ -2,6 +2,7 @@
 import { formatNumber } from '../core/format';
 import { en } from './en';
 import { pl } from './pl';
+import { pseudoText } from './pseudo';
 
 export type Language = 'pl' | 'en';
 export type TranslationKey = keyof typeof en;
@@ -10,6 +11,10 @@ export type TranslationParams = Readonly<Record<string, number | string>>;
 const SETTINGS_KEY = 'airway.settings';
 const catalogs: Record<Language, Record<TranslationKey, string>> = { en, pl };
 let activeLanguage: Language | null = null;
+let pseudo = false;
+
+/** [night-10p] DEV layout check: stretch every translated string (src/i18n/pseudo.ts). */
+export function setPseudoLocale(enabled: boolean): void { pseudo = enabled; }
 
 function normaliseLanguage(value: unknown): Language | null {
   if (typeof value !== 'string') return null;
@@ -89,9 +94,10 @@ export function t(key: TranslationKey, params?: TranslationParams): string {
     const value = pluralValue(params?.[name]);
     return params?.[name] === undefined || !Number.isFinite(value) ? token : pluralForm(language, value, forms.split('|'));
   });
-  return template.replace(/\{([A-Za-z][A-Za-z0-9_]*)\}/g, (token, name: string) =>
+  const text = template.replace(/\{([A-Za-z][A-Za-z0-9_]*)\}/g, (token, name: string) =>
     params?.[name] === undefined ? token : typeof params[name] === 'number' ? localNumber(params[name]) : String(params[name]),
   );
+  return pseudo ? pseudoText(text) : text;
 }
 
 /** [task-37] D-61: the player-facing number format of the active language ("2 500" PL, "2,500" EN).

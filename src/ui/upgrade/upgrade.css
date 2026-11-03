@@ -120,7 +120,8 @@
   letter-spacing: .14em;
   white-space: nowrap;
 }
-.airway-upgrade-code { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.airway-upgrade-code { min-width: 0; white-space: normal; overflow-wrap: anywhere; }
+.airway-upgrade-code > span { white-space: nowrap; } /* [night-10p] wrap only between the pieces */
 .airway-upgrade-count { flex: none; }
 /* [task-40] Narrow phones (EN "FREIGHT · WB-300" at 360 dp): tighter tracking instead of an ellipsis. */
 @container (max-width: 220px) { .airway-upgrade-heading { letter-spacing: .04em; gap: 6px; } }
