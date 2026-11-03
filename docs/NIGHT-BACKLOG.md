@@ -885,7 +885,7 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
       jam/closed → `REJECT` (API 30+, else `LONG_PRESS`); inject it as the Android `NativeHapticDriver`, iOS
       unchanged. `test:android-config` asserts the plugin is registered; `docs/ANDROID.md` note. **Area:** platform
       (native Android, `src/platform/haptics.ts`).
-- [ ] R6f **Puzzle packs without hand-kept lists** — `src/data/puzzles/index.ts` imports 30 JSON files by hand and
+- [x] R6f → ext/01 **Puzzle packs without hand-kept lists** — `src/data/puzzles/index.ts` imports 30 JSON files by hand and
       `scripts/test-puzzles.mjs` hard-codes `LEVELS = 30`. Use `import.meta.glob` (or a generated index) and derive
       the count from the folder (ids stay contiguous 01…NN, ≤ 99); add `npm run puzzle:report` printing per level:
       duration at 1×, goal, mechanics, reference margin and star thresholds, so a 5-level pack PR shows its

@@ -3,7 +3,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const LEVELS = 30;
+let LEVELS = 0;
 let checked = 0;
 let passed = 0;
 const failures = [];
@@ -24,9 +24,19 @@ try {
   const { cityByCode } = await import('../src/data/index.ts');
   const { SIM_MINUTES_PER_WEEK } = await import('../src/sim/params.ts');
 
+  // [ext-01] R6f, D-160: the count comes from the folder; ids must run 01…NN without a gap and PUZZLES (the
+  // generated index the game imports) must list exactly those files in order.
+  const { PUZZLES } = await import('../src/data/puzzles/index.ts');
+  const { puzzleIds } = await import('./puzzle-index.mjs');
   const folder = resolve(ROOT, 'src/data/puzzles');
   const files = readdirSync(folder).filter((name) => /^\d{2}\.json$/.test(name)).sort();
-  check('level count', () => assert(files.length === LEVELS, `expected ${LEVELS}, got ${files.length}`));
+  LEVELS = files.length;
+  check('level ids contiguous from 01', () => assert(puzzleIds(folder).length === LEVELS, 'numbering'));
+  check('game index lists the folder', () => {
+    const listed = PUZZLES.map((level) => level.id).join(',');
+    const want = files.map((name) => name.slice(0, 2)).join(',');
+    assert(listed === want, `PUZZLES ${listed || '(none)'} != folder ${want}: run npm run build:puzzles`);
+  });
   const levels = files.map((file) => JSON.parse(readFileSync(resolve(folder, file), 'utf8')));
   for (const [index, level] of levels.entries()) {
     const id = level.id;
