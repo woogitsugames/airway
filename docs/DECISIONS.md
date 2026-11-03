@@ -1079,9 +1079,9 @@ realistic** (NASA Blue Marble NG colours, Black Marble city lights, NOAA ETOPO5 
 sun-aware atmosphere), C painted in-between. The owner chose **B** ("O ten kierunek jest ok"). The airport objects,
 routes, planes and the paper/airport-artefact UI of D-11 stay; only the globe surface changes. Supersedes the
 globe part of D-11 (world style A "Diorama"); D-05 (not minimal) is met by a real, lit, relief-rich Earth. Plan in
-`docs/mockups/globe-2026-11/PLAN.md`, steps G1–G7 in `docs/NIGHT-BACKLOG.md`. Rejected: A (still reads as a
+`docs/mockups/globe-2026-11/PLAN.md`, steps G1–G9 in `docs/NIGHT-BACKLOG.md`. Rejected: A (still reads as a
 diagram where mountains are hand-traced bands), C (muddy at phone size, the simplification removes the realism the
-owner asked for). **Status: accepted by the owner 2026-11-03; implementation pending (G1–G7).**
+owner asked for). **Status: accepted by the owner 2026-11-03; implementation pending (G1–G9).**
 
 ## D-171 — Bundle `total` budget for the satellite globe (2026-11-03, Claude, ext/03)
 B ships ~1.8 MB of textures (day 4096 + 2048, night 2048 + 1024, elevation, clouds) and the Mapa mode (D-172) ~0.55 MB more. The D-143 `total` budget
