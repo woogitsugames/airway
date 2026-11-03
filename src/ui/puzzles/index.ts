@@ -116,6 +116,7 @@ export function mountPuzzleSelector(host: HTMLElement, onExit: () => void = () =
   let current: PuzzleLevel | null = null;
   let session: PuzzleSession | null = null;
   let error = '';
+  let focusNext = false;
   function renderBoard(): void {
     current = null;
     session = null;
@@ -262,9 +263,22 @@ export function mountPuzzleSelector(host: HTMLElement, onExit: () => void = () =
     controls.append(button(t('puzzle.action.undo'), 'undo', 'puzzle-control', session.history.length === 0),
       button(t('puzzle.action.reset'), 'reset', 'puzzle-control'),
       button(t('puzzle.action.advance'), 'advance', 'puzzle-control', over),
-      button(t('puzzle.action.finish'), 'finish', 'puzzle-control primary', over));
+      primaryControl(level, snapshot.status === 'won'));
     wrapper.appendChild(controls);
     root.replaceChildren(wrapper, live);
+    if (focusNext) controls.querySelector<HTMLButtonElement>('.puzzle-control.primary')?.focus({ preventScroll: true });
+    focusNext = false;
+  }
+  /** [night-10w] A cleared level's yellow action leads on to the next departure (the last one back to the board);
+   * before, it stayed a disabled "To deadline" and the only way on was Back → board → next flap. */
+  function primaryControl(level: PuzzleLevel, won: boolean): HTMLButtonElement {
+    if (!won) return button(t('puzzle.action.finish'), 'finish', 'puzzle-control primary', session?.snapshot.status !== 'playing');
+    const next = PUZZLES[PUZZLES.findIndex((item) => item.id === level.id) + 1];
+    const control = next
+      ? button(t('puzzle.action.next', { number: next.id }), `open:${next.id}`, 'puzzle-control primary')
+      : button(t('puzzle.action.allPuzzles'), 'board', 'puzzle-control primary');
+    if (next) control.setAttribute('aria-label', t('puzzle.action.nextLabel', { number: next.id, title: heading(next) }));
+    return control;
   }
   const onClick = (event: MouseEvent): void => {
     const target = event.target;
@@ -273,7 +287,7 @@ export function mountPuzzleSelector(host: HTMLElement, onExit: () => void = () =
     if (!control || !root.contains(control) || control.disabled) return;
     const [name, value] = (control.dataset.action ?? '').split(':');
     if (name === 'exit') { onExit(); return; }
-    if (name === 'back') { renderBoard(); return; }
+    if (name === 'back' || name === 'board') { renderBoard(); return; }
     if (name === 'open') {
       const level = PUZZLES.find((item) => item.id === value);
       if (level) openLevel(level);
@@ -297,6 +311,7 @@ export function mountPuzzleSelector(host: HTMLElement, onExit: () => void = () =
         }
       }
       if (session.snapshot.status === 'won') {
+        focusNext = true;
         progress[current.id] = Math.max(progress[current.id] ?? 0, session.snapshot.stars);
         saveProgress(progress);
         // Only a wider margin than a recorded clear is news; the first clear is the result itself.

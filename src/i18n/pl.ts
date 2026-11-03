@@ -239,6 +239,9 @@ export const pl = {
   'puzzle.action.reset': 'Od nowa',
   'puzzle.action.advance': '+6 godz.',
   'puzzle.action.finish': 'Do końca',
+  'puzzle.action.next': 'Dalej: {number}', // [night-10w]
+  'puzzle.action.nextLabel': 'Następne zadanie {number}: {title}',
+  'puzzle.action.allPuzzles': 'Wszystkie zadania',
   'puzzle.status.playing': 'Planowanie',
   'puzzle.status.won': 'Zaliczono',
   'puzzle.status.lost': 'Odwołano',

@@ -238,6 +238,9 @@ export const en = {
   'puzzle.action.reset': 'Restart',
   'puzzle.action.advance': '+6 h',
   'puzzle.action.finish': 'To deadline',
+  'puzzle.action.next': 'Next: {number}', // [night-10w]
+  'puzzle.action.nextLabel': 'Next puzzle {number}: {title}',
+  'puzzle.action.allPuzzles': 'All puzzles',
   'puzzle.status.playing': 'Planning',
   'puzzle.status.won': 'Cleared',
   'puzzle.status.lost': 'Cancelled',
