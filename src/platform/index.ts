@@ -9,6 +9,8 @@ export {
   GAME_SAVE_KEY, SETTINGS_KEY, createDefaultStorage, createPlatformStorage, readSettings, writeSettings,
 } from './storage';
 export type { KeyValueStorage } from './storage';
+export { INSTALL_MARKER_PATH, createNativeInstallMarker, forgetIdentityOnNewInstall } from './install';
+export type { InstallCheck, InstallMarker } from './install';
 export { formatDailyShare, shareDailyResult } from './share';
 export type { ShareOutcome } from './share';
 export { freeEntitlements } from './store';

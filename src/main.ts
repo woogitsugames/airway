@@ -13,7 +13,7 @@ import { PUZZLES } from './data/puzzles';
 import { registerDevGameAdapter, type AwDevState, type AwScreen } from './game/devHandle';
 import { createDailyMode, servedTicketRegions } from './game/modes/daily';
 import { dailyRankingBoard } from './game/dailyRanking'; // [night-06c] D-66
-import { createBrowserLeaderboards } from './net'; // [night-06c] D-66
+import { IDENTITY_KEYS, createBrowserLeaderboards } from './net'; // [night-06c] D-66
 import { EndlessRun } from './game/run';
 import { dailyRowHint } from './game/dailyRow'; // [night-10d]
 import { localDay, readLogbook, recordFlight, runHub } from './game/logbook'; // [night-10n]
@@ -25,7 +25,7 @@ import { mountTutorial } from './game/tutorial';
 import { TUTORIAL_KEY } from './game/tutorial/controller';
 import { createWorld, type World } from './game/world';
 import { getLanguage, setPseudoLocale, t } from './i18n';
-import { configureHaptics, createDefaultStorage, GameLifecycle, shareDailyResult, type KeyValueStorage } from './platform';
+import { configureHaptics, createDefaultStorage, createNativeInstallMarker, forgetIdentityOnNewInstall, GameLifecycle, shareDailyResult, type KeyValueStorage } from './platform';
 import { initializeAccessibility } from './ui/a11y';
 import { readBestRecord } from './ui/gameover/storage';
 import { mountPuzzleSelector, readPuzzleProgress } from './ui/puzzles';
@@ -94,6 +94,10 @@ async function boot(): Promise<void> {
   const storage: KeyValueStorage = await createDefaultStorage();
   const scores = new LocalScoreService();
   const daily = createDailyMode(scores);
+  // [night-12c] D-92: a backup restored onto another phone keeps the game, not the leaderboard identity.
+  await forgetIdentityOnNewInstall(await createNativeInstallMarker(), (() => {
+    try { return globalThis.localStorage ?? null; } catch { return null; }
+  })(), IDENTITY_KEYS);
   // [night-06c] D-66: off without VITE_FIREBASE_* config; otherwise retry queued daily runs at start.
   const leaderboards = createBrowserLeaderboards(import.meta.env);
   void leaderboards.flush();

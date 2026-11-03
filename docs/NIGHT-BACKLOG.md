@@ -366,6 +366,15 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       `test:ios-config` checks: the encryption key, the localizations equal to the `src/i18n/<xx>.ts` catalogs, and the
       development region is one of them (21/23 on the old plist, 23/23 now). Also removed stray merge-conflict markers
       left in `docs/DECISIONS.md` around D-82…D-85 on `dev`. `docs/IOS.md`, `docs/TESTING.md`.
+- [x] N12c **Saves survive a phone change (R1e, D-92)** — Android Auto Backup on with include-only rules
+      (`data_extraction_rules.xml` for 12+, `backup_rules.xml` for 11 and older): Preferences, both save slots and the
+      WebView `localStorage` (logbook, streak, settings, puzzle stars, tutorial). The leaderboard token and offline
+      queue share that `localStorage`, so `src/platform/install.ts` keeps a never-backed-up install marker
+      (`Directory.LibraryNoCloud`) and drops both keys on the first launch without it (restored phone = new
+      anonymous player, Q-52). iOS side documented (Documents, Preferences and WebKit are in iCloud backups; marker in
+      `Library/NoCloud`). `test:android-config` +4 checks (14/18 on the old manifest), new `test:install-identity`
+      6/6 (in `test:fast`). Resources pass `aapt2 compile`; Gradle lint and a device restore could not run here
+      (Maven 429, no device) — `docs/ANDROID.md` lists the `bmgr` check.
 
 ## Research proposals (R-agent)
 Proposals from the research agent (findings and sources: `docs/RESEARCH.md`, sections "R1 — …"). Each item is
@@ -393,7 +402,7 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
       Android 13+ shows Airway in system per-app language settings; check on a device that the WebView's
       `navigator.languages` follows the per-app locale (uncertain) and that the in-game language setting still wins
       (D-31). `test:android-config` asserts the config. **Area:** `android/`, `src/i18n/index.ts` only if needed.
-- [ ] R1e **Saves survive a phone change (Android backup)** — `android:allowBackup="false"` loses the save,
+- [x] R1e → N12c **Saves survive a phone change (Android backup)** — `android:allowBackup="false"` loses the save,
       logbook, streak and settings on a new phone. Enable Auto Backup with `dataExtractionRules`
       (Android 12+) / `fullBackupContent` that include saves/settings (Filesystem `Directory.Data`, Preferences) and
       exclude the leaderboard identity/token and the net queue (a restored phone gets a new anonymous identity).
@@ -584,3 +593,4 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
 - 2026-11-03 · N12a balance bot plays for reach (D-90) · night/12a-bot-expansion · test:bot-policy 10/10 (6/10 on the old bot; 20 seeds unserved jams 14/18 → 4/16), test:balance median 14.55 → 17.81 min upgrade1 0.86 → 0.88 upgrade2 0.50 → 0.56, test:fast 58/58, build ok, bot-driven e2e past week 1: gameover-unserved 4/4, gameover-map 3/3, gameover-short 4/4, run-timeline 4/4, upgrade-picks 10/10, curfew-barrier 2/2, logbook 4/4, pause-summary 4/4, transfer-glyphs 2/2, board-short 4/4, pick-sign 10/10, edge-chip-tags 6/6, edge-chip-airports 2/2; smoke/ui:matrix/store:shots not run (bot unchanged up to the week-1 board)
 - 2026-11-03 · N11d edge-chip waiting gauge + owner decisions D-82…D-85 · night/11d-edge-gauge · ui:long-play EN 915×412 4× 10 min runs=3 maxWeek=1 issues=0; test:fast 58/58, build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:edge-chip-tags 6/6, e2e:edge-dock 5/5, e2e:edge-chip-airports 2/2, e2e:curfew-barrier 2/2, e2e:new-airport 4/4, test:e2e:edge-chip-fill 4/4 (0/4 on the old overlay), store:shots 30 (test:store-shots 30/30)
 - 2026-11-03 · N12b iOS store plist keys (R1c, D-91) · night/12b-ios-plist-keys · test:ios-config 23/23 (21/23 on the old plist), test:fast 58/58, build ok; e2e/ui:matrix/store:shots not run (no web code changed)
+- 2026-11-03 · N12c Android backup without leaderboard identity (R1e, D-92) · night/12c-android-backup · test:android-config 18/18 (14/18 on the old manifest), test:install-identity 6/6 (new), aapt2 compile ok, test:fast 59/59, build ok, e2e:smoke 9/9 (boot path touched); Gradle lint not run (Maven 429), no device restore; ui:matrix/store:shots not run (no UI change)

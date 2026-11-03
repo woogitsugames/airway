@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- [night-12c] D-92: Auto Backup on Android 11 and older; same include list as data_extraction_rules.xml. -->
+<full-backup-content>
+    <include domain="sharedpref" path="CapacitorStorage.xml" />
+    <include domain="file" path="aw-save-a.json" />
+    <include domain="file" path="aw-save-b.json" />
+    <include domain="root" path="app_webview/Default/Local Storage/" />
+    <include domain="root" path="app_webview/Local Storage/" />
+</full-backup-content>
