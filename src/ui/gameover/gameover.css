@@ -237,3 +237,40 @@
   .airway-go-flap { animation: none; }
   .airway-go-button:active { translate: none; }
 }
+/* [night-10e] Daily share: a punch-through button on the paper strip, the outcome beside it. */
+.airway-go-share {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  margin-top: 8px;
+}
+.airway-go-share-button {
+  min-height: 48px;
+  padding: 7px 14px;
+  background: #fbf8f1;
+  color: #1c1e20;
+  border-style: dashed;
+}
+.airway-go-share-status {
+  flex: 1 1 140px;
+  margin: 0;
+  font: 700 12px/1.3 'Overpass Mono', monospace;
+  color: #1e6f6a;
+}
+.airway-go-share-status:empty { display: none; }
+.airway-go-share-text {
+  flex: 1 1 100%;
+  min-height: 48px;
+  box-sizing: border-box;
+  resize: none;
+  border: 1px solid #beb4a4;
+  border-radius: 0;
+  background: #fbf8f1;
+  color: #2a2420;
+  padding: 6px 8px;
+  font: 12px/1.35 'Overpass Mono', monospace;
+}
+@media (max-height: 550px) and (min-width: 620px) {
+  .airway-go-share { margin-top: 5px; }
+}

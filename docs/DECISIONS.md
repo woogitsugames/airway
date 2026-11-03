@@ -582,3 +582,13 @@ D-40/D-43. **Status: implemented (N9b, `scripts/balance-report.ts`; median 14.55
 
 ## D-80 — Player picks their airline colour (2026-11-03, owner, Q-26)
 A CVD-checked palette in settings; plane tail fin and livery accents use the airline colour. Separate task. **Status: partly implemented (N9c): palette `src/data/airline-colours.json` (CVD-checked by `test:cvd`), settings select, boarding pass band, render hook `onAirlineColour` in `src/ui/airlineColour.ts`; the tail fin/livery paint waits for M1 (#52, plane models) → N9d.**
+
+## D-81 — Daily report shares the result; daily restart buttons keep their words (2026-11-03, Claude, night N10e)
+The daily game-over report has a "Share result" action on the ATC strip: the native share sheet (@capacitor/share),
+else the clipboard, else the text in a read-only box to select; a dismissed sheet copies nothing (consent). The text
+stays offline (task 18): no score or replay leaves the device, no link until the owner approves the domain (Q-39).
+The ticket is the regions the final network served, once each, in city opening order; ASI and OCE get the ticket
+glyphs ⌒ and ⌐, provisional like their D-20 shapes (Q-38). An official run adds "STREAK N DAYS" from two days.
+On a daily, "Same world" starts a practice of the same day's world (menu once the Warsaw day changed) and "New world"
+starts Endless; both used to drop silently to the menu. Rationale: the share path existed since task 18 but was never
+reachable, and a button must do what it says. **Status: in force (N10e, `test:e2e:daily-share`).**

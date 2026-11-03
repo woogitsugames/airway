@@ -24,6 +24,8 @@ export interface GameOverSnapshot extends WorldIdentity {
   readonly departures: readonly FailedDeparture[];
   /** [night-06c] Optional extra board under the report (daily ranking, D-66). */
   readonly extra?: HTMLElement;
+  /** [night-10e] Daily runs: share the result (src/platform/share.ts); the report shows the outcome. */
+  readonly share?: () => Promise<{ readonly status: 'shared' | 'copied' | 'unavailable' | 'failed'; readonly text: string }>;
 }
 
 export interface GameOverAdapters {
@@ -108,6 +110,38 @@ function entropySeed(): number {
   }
 }
 
+/** [night-10e] Share button on the paper strip; a dismissed native sheet says nothing, never copies. */
+function shareRow(share: NonNullable<GameOverSnapshot['share']>): HTMLElement {
+  const row = element('div', 'airway-go-share');
+  const button = element('button', 'airway-go-button airway-go-share-button', t('daily.share.action'));
+  button.type = 'button';
+  button.dataset.testid = 'gameover-share';
+  const status = element('p', 'airway-go-share-status');
+  status.setAttribute('role', 'status');
+  status.dataset.testid = 'gameover-share-status';
+  let busy = false;
+  button.addEventListener('click', () => {
+    if (busy) return;
+    busy = true;
+    void share().then((outcome) => {
+      row.querySelector('.airway-go-share-text')?.remove();
+      status.textContent = outcome.status === 'copied' ? t('daily.share.copied')
+        : outcome.status === 'unavailable' ? t('daily.share.select') : '';
+      if (outcome.status === 'unavailable') {
+        const text = element('textarea', 'airway-go-share-text');
+        text.readOnly = true;
+        text.rows = Math.min(8, outcome.text.split('\n').length);
+        text.value = outcome.text;
+        text.dataset.testid = 'gameover-share-text';
+        row.append(text);
+        text.select();
+      }
+    }).catch(() => { status.textContent = ''; }).finally(() => { busy = false; });
+  });
+  row.append(button, status);
+  return row;
+}
+
 function buildDialog(
   snapshot: GameOverSnapshot,
   isNewRecord: boolean,
@@ -165,7 +199,9 @@ function buildDialog(
   for (const fact of buildCauseReport(snapshot.ledger)) {
     causesList.append(element('li', '', causeText(fact)));
   }
-  strip.append(stripHeader, scoreRow, causesTitle, causesList);
+  strip.append(stripHeader, scoreRow);
+  if (snapshot.share) strip.append(shareRow(snapshot.share));
+  strip.append(causesTitle, causesList);
   if (isNewRecord) strip.append(element('p', 'airway-go-record', t('gameover.newRecord')));
 
   const actions = element('nav', 'airway-go-actions');

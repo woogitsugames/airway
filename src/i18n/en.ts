@@ -278,6 +278,10 @@ export const en = {
   'daily.share.weeks': 'WEEKS {weeks}',
   'daily.share.ticket': 'ROUTE {ticket}',
   'daily.share.dialog': 'Share flight ticket',
+  'daily.share.streak': 'STREAK {days} {days|DAY|DAYS}', // [night-10e]
+  'daily.share.action': 'Share result',
+  'daily.share.copied': 'Copied. Paste it anywhere.',
+  'daily.share.select': 'Sharing is not available here. Select the text:',
   // [task-23] The tutorial uses the game's bilingual catalog, never hardcoded labels.
   'tutorial.title': 'FLIGHT TRAINING',
   'tutorial.progress': 'STEP {current} / {total}',

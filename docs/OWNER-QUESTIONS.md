@@ -58,6 +58,7 @@ Priorytet: **P1** — blokuje wydanie albo sklep, **P2** — warto zdecydować p
 | Q-27 | P3 | Lista 15 zabytków miast; mniejsze archetypy dla Europy (Rzym, Stambuł)? | Zostawić / dodać | 15 miast (PR M1 otwarty) | Zostawić | #52 (otwarty) |
 | Q-28 | P3 | Kolory dachów lotnisk według regionu | Akceptuję / poprawki | Mapowanie z PR M1 (otwarty) | Akceptować, poprawki po telefonie | #52 (otwarty) |
 | Q-37 | P3 | Paleta kolorów linii (D-80): morski (domyślny), błękitny, ceglany, ochra, różany, grafitowy — czy odpowiada? | OK / inne odcienie (plik `src/data/airline-colours.json`, `test:cvd` pilnuje ΔE ≥ 15) | 6 kolorów; kolor widać w ustawieniach i na pasku karty pokładowej; na samolotach po scaleniu M1 | OK; kolory samolotów ocenić po M1 | N9c |
+| Q-38 | P3 | Znaki biletu do udostępniania dla Azji i Oceanii: „⌒” (skrzydło) i „⌐” (hak), obok ‹ ⋈ ◖ ⌑ ⟆ ⟧ | OK / inne znaki Unicode (nie emoji; `TICKET_GLYPHS` w `src/game/modes/daily.ts`) | ⌒ i ⌐ (D-81), tymczasowe jak glify ASI/OCE (Q-25) | OK; zmienić razem z glifami Q-25 | N10e |
 
 ## D. Dźwięk
 
@@ -79,3 +80,4 @@ Priorytet: **P1** — blokuje wydanie albo sklep, **P2** — warto zdecydować p
 | ID | P | Pytanie | Opcje | Obecnie w grze | Rekomendacja | Źródło |
 |---|---|---|---|---|---|---|
 | Q-34 | P1 | Sprawdzenie znaku towarowego „Airway” (EUIPO/USPTO/UPRP) przed wydaniem | Zlecić / sprawdzić samemu | Niesprawdzone (wstępne wyszukiwanie w sklepach: RESEARCH §7) | Sprawdzić przed przedrejestracją w sklepach | `docs/RESEARCH.md` §7 |
+| Q-39 | P3 | Dodać link do gry (np. `airway.games`) na końcu tekstu udostępnianego wyniku dnia? | A: bez linku; B: link po zatwierdzeniu domeny (docs/SITE.md) | A — tekst bez linku (D-81) | B, gdy domena i strona będą gotowe | N10e |

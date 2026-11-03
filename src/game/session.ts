@@ -15,7 +15,7 @@ import { calendarDayAt, calendarWeekAt } from '../sim/clock'; // [task-31]
 import type { PlaneView as PlaneRenderSnapshot } from '../render';
 import type { AudioCue } from '../audio/events';
 import { mountAtcStrip, mountRouteContextMenu, mountRouteHandles } from '../ui/atcStrip';
-import { createGameOverController, type GameOverController } from '../ui/gameover';
+import { createGameOverController, type GameOverController, type GameOverSnapshot } from '../ui/gameover';
 import { mountHud, type GameSpeed, type HudController, type PlaneType } from '../ui/hud';
 import { createAirportOverlay, type AirportOverlay } from '../ui/overlay';
 import { WeeklyUpgradeView } from '../ui/upgrade';
@@ -39,6 +39,8 @@ export interface SessionCallbacks {
   onSave(run: EndlessRun): Promise<boolean>;
   /** May return an extra board for the game-over screen (daily ranking, D-66). */
   onFailure?(run: EndlessRun): HTMLElement | void;
+  /** [night-10e] Called right after onFailure: a daily run's share action for the report. */
+  failureShare?(): GameOverSnapshot['share'] | void;
   onTick?(run: EndlessRun, speed: number): void;
   cue?(cue: AudioCue): void;
 }
@@ -368,6 +370,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       setScreen('gameover');
       tool.pointerCancel(ROUTE_POINTER);
       const extra = callbacks.onFailure?.(run) ?? undefined; // [night-06c]
+      const share = callbacks.failureShare?.() ?? undefined; // [night-10e]
       const flights = failure.departures.map((departure, i) => ({
         originHubId: failure.cityId, flightNumber: 'AW' + String(101 + i),
         destinationCode: departure.destination, gate: String.fromCharCode(65 + (i % 6)) + String(1 + i),
@@ -375,7 +378,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       void gameOver.show({
         seed: run.seed, initialHash: '', hubId: failure.cityId, hubCode: airportLabel(failure.cityId),
         delivered: run.passengers, completedWeeks: Math.floor(failure.tick / TICKS_PER_WEEK),
-        ledger: failure.ledger, departures: flights, ...(extra ? { extra } : {}),
+        ledger: failure.ledger, departures: flights, ...(extra ? { extra } : {}), ...(share ? { share } : {}),
       });
     }
   }
