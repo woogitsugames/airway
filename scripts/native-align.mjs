@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// [night-12e] D-94 Google Play 16 KB page-size guard (R1m). Since 1.11.2025 every new app/update targeting Android 15+
+// [night-12e] D-98 Google Play 16 KB page-size guard (R1m). Since 1.11.2025 every new app/update targeting Android 15+
 // must ship 64-bit native libraries whose ELF LOAD segments are aligned to 16 KB; in an APK, uncompressed `.so`
 // entries must also start on a 16 KB boundary (`zipalign -P 16`). Pure Node (no SDK): reads the ZIP central
 // directory of an .aab or .apk, inflates each `lib/<abi>/*.so`, and checks both. A Capacitor web app normally has no

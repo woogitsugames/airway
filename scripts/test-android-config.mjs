@@ -38,8 +38,8 @@ check('foldable-resize', manifest.includes('android:resizeableActivity="true"'))
 check('single-activity-launch', manifest.includes('android:launchMode="singleTask"') && manifest.includes('android:exported="true"'));
 const permissions = [...manifest.matchAll(/<uses-permission\s+android:name="([^"]+)"/g)].map((match) => match[1]);
 check('minimal-permissions', permissions.length === 1 && permissions[0] === 'android.permission.INTERNET');
-check('sdk-versions', variables.includes('minSdkVersion = 24')); // target/compile: play-target-sdk-floor (D-94)
-// [night-12e] D-94 store-requirement guards (R1m): Play requires targetSdk ≥ 36 for new apps and updates from
+check('sdk-versions', variables.includes('minSdkVersion = 24')); // target/compile: play-target-sdk-floor (D-98)
+// [night-12e] D-98 store-requirement guards (R1m): Play requires targetSdk ≥ 36 for new apps and updates from
 // 31.08.2026 (raise PLAY_MIN_TARGET_SDK every August), and release builds check 16 KB native-library alignment.
 const PLAY_MIN_TARGET_SDK = 36;
 const sdk = (name) => Number(variables.match(new RegExp(name + '\\s*=\\s*(\\d+)'))?.[1] ?? NaN);

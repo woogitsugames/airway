@@ -78,7 +78,7 @@ export function verifyDailySubmission(input: unknown, allowedDays: readonly stri
     return { ok: false, reason: 'replay_error' };
   }
   if (sim.world.status !== 'over') return { ok: false, reason: 'not_finished' };
-  // [night-12d] D-93: the run must end exactly at the claimed tick. The replay stops at the game over, so an
+  // [night-12d] D-97: the run must end exactly at the claimed tick. The replay stops at the game over, so an
   // inflated endTick (or commands after the end) costs nothing and cannot inflate `weeks`.
   if (sim.tickCount !== submission.endTick) return { ok: false, reason: 'malformed' };
   if (sim.world.score !== submission.claimedScore) return { ok: false, reason: 'score_mismatch' };
