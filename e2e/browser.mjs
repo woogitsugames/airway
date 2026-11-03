@@ -36,14 +36,23 @@ export async function withBrowser(callback, { fixture = false } = {}) {
   }
 }
 
-export async function newGamePage(browser, url, language, viewport = { width: 412, height: 915 }) {
+export async function newGamePage(browser, url, language, viewport = { width: 412, height: 915 }, options = {}) {
   const page = await browser.newPage({
-    viewport, deviceScaleFactor: 1, hasTouch: true,
-    reducedMotion: 'reduce', locale: language === 'pl' ? 'pl-PL' : 'en-US',
+    viewport, deviceScaleFactor: options.deviceScaleFactor ?? 1, hasTouch: options.hasTouch ?? true,
+    reducedMotion: options.reducedMotion ?? 'reduce', locale: language === 'pl' ? 'pl-PL' : 'en-US',
   });
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await presetLanguage(page, language, { clear: true });
+  // [m3] D-55: optional text-size setting (100/115/130) written before any page script runs.
+  if (options.textScale) {
+    await page.addInitScript((scale) => {
+      try {
+        const value = JSON.parse(localStorage.getItem('airway.settings') || '{}');
+        localStorage.setItem('airway.settings', JSON.stringify({ ...value, textScale: scale }));
+      } catch { /* storage blocked */ }
+    }, options.textScale);
+  }
   await page.goto(url, { waitUntil: 'load' });
   await page.locator('#app').waitFor({ timeout: 12000 });
   await page.waitForFunction(() => typeof window.aw === 'object', null, { timeout: 12000 })
