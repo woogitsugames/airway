@@ -184,6 +184,11 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       Continue row (the `save.error.*` strings existed but were never shown, and claimed "a new game has been
       started"). The menu now shows a one-line paper notice until the next flight starts; unreadable storage (private
       window) stays silent, the save itself is kept untouched. `loadSavedSimChecked` in `src/game/save.ts`.
+- [x] N10d **Daily row: today's score and streak; plural bug from 1 000** — the score store counted today's official
+      result and the streak of days, but the menu never showed them; the daily row now reads "today 1,250 · 3-day
+      streak" / "2-day streak · play today". Found on the way: every plural with a `localNumber` count of 1 000 or
+      more leaked its token ("rekord 2 500 {count|pasażer|…}" on the menu record and Continue rows); `t()` now
+      reads formatted counts. `src/game/dailyRow.ts`, `test:format` +2, `e2e/daily-row.mjs`.
 
 ## Log
 <!-- one line per finished item: date UTC · item · PR · gate summary -->
@@ -233,3 +238,4 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
 - 2026-11-03 · N10a new airport mark · night/10a-new-airport · test:fast 52/52, build ok, e2e:smoke 9/9, ui:matrix 32/32, test:new-airports 5/5, test:e2e:new-airport 4/4 (EN+PL)
 - 2026-11-03 · N10b PL/EN text review · night/10b-text-review · test:fast 52/52, build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:puzzles 34/34, e2e:screens-fit 18/18, e2e:screens-fit-320 12/12
 - 2026-11-03 · N10c saved-flight notice · night/10c-save-notice · test:fast 52/52, build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:daily-continue 7/7, test:save-golden 19/19, test:e2e:save-notice 4/4
+- 2026-11-03 · N10d daily row score/streak + plural fix · night/10d-daily-row · test:fast 52/52 (test:format 13/13), build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:save-notice 4/4, e2e:screens-fit-320 12/12, test:e2e:daily-row 4/4

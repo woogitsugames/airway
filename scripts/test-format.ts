@@ -2,6 +2,7 @@
 import assert from 'node:assert/strict';
 import { formatNumber } from '../src/core/format.ts';
 import { localNumber, pluralForm, setLanguage, t } from '../src/i18n/index.ts';
+import { dailyRowHint } from '../src/game/dailyRow.ts';
 
 const SEED = '0xA1A1';
 let passed = 0;
@@ -73,6 +74,31 @@ test('t() fills plural tokens in real catalog strings', () => {
   assert.equal(t('puzzle.goal.continents', { continents: 3, passengers: 1 }), 'Connect 3 continents and deliver 1 passenger without a jam.');
   assert.equal(t('puzzle.board.item', { number: 4, title: 'X', stars: 1 }), 'Puzzle 4: X, 1 star');
   assert.equal(t('airport.waiting', { code: 'LON' }), 'LON: {count} {count|passenger|passengers} waiting', 'missing param keeps the token');
+});
+
+// [night-10d] Counts formatted by localNumber still pick the plural form (the token leaked from 1 000 up).
+test('plural forms read localNumber output (PL "2 500", EN "2,500")', () => {
+  setLanguage('pl');
+  assert.equal(t('menu.record', { count: localNumber(2500) }), `rekord 2${NBSP}500 pasażerów`);
+  assert.equal(t('menu.record', { count: localNumber(1) }), 'rekord 1 pasażer');
+  assert.equal(t('menu.continueHint', { week: 3, count: localNumber(12345) }), `tydzień 3 · 12${NBSP}345 pasażerów`);
+  setLanguage('en');
+  assert.equal(t('menu.record', { count: localNumber(2500) }), 'record 2,500 passengers');
+  assert.equal(t('menu.record', { count: localNumber(1) }), 'record 1 passenger');
+});
+test('daily row: hint, streak to keep, score, score with streak', () => {
+  const result = { dateKey: 'd', kind: 'official' as const, score: 1250, weeks: 2, ticket: '--' };
+  setLanguage('en');
+  assert.equal(dailyRowHint({ officialResult: null, currentStreak: 0 }), 'same world for everyone');
+  assert.equal(dailyRowHint({ officialResult: null, currentStreak: 3 }), '3-day streak · play today');
+  assert.equal(dailyRowHint({ officialResult: result, currentStreak: 1 }), 'today 1,250 passengers');
+  assert.equal(dailyRowHint({ officialResult: result, currentStreak: 4 }), 'today 1,250 · 4-day streak');
+  setLanguage('pl');
+  assert.equal(dailyRowHint({ officialResult: null, currentStreak: 1 }), 'seria 1 dzień · zagraj dziś');
+  assert.equal(dailyRowHint({ officialResult: null, currentStreak: 5 }), 'seria 5 dni · zagraj dziś');
+  assert.equal(dailyRowHint({ officialResult: { ...result, score: 1 }, currentStreak: 1 }), 'dziś 1 pasażer');
+  assert.equal(dailyRowHint({ officialResult: result, currentStreak: 2 }), `dziś 1${NBSP}250 · seria 2 dni`);
+  setLanguage('en');
 });
 
 console.log(`SUMMARY test:format seed=${SEED} passed=${passed} failed=${failed}`);

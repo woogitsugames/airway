@@ -93,6 +93,9 @@ export const en = {
   'menu.progress': '{solved} of {total} solved',
   'menu.puzzlesHint': 'puzzles coming soon',
   'menu.dailyHint': 'same world for everyone',
+  'menu.dailyScore': 'today {count} {count|passenger|passengers}', // [night-10d]
+  'menu.dailyScoreStreak': 'today {count} · {days}-day streak',
+  'menu.dailyStreak': '{days}-day streak · play today',
   'settings.language': 'Language',
   'settings.graphics': 'Graphics quality',
   // [night-05] D-68 airport label setting.
