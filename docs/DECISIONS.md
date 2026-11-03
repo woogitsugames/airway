@@ -438,6 +438,24 @@ Atkinson Hyperlegible Next via `unicode-range` (same OFL files) and " · " is sy
 checks menu, upgrade labels and game over in PL/EN at 360–915 px for bare mid-word breaks, header gaps ≥ 8 px and
 dot symmetry. **Status: in force.**
 
+## D-53 — Richer world: regional airports, generic landmarks, plane bank (2026-11-03, M1)
+Implements more of D-05 on the D-11 Diorama. **Airports** are built from one shared instanced kit (pad, building
+blocks, roofs, tower, palms, snow field, two landmark meshes; one draw call per piece for the whole world, empty
+pieces draw nothing). The terminal roof follows the dataset region: North America flat slate-blue, South America and
+southern Europe low hipped terracotta, northern Europe steep slate gable, Africa flat ochre, Middle East a sand dome,
+Asia a two-tier flared roof, Oceania a warm gable. Hubs keep the sea-green roof (diorama.md) and add a larger pad, an
+apron, a second terminal block and the tower. Palms (3–5) stand around pads below 23° latitude; above 55° the pad
+sits on a snow field and city roofs are snow-capped. Everything is a pure function of the city id/coordinates.
+**Landmarks** are generic archetypes, never replicas: lattice tower (PAR), tower cluster (CHI, SHA, HKG, SIN, DXB),
+stepped pagoda-like tower (TYO, PEK, BKK), domed hall with two slim towers (DEL, DCA), arch bridge (SYD, SFO),
+pyramids (CAI), stepped platform (MEX). Each stands at a hand-picked bearing just outside the curfew barrier, on land
+and clear of every other dataset airport's hub pad (`test:render-layers` checks this against the Natural Earth
+raster), and appears only while its city is in play. Dense Europe has no room at this scale, so it gets none beyond
+Paris. **Planes:** tail fin, tailplane and a new cheat line carry the existing type colour (routes have no per-line
+colour yet), plus a dark windscreen band; no numbers. A smoothed visual heading gives a roll from the yaw rate
+(≤ 20°, first-order, no overshoot, zero on great circles and on the ground). **Status: in force; the landmark list,
+the roof-per-region mapping and per-line liveries are owner questions in the M1 PR.**
+
 ## D-60 — First weekly upgrade at ~7.2 min is accepted (2026-11-02, owner)
 Keeps 1 tick = 1 game minute and the D-43 balance (median 12.9 min, 86% / 44%). Supersedes the "4–5 min" estimate in D-40.
 **Status: in force.**

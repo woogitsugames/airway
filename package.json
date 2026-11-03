@@ -87,6 +87,7 @@
     "shots:world": "node dev/shots.mjs world",
     "shots:34": "node scripts/shots-34.mjs",
     "shots:39": "node scripts/shots-39.mjs",
+    "shots:m1": "node scripts/shots-m1.mjs",
     "shots:38": "node scripts/shots-38.mjs"
   },
   "dependencies": {

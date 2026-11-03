@@ -94,10 +94,14 @@ export function createInstancedPlaneModel(type: AircraftKind, capacity: number):
     const tail = new BoxGeometry(0.03, 0.34, 0.26);
     tail.rotateX(-0.35);
     colored.push({ geometry: tail, position: [0, 0.2, -0.62] });
+    // [M1] Livery: a cheat line along both sides in the tail colour (no registration, no numbers).
+    for (const x of [-0.088, 0.088]) colored.push({ geometry: new BoxGeometry(0.012, 0.03, 1.12), position: [x, 0.012, -0.02] });
   } else {
     white.push({ geometry: new BoxGeometry(1.5, 0.03, 0.16), position: [0, 0.06, 0.08] });
     colored.push({ geometry: new BoxGeometry(0.03, 0.3, 0.2), position: [0, 0.16, -0.42] });
     colored.push({ geometry: new BoxGeometry(0.5, 0.02, 0.12), position: [0, 0.3, -0.45] });
+    // [M1] Livery: cheat line in the tail colour along both sides of the fuselage.
+    for (const x of [-0.058, 0.058]) colored.push({ geometry: new BoxGeometry(0.01, 0.022, 0.74), position: [x, 0.006, -0.02] });
     for (const x of [-0.32, 0.32]) {
       colored.push({ geometry: new CylinderGeometry(0.05, 0.05, 0.22, 8).rotateX(Math.PI / 2),
         position: [x, 0.03, 0.16] });
@@ -105,6 +109,8 @@ export function createInstancedPlaneModel(type: AircraftKind, capacity: number):
       dark.push({ geometry: new BoxGeometry(0.035, 0.32, 0.014), position: [x, 0.03, 0.28] });
     }
   }
+  // [M1] Dark windscreen band on the nose (reads as a cockpit, not a flight number).
+  dark.push({ geometry: new BoxGeometry(0.1 * L, 0.03 * L, 0.06 * L), position: [0, 0.045 * L, 0.44 * L] });
   const geometries = [unite(white), unite(colored), unite(dark)];
   const materials = [standard('#f7f5ee'), standard(wide ? '#e2553b' : '#2a8f8a'), standard('#2a2f35')];
   const group = new Group();

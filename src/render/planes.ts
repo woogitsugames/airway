@@ -39,7 +39,69 @@ export interface PlaneRenderStats {
   readonly droppedPlanes: number;
 }
 
+/** [M1] Visual-only heading/bank state of one aircraft, kept across ticks by plane id. */
+export interface BankState {
+  /** Smoothed visual forward (unit, tangent to the globe). */
+  readonly forward: Vector3;
+  /** Current roll in radians (positive = right wing up, model local +Z axis). */
+  bank: number;
+  /** False until the first frame seeds `forward`. */
+  seeded: boolean;
+  /** Tick generation that last saw this plane (stale states are dropped). */
+  seen: number;
+}
+
+/** Maximum roll: a slight bank, never a stunt. */
+export const MAX_BANK = 20 * Math.PI / 180;
+/** Roll per unit of yaw rate (rad per rad/s): ~45°/s of turning reaches the limit. */
+export const BANK_PER_YAW_RATE = 0.45;
+/** First-order (critically damped, no overshoot) time constants in seconds. */
+export const HEADING_TAU = 0.28;
+export const BANK_TAU = 0.18;
+/** A heading change above this is a turn-around on the ground: snap, no bank. */
+const SNAP_TURN = 2.2;
+
+const bankScratch = new Vector3();
+const bankCross = new Vector3();
+export function createBankState(): BankState {
+  return { forward: new Vector3(), bank: 0, seeded: false, seen: 0 };
+}
+
+/**
+ * Advance one plane's smoothed heading towards the route tangent `target` at surface normal `up`
+ * and return the bank (rad). Straight great-circle flight has zero heading error after the old
+ * forward is projected onto the new tangent plane, so it banks exactly 0. `airborne` (0..1) scales
+ * the roll so a plane on the ground never leans. Allocation-free.
+ */
+export function stepBank(state: BankState, target: Vector3, up: Vector3, dt: number, airborne: number): number {
+  const f = state.forward;
+  if (!state.seeded) { f.copy(target); state.seeded = true; state.bank = 0; return 0; }
+  // Parallel transport of the previous visual heading: project onto the new tangent plane.
+  f.addScaledVector(up, -f.dot(up));
+  if (f.lengthSq() < 1e-12) f.copy(target);
+  f.normalize();
+  const cos = Math.max(-1, Math.min(1, f.dot(target)));
+  const sin = bankCross.crossVectors(f, target).dot(up);
+  const error = Math.atan2(sin, cos);
+  const step = dt > 0 ? Math.min(1, dt / HEADING_TAU) : 0;
+  let yawRate = 0;
+  if (Math.abs(error) > SNAP_TURN || dt <= 0) {
+    f.copy(target);
+  } else {
+    const turn = error * step;
+    // Rotate f about up by `turn` (Rodrigues; f ⟂ up).
+    bankScratch.crossVectors(up, f);
+    f.multiplyScalar(Math.cos(turn)).addScaledVector(bankScratch, Math.sin(turn)).normalize();
+    yawRate = turn / dt;
+  }
+  const want = Math.max(-MAX_BANK, Math.min(MAX_BANK, -BANK_PER_YAW_RATE * yawRate)) * Math.max(0, Math.min(1, airborne));
+  state.bank += (want - state.bank) * (dt > 0 ? Math.min(1, dt / BANK_TAU) : 0);
+  if (Math.abs(state.bank) < 1e-9) state.bank = 0;
+  return state.bank;
+}
+
 interface PlaneTrack {
+  bank: BankState;
   route: PreparedRoute;
   type: AircraftKind;
   slot: number;
@@ -110,6 +172,11 @@ export class PlaneLayer {
   private readonly shadowMaterial: MeshBasicMaterial;
   private readonly trailMaterial: MeshBasicMaterial;
   private readonly barMaterial: MeshBasicMaterial;
+  private readonly banks = new Map<string, BankState>();
+  private readonly rollRotation = new Quaternion();
+  private readonly rollAxis = new Vector3(0, 0, 1);
+  private generation = 0;
+  private lastFrameMs = -1;
   private dropped = 0;
   private countTurboprop = 0;
   private countWidebody = 0;
@@ -164,6 +231,7 @@ export class PlaneLayer {
     for (let i = 0; i < previous.length; i++) this.prior.set(previous[i].id, previous[i]);
     this.tracks.length = 0;
     this.dropped = 0;
+    const generation = ++this.generation;
     this.countTurboprop = 0;
     this.countWidebody = 0;
     for (let i = 0; i < current.length; i++) {
@@ -189,11 +257,16 @@ export class PlaneLayer {
       const capacity = Math.max(1, now.capacity ?? (type === 'widebody' ? 300 : 48));
       const load = Math.max(0, Math.min(capacity, Number.isFinite(now.load) ? now.load : 0));
       // Track records are pooled: a tick boundary reuses them instead of allocating.
+      let bank = this.banks.get(now.id);
+      if (!bank) { bank = createBankState(); this.banks.set(now.id, bank); }
+      if (before && before.routeId !== now.routeId) bank.seeded = false;
+      bank.seen = generation;
       let track = this.pool[this.tracks.length];
       if (!track) {
-        track = { route, type, slot, fromDistance, toDistance, direction: 1, load, capacity };
+        track = { bank, route, type, slot, fromDistance, toDistance, direction: 1, load, capacity };
         this.pool.push(track);
       }
+      track.bank = bank;
       track.route = route;
       track.type = type;
       track.slot = slot;
@@ -209,6 +282,7 @@ export class PlaneLayer {
           active ? (load / capacity >= 0.8 ? CRITICAL : LOADED) : EMPTY);
       }
     }
+    for (const [id, state] of this.banks) if (state.seen !== generation) this.banks.delete(id);
     this.turboprops.setCount(this.countTurboprop);
     this.widebodies.setCount(this.countWidebody);
     this.shadow.count = this.tracks.length;
@@ -217,8 +291,18 @@ export class PlaneLayer {
     if (this.bars.instanceColor) this.bars.instanceColor.needsUpdate = true;
   }
 
-  /** Call per animation frame with [0,1] tick accumulator fraction. Never allocates. */
-  update(alpha: number, camera: PerspectiveCamera): void {
+  /**
+   * Call per animation frame with [0,1] tick accumulator fraction. Never allocates. `dtSeconds`
+   * drives the visual bank smoothing; omitted, it is measured with `performance.now()`.
+   */
+  update(alpha: number, camera: PerspectiveCamera, dtSeconds?: number): void {
+    let dt = dtSeconds ?? 0;
+    if (dtSeconds === undefined && typeof performance !== 'undefined') {
+      const nowMs = performance.now();
+      dt = this.lastFrameMs < 0 ? 0 : (nowMs - this.lastFrameMs) / 1000;
+      this.lastFrameMs = nowMs;
+    }
+    dt = Math.max(0, Math.min(0.1, dt));
     camera.getWorldQuaternion(this.cameraRotation);
     this.cameraRight.set(1, 0, 0).applyQuaternion(this.cameraRotation);
     this.cameraUp.set(0, 1, 0).applyQuaternion(this.cameraRotation);
@@ -230,8 +314,6 @@ export class PlaneLayer {
       sampleRouteDistance(track.route, distance, this.position, this.forward);
       if (track.direction === -1) this.forward.negate();
       this.up.copy(this.position).normalize();
-      this.right.crossVectors(this.up, this.forward).normalize();
-      this.north.crossVectors(this.forward, this.right).normalize();
       // Each leg has a short linear take-off/landing transition, with no springs.
       let leg = track.route.arcs.length - 1;
       for (let j = 0; j < track.route.arcs.length - 1; j++) {
@@ -241,8 +323,17 @@ export class PlaneLayer {
         (distance - track.route.cumulative[leg]) / track.route.arcs[leg].angle));
       const climb = Math.min(1, legProgress / NEAR_LANDING, (1 - legProgress) / NEAR_LANDING);
       this.position.addScaledVector(this.up, 0.01 * Math.max(0, climb));
+      // [M1] Visual heading is smoothed through turns; the roll follows the yaw rate (no springs).
+      // The pitch along the lifted arc is kept; only the horizontal heading is smoothed.
+      const pitch = Math.max(-0.99, Math.min(0.99, this.forward.dot(this.up)));
+      this.forward.addScaledVector(this.up, -pitch).normalize();
+      const bank = stepBank(track.bank, this.forward, this.up, dt, Math.max(0, climb) * 3);
+      this.forward.copy(track.bank.forward).multiplyScalar(Math.sqrt(1 - pitch * pitch)).addScaledVector(this.up, pitch);
+      this.right.crossVectors(this.up, this.forward).normalize();
+      this.north.crossVectors(this.forward, this.right).normalize();
       this.basis.makeBasis(this.right, this.north, this.forward);
       this.modelRotation.setFromRotationMatrix(this.basis);
+      if (bank !== 0) this.modelRotation.multiply(this.rollRotation.setFromAxisAngle(this.rollAxis, bank));
       const size = track.type === 'widebody' ? 0.045 : 0.04;
       this.modelScale.set(size, size, size);
       this.worldMatrix.compose(this.position, this.modelRotation, this.modelScale);
@@ -316,5 +407,6 @@ export class PlaneLayer {
     this.group.clear();
     this.tracks.length = 0;
     this.prior.clear();
+    this.banks.clear();
   }
 }

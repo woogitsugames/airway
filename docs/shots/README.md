@@ -17,6 +17,7 @@ against the Diorama checklist (`docs/styles/diorama.md`) and the forbidden list 
 | `29/` | `npm run shots:site` | Landing page |
 | `33/` | `npm run shots -- globe-low-1x globe-low-2_5x globe-medium-1x globe-medium-2_5x globe-high-1x globe-high-2_5x globe-menu` | Globe detail per preset at 1× / 2.5× and the menu globe; `33/before/` = `dev` before task 33 |
 | `35/` | `npm run test:hud-targets` (+ `ui:matrix` copies `game-*`) | Weekly upgrade cargo labels: PL/EN × 4 sizes, `-slots` variant, mockup comparison sheets |
+| `m1/` | `npm run shots:m1` + `node scripts/shots-34.mjs docs/shots/m1` | Richer world (D-53): regional airports, palms/snow, hubs, landmarks (dev/world close-ups, DPR 3, day + night) and the real game menu/day/dusk/night 412×915 / 915×412 |
 | `matrix/` | `npm run ui:matrix` | 4 screens × PL/EN × 4 sizes (real game only) |
 | `matrix-fixture/` | `npm run test:e2e:fixture` | Harness self-test images; git-ignored, never game evidence |
 
