@@ -1025,3 +1025,24 @@ string (stricter than the real CSS mapping) so a key may move between faces free
 Atkinson file with U+202F/U+2192 (a rebuilt font file and licence trail for two glyphs). Not covered: French
 typography's narrow space before ": ; ! ?" in future catalogs, which a translator must write as U+00A0 — the test
 will fail on U+202F. **Status: in force (N12s).**
+
+## D-160 — Puzzle list generated from the folder, not `import.meta.glob` (2026-11-03, Claude, ext/01)
+R6f: `src/data/puzzles/index.ts` imported 30 JSON files by hand and `test:puzzles` hard-coded 30 levels. The list is
+now `src/data/puzzles/levels.generated.ts`, written by `npm run build:puzzles` (`scripts/build-puzzles.mjs`, also run
+by `prebuild` and `predev`) from the `NN.json` files: two-digit ids, contiguous from 01, at most 99, any other
+`*.json` name refused. `index.ts` keeps the types and re-exports `PUZZLES`. `test:puzzles` takes the count from the
+folder and fails when the game's index differs from it; `test:puzzle-packs` adds a level to a copy of the folder and
+checks that it reaches `PUZZLES` without touching `index.ts`, and that the committed file is fresh. Rejected:
+`import.meta.glob` — the list is imported by the Sim (`src/sim/puzzles.ts` → `scenarios.ts`), so it also runs under
+Node (the TS test loader, every headless test) and in the esbuild bundle of `functions/` (server replay, D-72), where
+`import.meta.glob` does not exist; a generated file works in all three without a Vite-only transform (same pattern as
+`generated/distances.ts`). Adding a pack: drop `31.json`…`35.json`, run `npm run build:puzzles`, add the
+`puzzle.NN.title` keys. **Status: in force (ext/01).**
+
+## D-161 — `npm run puzzle:report`: one difficulty row per level from its reference run (2026-11-03, Claude, ext/01)
+R6f: a pack PR shows its curve as a Markdown table, one row per level computed from the real reference run: time at
+1× (ticks / 10 per second), goal, cities and offered routes, stock (T/W/H), number of reference actions and
+widebodies among them, `mechanics` tags plus what the run actually met (minutes of slot waits, curfew airports),
+reference result with stars, margin over the target and the ★★ (+15 %) / ★★★ (+30 %) thresholds in passengers.
+`-- --from NN` limits it to one pack, `-- --json` prints the rows. Developer tool only; nothing in the game reads it.
+**Status: in force (ext/01).**
