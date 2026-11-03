@@ -596,6 +596,46 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
       with thresholds written before the test, and an answer sheet for Google's production-access questions (recruiting,
       engagement, feedback summary, changes made, readiness evidence). **Area:** docs. *Needs Q-42, Q-52.*
 
+### R4 (2026-11-03) — real-world data facts, mid-game jam diagnosis, large screens
+- [ ] R4a **Correct six airport codes on screen, keep city IDs** — `KIV` (Chișinău's old code, now RMO) for Kyiv,
+      `HCM` for Ho Chi Minh, `LUA` (Lukla, Nepal) for Luanda, `LUS` for Lusaka, `ISF` for Isfahan and `ALX` for
+      Alexandria are wrong. `City.code` is also the sim ID (saves, logbook, sorted curfew draw, puzzles, golden save), so
+      do **not** rename it: add an optional `displayCode` to `City` (`IEV`, `SGN`, `LAD`, `LUN`, `IFN`, `ALY`) and read it
+      through `airportLabel()` and every direct `airport.code` use in `src/ui/overlay.ts` (edge chips, aria), the
+      game-over departures board and the logbook. Code comment states the rule ("code travellers know from a ticket:
+      common city code, else main airport"). `test:replay`, `test:save-golden` and daily hashes must stay unchanged;
+      shots of one affected airport. **Area:** content/UI (`src/data/cities.ts`, `src/ui/airportLabel.ts`,
+      `src/ui/overlay.ts`).
+- [ ] R4b **City data guard + "solar time" line** — new fast test `test:city-data`: display codes are 3 uppercase
+      letters and unique, IDs unchanged against a frozen list (order and spelling, so a rename fails loudly), lat/lon in
+      range and on land or within ~30 km of the coast using the existing land mask, PL/EN names non-empty, population
+      > 0; add to `test:fast`. Plus one sentence in help/tutorial PL/EN that clocks show solar time, not official time
+      zones (D-27 keeps them; it matches the day/night line). **Area:** content/scripts (`scripts/`, `src/data/`) + i18n.
+- [ ] R4c **Fill trend chevron on the passenger tag** — when an airport is ≥ 50 % full, a small chevron beside the
+      count shows the last game hour's balance (up = more arrived than departed, down = draining, none = steady ±1).
+      Computed in `src/game/` from the hourly hub readings already taken for audio cues (no sim change, D-13); shape
+      not colour; aria text "filling/emptying"; reduced motion = no animation. Unit test for the trend rule, overlay DOM
+      test, shots portrait/landscape. **Area:** UI (`src/game/`, `src/ui/overlay.ts`, i18n).
+- [ ] R4d **Hub cause board on long-press** — long-press (or tap when ≥ 70 % full) on an airport opens a small
+      departures-board sheet: one row per destination region (glyph, waiting count, one cause mark: no onward flight /
+      departures left full in the last hour / waiting for a slot / curfew until 06:00), same wording as the game-over
+      causes. Needs a read-only per-hub rolling view (last game hour) derived in the game layer from run events, not
+      stored in the sim hash. Sheet fits 360×640 and the landscape dock; 48 dp targets; e2e opens it on a forced jam.
+      **Area:** UI (`src/ui/`, `src/game/`), i18n.
+- [ ] R4e **Full-departure ticks on route legs** (after the closed test) — a leg whose last three departures from a
+      hub left with no free seat gets short cross ticks near that hub for a few seconds; cleared when a departure has
+      spare seats. Render-only from plane load events; low preset uses the same line batch. **Area:** render
+      (`src/render/` routes) + `src/game/` event mapping.
+- [ ] R4f **Large-screen matrix and resize mid-run** — add Google's reference sizes to `ui:matrix` (1024×640,
+      1280×800, 800×1280, 841×701, 1600×900) and a narrow window (500×700); new e2e `test:e2e:resize`: start a run,
+      resize portrait→landscape→narrow→wide and fold-like 673×841→841×701, assert the state hash, open sheets and the
+      camera target survive and nothing overflows (Tier 3 Config_Changes/Config_Combinations). **Area:** platform/scripts
+      (`scripts/ui-matrix.mjs`, `e2e/`).
+- [ ] R4g **Keyboard and mouse basics** — Space pause/resume, 1/2/3 game speed, +/- zoom, existing Escape/Back;
+      `@media (hover: hover)` hover state on HUD buttons and airports; no browser context menu on right-click over the
+      globe; shortcuts listed in settings → help (PL/EN). E2E with Playwright keyboard. **Area:** input/UI
+      (`src/input/`, `src/ui/`, CSS, i18n). Auto-pause on focus loss *needs Q-59*.
+
 ## Log
 <!-- one line per finished item: date UTC · item · PR · gate summary -->
 - 2026-11-03 · N1 puzzles 16–30 (D-70) · night/01-puzzles · test:fast 42/42, build ok, e2e:smoke 9/9, ui:matrix 32/32, test:puzzles levels=30 cases=168 failed=0 (merged tree with #40, #42)
