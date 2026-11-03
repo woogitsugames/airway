@@ -47,6 +47,9 @@ interface BubbleEntry {
   /** [night-10a] Ink "NEW" stub at the front of the tag while the airport is newly opened. */
   fresh: HTMLSpanElement;
   isNew: boolean;
+  /** [night-10h] Red-white boom-barrier stub while the night curfew closes the airport. */
+  barrier: HTMLSpanElement;
+  closed: boolean;
   tag: TagSlot;
   /** [task-38] Departure-slot tag hung under the passenger tag (D-50). */
   slot: HTMLDivElement;
@@ -85,6 +88,8 @@ export interface AirportOverlay {
   setSlotHold(id: string, held: number, minutes: number): void;
   /** [night-10a] Newly opened airport: ink "NEW" stub on its tag and an ink edge chip. */
   setNew(id: string, isNew: boolean): void;
+  /** [night-10h] Closed by the night curfew: barrier stub on its tag and a striped bar on its edge chip. */
+  setCurfew(id: string, closed: boolean): void;
   update(): void;
   getPoolStats(): { airports: number; bubbles: number; slotTags: number; edgeButtons: number; domElements: number };
   dispose(): void;
@@ -141,6 +146,13 @@ const SLOT_LABEL_CHAR = 7.4;
 const SLOT_DIGIT = 7.4;
 /** [night-10a] "NEW" stub: fixed per-letter width plus padding, so the layout box matches the CSS width. */
 const NEW_CHAR = 7.6;
+/** [night-10h] Barrier stub: 26 px mark + 2 px margin + 4 px gap, as laid out by .airport-bubble__curfew. */
+const BARRIER_WIDTH = 32;
+/** The boom barrier the globe draws on a closed airport, same drawing as the puzzle strips (N7d). */
+const BARRIER_SVG = '<svg viewBox="0 0 22 12" width="26" height="14" aria-hidden="true" focusable="false">' +
+  '<rect x="1" y="2" width="3" height="9" fill="#13302e"/>' +
+  '<rect x="4" y="3" width="17" height="4" fill="#fbf8f1" stroke="#13302e" stroke-width="1"/>' +
+  '<path d="M7 3h3l-2 4H5zM13 3h3l-2 4h-3zM19 3h2v1.6L20 7h-3z" fill="#b8322a"/></svg>';
 const NEW_PAD = 10;
 
 export function createAirportOverlay(host: HTMLElement, camera: Camera, options: AirportOverlayOptions = {}): AirportOverlay {
@@ -187,6 +199,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       entry.fresh.style.width = freshWidth + 'px';
       bubble.appendChild(entry.fresh);
     }
+    if (entry.closed) bubble.appendChild(entry.barrier);
     for (let i = 0; i < limit; i++) bubble.appendChild(regionGlyph(entry.waiting[i]));
     if (entry.waiting.length > MAX_GLYPHS) {
       const more = document.createElement('span');
@@ -200,11 +213,14 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
     entry.edge.classList.toggle('airport-edge--jam', jammed);
     entry.tag.jammed = jammed;
     // [task-38] mainWidth 0 = no passenger tag; the group box also holds the slot tag.
-    entry.mainWidth = entry.waiting.length > 0 || jammed || entry.isNew
+    entry.mainWidth = entry.waiting.length > 0 || jammed || entry.isNew || entry.closed
       ? Math.max(30, 23 + limit * 18 + (entry.waiting.length > MAX_GLYPHS ? 27 : 0) + (jammed ? 53 : 0) +
-        (freshWidth ? freshWidth + (limit || jammed ? 4 : 0) : 0)) : 0;
+        (freshWidth ? freshWidth + (limit || jammed ? 4 : 0) : 0) + (entry.closed ? BARRIER_WIDTH : 0)) : 0;
     bubble.classList.toggle('airport-bubble--new', entry.isNew);
     entry.edge.classList.toggle('airport-edge--new', entry.isNew && !jammed);
+    entry.edge.classList.toggle('airport-edge--curfew', entry.closed && !jammed); // [night-10h]
+    entry.edge.setAttribute('aria-label', t('airport.focus', { code: entry.airport.code }) +
+      (entry.closed ? ' ' + t('airport.curfewAria', { code: entry.airport.code }) : ''));
     sizeTagGroup(entry.tag, entry.mainWidth, entry.slotRect);
     entry.timer.hidden = !jammed;
     if (jammed) {
@@ -212,7 +228,8 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       entry.timer.textContent = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
     }
     const label = jammed ? t('airport.jammed', { code: entry.airport.code, seconds: Math.ceil(entry.jamSeconds ?? 0) }) : t('airport.waiting', { code: entry.airport.code, count: entry.waiting.length });
-    bubble.setAttribute('aria-label', entry.isNew ? t('airport.newAria', { code: entry.airport.code }) + ' ' + label : label);
+    bubble.setAttribute('aria-label', (entry.isNew ? t('airport.newAria', { code: entry.airport.code }) + ' ' : '') +
+      (entry.closed ? t('airport.curfewAria', { code: entry.airport.code }) + ' ' : '') + label);
   }
 
   /** [task-38] Rebuild the slot tag text only when the held count or the countdown changes. */
@@ -310,6 +327,9 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       timer.className = 'airport-bubble__timer';
       const fresh = document.createElement('span');
       fresh.className = 'airport-bubble__new';
+      const barrier = document.createElement('span');
+      barrier.className = 'airport-bubble__curfew';
+      barrier.innerHTML = BARRIER_SVG;
       const edge = document.createElement('button');
       edge.type = 'button';
       edge.className = 'airport-edge';
@@ -336,7 +356,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       layer.append(bubble, slot, edge);
       const tag: TagSlot = { id: airport.id, anchorX: 0, anchorY: 0, width: 30, height: 30, active: false, jammed: false, x: 0, y: 0, placed: false };
       const entry: BubbleEntry = {
-        airport, normal, anchor, bubble, edge, timer, fresh, isNew: false, tag,
+        airport, normal, anchor, bubble, edge, timer, fresh, isNew: false, barrier, closed: false, tag,
         slot, slotLabel, slotTime, slotCount, slotRect: { width: 0, x: 0, y: 0, visible: false }, slotHeld: 0, slotMinutes: 0,
         mainWidth: 0, slotVisible: false, lastSlotX: NaN, lastSlotY: NaN,
         waiting: [], jamSeconds: null,
@@ -369,6 +389,12 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       entry.slotHeld = held;
       entry.slotMinutes = nextMinutes;
       rebuildSlot(entry);
+    },
+    setCurfew(id, closed): void {
+      const entry = get(id);
+      if (entry.closed === closed) return;
+      entry.closed = closed;
+      rebuildBubble(entry);
     },
     setNew(id, isNew): void {
       const entry = get(id);

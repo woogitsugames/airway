@@ -203,6 +203,11 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       by the night curfew (task 11), but the game never called `setCurfew` (only `reset` cleared it): from Endless
       week 4 and in the curfew puzzles a closed airport looked open while planes held. Session sync feeds the
       sim's `curfewClosed` per city to the world on change only. The ring is small at gameplay zoom → N10h.
+- [x] N10h **Readable curfew sign on the tag and edge chip** — after N10g the globe draws the barrier ring, but at
+      gameplay zoom it is a few pixels and an off-screen closed airport's edge chip said nothing. While the sim
+      closes an airport, its luggage tag gets the red-white boom-barrier stub (the same mark as the puzzle strips,
+      N7d: a shape, not only colour) and its edge chip a striped barrier bar; screen-reader labels say it is closed.
+      Also removes a `node_modules` symlink committed by N10f (`.gitignore` matched only the directory).
 
 ## Log
 <!-- one line per finished item: date UTC · item · PR · gate summary -->
@@ -256,3 +261,4 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
 - 2026-11-03 · N10e daily share + restart buttons (D-81) · night/10e-share · test:fast 52/52 (test:daily-mode 20/20), build ok, e2e:smoke 9/9, ui:matrix 32/32, test:e2e:daily-share 4/4
 - 2026-11-03 · N10f haptics for every committed action · night/10f-haptics · test:fast 53/53 (test:haptics 6/6), build ok, e2e:smoke 9/9; ui:matrix not run (no visual change)
 - 2026-11-03 · N10g curfew barrier drawn in the game · night/10g-curfew · test:fast 53/53, build ok, e2e:smoke 9/9, ui:matrix 32/32, test:e2e:curfew-barrier 2/2 (0/2 without the sync)
+- 2026-11-03 · N10h curfew sign on tag and edge chip · night/10h-curfew-tag · test:fast 53/53, build ok, e2e:smoke 9/9, ui:matrix 32/32, test:hud-targets 300/300, e2e:new-airport 4/4, test:e2e:curfew-barrier 2/2 (tag/chip checks added)

@@ -281,18 +281,13 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
 
   // ---- read-only sync -----------------------------------------------------------------------
   let lastCurfewKey = '';
+  const closedTags = new Set<string>();
   function syncWorld(force = false): void {
     const cities = run.cityList();
     const hubKey = cities.map((city) => city.id + (city.hub ? '*' : '')).join(',');
     if (hubKey !== lastHubKey) {
       lastHubKey = hubKey;
       world.setCities(cities.map((city) => ({ id: city.id, lon: city.lon, lat: city.lat, hub: city.hub })));
-    }
-    // [night-10g] The curfew barrier: rebuilt only when the set of closed airports changes.
-    const curfewKey = cities.filter((city) => city.curfewClosed).map((city) => city.id).join(',');
-    if (curfewKey !== lastCurfewKey) {
-      lastCurfewKey = curfewKey;
-      world.setCurfew(curfewKey ? curfewKey.split(',') : []);
     }
     world.setHubLoad(cities.filter((city) => city.hub)
       .map((city) => ({ id: city.id, used: Math.min(city.waiting.length, city.capacity), cap: city.capacity })));
@@ -308,6 +303,17 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       if (jamKeys.get(city.id) !== seconds) { jamKeys.set(city.id, seconds); overlay.setJamCountdown(city.id, seconds); }
       jamHaptics.setJammed(city.id, city.jamTicksLeft !== null);
       overlay.setSlotHold(city.id, city.slotHeld, city.nextSlotMinutes); // [task-38] deduplicated inside
+    }
+    // [night-10g] The curfew barrier: rebuilt only when the set of closed airports changes.
+    const curfewKey = cities.filter((city) => city.curfewClosed).map((city) => city.id).join(',');
+    if (curfewKey !== lastCurfewKey) {
+      lastCurfewKey = curfewKey;
+      const closed = curfewKey ? curfewKey.split(',') : [];
+      world.setCurfew(closed);
+      // [night-10h] The same state on the luggage tag and edge chip, readable at gameplay zoom.
+      for (const id of closedTags) if (!closed.includes(id) && knownAirports.has(id)) overlay.setCurfew(id, false);
+      closedTags.clear();
+      for (const id of closed) { closedTags.add(id); if (knownAirports.has(id)) overlay.setCurfew(id, true); }
     }
     if (force || run !== lastRun || run.revision !== lastRunRevision) {
       lastRun = run;
