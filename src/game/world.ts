@@ -9,6 +9,7 @@ import {
   contrastRatio, relativeLuminance, insetsFromLayout, menuFraming, solveZoomForRadius, menuSpinRate, type LayoutRect,
 } from '../render'; // [task-34] [task-39] menuSpinRate
 import { cityByCode } from '../data'; // [task-34]
+import { forgetAdaptiveSteps, readAdaptiveSteps, writeAdaptiveSteps } from './adaptiveMemory'; // [night-07b]
 
 // [task-34] HTML panels the globe must stay clear of. Their boxes become camera insets (D-47).
 const GAME_PANELS = ['.airway-pass', '.airway-dock'];
@@ -59,6 +60,9 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
   const renderer = createWorldRenderer(undefined, {
     quality, seed: 0xA1A1, autoResize: host, insets: () => appliedInsets,
     camera: { longitude: -18, latitude: 40, zoom: 2 }, maxAirports: 64, maxPlanes: 120,
+    // [night-07b] D-74: a slow device starts where its last session ended up.
+    adaptedSteps: quality === 'auto' ? readAdaptiveSteps() : [],
+    onAdapt: (steps) => writeAdaptiveSteps(steps),
   });
   const canvas = renderer.canvas;
   canvas.classList.add('airway-world');
@@ -207,7 +211,10 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
     preview: (model) => renderer.setRoutePreview(model),
     project: (lon, lat, out) => renderer.project(lon, lat, 1.01, out),
     pickGlobe: (x, y) => renderer.pickGlobe(x, y),
-    setQuality(preference) { void renderer.setQuality(preference).catch((error: unknown) => console.warn('Quality change failed', error)); },
+    setQuality(preference) {
+      forgetAdaptiveSteps(); // [night-07b] an explicit choice (also back to auto) detects afresh
+      void renderer.setQuality(preference).catch((error: unknown) => console.warn('Quality change failed', error));
+    },
     reset() {
       demo.stop(); // [task-34]
       renderer.setRoutePreview(null);
