@@ -14,6 +14,8 @@ export const en = {
   'airport.waiting': '{code}: {count} {count|passenger|passengers} waiting',
   'airport.jammed': '{code}: congestion, {seconds} {seconds|second|seconds} remaining',
   'airport.slot.label': 'SLOT', // [task-38]
+  'airport.new': 'NEW', // [night-10a]
+  'airport.newAria': 'New airport {code}.',
   'airport.slotHeld': '{code}: {count} aircraft waiting for a departure slot, next slot in {time}',
   // [task-07] Route drawing, airport-paper ATC hint and route actions.
   'route.aircraft.turboprop': 'turboprop',

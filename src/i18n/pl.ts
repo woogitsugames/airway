@@ -15,6 +15,8 @@ export const pl = {
   'airport.waiting': '{code}: {count} {count|pasażer czeka|pasażerów czeka|pasażerów czeka}',
   'airport.jammed': '{code}: zator, {seconds|pozostała|pozostały|pozostało} {seconds} {seconds|sekunda|sekundy|sekund}',
   'airport.slot.label': 'SLOT', // [task-38]
+  'airport.new': 'NOWE', // [night-10a]
+  'airport.newAria': 'Nowe lotnisko {code}.',
   'airport.slotHeld': '{code}: samoloty czekające na slot startowy: {count}, następny slot za {time}',
   // [task-07] Rysowanie tras, pasek ATC i działania na trasach.
   'route.aircraft.turboprop': 'turbośmigłowca',
