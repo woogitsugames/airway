@@ -97,16 +97,20 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
   world.reset();
   world.setIdleSpin(0);
   // Keep the globe clear of the boarding pass and the tag dock (bottom in portrait, right in landscape).
+  // [night-08b] The same bands for the airport edge buttons: in landscape the dock is a right column
+  // (right 12 px, 78 px wide), so the buttons stay left of it.
+  const overlayReserved = { top: 84, bottom: 96, right: 0 };
   const applyInsets = (): void => {
     const landscape = host.clientWidth > host.clientHeight;
     world.setInsets(landscape ? { top: 40, right: 110 } : { top: 84, bottom: 96 });
+    overlayReserved.right = landscape ? 96 : 0;
   };
   applyInsets();
   window.addEventListener('resize', applyInsets);
 
   // ---- presentation layers -------------------------------------------------------------
   const overlay: AirportOverlay = createAirportOverlay(layer, world.camera, {
-    reservedTop: 84, reservedBottom: 96,
+    reserved: () => overlayReserved,
     project: (lon, lat, altitude, out) => world.renderer.project(lon, lat, altitude, out),
     onNavigate: (id) => {
       const city = run.cityList().find((item) => item.id === id);
