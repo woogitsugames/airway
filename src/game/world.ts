@@ -12,6 +12,13 @@ import { cityByCode } from '../data'; // [task-34]
 import { t } from '../i18n'; // [night-11h]
 import { forgetAdaptiveSteps, readAdaptiveSteps, writeAdaptiveSteps } from './adaptiveMemory'; // [night-07b]
 import { reducedMotion } from '../ui/motion'; // [night-11g] D-88
+import type { GlobeLook } from '../render/globe';
+
+/** [ext-03] `?globeLook=` in DEV builds (docs/mockups/globe-2026-11/). */
+function devGlobeLook(): GlobeLook | undefined {
+  const value = new URLSearchParams(location.search).get('globeLook');
+  return value === 'refined' || value === 'satellite' || value === 'painted' || value === 'map' ? value : undefined;
+}
 
 // [task-34] HTML panels the globe must stay clear of. Their boxes become camera insets (D-47).
 const GAME_PANELS = ['.airway-pass', '.airway-dock'];
@@ -70,6 +77,8 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
   const renderer = createWorldRenderer(undefined, {
     quality, seed: 0xA1A1, autoResize: host, insets: () => appliedInsets,
     camera: { longitude: -18, latitude: 40, zoom: 2 }, maxAirports: 64, maxPlanes: 120,
+    // [ext-03] DEV-only experimental globe look (`?globeLook=refined|satellite|painted`); production: diorama.
+    look: import.meta.env.DEV ? devGlobeLook() : undefined,
     // [night-07b] D-74: a slow device starts where its last session ended up.
     adaptedSteps: quality === 'auto' ? readAdaptiveSteps() : [],
     onAdapt: (steps) => writeAdaptiveSteps(steps),

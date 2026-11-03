@@ -1,6 +1,7 @@
 // Deterministic render benchmark of the production world renderer (globe, airports, routes,
 // planes, day/night). Plane progress is a fixed visual script, not a simulation.
 import { AdaptiveFrameScheduler, type QualityPreference } from './quality';
+import type { GlobeLook } from './globe';
 import { createWorldRenderer, type CityView, type HubLoadView, type RouteView, type ScreenPoint } from './world';
 import type { PlaneRenderSnapshot } from './planes';
 
@@ -73,9 +74,10 @@ function summarizeHistory(buffer: Float32Array, recorded: number): {
 export function mountPerformanceFixture(
   host: HTMLElement,
   preference: QualityPreference = 'medium',
+  look?: GlobeLook, // [ext-03] experimental globe look (perf:scene --look), default the diorama
 ): PerfFixture {
   const world = createWorldRenderer(undefined, {
-    quality: preference, autoResize: host, maxAirports: CITY_COUNT, maxPlanes: PLANE_COUNT,
+    quality: preference, autoResize: host, maxAirports: CITY_COUNT, maxPlanes: PLANE_COUNT, look,
     camera: { longitude: 10, latitude: 30 },
   });
   world.canvas.style.cssText = 'display:block;width:100%;height:100%';

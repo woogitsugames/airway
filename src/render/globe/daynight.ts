@@ -53,13 +53,22 @@ export function applyDayNightGrading(material: Material, sunDirection: Vector3):
   if (!standard.isMeshStandardMaterial || standard.userData['awDayNight']) return;
   standard.userData['awDayNight'] = true;
   const uniform = { value: sunDirection };
-  standard.onBeforeCompile = (shader) => {
-    shader.uniforms['awSunDirection'] = uniform;
-    shader.vertexShader = VERTEX_DECL + shader.vertexShader.replace(
-      '#include <project_vertex>', '#include <project_vertex>' + VERTEX_BODY);
-    shader.fragmentShader = FRAGMENT_DECL + shader.fragmentShader.replace(
-      '#include <opaque_fragment>', FRAGMENT_BODY + '#include <opaque_fragment>');
-  };
+  standard.onBeforeCompile = (shader) => patchDayNightShader(shader, uniform);
   standard.customProgramCacheKey = () => 'aw-daynight';
   standard.needsUpdate = true;
+}
+
+/**
+ * [ext-03] The grading as a shader patch, so an experimental material (globe-look, DEV only) can apply it
+ * inside its own `onBeforeCompile`. Declares `awSunDirection` and `vAwSurface` (world position).
+ */
+export function patchDayNightShader(
+  shader: { uniforms: Record<string, { value: unknown }>; vertexShader: string; fragmentShader: string },
+  uniform: { value: Vector3 },
+): void {
+  shader.uniforms['awSunDirection'] = uniform;
+  shader.vertexShader = VERTEX_DECL + shader.vertexShader.replace(
+    '#include <project_vertex>', '#include <project_vertex>' + VERTEX_BODY);
+  shader.fragmentShader = FRAGMENT_DECL + shader.fragmentShader.replace(
+    '#include <opaque_fragment>', FRAGMENT_BODY + '#include <opaque_fragment>');
 }

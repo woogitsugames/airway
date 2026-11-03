@@ -12,6 +12,19 @@ import { drynessAt, mountainAt } from './relief';
 
 export type QualityLevel = 'low' | 'medium' | 'high';
 
+/**
+ * [ext-03] Experimental globe looks (DEV only, `?globeLook=`; see docs/mockups/globe-2026-11/). `diorama` is
+ * the shipped look and every default below keeps it byte-identical. `refined` keeps the hand-entered relief
+ * with softer ridges, muted biomes, per-vertex colours and smooth normals; `textured` takes land heights from
+ * a public-domain elevation raster and leaves the colour to a texture (white vertex colours).
+ */
+export interface TerrainStyle {
+  readonly id: 'diorama' | 'refined' | 'textured';
+  /** Land elevation in metres (`textured`); null = hand-entered relief. */
+  readonly elevation: ((lon: number, lat: number) => number) | null;
+}
+export const DIORAMA_STYLE: TerrainStyle = { id: 'diorama', elevation: null };
+
 export interface TerrainQuality {
   /** Icosphere subdivision of the coarse (open-sea) mesh. */
   readonly detail: number;
@@ -34,6 +47,14 @@ const PALETTE = {
   jungle: new Color('#3d7a3c'), desert: new Color('#dcb36e'), rock: new Color('#9a8f7c'),
   snow: new Color('#f3f1ea'), tundra: new Color('#a9b48c'), steppe: new Color('#b7b06a'),
   taiga: new Color('#3f7346'), ice: new Color('#e4ecee'), iceShadow: new Color('#c9d9de'),
+};
+/** [ext-03] `refined` palette: the same family, less saturated, no orange deserts (DEV experiment). */
+const REFINED = {
+  deep: new Color('#1d5577'), sea: new Color('#2b7898'), shallow: new Color('#57a9b5'), foam: new Color('#cfe6df'),
+  sand: new Color('#e6d6aa'), grass: new Color('#8fb468'), forest: new Color('#5b8a4d'),
+  jungle: new Color('#4a7f45'), desert: new Color('#d6c194'), rock: new Color('#8f877a'),
+  snow: new Color('#f4f3ee'), tundra: new Color('#a6ad8f'), steppe: new Color('#b6b081'),
+  taiga: new Color('#4c7651'), ice: new Color('#e6edef'), iceShadow: new Color('#cbdadf'),
 };
 const DEG = Math.PI / 180;
 /** Heights above the unit sphere (globe radius = 1). Airport pads sit at 1.0055. */
@@ -62,6 +83,10 @@ export function terrainNoise(v: Position): number {
   return noise(v.x * 3, v.y * 3, v.z * 3) * .55 +
     noise(v.x * 7, v.y * 7, v.z * 7) * .3 +
     noise(v.x * 17, v.y * 17, v.z * 17) * .15;
+}
+/** [ext-03] `refined`: one broad ridge octave only (the 61x octave reads as pixel noise on fine facets). */
+function softRidge(x: number, y: number, z: number): number {
+  return 1 - Math.abs(noise(x * 22, y * 22, z * 22) * 2 - 1);
 }
 function ridge(x: number, y: number, z: number): number {
   const a = 1 - Math.abs(noise(x * 28, y * 28, z * 28) * 2 - 1);
@@ -122,7 +147,9 @@ export function createSample(): SurfaceSample {
 }
 
 /** Sample the terrain fields at a unit vector (writes into `out`). */
-export function sampleSurface(x: number, y: number, z: number, mask: LandMask, out: SurfaceSample): SurfaceSample {
+export function sampleSurface(
+  x: number, y: number, z: number, mask: LandMask, out: SurfaceSample, style: TerrainStyle = DIORAMA_STYLE,
+): SurfaceSample {
   const lat = Math.asin(Math.max(-1, Math.min(1, y))) / DEG;
   const lon = Math.atan2(x, z) / DEG;
   const dist = mask.distanceAt(lon, lat);
@@ -132,14 +159,29 @@ export function sampleSurface(x: number, y: number, z: number, mask: LandMask, o
   out.detail = a > 55 ? noise(x * 47 + 11, y * 47, z * 47) : .5;
   if (dist > 0) {
     const flat = airportFlatten(lon, lat);
-    const relief = mountainAt(lon, lat);
-    const mountain = relief > 0 ? relief * (.45 + .75 * ridge(x, y, z)) * (1 - flat) : 0;
     const shore = smooth(0, .9, dist);
+    if (style.elevation) {
+      // [ext-03] `textured`: real elevation, square-root exaggerated (Himalaya ~0.011, lowland ~0.002).
+      const metres = Math.max(0, style.elevation(lon, lat));
+      out.mountain = Math.sqrt(metres / 8000);
+      out.dry = 0; out.ice = 0;
+      out.height = H.coast + (.0004 + .0052 * Math.sqrt(metres / 1000)) * shore;
+      if (flat > 0) out.height += (Math.min(out.height, H.airport) - out.height) * flat;
+      return out;
+    }
+    const refined = style.id === 'refined';
+    // [ext-03] `refined`: wider, lower ranges broken into massifs and saddles along the ridge line.
+    const relief = refined ? mountainAt(lon, lat, 1.7) * .8 : mountainAt(lon, lat);
+    const mountain = relief > 0 ? relief * (1 - flat) * (refined
+      ? (.5 + .45 * softRidge(x, y, z)) * (.45 + .75 * noise(x * 13 + 2, y * 13, z * 13))
+      : .45 + .75 * ridge(x, y, z)) : 0;
     const hills = H.lowland + H.hills * smooth(.35, .8, n) * (1 - flat);
     // Ice sheets: Greenland and Antarctica are smooth white domes.
     const sheet = lat < -60 ? smooth(-62, -68, lat) : (lon > -75 && lon < -10 && lat > 59) ? smooth(59, 66, lat) : 0;
     out.mountain = mountain;
-    out.dry = drynessAt(lon, lat, noise(x * 9, y * 9, z * 9));
+    out.dry = refined
+      ? drynessAt(lon, lat, noise(x * 9, y * 9, z * 9) * .6 + noise(x * 23 + 3, y * 23, z * 23) * .4, 3)
+      : drynessAt(lon, lat, noise(x * 9, y * 9, z * 9));
     out.ice = Math.max(sheet, a > 72 ? smooth(72, 78, a) : 0);
     out.height = H.coast + (hills - H.coast + mountain * H.mountain + sheet * .006) * shore;
     if (flat > 0) out.height += (Math.min(out.height, H.airport) - out.height) * flat;
@@ -149,9 +191,11 @@ export function sampleSurface(x: number, y: number, z: number, mask: LandMask, o
     const fray = (noise(x * 11, y * 11, z * 11) - .5) * 8 + (noise(x * 29 + 5, y * 29, z * 29) - .5) * 4;
     const pack = lat > 0 ? smooth(78, 80.5, lat + fray) : smooth(-66.5, -69, lat - fray);
     const floes = lat > 0 ? smooth(72.5, 76.5, lat + fray) : smooth(-62.5, -65.5, lat - fray);
-    const ice = Math.max(pack, out.detail > .6 - floes * .12 ? floes : 0);
+    const ice = style.elevation ? 0 : Math.max(pack, out.detail > .6 - floes * .12 ? floes : 0);
     out.mountain = 0; out.dry = 0; out.ice = ice;
-    const sea = H.coast + (H.deep - H.coast) * smooth(0, 3, -dist);
+    // [ext-03] Experimental looks: the sea floor drops below the ocean shell (r = 1.0002) at the coast.
+    const sea = style.id === 'diorama' ? H.coast + (H.deep - H.coast) * smooth(0, 3, -dist)
+      : -.0008 + (H.deep + .0008) * smooth(0, 3, -dist);
     out.height = sea + (H.ice + (out.detail - .5) * .0022 * pack - sea) * smooth(.35, .6, ice);
   }
   return out;
@@ -162,14 +206,18 @@ const S = createSample();
 export function terrainHeight(lon: number, lat: number, mask: LandMask): number {
   return sampleAt(lon, lat, mask, S).height;
 }
-export function sampleAt(lon: number, lat: number, mask: LandMask, out: SurfaceSample): SurfaceSample {
+export function sampleAt(
+  lon: number, lat: number, mask: LandMask, out: SurfaceSample, style: TerrainStyle = DIORAMA_STYLE,
+): SurfaceSample {
   const c = Math.cos(lat * DEG);
-  return sampleSurface(Math.sin(lon * DEG) * c, Math.sin(lat * DEG), Math.cos(lon * DEG) * c, mask, out);
+  return sampleSurface(Math.sin(lon * DEG) * c, Math.sin(lat * DEG), Math.cos(lon * DEG) * c, mask, out, style);
 }
 
 const OUT = new Color();
 /** Biome colour from smooth weights (linear working space), written into a shared Color. */
-export function biomeColor(s: SurfaceSample, h: number): Color {
+export function biomeColor(s: SurfaceSample, h: number, style: TerrainStyle = DIORAMA_STYLE): Color {
+  if (style.id === 'textured') return OUT.setRGB(1, 1, 1);
+  if (style.id === 'refined') return refinedColor(s);
   const a = Math.abs(s.lat), n = s.noise;
   if (s.dist <= 0) {
     if (s.ice > .5) {
@@ -201,6 +249,33 @@ export function biomeColor(s: SurfaceSample, h: number): Color {
   return OUT.multiplyScalar(.96 + n * .05 + (h - H.lowland) * 1.5);
 }
 
+/** [ext-03] `refined` biome colour: wide blends, muted dry lands, clean snowline, coastal foam (per vertex). */
+function refinedColor(s: SurfaceSample): Color {
+  const P = REFINED, a = Math.abs(s.lat), n = s.noise;
+  if (s.dist <= 0) {
+    if (s.ice > .5) {
+      OUT.copy(P.ice).lerp(P.snow, smooth(.5, .85, s.detail));
+      return OUT.lerp(P.iceShadow, smooth(.45, .2, s.detail) * .6 + (1 - s.ice) * .5);
+    }
+    OUT.copy(P.deep).lerp(P.sea, smooth(-3.2, -.6, s.dist) * .8 + (n - .5) * .06);
+    OUT.lerp(P.shallow, smooth(-.9, -.08, s.dist) * .85);
+    return OUT.lerp(P.foam, smooth(-.22, -.02, s.dist) * .55);
+  }
+  if (a < 14) OUT.copy(P.jungle).lerp(P.grass, smooth(6, 16, a) * .6);
+  else OUT.copy(P.grass).lerp(P.forest, smooth(.4, .66, n) * .85);
+  OUT.lerp(P.taiga, smooth(48, 58, a) * (1 - smooth(62, 69, a)));
+  OUT.lerp(P.tundra, smooth(60, 69, a + (n - .5) * 8));
+  if (s.dry > 0) {
+    OUT.lerp(P.steppe, smooth(0, .7, s.dry) * .75);
+    OUT.lerp(P.desert, smooth(.5, 1, s.dry) * .85);
+  }
+  OUT.lerp(P.sand, (1 - smooth(.03, .22, s.dist)) * .5 * (1 - smooth(45, 58, a)));
+  const snowAt = .34 + .3 * (1 - smooth(25, 60, a));
+  OUT.lerp(P.rock, smooth(.08, .26, s.mountain) * (1 - s.ice) * .9);
+  OUT.lerp(P.snow, Math.max(smooth(snowAt, snowAt + .14, s.mountain), s.ice));
+  return OUT.multiplyScalar(.97 + n * .04);
+}
+
 /**
  * Refinement level a vertex asks for (cheap: no noise); an edge splits at depth d when either
  * end or its midpoint wants more than d. Coasts, mountains and the ice edge get the full depth.
@@ -224,13 +299,17 @@ export interface TerrainArrays {
   readonly colors: Uint16Array;
   /** 1 when the triangle's centroid is land. */
   readonly land: Uint8Array;
+  /** [ext-03] Smooth per-vertex normals (experimental looks only; the diorama is flat-shaded). */
+  readonly normals?: Float32Array;
   /** Finest edge length, degrees. */
   readonly finestDeg: number;
   readonly stats: TerrainStats;
 }
 
 /** Builds the terrain arrays (non-indexed, flat colours). Pure function of mask + level. */
-export function buildTerrainArrays(mask: LandMask, level: QualityLevel): TerrainArrays {
+export function buildTerrainArrays(
+  mask: LandMask, level: QualityLevel, style: TerrainStyle = DIORAMA_STYLE,
+): TerrainArrays {
   const started = Date.now();
   const q = TERRAIN_QUALITY[level];
   const finest = 63.435 / (q.detail + 1) / (1 << q.depth); // degrees
@@ -349,12 +428,15 @@ export function buildTerrainArrays(mask: LandMask, level: QualityLevel): Terrain
   // Open water is coloured per vertex (smooth depth gradient across the coarse sea facets, so no
   // blocky shelf patches); land and ice keep one flat colour per facet.
   const seaColor = new Uint16Array(vertexCount * 3);
+  const perVertex = style.id !== 'diorama';
   for (let i = 0; i < vertexCount; i++) {
     if (!used[i]) continue;
-    fh[i] = sampleSurface(fx[i], fy[i], fz[i], mask, tmp).height;
-    if (tmp.dist > 0) tmp.dist = 0;
-    tmp.ice = 0;
-    const c = biomeColor(tmp, fh[i]);
+    fh[i] = sampleSurface(fx[i], fy[i], fz[i], mask, tmp, style).height;
+    if (!perVertex) {
+      if (tmp.dist > 0) tmp.dist = 0;
+      tmp.ice = 0;
+    }
+    const c = biomeColor(tmp, fh[i], style);
     seaColor[i * 3] = Math.round(Math.max(0, Math.min(1, c.r)) * 65535);
     seaColor[i * 3 + 1] = Math.round(Math.max(0, Math.min(1, c.g)) * 65535);
     seaColor[i * 3 + 2] = Math.round(Math.max(0, Math.min(1, c.b)) * 65535);
@@ -365,30 +447,51 @@ export function buildTerrainArrays(mask: LandMask, level: QualityLevel): Terrain
   const colors = new Uint16Array(tris.length * 3);
   const land = new Uint8Array(triangles);
   const center = createSample();
+  // [ext-03] Smooth normals for the experimental looks: area-weighted face normals summed per vertex.
+  let vertexNormals: Float32Array | null = null;
+  if (perVertex) {
+    vertexNormals = new Float32Array(vertexCount * 3);
+    for (let t = 0; t < tris.length; t += 3) {
+      const a = tris[t], b = tris[t + 1], c = tris[t + 2];
+      const ra = 1 + fh[a], rb = 1 + fh[b], rc = 1 + fh[c];
+      const ux = fx[b] * rb - fx[a] * ra, uy = fy[b] * rb - fy[a] * ra, uz = fz[b] * rb - fz[a] * ra;
+      const vx = fx[c] * rc - fx[a] * ra, vy = fy[c] * rc - fy[a] * ra, vz = fz[c] * rc - fz[a] * ra;
+      const nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
+      for (const v of [a, b, c]) { vertexNormals[v * 3] += nx; vertexNormals[v * 3 + 1] += ny; vertexNormals[v * 3 + 2] += nz; }
+    }
+  }
+  const normals = vertexNormals ? new Float32Array(tris.length * 3) : undefined;
   for (let t = 0; t < triangles; t++) {
     const a = tris[t * 3], b = tris[t * 3 + 1], c = tris[t * 3 + 2];
     // Biome and land/sea class come from the facet centroid (flat colour per facet).
     const cx = fx[a] + fx[b] + fx[c], cy = fy[a] + fy[b] + fy[c], cz = fz[a] + fz[b] + fz[c];
     const m = 1 / Math.hypot(cx, cy, cz);
-    sampleSurface(cx * m, cy * m, cz * m, mask, center);
+    sampleSurface(cx * m, cy * m, cz * m, mask, center, style);
     land[t] = center.dist > 0 ? 1 : 0;
-    const color = biomeColor(center, (fh[a] + fh[b] + fh[c]) / 3);
+    const color = biomeColor(center, (fh[a] + fh[b] + fh[c]) / 3, style);
     const r = Math.round(Math.max(0, Math.min(1, color.r)) * 65535);
     const g = Math.round(Math.max(0, Math.min(1, color.g)) * 65535);
     const bl = Math.round(Math.max(0, Math.min(1, color.b)) * 65535);
     for (let j = 0; j < 3; j++) {
       const v = tris[t * 3 + j], o = (t * 3 + j) * 3, radius = 1 + fh[v];
       positions[o] = fx[v] * radius; positions[o + 1] = fy[v] * radius; positions[o + 2] = fz[v] * radius;
-      if (land[t] || center.ice > .5) { colors[o] = r; colors[o + 1] = g; colors[o + 2] = bl; } else {
+      if (normals && vertexNormals) {
+        const nx = vertexNormals[v * 3], ny = vertexNormals[v * 3 + 1], nz = vertexNormals[v * 3 + 2];
+        const k = 1 / (Math.hypot(nx, ny, nz) || 1);
+        normals[o] = nx * k; normals[o + 1] = ny * k; normals[o + 2] = nz * k;
+      }
+      if (!perVertex && (land[t] || center.ice > .5)) { colors[o] = r; colors[o + 1] = g; colors[o + 2] = bl; } else {
         colors[o] = seaColor[v * 3]; colors[o + 1] = seaColor[v * 3 + 1]; colors[o + 2] = seaColor[v * 3 + 2];
       }
     }
   }
-  return { positions, colors, land, finestDeg: finest,
+  return { positions, colors, land, normals, finestDeg: finest,
     stats: { triangles, vertices: usedCount, snapped, buildMs: Date.now() - started } };
 }
 
 /** The terrain's one material (vertex colours, flat facets); shared by every LOD chunk. */
-export function createTerrainMaterial(): MeshStandardMaterial {
-  return new MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: .92, metalness: 0 });
+export function createTerrainMaterial(style: TerrainStyle = DIORAMA_STYLE): MeshStandardMaterial {
+  return new MeshStandardMaterial({
+    vertexColors: true, flatShading: style.id === 'diorama', roughness: .92, metalness: 0,
+  });
 }

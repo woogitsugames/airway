@@ -1069,3 +1069,60 @@ Johannesburg, and the single hub upgrade must go to Sydney; 1 of 1 525 networks 
 give the reference +16 % (31–33) and +15 % (34–35), below 26–30 (+17…18 %). `test:long-haul` pins the curve and one
 tempting decoy per level that must lose. Titles are short enough not to break words on the 320 px board.
 **Status: in force; difficulty is a proposal for the owner to playtest (as D-70).**
+
+## D-170 — Globe look: direction B "Realistyczny" (satellite Earth) (2026-11-03, owner)
+On the owner's Galaxy Fold the low-poly diorama globe read as large angular terrain facets, blocky mountains, orange
+desert blobs, tree noise and a flat sea; the owner asked for "more realistic". Three directions were rendered from
+the game engine itself (DEV flag `?globeLook=`, seed 15 = the owner's screenshot frame: Tehran, Lahore, Tashkent,
+Almaty; day and dusk; Fold 1812×2176 and phone 412×915; `docs/mockups/globe-2026-11/`): A refined diorama, **B
+realistic** (NASA Blue Marble NG colours, Black Marble city lights, NOAA ETOPO5 relief, cloud shell, ocean glint,
+sun-aware atmosphere), C painted in-between. The owner chose **B** ("O ten kierunek jest ok"). The airport objects,
+routes, planes and the paper/airport-artefact UI of D-11 stay; only the globe surface changes. Supersedes the
+globe part of D-11 (world style A "Diorama"); D-05 (not minimal) is met by a real, lit, relief-rich Earth. Plan in
+`docs/mockups/globe-2026-11/PLAN.md`, steps G1–G9 in `docs/NIGHT-BACKLOG.md`. Rejected: A (still reads as a
+diagram where mountains are hand-traced bands), C (muddy at phone size, the simplification removes the realism the
+owner asked for). **Status: accepted by the owner 2026-11-03; implementation pending (G1–G9).**
+
+## D-171 — Bundle `total` budget for the satellite globe (2026-11-03, Claude, ext/03)
+B ships ~1.8 MB of textures (day 4096 + 2048, night 2048 + 1024, elevation, clouds) and the Mapa mode (D-172) ~0.55 MB more. The D-143 `total` budget
+(2 200 kB, measured 1 805 kB) is raised to 4 300 kB in G1; main JS and CSS budgets are unchanged (the look adds
+code, not a chunk). Rejected: streaming the 4096 texture from the network (the app must work offline, Capacitor
+loads from disk) and shipping only 2048 (visibly soft at Fold zoom 2). **Status: proposed; applies with G1.**
+
+## D-172 — Two globe modes, "Satelita" and "Mapa", like a maps app (2026-11-03, owner)
+Owner, after choosing B: "Może zrobić dwa tryby jak w Google Maps. Realistyczny i taki jak mapa." The globe gets two
+surface modes over the same relief mesh: **Satelita** (B, D-170) and **Mapa** (a cartographic surface; its look is
+being chosen from the owner's reference screenshot). Switching swaps only the surface textures (no terrain rebuild),
+so the cost is a second texture set (~0.5–0.8 MB) and one texture upload. Owner's answers: **Satelita is the
+default** on first launch; the mode is switched in **Settings (remembered) and by a luggage tag in the in-game
+dock** for quick changes. The Mapa mode must still respect the forbidden list (no flat pastel background, no
+subway-map look) and D-05: it stays a lit 3D globe with relief. Mapa look: the owner's Google-Maps-like reference,
+rebuilt in our own palette with ETOPO5 hillshade and Natural Earth borders (no copied colours, no labels).
+**Status: accepted by the owner 2026-11-03; plan step G8 (readability via D-175).**
+
+## D-173 — Adaptive quality steps down the globe texture first (2026-11-03, Claude, ext/03)
+With B the largest GPU cost is the 4096×2048 day texture (~43 MB with mips, uncompressed). The D-73 ladder gets a
+first step "day texture 4096 → 2048, cloud shell off" before DPR → 1; `low`/`saver` start on 2048 without clouds.
+If devices still run out of memory, G7b moves to KTX2/ETC1S compression (D-174 follow-up). **Status: proposed; G3/G4.**
+
+## D-174 — The look experiment stays in the tree behind a DEV flag (2026-11-03, Claude, ext/03)
+`src/render/globe/look.ts` (loaded with a DEV-guarded dynamic `import()`, so Vite drops it from the production
+bundle), the `TerrainStyle` parameter in `terrain.ts` (default `diorama` is byte-identical), `?globeLook=` in
+`src/game/world.ts`, `perf:scene --look`, the store-shot fixture knobs `storePlay`/`storeSunDot`, and the textures in
+`dev/globe-look/assets/` (served by the dev server only; `dist/` unchanged). G1–G5 turn the `satellite` path into
+the production globe and delete `refined`/`painted`. **Status: in force until G5.**
+
+## D-175 — Airport pads, routes and planes get redesigned for the new globe (2026-11-03, owner)
+Mockup measurement: on B the D-47 contrast is the best of all directions (day: airports 4.9–5.2:1, tags 9.2–12.9:1;
+today's diorama 2.3:1), but on the first "Mapa" texture the white pads and pale-yellow dashed routes drop to
+1.3–1.7:1. The owner: "Trzeba będzie poprawić te płyty lotnisk itp., bo to brzydko wygląda i nie pasuje." The airport
+objects (pad, runway, terminal, hub ring, curfew barrier), route tubes and plane colours are redesigned so they fit a
+realistic Earth and read ≥ 4.5:1 in both modes (e.g. a dark ink outline / mode-dependent ink in Mapa). It is an owner
+style decision: Claude renders 2–3 variants from the engine first (plan step G9), nothing ships before the owner
+picks one. Shapes keep distinguishing types (D-08, CLAUDE.md). **Status: accepted by the owner; variants pending (G9).**
+
+## D-176 — Satellite texture month: July (2026-11-03, owner)
+The Satelita surface uses Blue Marble NG **July 2004** (green northern hemisphere) instead of November (snow over
+Siberia and Kazakhstan, matching the in-game November sun of D-63). The owner chose July over Claude's recommendation
+(November). Consequence: winter sun on a summer Earth is accepted; the D-63 golden-dusk gate is re-checked in G3.
+**Status: in force (owner).**

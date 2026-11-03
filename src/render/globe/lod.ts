@@ -116,10 +116,14 @@ export function chunkTerrain(arrays: TerrainArrays, level: QualityLevel): Chunke
   const cursor = firstTri.slice();
   const outPositions = new Float32Array(positions.length);
   const outColors = new Uint16Array(colors.length);
+  // [ext-03] Smooth normals only exist for the experimental globe looks (DEV); the diorama is flat-shaded.
+  const normals = arrays.normals;
+  const outNormals = normals ? new Float32Array(normals.length) : null;
   for (let t = 0; t < triangles; t++) {
     const dst = cursor[ids[t]]++ * 9;
     outPositions.set(positions.subarray(t * 9, t * 9 + 9), dst);
     outColors.set(colors.subarray(t * 9, t * 9 + 9), dst);
+    if (normals && outNormals) outNormals.set(normals.subarray(t * 9, t * 9 + 9), dst);
   }
   const chunks: TerrainChunk[] = [];
   const point = new Vector3();
@@ -153,6 +157,7 @@ export function chunkTerrain(arrays: TerrainArrays, level: QualityLevel): Chunke
   const geometry = new BufferGeometry();
   geometry.setAttribute('position', new BufferAttribute(outPositions, 3));
   geometry.setAttribute('color', new BufferAttribute(outColors, 3, true));
+  if (outNormals) geometry.setAttribute('normal', new BufferAttribute(outNormals, 3));
   geometry.boundingSphere = new Sphere(new Vector3(), 1.05);
   return { level, geometry, chunks, triangles, finestDeg: arrays.finestDeg };
 }
@@ -201,6 +206,8 @@ export function createTerrainLod(levels: readonly ChunkedLevel[], material: Mate
       const geometry = new BufferGeometry();
       geometry.setAttribute('position', lvl.geometry.getAttribute('position'));
       geometry.setAttribute('color', lvl.geometry.getAttribute('color'));
+      const normal = lvl.geometry.getAttribute('normal'); // [ext-03] experimental looks only
+      if (normal) geometry.setAttribute('normal', normal);
       geometry.boundingSphere = lvl.geometry.boundingSphere;
       const mesh = new Mesh(geometry, material);
       mesh.name = `AirwayTerrain.${lvl.level}.${i}`;
