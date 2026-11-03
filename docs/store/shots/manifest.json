@@ -17,25 +17,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 00:04 PASAŻERÓW 29 0 0 0 1×",
+   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 23:52 PASAŻERÓW 29 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
-    "routes": 9.39,
-    "airports": 9.04,
-    "planes": 9.18,
-    "tags": 11.88
+    "routes": 9.38,
+    "airports": 9.03,
+    "planes": 9.7,
+    "tags": 11.83
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.446
+    "ratio": 0.445
    },
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 90.4,
+    "meanLuma": 90.5,
     "lumaStd": 79.6,
     "whiteShare": 0,
-    "colours": 338
+    "colours": 335
    }
   },
   {
@@ -46,17 +46,17 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 00:01 PASAŻERÓW 29 0 0 0 1×",
+   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 23:48 PASAŻERÓW 29 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
-    "routes": 9.37,
+    "routes": 9.36,
     "airports": 9.04,
-    "planes": 9.18,
-    "tags": 1.56
+    "planes": 9.5,
+    "tags": 3.48
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.476
+    "ratio": 0.474
    },
    "png": {
     "width": 1346,
@@ -64,7 +64,7 @@
     "meanLuma": 74.2,
     "lumaStd": 67.7,
     "whiteShare": 0,
-    "colours": 325
+    "colours": 337
    }
   },
   {
@@ -75,12 +75,12 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 23:58 PASAŻERÓW 29 0 0 0 1×",
+   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 23:47 PASAŻERÓW 29 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
-    "routes": 9.37,
-    "airports": 9.03,
-    "planes": 9.39,
+    "routes": 9.36,
+    "airports": 9.04,
+    "planes": 9.56,
     "tags": 1.56
    },
    "warmth": {
@@ -91,9 +91,9 @@
     "width": 1536,
     "height": 2048,
     "meanLuma": 72.3,
-    "lumaStd": 65.7,
+    "lumaStd": 65.8,
     "whiteShare": 0,
-    "colours": 329
+    "colours": 331
    }
   },
   {
@@ -104,25 +104,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 17:06 PASAŻERÓW 25 0 0 0 1×",
+   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 16:43 PASAŻERÓW 25 0 0 0 1×",
    "sun": "-70.7@31.2,38.2",
    "contrast": {
-    "routes": 10.13,
-    "airports": 8.85,
-    "planes": 7.65,
-    "tags": 13.26
+    "routes": 7.52,
+    "airports": 6.87,
+    "planes": 7.35,
+    "tags": 9.18
    },
    "warmth": {
-    "gold": 0.081,
-    "ratio": 0.966
+    "gold": 0.085,
+    "ratio": 1.064
    },
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 103.3,
-    "lumaStd": 75.2,
+    "meanLuma": 107.6,
+    "lumaStd": 73.5,
     "whiteShare": 0,
-    "colours": 574
+    "colours": 604
    }
   },
   {
@@ -133,25 +133,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 17:02 PASAŻERÓW 25 0 0 0 1×",
+   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 16:44 PASAŻERÓW 25 0 0 0 1×",
    "sun": "-70.7@31.2,38.2",
    "contrast": {
-    "routes": 10.15,
-    "airports": 9,
-    "planes": 7.6,
-    "tags": 13.25
+    "routes": 7.69,
+    "airports": 7.1,
+    "planes": 7.27,
+    "tags": 1.66
    },
    "warmth": {
-    "gold": 0.101,
-    "ratio": 1.021
+    "gold": 0.077,
+    "ratio": 1.07
    },
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 90.8,
-    "lumaStd": 65.5,
+    "meanLuma": 96.1,
+    "lumaStd": 64.5,
     "whiteShare": 0,
-    "colours": 569
+    "colours": 609
    }
   },
   {
@@ -162,25 +162,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 17:04 PASAŻERÓW 25 0 0 0 1×",
+   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 16:44 PASAŻERÓW 25 0 0 0 1×",
    "sun": "-70.7@31.2,38.2",
    "contrast": {
-    "routes": 10.26,
-    "airports": 9.04,
-    "planes": 7.68,
-    "tags": 1.65
+    "routes": 7.81,
+    "airports": 7.22,
+    "planes": 7.25,
+    "tags": 1.66
    },
    "warmth": {
-    "gold": 0.105,
-    "ratio": 1.008
+    "gold": 0.077,
+    "ratio": 1.06
    },
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 88.2,
-    "lumaStd": 64.1,
+    "meanLuma": 93.9,
+    "lumaStd": 63,
     "whiteShare": 0,
-    "colours": 588
+    "colours": 606
    }
   },
   {
@@ -195,20 +195,20 @@
    "contrast": {
     "routes": 9.52,
     "airports": 9.04,
-    "planes": 9.96,
+    "planes": 10.01,
     "tags": 12.13
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.451
+    "ratio": 0.45
    },
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 156.2,
-    "lumaStd": 65,
+    "meanLuma": 156,
+    "lumaStd": 63.1,
     "whiteShare": 0,
-    "colours": 175
+    "colours": 174
    }
   },
   {
@@ -223,20 +223,20 @@
    "contrast": {
     "routes": 9.49,
     "airports": 9.09,
-    "planes": 9.84,
-    "tags": 12.32
+    "planes": 9.96,
+    "tags": 12.26
    },
    "warmth": {
     "gold": 0.003,
-    "ratio": 0.479
+    "ratio": 0.48
    },
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 156.3,
-    "lumaStd": 63.9,
+    "meanLuma": 158,
+    "lumaStd": 61.5,
     "whiteShare": 0,
-    "colours": 138
+    "colours": 137
    }
   },
   {
@@ -251,18 +251,18 @@
    "contrast": {
     "routes": 9.5,
     "airports": 9.1,
-    "planes": 10.01,
+    "planes": 9.95,
     "tags": 1.58
    },
    "warmth": {
     "gold": 0.003,
-    "ratio": 0.469
+    "ratio": 0.47
    },
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 105.3,
-    "lumaStd": 76.6,
+    "meanLuma": 105.6,
+    "lumaStd": 76.4,
     "whiteShare": 0,
     "colours": 142
    }
@@ -275,11 +275,11 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "TYDZIEŃ 02 DZIEŃ 3/3 GODZ. 14:38 PASAŻERÓW 59 1 0 0 1× SIATKA WSTRZYMANA ODLOTY · BGW LOT / CEL BRAMKA STATUS AW101 · AMM A1 ODWOŁANY ATC · RAPORT ZDARZENIA Dowiezieni pasażerowie: 59 Ukończone tygodnie: 1 TRZY GŁÓWNE PRZYCZYNY 25 pasażerów nie miało trasy do regionu docelowego. 62% oczekujących chciało dotrzeć do Europy Północnej (16 osób). Poczekalnia osiągnęła limit: 26 z 24 miejsc. NOWY REKORD LOKALNY JESZCZE RAZ · TEN SAM ŚWIAT NOWY ŚWIAT MENU",
+   "text": "TYDZIEŃ 02 DZIEŃ 3/3 GODZ. 14:38 PASAŻERÓW 59 1 0 0 1× SIATKA WSTRZYMANA ODLOTY · BGW LOT / CEL BRAMKA STATUS AW101 · AMM A1 ODWOŁANY ATC · RAPORT ZDARZENIA Dowiezieni pasażerowie: 59 Ukończone tygodnie: 1 TRZY GŁÓWNE PRZYCZYNY 25 pasażerów nie miało trasy do regionu docelowego. 62% oczekujących chciało dotrzeć do Europy Północnej (16 osób). Poczekalnia przepełniona: 26 osób na 24 miejsca. NOWY REKORD LOKALNY JESZCZE RAZ · TEN SAM ŚWIAT NOWY ŚWIAT MENU",
    "contrast": {
     "routes": 4.42,
     "airports": 4.14,
-    "planes": 3.02,
+    "planes": 3.29,
     "tags": null
    },
    "warmth": {
@@ -289,7 +289,7 @@
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 148.9,
+    "meanLuma": 148.8,
     "lumaStd": 92,
     "whiteShare": 0,
     "colours": 203
@@ -303,7 +303,7 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "TYDZIEŃ 02 DZIEŃ 3/3 GODZ. 14:38 PASAŻERÓW 59 1 0 0 1× SIATKA WSTRZYMANA ODLOTY · BGW LOT / CEL BRAMKA STATUS AW101 · AMM A1 ODWOŁANY ATC · RAPORT ZDARZENIA Dowiezieni pasażerowie: 59 Ukończone tygodnie: 1 TRZY GŁÓWNE PRZYCZYNY 25 pasażerów nie miało trasy do regionu docelowego. 62% oczekujących chciało dotrzeć do Europy Północnej (16 osób). Poczekalnia osiągnęła limit: 26 z 24 miejsc. NOWY REKORD LOKALNY JESZCZE RAZ · TEN SAM ŚWIAT NOWY ŚWIAT MENU",
+   "text": "TYDZIEŃ 02 DZIEŃ 3/3 GODZ. 14:38 PASAŻERÓW 59 1 0 0 1× SIATKA WSTRZYMANA ODLOTY · BGW LOT / CEL BRAMKA STATUS AW101 · AMM A1 ODWOŁANY ATC · RAPORT ZDARZENIA Dowiezieni pasażerowie: 59 Ukończone tygodnie: 1 TRZY GŁÓWNE PRZYCZYNY 25 pasażerów nie miało trasy do regionu docelowego. 62% oczekujących chciało dotrzeć do Europy Północnej (16 osób). Poczekalnia przepełniona: 26 osób na 24 miejsca. NOWY REKORD LOKALNY JESZCZE RAZ · TEN SAM ŚWIAT NOWY ŚWIAT MENU",
    "contrast": {
     "routes": 4.39,
     "airports": 4.09,
@@ -331,11 +331,11 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "TYDZIEŃ 02 DZIEŃ 3/3 GODZ. 14:38 PASAŻERÓW 59 1 0 0 1× SIATKA WSTRZYMANA ODLOTY · BGW LOT / CEL BRAMKA STATUS AW101 · AMM A1 ODWOŁANY ATC · RAPORT ZDARZENIA Dowiezieni pasażerowie: 59 Ukończone tygodnie: 1 TRZY GŁÓWNE PRZYCZYNY 25 pasażerów nie miało trasy do regionu docelowego. 62% oczekujących chciało dotrzeć do Europy Północnej (16 osób). Poczekalnia osiągnęła limit: 26 z 24 miejsc. NOWY REKORD LOKALNY JESZCZE RAZ · TEN SAM ŚWIAT NOWY ŚWIAT MENU",
+   "text": "TYDZIEŃ 02 DZIEŃ 3/3 GODZ. 14:38 PASAŻERÓW 59 1 0 0 1× SIATKA WSTRZYMANA ODLOTY · BGW LOT / CEL BRAMKA STATUS AW101 · AMM A1 ODWOŁANY ATC · RAPORT ZDARZENIA Dowiezieni pasażerowie: 59 Ukończone tygodnie: 1 TRZY GŁÓWNE PRZYCZYNY 25 pasażerów nie miało trasy do regionu docelowego. 62% oczekujących chciało dotrzeć do Europy Północnej (16 osób). Poczekalnia przepełniona: 26 osób na 24 miejsca. NOWY REKORD LOKALNY JESZCZE RAZ · TEN SAM ŚWIAT NOWY ŚWIAT MENU",
    "contrast": {
     "routes": 4.39,
     "airports": 4.09,
-    "planes": 2.98,
+    "planes": 2.89,
     "tags": null
    },
    "warmth": {
@@ -384,7 +384,7 @@
     "meanLuma": 91.9,
     "lumaStd": 69.8,
     "whiteShare": 0,
-    "colours": 641
+    "colours": 638
    }
   },
   {
@@ -402,7 +402,7 @@
     "meanLuma": 93.4,
     "lumaStd": 69.5,
     "whiteShare": 0,
-    "colours": 667
+    "colours": 666
    }
   },
   {
@@ -413,25 +413,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "WEEK 01 DAY 2/3 TIME 00:05 PASSENGERS 29 0 0 0 1×",
+   "text": "WEEK 01 DAY 2/3 TIME 23:47 PASSENGERS 29 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
-    "routes": 9.4,
-    "airports": 9.04,
-    "planes": 9.08,
-    "tags": 11.95
+    "routes": 9.38,
+    "airports": 9.03,
+    "planes": 9.61,
+    "tags": 11.83
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.446
+    "ratio": 0.445
    },
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 91.2,
-    "lumaStd": 80.1,
+    "meanLuma": 90.5,
+    "lumaStd": 79.6,
     "whiteShare": 0,
-    "colours": 348
+    "colours": 339
    }
   },
   {
@@ -442,23 +442,23 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "WEEK 01 DAY 2/3 TIME 00:06 PASSENGERS 29 0 0 0 1×",
+   "text": "WEEK 01 DAY 2/3 TIME 23:47 PASSENGERS 29 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
-    "routes": 9.37,
-    "airports": 9.04,
-    "planes": 8.88,
-    "tags": 1.61
+    "routes": 9.36,
+    "airports": 9.03,
+    "planes": 9.5,
+    "tags": 11.33
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.475
+    "ratio": 0.474
    },
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 74.5,
-    "lumaStd": 68,
+    "meanLuma": 74.3,
+    "lumaStd": 67.7,
     "whiteShare": 0,
     "colours": 329
    }
@@ -471,25 +471,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "WEEK 01 DAY 2/3 TIME 00:10 PASSENGERS 29 0 0 0 1×",
+   "text": "WEEK 01 DAY 2/3 TIME 23:47 PASSENGERS 29 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
-    "routes": 9.39,
-    "airports": 9.05,
-    "planes": 9.04,
+    "routes": 9.36,
+    "airports": 9.04,
+    "planes": 9.5,
     "tags": 1.56
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.466
+    "ratio": 0.465
    },
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 72.5,
-    "lumaStd": 66,
+    "meanLuma": 72.3,
+    "lumaStd": 65.8,
     "whiteShare": 0,
-    "colours": 336
+    "colours": 334
    }
   },
   {
@@ -500,25 +500,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "WEEK 01 DAY 2/3 TIME 17:04 PASSENGERS 25 0 0 0 1×",
+   "text": "WEEK 01 DAY 2/3 TIME 16:43 PASSENGERS 25 0 0 0 1×",
    "sun": "-70.7@31.2,38.2",
    "contrast": {
-    "routes": 10.13,
-    "airports": 8.86,
-    "planes": 7.6,
-    "tags": 13.26
+    "routes": 7.38,
+    "airports": 6.77,
+    "planes": 7.37,
+    "tags": 9.18
    },
    "warmth": {
-    "gold": 0.081,
-    "ratio": 0.965
+    "gold": 0.086,
+    "ratio": 1.07
    },
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 103.8,
-    "lumaStd": 75,
+    "meanLuma": 107.7,
+    "lumaStd": 73.5,
     "whiteShare": 0,
-    "colours": 583
+    "colours": 606
    }
   },
   {
@@ -529,25 +529,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "WEEK 01 DAY 2/3 TIME 17:04 PASSENGERS 25 0 0 0 1×",
+   "text": "WEEK 01 DAY 2/3 TIME 16:43 PASSENGERS 25 0 0 0 1×",
    "sun": "-70.7@31.2,38.2",
    "contrast": {
-    "routes": 10.21,
-    "airports": 9.03,
-    "planes": 7.79,
-    "tags": 13.35
+    "routes": 7.72,
+    "airports": 7.14,
+    "planes": 7.29,
+    "tags": 1.66
    },
    "warmth": {
-    "gold": 0.104,
-    "ratio": 1.018
+    "gold": 0.077,
+    "ratio": 1.068
    },
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 90.4,
-    "lumaStd": 65.7,
+    "meanLuma": 96,
+    "lumaStd": 64.6,
     "whiteShare": 0,
-    "colours": 573
+    "colours": 606
    }
   },
   {
@@ -558,25 +558,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "WEEK 01 DAY 2/3 TIME 17:04 PASSENGERS 25 0 0 0 1×",
+   "text": "WEEK 01 DAY 2/3 TIME 16:44 PASSENGERS 25 0 0 0 1×",
    "sun": "-70.7@31.2,38.2",
    "contrast": {
-    "routes": 10.19,
-    "airports": 9.03,
-    "planes": 7.75,
-    "tags": 1.65
+    "routes": 7.88,
+    "airports": 7.26,
+    "planes": 7.25,
+    "tags": 1.66
    },
    "warmth": {
-    "gold": 0.107,
-    "ratio": 1.006
+    "gold": 0.077,
+    "ratio": 1.061
    },
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 88.6,
-    "lumaStd": 64,
+    "meanLuma": 93.7,
+    "lumaStd": 63,
     "whiteShare": 0,
-    "colours": 580
+    "colours": 604
    }
   },
   {
@@ -591,7 +591,7 @@
    "contrast": {
     "routes": 9.52,
     "airports": 9.04,
-    "planes": 9.97,
+    "planes": 10.01,
     "tags": 12.13
    },
    "warmth": {
@@ -601,10 +601,10 @@
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 153.7,
-    "lumaStd": 65.1,
+    "meanLuma": 156,
+    "lumaStd": 62.7,
     "whiteShare": 0,
-    "colours": 177
+    "colours": 181
    }
   },
   {
@@ -619,20 +619,20 @@
    "contrast": {
     "routes": 9.49,
     "airports": 9.09,
-    "planes": 9.87,
-    "tags": 12.32
+    "planes": 9.96,
+    "tags": 12.26
    },
    "warmth": {
     "gold": 0.003,
-    "ratio": 0.479
+    "ratio": 0.48
    },
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 156.7,
-    "lumaStd": 63.6,
+    "meanLuma": 158.5,
+    "lumaStd": 61.2,
     "whiteShare": 0,
-    "colours": 139
+    "colours": 138
    }
   },
   {
@@ -647,7 +647,7 @@
    "contrast": {
     "routes": 9.5,
     "airports": 9.1,
-    "planes": 9.94,
+    "planes": 9.95,
     "tags": 1.58
    },
    "warmth": {
@@ -657,10 +657,10 @@
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 104.7,
-    "lumaStd": 76.5,
+    "meanLuma": 105.1,
+    "lumaStd": 76.3,
     "whiteShare": 0,
-    "colours": 142
+    "colours": 143
    }
   },
   {
@@ -671,11 +671,11 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "WEEK 02 DAY 3/3 TIME 14:38 PASSENGERS 59 1 0 0 1× NETWORK CLOSED DEPARTURES · BGW FLIGHT / DEST. GATE STATUS AW101 · AMM A1 CANCELLED ATC · INCIDENT REPORT Passengers delivered: 59 Weeks completed: 1 THREE KEY CAUSES 25 passengers had no available route to their destination region. 62% of waiting passengers were headed to Northern Europe (16 people). The waiting area reached 26 of 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
+   "text": "WEEK 02 DAY 3/3 TIME 14:38 PASSENGERS 59 1 0 0 1× NETWORK CLOSED DEPARTURES · BGW FLIGHT / DEST. GATE STATUS AW101 · AMM A1 CANCELLED ATC · INCIDENT REPORT Passengers delivered: 59 Weeks completed: 1 THREE KEY CAUSES 25 passengers had no available route to their destination region. 62% of waiting passengers were headed to Northern Europe (16 people). The waiting area was full: 26 people for 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
    "contrast": {
     "routes": 4.42,
     "airports": 4.14,
-    "planes": 3.02,
+    "planes": 3.29,
     "tags": null
    },
    "warmth": {
@@ -685,7 +685,7 @@
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 144.6,
+    "meanLuma": 144.4,
     "lumaStd": 90.6,
     "whiteShare": 0,
     "colours": 202
@@ -699,7 +699,7 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "WEEK 02 DAY 3/3 TIME 14:38 PASSENGERS 59 1 0 0 1× NETWORK CLOSED DEPARTURES · BGW FLIGHT / DEST. GATE STATUS AW101 · AMM A1 CANCELLED ATC · INCIDENT REPORT Passengers delivered: 59 Weeks completed: 1 THREE KEY CAUSES 25 passengers had no available route to their destination region. 62% of waiting passengers were headed to Northern Europe (16 people). The waiting area reached 26 of 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
+   "text": "WEEK 02 DAY 3/3 TIME 14:38 PASSENGERS 59 1 0 0 1× NETWORK CLOSED DEPARTURES · BGW FLIGHT / DEST. GATE STATUS AW101 · AMM A1 CANCELLED ATC · INCIDENT REPORT Passengers delivered: 59 Weeks completed: 1 THREE KEY CAUSES 25 passengers had no available route to their destination region. 62% of waiting passengers were headed to Northern Europe (16 people). The waiting area was full: 26 people for 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
    "contrast": {
     "routes": 4.39,
     "airports": 4.09,
@@ -713,7 +713,7 @@
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 124.7,
+    "meanLuma": 124.6,
     "lumaStd": 85.6,
     "whiteShare": 0,
     "colours": 195
@@ -727,11 +727,11 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "WEEK 02 DAY 3/3 TIME 14:38 PASSENGERS 59 1 0 0 1× NETWORK CLOSED DEPARTURES · BGW FLIGHT / DEST. GATE STATUS AW101 · AMM A1 CANCELLED ATC · INCIDENT REPORT Passengers delivered: 59 Weeks completed: 1 THREE KEY CAUSES 25 passengers had no available route to their destination region. 62% of waiting passengers were headed to Northern Europe (16 people). The waiting area reached 26 of 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
+   "text": "WEEK 02 DAY 3/3 TIME 14:38 PASSENGERS 59 1 0 0 1× NETWORK CLOSED DEPARTURES · BGW FLIGHT / DEST. GATE STATUS AW101 · AMM A1 CANCELLED ATC · INCIDENT REPORT Passengers delivered: 59 Weeks completed: 1 THREE KEY CAUSES 25 passengers had no available route to their destination region. 62% of waiting passengers were headed to Northern Europe (16 people). The waiting area was full: 26 people for 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
    "contrast": {
     "routes": 4.39,
     "airports": 4.09,
-    "planes": 4.21,
+    "planes": 2.89,
     "tags": null
    },
    "warmth": {
@@ -762,7 +762,7 @@
     "meanLuma": 83.1,
     "lumaStd": 69,
     "whiteShare": 0,
-    "colours": 628
+    "colours": 621
    }
   },
   {
@@ -778,9 +778,9 @@
     "width": 1346,
     "height": 1682,
     "meanLuma": 91.9,
-    "lumaStd": 69.8,
+    "lumaStd": 69.9,
     "whiteShare": 0,
-    "colours": 640
+    "colours": 635
    }
   },
   {
@@ -798,7 +798,7 @@
     "meanLuma": 93.4,
     "lumaStd": 69.5,
     "whiteShare": 0,
-    "colours": 661
+    "colours": 668
    }
   }
  ]
