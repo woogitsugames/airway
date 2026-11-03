@@ -24,7 +24,7 @@ import { startSession, type GameSession, type RunMode, type SessionScreen } from
 import { mountTutorial } from './game/tutorial';
 import { TUTORIAL_KEY } from './game/tutorial/controller';
 import { createWorld, type World } from './game/world';
-import { getLanguage, t } from './i18n';
+import { getLanguage, setPseudoLocale, t } from './i18n';
 import { configureHaptics, createDefaultStorage, GameLifecycle, shareDailyResult, type KeyValueStorage } from './platform';
 import { initializeAccessibility } from './ui/a11y';
 import { readBestRecord } from './ui/gameover/storage';
@@ -50,6 +50,8 @@ const STORE_SHOT_PLAY_TICKS = 1500;
  * (on seed 0xA1A1: hour angle −70.7° at 31.2°E 38.2°N, about 17:05 on the boarding pass).
  */
 const STORE_GAME_SUN_DOT = 0.05;
+
+if (import.meta.env.DEV && query.has('pseudo')) setPseudoLocale(true); // [night-10p] layout check only
 
 // The airport-model fixture lives in dev/world.html (render agent, shared world renderer).
 if (import.meta.env.DEV && query.get('preview') === 'gameover') {

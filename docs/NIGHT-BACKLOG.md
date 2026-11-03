@@ -252,6 +252,13 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
 - [x] N10o **Store shots refreshed (service row)** — the 30 store PNGs' `menu` scene still showed the old last
       board row after N10n (Settings alone); `store:shots` regenerated, `test:store-shots` checks them.
 
+- [x] N10p **Localisation robustness: pseudo-locale audit** — a DEV-only `?pseudo` stretches every translated string
+      ~40 % (doubled accented vowels, `[…]`), like German/Finnish copy would. `e2e/pseudo-locale.mjs` audits the
+      departure board, settings, logbook, puzzle board, pause sheet, weekly upgrade board and game over at 360×640
+      (PL, EN) and 915×412 (EN): no text cut by an overflow box, nothing outside the viewport, ≥ 48 px buttons.
+      Found 3/21: the cargo label kicker "FREIGHT · SLOT+2" was cut by an ellipsis; it now wraps after the " · ".
+      `src/i18n/pseudo.ts`.
+
 ## Log
 <!-- one line per finished item: date UTC · item · PR · gate summary -->
 - 2026-11-03 · N1 puzzles 16–30 (D-70) · night/01-puzzles · test:fast 42/42, build ok, e2e:smoke 9/9, ui:matrix 32/32, test:puzzles levels=30 cases=168 failed=0 (merged tree with #40, #42)

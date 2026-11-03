@@ -31,7 +31,10 @@ function cargoLabel(model: CardModel, index: number): { card: HTMLButtonElement;
   window.setAttribute('aria-hidden', 'true');
   const body = span('airway-upgrade-body');
   const heading = span('airway-upgrade-heading');
-  heading.append(span('airway-upgrade-code', `${t('upgrade.freight')} · ${model.code}`), span('airway-upgrade-count', model.counter));
+  // [night-10p] Two unbreakable pieces: a longer translation wraps after the " · " instead of being cut by an ellipsis.
+  const code = span('airway-upgrade-code');
+  code.append(span('', `${t('upgrade.freight')} ·`), ' ', span('', model.code));
+  heading.append(code, span('airway-upgrade-count', model.counter));
   const title = span('airway-upgrade-title', model.title);
   // [task-37] Longest word (soft hyphens excluded) drives the fit-to-width font size in upgrade.css.
   title.style.setProperty('--title-chars', String(Math.max(...model.title.replace(/\u00AD/g, '').split(/\s+/).map((w) => w.length))));
