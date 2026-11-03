@@ -97,6 +97,16 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
 - [x] N7t **Airport pick sign beside the pass in landscape** — N7n left the pick mode as it was: on 915×412 the
       sign sat at 86–136 px across the globe, over airport tags in the upper band where the player must tap. It
       now sits beside the boarding pass as on the board.
+- [x] N7u **Airport-pick sign fits beside the pass** — N7t leftover, worse than reported: the instruction shared
+      one row with the week and Back, so on 844/740 px landscape it got 11/0 px and the sign grew to 84–117 px
+      (pass: 60 px); on 360 px portrait PL it took 4 lines. The week now sits small above the instruction; below
+      880 px landscape Back keeps its arrow only. New `e2e/pick-sign.mjs` (`test:e2e:pick-sign`, in `test:ci`).
+- [ ] N7v **"Automatyczna" at 320 dp** — the settings select is tight on the smallest phones; audit at 320×568.
+- [ ] N7w **Fair balance bot after "+2 slots"** — the DEV bot loses when it takes "+2 slots" in week 1 (it adds
+      no aircraft); improve `src/game/dev/bot-policy.ts` so `test:balance` is a fair signal; report the numbers,
+      no game-parameter retune without an owner question.
+- [ ] N7x **Long Playwright play-throughs** — 20+ min runs at 1×/4×, 412×915 and 915×412, PL+EN, looking for
+      bugs, softlocks and unclear states; regression specs for anything found.
 - [ ] N7 When the queue is empty: pick the most valuable next improvement from `docs/HANDOVER*.md`, PR "Known issues"
       sections and the forbidden list review of current screenshots; add it here first, then do it.
 
@@ -130,3 +140,4 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
 - 2026-11-03 · N7r plural leftovers · night/07r-plural-leftovers · test:fast 48/48, build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:puzzles 34/34, test:format 11/11, test:i18n keys=300
 - 2026-11-03 · N7s secondary screens fit · night/07s-screens-fit · test:fast 48/48, build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:tutorial 21/21, test:e2e:screens-fit 18/18 (17/18 on the old settings grid)
 - 2026-11-03 · N7t pick sign beside the pass · night/07t-pick-sign · test:fast 48/48, build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:upgrade-picks 10/10, test:hud-targets 300/300, shots:39 8/8
+- 2026-11-03 · N7u airport-pick sign fits beside the pass · night/07u-pick-sign-height · test:fast 48/48, build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:upgrade-picks 10/10, test:hud-targets 300/300, test:e2e:pick-sign 10/10 (1/10 on the old CSS), shots:39 8/8

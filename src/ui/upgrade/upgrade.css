@@ -165,7 +165,7 @@
   background: transparent; align-items: flex-start; justify-content: flex-start; pointer-events: none;
   padding-top: calc(86px + env(safe-area-inset-top));
 }
-.airway-upgrade-open.is-picking-hub .airway-upgrade { width: auto; }
+.airway-upgrade-open.is-picking-hub .airway-upgrade { width: 100%; } /* [night-07u] was auto: the sign's % max-width needs a definite box */
 /* [task-39] Back from the airport pick: a black wayfinding tile set into the yellow sign (D-49). The
    overlay lets taps through to the globe, so the tile takes them back; 48 px minimum target. */
 .airway-upgrade-back {
@@ -188,6 +188,15 @@
   text-transform: uppercase;
   cursor: pointer;
 }
+/* [night-07u] Airport pick: the week sits small above the instruction, both beside the Back tile, so the
+   instruction gets the sign's full text width instead of the strip left over beside a 26–34 px week (it was
+   squeezed to 0–66 px and grew the sign to 4–6 lines on 740–915 px landscape and 360 px portrait). */
+.airway-upgrade-open.is-picking-hub .airway-upgrade-sign {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 14px; row-gap: 2px; align-items: center;
+}
+.airway-upgrade-open.is-picking-hub .airway-upgrade-back { grid-row: 1 / span 2; }
+.airway-upgrade-open.is-picking-hub .airway-upgrade-week { grid-column: 2; align-self: end; font-size: 20px; }
+.airway-upgrade-open.is-picking-hub .airway-upgrade-sub { grid-column: 2; align-self: start; }
 .airway-upgrade-back-arrow { width: 24px; height: 24px; flex: none; fill: currentColor; }
 .airway-upgrade-back:active { background: #3a3c3e; }
 .airway-upgrade-back:focus-visible { outline: 3px solid #1c1e20; outline-offset: 3px; }
@@ -218,6 +227,12 @@
   .airway-upgrade-stamp { margin-top: 6px; }
   /* [night-07t] The airport pick too: the sign beside the pass leaves the low globe band free for tapping. */
   .airway-upgrade-open.is-picking-hub { padding-top: calc(10px + env(safe-area-inset-top)); }
+}
+/* [night-07u] Narrow phone landscape: the Back tile keeps its arrow only (its aria-label still names it), so the
+   instruction keeps one or two lines beside the pass. */
+@media (min-width: 720px) and (max-width: 879px) and (max-height: 520px) {
+  .airway-upgrade-open.is-picking-hub .airway-upgrade-back { padding: 0 12px; }
+  .airway-upgrade-open.is-picking-hub .airway-upgrade-back-text { display: none; }
 }
 
 /* [task-37] Fit-to-width: the longest word of the title (--title-chars, set in index.ts; Overpass 800
