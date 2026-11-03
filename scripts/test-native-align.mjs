@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// [night-12e] D-94 16 KB native-library guard (R1m) on synthetic bundles: no libs, aligned and misaligned 64-bit ELF
+// [night-12e] D-98 16 KB native-library guard (R1m) on synthetic bundles: no libs, aligned and misaligned 64-bit ELF
 // LOAD segments, 32-bit libraries (listed, not required), stored APK entries on and off a 16 KB boundary,
 // compressed entries, corrupt input. When the Android SDK's zipalign is installed, its `-c -P 16` verdict on the
 // same APKs must agree. Deterministic (fixed bytes, no clock).

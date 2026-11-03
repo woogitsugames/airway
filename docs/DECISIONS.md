@@ -680,7 +680,40 @@ Android skins hide it) can now still the game. Rejected: a three-way "system / o
 for a choice the hint explains), a catch-all `* { animation: none }` rule (changes the timing of every screen and
 e2e suite at once). **Status: in force (N11g, `test:motion` 8 cases, `test:e2e:reduce-motion` 3 cases).**
 
-## D-93 — The server replay ends at the game over; endTick must be the game-over tick (2026-11-03, Claude, night N12d)
+## D-93 — Leaderboard data can be deleted from inside the app (2026-11-03, owner, Q-41 → A)
+Settings gain a "Delete my leaderboard data" action that removes the player's board entries and the anonymous
+Firebase account; e-mail stays as the web path that Google Play's data-deletion form needs. Extends D-77 (90-day TTL +
+e-mail). Reason: Apple 5.1.1(v) requires account deletion, guest accounts included, to start in the app; e-mail alone
+risks rejection. Rejected: e-mail only (B), first iOS release without leaderboards (C). Unblocks R1a.
+**Status: to implement (R1a).**
+
+## D-94 — Google Play organisation account (2026-11-03, owner, Q-42 → B)
+Airway is published from a Google Play organisation account (D-U-N-S number, the company from Q-01), which is exempt
+from the personal-account rule of a closed test with ≥ 12 testers × 14 days before production. A closed test is still
+run, as a playtest (R1o, Q-52). The DSA trader declaration (address and contact visible in the EU) applies.
+Rejected: personal account + mandatory closed test (A).
+**Status: decided (owner action: D-U-N-S and Play Console organisation account).**
+
+## D-95 — Week 1 is fair: new airports within reach, pace slightly faster (2026-11-03, owner, Q-51 → B)
+In week 1 (before the first weekly board, where the first widebody can be taken) new airports appear only within
+2,500 km of an active airport, so no loss is one the player could not have answered. To keep the session target, the
+pace gets slightly faster (e.g. more frequent airports) so the bot median stays inside 10–18 min (D-79). Reason: after
+N12a 5 of 50 bot runs were still lost in week 1 at an airport farther than 2,500 km from every other one. Rejected:
+leave the rules (A), widen the target to 10–20 min (C).
+**Status: to implement (sim spawner + `test:balance`).**
+
+## D-96 — Post-launch languages, distribution and launch plan (2026-11-03, owner, Q-43 → A, Q-44 → A, Q-48 → A)
+- **Languages:** after launch wave 1 adds DE, FR, ES and PT-BR (no technical change), then JA (an OFL CJK typeface,
+  a few MB). Store listings first (R1k), then the game with a native-speaker review.
+- **Distribution:** worldwide except mainland China (Apple needs an ISBN/ICP licence there; Google Play is not
+  available).
+- **Launch plan:** the T−12 weeks plan from R2 (`docs/LAUNCH.md`, R2f): closed test → iOS pre-order / Play
+  pre-registration (≤ 90 days) → launch, Apple featuring nomination 6–12 weeks before. Showcases (Big Indie Pitch
+  Mobile at PG Connects London, Digital Dragons 2027) only once a playable build exists.
+Rejected: JA at launch, EU + UK + US only, no showcases or a silent launch.
+**Status: decided (R2f writes `docs/LAUNCH.md`).**
+
+## D-97 — The server replay ends at the game over; endTick must be the game-over tick (2026-11-03, Claude, night N12d) — merged as D-93 in PR #130, renumbered
 `verifyDailySubmission` replays with `Sim.replay(..., stopAtEnd = true)`: the loop stops after the tick on which the
 world reaches `over` (or `won`), and a submission whose `endTick` is not exactly that tick is `malformed` (one tick
 early stays `not_finished`). Before, a finished run sent with `endTick` = 30 weeks replayed a dead world for the whole
@@ -692,7 +725,7 @@ container: bot daily runs 30–48 ms per game week (a 30-week run ~1.4 s), a 5 0
 and the client shows any rejection the same way); shortening `MAX_REPLAY_TICKS` (would cap real long runs).
 **Status: in force (N12d, `test:replay-cost` 7 checks).**
 
-## D-94 — Store-requirement guards: target-API floor and 16 KB native alignment (2026-11-03, Claude, night N12e)
+## D-98 — Store-requirement guards: target-API floor and 16 KB native alignment (2026-11-03, Claude, night N12e) — merged as D-94 in PR #131, renumbered
 `test:android-config` asserts Play's target-API floor numerically (`targetSdkVersion` ≥ `PLAY_MIN_TARGET_SDK` = 36,
 the rule for new apps and updates from 31.08.2026; `compileSdkVersion` ≥ target; `app/build.gradle` reads the value
 from `variables.gradle` only). The old exact-string check (`targetSdkVersion = 36`) would have blocked next year's

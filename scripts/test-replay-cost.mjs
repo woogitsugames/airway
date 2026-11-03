@@ -1,5 +1,5 @@
-// [night-12d] D-93 replay-cost guard for the daily leaderboard (R3c). The server replays every submitted journal
-// (D-66); before D-93 the replay kept ticking a finished world up to the claimed endTick, so a finished run sent
+// [night-12d] D-97 replay-cost guard for the daily leaderboard (R3c). The server replays every submitted journal
+// (D-66); before D-97 the replay kept ticking a finished world up to the claimed endTick, so a finished run sent
 // with endTick = 30 weeks was accepted with `weeks: 30` and cost a 30-week replay. This suite checks that inflated
 // end ticks are rejected, that honest bot runs (6 daily seeds) still verify with unchanged hashes, and that the
 // replay stays inside a time budget per game week and for a dense journal near MAX_JOURNAL_ENTRIES.

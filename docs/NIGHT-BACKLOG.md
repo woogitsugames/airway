@@ -405,7 +405,7 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       `Library/NoCloud`). `test:android-config` +4 checks (14/18 on the old manifest), new `test:install-identity`
       6/6 (in `test:fast`). Resources pass `aapt2 compile`; Gradle lint and a device restore could not run here
       (Maven 429, no device) — `docs/ANDROID.md` lists the `bmgr` check.
-- [x] N12d **Server replay ends at the game over (R3c, D-93)** — `Sim.replay` kept ticking a finished world up to
+- [x] N12d **Server replay ends at the game over (R3c, D-97)** — `Sim.replay` kept ticking a finished world up to
       the claimed `endTick`, so a finished daily run sent with `endTick` = 30 weeks replayed a dead world for the
       whole budget and was stored with `weeks: 30`. `verifyDailySubmission` now replays with `stopAtEnd` (new optional
       `Sim.replay` argument; default unchanged for saves/undo/tests) and requires `endTick` to equal the game-over tick
@@ -414,13 +414,18 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       end ticks, empty 30-week claim, cost budgets — measured 30–48 ms per game week (30-week projection ~1.4 s),
       dense 5 000-command journal ~0.2 s. Note: an empty journal never ends (the world waits on the week-1 board),
       so it was already `not_finished`, not accepted as the R3c text assumed.
-- [x] N12e **Store-requirement guards (R1m, D-94)** — `test:android-config` now fails when `targetSdkVersion` is
+- [x] N12e **Store-requirement guards (R1m, D-98)** — `test:android-config` now fails when `targetSdkVersion` is
       below Play's floor (`PLAY_MIN_TARGET_SDK` = 36, raise each August) or `compileSdk` < target, and no longer pins
       target/compile to exactly 36 (that blocked the yearly bump). Every `npm run android*` build checks its APK/AAB
       with the new `scripts/native-align.mjs` (pure Node: ZIP directory + ELF program headers): 64-bit `.so` LOAD
       segments ≥ 16 KB, stored APK entries on a 16 KB boundary; release builds fail on a misaligned library, and the
       web-only app reports "no native libs". New `test:native-align` (in `test:fast`) on synthetic bundles, with a
       `zipalign -c -P 16` cross-check when the SDK is installed. `docs/ANDROID.md`.
+- [x] N12g **Owner decisions D-93…D-96 recorded** — Q-41 → A (in-app leaderboard data deletion + e-mail web path,
+      D-93), Q-42 → B (Play organisation account, D-94), Q-51 → B (week-1 airports within 2,500 km + slightly faster
+      pace, D-95), Q-43/Q-44/Q-48 → A (languages wave, worldwide except mainland China, T−12 weeks plan, D-96); marked
+      ✅ in `docs/OWNER-QUESTIONS.md`. N12d/N12e's own decisions renumbered D-93/D-94 → D-97/D-98 (docs and code
+      comments only).
 
 ## Research proposals (R-agent)
 Proposals from the research agent (findings and sources: `docs/RESEARCH.md`, sections "R1 — …"). Each item is
@@ -745,6 +750,7 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
 - 2026-11-03 · N12c Android backup without leaderboard identity (R1e, D-92) · night/12c-android-backup · test:android-config 18/18 (14/18 on the old manifest), test:install-identity 6/6 (new), aapt2 compile ok, test:fast 59/59, build ok, e2e:smoke 9/9 (boot path touched); Gradle lint not run (Maven 429), no device restore; ui:matrix/store:shots not run (no UI change)
 - 2026-11-03 · N11e privacy policy in the app (D-86) · night/11e-privacy · test:fast 60/60 (test:privacy-text 6/6, 1/6 before), build ok, test:e2e:privacy-page 4/4 (0/4 on the old settings), e2e:settings-groups 4/4, e2e:covered-pages 2/2, e2e:pseudo-locale 27/27; e2e:smoke/ui:matrix not run (settings only, no game screen)
 - 2026-11-03 · N11f one tip on the game-over report (D-87) · night/11f-gameover-tip · test:fast 61/61 (test:gameover-tip 7/7, 6/7 on the old catalogs), build ok, e2e:smoke 9/9, ui:matrix 32/32 (its game overs are at unserved airports: no tip, PNGs unchanged), e2e:pseudo-locale 27/27, e2e:gameover-short 4/4 (0/4 before the short-screen rule), e2e:gameover-unserved 4/4, e2e:gameover-map 3/3, e2e:run-timeline 4/4, e2e:daily-share 4/4, test:e2e:gameover-tip 4/4 (1/4 on the old report), store:shots 30 (test:store-shots 30/30)
-- 2026-11-03 · N12d server replay ends at the game over (R3c, D-93) · night/12d-replay-stop · test:replay-cost 7/7 (5/7 on the old replay), test:replay 23/23 (summary identical), test:net 8/8, test:net-server 5/5, test:fast 62/62, build ok, test:firebase 7/7 (emulator); e2e/ui:matrix/store:shots not run (no UI change)
-- 2026-11-03 · N12e store-requirement guards (R1m, D-94) · night/12e-store-guards · test:android-config 20/20 (19/20 on the old build script; 19/20 with targetSdk 35), test:native-align 7/7 incl. zipalign cross-check (new; module absent before), test:fast 63/63, build ok; Gradle `assembleDebug --offline` could not resolve plugins here, so no real APK/AAB was checked
+- 2026-11-03 · N12d server replay ends at the game over (R3c, D-97) · night/12d-replay-stop · test:replay-cost 7/7 (5/7 on the old replay), test:replay 23/23 (summary identical), test:net 8/8, test:net-server 5/5, test:fast 62/62, build ok, test:firebase 7/7 (emulator); e2e/ui:matrix/store:shots not run (no UI change)
+- 2026-11-03 · N12e store-requirement guards (R1m, D-98) · night/12e-store-guards · test:android-config 20/20 (19/20 on the old build script; 19/20 with targetSdk 35), test:native-align 7/7 incl. zipalign cross-check (new; module absent before), test:fast 63/63, build ok; Gradle `assembleDebug --offline` could not resolve plugins here, so no real APK/AAB was checked
 - 2026-11-03 · N11g reduce motion setting (D-88) · night/11g-reduce-motion · test:fast 63/63 (test:motion 8/8, 0/8 on the old code; test:flap 15/15 via the TS loader), build ok, test:e2e:reduce-motion 3/3 (0/3 on the old settings), e2e:settings-groups 4/4, e2e:screens-fit 18/18, e2e:screens-fit-320 12/12, e2e:pseudo-locale 27/27, e2e:privacy-page 4/4, e2e:covered-pages 2/2, e2e:airline-colour 3/3; e2e:smoke/ui:matrix not run (settings only; E2E pages emulate a reduce-motion system, game screens unchanged)
+- 2026-11-03 · N12g owner decisions D-93…D-96, own D-97/D-98 renumbered · night/12g-owner-decisions · test:fast 64/64, build ok (docs and comments only)

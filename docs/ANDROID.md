@@ -70,7 +70,7 @@ Outputs:
 - `android/app/build/outputs/apk/release/app-release.apk`
 - `android/app/build/outputs/bundle/release/app-release.aab`
 
-After Gradle, every build checks its output for 16 KB native-library alignment (`scripts/native-align.mjs`, D-94):
+After Gradle, every build checks its output for 16 KB native-library alignment (`scripts/native-align.mjs`, D-98):
 64-bit `lib/<abi>/*.so` must have ELF LOAD segments aligned to ≥ 16 KB, and stored APK entries must start on a
 16 KB boundary (what `zipalign -c -P 16 4` checks). The line `SUMMARY native-align …: no native libs` is the normal
 result for this web-only Capacitor app; a misaligned library fails `android:release` / `android:aab` (debug builds
