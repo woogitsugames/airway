@@ -502,6 +502,9 @@ and tag / paper / stamp for route add, route removal and upgrade choice. Mix: bu
 glue compressor, then a −3 dB limiter and trim; previews peak −7…−9 dBFS and a 4x burst stays under −1 dBFS.
 Previews in `docs/audio/`. **Status: in force; sound character is a proposal until the owner listens on a phone.**
 
+_N7e:_ the split-flap boards (menu, puzzles, game over, ranking) now rattle when they flip: one merged rattle per
+board, at most 8 clicks 45 ms apart; silent under reduced motion (no flip) and with Sound off.
+
 ## D-72 — Leaderboard client: journal submissions, server replay, no Firebase SDK (2026-11-03, Claude, night N6)
 Implements D-66 on the client side. Only the **official** daily run (one per Warsaw day) is submitted: seed, day key,
 rules version, end tick, claimed score and the full command journal. The server replays it with the same Sim

@@ -75,5 +75,32 @@ check('week and jam cues pass through', () => {
   assert.equal(cues[1].loadRatio, 1);
 });
 
+// [night-07e] Split-flap rattle: capped, spaced clicks; simultaneous boards merge into one rattle.
+const flap = await import('../src/game/flapSound.ts');
+check('flap plan: a few clicks per animation, spaced and capped', () => {
+  assert.deepEqual(flap.planFlapClicks(1, 76), [0]);
+  assert.deepEqual(flap.planFlapClicks(9, 268), [0, 45, 90]);
+  const board = flap.planFlapClicks(150, 3600);
+  assert.equal(board.length, flap.FLAP_MAX_CLICKS);
+  for (let i = 1; i < board.length; i++) assert.ok(board[i] - board[i - 1] >= flap.FLAP_CLICK_GAP_MS);
+  assert.deepEqual(flap.planFlapClicks(0, 100), []);
+  assert.deepEqual(flap.planFlapClicks(12, 300, 400), [], 'fully covered by an earlier rattle');
+});
+check('flap rattle: rows of one board merge, a later board rattles again', () => {
+  let clock = 0;
+  const timers = [];
+  let clicks = 0;
+  const rattle = flap.createFlapRattle(() => { clicks++; }, () => clock, (fn, ms) => { timers.push({ fn, at: clock + ms }); return timers.length; }, () => {});
+  for (let row = 0; row < 12; row++) rattle.animate(20, 20 * 24 + 76); // whole menu board at once
+  const flush = () => { timers.sort((a, b) => a.at - b.at); while (timers.length) { const t = timers.shift(); clock = t.at; t.fn(); } };
+  flush();
+  assert.equal(clicks, flap.FLAP_MAX_CLICKS, `merged board clicks ${clicks}`);
+  const first = clicks;
+  clock += 2000;
+  rattle.animate(6, 196);
+  flush();
+  assert.equal(clicks - first, 2, 'a later status change rattles on its own');
+});
+
 console.log(`SUMMARY test:audio-cues seed=0xA1A1 passed=${passed} failed=${failed}`);
 if (failed) process.exitCode = 1;
