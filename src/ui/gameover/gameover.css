@@ -232,6 +232,23 @@
   .airway-go-board { padding-block: 9px; }
   .airway-go-strip { padding-block: 10px; }
   .airway-go-causes-title { margin-top: 10px; padding-top: 6px; }
+  /* [night-10m] A week-2 jam with four cancelled departures and three causes pushed "New world" and "Menu" below
+     a 360×640 screen (long play): the three actions share one row and the departures list shows two and a half rows
+     (the third half-cut, so the list reads as scrollable) before it scrolls, so every action stays on screen without scrolling the report. */
+  .airway-go-actions { grid-template-columns: 1.5fr 1fr .8fr; gap: 6px; }
+  .airway-go-same { grid-column: auto; }
+  .airway-go-button { padding: 6px; font-size: 12px; }
+  .airway-go-flight-list { max-height: 100px; }
+}
+/* [night-10m] 320×568: one and a half departure rows before the list scrolls, a tighter sign and board. */
+@media (max-height: 600px) and (max-width: 619px) {
+  .airway-go-content { gap: 6px; }
+  .airway-go-sign { min-height: 40px; padding-block: 2px; }
+  .airway-go-board { padding-block: 7px; }
+  .airway-go-board-title { margin-bottom: 5px; }
+  .airway-go-flight-list { max-height: 60px; }
+  .airway-go-strip { padding-block: 8px; }
+  .airway-go-causes-title { margin-top: 6px; padding-top: 4px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .airway-go-flap { animation: none; }

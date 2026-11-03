@@ -160,6 +160,8 @@ while (Date.now() < end) {
     const info = await page.evaluate(() => ({
       picking: !!document.querySelector('.airway-upgrade-open.is-picking-hub'),
       offers: [...document.querySelectorAll('[data-testid^="upgrade-option-"]')].map((n) => n.dataset.upgrade),
+      // [night-10m] A crate the run cannot use (e.g. "Expand hub" with no hub) is disabled; never pick it.
+      enabled: [...document.querySelectorAll('[data-testid^="upgrade-option-"]')].map((n) => !n.disabled),
       week: document.querySelector('.airway-upgrade-week')?.textContent,
     }));
     if (info.picking) {
@@ -171,7 +173,9 @@ while (Date.now() < end) {
     } else if (info.offers.length) {
       const wk = info.week;
       if (!weeksShot.has(wk)) { weeksShot.add(wk); await layoutCheck('board ' + wk); await shot(page, 'board'); maxWeek = Math.max(maxWeek, parseInt((wk || '').replace(/\D/g, '')) || 0); }
-      const i = Math.floor(rnd() * info.offers.length);
+      const usable = info.offers.map((_, k) => k).filter((k) => info.enabled[k]);
+      if (!usable.length) { note('ISSUE', 'weekly board with every crate disabled'); await shot(page, 'board-all-disabled'); }
+      const i = usable.length ? usable[Math.floor(rnd() * usable.length)] : 0;
       note('UI', `${wk}: offers=${info.offers.join(',')} take ${info.offers[i]}`);
       await page.getByTestId(`upgrade-option-${i}`).click().catch((e) => note('ISSUE', 'card click ' + e.message.split('\n')[0]));
     } else { note('ISSUE', 'upgrade screen with no offers and no pick'); await shot(page, 'upgrade-empty'); await page.waitForTimeout(2000); }
