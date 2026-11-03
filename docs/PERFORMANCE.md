@@ -179,7 +179,21 @@ first frame; an explicit graphics choice forgets them.
 | high z1 / z2 / z3.3 | 453 404 → 332 853 / 300 620 / 246 470 | 36 → 44 / 47 / 43 |
 
 The remaining non-terrain triangles are mostly decorations (medium: trees 75 k, rocks 14 k) plus
-routes and planes; trees are instanced and not chunked (a split would cost ~20 draw calls).
+routes and planes.
+
+[night-07f] **Decoration culling (D-75, `src/render/globe/decor-cull.ts`).** Trees and rocks are sorted into the
+terrain chunks; the visible chunks are packed to the front of each instance buffer when the visible set or the
+density changes (one draw call per mesh as before; `world.stats().decorDrawn / decorTotal`). Headless, over 16 random
+cameras, 25 % of the 11 700 medium trees/rocks are drawn on average. `dev/world.html?frozen&clean`, DPR 1, 412×915
+(portrait) / 915×412, same run before → after, images pixel-identical:
+
+| Preset, zoom | Frame triangles before → after (portrait / landscape) | Draw calls |
+| --- | --- | --- |
+| low 1x / 2.5x | 77 619 → 75 572 / 76 170 → 73 892; 67 393 → 52 244 / 67 901 → 58 209 | unchanged (43–50) |
+| medium 1x / 2.5x | 140 441 → 134 216 / 138 992 → 132 160; 216 081 → 173 035 / 216 188 → 186 569 | unchanged |
+| high 1x / 2.5x | 332 853 → 322 550 / 328 819 → 317 182; 277 239 → 206 728 / 277 346 → 228 229 | unchanged |
+
+At 1x most of the globe faces the camera, so the gain is small; zoomed in (the game opens at 2x) it is 14–25 %.
 
 `perf:scene` (SwiftShader, 412×915, DPR 1; medium 120 s, low/saver 60 s; one run each):
 
