@@ -32,7 +32,14 @@ pooled DOM and shared materials. Do not rebuild route geometry each frame.
 profile and hands it to every layer:
 
 - `chooseQualityPreset(pref, hints)`: auto-detect from hardware concurrency and reported
-  device memory; missing hints default to medium. Persisting a manual choice belongs to
+  device memory; missing hints default to medium. [N12m, D-116] Before that rule, the unmasked WebGL
+  renderer string (`DeviceHints.gpu`, one throwaway context read by `readGpuRenderer`, cached, released at
+  once) is matched against `LOW_GPU_FAMILIES`: Mali-G52, Mali-G57/G68 MC1–MC2, Mali-T8xx, PowerVR GE83xx,
+  Adreno 5xx and 610/613 start on `low` (8 cores and 4 GB would give them `medium`). An unknown or capable
+  string (SwiftShader, Apple GPU, Adreno 618+, Mali-G6xx/G7xx, MC3+) keeps the core/memory rule; an explicit
+  choice wins, and remembered adaptation (D-74) is re-applied only when it is a prefix of the new ladder.
+  Not measured on the listed phones here: the table rests on RESEARCH R3 and is checked by `test:quality`
+  only; SwiftShader runs (`perf:scene` passes `--preset`) are unaffected. Persisting a manual choice belongs to
   the settings screen, which passes it to `world.setQuality(pref)`.
 - `resolveQualityProfile()`: preset (drives terrain subdivision and tree/rock/cloud/light
   counts in `globe/`), capped DPR (1 / 1.5 / 2), antialias, shadows (high only, 2048 map),
