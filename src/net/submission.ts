@@ -73,11 +73,14 @@ export function verifyDailySubmission(input: unknown, allowedDays: readonly stri
   if (submission.journal.some(([tick]) => tick > submission.endTick)) return { ok: false, reason: 'malformed' };
   let sim: Sim;
   try {
-    sim = Sim.replay(submission.seed, submission.journal as never, submission.endTick, { mode: 'daily' });
+    sim = Sim.replay(submission.seed, submission.journal as never, submission.endTick, { mode: 'daily' }, true);
   } catch {
     return { ok: false, reason: 'replay_error' };
   }
   if (sim.world.status !== 'over') return { ok: false, reason: 'not_finished' };
+  // [night-12d] D-93: the run must end exactly at the claimed tick. The replay stops at the game over, so an
+  // inflated endTick (or commands after the end) costs nothing and cannot inflate `weeks`.
+  if (sim.tickCount !== submission.endTick) return { ok: false, reason: 'malformed' };
   if (sim.world.score !== submission.claimedScore) return { ok: false, reason: 'score_mismatch' };
   return { ok: true, score: sim.world.score, weeks: Math.floor(sim.tickCount / TICKS_PER_WEEK), hash: sim.hash() };
 }

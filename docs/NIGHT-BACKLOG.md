@@ -392,6 +392,15 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       `Library/NoCloud`). `test:android-config` +4 checks (14/18 on the old manifest), new `test:install-identity`
       6/6 (in `test:fast`). Resources pass `aapt2 compile`; Gradle lint and a device restore could not run here
       (Maven 429, no device) — `docs/ANDROID.md` lists the `bmgr` check.
+- [x] N12d **Server replay ends at the game over (R3c, D-93)** — `Sim.replay` kept ticking a finished world up to
+      the claimed `endTick`, so a finished daily run sent with `endTick` = 30 weeks replayed a dead world for the
+      whole budget and was stored with `weeks: 30`. `verifyDailySubmission` now replays with `stopAtEnd` (new optional
+      `Sim.replay` argument; default unchanged for saves/undo/tests) and requires `endTick` to equal the game-over tick
+      (`malformed` otherwise; one tick early stays `not_finished`). Honest verdicts, scores and hashes unchanged
+      (`test:replay` summary identical, D-13). New `test:replay-cost` (in `test:fast`): 6 bot daily seeds, inflated
+      end ticks, empty 30-week claim, cost budgets — measured 30–48 ms per game week (30-week projection ~1.4 s),
+      dense 5 000-command journal ~0.2 s. Note: an empty journal never ends (the world waits on the week-1 board),
+      so it was already `not_finished`, not accepted as the R3c text assumed.
 
 ## Research proposals (R-agent)
 Proposals from the research agent (findings and sources: `docs/RESEARCH.md`, sections "R1 — …"). Each item is
@@ -547,7 +556,7 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
       `getBoards` `maxInstances: 3`, `submitDaily` `concurrency: 4` (CPU-bound replay must not queue 80 players behind
       one vCPU) with `maxInstances: 5`. Pure limiter in `functions/src/logic.ts` with `test:net-server` cases; the
       client already treats errors as "queued". **Area:** platform (`functions/`).
-- [ ] R3c **Replay stops at game over + replay-cost guard** — `Sim.replay` keeps ticking after `status === 'over'`, so
+- [x] R3c → N12d **Replay stops at game over + replay-cost guard** — `Sim.replay` keeps ticking after `status === 'over'`, so
       an empty journal with `endTick` = 30 weeks is accepted with `weeks: 30` (score 0) and costs a full 30-week replay.
       Stop the replay loop at game over (or reject `endTick` more than one tick past the game-over tick as
       `malformed`) and compute `weeks` from the game-over tick. Add `test:replay-cost`: bot daily runs on 6 seeds plus
@@ -676,3 +685,4 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
 - 2026-11-03 · N12c Android backup without leaderboard identity (R1e, D-92) · night/12c-android-backup · test:android-config 18/18 (14/18 on the old manifest), test:install-identity 6/6 (new), aapt2 compile ok, test:fast 59/59, build ok, e2e:smoke 9/9 (boot path touched); Gradle lint not run (Maven 429), no device restore; ui:matrix/store:shots not run (no UI change)
 - 2026-11-03 · N11e privacy policy in the app (D-86) · night/11e-privacy · test:fast 60/60 (test:privacy-text 6/6, 1/6 before), build ok, test:e2e:privacy-page 4/4 (0/4 on the old settings), e2e:settings-groups 4/4, e2e:covered-pages 2/2, e2e:pseudo-locale 27/27; e2e:smoke/ui:matrix not run (settings only, no game screen)
 - 2026-11-03 · N11f one tip on the game-over report (D-87) · night/11f-gameover-tip · test:fast 61/61 (test:gameover-tip 7/7, 6/7 on the old catalogs), build ok, e2e:smoke 9/9, ui:matrix 32/32 (its game overs are at unserved airports: no tip, PNGs unchanged), e2e:pseudo-locale 27/27, e2e:gameover-short 4/4 (0/4 before the short-screen rule), e2e:gameover-unserved 4/4, e2e:gameover-map 3/3, e2e:run-timeline 4/4, e2e:daily-share 4/4, test:e2e:gameover-tip 4/4 (1/4 on the old report), store:shots 30 (test:store-shots 30/30)
+- 2026-11-03 · N12d server replay ends at the game over (R3c, D-93) · night/12d-replay-stop · test:replay-cost 7/7 (5/7 on the old replay), test:replay 23/23 (summary identical), test:net 8/8, test:net-server 5/5, test:fast 62/62, build ok, test:firebase 7/7 (emulator); e2e/ui:matrix/store:shots not run (no UI change)
