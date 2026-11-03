@@ -15,6 +15,7 @@ import { createDailyMode } from './game/modes/daily';
 import { dailyRankingBoard } from './game/dailyRanking'; // [night-06c] D-66
 import { createBrowserLeaderboards } from './net'; // [night-06c] D-66
 import { EndlessRun } from './game/run';
+import { dailyRowHint } from './game/dailyRow'; // [night-10d]
 import { loadSavedSimChecked, saveSourceFromSim, writeGame, type SaveNotice } from './game/save';
 import { LocalScoreService } from './game/scores';
 import { mountScreens, type ScreenName } from './game/screens';
@@ -120,6 +121,7 @@ async function boot(): Promise<void> {
         solvedPuzzles: Object.keys(progress).length,
         totalPuzzles: PUZZLES.length,
         dailyNew: !scores.getProgress(dailyKey()).officialUsed,
+        dailyHint: dailyRowHint(scores.getProgress(dailyKey())), // [night-10d]
         saved: saved ? { week: saved.week, passengers: saved.passengers } : null,
         notice: saveNotice ? t(saveNotice === 'unsupported' ? 'save.error.unsupported' : 'save.error.corrupt') : null,
       };

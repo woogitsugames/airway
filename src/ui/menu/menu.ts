@@ -9,6 +9,8 @@ export interface MenuData {
   readonly totalPuzzles?: number;
   readonly today?: Date;
   readonly dailyNew?: boolean;
+  /** [night-10d] Subtitle of the daily row (today's score / streak); the generic hint when absent. */
+  readonly dailyHint?: string;
   /** A resumable saved flight; adds the CONTINUE row on top of the board. */
   readonly saved?: { readonly week: number; readonly passengers: number } | null;
   /** [night-10c] One-line paper notice under the sign (e.g. a saved flight that cannot be continued). */
@@ -46,7 +48,7 @@ function flightRows(data: MenuData): Flight[] {
   return [...rows,
     {id:'endless',gate:'A1',title:t('menu.endless'),sub:record==null?t('menu.noRecord'):t('menu.record',{count:localNumber(record)}),status:t('menu.boarding'),hot:!data.saved},
     {id:'puzzles',gate:'B4',title:t('menu.puzzles'),sub:puzzlesTotal?t('menu.progress',{solved:data.solvedPuzzles ?? 0,total:puzzlesTotal}):t('menu.puzzlesHint'),status:t('menu.onTime')},
-    {id:'daily',gate:'C2',title:t('menu.today',{date:formatDay(data.today ?? new Date())}),sub:t('menu.dailyHint'),status:data.dailyNew===false?t('menu.onTime'):t('menu.new')},
+    {id:'daily',gate:'C2',title:t('menu.today',{date:formatDay(data.today ?? new Date())}),sub:data.dailyHint ?? t('menu.dailyHint'),status:data.dailyNew===false?t('menu.onTime'):t('menu.new')},
     {id:'settings',gate:'D0',title:t('menu.settings'),sub:'',status:''},
   ];
 }

@@ -73,10 +73,20 @@ export function pluralForm(language: Language, value: number, forms: readonly st
   return forms[Math.min(index < 0 ? forms.length - 1 : index, forms.length - 1)] ?? '';
 }
 
+/**
+ * [night-10d] Plural selector value. Callers pass counts already formatted by localNumber ("2 500", "2,500"),
+ * which Number() cannot read, so the {n|form|…} token leaked into the text for counts from 1 000 up.
+ */
+function pluralValue(raw: unknown): number {
+  if (typeof raw !== 'string') return Number(raw);
+  const plain = raw.replace(/[\s\u00a0\u202f]/g, '').replace(/,(?=\d{3}(?:\D|$))/g, '').replace(',', '.');
+  return Number(plain);
+}
+
 export function t(key: TranslationKey, params?: TranslationParams): string {
   const language = getLanguage();
   const template = (catalogs[language][key] ?? en[key]).replace(/\{([A-Za-z][A-Za-z0-9_]*)\|([^{}]*)\}/g, (token, name: string, forms: string) => {
-    const value = Number(params?.[name]);
+    const value = pluralValue(params?.[name]);
     return params?.[name] === undefined || !Number.isFinite(value) ? token : pluralForm(language, value, forms.split('|'));
   });
   return template.replace(/\{([A-Za-z][A-Za-z0-9_]*)\}/g, (token, name: string) =>
