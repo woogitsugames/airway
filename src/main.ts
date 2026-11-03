@@ -259,6 +259,7 @@ async function boot(): Promise<void> {
       routeCount: run?.routeList().length ?? 0,
       aircraftAssignments: run?.assignments ?? 0,
       snapshotHash: run?.hash() ?? '',
+      upgrades: (run?.sim.world.upgrades ?? []).map((item) => ({ ...item })), // [night-07q]
     };
   }
 
@@ -288,7 +289,7 @@ async function boot(): Promise<void> {
       prepareSeed: (seed) => { pendingSeed = seed >>> 0; skipTutorialOnce = true; },
       advanceTicks: (ticks) => session?.advance(ticks),
       gesture: (kind) => {
-        const drag = kind === 'route' ? session?.routeGesture() : session?.planeGesture();
+        const drag = kind === 'route' ? session?.routeGesture() : kind === 'pick' ? session?.pickGesture() : session?.planeGesture();
         if (!drag) throw new Error('No gesture available for ' + kind);
         if (kind === 'plane') return drag;
         const rect = world!.canvas.getBoundingClientRect();
