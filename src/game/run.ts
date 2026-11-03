@@ -22,6 +22,8 @@ export interface RunCity {
   readonly lat: number;
   readonly region: RegionId;
   readonly waiting: readonly RegionId[];
+  /** [night-10i] How many of `waiting` (its tail) are transfers still inside the minimum connection time. */
+  readonly connecting: number;
   readonly capacity: number;
   readonly hub: boolean;
   readonly jamTicksLeft: number | null;
@@ -171,14 +173,21 @@ export class EndlessRun {
     return this.sim.world.cities().map((view) => {
       const data = cityByCode(view.id);
       const waiting: RegionId[] = [];
+      // [night-10i] Ready passengers first, then the transfers still making their connection (drawn hollow).
+      let connecting = 0;
       for (const region of REGION_IDS) {
-        const count = view.waitingByRegion[region] ?? 0;
+        const count = (view.waitingByRegion[region] ?? 0) - (view.connectingByRegion[region] ?? 0);
         for (let i = 0; i < count; i++) waiting.push(region);
+      }
+      for (const region of REGION_IDS) {
+        const count = view.connectingByRegion[region] ?? 0;
+        for (let i = 0; i < count; i++) waiting.push(region);
+        connecting += count;
       }
       return {
         id: view.id, lon: data?.lon ?? 0, lat: data?.lat ?? 0,
         region: isRegion(view.regionId) ? view.regionId : 'NAM',
-        waiting, capacity: view.capacity, hub: view.isHub, jamTicksLeft: view.jamTicksRemaining,
+        waiting, connecting, capacity: view.capacity, hub: view.isHub, jamTicksLeft: view.jamTicksRemaining,
         slotHeld: view.slotHeldPlanes, nextSlotMinutes: view.nextSlotMinutes, // [task-38]
         curfewClosed: view.curfewClosed, // [night-10g]
       };

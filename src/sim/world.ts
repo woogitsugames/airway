@@ -132,6 +132,8 @@ export interface CityView {
   /** Ticks left before this terminal ends the game, or null when not congested. */
   readonly jamTicksRemaining: number | null;
   readonly waitingByRegion: Readonly<Record<string, number>>;
+  /** [night-10i] Transfer passengers still inside the minute connection time (part of waitingByRegion). */
+  readonly connectingByRegion: Readonly<Record<string, number>>;
   readonly localHour: number;
   readonly curfewCity: boolean;
   readonly curfewClosed: boolean;
@@ -642,6 +644,7 @@ export class World implements WorldView {
       transferTicks: queue.transferTicks, fullTicks: queue.fullTicks,
       jamTicksRemaining: queue.fullTicks > 0 ? Math.max(0, CONGESTION_GRACE_TICKS - queue.fullTicks) : null,
       waitingByRegion: this.passengers.ledger.waitingRegions(cityId),
+      connectingByRegion: this.connectingAt(queue.waiting),
       localHour: localHourAt(this.minuteValue, offset), curfewCity,
       curfewClosed: curfewCity && isLocalCurfewHour(this.minuteValue, offset),
       routes: this.passengers.network.routesAt(cityId),
@@ -651,6 +654,16 @@ export class World implements WorldView {
       slotHeldPlanes: this.slotHeldAt(cityId),
       nextSlotMinutes: GAME_TICKS_PER_HOUR - (this.minuteValue % GAME_TICKS_PER_HOUR),
     };
+  }
+
+  /** [night-10i] Read-only count by destination of passengers whose connection time has not run out yet. */
+  private connectingAt(waiting: readonly { readonly destinationRegion: string; readonly readyAtTick: number }[]): Record<string, number> {
+    const now = this.passengers.tick;
+    const out: Record<string, number> = {};
+    for (const passenger of waiting) {
+      if (passenger.readyAtTick > now) out[passenger.destinationRegion] = (out[passenger.destinationRegion] ?? 0) + 1;
+    }
+    return out;
   }
 
   private slotHeldAt(cityId: string): number {

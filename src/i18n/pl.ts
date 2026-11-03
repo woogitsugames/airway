@@ -18,6 +18,7 @@ export const pl = {
   'airport.new': 'NOWE', // [night-10a]
   'airport.newAria': 'Nowe lotnisko {code}.',
   'airport.curfewAria': '{code} zamknięte na ciszę nocną.', // [night-10h]
+  'airport.connectingAria': 'W trakcie przesiadki: {count}.', // [night-10i]
   'airport.slotHeld': '{code}: samoloty czekające na slot startowy: {count}, następny slot za {time}',
   // [task-07] Rysowanie tras, pasek ATC i działania na trasach.
   'route.aircraft.turboprop': 'turbośmigłowca',

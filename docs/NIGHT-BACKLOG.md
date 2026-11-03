@@ -208,6 +208,12 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       closes an airport, its luggage tag gets the red-white boom-barrier stub (the same mark as the puzzle strips,
       N7d: a shape, not only colour) and its edge chip a striped barrier bar; screen-reader labels say it is closed.
       Also removes a `node_modules` symlink committed by N10f (`.gitignore` matched only the directory).
+- [x] N10i **Transfers visibly make their connection** — a passenger dropped at a hub waits the minimum connection
+      time (25 min, 15 after a hub upgrade) before it can board, but its tag looked the same as a ready passenger, so
+      the MCT and the hub upgrade that shortens it were invisible. The sim view gains `connectingByRegion` (read-only,
+      no state change); the luggage tag draws those passengers as hollow region glyphs (same shape, outline only) at
+      its tail, at most half the shown glyphs when the tag overflows, and they fill in when the time runs out; the
+      screen-reader label adds "Making a connection: N". `test:transfers`, `e2e/transfer-glyphs.mjs`.
 
 ## Log
 <!-- one line per finished item: date UTC · item · PR · gate summary -->
@@ -262,3 +268,4 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
 - 2026-11-03 · N10f haptics for every committed action · night/10f-haptics · test:fast 53/53 (test:haptics 6/6), build ok, e2e:smoke 9/9; ui:matrix not run (no visual change)
 - 2026-11-03 · N10g curfew barrier drawn in the game · night/10g-curfew · test:fast 53/53, build ok, e2e:smoke 9/9, ui:matrix 32/32, test:e2e:curfew-barrier 2/2 (0/2 without the sync)
 - 2026-11-03 · N10h curfew sign on tag and edge chip · night/10h-curfew-tag · test:fast 53/53, build ok, e2e:smoke 9/9, ui:matrix 32/32, test:hud-targets 300/300, e2e:new-airport 4/4, test:e2e:curfew-barrier 2/2 (tag/chip checks added)
+- 2026-11-03 · N10i transfers drawn hollow inside the MCT · night/10i-mct · test:fast 54/54 (test:transfers 3/3, test:replay hashes unchanged), build ok, e2e:smoke 9/9, ui:matrix 32/32, test:e2e:transfer-glyphs 2/2

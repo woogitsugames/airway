@@ -17,6 +17,7 @@ export const en = {
   'airport.new': 'NEW', // [night-10a]
   'airport.newAria': 'New airport {code}.',
   'airport.curfewAria': '{code} closed for the night curfew.', // [night-10h]
+  'airport.connectingAria': 'Making a connection: {count}.', // [night-10i]
   'airport.slotHeld': '{code}: {count} aircraft waiting for a departure slot, next slot in {time}',
   // [task-07] Route drawing, airport-paper ATC hint and route actions.
   'route.aircraft.turboprop': 'turboprop',
