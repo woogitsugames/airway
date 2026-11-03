@@ -357,6 +357,15 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       URL until D-67; the leaderboard section of the policy waits for Q-56. The licences row got a test id
       (`e2e/covered-pages.mjs` clicked "the last Help button", which is now the privacy row). `e2e/privacy-page.mjs` (`test:e2e:privacy-page`, in `test:ci`; 0/4 on the old settings).
 
+- [x] N11f **One tip on the game-over report (R1j, D-87)** — the report said why the network closed but not what to
+      change. In the player's first 10 logged flights it now ends the causes with one "TIP / WSKAZÓWKA" line chosen by
+      the leading cause (hub overflow → "Expand hub" or a second hub, regional demand → a route to that region, no
+      route → a route for every region, seats → a second aircraft or a widebody, transfers → "Expand hub", slot wait →
+      "Departure slots"); none in puzzles, none at an unserved airport (the N11b hint says it), the Timeline tab hides
+      it. Short portrait phones and short landscape keep only the leading cause with the tip (the report scrolled
+      48–64 px otherwise). Pure `src/game/gameoverTip.ts` + `test:gameover-tip` (in `test:fast`), DEV preview shows the
+      tip, `e2e/gameover-tip.mjs` (`test:e2e:gameover-tip`, in `test:ci`; 1/4 on the old report).
+
 ## Continuous development round N12 (agent 2)
 - [x] N12a **Balance bot plays for reach (D-90)** — the handover gap "the DEV bot rarely connects new airports; long
       plays end in weeks 1–3": measured, 34 of 44 bot game overs (50 seeds) were at an airport no route served, 20 of
@@ -436,7 +445,7 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
       Without Color Alone, Sufficient Contrast, Reduced Motion after R1h) the common tasks checked, the tests that
       prove it (`test:cvd`, contrast tokens, screenshots) and what we do **not** claim (VoiceOver, Larger Text, Dark
       Interface) with the reason; short PL/EN accessibility paragraph for the store descriptions. **Area:** `docs/store/`.
-- [ ] R1j **One tip on the game-over report** — the report says why the network closed but not what to change.
+- [x] R1j → N11f **One tip on the game-over report** — the report says why the network closed but not what to change.
       Map each cause from the ledger to one matter-of-fact tip (hub overflow → hub expansion or a second hub; region
       without a route → connect it; slot wait → "+2 slots" or spread departures; unserved airport → route to it),
       shown as one line under the cause, only in the player's first ~10 runs (count from the logbook), never during
@@ -666,3 +675,4 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
 - 2026-11-03 · N12b iOS store plist keys (R1c, D-91) · night/12b-ios-plist-keys · test:ios-config 23/23 (21/23 on the old plist), test:fast 58/58, build ok; e2e/ui:matrix/store:shots not run (no web code changed)
 - 2026-11-03 · N12c Android backup without leaderboard identity (R1e, D-92) · night/12c-android-backup · test:android-config 18/18 (14/18 on the old manifest), test:install-identity 6/6 (new), aapt2 compile ok, test:fast 59/59, build ok, e2e:smoke 9/9 (boot path touched); Gradle lint not run (Maven 429), no device restore; ui:matrix/store:shots not run (no UI change)
 - 2026-11-03 · N11e privacy policy in the app (D-86) · night/11e-privacy · test:fast 60/60 (test:privacy-text 6/6, 1/6 before), build ok, test:e2e:privacy-page 4/4 (0/4 on the old settings), e2e:settings-groups 4/4, e2e:covered-pages 2/2, e2e:pseudo-locale 27/27; e2e:smoke/ui:matrix not run (settings only, no game screen)
+- 2026-11-03 · N11f one tip on the game-over report (D-87) · night/11f-gameover-tip · test:fast 61/61 (test:gameover-tip 7/7, 6/7 on the old catalogs), build ok, e2e:smoke 9/9, ui:matrix 32/32 (its game overs are at unserved airports: no tip, PNGs unchanged), e2e:pseudo-locale 27/27, e2e:gameover-short 4/4 (0/4 before the short-screen rule), e2e:gameover-unserved 4/4, e2e:gameover-map 3/3, e2e:run-timeline 4/4, e2e:daily-share 4/4, test:e2e:gameover-tip 4/4 (1/4 on the old report), store:shots 30 (test:store-shots 30/30)

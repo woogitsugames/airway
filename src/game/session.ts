@@ -44,6 +44,8 @@ export interface SessionCallbacks {
   onFailure?(run: EndlessRun): HTMLElement | void;
   /** [night-10e] Called right after onFailure: a daily run's share action for the report. */
   failureShare?(): GameOverSnapshot['share'] | void;
+  /** [night-11f] True while the player is in their first flights: the report shows one tip. */
+  failureTip?(): boolean;
   onTick?(run: EndlessRun, speed: number): void;
   cue?(cue: AudioCue): void;
 }
@@ -412,6 +414,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       handles.show([]); // [night-11c] route-end handles are edit controls; they stayed pinned where the camera was
       const extra = callbacks.onFailure?.(run) ?? undefined; // [night-06c]
       const share = callbacks.failureShare?.() ?? undefined; // [night-10e]
+      const tip = run.mode !== 'puzzle' && (callbacks.failureTip?.() ?? false); // [night-11f]
       const flights = failure.departures.map((departure, i) => ({
         originHubId: failure.cityId, flightNumber: 'AW' + String(101 + i),
         destinationCode: departure.destination, gate: String.fromCharCode(65 + (i % 6)) + String(1 + i),
@@ -420,7 +423,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
         seed: run.seed, initialHash: '', hubId: failure.cityId, hubCode: airportLabel(failure.cityId),
         delivered: run.passengers, completedWeeks: Math.floor(failure.tick / TICKS_PER_WEEK),
         ledger: failure.ledger, departures: flights, ...(extra ? { extra } : {}), ...(share ? { share } : {}),
-        ...(run.mode === 'puzzle' ? {} : { timeline: runTimelineLoader(run) }),
+        ...(run.mode === 'puzzle' ? {} : { timeline: runTimelineLoader(run) }), ...(tip ? { tip } : {}),
       });
     }
   }

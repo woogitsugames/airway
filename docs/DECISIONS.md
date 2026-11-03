@@ -650,3 +650,16 @@ is a new anonymous player (Q-55); queued runs are not resent from a second devic
 (identity copied to two phones), backing up only native files (logbook and streak still lost), moving the identity
 into a separate store now (bigger net change; follow-up so the token is not in the encrypted backup at all).
 **Status: in force (N12c, `test:android-config` 18 checks, `test:install-identity` 6 cases).**
+
+## D-87 — One tip on the game-over report in the first ten flights (2026-11-03, Claude, night N11f)
+The game-over report adds one line under the causes, "TIP / WSKAZÓWKA", chosen by the first ranked cause that has a
+tip (`src/game/gameoverTip.ts`): full waiting area, long jam or long wait → "Expand hub" or a second hub; regional
+demand → a route (or more aircraft) to that region; no route → give every region a route; seat shortage → a second
+aircraft or a widebody; missed / not-ready transfer → "Expand hub" (it also shortens the minimum transfer time);
+slot wait → "Departure slots" or move routes. It shows only while the logbook holds at most 10 flights (this one
+included), never in puzzles, never during play, and not at an airport no route served (the N11b board hint already
+says what would have helped). It sits in the causes tab panel, so Timeline hides it. On short screens (≤ 700 px
+portrait phones, ≤ 550 px landscape) the tip keeps only the leading cause, so the actions stay on screen without
+scrolling. Rationale: the report said why the network closed, not what to change (RESEARCH R1, R1j); ten flights
+teach the four upgrades, after that the tip would be noise. **Status: in force (N11f, `test:gameover-tip`,
+`test:e2e:gameover-tip`).**

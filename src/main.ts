@@ -17,6 +17,7 @@ import { IDENTITY_KEYS, createBrowserLeaderboards } from './net'; // [night-06c]
 import { EndlessRun } from './game/run';
 import { dailyRowHint } from './game/dailyRow'; // [night-10d]
 import { localDay, readLogbook, recordFlight, runHub } from './game/logbook'; // [night-10n]
+import { tipsForFlight } from './game/gameoverTip'; // [night-11f]
 import { loadSavedSimChecked, saveSourceFromSim, writeGame, type SaveNotice } from './game/save';
 import { LocalScoreService, type DailyResult } from './game/scores';
 import { mountScreens, type ScreenName } from './game/screens';
@@ -237,6 +238,8 @@ async function boot(): Promise<void> {
         void storage.remove('aw-save-v1').catch(() => undefined);
         return ranking;
       },
+      // [night-11f] onFailure has logged this flight already: tips for the first TIP_RUNS flights.
+      failureTip: () => { try { return tipsForFlight(readLogbook(globalThis.localStorage).flights); } catch { return true; } },
       failureShare: () => {
         const result = lastDaily;
         if (!result) return undefined;
