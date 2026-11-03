@@ -635,7 +635,7 @@ lost all of it on a phone change. The leaderboard session token and offline queu
 so instead of a file rule an install marker that no backup reaches (`aw-install-v1.json` in
 `Directory.LibraryNoCloud`; on iOS `Library/NoCloud`) decides: no marker → write it, then remove `aw-net-session-v1`
 and `aw-net-queue-v1` before the leaderboards start; a marker that cannot be written resets nothing. A restored phone
-is a new anonymous player (Q-52); queued runs are not resent from a second device. Rejected: backing up everything
+is a new anonymous player (Q-55); queued runs are not resent from a second device. Rejected: backing up everything
 (identity copied to two phones), backing up only native files (logbook and streak still lost), moving the identity
 into a separate store now (bigger net change; follow-up so the token is not in the encrypted backup at all).
 **Status: in force (N12c, `test:android-config` 18 checks, `test:install-identity` 6 cases).**
