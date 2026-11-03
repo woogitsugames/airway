@@ -3,9 +3,11 @@
 import { installBackHandler, type BackOptions } from '../platform';
 import { createMenu, type MenuData, type MenuHandle, type MenuMode } from '../ui/menu/menu';
 import { createSettings, createLicenses } from '../ui/settings/settings';
+import { createLogbook, type LogbookData } from '../ui/logbook/logbook';
 
-export type ScreenName = 'menu' | 'settings' | 'licenses' | 'puzzles' | 'tutorial' | 'game';
-export type ModeScreen = Exclude<ScreenName, 'menu' | 'settings' | 'licenses'>;
+export type ScreenName = 'menu' | 'settings' | 'licenses' | 'logbook' | 'puzzles' | 'tutorial' | 'game';
+export type ModeScreen = Exclude<ScreenName, 'menu' | 'settings' | 'licenses' | 'logbook'>;
+type RouterScreen = 'menu' | 'settings' | 'licenses' | 'logbook';
 
 /** A registered screen. back() returns true when it consumed the press (e.g. closed a sheet). */
 export interface ScreenView {
@@ -17,6 +19,8 @@ export interface ScreenView {
 
 export interface ScreensOptions {
   readonly getMenuData?: () => MenuData;
+  /** [night-10n] Local stores for the logbook screen, read each time it opens. */
+  readonly getLogbookData?: () => LogbookData;
   readonly onMode?: (mode: MenuMode) => void;
   readonly onScreen?: (screen: ScreenName) => void;
   readonly onLanguageChanged?: () => void;
@@ -25,7 +29,7 @@ export interface ScreensOptions {
 }
 export interface ScreensHandle {
   readonly current: () => ScreenName;
-  show(screen: 'menu' | 'settings' | 'licenses'): void;
+  show(screen: RouterScreen): void;
   /** Replace the active screen with a mode screen built by the caller. */
   open(screen: ModeScreen, view: ScreenView): void;
   refresh(): void;
@@ -44,7 +48,7 @@ export function mountScreens(host: HTMLElement, options: ScreensOptions = {}): S
 
   function buildMenu(): ScreenView {
     menu = createMenu((mode) => {
-      if (mode === 'settings') show('settings');
+      if (mode === 'settings' || mode === 'logbook') show(mode);
       else options.onMode?.(mode);
     }, options.getMenuData?.());
     const handle = menu;
@@ -67,7 +71,7 @@ export function mountScreens(host: HTMLElement, options: ScreensOptions = {}): S
     } else focus?.focus({ preventScroll: true });
     options.onScreen?.(next);
   }
-  function show(screen: 'menu' | 'settings' | 'licenses', force = false): void {
+  function show(screen: RouterScreen, force = false): void {
     if (screen === name && !force) return;
     if (screen === 'menu') replace('menu', buildMenu());
     else if (screen === 'settings') {
@@ -75,6 +79,10 @@ export function mountScreens(host: HTMLElement, options: ScreensOptions = {}): S
         options.onLanguageChanged?.();
         show('settings', true);
       }, options.onReplayTutorial));
+    } else if (screen === 'logbook') {
+      const data = options.getLogbookData?.();
+      if (!data) return;
+      replace('logbook', createLogbook(() => show('menu'), data));
     } else replace('licenses', createLicenses(() => show('settings')));
   }
   const back = (): boolean => {

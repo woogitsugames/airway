@@ -1,0 +1,29 @@
+/* [night-10n] Logbook: a pilot's logbook page on the settings paper. Ruled cells, ink numbers in Overpass Mono,
+   a red margin rule like a printed logbook; no cards, no charts. */
+.airway-logbook__paper { position:relative; border-left:3px double #c8352a; }
+.airway-logbook__columns { display:grid; gap:14px; }
+@media (orientation:landscape) and (min-width:700px) { .airway-logbook__columns { grid-template-columns:1fr 1fr; column-gap:22px; } }
+.airway-logbook__section { min-width:0; margin-bottom:14px; }
+.airway-logbook__totals { display:grid; grid-template-columns:1fr 1fr; margin:8px 0 0; border-top:2px solid #2a2420; }
+.airway-logbook__records .airway-logbook__piece { white-space:nowrap; }
+.airway-logbook__totals .airway-logbook__cell { display:flex; flex-direction:column; justify-content:space-between; padding:8px 8px 9px; border-bottom:1px solid #c2b5a6; min-width:0; }
+.airway-logbook__totals .airway-logbook__cell:nth-child(odd) { border-right:1px solid #c2b5a6; }
+.airway-logbook__totals dt { font:700 11px/1.25 'Overpass Mono',monospace; letter-spacing:.04em; text-transform:uppercase; color:#55514a; overflow-wrap:anywhere; }
+.airway-logbook__totals dd { margin:4px 0 0; font:800 24px/1.1 'Overpass Mono',monospace; color:#13302e; overflow-wrap:anywhere; }
+.airway-logbook__records { margin:8px 0 0; border-top:2px solid #2a2420; }
+.airway-logbook__records .airway-logbook__cell { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.15fr); gap:10px; align-items:baseline; padding:9px 2px; border-bottom:1px dashed #c2b5a6; }
+.airway-logbook__records dt { font:700 13px/1.25 'Atkinson Hyperlegible Next',sans-serif; color:#2a2420; overflow-wrap:anywhere; }
+.airway-logbook__records dd { margin:0; font:700 13px/1.3 'Overpass Mono',monospace; color:#13302e; text-align:right; overflow-wrap:anywhere; }
+.airway-logbook__flights { width:100%; margin-top:8px; border-collapse:collapse; table-layout:fixed; font:700 12px/1.2 'Overpass Mono',monospace; color:#2a2420; }
+.airway-logbook__flights th { text-align:left; font:700 10px/1.2 'Overpass Mono',monospace; letter-spacing:.06em; text-transform:uppercase; color:#55514a; padding:6px 4px; border-top:2px solid #2a2420; border-bottom:2px solid #2a2420; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.airway-logbook__flights td { padding:9px 4px; border-bottom:1px solid #c2b5a6; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.airway-logbook__flights th:nth-child(1), .airway-logbook__flights td:nth-child(1) { width:17%; }
+.airway-logbook__flights th:nth-child(3), .airway-logbook__flights td:nth-child(3) { width:15%; }
+.airway-logbook__flights th:nth-child(4), .airway-logbook__flights td:nth-child(4) { width:13%; }
+.airway-logbook__flights th:nth-child(5), .airway-logbook__flights td:nth-child(5) { width:21%; }
+.airway-logbook__flights th:nth-child(n+4), .airway-logbook__flights .is-num { text-align:right; }
+/* Daily flights carry the teal stub of the daily challenge; Endless rows stay plain ink. Shape, not only colour. */
+.airway-logbook__flights tr[data-mode="daily"] .airway-logbook__mode::before { content:''; display:inline-block; width:8px; height:10px; margin-right:5px; background:#1e6f6a; clip-path:polygon(0 0,100% 0,100% 100%,50% 70%,0 100%); vertical-align:-1px; }
+.airway-logbook__empty { margin:10px 0 0; font:400 14px/1.4 'Atkinson Hyperlegible Next',sans-serif; color:#2a2420; }
+.airway-logbook__local { margin-top:4px; }
+@media (max-width:370px) { .airway-logbook__totals dd { font-size:20px; } .airway-logbook__records .airway-logbook__cell { grid-template-columns:1fr; gap:3px; } .airway-logbook__records dd { text-align:left; } .airway-logbook__flights { font-size:11px; } .airway-logbook__flights td, .airway-logbook__flights th { padding-left:2px; padding-right:2px; } }

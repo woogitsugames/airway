@@ -22,8 +22,9 @@ export interface MenuHandle {
   announce(text: string): void;
   dispose(): void;
 }
+export type MenuService = 'settings' | 'logbook';
 interface Flight {
-  readonly id: MenuMode | 'settings';
+  readonly id: MenuMode | MenuService;
   readonly gate: string;
   readonly title: string;
   readonly sub: string;
@@ -49,8 +50,14 @@ function flightRows(data: MenuData): Flight[] {
     {id:'endless',gate:'A1',title:t('menu.endless'),sub:record==null?t('menu.noRecord'):t('menu.record',{count:localNumber(record)}),status:t('menu.boarding'),hot:!data.saved},
     {id:'puzzles',gate:'B4',title:t('menu.puzzles'),sub:puzzlesTotal?t('menu.progress',{solved:data.solvedPuzzles ?? 0,total:puzzlesTotal}):t('menu.puzzlesHint'),status:t('menu.onTime')},
     {id:'daily',gate:'C2',title:t('menu.today',{date:formatDay(data.today ?? new Date())}),sub:data.dailyHint ?? t('menu.dailyHint'),status:data.dailyNew===false?t('menu.onTime'):t('menu.new')},
+    // [night-10n] Service row: settings and the logbook share the last line, so the board keeps its height.
     {id:'settings',gate:'D0',title:t('menu.settings'),sub:'',status:''},
+    {id:'logbook',gate:'D1',title:t('menu.logbook'),sub:'',status:''},
   ];
+}
+
+function ariaLabel(flight:Flight):string {
+  return flight.status ? `${flight.title}, ${t('menu.gate')} ${flight.gate}, ${flight.status}` : `${flight.title}, ${t('menu.gate')} ${flight.gate}`;
 }
 
 function makeSign():HTMLElement {
@@ -65,7 +72,7 @@ function makeSign():HTMLElement {
 }
 
 /** Presentation-only departure board; the router in src/game/screens.ts handles each row. */
-export function createMenu(onFlight:(mode:MenuMode|'settings')=>void,initial:MenuData={}):MenuHandle {
+export function createMenu(onFlight:(mode:MenuMode|MenuService)=>void,initial:MenuData={}):MenuHandle {
   const root=el('section','airway-menu');
   root.setAttribute('aria-label',t('menu.departures'));
   // The shared world canvas (src/game/world.ts) is the backdrop; the menu owns no WebGL context.
@@ -80,13 +87,15 @@ export function createMenu(onFlight:(mode:MenuMode|'settings')=>void,initial:Men
   notice.hidden=true;
   const flaps:SplitFlap[]=[];
   const items=new Map<Flight['id'],{title:SplitFlap;gate:SplitFlap;status:SplitFlap;sub:HTMLElement}>();
+  const service=el('div','airway-board__service');
   for(const flight of flightRows(initial)) {
-    const button=el('button','airway-flight');
+    const half=flight.id==='settings'||flight.id==='logbook';
+    const button=el('button',half?'airway-flight airway-flight--half':'airway-flight');
     button.type='button';
     button.dataset.mode=flight.id;
     button.dataset.testid='menu-'+flight.id;
     const main=el('span','airway-flight__main');
-    const title=new SplitFlap(flight.title,{highlight:flight.hot,initialAnimation:true,maxCells:20});
+    const title=new SplitFlap(flight.title,{highlight:flight.hot,initialAnimation:true,maxCells:half?10:20});
     const gate=new SplitFlap(flight.gate,{initialAnimation:true,maxCells:2});
     const status=new SplitFlap(flight.status,{highlight:flight.hot,initialAnimation:true,maxCells:10});
     flaps.push(title,gate,status);
@@ -95,12 +104,13 @@ export function createMenu(onFlight:(mode:MenuMode|'settings')=>void,initial:Men
     main.append(title.element,sub);
     const gateWrap=el('span','airway-flight__gate');gateWrap.append(gate.element);
     const statusWrap=el('span','airway-flight__status');statusWrap.append(status.element);
-    button.append(main,gateWrap,statusWrap);
-    button.setAttribute('aria-label',`${flight.title}, ${t('menu.gate')} ${flight.gate}, ${flight.status}`);
+    if(half) button.append(main,gateWrap); else button.append(main,gateWrap,statusWrap);
+    button.setAttribute('aria-label',ariaLabel(flight));
     button.addEventListener('click',()=>onFlight(flight.id));
-    board.append(button);
+    if(half) service.append(button); else board.append(button);
     items.set(flight.id,{title,gate,status,sub});
   }
+  board.append(service);
   root.append(board,notice);
   const applyNotice=(data:MenuData):void => {
     if(data.notice===undefined) return;
@@ -127,7 +137,7 @@ export function createMenu(onFlight:(mode:MenuMode|'settings')=>void,initial:Men
         item.sub.textContent=flight.sub;
         item.sub.hidden=!flight.sub;
         const button=item.title.element.closest('button');
-        button?.setAttribute('aria-label',`${flight.title}, ${t('menu.gate')} ${flight.gate}, ${flight.status}`);
+        button?.setAttribute('aria-label',ariaLabel(flight));
       }
     },
     announce(message:string):void { notice.textContent=message; notice.hidden=false; },

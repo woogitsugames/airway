@@ -16,6 +16,7 @@ import { dailyRankingBoard } from './game/dailyRanking'; // [night-06c] D-66
 import { createBrowserLeaderboards } from './net'; // [night-06c] D-66
 import { EndlessRun } from './game/run';
 import { dailyRowHint } from './game/dailyRow'; // [night-10d]
+import { localDay, readLogbook, recordFlight, runHub } from './game/logbook'; // [night-10n]
 import { loadSavedSimChecked, saveSourceFromSim, writeGame, type SaveNotice } from './game/save';
 import { LocalScoreService, type DailyResult } from './game/scores';
 import { mountScreens, type ScreenName } from './game/screens';
@@ -128,6 +129,24 @@ async function boot(): Promise<void> {
         notice: saveNotice ? t(saveNotice === 'unsupported' ? 'save.error.unsupported' : 'save.error.corrupt') : null,
       };
     },
+    // [night-10n] Logbook: its own store plus the best record, daily scores and puzzle stars already kept.
+    getLogbookData: () => {
+      let storageRef: Storage | undefined;
+      try { storageRef = globalThis.localStorage; } catch { storageRef = undefined; }
+      const progress = readPuzzleProgress();
+      const dailyProgress = scores.getProgress(dailyKey());
+      let best: { score: number; weeks: number } | null = null;
+      try { best = readBestRecord(storageRef) ?? null; } catch { /* Storage blocked. */ }
+      return {
+        book: readLogbook(storageRef),
+        best: best && best.score > 0 ? { score: best.score, weeks: best.weeks } : null,
+        dailyBest: dailyProgress.bestOfficial?.score ?? null,
+        longestStreak: dailyProgress.longestStreak,
+        puzzlesSolved: Object.keys(progress).length,
+        puzzlesTotal: PUZZLES.length,
+        stars: Object.values(progress).reduce((sum, value) => sum + value, 0),
+      };
+    },
     onMode: (mode) => {
       if (mode === 'continue') void continueSaved();
       else if (mode === 'endless') { saveNotice = null; startEndless(pendingSeed ?? freshSeed()); }
@@ -138,7 +157,7 @@ async function boot(): Promise<void> {
       if (name !== 'game') {
         if (session) { endSession(); world?.reset(); }
         world?.showMenuBackdrop();
-        screenName = name === 'settings' || name === 'licenses' ? 'settings' : 'menu';
+        screenName = name === 'settings' || name === 'licenses' ? 'settings' : name === 'logbook' ? 'logbook' : 'menu';
       }
     },
     onLanguageChanged: () => { document.title = t('app.title'); },
@@ -201,6 +220,12 @@ async function boot(): Promise<void> {
           ranking = dailyRankingBoard(leaderboards, failed, dailySession.session); // [night-06c]
           dailySession = null;
         }
+        try { // [night-10n] one logbook line per finished flight
+          recordFlight(globalThis.localStorage, {
+            day: localDay(new Date()), mode, passengers: failed.passengers,
+            weeks: Math.floor(failed.tick / TICKS_PER_WEEK), hub: runHub(failed.cityList(), failed.routeList()),
+          });
+        } catch { /* Storage blocked: the flight is not logged. */ }
         saved = null;
         void storage.remove('aw-save-v1').catch(() => undefined);
         return ranking;
@@ -286,7 +311,8 @@ async function boot(): Promise<void> {
   function devState(): AwDevState {
     const run = session?.run;
     return {
-      screen: session ? screenName : (screens.current() === 'settings' || screens.current() === 'licenses' ? 'settings' : 'menu'),
+      screen: session ? screenName : (screens.current() === 'settings' || screens.current() === 'licenses' ? 'settings'
+        : screens.current() === 'logbook' ? 'logbook' : 'menu'),
       seed: run?.seed ?? pendingSeed ?? 0,
       tick: run?.tick ?? 0,
       nextWeekTick: run?.nextWeekTick ?? 0,

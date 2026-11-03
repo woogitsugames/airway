@@ -1,6 +1,6 @@
 // [task-28] Development-only bridge between browser QA and the real game composition root.
 // This module never supplies fake game state; integrations must register a real adapter.
-export type AwScreen = 'menu' | 'game' | 'upgrade' | 'gameover' | 'settings';
+export type AwScreen = 'menu' | 'game' | 'upgrade' | 'gameover' | 'settings' | 'logbook';
 // [night-07q] 'pick': a tap (from === to) on an airport the weekly board is waiting for (hub expansion, slots).
 export type AwGesture = 'route' | 'plane' | 'pick';
 

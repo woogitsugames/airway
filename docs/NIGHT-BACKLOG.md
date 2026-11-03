@@ -239,6 +239,16 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       the long-play script clicking a disabled "Expand hub" crate (no hub yet); it now picks only enabled crates.
       `e2e/gameover-short.mjs`.
 
+- [x] N10n **Logbook (run statistics)** — nothing in the game said how much had been played: the menu showed only
+      the record. A pilot's logbook page, opened from the departure board's service row (Settings D0 and Logbook D1
+      now share the last line, so the board keeps its height on 915×412 and 320×568): totals (flights, passengers
+      carried, weeks in the air, longest flight), records (best flight from the existing best record, favourite hub,
+      best official daily and longest streak from the daily scores, puzzles solved and stars) and the last six
+      flights as ruled logbook lines (date, Endless/daily with the teal stub, hub code, weeks, passengers). One line
+      per finished Endless or daily flight in a new device-local store (`airway.logbook.v1`, written at game over;
+      older flights are not known). The run's hub is the hub on most routes, else the busiest airport.
+      `src/game/logbook.ts`, `src/ui/logbook/`, `test:logbook`, `e2e/logbook.mjs`.
+
 ## Log
 <!-- one line per finished item: date UTC · item · PR · gate summary -->
 - 2026-11-03 · N1 puzzles 16–30 (D-70) · night/01-puzzles · test:fast 42/42, build ok, e2e:smoke 9/9, ui:matrix 32/32, test:puzzles levels=30 cases=168 failed=0 (merged tree with #40, #42)
@@ -297,3 +307,4 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
 - 2026-11-03 · N10k settings in groups · night/10k-settings-groups · test:fast 55/55, build ok, e2e:smoke 9/9, e2e:screens-fit 18/18, e2e:screens-fit-320 12/12, e2e:airline-colour 3/3, e2e:tutorial 21/21, test:e2e:settings-groups 4/4; ui:matrix not run (settings not in the matrix)
 - 2026-11-03 · N10l best margin per puzzle · night/10l-puzzle-best · test:fast 56/56 (test:puzzle-best 4/4), build ok, e2e:smoke 9/9, e2e:puzzles 34/34 (margin checked on all 30), e2e:screens-fit 18/18, e2e:screens-fit-320 12/12, test:e2e:puzzle-best 2/2; ui:matrix not run (puzzle screens not in the matrix)
 - 2026-11-03 · N10m long play at unusual sizes + game-over on short phones · night/10m-long-play · ui:long-play EN 1280×800 4× 14 min issues=0, PL 360×640 2× 14 min issues=4 → recheck 10 min issues=0; test:fast 56/56, build ok, e2e:smoke 9/9, ui:matrix 32/32, test:hud-targets 300/300, test:e2e:gameover-short 4/4 (2/4 on the old CSS)
+- 2026-11-03 · N10n logbook (run statistics) · night/10n-logbook · test:fast 57/57 (test:logbook 8/8), build ok, e2e:smoke 9/9, ui:matrix 32/32, test:hud-targets 300/300, test:e2e:logbook 4/4
