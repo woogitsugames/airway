@@ -80,6 +80,9 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       their height. `ui:matrix` now fails when the board covers the pass or scrolls.
 - [x] N7o **Store shots after N7m/N7n** — the failure scene still showed the old capacity wording and the upgrade
       scene the old board layout; all 30 store PNGs, the manifest and the contact sheet re-rendered and checked.
+- [x] N7p **Game-over report clears the boarding pass** — N7o known issue: on the 360×640 store phone the
+      "NETWORK CLOSED" sign covered the final week/day/time/passengers. The report starts below the pass (short
+      portrait trims gaps so it still fits); `ui:matrix` and `store:shots` fail when the board or report covers it.
 - [ ] N7 When the queue is empty: pick the most valuable next improvement from `docs/HANDOVER*.md`, PR "Known issues"
       sections and the forbidden list review of current screenshots; add it here first, then do it.
 
@@ -108,3 +111,4 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
 - 2026-11-03 · N7m capacity cause wording · night/07m-capacity-cause · test:fast 48/48, build ok, e2e:smoke 9/9, ui:matrix 32/32, test:format 11/11
 - 2026-11-03 · N7n weekly board clears the boarding pass · night/07n-landscape-banner · test:fast 48/48, build ok, e2e:smoke 9/9, ui:matrix 32/32 (new HUD-overlap check fails 4/32 on the old CSS), test:hud-targets 300/300
 - 2026-11-03 · N7o store shots refreshed · night/07o-store-shots · store:shots captured=30 failed=0, test:store-shots shots=30 failed=0, test:fast 48/48, build ok
+- 2026-11-03 · N7p game-over report clears the boarding pass · night/07p-gameover-pass · test:fast 48/48, build ok, e2e:smoke 9/9, ui:matrix 32/32, test:hud-targets 300/300, store:shots 30/30 (fails on the old CSS), test:store-shots 30/30

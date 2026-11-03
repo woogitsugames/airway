@@ -302,6 +302,21 @@ async function capture(page, baseUrl, lang, scene, destination) {
   if (state.overflow) throw new Error('Horizontal overflow: ' + scene);
   if (!state.canvas) throw new Error('No visible globe canvas: ' + scene);
   if (errors.length) throw new Error('Browser errors: ' + errors.join('; '));
+  // [night-07p] The upgrade board and the game-over report must leave the boarding pass readable.
+  const covered = await page.evaluate(() => {
+    const pass = document.querySelector('.airway-pass')?.getBoundingClientRect();
+    if (!pass) return '';
+    const parts = document.querySelectorAll('.airway-upgrade-sign, .airway-upgrade-tag, .airway-go-sign, ' +
+      '.airway-go-board, .airway-go-strip, .airway-go-button');
+    for (const part of parts) {
+      const r = part.getBoundingClientRect();
+      if (r.width && r.left < pass.right && pass.left < r.right && r.top < pass.bottom && pass.top < r.bottom) {
+        return part.className + ' at ' + Math.round(r.top) + ' px';
+      }
+    }
+    return '';
+  });
+  if (covered) throw new Error('Boarding pass covered by ' + covered + ': ' + scene);
   // [task-40] Sun hour angle@camera latitude chosen by the fixture (game and night scenes).
   state.sun = await page.evaluate(() => document.documentElement.dataset.storeShotSun ?? null);
   await page.screenshot({ path: destination, animations: 'disabled', fullPage: false });

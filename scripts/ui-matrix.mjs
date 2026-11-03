@@ -73,11 +73,12 @@ try {
                 viewport: window.innerWidth, overflow: document.documentElement.scrollWidth,
               }));
               assert(layout.overflow <= layout.viewport + 2, `Horizontal overflow ${JSON.stringify(layout)}`);
-              if (screen === 'upgrade') {
-                // [night-07n] The weekly board must not cover the boarding pass (week/day/time/passengers).
-                const hit = await page.evaluate(() => {
+              if (screen === 'upgrade' || screen === 'gameover') {
+                // [night-07n/07p] The weekly board and the game-over report must not cover the boarding pass
+                // (week/day/time/passengers) nor scroll.
+                const hit = await page.evaluate((selector) => {
                   const pass = document.querySelector('.airway-pass')?.getBoundingClientRect();
-                  const parts = [...document.querySelectorAll('.airway-upgrade-sign, .airway-upgrade-tag')];
+                  const parts = [...document.querySelectorAll(selector)];
                   if (!pass || parts.length < 2) return 'missing .airway-pass or the board';
                   for (const part of parts) {
                     const r = part.getBoundingClientRect();
@@ -86,10 +87,12 @@ try {
                     }
                   }
                   return '';
-                });
-                assert(!hit, `Upgrade board overlaps HUD: ${hit}`);
-                const bottom = await page.evaluate(() => document.querySelector('.airway-upgrade-open')?.scrollHeight ?? 0);
-                assert(bottom <= height + 1, `Upgrade board scrolls: ${bottom} > ${height}`);
+                }, screen === 'upgrade' ? '.airway-upgrade-sign, .airway-upgrade-tag'
+                  : '.airway-go-sign, .airway-go-board, .airway-go-strip, .airway-go-button');
+                assert(!hit, `${screen} overlaps HUD: ${hit}`);
+                const bottom = await page.evaluate((selector) => document.querySelector(selector)?.scrollHeight ?? 0,
+                  screen === 'upgrade' ? '.airway-upgrade-open' : '.airway-go-overlay');
+                assert(bottom <= height + 1, `${screen} scrolls: ${bottom} > ${height}`);
               }
               const filename = `${screen}-${language}-${width}x${height}.png`;
               await page.screenshot({ path: resolve(outdir, filename), animations: 'disabled' });
