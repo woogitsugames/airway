@@ -825,3 +825,15 @@ the account already deleted counts as done. The e-mail path (D-77) stays as the 
 Rejected: a `uid` field + collection-group query (needs a new index and a migration of existing entries); deleting
 the whole top document (the next reads would fall back to the 50-document query and the re-seeded top would get a
 later TTL than the entries it copies). **Status: in force (N12k).**
+
+## D-115 — Android per-app language list (2026-11-03, Claude, night N12l)
+R1d: Android 13+ offers a per-app language only for apps that declare their languages. The manifest now points
+`android:localeConfig` at `res/xml/locales_config.xml` with `en` and `pl` — the same set as `src/i18n` and iOS
+`CFBundleLocalizations` (D-91), kept equal by `test:android-config`. The in-game language setting stays the
+authority (D-31): a saved choice is read before the device language, and the system per-app language only changes
+what a player who never chose sees (through the WebView's `navigator.languages`, still to verify on a device).
+Rejected: AppCompat `setApplicationLocales` with a native picker and the `autoStoreLocales` service (a second
+language store that could disagree with the game's own; Android 12 and older have no system UI for it anyway);
+AGP `generateLocaleConfig` (needs `resources.properties` and only sees Android string resources, while the game's
+text lives in `src/i18n`). A per-app change while the game runs applies at the next start (`locale` is in
+`configChanges`). **Status: in force (N12l); device check open.**

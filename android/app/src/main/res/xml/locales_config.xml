@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- [night-12l] D-115 (R1d): the languages Airway ships (src/i18n: en, pl). Android 13+ lists them under
+     Settings > Apps > Airway > Language. The language chosen inside the game still wins (D-31): it is stored in
+     the game's settings and read before the device language. -->
+<locale-config xmlns:android="http://schemas.android.com/apk/res/android">
+    <locale android:name="en" />
+    <locale android:name="pl" />
+</locale-config>

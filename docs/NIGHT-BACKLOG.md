@@ -469,6 +469,12 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       queue cleared only after the server's answer. Settings → Help row "Delete my ranking data" with inline
       confirmation (PL/EN), shown only with an identity. New `test:e2e:delete-ranking` (page.route, no emulator).
       `docs/FIREBASE.md`, `docs/legal/leaderboards-privacy.md` updated. Owner answer Q-60 → C recorded as D-113.
+- [x] N12l **Android per-app language (R1d, D-115)** — `res/xml/locales_config.xml` (en, pl) and
+      `android:localeConfig` so Android 13+ lists Airway under Settings → Apps → Language. `test:android-config`
+      +2 checks: the list equals the `Language` type in `src/i18n` and iOS `CFBundleLocalizations`, and the saved
+      in-game language is read before the device language (D-31). `aapt2 link` (android-36, minSdk 24) accepts the
+      attribute. `docs/ANDROID.md` section "Per-app language" with the device check (does the WebView's
+      `navigator.languages` follow the per-app locale — not verifiable here).
 
 ## Research proposals (R-agent)
 Proposals from the research agent (findings and sources: `docs/RESEARCH.md`, sections "R1 — …"). Each item is
@@ -492,7 +498,7 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
 - [x] R1c → N12b **iOS store plist keys** — add `ITSAppUsesNonExemptEncryption = false` (HTTPS only, exempt; avoids the
       export-compliance prompt on every upload) and `CFBundleLocalizations = [en, pl]` (App Store lists the game's
       languages from the bundle). `test:ios-config` asserts both. **Area:** `ios/App/App/Info.plist`, scripts.
-- [ ] R1d **Android per-app language** — `res/xml/locales_config.xml` (en, pl) and `android:localeConfig` so
+- [x] R1d → N12l **Android per-app language** — `res/xml/locales_config.xml` (en, pl) and `android:localeConfig` so
       Android 13+ shows Airway in system per-app language settings; check on a device that the WebView's
       `navigator.languages` follows the per-app locale (uncertain) and that the in-game language setting still wins
       (D-31). `test:android-config` asserts the config. **Area:** `android/`, `src/i18n/index.ts` only if needed.
@@ -802,3 +808,4 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
 - 2026-11-03 · N12i one top-50 document per board (R3a, D-108) · night/12i-top-board · test:net-server 9/9 (5/9 on the old functions), test:firebase 9/9 on the emulator (7/9 on the old functions: no `rank`, no `meta/top`), test:fast 66/66, build ok; e2e/ui:matrix/store:shots not run (client unchanged); read count proven behaviourally (a direct entry edit is not read back), no emulator request log
 - 2026-11-03 · N12j per-player rate limit + split function caps (R3b, D-109) · night/12j-rate-limit · test:net-server 13/13 (9/13 on the old functions), test:net 9/9 (8/9 on the old client: a 429 dropped the queued run), test:firebase 10/10 on the emulator (9/10 on the old functions: no limit), test:fast 66/66, build ok; e2e/ui:matrix/store:shots not run (no UI change); caps not verified on a real deploy
 - 2026-11-03 · N12k in-app deletion of leaderboard data (R1a, D-93, D-114) + Q-60 → D-113 · night/12k-delete-my-data · test:net-server 16/16 (12/16 on the old functions), test:net 12/12 (9/12 on the old client), test:firebase 12/12 on the emulator (new deletion checks; `deleteMyData` absent before), test:e2e:delete-ranking 4/4 (new; 2/4 on the old settings), test:fast 66/66, build ok; ui:matrix/store:shots not run (row hidden without Firebase config); no real deploy
+- 2026-11-03 · N12l Android per-app language (R1d, D-115) · night/12l-android-locales · test:android-config 22/22 (21/22 on the old manifest), aapt2 link ok (android-36, minSdk 24), test:fast TBD, build TBD; no device run (WebView `navigator.languages` under a per-app locale unverified); e2e/ui:matrix not run (no web code changed)
