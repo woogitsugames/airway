@@ -199,10 +199,10 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       starting; dropping an aircraft on a route, picking the weekly card and the network closing were silent, and no
       test covered haptics at all. Light impact on an accepted aircraft drop and weekly pick, one heavy impact when
       the network closes; still behind the "Haptic feedback" switch, presentation only (D-13). `test:haptics`.
-- [ ] N10g **Draw the curfew barrier in the game** — the renderer has a red-white barrier ring for an airport closed
+- [x] N10g **Draw the curfew barrier in the game** — the renderer has a red-white barrier ring for an airport closed
       by the night curfew (task 11), but the game never called `setCurfew` (only `reset` cleared it): from Endless
       week 4 and in the curfew puzzles a closed airport looked open while planes held. Session sync feeds the
-      sim's `curfewClosed` per city to the world on change only.
+      sim's `curfewClosed` per city to the world on change only. The ring is small at gameplay zoom → N10h.
 
 ## Log
 <!-- one line per finished item: date UTC · item · PR · gate summary -->
@@ -255,3 +255,4 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
 - 2026-11-03 · N10d daily row score/streak + plural fix · night/10d-daily-row · test:fast 52/52 (test:format 13/13), build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:save-notice 4/4, e2e:screens-fit-320 12/12, test:e2e:daily-row 4/4
 - 2026-11-03 · N10e daily share + restart buttons (D-81) · night/10e-share · test:fast 52/52 (test:daily-mode 20/20), build ok, e2e:smoke 9/9, ui:matrix 32/32, test:e2e:daily-share 4/4
 - 2026-11-03 · N10f haptics for every committed action · night/10f-haptics · test:fast 53/53 (test:haptics 6/6), build ok, e2e:smoke 9/9; ui:matrix not run (no visual change)
+- 2026-11-03 · N10g curfew barrier drawn in the game · night/10g-curfew · test:fast 53/53, build ok, e2e:smoke 9/9, ui:matrix 32/32, test:e2e:curfew-barrier 2/2 (0/2 without the sync)

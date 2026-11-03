@@ -19,6 +19,9 @@ export interface AwDevState {
   readonly snapshotHash: string;
   /** [night-07q] Weekly upgrades taken so far, with the picked airport of targeted ones. */
   readonly upgrades?: readonly { readonly week: number; readonly upgrade: string; readonly hubId?: string }[];
+  /** [night-10g] Airports the sim closes by curfew now, and how many the renderer draws with the barrier. */
+  readonly curfewClosed?: readonly string[];
+  readonly curfewDrawn?: number;
 }
 
 export interface AwDevAdapter {

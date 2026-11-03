@@ -294,6 +294,8 @@ async function boot(): Promise<void> {
       aircraftAssignments: run?.assignments ?? 0,
       snapshotHash: run?.hash() ?? '',
       upgrades: (run?.sim.world.upgrades ?? []).map((item) => ({ ...item })), // [night-07q]
+      curfewClosed: (run?.cityList() ?? []).filter((city) => city.curfewClosed).map((city) => city.id), // [night-10g]
+      curfewDrawn: world?.curfewDrawn() ?? 0,
     };
   }
 

@@ -66,6 +66,8 @@ export interface WorldStats {
   readonly planes: number;
   readonly routes: number;
   readonly airports: number;
+  /** [night-10g] Airports drawn with the curfew barrier now. */
+  readonly curfewAirports: number;
   /** [night-04] Terrain LOD level (0 = preset mesh), drawn chunks / all chunks, terrain draw runs. */
   readonly terrainLevel: number;
   readonly terrainChunks: number;
@@ -415,6 +417,7 @@ export function createWorldRenderer(
         drawCalls: info.render.calls, triangles: info.render.triangles,
         geometries: info.memory.geometries, textures: info.memory.textures,
         planes: planes.stats.planes, routes: routes.stats.routes, airports: cities.size,
+        curfewAirports: [...closed].filter((id) => airports.has(id)).length,
         terrainLevel: globe?.lod.stats.level ?? 0, terrainChunks: globe?.lod.stats.visibleChunks ?? 0,
         terrainChunksTotal: globe?.lod.stats.chunks ?? 0, terrainRuns: globe?.lod.stats.runs ?? 0,
         terrainTriangles: globe?.lod.stats.triangles ?? 0, adaptations: adaptations.slice(),
