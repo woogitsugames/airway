@@ -15,7 +15,7 @@ import { createDailyMode } from './game/modes/daily';
 import { dailyRankingBoard } from './game/dailyRanking'; // [night-06c] D-66
 import { createBrowserLeaderboards } from './net'; // [night-06c] D-66
 import { EndlessRun } from './game/run';
-import { loadSavedSim, saveSourceFromSim, writeGame } from './game/save';
+import { loadSavedSimChecked, saveSourceFromSim, writeGame, type SaveNotice } from './game/save';
 import { LocalScoreService } from './game/scores';
 import { mountScreens, type ScreenName } from './game/screens';
 import { startSession, type GameSession, type RunMode, type SessionScreen } from './game/session';
@@ -100,8 +100,10 @@ async function boot(): Promise<void> {
   let dailySession: ReturnType<typeof daily.start> | null = null;
 
   // [night-07k] D-76: a save from older sim rules is replayed and written back here, once.
-  const loaded = await loadSavedSim(storage);
-  if (loaded) saved = summary(new EndlessRun(loaded.sim));
+  const loaded = await loadSavedSimChecked(storage);
+  if (loaded.restored) saved = summary(new EndlessRun(loaded.restored.sim));
+  // [night-10c] A save that exists but cannot be continued is said so on the menu, until the next flight starts.
+  let saveNotice: SaveNotice | null = loaded.issue;
 
   function summary(run: EndlessRun): SavedSummary {
     return { mode: run.mode === 'daily' ? 'daily' : 'endless', week: Math.floor(run.clockMinute / TICKS_PER_WEEK) + 1, /* [task-31] */ passengers: run.passengers };
@@ -119,12 +121,13 @@ async function boot(): Promise<void> {
         totalPuzzles: PUZZLES.length,
         dailyNew: !scores.getProgress(dailyKey()).officialUsed,
         saved: saved ? { week: saved.week, passengers: saved.passengers } : null,
+        notice: saveNotice ? t(saveNotice === 'unsupported' ? 'save.error.unsupported' : 'save.error.corrupt') : null,
       };
     },
     onMode: (mode) => {
       if (mode === 'continue') void continueSaved();
-      else if (mode === 'endless') startEndless(pendingSeed ?? freshSeed());
-      else if (mode === 'daily') startDaily();
+      else if (mode === 'endless') { saveNotice = null; startEndless(pendingSeed ?? freshSeed()); }
+      else if (mode === 'daily') { saveNotice = null; startDaily(); }
       else openPuzzles();
     },
     onScreen: (name: ScreenName) => {
@@ -232,11 +235,14 @@ async function boot(): Promise<void> {
   }
 
   async function continueSaved(): Promise<void> {
-    const sim = (await loadSavedSim(storage))?.sim ?? null;
+    const checked = await loadSavedSimChecked(storage);
+    const sim = checked.restored?.sim ?? null;
     if (!sim) {
       console.warn('Saved flight failed verification; starting fresh.');
       saved = null;
+      saveNotice = checked.issue ?? 'corrupt'; // [night-10c] the Continue row vanished: say why
       screens.show('menu');
+      screens.refresh();
       return;
     }
     const run = new EndlessRun(sim);

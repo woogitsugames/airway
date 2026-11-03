@@ -305,9 +305,25 @@ export function restoreSimFromSave(save: GameSaveV1): Sim | null {
  * so the re-simulation is paid once, not at every launch. A failed write-back keeps the old save untouched.
  */
 export async function loadSavedSim(storage: KeyValueStorage): Promise<RestoredSim | null> {
+  return (await loadSavedSimChecked(storage)).restored;
+}
+
+/**
+ * [night-10c] Saved flights the player is told about: a save exists but is damaged, or it comes from newer rules.
+ * Unreadable storage is not reported — there may be no save at all (private window, blocked storage).
+ */
+export type SaveNotice = 'corrupt' | 'unsupported';
+
+/** loadSavedSim plus why an existing save could not be continued (null: no save, or it restored). */
+export async function loadSavedSimChecked(storage: KeyValueStorage): Promise<{ restored: RestoredSim | null; issue: SaveNotice | null }> {
   const loaded = await readGame(storage);
-  if (loaded.status !== 'ok') return null;
+  if (loaded.status === 'missing') return { restored: null, issue: null };
+  if (loaded.status === 'error') return { restored: null, issue: loaded.issue === 'storage-unavailable' ? null : loaded.issue };
   const restored = restoreSimDetailed(loaded.save);
-  if (restored?.replayed) await writeGame(storage, saveSourceFromSim(restored.sim));
-  return restored;
+  if (!restored) {
+    const newer = loaded.save.paramsVersion !== null && loaded.save.paramsVersion > RULES_VERSION;
+    return { restored: null, issue: newer ? 'unsupported' : 'corrupt' };
+  }
+  if (restored.replayed) await writeGame(storage, saveSourceFromSim(restored.sim));
+  return { restored, issue: null };
 }
