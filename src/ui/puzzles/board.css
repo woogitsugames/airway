@@ -80,3 +80,9 @@
 .puzzle-curfew-hours { font-weight: 400; margin-left: 3px; }
 /* [night-07d] The codes column never shrinks below its content (a curfew mark adds ~30 px); detail and CTA give way. */
 .puzzle-route { grid-template-columns: minmax(max-content, 1fr) minmax(32px, 85px) minmax(72px, 96px); }
+/* [night-07h] One column grid for all strips (subgrid), so "TP/Jet" and the action line up even when one
+   strip carries a curfew mark. Without subgrid support the per-strip columns above still apply. */
+@supports (grid-template-columns: subgrid) {
+  .puzzle-route-list { grid-template-columns: minmax(max-content, 1fr) minmax(32px, 85px) minmax(72px, 96px); column-gap: 7px; row-gap: 5px; }
+  .puzzle-route { grid-column: 1 / -1; grid-template-columns: subgrid; }
+}
