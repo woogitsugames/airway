@@ -368,3 +368,220 @@ zmieniają symulacji domyślnego Endless ani Daily.
 Najpierw **R2g + R2h** (tanie, tylko scenariusze i menu, dają cel po 3 h), potem **R2i** (pierwsza nowa reguła,
 mała), **R2j** jako „duża” funkcja pierwszej aktualizacji po wydaniu (dobry temat wydarzenia Apple i wideo),
 R2k po teście zamkniętym, jeśli testerzy kończą biegi bez celu. Wybór kierunku: Q-50.
+
+## R3 — Rankingi Firebase: koszt i nadużycia przy skali premiery (stan 2026-11-03)
+
+Liczby do **Q-07** (budżet) i nowego **Q-53** (App Check). Ceny: strona cennika Cloud Run (tier 1, obejmuje
+`europe-west1`) i Firestore, pobrane 2026-11-03; ceny Firestore w tabeli to wartości domyślne z cennika — stawki dla
+`europe-west1` mogą się nieznacznie różnić (**NIEPEWNE**, sprawdzić w konsoli).
+
+### Ustalenia — cennik
+| Pozycja | Darmowo | Ponad limit | Źródło |
+|---|---|---|---|
+| Firestore odczyt / zapis / usunięcie | 50 000 / 20 000 / 20 000 **dziennie** (reset ok. północy czasu pacyficznego) | 0,03 / 0,09 / 0,01 USD za 100 000 | [Firestore pricing](https://cloud.google.com/firestore/pricing), [Firebase](https://firebase.google.com/docs/firestore/pricing) |
+| Usunięcia przez TTL (D-77) | **brak darmowej puli** (wymaga Blaze) | 0,01 USD za 100 000 | jw. |
+| Zapytanie `count()` | — | 1 odczyt za każde rozpoczęte 1000 wpisów indeksu; minimum 1 odczyt na zapytanie, także puste | jw. |
+| Funkcje 2. gen. (Cloud Run, rozliczanie za żądania) | 2 mln wywołań, 180 000 vCPU-s, 360 000 GiB-s **miesięcznie** na konto rozliczeniowe | 0,40 USD / mln; 0,000024 USD / vCPU-s; 0,0000025 USD / GiB-s; czas zaokrąglany w górę do 100 ms | [Cloud Run pricing](https://cloud.google.com/run/pricing) |
+| Funkcje 2. gen. — domyślne | 1 vCPU do 2 GB pamięci, współbieżność 80 na instancję; przy `maxInstances` żądania ponad limit czekają 30 s, potem 429 | — | [Manage functions](https://firebase.google.com/docs/functions/manage-functions) |
+| Anonimowe konta Auth | do 100 mln kont; 100 nowych kont / h / adres IP; logowanie anonimowe bez opłat do 50 000 MAU (powyżej tylko po przejściu na Identity Platform) | 0,0055–0,0025 USD / MAU (Identity Platform) | [Auth limits](https://firebase.google.com/docs/auth/limits); MAU: źródła wtórne, **NIEPEWNE** |
+| App Check (Play Integrity) | 10 000 żądań tokenu i 10 000 deszyfrowań dziennie; zwiększenie formularzem (do tygodnia), aplikacja musi być w Google Play | — | [Play Integrity setup](https://developer.android.com/google/play/integrity/setup) |
+
+### Ustalenia — co dziś kosztuje jedna gra dnia (kod `functions/src/index.ts`, `src/net/index.ts`)
+- `submitDaily`: 1 wywołanie, transakcja 1 odczyt + 2 zapisy (wpis dzienny + suma tygodnia), później 1 usunięcie TTL
+  (wpis tygodniowy dzieli się na dni tygodnia).
+- `getBoards` (wołane raz, po wysłaniu wyniku): dwa zapytania top 50 = **do 100 odczytów**, a gdy gracza nie ma w top 50:
+  +2 odczyty dokumentu i +2 zapytania `count()` (przy 10 000 wpisów ok. 5 odczytów każde). Razem **ok. 105 odczytów na
+  gracza dziennie** — to dominuje koszt.
+- Powtórka na serwerze (zmierzone w tej sesji, `Sim.replay` przez `verifyDailySubmission`, Node 22, Xeon 2,8 GHz, gra
+  bota z `scripts/bot.ts` na sześciu seedach dnia): 0,6 tyg. → 25–60 ms; 1–1,3 tyg. → 40–60 ms; 2,1 tyg. → 104–128 ms;
+  2,6–2,8 tyg. → 144–205 ms; dziennik 3–17 poleceń, 339–1531 B. Czyli ok. **60–70 ms CPU na tydzień gry** (rośnie
+  z wielkością sieci). Rdzeń Cloud Run może być wolniejszy — przyjmuję ×2. Bieg 30 tygodni (limit `MAX_REPLAY_TICKS`)
+  nie został zmierzony z prawdziwą siecią (bot nie dożywa) — **NIEPEWNE**, szacunek 2–5 s.
+- **Znalezisko:** zgłoszenie z pustym dziennikiem i `endTick` = 30 tygodni przechodzi (`ok`, wynik 0, `weeks: 30`,
+  229 ms), bo `Sim.replay` dalej tyka po końcu gry, a `weeks` liczy się z `endTick`. Wynik 0 nie oszukuje rankingu, ale
+  pole `weeks` da się zawyżyć, a każda taka próba kosztuje pełne 30 tygodni tyknięć (R3c).
+
+### Model kosztu (gracze dnia = DAU, którzy zagrają oficjalną grę dnia)
+| Gracze dnia | Odczyty / dzień (dziś) | Koszt dziś / mies. | Z jednym dokumentem „top 50” (R3a) |
+|---|---|---|---|
+| 300 | 32 000 | 0 (w darmowej puli) | 0 |
+| 1 000 | 105 000 | ok. 0,5 USD | 0 |
+| 5 000 | 525 000 | ok. 4,5 USD | 0 |
+| 10 000 | 1,05 mln | ok. 9,5 USD (+ ok. 0,3 USD zapisy) | ok. 0,5 USD |
+| 50 000 | 5,25 mln | ok. 47 USD | ok. 3–25 USD (zależnie od kosztu `count()` miejsca gracza) |
+
+Funkcje: 2 wywołania na gracza (10 000 graczy = 600 000 / mies., w darmowej puli); CPU 10 000 × ok. 0,4 s =
+120 000 vCPU-s / mies. — też w puli. Przy 50 000 graczy funkcje to ok. 10 USD / mies. (CPU ponad pulę). **Wniosek: bez nadużyć
+budżet 10 EUR (Q-07) wystarcza do ok. 10 000 graczy dziennie, a z R3a do ok. 25–30 000.**
+
+### Model nadużyć (najgorszy przypadek przy dzisiejszej konfiguracji)
+- **Zalewanie `getBoards`** to główne ryzyko: wystarczy jeden anonimowy token (Auth nie wymaga niczego więcej), każde
+  wywołanie czyta ok. 100 dokumentów. 200 wywołań/s z jednego skryptu = 17 mln wywołań / dobę ≈ **540 USD / dobę**
+  odczytów (+ 7 USD wywołań). Pułap `maxInstances: 10` × współbieżność 80 tego nie zatrzymuje (krótkie wywołania).
+  Budżet tylko powiadamia — niczego nie wyłącza (`docs/FIREBASE.md` krok 4).
+- **Zalewanie `submitDaily`**: odrzucenia strukturalne są tanie; prawidłowe zgłoszenia „30 tygodni” palą CPU. Pułap
+  10 instancji × 1 vCPU ogranicza koszt do ok. 36 000 vCPU-s / h ≈ **0,9 USD / h ≈ 22 USD / dobę** — wysoko, ale
+  ograniczone. Współbieżność 80 na 1 vCPU przy pracy CPU dławi też uczciwych graczy (kolejka).
+- Po R3a (jeden dokument na tablicę) i R3b (limit na uid + mniejsze pułapy) ten sam atak 200/s to ok. **5–10 USD
+  odczytów + 7 USD wywołań na dobę** — alert 50 % budżetu zadzwoni pierwszego dnia, a szkoda jest mała.
+- App Check zamyka ataki spoza aplikacji, ale nasz klient nie używa SDK Firebase (REST, D-66): potrzebna wtyczka
+  natywna (np. [Capawesome Firebase App Check](https://capawesome.io/docs/plugins/firebase/app-check/) — Play Integrity
+  na Androidzie, App Attest na iOS; nieoficjalna) albo własny most do Play Integrity / App Attest i wymiana tokenu przez
+  REST. Wymuszenie po stronie funkcji to `enforceAppCheck: true` w `onCall`; ochrona przed powtórzeniem
+  (`consumeAppCheckToken`, beta) dodaje rundę sieciową ([App Check for functions](https://firebase.google.com/docs/app-check/cloud-functions)).
+  Emulatory i symulatory nie przejdą atestacji (token debug). To nowa zależność i decyzja właściciela → **Q-53**.
+
+### Rekomendacja
+1. **Q-07:** budżet **10 EUR / mies.** z alertami 50/90/100 % oraz alertem prognozy; region `europe-west1` bez zmian.
+2. Przed testem zamkniętym z prawdziwym Firebase: **R3a** (dokument „top 50” na tablicę, odczyt 1–3 zamiast ~105)
+   i **R3b** (limit na uid, `getBoards` `maxInstances: 3`, `submitDaily` współbieżność 4). To kilka godzin pracy
+   i zmienia skalę ryzyka o dwa rzędy.
+3. **R3c** (powtórka kończy się na końcu gry; test kosztu najdłuższej gry) i **R3d** (hamulec: parametr
+   `LEADERBOARDS_PAUSED` + instrukcja na wypadek alertu).
+4. App Check (**R3e**) po teście zamkniętym, jeśli właściciel zgodzi się na wtyczkę (Q-53); do tego czasu R3a+R3b
+   wystarczą przy budżecie 10 EUR.
+5. Osobny ekran rankingu (Q-06) dopiero po R3a — inaczej każde otwarcie to kolejne ~105 odczytów.
+
+## R3 — Test zamknięty i playtest bez analityki (stan 2026-11-03)
+
+Uzupełnia R1o (protokół i „Kopiuj podsumowanie” z dziennika) — tu: rekrutacja, liczności, formularz, reguły decyzji
+i odpowiedzi do wniosku o produkcję. Dotyczy **Q-42** i nowego **Q-52**.
+
+### Ustalenia
+- **Reguła Google Play** (konta osobiste założone po 13.11.2023): test zamknięty z **≥ 12 testerami zapisanymi bez
+  przerwy przez ≥ 14 dni**; kto się wypisze i zapisze ponownie, liczy od nowa. Dopiero potem wniosek o produkcję,
+  w którym Google pyta: jak łatwo było zrekrutować testerów, jak bardzo byli zaangażowani (czy użyli wszystkich
+  funkcji), czy użycie przypominało docelowe, **podsumowanie opinii i sposób zbierania**, grupa docelowa, co wyróżnia
+  grę, szacunek instalacji w 1. roku, **co zmieniono po teście** i skąd wiadomo, że gra jest gotowa
+  ([Play Console Help 14151465](https://support.google.com/googleplay/android-developer/answer/14151465), 2026-11-03).
+- Od 2025 r. wnioski odrzucane są częściej za „niewystarczające zaangażowanie” mimo 12×14 (relacje deweloperów,
+  [DEV Community, 2026](https://dev.to/tizoc_araujo_3cd9fb67191f/google-play-closed-testing-rejected-for-insufficient-engagement-what-that-actually-means-in-2026-ion)
+  — **NIEPEWNE**, źródło nieoficjalne). Rada powtarzana przez wiele źródeł: wydać w trakcie testu co najmniej jedną
+  poprawkę i opisać ją we wniosku. Serwisy „12 testerów za opłatą / wymiana testów” istnieją; ich testerzy zwykle tylko
+  instalują — ryzyko odrzucenia, a opinie nie mają wartości.
+- **Mechanika Play:** testerzy z listy e-mail (do 2000 adresów na listę) albo Grupy Google; dołączają linkiem opt-in
+  (widoczny dopiero, gdy wydanie ma status „Opublikowane”); w konsoli podaje się **adres URL lub e-mail do opinii**.
+  Gra jest darmowa (D-16), więc problem płatnych testów nie dotyczy
+  ([Play Console Help 9845334](https://support.google.com/googleplay/android-developer/answer/9845334)).
+- **Raport przed wydaniem** (pre-launch report) uruchamia się sam po wysłaniu pakietu: crawler przez kilka minut na
+  telefonach i tabletach z Androidem 9+, zrzuty, awarie, dostępność; dla gier OpenGL przydatny jest dopiero z pętlą gry
+  ([9842757](https://support.google.com/googleplay/android-developer/answer/9842757)). Darmowy sygnał „czy w ogóle
+  startuje na Mali/Adreno” — wykorzystać w R3i.
+- **iOS (opcjonalnie równolegle):** TestFlight — do 10 000 testerów zewnętrznych, publiczny link z filtrami urządzeń,
+  pierwsza wersja przechodzi Beta App Review; testerzy wysyłają zrzut z adnotacją i komentarz do awarii prosto z
+  aplikacji ([TestFlight](https://developer.apple.com/testflight/)).
+- **Liczności:** 5 osób znajduje ok. 85 % problemów użyteczności, lepiej 3 rundy po 5 niż 1 runda po 15; przy dwóch
+  grupach (np. PL i EN) 3–4 osoby na grupę ([NN/g, Nielsen 2000](https://www.nngroup.com/articles/why-you-only-need-to-test-with-5-users/)).
+  12 testerów wystarcza do problemów samouczka i czytelności, ale **nie** do strojenia balansu liczbami — do balansu
+  służy bot (`test:balance`), testerzy mówią „za trudno / nudno w tygodniu N”.
+- **Nagroda dla testerów:** gra darmowa, więc kodów promocyjnych nie potrzeba (Play: do 500 kodów / kwartał; Apple od
+  26.03.2026 nie tworzy już kodów promocyjnych dla zakupów w aplikacji, kody pobrania płatnych aplikacji zostają —
+  [9to5Mac](https://9to5mac.com/?p=1025773), **NIEPEWNE**). Propozycja: podziękowanie w napisach (opt-in, znak
+  wywoławczy lub imię) — bez wpływu na prywatność rankingu.
+
+### Plan (do `docs/PLAYTEST.md`, razem z R1o)
+**Rekrutacja (T−7 dni):** 16–18 osób (zapas na odpadających), co najmniej 6 PL i 6 EN; mieszanka: 4–5 osób znających
+gry sieciowe/strategiczne, reszta „zwykli gracze”; co najmniej 3 osoby z budżetowym Androidem (Mali-G52/G57, 4 GB) i 2
+z tabletem/składakiem. Źródła: znajomi i rodzina, polskie społeczności gamedev i grupy graczy mobilnych, formularz
+zapisu na `airway.games` (D-67) — bez płatnych serwisów i wymian. Jedna Grupa Google „airway-testers”.
+
+**Przebieg (14 dni):**
+| Dzień | Co robią testerzy | Co zbieramy |
+|---|---|---|
+| 1 | instalacja, samouczek, pierwszy bieg Endless; 3–5 osób nagrywa ekran (systemowe nagrywanie) z komentarzem na głos przez pierwsze 10 min | nagrania (gdzie się zacinają), ankieta A (5 pytań) |
+| 2–6 | gra dnia codziennie, Endless dowolnie, zagadki 1–10 | nic, poza zgłoszeniami błędów |
+| 7 | ankieta B + „Kopiuj podsumowanie” z dziennika (R1o / R3j) | dane biegów, odpowiedzi |
+| 8 | **wydanie poprawki** z najczęstszymi problemami z dni 1–7 (do wniosku o produkcję) | — |
+| 9–13 | jak 2–6, zagadki 11–30 | — |
+| 14 | ankieta C + podsumowanie z dziennika | dane biegów, odpowiedzi |
+
+**Ankiety (PL/EN, Formularz Google, bez danych osobowych poza adresem z listy testu):**
+- A (dzień 1): Czy wiesz, czemu przegrałeś pierwszy bieg? (tak / chyba / nie + 1 zdanie); Co było niejasne w
+  samouczku?; Czy odróżniasz typy samolotów/lotnisk bez czytania? ; Telefon i czy gra się przycinała (nigdy /
+  czasem / często); Czy zagrasz jutro? (1–5).
+- B (dzień 7): Ile razy dziennie otwierasz grę; Co sprawia, że kończysz sesję; Najlepszy i najgorszy moment tygodnia;
+  Która karta ulepszeń wydaje się zawsze najlepsza (sprawdza Q-35); Bateria / grzanie się telefonu.
+- C (dzień 14): Czy poleciłbyś grę (0–10); Czego brakuje po kilku godzinach (cel, odmiana — sprawdza Q-50); Czy
+  zapłaciłbyś / ile (tylko sygnał do przyszłych decyzji, D-16 zostaje); Dźwięk (Q-29) i jasność nocy (Q-14).
+
+**Reguły decyzji (spisane przed testem, by wyniki nie były naginane):**
+| Sygnał | Próg | Decyzja |
+|---|---|---|
+| „Nie wiem, czemu przegrałem” po 1. biegu | ≥ 4 z 12 | najpierw R1j (wskazówka na raporcie końca), przed wydaniem |
+| Samouczek nieukończony (dziennik) | ≥ 3 z 12 | skrócić/przebudować krok, w którym odpadają (nagrania) |
+| Mediana pierwszego biegu (dziennik) | < 6 min albo > 20 min | Q-51/D-79: przestroić 1. tydzień |
+| Ta sama karta brana zawsze (dziennik R3j) | ≥ 70 % wyborów 1. tygodnia | Q-35 → wariant B |
+| „Czego brakuje” = cel / odmiana | ≥ 5 z 12 | Q-50 → R2g+R2h przed wydaniem |
+| Przycinanie „często” lub grzanie | ≥ 2 osoby na tym samym GPU | R3f/R3i dla tej rodziny GPU, Q-31/Q-32 |
+| Gra dnia grana ≥ 5 z 7 dni | < 4 z 12 osób | wrócić do Q-45 (przypomnienie) |
+
+**Z wyników do wniosku o produkcję:** jedna strona w `docs/PLAYTEST.md` — liczba testerów i dni, sposób zbierania
+(ankiety + podsumowania z dziennika + nagrania), 5 najczęstszych uwag, lista zmian w poprawce z dnia 8 (z PR), dowód
+gotowości (`test:ci` zielony, raport przed wydaniem bez awarii, brak zgłoszeń blokujących w dniach 9–14).
+
+### Rekomendacja
+Test zamknięty traktować jako prawdziwy playtest, nie formalność: 16–18 osób, poprawka w dniu 8, reguły decyzji spisane
+z góry. Przed startem potrzebne: R1o + R3j (dane z dziennika), R3k (arkusz odpowiedzi), konto Play (Q-42), wybór
+rekrutacji (Q-52). TestFlight równolegle tylko, jeśli konto Apple jest gotowe — iOS nie ma wymogu 12×14.
+
+## R3 — Pokrycie urządzeń i budżety wydajności (stan 2026-11-03)
+
+### Ustalenia
+- **Wersje Androida** (dane Google do 12.2025, [Android Headlines, 30.01.2026](https://www.androidheadlines.com/2026/01/android-version-distribution-numbers-2025-2026-market-share.html)):
+  16 — 7,5 %, 15 — 19,3 %, 14 — 17,2 %, 13 — 13,9 %, 12 — 11,4 %, 11 — 13,7 %, 10 — 7,8 %, **9 — 4,5 %, 8.x — 3,1 %,
+  7.x — 0,8 %**. StatCounter (ruch WWW) w 06.2026 pokazuje już Android 16 na 1. miejscu (23,7 %).
+- **WebView na starych Androidach:** Chrome 138 to ostatnia wersja dla Androida 8/9, od Chrome 139 (08.2025) wymagany
+  Android 10 ([PhoneArena](https://www.phonearena.com/news/if-your-android-phone-is-still-running-on-this-version-you-can-forget-about-chrome-updates_id171730));
+  WebView dzieli ten cykl (**NIEPEWNE** dla samego WebView). Airway ma `minSdkVersion = 24` (Android 7) — ok. **8,4 %**
+  urządzeń z Play dostaje zamrożony silnik, którego nigdy nie testujemy. Three r170 wymaga WebGL 2 (OpenGL ES 3.0);
+  manifest nie deklaruje `glEsVersion`, więc Play pokaże grę także telefonom bez ES 3.0.
+- **Chipy:** udział w dostawach (Counterpoint, Q4 2025, [Malaysian Wireless 03.2026](https://www.malaysianwireless.com/2026/03/apple-overtakes-qualcomm-q4-2025-soc-market/)):
+  MediaTek 30 %, Apple 23 %, Qualcomm 22 %, UNISOC 15 %, Samsung 6 %. MediaTek i UNISOC to prawie zawsze GPU **Mali**
+  (UNISOC także PowerVR/Mali starszych generacji) — czyli tani Android = Mali.
+- **Najczęściej kupowane tanie Androidy 2025** (Counterpoint: Galaxy A16 5G najlepiej sprzedającym się Androidem 2025;
+  Indie: Vivo Y29, Oppo A3x, Redmi 14C, Redmi A3x w top 5 —
+  [Counterpoint Q1 2025](https://www.counterpointresearch.com/en/insights/top-10-bestselling-smartphones-q1-2025),
+  [9to5Google](https://9to5google.com/2025/06/03/best-selling-phones-early-2025-by-country/)). Ich GPU wg kart
+  producentów (sprawdzić przed zakupem, **NIEPEWNE** co do wariantów regionalnych): Galaxy A06 / Redmi 14C / Moto G05 —
+  Helio G85/G81, **Mali-G52 MC2**; Galaxy A16 4G / Galaxy Tab A9 — Helio G99, **Mali-G57 MC2**; Vivo Y29 / część A16 5G —
+  Dimensity 6300, Mali-G57 MC2; Moto G (Snapdragon 680/4 Gen 2) — **Adreno 610/613** (popularne w BR/US). Typowo 4 GB RAM.
+  PL/EU: Samsung A + Xiaomi Redmi; BR: Samsung + Motorola; IN: Vivo/Oppo/Xiaomi/Samsung; US: iPhone + Samsung + Moto.
+- **Auto-dobór jakości trafia obok:** `chooseQualityPreset` daje `low` tylko przy ≤ 4 rdzeniach albo ≤ 3 GB. Wszystkie
+  telefony z listy wyżej mają **8 rdzeni** i zgłaszają 4 GB (`navigator.deviceMemory` jest zaokrąglane i ograniczone do
+  8 — dokładne zaokrąglanie **NIEPEWNE**), więc Mali-G52 MC2 startuje na **medium** (DPR 1,5, antyaliasing, 140–240 tys.
+  trójkątów) i dopiero adaptacja (D-73/D-74) schodzi w dół po kilku sekundach przycięć — pierwsze wrażenie testera to
+  przycięcia. WebGL w Chromium/WebView zwraca nazwę GPU przez `WEBGL_debug_renderer_info` (np. „Mali-G52 MC2”) — można
+  dobierać preset po rodzinie GPU (**NIEPEWNE**: niektóre WebView mogą maskować nazwę).
+- **Utrata kontekstu WebGL:** w `src/` nie ma obsługi `webglcontextlost` / `webglcontextrestored` ani ekranu „brak
+  WebGL 2”. Na Androidach z małą pamięcią kontekst ginie po powrocie z tła — Three częściowo odtwarza stan, ale nikt
+  tego nie testował; przy braku WebGL 2 gracz widzi pusty ekran.
+- **Tanie testy na prawdziwych GPU:** Firebase Test Lab — plan Spark 5 testów/dzień na fizycznych urządzeniach, Blaze
+  30 min/dzień gratis, potem 5 USD/h ([quotas](https://firebase.google.com/docs/test-lab/usage-quotas-pricing)). Test
+  typu **Game Loop** uruchamia aplikację z intencją `com.google.intent.action.TEST_LOOP`, gra sama robi scenariusz
+  i zapisuje własny plik wyników (FPS liczy aplikacja; domyślny limit 3 min)
+  ([Game Loop](https://firebase.google.com/docs/test-lab/android/game-loop)). Nasza scena `perf:scene` może działać jako
+  taka pętla — liczby z prawdziwych Mali/Adreno bez kupowania telefonów. Lista modeli w Test Lab — **NIEPEWNE**
+  (sprawdzić `gcloud firebase test android models list`).
+- **iOS:** cel wdrożenia 15.0; najsłabsze realne urządzenia to iPhone SE 2/3 i iPhone 11 (A13, 3–4 GB) oraz iPad 9. gen.
+  (A13). WebKit zwraca „Apple GPU”, więc tu preset tylko z rozmiaru ekranu i pamięci (często niedostępnej).
+
+### Co to znaczy dla budżetów z `docs/PERFORMANCE.md`
+Budżet low (≤ 33 ms p95, ≤ 35 tys. trójkątów terenu, ≤ 50 draw calli) jest pisany dokładnie pod Mali-G52 MC2 — ale ten
+telefon dziś na start dostaje medium. Najpierw trafić w preset (R3f), potem mierzyć na prawdziwym GPU (R3i), dopiero
+wtedy przestrajać próg 24 kl./s (Q-32) i tryb oszczędny (Q-31).
+
+### Lista urządzeń testowych (zakup lub pożyczka; ok. 1 600–2 000 zł razem, ceny orientacyjne **NIEPEWNE**)
+| Rola | Propozycja | Dlaczego |
+|---|---|---|
+| Najsłabszy cel | Galaxy A06 albo Redmi 14C/15C (Mali-G52 MC2, 4 GB) | najczęstsza klasa tanich telefonów PL/BR/IN; budżet low |
+| Tani średni | Galaxy A16 (Helio G99 lub Exynos 1330) | najlepiej sprzedający się Android 2025; budżet medium |
+| Adreno | Moto G z Snapdragon 4 Gen 2 / 680 | inna rodzina sterowników, popularna w BR/US |
+| Tablet / duży ekran | Galaxy Tab A9 lub A9+ | tani tablet, Mali-G57; układ poziomy i 3:4 |
+| Zamrożony WebView | dowolny telefon z Androidem 9 (z szuflady) | 4,5 % rynku; decyzja Q-54 |
+| iOS | iPhone SE 2/3 lub iPhone 11 | najsłabszy obsługiwany A13/A15 |
+Reszta (składak, flagowce, 120 Hz) — Test Lab i telefony testerów.
+
+### Rekomendacja
+R3f (preset po GPU) i R3h (deklaracja ES 3.0) przed testem zamkniętym; R3g (utrata kontekstu, ekran braku WebGL 2)
+przed wydaniem; R3i (Test Lab Game Loop) jako tani pomiar zanim właściciel kupi telefony. `minSdk`: podnieść do 29
+(Android 10) albo zostawić 24 z filtrem ES 3.0 — decyzja **Q-54**.
