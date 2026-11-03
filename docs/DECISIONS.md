@@ -889,6 +889,18 @@ a while (a delay before the pause is time the hub fills unseen), and option C "o
 reliable web signal for it). Known: the first-launch tutorial keeps its own controller and is not paused on blur.
 **Status: in force (N11i, `test:saves` 13 cases, `test:e2e:focus-pause` 3 cases).**
 
+## D-123 — Store shots in the exact Apple sizes and 16:9 (2026-11-03, Claude, night N12o)
+R2a: App Store Connect requires iPhone 6.9" (1320×2868) and iPad 13" (2064×2752) screenshots, and Play's large-screen
+promotion takes only 9:16 or 16:9 images with a short side ≥ 1080 px, which the foldable (4:5) and tablet (3:4) shots
+are not. `scripts/store-shots.mjs` gains three device profiles — `iphone` 440×956 @3, `ipad` 1032×1376 @2 and
+`landscape` 960×540 @2 (1920×1080, the game's own landscape HUD) — next to the existing three, so the store set is
+5 scenes × 2 languages × 6 devices = 60 real screenshots, with the same per-shot checks (size, not blank, no dev text,
+D-08 glyphs, contrast, warmth, boarding pass not covered). `checkStoreSizes` fails the copy check when a console size
+rule is not met, and every shot must be RGB without alpha (Apple rejects alpha). Each profile names its console slot
+(`docs/store/README.md`). Rejected: scaling the 1080×1920 phone shot up to Apple's size (blurry text, a different
+aspect, Apple asks for the real device class) and a 1206×2622 iPhone 6.3" profile (6.9" is the one Apple requires; it
+scales down). **Status: in force (N12o).**
+
 ## D-124 — Play device filter: OpenGL ES 3.0 required (2026-11-03, Claude, night N12p)
 R3h: three r170 has no WebGL 1 renderer, and Android WebView offers WebGL 2 only on OpenGL ES 3.0 GPUs, so on an
 ES 2.0 phone the game is a blank globe. The manifest now requires `glEsVersion 0x00030000`, so Play hides the game
