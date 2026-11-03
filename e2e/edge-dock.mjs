@@ -8,7 +8,9 @@ import { withBrowser, newGamePage, waitForScreen, assert, clickTestId, saveDiagn
 const started = performance.now();
 const results = [];
 const WIDE_SEED = 0xA1C2;
-const CASES = [['pl', 915, 412], ['en', 841, 673], ['en', 412, 915]];
+// [night-10x] + the unfolded Fold in portrait (673×841) and the tablet-sized 904×1000: their HUD layout is
+// 'foldable', with the dock as a right column, but only landscape reserved that column for the edge buttons.
+const CASES = [['pl', 915, 412], ['en', 841, 673], ['en', 412, 915], ['pl', 673, 841], ['en', 904, 1000]];
 
 async function audit(page) {
   return page.evaluate(() => {
@@ -21,6 +23,15 @@ async function audit(page) {
     const problems = [];
     for (const edge of edges) for (const other of blockers) {
       if (hit(edge.r, other.r)) problems.push(`${edge.name} ${Math.round(edge.r.left)},${Math.round(edge.r.top)} over ${other.name || 'pass'} ${Math.round(other.r.left)},${Math.round(other.r.top)}`);
+    }
+    // [night-10x] A right-column dock owns its whole band: an edge button between two tags is still in reach of
+    // a thumb aimed at the dock. Portrait keeps the dock as a bottom row (the pass/tag test above covers it).
+    const hud = document.querySelector('.airway-hud');
+    const dock = document.querySelector('.airway-dock')?.getBoundingClientRect();
+    if (hud && dock && hud.dataset.layout !== 'portrait') {
+      for (const edge of edges) {
+        if (edge.r.right > dock.left) problems.push(`${edge.name} ${Math.round(edge.r.left)}-${Math.round(edge.r.right)} in the dock column from ${Math.round(dock.left)} (${hud.dataset.layout})`);
+      }
     }
     return { edges: edges.length, problems };
   });

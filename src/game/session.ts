@@ -20,6 +20,7 @@ import { createGameOverController, type GameOverController, type GameOverSnapsho
 import { buildRunTimeline } from './runTimeline'; // [night-10r]
 import { mountHud, type GameSpeed, type HudController, type PlaneType } from '../ui/hud';
 import { createAirportOverlay, type AirportOverlay } from '../ui/overlay';
+import { resolveHudLayout } from '../ui/layout'; // [night-10x]
 import { WeeklyUpgradeView } from '../ui/upgrade';
 import { EndlessRun, cityDistanceKm, type RunCommand, type RunEvent } from './run';
 import { mountSlotHint } from './tutorial/slot-hint'; // [task-32]
@@ -106,10 +107,14 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
   // [night-08b] The same bands for the airport edge buttons: in landscape the dock is a right column
   // (right 12 px, 78 px wide), so the buttons stay left of it.
   const overlayReserved = { top: 84, bottom: 96, right: 0 };
+  // [night-10x] Follow the HUD's own layout: the 'foldable' layout (≥ 600 × 600, e.g. the unfolded Fold in
+  // portrait) also docks on the right, but `width > height` reserved the bottom row there, so edge buttons sat on
+  // the dock tags and the globe centred behind the dock.
   const applyInsets = (): void => {
+    const layout = resolveHudLayout(host.clientWidth, host.clientHeight);
     const landscape = host.clientWidth > host.clientHeight;
-    world.setInsets(landscape ? { top: 40, right: 110 } : { top: 84, bottom: 96 });
-    overlayReserved.right = landscape ? 96 : 0;
+    world.setInsets(layout === 'portrait' ? { top: 84, bottom: 96 } : { top: landscape ? 40 : 84, right: 110 });
+    overlayReserved.right = layout === 'portrait' ? 0 : 96;
   };
   applyInsets();
   window.addEventListener('resize', applyInsets);
