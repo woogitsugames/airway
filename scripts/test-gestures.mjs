@@ -45,6 +45,12 @@ for(const hit of ['empty','route-body']) test('orbit '+hit,()=>{
   assert.equal(s.events('rotate').length,1);assert.equal(s.events('start').length,0);
 });
 test('350 ms long press',()=>{const s=seq('route-body');s.send('down');s.g.advanceTime(349);assert.equal(s.events('menu').length,0);s.g.advanceTime(350);assert.equal(s.events('menu').length,1);});
+// [night-08d] A down handled late (it waited behind a long frame) or a late frame never turns a quick drag
+// into a long press; a steadily slow device still gets the menu.
+test('long press counts from the handled down',()=>{const s=seq('city');s.g.handle({type:'down',x:100,y:100,timeMs:0,handledMs:400,pointerId:1,pointerType:'touch',button:0});s.g.advanceTime(405);assert.equal(s.events('menu').length,0);s.send('move',130,100,420);assert.equal(s.events('start').length,1);assert.equal(s.events('menu').length,0);});
+test('handled-late press still opens after 350 ms',()=>{const s=seq('route-body');s.g.handle({type:'down',x:100,y:100,timeMs:0,handledMs:400,pointerId:1,pointerType:'touch',button:0});s.g.advanceTime(405);s.g.advanceTime(740);assert.equal(s.events('menu').length,0);s.g.advanceTime(751);assert.equal(s.events('menu').length,1);});
+test('late frame defers the long press one frame',()=>{const s=seq('city');s.send('down');s.g.advanceTime(16);s.g.advanceTime(480);assert.equal(s.events('menu').length,0);s.send('move',130,100,470);assert.equal(s.events('start').length,1);s.g.advanceTime(496);assert.equal(s.events('menu').length,0);});
+test('slow frames still open the long press',()=>{const s=seq('route-body');s.send('down');for(const t of [150,300,450])s.g.advanceTime(t);assert.equal(s.events('menu').length,0);s.g.advanceTime(600);assert.equal(s.events('menu').length,1);});
 test('city tap does not draw',()=>{const s=seq('city');s.send('down');s.send('up',100,100,10);assert.equal(s.events('start').length,0);});
 test('pinch cancels a route',()=>{const s=seq('city');s.send('down');s.send('move',140,100,20);s.send('down',230,100,70,2);s.send('move',280,100,90,2);assert.equal(s.events('cancel')[0][1],'pinch');assert.ok(s.events('zoom').length);});
 test('pinch before route starts',()=>{const s=seq('city');s.send('down');s.send('down',130,100,60,2);assert.equal(s.events('start').length,0);});

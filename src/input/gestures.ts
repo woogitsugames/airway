@@ -20,6 +20,11 @@ export interface GesturePointerSample {
   timeMs: number;
   pointerType?: GesturePointerType;
   button?: number;
+  /**
+   * [night-08d] When the app handled the sample (same clock as timeMs/rAF). A down that waited behind a long
+   * frame is older than it looks: the long press counts from here, so a quick drag is never read as a hold.
+   */
+  handledMs?: number;
 }
 
 export interface GestureCallbacks {
@@ -64,6 +69,11 @@ const LONG_PRESS_MS = 350;
 const EDGE_DWELL_MS = 120;
 const EDGE_MAX_DEGREES_PER_SECOND = 60;
 const MAX_EDGE_TICK_MS = 60;
+/**
+ * [night-08d] A frame later than this after the previous one may have input queued behind it (the browser
+ * dispatches it before the next rAF), so the long press is judged one frame later.
+ */
+const LONG_PRESS_LATE_FRAME_MS = 100;
 
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
@@ -82,6 +92,8 @@ export class GestureRecognizer {
   private startX = 0;
   private startY = 0;
   private startTime = 0;
+  private pressSinceMs = 0; // [night-08d] long-press clock: when the down was handled
+  private longPressDeferred = false; // [night-08d] the deadline already waited one late frame
   private lastMotionTime = 0;
   private downHit: GestureHit = { kind: 'empty' };
   private lastTap: LastTap | null = null;
@@ -108,13 +120,15 @@ export class GestureRecognizer {
     }
     const pointer = this.pointers.get(sample.pointerId);
     if (!pointer) return;
-    this.advanceTime(sample.timeMs);
     const oldX = pointer.x;
     const oldY = pointer.y;
     const oldTime = pointer.timeMs;
     pointer.x = sample.x;
     pointer.y = sample.y;
     pointer.timeMs = sample.timeMs;
+    // [night-08d] Judge the long press at the sample's own position: a move that waited behind a long frame
+    // past the 350 ms deadline is a drag, not a hold.
+    this.advanceTime(sample.timeMs);
     if (sample.type === 'cancel') {
       this.cancelAll();
       return;
@@ -174,14 +188,20 @@ export class GestureRecognizer {
   /** Drive with requestAnimationFrame while a pointer is down, or with fixed test times. */
   advanceTime(nowMs: number): void {
     if (!Number.isFinite(nowMs)) return;
-    const elapsed = clamp(nowMs - this.lastAdvanceMs, 0, MAX_EDGE_TICK_MS);
+    const gap = nowMs - this.lastAdvanceMs;
+    const elapsed = clamp(gap, 0, MAX_EDGE_TICK_MS);
     this.lastAdvanceMs = nowMs;
     if (this.pointers.size !== 1) return;
     const pointer = this.pointers.get(this.primaryId);
     if (!pointer) return;
     if ((this.mode === 'press-route' || this.mode === 'press-orbit') &&
-        nowMs - this.startTime >= LONG_PRESS_MS &&
+        nowMs - this.pressSinceMs >= LONG_PRESS_MS &&
         separationSquared(pointer.x, pointer.y, this.startX, this.startY) <= DRAG_THRESHOLD_DP ** 2) {
+      // [night-08d] After a late frame, give queued moves one frame to arrive (once: a slow device still opens it).
+      if (gap > LONG_PRESS_LATE_FRAME_MS && !this.longPressDeferred) {
+        this.longPressDeferred = true;
+        return;
+      }
       this.mode = 'context';
       this.callbacks.onContextMenu?.(this.downHit, pointer.x, pointer.y);
       return;
@@ -220,6 +240,8 @@ export class GestureRecognizer {
       this.startX = sample.x;
       this.startY = sample.y;
       this.startTime = sample.timeMs;
+      this.pressSinceMs = Math.max(sample.timeMs, sample.handledMs ?? sample.timeMs);
+      this.longPressDeferred = false;
       this.lastAdvanceMs = sample.timeMs;
       this.lastMotionTime = sample.timeMs;
       this.edgeSinceMs = -1;
@@ -317,6 +339,7 @@ export function attachPointerGestures(element: HTMLElement, callbacks: GestureCa
       type, pointerId: event.pointerId,
       x: event.clientX - bounds.left, y: event.clientY - bounds.top,
       timeMs: event.timeStamp,
+      handledMs: performance.now(), // [night-08d] a down queued behind a long frame is not yet a hold
       pointerType: event.pointerType === 'mouse' ? 'mouse' : event.pointerType === 'pen' ? 'pen' : 'touch',
       button: event.button,
     });

@@ -4,12 +4,38 @@
 // Steps depend on each other: after the first failure the rest are reported as SKIP. Fixed seed, fails closed.
 import { performance } from 'node:perf_hooks';
 import {
-  withBrowser, newGamePage, waitForScreen, dragGesture, state, assert, clickTestId, saveDiagnostics, SEED,
+  withBrowser, newGamePage, waitForScreen, state, assert, clickTestId, saveDiagnostics, SEED,
 } from './browser.mjs';
 
 const started = performance.now();
 const results = [];
 const memo = {};
+
+/**
+ * [night-08d] Real (CDP) mouse drag whose first moves are sent together with the press. dragGesture awaits
+ * the press before moving; on a loaded machine that round trip alone exceeded the 350 ms long press, so the globe
+ * correctly opened the route menu instead of drawing (the flake of N7x).
+ */
+async function pressAndDrag(page, { from, to }) {
+  const { width, height } = page.viewportSize();
+  for (const point of [from, to]) {
+    assert(Number.isFinite(point.x) && Number.isFinite(point.y) && point.x >= 0 && point.x < width &&
+      point.y >= 0 && point.y < height, `Gesture point outside viewport: ${JSON.stringify(point)}`);
+  }
+  const cdp = await page.context().newCDPSession(page);
+  const send = (type, { x, y }, buttons) => cdp.send('Input.dispatchMouseEvent',
+    { type, x, y, button: type === 'mouseMoved' && !buttons ? 'none' : 'left', buttons, clickCount: type === 'mouseMoved' ? 0 : 1 });
+  const at = (t) => ({ x: from.x + (to.x - from.x) * t, y: from.y + (to.y - from.y) * t });
+  try {
+    await send('mouseMoved', from, 0);
+    // Written to the socket back to back: the press and the first steps reach the page together.
+    await Promise.all([send('mousePressed', from, 1), send('mouseMoved', at(1 / 12), 1), send('mouseMoved', at(2 / 12), 1)]);
+    for (let step = 3; step <= 12; step++) await send('mouseMoved', at(step / 12), 1);
+    await send('mouseReleased', to, 0);
+  } finally {
+    await cdp.detach();
+  }
+}
 
 const storage = (page) => page.evaluate(() => ({
   active: JSON.parse(localStorage.getItem('aw-daily-active-v1') || 'null'),
@@ -61,11 +87,16 @@ const steps = [
   }],
   ['play: route, aircraft and some time', async (page) => {
     const initial = await state(page);
-    await dragGesture(page, await page.evaluate(() => window.aw.gesture('route')));
-    await page.waitForFunction((n) => window.aw.state().routeCount === n + 1, initial.routeCount, { timeout: 8000 });
-    await dragGesture(page, await page.evaluate(() => window.aw.gesture('plane')));
+    await pressAndDrag(page, await page.evaluate(() => window.aw.gesture('route')));
+    await page.waitForFunction((n) => window.aw.state().routeCount === n + 1, initial.routeCount, { timeout: 8000 })
+      .catch(() => { throw new Error('route drag did not add a route'); });
+    // [night-08d] A new route already flies one aircraft: count from here, not from before the route (the
+    // assignment could tick in during a slow drag and the count skipped the expected value).
+    const routed = await state(page);
+    await pressAndDrag(page, await page.evaluate(() => window.aw.gesture('plane')));
     await page.waitForFunction((n) => window.aw.state().aircraftAssignments === n + 1,
-      initial.aircraftAssignments, { timeout: 8000 });
+      routed.aircraftAssignments, { timeout: 8000 })
+      .catch(() => { throw new Error(`aircraft drag did not assign (planes ${routed.aircraftAssignments})`); });
     await page.evaluate(() => window.aw.advanceTicks(120));
     assert((await state(page)).tick > initial.tick, 'ticks did not advance');
   }],

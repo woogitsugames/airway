@@ -413,6 +413,9 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
   world.orbit.setZoom(3);
   syncWorld(true);
   syncUpgrade();
+  // [night-08d] Measure the boarding pass and dock now that they are mounted: the first frame (and the first
+  // gesture) already has the final framing instead of the pre-HUD bands until a resize observer fires.
+  applyInsets();
   callbacks.onScreen('game');
 
   function dragBetween(a: ProjectedCity, b: ProjectedCity) { return { from: { x: a.x, y: a.y }, to: { x: b.x, y: b.y } }; }
