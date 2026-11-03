@@ -313,6 +313,14 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       when the edge is too crowded may it sit under a tag, and never on an airport marker (N10v). New
       `e2e/edge-chip-tags.mjs` (`test:e2e:edge-chip-tags`, in `test:ci`).
 
+## Continuous development round N11 (night agent, after the N10 letters ran out)
+- [x] N11a **No globe frames behind opaque pages** — settings, licences, logbook, the puzzle screens and the tutorial
+      replay hide the canvas behind an opaque page, yet the menu globe kept drawing under them at full rate
+      (SwiftShader: 36 frames in 1.2 s behind settings; on a phone 60–120 Hz for a whole puzzle session). The router
+      now marks those pages as covering the world and the frame loop skips all camera, demo and render work while
+      no run is attached. `e2e/covered-pages.mjs` (`test:e2e:covered-pages`, in `test:ci`), DEV probe
+      `__awWorld.frames()`, `docs/PERFORMANCE.md` § N11a.
+
 ## Log
 <!-- one line per finished item: date UTC · item · PR · gate summary -->
 - 2026-11-03 · N1 puzzles 16–30 (D-70) · night/01-puzzles · test:fast 42/42, build ok, e2e:smoke 9/9, ui:matrix 32/32, test:puzzles levels=30 cases=168 failed=0 (merged tree with #40, #42)
@@ -384,3 +392,4 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
 - 2026-11-03 · N10y puzzle board opens where the player is · night/10y-board-scroll · test:fast 58/58, build ok, test:e2e:puzzle-board-scroll 12/12 (3 runs; 3/12 on the old board), e2e:puzzles 34/34; e2e:smoke/ui:matrix not run (puzzle board only)
 - 2026-11-03 · N10x long play 800×1280 PL 4× + edge buttons on the portrait Fold dock · night/10x-fold-dock · ui:long-play runs=2 maxWeek=3 issues=0; test:fast 58/58, build ok, e2e:smoke 9/9, ui:matrix 32/32, test:e2e:edge-dock 5/5 (3/5 on the old session), e2e:edge-chip-airports 2/2, e2e:continue-framing 2/2, store:shots 30 (test:store-shots 30/30)
 - 2026-11-03 · N10z edge chips clear of airport tags · night/10z-chip-tags · test:fast 58/58, build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:edge-dock 5/5, e2e:edge-chip-airports 2/2, e2e:upgrade-picks 10/10, test:e2e:edge-chip-tags 6/6 twice (4/6 on the old overlay)
+- 2026-11-03 · N11a no globe frames behind opaque pages · night/11a-covered-pages · test:fast 58/58, build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:tutorial 21/21, e2e:screens-fit 18/18, e2e:logbook 4/4, e2e:settings-groups 4/4, e2e:puzzle-board-scroll 12/12, test:e2e:covered-pages 2/2 ×3 (0/2 before)
