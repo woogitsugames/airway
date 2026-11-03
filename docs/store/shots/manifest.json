@@ -17,13 +17,13 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 00:11 PASAŻERÓW 29 0 0 0 1×",
+   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 00:04 PASAŻERÓW 29 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
-    "routes": 9.43,
+    "routes": 9.39,
     "airports": 9.04,
-    "planes": 9.08,
-    "tags": 11.97
+    "planes": 9.18,
+    "tags": 11.88
    },
    "warmth": {
     "gold": 0.002,
@@ -32,10 +32,10 @@
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 91.2,
-    "lumaStd": 80.1,
+    "meanLuma": 90.4,
+    "lumaStd": 79.6,
     "whiteShare": 0,
-    "colours": 350
+    "colours": 338
    }
   },
   {
@@ -46,13 +46,13 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 00:11 PASAŻERÓW 29 0 0 0 1×",
+   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 00:01 PASAŻERÓW 29 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
-    "routes": 9.39,
+    "routes": 9.37,
     "airports": 9.04,
-    "planes": 8.98,
-    "tags": 1.68
+    "planes": 9.18,
+    "tags": 1.56
    },
    "warmth": {
     "gold": 0.002,
@@ -61,10 +61,10 @@
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 74.5,
-    "lumaStd": 68,
+    "meanLuma": 74.2,
+    "lumaStd": 67.7,
     "whiteShare": 0,
-    "colours": 336
+    "colours": 325
    }
   },
   {
@@ -75,12 +75,12 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 00:11 PASAŻERÓW 29 0 0 0 1×",
+   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 23:58 PASAŻERÓW 29 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
-    "routes": 9.38,
-    "airports": 9.04,
-    "planes": 8.95,
+    "routes": 9.37,
+    "airports": 9.03,
+    "planes": 9.39,
     "tags": 1.56
    },
    "warmth": {
@@ -90,10 +90,10 @@
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 72.5,
-    "lumaStd": 66,
+    "meanLuma": 72.3,
+    "lumaStd": 65.7,
     "whiteShare": 0,
-    "colours": 336
+    "colours": 329
    }
   },
   {
@@ -107,22 +107,22 @@
    "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 17:06 PASAŻERÓW 25 0 0 0 1×",
    "sun": "-70.7@31.2,38.2",
    "contrast": {
-    "routes": 10.21,
-    "airports": 8.9,
-    "planes": 7.7,
-    "tags": 13.28
+    "routes": 10.13,
+    "airports": 8.85,
+    "planes": 7.65,
+    "tags": 13.26
    },
    "warmth": {
-    "gold": 0.082,
-    "ratio": 0.958
+    "gold": 0.081,
+    "ratio": 0.966
    },
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 103,
-    "lumaStd": 75.3,
+    "meanLuma": 103.3,
+    "lumaStd": 75.2,
     "whiteShare": 0,
-    "colours": 584
+    "colours": 574
    }
   },
   {
@@ -133,25 +133,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 17:08 PASAŻERÓW 25 0 0 0 1×",
+   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 17:02 PASAŻERÓW 25 0 0 0 1×",
    "sun": "-70.7@31.2,38.2",
    "contrast": {
-    "routes": 10.3,
-    "airports": 9.1,
-    "planes": 7.77,
-    "tags": 13.58
+    "routes": 10.15,
+    "airports": 9,
+    "planes": 7.6,
+    "tags": 13.25
    },
    "warmth": {
-    "gold": 0.111,
-    "ratio": 1.014
+    "gold": 0.101,
+    "ratio": 1.021
    },
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 89.5,
-    "lumaStd": 65.9,
+    "meanLuma": 90.8,
+    "lumaStd": 65.5,
     "whiteShare": 0,
-    "colours": 576
+    "colours": 569
    }
   },
   {
@@ -162,25 +162,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 17:08 PASAŻERÓW 25 0 0 0 1×",
+   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 17:04 PASAŻERÓW 25 0 0 0 1×",
    "sun": "-70.7@31.2,38.2",
    "contrast": {
-    "routes": 10.33,
-    "airports": 9.09,
-    "planes": 7.77,
+    "routes": 10.26,
+    "airports": 9.04,
+    "planes": 7.68,
     "tags": 1.65
    },
    "warmth": {
-    "gold": 0.109,
-    "ratio": 1.004
+    "gold": 0.105,
+    "ratio": 1.008
    },
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 87.4,
-    "lumaStd": 64.3,
+    "meanLuma": 88.2,
+    "lumaStd": 64.1,
     "whiteShare": 0,
-    "colours": 575
+    "colours": 588
    }
   },
   {
@@ -206,9 +206,9 @@
     "width": 1080,
     "height": 1920,
     "meanLuma": 156.2,
-    "lumaStd": 64.9,
+    "lumaStd": 65,
     "whiteShare": 0,
-    "colours": 174
+    "colours": 175
    }
   },
   {
@@ -221,20 +221,20 @@
    "devOverlay": false,
    "text": "+5 ULN BKO TYDZIEŃ 01 DZIEŃ 3/3 GODZ. 02:00 PASAŻERÓW 37 0 0 0 1× Tydzień 1 Hangar: przyszły trzy skrzynie. Otwierasz jedną. FRACHT · TP-48 1/3 Turbo­śmigłowiec ZASIĘG 2 500 km MIEJSC 48 NAJLEPSZY krótkie trasy FRACHT · WB-300 2/3 Szeroko­kadłubowiec ZASIĘG 11 000 km MIEJSC 300 NAJLEPSZY przez ocean FRACHT · SLOT+2 3/3 Sloty startowe ODLOTY +2 na godzinę DLA wybranego lotniska",
    "contrast": {
-    "routes": 9.5,
-    "airports": 9.04,
+    "routes": 9.49,
+    "airports": 9.09,
     "planes": 9.84,
-    "tags": 13.15
+    "tags": 12.32
    },
    "warmth": {
-    "gold": 0.002,
-    "ratio": 0.427
+    "gold": 0.003,
+    "ratio": 0.479
    },
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 156.6,
-    "lumaStd": 63.5,
+    "meanLuma": 156.3,
+    "lumaStd": 63.9,
     "whiteShare": 0,
     "colours": 138
    }
@@ -251,8 +251,8 @@
    "contrast": {
     "routes": 9.5,
     "airports": 9.1,
-    "planes": 9.87,
-    "tags": 1.59
+    "planes": 10.01,
+    "tags": 1.58
    },
    "warmth": {
     "gold": 0.003,
@@ -279,7 +279,7 @@
    "contrast": {
     "routes": 4.42,
     "airports": 4.14,
-    "planes": 3.29,
+    "planes": 3.02,
     "tags": null
    },
    "warmth": {
@@ -335,7 +335,7 @@
    "contrast": {
     "routes": 4.39,
     "airports": 4.09,
-    "planes": 2.89,
+    "planes": 2.98,
     "tags": null
    },
    "warmth": {
@@ -359,7 +359,7 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Airway AIRWAY.GAMES · TERMINAL 1 ODLOTY BRAMKA STATUS L L O O T T B B E E Z Z K K O O Ń Ń C C A A brak rekordu A A 1 1 W W E E J J Ś Ś C C I I E E Z Z A A D D A A N N I I A A 0 z 15 rozwiązanych B B 4 4 P P L L A A N N O O W W O O D D Z Z I I Ś Ś 0 0 3 3 . . 1 1 1 1 ten sam świat dla wszystkich C C 2 2 N N O O W W Y Y U U S S T T A A W W I I E E N N I I A A D D 0 0",
+   "text": "Airway AIRWAY.GAMES · TERMINAL 1 ODLOTY BRAMKA STATUS L L O O T T B B E E Z Z K K O O Ń Ń C C A A brak rekordu A A 1 1 W W E E J J Ś Ś C C I I E E Z Z A A D D A A N N I I A A 0 z 30 rozwiązanych B B 4 4 P P L L A A N N O O W W O O D D Z Z I I Ś Ś 0 0 3 3 . . 1 1 1 1 ten sam świat dla wszystkich C C 2 2 N N O O W W Y Y U U S S T T A A W W I I E E N N I I A A D D 0 0",
    "png": {
     "width": 1080,
     "height": 1920,
@@ -377,14 +377,14 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Airway AIRWAY.GAMES · TERMINAL 1 ODLOTY BRAMKA STATUS L L O O T T B B E E Z Z K K O O Ń Ń C C A A brak rekordu A A 1 1 W W E E J J Ś Ś C C I I E E Z Z A A D D A A N N I I A A 0 z 15 rozwiązanych B B 4 4 P P L L A A N N O O W W O O D D Z Z I I Ś Ś 0 0 3 3 . . 1 1 1 1 ten sam świat dla wszystkich C C 2 2 N N O O W W Y Y U U S S T T A A W W I I E E N N I I A A D D 0 0",
+   "text": "Airway AIRWAY.GAMES · TERMINAL 1 ODLOTY BRAMKA STATUS L L O O T T B B E E Z Z K K O O Ń Ń C C A A brak rekordu A A 1 1 W W E E J J Ś Ś C C I I E E Z Z A A D D A A N N I I A A 0 z 30 rozwiązanych B B 4 4 P P L L A A N N O O W W O O D D Z Z I I Ś Ś 0 0 3 3 . . 1 1 1 1 ten sam świat dla wszystkich C C 2 2 N N O O W W Y Y U U S S T T A A W W I I E E N N I I A A D D 0 0",
    "png": {
     "width": 1346,
     "height": 1682,
     "meanLuma": 91.9,
-    "lumaStd": 69.9,
+    "lumaStd": 69.8,
     "whiteShare": 0,
-    "colours": 640
+    "colours": 641
    }
   },
   {
@@ -395,14 +395,14 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Airway AIRWAY.GAMES · TERMINAL 1 ODLOTY BRAMKA STATUS L L O O T T B B E E Z Z K K O O Ń Ń C C A A brak rekordu A A 1 1 W W E E J J Ś Ś C C I I E E Z Z A A D D A A N N I I A A 0 z 15 rozwiązanych B B 4 4 P P L L A A N N O O W W O O D D Z Z I I Ś Ś 0 0 3 3 . . 1 1 1 1 ten sam świat dla wszystkich C C 2 2 N N O O W W Y Y U U S S T T A A W W I I E E N N I I A A D D 0 0",
+   "text": "Airway AIRWAY.GAMES · TERMINAL 1 ODLOTY BRAMKA STATUS L L O O T T B B E E Z Z K K O O Ń Ń C C A A brak rekordu A A 1 1 W W E E J J Ś Ś C C I I E E Z Z A A D D A A N N I I A A 0 z 30 rozwiązanych B B 4 4 P P L L A A N N O O W W O O D D Z Z I I Ś Ś 0 0 3 3 . . 1 1 1 1 ten sam świat dla wszystkich C C 2 2 N N O O W W Y Y U U S S T T A A W W I I E E N N I I A A D D 0 0",
    "png": {
     "width": 1536,
     "height": 2048,
     "meanLuma": 93.4,
     "lumaStd": 69.5,
     "whiteShare": 0,
-    "colours": 663
+    "colours": 667
    }
   },
   {
@@ -413,13 +413,13 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "WEEK 01 DAY 2/3 TIME 00:12 PASSENGERS 29 0 0 0 1×",
+   "text": "WEEK 01 DAY 2/3 TIME 00:05 PASSENGERS 29 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
-    "routes": 9.43,
+    "routes": 9.4,
     "airports": 9.04,
-    "planes": 9.16,
-    "tags": 11.97
+    "planes": 9.08,
+    "tags": 11.95
    },
    "warmth": {
     "gold": 0.002,
@@ -431,7 +431,7 @@
     "meanLuma": 91.2,
     "lumaStd": 80.1,
     "whiteShare": 0,
-    "colours": 349
+    "colours": 348
    }
   },
   {
@@ -442,17 +442,17 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "WEEK 01 DAY 2/3 TIME 00:10 PASSENGERS 29 0 0 0 1×",
+   "text": "WEEK 01 DAY 2/3 TIME 00:06 PASSENGERS 29 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
-    "routes": 9.39,
+    "routes": 9.37,
     "airports": 9.04,
-    "planes": 9.06,
-    "tags": 3.48
+    "planes": 8.88,
+    "tags": 1.61
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.476
+    "ratio": 0.475
    },
    "png": {
     "width": 1346,
@@ -460,7 +460,7 @@
     "meanLuma": 74.5,
     "lumaStd": 68,
     "whiteShare": 0,
-    "colours": 337
+    "colours": 329
    }
   },
   {
@@ -471,17 +471,17 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "WEEK 01 DAY 2/3 TIME 00:08 PASSENGERS 29 0 0 0 1×",
+   "text": "WEEK 01 DAY 2/3 TIME 00:10 PASSENGERS 29 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
     "routes": 9.39,
-    "airports": 9.04,
-    "planes": 9.05,
+    "airports": 9.05,
+    "planes": 9.04,
     "tags": 1.56
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.465
+    "ratio": 0.466
    },
    "png": {
     "width": 1536,
@@ -489,7 +489,7 @@
     "meanLuma": 72.5,
     "lumaStd": 66,
     "whiteShare": 0,
-    "colours": 329
+    "colours": 336
    }
   },
   {
@@ -500,25 +500,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "WEEK 01 DAY 2/3 TIME 17:07 PASSENGERS 25 0 0 0 1×",
+   "text": "WEEK 01 DAY 2/3 TIME 17:04 PASSENGERS 25 0 0 0 1×",
    "sun": "-70.7@31.2,38.2",
    "contrast": {
-    "routes": 10.22,
-    "airports": 8.9,
-    "planes": 7.59,
-    "tags": 13.28
+    "routes": 10.13,
+    "airports": 8.86,
+    "planes": 7.6,
+    "tags": 13.26
    },
    "warmth": {
-    "gold": 0.082,
-    "ratio": 0.959
+    "gold": 0.081,
+    "ratio": 0.965
    },
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 103.1,
-    "lumaStd": 75.3,
+    "meanLuma": 103.8,
+    "lumaStd": 75,
     "whiteShare": 0,
-    "colours": 585
+    "colours": 583
    }
   },
   {
@@ -529,25 +529,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "WEEK 01 DAY 2/3 TIME 17:03 PASSENGERS 25 0 0 0 1×",
+   "text": "WEEK 01 DAY 2/3 TIME 17:04 PASSENGERS 25 0 0 0 1×",
    "sun": "-70.7@31.2,38.2",
    "contrast": {
-    "routes": 10.15,
-    "airports": 9,
-    "planes": 7.6,
-    "tags": 13.25
+    "routes": 10.21,
+    "airports": 9.03,
+    "planes": 7.79,
+    "tags": 13.35
    },
    "warmth": {
-    "gold": 0.103,
-    "ratio": 1.019
+    "gold": 0.104,
+    "ratio": 1.018
    },
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 90.5,
-    "lumaStd": 65.6,
+    "meanLuma": 90.4,
+    "lumaStd": 65.7,
     "whiteShare": 0,
-    "colours": 577
+    "colours": 573
    }
   },
   {
@@ -558,25 +558,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "WEEK 01 DAY 2/3 TIME 17:05 PASSENGERS 25 0 0 0 1×",
+   "text": "WEEK 01 DAY 2/3 TIME 17:04 PASSENGERS 25 0 0 0 1×",
    "sun": "-70.7@31.2,38.2",
    "contrast": {
-    "routes": 10.21,
+    "routes": 10.19,
     "airports": 9.03,
-    "planes": 7.72,
+    "planes": 7.75,
     "tags": 1.65
    },
    "warmth": {
-    "gold": 0.103,
-    "ratio": 1.011
+    "gold": 0.107,
+    "ratio": 1.006
    },
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 88.1,
-    "lumaStd": 64.1,
+    "meanLuma": 88.6,
+    "lumaStd": 64,
     "whiteShare": 0,
-    "colours": 584
+    "colours": 580
    }
   },
   {
@@ -591,7 +591,7 @@
    "contrast": {
     "routes": 9.52,
     "airports": 9.04,
-    "planes": 10.01,
+    "planes": 9.97,
     "tags": 12.13
    },
    "warmth": {
@@ -604,7 +604,7 @@
     "meanLuma": 153.7,
     "lumaStd": 65.1,
     "whiteShare": 0,
-    "colours": 178
+    "colours": 177
    }
   },
   {
@@ -619,8 +619,8 @@
    "contrast": {
     "routes": 9.49,
     "airports": 9.09,
-    "planes": 10,
-    "tags": 12.29
+    "planes": 9.87,
+    "tags": 12.32
    },
    "warmth": {
     "gold": 0.003,
@@ -647,12 +647,12 @@
    "contrast": {
     "routes": 9.5,
     "airports": 9.1,
-    "planes": 10.01,
+    "planes": 9.94,
     "tags": 1.58
    },
    "warmth": {
     "gold": 0.003,
-    "ratio": 0.469
+    "ratio": 0.47
    },
    "png": {
     "width": 1536,
@@ -729,22 +729,22 @@
    "devOverlay": false,
    "text": "WEEK 02 DAY 3/3 TIME 14:38 PASSENGERS 59 1 0 0 1× NETWORK CLOSED DEPARTURES · BGW FLIGHT / DEST. GATE STATUS AW101 · AMM A1 CANCELLED ATC · INCIDENT REPORT Passengers delivered: 59 Weeks completed: 1 THREE KEY CAUSES 25 passengers had no available route to their destination region. 62% of waiting passengers were headed to Northern Europe (16 people). The waiting area reached 26 of 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
    "contrast": {
-    "routes": 4.42,
-    "airports": 4.12,
-    "planes": 2.98,
+    "routes": 4.39,
+    "airports": 4.09,
+    "planes": 4.21,
     "tags": null
    },
    "warmth": {
-    "gold": 0.005,
-    "ratio": 1.001
+    "gold": 0.007,
+    "ratio": 1.075
    },
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 98.4,
-    "lumaStd": 72.9,
+    "meanLuma": 98.6,
+    "lumaStd": 72.7,
     "whiteShare": 0,
-    "colours": 199
+    "colours": 201
    }
   },
   {
@@ -755,14 +755,14 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Airway AIRWAY.GAMES · TERMINAL 1 DEPARTURES GATE STATUS E E N N D D L L E E S S S S F F L L I I G G H H T T no record yet A A 1 1 B B O O A A R R D D I I N N G G P P U U Z Z Z Z L L E E S S 0 of 15 solved B B 4 4 O O N N T T I I M M E E T T O O D D A A Y Y 0 0 3 3 . . 1 1 1 1 same world for everyone C C 2 2 N N E E W W S S E E T T T T I I N N G G S S D D 0 0",
+   "text": "Airway AIRWAY.GAMES · TERMINAL 1 DEPARTURES GATE STATUS E E N N D D L L E E S S S S F F L L I I G G H H T T no record yet A A 1 1 B B O O A A R R D D I I N N G G P P U U Z Z Z Z L L E E S S 0 of 30 solved B B 4 4 O O N N T T I I M M E E T T O O D D A A Y Y 0 0 3 3 . . 1 1 1 1 same world for everyone C C 2 2 N N E E W W S S E E T T T T I I N N G G S S D D 0 0",
    "png": {
     "width": 1080,
     "height": 1920,
     "meanLuma": 83.1,
     "lumaStd": 69,
     "whiteShare": 0,
-    "colours": 622
+    "colours": 628
    }
   },
   {
@@ -773,14 +773,14 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Airway AIRWAY.GAMES · TERMINAL 1 DEPARTURES GATE STATUS E E N N D D L L E E S S S S F F L L I I G G H H T T no record yet A A 1 1 B B O O A A R R D D I I N N G G P P U U Z Z Z Z L L E E S S 0 of 15 solved B B 4 4 O O N N T T I I M M E E T T O O D D A A Y Y 0 0 3 3 . . 1 1 1 1 same world for everyone C C 2 2 N N E E W W S S E E T T T T I I N N G G S S D D 0 0",
+   "text": "Airway AIRWAY.GAMES · TERMINAL 1 DEPARTURES GATE STATUS E E N N D D L L E E S S S S F F L L I I G G H H T T no record yet A A 1 1 B B O O A A R R D D I I N N G G P P U U Z Z Z Z L L E E S S 0 of 30 solved B B 4 4 O O N N T T I I M M E E T T O O D D A A Y Y 0 0 3 3 . . 1 1 1 1 same world for everyone C C 2 2 N N E E W W S S E E T T T T I I N N G G S S D D 0 0",
    "png": {
     "width": 1346,
     "height": 1682,
     "meanLuma": 91.9,
-    "lumaStd": 69.9,
+    "lumaStd": 69.8,
     "whiteShare": 0,
-    "colours": 642
+    "colours": 640
    }
   },
   {
@@ -791,14 +791,14 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Airway AIRWAY.GAMES · TERMINAL 1 DEPARTURES GATE STATUS E E N N D D L L E E S S S S F F L L I I G G H H T T no record yet A A 1 1 B B O O A A R R D D I I N N G G P P U U Z Z Z Z L L E E S S 0 of 15 solved B B 4 4 O O N N T T I I M M E E T T O O D D A A Y Y 0 0 3 3 . . 1 1 1 1 same world for everyone C C 2 2 N N E E W W S S E E T T T T I I N N G G S S D D 0 0",
+   "text": "Airway AIRWAY.GAMES · TERMINAL 1 DEPARTURES GATE STATUS E E N N D D L L E E S S S S F F L L I I G G H H T T no record yet A A 1 1 B B O O A A R R D D I I N N G G P P U U Z Z Z Z L L E E S S 0 of 30 solved B B 4 4 O O N N T T I I M M E E T T O O D D A A Y Y 0 0 3 3 . . 1 1 1 1 same world for everyone C C 2 2 N N E E W W S S E E T T T T I I N N G G S S D D 0 0",
    "png": {
     "width": 1536,
     "height": 2048,
     "meanLuma": 93.4,
     "lumaStd": 69.5,
     "whiteShare": 0,
-    "colours": 665
+    "colours": 661
    }
   }
  ]
