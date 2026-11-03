@@ -48,7 +48,7 @@ export interface World {
   reset(): void;
   /** [night-11a] An opaque full-screen page (settings, logbook, puzzles, tutorial) hides the globe: stop drawing it. */
   setCovered(covered: boolean): void;
-  /** [night-11h] D-89: the WebGL context is lost; the run is held and a notice says so. */
+  /** [night-11h] D-118: the WebGL context is lost; the run is held and a notice says so. */
   contextLost(): boolean;
   /** Per-frame hook: advance the run, return the authoritative tick and accumulator fraction. */
   onFrame(callback: ((dtSeconds: number) => FrameState | void) | null): void;
@@ -179,7 +179,7 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
     const dt = Math.min(0.1, Math.max(0, (now - last) / 1000));
     last = now;
     if (covered && !frameCallback) return; // a running game always draws (no page covers it)
-    // [night-11h] D-89: no GPU context, no frame. The run is not advanced either (same as a hidden tab): the frame
+    // [night-11h] D-118: no GPU context, no frame. The run is not advanced either (same as a hidden tab): the frame
     // hook is the run's only clock, so the network waits under the notice instead of jamming unseen.
     if (renderer.contextLost()) return;
     // [task-39] A layout change since the last frame is framed before drawing, never one frame late.
@@ -204,9 +204,11 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
     drawn++;
   };
   raf = requestAnimationFrame(loop);
-  // [night-11h] D-89: one paper strip over the globe while the graphics restart; the HUD stays readable.
+  // [night-11h] D-118: one paper strip over the globe while the graphics restart; the HUD stays readable.
   let glNotice: HTMLElement | null = null;
   const stopContextWatch = renderer.onContextChange((lost) => {
+    // The lost drawing buffer paints blank white; hide it so the sky behind the canvas shows under the notice.
+    canvas.style.visibility = lost ? 'hidden' : '';
     if (lost && !glNotice) {
       glNotice = document.createElement('div');
       glNotice.className = 'airway-notice airway-gl-notice';

@@ -1,4 +1,4 @@
-// [night-11h] R3g, D-89: WebGL context loss. A phone drops the GPU context under memory pressure, after a driver reset
+// [night-11h] R3g, D-118: WebGL context loss. A phone drops the GPU context under memory pressure, after a driver reset
 // or when another app takes the GPU; without handling the globe froze on its last frame (or went black) while the run
 // kept going underneath. The guard keeps the "lost" state, lets the browser restore the context (preventDefault),
 // and tells its listeners both ways. No three.js import, so `test:webgl-context` runs it under Node.
@@ -66,16 +66,24 @@ export function gpuRendererString(createCanvas: () => CanvasLike): string {
     try {
       const unmasked = gl.getExtension('WEBGL_debug_renderer_info') ? gl.getParameter(UNMASKED_RENDERER_WEBGL) : null;
       const value = typeof unmasked === 'string' && unmasked.trim() ? unmasked : gl.getParameter(GL_RENDERER);
+      release(gl);
       if (typeof value === 'string' && value.trim()) return value.trim().slice(0, 160);
     } catch { /* fall through to the next kind */ }
   }
   return 'unknown';
 }
 
+/** The probe context is released at once (a page has a small budget of live contexts). */
+function release(gl: GlLike): void {
+  try { (gl.getExtension('WEBGL_lose_context') as { loseContext?: () => void } | null)?.loseContext?.(); } catch { /* best effort */ }
+}
+
 /** Whether this browser can create the WebGL 2 context three.js r170 needs. */
 export function webgl2Available(createCanvas: () => CanvasLike): boolean {
   try {
-    return !!createCanvas().getContext('webgl2');
+    const gl = createCanvas().getContext('webgl2') as GlLike | null;
+    if (gl) release(gl);
+    return !!gl;
   } catch {
     return false;
   }

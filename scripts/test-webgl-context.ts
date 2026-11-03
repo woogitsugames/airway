@@ -1,4 +1,4 @@
-// [night-11h] R3g, D-89: WebGL context loss guard and the no-WebGL-2 probes (src/render/contextGuard.ts) under Node,
+// [night-11h] R3g, D-118: WebGL context loss guard and the no-WebGL-2 probes (src/render/contextGuard.ts) under Node,
 // plus the wiring the browser test cannot see cheaply: the renderer draws nothing while lost, the world loop holds
 // the run, main.ts mounts the unsupported page, and both catalogs carry the texts.
 import assert from 'node:assert/strict';
@@ -93,6 +93,7 @@ await test('world loop holds the run while the context is lost', () => {
   assert.ok(hold > 0, 'contextLost check in the loop');
   assert.ok(hold < loop.indexOf('frameCallback?.(dt)'), 'checked before the run advances');
   assert.match(world, /t\('gl\.lost'\)/);
+  assert.match(world, /canvas\.style\.visibility = lost \? 'hidden' : ''/, 'blank lost canvas hidden under the notice');
 });
 
 await test('main.ts shows the unsupported page when WebGL 2 is missing', () => {

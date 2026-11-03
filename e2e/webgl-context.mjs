@@ -1,4 +1,4 @@
-// [night-11h] R3g, D-89: WebGL context loss and the no-WebGL-2 page.
+// [night-11h] R3g, D-118: WebGL context loss and the no-WebGL-2 page.
 // Loss (WEBGL_lose_context) mid-run EN 412×915 and on the menu PL 915×412: the paper notice appears, no globe frame
 // is drawn and the run does not advance (same tick and snapshot hash over 1.5 s); after restoreContext the notice
 // goes, the globe draws again and the run carries on from the same state. No WebGL 2 (getContext('webgl2') → null)
@@ -44,7 +44,10 @@ async function lossInGame(page, language, width, height) {
   await clickTestId(page, 'menu-endless');
   await waitForScreen(page, 'game');
   await page.waitForFunction(() => window.aw.state().tick > 3, null, { timeout: 10000 });
+  await page.screenshot({ path: resolve(SHOTS, `before-game-${language}-${width}x${height}.png`) });
   await loseContext(page);
+  assert(await page.evaluate(() => getComputedStyle(document.querySelector('canvas.airway-world')).visibility) === 'hidden',
+    'blank canvas hidden while lost');
   const a = await state(page);
   const fa = await frames(page);
   await page.waitForTimeout(HOLD_MS);
@@ -62,6 +65,8 @@ async function lossInGame(page, language, width, height) {
   assert(notice.role === 'status', 'notice is a status region');
   await page.screenshot({ path: resolve(SHOTS, `lost-game-${language}-${width}x${height}.png`) });
   await restoreContext(page);
+  assert(await page.evaluate(() => getComputedStyle(document.querySelector('canvas.airway-world')).visibility) === 'visible',
+    'canvas shown again after the restore');
   const c = await state(page);
   assert(c.snapshotHash === b.snapshotHash || c.tick > b.tick, 'state after restore');
   await expectDrawingAgain(page, 'game');
@@ -81,6 +86,7 @@ async function lossOnMenu(page, language, width, height) {
   await page.screenshot({ path: resolve(SHOTS, `lost-menu-${language}-${width}x${height}.png`) });
   await restoreContext(page);
   await expectDrawingAgain(page, 'menu');
+  await page.evaluate((seed) => window.aw.prepareSeed(seed), SEED); // skips the first-launch tutorial
   await clickTestId(page, 'menu-endless');
   await waitForScreen(page, 'game');
   await expectDrawingAgain(page, 'game after a menu restore');

@@ -1,4 +1,4 @@
-// [night-11h] R3g, D-89: the page shown instead of a blank sky when the WebGL 2 context cannot be created. Plain
+// [night-11h] R3g, D-118: the page shown instead of a blank sky when the WebGL 2 context cannot be created. Plain
 // settings paper (same tokens as the settings and privacy pages), the device's renderer string for a support mail,
 // no buttons: there is nothing to play on this device, and back/home leave the app as usual.
 import { t } from '../i18n';

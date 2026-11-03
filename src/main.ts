@@ -87,7 +87,7 @@ async function boot(): Promise<void> {
     world = createWorld(app, t('canvas.label'), readSettings().graphics);
     world.showMenuBackdrop();
   } catch (error) {
-    // [night-11h] D-89: no WebGL 2 (three.js r170 needs it). A plain page says so instead of a blank sky whose
+    // [night-11h] D-118: no WebGL 2 (three.js r170 needs it). A plain page says so instead of a blank sky whose
     // Play button led nowhere; the renderer string is what a support mail needs.
     console.error('WebGL 2 is unavailable.', error);
     if (!webgl2Available(() => document.createElement('canvas'))) {

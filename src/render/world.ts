@@ -121,7 +121,7 @@ export interface WorldRenderer {
   readonly quality: QualityProfile;
   /** Resolves when the land mask, terrain and decorations are in the scene. */
   readonly ready: Promise<void>;
-  /** [night-11h] D-89: true while the WebGL context is lost (nothing draws; the caller pauses the run). */
+  /** [night-11h] D-118: true while the WebGL context is lost (nothing draws; the caller pauses the run). */
   contextLost(): boolean;
   /** [night-11h] Called with true on context loss and false once it is restored and the quality re-applied. */
   onContextChange(listener: (lost: boolean) => void): () => void;
@@ -245,7 +245,7 @@ export function createWorldRenderer(
   if (observed) onResize();
   else resize(element.clientWidth || 412, element.clientHeight || 915);
 
-  // [night-11h] D-89: on restore three.js re-creates its GL state and re-uploads buffers and textures on the next
+  // [night-11h] D-118: on restore three.js re-creates its GL state and re-uploads buffers and textures on the next
   // draw; the quality profile (DPR, shadows, size) is re-applied and the frame cap / adaptive monitor restart, so the
   // loss gap is never read as a slow frame.
   const guard = createContextGuard(element, () => {
