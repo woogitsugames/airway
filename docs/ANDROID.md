@@ -70,6 +70,14 @@ Outputs:
 - `android/app/build/outputs/apk/release/app-release.apk`
 - `android/app/build/outputs/bundle/release/app-release.aab`
 
+After Gradle, every build checks its output for 16 KB native-library alignment (`scripts/native-align.mjs`, D-94):
+64-bit `lib/<abi>/*.so` must have ELF LOAD segments aligned to ≥ 16 KB, and stored APK entries must start on a
+16 KB boundary (what `zipalign -c -P 16 4` checks). The line `SUMMARY native-align …: no native libs` is the normal
+result for this web-only Capacitor app; a misaligned library fails `android:release` / `android:aab` (debug builds
+only print it). Run it on any bundle with `node scripts/native-align.mjs <file.aab|file.apk>`. Play's target-API
+floor (targetSdk ≥ 36 from 31.08.2026) is asserted by `test:android-config`; raise `PLAY_MIN_TARGET_SDK` there and
+`targetSdkVersion` in `android/variables.gradle` each August when Google moves it.
+
 Both scripts reject a missing keystore/password, a relative path or a key
 located inside the repository. Gradle also refuses direct release tasks without
 signing material. Version code/name currently `1` / `0.1.0`; coordinate future

@@ -691,3 +691,17 @@ container: bot daily runs 30–48 ms per game week (a 30-week run ~1.4 s), a 5 0
 `test:replay-cost` are 600 ms/week and 5 s. Rejected: a new reject reason (`malformed` is already "not a real run",
 and the client shows any rejection the same way); shortening `MAX_REPLAY_TICKS` (would cap real long runs).
 **Status: in force (N12d, `test:replay-cost` 7 checks).**
+
+## D-94 — Store-requirement guards: target-API floor and 16 KB native alignment (2026-11-03, Claude, night N12e)
+`test:android-config` asserts Play's target-API floor numerically (`targetSdkVersion` ≥ `PLAY_MIN_TARGET_SDK` = 36,
+the rule for new apps and updates from 31.08.2026; `compileSdkVersion` ≥ target; `app/build.gradle` reads the value
+from `variables.gradle` only). The old exact-string check (`targetSdkVersion = 36`) would have blocked next year's
+bump, so it now pins only `minSdkVersion = 24`. The floor is a constant raised by hand each August, not derived from
+the clock (tests stay deterministic). Every Android build runs `scripts/native-align.mjs` on its APK/AAB: pure Node
+(ZIP central directory + ELF program headers, no SDK), 64-bit `.so` LOAD segments ≥ 16 KB, stored APK entries on a
+16 KB boundary; 32-bit libraries are listed but not required (Play's rule covers 64-bit). A misaligned library fails
+the release builds; "no native libs" is the expected result for this web-only Capacitor app. Rejected: calling
+`zipalign`/`bundletool` from the build (extra SDK/JAR dependency; `zipalign` does not read ELF headers) — the test
+cross-checks our verdict against `zipalign -c -P 16` when the SDK is present.
+**Status: in force (N12e, `test:android-config` 20 checks, `test:native-align` 7 cases).**
+
