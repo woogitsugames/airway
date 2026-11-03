@@ -281,7 +281,7 @@ the rAF loop returns before any camera, demo or render work (the loop itself sta
 drawn on the next vsync). `test:e2e:covered-pages` reads the DEV probe `__awWorld.frames()`: 0 frames behind every
 page, ≥ 3 per 1.2 s on the menu and in a game.
 
-## Bundle budget (N12q, R5k, D-134)
+## Bundle budget (N12q, R5k, D-143)
 
 `npm run test:bundle` (in `test:ci` right after `build`) measures the built `dist/` and fails above these budgets:
 

@@ -55,7 +55,11 @@ export interface RouteToolPorts {
   routeAt?(x: number, y: number): string | null;
   menu?(request: RouteMenuRequest | null): void;
   handles?(handles: readonly RouteHandle[]): void;
-  haptics?: { snap(): void; confirm(): void };
+  /**
+   * [night-12r] D-137: `start` opens a native selection when a drag begins and `end` closes it when the drag ends
+   * or is cancelled; `snap` ticks inside it (Capacitor Haptics drops a selection tick without a started selection).
+   */
+  haptics?: { start?(): void; snap(): void; confirm(): void; end?(): void };
 }
 
 export const CITY_START_RADIUS_DP = 28;
@@ -185,6 +189,7 @@ export class RouteTool {
     const previousSpeed = this.ports.speed();
     if (!this.ports.dispatch({ type: 'SetSpeed', speed: previousSpeed === 0 ? 0 : 0.25 })) return false;
     this.active = { pointerId, ids: [city.id], route, end: chosen?.end ?? 'end', aircraft, previousSpeed, hoverId: city.id };
+    this.ports.haptics?.start?.();
     this.ports.haptics?.snap();
     this.ports.warning(null);
     this.renderPreview(city);
@@ -340,6 +345,7 @@ export class RouteTool {
     const edit = this.active;
     if (!edit) return;
     this.active = null;
+    this.ports.haptics?.end?.();
     this.ports.preview(null);
     if (accepted) this.ports.warning(null);
     this.ports.dispatch({ type: 'SetSpeed', speed: edit.previousSpeed });

@@ -55,7 +55,8 @@ function makePort({ selection = 'turboprop', originalSpeed = 2, routes = [] } = 
     warning: (info) => { warnings.push(info); },
     routeAt: () => routes.length ? routes[0].id : null,
     menu: (request) => { menus.push(request); },
-    haptics: { snap: () => vibrations.push('snap'), confirm: () => vibrations.push('confirm') },
+    haptics: { start: () => vibrations.push('start'), snap: () => vibrations.push('snap'),
+      confirm: () => vibrations.push('confirm'), end: () => vibrations.push('end') },
   };
   return { ports, commands, previews, warnings, menus, vibrations, get speed() { return speed; }, get undoCalls() { return undoCalls; } };
 }
@@ -86,7 +87,19 @@ test('LIS to DKR to ACC is a single AddRoute with deterministic leg kms', () => 
   assert.deepEqual(networkCommands(p.commands), [{ type: 'AddRoute', aircraft: 'turboprop',
     cityIds: ['LIS', 'DKR', 'ACC'], legDistancesKm: [1800, 1950] }]);
   assert.equal(p.speed, 2);
-  assert.deepEqual(p.vibrations, ['snap', 'snap', 'snap', 'confirm']);
+  // [night-12r] D-137: the snaps tick inside one native selection opened at pointer-down and closed after the drop.
+  assert.deepEqual(p.vibrations, ['start', 'snap', 'snap', 'snap', 'confirm', 'end']);
+});
+test('a cancelled, a refused and an undone drag each close the haptic selection once', () => {
+  const p = makePort(); const tool = new RouteTool(p.ports);
+  assert.equal(tool.pointerDown(1, 30, 100), true);
+  tool.pointerCancel(1);
+  assert.equal(tool.pointerDown(2, 30, 100), true);
+  assert.equal(tool.pointerUp(2, 400, 400), false);
+  assert.equal(tool.pointerDown(3, 30, 100), true);
+  tool.undo();
+  tool.pointerCancel(3);
+  assert.deepEqual(p.vibrations, ['start', 'snap', 'end', 'start', 'snap', 'end', 'start', 'snap', 'end']);
 });
 test('out-of-range LIS to ACC is rejected and warns (not network-committed)', () => {
   const p = makePort(); const tool = new RouteTool(p.ports);
