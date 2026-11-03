@@ -51,6 +51,8 @@ export interface BotSnapshot {
 export type BotCommand =
   | { readonly type: 'AddRoute'; readonly from: string; readonly to: string }
   | { readonly type: 'AssignPlane'; readonly routeId: string; readonly aircraftType: AircraftType }
+  // [night-07w] Append a stop at one end of a served route (the route tool's drag from a route end).
+  | { readonly type: 'ExtendRoute'; readonly routeId: string; readonly end: 'start' | 'end'; readonly cityId: string }
   | { readonly type: 'ChooseUpgrade'; readonly offerId: string; readonly cityId?: string };
 
 export interface BotDecision {
@@ -148,6 +150,38 @@ function connectCity(snapshot: BotSnapshot): BotDecision | null {
   };
 }
 
+// [night-07w] No spare aircraft for a new route (e.g. after "+2 slots", which adds none): bring the city onto
+// the nearest end of a route that already has aircraft, as a player drags a route end to it. The new leg must
+// fit the shortest range among the route's aircraft (the Sim refuses it otherwise), and very long routes are
+// left alone so the bot does not dilute one line's frequency across the whole map.
+const MAX_EXTENDED_STOPS = 5;
+
+function extendToCity(snapshot: BotSnapshot): BotDecision | null {
+  const disconnected = snapshot.cities.filter((city) => city.active && city.connectedRoutes === 0);
+  if (!disconnected.length) return null;
+  let best: { routeId: string; end: 'start' | 'end'; cityId: string; distance: number } | null = null;
+  for (const city of disconnected) {
+    for (const route of snapshot.routes) {
+      const planes = route.assigned.turboprop + route.assigned.widebody;
+      if (!planes || route.stops.length < 2 || route.stops.length >= MAX_EXTENDED_STOPS) continue;
+      const range = route.assigned.turboprop > 0 ? TURBOPROP_RANGE_KM : WIDEBODY_RANGE_KM;
+      for (const end of ['start', 'end'] as const) {
+        const terminal = end === 'start' ? route.stops[0] : route.stops[route.stops.length - 1];
+        const distance = snapshot.distancesKm[terminal]?.[city.id];
+        if (!Number.isFinite(distance) || distance <= 0 || distance > range) continue;
+        const better = !best || distance < best.distance || (distance === best.distance &&
+          (compareId(city.id, best.cityId) < 0 || (city.id === best.cityId && compareId(route.id, best.routeId) < 0)));
+        if (better) best = { routeId: route.id, end, cityId: city.id, distance };
+      }
+    }
+  }
+  if (!best) return null;
+  return {
+    command: { type: 'ExtendRoute', routeId: best.routeId, end: best.end, cityId: best.cityId },
+    reason: 'No spare aircraft: extend the nearest served route to an unserved city',
+  };
+}
+
 function chooseUpgrade(snapshot: BotSnapshot): BotDecision | null {
   if (!snapshot.offers.length) return null;
   // Only interchange hubs can be expanded (task 12); rank them by pressure and overflow history.
@@ -203,5 +237,5 @@ export function chooseBotAction(snapshot: BotSnapshot): BotDecision | null {
     const aircraft = chooseAircraft(snapshot);
     if (aircraft) return aircraft;
   }
-  return connectCity(snapshot) ?? chooseAircraft(snapshot);
+  return connectCity(snapshot) ?? chooseAircraft(snapshot) ?? extendToCity(snapshot);
 }

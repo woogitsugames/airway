@@ -61,6 +61,11 @@ export function botCommandToSim(sim: Sim, command: BotCommand): Command {
     const cityIds = [command.from, command.to];
     return aircraft ? { type: 'AddRoute', cityIds, aircraft } : { type: 'AddRoute', cityIds };
   }
+  if (command.type === 'ExtendRoute') { // [night-07w]
+    const stops = sim.world.routes().find((route) => route.id === command.routeId)?.cityIds ?? [];
+    const cityIds = command.end === 'start' ? [command.cityId, ...stops] : [...stops, command.cityId];
+    return { type: 'ExtendRoute', routeId: command.routeId, end: command.end, cityIds };
+  }
   if (command.type === 'AssignPlane') return { type: 'AssignPlane', routeId: command.routeId, aircraft: command.aircraftType };
   const week = sim.world.offer?.week ?? 0;
   const upgrade = command.offerId as UpgradeKind;

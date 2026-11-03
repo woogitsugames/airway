@@ -33,6 +33,8 @@ Priorytet: **P1** — blokuje wydanie albo sklep, **P2** — warto zdecydować p
 | Q-09 | P2 | Ulepszenie „+2 sloty” dla jednego wybranego lotniska czy dla wszystkich? | A: jedno lotnisko (realny wybór); B: globalnie | A — jedno wybrane lotnisko | A | #35 |
 | Q-10 | P3 | Karta „Rozbudowa huba”, gdy nie ma jeszcze huba | A: wyłączona ze stemplem „Brak huba”; B: ukryta i zastąpiona inną kartą | A | A (zawsze zostaje co najmniej samolot do wyboru) | #33 |
 | Q-11 | P2 | Trudność zagadek 16–30: marginesy 25 % → 17 % ponad rozwiązanie wzorcowe — dobre po zagraniu na telefonie? | Łagodniej / tak zostaje / trudniej (liczby w JSON, `targetDelivered`) | Margines maleje od 25 % (16) do 17 % (29–30), D-70 | Zostawić do pierwszego testu na telefonie | #44 |
+| Q-35 | P2 | Szerokokadłubowiec w 1. tygodniu wyraźnie najsilniejszy: bot (N7w) z wymuszonym wyborem przeżywa średnio 21,8 min (WB-300) wobec 15,8 (TP-48), 16,4 („+2 sloty”) i 17,9 (huba) | A: zostawić; B: osłabić WB-300 na start (np. mniej miejsc / dłuższy postój); C: rzadziej w 1. tygodniu | A — parametry bez zmian | A do testu na ludziach; B, jeśli gracze zawsze biorą WB-300 | #76, `npm run test:bot-policy` |
+| Q-36 | P3 | Lepszy bot (wydłuża trasy, gdy brak wolnych samolotów) podniósł medianę sesji z 12,9 do 14,6 min — blisko górnej granicy celu 8–15 min z zadania 31 | A: zostawić cel 8–15; B: cel 10–18 (bot gra już rozsądniej); C: przestroić popyt | A — cel bez zmian, bramka zielona | B (cel mierzy bota, nie gracza) | #76, `docs/balance/game-summary.md` |
 
 ## C. Wygląd świata i interfejs
 
