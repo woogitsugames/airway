@@ -554,7 +554,7 @@ before/after `npm run shots -- globe` PNGs and look at them.
 - [x] G1 **Production globe assets** — reproducible bake into `public/data/globe/` (day 4096/2048, night 2048/1024,
       elevation 2048, clouds 2048, ~1.9 MB) with a SHA-256 manifest; NASA/NOAA entries in `docs/ASSETS.md`; credit
       line (PL/EN i18n) on the About page; bundle `total` budget → 4 300 kB (D-171); new fast test `test:globe-assets`.
-- [ ] G2 **Terrain from ETOPO5 elevation** — production `textured` TerrainStyle: real heights (sqrt exaggeration),
+- [ ] G2 **Terrain from ETOPO5 elevation** (one PR with G3: G2 alone draws a white globe; gate + smoke/ui:matrix/store:shots) — production `textured` TerrainStyle: real heights (sqrt exaggeration),
       airport pads flattened, smooth normals, sea floor under the ocean shell; elevation decoded in parallel with the
       land mask; `test:land`/`test:quality`/`test:framing` green, triangle budgets unchanged.
 - [ ] G3 **Textured surface material and night lights** — Blue Marble by direction (seam-safe), shipped day/night
@@ -575,6 +575,8 @@ before/after `npm run shots -- globe` PNGs and look at them.
 - [ ] G9 **Airport objects, routes and planes for the new globe (D-175)** — first 2–3 engine-rendered variants for the
       owner (Satelita + Mapa, seed 15 frame), wait for the owner's pick, then implement with a mode-dependent ink;
       D-47 ≥ 4.5:1 for routes/airports/planes in both modes (`measureLayerContrast`), `store:shots`. Blocked on owner.
+      Variants ready: `docs/mockups/globe-2026-11/g9/` (V1 Tusz, V2 Płyta, V3 Medalion — Claude recommends V3);
+      the probe must measure edge contrast first (D-177).
 
 ## Research proposals (R-agent)
 Proposals from the research agent (findings and sources: `docs/RESEARCH.md`, sections "R1 — …"). Each item is
@@ -1144,3 +1146,4 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
 - 2026-11-03 · R6f puzzle packs without hand-kept lists + `puzzle:report` (D-160, D-161) · ext/01-puzzle-packs · test:puzzle-packs 7/7 (0/7 on the hand-kept index: a 31st `NN.json` left `PUZZLES` at 30, no generator/report), test:puzzles levels=30 cases=169 passed=169, test:fast 70/70 (98.7 s), build ok, test:e2e:puzzles levels=30 steps=34 passed=34 (merged tree with dev at ce9ef74)
 - 2026-11-03 · R6h puzzle pack "Long haul" 31–35 (D-162, D-163; Q-74) · ext/02-puzzles-31-35 · test:long-haul 10/10 (0/10 on dev: no pack, no levels 31–35), test:puzzles levels=35 cases=204 passed=204, test:puzzle-packs 7/7, test:fast 71/71 (108.1 s), build ok, test:e2e:puzzles levels=35 steps=39 passed=39, test:e2e:screens-fit-320 12/12, shots ext-02 4/4 inspected (merged tree with dev at f1e4d53)
 - 2026-11-03 · G1 production globe assets (D-170, D-171, D-176) · ext/03-g1-globe-assets · test:globe-assets 45/45 (new: 6 files, 1,773,908 B, manifest SHA-256), test:fast 72/72 (129.2 s), build ok (main 1,050.3 kB / gzip 310.6 kB), test:bundle 9/9 (dist 3,597.7 kB ≤ 4,300 kB); textures not drawn yet (G2/G3), licences screen lists NASA Earth Observatory + NOAA ETOPO5 (PL/EN); ui:matrix not run
+- 2026-11-03 · G9 airport/route variants for the owner (D-175, D-177) · ext/03-g9-airport-variants · DEV-only `?airportStyle=ink|apron|medal` (default objects unchanged), 15 engine renders (Satelita/Mapa day, Satelita dusk; phone + Fold), comparison sheets in docs/mockups/globe-2026-11/g9/, probe numbers; test:fast 72/72 (102.2 s), build ok (main 1,051.6 kB / gzip 311.0 kB); waits for the owner pick (Claude recommends V3 Medalion)

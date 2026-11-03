@@ -1,0 +1,212 @@
+{
+  "satellite-ink-day-phone": {
+    "look": "satellite",
+    "time": "day",
+    "size": "phone",
+    "assetBytes": 0,
+    "errors": [],
+    "contrast": {
+      "routes": 2.34,
+      "airports": 2.79,
+      "planes": 3.98,
+      "tags": 8.98
+    },
+    "stats": null
+  },
+  "satellite-ink-day-fold": {
+    "look": "satellite",
+    "time": "day",
+    "size": "fold",
+    "assetBytes": 0,
+    "errors": [],
+    "contrast": {
+      "routes": 3.48,
+      "airports": 3.12,
+      "planes": 5.21,
+      "tags": 11.16
+    },
+    "stats": null
+  },
+  "map-ink-day-phone": {
+    "look": "map",
+    "time": "day",
+    "size": "phone",
+    "assetBytes": 0,
+    "errors": [],
+    "contrast": {
+      "routes": 1.95,
+      "airports": 2.07,
+      "planes": 1.45,
+      "tags": 1.7
+    },
+    "stats": null
+  },
+  "map-ink-day-fold": {
+    "look": "map",
+    "time": "day",
+    "size": "fold",
+    "assetBytes": 0,
+    "errors": [],
+    "contrast": {
+      "routes": 2.16,
+      "airports": 2.07,
+      "planes": 1.52,
+      "tags": 1.81
+    },
+    "stats": null
+  },
+  "satellite-ink-dusk-phone": {
+    "look": "satellite",
+    "time": "dusk",
+    "size": "phone",
+    "assetBytes": 0,
+    "errors": [],
+    "contrast": {
+      "routes": 3.05,
+      "airports": 3.98,
+      "planes": 4.62,
+      "tags": 16.64
+    },
+    "stats": null
+  },
+  "satellite-apron-day-phone": {
+    "look": "satellite",
+    "time": "day",
+    "size": "phone",
+    "assetBytes": 0,
+    "errors": [],
+    "contrast": {
+      "routes": 2.24,
+      "airports": 2.05,
+      "planes": 4.06,
+      "tags": 9.16
+    },
+    "stats": null
+  },
+  "satellite-apron-day-fold": {
+    "look": "satellite",
+    "time": "day",
+    "size": "fold",
+    "assetBytes": 0,
+    "errors": [],
+    "contrast": {
+      "routes": 3,
+      "airports": 2.15,
+      "planes": 5.24,
+      "tags": 11.27
+    },
+    "stats": null
+  },
+  "map-apron-day-phone": {
+    "look": "map",
+    "time": "day",
+    "size": "phone",
+    "assetBytes": 0,
+    "errors": [],
+    "contrast": {
+      "routes": 1.77,
+      "airports": 2.17,
+      "planes": 1.45,
+      "tags": 1.7
+    },
+    "stats": null
+  },
+  "map-apron-day-fold": {
+    "look": "map",
+    "time": "day",
+    "size": "fold",
+    "assetBytes": 0,
+    "errors": [],
+    "contrast": {
+      "routes": 1.88,
+      "airports": 2.28,
+      "planes": 1.52,
+      "tags": 1.82
+    },
+    "stats": null
+  },
+  "satellite-apron-dusk-phone": {
+    "look": "satellite",
+    "time": "dusk",
+    "size": "phone",
+    "assetBytes": 0,
+    "errors": [],
+    "contrast": {
+      "routes": 2.6,
+      "airports": 2.07,
+      "planes": 4.48,
+      "tags": 16.33
+    },
+    "stats": null
+  },
+  "satellite-medal-day-phone": {
+    "look": "satellite",
+    "time": "day",
+    "size": "phone",
+    "assetBytes": 0,
+    "errors": [],
+    "contrast": {
+      "routes": 2.34,
+      "airports": 4.21,
+      "planes": 3.99,
+      "tags": 9.4
+    },
+    "stats": null
+  },
+  "satellite-medal-day-fold": {
+    "look": "satellite",
+    "time": "day",
+    "size": "fold",
+    "assetBytes": 0,
+    "errors": [],
+    "contrast": {
+      "routes": 3.48,
+      "airports": 4.52,
+      "planes": 5.1,
+      "tags": 12.93
+    },
+    "stats": null
+  },
+  "map-medal-day-phone": {
+    "look": "map",
+    "time": "day",
+    "size": "phone",
+    "assetBytes": 0,
+    "errors": [],
+    "contrast": {
+      "routes": 1.95,
+      "airports": 1.58,
+      "planes": 1.45,
+      "tags": 1.7
+    },
+    "stats": null
+  },
+  "map-medal-day-fold": {
+    "look": "map",
+    "time": "day",
+    "size": "fold",
+    "assetBytes": 0,
+    "errors": [],
+    "contrast": {
+      "routes": 2.16,
+      "airports": 1.59,
+      "planes": 1.52,
+      "tags": 1.76
+    },
+    "stats": null
+  },
+  "satellite-medal-dusk-phone": {
+    "look": "satellite",
+    "time": "dusk",
+    "size": "phone",
+    "assetBytes": 0,
+    "errors": [],
+    "contrast": {
+      "routes": 3.03,
+      "airports": 5.96,
+      "planes": 5.34,
+      "tags": 16.88
+    },
+    "stats": null
+  }
+}

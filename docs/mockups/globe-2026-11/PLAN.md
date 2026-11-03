@@ -28,7 +28,10 @@ shipped globe assets ≤ 2.2 MB (bundle `total` budget raised accordingly, D-171
 - New fast test `test:globe-assets`: files exist, dimensions are powers of two (2:1), JPEG/PNG headers, sizes under
   per-file caps, manifest hashes match.
 
-## G2 — Terrain from real elevation
+## G2 — Terrain from real elevation (lands together with G3)
+- [ext-03, after G1] G2 alone would draw a white globe (the textured style has white vertex colours), so G2 and G3
+  are one PR (or G2 stays behind the DEV flag until G3); that PR changes the shipped look, so its gate adds
+  `test:e2e:smoke`, `ui:matrix` and `store:shots --validate` to `test:fast` + `build`.
 - `src/render/globe/terrain.ts`: make the `textured` `TerrainStyle` the production path: land height from
   `elevation-2048.png` (sqrt exaggeration, `0.0004 + 0.0052·√km`), airport pads still flattened (`airportFlatten`),
   coast snapping and adaptive refinement unchanged, smooth vertex normals (`normals` in `TerrainArrays`, already
@@ -97,6 +100,10 @@ shipped globe assets ≤ 2.2 MB (bundle `total` budget raised accordingly, D-171
   (b) a realistic apron (asphalt grey, white markings) with a coloured hub ring, (c) a cut-out "map pin" medallion
   that is not a Google pin; routes as a dark-cored tube with a light halo (readable on both modes), planes with
   an ink outline. Present side by side, ask the owner, record D-17x.
+- Variants rendered 2026-11-03 night: `g9/` (V1 Tusz, V2 Płyta, V3 Medalion; DEV `?airportStyle=`), Claude
+  recommends V3; the owner picks.
+- D-177: `measureLayerContrast` must measure edge contrast (the outline vs the globe, the core vs the outline),
+  not the median of all layer pixels, or outlined designs score lower than they read.
 - Implement in `src/render/airports.ts`, `routes.ts`, `planes.ts`, `routePreview.ts` with a mode-dependent ink
   uniform (`setGlobeMode`), no extra draw calls; the D-47 probe (`measureLayerContrast`) must give ≥ 4.5:1 for
   routes/airports/planes in both modes in `game` and `night`; `test:contrast`, `test:render-layers`, `store:shots`.
