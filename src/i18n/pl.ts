@@ -279,6 +279,10 @@ export const pl = {
   'daily.share.weeks': 'TYGODNIE {weeks}',
   'daily.share.ticket': 'BILET {ticket}',
   'daily.share.dialog': 'Udostępnij bilet',
+  'daily.share.streak': 'SERIA {days} {days|DZIEŃ|DNI|DNI}', // [night-10e]
+  'daily.share.action': 'Udostępnij wynik',
+  'daily.share.copied': 'Skopiowano. Wklej, gdzie chcesz.',
+  'daily.share.select': 'Udostępnianie jest tu niedostępne. Zaznacz tekst:',
   // [task-23] Bilingual first-run flight-training vignette.
   'tutorial.title': 'SZKOLENIE LOTNICZE',
   'tutorial.progress': 'KROK {current} / {total}',

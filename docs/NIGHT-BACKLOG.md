@@ -189,7 +189,7 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       streak" / "2-day streak · play today". Found on the way: every plural with a `localNumber` count of 1 000 or
       more leaked its token ("rekord 2 500 {count|pasażer|…}" on the menu record and Continue rows); `t()` now
       reads formatted counts. `src/game/dailyRow.ts`, `test:format` +2, `e2e/daily-row.mjs`.
-- [ ] N10e **Daily report: share the result; honest restart buttons** — `shareDailyResult` (task 18) was never
+- [x] N10e **Daily report: share the result; honest restart buttons** — `shareDailyResult` (task 18) was never
       called: the daily game-over had no way to share, and `daily.finish` got no regions, so every ticket read "--".
       The report gets a "Share result" action (native sheet, else clipboard, else the text to select), the ticket is
       the regions the network served (8 glyphs, two new for ASI/OCE), the text adds the streak of days. On a daily,
@@ -245,3 +245,4 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
 - 2026-11-03 · N10b PL/EN text review · night/10b-text-review · test:fast 52/52, build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:puzzles 34/34, e2e:screens-fit 18/18, e2e:screens-fit-320 12/12
 - 2026-11-03 · N10c saved-flight notice · night/10c-save-notice · test:fast 52/52, build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:daily-continue 7/7, test:save-golden 19/19, test:e2e:save-notice 4/4
 - 2026-11-03 · N10d daily row score/streak + plural fix · night/10d-daily-row · test:fast 52/52 (test:format 13/13), build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:save-notice 4/4, e2e:screens-fit-320 12/12, test:e2e:daily-row 4/4
+- 2026-11-03 · N10e daily share + restart buttons (D-81) · night/10e-share · test:fast 52/52 (test:daily-mode 20/20), build ok, e2e:smoke 9/9, ui:matrix 32/32, test:e2e:daily-share 4/4

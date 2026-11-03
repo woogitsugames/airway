@@ -1,5 +1,5 @@
 // Fixed-seed contract checks with a thin task-02 seed/simulation adapter.
-import { DailyChallengeMode, createDailyMode, dailyTicket, TICKET_GLYPHS } from '../src/game/modes/daily.ts';
+import { DailyChallengeMode, createDailyMode, dailyTicket, servedTicketRegions, TICKET_GLYPHS } from '../src/game/modes/daily.ts';
 import { dailySeed } from '../src/core/daily.ts';
 import { LocalScoreService, MemoryScoreStorage, dateIndex } from '../src/game/scores.ts';
 import { formatDailyShare } from '../src/platform/share.ts';
@@ -127,11 +127,11 @@ check('noninteger scores and out-of-range glyphs are rejected', () => {
     assert(rejected, 'accepted score ' + score);
   }
   let rejected = false;
-  try { dailyTicket([6]); } catch { rejected = true; }
+  try { dailyTicket([8]); } catch { rejected = true; }
   assert(rejected, 'invalid region accepted');
 });
 check('shared ticket is short, localized, and emoji-free', () => {
-  equal(TICKET_GLYPHS.length, 6);
+  equal(TICKET_GLYPHS.length, 8);
   const ticket = dailyTicket([0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 0]);
   equal(ticket, '‹⋈◖⌑⟆⟧‹⋈◖⌑⟆⟧+');
   const translator = (key, params = {}) => key + ' ' + Object.values(params).join('');
@@ -202,6 +202,34 @@ check('a finished official attempt cannot be resumed as official', () => {
   scores.setActiveRun({ dateKey: s1.dateKey, kind: 'official', attemptId: s1.reservation.attemptId });
   const again = game(scores).resume(sim(s1.seed), s1.seed, now('2026-11-02T09:00:00Z'));
   assert(again && again.kind === 'practice', 'second official result possible');
+});
+
+// [night-10e] The ticket is the served regions; the streak line only for official runs from 2 days.
+check('ticket lists served regions once, in city opening order', () => {
+  const cities = [
+    { id: 'WAW', region: 'EUN' }, { id: 'SYD', region: 'OCE' }, { id: 'NYC', region: 'NAM' },
+    { id: 'OSL', region: 'EUN' }, { id: 'TYO', region: 'ASI' }, { id: 'CAI', region: 'AFR' },
+  ];
+  const routes = [{ cityIds: ['NYC', 'WAW', 'OSL'] }, { cityIds: ['TYO', 'SYD'] }];
+  const regions = servedTicketRegions(cities, routes);
+  equal(dailyTicket(regions), '‹⌐⟆⌒');
+  equal(servedTicketRegions(cities, []).length, 0);
+  equal(dailyTicket([]), '--');
+});
+check('stored ticket with the ASI/OCE glyphs survives a reload', () => {
+  const storage = new MemoryScoreStorage();
+  new LocalScoreService(storage).recordPractice('2026-11-02', 40, 2, '‹⌒⌐');
+  const best = new LocalScoreService(storage).getProgress('2026-11-02').practiceBest;
+  equal(best?.ticket, '‹⌒⌐');
+});
+check('share text adds the streak to official runs only', () => {
+  const translator = (key, params = {}) => key + ' ' + Object.values(params).join('');
+  const base = { dateKey: '2026-11-02', score: 320, weeks: 5, ticket: '‹⌒' };
+  const official = formatDailyShare({ ...base, kind: 'official' }, translator, { streak: 3 });
+  assert(official.includes('daily.share.streak 3'), 'streak missing');
+  assert(!formatDailyShare({ ...base, kind: 'official' }, translator, { streak: 1 }).includes('streak'), 'streak of 1');
+  assert(!formatDailyShare({ ...base, kind: 'practice' }, translator, { streak: 3 }).includes('streak'), 'practice streak');
+  assert(!/\p{Extended_Pictographic}/u.test(official), 'emoji in share text');
 });
 
 for (const error of errors) console.error('FAIL ' + error);

@@ -1,6 +1,7 @@
 // Daily mode composition: the run is seeded from the Warsaw calendar day, never by the device RNG.
 import { dailyKey, dailySeedForKey } from '../../core/daily.ts';
 import { createGame, type Sim } from '../../sim/index.ts';
+import { REGIONS, type RegionGlyph, type RegionId } from '../../data/regions.ts';
 import type { DailyResult, OfficialReservation, ScoreService } from '../scores';
 
 export interface DailySeedSource {
@@ -29,8 +30,24 @@ export type DailyStart<TSimulation extends DailySimulation> =
   | { readonly status: 'started'; readonly session: DailySession<TSimulation> }
   | { readonly status: 'already-used'; readonly dateKey: string };
 
-/** The symbols correspond to the six non-emoji destination shapes of D-08. */
-export const TICKET_GLYPHS = ['‹', '⋈', '◖', '⌑', '⟆', '⟧'] as const;
+/** The symbols correspond to the six non-emoji destination shapes of D-08, then the provisional ASI wing and
+ *  OCE hook (D-20) [night-10e]; order follows RegionGlyph, not REGION_IDS. */
+export const TICKET_GLYPHS = ['‹', '⋈', '◖', '⌑', '⟆', '⟧', '⌒', '⌐'] as const;
+const TICKET_ORDER: readonly RegionGlyph[] = ['chevron', 'bowtie', 'crescent', 'keyhole', 'fin', 'bracket', 'wing', 'hook'];
+
+/** [night-10e] Ticket indexes of the regions a network serves: distinct, in city opening order. */
+export function servedTicketRegions(cities: readonly { readonly id: string; readonly region: RegionId }[],
+  routes: readonly { readonly cityIds: readonly string[] }[]): number[] {
+  const served = new Set<string>();
+  for (const route of routes) for (const id of route.cityIds) served.add(id);
+  const out: number[] = [];
+  for (const city of cities) {
+    if (!served.has(city.id)) continue;
+    const index = TICKET_ORDER.indexOf(REGIONS[city.region].glyph);
+    if (index >= 0 && !out.includes(index)) out.push(index);
+  }
+  return out;
+}
 
 /** A short offline share ticket; invalid region codes are rejected, never coerced. */
 export function dailyTicket(regions: readonly number[]): string {

@@ -55,7 +55,7 @@ export interface ScoreService {
 const STORAGE_KEY = 'aw-daily-scores-v1';
 const ACTIVE_KEY = 'aw-daily-active-v1';
 const DAY_MS = 86_400_000;
-const TICKET_PATTERN = /^(?:--|[‹⋈◖⌑⟆⟧]{1,12}\+?)$/u;
+const TICKET_PATTERN = /^(?:--|[‹⋈◖⌑⟆⟧⌒⌐]{1,12}\+?)$/u;
 
 interface DayEntry {
   attemptId?: number;

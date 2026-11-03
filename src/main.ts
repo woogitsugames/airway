@@ -8,23 +8,23 @@ import './ui/game.css';
 import { bootAudio, audioSettingsFromToggles } from './audio';
 import { createFlapRattle } from './game/flapSound'; // [night-07e]
 import { onSplitFlapAnimate } from './ui/flap'; // [night-07e]
-import { dailyKey } from './core/daily';
+import { dailyKey, dailySeedForKey } from './core/daily';
 import { PUZZLES } from './data/puzzles';
 import { registerDevGameAdapter, type AwDevState, type AwScreen } from './game/devHandle';
-import { createDailyMode } from './game/modes/daily';
+import { createDailyMode, servedTicketRegions } from './game/modes/daily';
 import { dailyRankingBoard } from './game/dailyRanking'; // [night-06c] D-66
 import { createBrowserLeaderboards } from './net'; // [night-06c] D-66
 import { EndlessRun } from './game/run';
 import { dailyRowHint } from './game/dailyRow'; // [night-10d]
 import { loadSavedSimChecked, saveSourceFromSim, writeGame, type SaveNotice } from './game/save';
-import { LocalScoreService } from './game/scores';
+import { LocalScoreService, type DailyResult } from './game/scores';
 import { mountScreens, type ScreenName } from './game/screens';
 import { startSession, type GameSession, type RunMode, type SessionScreen } from './game/session';
 import { mountTutorial } from './game/tutorial';
 import { TUTORIAL_KEY } from './game/tutorial/controller';
 import { createWorld, type World } from './game/world';
 import { getLanguage, t } from './i18n';
-import { configureHaptics, createDefaultStorage, GameLifecycle, type KeyValueStorage } from './platform';
+import { configureHaptics, createDefaultStorage, GameLifecycle, shareDailyResult, type KeyValueStorage } from './platform';
 import { initializeAccessibility } from './ui/a11y';
 import { readBestRecord } from './ui/gameover/storage';
 import { mountPuzzleSelector, readPuzzleProgress } from './ui/puzzles';
@@ -99,6 +99,8 @@ async function boot(): Promise<void> {
   let pendingSeed: number | null = null;
   let skipTutorialOnce = false;
   let dailySession: ReturnType<typeof daily.start> | null = null;
+  let lastDaily: DailyResult | null = null; // [night-10e] the finished daily run, for the share action
+  let failedDailySeed: number | null = null;
 
   // [night-07k] D-76: a save from older sim rules is replayed and written back here, once.
   const loaded = await loadSavedSimChecked(storage);
@@ -179,18 +181,35 @@ async function boot(): Promise<void> {
       mode,
       onScreen: (next: SessionScreen) => { screenName = next; },
       onMenu: () => screens.show('menu'),
-      onRestart: (seed) => { if (mode === 'daily') screens.show('menu'); else startEndless(seed); },
+      // [night-10e] Daily: "same world" is a practice of the same day's world (menu once the day changed),
+      // "new world" is Endless; both used to drop silently to the menu.
+      onRestart: (seed) => {
+        if (mode !== 'daily') startEndless(seed);
+        else if (seed === dailySeedForKey(dailyKey())) startDaily();
+        else if (seed === failedDailySeed) screens.show('menu');
+        else startEndless(seed);
+      },
       onSave: saveRun,
       onFailure: (failed) => {
         let ranking: HTMLElement | undefined;
+        lastDaily = null;
+        failedDailySeed = mode === 'daily' ? failed.seed : null;
         if (mode === 'daily' && dailySession?.status === 'started') {
-          daily.finish(dailySession.session, failed.passengers, Math.floor(failed.tick / TICKS_PER_WEEK), []); // [task-31]
+          // [night-10e] The ticket is the regions the network served (it read "--" for every run).
+          lastDaily = daily.finish(dailySession.session, failed.passengers, Math.floor(failed.tick / TICKS_PER_WEEK),
+            servedTicketRegions(failed.cityList(), failed.routeList())); // [task-31]
           ranking = dailyRankingBoard(leaderboards, failed, dailySession.session); // [night-06c]
           dailySession = null;
         }
         saved = null;
         void storage.remove('aw-save-v1').catch(() => undefined);
         return ranking;
+      },
+      failureShare: () => {
+        const result = lastDaily;
+        if (!result) return undefined;
+        const streak = scores.getProgress(result.dateKey).currentStreak;
+        return () => shareDailyResult(result, t, { streak });
       },
       onTick: (current, speed) => {
         audio.setSimClock(current.clockMinute, speed);
