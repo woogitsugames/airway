@@ -12,13 +12,18 @@ import {
 } from 'firebase-admin/firestore';
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
 import {
-  TOP_ENTRIES, callSign, expiresAt, mergeTop, rankInTop, readTopRows, reviewSubmission, validBoardId,
-  type TopEntry,
+  FUNCTION_OPTIONS, RATE_LIMITS, RateLimiter, TOP_ENTRIES, callSign, expiresAt, mergeTop, rankInTop, readTopRows,
+  reviewSubmission, validBoardId, type TopEntry,
 } from './logic.ts';
 
 initializeApp();
 const db = getFirestore();
-const OPTIONS = { region: 'europe-west1', maxInstances: 10, memory: '512MiB' as const, timeoutSeconds: 60 };
+// [night-12j] D-109: split caps per function and a per-player limit per instance, checked before any Firestore
+// access or replay; over the limit the client keeps the run queued and retries later.
+const limits = { getBoards: new RateLimiter(RATE_LIMITS.getBoards), submitDaily: new RateLimiter(RATE_LIMITS.submitDaily) };
+function throttle(name: keyof typeof limits, uid: string): void {
+  if (!limits[name].take(uid)) throw new HttpsError('resource-exhausted', 'Too many requests, try again in a minute');
+}
 
 function uidOf(request: { auth?: { uid: string } | null }): string {
   const uid = request.auth?.uid;
@@ -39,8 +44,9 @@ async function topInTx(tx: Transaction, board: string, doc: DocumentSnapshot): P
   return doc.exists ? readTopRows(doc.get('entries')) : rowsOfQuery(await tx.get(topQuery(board)));
 }
 
-export const submitDaily = onCall(OPTIONS, async (request) => {
+export const submitDaily = onCall(FUNCTION_OPTIONS.submitDaily, async (request) => {
   const uid = uidOf(request);
+  throttle('submitDaily', uid);
   const reviewed = reviewSubmission((request.data as { submission?: unknown } | null)?.submission, Date.now());
   if (!reviewed.verdict.ok || !reviewed.daily || !reviewed.weekly) {
     return { accepted: false, reason: reviewed.verdict.ok ? 'malformed' : reviewed.verdict.reason };
@@ -96,8 +102,9 @@ async function board(id: string, uid: string, topDoc: DocumentSnapshot, mine: Do
   return { id, entries: list, me };
 }
 
-export const getBoards = onCall(OPTIONS, async (request) => {
+export const getBoards = onCall(FUNCTION_OPTIONS.getBoards, async (request) => {
   const uid = uidOf(request);
+  throttle('getBoards', uid);
   const data = request.data as { daily?: unknown; weekly?: unknown } | null;
   if (!validBoardId(data?.daily) || !validBoardId(data?.weekly)) throw new HttpsError('invalid-argument', 'Unknown board');
   const [dailyTop, weeklyTop, dailyMine, weeklyMine] = await db.getAll(

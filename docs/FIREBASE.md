@@ -17,6 +17,9 @@ przed wydaniem. Kod: klient `src/net/`, funkcje `functions/`, reguły `firestore
   zapytania po 50 dokumentów (~105 odczytów na wywołanie). Ranking zapisany przed tą zmianą (bez `top`) jest przy
   pierwszym zapisie wypełniany starym zapytaniem; do tego czasu `getBoards` czyta go starym zapytaniem.
 - Bez sieci wynik czeka w kolejce na urządzeniu (`aw-net-queue-v1`).
+- Limit na gracza (D-109): każda instancja funkcji pozwala jednemu uid na 20 wywołań `getBoards` i 6 `submitDaily`
+  na minutę (kubełek żetonów w pamięci, sprawdzany przed Firestore i powtórką). Ponad limit funkcja zwraca
+  `resource-exhausted` (HTTP 429); klient traktuje to jak chwilowy błąd i wynik zostaje w kolejce.
 - Retencja (D-77): każdy wpis ma pole `expireAt` = czas zapisu + 90 dni; polityka TTL Firestore na grupie kolekcji
   `entries` (w `firestore.indexes.json`) usuwa wpis po tym terminie (zwykle w ciągu doby). Dokument `meta/top`
   (D-108) ma `expireAt` z pierwszego zapisu, który się nie przedłuża, i własną politykę TTL na grupie `meta`, więc
@@ -29,7 +32,8 @@ przed wydaniem. Kod: klient `src/net/`, funkcje `functions/`, reguły `firestore
 3. **Build → Authentication → Get started → Sign-in method → Anonymous → Enable**.
 4. **Usage and billing → Modify plan → Blaze** (funkcje 2. generacji wymagają rozliczeń). W Google Cloud Billing ustaw
    budżet (propozycja 10 EUR/mies.) z alertami 50/90/100%. Uwaga: budżet tylko powiadamia, nie blokuje wydatków;
-   funkcje mają `maxInstances: 10`.
+   pułapy funkcji (D-109): `getBoards` `maxInstances: 3`, `submitDaily` `maxInstances: 5` i `concurrency: 4`
+   (1 vCPU), plus limit na gracza w każdej instancji (20 `getBoards` i 6 `submitDaily` na minutę).
 5. **Project settings → General → Your apps → Web (`</>`)**, nazwa „Airway”, bez Hostingu. Skopiuj `apiKey`
    i `projectId` (to nie są sekrety — trafiają do aplikacji).
 6. Lokalnie w repo:

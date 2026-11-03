@@ -158,5 +158,17 @@ await check('getBoards reads the top document, not the entries query (D-108)', a
   assert.equal(boards.daily.entries.length, 50);
 });
 
+// [night-12j] D-109 (R3b): a fresh player's 21st getBoards inside a minute is refused with resource-exhausted
+// (HTTP 429) before any Firestore read; another player is not affected. Last check: it spends the limit.
+await check('per-player rate limit: getBoards 20/min, then resource-exhausted (D-109)', async () => {
+  const hammer = new FirebaseRestClient(config, fetch, memoryTokens());
+  for (let i = 0; i < 20; i++) await hammer.call('getBoards', { daily: ids.daily, weekly: ids.weekly });
+  await assert.rejects(hammer.call('getBoards', { daily: ids.daily, weekly: ids.weekly }),
+    (error) => error.reason === 'RESOURCE_EXHAUSTED' && error.code === 'server');
+  const other = new FirebaseRestClient(config, fetch, memoryTokens());
+  const boards = await other.call('getBoards', { daily: ids.daily, weekly: ids.weekly });
+  assert.equal(boards.daily.id, ids.daily);
+});
+
 console.log(`SUMMARY test:firebase day=${day} score=${run.claimedScore} passed=${passed} failed=${failed}`);
 if (failed) process.exitCode = 1;

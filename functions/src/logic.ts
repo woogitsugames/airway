@@ -94,3 +94,47 @@ export function readTopRows(raw: unknown): TopEntry[] {
   }
   return rows.sort(compareTop).slice(0, TOP_ENTRIES);
 }
+
+/**
+ * [night-12j] D-109: per-function deployment caps. `getBoards` is a few reads, so 3 instances serve plenty;
+ * `submitDaily` runs a CPU-bound replay, so one instance takes at most 4 at a time (not the 2nd-gen default of 80
+ * queued behind one vCPU) and up to 5 instances scale out instead.
+ */
+export const FUNCTION_OPTIONS = {
+  getBoards: { region: 'europe-west1', maxInstances: 3, memory: '512MiB', timeoutSeconds: 60 },
+  submitDaily: { region: 'europe-west1', maxInstances: 5, concurrency: 4, cpu: 1, memory: '512MiB', timeoutSeconds: 60 },
+} as const;
+
+/** [night-12j] D-109: calls one player may make per minute and per instance, before any Firestore access. */
+export const RATE_LIMITS = { getBoards: 20, submitDaily: 6 } as const;
+/** Players remembered per instance and function; the oldest is forgotten first (memory bound). */
+export const RATE_LIMIT_KEYS = 10_000;
+const MINUTE_MS = 60_000;
+
+/**
+ * [night-12j] D-109: an in-memory token bucket per key (the uid): `perMinute` calls at once, refilled evenly over a
+ * minute. Per instance only (instances share nothing), so the real cap is `perMinute × maxInstances`.
+ */
+export class RateLimiter {
+  private readonly buckets = new Map<string, { tokens: number; at: number }>();
+
+  constructor(readonly perMinute: number, private readonly now: () => number = Date.now,
+    private readonly maxKeys = RATE_LIMIT_KEYS) {}
+
+  /** True when the call may go ahead (and spends a token); false = over the limit. */
+  take(key: string): boolean {
+    const now = this.now();
+    const bucket = this.buckets.get(key);
+    let tokens = this.perMinute;
+    if (bucket) {
+      tokens = Math.min(this.perMinute, bucket.tokens + ((now - bucket.at) * this.perMinute) / MINUTE_MS);
+      this.buckets.delete(key); // re-inserted below: Map order = least recently used first
+    }
+    const allowed = tokens >= 1;
+    this.buckets.set(key, { tokens: allowed ? tokens - 1 : tokens, at: now });
+    while (this.buckets.size > this.maxKeys) this.buckets.delete(this.buckets.keys().next().value as string);
+    return allowed;
+  }
+
+  get size(): number { return this.buckets.size; }
+}

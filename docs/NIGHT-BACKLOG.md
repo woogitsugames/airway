@@ -455,6 +455,12 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       boards are seeded from the old query at their first write. The top's `expireAt` is fixed at its first write
       (TTL policy on `meta` added), so it never outlives the entries. Pure `mergeTop`/`rankInTop`/`readTopRows` in
       `functions/src/logic.ts`; `docs/FIREBASE.md` (incl. step 9 manual deletion) updated.
+- [x] N12j **Per-player rate limit and split function caps (R3b, D-109)** — pure `RateLimiter` (token bucket per
+      uid per instance, burst = limit, 10 000 keys LRU) in `functions/src/logic.ts`; `getBoards` 20/min,
+      `submitDaily` 6/min, checked after auth and before Firestore/replay → `resource-exhausted`. `FUNCTION_OPTIONS`:
+      `getBoards` `maxInstances: 3`; `submitDaily` `maxInstances: 5`, `concurrency: 4`, `cpu: 1` (was one shared
+      `maxInstances: 10`, concurrency 80). Client fix found on the way: HTTP 429 counted as a final rejection and
+      dropped the run from the queue; it is now `retry`. `docs/FIREBASE.md` updated.
 
 ## Research proposals (R-agent)
 Proposals from the research agent (findings and sources: `docs/RESEARCH.md`, sections "R1 — …"). Each item is
@@ -605,7 +611,7 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
       top 50. Same response shape (client unchanged). Emulator test: 60 submissions → `top` equals the old query
       result; read count per `getBoards` ≤ 4 (count via emulator request log). **Area:** platform (`functions/`,
       `scripts/emulator-checks.mjs`, `docs/FIREBASE.md`).
-- [ ] R3b **Per-caller rate limit and split function caps** — in-memory token bucket per uid per instance
+- [x] R3b → N12j **Per-caller rate limit and split function caps** — in-memory token bucket per uid per instance
       (`getBoards` 20/min, `submitDaily` 6/min; over the limit → `resource-exhausted` before any Firestore access);
       `getBoards` `maxInstances: 3`, `submitDaily` `concurrency: 4` (CPU-bound replay must not queue 80 players behind
       one vCPU) with `maxInstances: 5`. Pure limiter in `functions/src/logic.ts` with `test:net-server` cases; the
@@ -786,3 +792,4 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
 - 2026-11-03 · N12f fair week 1 + faster pace, Alexandria in ME (D-95, D-99, D-105, D-106; rules v5) · night/12f-week1-reach · test:week1-reach 5/5 (new; 2/5 on rules v4: 507/1,600 week-1 spawns and 33 start airports beyond reach), test:balance median 17.81 → 17.03 min (reach rule alone 24.43; 200 seeds 17.53 → 16.52), upgrade1 0.88 → 1.00, upgrade2 0.56 → 0.66, week-1 losses beyond reach 5/50 → 0/50, test:replay 23/23 (summary changed with the rules: a1a1 min8640:upgrade:score109 → min4124:over:score48), test:sim-week 6/6 (re-locked), test:save-golden 20/20 (seed 0xA1A3, + v4 replay check), test:bot-policy 10/10 (2 checks re-pinned), test:daily-mode 20/20, test:net 8/8, test:fast 65/65, build ok, store:shots 30/30 regenerated and inspected (test:store-shots 30/30); e2e/ui:matrix not run (no UI code changed)
 - 2026-11-03 · N12h six airport codes on screen + city data guard (R4a, R4b test, D-107) · night/12h-display-codes · test:city-data 5/5 (new; 4/5 before the display codes), test:airport-labels 5/5 (+1), test:replay 23/23 and test:save-golden 20/20 with summaries/hashes identical to dev (sim ids unchanged), test:balance median 17.03 (unchanged), test:fast 66/66, build ok; e2e/ui:matrix/store:shots not run (none of the six airports is in those scenes); no shot of an affected airport taken
 - 2026-11-03 · N12i one top-50 document per board (R3a, D-108) · night/12i-top-board · test:net-server 9/9 (5/9 on the old functions), test:firebase 9/9 on the emulator (7/9 on the old functions: no `rank`, no `meta/top`), test:fast 66/66, build ok; e2e/ui:matrix/store:shots not run (client unchanged); read count proven behaviourally (a direct entry edit is not read back), no emulator request log
+- 2026-11-03 · N12j per-player rate limit + split function caps (R3b, D-109) · night/12j-rate-limit · test:net-server 13/13 (9/13 on the old functions), test:net 9/9 (8/9 on the old client: a 429 dropped the queued run), test:firebase 10/10 on the emulator (9/10 on the old functions: no limit), test:fast 66/66, build ok; e2e/ui:matrix/store:shots not run (no UI change); caps not verified on a real deploy
