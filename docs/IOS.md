@@ -39,6 +39,12 @@ If dependencies are stale: `cd ios/App && pod install`. Do not commit `Pods/`, g
 
 - `index.html` sets `viewport-fit=cover`. The sky / 3D world canvas remains edge-to-edge. HUD and interactive controls must use `--aw-safe-top`, `--aw-safe-right`, `--aw-safe-bottom`, `--aw-safe-left` (CSS `env(safe-area-inset-*)`) to avoid the notch, Dynamic Island and home indicator.
 - `Info.plist` allows portrait and both landscape orientations on iPhone and all four on iPad. Full-screen-only mode is not requested; test rotation, iPad Split View and window resizing.
+- Store keys (N12b, D-91): `ITSAppUsesNonExemptEncryption = false` — the game uses only Apple's system HTTPS
+  (WKWebView, Firebase over TLS), which is exempt from export documentation, so App Store Connect stops asking the
+  export-compliance question on every upload. `CFBundleLocalizations = [en, pl]` — the App Store lists the game's
+  languages from the bundle, and WKWebView's `navigator.languages` (which `src/i18n` reads on first launch) can only
+  report a language the bundle declares. `test:ios-config` keeps the list equal to the i18n catalogs in `src/i18n/`.
+  Adding real encryption (own crypto, non-HTTPS TLS) means revisiting the first key.
 - `AppDelegate.swift` sets `AVAudioSession.Category.ambient`: the device's Ring/Silent switch mutes the game by default, without stopping other apps' audio. The Web Audio engine (`src/audio`) also requests `navigator.audioSession.type = 'ambient'` where WKWebView supports it; a play-in-silent-mode override would need a reviewed native bridge.
 - No camera, photo library, location, contacts, microphone, tracking or background privileges are requested. Native plugins: Haptics, Share, Preferences (UserDefaults, reason CA92.1) and Filesystem (file timestamps, reason C617.1), each with a pod in the `Podfile`; `test:ios-config` checks the pod list against `package.json` and forbids ad/analytics/billing SDKs. Review `PrivacyInfo.xcprivacy` whenever a plugin is added.
 
@@ -71,9 +77,9 @@ No API secrets, `.p8`, `.p12`, provisioning profiles, IPA or Fastlane logs belon
 
 ## Required manual checks before release
 
-1. Run `npm run test:ios-config` and the full `npm ci`, `npm run typecheck`, `npm run test:fast`, `npm run build` gate.
+1. Run `npm run test:ios-config` (store keys included) and the full `npm ci`, `npm run typecheck`, `npm run test:fast`, `npm run build` gate.
 2. On a Mac, execute pinned `cap sync ios`, `pod install`, and `xcodebuild -list -workspace ios/App/App.xcworkspace`.
-3. Build with Xcode on an iPhone and iPad simulator, check landscape, portrait, safe areas, Split View and resizing.
+3. Build with Xcode on an iPhone and iPad simulator, check that a Polish-language device starts the game in Polish (first launch, no saved language), landscape, portrait, safe areas, Split View and resizing.
 4. Test on an actual iPhone: silent switch, interruption/resume, and audio playback after task 19 is merged.
 5. Set up signing, archive for a device, run `bundle exec fastlane ios beta` and verify the resulting TestFlight build.
 6. Revisit privacy and platform capabilities after tasks 16, 19, 24 and 27, before store submission.
