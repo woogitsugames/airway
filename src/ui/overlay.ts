@@ -349,6 +349,9 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       const max = vertical ? height - bounds.bottom - EDGE_HEIGHT - EDGE_PAD : width - reservedRight - EDGE_WIDTH - EDGE_PAD;
       const step = (vertical ? EDGE_HEIGHT : EDGE_WIDTH) + 3;
       entry.edgePlaced = false;
+      // [night-10z] First look for a place clear of the luggage tags as well (a tag drawn over a chip hid its
+      // code); only when the edge is too crowded may a chip sit under a tag, never on an airport marker.
+      for (let avoidTags = 1; avoidTags >= 0 && !entry.edgePlaced; avoidTags--)
       for (let offset = 0; offset <= entries.length; offset++) {
         const delta = offset === 0 ? 0 : (offset % 2 ? 1 : -1) * Math.ceil(offset / 2) * step;
         const coord = Math.round(start + delta);
@@ -367,6 +370,9 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
               collides = true;
               break;
             }
+            const tag = other.tag;
+            if (avoidTags && tag.placed && x < tag.x + tag.width + 3 && x + EDGE_WIDTH + 3 > tag.x &&
+                y < tag.y + tag.height + 3 && y + EDGE_HEIGHT + 3 > tag.y) { collides = true; break; }
             continue;
           }
           if (!other.edgePlaced || other.edgeSide !== entry.edgeSide) continue;

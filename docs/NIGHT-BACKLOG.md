@@ -307,6 +307,11 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       Overlay reservation and world insets now follow `resolveHudLayout`. `test:e2e:edge-dock` adds both portrait
       foldables and a dock-column check (2/5 fail on the old session); matrix fold game shots and the 30 store
       PNGs (foldable/tablet framing) refreshed.
+- [x] N10z **Edge chips clear of airport tags** — seen in the N10x long play: the luggage tag of an on-screen airport
+      near the left edge was drawn over the edge chip of an off-screen airport and hid its code ("←B…"). After the
+      tags are laid out, a chip now first looks for a place along its edge clear of every placed tag (3 px gap); only
+      when the edge is too crowded may it sit under a tag, and never on an airport marker (N10v). New
+      `e2e/edge-chip-tags.mjs` (`test:e2e:edge-chip-tags`, in `test:ci`).
 
 ## Log
 <!-- one line per finished item: date UTC · item · PR · gate summary -->
@@ -378,3 +383,4 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
 - 2026-11-03 · N10w next puzzle after a clear · night/10w-next-puzzle · test:fast 58/58, build ok, test:e2e:puzzles 34/34 (3/34 passed, failing at puzzle 01, on the old screen), test:i18n keys=378; e2e:smoke/ui:matrix not run (puzzle screen only)
 - 2026-11-03 · N10y puzzle board opens where the player is · night/10y-board-scroll · test:fast 58/58, build ok, test:e2e:puzzle-board-scroll 12/12 (3 runs; 3/12 on the old board), e2e:puzzles 34/34; e2e:smoke/ui:matrix not run (puzzle board only)
 - 2026-11-03 · N10x long play 800×1280 PL 4× + edge buttons on the portrait Fold dock · night/10x-fold-dock · ui:long-play runs=2 maxWeek=3 issues=0; test:fast 58/58, build ok, e2e:smoke 9/9, ui:matrix 32/32, test:e2e:edge-dock 5/5 (3/5 on the old session), e2e:edge-chip-airports 2/2, e2e:continue-framing 2/2, store:shots 30 (test:store-shots 30/30)
+- 2026-11-03 · N10z edge chips clear of airport tags · night/10z-chip-tags · test:fast 58/58, build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:edge-dock 5/5, e2e:edge-chip-airports 2/2, e2e:upgrade-picks 10/10, test:e2e:edge-chip-tags 6/6 twice (4/6 on the old overlay)
