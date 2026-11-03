@@ -426,6 +426,19 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       pace, D-95), Q-43/Q-44/Q-48 → A (languages wave, worldwide except mainland China, T−12 weeks plan, D-96); marked
       ✅ in `docs/OWNER-QUESTIONS.md`. N12d/N12e's own decisions renumbered D-93/D-94 → D-97/D-98 (docs and code
       comments only).
+- [x] N12f **Fair week 1 + faster pace, Alexandria in ME (D-95, D-99, D-105, D-106, rules v5)** — before the first
+      weekly board a new airport opens only within turboprop range (2,500 km) of an open airport (weighted draw keeps
+      its proximity weights, falls back to the global draw only if nothing is in reach); the start radius is 2,500 km
+      (D-105); Alexandria joins Cairo in `ME` (Q-58). The fair week 1 alone lengthened the bot median 17.81 → 24.43 min,
+      so the pace rose: spawns every 12 h instead of 16 h and the new `DEMAND_RATE_PERCENT` = 130 (D-106, sweep in
+      `docs/balance/README.md`; Q-60). `test:balance` median 17.03 min, boards 100/66 %, week-1 losses at an airport
+      beyond reach 5/50 → 0/50 (new `week1_unreachable` gate and CSV column). `RULES_VERSION` 4 → 5,
+      `SPAWNER_PARAMS_VERSION` 1 → 2, `CITY_DATA_VERSION` 1 → 2. New `test:week1-reach` (fast, 2/5 on rules v4: 507 of
+      1,600 week-1 spawns and 33 start airports beyond reach). Re-locked deliberately: `test:sim-week` hashes and
+      failure tick 2619 → 2174 (demand 1.3×), `save-golden` regenerated on seed 0xA1A3 (this simple policy now loses
+      0xA1A1 in week 1) plus the frozen rules-v4 save as a D-76 replay check, `test:bot-policy` "+2 slots" check moved to
+      seed 0xA1A5 and unserved-jam ceiling 4 → 6 (6 airports a week; measured 6 of 19). Store shots regenerated (seed
+      0xA1A1 starts elsewhere: RIX VCE ATH… instead of ATH ZAG ANK…).
 
 ## Research proposals (R-agent)
 Proposals from the research agent (findings and sources: `docs/RESEARCH.md`, sections "R1 — …"). Each item is
@@ -754,3 +767,4 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
 - 2026-11-03 · N12e store-requirement guards (R1m, D-98) · night/12e-store-guards · test:android-config 20/20 (19/20 on the old build script; 19/20 with targetSdk 35), test:native-align 7/7 incl. zipalign cross-check (new; module absent before), test:fast 63/63, build ok; Gradle `assembleDebug --offline` could not resolve plugins here, so no real APK/AAB was checked
 - 2026-11-03 · N11g reduce motion setting (D-88) · night/11g-reduce-motion · test:fast 63/63 (test:motion 8/8, 0/8 on the old code; test:flap 15/15 via the TS loader), build ok, test:e2e:reduce-motion 3/3 (0/3 on the old settings), e2e:settings-groups 4/4, e2e:screens-fit 18/18, e2e:screens-fit-320 12/12, e2e:pseudo-locale 27/27, e2e:privacy-page 4/4, e2e:covered-pages 2/2, e2e:airline-colour 3/3; e2e:smoke/ui:matrix not run (settings only; E2E pages emulate a reduce-motion system, game screens unchanged)
 - 2026-11-03 · N12g owner decisions D-93…D-96, own D-97/D-98 renumbered · night/12g-owner-decisions · test:fast 64/64, build ok (docs and comments only)
+- 2026-11-03 · N12f fair week 1 + faster pace, Alexandria in ME (D-95, D-99, D-105, D-106; rules v5) · night/12f-week1-reach · test:week1-reach 5/5 (new; 2/5 on rules v4: 507/1,600 week-1 spawns and 33 start airports beyond reach), test:balance median 17.81 → 17.03 min (reach rule alone 24.43; 200 seeds 17.53 → 16.52), upgrade1 0.88 → 1.00, upgrade2 0.56 → 0.66, week-1 losses beyond reach 5/50 → 0/50, test:replay 23/23 (summary changed with the rules: a1a1 min8640:upgrade:score109 → min4124:over:score48), test:sim-week 6/6 (re-locked), test:save-golden 20/20 (seed 0xA1A3, + v4 replay check), test:bot-policy 10/10 (2 checks re-pinned), test:daily-mode 20/20, test:net 8/8, test:fast 65/65, build ok, store:shots 30/30 regenerated and inspected (test:store-shots 30/30); e2e/ui:matrix not run (no UI code changed)

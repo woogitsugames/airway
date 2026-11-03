@@ -151,3 +151,24 @@ run the 50-seed baseline, change only versioned values in `src/sim/params.ts`,
 then produce before/after production CSVs and a green `npm run test:balance`.
 Re-test after rebasing on the new `dev`. The owner must inspect the real failure
 countdown in the game UI before calling the failure visually fair.
+
+## Night N12f — week-1 reach and a faster pace (rules v5, D-95, D-105, D-106)
+
+Owner decision D-95 (Q-51 → B): before the first weekly board (the first chance of a widebody) a new airport opens
+only within turboprop range (2,500 km) of an open airport; D-105 narrows the start radius 3,000 → 2,500 km so the
+start group follows the same rule; D-99 (Q-58) moves Alexandria to region ME with Cairo. The fairer week 1 alone made
+the bot sample much longer (median 17.81 → 24.43 min, 200 seeds 17.53 → 23.48), so the pace was raised with two
+versioned values in `src/sim/params.ts`: `SPAWNER_INTERVAL_HOURS` 16 → 12 (6 airports per week instead of 4.5) and
+the new `DEMAND_RATE_PERCENT` = 130.
+
+| Rules | Median (50 seeds) | Median (200 seeds) | 1st / 2nd board | Week-1 losses at an airport beyond reach |
+| --- | --- | --- | --- | --- |
+| v4 (before, `n12f-rules-v4-before-50.csv`) | 17.81 min | 17.53 min | 88 % / 56 % | 5 / 50 |
+| reach rule only, 16 h, 100 % | 24.43 min | 23.48 min | — | 0 / 50 |
+| **v5: 12 h, 130 %** (`game-50.csv`) | **17.03 min** | 16.52 min | 100 % / 66 % | **0 / 50** |
+
+Sweep (50 seeds, median min): 16 h × 115 % 22.28, × 120 % 22.08, × 140 % 20.81; 14 h × 130 % 20.63; 13 h × 120 %
+20.07; 12 h × 110 % 19.60, × 120 % 18.84, × 130 % 17.03; 11 h × 100 % 18.75, × 110 % 17.57; 10 h × 110 % 16.71,
+× 120 % 16.21. The interval changes the whole spawn sequence, so neighbouring values are not monotonic; 12 h × 130 %
+was chosen because its 200-seed median (16.52) agrees with the gated 50-seed one. `test:balance` now also fails on any
+week-1 loss at an airport that opened beyond turboprop reach (`week1_unreachable`, CSV column `week1_unreachable`).

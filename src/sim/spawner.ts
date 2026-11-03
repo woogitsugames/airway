@@ -8,9 +8,11 @@ import {
   SPAWNER_MAX_CITIES,
   SPAWNER_MIN_CITY_DISTANCE_KM,
   SPAWNER_PARAMS_VERSION,
+  SPAWNER_REACH_RULE_UNTIL_MINUTE,
   SPAWNER_START_CITY_MAX,
   SPAWNER_START_CITY_MIN,
   SPAWNER_START_RADIUS_KM,
+  SPAWNER_WEEK1_REACH_KM,
 } from './params.ts';
 
 export interface CitySpawnerState {
@@ -96,10 +98,16 @@ function proximityWeight(nearestKm: number): number {
   return 1; // A small global escape probability prevents regional dead ends.
 }
 
-function chooseNextCity(active: readonly number[], rng: Rng): number | null {
+/**
+ * Weighted draw of the next city. `withinReach` (week 1, D-98) keeps only candidates whose nearest active airport is
+ * at most SPAWNER_WEEK1_REACH_KM away; when no such candidate exists the draw falls back to every spaced candidate.
+ */
+function chooseNextCity(active: readonly number[], rng: Rng, withinReach: boolean): number | null {
   const candidates: number[] = [];
   const weights: number[] = [];
   let totalWeight = 0;
+  let reachable = 0;
+  const nearest: number[] = [];
   for (let index = 0; index < CITIES.length; index++) {
     let nearestKm = 20016;
     for (const existing of active) {
@@ -108,12 +116,17 @@ function chooseNextCity(active: readonly number[], rng: Rng): number | null {
       if (nearestKm < SPAWNER_MIN_CITY_DISTANCE_KM) break;
     }
     if (nearestKm < SPAWNER_MIN_CITY_DISTANCE_KM) continue;
-    const weight = proximityWeight(nearestKm);
     candidates.push(index);
+    nearest.push(nearestKm);
+    if (nearestKm <= SPAWNER_WEEK1_REACH_KM) reachable++;
+  }
+  const restrict = withinReach && reachable > 0;
+  for (let i = 0; i < candidates.length; i++) {
+    const weight = restrict && nearest[i] > SPAWNER_WEEK1_REACH_KM ? 0 : proximityWeight(nearest[i]);
     weights.push(weight);
     totalWeight += weight;
   }
-  if (candidates.length === 0) return null;
+  if (totalWeight === 0) return null;
   let ticket = rng.int(totalWeight);
   for (let i = 0; i < candidates.length; i++) {
     ticket -= weights[i];
@@ -143,7 +156,7 @@ export function advanceCitySpawner(state: CitySpawnerState, gameTick: number, rn
       nextSpawnTick = null;
       break;
     }
-    const index = chooseNextCity(active, rng);
+    const index = chooseNextCity(active, rng, nextSpawnTick < SPAWNER_REACH_RULE_UNTIL_MINUTE);
     if (index === null) {
       nextSpawnTick = null; // Dataset exhausted under the 6-degree restriction.
       break;

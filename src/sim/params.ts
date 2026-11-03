@@ -3,15 +3,18 @@ export const SIM_TICKS_PER_SECOND = 10 as const;
 export const SIM_TICK_MS = 100 as const;
 
 // [task-05] City spawner (1 simulation tick = 1 game minute, task 01 architecture).
-export const SPAWNER_PARAMS_VERSION = 1 as const;
+// [night-12f] 1 -> 2: week-1 reach rule and a 2,500 km start radius (D-95, D-105).
+export const SPAWNER_PARAMS_VERSION = 2 as const;
 export const GAME_TICKS_PER_HOUR = 60 as const;
 // [task-22 balance, integration] 4 h -> 12 h; see docs/balance/README.md (bot median 10.1 min at 1x).
 // [task-31 balance] 12 h -> 16 h with the 3-day week (D-40): 4.5 new cities per week; docs/balance/README.md.
-export const SPAWNER_INTERVAL_HOURS = 16 as const;
+// [night-12f balance] 16 h -> 12 h with the week-1 reach rule (D-95, D-106): 6 new airports per week.
+export const SPAWNER_INTERVAL_HOURS = 12 as const;
 export const SPAWNER_INTERVAL_TICKS = SPAWNER_INTERVAL_HOURS * GAME_TICKS_PER_HOUR;
 export const SPAWNER_START_CITY_MIN = 3 as const;
 export const SPAWNER_START_CITY_MAX = 4 as const;
-export const SPAWNER_START_RADIUS_KM = 3000 as const;
+// [night-12f] 3000 -> 2500 km (D-105): every start airport is within turboprop range of the start anchor.
+export const SPAWNER_START_RADIUS_KM = 2500 as const;
 export const SPAWNER_MAX_CITIES = 40 as const;
 // A rounded integer great-circle distance >= 668 km guarantees >= 6.0 degrees
 // for Earth radius 6371 km (6 degrees ~= 667.17 km), even after rounding.
@@ -25,6 +28,9 @@ export const SIM_DAYS_PER_WEEK = 3 as const;
 export const SIM_MINUTES_PER_WEEK = SIM_MINUTES_PER_DAY * SIM_DAYS_PER_WEEK;
 // [task-22 balance, integration] 3 -> 1 passenger per million inhabitants per day.
 export const DEMAND_PASSENGERS_PER_MILLION_PER_DAY = 1 as const;
+// [night-12f balance] D-95/D-106: integer percentage on the demand rate above (100 = the task-22 rate). Week 1
+// became fairer (airports within reach, bot median 17.81 -> 24.43 min), so the pace is faster to keep it in 10–18.
+export const DEMAND_RATE_PERCENT = 130 as const;
 // Dawn is intentionally strongest; this 24-element integer profile is in local time.
 // [task-11] One game tick is one UTC minute; day/night balance is versioned.
 export const DAYNIGHT_PARAMS_VERSION = 1 as const;
@@ -54,6 +60,10 @@ export const PLANE_TYPES = {
   widebody: { rangeKm: 11000, seats: 300, speedKmPerTick: 14 },
 } as const;
 export type PlaneType = keyof typeof PLANE_TYPES;
+// [night-12f] D-95: before the first weekly board (where the first widebody can be taken) a new airport opens only
+// within turboprop range of an active airport, so every week-1 airport can be answered with the starting fleet.
+export const SPAWNER_WEEK1_REACH_KM = PLANE_TYPES.turboprop.rangeKm;
+export const SPAWNER_REACH_RULE_UNTIL_MINUTE = SIM_MINUTES_PER_WEEK;
 export const MIN_AIRPORT_SERVICE_TICKS = 25 as const;
 export const MAX_ROUTE_SEGMENT_KM = 21000 as const;
 export const PLANE_PROGRESS_SCALE = 10000 as const;

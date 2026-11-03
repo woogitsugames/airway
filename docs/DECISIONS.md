@@ -700,7 +700,8 @@ In week 1 (before the first weekly board, where the first widebody can be taken)
 pace gets slightly faster (e.g. more frequent airports) so the bot median stays inside 10–18 min (D-79). Reason: after
 N12a 5 of 50 bot runs were still lost in week 1 at an airport farther than 2,500 km from every other one. Rejected:
 leave the rules (A), widen the target to 10–20 min (C).
-**Status: to implement (sim spawner + `test:balance`).**
+**Status: in force (N12f, rules v5: spawner reach rule, D-105 start radius, D-106 pace; `test:week1-reach`,
+`test:balance` `week1_unreachable` = 0 of 50, was 5 of 50; median 17.81 → 17.03 min).**
 
 ## D-96 — Post-launch languages, distribution and launch plan (2026-11-03, owner, Q-43 → A, Q-44 → A, Q-48 → A)
 - **Languages:** after launch wave 1 adds DE, FR, ES and PT-BR (no technical change), then JA (an OFL CJK typeface,
@@ -737,4 +738,33 @@ the release builds; "no native libs" is the expected result for this web-only Ca
 `zipalign`/`bundletool` from the build (extra SDK/JAR dependency; `zipalign` does not read ELF headers) — the test
 cross-checks our verdict against `zipalign -c -P 16` when the SDK is present.
 **Status: in force (N12e, `test:android-config` 20 checks, `test:native-align` 7 cases).**
+
+## D-99 — Restricted-airspace cities stay; Alexandria joins Cairo in ME; auto-pause on focus loss (2026-11-03, owner, Q-57 → A, Q-58 → A, Q-59 → B)
+- **Q-57 → A:** cities in airspace that is closed or restricted today (Kyiv, Tel Aviv, Beirut, Baghdad, Tehran,
+  Isfahan) stay in the data and in the draw: the game is a timeless network, not a news simulator. Kyiv's screen code
+  is corrected (KIV → IEV, R4a) regardless.
+- **Q-58 → A:** Alexandria moves from `AFR` to `ME`, the region of Cairo 180 km away (one glyph for Egypt), in the same
+  sim-rules change as D-95 (it changes demand; old saves are replayed, D-76).
+- **Q-59 → B:** the game pauses when its window loses focus in split screen / multi-window and shows the pause screen
+  on return (the picture keeps refreshing, so multi-resume is still honoured). UI item for the UI agent, not done yet.
+**Status: Q-57 in force (no change); Q-58 in force (N12f, rules v5, `CITY_DATA_VERSION` 2, `test:week1-reach`);
+Q-59 to implement (UI).**
+
+## D-105 — The start group also sits within turboprop range (2026-11-03, Claude, night N12f)
+`SPAWNER_START_RADIUS_KM` 3,000 → 2,500: every start airport is within turboprop range of the start anchor, so the
+start group obeys the same rule as the week-1 spawns of D-95. Under the old radius 33 of 1,403 start airports on 400
+seeds were more than 2,500 km from every other start airport (e.g. Medellín–Mexico City 2,934 km); 78 of the 89 start
+clusters remain and they cover the same seven regions. Rejected: checking pairwise reach inside a 3,000 km cluster
+(more code for the same effect). **Status: in force (N12f, `test:week1-reach`).**
+
+## D-106 — Faster pace for the fair week 1: 12 h spawns and 130 % demand (2026-11-03, Claude, night N12f)
+D-95 asked for a slightly faster pace to keep the bot median inside 10–18 min (D-79). The reach rule alone made the
+bot sample much longer than expected (50 seeds 17.81 → 24.43 min; 200 seeds 17.53 → 23.48): a compact week 1 also
+keeps later weeks manageable. `SPAWNER_INTERVAL_HOURS` 16 → 12 (6 new airports per 3-day week instead of 4.5) and the
+new integer `DEMAND_RATE_PERCENT` = 130 (demand credit kept in hundredths, D-13) bring it to 17.03 min (200 seeds
+16.52), 1st/2nd board 100 % / 66 %, 0 week-1 losses beyond reach. Neither knob alone was enough without extremes
+(spawns only: 10 h; demand only: 140 % still 20.81 min); the sweep is in `docs/balance/README.md`. `RULES_VERSION`
+4 → 5, `SPAWNER_PARAMS_VERSION` 1 → 2. Rejected: smaller waiting rooms (24 → 20 seats still 22.7 min), widening the
+target (owner rejected C in Q-51). It is a bigger change than "slightly"; a human playtest should confirm it (Q-60).
+**Status: in force (N12f, `test:balance`).**
 
