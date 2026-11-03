@@ -5,6 +5,7 @@ import { resolve, dirname, join, relative, isAbsolute, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { deflateSync } from 'node:zlib';
 import { spawnSync } from 'node:child_process';
+import { checkNativeAlignment, describe } from './native-align.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const ANDROID = join(ROOT, 'android');
@@ -172,6 +173,12 @@ try {
   run('npm', ['exec', '--yes', '--package=@capacitor/cli@8.5.3', '--', 'cap', 'sync', 'android']);
   const task = mode === '--release-aab' ? 'bundleRelease' : mode === '--release-apk' ? 'assembleRelease' : 'assembleDebug';
   run(process.platform === 'win32' ? 'gradlew.bat' : './gradlew', [task], ANDROID);
+  // [night-12e] D-94: Play rejects 64-bit native libraries that are not 16 KB aligned; release builds fail here.
+  const output = mode === '--release-aab' ? 'app/build/outputs/bundle/release/app-release.aab'
+    : mode === '--release-apk' ? 'app/build/outputs/apk/release/app-release.apk' : 'app/build/outputs/apk/debug/app-debug.apk';
+  const alignment = checkNativeAlignment(readFileSync(join(ANDROID, output)), output.endsWith('.apk') ? 'apk' : 'aab');
+  for (const line of describe(alignment, output)) console.log(line);
+  if (!alignment.ok && mode.startsWith('--release-')) throw new Error('native libraries are not 16 KB aligned');
   console.log('SUMMARY android:build seed=0xA1A1 task=' + task + ' passed=1 failed=0');
 } catch (error) {
   console.error('Android build failed: ' + error.message);
