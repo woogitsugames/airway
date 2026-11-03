@@ -163,6 +163,18 @@ class FixtureSession implements BalanceSession {
       to.connectedRoutes++;
       return true;
     }
+    if (command.type === 'ExtendRoute' && this.phase === 'running') { // [night-07w]
+      const route = this.routes.find((item) => item.id === command.routeId);
+      const city = this.cities.find((item) => item.id === command.cityId && item.active);
+      if (!route || !city || route.stops.includes(city.id)) return false;
+      const terminal = command.end === 'start' ? route.stops[0] : route.stops[route.stops.length - 1];
+      const legKm = this.distances[terminal][city.id];
+      if (legKm > (route.assigned.turboprop > 0 ? 2_500 : 11_000)) return false;
+      route.stops = command.end === 'start' ? [city.id, ...route.stops] : [...route.stops, city.id];
+      route.distanceKm = Math.max(route.distanceKm, legKm);
+      city.connectedRoutes++;
+      return true;
+    }
     if (command.type === 'AssignPlane' && this.phase === 'running') {
       const route = this.routes.find((item) => item.id === command.routeId);
       if (!route || this.inventory[command.aircraftType] < 1 ||
