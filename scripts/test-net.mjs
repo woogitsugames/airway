@@ -162,5 +162,25 @@ await check('[night-06c] the default fetch is bound (browsers throw "Illegal inv
   } finally { globalThis.fetch = original; }
 });
 
+// [night-12j] D-109: the server's per-player limit answers 429 `resource-exhausted`; the run must stay queued.
+await check('a rate-limited submission (429) stays queued and is sent on the next flush', async () => {
+  const config = readNetConfig({ VITE_FIREBASE_API_KEY: 'k', VITE_FIREBASE_PROJECT_ID: 'p' });
+  let limited = true;
+  const fakeFetch = async (url) => {
+    if (url.includes('accounts:signUp')) return { ok: true, status: 200, json: async () => ({ localId: 'u', idToken: 't', refreshToken: 'r', expiresIn: '3600' }) };
+    if (limited) return { ok: false, status: 429, json: async () => ({ error: { message: 'Too many requests', status: 'RESOURCE_EXHAUSTED' } }) };
+    return { ok: true, status: 200, json: async () => ({ result: { accepted: true, score: honest.claimedScore } }) };
+  };
+  const store = new Map();
+  let clock = 1_000;
+  const api = createLeaderboards({ config, fetch: fakeFetch, now: () => clock, storage: { getItem: (k) => store.get(k) ?? null, setItem: (k, v) => store.set(k, v) } });
+  assert.equal(await api.submitDaily(honest), 'queued');
+  assert.equal(JSON.parse(store.get('aw-net-queue-v1')).length, 1, 'still in the queue');
+  limited = false;
+  clock += 10 * 60_000;
+  await api.flush();
+  assert.equal(JSON.parse(store.get('aw-net-queue-v1')).length, 0, 'sent after the limit');
+});
+
 console.log(`SUMMARY test:net seed=0xA1A1 day=${DAY} score=${honest.claimedScore} ticks=${honest.endTick} passed=${passed} failed=${failed}`);
 if (failed) process.exitCode = 1;

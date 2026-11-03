@@ -790,3 +790,15 @@ collide. Rejected: a scheduled job that rebuilds tops (extra function, stale boa
 (not needed at this size). Every write to a board now contends on one document; at well below one accepted run per
 second per board this is fine, and the write is skipped once a run cannot reach the top. **Status: in force (N12i).**
 
+## D-109 — Per-player rate limit and split function caps (2026-11-03, Claude, night N12j)
+R3b: one shared `maxInstances: 10` with the 2nd-gen default concurrency of 80 neither capped a scripted caller nor
+kept the CPU-bound replay from queueing 80 players behind one vCPU. Now `getBoards` has `maxInstances: 3`;
+`submitDaily` has `maxInstances: 5`, `concurrency: 4` and `cpu: 1` (worst case 20 replays at once). Each instance
+keeps an in-memory token bucket per uid (`getBoards` 20/min, `submitDaily` 6/min, burst = the per-minute limit,
+at most 10 000 players remembered, least recently used forgotten), checked right after auth and before any
+Firestore access or replay; over the limit → `resource-exhausted`. Instances share nothing, so the effective cap is
+limit × instances (60 and 30/min), which still bounds the bill. The client used to treat every 4xx as a final
+rejection and would have dropped a rate-limited run from its queue; 429 now counts as a temporary server error
+(`retry`). Rejected: a Firestore counter per uid (a read and a write per call, the cost we are cutting); App Check
+(separate decision, needs the store builds). **Status: in force (N12j).**
+

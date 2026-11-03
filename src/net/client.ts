@@ -38,7 +38,9 @@ export class FirebaseRestClient {
     const json = await response.json().catch(() => null);
     if (!response.ok) {
       const message = (json as { error?: { message?: string; status?: string } } | null)?.error;
-      const code = response.status === 401 || response.status === 403 ? 'auth' : response.status >= 500 ? 'server' : 'rejected';
+      // [night-12j] D-109: 429 (`resource-exhausted`, the server's per-player limit) is temporary: retry later.
+      const code = response.status === 401 || response.status === 403 ? 'auth'
+        : response.status >= 500 || response.status === 429 ? 'server' : 'rejected';
       throw new NetError(code, message?.message ?? `HTTP ${response.status}`, message?.status);
     }
     return json;
