@@ -1,5 +1,5 @@
 // Local-time regional demand (task 08). All arithmetic is integral except the seeded RNG draw.
-import { DEMAND_HOURLY_WEIGHTS, DEMAND_PASSENGERS_PER_MILLION_PER_DAY } from './params.ts';
+import { DEMAND_HOURLY_WEIGHTS, DEMAND_PASSENGERS_PER_MILLION_PER_DAY, DEMAND_RATE_PERCENT } from './params.ts';
 import { localHourAt } from './daynight.ts';
 import type { DistanceLookup, RoutingCity } from './routing.ts';
 
@@ -19,7 +19,8 @@ export interface DemandSnapshot {
 }
 interface RegionChoice { readonly regionId: string; readonly weight: number }
 const PROFILE_SUM = DEMAND_HOURLY_WEIGHTS.reduce((sum, weight) => sum + weight, 0);
-const CREDIT_THRESHOLD = 1_000_000 * PROFILE_SUM * 60;
+// Credit is kept in hundredths so DEMAND_RATE_PERCENT stays integral (D-13).
+const CREDIT_THRESHOLD = 1_000_000 * PROFILE_SUM * 60 * 100;
 
 function distanceFactor(km: number): number {
   if (km <= 1_200) return 5;
@@ -97,7 +98,7 @@ export class RegionalDemand {
       // Shared day/night clock (task 11): the dawn wave follows each city's local hour.
       const hour = localHourAt(tick, city.utcOffsetH);
       let balance = this.credit[city.cityId] +
-        city.population * DEMAND_PASSENGERS_PER_MILLION_PER_DAY * DEMAND_HOURLY_WEIGHTS[hour];
+        city.population * DEMAND_PASSENGERS_PER_MILLION_PER_DAY * DEMAND_RATE_PERCENT * DEMAND_HOURLY_WEIGHTS[hour];
       while (balance >= CREDIT_THRESHOLD) {
         balance -= CREDIT_THRESHOLD;
         let total = 0;

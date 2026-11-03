@@ -85,9 +85,11 @@ try {
     tests++;
   }
   // [task-31] Re-locked for the 3-day week (D-40) and waiting capacities 36/24 (end-of-week state, day 3).
-  const expectedHashes = ['a1a1:1a6df881', 'b2b2:c28b2b35', 'c3c3:77123733'];
+  // [night-12f] Re-locked for rules v5 (D-95/D-105/D-106: week-1 reach, 12 h spawns, demand 130 %, ALX in ME);
+  // the unserved world now jams at tick 2174 instead of 2619 (demand 1.3x).
+  const expectedHashes = ['a1a1:7b1ed586', 'b2b2:14760e40', 'c3c3:1aea8e84'];
   assert.deepEqual(hashes, expectedHashes, 'deterministic week hashes changed');
-  assert.deepEqual(failTicks, ['a1a1:2619', 'b2b2:2619', 'c3c3:2619'], 'locked congestion failure ticks');
+  assert.deepEqual(failTicks, ['a1a1:2174', 'b2b2:2174', 'c3c3:2174'], 'locked congestion failure ticks');
   console.log(`SUMMARY test:sim-week seeds=3 weekTicks=${WEEK} cases=${tests} passed=${tests} failed=0 hashes=${hashes.join(',')} failTicks=${failTicks.join(',')}`);
 } catch (e) {
   console.error(e);

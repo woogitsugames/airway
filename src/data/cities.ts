@@ -2,7 +2,8 @@
 // Geographic names and rounded coordinates are factual public-domain data; estimates are not census statistics.
 import type { RegionId } from './regions';
 
-export const CITY_DATA_VERSION = 1 as const;
+// [night-12f] 1 -> 2: Alexandria moved to region ME with Cairo (D-99, Q-58).
+export const CITY_DATA_VERSION = 2 as const;
 export interface City {
   readonly code: string;
   readonly namePl: string;
@@ -103,7 +104,7 @@ export const CITIES: readonly City[] = [
   { code: 'CMN', namePl: "Casablanca", nameEn: "Casablanca", lon: -7.6, lat: 33.6, population: 3700000, region: 'AFR' },
   { code: 'ALG', namePl: "Algier", nameEn: "Algiers", lon: 3.1, lat: 36.8, population: 3600000, region: 'AFR' },
   { code: 'TUN', namePl: "Tunis", nameEn: "Tunis", lon: 10.2, lat: 36.8, population: 2300000, region: 'AFR' },
-  { code: 'ALX', namePl: "Aleksandria", nameEn: "Alexandria", lon: 29.9, lat: 31.2, population: 5500000, region: 'AFR' },
+  { code: 'ALX', namePl: "Aleksandria", nameEn: "Alexandria", lon: 29.9, lat: 31.2, population: 5500000, region: 'ME' },
   { code: 'DKR', namePl: "Dakar", nameEn: "Dakar", lon: -17.4, lat: 14.7, population: 1500000, region: 'AFR' },
   { code: 'ACC', namePl: "Akra", nameEn: "Accra", lon: -0.2, lat: 5.6, population: 2500000, region: 'AFR' },
   { code: 'LOS', namePl: "Lagos", nameEn: "Lagos", lon: 3.4, lat: 6.5, population: 16000000, region: 'AFR' },

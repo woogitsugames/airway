@@ -25,12 +25,16 @@ const TARGET_MAX = 18;
 // [task-31] Share of bot runs that must reach the first / second weekly upgrade choice.
 const TARGET_FIRST_UPGRADE = 0.6;
 const TARGET_SECOND_UPGRADE = 0.3;
+// [night-12f] D-95: week-1 losses at an airport that opened beyond turboprop reach (old rules: 6 of 50).
+const TARGET_WEEK1_UNREACHABLE = 0;
 
 interface BalanceOutcome {
   readonly reason: 'hubOverflow' | 'timeLimit';
   readonly score: number;
   readonly warned: boolean;
   readonly warningLeadTicks: number;
+  /** [night-12f] Lost in week 1 at an airport that opened beyond turboprop reach (real adapter only). */
+  readonly week1Unreachable?: boolean;
 }
 
 /** Real engine adapter contract. Task 08/09/12 integration must implement this. */
@@ -57,6 +61,7 @@ interface RunResult {
   commands: number;
   rejected: number;
   upgrades: number;
+  week1Unreachable: boolean;
 }
 
 // LCG exists only inside the isolated fixture; the real sim must use src/core/rng.ts.
@@ -307,14 +312,16 @@ function play(adapter: BalanceAdapter, seed: number): RunResult {
     weeks: snapshot.tick / TICKS_PER_WEEK,
     score: end.score, reason: snapshot.status === 'finished' ? end.reason : 'censored',
     warned: end.warned, warningLeadTicks: end.warningLeadTicks, commands, rejected, upgrades,
+    week1Unreachable: end.week1Unreachable === true,
   };
 }
 
 function csv(results: RunResult[]): string {
-  const header = 'seed,ticks,game_weeks,wall_minutes_1x,score,reason,warning_seen,warning_lead_ticks,commands,rejected,upgrades';
+  const header = 'seed,ticks,game_weeks,wall_minutes_1x,score,reason,warning_seen,warning_lead_ticks,commands,rejected,upgrades,week1_unreachable';
   return header + '\n' + results.map((item) => [
     item.seed, item.ticks, item.weeks.toFixed(3), item.minutes.toFixed(3), item.score,
     item.reason, item.warned ? 1 : 0, item.warningLeadTicks, item.commands, item.rejected, item.upgrades,
+    item.week1Unreachable ? 1 : 0,
   ].join(',')).join('\n') + '\n';
 }
 
@@ -336,6 +343,8 @@ function report(results: RunResult[], mode: string): string {
     `- Median delivered passengers: ${median(scores).toFixed(0)}.\n` +
     `- Warnings before failure: ${results.filter((r) => r.reason === 'hubOverflow' && r.warned && r.warningLeadTicks > 0).length} / ${results.filter((r) => r.reason === 'hubOverflow').length} recorded.\n` +
     `- Rejected commands: ${results.reduce((sum, r) => sum + r.rejected, 0)}.\n` +
+    `- Lost in week 1 at an airport beyond turboprop reach when it opened (D-95): ` +
+    `${results.filter((r) => r.week1Unreachable).length}/${results.length}.\n` +
     `- Reached the 1st weekly upgrade: ${share(results, 1)} (target ≥ ${TARGET_FIRST_UPGRADE * 100}%); ` +
     `2nd: ${share(results, 2)} (target ≥ ${TARGET_SECOND_UPGRADE * 100}%); 3rd: ${share(results, 3)}.\n\n` +
     `## Outcomes\n${causes}\n\n` +
@@ -406,10 +415,13 @@ async function main(): Promise<void> {
     const first = reachedShare(results, 1);
     const second = reachedShare(results, 2);
     const upgradesOk = fixture || (first >= TARGET_FIRST_UPGRADE && second >= TARGET_SECOND_UPGRADE);
-    const passed = invalid.length === 0 && inRange && upgradesOk;
+    // [night-12f] D-95: no week-1 loss at an airport that the starting turboprops could not reach.
+    const week1Unreachable = results.filter((item) => item.week1Unreachable).length;
+    const fairOk = week1Unreachable <= TARGET_WEEK1_UNREACHABLE;
+    const passed = invalid.length === 0 && inRange && upgradesOk && fairOk;
     console.log(`SUMMARY ${label} seed=0xA1A1 mode=${mode} seeds=${n} median_min=${med.toFixed(2)} ` +
-      `upgrade1=${first.toFixed(2)} upgrade2=${second.toFixed(2)} ` +
-      `passed=${passed ? 1 : 0} failed=${invalid.length + (inRange ? 0 : 1) + (upgradesOk ? 0 : 1)}`);
+      `upgrade1=${first.toFixed(2)} upgrade2=${second.toFixed(2)} week1_unreachable=${week1Unreachable} ` +
+      `passed=${passed ? 1 : 0} failed=${invalid.length + (inRange ? 0 : 1) + (upgradesOk ? 0 : 1) + (fairOk ? 0 : 1)}`);
     if (!passed) process.exitCode = 1;
   } catch (error) {
     console.error(error instanceof Error ? error.message : String(error));
