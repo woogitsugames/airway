@@ -2,6 +2,7 @@
 // Authority flows input → RunCommand → EndlessRun.step() at fixed 100 ms ticks → read-only
 // snapshots → render / UI / audio. Nothing here writes run state except through queue().
 import { t } from '../i18n';
+import { framingPoints } from './framing';
 import { cameraGestureCallbacks, attachPointerGestures, type AttachedGestures, type GestureHit } from '../input';
 import {
   RouteTool, hitTestRouteSegments, nearestCity, routeHandles,
@@ -403,7 +404,8 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     return { tick: run.clockMinute, alpha: Math.max(0, Math.min(1, accumulator)) };
   });
   const cities = run.cityList();
-  world.orbit.fitNetwork(cities.map((city) => ({ lon: city.lon, lat: city.lat })));
+  // [night-07z] Frame the densest cluster when the airports span several continents (never an empty ocean).
+  world.orbit.fitNetwork(framingPoints(cities.map((city) => ({ lon: city.lon, lat: city.lat, hub: city.hub }))));
   world.orbit.setZoom(3);
   syncWorld(true);
   syncUpgrade();
