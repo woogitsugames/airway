@@ -1,5 +1,6 @@
 // Accessibility adapters (task 20). HUD (13), overlays (06) and the settings screen bind to these APIs.
 import { t, type TranslationKey } from '../i18n';
+import { installKeyboardNavigation } from './a11y-keys';
 
 export type TextScale = 100 | 115 | 130;
 export interface AccessibilitySettings {
@@ -100,7 +101,9 @@ export function initializeAccessibility(root?: HTMLElement): () => void {
     }
   };
   window.addEventListener('storage', onStorage);
-  return () => window.removeEventListener('storage', onStorage);
+  // [m3] D-55: Tab trap in open boards, D-pad / arrow focus movement, keyboard modality flag.
+  const removeKeys = typeof document !== 'undefined' ? installKeyboardNavigation(document) : () => undefined;
+  return () => { window.removeEventListener('storage', onStorage); removeKeys(); };
 }
 
 /** Set translated action names on native buttons (dock and split-flap menu). */

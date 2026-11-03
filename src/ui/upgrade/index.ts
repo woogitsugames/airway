@@ -2,6 +2,7 @@ import type { HubPressure, UpgradeCommand, UpgradeKind, WeeklyUpgradeState } fro
 import './upgrade.css';
 import { t } from '../../i18n';
 import { cardModel, upgradeFacts, type CardModel, type SlotPressure } from './cards';
+import { airportLabel } from '../airportLabel'; // [m3]
 
 export { cardModel, upgradeFacts, mostSlotStarved, type CardModel, type UpgradeFacts, type SlotPressure } from './cards';
 
@@ -66,6 +67,25 @@ function backTile(onBack: () => void): HTMLButtonElement {
   return button;
 }
 
+/** [m3] D-55: the globe tap as buttons: visible with keyboard input, screen-reader-only otherwise (theme.css). */
+function pickButtons(ids: readonly string[], onPick: (id: string) => void): HTMLElement {
+  const row = document.createElement('div');
+  row.className = 'airway-upgrade-picks';
+  row.setAttribute('role', 'group');
+  row.setAttribute('aria-label', t('a11y.pickGroup'));
+  for (const id of ids) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'airway-upgrade-pick';
+    button.dataset.testid = `upgrade-pick-${id}`;
+    button.textContent = airportLabel(id);
+    button.setAttribute('aria-label', t('a11y.pick', { airport: airportLabel(id, 'name') }));
+    button.addEventListener('click', () => onPick(id));
+    row.append(button);
+  }
+  return row;
+}
+
 export class WeeklyUpgradeView {
   private readonly root: HTMLElement;
   private readonly options: UpgradeUIOptions;
@@ -103,7 +123,9 @@ export class WeeklyUpgradeView {
     if (state.pendingHub) {
       // The globe must stay readable while the player taps a hub: only the sign remains.
       if (this.options.onCancelPick) sign.prepend(backTile(() => this.options.onCancelPick?.(state.week))); // [task-39]
-      this.options.onHubSelectionMode?.(true, pickingSlots ? this.airports.map(a => a.cityId) : this.hubs.map(h => h.hubId));
+      const pickIds = pickingSlots ? this.airports.map(a => a.cityId) : this.hubs.map(h => h.hubId);
+      sign.append(pickButtons(pickIds, (id) => this.selectHub(id))); // [m3] D-55 keyboard / screen-reader pick
+      this.options.onHubSelectionMode?.(true, pickIds);
       this.root.append(wrap);
       return;
     }

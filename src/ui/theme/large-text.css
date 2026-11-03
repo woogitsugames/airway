@@ -1,0 +1,68 @@
+/* [m3] D-55: layout fixes for the 115 / 130 % text-size setting. Every font size already follows
+   --airway-text-scale (scripts/lib/postcss-text-scale.mjs); these rules give the fixed-size boxes around
+   that text room to grow. Scoped to a non-default scale, so the 100 % screens (and the 32-shot ui:matrix
+   contract) are untouched. `:root` raises specificity over the component sheets loaded after this one. */
+
+/* ---- Boarding pass (HUD): fields size to their content, the notch follows the passenger stub. ---- */
+:root:not([data-airway-text-scale='100']) .airway-pass {
+  width: min(calc(420px * var(--airway-text-scale)), calc(100% - var(--hud-safe-left, 0px) - var(--hud-safe-right, 0px) - 24px));
+  height: auto;
+  min-height: 60px;
+  gap: 6px;
+}
+:root:not([data-airway-text-scale='100']) .airway-pass__ticket { --cut: calc(100% - 86px * var(--airway-text-scale)); }
+:root:not([data-airway-text-scale='100']) .airway-pass__field { padding: 6px 5px; }
+:root:not([data-airway-text-scale='100']) :is(.airway-pass__week, .airway-pass__day, .airway-pass__time) {
+  width: auto; flex: 1 1 auto; min-width: max-content;
+}
+:root:not([data-airway-text-scale='100']) .airway-pass__label { letter-spacing: .04em; }
+:root:not([data-airway-text-scale='100']) .airway-pass__passengers {
+  flex: 0 0 calc(84px * var(--airway-text-scale)); padding: 6px 5px;
+}
+:root:not([data-airway-text-scale='100']) .airway-pass__field strong { overflow: visible; }
+:root:not([data-airway-text-scale='100']) .airway-pass__pause { height: auto; align-self: stretch; }
+
+/* ---- Departures board (menu): tiles grow with their letters. ---- */
+:root:not([data-airway-text-scale='100']) .flap-tile {
+  width: calc(var(--flap-w, 11px) * var(--airway-text-scale));
+  height: calc(25px * var(--airway-text-scale));
+}
+:root:not([data-airway-text-scale='100']) .flap-half { height: calc(12.5px * var(--airway-text-scale)); }
+:root:not([data-airway-text-scale='100']) .flap-ink {
+  height: calc(25px * var(--airway-text-scale)); line-height: calc(25px * var(--airway-text-scale));
+}
+:root:not([data-airway-text-scale='100']) :is(.flap-half--bottom, .flap-fold-in) .flap-ink { top: calc(-12.5px * var(--airway-text-scale)); }
+:root:not([data-airway-text-scale='100']) :is(.airway-board__header, .airway-flight) {
+  grid-template-columns: minmax(0, 1fr) calc(48px * var(--airway-text-scale)) calc(95px * var(--airway-text-scale));
+}
+:root:not([data-airway-text-scale='100']) .airway-flight__sub { white-space: normal; }
+@media (orientation: landscape) {
+  :root:not([data-airway-text-scale='100']) .airway-board {
+    width: min(calc(410px * var(--airway-text-scale)), calc(100% - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px) - 30px));
+  }
+}
+/* A phone in portrait has no room for title, gate and status side by side: title above, gate + status below. */
+@media (max-width: 559px) {
+  :root:not([data-airway-text-scale='100']) .airway-board__header { grid-template-columns: minmax(0, 1fr) auto auto; }
+  :root:not([data-airway-text-scale='100']) .airway-flight {
+    grid-template-columns: calc(48px * var(--airway-text-scale)) minmax(0, 1fr);
+    grid-template-areas: 'main main' 'gate status';
+    row-gap: 6px;
+  }
+  :root:not([data-airway-text-scale='100']) .airway-flight__main { grid-area: main; }
+  :root:not([data-airway-text-scale='100']) .airway-flight__gate { grid-area: gate; }
+  :root:not([data-airway-text-scale='100']) .airway-flight__status { grid-area: status; }
+}
+
+/* ---- Settings: label above its control when the row gets tight. ---- */
+@media (max-width: 559px) {
+  :root:not([data-airway-text-scale='100']) .airway-setting { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  :root:not([data-airway-text-scale='100']) .airway-setting__switch { justify-content: flex-start; }
+}
+
+/* ---- Upgrade labels: the stencil header may wrap instead of being cut. ---- */
+:root:not([data-airway-text-scale='100']) .airway-upgrade-heading { white-space: normal; flex-wrap: wrap; letter-spacing: .08em; }
+:root:not([data-airway-text-scale='100']) .airway-upgrade-code { overflow: visible; }
+
+/* ---- Menu sign: a taller title line so the subtitle never touches it. ---- */
+:root:not([data-airway-text-scale='100']) .airway-sign__title { line-height: 1.08; }

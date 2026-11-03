@@ -23,6 +23,9 @@ import { mountSlotHint } from './tutorial/slot-hint'; // [task-32]
 import { airportLabel } from '../ui/airportLabel'; // [night-05] D-68
 import { AudioCueMapper, cueRun } from './audioCues'; // [night-03]
 import type { World, ScreenPoint } from './world';
+import { createLiveAnnouncer } from '../ui/a11y-live'; // [m3] D-55
+import { focusInto } from '../ui/a11y-keys'; // [m3] D-55
+import { upgradeTitle } from '../ui/upgrade/cards'; // [m3] D-55
 
 export type SessionScreen = 'game' | 'upgrade' | 'gameover';
 export type RunMode = 'endless' | 'daily';
@@ -90,6 +93,8 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
   const layer = document.createElement('div');
   layer.className = 'airway-game-layer';
   host.append(layer);
+  const live = createLiveAnnouncer(layer); // [m3] D-55: aria-live run announcements
+  let upgradeReturnFocus: HTMLElement | null = null; // [m3]
 
   world.reset();
   world.setIdleSpin(0);
@@ -131,6 +136,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
   const upgrade = new WeeklyUpgradeView(upgradeHost, {
     onCommand: (command) => {
       run.queue({ type: 'ChooseUpgrade', week: command.week, upgrade: command.upgrade, ...(command.hubId ? { hubId: command.hubId } : {}) });
+      live.say(t('a11y.live.upgradeChosen', { upgrade: upgradeTitle(command.upgrade).replace(/\u00AD/g, '') + (command.hubId ? ', ' + airportLabel(command.hubId, 'name') : '') })); // [m3]
       audioCues?.command('ChooseUpgrade'); // [night-03]
       run.resolveBoundary();
       syncUpgrade(true);
@@ -287,6 +293,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       jamHaptics.setJammed(city.id, city.jamTicksLeft !== null);
       overlay.setSlotHold(city.id, city.slotHeld, city.nextSlotMinutes); // [task-38] deduplicated inside
     }
+    live.cities(cities, run.clockMinute); // [m3] D-55
     if (force || run !== lastRun || run.revision !== lastRunRevision) {
       lastRun = run;
       lastRunRevision = run.revision;
@@ -323,11 +330,20 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     const state = run.weeklyUpgrade;
     if (state && (force || state.week !== upgradeWeek || state.pendingHub)) {
       upgradeWeek = state.week;
+      // [m3] D-55: announce the board once, move focus into it and back to the HUD when it closes.
+      if (screen !== 'upgrade') {
+        upgradeReturnFocus = document.activeElement instanceof HTMLElement && layer.contains(document.activeElement) ? document.activeElement : null;
+        live.upgradeOpened(state.week, state.offers.map((offer) => upgradeTitle(offer.id)));
+      }
       upgrade.render(state, run.hubPressure(), run.slotPressure()); // [task-32] airports for "+2 slots"
       setScreen('upgrade');
+      if (state.pendingHub) live.say(t(state.selected === 'departure-slots' ? 'upgrade.selectAirport' : 'upgrade.selectHub')); // [m3]
+      focusInto(upgradeHost, '.airway-upgrade-tag:not([disabled]), .airway-upgrade-pick'); // [m3]
     } else if (!state && screen === 'upgrade') {
       upgrade.render(null, []);
       setScreen('game');
+      if (upgradeReturnFocus?.isConnected) upgradeReturnFocus.focus({ preventScroll: true }); // [m3]
+      upgradeReturnFocus = null;
     }
   }
   function setScreen(next: SessionScreen): void {
@@ -353,6 +369,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     const failure = run.failed;
     if (failure && screen !== 'gameover') {
       setScreen('gameover');
+      live.gameOver(failure.cityId, run.passengers); // [m3] D-55
       tool.pointerCancel(ROUTE_POINTER);
       const extra = callbacks.onFailure?.(run) ?? undefined; // [night-06c]
       const flights = failure.departures.map((departure, i) => ({
@@ -475,6 +492,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       overlay.dispose();
       hud.destroy();
       gameOver.dispose();
+      live.dispose(); // [m3]
       jamHaptics.reset();
       layer.remove();
     },

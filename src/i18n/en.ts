@@ -172,6 +172,16 @@ export const en = {
   'a11y.action.menu': 'Open main menu',
   'a11y.action.settings': 'Open settings',
   'a11y.action.back': 'Go back',
+  // [m3] D-55: aria-live announcements during a run.
+  'a11y.pickGroup': 'Airports to choose from',
+  'a11y.pick': 'Choose {airport}',
+  'a11y.live.jam': 'Hub {hub} is jammed. It closes in {seconds} s unless passengers fly out.',
+  'a11y.live.jamCleared': 'Hub {hub} is clear again.',
+  'a11y.live.busy': 'Hub {hub} nearly full: {waiting} of {capacity} places taken.',
+  'a11y.live.slotHold': 'Aircraft waiting for a departure slot at {airports}.',
+  'a11y.live.upgrade': 'Week {week} complete. Choose one upgrade: {offers}.',
+  'a11y.live.upgradeChosen': 'Chosen: {upgrade}.',
+  'a11y.live.gameOver': 'Network closed. Hub {hub} jammed. Passengers delivered: {score}.',
   // [task-17] Airport departure-board puzzle mode.
   'puzzle.board.title': 'Puzzles / departures',
   'puzzle.board.subtitle': 'Route planning terminal',

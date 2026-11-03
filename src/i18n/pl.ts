@@ -173,6 +173,16 @@ export const pl = {
   'a11y.action.menu': 'Otwórz menu główne',
   'a11y.action.settings': 'Otwórz ustawienia',
   'a11y.action.back': 'Wróć',
+  // [m3] D-55: komunikaty aria-live w trakcie gry.
+  'a11y.pickGroup': 'Lotniska do wyboru',
+  'a11y.pick': 'Wybierz {airport}',
+  'a11y.live.jam': 'Hub {hub} zatkany. Zamknięcie za {seconds} s, jeśli pasażerowie nie odlecą.',
+  'a11y.live.jamCleared': 'Hub {hub} znów jest drożny.',
+  'a11y.live.busy': 'Hub {hub} prawie pełny: zajęte {waiting} z {capacity} miejsc.',
+  'a11y.live.slotHold': 'Samoloty czekają na slot odlotu: {airports}.',
+  'a11y.live.upgrade': 'Koniec tygodnia {week}. Wybierz jedno ulepszenie: {offers}.',
+  'a11y.live.upgradeChosen': 'Wybrano: {upgrade}.',
+  'a11y.live.gameOver': 'Siatka wstrzymana. Hub {hub} zatkany. Dowiezieni pasażerowie: {score}.',
   // [task-17] Airport departure-board puzzle mode.
   'puzzle.board.title': 'Zadania / odloty',
   'puzzle.board.subtitle': 'Terminal planowania tras',

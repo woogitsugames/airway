@@ -5,14 +5,21 @@ import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { withBrowser, newGamePage, waitForScreen, state, assert, clickTestId, ROOT, SEED } from '../e2e/browser.mjs';
+import { textFitProblems } from './lib/text-fit.mjs'; // [m3] D-55
 
 const fixture = process.argv.includes('--fixture');
+// [m3] D-55: `--text-scale 130` = the large-text variant: the 130 % setting, its own folder and SUMMARY, and a
+// clipping / overlap check of every screen. The default run (32 shots in docs/shots/matrix) is unchanged.
+const scaleArg = process.argv.indexOf('--text-scale');
+const textScale = scaleArg > 0 ? Number(process.argv[scaleArg + 1]) : 0;
+if (textScale && ![115, 130].includes(textScale)) throw new Error('--text-scale must be 115 or 130');
+const variant = textScale ? `matrix-${textScale}` : fixture ? 'matrix-fixture' : 'matrix';
 const sizes = [[412, 915], [915, 412], [673, 841], [904, 1000]];
 const screens = ['menu', 'game', 'upgrade', 'gameover'];
 // [task-31] With 3-day weeks (D-40) the DEV autoplay bot reaches the week-1 board from a clean start on the
 // ordinary test seed 0xA1A1, so no hand-picked "lucky" seed is needed any more.
 const WEEK_SEED = SEED;
-const outdir = resolve(ROOT, fixture ? 'docs/shots/matrix-fixture' : 'docs/shots/matrix');
+const outdir = resolve(ROOT, 'docs/shots', variant);
 const expected = sizes.length * screens.length * 2;
 const failures = [];
 let captured = 0;
@@ -51,7 +58,7 @@ try {
         let page;
         let errors;
         try {
-          ({ page, errors } = await newGamePage(browser, url, language, { width, height }));
+          ({ page, errors } = await newGamePage(browser, url, language, { width, height }, textScale ? { textScale } : {}));
           assert(await page.evaluate(() => window.aw?.ready), 'window.aw.ready=false: no AwDevAdapter registered');
           assert(await page.evaluate(() => document.documentElement.lang) === language,
             `<html lang> should be ${language}`);
@@ -73,10 +80,17 @@ try {
                 viewport: window.innerWidth, overflow: document.documentElement.scrollWidth,
               }));
               assert(layout.overflow <= layout.viewport + 2, `Horizontal overflow ${JSON.stringify(layout)}`);
+              if (textScale) {
+                const scale = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--airway-text-scale').trim());
+                assert(Number(scale) === textScale / 100, `--airway-text-scale is "${scale}", expected ${textScale / 100}`);
+                const problems = await page.evaluate(textFitProblems);
+                // Reported per screen; the run continues so one report lists every screen's problems.
+                if (problems.length) failures.push(`${run} ${screen}: ${problems.length} text problem(s): ${problems.slice(0, 8).join(' | ')}`);
+              }
               const filename = `${screen}-${language}-${width}x${height}.png`;
               await page.screenshot({ path: resolve(outdir, filename), animations: 'disabled' });
               captured++;
-              console.log(`shot ${fixture ? 'matrix-fixture' : 'matrix'}/${filename}`);
+              console.log(`shot ${variant}/${filename}`);
             } catch (error) {
               failures.push(`${run} ${screen}: ${message(error)}`);
               break;
@@ -93,6 +107,6 @@ try {
 } finally {
   for (const line of failures) console.error('FAIL ' + line);
   const failed = failures.length || (captured === expected ? 0 : 1);
-  console.log(`SUMMARY ui:matrix seed=0x${SEED.toString(16).toUpperCase()} weekSeed=${WEEK_SEED} mode=${fixture ? 'fixture' : 'game'} captured=${captured} expected=${expected} failed=${failed} durationMs=${Math.round(performance.now() - started)}`);
+  console.log(`SUMMARY ui:matrix${textScale ? ':' + textScale : ''} seed=0x${SEED.toString(16).toUpperCase()} weekSeed=${WEEK_SEED} mode=${fixture ? 'fixture' : 'game'}${textScale ? ` textScale=${textScale}` : ''} captured=${captured} expected=${expected} failed=${failed} durationMs=${Math.round(performance.now() - started)}`);
   if (failed) process.exitCode = 1;
 }
