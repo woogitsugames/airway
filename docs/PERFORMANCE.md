@@ -131,6 +131,67 @@ The summary *mean* rises ~30% because the one-off geometry upload spike on the f
 software-GPU effect and says nothing about a mobile GPU; it must be re-measured on the
 hardware checklist below (the frame-triangle count is the number to watch on low-end Mali).
 
+## Globe LOD, battery saver and adaptive quality (night N4, D-73)
+
+**Terrain chunks.** `src/render/globe/lod.ts` cuts every terrain level into 184 chunks (15° latitude
+bands, each split into sectors of ~15° of arc) stored in one vertex buffer in sector-major order.
+Per rendered frame (only when the camera moved) each chunk is tested against a conservative horizon
+(lowest terrain radius 0.995 as the occluder, the chunk's highest vertex as the target) and the view
+frustum; consecutive visible chunks merge into one draw run from a pool of meshes sharing the buffer.
+`test:quality` proves no visible vertex is ever culled and that runs stay ≤ 16.
+
+**Terrain levels.** `medium` and `high` also build the next coarser mesh (`low`, `medium`) as a far
+level; `low` keeps a single level so low-end CPUs pay no extra build. The far level is drawn while
+its finest facet is under 4.5 device px on screen and the near (preset) mesh above 5.5 px
+(hysteresis). On a 412 dp phone at DPR 1.5 the medium preset draws the far mesh at zoom 1 (menu,
+zoomed-out globe) and the preset mesh from about zoom 1.7 (the game opens at zoom 2). Build time
+grows by the far level: medium +~160 ms, high +~500 ms on the CI container (×3–4 on a phone).
+
+**Battery saver** (`saver` in settings, PL "Oszczędna"): low terrain, DPR 1, no
+antialiasing on a fresh context, shadows off, 60 % of trees/rocks/city lights, and `render()` draws at
+most 30 frames per second (60 Hz → every second display frame, 120 Hz → every fourth; skipped
+frames carry their dt to the camera).
+
+**Adaptive quality** (`auto` only; off under `navigator.webdriver` so harnesses keep their preset):
+`AdaptiveQualityMonitor` takes the interval between rendered frames in windows of 60; three windows
+in a row with a median above 41.7 ms (under 24 fps) take one step: DPR → 1, then decorations → 60 %,
+then terrain one preset lower (rebuild). A step is followed by one window of cooldown; it never
+steps back up within a session. `world.stats().adaptations` lists the steps taken.
+
+### Budgets (per frame, 412×915 portrait)
+
+| Preset | Terrain triangles drawn, zoom 1 / 2 / 3.3 (budget) | Draw calls (budget) | Frame cap |
+| --- | --- | --- | --- |
+| saver / low | 26 k / 20 k / 11 k (≤ 35 k) | ≤ 50 | 30 / display |
+| medium | 26 k / 125 k / 71 k (≤ 160 k) | ≤ 50 | display |
+| high | 157 k / 125 k / 71 k (≤ 200 k; the high mesh only from ~zoom 4) | ≤ 50 | display |
+
+### Measured 2026-11-03 (dev/world.html `?frozen&clean`, DPR 1.5 where the preset allows)
+
+| Preset, zoom | Frame triangles before → after | Draw calls before → after |
+| --- | --- | --- |
+| low z1 / z2 / z3.3 | 86 254 → 77 619 / 71 222 / 62 353 | 36 → 43 / 47 / 43 |
+| medium z1 / z2 / z3.3 | 313 502 → 140 441 / 239 462 / 185 312 | 36 → 43 / 47 / 43 |
+| high z1 / z2 / z3.3 | 453 404 → 332 853 / 300 620 / 246 470 | 36 → 44 / 47 / 43 |
+
+The remaining non-terrain triangles are mostly decorations (medium: trees 75 k, rocks 14 k) plus
+routes and planes; trees are instanced and not chunked (a split would cost ~20 draw calls).
+
+`perf:scene` (SwiftShader, 412×915, DPR 1; medium 120 s, low/saver 60 s; one run each):
+
+| Run | CPU submit mean / p95 | Frames rendered | Idle / active FPS | Triangles (max) | Draw calls (max) |
+| --- | --- | --- | --- | --- | --- |
+| medium before | 2.36 / 2.10 ms | 307 | 2.75 / 2.38 | 423 022 | 35 |
+| medium after | 1.35 / 1.60 ms | 384 | 3.44 / 2.98 | 250 217 | 43 |
+| low before | 1.19 / 1.40 ms | 523 | 9.53 / 7.96 | 195 774 | 35 |
+| low after | 1.07 / 1.40 ms | 605 | 10.43 / 9.74 | 187 395 | 42 |
+| saver after | 0.63 / 1.20 ms | 1 012 | 14.12 / 19.33 | 175 666 | 43 |
+
+Reading: on medium the triangle peak drops 41 % and SwiftShader renders 25 % more frames. In the
+perf fixture most remaining triangles belong to its 100 planes and 40 route tubes (low terrain is
+only ~26 k of the 187 k); those layers are the next candidates. SwiftShader numbers remain
+orientation only; the hardware checklist below still decides.
+
 ## Allocation validation and hardware test checklist
 
 1. Run `perf:scene` and save JSON; check stable DOM node count (=40),

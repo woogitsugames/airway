@@ -15,7 +15,8 @@ import { pickSphereNdc, setLatLonVec3, type LonLat } from './globe/geo-math';
 import { createModelPreviewRenderer, type ModelPreviewRenderer } from './modelPreview';
 import { PlaneLayer, type PlaneRenderSnapshot } from './planes';
 import {
-  applyQualityProfile, resolveQualityProfile, type QualityPreference, type QualityProfile,
+  AdaptiveQualityMonitor, adaptiveSteps, applyQualityProfile, frameDue, resolveQualityProfile,
+  SAVER_DECOR_DENSITY, type AdaptiveStep, type QualityPreference, type QualityProfile,
 } from './quality';
 import { createRoutePreview, type RoutePreviewView } from './routePreview';
 import { RouteLayer, type AircraftKind, type GeoWaypoint, type RouteRenderSpec } from './routes';
@@ -65,6 +66,14 @@ export interface WorldStats {
   readonly planes: number;
   readonly routes: number;
   readonly airports: number;
+  /** [night-04] Terrain LOD level (0 = preset mesh), drawn chunks / all chunks, terrain draw runs. */
+  readonly terrainLevel: number;
+  readonly terrainChunks: number;
+  readonly terrainChunksTotal: number;
+  readonly terrainRuns: number;
+  readonly terrainTriangles: number;
+  /** [night-04] Adaptive quality steps taken this session, in order. */
+  readonly adaptations: readonly AdaptiveStep[];
 }
 
 export interface WorldRendererOptions {
@@ -82,6 +91,11 @@ export interface WorldRendererOptions {
   /** Observe this element and resize automatically (insets from `insets()`). */
   readonly autoResize?: HTMLElement;
   readonly insets?: () => SafeAreaInsets;
+  /**
+   * [night-04] Step quality down when frames are slow (D-73). Default: on for `auto`, off under
+   * automation (`navigator.webdriver`), so SwiftShader harnesses keep the quality they ask for.
+   */
+  readonly adaptive?: boolean;
 }
 
 export interface WorldRenderer {
@@ -106,8 +120,13 @@ export interface WorldRenderer {
   setRoutePreview(model: RoutePreviewView | null): void;
   /** Call on each tick boundary with the previous and current plane views. */
   setPlanes(previous: readonly PlaneView[], current: readonly PlaneView[]): void;
-  /** Draw one frame. `alpha` is the [0,1] tick accumulator fraction; `dtSeconds` drives camera inertia. */
-  render(alpha: number, dtSeconds: number): void;
+  /**
+   * Draw one frame. `alpha` is the [0,1] tick accumulator fraction; `dtSeconds` drives camera inertia.
+   * [night-04] Returns false when the battery-saver frame cap skipped this display frame.
+   */
+  render(alpha: number, dtSeconds: number): boolean;
+  /** [night-04] Pin the terrain LOD level (0 = preset mesh, 1 = far); null = automatic. Tests/shots. */
+  forceTerrainLevel(level: number | null): void;
   pick(x: number, y: number): PickResult | null;
   pickGlobe(x: number, y: number): LonLat | null;
   project(lon: number, lat: number, altitude: number, out: ScreenPoint): ScreenPoint;
@@ -126,7 +145,8 @@ export interface WorldRenderer {
 export function createWorldRenderer(
   canvas?: HTMLCanvasElement, opts: WorldRendererOptions = {},
 ): WorldRenderer {
-  let quality = resolveQualityProfile(opts.quality ?? 'auto');
+  let preference: QualityPreference = opts.quality ?? 'auto';
+  let quality = resolveQualityProfile(preference);
   const renderer = new WebGLRenderer({
     canvas, antialias: quality.antialias, alpha: false, powerPreference: 'high-performance',
   });
@@ -163,6 +183,14 @@ export function createWorldRenderer(
   let globeEpoch = 0;
   let disposed = false;
   let lastZoom = -1;
+  // [night-04] Frame cap, adaptive quality and terrain LOD state.
+  let lastPaintAt = 0;
+  let pendingDt = 0;
+  let forcedLevel: number | null = null;
+  const adaptations: AdaptiveStep[] = [];
+  const automated = typeof navigator !== 'undefined' && navigator.webdriver === true;
+  const adaptiveWanted = (): boolean => opts.adaptive ?? (preference === 'auto' && !automated);
+  let monitor: AdaptiveQualityMonitor | null = adaptiveWanted() ? new AdaptiveQualityMonitor(adaptiveSteps(quality)) : null;
 
   const loadGlobe = async (): Promise<void> => {
     const mine = ++globeEpoch;
@@ -172,6 +200,8 @@ export function createWorldRenderer(
     if (disposed || mine !== globeEpoch) { next.dispose(); return; }
     globe?.dispose();
     globe = next;
+    globe.setDecorDensity(quality.decorDensity);
+    globe.lod.forceLevel(forcedLevel);
   };
 
   function resize(width: number, height: number, insets?: SafeAreaInsets): void {
@@ -205,6 +235,31 @@ export function createWorldRenderer(
     out.y = (1 - scratch.y) / 2 * orbit.viewportHeight;
     out.visible = facing && scratch.z >= -1 && scratch.z <= 1;
     return out;
+  }
+
+  /** [night-04] One adaptive step down; terrain steps rebuild the globe off the frame. */
+  function adapt(step: AdaptiveStep): void {
+    adaptations.push(step);
+    if (step === 'pixel-ratio') {
+      quality = { ...quality, pixelRatio: 1 };
+      applyQualityProfile(renderer, quality);
+      resize(orbit.viewportWidth, orbit.viewportHeight);
+    } else if (step === 'decorations') {
+      quality = { ...quality, decorDensity: SAVER_DECOR_DENSITY };
+      globe?.setDecorDensity(quality.decorDensity);
+    } else {
+      const lower = quality.preset === 'high' ? 'medium' : 'low';
+      quality = { ...quality, preset: lower, shadowEnabled: false, shadowMapSize: 0 };
+      applyQualityProfile(renderer, quality);
+      lights.applyQuality(quality);
+      void loadGlobe().catch(() => { /* keep the current globe */ });
+    }
+  }
+
+  /** Device pixels per degree of arc at the centre of the globe disc (0 when off screen). */
+  function pixelsPerDegree(): number {
+    const disc = orbit.getScreenDisc();
+    return disc ? disc.radius * renderer.getPixelRatio() * Math.PI / 180 : 0;
   }
 
   function pickGlobe(x: number, y: number): LonLat | null {
@@ -270,14 +325,30 @@ export function createWorldRenderer(
     setRoutePreview: (model) => preview.update(model),
     setPlanes: (previous, current) => planes.setSnapshots(previous, current),
     render(alpha, dtSeconds) {
-      if (disposed) return;
-      orbit.update(dtSeconds);
+      if (disposed) return false;
+      const now = performance.now();
+      pendingDt += dtSeconds;
+      if (lastPaintAt !== 0 && !frameDue(now - lastPaintAt, quality.maxFps)) return false;
+      if (lastPaintAt !== 0 && monitor) {
+        const step = monitor.push(now - lastPaintAt);
+        if (step) adapt(step);
+      }
+      lastPaintAt = now;
+      const dt = Math.min(0.25, pendingDt);
+      pendingDt = 0;
+      orbit.update(dt);
       const zoom = orbit.zoomLevel;
       if (zoom !== lastZoom) { airports.setZoom(zoom); lastZoom = zoom; }
       airports.update();
       camera.updateMatrixWorld();
       planes.update(alpha, camera);
+      globe?.update(camera, pixelsPerDegree());
       renderer.render(scene, camera);
+      return true;
+    },
+    forceTerrainLevel(level) {
+      forcedLevel = level;
+      globe?.lod.forceLevel(level);
     },
     pick(x, y) {
       let best: CityView | null = null;
@@ -299,15 +370,20 @@ export function createWorldRenderer(
     pickGlobe,
     project,
     resize,
-    async setQuality(preference) {
+    async setQuality(nextPreference) {
+      preference = nextPreference;
+      monitor = adaptiveWanted() ? new AdaptiveQualityMonitor(adaptiveSteps(resolveQualityProfile(preference))) : null;
       const next = resolveQualityProfile(preference);
-      if (next.preset === quality.preset && next.pixelRatio === quality.pixelRatio) return;
+      const rebuild = next.preset !== quality.preset;
+      if (!rebuild && next.pixelRatio === quality.pixelRatio && next.maxFps === quality.maxFps &&
+        next.decorDensity === quality.decorDensity && next.shadowEnabled === quality.shadowEnabled) return;
       // Antialiasing is fixed for the lifetime of the WebGL context.
       quality = { ...next, antialias: quality.antialias };
       applyQualityProfile(renderer, quality);
       lights.applyQuality(quality);
       resize(orbit.viewportWidth, orbit.viewportHeight);
-      await loadGlobe();
+      globe?.setDecorDensity(quality.decorDensity);
+      if (rebuild) await loadGlobe();
     },
     drawModelPreview(kind, target) {
       if (disposed) return false;
@@ -320,6 +396,9 @@ export function createWorldRenderer(
         drawCalls: info.render.calls, triangles: info.render.triangles,
         geometries: info.memory.geometries, textures: info.memory.textures,
         planes: planes.stats.planes, routes: routes.stats.routes, airports: cities.size,
+        terrainLevel: globe?.lod.stats.level ?? 0, terrainChunks: globe?.lod.stats.visibleChunks ?? 0,
+        terrainChunksTotal: globe?.lod.stats.chunks ?? 0, terrainRuns: globe?.lod.stats.runs ?? 0,
+        terrainTriangles: globe?.lod.stats.triangles ?? 0, adaptations: adaptations.slice(),
       };
     },
     measureLayerContrast() {

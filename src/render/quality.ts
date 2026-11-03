@@ -4,7 +4,9 @@ import {
 } from 'three';
 
 export type QualityPreset = 'low' | 'medium' | 'high';
-export type QualityPreference = QualityPreset | 'auto';
+/** [night-04] `saver` = battery saver (D-73): low terrain, 30 fps cap, DPR 1, no shadows, fewer decorations. */
+export type QualityPreference = QualityPreset | 'auto' | 'saver';
+export const QUALITY_PREFERENCES: readonly QualityPreference[] = ['auto', 'saver', 'low', 'medium', 'high'];
 
 export interface DeviceHints {
   hardwareConcurrency?: number;
@@ -20,7 +22,16 @@ export interface QualityProfile {
   readonly shadowEnabled: boolean;
   readonly shadowMapSize: number;
   readonly maxOverlayItems: number;
+  /** [night-04] Rendered frames per second cap; 0 = every display frame. */
+  readonly maxFps: number;
+  /** [night-04] 0..1 share of trees, rocks and city lights drawn. */
+  readonly decorDensity: number;
+  readonly batterySaver: boolean;
 }
+
+/** [night-04] Battery saver frame cap. */
+export const SAVER_MAX_FPS = 30;
+export const SAVER_DECOR_DENSITY = 0.6;
 
 export const TONE_MAPPING_EXPOSURE = 1.05;
 
@@ -38,6 +49,7 @@ export function chooseQualityPreset(
   preference: QualityPreference = 'auto',
   hints: DeviceHints = getDeviceHints(),
 ): QualityPreset {
+  if (preference === 'saver') return 'low';
   if (preference !== 'auto') return preference;
   const cores = hints.hardwareConcurrency ?? 6;
   const memory = hints.deviceMemoryGb ?? 6;
@@ -55,13 +67,81 @@ export function resolveQualityProfile(
   const cap = preset === 'high' ? 2 : preset === 'medium' ? 1.5 : 1;
   const reportedDpr = hints.devicePixelRatio ?? 1;
   const pixelRatio = Math.max(1, Math.min(2, cap, Number.isFinite(reportedDpr) ? reportedDpr : 1));
+  const common = { pixelRatio, maxFps: 0, decorDensity: 1, batterySaver: false };
+  if (preference === 'saver') {
+    return { ...common, preset, pixelRatio: 1, antialias: false, shadowEnabled: false, shadowMapSize: 0,
+      maxOverlayItems: 40, maxFps: SAVER_MAX_FPS, decorDensity: SAVER_DECOR_DENSITY, batterySaver: true };
+  }
   if (preset === 'low') {
-    return { preset, pixelRatio, antialias: false, shadowEnabled: false, shadowMapSize: 0, maxOverlayItems: 40 };
+    return { ...common, preset, antialias: false, shadowEnabled: false, shadowMapSize: 0, maxOverlayItems: 40 };
   }
   if (preset === 'high') {
-    return { preset, pixelRatio, antialias: true, shadowEnabled: true, shadowMapSize: 2048, maxOverlayItems: 80 };
+    return { ...common, preset, antialias: true, shadowEnabled: true, shadowMapSize: 2048, maxOverlayItems: 80 };
   }
-  return { preset, pixelRatio, antialias: true, shadowEnabled: false, shadowMapSize: 0, maxOverlayItems: 60 };
+  return { ...common, preset, antialias: true, shadowEnabled: false, shadowMapSize: 0, maxOverlayItems: 60 };
+}
+
+/**
+ * [night-04] Frame cap for `WorldRenderer.render`: true when this display frame should be drawn.
+ * Tolerates vsync jitter, so 60 Hz draws every second frame and 120 Hz every fourth for 30 fps.
+ */
+export function frameDue(sinceLastMs: number, maxFps: number): boolean {
+  return maxFps <= 0 || sinceLastMs >= 1000 / maxFps - 4;
+}
+
+/** One step down the adaptive ladder (auto quality only). */
+export type AdaptiveStep = 'pixel-ratio' | 'decorations' | 'terrain';
+
+/**
+ * [night-04] Adaptive quality from frame time (D-73). Fed the interval between rendered frames;
+ * when the median of a window stays above the budget for `strikes` windows in a row it asks for
+ * one step down: DPR to 1, then fewer decorations, then a lower terrain preset. It never steps
+ * back up during a session (no oscillation); a new session detects afresh. Pure: no clock, no DOM.
+ */
+export class AdaptiveQualityMonitor {
+  private readonly samples: Float32Array;
+  private filled = 0;
+  private strikes = 0;
+  private stepIndex = 0;
+  private cooldown = 0;
+
+  constructor(
+    private readonly steps: readonly AdaptiveStep[],
+    private readonly budgetMs = 1000 / 24,
+    window = 60,
+    private readonly strikesNeeded = 3,
+  ) {
+    this.samples = new Float32Array(window);
+  }
+
+  /** Steps still available. */
+  get remaining(): number { return this.steps.length - this.stepIndex; }
+
+  /** Returns the step to apply now, or null. Intervals > 250 ms (resume, hitch) are ignored. */
+  push(intervalMs: number): AdaptiveStep | null {
+    if (!(intervalMs > 0) || intervalMs > 250 || this.stepIndex >= this.steps.length) return null;
+    if (this.cooldown > 0) { this.cooldown--; return null; }
+    this.samples[this.filled++] = intervalMs;
+    if (this.filled < this.samples.length) return null;
+    this.filled = 0;
+    const sorted = Array.from(this.samples).sort((a, b) => a - b);
+    const median = sorted[sorted.length >> 1];
+    this.strikes = median > this.budgetMs ? this.strikes + 1 : 0;
+    if (this.strikes < this.strikesNeeded) return null;
+    this.strikes = 0;
+    // Let the new setting settle (a terrain rebuild hitches) before judging again.
+    this.cooldown = this.samples.length;
+    return this.steps[this.stepIndex++];
+  }
+}
+
+/** Adaptive ladder for a resolved profile: only steps that would change something. */
+export function adaptiveSteps(profile: QualityProfile): AdaptiveStep[] {
+  const steps: AdaptiveStep[] = [];
+  if (profile.pixelRatio > 1) steps.push('pixel-ratio');
+  if (profile.decorDensity > SAVER_DECOR_DENSITY) steps.push('decorations');
+  if (profile.preset !== 'low') steps.push('terrain');
+  return steps;
 }
 
 /**

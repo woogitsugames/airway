@@ -98,6 +98,7 @@ export const en = {
   'settings.airportLabels.code': 'Code',
   'settings.airportLabels.name': 'City name',
   'settings.auto': 'Automatic',
+  'settings.saver': 'Battery saver',
   'settings.low': 'Low',
   'settings.medium': 'Medium',
   'settings.high': 'High',

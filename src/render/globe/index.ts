@@ -1,19 +1,23 @@
 import {
-  BackSide, Color, DirectionalLight, Group, HemisphereLight,
-  Mesh, Points, Scene, ShaderMaterial, SphereGeometry, Vector3,
+  BackSide, Color, DirectionalLight, Group, HemisphereLight, InstancedMesh,
+  Mesh, Points, Scene, ShaderMaterial, SphereGeometry, Vector3, type Camera,
 } from 'three';
 import type { QualityProfile } from '../quality';
 import { applyDayNightGrading } from './daynight';
 import { createDecorations } from './decorations';
 import { setLatLonVec3 } from './geo-math';
 import { loadLandMask } from './land-mask';
-import { createTerrain } from './terrain';
+import { chunkTerrain, createTerrainLod, TERRAIN_LOD_LEVELS, type TerrainLod } from './lod';
+import { buildTerrainArrays, createTerrainMaterial } from './terrain';
 
 export {
   latLonToVec3, setLatLonVec3, vec3ToLatLon, intersectUnitSphere, pickSphereNdc, normalizeLon,
 } from './geo-math';
 export type { LonLat, Vec3Like, MutableVec3 } from './geo-math';
 export type { QualityLevel } from './terrain';
+export type { TerrainLodStats } from './lod';
+/** [night-04] Decorations thinned by `setDecorDensity` (clouds stay: they carry the sky). */
+const THINNED = new Set(['Conifers', 'BroadleafTrees', 'Rocks']);
 
 export interface GlobeOptions {
   /** Shared profile from `resolveQualityProfile()`; terrain/decor density follows `preset`. */
@@ -27,6 +31,11 @@ export interface GlobeOptions {
 export interface GlobeInstance {
   readonly group: Group;
   readonly quality: QualityProfile;
+  /** [night-04] Terrain chunks and level for this camera (D-73); call once per rendered frame. */
+  update(camera: Camera, pixelsPerDegree: number): void;
+  /** [night-04] 0..1 share of trees, rocks and city lights drawn (battery saver, adaptive quality). */
+  setDecorDensity(density: number): void;
+  readonly lod: TerrainLod;
   dispose(): void;
 }
 
@@ -115,9 +124,18 @@ export async function createGlobe(scene: Scene, opts: GlobeOptions): Promise<Glo
   if (opts.signal?.aborted) throw new DOMException('Aborted', 'AbortError');
   const group = new Group();
   group.name = 'AirwayDioramaGlobe';
-  const terrain = createTerrain(mask, quality);
-  group.add(terrain, createDecorations(mask, quality, opts.seed ?? 7, opts.sunDirection),
-    createAtmosphere());
+  // [night-04] D-73: near (preset) level plus a coarser far level, both chunked for culling.
+  const lod = createTerrainLod(
+    TERRAIN_LOD_LEVELS[quality].map((level) => chunkTerrain(buildTerrainArrays(mask, level), level)),
+    createTerrainMaterial());
+  const decorations = createDecorations(mask, quality, opts.seed ?? 7, opts.sunDirection);
+  group.add(lod.group, decorations, createAtmosphere());
+  // Instances are placed in random order, so any prefix is an even thinning of the whole set.
+  const thinned: { object: InstancedMesh | Points; full: number }[] = [];
+  decorations.traverse((object) => {
+    if (object instanceof InstancedMesh && THINNED.has(object.name)) thinned.push({ object, full: object.count });
+    else if (object instanceof Points) thinned.push({ object, full: object.geometry.getAttribute('position').count });
+  });
   // [task-34] Warm terminator and cool night palette on the world (not on gameplay layers).
   group.traverse((object) => {
     if (object instanceof Mesh) {
@@ -128,11 +146,21 @@ export async function createGlobe(scene: Scene, opts: GlobeOptions): Promise<Glo
   scene.add(group);
   let disposed = false;
   return {
-    group, quality: opts.quality,
+    group, quality: opts.quality, lod,
+    update: (camera, pixelsPerDegree) => lod.update(camera, pixelsPerDegree),
+    setDecorDensity(density) {
+      const share = Math.max(0, Math.min(1, density));
+      for (const { object, full } of thinned) {
+        const n = Math.round(full * share);
+        if (object instanceof InstancedMesh) object.count = n;
+        else object.geometry.setDrawRange(0, n);
+      }
+    },
     dispose() {
       if (disposed) return;
       disposed = true;
       scene.remove(group);
+      lod.dispose();
       group.traverse((object) => {
         if (object instanceof Mesh || object instanceof Points) {
           object.geometry.dispose();

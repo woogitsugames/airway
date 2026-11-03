@@ -518,3 +518,15 @@ _N6c:_ the official daily game-over screen shows a second split-flap board "Rank
 + own rank, call sign marked "Ty/You"), or a status line: sending, offline-queued, rejected, practice run (not ranked).
 Without Firebase config nothing is shown. Queued runs are retried at app start. A daily run resumed from a save is not
 submitted (known gap, the journal is complete, so it can be added later).
+
+## D-73 — Globe LOD, battery saver and adaptive quality (2026-11-03, Claude, night N4)
+The terrain is drawn in chunks culled by a conservative horizon test and the frustum (merged into ≤ 16
+draw runs), and `medium`/`high` carry a coarser far level chosen by on-screen facet size (far below
+4.5 device px, near above 5.5 px), so the zoomed-out globe never pays for sub-pixel coastlines; the
+low preset keeps one level. A new graphics option **Battery saver** (PL "Oszczędna") (`saver`: low terrain, DPR 1,
+no shadows, 60 % decorations, 30 fps cap) sits next to Automatic. `auto` steps down by itself when
+frames stay under 24 fps (DPR → decorations → terrain), never back up within a session, and never
+under automation. Budgets and before/after numbers in `docs/PERFORMANCE.md`.
+**Status: in force; the saver look and the 24 fps trigger are proposals until measured on a low-end
+Android phone.**
+
