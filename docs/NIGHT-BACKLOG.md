@@ -125,8 +125,8 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       was an edge arrow and the "+2 slots" pick had nothing to tap. `src/game/framing.ts` keeps the mean for a
       compact network, else frames the densest 30° cluster (hubs count double). `test:framing` (in `test:fast`) and
       `e2e/continue-framing.mjs` (`test:e2e:continue-framing`, in `test:ci`).
-- [ ] N8a **Store shots after N7w** — the better bot grows a different network, so `store:shots` no longer matches
-      the committed PNGs; re-render, inspect the contact sheet, commit.
+- [x] N8a **Store shots after N7w/N8c** — the better bot grows a different network and the 360×640 phone board is
+      compact now (all three crates on screen); 24 of 30 store PNGs and the contact sheet re-rendered and checked.
 - [x] N8b **Edge buttons clear of the landscape dock** — in every landscape size the off-screen airport buttons of
       the right column sat on the dock tags (the overlay reserved only top/bottom bands, the portrait layout). The
       overlay takes a live reservation; landscape reserves a 96 px right band. New `e2e/edge-dock.mjs`
@@ -176,3 +176,4 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
 - 2026-11-03 · N7y long play-throughs round 2 (4 × 21 min) · found N7z, N8b, N8c · no code
 - 2026-11-03 · N8c weekly board fits short phones · night/08c-board-short · test:fast 50/50, build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:upgrade-picks 10/10, e2e:pick-sign 10/10, e2e:tutorial 21/21, test:hud-targets 300/300, e2e:screens-fit 18/18, test:e2e:board-short 4/4 (0/4 on the old CSS)
 - 2026-11-03 · N8b edge buttons clear of the landscape dock · night/08b-edge-arrows · test:fast 50/50, build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:tutorial 21/21, test:hud-targets 300/300, e2e:upgrade-picks 10/10, e2e:continue-framing 2/2, shots airports 4/4, test:e2e:edge-dock 3/3 (1/3 on the old overlay)
+- 2026-11-03 · N8a store shots refreshed · night/08a-store-shots · store:shots captured=30 failed=0, test:store-shots shots=30 failed=0, test:fast 50/50, build ok
