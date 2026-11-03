@@ -1,0 +1,44 @@
+/* [m2] Contextual hint strip (D-54): the ATC paper strip of atcStrip.css plus a "Roger" field. */
+.airway-hint-strip {
+  z-index: 42;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: "step tag ack" "text text ack";
+  align-items: stretch;
+  width: min(560px, calc(100% - 24px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)));
+  pointer-events: auto;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.airway-hint-strip[hidden] { display: none; }
+.airway-hint-strip .airway-atc-flight { grid-area: step; border-bottom: 1px solid #cdbf8f; white-space: nowrap; }
+.airway-hint-strip .airway-atc-error { grid-area: tag; border-bottom: 1px solid #cdbf8f; border-right: 1px solid #cdbf8f; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.airway-hint-strip .airway-atc-error[hidden] { display: block; visibility: hidden; }
+.airway-hint-strip .airway-atc-hint { grid-area: text; border-right: 1px solid #cdbf8f; }
+.airway-hint-ack {
+  grid-area: ack;
+  min-width: 72px;
+  min-height: 48px;
+  padding: 6px 10px;
+  border: 0;
+  border-left: 2px dashed #9e916c;
+  background: #ffc72c;
+  color: #1c1e20;
+  font: 800 13px/1.1 'Overpass', sans-serif;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.airway-hint-ack:focus-visible { outline: 3px solid #13302e; outline-offset: -5px; }
+/* The weekly-board hint sits over the inert tag dock (portrait), never over a cargo label. */
+.airway-hint-strip.is-on-board {
+  z-index: 72; /* above the board scrim (.airway-upgrade-open, z 70) */
+  bottom: max(10px, env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+}
+@media (orientation: landscape) and (max-height: 540px) {
+  .airway-hint-strip { width: min(560px, calc(100% - 200px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px))); }
+  .airway-hint-strip.is-on-board { bottom: auto; top: max(6px, env(safe-area-inset-top, 0px)); left: auto; right: max(10px, env(safe-area-inset-right, 0px)); transform: none; width: min(380px, calc(100% - 540px)); grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "text ack"; }
+  .airway-hint-strip.is-on-board .airway-atc-flight, .airway-hint-strip.is-on-board .airway-atc-error { display: none; }
+}

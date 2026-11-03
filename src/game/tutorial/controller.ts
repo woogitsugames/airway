@@ -1,4 +1,6 @@
 // [task-23] Training progression is independent of renderer and simulation implementations.
+import { resetHintFlags } from './hints'; // [m2]
+
 export const TUTORIAL_KEY = 'aw-tutorial';
 export const TUTORIAL_VERSION = 1;
 export const TUTORIAL_STEPS = [
@@ -27,6 +29,7 @@ export interface TutorialPort {
 export interface TutorialStorage {
   getItem(key: string): string | null;
   setItem(key: string, value: string): void;
+  removeItem?(key: string): void;
 }
 
 export interface TutorialState {
@@ -147,6 +150,7 @@ export class TutorialController {
     this.port.reset?.();
     this.change({ visible: true, step: 'route', busy: false, selectedUpgrade: null });
     this.save({ version: TUTORIAL_VERSION, status: 'in-progress', step: 'route' });
+    resetHintFlags(this.storage); // [m2] replay also re-arms the one-time contextual hints (D-54)
     this.port.setPaused(true);
   }
   dispose(): void {

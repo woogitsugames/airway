@@ -14,9 +14,10 @@ export interface UserSettings {
   haptics: boolean;
   colorblind: boolean;
   textScale: TextScale;
+  hints: boolean; // [m2] contextual ATC hints in a run (D-54)
 }
 const KEY='airway.settings';
-type LocalField='sound'|'music'|'graphics';
+type LocalField='sound'|'music'|'graphics'|'hints'; // [m2] hints
 const QUALITY:readonly QualityPreference[]=['auto','low','medium','high'];
 const listeners=new Set<(settings:UserSettings)=>void>();
 
@@ -39,6 +40,7 @@ export function readSettings():UserSettings {
     haptics:a11y.hapticsEnabled,
     colorblind:a11y.enhancedGlyphs,
     textScale:a11y.textScale,
+    hints:typeof record.hints==='boolean'?record.hints:true, // [m2]
   };
 }
 
@@ -54,6 +56,7 @@ export function saveSettings(change:Partial<UserSettings>):UserSettings {
   if(change.sound!==undefined) local.sound=change.sound;
   if(change.music!==undefined) local.music=change.music;
   if(change.graphics!==undefined) local.graphics=change.graphics;
+  if(change.hints!==undefined) local.hints=change.hints; // [m2]
   if(Object.keys(local).length){
     try { globalThis.localStorage?.setItem(KEY,JSON.stringify({...storedRecord(),...local})); }
     catch { /* Preferences still apply to this session via the listeners. */ }
@@ -104,7 +107,7 @@ export function createSettings(onBack:()=>void,onLicenses:()=>void,onLanguageCha
     select.value=value;select.addEventListener('change',()=>onChange(select.value));
     controlHost.append(select);paper.append(outer);
   }
-  function switchField(label:string,value:boolean,setting:'sound'|'music'|'haptics'|'colorblind',testId:string):void {
+  function switchField(label:string,value:boolean,setting:'sound'|'music'|'haptics'|'colorblind'|'hints',testId:string):void {
     const {outer,controlHost}=row(label);
     const wrap=e('label','airway-setting__switch');
     const input=e('input','');input.type='checkbox';input.checked=value;
@@ -130,6 +133,7 @@ export function createSettings(onBack:()=>void,onLicenses:()=>void,onLanguageCha
   switchField(t('settings.sound'),values.sound,'sound','settings-sound');
   switchField(t('settings.music'),values.music,'music','settings-music');
   switchField(t('settings.haptics'),values.haptics,'haptics','settings-haptics');
+  switchField(t('settings.hints'),values.hints,'hints','settings-hints'); // [m2]
   switchField(t('settings.colorblind'),values.colorblind,'colorblind','settings-colorblind');
   paper.append(e('p','airway-setting__hint',t('a11y.enhancedGlyphs')));
   if(onReplayTutorial){

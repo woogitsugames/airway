@@ -24,6 +24,8 @@ export interface RunCity {
   readonly capacity: number;
   readonly hub: boolean;
   readonly jamTicksLeft: number | null;
+  /** [m2] Closed by the night curfew right now (read-only view, first-curfew hint). */
+  readonly curfewClosed: boolean;
   /** [task-38] Aircraft held on the ground for a departure slot, and game minutes to the next slot. */
   readonly slotHeld: number;
   readonly nextSlotMinutes: number;
@@ -177,6 +179,7 @@ export class EndlessRun {
         region: isRegion(view.regionId) ? view.regionId : 'NAM',
         waiting, capacity: view.capacity, hub: view.isHub, jamTicksLeft: view.jamTicksRemaining,
         slotHeld: view.slotHeldPlanes, nextSlotMinutes: view.nextSlotMinutes, // [task-38]
+        curfewClosed: view.curfewClosed, // [m2]
       };
     });
   }

@@ -1,5 +1,6 @@
 // [task-23] Airport-object overlay for the isolated three-city training flight.
 import { t, type TranslationKey } from '../../i18n';
+import { regionGlyph } from '../glyphs'; // [m2] real D-08 passenger glyph, not a text character
 import {
   TutorialController,
   type TutorialAction,
@@ -83,15 +84,15 @@ export function mountTutorialUi(host: HTMLElement, controller: TutorialControlle
           <button type="button" class="aw-city aw-city-par" data-city="PAR" data-testid="city-par"><span class="aw-city-pin aw-city-hub"></span><span class="aw-city-name" data-copy="tutorial.city.paris"></span></button>
           <button type="button" class="aw-city aw-city-rom" data-city="ROM" data-testid="city-rom"><span class="aw-city-pin"></span><span class="aw-city-name" data-copy="tutorial.city.rome"></span></button>
           <button type="button" class="aw-route-drop" data-testid="tutorial-route-drop"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 5V35M5 20H35" stroke="currentColor" stroke-width="3"/><circle cx="20" cy="20" r="18" fill="none" stroke="currentColor" stroke-width="2"/></svg></button>
-          <div class="aw-passenger-card" aria-hidden="true"><span class="aw-passenger-shape">❯</span><span class="aw-passenger-arrow">→</span><span class="aw-passenger-shape">❯</span></div>
+          <div class="aw-passenger-card" aria-hidden="true"><span class="aw-passenger-shape" data-glyph></span><svg class="aw-passenger-arrow" viewBox="0 0 24 14"><path d="M1 7h17M13 2l6 5-6 5" fill="none" stroke="currentColor" stroke-width="2.5"/></svg><span class="aw-passenger-shape" data-glyph></span></div>
           <div class="aw-jam-label" data-copy="tutorial.jam"></div>
         </div>
         <div class="aw-tutorial-strip" role="status" aria-live="polite" aria-atomic="true">
           <span class="aw-strip-index" data-testid="tutorial-step-label"></span><span class="aw-strip-copy" data-testid="tutorial-instruction"></span>
+          <span class="aw-strip-why" data-testid="tutorial-hint"></span>
         </div>
       </main>
       <footer class="aw-tutorial-controls">
-        <p class="aw-tutorial-hint" data-testid="tutorial-hint"></p>
         <div class="aw-tutorial-dock">
           <button type="button" class="aw-plane-tag" data-testid="tutorial-plane-tag"><svg viewBox="0 0 48 36" aria-hidden="true"><path d="M24 3L29 17 45 25V31L27 26 26 34 22 34 21 26 3 31V25L19 17Z" fill="currentColor"/></svg><span data-copy="tutorial.tag.aircraft"></span></button>
           <button type="button" class="aw-action-tag aw-dawn-action" data-testid="tutorial-dawn" data-copy="tutorial.action.dawn"></button>
@@ -119,6 +120,8 @@ export function mountTutorialUi(host: HTMLElement, controller: TutorialControlle
   root.querySelectorAll<HTMLElement>('[data-copy]').forEach((element) => {
     buttonLabel(element, element.dataset.copy as TranslationKey);
   });
+  // [m2] A passenger for Rome (Southern Europe) changes planes at Paris: the in-game glyph, twice.
+  root.querySelectorAll<HTMLElement>('[data-glyph]').forEach((slot) => slot.append(regionGlyph('EUS', 20)));
   const routeDrop = query<HTMLButtonElement>('[data-testid="tutorial-route-drop"]');
   routeDrop.setAttribute('aria-label', translate('tutorial.route.drop'));
   const worldArt = query<SVGSVGElement>('.aw-world-art');

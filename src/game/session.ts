@@ -19,7 +19,8 @@ import { mountHud, type GameSpeed, type HudController, type PlaneType } from '..
 import { createAirportOverlay, type AirportOverlay } from '../ui/overlay';
 import { WeeklyUpgradeView } from '../ui/upgrade';
 import { EndlessRun, cityDistanceKm, type RunCommand, type RunEvent } from './run';
-import { mountSlotHint } from './tutorial/slot-hint'; // [task-32]
+import { mountRunHints } from './tutorial/run-hints'; // [task-32] [m2] one-time contextual ATC hints
+import { readSettings } from '../ui/settings/settings'; // [m2]
 import type { World, ScreenPoint } from './world';
 
 export type SessionScreen = 'game' | 'upgrade' | 'gameover';
@@ -107,7 +108,8 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     },
   });
   const atc = mountAtcStrip(layer);
-  const slotHint = mountSlotHint(layer); // [task-32] one-time departure-slot step
+  const hintsOn = readSettings().hints; // [m2] Settings is outside the run, so read once
+  const hints = mountRunHints(layer, () => hintsOn); // [m2] jam/curfew/slots/board, one queue
   const handles = mountRouteHandles(layer);
   const hud: HudController = mountHud(layer, {
     onUndo: () => tool.undo(),
@@ -278,6 +280,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       if (jamKeys.get(city.id) !== seconds) { jamKeys.set(city.id, seconds); overlay.setJamCountdown(city.id, seconds); }
       jamHaptics.setJammed(city.id, city.jamTicksLeft !== null);
       overlay.setSlotHold(city.id, city.slotHeld, city.nextSlotMinutes); // [task-38] deduplicated inside
+      if (city.curfewClosed) hints.curfew(city.id); // [m2] first night curfew (ignored once seen)
     }
     if (force || run !== lastRun || run.revision !== lastRunRevision) {
       lastRun = run;
@@ -317,9 +320,12 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       upgradeWeek = state.week;
       upgrade.render(state, run.hubPressure(), run.slotPressure()); // [task-32] airports for "+2 slots"
       setScreen('upgrade');
+      hints.setContext('board'); // [m2]
+      hints.board(); // [m2] first weekly board
     } else if (!state && screen === 'upgrade') {
       upgrade.render(null, []);
       setScreen('game');
+      hints.setContext('game'); // [m2]
     }
   }
   function setScreen(next: SessionScreen): void {
@@ -335,11 +341,13 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
         callbacks.cue?.({ type: event.type, tick: run.tick, hubId: event.cityId, latitude });
       } else if (event.type === 'jam' && event.jammed && city) {
         callbacks.cue?.({ type: 'hub-load', tick: run.tick, hubId: event.cityId, latitude, loadRatio: 1, capacity: city.capacity });
+        const jammed = event.cityId; // [m2] first overload warning, before game over
+        hints.jam(jammed, () => run.cityList().some((item) => item.id === jammed && item.jamTicksLeft !== null));
       } else if (event.type === 'week') {
         callbacks.cue?.({ type: 'week', tick: run.tick, week: event.week });
-        slotHint.hide(); // [task-32] the weekly board replaces the hint
+        hints.setContext('board'); // [task-32] [m2] the weekly board replaces the hint
       } else if (event.type === 'slot-held') { // [task-32]
-        slotHint.held(event.cityId, event.limit, event.minutesToSlot);
+        hints.slots(event.cityId, event.limit, event.minutesToSlot); // [m2] same queue
       } else if (event.type === 'new-city') {
         callbacks.cue?.({ type: 'new-city', tick: run.tick, latitude });
       }
@@ -352,6 +360,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     const failure = run.failed;
     if (failure && screen !== 'gameover') {
       setScreen('gameover');
+      hints.setContext('over'); // [m2]
       tool.pointerCancel(ROUTE_POINTER);
       callbacks.onFailure?.(run);
       const flights = failure.departures.map((departure, i) => ({
@@ -470,7 +479,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       routeMenu.dispose();
       handles.dispose();
       atc.dispose();
-      slotHint.dispose();
+      hints.dispose(); // [m2]
       overlay.dispose();
       hud.destroy();
       gameOver.dispose();

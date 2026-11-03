@@ -426,6 +426,24 @@ held. Readability: the paper body reaches ≥ 4.81:1 by day and ≥ 14.8:1 at ni
 (`npm run shots:38`); ink on paper inside the tag is 12.7:1. **Status: in force; the tag's wording ("SLOT" in both
 languages) is an owner-visible choice (task-38 PR question).**
 
+## D-54 — Contextual one-time ATC hints share one queue; shorter training copy (2026-11-03, M2)
+Four in-run training strips, each **once per install**: first weekly board ("FREIGHT / WEEKLY 08"), first departure-slot
+hold (the existing "SLOTS 07", D-46, behaviour kept), first night curfew ("CURFEW 09": the first time any airport's
+`curfewClosed` turns true, not a fixed week) and first hub jam ("CONGESTION 10": `HubJamStarted`, i.e. the overload
+countdown before game over). They go through one priority queue (`src/game/tutorial/hints.ts`): jam > slots > curfew >
+board; one strip at a time, 0.7 s gap, auto-hide after 9 s, dismissed by a tap on the strip, its ≥ 48 dp "Przyjęte /
+Roger" field, or any other tap in the run (the tap still reaches its target). Nothing shows over the weekly board except
+the board's own hint, which sits over the inert tag dock (portrait) or beside the yellow sign (landscape), never over a
+cargo label; hints waiting during the board show after it closes (a curfew that starts as the week-3 board opens);
+game over drops the queue; a queued jam hint is skipped if the hub is no longer jammed. Seen flags are
+`aw-tutorial-{jam,slots,curfew,upgrade}` (`aw-tutorial-slots` predates the queue and is kept); Settings → "Replay
+tutorial" clears them. A Settings switch "Podpowiedzi ATC / ATC hints" (`airway.settings.hints`, default on) turns them
+off without marking anything seen. DEV `?storeShot` never shows them. The vignette copy is cut to one action line plus
+one short why-line on the strip itself (no second hint line by the dock), the night step lost its dark square backdrop,
+and its passenger card uses the real D-08 glyph. Rationale: teach curfew, jams and the weekly board at the moment they
+first matter, without stacking paper over the globe. **Status: in force; the switch's default and the copy are
+owner-visible choices (M2 PR questions).**
+
 <!-- Owner decisions below use D-60+ so they cannot collide with D-49… taken by the parallel task-37…40 session. -->
 
 ## D-60 — First weekly upgrade at ~7.2 min is accepted (2026-11-02, owner)

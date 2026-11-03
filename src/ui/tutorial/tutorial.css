@@ -28,7 +28,7 @@
 .aw-tutorial.has-plane .aw-aircraft-symbol { opacity: 1; }
 .aw-night-wash { opacity: 0; transition: opacity 200ms linear; }
 .aw-tutorial.is-night .aw-night-wash { opacity: .78; }
-.aw-tutorial.is-night .aw-tutorial-world { background: #133e57; }
+/* [m2] Night darkens only the globe (wash above); a dark square behind the disc read as a broken frame. */
 .aw-wave-awakening { opacity: 0; }
 .aw-tutorial[data-step="upgrade"] .aw-wave-awakening { opacity: 1; }
 .aw-congestion-ring { opacity: 0; }
@@ -46,14 +46,17 @@
 .aw-tutorial[data-step="aircraft"] .aw-route-drop { display: block; }
 .aw-passenger-card { display: none; position: absolute; left: 67%; top: 51%; padding: 6px 10px; border-left: 4px solid #ff7a3d; background: #fbf8f1; gap: 7px; align-items: center; font-size: 18px; color: #1e6f6a; }
 .aw-tutorial[data-step="transfer"] .aw-passenger-card, .aw-tutorial[data-step="dawn"] .aw-passenger-card { display: flex; }
-.aw-passenger-arrow { font-family: 'Overpass Mono',monospace; font-size: 16px; color: #2a2420; }
+.aw-passenger-shape { display: flex; } /* [m2] */
+.aw-passenger-arrow { width: 22px; height: 13px; color: #2a2420; } /* [m2] */
 .aw-jam-label { display: none; position: absolute; left: 68%; top: 34%; padding: 6px 8px; background: #c8352a; color: #fff; font: 700 12px 'Overpass Mono', monospace; }
 .aw-tutorial.is-jammed .aw-jam-label { display: block; }
 .aw-tutorial-strip { width: min(100%, 540px); min-height: 64px; display: flex; flex-direction: column; justify-content: center; gap: 5px; padding: 8px 13px; background: #f7f3ea; border-left: 7px solid #c8352a; color: #2a2420; }
 .aw-strip-index { font: 800 12px Overpass,sans-serif; color: #1e6f6a; letter-spacing: .05em; }
 .aw-strip-copy { font: 700 16px 'Atkinson Hyperlegible Next',sans-serif; line-height: 1.2; }
+/* [m2] The why-line sits on the strip under the action, not 200 px lower by the dock. */
+.aw-strip-why { font: 400 13px/1.25 'Atkinson Hyperlegible Next',sans-serif; color: #4a4038; }
+.aw-strip-why:empty { display: none; }
 .aw-tutorial-controls { width: 100%; max-width: 540px; justify-self: center; align-self: end; min-height: 44px; display: flex; flex-direction: column; gap: 7px; }
-.aw-tutorial-hint { min-height: 30px; margin: 0; display: flex; align-items: center; justify-content: center; text-align: center; color: #13302e; font-weight: 700; font-size: 13px; line-height: 1.25; }
 .aw-tutorial-dock { min-height: 80px; border-top: 5px solid #1e6f6a; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 7px 2px; background: #13302e; }
 .aw-plane-tag, .aw-action-tag { min-height: 58px; padding: 8px 16px; color: #2a2420; background: #f7f3ea; font-weight: 700; border: 0; clip-path: polygon(0 0, 90% 0, 90% 12%, 100% 12%, 100% 100%, 0 100%); }
 .aw-plane-tag { display: none; width: 120px; flex-direction: column; align-items: center; gap: 1px; touch-action: none; }
@@ -85,8 +88,8 @@
  .aw-tutorial-strip { min-height: 54px; padding: 5px 8px; }
  .aw-strip-index { font-size: 11px; }
  .aw-strip-copy { font-size: 13px; }
+ .aw-strip-why { font-size: 12px; }
  .aw-tutorial-controls { grid-column: 3; grid-row: 1; align-self: stretch; justify-self: stretch; min-height: 0; justify-content: flex-end; }
- .aw-tutorial-hint { font-size: 12px; }
  .aw-tutorial-dock { min-height: 85px; border-top: 0; border-left: 5px solid #1e6f6a; padding: 9px 5px; }
  .aw-upgrades { flex-direction: column; }
  .aw-upgrade { flex: none; min-height: 57px; }
