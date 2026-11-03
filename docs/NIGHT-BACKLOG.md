@@ -214,6 +214,11 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       no state change); the luggage tag draws those passengers as hollow region glyphs (same shape, outline only) at
       its tail, at most half the shown glyphs when the tag overflows, and they fill in when the time runs out; the
       screen-reader label adds "Making a connection: N". `test:transfers`, `e2e/transfer-glyphs.mjs`.
+- [x] N10j **Pause sheet: a network summary** — the "Holding pattern" sheet had only Resume / Save / Menu, so a
+      pause told the player nothing about the run. It now opens with three flight-strip fields read once on pause:
+      routes and aircraft (with spare ones), the fullest hub by share of capacity (code or name per D-68) and the time
+      to the next crates. Save and Menu share one row so the taller sheet still fits 915×412 and 320×568 under the
+      boarding pass. Pure rows in `src/game/pauseSummary.ts`; `test:pause-summary`, `e2e/pause-summary.mjs`.
 
 ## Log
 <!-- one line per finished item: date UTC · item · PR · gate summary -->
@@ -269,3 +274,4 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
 - 2026-11-03 · N10g curfew barrier drawn in the game · night/10g-curfew · test:fast 53/53, build ok, e2e:smoke 9/9, ui:matrix 32/32, test:e2e:curfew-barrier 2/2 (0/2 without the sync)
 - 2026-11-03 · N10h curfew sign on tag and edge chip · night/10h-curfew-tag · test:fast 53/53, build ok, e2e:smoke 9/9, ui:matrix 32/32, test:hud-targets 300/300, e2e:new-airport 4/4, test:e2e:curfew-barrier 2/2 (tag/chip checks added)
 - 2026-11-03 · N10i transfers drawn hollow inside the MCT · night/10i-mct · test:fast 54/54 (test:transfers 3/3, test:replay hashes unchanged), build ok, e2e:smoke 9/9, ui:matrix 32/32, test:e2e:transfer-glyphs 2/2
+- 2026-11-03 · N10j pause sheet network summary · night/10j-pause-week · test:fast 55/55 (test:pause-summary 5/5), build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:screens-fit 18/18, e2e:screens-fit-320 12/12, test:e2e:pause-summary 4/4 (2/4 before Save and Menu shared a row)

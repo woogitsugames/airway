@@ -1,6 +1,7 @@
 // In-game composition (task 30 integration): one run, one world, every in-game layer.
 // Authority flows input → RunCommand → EndlessRun.step() at fixed 100 ms ticks → read-only
 // snapshots → render / UI / audio. Nothing here writes run state except through queue().
+import { pauseSummary } from './pauseSummary';
 import { t } from '../i18n';
 import { framingPoints } from './framing';
 import { cameraGestureCallbacks, attachPointerGestures, type AttachedGestures, type GestureHit } from '../input';
@@ -182,7 +183,15 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     void callbacks.onSave(run).then((ok) => { pauseStatus.textContent = t(ok ? 'save.done' : 'save.failed'); });
   });
   const menu = button('airway-pause__button', '', 'action-menu', () => callbacks.onMenu());
-  pauseSheet.append(pauseTitle, resume, save, menu, pauseStatus);
+  // [night-10j] A flight-strip summary of the network: what is built and where the pressure is.
+  const pauseSummaryList = document.createElement('dl');
+  pauseSummaryList.className = 'airway-pause__summary';
+  pauseSummaryList.dataset.testid = 'pause-summary';
+  // Save and Menu share one row so the sheet with its summary still fits a 412 px landscape screen.
+  const pauseRow = document.createElement('div');
+  pauseRow.className = 'airway-pause__row';
+  pauseRow.append(save, menu);
+  pauseSheet.append(pauseTitle, pauseSummaryList, resume, pauseRow, pauseStatus);
   layer.append(pauseSheet);
 
   const gameOver: GameOverController = createGameOverController({
@@ -411,6 +420,22 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     }
     if (stepped || run.weeklyUpgrade || run.failed) afterTicks();
   }
+  function fillPauseSummary(): void {
+    const spare = run.inventory.turboprop + run.inventory.widebody;
+    const rows = pauseSummary({
+      routes: run.routeList().length, assigned: run.assignments, spare,
+      hubs: run.hubPressure(),
+      minutesToBoard: run.mode === 'puzzle' ? null : run.nextWeekTick - run.tick,
+    });
+    pauseSummaryList.replaceChildren(...rows.flatMap((row) => {
+      const term = document.createElement('dt');
+      term.textContent = row.label;
+      const value = document.createElement('dd');
+      value.textContent = row.value;
+      value.dataset.row = row.key;
+      return [term, value];
+    }));
+  }
   function setPaused(next: boolean): void {
     if (screen === 'gameover') return;
     paused = next;
@@ -419,6 +444,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     save.textContent = t('action.save');
     menu.textContent = t('action.menu');
     pauseStatus.textContent = '';
+    if (paused) fillPauseSummary();
     pauseSheet.hidden = !paused;
     if (paused) resume.focus({ preventScroll: true });
     renderHud();
