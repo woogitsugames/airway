@@ -57,8 +57,28 @@ export function setLanguage(language: Language): void {
   if (typeof document !== 'undefined') document.documentElement.lang = language;
 }
 
+/** Plural categories in the order a `{name|form|…}` token lists its forms; a missing form falls back to the last. */
+const PLURAL_ORDER: Record<Language, readonly Intl.LDMLPluralRule[]> = {
+  en: ['one', 'other'],
+  pl: ['one', 'few', 'many', 'other'],
+};
+const pluralRules = new Map<Language, Intl.PluralRules>();
+
+/** [night-07j] `{count|pasażer|pasażerów|pasażerów}` picks the word form for the number in `count` (PL: one|few|many,
+ *  EN: one|other); it prints only the word, so templates write `{count} {count|…}`. */
+export function pluralForm(language: Language, value: number, forms: readonly string[]): string {
+  let rules = pluralRules.get(language);
+  if (!rules) pluralRules.set(language, rules = new Intl.PluralRules(language));
+  const index = PLURAL_ORDER[language].indexOf(rules.select(value));
+  return forms[Math.min(index < 0 ? forms.length - 1 : index, forms.length - 1)] ?? '';
+}
+
 export function t(key: TranslationKey, params?: TranslationParams): string {
-  const template = catalogs[getLanguage()][key] ?? en[key];
+  const language = getLanguage();
+  const template = (catalogs[language][key] ?? en[key]).replace(/\{([A-Za-z][A-Za-z0-9_]*)\|([^{}]*)\}/g, (token, name: string, forms: string) => {
+    const value = Number(params?.[name]);
+    return params?.[name] === undefined || !Number.isFinite(value) ? token : pluralForm(language, value, forms.split('|'));
+  });
   return template.replace(/\{([A-Za-z][A-Za-z0-9_]*)\}/g, (token, name: string) =>
     params?.[name] === undefined ? token : typeof params[name] === 'number' ? localNumber(params[name]) : String(params[name]),
   );
