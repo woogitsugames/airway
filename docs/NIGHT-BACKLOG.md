@@ -326,3 +326,4 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
 - 2026-11-03 · N10n logbook (run statistics) · night/10n-logbook · test:fast 57/57 (test:logbook 8/8), build ok, e2e:smoke 9/9, ui:matrix 32/32, test:hud-targets 300/300, test:e2e:logbook 4/4
 - 2026-11-03 · N10o store shots refreshed (service row, N10m game-over row) · night/10o-store-shots · store:shots captured=30 failed=0, test:fast 57/57 (test:store-shots 30/30), build ok
 - 2026-11-03 · N10p pseudo-locale audit + cargo kicker wrap · night/10p-pseudo-locale · test:fast 57/57, build ok, e2e:smoke 9/9, ui:matrix 32/32, test:hud-targets 300/300, e2e:board-short 4/4, test:e2e:pseudo-locale 21/21 (18/21 before the kicker fix)
+- 2026-11-03 · N10q pseudo-locale on the in-game HUD + pass label/board head wrap · night/10q-pseudo-hud · test:fast 57/57, build ok, e2e:smoke 9/9, ui:matrix 32/32, test:hud-targets 300/300, test:e2e:pseudo-locale 27/27 (21/27 before the wrap)
