@@ -2,7 +2,7 @@
 // read-only boards. The server (functions/) replays every run with the same Sim before it counts.
 import { FirebaseRestClient, NetError, type Fetch, type Session, type TokenStore } from './client.ts';
 import { readNetConfig, type NetConfig } from './config.ts';
-import { SubmissionQueue, type QueueStorage, type SendResult } from './queue.ts';
+import { QUEUE_KEY, SubmissionQueue, type QueueStorage, type SendResult } from './queue.ts';
 import { selfCheck, type DailySubmission, type RejectReason } from './submission.ts';
 import { boardsForDaily } from './boards.ts';
 
@@ -28,6 +28,8 @@ export interface Leaderboards {
 }
 
 const TOKEN_KEY = 'aw-net-session-v1';
+/** Device-bound leaderboard state a backup restore must not carry to another phone (D-92). */
+export const IDENTITY_KEYS: readonly string[] = [TOKEN_KEY, QUEUE_KEY];
 
 function storageTokens(storage: QueueStorage | null): TokenStore {
   return {

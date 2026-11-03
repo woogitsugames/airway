@@ -96,12 +96,39 @@ store version bumps in this native file when releasing.
   merges the normal-level `android.permission.VIBRATE`; no runtime permission prompts, no ad,
   analytics or billing SDKs (D-16).
 
+## Backup and phone change (D-92)
+
+Auto Backup is on (`android:allowBackup="true"`) with **include-only** rules:
+`res/xml/data_extraction_rules.xml` (Android 12+, cloud backup and device-to-device transfer) and
+`res/xml/backup_rules.xml` (`fullBackupContent`, Android 11 and older), both with the same list:
+
+| Domain / path | What it holds |
+|---|---|
+| `sharedpref` `CapacitorStorage.xml` | `@capacitor/preferences`: committed save pointer and native settings (`src/platform/storage.ts`) |
+| `file` `aw-save-a.json`, `aw-save-b.json` | `@capacitor/filesystem` `Directory.Data`: the two save slots |
+| `root` `app_webview/Default/Local Storage/` (and the pre-profile `app_webview/Local Storage/`) | WebView `localStorage`: logbook, daily streak and best scores, settings, puzzle stars, tutorial flag |
+
+Everything else (WebView cache, cookies, code cache, `files/aw-install-v1.json`) stays on the phone. The
+leaderboard session token and offline queue (`aw-net-session-v1`, `aw-net-queue-v1`) share the WebView
+`localStorage` with the logbook, so file rules cannot split them; instead `src/platform/install.ts` keeps an
+install marker that is never backed up (Filesystem `Directory.LibraryNoCloud` = app files directory on Android).
+On a launch without the marker (fresh install or restore onto another phone) it writes the marker first and then
+removes both keys before the leaderboards start, so the restored phone signs in as a new anonymous player. The
+encrypted backup itself still contains the token; moving it out of `localStorage` is a follow-up. Note: the
+first launch of this version on an existing test install also counts as new once (pre-release, no players yet).
+
+`test:android-config` checks the manifest attributes, identical include lists, no wildcard include, the save paths
+against `SAVE_PATHS`, and that the marker is not included; `test:install-identity` checks the reset logic.
+Device check (not possible here): `adb shell bmgr backupnow pl.samsufi.airway`, uninstall, reinstall from the same
+signed build with restore (`adb shell bmgr restore`), then confirm the logbook and save are back and the first
+official daily gets a new call sign.
+
 ## Pre-release device checklist (not covered by static tests)
 
 Test on a physical Android 15+ device and emulator/API 36: 412x915 and 915x412,
 foldables 673x841 and 904x1000, back navigation, startup splash, safe-area
 at status/navigation bars, split-screen resize, losing/restoring focus, and
-unfolding without resetting a session. No device run was performed in this task
+unfolding without resetting a session, and a backup restore (section above). No device run was performed in this task
 environment; passing `test:android-config` is a static guarantee only.
 
 Do **not** add APK, AAB, keystore or Gradle build products to Git.

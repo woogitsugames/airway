@@ -47,5 +47,30 @@ check('release-env-only', hasAll(appGradle, ["System.getenv('AW_KEYSTORE')", "Sy
 check('procedural-assets', ['icon.svg', 'icon-foreground.svg', 'splash.svg'].every((file) => existsSync(join(ROOT, 'resources', file))));
 check('wrapper-present', existsSync(join(ANDROID, 'gradle/wrapper/gradle-wrapper.jar')) && readFileSync(join(ANDROID, 'gradle/wrapper/gradle-wrapper.jar')).subarray(0, 2).toString() === 'PK');
 check('build-flavours', hasAll(buildScript, ['assembleDebug', 'assembleRelease', 'bundleRelease', '@capacitor/cli@8.5.3']));
+// [night-12c] D-92: Auto Backup carries the game to a new phone (saves, logbook, streak, settings), include-only,
+// and never the install marker that makes a restored phone forget the leaderboard identity.
+const backupXml = (name) => existsSync(join(ANDROID, 'app/src/main/res/xml', name + '.xml'))
+  ? read('android/app/src/main/res/xml/' + name + '.xml').replace(/<!--[\s\S]*?-->/g, '') : '';
+const includes = (xml) => [...xml.matchAll(/<include\s+domain="([^"]+)"\s+path="([^"]*)"\s*\/>/g)]
+  .map((match) => match[1] + ':' + match[2]).sort();
+const section = (xml, tag) => xml.match(new RegExp('<' + tag + '>([\\s\\S]*?)</' + tag + '>'))?.[1] ?? '';
+const legacyRules = backupXml('backup_rules');
+const modernRules = backupXml('data_extraction_rules');
+const ruleSets = [includes(legacyRules), includes(section(modernRules, 'cloud-backup')), includes(section(modernRules, 'device-transfer'))];
+check('backup-enabled', manifest.includes('android:allowBackup="true"') &&
+  manifest.includes('android:fullBackupContent="@xml/backup_rules"') &&
+  manifest.includes('android:dataExtractionRules="@xml/data_extraction_rules"') && !!legacyRules && !!modernRules);
+check('backup-include-only', ruleSets[0].length > 0 && ruleSets.every((set) => set.join() === ruleSets[0].join()) &&
+  !/<exclude\b/.test(legacyRules + modernRules) && ruleSets[0].every((rule) => !/:(\.?|\/)$/.test(rule)));
+const storageSource = read('src/platform/storage.ts');
+const savePaths = [...(storageSource.match(/SAVE_PATHS\s*=\s*\{([^}]*)\}/)?.[1] ?? '').matchAll(/'([^']+\.json)'/g)].map((match) => 'file:' + match[1]);
+const preferencesGroup = /Preferences\.configure\(/.test(read('src/main.ts') + storageSource) ? null : 'sharedpref:CapacitorStorage.xml';
+check('backup-covers-game-stores', savePaths.length === 2 && !!preferencesGroup &&
+  [...savePaths, preferencesGroup, 'root:app_webview/Default/Local Storage/'].every((rule) => ruleSets[0].includes(rule)));
+const installSource = existsSync(join(ROOT, 'src/platform/install.ts')) ? read('src/platform/install.ts') : '';
+const marker = installSource.match(/INSTALL_MARKER_PATH = '([^']+)'/)?.[1];
+check('backup-leaves-install-marker', !!marker && installSource.includes('Directory.LibraryNoCloud') &&
+  !(legacyRules + modernRules).includes(marker) && !savePaths.includes('file:' + marker) &&
+  read('src/main.ts').includes('forgetIdentityOnNewInstall(') && read('src/net/index.ts').includes('IDENTITY_KEYS'));
 console.log('SUMMARY test:android-config seed=0xA1A1 checks=' + (passed + failed) + ' passed=' + passed + ' failed=' + failed);
 if (failed) process.exitCode = 1;
