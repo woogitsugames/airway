@@ -32,6 +32,9 @@ Airway to gra strategiczno-logiczna o połączeniach, przesiadkach i planowaniu 
 ## App Store keywords
 loty,lotnisko,globus,trasy,sieć,strategia,hub,przesiadki,samoloty,zagadki
 
+## Play feature graphic alt text
+Szyld Airway obok globusa 3D o zmierzchu, trasy lotnicze łączą lotniska Europy i Bliskiego Wschodu.
+
 ## Kolejność zrzutów i podpisy
 Podpisy tylko do konsoli sklepu (nigdy nie są rysowane na obrazach); pliki w `shots/pl/`.
 Kolejność wg D-63 (nocny globus jako pierwszy kadr).

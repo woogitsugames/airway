@@ -120,6 +120,7 @@
     "shots": "node scripts/shots.mjs",
     "shots:site": "npm run build:site && node site/shots.mjs",
     "store:shots": "node scripts/store-shots.mjs",
+    "store:feature": "node scripts/store-shots.mjs --feature",
     "mockups": "node mockups/build-all.mjs",
     "shots:mockups": "node mockups/shoot.mjs",
     "balance:report": "node --import ./scripts/ts-test-loader.mjs scripts/balance-report.ts --report",

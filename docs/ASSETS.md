@@ -83,6 +83,7 @@ The production three.js world will replace this demo illustration after tasks 07
 ## Task 24 — Android launcher and splash
 - `resources/icon.svg`, `resources/icon-foreground.svg`, `resources/splash.svg` — original SVG geometry (yellow `#FFC72C` / black `#1C1E20`) authored for Airway, no third-party licence. Node script `scripts/build-android.mjs` generates Android launcher/splash PNG raster assets; no network graphics are used.
 - `brand/wayfinding.svg` — matching original airport wayfinding sign/wordmark; Overpass 800 (OFL licence already listed above).
+- [N12n] `docs/store/feature-graphic.png` — Google Play feature graphic: our own render of the game scene (globe from Natural Earth data as in the game) with `brand/wayfinding.svg` on the left; no third-party imagery (`npm run store:feature`).
 ## iOS native art — task 25
 - `ios/Brand/app-icon.svg`: byte-identical copy of task 24 `resources/icon.svg` from draft PR #12, original black/yellow Airway airport wayfinding mark.
 - `ios/Brand/splash.svg`: byte-identical copy of task 24 `resources/splash.svg`; the opaque iOS PNG composites this mark over a black launch background matching Android.

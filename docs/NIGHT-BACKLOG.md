@@ -480,6 +480,11 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       context, released, cached) into `DeviceHints.gpu`; `LOW_GPU_FAMILIES` maps Mali-G52, Mali-G57/G68 MC1–MC2,
       Mali-T8xx, PowerVR GE83xx, Adreno 5xx/610/613 to `low`. Unknown strings keep the old rule; explicit choice and
       remembered adaptation still win. `test:quality` +38 checks; perf note in `docs/PERFORMANCE.md`.
+- [x] N12n **Play feature graphic 1024×500 (R2d, D-117)** — `npm run store:feature` renders
+      `docs/store/feature-graphic.png` from the real `game` scene (1024×500 @2 → @1, HUD hidden, DEV probe
+      `featureView` frames the network right of centre, `brand/wayfinding.svg` on the left third) and writes opaque
+      RGB. `test:store-shots` checks size, no alpha, ≤ 15 MB, centre band, dark share ≤ 0.2 and the new PL/EN field
+      "Play feature graphic alt text" (≤ 140). Console slot in `docs/store/README.md`, entry in `docs/ASSETS.md`.
 
 ## Research proposals (R-agent)
 Proposals from the research agent (findings and sources: `docs/RESEARCH.md`, sections "R1 — …"). Each item is
@@ -579,7 +584,7 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
       Rename "captions" in `en.md`/`pl.md` to **Play alt text** (one unique line per screenshot, ≤ 140 chars, no "image
       of"); note that App Store has no caption field. Consider "puzzle" in the Play short description (80 chars).
       **Area:** docs (`docs/store/`).
-- [ ] R2d **Play feature graphic 1024×500** — required to publish on Google Play; also the cover of the preview
+- [x] R2d → N12n **Play feature graphic 1024×500** — required to publish on Google Play; also the cover of the preview
       video (play button drawn in the centre). Render it from the real game (store-shot `game` scene at dusk, network
       centred, wide landscape viewport 1024×500 @1 and @2 then downscale) with the "Airway" wordmark in the game font
       on the left third; avoid pure black/dark-grey fields (Google's rule — the night scene is unsuitable). Add to
