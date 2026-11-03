@@ -340,6 +340,84 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       320×568: the sign keeps its height with the tab (title 17 px). Store PNGs refreshed. `e2e/gameover-map.mjs`
       (`test:e2e:gameover-map`, in `test:ci`).
 
+## Research proposals (R-agent)
+Proposals from the research agent (findings and sources: `docs/RESEARCH.md`, sections "R1 — …"). Each item is
+sized for one PR; **Area** says where it lands so the coordinator can route it. Items marked *needs Q-xx* wait for
+the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
+
+### R1 (2026-11-03) — release readiness, accessibility/localisation, onboarding
+- [ ] R1a **In-app deletion of leaderboard data** — Apple 5.1.1(v) requires deletion to start in the app and
+      explicitly covers auto-created guest accounts; e-mail only (D-77) is not accepted outside regulated industries.
+      Settings row "Delete my ranking data" (shown once an anonymous identity exists): confirm sheet → callable
+      `deleteMyData` removes every `entries` doc of the caller's uid (daily + weekly) and deletes the anonymous Auth
+      user; client clears identity, call sign and offline queue (`aw-net-queue-v1`). Offline: say it needs a
+      connection, never fake success. Keep the e-mail path as the web resource for Google. Tests: `test:net-server`,
+      `test:firebase` (emulator: entries and user gone, second call idempotent), e2e on the settings row; update
+      `docs/legal/leaderboards-privacy.md` and `docs/FIREBASE.md` step 9. **Area:** `functions/`, `src/net/**`,
+      `src/ui/settings/**`, i18n. *Needs Q-41.*
+- [ ] R1b **Privacy policy reachable in the app** — Google's User Data policy wants the policy inside the app when
+      user data is handled; there is no "privacy" string in `src/` today. Settings/licences gain a "Privacy" row that
+      opens the policy (bundled offline copy of `site/privacy.html` content as an in-app page, PL/EN, plus the public
+      URL once D-67 publishes the site). **Area:** `src/ui/settings/**`, i18n, `site/` (shared text source).
+- [ ] R1c **iOS store plist keys** — add `ITSAppUsesNonExemptEncryption = false` (HTTPS only, exempt; avoids the
+      export-compliance prompt on every upload) and `CFBundleLocalizations = [en, pl]` (App Store lists the game's
+      languages from the bundle). `test:ios-config` asserts both. **Area:** `ios/App/App/Info.plist`, scripts.
+- [ ] R1d **Android per-app language** — `res/xml/locales_config.xml` (en, pl) and `android:localeConfig` so
+      Android 13+ shows Airway in system per-app language settings; check on a device that the WebView's
+      `navigator.languages` follows the per-app locale (uncertain) and that the in-game language setting still wins
+      (D-31). `test:android-config` asserts the config. **Area:** `android/`, `src/i18n/index.ts` only if needed.
+- [ ] R1e **Saves survive a phone change (Android backup)** — `android:allowBackup="false"` loses the save,
+      logbook, streak and settings on a new phone. Enable Auto Backup with `dataExtractionRules`
+      (Android 12+) / `fullBackupContent` that include saves/settings (Filesystem `Directory.Data`, Preferences) and
+      exclude the leaderboard identity/token and the net queue (a restored phone gets a new anonymous identity).
+      Document the iOS side (Filesystem `Directory.Data` maps to Documents, which iCloud backs up — verify).
+      **Area:** `android/app/src/main/**`, `docs/ANDROID.md`, `docs/IOS.md`.
+- [ ] R1f **Privacy declarations for the leaderboard build** — new `docs/store/privacy-declarations.md`: exact
+      Google Play Data safety answers and App Store App Privacy answers for (A) build without Firebase config and
+      (B) with leaderboards (User ID / "Device or other IDs" pseudonymous, gameplay content = command journal and
+      score; purpose App functionality + fraud prevention; not shared, not for tracking; encrypted in transit;
+      deletion available — R1a; retention 90 days — D-77). Fill `NSPrivacyCollectedDataTypes` in
+      `PrivacyInfo.xcprivacy` for (B) and make `test:ios-config` check it. **Area:** `docs/store/`, `ios/`.
+      *Needs Q-03.*
+- [ ] R1g **Text scale follows the system and goes to 150%** — read Android `fontScale` / iOS Dynamic Type once on
+      first launch to preset `textScale` (explicit choice still wins), add a 150% step where layouts allow; run
+      `ui:matrix` and `screens-fit` at 150% and fix overflow. Do not claim Apple's "Larger Text" label (needs ≥ 200%).
+      **Area:** `src/ui/settings/**`, `src/ui/a11y.ts`, `src/platform/**`, CSS.
+- [ ] R1h **"Reduce motion" setting in the game** — today only the flap and game-over read
+      `prefers-reduced-motion`. A settings switch (default from the OS) that also stills the menu globe rotation, camera
+      fly-tos (cut instead of pan), stamp-ins and the new-airport stub; one `reducedMotion()` helper used everywhere.
+      Prerequisite for declaring Apple's "Reduced Motion" label. **Area:** `src/ui/**`, `src/render/camera*`, settings,
+      i18n.
+- [ ] R1i **Accessibility label evidence sheet** — `docs/store/accessibility.md`: per Apple label (Differentiate
+      Without Color Alone, Sufficient Contrast, Reduced Motion after R1h) the common tasks checked, the tests that
+      prove it (`test:cvd`, contrast tokens, screenshots) and what we do **not** claim (VoiceOver, Larger Text, Dark
+      Interface) with the reason; short PL/EN accessibility paragraph for the store descriptions. **Area:** `docs/store/`.
+- [ ] R1j **One tip on the game-over report** — the report says why the network closed but not what to change.
+      Map each cause from the ledger to one matter-of-fact tip (hub overflow → hub expansion or a second hub; region
+      without a route → connect it; slot wait → "+2 slots" or spread departures; unserved airport → route to it),
+      shown as one line under the cause, only in the player's first ~10 runs (count from the logbook), never during
+      play. PL/EN with plural tokens; `test:format`, game-over DOM test, shots. **Area:** `src/ui/gameover/**`, i18n.
+- [ ] R1k **Store listing localisation, wave 1** — DE, FR, ES, PT-BR store texts from `docs/store/en.md` (title
+      within 30 chars, short description 80, keywords) stating the game is in English and Polish until the game
+      itself is translated; mark every text "needs native review". **Area:** `docs/store/`. *Needs Q-43.*
+- [ ] R1l **Release checklist** — `docs/RELEASE.md`: one list from RESEARCH R1 (accounts, closed test 12×14, privacy
+      URL, Data safety, App Privacy, IARC/Apple age questionnaire, DSA trader status, export compliance, accessibility
+      labels, store shots per Apple device class, version bump in both native projects) with owner/agent and a link
+      to the decision or question for each line. **Area:** `docs/`.
+- [ ] R1m **Store-requirement guards in the config tests** — `test:android-config` fails when `targetSdkVersion`
+      < 36 (Play rule from 31.08.2026; bump yearly) and `android:aab` checks the bundle for native libraries not aligned
+      to 16 KB (`zipalign -c -P 16` or `bundletool` dump), reporting "no native libs" when there are none.
+      **Area:** `scripts/`, `android/`.
+- [ ] R1n **Run milestones in Endless** — give a first run intermediate goals without changing the sim: milestones
+      read from the sim view (first hub, every region served, week 2/3/5 reached, 500/1 000 passengers) shown as a
+      short "milestones" row on the game-over report and counted in the logbook ("first reached in run N"). Presentation
+      only (D-13), no new rules, no rewards. **Area:** `src/game/**` (pure milestone check), `src/ui/gameover/**`,
+      `src/ui/logbook/**`, i18n.
+- [ ] R1o **Closed-test protocol and local logbook export** — `docs/PLAYTEST.md` (what testers do on days 1–14,
+      what we ask, PL/EN feedback questions) and a "Copy summary" action (release builds too) in the logbook
+      that copies a plain-text summary (runs, lengths, weeks reached, tutorial finished, dailies played) for the tester
+      to paste into feedback — no network, no analytics (D-16). **Area:** `docs/`, `src/ui/logbook/**`, i18n.
+
 ## Log
 <!-- one line per finished item: date UTC · item · PR · gate summary -->
 - 2026-11-03 · N1 puzzles 16–30 (D-70) · night/01-puzzles · test:fast 42/42, build ok, e2e:smoke 9/9, ui:matrix 32/32, test:puzzles levels=30 cases=168 failed=0 (merged tree with #40, #42)
