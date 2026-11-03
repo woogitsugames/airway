@@ -426,6 +426,18 @@ held. Readability: the paper body reaches ≥ 4.81:1 by day and ≥ 14.8:1 at ni
 (`npm run shots:38`); ink on paper inside the tag is 12.7:1. **Status: in force; the tag's wording ("SLOT" in both
 languages) is an owner-visible choice (task-38 PR question).**
 
+<!-- Owner decisions below use D-60+ so they cannot collide with D-49… taken by the parallel task-37…40 session. -->
+
+## D-51 — Player text never breaks inside a word without a hyphen (2026-11-02, task 37)
+UI text must not use `overflow-wrap:anywhere` / `word-break` (they produced "Szerokokadłubowie / c" on the 360 px
+store phone). Browser `hyphens:auto` is not relied on: its dictionaries are missing in some WebViews and headless
+Chromium. Instead long single words carry soft hyphens (U+00AD) in the i18n catalogue ("Szeroko\u00ADkadłubowiec"),
+and the upgrade-label title shrinks to fit its longest word (container query, down to 15 px) before the soft hyphen
+is needed. Overpass ships the middle dot U+00B7 with a zero advance, so Overpass text borrows the dot from
+Atkinson Hyperlegible Next via `unicode-range` (same OFL files) and " · " is symmetric. `npm run test:hud-targets`
+checks menu, upgrade labels and game over in PL/EN at 360–915 px for bare mid-word breaks, header gaps ≥ 8 px and
+dot symmetry. **Status: in force.**
+
 ## D-54 — Contextual one-time ATC hints share one queue; shorter training copy (2026-11-03, M2)
 Four in-run training strips, each **once per install**: first weekly board ("FREIGHT / WEEKLY 08"), first departure-slot
 hold (the existing "SLOTS 07", D-46, behaviour kept), first night curfew ("CURFEW 09": the first time any airport's
@@ -443,18 +455,6 @@ one short why-line on the strip itself (no second hint line by the dock), the ni
 and its passenger card uses the real D-08 glyph. Rationale: teach curfew, jams and the weekly board at the moment they
 first matter, without stacking paper over the globe. **Status: in force; the switch's default and the copy are
 owner-visible choices (M2 PR questions).**
-
-<!-- Owner decisions below use D-60+ so they cannot collide with D-49… taken by the parallel task-37…40 session. -->
-
-## D-51 — Player text never breaks inside a word without a hyphen (2026-11-02, task 37)
-UI text must not use `overflow-wrap:anywhere` / `word-break` (they produced "Szerokokadłubowie / c" on the 360 px
-store phone). Browser `hyphens:auto` is not relied on: its dictionaries are missing in some WebViews and headless
-Chromium. Instead long single words carry soft hyphens (U+00AD) in the i18n catalogue ("Szeroko\u00ADkadłubowiec"),
-and the upgrade-label title shrinks to fit its longest word (container query, down to 15 px) before the soft hyphen
-is needed. Overpass ships the middle dot U+00B7 with a zero advance, so Overpass text borrows the dot from
-Atkinson Hyperlegible Next via `unicode-range` (same OFL files) and " · " is symmetric. `npm run test:hud-targets`
-checks menu, upgrade labels and game over in PL/EN at 360–915 px for bare mid-word breaks, header gaps ≥ 8 px and
-dot symmetry. **Status: in force.**
 
 ## D-60 — First weekly upgrade at ~7.2 min is accepted (2026-11-02, owner)
 Keeps 1 tick = 1 game minute and the D-43 balance (median 12.9 min, 86% / 44%). Supersedes the "4–5 min" estimate in D-40.
