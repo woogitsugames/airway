@@ -55,6 +55,20 @@ try {
     else if (placeholders(english.get(key)) !== placeholders(polish.get(key))) {
       failures.push('placeholder mismatch: ' + key);
     }
+    // [night-07j] Plural tokens `{name|form|…}`: PL lists one|few|many(|other), EN one|other; the name must be a
+    // parameter of the English template so callers pass it.
+    if (polish.has(key)) {
+      const params = new Set([...english.get(key).matchAll(/\{([A-Za-z][A-Za-z0-9_]*)[}|]/g)].map((m) => m[1]));
+      for (const [language, value, min, max] of [['en', english.get(key), 2, 2], ['pl', polish.get(key), 3, 4]]) {
+        for (const match of value.matchAll(/\{([A-Za-z][A-Za-z0-9_]*)\|([^{}]*)\}/g)) {
+          const forms = match[2].split('|');
+          if (forms.length < min || forms.length > max || forms.some((form) => !form.trim())) {
+            failures.push(language + ': plural token ' + match[0] + ' in ' + key + ' needs ' + min + '-' + max + ' forms');
+          }
+          if (!params.has(match[1])) failures.push(language + ': plural token parameter ' + match[1] + ' unknown in ' + key);
+        }
+      }
+    }
   }
   for (const key of polish.keys()) if (!english.has(key)) failures.push('en: missing key ' + key);
   if (english.size === 0) failures.push('dictionaries must not be empty');
