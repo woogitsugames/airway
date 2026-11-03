@@ -61,7 +61,27 @@ const steps = [
     const result = await resultClass(page);
     const text = await page.locator('.puzzle-result').textContent().catch(() => '');
     assert(result.includes('won'), `${level.id} not cleared: ${result} "${text}"`);
-    await click(page, 'back');
+    // [night-10w] The yellow action leads on: the next departure, or the board after the last one; it has focus.
+    const next = levels[levels.indexOf(level) + 1];
+    const primary = await page.evaluate(() => {
+      const b = document.querySelector('.puzzle-control.primary');
+      return b ? { action: b.dataset.action, disabled: b.disabled, focused: document.activeElement === b, text: b.textContent, h: b.getBoundingClientRect().height } : null;
+    });
+    const want = next ? `open:${next.id}` : 'board';
+    assert(primary && primary.action === want && !primary.disabled, `${level.id}: primary action ${JSON.stringify(primary)}, want ${want}`);
+    assert(primary.focused, `${level.id}: the primary action has no focus after the clear`);
+    assert(primary.h >= 48, `${level.id}: primary action ${primary.h}px tall`);
+    if (level.id === '01') {
+      await click(page, 'open:02');
+      const title = await page.locator('.puzzle-game-sign strong').textContent();
+      assert(/02/.test(title ?? '') && (await resultClass(page)) === '', `Next from 01 opened "${title}" (result "${await resultClass(page)}")`);
+      const finish = page.locator('.puzzle-control.primary');
+      assert((await finish.getAttribute('data-action')) === 'finish' && !(await finish.isDisabled()), 'puzzle 02 does not start with "To deadline"');
+      await click(page, 'back');
+    } else if (!next) {
+      await click(page, 'board');
+      await page.locator('.puzzle-departures').waitFor({ timeout: 3000 });
+    } else await click(page, 'back');
     const stars = await page.locator(`button[data-action="open:${level.id}"] .puzzle-flap-stars.is-done`).count();
     assert(stars === 1, `${level.id}: board does not show the cleared stars`);
     // [night-10l] The best margin sits under the stars.
