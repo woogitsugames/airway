@@ -1,5 +1,6 @@
 // Task 17: airport departure-board puzzle selector and flight-strip editor (a router screen).
 import { PUZZLES, type PuzzleLevel, type PuzzleCommand } from '../../data/puzzles';
+import { PUZZLE_PACKS } from '../../data/puzzles/packs.ts';
 import { dispatchPuzzle, resetPuzzle, startPuzzle, undoPuzzle, type PuzzleSession } from '../../game/modes/puzzle';
 import { readPuzzleMargins, recordPuzzleMargin } from '../../game/puzzleBest';
 import { t, type TranslationKey } from '../../i18n';
@@ -136,7 +137,19 @@ export function mountPuzzleSelector(host: HTMLElement, onExit: () => void = () =
     wrapper.appendChild(title);
     const table = element('div', 'puzzle-departures');
     table.setAttribute('role', 'group');
-    PUZZLES.forEach((level) => {
+    PUZZLES.forEach((level, index) => {
+      // [ext-02] D-162: a pack's name sits above its first flap, like a new block on a departures board.
+      const pack = PUZZLE_PACKS.find((item) => item.firstLevel === level.id);
+      if (pack) {
+        const next = PUZZLE_PACKS.map((item) => PUZZLES.findIndex((entry) => entry.id === item.firstLevel))
+          .filter((start) => start > index).sort((a, b) => a - b)[0] ?? PUZZLES.length;
+        const row = element('div', 'puzzle-pack', t('puzzle.pack.line', {
+          name: t(pack.nameKey as TranslationKey), count: next - index,
+        }));
+        row.setAttribute('role', 'heading');
+        row.setAttribute('aria-level', '2');
+        table.appendChild(row);
+      }
       const flap = button('', `open:${level.id}`, 'puzzle-flap');
       const margin = progress[level.id] ? margins[level.id] : undefined;
       flap.setAttribute('aria-label', t(margin === undefined ? 'puzzle.board.item' : 'puzzle.board.itemBest', {

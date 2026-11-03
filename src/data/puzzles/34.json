@@ -1,0 +1,245 @@
+{
+  "version": 1,
+  "id": "34",
+  "titleKey": "puzzle.34.title",
+  "durationTicks": 8640,
+  "demandSeed": 3834,
+  "startCities": [
+    {
+      "id": "SIN",
+      "continent": "AS",
+      "latitude": 1.3,
+      "longitude": 103.8,
+      "hubCapacity": 200
+    },
+    {
+      "id": "KUL",
+      "continent": "AS",
+      "latitude": 3.1,
+      "longitude": 101.7,
+      "hubCapacity": 50
+    },
+    {
+      "id": "JKT",
+      "continent": "AS",
+      "latitude": -6.2,
+      "longitude": 106.8,
+      "hubCapacity": 60
+    },
+    {
+      "id": "BKK",
+      "continent": "AS",
+      "latitude": 13.8,
+      "longitude": 100.5,
+      "hubCapacity": 60
+    },
+    {
+      "id": "HCM",
+      "continent": "AS",
+      "latitude": 10.8,
+      "longitude": 106.7,
+      "hubCapacity": 50
+    },
+    {
+      "id": "PER",
+      "continent": "OC",
+      "latitude": -31.9,
+      "longitude": 115.9,
+      "hubCapacity": 80
+    },
+    {
+      "id": "JNB",
+      "continent": "AF",
+      "latitude": -26.2,
+      "longitude": 28.0,
+      "hubCapacity": 150,
+      "curfew": {
+        "startMinuteOfDay": 1380,
+        "endMinuteOfDay": 360
+      }
+    },
+    {
+      "id": "DXB",
+      "continent": "AS",
+      "latitude": 25.2,
+      "longitude": 55.3,
+      "hubCapacity": 120
+    }
+  ],
+  "stock": {
+    "turboprops": 4,
+    "jets": 2,
+    "hubUpgrades": 0
+  },
+  "goal": {
+    "kind": "curfewNights",
+    "targetDelivered": 1151,
+    "nights": 5
+  },
+  "mechanics": [
+    "slots",
+    "curfew",
+    "transfer"
+  ],
+  "demand": [
+    {
+      "from": "KUL",
+      "to": "JNB",
+      "passengers": 6,
+      "firstTick": 20,
+      "everyTicks": 180
+    },
+    {
+      "from": "JKT",
+      "to": "JNB",
+      "passengers": 8,
+      "firstTick": 40,
+      "everyTicks": 180
+    },
+    {
+      "from": "BKK",
+      "to": "JNB",
+      "passengers": 8,
+      "firstTick": 60,
+      "everyTicks": 180
+    },
+    {
+      "from": "HCM",
+      "to": "JNB",
+      "passengers": 6,
+      "firstTick": 80,
+      "everyTicks": 180
+    },
+    {
+      "from": "PER",
+      "to": "JNB",
+      "passengers": 8,
+      "firstTick": 100,
+      "everyTicks": 180
+    }
+  ],
+  "availableRoutes": [
+    {
+      "from": "SIN",
+      "to": "KUL",
+      "plane": "turboprop",
+      "flightTicks": 39,
+      "intervalTicks": 120
+    },
+    {
+      "from": "SIN",
+      "to": "JKT",
+      "plane": "turboprop",
+      "flightTicks": 113,
+      "intervalTicks": 120
+    },
+    {
+      "from": "SIN",
+      "to": "BKK",
+      "plane": "turboprop",
+      "flightTicks": 180,
+      "intervalTicks": 120
+    },
+    {
+      "from": "SIN",
+      "to": "HCM",
+      "plane": "turboprop",
+      "flightTicks": 138,
+      "intervalTicks": 120
+    },
+    {
+      "from": "KUL",
+      "to": "BKK",
+      "plane": "turboprop",
+      "flightTicks": 150,
+      "intervalTicks": 120
+    },
+    {
+      "from": "BKK",
+      "to": "HCM",
+      "plane": "turboprop",
+      "flightTicks": 94,
+      "intervalTicks": 120
+    },
+    {
+      "from": "SIN",
+      "to": "PER",
+      "plane": "jet",
+      "flightTicks": 279,
+      "intervalTicks": 120
+    },
+    {
+      "from": "SIN",
+      "to": "JNB",
+      "plane": "jet",
+      "flightTicks": 619,
+      "intervalTicks": 120
+    },
+    {
+      "from": "PER",
+      "to": "JNB",
+      "plane": "jet",
+      "flightTicks": 595,
+      "intervalTicks": 120
+    },
+    {
+      "from": "SIN",
+      "to": "DXB",
+      "plane": "jet",
+      "flightTicks": 417,
+      "intervalTicks": 120
+    },
+    {
+      "from": "DXB",
+      "to": "JNB",
+      "plane": "jet",
+      "flightTicks": 459,
+      "intervalTicks": 120
+    },
+    {
+      "from": "JKT",
+      "to": "PER",
+      "plane": "jet",
+      "flightTicks": 215,
+      "intervalTicks": 120
+    }
+  ],
+  "referenceCommands": [
+    {
+      "type": "connect",
+      "from": "SIN",
+      "to": "KUL",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "SIN",
+      "to": "JKT",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "SIN",
+      "to": "BKK",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "SIN",
+      "to": "HCM",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "SIN",
+      "to": "JNB",
+      "plane": "jet"
+    },
+    {
+      "type": "connect",
+      "from": "PER",
+      "to": "JNB",
+      "plane": "jet"
+    }
+  ]
+}

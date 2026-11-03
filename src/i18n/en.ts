@@ -313,6 +313,14 @@ export const en = {
   'puzzle.28.title': 'Alpine detour',
   'puzzle.29.title': 'Atlantic gateway',
   'puzzle.30.title': 'The night network',
+  // [ext-02] R6h, D-131/D-162: pack "Long haul", puzzles 31–35.
+  'puzzle.31.title': 'Islands to Los Angeles',
+  'puzzle.32.title': 'South Atlantic by night',
+  'puzzle.33.title': 'Santiago to Sydney',
+  'puzzle.34.title': 'Dusk over Africa',
+  'puzzle.35.title': 'Around the world',
+  'puzzle.pack.longHaul': 'Long haul',
+  'puzzle.pack.line': 'Pack: {name} · {count} {count|puzzle|puzzles}',
   // [night-06c] D-66 daily ranking board.
   'rank.title': 'Ranking · {date}',
   'rank.today': 'Today',

@@ -1,0 +1,164 @@
+{
+  "version": 1,
+  "id": "31",
+  "titleKey": "puzzle.31.title",
+  "durationTicks": 8640,
+  "demandSeed": 3831,
+  "startCities": [
+    {
+      "id": "AKL",
+      "continent": "OC",
+      "latitude": -36.8,
+      "longitude": 174.8,
+      "hubCapacity": 300
+    },
+    {
+      "id": "SYD",
+      "continent": "OC",
+      "latitude": -33.9,
+      "longitude": 151.2,
+      "hubCapacity": 100
+    },
+    {
+      "id": "SUV",
+      "continent": "OC",
+      "latitude": -18.1,
+      "longitude": 178.5,
+      "hubCapacity": 60
+    },
+    {
+      "id": "NOU",
+      "continent": "OC",
+      "latitude": -22.3,
+      "longitude": 166.5,
+      "hubCapacity": 40
+    },
+    {
+      "id": "LAX",
+      "continent": "NA",
+      "latitude": 34.1,
+      "longitude": -118.2,
+      "hubCapacity": 150
+    }
+  ],
+  "stock": {
+    "turboprops": 3,
+    "jets": 1,
+    "hubUpgrades": 0
+  },
+  "goal": {
+    "kind": "deliver",
+    "targetDelivered": 841
+  },
+  "mechanics": [
+    "week",
+    "transfer"
+  ],
+  "demand": [
+    {
+      "from": "SYD",
+      "to": "LAX",
+      "passengers": 12,
+      "firstTick": 20,
+      "everyTicks": 180
+    },
+    {
+      "from": "NOU",
+      "to": "LAX",
+      "passengers": 6,
+      "firstTick": 40,
+      "everyTicks": 180
+    },
+    {
+      "from": "AKL",
+      "to": "LAX",
+      "passengers": 6,
+      "firstTick": 80,
+      "everyTicks": 180
+    },
+    {
+      "from": "SUV",
+      "to": "LAX",
+      "passengers": 8,
+      "firstTick": 4320,
+      "everyTicks": 180
+    }
+  ],
+  "availableRoutes": [
+    {
+      "from": "AKL",
+      "to": "SYD",
+      "plane": "turboprop",
+      "flightTicks": 270,
+      "intervalTicks": 120
+    },
+    {
+      "from": "AKL",
+      "to": "SUV",
+      "plane": "turboprop",
+      "flightTicks": 264,
+      "intervalTicks": 120
+    },
+    {
+      "from": "AKL",
+      "to": "NOU",
+      "plane": "turboprop",
+      "flightTicks": 225,
+      "intervalTicks": 120
+    },
+    {
+      "from": "SYD",
+      "to": "NOU",
+      "plane": "turboprop",
+      "flightTicks": 247,
+      "intervalTicks": 120
+    },
+    {
+      "from": "LAX",
+      "to": "AKL",
+      "plane": "jet",
+      "flightTicks": 750,
+      "intervalTicks": 120
+    },
+    {
+      "from": "LAX",
+      "to": "SUV",
+      "plane": "jet",
+      "flightTicks": 633,
+      "intervalTicks": 120
+    },
+    {
+      "from": "SYD",
+      "to": "SUV",
+      "plane": "jet",
+      "flightTicks": 231,
+      "intervalTicks": 120
+    }
+  ],
+  "referenceCommands": [
+    {
+      "type": "connect",
+      "from": "AKL",
+      "to": "SYD",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "AKL",
+      "to": "NOU",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "AKL",
+      "to": "SUV",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "LAX",
+      "to": "AKL",
+      "plane": "jet"
+    }
+  ]
+}

@@ -1,0 +1,184 @@
+{
+  "version": 1,
+  "id": "32",
+  "titleKey": "puzzle.32.title",
+  "durationTicks": 8640,
+  "demandSeed": 3832,
+  "startCities": [
+    {
+      "id": "GRU",
+      "continent": "SA",
+      "latitude": -23.6,
+      "longitude": -46.6,
+      "hubCapacity": 70,
+      "curfew": {
+        "startMinuteOfDay": 1380,
+        "endMinuteOfDay": 360
+      }
+    },
+    {
+      "id": "RIO",
+      "continent": "SA",
+      "latitude": -22.9,
+      "longitude": -43.2,
+      "hubCapacity": 220
+    },
+    {
+      "id": "EZE",
+      "continent": "SA",
+      "latitude": -34.6,
+      "longitude": -58.4,
+      "hubCapacity": 60
+    },
+    {
+      "id": "CPT",
+      "continent": "AF",
+      "latitude": -33.9,
+      "longitude": 18.4,
+      "hubCapacity": 100
+    },
+    {
+      "id": "JNB",
+      "continent": "AF",
+      "latitude": -26.2,
+      "longitude": 28.0,
+      "hubCapacity": 150
+    },
+    {
+      "id": "LOS",
+      "continent": "AF",
+      "latitude": 6.5,
+      "longitude": 3.4,
+      "hubCapacity": 60
+    }
+  ],
+  "stock": {
+    "turboprops": 2,
+    "jets": 1,
+    "hubUpgrades": 0
+  },
+  "goal": {
+    "kind": "curfewNights",
+    "targetDelivered": 1455,
+    "nights": 5
+  },
+  "mechanics": [
+    "curfew",
+    "transfer"
+  ],
+  "demand": [
+    {
+      "from": "EZE",
+      "to": "JNB",
+      "passengers": 12,
+      "firstTick": 20,
+      "everyTicks": 180
+    },
+    {
+      "from": "RIO",
+      "to": "JNB",
+      "passengers": 8,
+      "firstTick": 40,
+      "everyTicks": 180
+    },
+    {
+      "from": "GRU",
+      "to": "JNB",
+      "passengers": 14,
+      "firstTick": 60,
+      "everyTicks": 180
+    },
+    {
+      "from": "LOS",
+      "to": "EZE",
+      "passengers": 8,
+      "firstTick": 90,
+      "everyTicks": 180
+    }
+  ],
+  "availableRoutes": [
+    {
+      "from": "GRU",
+      "to": "RIO",
+      "plane": "turboprop",
+      "flightTicks": 45,
+      "intervalTicks": 120
+    },
+    {
+      "from": "GRU",
+      "to": "EZE",
+      "plane": "turboprop",
+      "flightTicks": 210,
+      "intervalTicks": 120
+    },
+    {
+      "from": "RIO",
+      "to": "EZE",
+      "plane": "turboprop",
+      "flightTicks": 246,
+      "intervalTicks": 120
+    },
+    {
+      "from": "CPT",
+      "to": "JNB",
+      "plane": "turboprop",
+      "flightTicks": 158,
+      "intervalTicks": 120
+    },
+    {
+      "from": "GRU",
+      "to": "JNB",
+      "plane": "jet",
+      "flightTicks": 530,
+      "intervalTicks": 120
+    },
+    {
+      "from": "RIO",
+      "to": "CPT",
+      "plane": "jet",
+      "flightTicks": 433,
+      "intervalTicks": 120
+    },
+    {
+      "from": "EZE",
+      "to": "CPT",
+      "plane": "jet",
+      "flightTicks": 491,
+      "intervalTicks": 120
+    },
+    {
+      "from": "GRU",
+      "to": "LOS",
+      "plane": "jet",
+      "flightTicks": 456,
+      "intervalTicks": 120
+    },
+    {
+      "from": "RIO",
+      "to": "LOS",
+      "plane": "jet",
+      "flightTicks": 431,
+      "intervalTicks": 120
+    }
+  ],
+  "referenceCommands": [
+    {
+      "type": "connect",
+      "from": "GRU",
+      "to": "RIO",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "RIO",
+      "to": "EZE",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "RIO",
+      "to": "LOS",
+      "plane": "jet"
+    }
+  ]
+}

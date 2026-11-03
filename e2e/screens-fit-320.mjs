@@ -34,6 +34,11 @@ function audit(page, root) {
         problems.push(`${name}: text clipped (${el.scrollWidth} > ${el.clientWidth})`);
       }
     }
+    // [ext-02] D-162: a pack header on the puzzle board wraps inside the list, never wider than the viewport.
+    for (const row of host.querySelectorAll('.puzzle-pack')) {
+      const r = row.getBoundingClientRect();
+      if (r.right > innerWidth + 0.5 || row.scrollWidth > row.clientWidth + 1) problems.push(`pack header overflows (${row.textContent})`);
+    }
     if (document.documentElement.scrollWidth > innerWidth + 2) problems.push('horizontal page scroll');
     return problems;
   }, [root, SELECT_SPARE]);
@@ -41,7 +46,17 @@ function audit(page, root) {
 
 const screens = [
   ['settings', async (page) => { await clickTestId(page, 'menu-settings'); return '.airway-settings'; }],
-  ['puzzle board', async (page) => { await clickTestId(page, 'menu-puzzles'); return '.puzzle-shell'; }],
+  ['puzzle board', async (page) => {
+    await clickTestId(page, 'menu-puzzles');
+    // [ext-02] R6h: every level from the folder is on the board (35 with the "Long haul" pack).
+    const { readdirSync } = await import('node:fs');
+    const want = readdirSync(new URL('../src/data/puzzles/', import.meta.url)).filter((n) => /^\d{2}\.json$/.test(n)).length;
+    await page.locator('.puzzle-departures .puzzle-flap').first().waitFor({ timeout: 8000 });
+    const count = await page.locator('.puzzle-departures .puzzle-flap').count();
+    assert(count === want, `board shows ${count} departures, the folder has ${want}`);
+    await page.locator(`button[data-action="open:${String(want).padStart(2, '0')}"]`).scrollIntoViewIfNeeded();
+    return '.puzzle-shell';
+  }],
   ['pause sheet', async (page) => {
     await page.evaluate((seed) => window.aw.prepareSeed(seed), SEED);
     await clickTestId(page, 'menu-endless');

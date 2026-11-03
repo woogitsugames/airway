@@ -15,6 +15,8 @@
 .puzzle-board-title { flex: none; display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; padding: 18px 4px 12px; font-family: 'Overpass', sans-serif; font-size: 20px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
 .puzzle-count { font-family: 'Overpass Mono', monospace; font-size: 10px; letter-spacing: 0; color: #ffc72c; }
 .puzzle-departures { min-height: 0; overflow: auto; flex: 1; scrollbar-color: #ffc72c #222528; }
+/* [ext-02] D-162: pack divider, a printed block header between departure rows (not a target). */
+.puzzle-pack { padding: 6px 10px 4px; background: #151718; color: #ffc72c; font: 700 13px/1.3 'Overpass Mono', monospace; text-transform: uppercase; letter-spacing: .04em; border-bottom: 2px solid #151718; overflow-wrap: anywhere; }
 .puzzle-flap { display: grid; grid-template-columns: 38px minmax(0,1fr) 43px 94px; align-items: center; text-align: left; gap: 8px; padding: 8px 10px; background: #2c2f32; color: #fbf8f1; border: 0; border-bottom: 2px solid #151718; width: 100%; min-height: 58px; position: relative; font-family: 'Overpass Mono', monospace !important; text-transform: uppercase; }
 .puzzle-flap::after { content: ''; position: absolute; left: 0; right: 0; top: 50%; border-top: 1px solid #17191a; pointer-events: none; }
 .puzzle-flap:hover, .puzzle-flap:focus-visible { background: #393d40; }
