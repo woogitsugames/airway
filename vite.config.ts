@@ -3,5 +3,6 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
   base: './',
-  build: { target: 'es2022' },
+  // [night-12q] D-134: the single main chunk is expected; `npm run test:bundle` enforces its budget instead.
+  build: { target: 'es2022', chunkSizeWarningLimit: 1150 },
 });

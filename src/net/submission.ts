@@ -2,7 +2,7 @@
 // deterministic Sim (D-13) and only the replayed score counts. Pure: shared by the client (shape, self-check)
 // and the Cloud Function (authoritative check), and testable without Firebase.
 import { dailySeedForKey } from '../core/daily.ts';
-import { createGame, Sim, TICKS_PER_WEEK } from '../sim/index.ts';
+import { Sim, TICKS_PER_WEEK } from '../sim/index.ts';
 import { RULES_VERSION } from '../sim/state.ts';
 
 export const SUBMISSION_VERSION = 1 as const;
@@ -89,6 +89,3 @@ export function verifyDailySubmission(input: unknown, allowedDays: readonly stri
 export function selfCheck(submission: DailySubmission): Verdict {
   return verifyDailySubmission(submission, [submission.dateKey]);
 }
-
-/** Fresh daily Sim for a key (tests, server fixtures). */
-export function dailyGame(dateKey: string): Sim { return createGame(dailySeedForKey(dateKey), 'daily'); }

@@ -5,6 +5,7 @@
  * install or a restore onto another device: the restored identity keys are dropped before anything reads them,
  * and the next official daily signs in as a new anonymous player.
  */
+import { Capacitor } from '@capacitor/core';
 
 export const INSTALL_MARKER_PATH = 'aw-install-v1.json';
 
@@ -43,7 +44,6 @@ export async function forgetIdentityOnNewInstall(marker: InstallMarker | null, s
 /** The native marker (Capacitor Filesystem, `Directory.LibraryNoCloud`); null on the web and without the plugin. */
 export async function createNativeInstallMarker(): Promise<InstallMarker | null> {
   try {
-    const { Capacitor } = await import('@capacitor/core');
     if (!Capacitor.isNativePlatform() || !Capacitor.isPluginAvailable('Filesystem')) return null;
     const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem');
     const location = { path: INSTALL_MARKER_PATH, directory: Directory.LibraryNoCloud };

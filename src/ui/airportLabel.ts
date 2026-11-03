@@ -5,7 +5,6 @@ import { cityByCode, displayCode } from '../data/index.ts';
 import { getLanguage } from '../i18n';
 
 export type AirportLabelMode = 'code' | 'name';
-export const AIRPORT_LABEL_MODES: readonly AirportLabelMode[] = ['code', 'name'];
 const KEY = 'airway.settings';
 
 export function readAirportLabelMode(): AirportLabelMode {

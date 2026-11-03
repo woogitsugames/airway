@@ -1,6 +1,6 @@
 // Check catalog parity, nonempty strings, and formatting placeholders with a fixed test seed.
-import { readFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
 
@@ -43,6 +43,27 @@ function dictionary(language) {
   return values;
 }
 
+// [night-12q] R5i: every catalog key must be referenced from src/ (outside the catalogs) as a string literal,
+// or start with the static prefix of a template/concatenated key such as `privacy.s${n}` or 'settings.airline.' + x.
+// Catches dead copy left behind when a screen is removed (13 a11y.city*/a11y.action.* keys and status.* were).
+function sourceFiles(dir, out = []) {
+  for (const name of readdirSync(dir)) {
+    const path = join(dir, name);
+    if (statSync(path).isDirectory()) sourceFiles(path, out);
+    else if (/\.(ts|tsx|js|mjs)$/.test(name)) out.push(path);
+  }
+  return out;
+}
+export function unusedKeys(keys, sources) {
+  const text = sources.join('\n');
+  const literals = new Set([...text.matchAll(/['"`]([A-Za-z0-9_.-]+)['"`]/g)].map((m) => m[1]));
+  const prefixes = new Set([
+    ...[...text.matchAll(/`([A-Za-z0-9_.-]+)\$\{/g)].map((m) => m[1]),
+    ...[...text.matchAll(/['"]([A-Za-z0-9_-]+\.[A-Za-z0-9_.-]*)['"]\s*\+/g)].map((m) => m[1]),
+  ].filter((prefix) => prefix.includes('.')));
+  return [...keys].filter((key) => !literals.has(key) && ![...prefixes].some((prefix) => key.startsWith(prefix)));
+}
+
 const placeholders = (value) => [...value.matchAll(/\{([A-Za-z][A-Za-z0-9_]*)\}/g)]
   .map((match) => match[1]).sort().join(',');
 let keyCount = 0;
@@ -71,6 +92,14 @@ try {
     }
   }
   for (const key of polish.keys()) if (!english.has(key)) failures.push('en: missing key ' + key);
+  const catalogDir = resolve(ROOT, 'src/i18n');
+  const sources = sourceFiles(resolve(ROOT, 'src'))
+    .filter((file) => !['en.ts', 'pl.ts', 'pseudo.ts'].some((name) => file === join(catalogDir, name)))
+    .map((file) => readFileSync(file, 'utf8'));
+  // Self-check of the matcher: a literal, a template prefix and a concatenated prefix count; a bare key does not.
+  const probe = unusedKeys(['a.used', 'b.s1', 'c.x.y', 'd.unused'], ["t('a.used')", "t(`b.s${n}`)", "t('c.x.' + v)"]);
+  if (probe.join() !== 'd.unused') failures.push('unused-key matcher self-check: got ' + probe.join());
+  for (const key of unusedKeys(english.keys(), sources)) failures.push('unused key (not referenced in src/): ' + key);
   if (english.size === 0) failures.push('dictionaries must not be empty');
 } catch (error) {
   failures.push(error instanceof Error ? error.message : String(error));

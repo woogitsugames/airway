@@ -4,7 +4,7 @@
 // smooth signed-distance contour so the shoreline has no raster "teeth"; heights and biome
 // colours are continuous fields (no thresholded terraces).
 import {
-  BufferAttribute, BufferGeometry, Color, IcosahedronGeometry, Mesh, MeshStandardMaterial,
+  Color, IcosahedronGeometry, MeshStandardMaterial,
 } from 'three';
 import { CITIES } from '../../data/cities';
 import type { LandMask } from './land-mask';
@@ -391,18 +391,4 @@ export function buildTerrainArrays(mask: LandMask, level: QualityLevel): Terrain
 /** The terrain's one material (vertex colours, flat facets); shared by every LOD chunk. */
 export function createTerrainMaterial(): MeshStandardMaterial {
   return new MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: .92, metalness: 0 });
-}
-
-export function createTerrain(mask: LandMask, level: QualityLevel): Mesh {
-  const { positions, colors, stats } = buildTerrainArrays(mask, level);
-  const geometry = new BufferGeometry();
-  geometry.setAttribute('position', new BufferAttribute(positions, 3));
-  geometry.setAttribute('color', new BufferAttribute(colors, 3, true));
-  geometry.computeBoundingSphere();
-  const mesh = new Mesh(geometry, createTerrainMaterial());
-  mesh.name = 'AirwayTerrain';
-  mesh.receiveShadow = true;
-  mesh.userData['triangles'] = stats.triangles;
-  mesh.userData['buildMs'] = stats.buildMs;
-  return mesh;
 }

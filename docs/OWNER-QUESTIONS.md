@@ -93,7 +93,7 @@ Priorytet: **P1** — blokuje wydanie albo sklep, **P2** — warto zdecydować p
 | Q-31 | P2 | Tryb „Oszczędna” (teren low, 30 kl./s, 60 % dekoracji, bez cieni) — dobry kompromis? | Tak / mocniej / łagodniej | Tak, jak opisano (D-73) | Tak; zweryfikować na słabym Androidzie | #53 |
 | Q-32 | P2 | Próg automatycznego obniżenia jakości: 24 kl./s | Zostawić / inny próg po pomiarze | 24 kl./s | Potwierdzić na telefonie z GPU Mali | #53 |
 | Q-33 | P3 | Ważność zapamiętanego obniżenia jakości | A: 30 dni; B: do nowej wersji aplikacji; C: A lub B, co pierwsze | A — 30 dni (D-74) | C (mała zmiana) | #55 |
-| Q-54 | P2 | Najstarszy obsługiwany Android: dziś `minSdk 24` (Android 7). Android 7–9 to ok. 8,4 % urządzeń z Play, a ich WebView nie dostaje już aktualizacji (Chrome 139+ wymaga Androida 10), czego nie testujemy | A: zostawić 24 + filtr OpenGL ES 3.0 w Play (R3h); B: podnieść do 29 (Android 10) + filtr ES 3.0; C: zostawić bez zmian | A — `minSdk 24`; filtr ES 3.0 już jest (N12p, D-124 — wspólny dla A i B), otwarte tylko minSdk | B (mniej nieprzetestowanych silników; 8 % rynku to głównie bardzo stare telefony, poniżej budżetu low) | R3 |
+| Q-54 ✅ D-133 | P2 | Najstarszy obsługiwany Android: dziś `minSdk 24` (Android 7). Android 7–9 to ok. 8,4 % urządzeń z Play, a ich WebView nie dostaje już aktualizacji (Chrome 139+ wymaga Androida 10), czego nie testujemy | A: zostawić 24 + filtr OpenGL ES 3.0 w Play (R3h); B: podnieść do 29 (Android 10) + filtr ES 3.0; C: zostawić bez zmian | B — `minSdk 29` (N12q, D-133) + filtr ES 3.0 (N12p, D-124) | B (mniej nieprzetestowanych silników; 8 % rynku to głównie bardzo stare telefony, poniżej budżetu low) | R3 |
 
 ## F. Wydanie i marka
 
