@@ -518,6 +518,10 @@ _N6c:_ the official daily game-over screen shows a second split-flap board "Rank
 + own rank, call sign marked "Ty/You"), or a status line: sending, offline-queued, rejected, practice run (not ranked).
 Without Firebase config nothing is shown. Queued runs are retried at app start. A daily run resumed from a save is not
 submitted (known gap, the journal is complete, so it can be added later).
+_N7a:_ fixed — the daily run being played is remembered next to the scores (`aw-daily-active-v1`: day, kind,
+attempt). A daily restored from the save slot stays **official** only if it is that day's open official attempt
+(same day/seed/attempt, no result yet; today or yesterday), otherwise it continues as practice; its game over then
+records the result and submits it like an uninterrupted run.
 
 ## D-73 — Globe LOD, battery saver and adaptive quality (2026-11-03, Claude, night N4)
 The terrain is drawn in chunks culled by a conservative horizon test and the frustum (merged into ≤ 16
