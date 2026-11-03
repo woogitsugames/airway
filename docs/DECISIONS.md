@@ -571,7 +571,7 @@ rules change, easy to get wrong); dropping the save (status quo). **Status: in f
 
 ## D-77 — Leaderboard retention 90 days, deletion by e-mail (2026-11-03, owner, Q-02)
 Firestore TTL deletes leaderboard entries after 90 days; deletion requests by e-mail (address in the privacy policy). An in-game
-"delete my entry" button comes after release. **Status: to implement.**
+"delete my entry" button comes after release. **Status: implemented (N9a: `expireAt` + TTL policy in `firestore.indexes.json`, `docs/FIREBASE.md` steps 8–9, privacy draft).**
 
 ## D-78 — Widebody week-1 strength stays until human playtest (2026-11-03, owner, Q-35)
 No parameter change now; revisit if testers always pick WB-300. **Status: in force.**

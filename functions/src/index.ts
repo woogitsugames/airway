@@ -1,11 +1,12 @@
 // [night-06b] D-66 leaderboards as callable Cloud Functions (2nd gen, europe-west1).
 // submitDaily: replays the official daily run on the game's own Sim; first accepted run per player and day
-// counts, and is added to the ISO-week total. getBoards: top 50 + the caller's own rank.
+// counts, and is added to the ISO-week total. getBoards: top 50 + the caller's own rank. Entries expire after
+// 90 days (D-77, Firestore TTL on `expireAt`).
 // Firestore is server-only (firestore.rules deny every client read and write).
 import { initializeApp } from 'firebase-admin/app';
-import { FieldValue, getFirestore } from 'firebase-admin/firestore';
+import { FieldValue, Timestamp, getFirestore } from 'firebase-admin/firestore';
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
-import { TOP_ENTRIES, callSign, reviewSubmission, validBoardId } from './logic.ts';
+import { TOP_ENTRIES, callSign, expiresAt, reviewSubmission, validBoardId } from './logic.ts';
 
 initializeApp();
 const db = getFirestore();
@@ -27,13 +28,16 @@ export const submitDaily = onCall(OPTIONS, async (request) => {
   const dailyRef = db.doc(`boards/${reviewed.daily}/entries/${uid}`);
   const weeklyRef = db.doc(`boards/${reviewed.weekly}/entries/${uid}`);
   const sign = callSign(uid);
+  // [night-09a] D-77: the TTL policy on `entries.expireAt` (firestore.indexes.json) deletes an entry 90 days
+  // after its last write; a weekly total is refreshed by every accepted day of that week.
+  const expireAt = Timestamp.fromMillis(expiresAt(Date.now()));
   const accepted = await db.runTransaction(async (tx) => {
     const existing = await tx.get(dailyRef);
     // The official run is unique per day (D-66): a second submission for the same day never counts.
     if (existing.exists) return false;
-    tx.set(dailyRef, { callSign: sign, score, weeks, hash, at: FieldValue.serverTimestamp() });
+    tx.set(dailyRef, { callSign: sign, score, weeks, hash, at: FieldValue.serverTimestamp(), expireAt });
     tx.set(weeklyRef, { callSign: sign, score: FieldValue.increment(score), days: FieldValue.increment(1),
-      at: FieldValue.serverTimestamp() }, { merge: true });
+      at: FieldValue.serverTimestamp(), expireAt }, { merge: true });
     return true;
   });
   return accepted ? { accepted: true, score } : { accepted: false, reason: 'duplicate', score };

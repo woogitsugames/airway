@@ -14,13 +14,15 @@ z tego identyfikatora (np. `AW-7F3A`) i wynik.
 
 - Cel: prowadzenie rankingu dziennego i tygodniowego oraz ochrona przed oszustwami (podstawa: wykonanie usługi,
   o którą prosisz, uruchamiając oficjalną grę dnia; do potwierdzenia przez prawnika).
-- Przechowywanie: wpisy rankingu przez [do ustalenia, propozycja: 90 dni], potem usuwane.
+- Przechowywanie: każdy wpis rankingu jest automatycznie usuwany 90 dni po ostatnim zapisie (D-77; wpis tygodniowy
+  odnawia każda przyjęta gra tego tygodnia). Usunięcie następuje zwykle w ciągu doby po upływie terminu.
 - Firebase może przetwarzać adres IP i dane techniczne żądań (logi). Dostawca: Google Ireland Ltd. / Google LLC
   (możliwy transfer poza EOG — do opisania zgodnie z umową powierzenia Firebase).
 - Bez reklam, śledzenia i analityki. Gra działa w pełni offline; wynik czeka w kolejce na urządzeniu, dopóki nie
   będzie połączenia.
-- Usunięcie danych: [do ustalenia — propozycja: przycisk „Usuń mój wpis rankingu” w ustawieniach lub e-mail na
-  contact@airway.games z widocznym znakiem wywoławczym].
+- Usunięcie danych wcześniej: napisz na [adres e-mail administratora — do uzupełnienia, propozycja
+  contact@airway.games] i podaj swój znak wywoławczy (np. `AW-7F3A`, widoczny w rankingu). Usuniemy wpisy z tym
+  znakiem w ciągu 30 dni (D-77). Przycisk „Usuń mój wpis rankingu” w ustawieniach pojawi się po wydaniu.
 
 ## EN — proposed text
 
@@ -29,10 +31,17 @@ z tego identyfikatora (np. `AW-7F3A`) i wynik.
 record of your moves in that game (a list of commands). The server replays the game from these moves to check the
 score. Sending requires an anonymous Firebase Authentication account with a random identifier; you never provide a
 name, e-mail or phone number. The leaderboard shows only a call sign derived from that identifier (e.g. `AW-7F3A`)
-and the score. Purpose, retention, processors and deletion: as in the Polish text above (to be confirmed).
+and the score.
+
+- Retention: every leaderboard entry is deleted automatically 90 days after its last write (a weekly entry is
+  refreshed by each accepted game of that week); deletion usually happens within a day after that date (D-77).
+- Earlier deletion: e-mail [controller's address — to be filled in, proposal contact@airway.games] with your call
+  sign (e.g. `AW-7F3A`, shown on the leaderboard); we delete the entries with that call sign within 30 days.
+- Purpose and processors: as in the Polish text above (to be confirmed).
 
 ## Otwarte sprawy dla właściciela
 1. Administrator danych (pełna nazwa i adres) i kontakt.
-2. Okres przechowywania wpisów (propozycja 90 dni) i sposób usuwania na żądanie.
+2. ~~Okres przechowywania i usuwanie na żądanie~~ — rozstrzygnięte w D-77 (90 dni, e-mail). Do uzupełnienia tylko
+   adres e-mail administratora (pkt 1).
 3. Czy Data Safety (Google Play) i App Privacy (App Store) mają deklarować „identyfikatory: User ID (anonimowy)”
    i „dane o grze”.
