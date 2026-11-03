@@ -768,3 +768,11 @@ new integer `DEMAND_RATE_PERCENT` = 130 (demand credit kept in hundredths, D-13)
 target (owner rejected C in Q-51). It is a bigger change than "slightly"; a human playtest should confirm it (Q-60).
 **Status: in force (N12f, `test:balance`).**
 
+## D-107 — Screen airport codes separate from sim ids (2026-11-03, Claude, night N12h)
+`City.code` stays the simulation id (saves, journals, logbook, puzzles, golden hashes, the sorted curfew draw), so
+the six wrong codes from R4 are not renamed: an optional `City.displayCode` holds the code travellers know from a
+ticket — the common city code, else the main airport (KIV → IEV, HCM → SGN, LUA → LAD, LUS → LUN, ISF → IFN,
+ALX → ALY) — and everything the player reads goes through `displayCode()` / `airportLabel()`. `test:city-data`
+freezes the id list (append only) and keeps display codes unique. Rejected: renaming the ids (would need a save,
+journal and logbook migration and a `RULES_VERSION` bump for no gameplay change). **Status: in force (N12h).**
+

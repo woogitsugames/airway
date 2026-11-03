@@ -1,7 +1,7 @@
 // [night-05] D-68: airports read as IATA-style code (default) or localized city name, per player setting.
 // The setting lives in the settings store ('airway.settings'); this module only reads it, so callers in the
 // game layer can label hubs without importing the settings screen.
-import { cityByCode } from '../data/index.ts';
+import { cityByCode, displayCode } from '../data/index.ts';
 import { getLanguage } from '../i18n';
 
 export type AirportLabelMode = 'code' | 'name';
@@ -17,9 +17,9 @@ export function readAirportLabelMode(): AirportLabelMode {
   return 'code';
 }
 
-/** Player-facing label of one airport; unknown codes stay as they are. */
+/** Player-facing label of one airport (display code or city name, R4a); unknown codes stay as they are. */
 export function airportLabel(code: string, mode: AirportLabelMode = readAirportLabelMode()): string {
-  if (mode !== 'name') return code;
+  if (mode !== 'name') return displayCode(code);
   const city = cityByCode(code);
   if (!city) return code;
   return getLanguage() === 'pl' ? city.namePl : city.nameEn;

@@ -3,6 +3,7 @@ import { PUZZLES, type PuzzleLevel, type PuzzleCommand } from '../../data/puzzle
 import { dispatchPuzzle, resetPuzzle, startPuzzle, undoPuzzle, type PuzzleSession } from '../../game/modes/puzzle';
 import { readPuzzleMargins, recordPuzzleMargin } from '../../game/puzzleBest';
 import { t, type TranslationKey } from '../../i18n';
+import { displayCode } from '../../data/index.ts'; // [night-12h] R4a: ids stay, the screen shows the known code
 import './board.css';
 
 const PROGRESS_KEY = 'airway.puzzles.v1';
@@ -74,8 +75,8 @@ function curfews(level: PuzzleLevel): Map<string, string> {
 function curfewMark(code: string, hours: string): HTMLElement {
   const mark = element('span', 'puzzle-curfew-mark');
   mark.setAttribute('role', 'img');
-  mark.setAttribute('aria-label', t('puzzle.curfew.mark', { city: code, hours }));
-  mark.title = t('puzzle.curfew.mark', { city: code, hours });
+  mark.setAttribute('aria-label', t('puzzle.curfew.mark', { city: displayCode(code), hours }));
+  mark.title = t('puzzle.curfew.mark', { city: displayCode(code), hours });
   mark.innerHTML = '<svg viewBox="0 0 22 12" width="26" height="14" aria-hidden="true" focusable="false">' +
     '<rect x="1" y="2" width="3" height="9" fill="#13302e"/>' +
     '<rect x="4" y="3" width="17" height="4" fill="#fbf8f1" stroke="#13302e" stroke-width="1"/>' +
@@ -84,7 +85,7 @@ function curfewMark(code: string, hours: string): HTMLElement {
 }
 /** [night-07d] Airport code followed by the curfew barrier when that airport closes at night. */
 function codeWithCurfew(code: string, closed: Map<string, string>): HTMLElement {
-  const span = element('span', 'puzzle-code', code);
+  const span = element('span', 'puzzle-code', displayCode(code));
   const hours = closed.get(code);
   if (hours) span.appendChild(curfewMark(code, hours));
   return span;
@@ -234,7 +235,7 @@ export function mountPuzzleSelector(host: HTMLElement, onExit: () => void = () =
       const info = element('p', `puzzle-result ${snapshot.status}`,
         snapshot.status === 'won' ? t('puzzle.result.won', { stars: stars(snapshot.stars), margin: snapshot.marginPercent }) +
           (newBest ? ' · ' + t('puzzle.result.newBest') : '') :
-          snapshot.reason === 'hub-jam' ? t('puzzle.result.jam', { city: snapshot.jammedCity ?? '' }) :
+          snapshot.reason === 'hub-jam' ? t('puzzle.result.jam', { city: snapshot.jammedCity ? displayCode(snapshot.jammedCity) : '' }) :
             t('puzzle.result.deadline'));
       ticket.appendChild(info);
     }

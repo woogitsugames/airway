@@ -439,6 +439,15 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       0xA1A1 in week 1) plus the frozen rules-v4 save as a D-76 replay check, `test:bot-policy` "+2 slots" check moved to
       seed 0xA1A5 and unserved-jam ceiling 4 → 6 (6 airports a week; measured 6 of 19). Store shots regenerated (seed
       0xA1A1 starts elsewhere: RIX VCE ATH… instead of ATH ZAG ANK…).
+- [x] N12h **Six airport codes corrected on screen, city data guard (R4a, R4b test, D-107)** — `City.displayCode`
+      (optional) for Kyiv IEV (was KIV, Chișinău's old code), Ho Chi Minh City SGN (HCM), Luanda LAD (LUA = Lukla),
+      Lusaka LUN (LUS), Isfahan IFN (ISF), Alexandria ALY (ALX); `displayCode()` in `src/data/index.ts`, read by
+      `airportLabel()` (code mode) and so by the airport tags, edge chips and their aria text, the game-over departures
+      board and title, timeline picks, upgrade stamps, pause summary, plus the puzzle board codes. Sim ids unchanged:
+      `test:replay`, `test:save-golden` and daily hashes identical. New `test:city-data` (fast, 1/5 before): ids frozen
+      in order and spelling, display codes 3 capital letters and unique, names, population, on land or ≤ ~30 km from
+      the coast of the game's land raster. `test:airport-labels` +1. The R4b "solar time" help line is left to the UI
+      agent (settings/help is its area).
 
 ## Research proposals (R-agent)
 Proposals from the research agent (findings and sources: `docs/RESEARCH.md`, sections "R1 — …"). Each item is
@@ -644,7 +653,7 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
       engagement, feedback summary, changes made, readiness evidence). **Area:** docs. *Needs Q-42, Q-52.*
 
 ### R4 (2026-11-03) — real-world data facts, mid-game jam diagnosis, large screens
-- [ ] R4a **Correct six airport codes on screen, keep city IDs** — `KIV` (Chișinău's old code, now RMO) for Kyiv,
+- [x] R4a → N12h **Correct six airport codes on screen, keep city IDs** — `KIV` (Chișinău's old code, now RMO) for Kyiv,
       `HCM` for Ho Chi Minh, `LUA` (Lukla, Nepal) for Luanda, `LUS` for Lusaka, `ISF` for Isfahan and `ALX` for
       Alexandria are wrong. `City.code` is also the sim ID (saves, logbook, sorted curfew draw, puzzles, golden save), so
       do **not** rename it: add an optional `displayCode` to `City` (`IEV`, `SGN`, `LAD`, `LUN`, `IFN`, `ALY`) and read it
@@ -653,7 +662,7 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
       common city code, else main airport"). `test:replay`, `test:save-golden` and daily hashes must stay unchanged;
       shots of one affected airport. **Area:** content/UI (`src/data/cities.ts`, `src/ui/airportLabel.ts`,
       `src/ui/overlay.ts`).
-- [ ] R4b **City data guard + "solar time" line** — new fast test `test:city-data`: display codes are 3 uppercase
+- [ ] R4b (test part done → N12h; the help sentence remains, UI agent) **City data guard + "solar time" line** — new fast test `test:city-data`: display codes are 3 uppercase
       letters and unique, IDs unchanged against a frozen list (order and spelling, so a rename fails loudly), lat/lon in
       range and on land or within ~30 km of the coast using the existing land mask, PL/EN names non-empty, population
       > 0; add to `test:fast`. Plus one sentence in help/tutorial PL/EN that clocks show solar time, not official time
@@ -768,3 +777,4 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
 - 2026-11-03 · N11g reduce motion setting (D-88) · night/11g-reduce-motion · test:fast 63/63 (test:motion 8/8, 0/8 on the old code; test:flap 15/15 via the TS loader), build ok, test:e2e:reduce-motion 3/3 (0/3 on the old settings), e2e:settings-groups 4/4, e2e:screens-fit 18/18, e2e:screens-fit-320 12/12, e2e:pseudo-locale 27/27, e2e:privacy-page 4/4, e2e:covered-pages 2/2, e2e:airline-colour 3/3; e2e:smoke/ui:matrix not run (settings only; E2E pages emulate a reduce-motion system, game screens unchanged)
 - 2026-11-03 · N12g owner decisions D-93…D-96, own D-97/D-98 renumbered · night/12g-owner-decisions · test:fast 64/64, build ok (docs and comments only)
 - 2026-11-03 · N12f fair week 1 + faster pace, Alexandria in ME (D-95, D-99, D-105, D-106; rules v5) · night/12f-week1-reach · test:week1-reach 5/5 (new; 2/5 on rules v4: 507/1,600 week-1 spawns and 33 start airports beyond reach), test:balance median 17.81 → 17.03 min (reach rule alone 24.43; 200 seeds 17.53 → 16.52), upgrade1 0.88 → 1.00, upgrade2 0.56 → 0.66, week-1 losses beyond reach 5/50 → 0/50, test:replay 23/23 (summary changed with the rules: a1a1 min8640:upgrade:score109 → min4124:over:score48), test:sim-week 6/6 (re-locked), test:save-golden 20/20 (seed 0xA1A3, + v4 replay check), test:bot-policy 10/10 (2 checks re-pinned), test:daily-mode 20/20, test:net 8/8, test:fast 65/65, build ok, store:shots 30/30 regenerated and inspected (test:store-shots 30/30); e2e/ui:matrix not run (no UI code changed)
+- 2026-11-03 · N12h six airport codes on screen + city data guard (R4a, R4b test, D-107) · night/12h-display-codes · test:city-data 5/5 (new; 4/5 before the display codes), test:airport-labels 5/5 (+1), test:replay 23/23 and test:save-golden 20/20 with summaries/hashes identical to dev (sim ids unchanged), test:balance median 17.03 (unchanged), test:fast 66/66, build ok; e2e/ui:matrix/store:shots not run (none of the six airports is in those scenes); no shot of an affected airport taken
