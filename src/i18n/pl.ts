@@ -99,6 +99,11 @@ export const pl = {
   'menu.dailyScore': 'dziś {count} {count|pasażer|pasażerów|pasażerów}', // [night-10d]
   'menu.dailyScoreStreak': 'dziś {count} · seria {days} {days|dzień|dni|dni}',
   'menu.dailyStreak': 'seria {days} {days|dzień|dni|dni} · zagraj dziś',
+  // [night-10k] Settings groups.
+  'settings.group.game': 'Gra',
+  'settings.group.display': 'Obraz',
+  'settings.group.sound': 'Dźwięk i dotyk',
+  'settings.group.help': 'Pomoc',
   'settings.language': 'Język',
   'settings.graphics': 'Jakość grafiki',
   // [night-05] D-68 airport label setting.

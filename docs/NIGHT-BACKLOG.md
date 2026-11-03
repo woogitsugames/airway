@@ -219,6 +219,12 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       routes and aircraft (with spare ones), the fullest hub by share of capacity (code or name per D-68) and the time
       to the next crates. Save and Menu share one row so the taller sheet still fits 915×412 and 320×568 under the
       boarding pass. Pure rows in `src/game/pauseSummary.ts`; `test:pause-summary`, `e2e/pause-summary.mjs`.
+- [x] N10k **Settings in groups** — eleven controls stood in one flat list in no particular order (language,
+      graphics, airport labels, airline colour, text size, then the switches). Now four labelled sections, each with a
+      teal tab heading: Game (language, airport labels, airline colour), Display (graphics, text size, colour-vision
+      mode and its hint), Sound and touch (sound, music, haptics), Help (tutorial replay, licences). Wide landscape
+      paper (≥ 700 px) puts them in two columns, so 915×412 and the unfolded Fold need less scrolling.
+      `e2e/settings-groups.mjs`.
 
 ## Log
 <!-- one line per finished item: date UTC · item · PR · gate summary -->
