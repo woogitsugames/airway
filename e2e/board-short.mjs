@@ -1,14 +1,14 @@
 // [night-08c] Found in a long play-through at 360×640: the weekly board's third crate sat half below the screen
 // (the overlay scrolled 51–111 px; 190–232 px at 320×568). Short portrait phones now get a compact board. Checks
 // the week-1 and week-2 boards (week 2 carries the tall hub-expansion label) in PL/EN: at 360×640 nothing scrolls
-// and all three labels lie inside the viewport below the boarding pass; at 320×568 the overlay scrolls ≤ 24 px.
+// and all three labels lie inside the viewport below the boarding pass; [night-08e] the same at 320×568.
 import { performance } from 'node:perf_hooks';
 import { withBrowser, newGamePage, waitForScreen, assert, clickTestId, saveDiagnostics, SEED } from './browser.mjs';
 
 const started = performance.now();
 const results = [];
 // [width, height, allowed overlay scroll in px]
-const SIZES = [[360, 640, 0], [320, 568, 24]];
+const SIZES = [[360, 640, 0], [320, 568, 0]]; // [night-08e] 320×568 fits too (was ≤ 24 px)
 const LANGUAGES = ['pl', 'en'];
 
 async function measure(page) {

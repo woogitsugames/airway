@@ -252,6 +252,18 @@
   .airway-upgrade-stamp { margin-top: 6px; }
 }
 
+/* [night-08e] 320×568: the week-2 board (tall hub-expansion crate) still scrolled 19 px (EN week 1: 1 px). The
+   smallest phones trim the remaining gaps; labels keep their 48 px+ targets, text sizes and torn edge. */
+@media (max-width: 359px) and (max-height: 600px) {
+  .airway-upgrade-open { padding-top: calc(72px + env(safe-area-inset-top)); padding-bottom: calc(6px + env(safe-area-inset-bottom)); }
+  .airway-upgrade { gap: 6px; }
+  .airway-upgrade-labels { gap: 6px; }
+  .airway-upgrade-sign { padding: 6px 12px 6px 10px; }
+  .airway-upgrade-title { margin-top: 2px; }
+  .airway-upgrade-grid { margin-top: 2px; }
+  .airway-upgrade-stamp { margin-top: 4px; }
+}
+
 /* [task-37] Fit-to-width: the longest word of the title (--title-chars, set in index.ts; Overpass 800
    averages ≤ .6em per letter) fits the label's text column, down to 15px; below that the soft hyphen breaks it. */
 @supports (container-type: inline-size) {
