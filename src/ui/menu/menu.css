@@ -46,6 +46,12 @@
 .airway-setting__switch { display:flex; align-items:center; gap:8px; justify-content:flex-end; min-height:48px; cursor:pointer; }
 .airway-setting__switch input { width:24px; height:24px; accent-color:#1e6f6a; }
 .airway-setting__swatch { display:inline-block; width:18px; height:16px; margin-right:8px; vertical-align:-3px; clip-path:polygon(0 100%,38% 0,100% 0,62% 100%); box-shadow:inset 0 0 0 1px #2a242033; } /* [night-09c] D-80: a tail fin in the airline colour */
+/* [night-10k] Groups: a teal tab heading like a luggage-label section; two columns on wide landscape paper. */
+.airway-settings__groups { display:grid; gap:14px; }
+.airway-settings__group { min-width:0; }
+.airway-settings__group .airway-settings__licenses { margin-top:10px; }
+.airway-settings__group-title { margin:6px 0 0; padding:6px 10px 5px; background:#1e6f6a; color:#fbf8f1; font:800 13px/1.2 'Overpass Mono',monospace; letter-spacing:.08em; text-transform:uppercase; clip-path:polygon(0 0,calc(100% - 10px) 0,100% 50%,calc(100% - 10px) 100%,0 100%); width:max-content; max-width:100%; padding-right:20px; }
+@media (orientation:landscape) and (min-width:700px) { .airway-settings__groups { grid-template-columns:1fr 1fr; column-gap:22px; } }
 .airway-setting__hint { margin:4px 0 11px; font:400 12px/1.4 'Atkinson Hyperlegible Next',sans-serif; color:#55514a; }
 .airway-settings__licenses { display:block; width:100%; min-height:50px; background:#1c1e20; color:#ffc72c; border:0; padding:12px; font:700 13px 'Overpass Mono',monospace; text-align:left; margin-top:18px; cursor:pointer; }
 .airway-licenses { font:400 13px/1.5 'Atkinson Hyperlegible Next',sans-serif; }

@@ -107,13 +107,28 @@ export function createSettings(onBack:()=>void,onLicenses:()=>void,onLanguageCha
   const paper=e('div','airway-settings__paper');
   const top=header(t('menu.settings'),onBack);
   paper.append(top);
-  function selectField(label:string,value:string,options:Array<readonly [string,string]>,onChange:(value:string)=>void):void {
+  // [night-10k] Settings grouped by what they change: the game's words, the picture, sound and touch.
+  const groups=e('div','airway-settings__groups');
+  paper.append(groups);
+  let host:HTMLElement=groups;
+  function group(title:string,testId:string):void {
+    const section=e('section','airway-settings__group');
+    section.dataset.testid=testId;
+    const heading=e('h2','airway-settings__group-title',title);
+    heading.id='settings-group-'+testId;
+    section.setAttribute('aria-labelledby',heading.id);
+    section.append(heading);
+    groups.append(section);
+    host=section;
+  }
+  function selectField(label:string,value:string,options:Array<readonly [string,string]>,onChange:(value:string)=>void):HTMLElement {
     const {outer,controlHost}=row(label);
     const select=e('select','airway-setting__control');
     select.setAttribute('aria-label',label);
     for(const [v,name] of options){const option=e('option','',name);option.value=v;select.append(option);}
     select.value=value;select.addEventListener('change',()=>onChange(select.value));
-    controlHost.append(select);paper.append(outer);
+    controlHost.append(select);host.append(outer);
+    return outer;
   }
   function switchField(label:string,value:boolean,setting:'sound'|'music'|'haptics'|'colorblind',testId:string):void {
     const {outer,controlHost}=row(label);
@@ -126,46 +141,49 @@ export function createSettings(onBack:()=>void,onLicenses:()=>void,onLanguageCha
       saveSettings({[setting]:input.checked});
       status.textContent=input.checked?t('settings.on'):t('settings.off');
     });
-    wrap.append(input,status);controlHost.append(wrap);paper.append(outer);
+    wrap.append(input,status);controlHost.append(wrap);host.append(outer);
   }
+  group(t('settings.group.game'),'settings-group-game');
   selectField(t('settings.language'),values.language,[['pl',t('language.polish')],['en',t('language.english')]],(lang)=>{
     saveSettings({language:lang==='pl'?'pl':'en'});
     onLanguageChanged();
-  });
-  selectField(t('settings.graphics'),values.graphics,[['auto',t('settings.auto')],['saver',t('settings.saver')],['low',t('settings.low')],['medium',t('settings.medium')],['high',t('settings.high')]],(v)=>{
-    saveSettings({graphics:QUALITY.includes(v as QualityPreference)?v as QualityPreference:'auto'});
   });
   selectField(t('settings.airportLabels'),values.airportLabels,[['code',t('settings.airportLabels.code')],['name',t('settings.airportLabels.name')]],(v)=>{
     saveSettings({airportLabels:v==='name'?'name':'code'});
   });
   // [night-09c] D-80: the swatch beside the label shows the chosen colour; names come from i18n.
-  selectField(t('settings.airline'),values.airlineColour,AIRLINE_COLOURS.map((id)=>[id,t(`settings.airline.${id}` as TranslationKey)] as const),(v)=>{
+  const airlineRow=selectField(t('settings.airline'),values.airlineColour,AIRLINE_COLOURS.map((id)=>[id,t(`settings.airline.${id}` as TranslationKey)] as const),(v)=>{
     if(isAirlineColour(v)) saveSettings({airlineColour:v});
     swatch.style.background=airlineColourHex(readAirlineColour());
   });
-  const airlineRow=paper.lastElementChild as HTMLElement;
   airlineRow.dataset.testid='settings-airline';
   const swatch=e('i','airway-setting__swatch');
   swatch.setAttribute('aria-hidden','true');
   swatch.style.background=airlineColourHex(values.airlineColour);
   airlineRow.firstElementChild?.prepend(swatch);
+  group(t('settings.group.display'),'settings-group-display');
+  selectField(t('settings.graphics'),values.graphics,[['auto',t('settings.auto')],['saver',t('settings.saver')],['low',t('settings.low')],['medium',t('settings.medium')],['high',t('settings.high')]],(v)=>{
+    saveSettings({graphics:QUALITY.includes(v as QualityPreference)?v as QualityPreference:'auto'});
+  });
   selectField(t('a11y.textScale'),String(values.textScale),[['100','100%'],['115','115%'],['130','130%']],(v)=>{
     saveSettings({textScale:v==='115'?115:v==='130'?130:100});
   });
+  switchField(t('settings.colorblind'),values.colorblind,'colorblind','settings-colorblind');
+  host.append(e('p','airway-setting__hint',t('a11y.enhancedGlyphs')));
+  group(t('settings.group.sound'),'settings-group-sound');
   switchField(t('settings.sound'),values.sound,'sound','settings-sound');
   switchField(t('settings.music'),values.music,'music','settings-music');
   switchField(t('settings.haptics'),values.haptics,'haptics','settings-haptics');
-  switchField(t('settings.colorblind'),values.colorblind,'colorblind','settings-colorblind');
-  paper.append(e('p','airway-setting__hint',t('a11y.enhancedGlyphs')));
+  group(t('settings.group.help'),'settings-group-help');
   if(onReplayTutorial){
     const replay=e('button','airway-settings__licenses',t('tutorial.replay'));
     replay.type='button';replay.dataset.testid='settings-tutorial-replay';
     replay.addEventListener('click',onReplayTutorial);
-    paper.append(replay);
+    host.append(replay);
   }
   const licences=e('button','airway-settings__licenses',t('settings.licenses'));
   licences.type='button';licences.addEventListener('click',onLicenses);
-  paper.append(licences);root.append(paper);
+  host.append(licences);root.append(paper);
   return {element:root,firstFocus:top.querySelector('button') as HTMLElement};
 }
 
