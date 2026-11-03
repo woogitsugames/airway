@@ -30,6 +30,11 @@ export interface AwDevAdapter {
   forceHubOverload(): void | Promise<void>;
   /** Play with the task-22 bot through real Commands until the weekly board for `untilWeek` opens. */
   autoplay(untilWeek: number): AwDevState | Promise<AwDevState>;
+  /**
+   * [night-07x] Queue at most one bot decision on the visible run without advancing time (the clock keeps
+   * its own pace), for long real-time play-throughs. Resolves to the queued command type, or null.
+   */
+  botStep?(): string | null | Promise<string | null>;
 }
 
 export interface AwDevHandle extends AwDevAdapter {
@@ -80,6 +85,11 @@ export function installDevHandle(): void {
     autoplay(untilWeek) {
       validInteger(untilWeek, 'untilWeek', 1, 520);
       return requireAdapter().autoplay(untilWeek);
+    },
+    botStep() {
+      const next = requireAdapter();
+      if (!next.botStep) throw new Error('botStep not supported by the registered adapter');
+      return next.botStep();
     },
   };
   Object.defineProperty(window, 'aw', { value: Object.freeze(handle), configurable: true });

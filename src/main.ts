@@ -297,6 +297,15 @@ async function boot(): Promise<void> {
       },
       forceHubOverload: () => session?.forceOverload(),
       autoplay: async (untilWeek) => { await autoplayUntil(untilWeek); return devState(); },
+      // [night-07x] One bot decision through real Commands, no fast-forward (long real-time play-throughs).
+      botStep: async () => {
+        const bot = import.meta.env.DEV ? await import('./game/dev/autoplay') : null;
+        const run = session?.run;
+        if (!bot || !run || run.failed) return null;
+        const command = bot.nextAutoplayCommand(run.sim);
+        if (command) run.queue(command);
+        return command?.type ?? null;
+      },
     });
   }
 

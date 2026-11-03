@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { Sim } from '../src/sim/sim.ts';
 import { CHECKPOINT_EVERY_TICKS } from '../src/sim/undo.ts';
+import { createBalanceSession } from './balance-game-adapter.ts';
+import { chooseBotAction } from '../src/game/dev/bot-policy.ts';
 
 const SEED = 0xa1a1;
 let passed = 0;
@@ -86,6 +88,39 @@ check('undo still works after bounded checkpoint ring eviction', () => {
   sim.apply(route('late')); sim.tick(); reference.tick();
   assert.equal(sim.undo(), true);
   assert.equal(sim.hash(), reference.hash());
+});
+// [night-07x] Undo right after a weekly choice popped the choice itself: the world went back to the board the UI
+// had already closed and the clock froze with nothing on screen. The choice must stay; the newest network edit goes.
+check('undo after a weekly choice keeps the choice and the clock running', () => {
+  const session = createBalanceSession(SEED);
+  for (let i = 0; i < 2000 && session.snapshot().status !== 'upgrade'; i++) {
+    const decision = chooseBotAction(session.snapshot());
+    if (decision) session.dispatch(decision.command);
+    session.advance(30);
+  }
+  const sim = session.simulation;
+  assert.equal(sim.world.status, 'upgrade', 'bot reached the week-1 board');
+  const offer = sim.world.offer!.offers.find((item) => item.id === 'turboprop' || item.id === 'widebody')!;
+  sim.apply({ type: 'ChooseUpgrade', week: sim.world.offer!.week, upgrade: offer.id });
+  skip(sim, 40);
+  const journal = sim.getCommandLog();
+  let removed = journal.length - 1;
+  while (removed >= 0 && journal[removed][1].type === 'ChooseUpgrade') removed--;
+  assert.ok(removed >= 0 && removed < journal.length - 1, 'the choice is newer than the last network command');
+  const expected = journal.filter((_, i) => i !== removed);
+  assert.equal(sim.undo(), true);
+  assert.equal(sim.world.status, 'running');
+  assert.equal(sim.world.upgrades.length, 1, 'the weekly choice survives Undo');
+  assert.equal(JSON.stringify(sim.getCommandLog()), JSON.stringify(expected), 'only the newest network command is gone');
+  const minute = sim.world.minute;
+  skip(sim, 10);
+  assert.ok(sim.world.minute > minute, 'the clock keeps running after Undo');
+});
+check('undo never removes a lone weekly choice', () => {
+  const sim = new Sim(SEED);
+  sim.apply({ type: 'ChooseUpgrade', week: 1, upgrade: 'turboprop' });
+  assert.equal(sim.undo(), false);
+  assert.equal(sim.pendingCount, 1);
 });
 console.log(`SUMMARY test:undo seed=0xA1A1 passed=${passed} failed=${failed}`);
 if (failed) process.exitCode = 1;

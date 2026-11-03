@@ -37,6 +37,11 @@ function uint32(value: unknown): value is number {
 }
 
 /** Structural copy of a command (see normalizeCommand); throws TypeError/RangeError. */
+/** [night-07x] Commands Undo may remove: everything but the weekly choices. */
+export function undoable(command: Command): boolean {
+  return command.type !== 'ChooseUpgrade' && command.type !== 'CancelUpgradePick';
+}
+
 function copyCommand(value: unknown): Command {
   if (!object(value) || !isCommandType(value.type)) throw new TypeError('unknown command type');
   return normalizeCommand(JSON.parse(canonicalJson(value)));
@@ -289,17 +294,25 @@ export class Sim {
     return sim;
   }
 
-  /** Remove the newest player command and exactly re-simulate up to the same tick. */
+  /**
+   * Remove the newest player command and exactly re-simulate up to the same tick.
+   * [night-07x] Weekly choices (ChooseUpgrade, CancelUpgradePick) are never undone: popping a
+   * week's choice left the world back on that week's board after the UI had closed it, so the clock froze with
+   * no board on screen (soft lock). Later weekly choices are replayed at their ticks.
+   */
   undo(): boolean {
-    if (this.pending.length) {
-      this.pending.pop();
+    for (let i = this.pending.length - 1; i >= 0; i--) {
+      if (!undoable(this.pending[i])) continue;
+      this.pending.splice(i, 1);
       return true;
     }
-    if (this.journal.length === 0) return false;
+    let removedIndex = -1;
+    for (let i = this.journal.length - 1; i >= 0; i--) if (undoable(this.journal[i][1])) { removedIndex = i; break; }
+    if (removedIndex < 0) return false;
 
     const targetTick = this.kernel.tick;
-    const removedTick = this.journal[this.journal.length - 1][0];
-    const retained = this.journal.slice(0, -1);
+    const removedTick = this.journal[removedIndex][0];
+    const retained = [...this.journal.slice(0, removedIndex), ...this.journal.slice(removedIndex + 1)];
     const checkpoint = this.checkpoints.before(removedTick) ??
       { tick: 0, commandCount: 0, state: new Sim(this.kernel.seed, this.kernel.config).fullState() };
     this.loadState(checkpoint.state);
