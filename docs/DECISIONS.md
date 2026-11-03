@@ -505,3 +505,6 @@ Identity Toolkit sign-up, callable functions) so the bundle carries no Firebase 
 and `VITE_FIREBASE_PROJECT_ID` the feature is off and makes no request. Finished runs wait in a bounded local queue
 (one per day, backoff) until the server answers. Players appear under a call sign derived from the anonymous uid, no
 names or e-mail. **Status: in force (client); server and UI follow in N6b/N6c.**
+_N6b:_ server in `functions/` — first accepted run per player and Warsaw day counts; the weekly board is the **sum** of a
+player's accepted daily scores in the ISO week (proposal for the owner; alternative: best single day). Accepted days
+are today and yesterday (late finishes, offline queue). Firestore is closed to clients. Owner steps: `docs/FIREBASE.md`.
