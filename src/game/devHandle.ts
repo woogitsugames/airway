@@ -22,6 +22,8 @@ export interface AwDevState {
   /** [night-10g] Airports the sim closes by curfew now, and how many the renderer draws with the barrier. */
   readonly curfewClosed?: readonly string[];
   readonly curfewDrawn?: number;
+  /** [night-11d] Waiting passengers (transfers included) and waiting places per airport. */
+  readonly airports?: readonly { readonly id: string; readonly waiting: number; readonly capacity: number }[];
 }
 
 export interface AwDevAdapter {

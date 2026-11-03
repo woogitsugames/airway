@@ -76,6 +76,23 @@
 }
 .airport-edge:focus-visible { outline: 3px solid #FFC72C; outline-offset: 2px; }
 .airport-edge svg { width: 14px; height: 14px; flex: none; }
+/* [night-11d] Waiting-area gauge under the code of an off-screen airport: an outlined track whose ink fill is the
+   share of waiting places taken (a length, readable without colour); signal red from three quarters full. Static. */
+.airport-edge--gauge { padding-bottom: 12px; }
+.airport-edge__gauge {
+  position: absolute;
+  left: 9px;
+  right: 9px;
+  bottom: 9px;
+  height: 6px;
+  box-sizing: border-box;
+  border: 1.5px solid currentColor;
+  pointer-events: none;
+}
+.airport-edge__gauge[hidden] { display: none; }
+.airport-edge__fill { display: block; height: 100%; max-width: 100%; background: currentColor; }
+.airport-edge__gauge--high .airport-edge__fill { background: #C8352A; }
+.airport-edge--jam .airport-edge__gauge--high .airport-edge__fill { background: currentColor; }
 .airport-edge--jam { border-color: #C8352A; background: #C8352A; color: #FBF8F1; animation: airport-edge-alert 1.1s ease-in-out infinite alternate; }
 @keyframes airport-edge-alert { from { opacity: 1; } to { opacity: .42; } }
 /* [night-10a] Newly opened airport: an ink stub with gold lettering at the front of the luggage tag (a shape

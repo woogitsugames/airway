@@ -325,6 +325,7 @@ async function boot(): Promise<void> {
       upgrades: (run?.sim.world.upgrades ?? []).map((item) => ({ ...item })), // [night-07q]
       curfewClosed: (run?.cityList() ?? []).filter((city) => city.curfewClosed).map((city) => city.id), // [night-10g]
       curfewDrawn: world?.curfewDrawn() ?? 0,
+      airports: (run?.cityList() ?? []).map((city) => ({ id: city.id, waiting: city.waiting.length, capacity: city.capacity })),
     };
   }
 

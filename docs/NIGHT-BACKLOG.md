@@ -339,6 +339,15 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       hidden at game over (they stayed pinned on screen), and Undo / aircraft drops are ignored on the game-over screen.
       320×568: the sign keeps its height with the tab (title 17 px). Store PNGs refreshed. `e2e/gameover-map.mjs`
       (`test:e2e:gameover-map`, in `test:ci`).
+- [x] N11d **Edge chips show how full the off-screen airport is** — `ui:long-play` EN 915×412 4× 10 min (3 runs, max
+      week 1, issues=0) ended both game overs at ABJ, an airport off the screen: its edge chip showed only "← ABJ" until the
+      waiting area was already full (red chip, 45 s of grace), while an on-screen airport shows its waiting passengers on
+      the tag. The chip now carries a gauge under the code: an outlined track whose ink fill is the share of waiting
+      places taken (a length, readable without colour; min 8 % so one passenger shows), signal red from three quarters
+      full, hidden while nobody waits; the chip's label adds "12 of 24 waiting places taken" / "Zajęte miejsca
+      w poczekalni: 12 z 24". Chip size and tap target unchanged; works with the NEW (ink) and curfew (striped) chips.
+      DEV `aw.state().airports` (waiting, capacity). Also recorded the owner's answers Q-37…Q-40 as D-82…D-85.
+      `e2e/edge-chip-fill.mjs` (`test:e2e:edge-chip-fill`, in `test:ci`; 0/4 on the old overlay).
 
 ## Continuous development round N12 (agent 2)
 - [x] N12a **Balance bot plays for reach (D-90)** — the handover gap "the DEV bot rarely connects new airports; long
@@ -567,3 +576,4 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
 - 2026-11-03 · N11b unserved game-over board + no record for 0 · night/11b-unserved-board · ui:long-play EN 673×841 2× runs=3 maxWeek=1 issues=0; test:fast 58/58 (test:causes 6/6), build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:gameover-short 4/4 (2/4 before the short-phone hint rule), e2e:run-timeline 4/4, e2e:pseudo-locale 27/27, e2e:daily-share 4/4, e2e:logbook 4/4, test:e2e:gameover-unserved 4/4
 - 2026-11-03 · N11c game-over map view + live tags at game over · night/11c-gameover-map · test:fast 58/58, build ok, e2e:smoke 9/9, ui:matrix 32/32, test:hud-targets 300/300, e2e:gameover-short 4/4 (2/4 before the 320 sign rule), e2e:run-timeline 4/4, e2e:daily-share 4/4, e2e:gameover-unserved 4/4, e2e:pseudo-locale 27/27, test:e2e:gameover-map 3/3, store:shots 30 (test:store-shots 30/30)
 - 2026-11-03 · N12a balance bot plays for reach (D-90) · night/12a-bot-expansion · test:bot-policy 10/10 (6/10 on the old bot; 20 seeds unserved jams 14/18 → 4/16), test:balance median 14.55 → 17.81 min upgrade1 0.86 → 0.88 upgrade2 0.50 → 0.56, test:fast 58/58, build ok, bot-driven e2e past week 1: gameover-unserved 4/4, gameover-map 3/3, gameover-short 4/4, run-timeline 4/4, upgrade-picks 10/10, curfew-barrier 2/2, logbook 4/4, pause-summary 4/4, transfer-glyphs 2/2, board-short 4/4, pick-sign 10/10, edge-chip-tags 6/6, edge-chip-airports 2/2; smoke/ui:matrix/store:shots not run (bot unchanged up to the week-1 board)
+- 2026-11-03 · N11d edge-chip waiting gauge + owner decisions D-82…D-85 · night/11d-edge-gauge · ui:long-play EN 915×412 4× 10 min runs=3 maxWeek=1 issues=0; test:fast 58/58, build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:edge-chip-tags 6/6, e2e:edge-dock 5/5, e2e:edge-chip-airports 2/2, e2e:curfew-barrier 2/2, e2e:new-airport 4/4, test:e2e:edge-chip-fill 4/4 (0/4 on the old overlay), store:shots 30 (test:store-shots 30/30)

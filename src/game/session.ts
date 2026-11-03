@@ -316,6 +316,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
         // D-68: the 58 px edge chip has no room for a city name, so it always shows the code.
         overlay.addAirport({ id: city.id, code: city.id, lon: city.lon, lat: city.lat, hub: city.hub });
       }
+      overlay.setCapacity(city.id, city.capacity); // [night-11d] edge-chip gauge; deduplicated inside
       const key = city.waiting.join(',') + '/' + city.connecting; // [night-10i] hollow transfer glyphs
       if (waitingKeys.get(city.id) !== key) {
         waitingKeys.set(city.id, key);
