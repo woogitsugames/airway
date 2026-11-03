@@ -592,3 +592,13 @@ glyphs ⌒ and ⌐, provisional like their D-20 shapes (Q-38). An official run a
 On a daily, "Same world" starts a practice of the same day's world (menu once the Warsaw day changed) and "New world"
 starts Endless; both used to drop silently to the menu. Rationale: the share path existed since task 18 but was never
 reachable, and a button must do what it says. **Status: in force (N10e, `test:e2e:daily-share`).**
+
+## D-90 — Balance bot plays for reach (2026-11-03, Claude, night N12a)
+The DEV/balance bot (`src/game/dev/bot-policy.ts`) values the widebody on the weekly board like a turboprop-only
+network needs it: +80 when the fleet owns no widebody or an active airport without a route lies beyond turboprop
+range (2,500 km) of every other active airport (before, only an existing long route counted, which a turboprop-only
+network never has, so the bot never took a widebody in 50 seeds). When no served airport is eligible for an unserved
+one, it may pair two unserved airports with each other (a new network island). Rationale: 34 of 44 bot game overs
+were at an airport no route served, 20 of them beyond turboprop reach — a measuring-stick fault, not game balance.
+Now 7 of 40; `test:balance` median 14.55 → 17.81 min, 1st/2nd board 86/50 → 88/56 %. No game parameter changed;
+the median now sits near the D-79 upper bound (Q-41). **Status: in force (N12a, `test:bot-policy`).**
