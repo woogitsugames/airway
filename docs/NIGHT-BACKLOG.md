@@ -264,6 +264,12 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       a text run wider than its own box (the ticket's notch mask hid overflow that no overflow box reported). Found
       6/27: the pass label "PASSENGERS" ran under the ticket edge (cut by the mask at 360 and 915 px), and the
       departure board's "GATE / BRAMKA" head ran into "STATUS". Both now wrap inside their box.
+- [x] N10r **End-of-run timeline on the game-over report** — the report said why the network closed but not how
+      the run went. A "Timeline / Przebieg" tab beside "Causes" lists one ruled line per week: the weekly crate taken,
+      routes opened/extended/closed and aircraft added, then "day 2: LIS jammed". Read from the command journal in a
+      separate throw-away Sim (refused commands do not count; the live run is untouched), only when the tab is opened
+      and in slices between frames. Both panels share one height, so the actions never move (short phones included).
+      `src/game/runTimeline.ts`, `test:run-timeline`, `e2e/run-timeline.mjs`.
 
 ## Log
 <!-- one line per finished item: date UTC · item · PR · gate summary -->
@@ -327,3 +333,4 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
 - 2026-11-03 · N10o store shots refreshed (service row, N10m game-over row) · night/10o-store-shots · store:shots captured=30 failed=0, test:fast 57/57 (test:store-shots 30/30), build ok
 - 2026-11-03 · N10p pseudo-locale audit + cargo kicker wrap · night/10p-pseudo-locale · test:fast 57/57, build ok, e2e:smoke 9/9, ui:matrix 32/32, test:hud-targets 300/300, e2e:board-short 4/4, test:e2e:pseudo-locale 21/21 (18/21 before the kicker fix)
 - 2026-11-03 · N10q pseudo-locale on the in-game HUD + pass label/board head wrap · night/10q-pseudo-hud · test:fast 57/57, build ok, e2e:smoke 9/9, ui:matrix 32/32, test:hud-targets 300/300, test:e2e:pseudo-locale 27/27 (21/27 before the wrap)
+- 2026-11-03 · N10r end-of-run timeline tab · night/10r-run-timeline · test:fast 58/58 (test:run-timeline 5/5, 4/5 with the rejection filter off), build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:gameover-short 4/4, e2e:pseudo-locale 27/27, test:e2e:run-timeline 4/4

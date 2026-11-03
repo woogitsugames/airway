@@ -3,6 +3,7 @@ import { buildCauseReport, type CauseFact, type CauseKind, type HubCauseLedger, 
 import { localNumber, t, type TranslationKey } from '../../i18n';
 import { nextWorldSeed, sameWorldIdentity, type WorldIdentity } from './seed';
 import { persistBestRecord, type BestStorage } from './storage';
+import type { TimelineWeek } from '../../game/runTimeline';
 import './gameover.css';
 
 export type { WorldIdentity } from './seed';
@@ -26,6 +27,14 @@ export interface GameOverSnapshot extends WorldIdentity {
   readonly extra?: HTMLElement;
   /** [night-10e] Daily runs: share the result (src/platform/share.ts); the report shows the outcome. */
   readonly share?: () => Promise<{ readonly status: 'shared' | 'copied' | 'unavailable' | 'failed'; readonly text: string }>;
+  /** [night-10r] What the player did each week, re-read from the command journal on demand (src/game/runTimeline.ts). */
+  readonly timeline?: () => Promise<RunTimeline | null>;
+}
+
+/** [night-10r] Weeks of the run plus the day of the jam; hub ids in picks are already display labels. */
+export interface RunTimeline {
+  readonly weeks: readonly TimelineWeek[];
+  readonly endDay: number;
 }
 
 export interface GameOverAdapters {
@@ -142,6 +151,81 @@ function shareRow(share: NonNullable<GameOverSnapshot['share']>): HTMLElement {
   return row;
 }
 
+const PICK_KEYS: Record<NonNullable<TimelineWeek['pick']>['upgrade'], TranslationKey> = {
+  turboprop: 'upgrade.turboprop', widebody: 'upgrade.widebody', 'hub-expansion': 'upgrade.hub', 'departure-slots': 'upgrade.slots',
+};
+
+/** [night-10r] One ruled line per week: the crate taken, then what changed in the network. */
+function timelineRow(week: TimelineWeek): HTMLLIElement {
+  const row = element('li', 'airway-go-timeline-week');
+  row.dataset.week = String(week.week);
+  const parts: string[] = [];
+  if (week.pick) {
+    const name = t(PICK_KEYS[week.pick.upgrade]).replace(/\u00AD/g, '');
+    parts.push(week.pick.hubId ? t('gameover.timeline.pickAt', { upgrade: name, hub: week.pick.hubId }) : name);
+  }
+  if (week.routes) parts.push(t('gameover.timeline.routes', { count: week.routes }));
+  if (week.extended) parts.push(t('gameover.timeline.extended', { count: week.extended }));
+  if (week.removed) parts.push(t('gameover.timeline.removed', { count: week.removed }));
+  if (week.aircraft) parts.push(t('gameover.timeline.aircraft', { count: week.aircraft }));
+  row.append(element('span', 'airway-go-timeline-mark', t('gameover.timeline.week', { week: week.week })),
+    element('span', 'airway-go-timeline-text', parts.length ? parts.join(' · ') : t('gameover.timeline.quiet')));
+  return row;
+}
+
+/** [night-10r] Causes and the run timeline share one panel behind two tabs, so the report keeps its height. */
+function reportTabs(causesList: HTMLElement, load: NonNullable<GameOverSnapshot['timeline']>, hubCode: string): HTMLElement[] {
+  const tabs = element('div', 'airway-go-tabs');
+  tabs.setAttribute('aria-label', t('gameover.causes'));
+  tabs.setAttribute('role', 'tablist');
+  const timeline = element('ol', 'airway-go-timeline');
+  timeline.dataset.testid = 'gameover-timeline';
+  timeline.hidden = true;
+  const make = (label: string, panel: HTMLElement, id: string): HTMLButtonElement => {
+    const tab = element('button', 'airway-go-tab', label);
+    tab.type = 'button';
+    tab.id = `airway-go-tab-${id}`;
+    tab.dataset.testid = `gameover-tab-${id}`;
+    tab.setAttribute('role', 'tab');
+    panel.setAttribute('role', 'tabpanel');
+    panel.setAttribute('aria-labelledby', tab.id);
+    return tab;
+  };
+  const causesTab = make(t('gameover.timeline.causes'), causesList, 'causes');
+  const timelineTab = make(t('gameover.timeline.title'), timeline, 'timeline');
+  let loaded = false;
+  const select = (showTimeline: boolean): void => {
+    if (showTimeline && !timeline.hidden) return;
+    // Same height for both panels: the report and its actions never move when switching.
+    const height = Math.max(causesList.offsetHeight, timeline.offsetHeight);
+    causesTab.setAttribute('aria-selected', String(!showTimeline));
+    timelineTab.setAttribute('aria-selected', String(showTimeline));
+    causesList.hidden = showTimeline;
+    timeline.hidden = !showTimeline;
+    if (showTimeline && height) timeline.style.height = `${height}px`;
+    if (!showTimeline || loaded) return;
+    loaded = true;
+    timeline.dataset.state = 'loading';
+    timeline.replaceChildren(element('li', 'airway-go-timeline-note', t('gameover.timeline.loading')));
+    void load().catch(() => null).then((result) => {
+      timeline.dataset.state = result ? 'ready' : 'unavailable';
+      if (!result) { timeline.replaceChildren(element('li', 'airway-go-timeline-note', t('gameover.timeline.unavailable'))); return; }
+      const end = element('li', 'airway-go-timeline-week airway-go-timeline-end');
+      const last = result.weeks.at(-1)?.week ?? 1;
+      end.append(element('span', 'airway-go-timeline-mark', t('gameover.timeline.week', { week: last })),
+        element('span', 'airway-go-timeline-text', t('gameover.timeline.end', { day: result.endDay, hub: hubCode })));
+      timeline.replaceChildren(...result.weeks.map(timelineRow), end);
+      timeline.scrollTop = timeline.scrollHeight; // the last weeks and the jam first; earlier weeks scroll up
+    });
+  };
+  causesTab.addEventListener('click', () => select(false));
+  timelineTab.addEventListener('click', () => select(true));
+  causesTab.setAttribute('aria-selected', 'true');
+  timelineTab.setAttribute('aria-selected', 'false');
+  tabs.append(causesTab, timelineTab);
+  return [tabs, causesList, timeline];
+}
+
 function buildDialog(
   snapshot: GameOverSnapshot,
   isNewRecord: boolean,
@@ -201,7 +285,8 @@ function buildDialog(
   }
   strip.append(stripHeader, scoreRow);
   if (snapshot.share) strip.append(shareRow(snapshot.share));
-  strip.append(causesTitle, causesList);
+  if (snapshot.timeline) strip.append(...reportTabs(causesList, snapshot.timeline, snapshot.hubCode));
+  else strip.append(causesTitle, causesList);
   if (isNewRecord) strip.append(element('p', 'airway-go-record', t('gameover.newRecord')));
 
   const actions = element('nav', 'airway-go-actions');
