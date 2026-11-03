@@ -24,6 +24,18 @@
 }
 .airway-pause[hidden] { display: none; }
 .airway-pause h2 { margin: 0 0 4px; font: 800 var(--airway-font-title) / 1.1 'Overpass Mono', monospace; letter-spacing: .08em; }
+/* [night-10j] Network summary as flight-strip fields: small caps label, mono value, dashed rule between rows. */
+.airway-pause__summary {
+  display: grid; grid-template-columns: max-content 1fr; margin: 0 0 2px; column-gap: 10px;
+  border-top: 2px solid var(--airway-ink);
+}
+.airway-pause__summary dt, .airway-pause__summary dd { padding: 4px 0; border-bottom: 1px dashed var(--airway-label-ink); }
+.airway-pause__summary dt {
+  font: 400 11px / 1.6 'Atkinson Hyperlegible Next', sans-serif; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--airway-ink); align-self: baseline;
+}
+.airway-pause__summary dd { margin: 0; font: 700 var(--airway-font-body) / 1.3 'Overpass', sans-serif; font-variant-numeric: tabular-nums; }
+.airway-pause__row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .airway-pause__button {
   min-height: 48px; padding: 10px 14px; text-align: left; cursor: pointer;
   border: 2px solid var(--airway-ink); border-radius: 0; background: var(--airway-ticket); color: var(--airway-ink);
@@ -34,5 +46,5 @@
 .airway-pause__status { margin: 0; min-height: 1.2em; font-weight: 400; color: var(--airway-label-ink); }
 @media (orientation: landscape) {
   /* [task-35] Keep clear of the right-hand tag dock (78 px tags + cord) instead of covering it. */
-  .airway-pause { left: auto; right: calc(var(--aw-safe-right) + 112px); bottom: calc(var(--aw-safe-bottom) + 16px); width: 320px; }
+  .airway-pause { left: auto; right: calc(var(--aw-safe-right) + 112px); bottom: calc(var(--aw-safe-bottom) + 16px); width: 360px; }
 }

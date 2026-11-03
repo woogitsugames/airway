@@ -1,0 +1,54 @@
+// [night-10j] The pause sheet's matter-of-fact network summary: what the player has built and where the pressure
+// is, read once when the game pauses (nothing changes while paused). Pure: rows of translated label/value pairs.
+import { t } from '../i18n';
+
+export interface PauseSummaryInput {
+  readonly routes: number;
+  /** Aircraft flying a route. */
+  readonly assigned: number;
+  /** Aircraft in reserve, not yet on a route. */
+  readonly spare: number;
+  /** Interchange hubs with their terminal load; the fullest one is shown. */
+  readonly hubs: readonly { readonly label: string; readonly waiting: number; readonly capacity: number }[];
+  /** Game minutes until the next weekly board opens; null in a mode without weekly boards. */
+  readonly minutesToBoard: number | null;
+}
+export interface PauseSummaryRow { readonly key: 'network' | 'hub' | 'board'; readonly label: string; readonly value: string }
+
+/** Fullest hub by share of capacity, ties by waiting count, then by label (stable). */
+function busiestHub(hubs: PauseSummaryInput['hubs']): PauseSummaryInput['hubs'][number] | null {
+  let best: PauseSummaryInput['hubs'][number] | null = null;
+  for (const hub of hubs) {
+    if (hub.capacity <= 0) continue;
+    if (!best) { best = hub; continue; }
+    const share = hub.waiting * best.capacity - best.waiting * hub.capacity;
+    if (share > 0 || (share === 0 && (hub.waiting > best.waiting || (hub.waiting === best.waiting && hub.label < best.label)))) {
+      best = hub;
+    }
+  }
+  return best;
+}
+
+export function pauseSummary(input: PauseSummaryInput): PauseSummaryRow[] {
+  const rows: PauseSummaryRow[] = [{
+    key: 'network', label: t('pause.summary.network'),
+    value: t(input.spare > 0 ? 'pause.summary.networkSpare' : 'pause.summary.networkValue',
+      { routes: input.routes, aircraft: input.assigned, spare: input.spare }),
+  }];
+  const hub = busiestHub(input.hubs);
+  rows.push({
+    key: 'hub', label: t('pause.summary.hub'),
+    value: hub ? t('pause.summary.hubValue', { hub: hub.label, waiting: hub.waiting, capacity: hub.capacity })
+      : t('pause.summary.noHub'),
+  });
+  if (input.minutesToBoard !== null) {
+    const minutes = Math.max(0, Math.floor(input.minutesToBoard));
+    const days = Math.floor(minutes / 1440);
+    const hours = Math.floor((minutes % 1440) / 60);
+    rows.push({
+      key: 'board', label: t('pause.summary.board'),
+      value: days > 0 ? t('pause.summary.inDays', { days, hours }) : t('pause.summary.inHours', { hours, minutes: minutes % 60 }),
+    });
+  }
+  return rows;
+}

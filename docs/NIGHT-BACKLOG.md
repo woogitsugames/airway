@@ -214,6 +214,11 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       no state change); the luggage tag draws those passengers as hollow region glyphs (same shape, outline only) at
       its tail, at most half the shown glyphs when the tag overflows, and they fill in when the time runs out; the
       screen-reader label adds "Making a connection: N". `test:transfers`, `e2e/transfer-glyphs.mjs`.
+- [x] N10j **Pause sheet: a network summary** — the "Holding pattern" sheet had only Resume / Save / Menu, so a
+      pause told the player nothing about the run. It now opens with three flight-strip fields read once on pause:
+      routes and aircraft (with spare ones), the fullest hub by share of capacity (code or name per D-68) and the time
+      to the next crates. Save and Menu share one row so the taller sheet still fits 915×412 and 320×568 under the
+      boarding pass. Pure rows in `src/game/pauseSummary.ts`; `test:pause-summary`, `e2e/pause-summary.mjs`.
 
 ## Log
 <!-- one line per finished item: date UTC · item · PR · gate summary -->
