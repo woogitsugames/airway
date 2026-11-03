@@ -23,6 +23,9 @@
 .puzzle-flap-gate { color: #b5c3c1; font-size: 12px; }
 .puzzle-flap-stars { color: #b5c3c1; text-align: right; font-size: 10px; white-space: nowrap; }
 .puzzle-flap-stars.is-done { color: #ffc72c; font-size: 17px; }
+/* [night-10l] Best margin under the stars; the stars keep their line, the figure sits below in board grey. */
+.puzzle-flap-best { display: block; margin-top: 2px; color: #b5c3c1; font-size: 11px; letter-spacing: .02em; line-height: 1.1; }
+.puzzle-best { margin: 6px 0 0; font: 700 13px/1.3 'Overpass Mono', monospace; color: #1e6f6a; }
 .puzzle-board-footer { display: flex; justify-content: space-between; gap: 12px; align-items: center; padding: 10px 2px 0; color: #a9bdb8; font-size: 11px; min-height: 60px; }
 .puzzle-exit { background: #ffc72c; color: #1c1e20; border: 0; min-width: 58px; min-height: 48px; font-weight: 700 !important; }
 .puzzle-game { background: #e5e7df; border-left: 4px solid #1e6f6a; border-right: 4px solid #1e6f6a; }

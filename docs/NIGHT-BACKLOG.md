@@ -225,6 +225,12 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       mode and its hint), Sound and touch (sound, music, haptics), Help (tutorial replay, licences). Wide landscape
       paper (≥ 700 px) puts them in two columns, so 915×412 and the unfolded Fold need less scrolling.
       `e2e/settings-groups.mjs`.
+- [x] N10l **Best result per puzzle** — the puzzle board kept only the stars, so a replay had nothing to beat
+      once three stars were reached and the margin over the target was forgotten. The widest margin of a cleared run
+      is stored per level (`airway.puzzles.margin.v1`, beside the unchanged stars record the menu reads), shown under
+      the stars on the departure flap ("best +26%") and as "Your best" on the level ticket; beating it adds "new
+      best" to the result. `src/game/puzzleBest.ts`, `test:puzzle-best`, `e2e/puzzle-best.mjs`, `e2e/puzzles.mjs`
+      checks the margin on every level.
 
 ## Log
 <!-- one line per finished item: date UTC · item · PR · gate summary -->
