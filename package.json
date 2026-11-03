@@ -103,6 +103,7 @@
     "ui:matrix": "node scripts/ui-matrix.mjs",
     "perf:scene": "node --experimental-strip-types scripts/perf-scene.ts",
     "test:perf-scene": "npm run perf:scene",
+    "perf:overlay": "node scripts/perf-overlay.mjs",
     "shots": "node scripts/shots.mjs",
     "shots:site": "npm run build:site && node site/shots.mjs",
     "store:shots": "node scripts/store-shots.mjs",

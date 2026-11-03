@@ -249,3 +249,17 @@ orientation only; the hardware checklist below still decides.
 - Playwright and Chromium are supplied by the runner, not installed as
   production dependencies. An unavailable browser/network is a test
   failure to report, never a simulated successful measurement.
+
+## N10u — airport tag overlay with 40 airports (2026-11-03)
+
+Real game, 1280×800, bot to week 4 (17 airports, 6 routes), 4×, CDP sampling profile over 8 s: the page's
+main-thread JavaScript was busy ~1.6 % of the time; `overlay.ts` + `overlay-layout.ts` together < 1 ms per
+second, `session.ts`/`run.ts` (per-frame `syncWorld`) ~1–2 ms per second. Rendering, not the HTML overlay, sets the
+frame rate. With 40 airports (`npm run perf:overlay`, synthetic tags on the real module) the cost is the tag
+rebuild after a passenger change: every rebuild threw away and re-created all glyph SVG nodes. Tags now reuse
+their glyph nodes per kind and only insert/remove the children that differ, and skip unchanged aria labels.
+
+| ms per frame (update + style/layout), two runs each | idle | 5 tag changes | 40 tag changes |
+|---|---|---|---|
+| before | 0.24–0.25 | 0.96–1.03 | 3.81–3.84 |
+| after | 0.16–0.19 | 0.76–0.81 | 2.58–2.88 |
