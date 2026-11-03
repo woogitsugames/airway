@@ -157,3 +157,16 @@ unfolding without resetting a session, a backup restore and the per-app language
 environment; passing `test:android-config` is a static guarantee only.
 
 Do **not** add APK, AAB, keystore or Gradle build products to Git.
+
+## OpenGL ES 3.0 device filter (D-124)
+
+The globe uses three r170, which renders only through WebGL 2 (WebGL 1 support was removed in r163). Android WebView
+exposes WebGL 2 only on GPUs with OpenGL ES 3.0, so the manifest declares
+`<uses-feature android:glEsVersion="0x00030000" android:required="true"/>`: Google Play then does not offer the
+game to devices without ES 3.0 (they would show a blank globe). `aapt2 dump badging` reports `uses-gl-es: '0x30000'`
+for the linked manifest. ES 3.0 exists from Android 4.3 (API 18), so the filter does not change the supported
+Android versions; `minSdk 24` stays until the owner answers Q-54. A device with ES 3.0 whose WebView still blocks
+WebGL 2 (driver blocklist) is not caught by the filter — the "graphics not supported" page (R3g) covers that case.
+`test:android-config` (`play-gles3-filter`) checks exactly one required `glEsVersion` = `0x00030000`, three ≥ r163
+and minSdk ≥ 18. Device check (not possible here): the Play Console device catalogue should list the ES 2.0-only
+models as "not supported" after the next upload.

@@ -486,6 +486,12 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       RGB. `test:store-shots` checks size, no alpha, ≤ 15 MB, centre band, dark share ≤ 0.2 and the new PL/EN field
       "Play feature graphic alt text" (≤ 140). Console slot in `docs/store/README.md`, entry in `docs/ASSETS.md`.
 
+- [x] N12p **Play device filter for OpenGL ES 3.0 (R3h, D-124)** — three r170 renders only through WebGL 2, which
+      Android WebView builds on ES 3.0, so the manifest requires `glEsVersion 0x00030000` and Play hides the game from
+      ES 2.0 phones (blank globe). `aapt2 dump badging` of the linked manifest shows `uses-gl-es: '0x30000'`.
+      `test:android-config` check `play-gles3-filter` (one required declaration, three ≥ r163, minSdk ≥ 18).
+      minSdk stays 24 until Q-54 (both A and B include the filter); note in `docs/ANDROID.md`.
+
 ## Research proposals (R-agent)
 Proposals from the research agent (findings and sources: `docs/RESEARCH.md`, sections "R1 — …"). Each item is
 sized for one PR; **Area** says where it lands so the coordinator can route it. Items marked *needs Q-xx* wait for
@@ -669,7 +675,7 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
       ("This device's graphics are not supported", with the device's renderer string) instead of a blank canvas. E2E:
       `WEBGL_lose_context.loseContext()`/`restoreContext()` mid-run → game resumes with the same state hash. **Area:**
       render (`src/render/world.ts`) + UI (`src/game/world.ts`, i18n).
-- [ ] R3h **Play device filter for OpenGL ES 3.0** — Three r170 needs WebGL 2; declare
+- [x] R3h → N12p (filter; the minSdk part still waits for Q-54) **Play device filter for OpenGL ES 3.0** — Three r170 needs WebGL 2; declare
       `<uses-feature android:glEsVersion="0x00030000" android:required="true"/>` so Play hides the game from devices
       that cannot run it, and make `test:android-config` assert it (and the minSdk chosen in Q-54). **Area:** platform
       (`android/app/src/main/AndroidManifest.xml`, `scripts/`). *minSdk part needs Q-54.*
