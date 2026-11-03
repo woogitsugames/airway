@@ -6,7 +6,7 @@ import ts from 'typescript';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const SIM = resolve(ROOT, 'src/sim');
-const DISALLOWED = ['render', 'ui', 'input', 'audio', 'platform'].map(
+const DISALLOWED = ['render', 'ui', 'input', 'audio', 'platform', 'net'].map(
   (name) => resolve(ROOT, 'src', name),
 );
 const MATH_METHODS = new Set([
