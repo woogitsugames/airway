@@ -45,6 +45,7 @@
     "test:saves": "node --import ./scripts/ts-test-loader.mjs scripts/test-saves.mjs",
     "test:net-server": "node scripts/test-net-server.mjs",
     "test:firebase": "node scripts/test-firebase-emulator.mjs",
+    "test:e2e:leaderboard": "node scripts/test-e2e-leaderboard.mjs",
     "test:net": "node scripts/test-net.mjs",
     "test:airport-labels": "node scripts/test-airport-labels.mjs",
     "test:audio-cues": "node scripts/test-audio-cues.mjs",
