@@ -49,6 +49,8 @@ export interface GameSession {
   setPaused(paused: boolean): void;
   /** Screen points (canvas CSS px) for a route-drawing drag between two reachable cities. */
   routeGesture(): { from: { x: number; y: number }; to: { x: number; y: number } } | null;
+  /** [night-07q] DEV/QA: canvas point of a visible airport the weekly board's pick accepts (from === to). */
+  pickGesture(): { from: { x: number; y: number }; to: { x: number; y: number } } | null;
   planeGesture(): { from: { x: number; y: number }; to: { x: number; y: number } } | null;
   forceOverload(): void;
   /** Android back / Escape: closes the topmost in-game layer; returns false when nothing was open. */
@@ -423,6 +425,17 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
         if (a.id < b.id && km > 0 && km <= rangeKm && Math.hypot(a.x - b.x, a.y - b.y) > 60) return dragBetween(a, b);
       }
       return null;
+    },
+    pickGesture() {
+      // Clear of the boarding pass, the yellow sign above the globe, the dock and the screen edge.
+      const w = world.canvas.clientWidth;
+      const h = world.canvas.clientHeight;
+      const sign = upgradeHost.querySelector('.airway-upgrade-sign')?.getBoundingClientRect();
+      const canvas = world.canvas.getBoundingClientRect();
+      const top = Math.max(100, (sign ? sign.bottom - canvas.top : 0) + 24);
+      const target = projectedCities().find((c) => hubSelection.includes(c.id) && c.visible &&
+        c.x > 40 && c.x < w - 120 && c.y > top && c.y < h - 120);
+      return target ? { from: { x: target.x, y: target.y }, to: { x: target.x, y: target.y } } : null;
     },
     planeGesture() {
       const route = run.routeList().find((item) => run.inventory[item.aircraft] > 0);

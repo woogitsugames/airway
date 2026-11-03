@@ -83,6 +83,10 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
 - [x] N7p **Game-over report clears the boarding pass** — N7o known issue: on the 360×640 store phone the
       "NETWORK CLOSED" sign covered the final week/day/time/passengers. The report starts below the pass (short
       portrait trims gaps so it still fits); `ui:matrix` and `store:shots` fail when the board or report covers it.
+- [x] N7q **Browser e2e for targeted weekly picks** — every browser suite took a card that completes on its own,
+      so the globe tap of "+2 slots" and the hub expansion (and Back from the pick) ran only in DOM tests.
+      New `e2e/upgrade-picks.mjs` (`test:e2e:upgrade-picks`, in `test:ci`) at 412×915 and 915×412; DEV-only
+      `aw.gesture('pick')` and `aw.state().upgrades`.
 - [ ] N7 When the queue is empty: pick the most valuable next improvement from `docs/HANDOVER*.md`, PR "Known issues"
       sections and the forbidden list review of current screenshots; add it here first, then do it.
 
@@ -112,3 +116,4 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
 - 2026-11-03 · N7n weekly board clears the boarding pass · night/07n-landscape-banner · test:fast 48/48, build ok, e2e:smoke 9/9, ui:matrix 32/32 (new HUD-overlap check fails 4/32 on the old CSS), test:hud-targets 300/300
 - 2026-11-03 · N7o store shots refreshed · night/07o-store-shots · store:shots captured=30 failed=0, test:store-shots shots=30 failed=0, test:fast 48/48, build ok
 - 2026-11-03 · N7p game-over report clears the boarding pass · night/07p-gameover-pass · test:fast 48/48, build ok, e2e:smoke 9/9, ui:matrix 32/32, test:hud-targets 300/300, store:shots 30/30 (fails on the old CSS), test:store-shots 30/30
+- 2026-11-03 · N7q targeted weekly pick e2e · night/07q-upgrade-picks-e2e · test:fast 48/48, build ok, e2e:smoke 9/9, ui:matrix 32/32, test:e2e:upgrade-picks 10/10 (6/10 with the globe tap disabled)

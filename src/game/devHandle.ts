@@ -1,7 +1,8 @@
 // [task-28] Development-only bridge between browser QA and the real game composition root.
 // This module never supplies fake game state; integrations must register a real adapter.
 export type AwScreen = 'menu' | 'game' | 'upgrade' | 'gameover' | 'settings';
-export type AwGesture = 'route' | 'plane';
+// [night-07q] 'pick': a tap (from === to) on an airport the weekly board is waiting for (hub expansion, slots).
+export type AwGesture = 'route' | 'plane' | 'pick';
 
 export interface AwPoint {
   readonly x: number;
@@ -16,6 +17,8 @@ export interface AwDevState {
   readonly routeCount: number;
   readonly aircraftAssignments: number;
   readonly snapshotHash: string;
+  /** [night-07q] Weekly upgrades taken so far, with the picked airport of targeted ones. */
+  readonly upgrades?: readonly { readonly week: number; readonly upgrade: string; readonly hubId?: string }[];
 }
 
 export interface AwDevAdapter {
@@ -70,7 +73,7 @@ export function installDevHandle(): void {
       return requireAdapter().advanceTicks(ticks);
     },
     gesture(kind) {
-      if (kind !== 'route' && kind !== 'plane') throw new TypeError('Unknown gesture');
+      if (kind !== 'route' && kind !== 'plane' && kind !== 'pick') throw new TypeError('Unknown gesture');
       return requireAdapter().gesture(kind);
     },
     forceHubOverload: () => requireAdapter().forceHubOverload(),
