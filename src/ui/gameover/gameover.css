@@ -372,6 +372,10 @@
 }
 .airway-go-map:focus-visible, .airway-go-mapback:focus-visible { outline: 3px solid #1c1e20; outline-offset: 2px; }
 .airway-go-content[hidden], .airway-go-mapbar[hidden] { display: none; }
+/* [night-11k] R5f: while the report is open, off-screen edge chips and the tag dock are noise over it (they looked
+   tappable through the dim); the "Map" view drops the attribute and brings them back. */
+[data-gameover-report] .airport-edge,
+[data-gameover-report] .airway-dock { visibility: hidden; }
 /* Map view: no dim and no dialog surface, so the globe under it can be turned; one paper strip at thumb height. */
 .airway-go-overlay.is-map[role] { background: transparent; pointer-events: none; align-items: end; }
 .airway-go-mapbar {

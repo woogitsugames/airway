@@ -394,7 +394,7 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       while hidden ignored. The lifecycle hooks pause only the `game` screen (the upgrade picker is not covered).
       `test:saves` +2 cases (11/13 on the old code), `e2e/focus-pause.mjs` (`test:e2e:focus-pause`, in `test:ci`,
       1/3 on the old code), shots `docs/shots/n11i/`.
-- [x] N11j **Pause-summary e2e green again; old-rules save notice (D-130)** — since rules v5 (N12f) `autoplay(2)` on
+- [x] N11j **Pause-summary e2e green again; old-rules save notice (D-132)** — since rules v5 (N12f) `autoplay(2)` on
       seed 0xA1A1 ends in a game over in week 2, before the week-2 board, so `test:e2e:pause-summary` failed 0/4 on
       `dev`. The bot now plays to the week-1 board (asserted), one pick (not hub/slots) puts the flight into week 2
       (asserted from the tick and the next board), then the same checks as before: three rows, sheet in the viewport,
@@ -403,6 +403,15 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       cannot continue it." (PL/EN, `old-rules` notice). `test:save-golden` +1 (fails on the old code),
       `test:e2e:save-notice` +2 steps with the frozen v4 save (4/6 on the old code). Owner answers Q-61/Q-62 recorded
       as D-128/D-129.
+- [x] N11k **Clean game-over report (R5f)** — over the report the off-screen edge chips (REK, DUB, VLC…) and the tag
+      dock stayed on top of the dim and looked tappable, and an unserved-airport board printed the "FLIGHT / DEST ·
+      GATE · STATUS" headings above a sentence with no rows (an unfinished table). While the report is open its host
+      carries `data-gameover-report` and edge chips and the dock are hidden (the boarding pass stays); the "Map" view
+      brings both back, "Back to report" hides them again. Column headings only above real departures. Also: since
+      rules v5 the "served hub" case of `test:e2e:gameover-unserved` failed on `dev` (seed 0xA1A1's bot run now ends
+      at unserved RIO); it plays seed 0xA1A3 (jams at served SEL, 2 rows). Owner answers Q-63/Q-64 recorded as
+      D-130/D-131 (the N11j decision renumbered to D-132). `e2e/gameover-unserved.mjs` asserts both (0/4 on the old
+      UI), shots `docs/shots/n11k/`, matrix and store failure shots refreshed.
 
 ## Continuous development round N12 (agent 2)
 - [x] N12a **Balance bot plays for reach (D-90)** — the handover gap "the DEV bot rarely connects new airports; long
@@ -794,7 +803,7 @@ Evidence: `docs/RESEARCH.md` "R5 — …", PNGs in `docs/research/r5/`.
       text; the pause summary shows "none yet" (`pause.summary.noHub`) when the fullest hub has 0 waiting
       (`pause-fullest-hub-0.png`). `test:pause-summary` +1, `test:format`, shots. **Area:** UI
       (`src/ui/upgrade/**`, `src/game/pauseSummary.ts`), i18n.
-- [ ] R5f **Clean game-over board** — while the report is open hide edge chips, route handles and the dock (they stay
+- [x] R5f → N11k **Clean game-over board** — while the report is open hide edge chips, route handles and the dock (they stay
       on the "Map" view); drop the "FLIGHT / DEST · GATE · STATUS" column header when the departures board has no
       rows (unserved-airport cause shows only a sentence). E2E `gameover-unserved` asserts both; shots PL/EN.
       **Area:** UI (`src/ui/gameover/**`, `src/game/session.ts`).
@@ -843,7 +852,7 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
       sentence on the "Start flying" step), move upgrade and congestion to R6a cards. Bump `TUTORIAL_VERSION` only if
       the stored step list needs it (completed players must not see it again). `test:e2e:tutorial` and its shots
       updated; do it in the same PR as R5b (both redraw the tutorial). **Area:** UI (`src/game/tutorial/**`,
-      `src/ui/tutorial/**`), i18n. *Needs Q-63 (B).* Depends on R6a.
+      `src/ui/tutorial/**`), i18n. Q-63 → B (D-130). Depends on R6a.
 - [ ] R6c **Empty dock tag counts down to the crates** — in week 1 the dock shows "0 / 0 / 0" for 7 minutes. While
       a tag is empty, its count line reads the arrival of the next weekly board ("crates day 3" / "skrzynie: dzień 3",
       or "tomorrow"/"jutro" on the last day) from the existing week/day clock; aria text the same. No sim change.
@@ -871,11 +880,11 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
 - [ ] R6g **Content roadmap and store-event texts** — add a "Content after launch" section to `docs/LAUNCH.md`
       (with R2f; Polish): the T / T+4 / T+8 / T+12 weeks table from RESEARCH R6, one new mechanic per update with its
       teaching puzzles, and draft PL/EN texts for an Apple In-App Event (name ≤ 30, short ≤ 50, long ≤ 120 chars) and
-      a Play "Major update" promotion (28 days, submit ≤ 60 days ahead, unique art). **Area:** docs. *Needs Q-64.*
+      a Play "Major update" promotion (28 days, submit ≤ 60 days ahead, unique art). **Area:** docs. Q-64 → A (D-131).
 - [ ] R6h **Puzzle pack 31–35 "Long haul"** (then 36–40 in a second PR) — five levels outside Europe that teach
       widebody range and ocean legs with today's rules only (no new mechanic tags): start cities in the Pacific /
       South Atlantic, stock with 1–2 widebodies, a `continents` goal in the last one. Each with `referenceCommands`,
-      PL/EN titles, `test:puzzles` green, shots. **Area:** content (`src/data/puzzles/**`, i18n). *Needs Q-64; after R6f.*
+      PL/EN titles, `test:puzzles` green, shots. **Area:** content (`src/data/puzzles/**`, i18n). Q-64 → A (D-131): ready before launch; after R6f.
 - [ ] R6i **First-session observation sheet** — extends R1o/R3k in `docs/PLAYTEST.md`: what the observer notes in
       a tester's first 10 minutes (seconds to the first own route on the real globe, did they find the dock, first
       "nothing to do" moment, what the glyph means, did they open the weekly board without help) plus two device
@@ -978,4 +987,4 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
 - 2026-11-03 · N12p Play OpenGL ES 3.0 device filter (R3h, D-124) · night/12p-gles3-filter · test:android-config 23/23 (22/23 on the old manifest), aapt2 link ok + `dump badging` uses-gl-es 0x30000 (android-36, minSdk 24, manifest without resource refs), test:fast 66/66, build ok; minSdk unchanged (Q-54); no Play Console device-catalogue check; e2e/ui:matrix/store:shots not run (no web code changed)
 - 2026-11-03 · N11i pause on window focus loss (D-99, D-119) · night/11i-focus-pause · test:fast 67/67 (test:saves 13/13, 11/13 on the old code), build ok, test:e2e:focus-pause 3/3 (1/3 on the old code), e2e:save-notice 4/4; e2e:pause-summary 0/4 on this branch and on origin/dev alike (rules v5: `autoplay(2)` ends in a game over before week 2 — pre-existing, not this change); e2e:smoke/ui:matrix not run (no layout change)
 - 2026-11-03 · N12o store shots in the exact Apple sizes and 16:9 (R2a, D-123) · night/12o-store-sizes · store:shots 60/60 (30 → 60: + iphone 1320×2868, ipad 2064×2752, landscape 1920×1080; contact sheet 2556×5361; new device PNGs and the sheet inspected), test:store-shots devices=6 shots=60 (new validator on the old 30-shot set: FAIL "Manifest lists 30/60"), test:fast 67/67, build ok; e2e/ui:matrix not run (no game code changed); App Store Connect / Play Console upload not tried; origin/dev (N11h context-loss guard, no visual change while the context lives) was merged during the run, so early shots predate it
-- 2026-11-03 · N11j pause-summary e2e under rules v5 + old-rules save notice (D-130), owner D-128/D-129 · night/11j-pause-summary-v4-save · test:e2e:pause-summary 4/4 (0/4 on origin/dev), test:save-golden 21/21 (20/21 on the old code), test:e2e:save-notice 6/6 (4/6 on the old code), test:fast 67/67, build ok; e2e:smoke/ui:matrix not run (no layout change)
+- 2026-11-03 · N11j pause-summary e2e under rules v5 + old-rules save notice (D-132, numbered D-130 in PR #147), owner D-128/D-129 · night/11j-pause-summary-v4-save · test:e2e:pause-summary 4/4 (0/4 on origin/dev), test:save-golden 21/21 (20/21 on the old code), test:e2e:save-notice 6/6 (4/6 on the old code), test:fast 67/67, build ok; e2e:smoke/ui:matrix not run (no layout change)

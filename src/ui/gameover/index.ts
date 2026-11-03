@@ -251,6 +251,15 @@ function reportTabs(causesList: HTMLElement, load: NonNullable<GameOverSnapshot[
   return [tabs, causesList, timeline];
 }
 
+/**
+ * [night-11k] R5f: while the report is open its host (the game layer) carries `data-gameover-report`, and the
+ * stylesheet hides the off-screen edge chips and the tag dock under it; they return on the "Map" view.
+ */
+const REPORT_ATTRIBUTE = 'data-gameover-report';
+function markReport(host: Element | null, open: boolean): void {
+  host?.toggleAttribute(REPORT_ATTRIBUTE, open);
+}
+
 function buildDialog(
   snapshot: GameOverSnapshot,
   isNewRecord: boolean,
@@ -282,10 +291,6 @@ function buildDialog(
   const board = element('section', 'airway-go-board');
   board.setAttribute('aria-label', t('gameover.departures', { hub: snapshot.hubCode }));
   const boardTitle = element('h2', 'airway-go-board-title', t('gameover.departures', { hub: snapshot.hubCode }));
-  const columns = element('div', 'airway-go-board-head');
-  for (const text of [t('gameover.flight'), t('menu.gate'), t('menu.status')]) {
-    columns.append(element('span', '', text));
-  }
   const flightList = element('div', 'airway-go-flight-list');
   flightList.setAttribute('role', 'list');
   const departing = snapshot.departures.filter((flight) => flight.originHubId === snapshot.hubId);
@@ -307,7 +312,16 @@ function buildDialog(
       element('p', 'airway-go-none-hint', t('gameover.unservedHint')));
     flightList.append(none);
   }
-  board.append(boardTitle, columns, flightList);
+  // [night-11k] R5f: column headings only above real rows; over the unserved sentence they read as an unfinished table.
+  if (departing.length > 0) {
+    const columns = element('div', 'airway-go-board-head');
+    for (const text of [t('gameover.flight'), t('menu.gate'), t('menu.status')]) {
+      columns.append(element('span', '', text));
+    }
+    board.append(boardTitle, columns, flightList);
+  } else {
+    board.append(boardTitle, flightList);
+  }
 
   const strip = element('section', 'airway-go-strip');
   strip.setAttribute('aria-label', t('gameover.report'));
@@ -358,6 +372,7 @@ function buildDialog(
   mapBar.append(element('span', 'airway-go-mapbar-hub', t('gameover.mapHub', { hub: snapshot.hubCode })), mapBack);
   const setMap = (open: boolean): void => {
     overlay.classList.toggle('is-map', open);
+    markReport(overlay.parentElement, !open); // [night-11k] the map view brings edge chips and the dock back
     content.hidden = open;
     mapBar.hidden = !open;
     // While the map shows, the overlay is no dialog: the globe under it takes the gestures.
@@ -384,6 +399,7 @@ export function createGameOverController(adapters: GameOverAdapters): GameOverCo
   const isDisposed = (): boolean => phase === 'disposed';
 
   function removeOverlay(): void {
+    if (overlay) markReport(overlay.parentElement, false);
     overlay?.remove();
     overlay = null;
     closeMap = null;
@@ -458,6 +474,7 @@ export function createGameOverController(adapters: GameOverAdapters): GameOverCo
       overlay = dialog.overlay;
       closeMap = dialog.closeMap;
       adapters.host.append(overlay);
+      markReport(adapters.host, true);
       phase = 'open';
       dialog.firstButton.focus();
     },
