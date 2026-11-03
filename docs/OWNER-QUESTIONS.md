@@ -57,6 +57,7 @@ Priorytet: **P1** — blokuje wydanie albo sklep, **P2** — warto zdecydować p
 | Q-26 ✅ D-80 | P2 | Własny kolor linii gracza (statecznik samolotu w kolorze linii)? | A: tak, osobne zadanie z paletą CVD; B: statecznik w kolorze typu | B (PR M1 otwarty) | A w osobnym zadaniu | #52 (otwarty) |
 | Q-27 | P3 | Lista 15 zabytków miast; mniejsze archetypy dla Europy (Rzym, Stambuł)? | Zostawić / dodać | 15 miast (PR M1 otwarty) | Zostawić | #52 (otwarty) |
 | Q-28 | P3 | Kolory dachów lotnisk według regionu | Akceptuję / poprawki | Mapowanie z PR M1 (otwarty) | Akceptować, poprawki po telefonie | #52 (otwarty) |
+| Q-37 | P3 | Paleta kolorów linii (D-80): morski (domyślny), błękitny, ceglany, ochra, różany, grafitowy — czy odpowiada? | OK / inne odcienie (plik `src/data/airline-colours.json`, `test:cvd` pilnuje ΔE ≥ 15) | 6 kolorów; kolor widać w ustawieniach i na pasku karty pokładowej; na samolotach po scaleniu M1 | OK; kolory samolotów ocenić po M1 | N9c |
 
 ## D. Dźwięk
 

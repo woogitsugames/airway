@@ -98,6 +98,13 @@ export const pl = {
   'settings.airportLabels': 'Lotniska',
   'settings.airportLabels.code': 'Kod',
   'settings.airportLabels.name': 'Nazwa miasta',
+  'settings.airline': 'Kolor linii', // [night-09c] D-80
+  'settings.airline.teal': 'Morski',
+  'settings.airline.sky': 'Błękitny',
+  'settings.airline.brick': 'Ceglany',
+  'settings.airline.ochre': 'Ochra',
+  'settings.airline.rose': 'Różany',
+  'settings.airline.ink': 'Grafitowy',
   'settings.auto': 'Automatyczna',
   'settings.saver': 'Oszczędna',
   'settings.low': 'Niska',

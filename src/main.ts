@@ -28,6 +28,7 @@ import { initializeAccessibility } from './ui/a11y';
 import { readBestRecord } from './ui/gameover/storage';
 import { mountPuzzleSelector, readPuzzleProgress } from './ui/puzzles';
 import { onSettingsChange, readSettings } from './ui/settings/settings';
+import { applyAirlineColour, onAirlineColour, readAirlineColour } from './ui/airlineColour';
 import { TICKS_PER_WEEK } from './sim/clock'; // [task-31] single week length (D-40)
 import { NOVEMBER_SUBSOLAR_LATITUDE_DEG } from './render/sun'; // [task-40] store `game` scene light
 
@@ -79,6 +80,12 @@ async function boot(): Promise<void> {
   } catch (error) {
     console.error('WebGL is unavailable; the menu stays on the flat sky.', error);
   }
+  // [night-09c] D-80: the boarding pass band reads the CSS variable; the plane liveries paint through this hook
+  // once the renderer offers `setAirlineColour` (the livery models belong to the parallel M1 task).
+  applyAirlineColour(readAirlineColour());
+  onAirlineColour((hex) => {
+    (world?.renderer as { setAirlineColour?: (hex: string) => void } | undefined)?.setAirlineColour?.(hex);
+  });
 
   const storage: KeyValueStorage = await createDefaultStorage();
   const scores = new LocalScoreService();

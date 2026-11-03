@@ -581,4 +581,4 @@ No parameter change now; revisit if testers always pick WB-300. **Status: in for
 D-40/D-43. **Status: implemented (N9b, `scripts/balance-report.ts`; median 14.55 min).**
 
 ## D-80 — Player picks their airline colour (2026-11-03, owner, Q-26)
-A CVD-checked palette in settings; plane tail fin and livery accents use the airline colour. Separate task. **Status: to implement.**
+A CVD-checked palette in settings; plane tail fin and livery accents use the airline colour. Separate task. **Status: partly implemented (N9c): palette `src/data/airline-colours.json` (CVD-checked by `test:cvd`), settings select, boarding pass band, render hook `onAirlineColour` in `src/ui/airlineColour.ts`; the tail fin/livery paint waits for M1 (#52, plane models) → N9d.**

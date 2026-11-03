@@ -97,6 +97,13 @@ export const en = {
   'settings.airportLabels': 'Airports',
   'settings.airportLabels.code': 'Code',
   'settings.airportLabels.name': 'City name',
+  'settings.airline': 'Airline colour', // [night-09c] D-80
+  'settings.airline.teal': 'Teal',
+  'settings.airline.sky': 'Sky blue',
+  'settings.airline.brick': 'Brick',
+  'settings.airline.ochre': 'Ochre',
+  'settings.airline.rose': 'Rose',
+  'settings.airline.ink': 'Graphite',
   'settings.auto': 'Automatic',
   'settings.saver': 'Battery saver',
   'settings.low': 'Low',
