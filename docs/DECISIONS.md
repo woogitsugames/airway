@@ -495,3 +495,13 @@ dominant→tonic cadence on the week turn (key moves a fifth), a two-tick "slot 
 and tag / paper / stamp for route add, route removal and upgrade choice. Mix: bus gains and make-up gain into the
 glue compressor, then a −3 dB limiter and trim; previews peak −7…−9 dBFS and a 4x burst stays under −1 dBFS.
 Previews in `docs/audio/`. **Status: in force; sound character is a proposal until the owner listens on a phone.**
+
+## D-72 — Leaderboard client: journal submissions, server replay, no Firebase SDK (2026-11-03, Claude, night N6)
+Implements D-66 on the client side. Only the **official** daily run (one per Warsaw day) is submitted: seed, day key,
+rules version, end tick, claimed score and the full command journal. The server replays it with the same Sim
+(`src/net/submission.ts`, shared code, D-13) and stores the replayed score; a mismatch, wrong seed/day, older rules,
+unfinished run or a run longer than 30 game weeks is rejected. The client talks to Firebase over REST (anonymous
+Identity Toolkit sign-up, callable functions) so the bundle carries no Firebase SDK; without `VITE_FIREBASE_API_KEY`
+and `VITE_FIREBASE_PROJECT_ID` the feature is off and makes no request. Finished runs wait in a bounded local queue
+(one per day, backoff) until the server answers. Players appear under a call sign derived from the anonymous uid, no
+names or e-mail. **Status: in force (client); server and UI follow in N6b/N6c.**
