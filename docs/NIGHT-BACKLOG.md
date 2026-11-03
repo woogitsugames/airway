@@ -195,6 +195,10 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       the regions the network served (8 glyphs, two new for ASI/OCE), the text adds the streak of days. On a daily,
       "Same world" and "New world" both silently went to the menu: same world now starts a practice of today's
       world (menu if the day changed), new world starts Endless.
+- [ ] N10f **Haptics for every committed action** — native haptics fired only on route snaps/commits and on a jam
+      starting; dropping an aircraft on a route, picking the weekly card and the network closing were silent, and no
+      test covered haptics at all. Light impact on an accepted aircraft drop and weekly pick, one heavy impact when
+      the network closes; still behind the "Haptic feedback" switch, presentation only (D-13). `test:haptics`.
 
 ## Log
 <!-- one line per finished item: date UTC · item · PR · gate summary -->
