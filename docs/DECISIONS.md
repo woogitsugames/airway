@@ -625,7 +625,7 @@ Settings → Help gains a "Privacy policy / Polityka prywatności" row under the
 title, the draft warning, its five sections and date, plus one line that the copy is stored in the game and opens
 without a connection. The game catalogs hold a copy of the site's `privacy.*` strings; `test:privacy-text` fails when
 they differ from `site/i18n.js`, so the site stays the one source. No public URL is shown until the site is published
-(D-67); the leaderboard section waits for the owner (Q-55). Rationale: Google's User Data policy wants the policy
+(D-67); the leaderboard section waits for the owner (Q-56). Rationale: Google's User Data policy wants the policy
 reachable inside the app (RESEARCH R1, R1b); an offline page works on every build and in every store review.
 **Status: in force (N11e, `test:privacy-text`, `test:e2e:privacy-page`).**
 
@@ -637,3 +637,16 @@ language list is what the App Store shows as the game's languages and what WKWeb
 `navigator.languages`; `test:ios-config` keeps it equal to the i18n catalogs (`src/i18n/<xx>.ts`, pseudo excluded),
 so a third language cannot ship without the bundle knowing it. Rejected: answering the export question in App Store
 Connect by hand per build (repetitive, easy to forget). **Status: in force (N12b, `test:ios-config` 23 checks).**
+
+## D-92 — Backup carries the game to a new phone, not the leaderboard identity (2026-11-03, Claude, night N12c)
+Android Auto Backup is on with include-only rules (`res/xml/data_extraction_rules.xml` for Android 12+ cloud backup
+and device transfer, `res/xml/backup_rules.xml` for older versions): the Preferences file, the two save slots and the
+WebView `localStorage` (logbook, streak, scores, settings, puzzle stars, tutorial). Before, `allowBackup="false"`
+lost all of it on a phone change. The leaderboard session token and offline queue live in the same `localStorage`,
+so instead of a file rule an install marker that no backup reaches (`aw-install-v1.json` in
+`Directory.LibraryNoCloud`; on iOS `Library/NoCloud`) decides: no marker → write it, then remove `aw-net-session-v1`
+and `aw-net-queue-v1` before the leaderboards start; a marker that cannot be written resets nothing. A restored phone
+is a new anonymous player (Q-55); queued runs are not resent from a second device. Rejected: backing up everything
+(identity copied to two phones), backing up only native files (logbook and streak still lost), moving the identity
+into a separate store now (bigger net change; follow-up so the token is not in the encrypted backup at all).
+**Status: in force (N12c, `test:android-config` 18 checks, `test:install-identity` 6 cases).**
