@@ -628,3 +628,12 @@ they differ from `site/i18n.js`, so the site stays the one source. No public URL
 (D-67); the leaderboard section waits for the owner (Q-52). Rationale: Google's User Data policy wants the policy
 reachable inside the app (RESEARCH R1, R1b); an offline page works on every build and in every store review.
 **Status: in force (N11e, `test:privacy-text`, `test:e2e:privacy-page`).**
+
+## D-91 — iOS bundle declares export-exempt encryption and its languages (2026-11-03, Claude, night N12b)
+`Info.plist` carries `ITSAppUsesNonExemptEncryption = false` and `CFBundleLocalizations = [en, pl]`. The game only
+uses the system's HTTPS (WKWebView, Firebase over TLS), which Apple treats as exempt, so the key answers the
+export-compliance question once instead of on every TestFlight upload; any own cryptography would reopen it. The
+language list is what the App Store shows as the game's languages and what WKWebView may report in
+`navigator.languages`; `test:ios-config` keeps it equal to the i18n catalogs (`src/i18n/<xx>.ts`, pseudo excluded),
+so a third language cannot ship without the bundle knowing it. Rejected: answering the export question in App Store
+Connect by hand per build (repetitive, easy to forget). **Status: in force (N12b, `test:ios-config` 23 checks).**
