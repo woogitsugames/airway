@@ -101,6 +101,15 @@
   color: #FFC72C;
   box-shadow: inset 0 4px 0 #FFC72C;
 }
+/* [night-10h] Night curfew: the boom-barrier stub at the front of the tag (same mark as the puzzle strips) and a
+   red-white striped bar along the bottom of the edge chip. Static: a closed airport is a state, not an alert. */
+.airport-bubble__curfew { flex: none; display: inline-flex; line-height: 0; margin-right: 2px; }
+.airport-edge--curfew:not(.airport-edge--jam) {
+  background-image: repeating-linear-gradient(135deg, #B8322A 0 5px, #FBF8F1 5px 10px);
+  background-size: 100% 6px;
+  background-position: bottom;
+  background-repeat: no-repeat;
+}
 /* [task-38] Departure-slot tag (D-50): a squared ticket hung under the passenger tag. Its shape differs
    from the pointed luggage tag (dark stub with a clock mark, chamfered right end, ink outline), so it reads
    without colour. Width is set inline from the same constants the layout uses. */

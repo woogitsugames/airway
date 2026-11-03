@@ -17,6 +17,7 @@ export const pl = {
   'airport.slot.label': 'SLOT', // [task-38]
   'airport.new': 'NOWE', // [night-10a]
   'airport.newAria': 'Nowe lotnisko {code}.',
+  'airport.curfewAria': '{code} zamknięte na ciszę nocną.', // [night-10h]
   'airport.slotHeld': '{code}: samoloty czekające na slot startowy: {count}, następny slot za {time}',
   // [task-07] Rysowanie tras, pasek ATC i działania na trasach.
   'route.aircraft.turboprop': 'turbośmigłowca',
