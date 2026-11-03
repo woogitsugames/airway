@@ -552,3 +552,13 @@ under automation. Budgets and before/after numbers in `docs/PERFORMANCE.md`.
 **Status: in force; the saver look and the 24 fps trigger are proposals until measured on a low-end
 Android phone.**
 
+
+## D-74 — Adaptive quality is remembered between sessions (2026-11-03, Claude, night N7b)
+With graphics on **Automatic**, the steps the adaptive monitor takes (D-73: DPR → decorations → terrain) are stored
+in `airway.adaptiveQuality` (`{v:1, steps, at}`) and applied before the first frame of the next launch, so a slow
+phone does not stutter through the same ~8 s of detection every time; the monitor then only offers the remaining
+steps. The record is ignored when it is not a prefix of the device's current ladder, malformed, or older than
+**30 days** (new OS/game version may be faster: detect afresh), and any explicit graphics choice in settings —
+including picking Automatic again — forgets it. Nothing is shown to the player. Rationale: a downgrade costs
+seconds of bad frames every session; never stepping back up within a session (D-73) already accepts that the
+downgrade is sticky. **Status: in force; the 30-day window is a proposal for the owner.**

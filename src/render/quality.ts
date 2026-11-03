@@ -96,7 +96,8 @@ export type AdaptiveStep = 'pixel-ratio' | 'decorations' | 'terrain';
  * [night-04] Adaptive quality from frame time (D-73). Fed the interval between rendered frames;
  * when the median of a window stays above the budget for `strikes` windows in a row it asks for
  * one step down: DPR to 1, then fewer decorations, then a lower terrain preset. It never steps
- * back up during a session (no oscillation); a new session detects afresh. Pure: no clock, no DOM.
+ * back up during a session (no oscillation). [night-07b] The game remembers the steps between
+ * sessions (D-74) and constructs the monitor with the remaining ladder. Pure: no clock, no DOM.
  */
 export class AdaptiveQualityMonitor {
   private readonly samples: Float32Array;
@@ -142,6 +143,26 @@ export function adaptiveSteps(profile: QualityProfile): AdaptiveStep[] {
   if (profile.decorDensity > SAVER_DECOR_DENSITY) steps.push('decorations');
   if (profile.preset !== 'low') steps.push('terrain');
   return steps;
+}
+
+/**
+ * [night-07b] Apply steps already taken (e.g. remembered from an earlier session, D-74) to a fresh
+ * profile. Only a prefix of `adaptiveSteps(profile)` is honoured; anything else returns null so a
+ * stale or foreign record never changes quality.
+ */
+export function applyAdaptiveSteps(profile: QualityProfile, taken: readonly AdaptiveStep[]): QualityProfile | null {
+  const ladder = adaptiveSteps(profile);
+  if (taken.length > ladder.length) return null;
+  for (let i = 0; i < taken.length; i++) if (taken[i] !== ladder[i]) return null;
+  let next = profile;
+  for (const step of taken) {
+    if (step === 'pixel-ratio') next = { ...next, pixelRatio: 1 };
+    else if (step === 'decorations') next = { ...next, decorDensity: SAVER_DECOR_DENSITY };
+    else {
+      next = { ...next, preset: next.preset === 'high' ? 'medium' : 'low', shadowEnabled: false, shadowMapSize: 0 };
+    }
+  }
+  return next;
 }
 
 /**
