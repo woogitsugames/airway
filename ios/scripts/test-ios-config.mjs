@@ -1,5 +1,5 @@
 // [task-25] Static iOS config contract, independent of macOS / Xcode.
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 
@@ -37,6 +37,18 @@ check('portrait and landscape on iPhone', expected.every((value) => orientations
 check('portrait and landscape on iPad', [...expected, 'UIInterfaceOrientationPortraitUpsideDown'].every((value) => orientations('UISupportedInterfaceOrientations~ipad').includes(value)));
 check('iPad multitasking not disabled', !/<key>UIRequiresFullScreen<\/key>\s*<true\s*\/>/.test(plist));
 check('no unnecessary permission descriptions', !/<key>NS[A-Za-z0-9]+UsageDescription<\/key>/.test(plist));
+// Store keys (R1c): HTTPS-only networking is exempt from export documentation, so the upload asks nothing;
+// the App Store lists the game's languages from CFBundleLocalizations, which must match the i18n catalogs.
+check('export compliance: no non-exempt encryption', /<key>ITSAppUsesNonExemptEncryption<\/key>\s*<false\s*\/>/.test(plist));
+function stringArray(key) {
+  const match = plist.match(new RegExp('<key>' + key + '<\\/key>\\s*<array>([\\s\\S]*?)<\\/array>'));
+  return match ? [...match[1].matchAll(/<string>([^<]+)<\/string>/g)].map((m) => m[1]).sort() : [];
+}
+const catalogs = readdirSync(join(ROOT, 'src', 'i18n')).filter((name) => /^[a-z]{2}\.ts$/.test(name))
+  .map((name) => name.slice(0, 2)).sort();
+check('bundle localizations match i18n catalogs', catalogs.length >= 2 &&
+  stringArray('CFBundleLocalizations').join() === catalogs.join());
+check('development region is a bundled language', catalogs.includes((plist.match(/<key>CFBundleDevelopmentRegion<\/key>\s*<string>([^<]+)</) || [])[1]));
 check('no background modes', !/<key>UIBackgroundModes<\/key>/.test(plist));
 check('bundle ID in Debug and Release', (project.match(/PRODUCT_BUNDLE_IDENTIFIER = pl\.samsufi\.airway;/g) || []).length === 2);
 check('CocoaPods minimum iOS 15', /platform\s+:ios,\s*'15\.0'/.test(podfile));

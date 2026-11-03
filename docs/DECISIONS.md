@@ -593,7 +593,6 @@ On a daily, "Same world" starts a practice of the same day's world (menu once th
 starts Endless; both used to drop silently to the menu. Rationale: the share path existed since task 18 but was never
 reachable, and a button must do what it says. **Status: in force (N10e, `test:e2e:daily-share`).**
 
-<<<<<<< HEAD
 ## D-82 — Airline colour palette approved as is (2026-11-03, owner, Q-37)
 The six colours of D-80 (navy default, sky blue, brick, ochre, rose, graphite; `src/data/airline-colours.json`, ΔE ≥ 15
 under CVD via `test:cvd`) stay. Plane colours are judged once M1 (#52) paints the tail fin. **Status: in force.**
@@ -609,7 +608,6 @@ The share text keeps no link; `airway.games` is added once the domain and the la
 ## D-85 — Logbook entry stays half of the last menu board row (2026-11-03, owner, Q-40)
 "SETTINGS D0 · LOGBOOK D1" keeps sharing the last split-flap row (option A of Q-40); no separate row, the logbook is not
 moved into settings. **Status: in force.**
-=======
 ## D-90 — Balance bot plays for reach (2026-11-03, Claude, night N12a)
 The DEV/balance bot (`src/game/dev/bot-policy.ts`) values the widebody on the weekly board like a turboprop-only
 network needs it: +80 when the fleet owns no widebody or an active airport without a route lies beyond turboprop
@@ -619,4 +617,12 @@ one, it may pair two unserved airports with each other (a new network island). R
 were at an airport no route served, 20 of them beyond turboprop reach — a measuring-stick fault, not game balance.
 Now 7 of 40; `test:balance` median 14.55 → 17.81 min, 1st/2nd board 86/50 → 88/56 %. No game parameter changed;
 the median now sits near the D-79 upper bound (Q-51). **Status: in force (N12a, `test:bot-policy`).**
->>>>>>> origin/dev
+
+## D-91 — iOS bundle declares export-exempt encryption and its languages (2026-11-03, Claude, night N12b)
+`Info.plist` carries `ITSAppUsesNonExemptEncryption = false` and `CFBundleLocalizations = [en, pl]`. The game only
+uses the system's HTTPS (WKWebView, Firebase over TLS), which Apple treats as exempt, so the key answers the
+export-compliance question once instead of on every TestFlight upload; any own cryptography would reopen it. The
+language list is what the App Store shows as the game's languages and what WKWebView may report in
+`navigator.languages`; `test:ios-config` keeps it equal to the i18n catalogs (`src/i18n/<xx>.ts`, pseudo excluded),
+so a third language cannot ship without the bundle knowing it. Rejected: answering the export question in App Store
+Connect by hand per build (repetitive, easy to forget). **Status: in force (N12b, `test:ios-config` 23 checks).**
