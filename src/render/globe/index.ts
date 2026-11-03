@@ -9,7 +9,8 @@ import { createDecorCuller, type DecorCullStats } from './decor-cull';
 import { setLatLonVec3 } from './geo-math';
 import { loadLandMask } from './land-mask';
 import { chunkTerrain, createTerrainLod, TERRAIN_LOD_LEVELS, type TerrainLod } from './lod';
-import { buildTerrainArrays, createTerrainMaterial } from './terrain';
+import { buildTerrainArrays, createTerrainMaterial, DIORAMA_STYLE } from './terrain';
+import type { GlobeLook } from './look';
 
 export {
   latLonToVec3, setLatLonVec3, vec3ToLatLon, intersectUnitSphere, pickSphereNdc, normalizeLon,
@@ -18,6 +19,7 @@ export type { LonLat, Vec3Like, MutableVec3 } from './geo-math';
 export type { QualityLevel } from './terrain';
 export type { TerrainLodStats } from './lod';
 export type { DecorCullStats } from './decor-cull';
+export type { GlobeLook } from './look';
 /** [night-04] Decorations thinned by `setDecorDensity` (clouds stay: they carry the sky). */
 const THINNED = new Set(['Conifers', 'BroadleafTrees', 'Rocks']);
 
@@ -29,6 +31,10 @@ export interface GlobeOptions {
   readonly signal?: AbortSignal;
   /** `SunLights.direction`; drives the night-side city lights. */
   readonly sunDirection: Vector3;
+  /** [ext-03] Experimental look (DEV only; production always builds the diorama). */
+  readonly look?: GlobeLook;
+  /** [ext-03] Where the experimental textures live (default: the dev server's dev/globe-look/assets/). */
+  readonly lookAssetBase?: string;
 }
 export interface GlobeInstance {
   readonly group: Group;
@@ -126,14 +132,29 @@ export async function createGlobe(scene: Scene, opts: GlobeOptions): Promise<Glo
   const landUrl = opts.landUrl ?? `${import.meta.env.BASE_URL}data/land-50m.json`;
   const mask = await loadLandMask(landUrl, opts.signal);
   if (opts.signal?.aborted) throw new DOMException('Aborted', 'AbortError');
+  // [ext-03] Experimental looks (docs/mockups/globe-2026-11/): the ternary lets Vite drop look.ts from production.
+  const look = opts.look ?? 'diorama';
+  const lookModule = import.meta.env.DEV && look !== 'diorama' ? await import('./look') : null;
+  const assets = lookModule && look !== 'diorama' ? await lookModule.loadLookAssets(look, quality,
+    opts.lookAssetBase ?? `${import.meta.env.BASE_URL}dev/globe-look/assets/`, opts.signal) : null;
+  if (opts.signal?.aborted) throw new DOMException('Aborted', 'AbortError');
+  const style = assets?.style ?? DIORAMA_STYLE;
   const group = new Group();
   group.name = 'AirwayDioramaGlobe';
   // [night-04] D-73: near (preset) level plus a coarser far level, both chunked for culling.
   const lod = createTerrainLod(
-    TERRAIN_LOD_LEVELS[quality].map((level) => chunkTerrain(buildTerrainArrays(mask, level), level)),
-    createTerrainMaterial());
-  const decorations = createDecorations(mask, quality, opts.seed ?? 7, opts.sunDirection);
-  group.add(lod.group, decorations, createAtmosphere());
+    TERRAIN_LOD_LEVELS[quality].map((level) => chunkTerrain(buildTerrainArrays(mask, level, style), level)),
+    lookModule && assets?.config.terrain === 'textured'
+      ? lookModule.createTexturedTerrainMaterial(assets, opts.sunDirection) : createTerrainMaterial(style));
+  const decorations = createDecorations(mask, quality, opts.seed ?? 7, opts.sunDirection, assets?.decor);
+  group.add(lod.group, decorations);
+  if (lookModule && assets) {
+    const segments = quality === 'low' ? 96 : quality === 'medium' ? 128 : 160;
+    group.add(lookModule.createOceanShell(assets.config, opts.sunDirection, segments),
+      ...lookModule.createScatterAtmosphere(opts.sunDirection));
+    if (assets.clouds) group.add(lookModule.createCloudShell(assets.clouds, opts.sunDirection, segments));
+    group.userData['lookBytes'] = assets.bytes;
+  } else group.add(createAtmosphere());
   // Instances are placed in random order, so any prefix is an even thinning of the whole set.
   // [night-07f] Trees and rocks: chunk-culled and thinned per chunk (decor-cull.ts); city lights: a prefix.
   const culled: InstancedMesh[] = [];
@@ -168,6 +189,7 @@ export async function createGlobe(scene: Scene, opts: GlobeOptions): Promise<Glo
       disposed = true;
       scene.remove(group);
       lod.dispose();
+      for (const texture of [assets?.day, assets?.night, assets?.clouds]) texture?.dispose();
       group.traverse((object) => {
         if (object instanceof Mesh || object instanceof Points) {
           object.geometry.dispose();

@@ -1,0 +1,282 @@
+{
+  "diorama-day-fold": {
+    "look": "diorama",
+    "time": "day",
+    "size": "fold",
+    "assetBytes": 0,
+    "errors": [],
+    "contrast": {
+      "routes": 2.38,
+      "airports": 2.36,
+      "planes": 2.47,
+      "tags": 1.62
+    },
+    "stats": null
+  },
+  "diorama-day-phone": {
+    "look": "diorama",
+    "time": "day",
+    "size": "phone",
+    "assetBytes": 0,
+    "errors": [],
+    "contrast": {
+      "routes": 2.15,
+      "airports": 2.29,
+      "planes": 1.88,
+      "tags": 2.22
+    },
+    "stats": null
+  },
+  "diorama-dusk-fold": {
+    "look": "diorama",
+    "time": "dusk",
+    "size": "fold",
+    "assetBytes": 0,
+    "errors": [],
+    "contrast": {
+      "routes": 5.38,
+      "airports": 6.74,
+      "planes": 3.89,
+      "tags": 7.52
+    },
+    "stats": null
+  },
+  "diorama-dusk-phone": {
+    "look": "diorama",
+    "time": "dusk",
+    "size": "phone",
+    "assetBytes": 0,
+    "errors": [],
+    "contrast": {
+      "routes": 3.95,
+      "airports": 5.76,
+      "planes": 3.56,
+      "tags": 7.67
+    },
+    "stats": null
+  },
+  "refined-day-fold": {
+    "look": "refined",
+    "time": "day",
+    "size": "fold",
+    "assetBytes": 0,
+    "errors": [],
+    "contrast": {
+      "routes": 2.37,
+      "airports": 2.3,
+      "planes": 2.81,
+      "tags": 3.09
+    },
+    "stats": null
+  },
+  "refined-day-phone": {
+    "look": "refined",
+    "time": "day",
+    "size": "phone",
+    "assetBytes": 0,
+    "errors": [],
+    "contrast": {
+      "routes": 2.21,
+      "airports": 2.25,
+      "planes": 2.39,
+      "tags": 3.18
+    },
+    "stats": null
+  },
+  "refined-dusk-fold": {
+    "look": "refined",
+    "time": "dusk",
+    "size": "fold",
+    "assetBytes": 0,
+    "errors": [],
+    "contrast": {
+      "routes": 6.38,
+      "airports": 7.46,
+      "planes": 8.28,
+      "tags": 7.27
+    },
+    "stats": null
+  },
+  "refined-dusk-phone": {
+    "look": "refined",
+    "time": "dusk",
+    "size": "phone",
+    "assetBytes": 0,
+    "errors": [],
+    "contrast": {
+      "routes": 4.06,
+      "airports": 5.99,
+      "planes": 5.89,
+      "tags": 7.9
+    },
+    "stats": null
+  },
+  "satellite-day-fold": {
+    "look": "satellite",
+    "time": "day",
+    "size": "fold",
+    "assetBytes": 0,
+    "errors": [],
+    "contrast": {
+      "routes": 5.66,
+      "airports": 5.22,
+      "planes": 5.14,
+      "tags": 12.92
+    },
+    "stats": null
+  },
+  "satellite-day-phone": {
+    "look": "satellite",
+    "time": "day",
+    "size": "phone",
+    "assetBytes": 0,
+    "errors": [],
+    "contrast": {
+      "routes": 3.75,
+      "airports": 4.89,
+      "planes": 3.98,
+      "tags": 9.24
+    },
+    "stats": null
+  },
+  "satellite-dusk-fold": {
+    "look": "satellite",
+    "time": "dusk",
+    "size": "fold",
+    "assetBytes": 0,
+    "errors": [],
+    "contrast": {
+      "routes": 7.91,
+      "airports": 8.59,
+      "planes": 8.92,
+      "tags": 13.8
+    },
+    "stats": null
+  },
+  "satellite-dusk-phone": {
+    "look": "satellite",
+    "time": "dusk",
+    "size": "phone",
+    "assetBytes": 0,
+    "errors": [],
+    "contrast": {
+      "routes": 4.98,
+      "airports": 7.57,
+      "planes": 4.75,
+      "tags": 16.84
+    },
+    "stats": null
+  },
+  "painted-day-fold": {
+    "look": "painted",
+    "time": "day",
+    "size": "fold",
+    "assetBytes": 0,
+    "errors": [],
+    "contrast": {
+      "routes": 3.23,
+      "airports": 3.09,
+      "planes": 2.91,
+      "tags": 4.89
+    },
+    "stats": null
+  },
+  "painted-day-phone": {
+    "look": "painted",
+    "time": "day",
+    "size": "phone",
+    "assetBytes": 0,
+    "errors": [],
+    "contrast": {
+      "routes": 2.59,
+      "airports": 2.97,
+      "planes": 2.4,
+      "tags": 4.87
+    },
+    "stats": null
+  },
+  "painted-dusk-fold": {
+    "look": "painted",
+    "time": "dusk",
+    "size": "fold",
+    "assetBytes": 0,
+    "errors": [],
+    "contrast": {
+      "routes": 5.69,
+      "airports": 6.66,
+      "planes": 8.03,
+      "tags": 10.87
+    },
+    "stats": null
+  },
+  "painted-dusk-phone": {
+    "look": "painted",
+    "time": "dusk",
+    "size": "phone",
+    "assetBytes": 0,
+    "errors": [],
+    "contrast": {
+      "routes": 3.69,
+      "airports": 6.01,
+      "planes": 5.25,
+      "tags": 10.93
+    },
+    "stats": null
+  },
+  "map-day-fold": {
+    "look": "map",
+    "time": "day",
+    "size": "fold",
+    "assetBytes": 0,
+    "errors": [],
+    "contrast": {
+      "routes": 1.33,
+      "airports": 1.38,
+      "planes": 1.52,
+      "tags": 1.75
+    },
+    "stats": null
+  },
+  "map-day-phone": {
+    "look": "map",
+    "time": "day",
+    "size": "phone",
+    "assetBytes": 0,
+    "errors": [],
+    "contrast": {
+      "routes": 1.29,
+      "airports": 1.36,
+      "planes": 1.44,
+      "tags": 1.69
+    },
+    "stats": null
+  },
+  "map-dusk-fold": {
+    "look": "map",
+    "time": "dusk",
+    "size": "fold",
+    "assetBytes": 0,
+    "errors": [],
+    "contrast": {
+      "routes": 2.77,
+      "airports": 3.08,
+      "planes": 3.72,
+      "tags": 4.23
+    },
+    "stats": null
+  },
+  "map-dusk-phone": {
+    "look": "map",
+    "time": "dusk",
+    "size": "phone",
+    "assetBytes": 0,
+    "errors": [],
+    "contrast": {
+      "routes": 2.2,
+      "airports": 2.83,
+      "planes": 3.13,
+      "tags": 4.28
+    },
+    "stats": null
+  }
+}

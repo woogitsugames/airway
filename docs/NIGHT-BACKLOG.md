@@ -546,6 +546,36 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       TTF `cmap` + borrowed ranges against the PL/EN catalogs, city/region names, numbers in six locales and the
       PL/EN/DE/FR/ES/PT-BR letter set. PL/EN output unchanged.
 
+## Globe look (D-170)
+Owner's choice 2026-11-03: the satellite globe (direction B). Plan, budgets and test lists per step:
+`docs/mockups/globe-2026-11/PLAN.md`; the DEV experiment to start from: `?globeLook=satellite`
+(`src/render/globe/look.ts`, `dev/globe-look/`). One PR per step, in order; G2+ change the shipped look, so attach
+before/after `npm run shots -- globe` PNGs and look at them.
+- [ ] G1 **Production globe assets** — reproducible bake into `public/data/globe/` (day 4096/2048, night 2048/1024,
+      elevation 2048, clouds 2048, ~1.9 MB) with a SHA-256 manifest; NASA/NOAA entries in `docs/ASSETS.md`; credit
+      line (PL/EN i18n) on the About page; bundle `total` budget → 4 300 kB (D-171); new fast test `test:globe-assets`.
+- [ ] G2 **Terrain from ETOPO5 elevation** — production `textured` TerrainStyle: real heights (sqrt exaggeration),
+      airport pads flattened, smooth normals, sea floor under the ocean shell; elevation decoded in parallel with the
+      land mask; `test:land`/`test:quality`/`test:framing` green, triangle budgets unchanged.
+- [ ] G3 **Textured surface material and night lights** — Blue Marble by direction (seam-safe), shipped day/night
+      grade, Black Marble emission replaces the city-light points; texture size per preset + adaptive step (D-173);
+      D-63 golden gate and D-47 contrast ≥ 4.5:1 re-checked (`test:daynight`, `test:store-shots`).
+- [ ] G4 **Ocean, atmosphere, clouds within fill-rate budget** — glint/fresnel and limb haze folded into the terrain
+      shader, outer halo as the only shell on low/saver, cloud shell on medium/high only; `transparentLayers` in
+      `world.stats()`; `test:quality`.
+- [ ] G5 **Remove diorama decorations and dead code** — trees, rocks, puffy clouds, decor culling (D-75 superseded),
+      `relief.ts`, diorama colouring, `refined`/`painted` experiment; new adaptive ladder; PERFORMANCE.md tables.
+- [ ] G6 **Menu, store, site, style docs** — menu contrast, `store:shots` (60 + feature graphic), `ui:matrix`,
+      `shots:site`, `docs/styles/realistyczny.md` (PL), D-11 status note; inspect every PNG.
+- [ ] G7 **Performance and device check** — `perf:scene` saver/low/medium/high, `perf:overlay`, hardware checklist
+      (GPU memory, first frame, 30 FPS on low); KTX2/ETC1S fallback only if a budget phone fails (D-174 follow-up).
+- [ ] G8 **"Mapa" mode next to "Satelita" (D-172)** — second texture set from the owner's chosen map look, uniform
+      swap without rebuild, `globeMode` setting (default satellite, PL/EN), dock tag toggle; dock/overlay tests,
+      `ui:matrix` at 320 dp. Mapa look: owner's reference (Google-Maps-like) in our own palette (`map-*.jpg`).
+- [ ] G9 **Airport objects, routes and planes for the new globe (D-175)** — first 2–3 engine-rendered variants for the
+      owner (Satelita + Mapa, seed 15 frame), wait for the owner's pick, then implement with a mode-dependent ink;
+      D-47 ≥ 4.5:1 for routes/airports/planes in both modes (`measureLayerContrast`), `store:shots`. Blocked on owner.
+
 ## Research proposals (R-agent)
 Proposals from the research agent (findings and sources: `docs/RESEARCH.md`, sections "R1 — …"). Each item is
 sized for one PR; **Area** says where it lands so the coordinator can route it. Items marked *needs Q-xx* wait for
