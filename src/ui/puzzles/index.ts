@@ -117,7 +117,7 @@ export function mountPuzzleSelector(host: HTMLElement, onExit: () => void = () =
   let session: PuzzleSession | null = null;
   let error = '';
   let focusNext = false;
-  function renderBoard(): void {
+  function renderBoard(returnFrom?: string): void {
     current = null;
     session = null;
     const completed = Object.keys(progress).length;
@@ -156,6 +156,24 @@ export function mountPuzzleSelector(host: HTMLElement, onExit: () => void = () =
       element('span', '', t('puzzle.board.caption')));
     wrapper.appendChild(bottom);
     root.replaceChildren(wrapper, live);
+    revealFlap(table, returnFrom);
+  }
+  /** [night-10y] The 30-row board used to open at puzzle 01 every time, so after puzzle 20 the player scrolled
+   * back down. Coming back from a level centres (and focuses) its flap; the first visit centres the first
+   * departure not yet cleared. Only the departures list scrolls, never the page. */
+  function revealFlap(table: HTMLElement, returnFrom?: string): void {
+    const id = returnFrom ?? PUZZLES.find((level) => !progress[level.id])?.id;
+    const flap = id ? table.querySelector<HTMLButtonElement>(`button[data-action="open:${id}"]`) : null;
+    if (!flap) return;
+    const place = (): void => {
+      if (!table.isConnected) return;
+      const box = table.getBoundingClientRect(), row = flap.getBoundingClientRect();
+      table.scrollTop += row.top - box.top - Math.max(0, (box.height - row.height) / 2);
+    };
+    place();
+    // The board may be mounted before the router attaches or sizes the host: place it again once laid out.
+    if (typeof requestAnimationFrame === 'function') requestAnimationFrame(place);
+    if (returnFrom) flap.focus({ preventScroll: true });
   }
   function openLevel(level: PuzzleLevel): void {
     current = level;
@@ -287,7 +305,7 @@ export function mountPuzzleSelector(host: HTMLElement, onExit: () => void = () =
     if (!control || !root.contains(control) || control.disabled) return;
     const [name, value] = (control.dataset.action ?? '').split(':');
     if (name === 'exit') { onExit(); return; }
-    if (name === 'back' || name === 'board') { renderBoard(); return; }
+    if (name === 'back' || name === 'board') { renderBoard(current?.id); return; }
     if (name === 'open') {
       const level = PUZZLES.find((item) => item.id === value);
       if (level) openLevel(level);
@@ -330,7 +348,7 @@ export function mountPuzzleSelector(host: HTMLElement, onExit: () => void = () =
   renderBoard();
   return {
     element: root,
-    back(): boolean { if (!current) return false; renderBoard(); return true; },
+    back(): boolean { if (!current) return false; renderBoard(current.id); return true; },
     dispose(): void { root.removeEventListener('click', onClick); root.remove(); },
   };
 }

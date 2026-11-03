@@ -294,6 +294,11 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       (screen-reader label with the next title) and has focus after the clear; after puzzle 30 it is "All puzzles" /
       "Wszystkie zadania" back to the board. `e2e/puzzles.mjs` checks it on all 30 levels and clicks 01 → 02.
       Also: the duplicate owner question id Q-39 (logbook entry) is now Q-40.
+- [x] N10y **Puzzle board opens where the player is** — the 30-row departures board always opened at puzzle 01, so
+      a player on puzzle 20 scrolled down every visit, and Back from a level threw the list back to the top. The
+      board now centres the first departure not yet cleared, and coming back from a level (Back, "All puzzles",
+      hardware back/Escape) centres that level's flap and focuses it. Only the list scrolls.
+      `e2e/puzzle-board-scroll.mjs` (`test:e2e:puzzle-board-scroll`, in `test:ci`; 3/12 on the old board).
 
 ## Log
 <!-- one line per finished item: date UTC · item · PR · gate summary -->
@@ -363,3 +368,4 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
 - 2026-11-03 · N10u overlay tags reuse glyph nodes · night/10u-overlay-perf · test:fast 58/58, build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:transfer-glyphs 2/2, e2e:new-airport 4/4, e2e:curfew-barrier 2/2, perf:overlay mismatched=0 (40/40 with stale-child removal off), 40-airport frame 0.96–1.03 → 0.76–0.81 ms (5 changes), 3.8 → 2.6–2.9 ms (40)
 - 2026-11-03 · N10v long play 1280×800 PL / 412×915 EN 4× + edge chips clear of airports · night/10v-edge-chips · ui:long-play PL runs=4 maxWeek=1 issues=0, EN runs=2 maxWeek=3 issues=1 (fixed); test:fast 58/58, build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:edge-dock 3/3, e2e:upgrade-picks 10/10, e2e:new-airport 4/4, test:e2e:edge-chip-airports 2/2 (1/2 on the old overlay)
 - 2026-11-03 · N10w next puzzle after a clear · night/10w-next-puzzle · test:fast 58/58, build ok, test:e2e:puzzles 34/34 (3/34 passed, failing at puzzle 01, on the old screen), test:i18n keys=378; e2e:smoke/ui:matrix not run (puzzle screen only)
+- 2026-11-03 · N10y puzzle board opens where the player is · night/10y-board-scroll · test:fast 58/58, build ok, test:e2e:puzzle-board-scroll 12/12 (3 runs; 3/12 on the old board), e2e:puzzles 34/34; e2e:smoke/ui:matrix not run (puzzle board only)
