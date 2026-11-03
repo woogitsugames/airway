@@ -141,3 +141,5 @@
     scroll-behavior: auto !important;
   }
 }
+/* [m3] On the yellow sign the ring stands off the black tile so the ink line reads against the yellow. */
+:root .airway-upgrade-pick:focus-visible { outline-offset: 3px; }

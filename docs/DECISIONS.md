@@ -438,6 +438,32 @@ Atkinson Hyperlegible Next via `unicode-range` (same OFL files) and " · " is sy
 checks menu, upgrade labels and game over in PL/EN at 360–915 px for bare mid-word breaks, header gaps ≥ 8 px and
 dot symmetry. **Status: in force.**
 
+## D-55 — Accessibility pass: live announcements, keyboard, reduced motion, 130 % text (2026-11-03, Claude, M3)
+- **Text size** (100/115/130 %, D-31 setting): one PostCSS rule (`scripts/lib/postcss-text-scale.mjs`, wired in
+  `vite.config.ts`) multiplies every absolute `font-size` / `font` size in `src/ui/**/*.css` by
+  `--airway-text-scale`; container-fitted (`cqi`) and already-scaled sizes are left alone. Boxes that held the text
+  get room in one sheet, `src/ui/theme/large-text.css`, scoped to a non-default scale (100 % is pixel-identical): the
+  boarding-pass fields size to content, split-flap tiles grow with their letters and on a portrait phone a departure
+  row puts gate + status under the title, settings rows stack, the upgrade stencil header may wrap. No
+  `transform: scale`. Checked by `npm run ui:matrix:130` and `test:a11y` (settings).
+- **Screen reader**: `src/ui/a11y-live.ts` owns two regions per run: polite (`role=status`) and assertive
+  (`role=alert`, only for an airport that started its jam countdown). Announced: airport nearly full (≥ 80 %, re-armed
+  below 60 %), jam / jam cleared, aircraft held for a departure slot (one coalesced sentence per game hour), weekly
+  board opened with its offers, upgrade chosen, airport pick prompt, game over. Messages in one 400 ms window are
+  joined into one utterance; spoken airport names use the city name, not the code. Every control has a name.
+- **Keyboard / TV remote**: `src/ui/a11y-keys.ts`: Tab/Shift+Tab stay inside the topmost open board (`aria-modal`),
+  arrows / D-pad move to the previous / next control, Enter/Space activate, Escape = Android back (existing
+  `src/platform/back.ts`). Focus moves into the weekly board and back to where it was, into the pause sheet and the
+  game-over board, and back to the menu row the player left. The hub / airport pick gets airport buttons in the
+  yellow sign: visible with keyboard input, screen-reader-only otherwise (touch players still tap the globe).
+  Drawing routes needs a pointer (open question to the owner).
+- **Focus ring**: one rule for all controls: 3 px ink outline + 3 px sign-yellow band (hard edges, no glow), so it
+  reads on paper, the yellow sign and the black board.
+- **Reduced motion**: `prefers-reduced-motion` turns every CSS transition off and shortens every CSS animation to
+  1 ms (end state kept), on top of the per-module rules; JS motion (menu globe D-62, split-flap, game-over camera)
+  already reads the same query. `test:a11y` fails on any animation/transition > 100 ms on the main screens.
+**Status: in force (M3).**
+
 ## D-60 — First weekly upgrade at ~7.2 min is accepted (2026-11-02, owner)
 Keeps 1 tick = 1 game minute and the D-43 balance (median 12.9 min, 86% / 44%). Supersedes the "4–5 min" estimate in D-40.
 **Status: in force.**

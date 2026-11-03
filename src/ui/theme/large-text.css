@@ -43,8 +43,9 @@
 }
 /* A phone in portrait has no room for title, gate and status side by side: title above, gate + status below. */
 @media (max-width: 559px) {
-  :root:not([data-airway-text-scale='100']) .airway-board__header { grid-template-columns: minmax(0, 1fr) auto auto; }
-  :root:not([data-airway-text-scale='100']) .airway-flight {
+  /* The header follows the same two-line grid, so BRAMKA / STATUS stand over their columns. */
+  :root:not([data-airway-text-scale='100']) .airway-board__header > :first-child { grid-column: 1 / -1; }
+  :root:not([data-airway-text-scale='100']) :is(.airway-board__header, .airway-flight) {
     grid-template-columns: calc(48px * var(--airway-text-scale)) minmax(0, 1fr);
     grid-template-areas: 'main main' 'gate status';
     row-gap: 6px;
