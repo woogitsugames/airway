@@ -46,6 +46,12 @@ interface BubbleEntry {
   anchor: Vector3;
   bubble: HTMLDivElement;
   edge: HTMLButtonElement;
+  /** [night-11d] Waiting-area gauge on the edge chip: track and fill, sized from `waiting.length / capacity`. */
+  gauge: HTMLSpanElement;
+  gaugeFill: HTMLSpanElement;
+  /** [night-11d] Waiting places of the terminal (0 = unknown: no gauge). */
+  capacity: number;
+  lastGauge: string;
   timer: HTMLSpanElement;
   /** [night-10a] Ink "NEW" stub at the front of the tag while the airport is newly opened. */
   fresh: HTMLSpanElement;
@@ -98,6 +104,8 @@ export interface AirportOverlay {
   /** `connecting`: how many of the last `waiting` entries are transfers still making their connection. */
   setPassengers(id: string, waiting: readonly DestinationRegion[], connecting?: number): void;
   setJamCountdown(id: string, seconds: number | null): void;
+  /** [night-11d] Waiting places of the terminal; the edge chip of an off-screen airport draws how many are taken. */
+  setCapacity(id: string, capacity: number): void;
   /** [task-38] Aircraft held for a departure slot and game minutes to the next slot; held 0 hides the tag. */
   setSlotHold(id: string, held: number, minutes: number): void;
   /** [night-10a] Newly opened airport: ink "NEW" stub on its tag and an ink edge chip. */
@@ -279,9 +287,12 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
     bubble.classList.toggle('airport-bubble--new', entry.isNew);
     entry.edge.classList.toggle('airport-edge--new', entry.isNew && !jammed);
     entry.edge.classList.toggle('airport-edge--curfew', entry.closed && !jammed); // [night-10h]
+    const taken = Math.min(entry.waiting.length, entry.capacity);
     const edgeAria = t('airport.focus', { code: entry.airport.code }) +
-      (entry.closed ? ' ' + t('airport.curfewAria', { code: entry.airport.code }) : '');
+      (entry.closed ? ' ' + t('airport.curfewAria', { code: entry.airport.code }) : '') +
+      (taken > 0 && entry.capacity > 0 ? ' ' + t('airport.edgeFillAria', { count: taken, capacity: entry.capacity }) : '');
     if (entry.edge.getAttribute('aria-label') !== edgeAria) entry.edge.setAttribute('aria-label', edgeAria);
+    rebuildGauge(entry, taken);
     sizeTagGroup(entry.tag, entry.mainWidth, entry.slotRect);
     entry.timer.hidden = !jammed;
     if (jammed) {
@@ -294,6 +305,25 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       (entry.connecting > 0 ? ' ' + t('airport.connectingAria', { count: entry.connecting }) : '');
     if (aria !== entry.ariaLabel) { bubble.setAttribute('aria-label', aria); entry.ariaLabel = aria; }
     bubble.classList.toggle('airport-bubble--connecting', entry.connecting > 0);
+  }
+
+  /**
+   * [night-11d] An off-screen airport used to show only its code until its waiting area was already full (red chip,
+   * 45 s of grace). The chip now carries a gauge under the code: its length is the share of waiting places taken
+   * (readable without colour); from three quarters full the fill turns signal red. Hidden while nobody waits.
+   */
+  function rebuildGauge(entry: BubbleEntry, taken: number): void {
+    const show = taken > 0 && entry.capacity > 0;
+    const percent = show ? Math.max(8, Math.round(taken * 100 / entry.capacity)) : 0;
+    const high = show && taken * 4 >= entry.capacity * 3;
+    const key = show ? `${taken}/${entry.capacity}` : '';
+    if (key === entry.lastGauge) return;
+    entry.lastGauge = key;
+    entry.gauge.hidden = !show;
+    entry.edge.classList.toggle('airport-edge--gauge', show);
+    entry.gauge.classList.toggle('airport-edge__gauge--high', high);
+    entry.gaugeFill.style.width = percent + '%';
+    entry.edge.dataset.fill = show ? `${taken}/${entry.capacity}` : '';
   }
 
   /** [task-38] Rebuild the slot tag text only when the held count or the countdown changes. */
@@ -418,7 +448,14 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       edge.className = 'airport-edge';
       edge.hidden = true;
       edge.setAttribute('aria-label', t('airport.focus', { code: airport.code }));
-      edge.append(arrow(), document.createTextNode(airport.code));
+      const gauge = document.createElement('span');
+      gauge.className = 'airport-edge__gauge';
+      gauge.hidden = true;
+      gauge.setAttribute('aria-hidden', 'true');
+      const gaugeFill = document.createElement('span');
+      gaugeFill.className = 'airport-edge__fill';
+      gauge.appendChild(gaugeFill);
+      edge.append(arrow(), document.createTextNode(airport.code), gauge);
       edge.addEventListener('click', () => options.onNavigate?.(airport.id));
       // [task-38] Slot tag: stub with the clock mark, "SLOT" label, h:mm countdown, optional ×N.
       const slot = document.createElement('div');
@@ -439,7 +476,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       layer.append(bubble, slot, edge);
       const tag: TagSlot = { id: airport.id, anchorX: 0, anchorY: 0, width: 30, height: 30, active: false, jammed: false, x: 0, y: 0, placed: false };
       const entry: BubbleEntry = {
-        airport, normal, anchor, bubble, edge, timer, fresh, isNew: false, barrier, closed: false, tag,
+        airport, normal, anchor, bubble, edge, gauge, gaugeFill, capacity: 0, lastGauge: '', timer, fresh, isNew: false, barrier, closed: false, tag,
         glyphPool: new Map(), more, children: [], ariaLabel: '',
         slot, slotLabel, slotTime, slotCount, slotRect: { width: 0, x: 0, y: 0, visible: false }, slotHeld: 0, slotMinutes: 0,
         mainWidth: 0, slotVisible: false, lastSlotX: NaN, lastSlotY: NaN,
@@ -467,6 +504,13 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       if (seconds !== null && (!Number.isFinite(seconds) || seconds < 0)) throw new RangeError('Invalid jam countdown');
       if (entry.jamSeconds === seconds) return;
       entry.jamSeconds = seconds;
+      rebuildBubble(entry);
+    },
+    setCapacity(id, capacity): void {
+      const entry = get(id);
+      if (!Number.isSafeInteger(capacity) || capacity < 0) throw new RangeError('Invalid waiting capacity');
+      if (entry.capacity === capacity) return;
+      entry.capacity = capacity;
       rebuildBubble(entry);
     },
     setSlotHold(id, held, minutes): void {

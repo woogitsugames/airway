@@ -17,25 +17,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATC / SLOTY 07 AMM · SLOT 0:54 Limit odlotów z AMM: 3 na godzinę, samoloty czekają na ziemi. Rozłóż loty albo weź „+2 sloty”. TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 23:47 PASAŻERÓW 29 0 0 0 1×",
+   "text": "ATC / SLOTY 07 AMM · SLOT 0:54 Limit odlotów z AMM: 3 na godzinę, samoloty czekają na ziemi. Rozłóż loty albo weź „+2 sloty”. TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 00:05 PASAŻERÓW 29 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
-    "routes": 9.35,
+    "routes": 9.36,
     "airports": 9.03,
-    "planes": 9.14,
-    "tags": 12.07
+    "planes": 8.75,
+    "tags": 12.44
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.448
+    "ratio": 0.447
    },
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 111.3,
-    "lumaStd": 89,
+    "meanLuma": 112.1,
+    "lumaStd": 89.3,
     "whiteShare": 0,
-    "colours": 359
+    "colours": 374
    }
   },
   {
@@ -46,13 +46,13 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATC / SLOTY 07 AMM · SLOT 0:54 Limit odlotów z AMM: 3 na godzinę, samoloty czekają na ziemi. Rozłóż loty albo weź „+2 sloty”. TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 23:47 PASAŻERÓW 29 0 0 0 1×",
+   "text": "ATC / SLOTY 07 AMM · SLOT 0:54 Limit odlotów z AMM: 3 na godzinę, samoloty czekają na ziemi. Rozłóż loty albo weź „+2 sloty”. TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 00:03 PASAŻERÓW 29 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
     "routes": 9.36,
-    "airports": 9.01,
-    "planes": 9.17,
-    "tags": 12.22
+    "airports": 9.02,
+    "planes": 8.33,
+    "tags": 12.37
    },
    "warmth": {
     "gold": 0.002,
@@ -61,7 +61,7 @@
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 100.1,
+    "meanLuma": 100,
     "lumaStd": 82.2,
     "whiteShare": 0,
     "colours": 356
@@ -75,23 +75,23 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATC / SLOTY 07 AMM · SLOT 0:54 Limit odlotów z AMM: 3 na godzinę, samoloty czekają na ziemi. Rozłóż loty albo weź „+2 sloty”. TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 23:47 PASAŻERÓW 29 0 0 0 1×",
+   "text": "ATC / SLOTY 07 AMM · SLOT 0:54 Limit odlotów z AMM: 3 na godzinę, samoloty czekają na ziemi. Rozłóż loty albo weź „+2 sloty”. TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 00:05 PASAŻERÓW 29 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
-    "routes": 9.36,
+    "routes": 9.37,
     "airports": 9.03,
-    "planes": 9.16,
+    "planes": 9.06,
     "tags": 11.33
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.426
+    "ratio": 0.425
    },
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 94.3,
-    "lumaStd": 79.6,
+    "meanLuma": 94.5,
+    "lumaStd": 79.8,
     "whiteShare": 0,
     "colours": 360
    }
@@ -104,25 +104,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 16:44 PASAŻERÓW 26 0 0 0 1×",
+   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 16:54 PASAŻERÓW 26 0 0 0 1×",
    "sun": "-70.7@31.2,38.2",
    "contrast": {
-    "routes": 7.83,
-    "airports": 6.87,
-    "planes": 7.34,
-    "tags": 9.18
+    "routes": 8.97,
+    "airports": 7.89,
+    "planes": 7.02,
+    "tags": 12.93
    },
    "warmth": {
-    "gold": 0.086,
-    "ratio": 1.066
+    "gold": 0.083,
+    "ratio": 1.015
    },
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 107.4,
-    "lumaStd": 73.4,
+    "meanLuma": 105.7,
+    "lumaStd": 74.5,
     "whiteShare": 0,
-    "colours": 603
+    "colours": 583
    }
   },
   {
@@ -133,25 +133,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 16:43 PASAŻERÓW 26 0 0 0 1×",
+   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 16:59 PASAŻERÓW 26 0 0 0 1×",
    "sun": "-70.7@31.2,38.2",
    "contrast": {
-    "routes": 8.17,
-    "airports": 7.15,
-    "planes": 7.34,
-    "tags": 8.89
+    "routes": 9.95,
+    "airports": 8.55,
+    "planes": 7.36,
+    "tags": 13.71
    },
    "warmth": {
-    "gold": 0.064,
-    "ratio": 0.942
+    "gold": 0.073,
+    "ratio": 0.897
    },
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 100.9,
-    "lumaStd": 69.3,
+    "meanLuma": 97.9,
+    "lumaStd": 70.4,
     "whiteShare": 0,
-    "colours": 597
+    "colours": 578
    }
   },
   {
@@ -162,25 +162,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 16:43 PASAŻERÓW 26 0 0 0 1×",
+   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 17:02 PASAŻERÓW 26 0 0 0 1×",
    "sun": "-70.7@31.2,38.2",
    "contrast": {
-    "routes": 8.19,
-    "airports": 7.21,
-    "planes": 7.27,
-    "tags": 5
+    "routes": 10.15,
+    "airports": 8.77,
+    "planes": 7.51,
+    "tags": 12.42
    },
    "warmth": {
-    "gold": 0.068,
-    "ratio": 0.95
+    "gold": 0.076,
+    "ratio": 0.895
    },
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 98.2,
-    "lumaStd": 67.5,
+    "meanLuma": 94.2,
+    "lumaStd": 68.5,
     "whiteShare": 0,
-    "colours": 602
+    "colours": 569
    }
   },
   {
@@ -191,7 +191,7 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ULN BKO TYDZIEŃ 01 DZIEŃ 3/3 GODZ. 02:00 PASAŻERÓW 54 0 0 0 1× Tydzień 1 Hangar: przyszły trzy skrzynie. Otwierasz jedną. FRACHT · TP-48 1/3 Turbo­śmigłowiec ZASIĘG 2 500 km MIEJSC 48 NAJLEPSZY krótkie trasy FRACHT · WB-300 2/3 Szeroko­kadłubowiec ZASIĘG 11 000 km MIEJSC 300 NAJLEPSZY przez ocean FRACHT · SLOT+2 3/3 Sloty startowe ODLOTY +2 na godzinę DLA wybranego lotniska AMM 14 min",
+   "text": "ULN BKO TYDZIEŃ 01 DZIEŃ 3/3 GODZ. 02:00 PASAŻERÓW 54 0 0 0 1× Tydzień 1 Hangar: przyszły trzy skrzynie. Otwierasz jedną. FRACHT · TP-48 1/3 Turbo­śmigłowiec ZASIĘG 2 500 km MIEJSC 48 NAJLEPSZY krótkie trasy FRACHT · WB-300 2/3 Szeroko­kadłubowiec ZASIĘG 11 000 km MIEJSC 300 NAJLEPSZY przez ocean FRACHT · SLOT+2 3/3 Sloty startowe ODLOTY +2 na godzinę DLA wybranego lotniska AMM 13 min",
    "contrast": {
     "routes": 9.49,
     "airports": 9.09,
@@ -200,7 +200,7 @@
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.453
+    "ratio": 0.452
    },
    "png": {
     "width": 1080,
@@ -208,7 +208,7 @@
     "meanLuma": 140.3,
     "lumaStd": 63.9,
     "whiteShare": 0,
-    "colours": 182
+    "colours": 181
    }
   },
   {
@@ -219,12 +219,12 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ULN BKO TYDZIEŃ 01 DZIEŃ 3/3 GODZ. 02:00 PASAŻERÓW 54 0 0 0 1× Tydzień 1 Hangar: przyszły trzy skrzynie. Otwierasz jedną. FRACHT · TP-48 1/3 Turbo­śmigłowiec ZASIĘG 2 500 km MIEJSC 48 NAJLEPSZY krótkie trasy FRACHT · WB-300 2/3 Szeroko­kadłubowiec ZASIĘG 11 000 km MIEJSC 300 NAJLEPSZY przez ocean FRACHT · SLOT+2 3/3 Sloty startowe ODLOTY +2 na godzinę DLA wybranego lotniska AMM 14 min",
+   "text": "ULN BKO TYDZIEŃ 01 DZIEŃ 3/3 GODZ. 02:00 PASAŻERÓW 54 0 0 0 1× Tydzień 1 Hangar: przyszły trzy skrzynie. Otwierasz jedną. FRACHT · TP-48 1/3 Turbo­śmigłowiec ZASIĘG 2 500 km MIEJSC 48 NAJLEPSZY krótkie trasy FRACHT · WB-300 2/3 Szeroko­kadłubowiec ZASIĘG 11 000 km MIEJSC 300 NAJLEPSZY przez ocean FRACHT · SLOT+2 3/3 Sloty startowe ODLOTY +2 na godzinę DLA wybranego lotniska AMM 13 min",
    "contrast": {
     "routes": 9.5,
     "airports": 9.04,
     "planes": 9.96,
-    "tags": 12.59
+    "tags": 12.47
    },
    "warmth": {
     "gold": 0.002,
@@ -247,12 +247,12 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ULN BKO TYDZIEŃ 01 DZIEŃ 3/3 GODZ. 02:00 PASAŻERÓW 54 0 0 0 1× Tydzień 1 Hangar: przyszły trzy skrzynie. Otwierasz jedną. FRACHT · TP-48 1/3 Turbo­śmigłowiec ZASIĘG 2 500 km MIEJSC 48 NAJLEPSZY krótkie trasy FRACHT · WB-300 2/3 Szeroko­kadłubowiec ZASIĘG 11 000 km MIEJSC 300 NAJLEPSZY przez ocean FRACHT · SLOT+2 3/3 Sloty startowe ODLOTY +2 na godzinę DLA wybranego lotniska AMM 14 min",
+   "text": "ULN BKO TYDZIEŃ 01 DZIEŃ 3/3 GODZ. 02:00 PASAŻERÓW 54 0 0 0 1× Tydzień 1 Hangar: przyszły trzy skrzynie. Otwierasz jedną. FRACHT · TP-48 1/3 Turbo­śmigłowiec ZASIĘG 2 500 km MIEJSC 48 NAJLEPSZY krótkie trasy FRACHT · WB-300 2/3 Szeroko­kadłubowiec ZASIĘG 11 000 km MIEJSC 300 NAJLEPSZY przez ocean FRACHT · SLOT+2 3/3 Sloty startowe ODLOTY +2 na godzinę DLA wybranego lotniska AMM 13 min",
    "contrast": {
     "routes": 9.49,
     "airports": 9.09,
     "planes": 9.96,
-    "tags": 11.68
+    "tags": 11.53
    },
    "warmth": {
     "gold": 0.002,
@@ -279,8 +279,8 @@
    "contrast": {
     "routes": 4.64,
     "airports": 4.49,
-    "planes": 3.42,
-    "tags": 1.36
+    "planes": 3.7,
+    "tags": 1.35
    },
    "warmth": {
     "gold": 0.027,
@@ -318,7 +318,7 @@
     "width": 1346,
     "height": 1682,
     "meanLuma": 129.7,
-    "lumaStd": 87.8,
+    "lumaStd": 87.9,
     "whiteShare": 0,
     "colours": 205
    }
@@ -333,14 +333,14 @@
    "devOverlay": false,
    "text": "+13 +5 +20 0:00 +6 ULN BKO REC TUN NOWE TYDZIEŃ 02 DZIEŃ 3/3 GODZ. 14:38 PASAŻERÓW 59 1 0 0 1× SIATKA WSTRZYMANA MAPA ODLOTY · BGW LOT / CEL BRAMKA STATUS AW101 · AMM A1 ODWOŁANY ATC · RAPORT ZDARZENIA Dowiezieni pasażerowie: 59 Ukończone tygodnie: 1 PRZYCZYNY PRZEBIEG 25 pasażerów nie miało trasy do regionu docelowego. 62% oczekujących chciało dotrzeć do Europy Północnej (16 osób). Poczekalnia przepełniona: 26 osób na 24 miejsca. NOWY REKORD LOKALNY JESZCZE RAZ · TEN SAM ŚWIAT NOWY ŚWIAT MENU",
    "contrast": {
-    "routes": 4.66,
-    "airports": 4.48,
-    "planes": 3.4,
+    "routes": 4.67,
+    "airports": 4.49,
+    "planes": 3.54,
     "tags": 1.42
    },
    "warmth": {
-    "gold": 0.035,
-    "ratio": 1.062
+    "gold": 0.036,
+    "ratio": 1.063
    },
    "png": {
     "width": 1536,
@@ -384,7 +384,7 @@
     "meanLuma": 91.6,
     "lumaStd": 70,
     "whiteShare": 0,
-    "colours": 637
+    "colours": 643
    }
   },
   {
@@ -399,10 +399,10 @@
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 93.6,
-    "lumaStd": 69.3,
+    "meanLuma": 93.7,
+    "lumaStd": 69.4,
     "whiteShare": 0,
-    "colours": 668
+    "colours": 663
    }
   },
   {
@@ -413,17 +413,17 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATC / SLOTS 07 AMM · SLOT 0:55 AMM launches 3 flights per hour; aircraft wait on the ground. Spread flights or pick “+2 slots”. WEEK 01 DAY 2/3 TIME 23:47 PASSENGERS 29 0 0 0 1×",
+   "text": "ATC / SLOTS 07 AMM · SLOT 0:54 AMM launches 3 flights per hour; aircraft wait on the ground. Spread flights or pick “+2 slots”. WEEK 01 DAY 2/3 TIME 00:01 PASSENGERS 29 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
-    "routes": 9.35,
+    "routes": 9.36,
     "airports": 9.03,
-    "planes": 9.05,
-    "tags": 11.98
+    "planes": 8.72,
+    "tags": 12.4
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.449
+    "ratio": 0.448
    },
    "png": {
     "width": 1080,
@@ -431,7 +431,7 @@
     "meanLuma": 111.4,
     "lumaStd": 89,
     "whiteShare": 0,
-    "colours": 357
+    "colours": 366
    }
   },
   {
@@ -442,25 +442,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATC / SLOTS 07 AMM · SLOT 0:55 AMM launches 3 flights per hour; aircraft wait on the ground. Spread flights or pick “+2 slots”. WEEK 01 DAY 2/3 TIME 23:47 PASSENGERS 29 0 0 0 1×",
+   "text": "ATC / SLOTS 07 AMM · SLOT 0:54 AMM launches 3 flights per hour; aircraft wait on the ground. Spread flights or pick “+2 slots”. WEEK 01 DAY 2/3 TIME 00:04 PASSENGERS 29 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
-    "routes": 9.36,
+    "routes": 9.37,
     "airports": 9.01,
-    "planes": 9.17,
-    "tags": 12.22
+    "planes": 8.79,
+    "tags": 12.4
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.432
+    "ratio": 0.431
    },
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 100.1,
-    "lumaStd": 82.2,
+    "meanLuma": 100.4,
+    "lumaStd": 82.3,
     "whiteShare": 0,
-    "colours": 356
+    "colours": 362
    }
   },
   {
@@ -471,25 +471,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATC / SLOTS 07 AMM · SLOT 0:54 AMM launches 3 flights per hour; aircraft wait on the ground. Spread flights or pick “+2 slots”. WEEK 01 DAY 2/3 TIME 23:47 PASSENGERS 29 0 0 0 1×",
+   "text": "ATC / SLOTS 07 AMM · SLOT 0:54 AMM launches 3 flights per hour; aircraft wait on the ground. Spread flights or pick “+2 slots”. WEEK 01 DAY 2/3 TIME 00:08 PASSENGERS 29 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
-    "routes": 9.36,
+    "routes": 9.38,
     "airports": 9.03,
-    "planes": 9.17,
+    "planes": 9.08,
     "tags": 11.33
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.426
+    "ratio": 0.425
    },
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 94.3,
-    "lumaStd": 79.6,
+    "meanLuma": 94.5,
+    "lumaStd": 79.8,
     "whiteShare": 0,
-    "colours": 361
+    "colours": 365
    }
   },
   {
@@ -500,25 +500,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "WEEK 01 DAY 2/3 TIME 16:43 PASSENGERS 26 0 0 0 1×",
+   "text": "WEEK 01 DAY 2/3 TIME 16:55 PASSENGERS 26 0 0 0 1×",
    "sun": "-70.7@31.2,38.2",
    "contrast": {
-    "routes": 7.79,
-    "airports": 6.87,
-    "planes": 7.43,
-    "tags": 9.18
+    "routes": 9.31,
+    "airports": 8.13,
+    "planes": 7.04,
+    "tags": 12.93
    },
    "warmth": {
-    "gold": 0.086,
-    "ratio": 1.069
+    "gold": 0.082,
+    "ratio": 1.004
    },
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 107.5,
-    "lumaStd": 73.5,
+    "meanLuma": 105.6,
+    "lumaStd": 74.5,
     "whiteShare": 0,
-    "colours": 603
+    "colours": 580
    }
   },
   {
@@ -529,25 +529,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "WEEK 01 DAY 2/3 TIME 16:43 PASSENGERS 26 0 0 0 1×",
+   "text": "WEEK 01 DAY 2/3 TIME 17:00 PASSENGERS 26 0 0 0 1×",
    "sun": "-70.7@31.2,38.2",
    "contrast": {
-    "routes": 8.02,
-    "airports": 7.03,
-    "planes": 7.29,
-    "tags": 8.89
+    "routes": 10.23,
+    "airports": 8.86,
+    "planes": 7.61,
+    "tags": 14.25
    },
    "warmth": {
-    "gold": 0.064,
-    "ratio": 0.946
+    "gold": 0.079,
+    "ratio": 0.89
    },
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 100.9,
-    "lumaStd": 69.3,
+    "meanLuma": 97.5,
+    "lumaStd": 70.2,
     "whiteShare": 0,
-    "colours": 597
+    "colours": 574
    }
   },
   {
@@ -558,25 +558,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "WEEK 01 DAY 2/3 TIME 16:43 PASSENGERS 26 0 0 0 1×",
+   "text": "WEEK 01 DAY 2/3 TIME 17:00 PASSENGERS 26 0 0 0 1×",
    "sun": "-70.7@31.2,38.2",
    "contrast": {
-    "routes": 8.11,
-    "airports": 7.14,
-    "planes": 7.29,
-    "tags": 5.27
+    "routes": 10.12,
+    "airports": 8.75,
+    "planes": 7.48,
+    "tags": 12.42
    },
    "warmth": {
-    "gold": 0.068,
-    "ratio": 0.954
+    "gold": 0.076,
+    "ratio": 0.895
    },
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 98.3,
-    "lumaStd": 67.5,
+    "meanLuma": 94.7,
+    "lumaStd": 68.6,
     "whiteShare": 0,
-    "colours": 605
+    "colours": 583
    }
   },
   {
@@ -587,11 +587,11 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ULN BKO WEEK 01 DAY 3/3 TIME 02:00 PASSENGERS 54 0 0 0 1× Week 1 Hangar: three crates arrived. You open one. FREIGHT · TP-48 1/3 Turbo­prop RANGE 2,500 km SEATS 48 BEST FOR short hops FREIGHT · WB-300 2/3 Wide­body RANGE 11,000 km SEATS 300 BEST FOR ocean crossings FREIGHT · SLOT+2 3/3 Departure slots DEPARTURES +2 per hour FOR an airport you pick AMM 14 min",
+   "text": "ULN BKO WEEK 01 DAY 3/3 TIME 02:00 PASSENGERS 54 0 0 0 1× Week 1 Hangar: three crates arrived. You open one. FREIGHT · TP-48 1/3 Turbo­prop RANGE 2,500 km SEATS 48 BEST FOR short hops FREIGHT · WB-300 2/3 Wide­body RANGE 11,000 km SEATS 300 BEST FOR ocean crossings FREIGHT · SLOT+2 3/3 Departure slots DEPARTURES +2 per hour FOR an airport you pick AMM 13 min",
    "contrast": {
     "routes": 9.49,
     "airports": 9.09,
-    "planes": 9.96,
+    "planes": 9.9,
     "tags": 12.28
    },
    "warmth": {
@@ -615,16 +615,16 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ULN BKO WEEK 01 DAY 3/3 TIME 02:00 PASSENGERS 54 0 0 0 1× Week 1 Hangar: three crates arrived. You open one. FREIGHT · TP-48 1/3 Turbo­prop RANGE 2,500 km SEATS 48 BEST FOR short hops FREIGHT · WB-300 2/3 Wide­body RANGE 11,000 km SEATS 300 BEST FOR ocean crossings FREIGHT · SLOT+2 3/3 Departure slots DEPARTURES +2 per hour FOR an airport you pick AMM 14 min",
+   "text": "ULN BKO WEEK 01 DAY 3/3 TIME 02:00 PASSENGERS 54 0 0 0 1× Week 1 Hangar: three crates arrived. You open one. FREIGHT · TP-48 1/3 Turbo­prop RANGE 2,500 km SEATS 48 BEST FOR short hops FREIGHT · WB-300 2/3 Wide­body RANGE 11,000 km SEATS 300 BEST FOR ocean crossings FREIGHT · SLOT+2 3/3 Departure slots DEPARTURES +2 per hour FOR an airport you pick AMM 13 min",
    "contrast": {
     "routes": 9.5,
     "airports": 9.04,
-    "planes": 9.96,
-    "tags": 12.59
+    "planes": 9.9,
+    "tags": 12.62
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.438
+    "ratio": 0.437
    },
    "png": {
     "width": 1346,
@@ -643,12 +643,12 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ULN BKO WEEK 01 DAY 3/3 TIME 02:00 PASSENGERS 54 0 0 0 1× Week 1 Hangar: three crates arrived. You open one. FREIGHT · TP-48 1/3 Turbo­prop RANGE 2,500 km SEATS 48 BEST FOR short hops FREIGHT · WB-300 2/3 Wide­body RANGE 11,000 km SEATS 300 BEST FOR ocean crossings FREIGHT · SLOT+2 3/3 Departure slots DEPARTURES +2 per hour FOR an airport you pick AMM 14 min",
+   "text": "ULN BKO WEEK 01 DAY 3/3 TIME 02:00 PASSENGERS 54 0 0 0 1× Week 1 Hangar: three crates arrived. You open one. FREIGHT · TP-48 1/3 Turbo­prop RANGE 2,500 km SEATS 48 BEST FOR short hops FREIGHT · WB-300 2/3 Wide­body RANGE 11,000 km SEATS 300 BEST FOR ocean crossings FREIGHT · SLOT+2 3/3 Departure slots DEPARTURES +2 per hour FOR an airport you pick AMM 13 min",
    "contrast": {
     "routes": 9.49,
     "airports": 9.09,
-    "planes": 9.96,
-    "tags": 11.65
+    "planes": 9.9,
+    "tags": 11.68
    },
    "warmth": {
     "gold": 0.002,
@@ -660,7 +660,7 @@
     "meanLuma": 109.9,
     "lumaStd": 74.2,
     "whiteShare": 0,
-    "colours": 150
+    "colours": 151
    }
   },
   {
@@ -701,14 +701,14 @@
    "devOverlay": false,
    "text": "+13 +5 +20 0:00 +6 ULN BKO REC TUN NEW WEEK 02 DAY 3/3 TIME 14:38 PASSENGERS 59 1 0 0 1× NETWORK CLOSED MAP DEPARTURES · BGW FLIGHT / DEST. GATE STATUS AW101 · AMM A1 CANCELLED ATC · INCIDENT REPORT Passengers delivered: 59 Weeks completed: 1 CAUSES TIMELINE 25 passengers had no available route to their destination region. 62% of waiting passengers were headed to Northern Europe (16 people). The waiting area was full: 26 people for 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
    "contrast": {
-    "routes": 4.65,
-    "airports": 4.48,
-    "planes": 3.4,
+    "routes": 4.67,
+    "airports": 4.49,
+    "planes": 3.08,
     "tags": 1.47
    },
    "warmth": {
-    "gold": 0.036,
-    "ratio": 1.069
+    "gold": 0.037,
+    "ratio": 1.068
    },
    "png": {
     "width": 1346,
@@ -729,14 +729,14 @@
    "devOverlay": false,
    "text": "+13 +5 +20 0:00 +6 ULN BKO REC TUN NEW WEEK 02 DAY 3/3 TIME 14:38 PASSENGERS 59 1 0 0 1× NETWORK CLOSED MAP DEPARTURES · BGW FLIGHT / DEST. GATE STATUS AW101 · AMM A1 CANCELLED ATC · INCIDENT REPORT Passengers delivered: 59 Weeks completed: 1 CAUSES TIMELINE 25 passengers had no available route to their destination region. 62% of waiting passengers were headed to Northern Europe (16 people). The waiting area was full: 26 people for 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
    "contrast": {
-    "routes": 4.66,
-    "airports": 4.48,
-    "planes": 3.4,
+    "routes": 4.67,
+    "airports": 4.49,
+    "planes": 3.46,
     "tags": 1.42
    },
    "warmth": {
-    "gold": 0.035,
-    "ratio": 1.062
+    "gold": 0.036,
+    "ratio": 1.063
    },
    "png": {
     "width": 1536,
@@ -780,7 +780,7 @@
     "meanLuma": 91.6,
     "lumaStd": 70,
     "whiteShare": 0,
-    "colours": 638
+    "colours": 640
    }
   },
   {
@@ -798,7 +798,7 @@
     "meanLuma": 93.6,
     "lumaStd": 69.3,
     "whiteShare": 0,
-    "colours": 665
+    "colours": 662
    }
   }
  ]

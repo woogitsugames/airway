@@ -16,6 +16,7 @@ export const en = {
   'airport.slot.label': 'SLOT', // [task-38]
   'airport.new': 'NEW', // [night-10a]
   'airport.newAria': 'New airport {code}.',
+  'airport.edgeFillAria': '{count} of {capacity} waiting places taken.', // [night-11d]
   'airport.curfewAria': '{code} closed for the night curfew.', // [night-10h]
   'airport.connectingAria': 'Making a connection: {count}.', // [night-10i]
   'airport.slotHeld': '{code}: {count} aircraft waiting for a departure slot, next slot in {time}',
