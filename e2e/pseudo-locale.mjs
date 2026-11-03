@@ -13,8 +13,8 @@ const SHOTS = resolve(ARTIFACTS, 'pseudo');
 const CASES = [['pl', 360, 640], ['en', 360, 640], ['en', 915, 412]];
 const results = [];
 
-function audit(page, root) {
-  return page.evaluate((root) => {
+function audit(page, root, { translated = true } = {}) {
+  return page.evaluate(([root, translated]) => {
     const host = document.querySelector(root);
     if (!host) return [`${root} missing`];
     const problems = [];
@@ -26,25 +26,43 @@ function audit(page, root) {
       const style = getComputedStyle(el);
       const r = el.getBoundingClientRect();
       if (r.width === 0 || r.height === 0 || style.visibility === 'hidden') continue;
+      const inScroller = scrollsX(el);
       const ownText = [...el.childNodes].some((node) => node.nodeType === 3 && node.textContent.trim());
       if (el.matches('button')) {
         if (r.height < 47.5 || r.width < 47.5) problems.push(`${name(el)}: target ${Math.round(r.width)}×${Math.round(r.height)}`);
       }
       const clips = style.overflowX === 'hidden' || style.overflowX === 'clip' || style.textOverflow === 'ellipsis';
       if (clips && ownText && el.scrollWidth > el.clientWidth + 1) problems.push(`${name(el)}: text clipped (${el.scrollWidth} > ${el.clientWidth})`);
-      if (ownText && !scrollsX(el) && (r.left < -0.5 || r.right > innerWidth + 0.5)) problems.push(`${name(el)}: outside the viewport (${Math.round(r.left)}..${Math.round(r.right)})`);
+      // [night-10q] Text wider than its own box: a mask or an ancestor (e.g. the boarding pass ticket) hides it
+      // even when no overflow box on the element itself says so.
+      if (ownText && !inScroller && style.display !== 'inline' && style.overflowX === 'visible') {
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        const t = range.getBoundingClientRect();
+        if (t.width && (t.right > r.right + 1 || t.left < r.left - 1)) problems.push(`${name(el)}: text wider than its box (${Math.round(t.width)} > ${Math.round(r.width)})`);
+      }
+      if (ownText && !inScroller && (r.left < -0.5 || r.right > innerWidth + 0.5)) problems.push(`${name(el)}: outside the viewport (${Math.round(r.left)}..${Math.round(r.right)})`);
     }
     if (/\{[A-Za-z]/.test(host.textContent)) problems.push('template token');
     if (document.documentElement.scrollWidth > innerWidth + 2) problems.push('horizontal page scroll');
-    if (!host.textContent.includes('[')) problems.push('pseudo-locale not active');
+    if (translated && !host.textContent.includes('[')) problems.push('pseudo-locale not active');
     return [...new Set(problems)];
-  }, root);
+  }, [root, translated]);
 }
 
 async function startGame(page) {
   await page.evaluate((seed) => window.aw.prepareSeed(seed), SEED);
   await clickTestId(page, 'menu-endless');
   await waitForScreen(page, 'game');
+}
+// [night-10q] A day of real bot play: routes, planes and waiting passengers, so tags carry counts and stubs.
+async function playADay(page) {
+  await startGame(page);
+  for (let hour = 0; hour < 24; hour += 1) {
+    await page.evaluate(async () => { await window.aw.botStep(); await window.aw.advanceTicks(60); });
+  }
+  const s = await page.evaluate(() => window.aw.state());
+  assert(s.screen === 'game' && s.routeCount > 0, `after a day: screen ${s.screen}, routes ${s.routeCount}`);
 }
 const SCREENS = [
   ['board', async () => '.airway-menu'],
@@ -70,6 +88,9 @@ const SCREENS = [
     await page.getByTestId('game-over').waitFor({ timeout: 5000 });
     return '[data-testid="game-over"]';
   }],
+  ['game hud', async (page) => { await playADay(page); return '.airway-hud'; }],
+  // Tags hold codes and counts; only the NEW/curfew stubs are translated, so no "[" is required.
+  ['airport tags', async (page) => { await playADay(page); return ['.airport-overlay', { translated: false }]; }],
 ];
 
 let fatal = null;
@@ -85,9 +106,10 @@ try {
         await page.goto(url + (url.includes('?') ? '&' : '?') + 'pseudo', { waitUntil: 'load' });
         await page.waitForFunction(() => typeof window.aw === 'object', null, { timeout: 12000 });
         await waitForScreen(page, 'menu');
-        const root = await open(page);
+        const opened = await open(page);
+        const [root, options] = Array.isArray(opened) ? opened : [opened, {}];
         await page.waitForTimeout(1200); // flaps and fly-ins settle (reduced motion)
-        const problems = await audit(page, root);
+        const problems = await audit(page, root, options);
         await page.screenshot({ path: resolve(SHOTS, `${label.replace(/ /g, '-')}-${language}-${width}x${height}.png`) });
         assert(!problems.length, problems.join('; '));
         if (errors.length) throw new Error(`Browser errors: ${errors.join('; ')}`);

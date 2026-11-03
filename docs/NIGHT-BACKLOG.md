@@ -259,6 +259,12 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       Found 3/21: the cargo label kicker "FREIGHT · SLOT+2" was cut by an ellipsis; it now wraps after the " · ".
       `src/i18n/pseudo.ts`.
 
+- [x] N10q **Pseudo-locale on the in-game HUD** — the N10p audit stopped at menus and sheets. It now also covers the
+      in-game HUD (boarding pass, plane-tag dock) and the airport tags/edge chips after a day of bot play, and flags
+      a text run wider than its own box (the ticket's notch mask hid overflow that no overflow box reported). Found
+      6/27: the pass label "PASSENGERS" ran under the ticket edge (cut by the mask at 360 and 915 px), and the
+      departure board's "GATE / BRAMKA" head ran into "STATUS". Both now wrap inside their box.
+
 ## Log
 <!-- one line per finished item: date UTC · item · PR · gate summary -->
 - 2026-11-03 · N1 puzzles 16–30 (D-70) · night/01-puzzles · test:fast 42/42, build ok, e2e:smoke 9/9, ui:matrix 32/32, test:puzzles levels=30 cases=168 failed=0 (merged tree with #40, #42)

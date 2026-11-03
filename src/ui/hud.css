@@ -53,6 +53,8 @@
 .airway-pass__band { width: 7px; flex: 0 0 7px; background: var(--airway-airline, var(--hud-teal)); } /* [night-09c] D-80 */
 .airway-pass__field { min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 3px; padding: 0 6px; }
 .airway-pass__label { font-size: 9px; font-weight: 700; letter-spacing: .075em; text-transform: uppercase; color: #665f55; }
+/* [night-10q] a label longer than its field wraps to a second line inside the ticket; the mask would cut it. */
+.airway-pass__label { white-space: normal; overflow-wrap: anywhere; line-height: 1.05; }
 .airway-pass__field strong { overflow: hidden; text-overflow: clip; font: 800 17px/1 'Overpass', sans-serif; }
 .airway-pass__week { min-width: 48px; flex: 0 0 auto; } /* [task-40] grows to fit the PL label "TYDZIEŃ" */
 .airway-pass__day { flex: 1 1 76px; min-width: 54px; }
