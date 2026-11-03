@@ -601,4 +601,4 @@ network never has, so the bot never took a widebody in 50 seeds). When no served
 one, it may pair two unserved airports with each other (a new network island). Rationale: 34 of 44 bot game overs
 were at an airport no route served, 20 of them beyond turboprop reach — a measuring-stick fault, not game balance.
 Now 7 of 40; `test:balance` median 14.55 → 17.81 min, 1st/2nd board 86/50 → 88/56 %. No game parameter changed;
-the median now sits near the D-79 upper bound (Q-46). **Status: in force (N12a, `test:bot-policy`).**
+the median now sits near the D-79 upper bound (Q-51). **Status: in force (N12a, `test:bot-policy`).**
