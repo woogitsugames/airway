@@ -20,8 +20,8 @@ const TICKS_PER_WEEK = SIM_MINUTES_PER_WEEK;
 const MAX_TICKS = 30 * 60 * SIM_TICKS_PER_SECOND; // 30 minutes at 1x.
 const ACTION_INTERVAL = 30; // one command opportunity every 3 seconds at 1x.
 const WARNING_TICKS = 45 * SIM_TICKS_PER_SECOND; // fixture only; not a gameplay parameter.
-const TARGET_MIN = 8;
-const TARGET_MAX = 15;
+const TARGET_MIN = 10; // [night-09b] D-79: bot session target 10–18 min (was 8–15, D-40/D-43)
+const TARGET_MAX = 18;
 // [task-31] Share of bot runs that must reach the first / second weekly upgrade choice.
 const TARGET_FIRST_UPGRADE = 0.6;
 const TARGET_SECOND_UPGRADE = 0.3;
@@ -330,7 +330,7 @@ function report(results: RunResult[], mode: string): string {
     (mode === 'fixture' ? '**NOT GAME DATA.** This stand-in has artificial queues, flights, city emergence, and capacity. ' +
       'It is useful only for testing the bot interface and report pipeline. No real parameter tuning or MVP balance is implied.\n\n' :
       'Production adapter results; inspect scenario coverage before treating these as player performance.\n\n') +
-    `- Median session: ${median(times).toFixed(2)} min at 1x (target 8–15 min).\n` +
+    `- Median session: ${median(times).toFixed(2)} min at 1x (target ${TARGET_MIN}–${TARGET_MAX} min, D-79).\n` +
     `- Session range: ${Math.min(...times).toFixed(2)}–${Math.max(...times).toFixed(2)} min.\n` +
     `- Median game weeks: ${median(results.map((r) => r.weeks)).toFixed(2)}.\n` +
     `- Median delivered passengers: ${median(scores).toFixed(0)}.\n` +

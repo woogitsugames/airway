@@ -4,7 +4,7 @@ Mode: **fixture**, seeds: **50**, starting at **0xA1A1**, deterministic autoplay
 
 **NOT GAME DATA.** This stand-in has artificial queues, flights, city emergence, and capacity. It is useful only for testing the bot interface and report pipeline. No real parameter tuning or MVP balance is implied.
 
-- Median session: 30.00 min at 1x (target 8–15 min).
+- Median session: 30.00 min at 1x (target 10–18 min, D-79).
 - Session range: 30.00–30.00 min.
 - Median game weeks: 4.17.
 - Median delivered passengers: 10420.

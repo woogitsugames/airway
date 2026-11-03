@@ -1,5 +1,11 @@
 # Task 22 — autoplay and balance evidence
 
+## N9b — bot session target 10–18 min (2026-11-03, D-79)
+
+The owner moved the `test:balance` median gate from 8–15 to 10–18 min: the target measures the DEV bot, which plays
+better since N7w (median 14.55 min), not a human. No game parameter changed; the 1st/2nd upgrade shares (≥ 60 % /
+≥ 30 %) stay. Older sections below keep the 8–15 min target they were tuned against.
+
 ## Task 32 — departure slots enforced (2026-11-02, D-41, D-46)
 
 Ready aircraft now wait on the ground until their airport has a free departure slot in the current game hour.
@@ -108,7 +114,7 @@ The production runner looks for `scripts/balance-game-adapter.ts` by default;
 
 The runner checks deterministic replay on a fixed seed, rejects invalid bot
 commands, fails if a real overflow lacks warning lead time and gates the actual
-10-seed median at **8–15 wall minutes at 1×**. The 50-seed report has per-seed
+median at **10–18 wall minutes at 1×** (D-79, 2026-11-03; it was 8–15 until N9b). The 50-seed report has per-seed
 CSV data, score, causes and real duration. **A snapshot warning field does not
 verify that the UI displayed the countdown**; that requires an integrated UI
 or screenshot/e2e test after task 06/15.
