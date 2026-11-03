@@ -283,6 +283,12 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       passenger change, which re-created every glyph SVG. Tags now reuse glyph nodes and write only the children that
       differ (~25–30 % less per frame with 5 or 40 changes). New `npm run perf:overlay` measures it and checks that a
       reused tag equals a fresh build. Numbers in `docs/PERFORMANCE.md`.
+- [x] N10v **Long play-throughs (1280×800 PL, 412×915 EN, 4×) + edge chips over airports** — `ui:long-play`
+      12 min each. PL 1280×800: 4 runs, every one closed in week 1 (bot only; no UI issue). EN 412×915: 2 runs, max
+      week 3, 1 issue: on the week-2 "+2 slots" pick the airport by the left screen edge sat under the edge chip of
+      an off-screen airport, so the tap went to the chip and the pick never completed (a route drag starting there
+      was blocked the same way). Edge chips now slide along the edge clear of every on-screen airport marker
+      (16 px clearance inside the 28 dp tap radius). `e2e/edge-chip-airports.mjs` (fails 1/2 on the old overlay).
 
 ## Log
 <!-- one line per finished item: date UTC · item · PR · gate summary -->
@@ -350,3 +356,4 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
 - 2026-11-03 · N10s store shots refreshed (game-over tabs) · night/10s-store-shots · store:shots captured=30 failed=0, test:fast 58/58 (test:store-shots 30/30), build ok
 - 2026-11-03 · N10t timeline from live command outcomes · night/10t-timeline-cache · test:fast 58/58 (test:run-timeline 9/9), build ok, e2e:smoke 9/9, test:e2e:run-timeline 4/4; ui:matrix not run (no visual change)
 - 2026-11-03 · N10u overlay tags reuse glyph nodes · night/10u-overlay-perf · test:fast 58/58, build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:transfer-glyphs 2/2, e2e:new-airport 4/4, e2e:curfew-barrier 2/2, perf:overlay mismatched=0 (40/40 with stale-child removal off), 40-airport frame 0.96–1.03 → 0.76–0.81 ms (5 changes), 3.8 → 2.6–2.9 ms (40)
+- 2026-11-03 · N10v long play 1280×800 PL / 412×915 EN 4× + edge chips clear of airports · night/10v-edge-chips · ui:long-play PL runs=4 maxWeek=1 issues=0, EN runs=2 maxWeek=3 issues=1 (fixed); test:fast 58/58, build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:edge-dock 3/3, e2e:upgrade-picks 10/10, e2e:new-airport 4/4, test:e2e:edge-chip-airports 2/2 (1/2 on the old overlay)

@@ -13,6 +13,8 @@ const EDGE_WIDTH = 58;
 const EDGE_HEIGHT = 48;
 const MAX_GLYPHS = 6;
 const EDGE_PAD = 7;
+/** [night-10v] Clearance between an edge chip and the marker of an on-screen airport (inside the 28 dp tap radius). */
+const EDGE_CLEAR = 16;
 const SVG = 'http://www.w3.org/2000/svg';
 
 export interface OverlayAirport {
@@ -356,6 +358,17 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
         let collides = false;
         for (let j = 0; j < entries.length; j++) {
           const other = entries[j];
+          // [night-10v] A chip must never sit on an airport that is on screen: the button would take the tap
+          // meant for that airport (route start, hub or "+2 slots" pick). It slides along the edge instead.
+          if (!other.edgeVisible) {
+            const ax = other.tag.anchorX;
+            const ay = other.tag.anchorY;
+            if (ax > x - EDGE_CLEAR && ax < x + EDGE_WIDTH + EDGE_CLEAR && ay > y - EDGE_CLEAR && ay < y + EDGE_HEIGHT + EDGE_CLEAR) {
+              collides = true;
+              break;
+            }
+            continue;
+          }
           if (!other.edgePlaced || other.edgeSide !== entry.edgeSide) continue;
           if (x < other.edgeX + EDGE_WIDTH + 3 && x + EDGE_WIDTH + 3 > other.edgeX &&
               y < other.edgeY + EDGE_HEIGHT + 3 && y + EDGE_HEIGHT + 3 > other.edgeY) { collides = true; break; }
