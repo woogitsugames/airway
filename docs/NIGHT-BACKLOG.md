@@ -394,6 +394,15 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       while hidden ignored. The lifecycle hooks pause only the `game` screen (the upgrade picker is not covered).
       `test:saves` +2 cases (11/13 on the old code), `e2e/focus-pause.mjs` (`test:e2e:focus-pause`, in `test:ci`,
       1/3 on the old code), shots `docs/shots/n11i/`.
+- [x] N11j **Pause-summary e2e green again; old-rules save notice (D-130)** — since rules v5 (N12f) `autoplay(2)` on
+      seed 0xA1A1 ends in a game over in week 2, before the week-2 board, so `test:e2e:pause-summary` failed 0/4 on
+      `dev`. The bot now plays to the week-1 board (asserted), one pick (not hub/slots) puts the flight into week 2
+      (asserted from the tick and the next board), then the same checks as before: three rows, sheet in the viewport,
+      clear of the boarding pass, nothing clipped, three ≥ 48 px buttons. Also: a v4 save the v5 rules cannot continue
+      showed "The saved flight is damaged"; it now says "Saved flight from an older rules version: the current rules
+      cannot continue it." (PL/EN, `old-rules` notice). `test:save-golden` +1 (fails on the old code),
+      `test:e2e:save-notice` +2 steps with the frozen v4 save (4/6 on the old code). Owner answers Q-61/Q-62 recorded
+      as D-128/D-129.
 
 ## Continuous development round N12 (agent 2)
 - [x] N12a **Balance bot plays for reach (D-90)** — the handover gap "the DEV bot rarely connects new airports; long
@@ -773,14 +782,14 @@ Evidence: `docs/RESEARCH.md` "R5 — …", PNGs in `docs/research/r5/`.
       codes. Draw a small Diorama signboard (code, or name per the D-68 setting) beside the airport disc for the
       airports chosen in Q-61, placed with the existing `layoutTags` collision pass (never over a passenger tag or a
       48 dp target); aria unchanged. Overlay DOM test + shots portrait/landscape/320 wide, PL/EN. **Area:** UI
-      (`src/ui/overlay.ts`, `overlay-layout.ts`, `src/game/session.ts`). *Needs Q-61.*
+      (`src/ui/overlay.ts`, `overlay-layout.ts`, `src/game/session.ts`). Q-61 → C (D-128): hubs + named airports, all when zoomed in.
 - [ ] R5b **Tutorial speaks the game's visual language** — the vignette uses orange diamonds for cities and a teal ring
       for the hub, while in the game airports are runway discs and yellow diamonds are route-end handles
       (`tutorial-vs-game-diamonds.png`); region glyphs are never taught and the game has no legend. Redraw the
       vignette's cities as the game's airport disc, the hub with the game's ring, passengers as the real glyph tag;
       step 3 (transfer) names the glyph's region once ("bow tie = Middle East"); the settings help gains a one-line
       glyph legend (8 glyph + region rows, shape not colour). `test:e2e:tutorial` and its shots updated.
-      **Area:** UI (`src/ui/tutorial/**`, `src/ui/settings/**`), i18n. *Needs Q-62 (B).*
+      **Area:** UI (`src/ui/tutorial/**`, `src/ui/settings/**`), i18n. Q-62 → B (D-129).
 - [ ] R5c **Route-end handles quieter at rest** — the yellow 20 px diamonds on every route end are the loudest marks
       on the map. At rest draw them as a small hollow marker inside the same 48 dp hit area; full diamond only while
       a route is selected, being drawn, or under the finger. Hit testing in `routeTool` unchanged. Shots; `test:hud-targets`
@@ -978,3 +987,4 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
 - 2026-11-03 · N12p Play OpenGL ES 3.0 device filter (R3h, D-124) · night/12p-gles3-filter · test:android-config 23/23 (22/23 on the old manifest), aapt2 link ok + `dump badging` uses-gl-es 0x30000 (android-36, minSdk 24, manifest without resource refs), test:fast 66/66, build ok; minSdk unchanged (Q-54); no Play Console device-catalogue check; e2e/ui:matrix/store:shots not run (no web code changed)
 - 2026-11-03 · N11i pause on window focus loss (D-99, D-119) · night/11i-focus-pause · test:fast 67/67 (test:saves 13/13, 11/13 on the old code), build ok, test:e2e:focus-pause 3/3 (1/3 on the old code), e2e:save-notice 4/4; e2e:pause-summary 0/4 on this branch and on origin/dev alike (rules v5: `autoplay(2)` ends in a game over before week 2 — pre-existing, not this change); e2e:smoke/ui:matrix not run (no layout change)
 - 2026-11-03 · N12o store shots in the exact Apple sizes and 16:9 (R2a, D-123) · night/12o-store-sizes · store:shots 60/60 (30 → 60: + iphone 1320×2868, ipad 2064×2752, landscape 1920×1080; contact sheet 2556×5361; new device PNGs and the sheet inspected), test:store-shots devices=6 shots=60 (new validator on the old 30-shot set: FAIL "Manifest lists 30/60"), test:fast 67/67, build ok; e2e/ui:matrix not run (no game code changed); App Store Connect / Play Console upload not tried; origin/dev (N11h context-loss guard, no visual change while the context lives) was merged during the run, so early shots predate it
+- 2026-11-03 · N11j pause-summary e2e under rules v5 + old-rules save notice (D-130), owner D-128/D-129 · night/11j-pause-summary-v4-save · test:e2e:pause-summary 4/4 (0/4 on origin/dev), test:save-golden 21/21 (20/21 on the old code), test:e2e:save-notice 6/6 (4/6 on the old code), test:fast 67/67, build ok; e2e:smoke/ui:matrix not run (no layout change)

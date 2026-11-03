@@ -1,5 +1,5 @@
 // [night-10j] The pause sheet carries a network summary (routes and aircraft, fullest hub, time to the next
-// crates). The bot plays Endless on the fixed seed into week 2, then Escape opens the sheet: three rows with real
+// crates). The bot plays Endless on the fixed seed to the week-1 board, one pick puts it into week 2, then Escape opens the sheet: three rows with real
 // numbers in the player's language, the whole sheet inside the viewport and clear of the boarding pass, every
 // button still a 48 px target. EN 412×915, PL 915×412, PL 360×640, EN 320×568; shots docs/shots/n10j/.
 import { mkdirSync } from 'node:fs';
@@ -35,14 +35,16 @@ try {
         await page.evaluate((seed) => window.aw.prepareSeed(seed), SEED);
         await clickTestId(page, 'menu-endless');
         await waitForScreen(page, 'game');
-        let s = await page.evaluate(() => window.aw.autoplay(2));
-        if (s.screen === 'upgrade') {
-          const list = await page.evaluate(() =>
-            [...document.querySelectorAll('[data-testid^="upgrade-option-"]')].map((node) => node.dataset.upgrade));
-          await clickTestId(page, `upgrade-option-${list.findIndex((item) => item !== 'hub-expansion' && item !== 'departure-slots')}`);
-          await waitForScreen(page, 'game');
-          s = await state(page);
-        }
+        // [night-11j] Rules v5 (N12f) end the bot's seed-0xA1A1 run in week 2, before the week-2 board, so the bot
+        // plays only to the week-1 board; one pick (not a hub or slot upgrade) puts the flight into week 2.
+        const atBoard = await page.evaluate(() => window.aw.autoplay(1));
+        assert(atBoard.screen === 'upgrade', `bot did not reach the week-1 board: ${atBoard.screen}`);
+        const list = await page.evaluate(() =>
+          [...document.querySelectorAll('[data-testid^="upgrade-option-"]')].map((node) => node.dataset.upgrade));
+        await clickTestId(page, `upgrade-option-${list.findIndex((item) => item !== 'hub-expansion' && item !== 'departure-slots')}`);
+        await waitForScreen(page, 'game');
+        const s = await state(page);
+        assert(s.tick >= atBoard.tick && s.nextWeekTick > atBoard.tick, `not in week 2: tick ${s.tick}, next board ${s.nextWeekTick}`);
         assert(s.screen === 'game', `not in the game: ${s.screen}`);
         await page.keyboard.press('Escape');
         await page.getByTestId('action-resume').waitFor({ timeout: 5000 });

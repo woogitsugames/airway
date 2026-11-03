@@ -197,6 +197,10 @@ const damaged = await issueOf('{"v":1,"broken');
 const newerEnvelope = await issueOf(JSON.stringify({ v: 99 }));
 const newerRules = await issueOf(JSON.stringify(encodeSave({ ...saveSourceFromSim(restoreSimFromSave(save)), paramsVersion: RULES_VERSION + 1 }, 0)));
 const blocked = await issueOf(null, true);
+// [night-11j] The frozen rules-v4 save (v5 ends that run) and an over-long older-rules save are old rules, not damage.
+const oldRulesV4 = await issueOf(JSON.parse(readFileSync(FIXTURE_V4, 'utf8')).save);
+const oldRulesLong = await issueOf(JSON.stringify(encodeSave({ ...saveSourceFromSim(restoreSimFromSave(save)),
+  paramsVersion: RULES_VERSION - 1, tick: MAX_REPLAY_TICKS + 1 }, 0)));
 const good = await issueOf(golden.save);
 check('save notice: none without a save or with unreadable storage, none for a good save', () => {
   assert(noSave.restored === null && noSave.issue === null, 'missing save');
@@ -207,6 +211,10 @@ check('save notice: damaged → corrupt, newer envelope or rules → unsupported
   assert(damaged.restored === null && damaged.issue === 'corrupt', `damaged ${damaged.issue}`);
   assert(newerEnvelope.issue === 'unsupported', `newer envelope ${newerEnvelope.issue}`);
   assert(newerRules.restored === null && newerRules.issue === 'unsupported', `newer rules ${newerRules.issue}`);
+});
+check('save notice: an older-rules save the current rules cannot continue → old-rules, not corrupt', () => {
+  assert(oldRulesV4.restored === null && oldRulesV4.issue === 'old-rules', `rules-v4 save ${oldRulesV4.issue}`);
+  assert(oldRulesLong.restored === null && oldRulesLong.issue === 'old-rules', `over-long older save ${oldRulesLong.issue}`);
 });
 check('tampered golden save is rejected by the checksum', () => {
   const tampered = JSON.parse(golden.save);
