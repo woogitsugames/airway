@@ -1,0 +1,264 @@
+{
+  "version": 1,
+  "id": "35",
+  "titleKey": "puzzle.35.title",
+  "durationTicks": 8640,
+  "demandSeed": 3835,
+  "startCities": [
+    {
+      "id": "SYD",
+      "continent": "OC",
+      "latitude": -33.9,
+      "longitude": 151.2,
+      "hubCapacity": 145,
+      "curfew": {
+        "startMinuteOfDay": 1380,
+        "endMinuteOfDay": 360
+      }
+    },
+    {
+      "id": "MEL",
+      "continent": "OC",
+      "latitude": -37.8,
+      "longitude": 145.0,
+      "hubCapacity": 60
+    },
+    {
+      "id": "BNE",
+      "continent": "OC",
+      "latitude": -27.5,
+      "longitude": 153.0,
+      "hubCapacity": 60
+    },
+    {
+      "id": "AKL",
+      "continent": "OC",
+      "latitude": -36.8,
+      "longitude": 174.8,
+      "hubCapacity": 150
+    },
+    {
+      "id": "SIN",
+      "continent": "AS",
+      "latitude": 1.3,
+      "longitude": 103.8,
+      "hubCapacity": 190
+    },
+    {
+      "id": "JNB",
+      "continent": "AF",
+      "latitude": -26.2,
+      "longitude": 28.0,
+      "hubCapacity": 120
+    },
+    {
+      "id": "EZE",
+      "continent": "SA",
+      "latitude": -34.6,
+      "longitude": -58.4,
+      "hubCapacity": 100
+    },
+    {
+      "id": "LAX",
+      "continent": "NA",
+      "latitude": 34.1,
+      "longitude": -118.2,
+      "hubCapacity": 150
+    }
+  ],
+  "stock": {
+    "turboprops": 3,
+    "jets": 4,
+    "hubUpgrades": 1
+  },
+  "goal": {
+    "kind": "continents",
+    "targetDelivered": 1154,
+    "continents": 5
+  },
+  "mechanics": [
+    "slots",
+    "curfew",
+    "week",
+    "mct",
+    "transfer"
+  ],
+  "demand": [
+    {
+      "from": "MEL",
+      "to": "LAX",
+      "passengers": 8,
+      "firstTick": 20,
+      "everyTicks": 180
+    },
+    {
+      "from": "BNE",
+      "to": "JNB",
+      "passengers": 8,
+      "firstTick": 40,
+      "everyTicks": 180
+    },
+    {
+      "from": "SYD",
+      "to": "EZE",
+      "passengers": 10,
+      "firstTick": 60,
+      "everyTicks": 180
+    },
+    {
+      "from": "AKL",
+      "to": "SIN",
+      "passengers": 8,
+      "firstTick": 80,
+      "everyTicks": 180
+    },
+    {
+      "from": "MEL",
+      "to": "JNB",
+      "passengers": 8,
+      "firstTick": 4320,
+      "everyTicks": 180
+    },
+    {
+      "from": "BNE",
+      "to": "EZE",
+      "passengers": 8,
+      "firstTick": 4340,
+      "everyTicks": 180
+    }
+  ],
+  "availableRoutes": [
+    {
+      "from": "SYD",
+      "to": "MEL",
+      "plane": "turboprop",
+      "flightTicks": 89,
+      "intervalTicks": 120
+    },
+    {
+      "from": "SYD",
+      "to": "BNE",
+      "plane": "turboprop",
+      "flightTicks": 92,
+      "intervalTicks": 120
+    },
+    {
+      "from": "SYD",
+      "to": "AKL",
+      "plane": "turboprop",
+      "flightTicks": 270,
+      "intervalTicks": 120
+    },
+    {
+      "from": "MEL",
+      "to": "BNE",
+      "plane": "turboprop",
+      "flightTicks": 171,
+      "intervalTicks": 120
+    },
+    {
+      "from": "SYD",
+      "to": "SIN",
+      "plane": "jet",
+      "flightTicks": 451,
+      "intervalTicks": 120
+    },
+    {
+      "from": "SIN",
+      "to": "JNB",
+      "plane": "jet",
+      "flightTicks": 619,
+      "intervalTicks": 120
+    },
+    {
+      "from": "AKL",
+      "to": "LAX",
+      "plane": "jet",
+      "flightTicks": 750,
+      "intervalTicks": 120
+    },
+    {
+      "from": "AKL",
+      "to": "EZE",
+      "plane": "jet",
+      "flightTicks": 740,
+      "intervalTicks": 120
+    },
+    {
+      "from": "JNB",
+      "to": "EZE",
+      "plane": "jet",
+      "flightTicks": 578,
+      "intervalTicks": 120
+    },
+    {
+      "from": "MEL",
+      "to": "SIN",
+      "plane": "jet",
+      "flightTicks": 433,
+      "intervalTicks": 120
+    },
+    {
+      "from": "BNE",
+      "to": "AKL",
+      "plane": "jet",
+      "flightTicks": 164,
+      "intervalTicks": 120
+    },
+    {
+      "from": "LAX",
+      "to": "EZE",
+      "plane": "jet",
+      "flightTicks": 704,
+      "intervalTicks": 120
+    }
+  ],
+  "referenceCommands": [
+    {
+      "type": "connect",
+      "from": "SYD",
+      "to": "MEL",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "SYD",
+      "to": "BNE",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "SYD",
+      "to": "AKL",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "SYD",
+      "to": "SIN",
+      "plane": "jet"
+    },
+    {
+      "type": "connect",
+      "from": "SIN",
+      "to": "JNB",
+      "plane": "jet"
+    },
+    {
+      "type": "connect",
+      "from": "AKL",
+      "to": "LAX",
+      "plane": "jet"
+    },
+    {
+      "type": "connect",
+      "from": "JNB",
+      "to": "EZE",
+      "plane": "jet"
+    },
+    {
+      "type": "upgradeHub",
+      "city": "SYD"
+    }
+  ]
+}

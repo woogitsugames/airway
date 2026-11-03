@@ -21,7 +21,9 @@ try {
   // The production engine: puzzle levels run on the authoritative Sim (src/sim/puzzles.ts).
   const engine = await import('../src/game/modes/puzzle.ts');
   const { createGame } = await import('../src/sim/index.ts');
-  const { cityByCode } = await import('../src/data/index.ts');
+  const { cityByCode, cityDistanceKm } = await import('../src/data/index.ts');
+  const { PUZZLE_PACKS } = await import('../src/data/puzzles/packs.ts');
+  const { PLANE_TYPES } = await import('../src/sim/params.ts');
   const { SIM_MINUTES_PER_WEEK } = await import('../src/sim/params.ts');
 
   // [ext-01] R6f, D-160: the count comes from the folder; ids must run 01…NN without a gap and PUZZLES (the
@@ -106,6 +108,19 @@ try {
           });
           assert(needsTransfer, 'transfer: every passenger flies direct');
         }
+      }
+    });
+    // [ext-02] R6h, D-162: the "Long haul" pack starts outside Europe and needs a widebody on an ocean leg.
+    const longHaul = PUZZLE_PACKS.find((pack) => pack.id === 'longHaul');
+    if (longHaul && Number(id) >= Number(longHaul.firstLevel)) check(`${id} long haul`, () => {
+      assert(level.startCities.every((city) => city.continent !== 'EU'), 'long haul: a start city in Europe');
+      const legs = level.referenceCommands.filter((command) => command.type === 'connect' && command.plane === 'jet')
+        .map((command) => cityDistanceKm(command.from, command.to) ?? 0);
+      assert(legs.some((km) => km > PLANE_TYPES.turboprop.rangeKm), 'long haul: no reference widebody leg beyond turboprop range');
+      for (const route of level.availableRoutes) {
+        const km = cityDistanceKm(route.from, route.to) ?? Infinity;
+        const range = PLANE_TYPES[route.plane === 'jet' ? 'widebody' : 'turboprop'].rangeKm;
+        assert(km <= range, `long haul: offered ${route.from}-${route.to} ${km} km is beyond ${route.plane} range`);
       }
     });
     check(`${id} invalid route rejected`, () => {

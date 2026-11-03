@@ -31,6 +31,11 @@ import level27 from './27.json';
 import level28 from './28.json';
 import level29 from './29.json';
 import level30 from './30.json';
+import level31 from './31.json';
+import level32 from './32.json';
+import level33 from './33.json';
+import level34 from './34.json';
+import level35 from './35.json';
 
 // Runtime validation in startPuzzle rejects malformed JSON at the boundary.
 export const PUZZLE_LEVELS: readonly PuzzleLevel[] = [
@@ -40,4 +45,5 @@ export const PUZZLE_LEVELS: readonly PuzzleLevel[] = [
   level16, level17, level18, level19, level20,
   level21, level22, level23, level24, level25,
   level26, level27, level28, level29, level30,
+  level31, level32, level33, level34, level35,
 ] as unknown as readonly PuzzleLevel[];

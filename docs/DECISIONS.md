@@ -1047,6 +1047,29 @@ reference result with stars, margin over the target and the ★★ (+15 %) / ★
 `-- --from NN` limits it to one pack, `-- --json` prints the rows. Developer tool only; nothing in the game reads it.
 **Status: in force (ext/01).**
 
+## D-162 — Puzzle packs: `packs.ts` and a pack header on the departures board (2026-11-03, Claude, ext/02)
+R6h / D-131 (owner, Q-64 → A, recorded on `night/11k-clean-gameover`, not yet on `dev`): levels after 30 come in
+packs. `src/data/puzzles/packs.ts` lists each pack's first level and name key (`longHaul` from 31); a pack runs to
+the next pack or the last level. The puzzle board draws one non-interactive row above the pack's first flap — "Pack:
+Long haul · 5 puzzles" / "Paczka: Daleki zasięg · 5 zadań" (`puzzle.pack.line`, plural `{count|…}`), printed in the
+board's yellow mono on black, wrapping inside the list (checked at 320×568 by `test:e2e:screens-fit-320`). No new
+mechanic tag: the long-haul lesson (widebody range, ocean legs) is in the levels themselves; `test:puzzles` checks
+that the pack starts outside Europe, uses a widebody leg beyond turboprop range and offers no out-of-range strip.
+**Status: in force (ext/02); whether the pack ships at launch or waits for T+4 is Q-74.**
+
+## D-163 — "Long haul" 31–35: a steeper curve built with a network search (2026-11-03, Claude, ext/02)
+Five levels outside Europe, each two 3-day weeks (8 640 ticks, 14:24 at 1×), designed with an exhaustive search over
+every network the stock allows (all strip subsets × hub-upgrade choices) on the real Sim:
+31 Islands to Los Angeles (Auckland feeder star, one widebody, Suva wave in week 2; 1 of 59 networks clears it),
+32 South Atlantic by night (São Paulo under curfew must not be the hub; 2 of 65), 33 Santiago to Sydney (Santiago–Sydney
+is beyond widebody range, Auckland transfers, 3 continents; 9 of 327 avoid a jam), 34 Dusk over Africa (four
+turboprop spokes queue for Singapore's slots, Johannesburg under curfew, Perth needs its own widebody; 8 of 1 253),
+35 Around the world (5 continents, Sydney curfew, week-2 waves, Buenos Aires reached westwards via Singapore and
+Johannesburg, and the single hub upgrade must go to Sydney; 1 of 1 525 networks × 1 of 5 upgrade choices). Targets
+give the reference +16 % (31–33) and +15 % (34–35), below 26–30 (+17…18 %). `test:long-haul` pins the curve and one
+tempting decoy per level that must lose. Titles are short enough not to break words on the 320 px board.
+**Status: in force; difficulty is a proposal for the owner to playtest (as D-70).**
+
 ## D-170 — Globe look: direction B "Realistyczny" (satellite Earth) (2026-11-03, owner)
 On the owner's Galaxy Fold the low-poly diorama globe read as large angular terrain facets, blocky mountains, orange
 desert blobs, tree noise and a flat sea; the owner asked for "more realistic". Three directions were rendered from
@@ -1066,6 +1089,17 @@ B ships ~1.8 MB of textures (day 4096 + 2048, night 2048 + 1024, elevation, clou
 code, not a chunk). Rejected: streaming the 4096 texture from the network (the app must work offline, Capacitor
 loads from disk) and shipping only 2048 (visibly soft at Fold zoom 2). **Status: proposed; applies with G1.**
 
+## D-172 — Two globe modes, "Satelita" and "Mapa", like a maps app (2026-11-03, owner)
+Owner, after choosing B: "Może zrobić dwa tryby jak w Google Maps. Realistyczny i taki jak mapa." The globe gets two
+surface modes over the same relief mesh: **Satelita** (B, D-170) and **Mapa** (a cartographic surface; its look is
+being chosen from the owner's reference screenshot). Switching swaps only the surface textures (no terrain rebuild),
+so the cost is a second texture set (~0.5–0.8 MB) and one texture upload. Owner's answers: **Satelita is the
+default** on first launch; the mode is switched in **Settings (remembered) and by a luggage tag in the in-game
+dock** for quick changes. The Mapa mode must still respect the forbidden list (no flat pastel background, no
+subway-map look) and D-05: it stays a lit 3D globe with relief. Mapa look: the owner's Google-Maps-like reference,
+rebuilt in our own palette with ETOPO5 hillshade and Natural Earth borders (no copied colours, no labels).
+**Status: accepted by the owner 2026-11-03; plan step G8 (readability via D-175).**
+
 ## D-173 — Adaptive quality steps down the globe texture first (2026-11-03, Claude, ext/03)
 With B the largest GPU cost is the 4096×2048 day texture (~43 MB with mips, uncompressed). The D-73 ladder gets a
 first step "day texture 4096 → 2048, cloud shell off" before DPR → 1; `low`/`saver` start on 2048 without clouds.
@@ -1077,17 +1111,6 @@ bundle), the `TerrainStyle` parameter in `terrain.ts` (default `diorama` is byte
 `src/game/world.ts`, `perf:scene --look`, the store-shot fixture knobs `storePlay`/`storeSunDot`, and the textures in
 `dev/globe-look/assets/` (served by the dev server only; `dist/` unchanged). G1–G5 turn the `satellite` path into
 the production globe and delete `refined`/`painted`. **Status: in force until G5.**
-
-## D-172 — Two globe modes, "Satelita" and "Mapa", like a maps app (2026-11-03, owner)
-Owner, after choosing B: "Może zrobić dwa tryby jak w Google Maps. Realistyczny i taki jak mapa." The globe gets two
-surface modes over the same relief mesh: **Satelita** (B, D-170) and **Mapa** (a cartographic surface; its look is
-being chosen from the owner's reference screenshot). Switching swaps only the surface textures (no terrain rebuild),
-so the cost is a second texture set (~0.5–0.8 MB) and one texture upload. Owner's answers: **Satelita is the
-default** on first launch; the mode is switched in **Settings (remembered) and by a luggage tag in the in-game
-dock** for quick changes. The Mapa mode must still respect the forbidden list (no flat pastel background, no
-subway-map look) and D-05: it stays a lit 3D globe with relief. Mapa look: the owner's Google-Maps-like reference,
-rebuilt in our own palette with ETOPO5 hillshade and Natural Earth borders (no copied colours, no labels).
-**Status: accepted by the owner 2026-11-03; plan step G8 (readability via D-175).**
 
 ## D-175 — Airport pads, routes and planes get redesigned for the new globe (2026-11-03, owner)
 Mockup measurement: on B the D-47 contrast is the best of all directions (day: airports 4.9–5.2:1, tags 9.2–12.9:1;
