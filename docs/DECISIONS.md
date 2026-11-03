@@ -578,7 +578,7 @@ No parameter change now; revisit if testers always pick WB-300. **Status: in for
 
 ## D-79 — Bot session-length target is 10–18 min (2026-11-03, owner, Q-36)
 `test:balance` gate changes from 8–15 to 10–18 min median (the target measures the bot, not a human). Supersedes the range in
-D-40/D-43. **Status: to implement.**
+D-40/D-43. **Status: implemented (N9b, `scripts/balance-report.ts`; median 14.55 min).**
 
 ## D-80 — Player picks their airline colour (2026-11-03, owner, Q-26)
 A CVD-checked palette in settings; plane tail fin and livery accents use the airline colour. Separate task. **Status: to implement.**

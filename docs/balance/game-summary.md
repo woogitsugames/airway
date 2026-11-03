@@ -4,7 +4,7 @@ Mode: **game**, seeds: **50**, starting at **0xA1A1**, deterministic autoplay.
 
 Production adapter results; inspect scenario coverage before treating these as player performance.
 
-- Median session: 14.55 min at 1x (target 8–15 min).
+- Median session: 14.55 min at 1x (target 10–18 min, D-79).
 - Session range: 3.29–30.00 min.
 - Median game weeks: 2.02.
 - Median delivered passengers: 116.
