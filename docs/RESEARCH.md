@@ -1133,3 +1133,143 @@ w sklepie”:
 | SEO | `<title>`/`og:title` per język, bez `hreflang`, bez `canonical`, brak `404.html` | `hreflang` pl/en (+ fala 1), `canonical`, prosta 404 w stylu strony |
 
 Rekomendacja: jeden PR **R7k** po decyzji o hostingu i adresach sklepów; bez newslettera (Q-70).
+
+## R8 — Audyt głębi rozgrywki i balansu przy regułach v5 (stan 2026-11-03)
+
+Pomiar, nie sieć: bot DEV (`src/game/dev/bot-policy.ts`) gra na prawdziwym `Sim` przez
+`scripts/balance-game-adapter.ts`, ten sam rytm co `balance:report` (decyzja co 30 ticków), **200 seedów od 0xA1A1**,
+limit 60 min (żaden bieg go nie dobił, więc nic nie jest ucięte). Żaden parametr gry nie został zmieniony. Nowy skrypt
+pomiarowy `scripts/research/r8-audit.ts` tylko liczy zdarzenia (opakowuje w swoim procesie `alightAt` pasażerów
+i bramkę ciszy nocnej, wyniku nie zmienia); kontrola zgodności: 50 seedów z limitem 30 min daje medianę **17,03 min**,
+dokładnie jak `npm run test:balance`. Dane per bieg: `docs/balance/r8-audit-200.csv` (1000 wierszy, 5 polityk).
+Dodatkowo krótki `ui:long-play` (PL, 412×915, 4×, 4 min) — 0 problemów, plansza tygodnia 1 bez szerokokadłubowca
+(karty: rozbudowa huba, +2 sloty, turboprop), czyli w ok. połowie tygodni karta „samolot” to turboprop.
+
+**Zastrzeżenie:** bot nie zdejmuje samolotów z tras, nie usuwa tras i nie skraca ich (`UnassignPlane`, `RemoveRoute`,
+`ShortenRoute` istnieją w `src/sim/commands.ts`, bot ich nie używa), a wydłuża trasę najwyżej do 5 przystanków.
+Liczby opisują sieć grana „prostym” graczem; człowiek może grać lepiej lub gorzej (D-79, D-113).
+
+### Długość sesji (bot, 200 seedów, 1×)
+
+| p10 | p25 | mediana | p75 | p90 | min | max | średnia | ≥ tydz. 4 (curfew) | ≥ tydz. 5 |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 9,8 min | 13,1 | **16,52** | 20,2 | 22,4 | 4,3 | 31,6 | 16,42 | **29 / 200 (15 %)** | 1 / 200 |
+
+Rozrzut jest wąski i ma twardy sufit: tydzień = 7,2 min, więc 85 % biegów kończy się w tygodniu 2–3,
+a żaden nie dożywa 6. planszy tygodnia (tydzień 5 kończy się po 36 min). Tablice tygodnia: 1. — 97 %, 2. — 66 %,
+3. — 15 %, 4. — 1 %. 10 % biegów kończy się przed 10 min (dolna granica celu D-79).
+
+### Przyczyny porażek wg tygodnia
+
+„Przyczyna” to pierwszy fakt raportu końca gry (`buildCauseReport`, `src/game/causes.ts`) dla lotniska, które się
+zapchało; „bez trasy” = lotnisko z 0 tras w chwili porażki.
+
+| Tydzień porażki | Biegi | W hubie | Lotnisko bez trasy | Główna przyczyna z raportu |
+|---|---:|---:|---:|---|
+| 1 | 6 | 2 | 0 | region 6 |
+| 2 | 63 | 19 | 16 | region 41 · brak trasy 17 · pojemność 5 |
+| 3 | 102 | 34 | 28 | region 41 · brak trasy 33 · pojemność 28 |
+| 4 | 28 | 9 | 12 | brak trasy 15 · pojemność 8 · region 5 |
+| 5 | 1 | 1 | 0 | pojemność 1 |
+| **Razem** | **200** | **65 (33 %)** | **56 (28 %)** | region 47 % · brak trasy 33 % · pojemność 21 % |
+
+- Tylko **⅓ porażek dzieje się w hubie**; lotnisko z 1 trasą (szprycha) to 79 porażek, bez trasy 56. Teza „przegrywasz,
+  gdy zapcha się hub” (CLAUDE.md) opisuje mniejszość biegów.
+- **99 % porażek: 0 wolnych samolotów w rezerwie.** Lotnisko bez trasy zapycha się po medianie **2 422 min gry**
+  (~40 h gry, ~4 min rzeczywistych; p10 1 255 min) od otwarcia — czasu jest dość, brakuje samolotu. W chwili porażki
+  mediana 1,5 lotniska bez obsługi (p90: 4). Sieć rośnie o 6 lotnisk na tydzień (D-106), flota o 1 samolot na tydzień.
+- Raport końca gry dla takiego lotniska radzi „Połącz nowe lotnisko, zanim zapełni się poczekalnia”
+  (`gameover.unservedHint`) — w 99 % przypadków nie było czym. Gracz potrzebuje innej rady: przenieść samolot albo
+  przedłużyć obsługiwaną trasę (R8b).
+- Fakt „region” (np. „62 % czeka na Azję”) jest główny w 47 % biegów; jest prawdziwy, ale nie mówi, co zrobić.
+
+### Ulepszenia tygodnia: co bot wybiera i ile to daje
+
+Plansza losuje 3 z 4 kart, zawsze z jednym samolotem (`drawUpgradeOffers`, `src/sim/upgrades.ts`).
+
+| Karta | Pokazana | Wybrana | Wybór, gdy pokazana | Plansza 1 | Plansza 2 | Plansza 3 |
+|---|---:|---:|---:|---:|---:|---:|
+| Turboprop | 290 | 201 | 69 % | 70 | 108 | 23 |
+| Szerokokadłubowiec | 301 | 148 | 49 % | 123 | 21 | 4 |
+| Rozbudowa huba | 235 | 6 | **3 %** | 1 | 2 | 2 |
+| +2 sloty | 239 | 0 | **0 %** | 0 | 0 | 0 |
+
+Wpływ na wynik — ten sam bot, ale zawsze bierze wskazaną kartę, gdy jest na planszy (inaczej swój wybór):
+
+| Polityka kart | Mediana | p25 | p90 | Wynik (mediana) | 2. / 3. plansza | Dożywa tyg. 4 | Porażki bez trasy | Samoloty na końcu |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Bot (normalnie) | 16,52 | 13,1 | 22,4 | 268 | 66 % / 15 % | 15 % | 56 | 6 |
+| **Zawsze szerokokadłubowiec** | **17,05** | 13,5 | 23,3 | **295 (+10 %)** | 70 % / 18 % | 18 % | 25 | 6 |
+| Zawsze turboprop | 15,49 | 12,0 | 21,9 | 238 (−11 %) | 59 % / 12 % | 12 % | 93 | 6 |
+| Zawsze rozbudowa huba | 15,59 | 12,3 | 21,4 | 236 (−12 %) | 59 % / 10 % | 10 % | 113 | 4 |
+| Zawsze +2 sloty | 15,49 | 12,1 | 21,3 | 231 (−14 %) | 58 % / 9 % | 9 % | 107 | 4 |
+
+- **Strategia dominująca:** samolot, a jeśli jest — szerokokadłubowiec (300 miejsc, 11 000 km). Przewaga jest mniejsza
+  niż przy N7w (D-78: 21,8 vs 15,8 min), ale nadal +10 % wyniku; to zgodne z D-78 („zostaje do playtestu”).
+- **Opcje bezużyteczne:** rozbudowa huba i +2 sloty kosztują samolot, a flota jest wąskim gardłem (99 % porażek bez
+  rezerwy). Wymuszone obniżają medianę o ~1 min, wynik o 12–14 % i podwajają porażki na lotniskach bez trasy.
+  Z losowania wynika, że **każda** plansza ma co najmniej jedną z tych dwóch kart, a co trzecia obie (pokazane
+  235 + 239 razy na 355 plansz) — wtedy realny wybór sprowadza się do jednej karty z samolotem.
+
+### Czy cisza nocna, sloty i przesiadki mają znaczenie
+
+| Mechanika (decyzja) | Ile biegów jej dotyka | Skala |
+|---|---|---|
+| Cisza nocna od tyg. 4 (D-17) | **29 / 200 (15 %)** dożywa tygodnia 4; 20 z nich ma choć jedno wstrzymanie | mediana 123 samolotominut na ziemi + 123 w kręgu nad lotniskiem w tych biegach |
+| Sloty odlotów 2/3 na godzinę (D-41) | **9 / 200** biegów ma jakiekolwiek wstrzymanie | max 32 samolotominut na bieg, mediana 0; „+2 sloty” nigdy nie jest potrzebne |
+| Przesiadki, MCT 25/15 min | **200 / 200** | **49 %** dowiezionych pasażerów miało ≥ 1 przesiadkę (mediana per bieg 48 %) |
+
+- Przesiadki to rdzeń, który działa: co drugi pasażer przesiada się w hubie, bo popyt jest „do regionu”, a nie
+  „do miasta”.
+- Sloty są niewidoczne dla sieci 4–6 samolotów rozłożonych po ~6 trasach (mediana na końcu: 17 lotnisk, 6 tras,
+  2 huby, 6 samolotów). To samo pokazał już pomiar zadania 32 (`docs/balance/README.md`); D-41 („+2 sloty to
+  realny wybór”) nie jest spełnione dla bota. Człowiek, który stawia kilka samolotów na jednym lotnisku, spotka limit
+  wcześniej — to trzeba sprawdzić w teście zamkniętym.
+- Cisza nocna, jeden z wyróżników gry (D-07), pojawia się w 1 na 7 biegów bota.
+
+### Zgodność z założeniami decyzji
+
+| Decyzja | Założenie | Pomiar R8 | Ocena |
+|---|---|---|---|
+| D-05 | świat bogaty, info w świecie | — (audyt mechaniki, nie grafiki) | — |
+| D-17 | cisza nocna od tygodnia 4 w Endless | 15 % biegów dożywa tygodnia 4 | mechanika prawie niewidoczna (Q-72) |
+| D-40 | tydzień 3 dni, plansza ok. 4–5 min | plansza po 7,2 min; 97 % / 66 % / 15 % dociera do 1./2./3. | OK dla 1. i 2., trzecia rzadka |
+| D-41 | +2 sloty to realny wybór | wybór 0 %, wstrzymania w 9 / 200 biegach | nie działa (Q-71) |
+| D-79 | mediana bota 10–18 min | 16,52 (200 seedów), 17,03 (50, bramka) | OK, blisko górnej granicy; 10 % biegów < 10 min |
+| D-95 | brak porażek w tyg. 1 bez możliwej odpowiedzi | 6 / 200 porażek w tyg. 1, wszystkie na lotnisku w zasięgu | OK |
+| D-106 | 6 lotnisk/tydz., popyt 130 % | flota +1/tydz.; 99 % porażek bez wolnego samolotu | tempo dyktuje flota, nie projekt sieci |
+| D-113 | tempo v5 do playtestu | — | propozycje R8 tylko po teście zamkniętym albo w osobnych regułach |
+
+### Propozycje (w `docs/NIGHT-BACKLOG.md`, R8a–R8g)
+- **R8a** plansza z kartami, które mają sens: „+2 sloty” dopiero po pierwszym wstrzymaniu odlotu, „rozbudowa huba”
+  tylko gdy hub istnieje (miara: odsetek plansz z kartą bez sensu → 0; wybór huba/slotów, gdy pokazane, > 3 % / > 0 %).
+- **R8b** rada na końcu gry „brak wolnego samolotu” (miara: odsetek porażek bez trasy, w których rada mówi
+  o przeniesieniu samolotu: 0 → 100 %).
+- **R8c** cisza nocna od tygodnia 3 w Endless, po Q-72 (miara: biegi z ciszą nocną 15 % → ~66 %, mediana w 10–18).
+- **R8d** `balance:report` pokazuje rozrzut i użycie mechanik (p10/p90, tydzień porażki, cisza, sloty, przesiadki).
+- **R8e** bot, który przenosi samoloty (lepszy zastępca człowieka; miara: porażki bez trasy 56 / 200 → mniej).
+- **R8f** przygotowany przegląd „późnej rampy” (flota vs lotniska po tygodniu 3), stosowany dopiero po teście (D-113).
+- **R8g** pytania R8 do arkusza testu zamkniętego (R3k/R6i).
+
+### Pytania do testu zamkniętego (R3k / R6i)
+1. Z ekranu końca gry: „Czy wiedziałeś, co mogło uratować lotnisko?” (tak / nie / zgadywałem) — i czy gracz miał wtedy
+   wolny samolot (z dziennika). Cel: rada R8b ma sens, jeśli „nie” > 30 %.
+2. Ile razy gracz przeniósł samolot z jednej trasy na inną (dziennik: `UnassignPlane` + `AssignPlane`)? Jeśli prawie
+   nigdy — przenoszenie jest ukryte i to ono, nie tempo, skraca biegi.
+3. Na planszy tygodnia: jaką kartę wybrał i dlaczego (jedno zdanie)? Czy którakolwiek karta wydała się „bez sensu”?
+   Próg: ≥ 1/3 testerów → R8a.
+4. Czy gracz kiedykolwiek zobaczył wstrzymany odlot (stempel SLOT)? Ile samolotów miał na najbardziej obciążonym
+   lotnisku? Odpowiada na D-41 dla ludzi.
+5. Czy gracz doszedł do ciszy nocnej (tydzień 4) i czy zrozumiał zamknięcie lotniska? Odsetek < 30 % → Q-72 B.
+6. Długość biegów: rozkład (p10/p50/p90) z dziennika, nie sama mediana; czy najlepsi testerzy przekraczają 30 min.
+7. „Czy w ostatnich minutach miałeś na co wydać decyzję, czy tylko patrzyłeś?” — sufit tygodnia 4–5 (R8f).
+
+### Powtórzenie pomiarów
+```sh
+npm ci
+npm run test:balance                                       # bramka: median_min=17.03 (50 seedów)
+node --import ./scripts/ts-test-loader.mjs scripts/research/r8-audit.ts --seeds=50 --cap-min=30   # kontrola: p50=17.03
+node --import ./scripts/ts-test-loader.mjs scripts/research/r8-audit.ts --seeds=200 --cap-min=60 \
+  --policy=all --csv=docs/balance/r8-audit-200.csv          # ~2,5 min, wszystkie tabele powyżej
+npm install --no-save playwright@1.63.0 && npm run ui:long-play -- pl 412 915 4 4 r8-pl-4x
+```
