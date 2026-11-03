@@ -448,6 +448,13 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       in order and spelling, display codes 3 capital letters and unique, names, population, on land or ≤ ~30 km from
       the coast of the game's land raster. `test:airport-labels` +1. The R4b "solar time" help line is left to the UI
       agent (settings/help is its area).
+- [x] N12i **One top-50 document per board (R3a, D-108)** — `submitDaily` keeps `boards/{id}/meta/top` (≤ 50
+      `{uid, callSign, score}`, old query order: score desc, doc id desc) in its transaction, writes it only when the
+      run changes the list, and returns `rank` inside the daily top 50; `getBoards` reads 4 documents (two tops, two
+      own entries) plus `count()` only outside the top, instead of two 50-document queries (~105 reads). Pre-upgrade
+      boards are seeded from the old query at their first write. The top's `expireAt` is fixed at its first write
+      (TTL policy on `meta` added), so it never outlives the entries. Pure `mergeTop`/`rankInTop`/`readTopRows` in
+      `functions/src/logic.ts`; `docs/FIREBASE.md` (incl. step 9 manual deletion) updated.
 
 ## Research proposals (R-agent)
 Proposals from the research agent (findings and sources: `docs/RESEARCH.md`, sections "R1 — …"). Each item is
@@ -590,7 +597,7 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
       testers report "no goal". **Area:** sim (`src/sim/upgrades.ts`, ledger) + UI (weekly board), i18n. *Needs Q-50.*
 
 ### R3 (2026-11-03) — leaderboard cost & abuse, closed-test playtest, device coverage
-- [ ] R3a **One "top 50" document per board** — `getBoards` reads ~105 documents per call today (two top-50 queries
+- [x] R3a → N12i **One "top 50" document per board** — `getBoards` reads ~105 documents per call today (two top-50 queries
       plus rank lookups), which is ~95 % of the Firestore bill and the main abuse vector. `submitDaily` keeps
       `boards/{id}/meta/top` (array of ≤ 50 `{callSign, score, uid-hash}`) up to date inside its transaction (read the
       doc, insert, trim, write; only when the new score beats the 50th) and returns the caller's rank in its response;
@@ -778,3 +785,4 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
 - 2026-11-03 · N12g owner decisions D-93…D-96, own D-97/D-98 renumbered · night/12g-owner-decisions · test:fast 64/64, build ok (docs and comments only)
 - 2026-11-03 · N12f fair week 1 + faster pace, Alexandria in ME (D-95, D-99, D-105, D-106; rules v5) · night/12f-week1-reach · test:week1-reach 5/5 (new; 2/5 on rules v4: 507/1,600 week-1 spawns and 33 start airports beyond reach), test:balance median 17.81 → 17.03 min (reach rule alone 24.43; 200 seeds 17.53 → 16.52), upgrade1 0.88 → 1.00, upgrade2 0.56 → 0.66, week-1 losses beyond reach 5/50 → 0/50, test:replay 23/23 (summary changed with the rules: a1a1 min8640:upgrade:score109 → min4124:over:score48), test:sim-week 6/6 (re-locked), test:save-golden 20/20 (seed 0xA1A3, + v4 replay check), test:bot-policy 10/10 (2 checks re-pinned), test:daily-mode 20/20, test:net 8/8, test:fast 65/65, build ok, store:shots 30/30 regenerated and inspected (test:store-shots 30/30); e2e/ui:matrix not run (no UI code changed)
 - 2026-11-03 · N12h six airport codes on screen + city data guard (R4a, R4b test, D-107) · night/12h-display-codes · test:city-data 5/5 (new; 4/5 before the display codes), test:airport-labels 5/5 (+1), test:replay 23/23 and test:save-golden 20/20 with summaries/hashes identical to dev (sim ids unchanged), test:balance median 17.03 (unchanged), test:fast 66/66, build ok; e2e/ui:matrix/store:shots not run (none of the six airports is in those scenes); no shot of an affected airport taken
+- 2026-11-03 · N12i one top-50 document per board (R3a, D-108) · night/12i-top-board · test:net-server 9/9 (5/9 on the old functions), test:firebase 9/9 on the emulator (7/9 on the old functions: no `rank`, no `meta/top`), test:fast 66/66, build ok; e2e/ui:matrix/store:shots not run (client unchanged); read count proven behaviourally (a direct entry edit is not read back), no emulator request log

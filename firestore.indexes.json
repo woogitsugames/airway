@@ -6,6 +6,12 @@
       "fieldPath": "expireAt",
       "ttl": true,
       "indexes": []
+    },
+    {
+      "collectionGroup": "meta",
+      "fieldPath": "expireAt",
+      "ttl": true,
+      "indexes": []
     }
   ]
 }
