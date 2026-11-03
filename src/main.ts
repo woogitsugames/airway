@@ -236,6 +236,11 @@ async function boot(): Promise<void> {
       return;
     }
     const run = new EndlessRun(sim);
+    if (run.mode === 'daily') {
+      // [night-07a] A resumed daily keeps its kind: the open official attempt is still ranked.
+      const resumed = daily.resume(sim, run.seed);
+      dailySession = resumed ? { status: 'started', session: resumed } : null;
+    }
     openGame(run, run.mode === 'daily' ? 'daily' : 'endless');
     session?.setPaused(true);
   }
