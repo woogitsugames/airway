@@ -316,7 +316,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       if (!knownAirports.has(city.id)) {
         knownAirports.add(city.id);
         // D-68: the 58 px edge chip has no room for a city name, so it always shows the code.
-        overlay.addAirport({ id: city.id, code: city.id, lon: city.lon, lat: city.lat, hub: city.hub });
+        overlay.addAirport({ id: city.id, code: airportLabel(city.id, 'code'), lon: city.lon, lat: city.lat, hub: city.hub });
       }
       overlay.setCapacity(city.id, city.capacity); // [night-11d] edge-chip gauge; deduplicated inside
       const key = city.waiting.join(',') + '/' + city.connecting; // [night-10i] hollow transfer glyphs
@@ -417,7 +417,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       const tip = run.mode !== 'puzzle' && (callbacks.failureTip?.() ?? false); // [night-11f]
       const flights = failure.departures.map((departure, i) => ({
         originHubId: failure.cityId, flightNumber: 'AW' + String(101 + i),
-        destinationCode: departure.destination, gate: String.fromCharCode(65 + (i % 6)) + String(1 + i),
+        destinationCode: airportLabel(departure.destination, 'code'), gate: String.fromCharCode(65 + (i % 6)) + String(1 + i),
       }));
       void gameOver.show({
         seed: run.seed, initialHash: '', hubId: failure.cityId, hubCode: airportLabel(failure.cityId),

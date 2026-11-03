@@ -12,6 +12,11 @@ export interface City {
   readonly lat: number;
   readonly population: number;
   readonly region: RegionId;
+  /**
+   * [night-12h] R4a: the code shown on screen when `code` (the sim id, never renamed: saves, journals, puzzles, golden
+   * hashes) is not the code travellers know from a ticket. Rule: the common city code, else the main airport's code.
+   */
+  readonly displayCode?: string;
 }
 
 // Ordering is stable: generated distance-table indices and saves depend on it.
@@ -82,7 +87,7 @@ export const CITIES: readonly City[] = [
   { code: 'MAN', namePl: "Manchester", nameEn: "Manchester", lon: -2.2, lat: 53.5, population: 2800000, region: 'EUN' },
   { code: 'RIX', namePl: "Ryga", nameEn: "Riga", lon: 24.1, lat: 56.9, population: 600000, region: 'EUN' },
   { code: 'TLL', namePl: "Tallinn", nameEn: "Tallinn", lon: 24.8, lat: 59.4, population: 450000, region: 'EUN' },
-  { code: 'KIV', namePl: "Kijów", nameEn: "Kyiv", lon: 30.5, lat: 50.4, population: 3000000, region: 'EUN' },
+  { code: 'KIV', namePl: "Kijów", nameEn: "Kyiv", lon: 30.5, lat: 50.4, population: 3000000, region: 'EUN', displayCode: 'IEV' },
   { code: 'LIS', namePl: "Lizbona", nameEn: "Lisbon", lon: -9.1, lat: 38.7, population: 2900000, region: 'EUS' },
   { code: 'OPO', namePl: "Porto", nameEn: "Porto", lon: -8.6, lat: 41.1, population: 1800000, region: 'EUS' },
   { code: 'MAD', namePl: "Madryt", nameEn: "Madrid", lon: -3.7, lat: 40.4, population: 6700000, region: 'EUS' },
@@ -104,7 +109,7 @@ export const CITIES: readonly City[] = [
   { code: 'CMN', namePl: "Casablanca", nameEn: "Casablanca", lon: -7.6, lat: 33.6, population: 3700000, region: 'AFR' },
   { code: 'ALG', namePl: "Algier", nameEn: "Algiers", lon: 3.1, lat: 36.8, population: 3600000, region: 'AFR' },
   { code: 'TUN', namePl: "Tunis", nameEn: "Tunis", lon: 10.2, lat: 36.8, population: 2300000, region: 'AFR' },
-  { code: 'ALX', namePl: "Aleksandria", nameEn: "Alexandria", lon: 29.9, lat: 31.2, population: 5500000, region: 'ME' },
+  { code: 'ALX', namePl: "Aleksandria", nameEn: "Alexandria", lon: 29.9, lat: 31.2, population: 5500000, region: 'ME', displayCode: 'ALY' },
   { code: 'DKR', namePl: "Dakar", nameEn: "Dakar", lon: -17.4, lat: 14.7, population: 1500000, region: 'AFR' },
   { code: 'ACC', namePl: "Akra", nameEn: "Accra", lon: -0.2, lat: 5.6, population: 2500000, region: 'AFR' },
   { code: 'LOS', namePl: "Lagos", nameEn: "Lagos", lon: 3.4, lat: 6.5, population: 16000000, region: 'AFR' },
@@ -116,8 +121,8 @@ export const CITIES: readonly City[] = [
   { code: 'ADD', namePl: "Addis Abeba", nameEn: "Addis Ababa", lon: 38.8, lat: 9.0, population: 5500000, region: 'AFR' },
   { code: 'DAR', namePl: "Dar es Salaam", nameEn: "Dar es Salaam", lon: 39.3, lat: -6.8, population: 7800000, region: 'AFR' },
   { code: 'KGL', namePl: "Kigali", nameEn: "Kigali", lon: 30.1, lat: -1.9, population: 1400000, region: 'AFR' },
-  { code: 'LUA', namePl: "Luanda", nameEn: "Luanda", lon: 13.2, lat: -8.8, population: 9500000, region: 'AFR' },
-  { code: 'LUS', namePl: "Lusaka", nameEn: "Lusaka", lon: 28.3, lat: -15.4, population: 3100000, region: 'AFR' },
+  { code: 'LUA', namePl: "Luanda", nameEn: "Luanda", lon: 13.2, lat: -8.8, population: 9500000, region: 'AFR', displayCode: 'LAD' },
+  { code: 'LUS', namePl: "Lusaka", nameEn: "Lusaka", lon: 28.3, lat: -15.4, population: 3100000, region: 'AFR', displayCode: 'LUN' },
   { code: 'JNB', namePl: "Johannesburg", nameEn: "Johannesburg", lon: 28.0, lat: -26.2, population: 6000000, region: 'AFR' },
   { code: 'CPT', namePl: "Kapsztad", nameEn: "Cape Town", lon: 18.4, lat: -33.9, population: 4800000, region: 'AFR' },
   { code: 'DUR', namePl: "Durban", nameEn: "Durban", lon: 31.0, lat: -29.9, population: 3800000, region: 'AFR' },
@@ -136,7 +141,7 @@ export const CITIES: readonly City[] = [
   { code: 'DOH', namePl: "Doha", nameEn: "Doha", lon: 51.5, lat: 25.3, population: 2400000, region: 'ME' },
   { code: 'KWI', namePl: "Kuwejt", nameEn: "Kuwait City", lon: 48.0, lat: 29.4, population: 3300000, region: 'ME' },
   { code: 'THR', namePl: "Teheran", nameEn: "Tehran", lon: 51.4, lat: 35.7, population: 9600000, region: 'ME' },
-  { code: 'ISF', namePl: "Isfahan", nameEn: "Isfahan", lon: 51.7, lat: 32.7, population: 2200000, region: 'ME' },
+  { code: 'ISF', namePl: "Isfahan", nameEn: "Isfahan", lon: 51.7, lat: 32.7, population: 2200000, region: 'ME', displayCode: 'IFN' },
   { code: 'DEL', namePl: "Delhi", nameEn: "Delhi", lon: 77.2, lat: 28.6, population: 33000000, region: 'ASI' },
   { code: 'BOM', namePl: "Mumbaj", nameEn: "Mumbai", lon: 72.9, lat: 19.1, population: 22000000, region: 'ASI' },
   { code: 'BLR', namePl: "Bengaluru", nameEn: "Bengaluru", lon: 77.6, lat: 12.9, population: 14000000, region: 'ASI' },
@@ -162,7 +167,7 @@ export const CITIES: readonly City[] = [
   { code: 'TYO', namePl: "Tokio", nameEn: "Tokyo", lon: 139.7, lat: 35.7, population: 37000000, region: 'ASI' },
   { code: 'OSA', namePl: "Osaka", nameEn: "Osaka", lon: 135.5, lat: 34.7, population: 19000000, region: 'ASI' },
   { code: 'BKK', namePl: "Bangkok", nameEn: "Bangkok", lon: 100.5, lat: 13.8, population: 11000000, region: 'ASI' },
-  { code: 'HCM', namePl: "Ho Chi Minh", nameEn: "Ho Chi Minh City", lon: 106.7, lat: 10.8, population: 10000000, region: 'ASI' },
+  { code: 'HCM', namePl: "Ho Chi Minh", nameEn: "Ho Chi Minh City", lon: 106.7, lat: 10.8, population: 10000000, region: 'ASI', displayCode: 'SGN' },
   { code: 'HAN', namePl: "Hanoi", nameEn: "Hanoi", lon: 105.9, lat: 21.0, population: 8500000, region: 'ASI' },
   { code: 'SIN', namePl: "Singapur", nameEn: "Singapore", lon: 103.8, lat: 1.3, population: 5900000, region: 'ASI' },
   { code: 'KUL', namePl: "Kuala Lumpur", nameEn: "Kuala Lumpur", lon: 101.7, lat: 3.1, population: 8600000, region: 'ASI' },
