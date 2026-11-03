@@ -12,18 +12,23 @@ const BACKOFF_MS = [0, 30_000, 120_000, 600_000, 3_600_000];
 export type SendResult = 'accepted' | 'rejected' | 'retry';
 
 export class SubmissionQueue {
+  /** In-memory copy for when storage is missing or blocked: the run still goes out in this session. */
+  private memory: QueuedRun[] = [];
+
   constructor(private readonly storage: QueueStorage | null, private readonly now: () => number = () => Date.now()) {}
 
   list(): QueuedRun[] {
+    if (!this.storage) return this.memory.slice();
     try {
-      const raw = this.storage?.getItem(QUEUE_KEY);
+      const raw = this.storage.getItem(QUEUE_KEY);
       const parsed: unknown = raw ? JSON.parse(raw) : [];
       return Array.isArray(parsed) ? parsed.filter((item) => item && typeof item === 'object' && item.submission) : [];
-    } catch { return []; }
+    } catch { return this.memory.slice(); }
   }
 
   private write(items: readonly QueuedRun[]): void {
-    try { this.storage?.setItem(QUEUE_KEY, JSON.stringify(items)); } catch { /* storage full or blocked */ }
+    this.memory = items.slice();
+    try { this.storage?.setItem(QUEUE_KEY, JSON.stringify(items)); } catch { /* storage full or blocked: memory copy */ }
   }
 
   /** Newest run for a day replaces an older one; the oldest days drop out beyond MAX_QUEUED. */

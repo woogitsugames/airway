@@ -470,7 +470,13 @@ space Intl uses for five digits; tested by `npm run test:format`.
 About 1.2°/s, paused with `prefers-reduced-motion` and while the menu is hidden. **Status: in force (task 39).**
 
 ## D-63 — Store screenshot order: night, game, upgrade, failure, menu; dusk must read as dusk (2026-11-02, owner)
-The "game" scene uses clearly golden low-sun light (not daylight). **Status: to implement.**
+The "game" scene uses clearly golden low-sun light (not daylight). Implemented in task 40: the scene `game-dusk` is
+renamed `game`; `SCENES`, contact-sheet columns, manifest order (checked by `--validate`) and the captions in
+`docs/store/{pl,en}.md` follow the new order. The fixture puts the sun at elevation 0.05 (daynight.ts units) over the
+network centroid in the evening instead of a fixed −95° from the camera centre (which left the network past the
+terminator); `test:store-shots` requires a golden-pixel share ≥ 0.045 on the `game` globe and D-47 contrast ≥ 4.5:1
+in `game` and `night`. **Status: in force (task 40); a stronger warm band in `daynight.ts` is proposed for the
+render owner (task-40 PR).**
 
 ## D-64 — `main` follows green `dev` (2026-11-02, owner)
 `dev` stays the integration branch for all task PRs. The coordinator regularly fast-forwards `main` to `dev` after the
@@ -522,7 +528,11 @@ unfinished run or a run longer than 30 game weeks is rejected. The client talks 
 Identity Toolkit sign-up, callable functions) so the bundle carries no Firebase SDK; without `VITE_FIREBASE_API_KEY`
 and `VITE_FIREBASE_PROJECT_ID` the feature is off and makes no request. Finished runs wait in a bounded local queue
 (one per day, backoff) until the server answers. Players appear under a call sign derived from the anonymous uid, no
-names or e-mail. **Status: in force (client); server and UI follow in N6b/N6c.**
+names or e-mail. **Status: in force (client, server N6b, UI N6c).**
 _N6b:_ server in `functions/` — first accepted run per player and Warsaw day counts; the weekly board is the **sum** of a
 player's accepted daily scores in the ISO week (proposal for the owner; alternative: best single day). Accepted days
 are today and yesterday (late finishes, offline queue). Firestore is closed to clients. Owner steps: `docs/FIREBASE.md`.
+_N6c:_ the official daily game-over screen shows a second split-flap board "Ranking · date" (today / this week, top 3
++ own rank, call sign marked "Ty/You"), or a status line: sending, offline-queued, rejected, practice run (not ranked).
+Without Firebase config nothing is shown. Queued runs are retried at app start. A daily run resumed from a save is not
+submitted (known gap, the journal is complete, so it can be added later).

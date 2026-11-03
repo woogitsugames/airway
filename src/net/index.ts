@@ -56,7 +56,8 @@ export function createLeaderboards(options: {
   now?: () => number;
 }): Leaderboards {
   const { config } = options;
-  const fetcher = options.fetch ?? (typeof fetch === 'function' ? (fetch as unknown as Fetch) : undefined);
+  // Bound: browsers throw "Illegal invocation" when fetch is called as a method of another object.
+  const fetcher = options.fetch ?? (typeof fetch === 'function' ? (fetch.bind(globalThis) as unknown as Fetch) : undefined);
   if (!config || !fetcher) return DISABLED;
   const storage = options.storage ?? null;
   const now = options.now ?? (() => Date.now());

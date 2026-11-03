@@ -10,6 +10,8 @@ import { dailyKey } from './core/daily';
 import { PUZZLES } from './data/puzzles';
 import { registerDevGameAdapter, type AwDevState, type AwScreen } from './game/devHandle';
 import { createDailyMode } from './game/modes/daily';
+import { dailyRankingBoard } from './game/dailyRanking'; // [night-06c] D-66
+import { createBrowserLeaderboards } from './net'; // [night-06c] D-66
 import { EndlessRun } from './game/run';
 import { readGame, restoreSimFromSave, saveSourceFromSim, writeGame } from './game/save';
 import { LocalScoreService } from './game/scores';
@@ -25,6 +27,7 @@ import { readBestRecord } from './ui/gameover/storage';
 import { mountPuzzleSelector, readPuzzleProgress } from './ui/puzzles';
 import { onSettingsChange, readSettings } from './ui/settings/settings';
 import { TICKS_PER_WEEK } from './sim/clock'; // [task-31] single week length (D-40)
+import { NOVEMBER_SUBSOLAR_LATITUDE_DEG } from './render/sun'; // [task-40] store `game` scene light
 
 const mount = document.getElementById('app');
 if (!mount) throw new Error('Missing #app mount point');
@@ -33,8 +36,15 @@ document.documentElement.lang = getLanguage();
 initializeAccessibility();
 document.title = t('app.title');
 const query = new URLSearchParams(location.search);
-/** [task-36] Ticks of autoplay before a store scene is lit (game-dusk, night, failure). */
+/** [task-36] Ticks of autoplay before a store scene is lit (game, night, failure). */
 const STORE_SHOT_PLAY_TICKS = 1500;
+/**
+ * [task-40] D-63: sun elevation (dot of the surface normal and the sun direction, daynight.ts units) wanted
+ * over the network centroid in the store `game` scene. Just on the sunny side of the terminator, inside the
+ * warm ±DUSK_HALF_WIDTH band, so the network sits in golden low-sun light with long shadows, not daylight
+ * (on seed 0xA1A1: hour angle −70.7° at 31.2°E 38.2°N, about 17:05 on the boarding pass).
+ */
+const STORE_GAME_SUN_DOT = 0.05;
 
 // The airport-model fixture lives in dev/world.html (render agent, shared world renderer).
 if (import.meta.env.DEV && query.get('preview') === 'gameover') {
@@ -68,6 +78,9 @@ async function boot(): Promise<void> {
   const storage: KeyValueStorage = await createDefaultStorage();
   const scores = new LocalScoreService();
   const daily = createDailyMode(scores);
+  // [night-06c] D-66: off without VITE_FIREBASE_* config; otherwise retry queued daily runs at start.
+  const leaderboards = createBrowserLeaderboards(import.meta.env);
+  void leaderboards.flush();
   let saved: SavedSummary | null = null;
   let session: GameSession | null = null;
   let pendingSeed: number | null = null;
@@ -157,12 +170,15 @@ async function boot(): Promise<void> {
       onRestart: (seed) => { if (mode === 'daily') screens.show('menu'); else startEndless(seed); },
       onSave: saveRun,
       onFailure: (failed) => {
+        let ranking: HTMLElement | undefined;
         if (mode === 'daily' && dailySession?.status === 'started') {
           daily.finish(dailySession.session, failed.passengers, Math.floor(failed.tick / TICKS_PER_WEEK), []); // [task-31]
+          ranking = dailyRankingBoard(leaderboards, failed, dailySession.session); // [night-06c]
           dailySession = null;
         }
         saved = null;
         void storage.remove('aw-save-v1').catch(() => undefined);
+        return ranking;
       },
       onTick: (current, speed) => {
         audio.setSimClock(current.clockMinute, speed);
@@ -325,6 +341,30 @@ async function boot(): Promise<void> {
       const minuteOfDay = ((180 - sunLon) * 4 % 1440 + 1440) % 1440;
       return Math.round((minuteOfDay - (run.clockMinute % 1440) + 1440) % 1440);
     };
+    /**
+     * [task-40] Ticks until the sun elevation over the network centroid (spherical mean of the open airports,
+     * as `fitNetwork`) equals `dot` in the evening (sun west of it). The oblique camera centre sits well
+     * south of the network, so it is not used here.
+     */
+    const ticksToEveningSun = (dot: number): { ticks: number; label: string } => {
+      const DEG = Math.PI / 180;
+      let x = 0, y = 0, z = 0;
+      for (const city of run.cityList()) {
+        x += Math.cos(city.lat * DEG) * Math.sin(city.lon * DEG);
+        y += Math.sin(city.lat * DEG);
+        z += Math.cos(city.lat * DEG) * Math.cos(city.lon * DEG);
+      }
+      const lon = Math.atan2(x, z) / DEG;
+      const lat = Math.atan2(y, Math.hypot(x, z)); // radians
+      const dec = NOVEMBER_SUBSOLAR_LATITUDE_DEG * DEG;
+      const cos = (dot - Math.sin(lat) * Math.sin(dec)) / (Math.cos(lat) * Math.cos(dec));
+      const hourAngle = -Math.acos(Math.max(-1, Math.min(1, cos))) / DEG;
+      const minuteOfDay = ((180 - (lon + hourAngle)) * 4 % 1440 + 1440) % 1440;
+      return {
+        ticks: Math.round((minuteOfDay - (run.clockMinute % 1440) + 1440) % 1440),
+        label: `${hourAngle.toFixed(1)}@${lon.toFixed(1)},${(lat / DEG).toFixed(1)}`,
+      };
+    };
     if (scene === 'upgrade') await autoplayUntil(1);
     else {
       // About one game day of real play grows the network before the light is chosen.
@@ -332,9 +372,13 @@ async function boot(): Promise<void> {
       if (scene === 'failure') active.forceOverload(); // The player stops building; real demand jams a hub.
       else {
         await frames(20); // Let the layout-measured framing settle before reading the camera centre.
-        const angle = scene === 'night' ? 180 : -95;
-        // Stay on the game screen: never let the dusk/night setup run into the weekly board.
-        let ticks = ticksToSun(angle);
+        // [task-40] `game`: golden low sun just before sunset over the network (was a fixed −95° from the
+        // camera centre, which left the European network past the terminator in November).
+        const evening = scene === 'night' ? null : ticksToEveningSun(STORE_GAME_SUN_DOT);
+        // Recorded by scripts/store-shots.mjs in the manifest: hour angle@network lon,lat.
+        document.documentElement.dataset.storeShotSun = evening ? evening.label : '180@camera';
+        // Stay on the game screen: never let the game/night setup run into the weekly board.
+        let ticks = evening ? evening.ticks : ticksToSun(180);
         if (run.tick + ticks >= run.nextWeekTick) ticks = Math.max(0, ticks - 1440);
         play(ticks);
       }
