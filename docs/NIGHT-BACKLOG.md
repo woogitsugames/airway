@@ -101,7 +101,10 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       one row with the week and Back, so on 844/740 px landscape it got 11/0 px and the sign grew to 84–117 px
       (pass: 60 px); on 360 px portrait PL it took 4 lines. The week now sits small above the instruction; below
       880 px landscape Back keeps its arrow only. New `e2e/pick-sign.mjs` (`test:e2e:pick-sign`, in `test:ci`).
-- [ ] N7v **"Automatyczna" at 320 dp** — the settings select is tight on the smallest phones; audit at 320×568.
+- [x] N7v **"Automatyczna" at 320 dp** — at 320×568 the settings selects were capped at 132 px (half the row), so
+      "Automatyczna" and "Nazwa miasta" ran into the arrow. The control column now keeps ~156 px down to 320 dp
+      (labels wrap instead). New `e2e/screens-fit-320.mjs` (`test:e2e:screens-fit-320`, in `test:ci`): the
+      screens-fit audit at 320×568/568×320 with ≥ 8 px to spare in every select.
 - [ ] N7w **Fair balance bot after "+2 slots"** — the DEV bot loses when it takes "+2 slots" in week 1 (it adds
       no aircraft); improve `src/game/dev/bot-policy.ts` so `test:balance` is a fair signal; report the numbers,
       no game-parameter retune without an owner question.
@@ -141,3 +144,4 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
 - 2026-11-03 · N7s secondary screens fit · night/07s-screens-fit · test:fast 48/48, build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:tutorial 21/21, test:e2e:screens-fit 18/18 (17/18 on the old settings grid)
 - 2026-11-03 · N7t pick sign beside the pass · night/07t-pick-sign · test:fast 48/48, build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:upgrade-picks 10/10, test:hud-targets 300/300, shots:39 8/8
 - 2026-11-03 · N7u airport-pick sign fits beside the pass · night/07u-pick-sign-height · test:fast 48/48, build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:upgrade-picks 10/10, test:hud-targets 300/300, test:e2e:pick-sign 10/10 (1/10 on the old CSS), shots:39 8/8
+- 2026-11-03 · N7v settings selects at 320 dp · night/07v-settings-320 · test:fast 48/48, build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:tutorial 21/21, e2e:screens-fit 18/18, test:e2e:screens-fit-320 12/12 (10/12 on the old grid)
