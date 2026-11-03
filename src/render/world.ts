@@ -9,7 +9,7 @@
  */
 import { Color, PerspectiveCamera, Scene, Vector3, WebGLRenderer } from 'three';
 import { createContextGuard } from './contextGuard'; // [night-11h]
-import { createAirports, type AirportsLayer } from './airports';
+import { createAirports, type AirportsLayer, type AirportStyle } from './airports';
 import { GlobeOrbitCamera, type OrbitCameraOptions, type SafeAreaInsets } from './camera';
 import { createGlobe, createSunLights, type GlobeInstance, type GlobeLook } from './globe';
 import { pickSphereNdc, setLatLonVec3, type LonLat } from './globe/geo-math';
@@ -90,6 +90,8 @@ export interface WorldRendererOptions {
   readonly landUrl?: string;
   /** [ext-03] Experimental globe look (DEV only, docs/mockups/globe-2026-11/); default the diorama. */
   readonly look?: GlobeLook;
+  /** [ext-03] D-175 airport/route variant (DEV only, `?airportStyle=`); default the shipped objects. */
+  readonly airportStyle?: AirportStyle;
   readonly camera?: OrbitCameraOptions;
   readonly maxAirports?: number;
   readonly maxHubSeats?: number;
@@ -185,9 +187,12 @@ export function createWorldRenderer(
   scene.add(lights.group);
   const sun: SunController = createSunController(lights, renderer);
   const airports: AirportsLayer = createAirports(scene, {
+    style: opts.airportStyle,
     maxAirports: opts.maxAirports ?? 64, maxHubSeats: opts.maxHubSeats ?? 48,
   });
-  const routes = new RouteLayer();
+  const routes = opts.airportStyle && opts.airportStyle !== 'current'
+    ? new RouteLayer({ outline: true, turboprop: opts.airportStyle === 'apron' ? '#F39A2E' : undefined })
+    : new RouteLayer();
   scene.add(routes.group);
   const planes = new PlaneLayer(routes, {
     maxPlanes: opts.maxPlanes ?? 120, progressScale: opts.progressScale,

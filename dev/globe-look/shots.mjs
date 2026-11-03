@@ -1,7 +1,7 @@
 // [ext-03] Globe-look mockups as real renders of the game (not paintings): the DEV store-shot fixture plays seed 15
 // (Tehran, Lahore, Tashkent, Almaty: the owner's phone screenshot), and `?globeLook=` switches the experimental look.
 //   node dev/globe-look/shots.mjs [--looks=diorama,refined,satellite,painted] [--times=day,dusk] [--sizes=fold,phone]
-//        [--out=docs/mockups/globe-2026-11] [--play=1500] [--preset=medium]
+//        [--out=docs/mockups/globe-2026-11] [--play=1500] [--preset=medium] [--style=ink|apron|medal]
 // Writes <look>-<time>-<size>.png and shots.json (asset bytes fetched per look, frame stats).
 import { spawn } from 'node:child_process';
 import { mkdirSync, writeFileSync, existsSync, readFileSync } from 'node:fs';
@@ -19,6 +19,7 @@ const SIZES = arg('sizes', 'fold,phone').split(',');
 const OUT = resolve(ROOT, arg('out', 'docs/mockups/globe-2026-11'));
 const PLAY = arg('play', '1500');
 const PRESET = arg('preset', 'medium');
+const STYLE = arg('style', ''); // [D-175] airport/route variant: ink | apron | medal
 const SEED = 15;
 // Sun elevation (dot of surface normal and sun) over the network centroid, in the afternoon / evening.
 const SUN = { day: 0.62, dusk: 0.05 };
@@ -78,7 +79,8 @@ try {
         url.searchParams.set('storeSunDot', String(SUN[time]));
         url.searchParams.set('quality', PRESET);
         if (look !== 'diorama') url.searchParams.set('globeLook', look);
-        const name = `${look}-${time}-${size}`;
+        if (STYLE) url.searchParams.set('airportStyle', STYLE); // D-175 variants
+        const name = `${look}${STYLE ? '-' + STYLE : ''}-${time}-${size}`;
         try {
           await page.goto(url.href, { waitUntil: 'networkidle', timeout: 60000 });
           await page.waitForFunction(() => document.documentElement.dataset.storeShotReady === 'game', null,

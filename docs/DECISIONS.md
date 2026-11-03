@@ -1126,3 +1126,13 @@ The Satelita surface uses Blue Marble NG **July 2004** (green northern hemispher
 Siberia and Kazakhstan, matching the in-game November sun of D-63). The owner chose July over Claude's recommendation
 (November). Consequence: winter sun on a summer Earth is accepted; the D-63 golden-dusk gate is re-checked in G3.
 **Status: in force (owner).**
+
+## D-177 — The D-47 contrast probe measures edges, not the layer median (2026-11-03, Claude, ext/03 G9)
+The G9 variants (`docs/mockups/globe-2026-11/g9/`) put a dark outline around light airport pads and route tubes.
+`measureLayerContrast` (`src/render/contrast.ts`) compares the median luminance of every pixel a layer changes with
+the globe behind it, so a two-tone object averages to mid-grey: on the Mapa texture the outlined pads clearly stand
+out in the PNGs while the probe moves only 1.4 → 1.6–2.2, and on Satelita the outline lowers the route score
+(3.8 → 2.3). Before G9 ships, the probe reports per layer the contrast of the outer edge against the globe and of
+the core against the edge, and the gate takes the better of the two (WCAG non-text contrast reads either boundary).
+Rejected: keeping the median (penalises the standard map-symbol design) and a pixel-count threshold (fragile at
+different zooms). **Status: proposed; implement with G9.**
