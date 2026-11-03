@@ -507,6 +507,69 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
       the ledger; drawn as a freight waybill on the board, progress on the pause sheet. Do after the closed test if
       testers report "no goal". **Area:** sim (`src/sim/upgrades.ts`, ledger) + UI (weekly board), i18n. *Needs Q-50.*
 
+### R3 (2026-11-03) — leaderboard cost & abuse, closed-test playtest, device coverage
+- [ ] R3a **One "top 50" document per board** — `getBoards` reads ~105 documents per call today (two top-50 queries
+      plus rank lookups), which is ~95 % of the Firestore bill and the main abuse vector. `submitDaily` keeps
+      `boards/{id}/meta/top` (array of ≤ 50 `{callSign, score, uid-hash}`) up to date inside its transaction (read the
+      doc, insert, trim, write; only when the new score beats the 50th) and returns the caller's rank in its response;
+      `getBoards` reads the two `top` docs plus the caller's own entry, `count()` only when the caller is outside the
+      top 50. Same response shape (client unchanged). Emulator test: 60 submissions → `top` equals the old query
+      result; read count per `getBoards` ≤ 4 (count via emulator request log). **Area:** platform (`functions/`,
+      `scripts/emulator-checks.mjs`, `docs/FIREBASE.md`).
+- [ ] R3b **Per-caller rate limit and split function caps** — in-memory token bucket per uid per instance
+      (`getBoards` 20/min, `submitDaily` 6/min; over the limit → `resource-exhausted` before any Firestore access);
+      `getBoards` `maxInstances: 3`, `submitDaily` `concurrency: 4` (CPU-bound replay must not queue 80 players behind
+      one vCPU) with `maxInstances: 5`. Pure limiter in `functions/src/logic.ts` with `test:net-server` cases; the
+      client already treats errors as "queued". **Area:** platform (`functions/`).
+- [ ] R3c **Replay stops at game over + replay-cost guard** — `Sim.replay` keeps ticking after `status === 'over'`, so
+      an empty journal with `endTick` = 30 weeks is accepted with `weeks: 30` (score 0) and costs a full 30-week replay.
+      Stop the replay loop at game over (or reject `endTick` more than one tick past the game-over tick as
+      `malformed`) and compute `weeks` from the game-over tick. Add `test:replay-cost`: bot daily runs on 6 seeds plus
+      a synthetic dense journal near `MAX_JOURNAL_ENTRIES`, prints ms per game week and fails above a budget (e.g.
+      ≤ 5 s for the worst case on the CI runner). Check `test:replay` hashes are unchanged for normal runs.
+      **Area:** sim (`src/sim/sim.ts` replay only) + net (`src/net/submission.ts`), scripts, `test:fast` list.
+- [ ] R3d **Budget alerts and a manual brake** — `docs/FIREBASE.md` step 4 gets exact clicks for a 10 EUR budget with
+      50/90/100 % actual and 100 % forecast alerts to the owner's e-mail, and a new "When an alert fires" section:
+      check Firestore usage per collection, then set the `LEADERBOARDS_PAUSED` param (firebase-functions `defineBoolean`)
+      and redeploy — both functions then answer `{ accepted: false, reason: 'paused' }` / empty boards without touching
+      Firestore; the client shows the existing "queued" state. Emulator test for the paused path. **Area:** platform
+      (`functions/`, `docs/FIREBASE.md`). *Needs Q-07.*
+- [ ] R3e **App Check for the callables** — native attestation (Play Integrity / App Attest) through a Capacitor plugin,
+      the token attached as `X-Firebase-AppCheck` by `src/net/client.ts`, `enforceAppCheck: true` on both callables,
+      debug provider for emulator/dev builds, Play Integrity quota (10 000/day) noted in `docs/FIREBASE.md`; licence entry
+      for the plugin. **Area:** platform (`src/net/**`, `android/`, `ios/`, `functions/`). *Needs Q-53.*
+- [ ] R3f **Quality preset from the GPU family** — budget phones (Galaxy A06/A16, Redmi 14C, Moto G) report 8 cores and
+      4 GB, so `chooseQualityPreset` starts them on medium and only adaptation (D-73) steps down after visible stutter.
+      Read `UNMASKED_RENDERER_WEBGL` once (`WEBGL_debug_renderer_info`, guarded) into `DeviceHints.gpu`; a small table in
+      `src/render/quality.ts` maps Mali-G52/G57/G68 MC1–MC2, Mali-T8xx, PowerVR GE83xx, Adreno 5xx/610/613 to `low`
+      (explicit choice and remembered adaptation still win). Unit cases in the quality test for each family plus
+      "unknown string → today's rule". **Area:** render (`src/render/quality.ts`).
+- [ ] R3g **WebGL context loss and "no WebGL 2" screen** — no `webglcontextlost`/`webglcontextrestored` handling exists.
+      On loss: pause the game clock (as on `document.hidden`), keep the sim, show a short in-world notice; on restore:
+      re-apply the quality profile and redraw. If `WebGLRenderer` cannot be created (no WebGL 2), show a plain PL/EN page
+      ("This device's graphics are not supported", with the device's renderer string) instead of a blank canvas. E2E:
+      `WEBGL_lose_context.loseContext()`/`restoreContext()` mid-run → game resumes with the same state hash. **Area:**
+      render (`src/render/world.ts`) + UI (`src/game/world.ts`, i18n).
+- [ ] R3h **Play device filter for OpenGL ES 3.0** — Three r170 needs WebGL 2; declare
+      `<uses-feature android:glEsVersion="0x00030000" android:required="true"/>` so Play hides the game from devices
+      that cannot run it, and make `test:android-config` assert it (and the minSdk chosen in Q-54). **Area:** platform
+      (`android/app/src/main/AndroidManifest.xml`, `scripts/`). *minSdk part needs Q-54.*
+- [ ] R3i **Firebase Test Lab game-loop perf run** — Android `MainActivity` recognises
+      `com.google.intent.action.TEST_LOOP`, opens the WebView on the perf scene (or a DEV-free autoplay scenario of the
+      real game) for 120 s, and a tiny native bridge writes the existing `.perf/scene.json` fields (frame p50/p95,
+      preset, adaptations, renderer string) to the result file URI, then `finish()`. `npm run perf:testlab` prints the
+      `gcloud firebase test android run --type game-loop` command for 4–5 low-end models; results table in
+      `docs/PERFORMANCE.md`. Spark plan: 5 physical runs/day free. **Area:** platform (`android/`, `scripts/`, docs).
+- [ ] R3j **Playtest record in the copied summary** — extends R1o: the logbook keeps, for the last 30 runs, game-over
+      cause, real minutes played, upgrade picked each week, tutorial finished, quality preset and adaptation steps, app
+      version; "Copy summary" adds one compact line (`AW1:` + base64url JSON, no identifiers) under the readable text.
+      `npm run playtest:decode -- file.txt` turns pasted lines into CSV for the decision table in `docs/PLAYTEST.md`.
+      Local only, no network (D-16). **Area:** game (`src/game/logbook.ts`), UI (`src/ui/logbook/**`), scripts, i18n.
+- [ ] R3k **Closed-test plan, decision rules and production-access answers** — fill `docs/PLAYTEST.md` (with R1o) from
+      RESEARCH R3: recruitment mix, 14-day schedule with the day-8 fix release, surveys A/B/C (PL/EN), decision table
+      with thresholds written before the test, and an answer sheet for Google's production-access questions (recruiting,
+      engagement, feedback summary, changes made, readiness evidence). **Area:** docs. *Needs Q-42, Q-52.*
+
 ## Log
 <!-- one line per finished item: date UTC · item · PR · gate summary -->
 - 2026-11-03 · N1 puzzles 16–30 (D-70) · night/01-puzzles · test:fast 42/42, build ok, e2e:smoke 9/9, ui:matrix 32/32, test:puzzles levels=30 cases=168 failed=0 (merged tree with #40, #42)
