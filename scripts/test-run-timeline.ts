@@ -1,11 +1,12 @@
 // [night-10r] End-of-run timeline (src/game/runTimeline.ts): a bot-played Endless run (fixed seed) is re-read from its
 // journal in a separate Sim; the counts equal the accepted commands of the live run, rejected commands are not
 // counted, the weekly crate shows in the week after its board, the live sim is untouched, and a foreign journal
-// yields null.
+// yields null. [night-10t] Live outcomes: no replay for a run in one sitting, only a resumed save's prefix; undo
+// and restore keep the outcomes in step with the journal.
 import assert from 'node:assert/strict';
 import { chooseBotAction } from '../src/game/dev/bot-policy.ts';
 import { buildRunTimeline, timelineFromAccepted } from '../src/game/runTimeline.ts';
-import { TICKS_PER_WEEK, type CommandEntry } from '../src/sim/index.ts';
+import { Sim, TICKS_PER_WEEK, type CommandEntry } from '../src/sim/index.ts';
 import { createBalanceSession } from './balance-game-adapter.ts';
 
 const SEED = 0xA1A1;
@@ -85,7 +86,69 @@ await test('a journal that does not fit the run (past its end) gives null', asyn
 await test('the replay yields to the caller in slices', async () => {
   let yields = 0;
   await buildRunTimeline(input, async () => { yields++; });
-  assert.ok(yields >= Math.floor(sim.tickCount / 1500), `yields ${yields}`);
+  // Without outcomes the replay runs up to the last journal entry.
+  assert.ok(yields >= Math.floor(journal.at(-1)![0] / 1500), `yields ${yields}`);
+});
+
+// [night-10t] The live Sim records each entry's outcome, so a run played in one sitting needs no replay.
+await test('live outcomes: same timeline as the replay, without replaying (no yields, seed never used)', async () => {
+  const outcomes = sim.getCommandOutcomes();
+  assert.equal(outcomes.length, journal.length);
+  assert.ok(outcomes.every((o) => o !== null), 'every outcome known on a live run');
+  const replayed = await buildRunTimeline(input);
+  let yields = 0;
+  // A wrong seed would replay a different world: equal output proves the outcomes alone were used.
+  const live = await buildRunTimeline({ ...input, seed: SEED + 1, outcomes }, async () => { yields++; });
+  assert.deepEqual(live, replayed);
+  assert.equal(yields, 0);
+});
+
+await test('a command refused at its tick is recorded as not accepted by the live sim', () => {
+  const probe = createBalanceSession(SEED).simulation;
+  probe.apply({ type: 'RemoveRoute', routeId: 'r999' });
+  probe.apply({ type: 'SetSpeed', speed: 1 });
+  probe.tick();
+  assert.deepEqual(probe.getCommandOutcomes(), [{ minute: 0, accepted: false }, { minute: 0, accepted: true }]);
+});
+
+await test('resumed save: outcomes unknown before the resume, only that prefix is replayed, result unchanged', async () => {
+  const session = createBalanceSession(SEED);
+  const live = session.simulation;
+  const half = Math.floor(sim.tickCount / 2);
+  let i = 0;
+  while (live.tickCount < half) {
+    while (i < journal.length && journal[i]![0] === live.tickCount + 1) live.apply(journal[i++]![1]);
+    live.tick();
+  }
+  const resumed = Sim.fromSnapshot(live.snapshot());
+  const known = resumed.getCommandOutcomes();
+  assert.ok(known.length > 0 && known.every((o) => o === null), 'restored journal has unknown outcomes');
+  while (resumed.tickCount < sim.tickCount) {
+    while (i < journal.length && journal[i]![0] === resumed.tickCount + 1) resumed.apply(journal[i++]![1]);
+    resumed.tick();
+  }
+  const outcomes = resumed.getCommandOutcomes();
+  assert.ok(outcomes.some((o) => o !== null), 'entries after the resume are known');
+  assert.equal(resumed.hash(), sim.hash());
+  let yields = 0;
+  const weeks = await buildRunTimeline({ ...input, outcomes }, async () => { yields++; });
+  assert.deepEqual(weeks, await buildRunTimeline(input));
+  assert.ok(yields <= Math.floor(half / 1500) + 1, `replay stopped near the resume (yields ${yields})`);
+});
+
+await test('undo keeps the outcomes in step with the journal (re-simulated outcomes)', () => {
+  const s = createBalanceSession(SEED).simulation;
+  let i = 0;
+  const stop = journal.find(([, c]) => c.type === 'AddRoute')![0] + 200;
+  while (s.tickCount < stop) {
+    while (i < journal.length && journal[i]![0] === s.tickCount + 1) s.apply(journal[i++]![1]);
+    s.tick();
+  }
+  assert.ok(s.undo(), 'undo');
+  const outcomes = s.getCommandOutcomes();
+  assert.equal(outcomes.length, s.getCommandLog().length);
+  const fresh = Sim.replay(SEED, s.getCommandLog(), s.tickCount, s.config);
+  assert.deepEqual(outcomes, fresh.getCommandOutcomes());
 });
 
 console.log(`SUMMARY test:run-timeline seed=0x${SEED.toString(16).toUpperCase()} ticks=${sim.tickCount} weeks=${Math.ceil(sim.world.minute / TICKS_PER_WEEK)} passed=${passed} failed=${failed}`);

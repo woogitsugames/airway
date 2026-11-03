@@ -1,9 +1,10 @@
 // [night-10r] End-of-run timeline for the game-over report: what the player did in each week, read from the
 // command journal. Commands the sim refused at their tick (CommandRejected) must not count, and the journal alone
 // does not say which those were, so the run is re-simulated in a separate, throw-away Sim from its seed: the live
-// run's state is never touched (D-13 determinism makes the copy exact). The replay runs in slices so the report
-// stays responsive on a slow phone; it only starts when the player opens the timeline.
-import { Sim, calendarWeekAt, type CommandEntry, type GameConfig, type UpgradeKind, type UpgradeRecord } from '../sim';
+// run's state is never touched (D-13 determinism makes the copy exact). [night-10t] The live Sim now records each
+// entry's outcome, so only a resumed save's unknown prefix is replayed (in slices); a long run in one sitting is
+// read straight from those outcomes.
+import { Sim, calendarWeekAt, type CommandEntry, type CommandOutcome, type GameConfig, type UpgradeKind, type UpgradeRecord } from '../sim';
 
 export interface TimelineWeek {
   readonly week: number;
@@ -29,6 +30,8 @@ export interface TimelineInput {
   readonly endMinute: number;
   /** Authoritative weekly choices of the live run (`sim.world.upgrades`). */
   readonly upgrades: readonly UpgradeRecord[];
+  /** [night-10t] `sim.getCommandOutcomes()` of the live run; null entries (a resumed save) are replayed. */
+  readonly outcomes?: readonly (CommandOutcome | null)[];
 }
 
 type Counts = { routes: number; extended: number; removed: number; aircraft: number };
@@ -67,41 +70,58 @@ const COUNTED = new Set(['AddRoute', 'ExtendRoute', 'RemoveRoute', 'AssignPlane'
 const SLICE_TICKS = 1500;
 
 /**
- * Replay the journal in a fresh Sim and keep the network commands the sim accepted, with the game minute each
- * ran at. `yieldEvery` lets the caller hand control back (e.g. `() => new Promise(r => setTimeout(r))`); null
- * when the journal cannot be replayed.
+ * Keep the network commands the sim accepted, with the game minute each ran at. [night-10t] The live Sim records
+ * each journal entry's outcome as it ticks (`getCommandOutcomes()`), so a run played in one sitting needs no replay
+ * at all, however long it lasted. Only the prefix whose outcomes are unknown (a run continued from a save) is
+ * re-simulated in a fresh Sim, up to the last unknown entry and no further. `yieldEvery` lets the caller hand
+ * control back during that replay (e.g. `() => new Promise(r => setTimeout(r))`); null when the journal cannot be
+ * replayed.
  */
 export async function buildRunTimeline(
   input: TimelineInput,
   yieldEvery: () => Promise<void> = () => Promise.resolve(),
 ): Promise<TimelineWeek[] | null> {
   try {
-    const sim = new Sim(input.seed, input.config);
+    const { journal } = input;
+    const outcomes = input.outcomes && input.outcomes.length === journal.length ? input.outcomes : null;
+    let unknown = journal.length - 1; // the last entry whose outcome must be replayed
+    if (outcomes) while (unknown >= 0 && outcomes[unknown]) unknown--;
     const accepted: { minute: number; entry: CommandEntry }[] = [];
-    let index = 0;
-    while (sim.tickCount < input.endTick) {
-      const nextTick = sim.tickCount + 1;
-      const applied: CommandEntry[] = [];
-      while (index < input.journal.length && input.journal[index]![0] === nextTick) {
-        const entry = input.journal[index]!;
-        if (sim.apply(entry[1])) applied.push(entry); // malformed input is never executed
-        index++;
-      }
-      const minute = sim.world.minute; // commands run before the tick's minute advances
-      sim.tick();
-      const events = sim.drainEvents();
-      if (applied.length) {
-        // Rejections arrive in command order: match them one by one to keep the accepted ones.
-        const rejected = events.filter((event) => event.type === 'CommandRejected').map((event) => JSON.stringify(event.command));
-        let r = 0;
-        for (const entry of applied) {
-          if (r < rejected.length && rejected[r] === JSON.stringify(entry[1])) { r++; continue; }
-          if (COUNTED.has(entry[1].type)) accepted.push({ minute, entry });
+    if (unknown >= 0) {
+      const untilTick = journal[unknown]![0];
+      if (untilTick > input.endTick) return null;
+      const sim = new Sim(input.seed, input.config);
+      let index = 0;
+      while (index <= unknown) {
+        const nextTick = sim.tickCount + 1;
+        const applied: CommandEntry[] = [];
+        while (index < journal.length && journal[index]![0] === nextTick) {
+          const entry = journal[index]!;
+          if (sim.apply(entry[1])) applied.push(entry); // malformed input is never executed
+          index++;
         }
+        const minute = sim.world.minute; // commands run before the tick's minute advances
+        sim.tick();
+        const events = sim.drainEvents();
+        if (applied.length) {
+          // Rejections arrive in command order: match them one by one to keep the accepted ones.
+          const rejected = events.filter((event) => event.type === 'CommandRejected').map((event) => JSON.stringify(event.command));
+          let r = 0;
+          for (const entry of applied) {
+            if (r < rejected.length && rejected[r] === JSON.stringify(entry[1])) { r++; continue; }
+            if (COUNTED.has(entry[1].type)) accepted.push({ minute, entry });
+          }
+        }
+        if (nextTick % SLICE_TICKS === 0) await yieldEvery();
+        if (sim.tickCount >= untilTick && index <= unknown) return null; // entries out of order or before tick 1
       }
-      if (nextTick % SLICE_TICKS === 0) await yieldEvery();
     }
-    if (index !== input.journal.length) return null;
+    for (let i = unknown + 1; i < journal.length; i++) {
+      const outcome = outcomes![i]!;
+      const entry = journal[i]!;
+      if (entry[0] > input.endTick) return null;
+      if (outcome.accepted && COUNTED.has(entry[1].type)) accepted.push({ minute: outcome.minute, entry });
+    }
     return timelineFromAccepted(accepted, input.endMinute, input.upgrades);
   } catch {
     return null;
