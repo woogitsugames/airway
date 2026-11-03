@@ -22,7 +22,8 @@ z tego identyfikatora (np. `AW-7F3A`) i wynik.
   będzie połączenia.
 - Usunięcie danych wcześniej: napisz na [adres e-mail administratora — do uzupełnienia, propozycja
   contact@airway.games] i podaj swój znak wywoławczy (np. `AW-7F3A`, widoczny w rankingu). Usuniemy wpisy z tym
-  znakiem w ciągu 30 dni (D-77). Przycisk „Usuń mój wpis rankingu” w ustawieniach pojawi się po wydaniu.
+  znakiem w ciągu 30 dni (D-77). Albo w grze: **Ustawienia → Pomoc → „Usuń moje dane rankingu”** (D-93, D-114)
+  — od razu usuwa Twoje wpisy dzienne i tygodniowe oraz anonimowe konto; wymaga połączenia z siecią.
 
 ## EN — proposed text
 
@@ -36,7 +37,9 @@ and the score.
 - Retention: every leaderboard entry is deleted automatically 90 days after its last write (a weekly entry is
   refreshed by each accepted game of that week); deletion usually happens within a day after that date (D-77).
 - Earlier deletion: e-mail [controller's address — to be filled in, proposal contact@airway.games] with your call
-  sign (e.g. `AW-7F3A`, shown on the leaderboard); we delete the entries with that call sign within 30 days.
+  sign (e.g. `AW-7F3A`, shown on the leaderboard); we delete the entries with that call sign within 30 days. Or in
+  the game: **Settings → Help → "Delete my ranking data"** (D-93, D-114) deletes your daily and weekly entries and
+  the anonymous account at once; it needs a connection.
 - Purpose and processors: as in the Polish text above (to be confirmed).
 
 ## Otwarte sprawy dla właściciela

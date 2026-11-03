@@ -144,6 +144,16 @@ export const pl = {
   'licenses.isc': 'Licencja ISC',
   'licenses.mit': 'Licencja MIT',
   // [night-11e] In-app privacy policy: the same text as site/i18n.js (test:privacy-text keeps them equal).
+  // [night-12k] D-114 (R1a): usuwanie danych rankingu z aplikacji.
+  'settings.deleteRanking': 'USUŃ MOJE DANE RANKINGU',
+  'settings.deleteRanking.warning': 'Usuwa Twoje wyniki z rankingów dziennych i tygodniowych oraz anonimowe konto rankingu tego urządzenia. Tego nie da się cofnąć. Zapisy gry i dziennik zostają na urządzeniu.',
+  'settings.deleteRanking.confirm': 'USUŃ',
+  'settings.deleteRanking.cancel': 'ANULUJ',
+  'settings.deleteRanking.working': 'Usuwanie…',
+  'settings.deleteRanking.deleted': 'Twoje dane rankingu zostały usunięte.',
+  'settings.deleteRanking.none': 'Z tego urządzenia nie ma danych w rankingu.',
+  'settings.deleteRanking.offline': 'Brak połączenia — nic nie zostało usunięte. Spróbuj ponownie po połączeniu z siecią.',
+  'settings.deleteRanking.failed': 'Nie udało się teraz usunąć danych. Spróbuj później.',
   'settings.privacy': 'POLITYKA PRYWATNOŚCI',
   'privacy.offline': 'Ta kopia jest zapisana w grze i otwiera się bez połączenia.',
   'privacy.overline': 'DOKUMENT / PRY-001',

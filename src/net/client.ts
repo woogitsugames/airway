@@ -10,6 +10,8 @@ export interface Session { readonly uid: string; readonly idToken: string; reado
 export interface TokenStore {
   load(): Session | null;
   save(session: Session): void;
+  /** [night-12k] D-114: forget the identity (after the server deleted the account). */
+  clear?(): void;
 }
 
 export class NetError extends Error {
@@ -27,6 +29,12 @@ export class FirebaseRestClient {
   }
 
   get uid(): string | null { return this.session?.uid ?? null; }
+
+  /** [night-12k] D-114: drop the stored identity; the next call signs up a new anonymous account. */
+  forget(): void {
+    this.session = null;
+    this.tokens.clear?.();
+  }
 
   private async post(url: string, body: unknown, headers: Record<string, string> = {}): Promise<unknown> {
     let response;

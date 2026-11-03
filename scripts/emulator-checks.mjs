@@ -158,6 +158,58 @@ await check('getBoards reads the top document, not the entries query (D-108)', a
   assert.equal(boards.daily.entries.length, 50);
 });
 
+// [night-12k] D-114 (R1a): in-app deletion. A player inside yesterday's full top 50 deletes their data: both
+// entries and the Auth account are gone, the top keeps 50 rows refilled from the entries, a second call is a
+// no-op; the facade (alice, today's boards) clears its identity and the next run signs up a new account.
+const AUTH_ADMIN = 'http://127.0.0.1:9099/identitytoolkit.googleapis.com/v1/projects/demo-airway/accounts:lookup';
+async function accountExists(uid) {
+  const response = await fetch(AUTH_ADMIN, { method: 'POST', headers: ADMIN, body: JSON.stringify({ localId: [uid] }) });
+  assert.equal(response.status, 200, 'auth admin lookup');
+  return ((await response.json()).users ?? []).length > 0;
+}
+const entryStatus = async (board, uid) => (await fetch(`${base}/boards/${board}/entries/${uid}`, { headers: ADMIN })).status;
+async function topUids(board) {
+  const response = await fetch(`${base}/boards/${board}/meta/top`, { headers: ADMIN });
+  return (await response.json()).fields.entries.arrayValue.values.map((v) => v.mapValue.fields.uid.stringValue);
+}
+await check('deleteMyData removes the entries, the top row and the anonymous account; repeat is a no-op (D-114)', async () => {
+  const before = await topUids(idsY.daily);
+  const uids = await Promise.all(players.map(async (player) => (await player.signIn()).uid));
+  const index = uids.findIndex((uid) => before.includes(uid));
+  assert.ok(index >= 0, 'one of the three players is in the full top');
+  const uid = uids[index];
+  assert.equal(await accountExists(uid), true);
+  const first = await players[index].call('deleteMyData', {});
+  assert.deepEqual(first, { deleted: true, entries: 2, account: true });
+  assert.deepEqual([await entryStatus(idsY.daily, uid), await entryStatus(idsY.weekly, uid)], [404, 404]);
+  assert.equal(await accountExists(uid), false, 'Auth user deleted');
+  const after = await topUids(idsY.daily);
+  assert.equal(after.length, 50, 'the full top is refilled');
+  assert.ok(!after.includes(uid), 'uid gone from the top document');
+  assert.ok(!(await topUids(idsY.weekly)).includes(uid), 'uid gone from the weekly top');
+  const ranking = (await adminRanking(idsY.daily)).map((row) => row.uid);
+  assert.ok(!ranking.includes(uid));
+  assert.deepEqual([...after].sort(), ranking.slice(0, 50).sort(), 'top = the 50 best remaining entries');
+  const again = await players[index].call('deleteMyData', {});
+  assert.deepEqual(again, { deleted: true, entries: 0, account: false }, 'idempotent');
+});
+await check('the client facade deletes, forgets its identity and signs up afresh for the next run (D-114)', async () => {
+  const storage = memory();
+  const bob = createLeaderboards({ config, fetch, storage });
+  assert.equal(bob.hasData(), false);
+  assert.equal(await bob.submitDaily(run), 'sent');
+  const oldUid = JSON.parse(storage.getItem('aw-net-session-v1')).uid;
+  assert.equal(await entryStatus(ids.daily, oldUid), 200);
+  assert.equal(await bob.deleteMyData(), 'deleted');
+  assert.equal(bob.hasData(), false);
+  assert.equal(await entryStatus(ids.daily, oldUid), 404);
+  assert.equal(await accountExists(oldUid), false);
+  const boards = await alice.boards(day);
+  assert.ok(boards.daily.entries.every((row) => !row.me || row.score === run.claimedScore));
+  assert.equal(await bob.submitDaily(run), 'sent', 'a new account may file today again');
+  assert.notEqual(JSON.parse(storage.getItem('aw-net-session-v1')).uid, oldUid);
+});
+
 // [night-12j] D-109 (R3b): a fresh player's 21st getBoards inside a minute is refused with resource-exhausted
 // (HTTP 429) before any Firestore read; another player is not affected. Last check: it spends the limit.
 await check('per-player rate limit: getBoards 20/min, then resource-exhausted (D-109)', async () => {
