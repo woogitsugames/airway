@@ -64,11 +64,17 @@ const steps = [
     await click(page, 'back');
     const stars = await page.locator(`button[data-action="open:${level.id}"] .puzzle-flap-stars.is-done`).count();
     assert(stars === 1, `${level.id}: board does not show the cleared stars`);
+    // [night-10l] The best margin sits under the stars.
+    const best = await page.locator(`button[data-action="open:${level.id}"] .puzzle-flap-best`).textContent().catch(() => '');
+    assert(/\+\d+%/.test(best ?? ''), `${level.id}: board shows no best margin ("${best}")`);
   }]),
   ['progress is stored for all 30 puzzles', async (page) => {
     const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('airway.puzzles.v1') || '{}'));
     const missing = levels.filter((l) => !(stored[l.id] >= 1 && stored[l.id] <= 3)).map((l) => l.id);
     assert(missing.length === 0, `no stored stars for ${missing.join(', ')}`);
+    const margins = await page.evaluate(() => JSON.parse(localStorage.getItem('airway.puzzles.margin.v1') || '{}'));
+    const noMargin = levels.filter((l) => !Number.isInteger(margins[l.id])).map((l) => l.id);
+    assert(noMargin.length === 0, `no stored best margin for ${noMargin.join(', ')}`); // [night-10l]
     const count = await page.locator('.puzzle-count').textContent();
     assert(/30\/30/.test(count ?? ''), `board progress "${count}"`);
   }],

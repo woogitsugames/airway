@@ -196,6 +196,10 @@ export const en = {
   'puzzle.board.subtitle': 'Route planning terminal',
   'puzzle.board.progress': '{done}/{total} cleared · {stars} {stars|star|stars}',
   'puzzle.board.item': 'Puzzle {number}: {title}, {stars} {stars|star|stars}',
+  'puzzle.board.itemBest': 'Puzzle {number}: {title}, {stars} {stars|star|stars}, best +{margin}% over target', // [night-10l]
+  'puzzle.board.best': 'best +{margin}%',
+  'puzzle.best.line': 'Your best: {stars} · +{margin}% over target',
+  'puzzle.result.newBest': 'new best',
   'puzzle.board.caption': 'Choose a departure to plan the network',
   'puzzle.game.title': 'Puzzle {number}',
   'puzzle.game.brief': 'Flight operations / objective',

@@ -197,6 +197,10 @@ export const pl = {
   'puzzle.board.subtitle': 'Terminal planowania tras',
   'puzzle.board.progress': '{done}/{total} zaliczonych · {stars} {stars|gwiazdka|gwiazdki|gwiazdek}',
   'puzzle.board.item': 'Zadanie {number}: {title}, {stars} {stars|gwiazdka|gwiazdki|gwiazdek}',
+  'puzzle.board.itemBest': 'Zadanie {number}: {title}, {stars} {stars|gwiazdka|gwiazdki|gwiazdek}, rekord +{margin}% ponad cel', // [night-10l]
+  'puzzle.board.best': 'rekord +{margin}%',
+  'puzzle.best.line': 'Twój rekord: {stars} · +{margin}% ponad cel',
+  'puzzle.result.newBest': 'nowy rekord',
   'puzzle.board.caption': 'Wybierz odlot i zaplanuj połączenia',
   'puzzle.game.title': 'Zadanie {number}',
   'puzzle.game.brief': 'Plan operacyjny / cel',

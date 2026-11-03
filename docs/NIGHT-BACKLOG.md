@@ -225,6 +225,12 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       mode and its hint), Sound and touch (sound, music, haptics), Help (tutorial replay, licences). Wide landscape
       paper (≥ 700 px) puts them in two columns, so 915×412 and the unfolded Fold need less scrolling.
       `e2e/settings-groups.mjs`.
+- [x] N10l **Best result per puzzle** — the puzzle board kept only the stars, so a replay had nothing to beat
+      once three stars were reached and the margin over the target was forgotten. The widest margin of a cleared run
+      is stored per level (`airway.puzzles.margin.v1`, beside the unchanged stars record the menu reads), shown under
+      the stars on the departure flap ("best +26%") and as "Your best" on the level ticket; beating it adds "new
+      best" to the result. `src/game/puzzleBest.ts`, `test:puzzle-best`, `e2e/puzzle-best.mjs`, `e2e/puzzles.mjs`
+      checks the margin on every level.
 
 ## Log
 <!-- one line per finished item: date UTC · item · PR · gate summary -->
@@ -282,3 +288,4 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
 - 2026-11-03 · N10i transfers drawn hollow inside the MCT · night/10i-mct · test:fast 54/54 (test:transfers 3/3, test:replay hashes unchanged), build ok, e2e:smoke 9/9, ui:matrix 32/32, test:e2e:transfer-glyphs 2/2
 - 2026-11-03 · N10j pause sheet network summary · night/10j-pause-week · test:fast 55/55 (test:pause-summary 5/5), build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:screens-fit 18/18, e2e:screens-fit-320 12/12, test:e2e:pause-summary 4/4 (2/4 before Save and Menu shared a row)
 - 2026-11-03 · N10k settings in groups · night/10k-settings-groups · test:fast 55/55, build ok, e2e:smoke 9/9, e2e:screens-fit 18/18, e2e:screens-fit-320 12/12, e2e:airline-colour 3/3, e2e:tutorial 21/21, test:e2e:settings-groups 4/4; ui:matrix not run (settings not in the matrix)
+- 2026-11-03 · N10l best margin per puzzle · night/10l-puzzle-best · test:fast 56/56 (test:puzzle-best 4/4), build ok, e2e:smoke 9/9, e2e:puzzles 34/34 (margin checked on all 30), e2e:screens-fit 18/18, e2e:screens-fit-320 12/12, test:e2e:puzzle-best 2/2; ui:matrix not run (puzzle screens not in the matrix)

@@ -1,6 +1,7 @@
 // Task 17: airport departure-board puzzle selector and flight-strip editor (a router screen).
 import { PUZZLES, type PuzzleLevel, type PuzzleCommand } from '../../data/puzzles';
 import { dispatchPuzzle, resetPuzzle, startPuzzle, undoPuzzle, type PuzzleSession } from '../../game/modes/puzzle';
+import { readPuzzleMargins, recordPuzzleMargin } from '../../game/puzzleBest';
 import { t, type TranslationKey } from '../../i18n';
 import './board.css';
 
@@ -108,6 +109,10 @@ export function mountPuzzleSelector(host: HTMLElement, onExit: () => void = () =
   root.appendChild(live);
   host.appendChild(root);
   const progress = readPuzzleProgress();
+  // [night-10l] Best margin over the target per cleared puzzle (stars stay in the v1 progress record).
+  const storage = (() => { try { return globalThis.localStorage; } catch { return undefined; } })();
+  const margins = readPuzzleMargins(storage, PUZZLES.map((level) => level.id));
+  let newBest = false;
   let current: PuzzleLevel | null = null;
   let session: PuzzleSession | null = null;
   let error = '';
@@ -131,14 +136,17 @@ export function mountPuzzleSelector(host: HTMLElement, onExit: () => void = () =
     table.setAttribute('role', 'group');
     PUZZLES.forEach((level) => {
       const flap = button('', `open:${level.id}`, 'puzzle-flap');
-      flap.setAttribute('aria-label', t('puzzle.board.item', {
-        number: level.id, title: heading(level), stars: progress[level.id] ?? 0,
+      const margin = progress[level.id] ? margins[level.id] : undefined;
+      flap.setAttribute('aria-label', t(margin === undefined ? 'puzzle.board.item' : 'puzzle.board.itemBest', {
+        number: level.id, title: heading(level), stars: progress[level.id] ?? 0, margin: margin ?? 0,
       }));
+      const result = element('span', `puzzle-flap-stars ${progress[level.id] ? 'is-done' : ''}`,
+        progress[level.id] ? stars(progress[level.id]) : t('menu.onTime'));
+      // [night-10l] The best margin under the stars, like a delay figure under a flight's status.
+      if (margin !== undefined) result.appendChild(element('span', 'puzzle-flap-best', t('puzzle.board.best', { margin })));
       flap.append(element('span', 'puzzle-flap-number', level.id),
         element('span', 'puzzle-flap-title', heading(level)),
-        element('span', 'puzzle-flap-gate', `B${level.id}`),
-        element('span', `puzzle-flap-stars ${progress[level.id] ? 'is-done' : ''}`,
-          progress[level.id] ? stars(progress[level.id]) : t('menu.onTime')));
+        element('span', 'puzzle-flap-gate', `B${level.id}`), result);
       table.appendChild(flap);
     });
     wrapper.appendChild(table);
@@ -150,6 +158,7 @@ export function mountPuzzleSelector(host: HTMLElement, onExit: () => void = () =
   }
   function openLevel(level: PuzzleLevel): void {
     current = level;
+    newBest = false;
     session = startPuzzle(level);
     error = '';
     renderGame();
@@ -170,6 +179,12 @@ export function mountPuzzleSelector(host: HTMLElement, onExit: () => void = () =
       element('h1', '', heading(level)), element('p', 'puzzle-goal', goalLine(level)));
     const notes = notesLine(level);
     if (notes) ticket.appendChild(element('p', 'puzzle-notes', notes));
+    // [night-10l] The result to beat on this level.
+    if (progress[level.id] && margins[level.id] !== undefined) {
+      const best = element('p', 'puzzle-best', t('puzzle.best.line', { stars: stars(progress[level.id]), margin: margins[level.id] }));
+      best.dataset.testid = 'puzzle-best';
+      ticket.appendChild(best);
+    }
     // [night-07d] Which airports close at night, and when (was only in the airport data).
     const closed = curfews(level);
     if (closed.size) {
@@ -198,7 +213,8 @@ export function mountPuzzleSelector(host: HTMLElement, onExit: () => void = () =
     ticket.appendChild(statGrid);
     if (over) {
       const info = element('p', `puzzle-result ${snapshot.status}`,
-        snapshot.status === 'won' ? t('puzzle.result.won', { stars: stars(snapshot.stars), margin: snapshot.marginPercent }) :
+        snapshot.status === 'won' ? t('puzzle.result.won', { stars: stars(snapshot.stars), margin: snapshot.marginPercent }) +
+          (newBest ? ' · ' + t('puzzle.result.newBest') : '') :
           snapshot.reason === 'hub-jam' ? t('puzzle.result.jam', { city: snapshot.jammedCity ?? '' }) :
             t('puzzle.result.deadline'));
       ticket.appendChild(info);
@@ -283,8 +299,11 @@ export function mountPuzzleSelector(host: HTMLElement, onExit: () => void = () =
       if (session.snapshot.status === 'won') {
         progress[current.id] = Math.max(progress[current.id] ?? 0, session.snapshot.stars);
         saveProgress(progress);
-        live.textContent = t('puzzle.result.won', { stars: stars(session.snapshot.stars), margin: session.snapshot.marginPercent });
-      } else live.textContent = '';
+        // Only a wider margin than a recorded clear is news; the first clear is the result itself.
+        newBest = recordPuzzleMargin(storage, margins, current.id, session.snapshot.marginPercent) === 'better';
+        live.textContent = t('puzzle.result.won', { stars: stars(session.snapshot.stars), margin: session.snapshot.marginPercent }) +
+          (newBest ? ' · ' + t('puzzle.result.newBest') : '');
+      } else { live.textContent = ''; newBest = false; }
       error = '';
     } catch (cause) {
       error = t('puzzle.error.action');
