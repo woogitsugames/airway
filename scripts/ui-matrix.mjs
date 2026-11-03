@@ -73,6 +73,24 @@ try {
                 viewport: window.innerWidth, overflow: document.documentElement.scrollWidth,
               }));
               assert(layout.overflow <= layout.viewport + 2, `Horizontal overflow ${JSON.stringify(layout)}`);
+              if (screen === 'upgrade') {
+                // [night-07n] The weekly board must not cover the boarding pass (week/day/time/passengers).
+                const hit = await page.evaluate(() => {
+                  const pass = document.querySelector('.airway-pass')?.getBoundingClientRect();
+                  const parts = [...document.querySelectorAll('.airway-upgrade-sign, .airway-upgrade-tag')];
+                  if (!pass || parts.length < 2) return 'missing .airway-pass or the board';
+                  for (const part of parts) {
+                    const r = part.getBoundingClientRect();
+                    if (r.left < pass.right && pass.left < r.right && r.top < pass.bottom && pass.top < r.bottom) {
+                      return `${part.className} ${Math.round(r.left)},${Math.round(r.top)} covers pass ..${Math.round(pass.right)},${Math.round(pass.bottom)}`;
+                    }
+                  }
+                  return '';
+                });
+                assert(!hit, `Upgrade board overlaps HUD: ${hit}`);
+                const bottom = await page.evaluate(() => document.querySelector('.airway-upgrade-open')?.scrollHeight ?? 0);
+                assert(bottom <= height + 1, `Upgrade board scrolls: ${bottom} > ${height}`);
+              }
               const filename = `${screen}-${language}-${width}x${height}.png`;
               await page.screenshot({ path: resolve(outdir, filename), animations: 'disabled' });
               captured++;
