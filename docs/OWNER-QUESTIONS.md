@@ -24,6 +24,7 @@ Priorytet: **P1** — blokuje wydanie albo sklep, **P2** — warto zdecydować p
 | Q-05 | P2 | Gracze jako znak wywoławczy z anonimowego id (`AW-7F3A`) czy własny nick? | A: tylko znak; B: nick (wymaga moderacji i filtrów) | A — tylko znak, bez nicków | A w MVP | #48 |
 | Q-06 | P2 | Osobny ekran rankingu w menu (obok „Wyzwanie dnia”)? | A: tak; B: tylko tablica na ekranie końca gry | B — tablica „Ranking · data” na końcu oficjalnej gry dnia | A, jako małe zadanie po teście rankingów na prawdziwym Firebase | #50 |
 | Q-07 | P1 | Założenie projektu Firebase (kroki w `docs/FIREBASE.md`) i budżet z alertami | Budżet np. 10 EUR/mies.; region | Funkcja działa tylko na emulatorze | Założyć przed testem zamkniętym; budżet 10 EUR z alertami 50/90/100 % | `docs/FIREBASE.md`, D-66 |
+| Q-41 | P1 | Usuwanie danych rankingu z poziomu aplikacji: Apple (5.1.1(v)) wymaga, by usunięcie konta — także automatycznego konta gościa — dało się rozpocząć w aplikacji; sam e-mail (D-77) nie wystarcza poza branżami regulowanymi | A: przycisk „Usuń moje dane rankingu” w ustawieniach (usuwa wpisy i anonimowe konto) + e-mail jako ścieżka WWW dla Google; B: tylko e-mail (ryzyko odrzucenia w App Store); C: pierwsze wydanie iOS bez rankingów | Tylko e-mail (D-77), brak przycisku | A (zadanie R1a, uzupełnia D-77) | R1, `docs/RESEARCH.md` R1 |
 
 ## B. Rozgrywka i balans
 
@@ -35,6 +36,7 @@ Priorytet: **P1** — blokuje wydanie albo sklep, **P2** — warto zdecydować p
 | Q-11 | P2 | Trudność zagadek 16–30: marginesy 25 % → 17 % ponad rozwiązanie wzorcowe — dobre po zagraniu na telefonie? | Łagodniej / tak zostaje / trudniej (liczby w JSON, `targetDelivered`) | Margines maleje od 25 % (16) do 17 % (29–30), D-70 | Zostawić do pierwszego testu na telefonie | #44 |
 | Q-35 ✅ D-78 | P2 | Szerokokadłubowiec w 1. tygodniu wyraźnie najsilniejszy: bot (N7w) z wymuszonym wyborem przeżywa średnio 21,8 min (WB-300) wobec 15,8 (TP-48), 16,4 („+2 sloty”) i 17,9 (huba) | A: zostawić; B: osłabić WB-300 na start (np. mniej miejsc / dłuższy postój); C: rzadziej w 1. tygodniu | A — parametry bez zmian | A do testu na ludziach; B, jeśli gracze zawsze biorą WB-300 | #76, `npm run test:bot-policy` |
 | Q-36 ✅ D-79 | P3 | Lepszy bot (wydłuża trasy, gdy brak wolnych samolotów) podniósł medianę sesji z 12,9 do 14,6 min — blisko górnej granicy celu 8–15 min z zadania 31 | A: zostawić cel 8–15; B: cel 10–18 (bot gra już rozsądniej); C: przestroić popyt | A — cel bez zmian, bramka zielona | B (cel mierzy bota, nie gracza) | #76, `docs/balance/game-summary.md` |
+| Q-45 | P3 | Przypomnienie o wyzwaniu dnia (lokalne powiadomienie, opt-in) | A: bez powiadomień (brak uprawnień, D-16); B: opt-in po kilku zagranych dniach (uprawnienie `POST_NOTIFICATIONS`, zmiana deklaracji prywatności) | A | A na start; wrócić po teście zamkniętym | R1 |
 
 ## C. Wygląd świata i interfejs
 
@@ -82,3 +84,6 @@ Priorytet: **P1** — blokuje wydanie albo sklep, **P2** — warto zdecydować p
 |---|---|---|---|---|---|---|
 | Q-34 | P1 | Sprawdzenie znaku towarowego „Airway” (EUIPO/USPTO/UPRP) przed wydaniem | Zlecić / sprawdzić samemu | Niesprawdzone (wstępne wyszukiwanie w sklepach: RESEARCH §7) | Sprawdzić przed przedrejestracją w sklepach | `docs/RESEARCH.md` §7 |
 | Q-39 | P3 | Dodać link do gry (np. `airway.games`) na końcu tekstu udostępnianego wyniku dnia? | A: bez linku; B: link po zatwierdzeniu domeny (docs/SITE.md) | A — tekst bez linku (D-81) | B, gdy domena i strona będą gotowe | N10e |
+| Q-42 | P1 | Konto Google Play: osobiste czy organizacji? Osobiste (założone po 13.11.2023) wymaga testu zamkniętego ≥ 12 testerów × 14 dni przed produkcją; organizacja wymaga numeru D-U-N-S, ale jest zwolniona. Do tego deklaracja DSA (przedsiębiorca: adres i kontakt widoczne w UE) | A: osobiste + test zamknięty (zaplanować ~3 tygodnie i 12+ osób); B: organizacja (D-U-N-S, firma z Q-01) | Brak konta | B, jeśli gra wychodzi jako firma; inaczej A — test i tak potrzebny jako playtest | R1 |
+| Q-43 | P2 | Kolejne języki po PL/EN | A: fala 1 po wydaniu DE, FR, ES, PT-BR (bez zmian technicznych), potem JA (krój CJK OFL, kilka MB); B: od razu z JA; C: czekać na dane z wydania | Tylko PL i EN | A; najpierw opisy w sklepie (R1k), potem tłumaczenie gry z korektą native speakera | R1 |
+| Q-44 | P2 | Kraje dystrybucji | A: cały świat oprócz Chin kontynentalnych (Apple: ISBN/ICP; Google Play tam nie działa); B: tylko UE + UK + USA na start; C: cały świat | Nie ustawione | A | R1 |
