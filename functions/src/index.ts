@@ -7,20 +7,24 @@
 // inside its transaction; getBoards reads the two top documents and the caller's two entries (4 reads) and runs
 // a `count()` only for a caller outside the top 50, instead of two 50-document queries per call.
 import { initializeApp } from 'firebase-admin/app';
+import { getAuth } from 'firebase-admin/auth';
 import {
   FieldValue, Timestamp, getFirestore, type DocumentSnapshot, type QuerySnapshot, type Transaction,
 } from 'firebase-admin/firestore';
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
 import {
-  FUNCTION_OPTIONS, RATE_LIMITS, RateLimiter, TOP_ENTRIES, callSign, expiresAt, mergeTop, rankInTop, readTopRows,
-  reviewSubmission, validBoardId, type TopEntry,
+  FUNCTION_OPTIONS, RATE_LIMITS, RateLimiter, TOP_ENTRIES, callSign, dropFromTop, expiresAt, mergeTop, rankInTop,
+  readTopRows, retainedBoardIds, reviewSubmission, validBoardId, type TopEntry,
 } from './logic.ts';
 
 initializeApp();
 const db = getFirestore();
 // [night-12j] D-109: split caps per function and a per-player limit per instance, checked before any Firestore
 // access or replay; over the limit the client keeps the run queued and retries later.
-const limits = { getBoards: new RateLimiter(RATE_LIMITS.getBoards), submitDaily: new RateLimiter(RATE_LIMITS.submitDaily) };
+const limits = {
+  getBoards: new RateLimiter(RATE_LIMITS.getBoards), submitDaily: new RateLimiter(RATE_LIMITS.submitDaily),
+  deleteMyData: new RateLimiter(RATE_LIMITS.deleteMyData),
+};
 function throttle(name: keyof typeof limits, uid: string): void {
   if (!limits[name].take(uid)) throw new HttpsError('resource-exhausted', 'Too many requests, try again in a minute');
 }
@@ -112,4 +116,54 @@ export const getBoards = onCall(FUNCTION_OPTIONS.getBoards, async (request) => {
   const [daily, weekly] = await Promise.all([
     board(data.daily, uid, dailyTop, dailyMine), board(data.weekly, uid, weeklyTop, weeklyMine)]);
   return { daily, weekly };
+});
+
+// [night-12k] D-114 (R1a, D-93): the player deletes their leaderboard data from the app. Every daily and weekly
+// entry of the caller that can still exist (D-77 retention + margin) is deleted, the uid leaves each board's top
+// document (a full top is refilled from the entries, as the old query would show), then the anonymous Auth account
+// is deleted. Idempotent: a second call finds nothing and an account already gone is not an error.
+const BOARD_BATCH = 20;
+async function deleteFromBoard(board: string, uid: string): Promise<boolean> {
+  const entryRef = entriesOf(board).doc(uid);
+  const topRef = topRefOf(board);
+  return db.runTransaction(async (tx) => {
+    const [entry, topDoc] = await tx.getAll(entryRef, topRef);
+    const top = topDoc.exists ? readTopRows(topDoc.get('entries')) : [];
+    const listed = top.some((row) => row.uid === uid);
+    if (!entry.exists && !listed) return false;
+    // All reads before the first write: the refill rows come from the query as it is before the delete.
+    const refill = listed && top.length >= TOP_ENTRIES
+      ? rowsOfQuery(await tx.get(entriesOf(board).orderBy('score', 'desc').limit(TOP_ENTRIES + 1))) : [];
+    const next = dropFromTop(top, uid, refill);
+    if (next) tx.set(topRef, { entries: next, expireAt: topDoc.get('expireAt') ?? null });
+    if (entry.exists) tx.delete(entryRef);
+    return entry.exists;
+  });
+}
+
+export const deleteMyData = onCall(FUNCTION_OPTIONS.deleteMyData, async (request) => {
+  const uid = uidOf(request);
+  throttle('deleteMyData', uid);
+  const boards = retainedBoardIds(Date.now());
+  // One cheap existence read per board first; transactions only where the player left something.
+  const touched: string[] = [];
+  for (let i = 0; i < boards.length; i += BOARD_BATCH) {
+    const slice = boards.slice(i, i + BOARD_BATCH);
+    const docs = await db.getAll(...slice.flatMap((board) => [entriesOf(board).doc(uid), topRefOf(board)]));
+    slice.forEach((board, k) => {
+      const entry = docs[2 * k];
+      const top = docs[2 * k + 1];
+      if (entry.exists || (top.exists && readTopRows(top.get('entries')).some((row) => row.uid === uid))) touched.push(board);
+    });
+  }
+  let entries = 0;
+  for (const board of touched) if (await deleteFromBoard(board, uid)) entries++;
+  let account = true;
+  try {
+    await getAuth().deleteUser(uid);
+  } catch (error) {
+    if ((error as { code?: string }).code !== 'auth/user-not-found') throw new HttpsError('internal', 'Account not deleted, try again');
+    account = false;
+  }
+  return { deleted: true, entries, account };
 });

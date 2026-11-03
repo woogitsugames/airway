@@ -17,6 +17,13 @@ przed wydaniem. Kod: klient `src/net/`, funkcje `functions/`, reguły `firestore
   zapytania po 50 dokumentów (~105 odczytów na wywołanie). Ranking zapisany przed tą zmianą (bez `top`) jest przy
   pierwszym zapisie wypełniany starym zapytaniem; do tego czasu `getBoards` czyta go starym zapytaniem.
 - Bez sieci wynik czeka w kolejce na urządzeniu (`aw-net-queue-v1`).
+- Usunięcie z aplikacji (D-93, D-114): **Ustawienia → Pomoc → „Usuń moje dane rankingu”** (widoczne, gdy urządzenie
+  ma anonimowe konto albo wynik w kolejce) → potwierdzenie → funkcja `deleteMyData`. Funkcja sprawdza wszystkie
+  rankingi dzienne i tygodniowe z ostatnich 97 dni (90 dni retencji + wczorajszy ranking + zapas na opóźnienie TTL;
+  ok. 113 rankingów, ~226 odczytów), usuwa wpisy gracza, wyjmuje go z dokumentów `meta/top` (pełne top 50 dopełnia
+  51. wpisem) i na końcu usuwa anonimowe konto Auth. Drugie wywołanie nic nie znajduje i też kończy się sukcesem.
+  Klient czyści token i kolejkę dopiero po odpowiedzi serwera; bez sieci mówi, że nic nie usunięto. Limit:
+  3 wywołania na minutę na gracza, `maxInstances: 2`.
 - Limit na gracza (D-109): każda instancja funkcji pozwala jednemu uid na 20 wywołań `getBoards` i 6 `submitDaily`
   na minutę (kubełek żetonów w pamięci, sprawdzany przed Firestore i powtórką). Ponad limit funkcja zwraca
   `resource-exhausted` (HTTP 429); klient traktuje to jak chwilowy błąd i wynik zostaje w kolejce.
@@ -56,7 +63,7 @@ przed wydaniem. Kod: klient `src/net/`, funkcje `functions/`, reguły `firestore
    **Firestore Database → Time-to-live (TTL)** — wiersz grupy kolekcji `entries`, pole `expireAt`, stan
    **Serving** (pierwsze włączenie może potrwać do kilkunastu minut), oraz drugi wiersz: grupa `meta`, pole
    `expireAt` (D-108). Jeśli wiersza brak, dodaj go ręcznie przyciskiem **Create policy** z tymi samymi nazwami.
-9. **Usunięcie na żądanie (D-77, e-mail):** w **Firestore Database → Data → Query** wybierz *Collection group*
+9. **Usunięcie na żądanie (D-77, e-mail — ścieżka WWW dla Google; w aplikacji robi to przycisk, D-114):** w **Firestore Database → Data → Query** wybierz *Collection group*
    `entries`, warunek `callSign == AW-XXXX` (znak z wiadomości), i usuń znalezione dokumenty (dzienne i tygodniowe).
    Potem (D-108) w tych samych rankingach otwórz dokument `boards/{id}/meta/top` i z tablicy `entries` usuń element
    z tym znakiem (albo usuń cały dokument `top` — następny zapis odbuduje go z wpisów).
@@ -70,7 +77,8 @@ przed wydaniem. Kod: klient `src/net/`, funkcje `functions/`, reguły `firestore
 `npm install --prefix functions --package-lock=false` i Java 11+, potem `npm run test:firebase` — buduje funkcje,
 uruchamia emulatory Auth/Functions/Firestore (projekt `demo-airway`, bez poświadczeń) i sprawdza: przyjęcie uczciwej
 gry z dzisiejszym seedem, brak drugiego wpisu tego samego dnia, odrzucenie podrobionego wyniku, kolejność i miejsce
-gracza, odmowę bez logowania oraz blokadę bezpośredniego dostępu do Firestore.
+gracza, odmowę bez logowania oraz blokadę bezpośredniego dostępu do Firestore, a także `deleteMyData` (wpisy,
+wiersz w `meta/top` i konto Auth znikają, drugie wywołanie nic nie robi).
 
 Do gry w przeglądarce z emulatorem: `.env.local` z `VITE_FIREBASE_API_KEY=demo-key`,
 `VITE_FIREBASE_PROJECT_ID=demo-airway`, `VITE_FIREBASE_FUNCTIONS_EMULATOR=127.0.0.1:5001`,

@@ -103,10 +103,12 @@ export function readTopRows(raw: unknown): TopEntry[] {
 export const FUNCTION_OPTIONS = {
   getBoards: { region: 'europe-west1', maxInstances: 3, memory: '512MiB', timeoutSeconds: 60 },
   submitDaily: { region: 'europe-west1', maxInstances: 5, concurrency: 4, cpu: 1, memory: '512MiB', timeoutSeconds: 60 },
+  /** [night-12k] D-114: rare (a player deleting their data), a few hundred reads at most. */
+  deleteMyData: { region: 'europe-west1', maxInstances: 2, memory: '256MiB', timeoutSeconds: 60 },
 } as const;
 
 /** [night-12j] D-109: calls one player may make per minute and per instance, before any Firestore access. */
-export const RATE_LIMITS = { getBoards: 20, submitDaily: 6 } as const;
+export const RATE_LIMITS = { getBoards: 20, submitDaily: 6, deleteMyData: 3 } as const;
 /** Players remembered per instance and function; the oldest is forgotten first (memory bound). */
 export const RATE_LIMIT_KEYS = 10_000;
 const MINUTE_MS = 60_000;
@@ -137,4 +139,39 @@ export class RateLimiter {
   }
 
   get size(): number { return this.buckets.size; }
+}
+
+/**
+ * [night-12k] D-114: days back that `deleteMyData` scans. An entry lives 90 days after its last write (D-77), a run
+ * may be filed under yesterday's board, and TTL deletion runs "usually within a day" after `expireAt`, so a week of
+ * margin covers every board that can still hold the player's entry.
+ */
+export const DELETE_SCAN_DAYS = RETENTION_DAYS + 7;
+
+/**
+ * [night-12k] D-114: every daily and weekly board id that can still hold an entry written up to `nowMs`
+ * (newest first, no duplicates). Entries carry no uid field (the uid is the document id), so the deletion reads
+ * these paths directly instead of a collection-group query.
+ */
+export function retainedBoardIds(nowMs: number): string[] {
+  const ids = new Set<string>();
+  for (let day = 0; day <= DELETE_SCAN_DAYS; day++) {
+    const boards = boardsForDaily(dailyKey(new Date(nowMs - day * DAY_MS)));
+    ids.add(boards.daily);
+    ids.add(boards.weekly);
+  }
+  return [...ids];
+}
+
+/**
+ * [night-12k] D-114: a board's top without `uid`. A full top that loses a row is refilled from `candidates` (the
+ * board's entries ordered as the top, read before the delete: up to TOP_ENTRIES + 1 rows), so the 51st player moves
+ * up as the old query would show. Returns null when `uid` is not in the top (no write needed).
+ */
+export function dropFromTop(top: readonly TopEntry[], uid: string, candidates: readonly TopEntry[] = [],
+  limit = TOP_ENTRIES): TopEntry[] | null {
+  if (!top.some((row) => row.uid === uid)) return null;
+  const rows = new Map<string, TopEntry>();
+  for (const row of [...top, ...candidates]) if (row.uid !== uid && !rows.has(row.uid)) rows.set(row.uid, row);
+  return [...rows.values()].sort(compareTop).slice(0, limit);
 }

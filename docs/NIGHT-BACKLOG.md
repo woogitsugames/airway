@@ -461,6 +461,14 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       `getBoards` `maxInstances: 3`; `submitDaily` `maxInstances: 5`, `concurrency: 4`, `cpu: 1` (was one shared
       `maxInstances: 10`, concurrency 80). Client fix found on the way: HTTP 429 counted as a final rejection and
       dropped the run from the queue; it is now `retry`. `docs/FIREBASE.md` updated.
+- [x] N12k **In-app deletion of leaderboard data (R1a, D-93, D-114) + Q-60 → D-113** — new callable `deleteMyData`
+      (`functions/src/index.ts`): reads every daily/weekly board an entry can still live on (pure `retainedBoardIds`,
+      97 days, 113 boards), deletes the caller's entries, removes the uid from `meta/top` (pure `dropFromTop`, a full
+      top refilled by the 51st entry), then deletes the anonymous Auth user; idempotent; `maxInstances: 2`, 3/min per
+      player. Client `Leaderboards.hasData()` / `deleteMyData()` → `deleted | none | offline | failed`; token and
+      queue cleared only after the server's answer. Settings → Help row "Delete my ranking data" with inline
+      confirmation (PL/EN), shown only with an identity. New `test:e2e:delete-ranking` (page.route, no emulator).
+      `docs/FIREBASE.md`, `docs/legal/leaderboards-privacy.md` updated. Owner answer Q-60 → C recorded as D-113.
 
 ## Research proposals (R-agent)
 Proposals from the research agent (findings and sources: `docs/RESEARCH.md`, sections "R1 — …"). Each item is
@@ -468,7 +476,7 @@ sized for one PR; **Area** says where it lands so the coordinator can route it. 
 the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
 
 ### R1 (2026-11-03) — release readiness, accessibility/localisation, onboarding
-- [ ] R1a **In-app deletion of leaderboard data** — Apple 5.1.1(v) requires deletion to start in the app and
+- [x] R1a → N12k **In-app deletion of leaderboard data** — Apple 5.1.1(v) requires deletion to start in the app and
       explicitly covers auto-created guest accounts; e-mail only (D-77) is not accepted outside regulated industries.
       Settings row "Delete my ranking data" (shown once an anonymous identity exists): confirm sheet → callable
       `deleteMyData` removes every `entries` doc of the caller's uid (daily + weekly) and deletes the anonymous Auth
@@ -793,3 +801,4 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
 - 2026-11-03 · N12h six airport codes on screen + city data guard (R4a, R4b test, D-107) · night/12h-display-codes · test:city-data 5/5 (new; 4/5 before the display codes), test:airport-labels 5/5 (+1), test:replay 23/23 and test:save-golden 20/20 with summaries/hashes identical to dev (sim ids unchanged), test:balance median 17.03 (unchanged), test:fast 66/66, build ok; e2e/ui:matrix/store:shots not run (none of the six airports is in those scenes); no shot of an affected airport taken
 - 2026-11-03 · N12i one top-50 document per board (R3a, D-108) · night/12i-top-board · test:net-server 9/9 (5/9 on the old functions), test:firebase 9/9 on the emulator (7/9 on the old functions: no `rank`, no `meta/top`), test:fast 66/66, build ok; e2e/ui:matrix/store:shots not run (client unchanged); read count proven behaviourally (a direct entry edit is not read back), no emulator request log
 - 2026-11-03 · N12j per-player rate limit + split function caps (R3b, D-109) · night/12j-rate-limit · test:net-server 13/13 (9/13 on the old functions), test:net 9/9 (8/9 on the old client: a 429 dropped the queued run), test:firebase 10/10 on the emulator (9/10 on the old functions: no limit), test:fast 66/66, build ok; e2e/ui:matrix/store:shots not run (no UI change); caps not verified on a real deploy
+- 2026-11-03 · N12k in-app deletion of leaderboard data (R1a, D-93, D-114) + Q-60 → D-113 · night/12k-delete-my-data · test:net-server 16/16 (12/16 on the old functions), test:net 12/12 (9/12 on the old client), test:firebase 12/12 on the emulator (new deletion checks; `deleteMyData` absent before), test:e2e:delete-ranking 4/4 (new; 2/4 on the old settings), test:fast TBD, build TBD; ui:matrix/store:shots not run (row hidden without Firebase config); no real deploy

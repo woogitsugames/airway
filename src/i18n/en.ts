@@ -143,6 +143,16 @@ export const en = {
   'licenses.isc': 'ISC License',
   'licenses.mit': 'MIT License',
   // [night-11e] In-app privacy policy: the same text as site/i18n.js (test:privacy-text keeps them equal).
+  // [night-12k] D-114 (R1a): in-app deletion of leaderboard data.
+  'settings.deleteRanking': 'DELETE MY RANKING DATA',
+  'settings.deleteRanking.warning': 'Removes your scores from the daily and weekly leaderboards and the anonymous leaderboard account of this device. This cannot be undone. Your saves and logbook stay on the device.',
+  'settings.deleteRanking.confirm': 'DELETE',
+  'settings.deleteRanking.cancel': 'CANCEL',
+  'settings.deleteRanking.working': 'Deleting…',
+  'settings.deleteRanking.deleted': 'Your leaderboard data has been deleted.',
+  'settings.deleteRanking.none': 'There is no leaderboard data from this device.',
+  'settings.deleteRanking.offline': 'No connection — nothing was deleted. Try again when you are online.',
+  'settings.deleteRanking.failed': 'The data could not be deleted right now. Try again later.',
   'settings.privacy': 'PRIVACY POLICY',
   'privacy.offline': 'This copy is stored in the game and opens without a connection.',
   'privacy.overline': 'DOCUMENT / PRY-001',

@@ -172,6 +172,7 @@ async function boot(): Promise<void> {
     },
     onLanguageChanged: () => { document.title = t('app.title'); },
     onReplayTutorial: () => openTutorial(() => screens.show('menu'), true),
+    ranking: leaderboards, // [night-12k] D-114 (R1a): settings row "Delete my ranking data"
   });
 
   function freshSeed(): number {

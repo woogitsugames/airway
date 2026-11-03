@@ -182,5 +182,63 @@ await check('a rate-limited submission (429) stays queued and is sent on the nex
   assert.equal(JSON.parse(store.get('aw-net-queue-v1')).length, 0, 'sent after the limit');
 });
 
+// [night-12k] D-114 (R1a): in-app deletion clears the identity and the queue only after the server confirmed.
+function fakeServer() {
+  const calls = [];
+  const state = { mode: 'ok', signUps: 0 };
+  const fetcher = async (url, init) => {
+    if (url.includes('accounts:signUp')) { state.signUps++; return { ok: true, status: 200, json: async () => ({ localId: `u${state.signUps}`, idToken: 't', refreshToken: 'r', expiresIn: '3600' }) }; }
+    const name = url.split('/').pop();
+    calls.push(name);
+    if (state.mode === 'offline') throw new TypeError('Failed to fetch');
+    if (name === 'deleteMyData' && state.mode === 'fail') return { ok: false, status: 500, json: async () => ({ error: { message: 'Account not deleted', status: 'INTERNAL' } }) };
+    if (name === 'deleteMyData') return { ok: true, status: 200, json: async () => ({ result: { deleted: true, entries: 2, account: true } }) };
+    if (state.mode === 'queue') throw new TypeError('Failed to fetch');
+    return { ok: true, status: 200, json: async () => ({ result: { accepted: true, score: honest.claimedScore } }) };
+  };
+  const store = new Map();
+  const storage = { getItem: (k) => store.get(k) ?? null, setItem: (k, v) => store.set(k, v), removeItem: (k) => store.delete(k) };
+  const config = readNetConfig({ VITE_FIREBASE_API_KEY: 'k', VITE_FIREBASE_PROJECT_ID: 'p' });
+  return { calls, state, store, make: () => createLeaderboards({ config, fetch: fetcher, storage }) };
+}
+await check('deleting ranking data: server first, then identity and queue are gone; a new run signs up afresh', async () => {
+  const server = fakeServer();
+  const api = server.make();
+  assert.equal(api.hasData(), false, 'no identity yet: the settings row stays hidden');
+  assert.equal(await api.deleteMyData(), 'none');
+  assert.deepEqual(server.calls, [], 'no account is created just to delete it');
+  server.state.mode = 'queue';
+  assert.equal(await api.submitDaily(honest), 'queued');
+  assert.equal(api.hasData(), true);
+  server.state.mode = 'ok';
+  assert.equal(await api.deleteMyData(), 'deleted');
+  assert.equal(server.calls.at(-1), 'deleteMyData');
+  assert.equal(server.store.has('aw-net-session-v1'), false, 'token removed');
+  assert.equal(JSON.parse(server.store.get('aw-net-queue-v1')).length, 0, 'queued run dropped');
+  assert.equal(api.hasData(), false);
+  assert.equal(server.make().hasData(), false, 'a restart does not bring the identity back');
+  assert.equal(await api.submitDaily(honest), 'sent');
+  assert.equal(server.state.signUps, 2, 'the next run uses a new anonymous account');
+});
+await check('deleting offline or on a server error changes nothing and never reports success', async () => {
+  const server = fakeServer();
+  const api = server.make();
+  assert.equal(await api.submitDaily(honest), 'sent');
+  const token = server.store.get('aw-net-session-v1');
+  server.state.mode = 'offline';
+  assert.equal(await api.deleteMyData(), 'offline');
+  server.state.mode = 'fail';
+  assert.equal(await api.deleteMyData(), 'failed');
+  assert.equal(server.store.get('aw-net-session-v1'), token, 'identity kept for a retry');
+  assert.equal(api.hasData(), true);
+  server.state.mode = 'ok';
+  assert.equal(await api.deleteMyData(), 'deleted');
+});
+await check('disabled leaderboards have nothing to delete', async () => {
+  const api = createLeaderboards({ config: null });
+  assert.equal(api.hasData(), false);
+  assert.equal(await api.deleteMyData(), 'none');
+});
+
 console.log(`SUMMARY test:net seed=0xA1A1 day=${DAY} score=${honest.claimedScore} ticks=${honest.endTick} passed=${passed} failed=${failed}`);
 if (failed) process.exitCode = 1;

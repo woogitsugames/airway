@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 const { allowedDays, callSign, reviewSubmission, validBoardId, MAX_REQUEST_BYTES, RETENTION_DAYS, expiresAt,
   TOP_ENTRIES, compareTop, mergeTop, rankInTop, readTopRows, RateLimiter, RATE_LIMITS, RATE_LIMIT_KEYS, FUNCTION_OPTIONS,
+  DELETE_SCAN_DAYS, retainedBoardIds, dropFromTop,
 } = await import('../functions/src/logic.ts');
 
 let passed = 0;
@@ -121,7 +122,7 @@ check('a refused call spends nothing and limits match R3b (getBoards 20/min, sub
   for (let i = 0; i < 50; i++) assert.equal(limiter.take('u'), false, 'hammering does not dig a deeper hole');
   clock += 3_000;
   assert.equal(limiter.take('u'), true, 'one token after 3 s at 20/min');
-  assert.deepEqual(RATE_LIMITS, { getBoards: 20, submitDaily: 6 });
+  assert.deepEqual(RATE_LIMITS, { getBoards: 20, submitDaily: 6, deleteMyData: 3 });
 });
 check('the limiter forgets the least recently used player beyond its key bound', () => {
   let clock = 0;
@@ -142,6 +143,39 @@ check('function caps are split: getBoards 3 instances, submitDaily 5 instances x
   const source = readFileSync(new URL('../functions/src/index.ts', import.meta.url), 'utf8');
   assert.match(source, /onCall\(FUNCTION_OPTIONS\.submitDaily,[^]*?throttle\('submitDaily', uid\);\n\s+const reviewed/);
   assert.match(source, /onCall\(FUNCTION_OPTIONS\.getBoards,[^]*?throttle\('getBoards', uid\);\n\s+const data/);
+});
+// [night-12k] D-114 (R1a): in-app deletion of the caller's leaderboard data.
+check('deletion scans every board an entry can still live on (90 days + yesterday + TTL lag)', () => {
+  const now = Date.UTC(2026, 10, 3, 12);
+  const ids = retainedBoardIds(now);
+  assert.equal(DELETE_SCAN_DAYS, RETENTION_DAYS + 7);
+  assert.equal(new Set(ids).size, ids.length, 'no duplicates');
+  const daily = ids.filter((id) => id.startsWith('d-'));
+  assert.equal(daily.length, DELETE_SCAN_DAYS + 1);
+  assert.equal(daily[0], 'd-2026-11-03');
+  // An entry written 90 days ago under yesterday's board (expireAt = now) is still in the scan, with margin.
+  assert.ok(daily.includes('d-2026-08-04') && daily.includes('d-2026-07-29'), daily.at(-1));
+  assert.ok(ids.includes('w-2026-W45') && ids.includes('w-2026-W31'), 'weekly boards of the window');
+  assert.ok(ids.every(validBoardId));
+  assert.ok(ids.length < 130, `bounded read cost (${ids.length} boards)`);
+});
+check('the deleted player leaves the top; a full top is refilled by the 51st entry', () => {
+  const rows = Array.from({ length: 51 }, (_, i) => ({ uid: `u${String(i).padStart(2, '0')}`, callSign: 'AW-0000', score: 200 - i }));
+  const top = rows.slice(0, TOP_ENTRIES);
+  assert.equal(dropFromTop(top, 'nobody'), null, 'absent uid: no write');
+  const next = dropFromTop(top, 'u10', rows);
+  assert.equal(next.length, TOP_ENTRIES);
+  assert.ok(next.every((row) => row.uid !== 'u10'));
+  assert.equal(next.at(-1).uid, 'u50', 'the 51st moves up');
+  assert.deepEqual(next, oldQuery(new Map(rows.filter((row) => row.uid !== 'u10').map((row) => [row.uid, row]))));
+  const small = dropFromTop(top.slice(0, 3), 'u01');
+  assert.deepEqual(small.map((row) => row.uid), ['u00', 'u02']);
+});
+check('deleteMyData is a capped callable, throttled after auth, that deletes the Auth user', () => {
+  assert.deepEqual([FUNCTION_OPTIONS.deleteMyData.maxInstances, FUNCTION_OPTIONS.deleteMyData.region], [2, 'europe-west1']);
+  const source = readFileSync(new URL('../functions/src/index.ts', import.meta.url), 'utf8');
+  assert.match(source, /export const deleteMyData = onCall\(FUNCTION_OPTIONS\.deleteMyData,[^]*?const uid = uidOf\(request\);\n\s+throttle\('deleteMyData', uid\);/);
+  assert.match(source, /getAuth\(\)\.deleteUser\(uid\)/);
 });
 console.log(`SUMMARY test:net-server seed=0xA1A1 passed=${passed} failed=${failed}`);
 if (failed) process.exitCode = 1;

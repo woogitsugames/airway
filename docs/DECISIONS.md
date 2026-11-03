@@ -802,3 +802,26 @@ rejection and would have dropped a rate-limited run from its queue; 429 now coun
 (`retry`). Rejected: a Firestore counter per uid (a read and a write per call, the cost we are cutting); App Check
 (separate decision, needs the store builds). **Status: in force (N12j).**
 
+
+## D-113 — Week-1 pace stays 12 h × 130 %, tuned after the human playtest (2026-11-03, owner, Q-60 → C)
+Q-60: N12f (D-95, D-106) sped up the start more than "slightly" — a new airport every 12 game hours instead of 16 and
+130 % demand (bot median 17.03 min, 0/50 week-1 losses without a possible answer). The owner keeps that pace (rules
+v5 unchanged) and tunes it only after the closed test with people: the balance bot measures the network, not a
+player. Options rejected for now: B (11 h × 110 %, median 17.57) — no evidence from humans yet. **Status: in force
+(rules v5); revisit with closed-test data.**
+
+## D-114 — In-app deletion of leaderboard data (2026-11-03, Claude, night N12k)
+Implements D-93 (R1a, Apple 5.1.1(v)). Settings → Help gains "Delete my ranking data", shown only once the device has
+an anonymous identity or a queued run; it asks for an inline confirmation, then calls the new callable
+`deleteMyData`. Entries carry no uid field (the uid is the document id), so the function reads the paths of every
+daily and weekly board an entry can still live on — 97 days back (90-day retention, D-77, + yesterday's board +
+TTL lag), 113 boards, one batched existence read per board — and, per board where the player left something, in a
+transaction deletes the entry and removes the uid from `meta/top` (D-108; a full top is refilled from the 51 best
+entries read before the delete, so it equals the old query). Then it deletes the anonymous Auth account; an account
+already gone is not an error, so a repeat is a no-op. Capped at `maxInstances: 2` and 3 calls/min per player
+(D-109). The client clears the token and the offline queue only after the server's answer; offline or on a server
+error it says nothing was deleted and keeps the identity for a retry (never a faked success); a refresh that finds
+the account already deleted counts as done. The e-mail path (D-77) stays as the web resource for Google Play.
+Rejected: a `uid` field + collection-group query (needs a new index and a migration of existing entries); deleting
+the whole top document (the next reads would fall back to the 50-document query and the re-seeded top would get a
+later TTL than the entries it copies). **Status: in force (N12k).**

@@ -106,7 +106,46 @@ function header(title:string,onBack:()=>void):HTMLElement {
 
 export interface SettingsHandle { readonly element:HTMLElement; readonly firstFocus:HTMLElement; }
 
-export function createSettings(onBack:()=>void,onLicenses:()=>void,onLanguageChanged:()=>void,onReplayTutorial?:()=>void,onPrivacy?:()=>void):SettingsHandle {
+/** [night-12k] D-114 (R1a): the leaderboard data the settings screen can delete (src/net Leaderboards). */
+export interface RankingData {
+  hasData():boolean;
+  deleteMyData():Promise<'deleted'|'none'|'offline'|'failed'>;
+}
+
+/** [night-12k] D-114: "Delete my ranking data" → inline confirmation → the server's answer, never a faked success. */
+function deleteRankingRow(ranking:RankingData):HTMLElement {
+  const wrap=e('div','airway-settings__delete');
+  wrap.dataset.testid='settings-delete-ranking-row';
+  const start=e('button','airway-settings__licenses',t('settings.deleteRanking'));
+  start.type='button';start.dataset.testid='settings-delete-ranking';
+  const confirm=e('div','airway-settings__delete-confirm');
+  confirm.hidden=true;
+  const yes=e('button','airway-settings__licenses',t('settings.deleteRanking.confirm'));
+  yes.type='button';yes.dataset.testid='settings-delete-ranking-confirm';
+  const no=e('button','airway-settings__licenses',t('settings.deleteRanking.cancel'));
+  no.type='button';no.dataset.testid='settings-delete-ranking-cancel';
+  confirm.append(e('p','airway-setting__hint',t('settings.deleteRanking.warning')),yes,no);
+  const status=e('p','airway-setting__hint');
+  status.dataset.testid='settings-delete-ranking-status';
+  status.setAttribute('aria-live','polite');
+  start.addEventListener('click',()=>{start.hidden=true;confirm.hidden=false;status.textContent='';yes.focus({preventScroll:true});});
+  no.addEventListener('click',()=>{confirm.hidden=true;start.hidden=false;start.focus({preventScroll:true});});
+  yes.addEventListener('click',()=>{
+    yes.disabled=true;no.disabled=true;
+    status.textContent=t('settings.deleteRanking.working');
+    void ranking.deleteMyData().then((result)=>{
+      yes.disabled=false;no.disabled=false;
+      status.textContent=t(`settings.deleteRanking.${result}` as TranslationKey);
+      confirm.hidden=true;
+      // Done: nothing left to delete on this device. Offline or failed: the player may try again.
+      start.hidden=result==='deleted'||result==='none';
+    });
+  });
+  wrap.append(start,confirm,status);
+  return wrap;
+}
+
+export function createSettings(onBack:()=>void,onLicenses:()=>void,onLanguageChanged:()=>void,onReplayTutorial?:()=>void,onPrivacy?:()=>void,ranking?:RankingData):SettingsHandle {
   const values=readSettings();
   const root=e('section','airway-settings');
   const paper=e('div','airway-settings__paper');
@@ -197,6 +236,8 @@ export function createSettings(onBack:()=>void,onLicenses:()=>void,onLanguageCha
     privacy.addEventListener('click',onPrivacy);
     host.append(privacy);
   }
+  // [night-12k] D-114: shown only once this device has a leaderboard identity (or a queued run).
+  if(ranking?.hasData()) host.append(deleteRankingRow(ranking));
   root.append(paper);
   return {element:root,firstFocus:top.querySelector('button') as HTMLElement};
 }
