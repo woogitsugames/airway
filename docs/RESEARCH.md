@@ -585,3 +585,141 @@ Reszta (składak, flagowce, 120 Hz) — Test Lab i telefony testerów.
 R3f (preset po GPU) i R3h (deklaracja ES 3.0) przed testem zamkniętym; R3g (utrata kontekstu, ekran braku WebGL 2)
 przed wydaniem; R3i (Test Lab Game Loop) jako tani pomiar zanim właściciel kupi telefony. `minSdk`: podnieść do 29
 (Android 10) albo zostawić 24 z filtrem ES 3.0 — decyzja **Q-54**.
+
+## R4 — Fakty lotnicze w danych świata: kody, godziny ciszy nocnej, samoloty (stan 2026-11-03)
+
+Przegląd `src/data/cities.ts` (152 miasta), `src/sim/params.ts` i `src/sim/daynight.ts` pod kątem faktów, które
+gracz z branży (albo z danego miasta) zauważy od razu. Bez licencji: kody IATA i współrzędne to fakty, nie utwór;
+źródła poniżej to strony publiczne, sprawdzone 2026-11-03.
+
+### Ustalenia — kody lotnisk (wyświetlane na stemplu huba, chipach przy krawędzi, w tablicy porażki, D-68)
+| Miasto | W grze | Co ten kod naprawdę znaczy | Poprawny kod | Źródło |
+|---|---|---|---|---|
+| Kijów | **KIV** | dawny kod Kiszyniowa (od rosyjskiego „Kiszyniow”); od 18.01.2024 Kiszyniów ma **RMO**, KIV nie powinien wisieć na tablicach | **IEV** (kod miasta; lotniska KBP Boryspol, IEV Żulany) | [Wikipedia: Chișinău Airport](https://en.wikipedia.org/wiki/Chisinau_Airport), [chartershop.com.ua](https://chartershop.com.ua/en/novosti/1350-moldavian-airport-chisinau-changes-its-iata-code-from-kiv-to-rmo.html) |
+| Ho Chi Minh | **HCM** | lotnisko Eil w Somalii (jedno źródło, **NIEPEWNE**); na pewno nie Wietnam | **SGN** (Tan Son Nhat) | [Wikipedia: Tan Son Nhat](https://en.wikipedia.org/wiki/Tan_Son_Nhat) |
+| Luanda | **LUA** | Lukla w Nepalu (lotnisko pod Everestem) | **LAD** (Quatro de Fevereiro; nowe lotnisko NBJ — **NIEPEWNE**, czy przejęło ruch) | [aruljohn.com LUA](https://aruljohn.com/airport-codes/?q=LUA) |
+| Lusaka | **LUS** | nie Lusaka (kod innego, małego lotniska — **NIEPEWNE** które) | **LUN** (Kenneth Kaunda) | [ch-aviation LUN](https://ch-aviation.com/airports/LUN) |
+| Isfahan | **ISF** | nie Isfahan | **IFN** (Shahid Beheshti) | [Wikipedia: Isfahan Airport](https://en.wikipedia.org/wiki/Isfahan_Airport) |
+| Aleksandria | **ALX** | Alexander City, Alabama (**NIEPEWNE**, z pamięci; na pewno nie Egipt) | **ALY** (kod miasta) albo **HBE** (Borg El Arab) | [ch-aviation HBE](https://ch-aviation.com/airports/HBE), [Wikipedia: Borg El Arab](https://en.wikipedia.org/wiki/Borg_El_Arab_Airport) |
+
+Pozostałe 146 kodów są prawdziwe, ale styl jest mieszany: część to kody miast (NYC, CHI, LON, PAR, STO, ROM, MIL, TYO,
+OSA, SEL, JKT, RIO, BUH, REK), część kody głównego lotniska (LAX, DCA zamiast WAS, EZE zamiast BUE, GRU zamiast SAO,
+PEK zamiast BJS, YYZ zamiast YTO, YUL zamiast YMQ). To jest w porządku — gracz zna raczej GRU i PEK niż SAO i BJS —
+więc proponuję regułę „kod, który podróżny zna z biletu: kod miasta tam, gdzie jest powszechny, inaczej główne lotnisko”
+i poprawienie tylko 6 błędnych kodów z tabeli. Drobne, bez zmiany: DKR (Dakar ma od 2017 lotnisko DSS, DKR zostaje kodem
+miasta — **NIEPEWNE**), ULN (Ułan Bator ma od 2021 lotnisko UBN), ANK (kod miasta; lotnisko ESB), THR (lotnisko IKA).
+
+**Ważne technicznie:** `City.code` jest jednocześnie identyfikatorem miasta w symulacji: klucz w zapisach
+(`scripts/fixtures/save-golden.json` ma KIV 57 razy), w dzienniku, w kolejności losowania ciszy nocnej (lista
+identyfikatorów jest sortowana przed tasowaniem w `selectEndlessCurfewCities`, więc zmiana „KIV” na „IEV” przestawia
+kolejność i zmienia wynik wyzwania dnia i powtórek). Dlatego poprawka musi być **tylko wyświetlana**: osobne pole
+`displayCode` (albo mapa nadpisań) czytane przez `airportLabel()` i chipy w `src/ui/overlay.ts`, a identyfikator
+zostaje. Wtedy zapisy, rankingi i `test:replay` się nie zmieniają (R4a).
+
+### Ustalenia — współrzędne, nazwy, regiony
+- Współrzędne wszystkich 152 miast zgadzają się z rzeczywistymi do 0,1° (sprawdzone ręcznie dla miast spoza listy
+  największych: Gdańsk, Kigali, Bamako, Wagadugu, Maskat, Rangun, Nouméa, Suva, Port Moresby, Reykjavík) — bez uwag.
+- Polskie egzonimy zgodne z praktyką KSNG (Lahaur, Ćennaj, Rangun, Abudża, Wagadugu, Antananarywa, Numea, Pusan,
+  Kanton). Bez uwag.
+- **Egipt jest w dwóch regionach**: Kair w `ME` (Bliski Wschód), Aleksandria w `AFR`. Gracz zobaczy dwa różne glify
+  dla miast 180 km od siebie. To zmiana treści (region zmienia popyt → nowe zasady symulacji, D-76) — pytanie Q-58.
+- Kijów, Tel Awiw, Bejrut, Bagdad, Teheran i Isfahan leżą dziś w przestrzeni zamkniętej albo ograniczonej dla lotów
+  cywilnych (Ukraina zamknięta od 24.02.2022, bez daty otwarcia w marcu 2026:
+  [Kyiv Independent](https://kyivindependent.com/ukraine-presents-roadmap-for-opening-airspace-during-martial-law),
+  [United24](https://united24media.com/latest-news/ukraine-forms-working-group-to-prepare-for-reopening-of-airports-16932)).
+  Gra jest ponadczasową siecią, nie symulatorem wiadomości, więc rekomenduję zostawić miasta — ale to decyzja
+  właściciela (Q-57). Kod KIV przy Kijowie jest niezależnie od tego błędem, który Ukraińcy odbiorą źle (rosyjska nazwa
+  Kiszyniowa).
+
+### Ustalenia — cisza nocna i czas lokalny
+- Gra zamyka wybrane lotniska 23:00–06:00 czasu lokalnego (D-17, D-27). Prawdziwe przykłady: Frankfurt 23:00–05:00
+  (wyrok BVerwG z 04.2012), Sydney 23:00–06:00 (Sydney Airport Curfew Act 1995, z małym limitem przylotów 05:00–06:00),
+  Zurych 23:30–06:00 (23:00–23:30 tylko na odrabianie opóźnień)
+  ([Wikipedia: Night flying restrictions](https://en.wikipedia.org/wiki/Night_flying_restrictions),
+  [slotcoordination.ch](https://www.slotcoordination.ch/restrictions_zrh)). Nasze 23–06 to realistyczny środek — bez zmian.
+- Strefy czasowe gry są fikcyjne (długość geograficzna / 15°, całe godziny). Przykłady różnic od prawdziwych w listopadzie:
+  Madryt i Paryż 0 zamiast +1, Lagos 0 zamiast +1, Buenos Aires −4 zamiast −3, Delhi +5 zamiast +5:30, Chengdu +7 zamiast +8.
+  To **dobra** decyzja i proponuję ją zostawić: czas słoneczny zgadza się z linią dnia i nocy na globusie (D-05 —
+  „grafika tłumaczy rozgrywkę”), a prawdziwe strefy pokazałyby północ w Madrycie przy słońcu nad horyzontem. Warto to
+  jednym zdaniem napisać w samouczku/ustawieniach pomocy („czas słoneczny, nie urzędowy”), bo gracze z Hiszpanii to
+  zauważą (R4b).
+
+### Ustalenia — samoloty (`AIRCRAFT` w `params.ts`)
+- Turbośmigłowiec 48 miejsc, 2 500 km, 480 km/h; prawdziwa klasa: ATR 42 ma ok. 48 miejsc i ok. 1 300 km zasięgu, Dash 8-400
+  ok. 78 miejsc i ok. 2 000 km, prędkość przelotowa ok. 500 km/h. Zasięg gry jest hojny, ale to świadoma abstrakcja balansu.
+- Szerokokadłubowiec 300 miejsc, 11 000 km, 840 km/h; klasa 787-9/A350-900: ok. 290–325 miejsc, 14 000–15 000 km,
+  ok. 900 km/h. Wiarygodne. **Bez zmian** — liczby nie są przedstawiane jako konkretne typy, więc nie ma błędu faktu
+  (dane typów z pamięci, **NIEPEWNE** co do pojedynczych wartości).
+
+### Rekomendacja
+R4a (kody wyświetlane, bez zmiany identyfikatorów) przed testem zamkniętym — to sześć widocznych błędów, w tym jeden
+drażliwy (KIV). R4b (strażnik danych + zdanie o czasie słonecznym) razem z R4a albo zaraz po. Region Aleksandrii i
+miasta w strefach konfliktu — Q-58 i Q-57.
+
+## R4 — Dlaczego ten hub się zapycha? Diagnoza w trakcie gry, wpisana w świat (stan 2026-11-03)
+
+### Co Airway już pokazuje (stan `dev`)
+- Przy lotnisku: przywieszka z glifami regionów docelowych czekających (kształt + kolor), puste glify dla pasażerów
+  w czasie przesiadki (N10i), przywieszka „SLOT” z liczbą samolotów i czasem do startu (zadanie 38, D-50), szlaban ciszy
+  nocnej (N10h), odliczanie zatoru, wskaźnik zapełnienia na chipie przy krawędzi (N11d), dźwiękowy dron napięcia od ok. 72 %
+  (D-71).
+- Po porażce: raport z trzema przyczynami z `CauseLedger` (`noRoute`, `full`, `longWait`, rozkład czekających według
+  regionu), oś czasu runu, mapa i jedna wskazówka w pierwszych dziesięciu lotach (N11f, D-87).
+
+Luka: **w trakcie gry** gracz widzi, *że* hub się zapełnia i *dokąd* chcą ludzie, ale nie widzi *dlaczego* — czy
+pasażerów przybywa szybciej, niż odlatują (za mało miejsc), czy samoloty stoją (sloty, cisza nocna), czy dla części
+nie ma lotu dalej. Ta wiedza pojawia się dopiero w raporcie, czyli po fakcie. W poradach projektowych o „uczciwej
+porażce” powtarza się ta sama myśl: porażka jest akceptowana, gdy gracz *przed* nią widział zapowiedź i umie wskazać
+swoją ostatnią decyzję, a test jest prosty — zapytać po porażce „co się stało?”; błędna odpowiedź to błąd czytelności,
+nie gracza ([Game Developer: Designing for difficulty readability](https://www.gamedeveloper.com/game-platforms/designing-for-difficulty-readability-in-arpgs);
+[bugnet.io: Designing failure](https://bugnet.io/blog/designing-failure-how-to-make-losing-fun); oba to teksty
+praktyków, nie badania — **NIEPEWNE** jako dowód).
+
+### Model: kolejka, nie magia
+Poczekalnia huba to kolejka. Zator jest nieunikniony, gdy przez dłuższy czas *napływ* (pasażerowie na godzinę: popyt
+lokalny + przesiadki) jest większy niż *odpływ* (miejsca w odlatujących samolotach na godzinę, ograniczone też slotami
+i ciszą nocną). Prawo Little'a (L = λ·W) daje prostą intuicję: przy stałym napływie czas czekania rośnie z liczbą
+czekających ([Wikipedia: Little's law](https://en.wikipedia.org/wiki/Little%27s_law)). Gracz nie potrzebuje wzoru —
+potrzebuje dwóch rzeczy narysowanych w świecie: **kierunku** (przybywa czy ubywa) i **wąskiego gardła** (co blokuje).
+
+### Propozycje (projekt własny; graficzne, bez wykresów i liczb w HUD)
+1. **Trend na przywieszce** (R4c): mała strzałka-chevron obok licznika, w górę = w ostatniej godzinie gry przybyło więcej,
+   niż odleciało, w dół = hub się opróżnia, brak = równowaga. Kształt, nie kolor; tylko gdy hub ma ≥ 50 % zapełnienia,
+   żeby nie zaśmiecać spokojnej sieci. Liczone w warstwie gry z godzinowych odczytów (już istnieją dla dźwięku,
+   `AudioCueMapper.hourly`), bez zmian w symulacji.
+2. **Tablica przyczyn huba** (R4d): przytrzymanie (albo stuknięcie, gdy hub jest ≥ 70 %) otwiera małą tablicę odlotów
+   w stylu raportu porażki — po jednym wierszu na region docelowy: glif, liczba czekających i jeden znak przyczyny:
+   „brak lotu dalej” (żadna trasa z tego huba nie prowadzi do regionu), „odloty pełne” (w ostatniej godzinie odloty
+   w tę stronę wyleciały bez wolnych miejsc), „czeka na slot”, „cisza nocna do 06:00”. To ten sam słownik co raport
+   porażki (spójność, gracz uczy się go wcześniej) i bez nowych reguł. Gra działa dalej (albo z pauzą — jak tablica
+   tygodniowa; do ustalenia w zadaniu).
+3. **Pełne odloty na trasie** (R4e): odcinek, którego samoloty trzy razy z rzędu startują pełne, dostaje na kilka
+   sekund krótkie poprzeczne kreski przy hubie (jak „pełny luk”), znikają po odciążeniu. To wskazuje, *gdzie* dołożyć
+   samolot, zanim pojawi się odliczanie.
+4. Wszystko trzy razy: kształt (dla CVD), tekst dla czytnika ekranu (aria), bez skoków i sprężyn w animacji; nic
+   nie trafia do symulacji ani do hasha powtórki (D-13).
+
+### Rekomendacja
+Najpierw R4c (najtańsze, od razu poprawia przewidywalność), potem R4d; R4e po teście zamkniętym, jeśli ankieta
+pokaże, że gracze nie wiedzą, gdzie dołożyć samolot (pytanie „co się stało?” warto dopisać do ankiety R3k).
+
+## R4 — Duże ekrany: tablet, składak, okna na iPadzie i Androidzie (stan 2026-11-03)
+
+### Ustalenia
+| Wymóg | Źródło (sprawdzone 2026-11-03) | Airway dziś | Luka |
+|---|---|---|---|
+| Android 16 ignoruje blokadę orientacji i `resizeableActivity` na ekranach ≥ 600 dp; od API 37 bez wyjątku. **Gry są wyłączone na podstawie `android:appCategory`** | [Android Developers Blog, 01.2025](https://android-developers.googleblog.com/2025/01/orientation-and-resizability-changes-in-android-16.html) | `appCategory="game"`, `resizeableActivity="true"`, pełne `configChanges` (zadanie 24) | brak; i tak obsługujemy oba układy |
+| Adaptive app quality, Tier 3 „Adaptive ready”: pełny ekran bez letterboxa, stan zachowany przy obrocie, złożeniu/rozłożeniu i zmianie rozmiaru okna (także kombinacje), działanie w podzielonym ekranie, podstawowa mysz/klawiatura | [Android: Adaptive app quality](https://developer.android.com/docs/quality-guidelines/adaptive-app-quality), [Tier 3](https://developer.android.com/docs/quality-guidelines/adaptive-app-quality/tier-3) (wersja po 2026-04-07) | `ui:matrix` sprawdza 412×915, 915×412, 673×841, 904×1000 | brak rozmiarów testowych Google: 1024×640 (8″), 1280×800 (10,5″), 841×701 (składak), 1600×900 (Chromebook); brak testu zmiany rozmiaru w trakcie runu |
+| Google: aplikacje spełniające wytyczne są wyżej w wyszukiwaniu na tabletach; odznaka po Tier 2/1 przez formularz | jw. | brak zgłoszenia | Tier 2 po testach R4f/R4g, potem formularz odznaki |
+| iPadOS 26: `UIRequiresFullScreen` ignorowany, każda aplikacja dostaje okna o zmiennym rozmiarze; `sizeRestrictions` to tylko życzenie | [Apple TN3192](https://developer.apple.com/documentation/technotes/tn3192-migrating-your-app-from-the-deprecated-uirequiresfullscreen-key), [forum Apple](https://developer.apple.com/forums/thread/793406) | `Info.plist` ma wszystkie 4 orientacje na iPadzie, bez `UIRequiresFullScreen` — dobrze | nie testujemy wąskich i niskich okien (np. ok. 500×700 pt w Stage Manager/podziale) |
+| Mysz/klawiatura (Tier 3 podstawa, Tier 2 więcej) | Tier 3 jw. | kółko myszy przybliża (`gestures.ts`), Escape/Back działa (`platform/back.ts`) | brak skrótów (spacja = pauza, 1/2/3 = prędkość), brak stanów `:hover` dla myszy/rysika, nie sprawdzaliśmy menu kontekstowego prawego przycisku w WebView |
+| Multi-resume: aplikacja niebędąca na pierwszym planie dalej się odświeża | Tier 3 jw. | gra pauzuje tylko przy ukryciu (`visibilitychange`); w podzielonym ekranie gra biegnie, gdy gracz pisze w drugiej aplikacji | zator „za plecami” gracza — Q-59 |
+
+### Co to znaczy dla Airway
+Fundament jest dobry (kategoria gry, pełne `configChanges`, orientacje iPada, układy portret/poziom/składak).
+Brakuje dowodu na tabletach 10″ i w oknach o dowolnym rozmiarze oraz drobnej obsługi myszy/klawiatury, której
+oczekują Chromebooki, tablety z klawiaturą i iPad z Magic Keyboard. Zrzuty do sklepu na duże ekrany są już w R2a.
+
+### Rekomendacja
+R4f (macierz rozmiarów + zmiana rozmiaru w trakcie runu) przed testem zamkniętym, R4g (skróty, hover) przed
+wydaniem; zgłoszenie po odznakę Google dopiero po przejściu listy Tier 2 na prawdziwym tablecie.

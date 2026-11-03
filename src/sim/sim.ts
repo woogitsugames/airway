@@ -284,8 +284,14 @@ export class Sim {
     return sim;
   }
 
-  /** Replay does not use a wall-clock accumulator or external randomness. */
-  static replay(seed: number, entries: readonly CommandEntry[], untilTick: number, config?: GameConfig): Sim {
+  /**
+   * Replay does not use a wall-clock accumulator or external randomness.
+   * [night-12d] `stopAtEnd` (D-93): stop after the tick on which the run ended ('over' or 'won'), even before
+   * `untilTick`. The live game never ticks a finished world (EndlessRun.step), so a finished run replays to the
+   * same tick and hash; the server uses it so a claimed `endTick` past the game over costs nothing extra.
+   */
+  static replay(seed: number, entries: readonly CommandEntry[], untilTick: number, config?: GameConfig,
+    stopAtEnd = false): Sim {
     if (!safeCount(untilTick)) throw new RangeError('invalid replay length');
     const sim = new Sim(seed, config);
     let index = 0;
@@ -297,6 +303,7 @@ export class Sim {
       previousTick = tick;
     }
     while (sim.tickCount < untilTick) {
+      if (stopAtEnd && (sim.worldValue.status === 'over' || sim.worldValue.status === 'won')) break;
       const nextTick = sim.tickCount + 1;
       while (index < entries.length && entries[index][0] === nextTick) {
         sim.apply(entries[index][1]);

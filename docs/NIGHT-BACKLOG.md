@@ -405,6 +405,15 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       `Library/NoCloud`). `test:android-config` +4 checks (14/18 on the old manifest), new `test:install-identity`
       6/6 (in `test:fast`). Resources pass `aapt2 compile`; Gradle lint and a device restore could not run here
       (Maven 429, no device) — `docs/ANDROID.md` lists the `bmgr` check.
+- [x] N12d **Server replay ends at the game over (R3c, D-93)** — `Sim.replay` kept ticking a finished world up to
+      the claimed `endTick`, so a finished daily run sent with `endTick` = 30 weeks replayed a dead world for the
+      whole budget and was stored with `weeks: 30`. `verifyDailySubmission` now replays with `stopAtEnd` (new optional
+      `Sim.replay` argument; default unchanged for saves/undo/tests) and requires `endTick` to equal the game-over tick
+      (`malformed` otherwise; one tick early stays `not_finished`). Honest verdicts, scores and hashes unchanged
+      (`test:replay` summary identical, D-13). New `test:replay-cost` (in `test:fast`): 6 bot daily seeds, inflated
+      end ticks, empty 30-week claim, cost budgets — measured 30–48 ms per game week (30-week projection ~1.4 s),
+      dense 5 000-command journal ~0.2 s. Note: an empty journal never ends (the world waits on the week-1 board),
+      so it was already `not_finished`, not accepted as the R3c text assumed.
 
 ## Research proposals (R-agent)
 Proposals from the research agent (findings and sources: `docs/RESEARCH.md`, sections "R1 — …"). Each item is
@@ -560,7 +569,7 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
       `getBoards` `maxInstances: 3`, `submitDaily` `concurrency: 4` (CPU-bound replay must not queue 80 players behind
       one vCPU) with `maxInstances: 5`. Pure limiter in `functions/src/logic.ts` with `test:net-server` cases; the
       client already treats errors as "queued". **Area:** platform (`functions/`).
-- [ ] R3c **Replay stops at game over + replay-cost guard** — `Sim.replay` keeps ticking after `status === 'over'`, so
+- [x] R3c → N12d **Replay stops at game over + replay-cost guard** — `Sim.replay` keeps ticking after `status === 'over'`, so
       an empty journal with `endTick` = 30 weeks is accepted with `weeks: 30` (score 0) and costs a full 30-week replay.
       Stop the replay loop at game over (or reject `endTick` more than one tick past the game-over tick as
       `malformed`) and compute `weeks` from the game-over tick. Add `test:replay-cost`: bot daily runs on 6 seeds plus
@@ -608,6 +617,46 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
       RESEARCH R3: recruitment mix, 14-day schedule with the day-8 fix release, surveys A/B/C (PL/EN), decision table
       with thresholds written before the test, and an answer sheet for Google's production-access questions (recruiting,
       engagement, feedback summary, changes made, readiness evidence). **Area:** docs. *Needs Q-42, Q-52.*
+
+### R4 (2026-11-03) — real-world data facts, mid-game jam diagnosis, large screens
+- [ ] R4a **Correct six airport codes on screen, keep city IDs** — `KIV` (Chișinău's old code, now RMO) for Kyiv,
+      `HCM` for Ho Chi Minh, `LUA` (Lukla, Nepal) for Luanda, `LUS` for Lusaka, `ISF` for Isfahan and `ALX` for
+      Alexandria are wrong. `City.code` is also the sim ID (saves, logbook, sorted curfew draw, puzzles, golden save), so
+      do **not** rename it: add an optional `displayCode` to `City` (`IEV`, `SGN`, `LAD`, `LUN`, `IFN`, `ALY`) and read it
+      through `airportLabel()` and every direct `airport.code` use in `src/ui/overlay.ts` (edge chips, aria), the
+      game-over departures board and the logbook. Code comment states the rule ("code travellers know from a ticket:
+      common city code, else main airport"). `test:replay`, `test:save-golden` and daily hashes must stay unchanged;
+      shots of one affected airport. **Area:** content/UI (`src/data/cities.ts`, `src/ui/airportLabel.ts`,
+      `src/ui/overlay.ts`).
+- [ ] R4b **City data guard + "solar time" line** — new fast test `test:city-data`: display codes are 3 uppercase
+      letters and unique, IDs unchanged against a frozen list (order and spelling, so a rename fails loudly), lat/lon in
+      range and on land or within ~30 km of the coast using the existing land mask, PL/EN names non-empty, population
+      > 0; add to `test:fast`. Plus one sentence in help/tutorial PL/EN that clocks show solar time, not official time
+      zones (D-27 keeps them; it matches the day/night line). **Area:** content/scripts (`scripts/`, `src/data/`) + i18n.
+- [ ] R4c **Fill trend chevron on the passenger tag** — when an airport is ≥ 50 % full, a small chevron beside the
+      count shows the last game hour's balance (up = more arrived than departed, down = draining, none = steady ±1).
+      Computed in `src/game/` from the hourly hub readings already taken for audio cues (no sim change, D-13); shape
+      not colour; aria text "filling/emptying"; reduced motion = no animation. Unit test for the trend rule, overlay DOM
+      test, shots portrait/landscape. **Area:** UI (`src/game/`, `src/ui/overlay.ts`, i18n).
+- [ ] R4d **Hub cause board on long-press** — long-press (or tap when ≥ 70 % full) on an airport opens a small
+      departures-board sheet: one row per destination region (glyph, waiting count, one cause mark: no onward flight /
+      departures left full in the last hour / waiting for a slot / curfew until 06:00), same wording as the game-over
+      causes. Needs a read-only per-hub rolling view (last game hour) derived in the game layer from run events, not
+      stored in the sim hash. Sheet fits 360×640 and the landscape dock; 48 dp targets; e2e opens it on a forced jam.
+      **Area:** UI (`src/ui/`, `src/game/`), i18n.
+- [ ] R4e **Full-departure ticks on route legs** (after the closed test) — a leg whose last three departures from a
+      hub left with no free seat gets short cross ticks near that hub for a few seconds; cleared when a departure has
+      spare seats. Render-only from plane load events; low preset uses the same line batch. **Area:** render
+      (`src/render/` routes) + `src/game/` event mapping.
+- [ ] R4f **Large-screen matrix and resize mid-run** — add Google's reference sizes to `ui:matrix` (1024×640,
+      1280×800, 800×1280, 841×701, 1600×900) and a narrow window (500×700); new e2e `test:e2e:resize`: start a run,
+      resize portrait→landscape→narrow→wide and fold-like 673×841→841×701, assert the state hash, open sheets and the
+      camera target survive and nothing overflows (Tier 3 Config_Changes/Config_Combinations). **Area:** platform/scripts
+      (`scripts/ui-matrix.mjs`, `e2e/`).
+- [ ] R4g **Keyboard and mouse basics** — Space pause/resume, 1/2/3 game speed, +/- zoom, existing Escape/Back;
+      `@media (hover: hover)` hover state on HUD buttons and airports; no browser context menu on right-click over the
+      globe; shortcuts listed in settings → help (PL/EN). E2E with Playwright keyboard. **Area:** input/UI
+      (`src/input/`, `src/ui/`, CSS, i18n). Auto-pause on focus loss *needs Q-59*.
 
 ## Log
 <!-- one line per finished item: date UTC · item · PR · gate summary -->
@@ -689,3 +738,5 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
 - 2026-11-03 · N12c Android backup without leaderboard identity (R1e, D-92) · night/12c-android-backup · test:android-config 18/18 (14/18 on the old manifest), test:install-identity 6/6 (new), aapt2 compile ok, test:fast 59/59, build ok, e2e:smoke 9/9 (boot path touched); Gradle lint not run (Maven 429), no device restore; ui:matrix/store:shots not run (no UI change)
 - 2026-11-03 · N11e privacy policy in the app (D-86) · night/11e-privacy · test:fast 60/60 (test:privacy-text 6/6, 1/6 before), build ok, test:e2e:privacy-page 4/4 (0/4 on the old settings), e2e:settings-groups 4/4, e2e:covered-pages 2/2, e2e:pseudo-locale 27/27; e2e:smoke/ui:matrix not run (settings only, no game screen)
 - 2026-11-03 · N11f one tip on the game-over report (D-87) · night/11f-gameover-tip · test:fast 61/61 (test:gameover-tip 7/7, 6/7 on the old catalogs), build ok, e2e:smoke 9/9, ui:matrix 32/32 (its game overs are at unserved airports: no tip, PNGs unchanged), e2e:pseudo-locale 27/27, e2e:gameover-short 4/4 (0/4 before the short-screen rule), e2e:gameover-unserved 4/4, e2e:gameover-map 3/3, e2e:run-timeline 4/4, e2e:daily-share 4/4, test:e2e:gameover-tip 4/4 (1/4 on the old report), store:shots 30 (test:store-shots 30/30)
+- 2026-11-03 · N12d server replay ends at the game over (R3c, D-93) · night/12d-replay-stop · test:replay-cost 7/7 (5/7 on the old replay), test:replay 23/23 (summary identical), test:net 8/8, test:net-server 5/5, test:fast 62/62, build ok, test:firebase 7/7 (emulator); e2e/ui:matrix/store:shots not run (no UI change)
+- 2026-11-03 · N11g reduce motion setting (D-88) · night/11g-reduce-motion · test:fast 63/63 (test:motion 8/8, 0/8 on the old code; test:flap 15/15 via the TS loader), build ok, test:e2e:reduce-motion 3/3 (0/3 on the old settings), e2e:settings-groups 4/4, e2e:screens-fit 18/18, e2e:screens-fit-320 12/12, e2e:pseudo-locale 27/27, e2e:privacy-page 4/4, e2e:covered-pages 2/2, e2e:airline-colour 3/3; e2e:smoke/ui:matrix not run (settings only; E2E pages emulate a reduce-motion system, game screens unchanged)

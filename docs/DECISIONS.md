@@ -679,3 +679,15 @@ Motion" label needs an in-app control or full system support, and a player whose
 Android skins hide it) can now still the game. Rejected: a three-way "system / on / off" select (one more control
 for a choice the hint explains), a catch-all `* { animation: none }` rule (changes the timing of every screen and
 e2e suite at once). **Status: in force (N11g, `test:motion` 8 cases, `test:e2e:reduce-motion` 3 cases).**
+
+## D-93 — The server replay ends at the game over; endTick must be the game-over tick (2026-11-03, Claude, night N12d)
+`verifyDailySubmission` replays with `Sim.replay(..., stopAtEnd = true)`: the loop stops after the tick on which the
+world reaches `over` (or `won`), and a submission whose `endTick` is not exactly that tick is `malformed` (one tick
+early stays `not_finished`). Before, a finished run sent with `endTick` = 30 weeks replayed a dead world for the whole
+budget and was stored with `weeks: 30`. The live game never ticks a finished world (`EndlessRun.step`), so honest
+clients already send the game-over tick: their verdicts, scores and hashes are unchanged (D-13; `test:replay`
+summary identical). `Sim.replay` keeps its default (tick to `untilTick`) for saves, undo and tests. Measured on this
+container: bot daily runs 30–48 ms per game week (a 30-week run ~1.4 s), a 5 000-command journal ~0.2 s; budgets in
+`test:replay-cost` are 600 ms/week and 5 s. Rejected: a new reject reason (`malformed` is already "not a real run",
+and the client shows any rejection the same way); shortening `MAX_REPLAY_TICKS` (would cap real long runs).
+**Status: in force (N12d, `test:replay-cost` 7 checks).**
