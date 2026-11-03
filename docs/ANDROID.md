@@ -131,12 +131,29 @@ Device check (not possible here): `adb shell bmgr backupnow pl.samsufi.airway`, 
 signed build with restore (`adb shell bmgr restore`), then confirm the logbook and save are back and the first
 official daily gets a new call sign.
 
+## Per-app language (D-115)
+
+`android:localeConfig="@xml/locales_config"` lists the game's languages (`en`, `pl`), so Android 13+ shows Airway
+under **Settings → Apps → Airway → Language** (and in the system per-app language list). Older Android ignores the
+attribute. No in-app native picker is added: the game's own setting (Settings → Game → Language) stays the
+authority (D-31) — `src/i18n` reads the saved choice first and only falls back to the device language
+(`navigator.languages`) when the player never chose one. `test:android-config` checks that the list equals the
+`Language` type in `src/i18n/index.ts` and iOS `CFBundleLocalizations` (D-91), and that the saved choice wins.
+`aapt2 link` against `android-36` accepts the attribute with `minSdk 24`.
+
+Device check (not possible here): on Android 13+ set Airway's per-app language to Polish while the phone is in
+English, start a fresh install and confirm the game opens in Polish (i.e. the WebView's `navigator.languages`
+follows the per-app locale — documented for the app's `LocaleList`, not verified for the WebView). Then pick
+English in the game and confirm it stays English after a restart. The activity handles `locale` in
+`configChanges`, so a per-app language change while the game runs takes effect at the next start (the game does
+not switch language mid-run).
+
 ## Pre-release device checklist (not covered by static tests)
 
 Test on a physical Android 15+ device and emulator/API 36: 412x915 and 915x412,
 foldables 673x841 and 904x1000, back navigation, startup splash, safe-area
 at status/navigation bars, split-screen resize, losing/restoring focus, and
-unfolding without resetting a session, and a backup restore (section above). No device run was performed in this task
+unfolding without resetting a session, a backup restore and the per-app language (sections above). No device run was performed in this task
 environment; passing `test:android-config` is a static guarantee only.
 
 Do **not** add APK, AAB, keystore or Gradle build products to Git.
