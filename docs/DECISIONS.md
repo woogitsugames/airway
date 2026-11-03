@@ -558,3 +558,13 @@ of every chunk. Rejected: one instanced mesh per chunk (~20 more draw calls, ove
 image is pixel-identical (`dev/world.html` shots); `test:quality` proves no visible tree or rock is dropped.
 **Status: in force.**
 
+## D-76 — A save from older sim rules is replayed, not dropped (2026-11-03, Claude, night N7k)
+Until now any change of `RULES_VERSION` (every balance or rules update) silently threw the player's saved flight
+away: "Continue" disappeared without a word. The save keeps the seed and the full command journal (D-13, D-72), so
+`restoreSimDetailed()` in `src/game/save.ts` now re-simulates such a save under the current rules to the saved tick
+(`Sim.replay`, the same path the leaderboard server uses, so a resumed official daily is scored consistently) and
+`loadSavedSim()` writes the result back once, so later launches restore directly. The outcome can differ from the
+old build; a run the new rules already end is not offered, and neither is a save from newer rules, a replay longer
+than 30 game weeks (~1–2 s on desktop) or a current-rules save whose state hash fails (corruption is never "fixed"
+by replay). Commands queued in the saved tick are kept. Rejected: a per-version snapshot migration (one adapter per
+rules change, easy to get wrong); dropping the save (status quo). **Status: in force.**
