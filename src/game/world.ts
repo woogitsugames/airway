@@ -32,6 +32,10 @@ export interface World {
   showMenuBackdrop(): void;
   setCities(cities: readonly CityView[]): void;
   setHubLoad(loads: readonly HubLoadView[]): void;
+  /** [night-10g] Airports closed by the night curfew now: the red-white barrier ring (task 11). */
+  setCurfew(closedIds: readonly string[]): void;
+  /** [night-10g] DEV/QA: airports the renderer draws with the barrier. */
+  curfewDrawn(): number;
   setRoutes(routes: readonly RouteView[], revision: number | string): void;
   setPlanes(previous: readonly PlaneView[], current: readonly PlaneView[]): void;
   preview(model: RoutePreviewModel | null): void;
@@ -206,6 +210,8 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
     },
     setCities: (cities) => renderer.setCities(cities),
     setHubLoad: (loads) => renderer.setHubLoad(loads),
+    setCurfew: (closedIds) => renderer.setCurfew(closedIds), // [night-10g]
+    curfewDrawn: () => renderer.stats().curfewAirports,
     setRoutes: (routes, revision) => renderer.setRoutes(routes, revision),
     setPlanes: (previous, current) => renderer.setPlanes(previous, current),
     preview: (model) => renderer.setRoutePreview(model),

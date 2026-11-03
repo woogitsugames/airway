@@ -28,6 +28,8 @@ export interface RunCity {
   /** [task-38] Aircraft held on the ground for a departure slot, and game minutes to the next slot. */
   readonly slotHeld: number;
   readonly nextSlotMinutes: number;
+  /** [night-10g] Closed by the night curfew right now (no take-offs or landings). */
+  readonly curfewClosed: boolean;
 }
 export interface RunRoute { readonly id: string; readonly cityIds: readonly string[]; readonly aircraft: AircraftType }
 export interface RunPlane {
@@ -178,6 +180,7 @@ export class EndlessRun {
         region: isRegion(view.regionId) ? view.regionId : 'NAM',
         waiting, capacity: view.capacity, hub: view.isHub, jamTicksLeft: view.jamTicksRemaining,
         slotHeld: view.slotHeldPlanes, nextSlotMinutes: view.nextSlotMinutes, // [task-38]
+        curfewClosed: view.curfewClosed, // [night-10g]
       };
     });
   }

@@ -280,12 +280,19 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
   }));
 
   // ---- read-only sync -----------------------------------------------------------------------
+  let lastCurfewKey = '';
   function syncWorld(force = false): void {
     const cities = run.cityList();
     const hubKey = cities.map((city) => city.id + (city.hub ? '*' : '')).join(',');
     if (hubKey !== lastHubKey) {
       lastHubKey = hubKey;
       world.setCities(cities.map((city) => ({ id: city.id, lon: city.lon, lat: city.lat, hub: city.hub })));
+    }
+    // [night-10g] The curfew barrier: rebuilt only when the set of closed airports changes.
+    const curfewKey = cities.filter((city) => city.curfewClosed).map((city) => city.id).join(',');
+    if (curfewKey !== lastCurfewKey) {
+      lastCurfewKey = curfewKey;
+      world.setCurfew(curfewKey ? curfewKey.split(',') : []);
     }
     world.setHubLoad(cities.filter((city) => city.hub)
       .map((city) => ({ id: city.id, used: Math.min(city.waiting.length, city.capacity), cap: city.capacity })));
