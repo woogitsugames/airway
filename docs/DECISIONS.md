@@ -568,3 +568,17 @@ old build; a run the new rules already end is not offered, and neither is a save
 than 30 game weeks (~1–2 s on desktop) or a current-rules save whose state hash fails (corruption is never "fixed"
 by replay). Commands queued in the saved tick are kept. Rejected: a per-version snapshot migration (one adapter per
 rules change, easy to get wrong); dropping the save (status quo). **Status: in force.**
+
+## D-77 — Leaderboard retention 90 days, deletion by e-mail (2026-11-03, owner, Q-02)
+Firestore TTL deletes leaderboard entries after 90 days; deletion requests by e-mail (address in the privacy policy). An in-game
+"delete my entry" button comes after release. **Status: to implement.**
+
+## D-78 — Widebody week-1 strength stays until human playtest (2026-11-03, owner, Q-35)
+No parameter change now; revisit if testers always pick WB-300. **Status: in force.**
+
+## D-79 — Bot session-length target is 10–18 min (2026-11-03, owner, Q-36)
+`test:balance` gate changes from 8–15 to 10–18 min median (the target measures the bot, not a human). Supersedes the range in
+D-40/D-43. **Status: to implement.**
+
+## D-80 — Player picks their airline colour (2026-11-03, owner, Q-26)
+A CVD-checked palette in settings; plane tail fin and livery accents use the airline colour. Separate task. **Status: to implement.**
