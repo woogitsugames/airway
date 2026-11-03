@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- [night-12p] D-124: three r170 renders only through WebGL 2, which the WebView builds on OpenGL ES 3.0.
+         Required, so Google Play hides the game from devices that would show a blank globe. -->
+    <uses-feature android:glEsVersion="0x00030000" android:required="true" />
     <application
         android:allowBackup="true"
         android:fullBackupContent="@xml/backup_rules"

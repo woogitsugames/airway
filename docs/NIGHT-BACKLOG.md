@@ -502,6 +502,12 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       RGB. `test:store-shots` checks size, no alpha, ≤ 15 MB, centre band, dark share ≤ 0.2 and the new PL/EN field
       "Play feature graphic alt text" (≤ 140). Console slot in `docs/store/README.md`, entry in `docs/ASSETS.md`.
 
+- [x] N12p **Play device filter for OpenGL ES 3.0 (R3h, D-124)** — three r170 renders only through WebGL 2, which
+      Android WebView builds on ES 3.0, so the manifest requires `glEsVersion 0x00030000` and Play hides the game from
+      ES 2.0 phones (blank globe). `aapt2 dump badging` of the linked manifest shows `uses-gl-es: '0x30000'`.
+      `test:android-config` check `play-gles3-filter` (one required declaration, three ≥ r163, minSdk ≥ 18).
+      minSdk stays 24 until Q-54 (both A and B include the filter); note in `docs/ANDROID.md`.
+
 ## Research proposals (R-agent)
 Proposals from the research agent (findings and sources: `docs/RESEARCH.md`, sections "R1 — …"). Each item is
 sized for one PR; **Area** says where it lands so the coordinator can route it. Items marked *needs Q-xx* wait for
@@ -685,7 +691,7 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
       ("This device's graphics are not supported", with the device's renderer string) instead of a blank canvas. E2E:
       `WEBGL_lose_context.loseContext()`/`restoreContext()` mid-run → game resumes with the same state hash. **Area:**
       render (`src/render/world.ts`) + UI (`src/game/world.ts`, i18n).
-- [ ] R3h **Play device filter for OpenGL ES 3.0** — Three r170 needs WebGL 2; declare
+- [x] R3h → N12p (filter; the minSdk part still waits for Q-54) **Play device filter for OpenGL ES 3.0** — Three r170 needs WebGL 2; declare
       `<uses-feature android:glEsVersion="0x00030000" android:required="true"/>` so Play hides the game from devices
       that cannot run it, and make `test:android-config` assert it (and the minSdk chosen in Q-54). **Area:** platform
       (`android/app/src/main/AndroidManifest.xml`, `scripts/`). *minSdk part needs Q-54.*
@@ -838,3 +844,4 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
 - 2026-11-03 · N12m budget GPUs start on the low preset (R3f, D-116) · night/12m-gpu-preset · test:quality 95/95 (57 before; on the old quality.ts 19 of the new checks fail and the probe check throws: no `readGpuRenderer`), renderer probe checked in headless Chromium (SwiftShader string read, probe context lost after), test:fast 66/66, build ok; perf:scene not run (it forces `--preset`, SwiftShader is not in the table), e2e/ui:matrix/store:shots not run (SwiftShader keeps the old rule); table not verified on the phones themselves
 - 2026-11-03 · N12n Play feature graphic 1024×500 (R2d, D-117) · night/12n-feature-graphic · store:feature 1/1 (centre luma std 62.1, 506 colours, dark share 0.038, 297,787 bytes; PNG inspected), test:store-shots fields 12 → 14 + feature=1 (fails on the old repo state: no feature graphic, no alt-text field), test:fast 66/66, build ok; store:shots not re-run (store scenes unchanged), e2e/ui:matrix not run (DEV probe only); PNG not byte-identical between runs (SwiftShader)
 - 2026-11-03 · N11h WebGL context loss + no-WebGL-2 page (D-118) · night/11h-webgl-loss · test:fast 67/67 (test:webgl-context 8/8, 4/8 with the wiring reverted), build ok, test:e2e:webgl-context 4/4 (0/4 on the old code); e2e:smoke/ui:matrix not run (game screens unchanged unless the context is lost)
+- 2026-11-03 · N12p Play OpenGL ES 3.0 device filter (R3h, D-124) · night/12p-gles3-filter · test:android-config 23/23 (22/23 on the old manifest), aapt2 link ok + `dump badging` uses-gl-es 0x30000 (android-36, minSdk 24, manifest without resource refs), test:fast 66/66, build ok; minSdk unchanged (Q-54); no Play Console device-catalogue check; e2e/ui:matrix/store:shots not run (no web code changed)

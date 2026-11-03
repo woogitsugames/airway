@@ -92,6 +92,14 @@ const iosLocales = [...(read('ios/App/App/Info.plist').match(/<key>CFBundleLocal
 check('per-app-locale-config', manifest.includes('android:localeConfig="@xml/locales_config"') &&
   localeConfig.includes('<locale-config') && declaredLocales.length === 2 &&
   declaredLocales.join() === gameLanguages.join() && declaredLocales.join() === iosLocales.join());
+// [night-12p] D-124: three r163+ has no WebGL 1 path, and Android WebView's WebGL 2 needs OpenGL ES 3.0, so the
+// manifest declares exactly one required glEsVersion of 0x00030000 (Play device filter). ES 3.0 exists from API 18,
+// so it never conflicts with minSdk; the minSdk itself waits for the owner (Q-54).
+const glEs = [...manifest.matchAll(/<uses-feature\b[^>]*android:glEsVersion="([^"]+)"[^>]*>/g)];
+const threeVersion = JSON.parse(read('package.json')).dependencies?.three ?? '';
+const threeMinor = Number(threeVersion.match(/^\D*0\.(\d+)/)?.[1] ?? NaN);
+check('play-gles3-filter', glEs.length === 1 && Number(glEs[0][1]) === 0x30000 &&
+  /android:required="true"/.test(glEs[0][0]) && threeMinor >= 163 && sdk('minSdkVersion') >= 18);
 const i18nSource = read('src/i18n/index.ts');
 check('in-game-language-wins', /savedLanguage\(\) \?\? deviceLanguage\(\)/.test(i18nSource) && i18nSource.includes('navigator.languages'));
 console.log('SUMMARY test:android-config seed=0xA1A1 checks=' + (passed + failed) + ' passed=' + passed + ' failed=' + failed);
