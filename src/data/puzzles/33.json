@@ -1,0 +1,189 @@
+{
+  "version": 1,
+  "id": "33",
+  "titleKey": "puzzle.33.title",
+  "durationTicks": 8640,
+  "demandSeed": 3833,
+  "startCities": [
+    {
+      "id": "SCL",
+      "continent": "SA",
+      "latitude": -33.4,
+      "longitude": -70.7,
+      "hubCapacity": 180
+    },
+    {
+      "id": "LIM",
+      "continent": "SA",
+      "latitude": -12.0,
+      "longitude": -77.0,
+      "hubCapacity": 60
+    },
+    {
+      "id": "EZE",
+      "continent": "SA",
+      "latitude": -34.6,
+      "longitude": -58.4,
+      "hubCapacity": 60
+    },
+    {
+      "id": "AKL",
+      "continent": "OC",
+      "latitude": -36.8,
+      "longitude": 174.8,
+      "hubCapacity": 120
+    },
+    {
+      "id": "SYD",
+      "continent": "OC",
+      "latitude": -33.9,
+      "longitude": 151.2,
+      "hubCapacity": 80
+    },
+    {
+      "id": "TYO",
+      "continent": "AS",
+      "latitude": 35.7,
+      "longitude": 139.7,
+      "hubCapacity": 150
+    }
+  ],
+  "stock": {
+    "turboprops": 3,
+    "jets": 2,
+    "hubUpgrades": 1
+  },
+  "goal": {
+    "kind": "continents",
+    "targetDelivered": 1017,
+    "continents": 3
+  },
+  "mechanics": [
+    "mct",
+    "transfer"
+  ],
+  "demand": [
+    {
+      "from": "LIM",
+      "to": "SYD",
+      "passengers": 6,
+      "firstTick": 20,
+      "everyTicks": 180
+    },
+    {
+      "from": "EZE",
+      "to": "SYD",
+      "passengers": 6,
+      "firstTick": 40,
+      "everyTicks": 180
+    },
+    {
+      "from": "SCL",
+      "to": "SYD",
+      "passengers": 8,
+      "firstTick": 60,
+      "everyTicks": 180
+    },
+    {
+      "from": "SYD",
+      "to": "TYO",
+      "passengers": 10,
+      "firstTick": 80,
+      "everyTicks": 180
+    }
+  ],
+  "availableRoutes": [
+    {
+      "from": "SCL",
+      "to": "LIM",
+      "plane": "turboprop",
+      "flightTicks": 308,
+      "intervalTicks": 120
+    },
+    {
+      "from": "SCL",
+      "to": "EZE",
+      "plane": "turboprop",
+      "flightTicks": 143,
+      "intervalTicks": 120
+    },
+    {
+      "from": "AKL",
+      "to": "SYD",
+      "plane": "turboprop",
+      "flightTicks": 270,
+      "intervalTicks": 120
+    },
+    {
+      "from": "LIM",
+      "to": "EZE",
+      "plane": "jet",
+      "flightTicks": 225,
+      "intervalTicks": 120
+    },
+    {
+      "from": "SCL",
+      "to": "AKL",
+      "plane": "jet",
+      "flightTicks": 691,
+      "intervalTicks": 120
+    },
+    {
+      "from": "EZE",
+      "to": "AKL",
+      "plane": "jet",
+      "flightTicks": 740,
+      "intervalTicks": 120
+    },
+    {
+      "from": "AKL",
+      "to": "TYO",
+      "plane": "jet",
+      "flightTicks": 632,
+      "intervalTicks": 120
+    },
+    {
+      "from": "SYD",
+      "to": "TYO",
+      "plane": "jet",
+      "flightTicks": 560,
+      "intervalTicks": 120
+    }
+  ],
+  "referenceCommands": [
+    {
+      "type": "connect",
+      "from": "SCL",
+      "to": "LIM",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "SCL",
+      "to": "EZE",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "AKL",
+      "to": "SYD",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "SCL",
+      "to": "AKL",
+      "plane": "jet"
+    },
+    {
+      "type": "connect",
+      "from": "AKL",
+      "to": "TYO",
+      "plane": "jet"
+    },
+    {
+      "type": "upgradeHub",
+      "city": "AKL"
+    }
+  ]
+}

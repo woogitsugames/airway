@@ -895,7 +895,7 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
       (with R2f; Polish): the T / T+4 / T+8 / T+12 weeks table from RESEARCH R6, one new mechanic per update with its
       teaching puzzles, and draft PL/EN texts for an Apple In-App Event (name ≤ 30, short ≤ 50, long ≤ 120 chars) and
       a Play "Major update" promotion (28 days, submit ≤ 60 days ahead, unique art). **Area:** docs. *Needs Q-64.*
-- [ ] R6h **Puzzle pack 31–35 "Long haul"** (then 36–40 in a second PR) — five levels outside Europe that teach
+- [x] R6h → ext/02 (31–35; 36–40 open, Q-74) **Puzzle pack 31–35 "Long haul"** (then 36–40 in a second PR) — five levels outside Europe that teach
       widebody range and ocean legs with today's rules only (no new mechanic tags): start cities in the Pacific /
       South Atlantic, stock with 1–2 widebodies, a `continents` goal in the last one. Each with `referenceCommands`,
       PL/EN titles, `test:puzzles` green, shots. **Area:** content (`src/data/puzzles/**`, i18n). *Needs Q-64; after R6f.*

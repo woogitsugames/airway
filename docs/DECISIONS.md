@@ -1046,3 +1046,26 @@ widebodies among them, `mechanics` tags plus what the run actually met (minutes 
 reference result with stars, margin over the target and the ★★ (+15 %) / ★★★ (+30 %) thresholds in passengers.
 `-- --from NN` limits it to one pack, `-- --json` prints the rows. Developer tool only; nothing in the game reads it.
 **Status: in force (ext/01).**
+
+## D-162 — Puzzle packs: `packs.ts` and a pack header on the departures board (2026-11-03, Claude, ext/02)
+R6h / D-131 (owner, Q-64 → A, recorded on `night/11k-clean-gameover`, not yet on `dev`): levels after 30 come in
+packs. `src/data/puzzles/packs.ts` lists each pack's first level and name key (`longHaul` from 31); a pack runs to
+the next pack or the last level. The puzzle board draws one non-interactive row above the pack's first flap — "Pack:
+Long haul · 5 puzzles" / "Paczka: Daleki zasięg · 5 zadań" (`puzzle.pack.line`, plural `{count|…}`), printed in the
+board's yellow mono on black, wrapping inside the list (checked at 320×568 by `test:e2e:screens-fit-320`). No new
+mechanic tag: the long-haul lesson (widebody range, ocean legs) is in the levels themselves; `test:puzzles` checks
+that the pack starts outside Europe, uses a widebody leg beyond turboprop range and offers no out-of-range strip.
+**Status: in force (ext/02); whether the pack ships at launch or waits for T+4 is Q-74.**
+
+## D-163 — "Long haul" 31–35: a steeper curve built with a network search (2026-11-03, Claude, ext/02)
+Five levels outside Europe, each two 3-day weeks (8 640 ticks, 14:24 at 1×), designed with an exhaustive search over
+every network the stock allows (all strip subsets × hub-upgrade choices) on the real Sim:
+31 Islands to Los Angeles (Auckland feeder star, one widebody, Suva wave in week 2; 1 of 59 networks clears it),
+32 South Atlantic by night (São Paulo under curfew must not be the hub; 2 of 65), 33 Santiago to Sydney (Santiago–Sydney
+is beyond widebody range, Auckland transfers, 3 continents; 9 of 327 avoid a jam), 34 Dusk over Africa (four
+turboprop spokes queue for Singapore's slots, Johannesburg under curfew, Perth needs its own widebody; 8 of 1 253),
+35 Around the world (5 continents, Sydney curfew, week-2 waves, Buenos Aires reached westwards via Singapore and
+Johannesburg, and the single hub upgrade must go to Sydney; 1 of 1 525 networks × 1 of 5 upgrade choices). Targets
+give the reference +16 % (31–33) and +15 % (34–35), below 26–30 (+17…18 %). `test:long-haul` pins the curve and one
+tempting decoy per level that must lose. Titles are short enough not to break words on the 320 px board.
+**Status: in force; difficulty is a proposal for the owner to playtest (as D-70).**
