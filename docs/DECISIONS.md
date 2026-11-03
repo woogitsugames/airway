@@ -998,3 +998,30 @@ concatenation prefix (`privacy.s${n}`, `'settings.airline.' + id`); on the old c
 Kept: `SIM_TICK_MS` and `DAYNIGHT_PARAMS_VERSION` (versioned simulation parameters, documentation of the rules).
 **Status: in force (N12q).**
 
+
+## D-145 — Plural form from the number, read with the language's own separators (2026-11-03, Claude, night N12s)
+R7e: callers pass counts already formatted by `localNumber`, and the plural reader took "." as a decimal point, so
+with German/Spanish/Brazilian grouping "1.000" picked the singular ("1.000 Passagier"), pt-BR "1.500" read as 1.5,
+and "1.000.000" was NaN, which leaked the raw `{n|…}` token. Of 24 fake de/pt-BR/es/fr cases (0, 1, 2, 1 000,
+1 500, 1 000 000) the old reader got 6 wrong. The reader is now `parseLocalNumber(text, locale)`
+(`src/core/format.ts`): it takes the group and decimal symbols from `Intl.NumberFormat#formatToParts` of the same
+locale that formatted the number, treats every space as a group separator, and returns NaN for anything else (codes,
+seeds), which keeps the token as before. Numeric params are used as they are. `fillPluralTokens` and `pluralFormIn`
+take a locale and form order, so tests cover languages not shipped yet; PL/EN output is unchanged. Rejected: making
+every caller pass raw numbers (touches ~10 UI call sites owned by the screens and still needs the string path for
+`dailyRow`-style pre-formatted text). Limit: a pre-formatted string must come from the active language's formatter;
+"1.5" handed to a German catalog reads as 15. **Status: in force (N12s).**
+
+## D-146 — No U+202F in numbers, borrowed arrow for the body font, glyph coverage test (2026-11-03, Claude, night N12s)
+R7g: Atkinson Hyperlegible Next (body font, 362-glyph subset) has neither U+202F (narrow no-break space, Intl fr-FR's
+thousands separator) nor U+2192 "→", which the upgrade card sets in body text ("{from} → {to} min"); the browser
+then takes the glyph from a system font. `formatNumberIn` replaces U+202F with U+00A0 (same no-break, present in every
+face), and `src/ui/fonts.css` gives the Atkinson family the arrow from the already shipped Overpass 400/800 through
+`unicode-range: U+2192` (the same mechanism as the Overpass middle dot, task-37). New fast `test:glyphs` parses each
+TTF `cmap` (formats 4/12, `scripts/lib/ttf-cmap.mjs`, no dependency) plus the borrowed ranges and fails when any face
+lacks a code point of the PL/EN catalogs, city/region names, numbers formatted for pl/en/de/fr/es/pt-BR, or the
+PL/EN/DE/FR/ES/PT-BR letter set; soft hyphens and zero-width characters are exempt. It checks every face for every
+string (stricter than the real CSS mapping) so a key may move between faces freely. Rejected: subsetting a new
+Atkinson file with U+202F/U+2192 (a rebuilt font file and licence trail for two glyphs). Not covered: French
+typography's narrow space before ": ; ! ?" in future catalogs, which a translator must write as U+00A0 — the test
+will fail on U+202F. **Status: in force (N12s).**

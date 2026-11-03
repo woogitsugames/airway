@@ -538,6 +538,13 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       open. Owner decisions recorded: D-134 (Q-65 A terms + Apple EULA, lawyer review; Q-66 A trader in both stores),
       D-135 (Q-68 A legitimate interest, no age gate, leaderboard toggle R7l), D-136 (Q-67 A, Q-69 A, Q-70 A). Own
       N12q decisions renumbered D-134/D-135 → D-143/D-144.
+- [x] N12s **Plural form from the number, no U+202F, glyph coverage test (R7e, R7g; D-145, D-146)** — the plural reader
+      took "." as a decimal point, so de/es/pt-BR "1.000" picked the singular and "1.000.000" leaked the token; it now
+      reads pre-formatted counts with the active locale's own separators (`parseLocalNumber`, `fillPluralTokens`,
+      `pluralFormIn`). `formatNumberIn` maps fr-FR's U+202F to U+00A0; Atkinson text borrows "→" (missing from the
+      362-glyph subset, used on the upgrade card) from Overpass via `unicode-range`. New fast `test:glyphs` reads every
+      TTF `cmap` + borrowed ranges against the PL/EN catalogs, city/region names, numbers in six locales and the
+      PL/EN/DE/FR/ES/PT-BR letter set. PL/EN output unchanged.
 
 ## Research proposals (R-agent)
 Proposals from the research agent (findings and sources: `docs/RESEARCH.md`, sections "R1 — …"). Each item is
@@ -926,7 +933,7 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
       and `getBoards` calls; when off, the daily report says the run is not ranked; queued submissions are dropped
       when it is turned off. Gives the GDPR art. 21 objection a one-tap path. `test:net`, settings e2e.
       **Area:** `src/net/**`, `src/ui/settings/**`, `src/ui/daily/**`, i18n. *Needs Q-68 (A).*
-- [ ] R7e **Plural form from the raw number** — `pluralValue` reads formatted strings and treats "." as a decimal
+- [x] R7e → N12s **Plural form from the raw number** — `pluralValue` reads formatted strings and treats "." as a decimal
       point, so with DE/ES/PT-BR grouping "1.000" picks `one` ("1.000 Passagier") and PT-BR "1.500" → 1.5 → `one`.
       Let callers pass numbers (format inside `t()`), or parse with the active locale's group/decimal symbols from
       `Intl.NumberFormat#formatToParts`. `test:i18n` cases with fake de/pt-BR catalogs for 0, 1, 2, 1 000, 1 500,
@@ -938,7 +945,7 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
       `test:android-config`). `test:i18n` checks every catalog: same keys, same `{param}` set, plural tokens have
       the category count of their language. Only PL/EN enabled until the translations exist.
       **Area:** `src/i18n/**`, `src/core/format.ts`, `src/ui/settings/**`, `src/ui/airportLabel.ts`, scripts.
-- [ ] R7g **Glyph coverage test + French narrow space** — Atkinson Hyperlegible Next (body font, 362-glyph subset)
+- [x] R7g → N12s **Glyph coverage test + French narrow space** — Atkinson Hyperlegible Next (body font, 362-glyph subset)
       lacks U+202F, which `Intl` fr-FR uses as the thousands separator. Map U+202F → U+00A0 in `formatNumber`, and
       add fast `test:glyphs` (reads the TTF `cmap` with a tiny parser, no new dependency) that fails when any catalog
       string or city name uses a code point missing from the font that renders it. **Area:** `src/core/format.ts`,
@@ -1060,3 +1067,4 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
 - 2026-11-03 · N11j pause-summary e2e under rules v5 + old-rules save notice (D-130), owner D-128/D-129 · night/11j-pause-summary-v4-save · test:e2e:pause-summary 4/4 (0/4 on origin/dev), test:save-golden 21/21 (20/21 on the old code), test:e2e:save-notice 6/6 (4/6 on the old code), test:fast 67/67, build ok; e2e:smoke/ui:matrix not run (no layout change)
 - 2026-11-03 · N12q bundle budget + dead code/unused keys + minSdk 29 (R5k, R5i, Q-54 → B; D-133, D-143, D-144) · night/12q-bundle-guard · test:bundle 9/9 (main 1,034.1 kB / gzip 306.4 kB, CSS 70.2 kB, dist 1,805.1 kB), test:bundle:static 5/5 (4/5 on the old platform code: `@capacitor/core` mixed import; Vite warning gone), test:i18n keys 424 → 409 (15 unused keys on the old catalogs, 2 with the old a11y.ts), test:android-config 23/23 (21/23 on minSdk 24), aapt2 link + `dump badging` minSdkVersion 29 / uses-gl-es 0x30000, test:fast 68/68, build ok; e2e/ui:matrix/store:shots not run (no screen changed); no Gradle build, no device
 - 2026-11-03 · N12r route snap haptic inside a native selection (R6d, D-137) + owner D-134…D-136, own N12q decisions → D-143/D-144 · night/12r-snap-haptic · test:haptics 9/9 (4/9 on the old driver: no selection start/end, a lone snap only `selectionChanged`), test:route-tool 18/18 (16/18 on the old tool), test:fast 68/68, build ok, test:bundle 9/9 (main 1,034.5 kB / gzip 306.5 kB); e2e/ui:matrix/store:shots not run (no visual change); no Android/iPhone vibration check
+- 2026-11-03 · N12s plural form from the number + no U+202F + glyph coverage (R7e, R7g; D-145, D-146) · night/12s-plural-glyphs · test:format 16/16 (+3; on the old reader 6/24 fake de/pt-BR/es/fr cases wrong: 3 singulars, 3 leaked tokens; on old code the file fails to import `formatNumberIn`/`parseLocalNumber`/`fillPluralTokens`), test:glyphs 12/12 (new; 10/12 with dev's fonts.css: "→" missing from Atkinson 400/700 in `route.atc.distance` and `upgrade.value.transfer`, PL and EN), test:fast 69/69, build ok (main 1,035.0 kB / gzip 307.4 kB), test:e2e:pseudo-locale 27/27 (fonts.css changed); ui:matrix/store:shots not run; arrow not compared on a phone WebView
