@@ -357,6 +357,15 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       URL until D-67; the leaderboard section of the policy waits for Q-56. The licences row got a test id
       (`e2e/covered-pages.mjs` clicked "the last Help button", which is now the privacy row). `e2e/privacy-page.mjs` (`test:e2e:privacy-page`, in `test:ci`; 0/4 on the old settings).
 
+- [x] N11f **One tip on the game-over report (R1j, D-87)** — the report said why the network closed but not what to
+      change. In the player's first 10 logged flights it now ends the causes with one "TIP / WSKAZÓWKA" line chosen by
+      the leading cause (hub overflow → "Expand hub" or a second hub, regional demand → a route to that region, no
+      route → a route for every region, seats → a second aircraft or a widebody, transfers → "Expand hub", slot wait →
+      "Departure slots"); none in puzzles, none at an unserved airport (the N11b hint says it), the Timeline tab hides
+      it. Short portrait phones and short landscape keep only the leading cause with the tip (the report scrolled
+      48–64 px otherwise). Pure `src/game/gameoverTip.ts` + `test:gameover-tip` (in `test:fast`), DEV preview shows the
+      tip, `e2e/gameover-tip.mjs` (`test:e2e:gameover-tip`, in `test:ci`; 1/4 on the old report).
+
 ## Continuous development round N12 (agent 2)
 - [x] N12a **Balance bot plays for reach (D-90)** — the handover gap "the DEV bot rarely connects new airports; long
       plays end in weeks 1–3": measured, 34 of 44 bot game overs (50 seeds) were at an airport no route served, 20 of
@@ -436,7 +445,7 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
       Without Color Alone, Sufficient Contrast, Reduced Motion after R1h) the common tasks checked, the tests that
       prove it (`test:cvd`, contrast tokens, screenshots) and what we do **not** claim (VoiceOver, Larger Text, Dark
       Interface) with the reason; short PL/EN accessibility paragraph for the store descriptions. **Area:** `docs/store/`.
-- [ ] R1j **One tip on the game-over report** — the report says why the network closed but not what to change.
+- [x] R1j → N11f **One tip on the game-over report** — the report says why the network closed but not what to change.
       Map each cause from the ledger to one matter-of-fact tip (hub overflow → hub expansion or a second hub; region
       without a route → connect it; slot wait → "+2 slots" or spread departures; unserved airport → route to it),
       shown as one line under the cause, only in the player's first ~10 runs (count from the logbook), never during

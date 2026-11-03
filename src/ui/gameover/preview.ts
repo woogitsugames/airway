@@ -21,7 +21,7 @@ export function mountGameOverPreview(host: HTMLElement): void {
   });
   void controller.show({
     seed, initialHash: 'preview-seed-' + seed, hubId: 'LIS', hubCode: 'LIS',
-    delivered: 1184, completedWeeks: 6,
+    delivered: 1184, completedWeeks: 6, tip: true, // [night-11f] worst case: three causes and a tip
     ledger: {
       waiting: 100, capacity: 100, waitingByRegion: { NAM: 62, EUN: 18, AFR: 20 },
       seatsUnavailable: 28, congestedSeconds: 45,

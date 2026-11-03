@@ -208,6 +208,14 @@ export const en = {
   'gameover.cause.congestionDuration': 'The hub remained congested for {seconds} {seconds|second|seconds}.',
   'gameover.cause.slotWait': 'Aircraft waited {minutes} {minutes|minute|minutes} on the ground for a departure slot.',
   'gameover.cause.unavailable': 'There is not enough recorded data to identify another cause.',
+  // [night-11f] One tip under the causes in the first flights (src/game/gameoverTip.ts).
+  'gameover.tip.label': 'TIP',
+  'gameover.tip.hubOverflow': 'Next time: take the “Expand hub” upgrade, or give a nearby airport a second route so it becomes a hub and shares the load.',
+  'gameover.tip.region': 'Next time: add a route to {region}, or more aircraft on the route that goes there.',
+  'gameover.tip.noRoute': 'Next time: give every region a route, so no passenger is left without a flight.',
+  'gameover.tip.seats': 'Next time: put a second aircraft on the busiest route, or a widebody for more seats.',
+  'gameover.tip.transfer': 'Next time: take the “Expand hub” upgrade: it also shortens the minimum transfer time.',
+  'gameover.tip.slotWait': 'Next time: take the “Departure slots” upgrade, or move some routes to another airport.',
   // [task-16] Save/load issues are translated by the composition root.
   'save.error.corrupt': 'The saved flight is damaged and cannot be continued.', // [night-10c] menu notice
   'save.error.unsupported': 'The saved flight comes from a newer version of Airway. Update the game to continue it.',

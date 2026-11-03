@@ -209,6 +209,14 @@ export const pl = {
   'gameover.cause.congestionDuration': 'Zator utrzymywał się przez {seconds} {seconds|sekundę|sekundy|sekund}.',
   'gameover.cause.slotWait': 'Samoloty czekały na ziemi {minutes} min na slot startowy.',
   'gameover.cause.unavailable': 'Brakuje danych, aby wskazać kolejną przyczynę.',
+  // [night-11f] One tip under the causes in the first flights (src/game/gameoverTip.ts).
+  'gameover.tip.label': 'WSKAZÓWKA',
+  'gameover.tip.hubOverflow': 'Następnym razem: weź ulepszenie „Rozbudowa huba” albo daj pobliskiemu lotnisku drugą trasę, żeby jako hub przejęło część ruchu.',
+  'gameover.tip.region': 'Następnym razem: dodaj trasę do {region} albo więcej samolotów na trasie, która tam leci.',
+  'gameover.tip.noRoute': 'Następnym razem: daj każdemu regionowi trasę, żeby żaden pasażer nie został bez lotu.',
+  'gameover.tip.seats': 'Następnym razem: dołóż drugi samolot na najbardziej obłożoną trasę albo szerokokadłubowiec, który ma więcej miejsc.',
+  'gameover.tip.transfer': 'Następnym razem: weź ulepszenie „Rozbudowa huba” — skraca też minimalny czas przesiadki.',
+  'gameover.tip.slotWait': 'Następnym razem: weź ulepszenie „Sloty startowe” albo przenieś część tras na inne lotnisko.',
   // [task-16] Save/load issue messages.
   'save.error.corrupt': 'Zapisany lot jest uszkodzony i nie da się go kontynuować.', // [night-10c] menu notice
   'save.error.unsupported': 'Zapisany lot pochodzi z nowszej wersji Airway. Zaktualizuj grę, aby go kontynuować.',

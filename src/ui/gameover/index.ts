@@ -4,6 +4,7 @@ import { localNumber, t, type TranslationKey } from '../../i18n';
 import { nextWorldSeed, sameWorldIdentity, type WorldIdentity } from './seed';
 import { persistBestRecord, type BestStorage } from './storage';
 import type { TimelineWeek } from '../../game/runTimeline';
+import { gameOverTip, type GameOverTip, type TipKind } from '../../game/gameoverTip';
 import './gameover.css';
 
 export type { WorldIdentity } from './seed';
@@ -29,6 +30,8 @@ export interface GameOverSnapshot extends WorldIdentity {
   readonly share?: () => Promise<{ readonly status: 'shared' | 'copied' | 'unavailable' | 'failed'; readonly text: string }>;
   /** [night-10r] What the player did each week, re-read from the command journal on demand (src/game/runTimeline.ts). */
   readonly timeline?: () => Promise<RunTimeline | null>;
+  /** [night-11f] Show one tip from the leading cause (the player's first flights, src/game/gameoverTip.ts). */
+  readonly tip?: boolean;
 }
 
 /** [night-10r] Weeks of the run plus the day of the jam; hub ids in picks are already display labels. */
@@ -93,6 +96,25 @@ function element<K extends keyof HTMLElementTagNameMap>(
   node.className = className;
   if (text !== undefined) node.textContent = text;
   return node;
+}
+
+const TIP_KEYS: Record<TipKind, TranslationKey> = {
+  'hub-overflow': 'gameover.tip.hubOverflow',
+  'region': 'gameover.tip.region',
+  'no-route': 'gameover.tip.noRoute',
+  'seats': 'gameover.tip.seats',
+  'transfer': 'gameover.tip.transfer',
+  'slot-wait': 'gameover.tip.slotWait',
+};
+
+/** [night-11f] One line under the causes: a kicker and what to try next time. */
+function tipLine(tip: GameOverTip): HTMLElement {
+  const line = element('p', 'airway-go-tip');
+  line.dataset.testid = 'gameover-tip';
+  line.dataset.tip = tip.kind;
+  line.append(element('span', 'airway-go-tip-label', t('gameover.tip.label')),
+    document.createTextNode(' ' + t(TIP_KEYS[tip.kind], tip.region ? { region: t(REGION_KEYS[tip.region]) } : {})));
+  return line;
 }
 
 function causeText(fact: CauseFact): string {
@@ -296,13 +318,21 @@ function buildDialog(
   );
   const causesTitle = element('h3', 'airway-go-causes-title', t('gameover.causes'));
   const causesList = element('ol', 'airway-go-causes');
-  for (const fact of buildCauseReport(snapshot.ledger)) {
+  const facts = buildCauseReport(snapshot.ledger);
+  for (const fact of facts) {
     causesList.append(element('li', '', causeText(fact)));
+  }
+  // [night-11f] The tip sits in the causes panel, so the Timeline tab hides it with the causes.
+  const tip = snapshot.tip ? gameOverTip(facts, { unserved: departing.length === 0 }) : null;
+  let causesPanel: HTMLElement = causesList;
+  if (tip) {
+    causesPanel = element('div', 'airway-go-causes-panel');
+    causesPanel.append(causesList, tipLine(tip));
   }
   strip.append(stripHeader, scoreRow);
   if (snapshot.share) strip.append(shareRow(snapshot.share));
-  if (snapshot.timeline) strip.append(...reportTabs(causesList, snapshot.timeline, snapshot.hubCode));
-  else strip.append(causesTitle, causesList);
+  if (snapshot.timeline) strip.append(...reportTabs(causesPanel, snapshot.timeline, snapshot.hubCode));
+  else strip.append(causesTitle, causesPanel);
   if (isNewRecord) strip.append(element('p', 'airway-go-record', t('gameover.newRecord')));
 
   const actions = element('nav', 'airway-go-actions');
