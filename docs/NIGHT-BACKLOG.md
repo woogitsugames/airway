@@ -387,6 +387,13 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       ("This device's graphics are not supported" + the renderer string for a support mail) instead of a blank sky.
       `test:webgl-context` (in `test:fast`, 4/8 with the wiring reverted), `e2e/webgl-context.mjs`
       (`test:e2e:webgl-context`, in `test:ci`, 0/4 on the old code), shots `docs/shots/n11h/`.
+- [x] N11i **Pause when the window loses focus (D-99 / Q-59 → B, D-119)** — in split screen or a floating window the
+      page stays visible, so the run kept going (and a hub could jam) while the player typed in the other app.
+      `GameLifecycle` now treats a window `blur` like a hidden tab: pause sheet + save, the globe keeps drawing; focus
+      coming back leaves the sheet up until the player taps Resume. One pause and one save for blur + hidden, focus
+      while hidden ignored. The lifecycle hooks pause only the `game` screen (the upgrade picker is not covered).
+      `test:saves` +2 cases (11/13 on the old code), `e2e/focus-pause.mjs` (`test:e2e:focus-pause`, in `test:ci`,
+      1/3 on the old code), shots `docs/shots/n11i/`.
 
 ## Continuous development round N12 (agent 2)
 - [x] N12a **Balance bot plays for reach (D-90)** — the handover gap "the DEV bot rarely connects new airports; long
@@ -736,7 +743,7 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
 - [ ] R4g **Keyboard and mouse basics** — Space pause/resume, 1/2/3 game speed, +/- zoom, existing Escape/Back;
       `@media (hover: hover)` hover state on HUD buttons and airports; no browser context menu on right-click over the
       globe; shortcuts listed in settings → help (PL/EN). E2E with Playwright keyboard. **Area:** input/UI
-      (`src/input/`, `src/ui/`, CSS, i18n). Auto-pause on focus loss *needs Q-59*.
+      (`src/input/`, `src/ui/`, CSS, i18n). Auto-pause on focus loss done in N11i (D-99, D-119).
 
 ## Log
 <!-- one line per finished item: date UTC · item · PR · gate summary -->
