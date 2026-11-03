@@ -26,6 +26,11 @@ export interface AirportOverlayOptions {
   radius?: number;
   reservedTop?: number;
   reservedBottom?: number;
+  /**
+   * [night-08b] Live HUD clearance (read every frame, so return a reused object): overrides reservedTop/Bottom
+   * and adds a right band, for the landscape tag dock that edge buttons must not cover.
+   */
+  reserved?: () => { readonly top: number; readonly bottom: number; readonly right: number };
   globeTransform?: Object3D;
   onNavigate?: (id: string) => void;
   /** The render facade's projection (WorldRenderer.project; altitude is a radius); preferred over the local fallback. */
@@ -143,6 +148,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
   const toCamera = new Vector3();
   const projected = { x: 0, y: 0, visible: false };
   const bounds: TagBounds = { width: host.clientWidth, height: host.clientHeight, top: 0, bottom: 0, gap: 4 };
+  let reservedRight = 0; // [night-08b] edge buttons only; tag layout keeps using `bounds`
   const radius = options.radius ?? 1;
   let disposed = false;
   let width = Math.max(1, host.clientWidth);
@@ -212,13 +218,15 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
 
   function edgeLayout(entry: BubbleEntry, dx: number, dy: number): void {
     const left = EDGE_PAD + EDGE_WIDTH / 2;
-    const right = width - left;
+    const right = width - reservedRight - left;
     const top = bounds.top + EDGE_PAD + EDGE_HEIGHT / 2;
     const bottom = height - bounds.bottom - EDGE_PAD - EDGE_HEIGHT / 2;
-    let x = width / 2;
+    // [night-08b] The horizontal centre of the free band (width / 2 without a right reservation).
+    const centreX = (left + right) / 2;
+    let x = centreX;
     let y = (top + bottom) / 2;
     if (dx === 0 && dy === 0) dx = entry.airport.lon >= 0 ? 1 : -1;
-    const halfW = Math.max(1, right - width / 2);
+    const halfW = Math.max(1, right - centreX);
     const halfH = Math.max(1, (bottom - top) / 2);
     const factor = Math.min(dx ? halfW / Math.abs(dx) : Infinity, dy ? halfH / Math.abs(dy) : Infinity);
     x = Math.max(left, Math.min(right, x + dx * factor));
@@ -237,7 +245,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       const vertical = entry.edgeSide < 2;
       const start = vertical ? entry.edgeY : entry.edgeX;
       const min = vertical ? bounds.top + EDGE_PAD : EDGE_PAD;
-      const max = vertical ? height - bounds.bottom - EDGE_HEIGHT - EDGE_PAD : width - EDGE_WIDTH - EDGE_PAD;
+      const max = vertical ? height - bounds.bottom - EDGE_HEIGHT - EDGE_PAD : width - reservedRight - EDGE_WIDTH - EDGE_PAD;
       const step = (vertical ? EDGE_HEIGHT : EDGE_WIDTH) + 3;
       entry.edgePlaced = false;
       for (let offset = 0; offset <= entries.length; offset++) {
@@ -349,8 +357,10 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       if (transform) transform.updateWorldMatrix(true, false);
       bounds.width = width;
       bounds.height = height;
-      bounds.top = options.reservedTop ?? 72;
-      bounds.bottom = options.reservedBottom ?? 92;
+      const live = options.reserved?.();
+      bounds.top = live ? live.top : options.reservedTop ?? 72;
+      bounds.bottom = live ? live.bottom : options.reservedBottom ?? 92;
+      reservedRight = live ? live.right : 0;
       for (const entry of entries) {
         marker.copy(entry.anchor);
         transformedNormal.copy(entry.normal);

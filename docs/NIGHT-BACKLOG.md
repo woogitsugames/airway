@@ -127,8 +127,10 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       `e2e/continue-framing.mjs` (`test:e2e:continue-framing`, in `test:ci`).
 - [ ] N8a **Store shots after N7w** — the better bot grows a different network, so `store:shots` no longer matches
       the committed PNGs; re-render, inspect the contact sheet, commit.
-- [ ] N8b **Edge arrows over the dock** — at 841×673 (fold rotated) the off-screen airport arrows in the right
-      column sit on top of the dock tags; keep them clear of the dock.
+- [x] N8b **Edge buttons clear of the landscape dock** — in every landscape size the off-screen airport buttons of
+      the right column sat on the dock tags (the overlay reserved only top/bottom bands, the portrait layout). The
+      overlay takes a live reservation; landscape reserves a 96 px right band. New `e2e/edge-dock.mjs`
+      (`test:e2e:edge-dock`, in `test:ci`).
 - [x] N8c **Weekly board fits short phones** — at 360×640 the third crate sat half below the screen (overlay
       scrolled 51–111 px, 320×568: 190–232 px). Short portrait (≤ 719 × ≤ 760 px) gets a compact board: smaller
       model window (wider text column, fewer wraps), tighter gaps. 360×640 fits, 320×568 scrolls ≤ 19 px. New
@@ -173,3 +175,4 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
 - 2026-11-03 · N7z opening camera frames a cluster · night/07z-framing · test:fast 50/50, build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:daily-continue 7/7, e2e:upgrade-picks 10/10, e2e:pick-sign 10/10, e2e:tutorial 21/21, test:hud-targets 300/300, test:framing 4/4, test:e2e:continue-framing 2/2 (1/2 on the old framing), store:shots 30/30 (PNG drift from N7w left for N8a)
 - 2026-11-03 · N7y long play-throughs round 2 (4 × 21 min) · found N7z, N8b, N8c · no code
 - 2026-11-03 · N8c weekly board fits short phones · night/08c-board-short · test:fast 50/50, build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:upgrade-picks 10/10, e2e:pick-sign 10/10, e2e:tutorial 21/21, test:hud-targets 300/300, e2e:screens-fit 18/18, test:e2e:board-short 4/4 (0/4 on the old CSS)
+- 2026-11-03 · N8b edge buttons clear of the landscape dock · night/08b-edge-arrows · test:fast 50/50, build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:tutorial 21/21, test:hud-targets 300/300, e2e:upgrade-picks 10/10, e2e:continue-framing 2/2, shots airports 4/4, test:e2e:edge-dock 3/3 (1/3 on the old overlay)
