@@ -25,7 +25,6 @@ export const en = {
   'route.menu.remove': 'Remove',
   'route.menu.shorten': 'Shorten',
   'route.menu.cancel': 'Cancel',
-  'route.undo': 'Undo last route change',
   // [task-13] Airport-object HUD labels and accessible control descriptions.
   'hud.boardingPass': 'Boarding pass',
   'hud.dock': 'Luggage-tag controls',
@@ -94,6 +93,10 @@ export const en = {
   'menu.dailyHint': 'same world for everyone',
   'settings.language': 'Language',
   'settings.graphics': 'Graphics quality',
+  // [night-05] D-68 airport label setting.
+  'settings.airportLabels': 'Airports',
+  'settings.airportLabels.code': 'Code',
+  'settings.airportLabels.name': 'City name',
   'settings.auto': 'Automatic',
   'settings.low': 'Low',
   'settings.medium': 'Medium',

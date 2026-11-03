@@ -26,7 +26,6 @@ export const pl = {
   'route.menu.remove': 'Usuń',
   'route.menu.shorten': 'Skróć',
   'route.menu.cancel': 'Anuluj',
-  'route.undo': 'Cofnij ostatnią zmianę trasy',
   // [task-13] Airport-object HUD labels and accessible control descriptions.
   'hud.boardingPass': 'Karta pokładowa',
   'hud.dock': 'Sterowanie przywieszkami bagażowymi',
@@ -95,6 +94,10 @@ export const pl = {
   'menu.dailyHint': 'ten sam świat dla wszystkich',
   'settings.language': 'Język',
   'settings.graphics': 'Jakość grafiki',
+  // [night-05] D-68 airport label setting.
+  'settings.airportLabels': 'Lotniska',
+  'settings.airportLabels.code': 'Kod',
+  'settings.airportLabels.name': 'Nazwa miasta',
   'settings.auto': 'Automatyczna',
   'settings.low': 'Niska',
   'settings.medium': 'Średnia',

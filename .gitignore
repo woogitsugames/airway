@@ -30,3 +30,10 @@ GoogleService-Info.plist
 # Browser QA scratch output (failure screenshots, harness-only fixture captures)
 .e2e/
 docs/shots/matrix-fixture/
+
+# [night-06b] Firebase local files
+.firebaserc
+firebase-debug*.log
+firestore-debug.log
+functions/node_modules/
+functions/lib/

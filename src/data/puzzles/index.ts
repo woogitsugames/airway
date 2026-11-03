@@ -78,6 +78,3 @@ export const PUZZLES: readonly PuzzleLevel[] = [
   level21, level22, level23, level24, level25,
   level26, level27, level28, level29, level30,
 ] as unknown as readonly PuzzleLevel[];
-export function getPuzzle(id: string): PuzzleLevel | undefined {
-  return PUZZLES.find((level) => level.id === id);
-}

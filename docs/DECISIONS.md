@@ -492,7 +492,10 @@ Publish together with the store pre-registration, after the device test. **Statu
 
 ## D-68 — Hub stamp shows code or city name per player setting (2026-11-03, owner)
 Settings toggle "Lotniska: kod / nazwa" (default: code). Applies to hub stamp and other airport labels that have room.
-**Status: to implement.**
+**Status: in force (night N5).** Implemented in `src/ui/airportLabel.ts` (setting `airportLabels` in `airway.settings`):
+the weekly card's hub and slot stamps, the hub/airport pick pressure labels and the game-over departures title use the
+PL/EN city name from `src/data/cities.ts`; the 58 px off-screen edge chips keep the code (no room). Long names wrap
+at spaces inside the stamp.
 
 ## D-70 — Puzzles 16–30: mechanics tags and a tighter margin curve (2026-11-03, Claude, night N1)
 Puzzles 16–30 carry an optional `mechanics` list (`slots`, `curfew`, `week`, `mct`, `transfer`); the briefing shows the
@@ -501,3 +504,25 @@ starts in the second 3-day week, a hub expansion, a demand that needs a transfer
 divided by 1 + margin, the margin falling from 25 % (16) to 17 % (29–30), so later levels need a near-best network.
 Several levels offer decoy strips (a curfewed hub, a five-spoke star that jams on slots). Data format stays version 1.
 **Status: in force; difficulty is a proposal for the owner to playtest.**
+
+## D-71 — Resonant hubs: region scales, tension, cadence, mix and limiter (2026-11-03, Claude, night N3)
+Each destination region plays its own rotation of one pentatonic collection (`REGION_SCALES`), so every hub stays
+consonant while regions sound different. `src/game/audioCues.ts` feeds the engine: graded hub load once per game hour
+(top 4 hubs drone, a calmed hub is released), dawn blooms when a hub reaches 06:00 local (max 2 per hour), a
+dominant→tonic cadence on the week turn (key moves a fifth), a two-tick "slot wait" effect (once per airport per hour),
+and tag / paper / stamp for route add, route removal and upgrade choice. Mix: bus gains and make-up gain into the
+glue compressor, then a −3 dB limiter and trim; previews peak −7…−9 dBFS and a 4x burst stays under −1 dBFS.
+Previews in `docs/audio/`. **Status: in force; sound character is a proposal until the owner listens on a phone.**
+
+## D-72 — Leaderboard client: journal submissions, server replay, no Firebase SDK (2026-11-03, Claude, night N6)
+Implements D-66 on the client side. Only the **official** daily run (one per Warsaw day) is submitted: seed, day key,
+rules version, end tick, claimed score and the full command journal. The server replays it with the same Sim
+(`src/net/submission.ts`, shared code, D-13) and stores the replayed score; a mismatch, wrong seed/day, older rules,
+unfinished run or a run longer than 30 game weeks is rejected. The client talks to Firebase over REST (anonymous
+Identity Toolkit sign-up, callable functions) so the bundle carries no Firebase SDK; without `VITE_FIREBASE_API_KEY`
+and `VITE_FIREBASE_PROJECT_ID` the feature is off and makes no request. Finished runs wait in a bounded local queue
+(one per day, backoff) until the server answers. Players appear under a call sign derived from the anonymous uid, no
+names or e-mail. **Status: in force (client); server and UI follow in N6b/N6c.**
+_N6b:_ server in `functions/` — first accepted run per player and Warsaw day counts; the weekly board is the **sum** of a
+player's accepted daily scores in the ISO week (proposal for the owner; alternative: best single day). Accepted days
+are today and yesterday (late finishes, offline queue). Firestore is closed to clients. Owner steps: `docs/FIREBASE.md`.

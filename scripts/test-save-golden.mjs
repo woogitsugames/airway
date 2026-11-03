@@ -1,0 +1,125 @@
+// [night-02] Golden save regression: a real-Sim save written by an earlier build must keep loading to the exact
+// same state hash, continue identically and replay from its journal alone. A save from an older RULES_VERSION
+// (e.g. v3 before the D-41 slots) must be refused cleanly, never half-restored. Regenerate the fixture only on an
+// intentional RULES_VERSION bump: `node scripts/test-save-golden.mjs --write`.
+import './ts-test-loader.mjs';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+const { createGame, Sim, TICKS_PER_WEEK } = await import('../src/sim/index.ts');
+const { RULES_VERSION } = await import('../src/sim/state.ts');
+const { cityDistanceKm } = await import('../src/data/index.ts');
+const { encodeSave, decodeSave, saveSourceFromSim, restoreSimFromSave } = await import('../src/game/save.ts');
+
+const SEED = 0xA1A1;
+const SAVE_AT = TICKS_PER_WEEK + 600; // past the first weekly board, inside week 2
+const CONTINUE = 1440;
+const FIXTURE = resolve(dirname(fileURLToPath(import.meta.url)), 'fixtures/save-golden.json');
+let passed = 0;
+let failed = 0;
+function check(name, fn) {
+  try { fn(); passed++; } catch (error) { failed++; console.error(`FAIL ${name}:`, error instanceof Error ? error.message : error); }
+}
+function assert(condition, message) { if (!condition) throw new Error(message); }
+
+/**
+ * Deterministic policy: link each unlinked city to its nearest linked one, stack spare aircraft on the busiest
+ * airport's first route (so departures queue for slots) and prefer the "+2 slots" card for that airport.
+ */
+function busiest(world) {
+  return world.cities().filter((city) => city.routes > 0)
+    .sort((a, b) => b.routes - a.routes || b.waiting - a.waiting || (a.id < b.id ? -1 : 1))[0];
+}
+function drive(sim) {
+  const world = sim.world;
+  if (world.status === 'upgrade' && world.offer && !sim.pendingCount) {
+    const offers = world.offer.offers;
+    const pick = offers.find((offer) => offer.id === 'departure-slots') ?? offers.find((offer) => offer.id !== 'hub-expansion') ?? offers[0];
+    const airport = busiest(world);
+    sim.apply(pick.id !== 'turboprop' && pick.id !== 'widebody' && airport
+      ? { type: 'ChooseUpgrade', week: world.offer.week, upgrade: pick.id, hubId: airport.id }
+      : { type: 'ChooseUpgrade', week: world.offer.week, upgrade: pick.id });
+    return;
+  }
+  if (world.status !== 'running' || sim.tickCount % 60 !== 0) return;
+  const cities = world.cities();
+  const linked = cities.filter((city) => city.routes > 0);
+  for (const city of cities.filter((c) => c.routes === 0)) {
+    const target = (linked.length ? linked : cities).filter((c) => c.id !== city.id)
+      .map((c) => ({ id: c.id, km: cityDistanceKm(city.id, c.id) }))
+      .sort((a, b) => a.km - b.km || (a.id < b.id ? -1 : 1))[0];
+    if (!target) continue;
+    const command = { type: 'AddRoute', cityIds: [city.id, target.id], aircraft: target.km <= 2500 ? 'turboprop' : 'widebody' };
+    if (sim.check(command).ok) { sim.apply(command); return; }
+  }
+  const airport = busiest(world);
+  const route = airport && world.routes().filter((r) => r.cityIds.includes(airport.id)).sort((a, b) => (a.id < b.id ? -1 : 1))[0];
+  for (const aircraft of ['turboprop', 'widebody']) {
+    const command = route && { type: 'AssignPlane', routeId: route.id, aircraft };
+    if (command && world.reserve[aircraft] > 0 && sim.check(command).ok) { sim.apply(command); return; }
+  }
+}
+function play(sim, until) {
+  while (sim.tickCount < until && (sim.world.status === 'running' || sim.world.status === 'upgrade')) {
+    drive(sim); sim.tick(); sim.drainEvents();
+  }
+  return sim;
+}
+
+if (process.argv.includes('--write')) {
+  const sim = play(createGame(SEED), SAVE_AT);
+  const save = JSON.stringify(encodeSave(saveSourceFromSim(sim), 0));
+  const continued = Sim.fromSnapshot(sim.snapshot());
+  for (let i = 0; i < CONTINUE && continued.world.status === 'running'; i++) continued.tick();
+  writeFileSync(FIXTURE, JSON.stringify({ rulesVersion: RULES_VERSION, saveAt: sim.tickCount, hash: sim.hash(),
+    continueTicks: CONTINUE, continueHash: continued.hash(), save }) + '\n');
+  console.log(`wrote ${FIXTURE} rules=${RULES_VERSION} tick=${sim.tickCount} hash=${sim.hash()}`);
+  process.exit(0);
+}
+
+const golden = JSON.parse(readFileSync(FIXTURE, 'utf8'));
+const decoded = decodeSave(golden.save);
+check('fixture decodes', () => assert(decoded.status === 'ok', `decode: ${JSON.stringify(decoded)}`));
+check('fixture covers a weekly "+2 slots" upgrade', () => {
+  const world = JSON.parse(golden.save).snapshot.state.world;
+  assert(world.upgradeHistory.some((entry) => entry.upgrade === 'departure-slots'), 'no "+2 slots" upgrade before the save');
+  assert(Object.values(world.slots.bonus).some((count) => count > 0), 'slot bonus not serialised');
+});
+check('fixture matches the current RULES_VERSION', () => assert(golden.rulesVersion === RULES_VERSION,
+  `fixture is rules v${golden.rulesVersion}, code is v${RULES_VERSION}: regenerate with --write after an intentional bump`));
+const save = decoded.status === 'ok' ? decoded.save : null;
+let restored = null;
+check('golden save restores to the exact hash', () => {
+  restored = restoreSimFromSave(save);
+  assert(restored, 'restore refused');
+  assert(restored.tickCount === golden.saveAt, `tick ${restored.tickCount} != ${golden.saveAt}`);
+  assert(restored.hash() === golden.hash, `hash ${restored.hash()} != ${golden.hash}`);
+});
+check('restored game continues identically', () => {
+  assert(restored, 'no restored game');
+  for (let i = 0; i < golden.continueTicks && restored.world.status === 'running'; i++) restored.tick();
+  assert(restored.hash() === golden.continueHash, `continue hash ${restored.hash()} != ${golden.continueHash}`);
+});
+check('journal alone replays to the saved hash', () => {
+  const replay = Sim.replay(save.seed, save.commands, save.tick);
+  assert(replay.hash() === golden.hash, `replay hash ${replay.hash()} != ${golden.hash}`);
+});
+check('the same game re-played today still produces the golden save', () => {
+  const sim = play(createGame(SEED), golden.saveAt);
+  assert(sim.hash() === golden.hash, `fresh run hash ${sim.hash()} != ${golden.hash} (rules changed without a RULES_VERSION bump?)`);
+});
+check('older rules (v3 save) is refused, not half-restored', () => {
+  const old = { ...save, paramsVersion: RULES_VERSION - 1 };
+  assert(restoreSimFromSave(old) === null, 'an older-rules save must start a new game');
+  const snapshot = { ...save.snapshot, state: { ...save.snapshot.state, rulesVersion: RULES_VERSION - 1 } };
+  let threw = false;
+  try { Sim.fromSnapshot(JSON.stringify(snapshot)); } catch { threw = true; }
+  assert(threw, 'Sim must reject an older-rules snapshot');
+});
+check('tampered golden save is rejected by the checksum', () => {
+  const tampered = JSON.parse(golden.save);
+  tampered.tick += 1;
+  assert(decodeSave(JSON.stringify(tampered)).status === 'error', 'checksum must catch a tampered field');
+});
+console.log(`SUMMARY test:save-golden seed=0x${SEED.toString(16).toUpperCase()} rules=${RULES_VERSION} passed=${passed} failed=${failed}`);
+if (failed) process.exitCode = 1;

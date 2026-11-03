@@ -72,6 +72,8 @@ All hub tones, congestion drones, departure-board clicks, paper rustle, luggage-
 clicks, stamps and city bells are synthesized at runtime via Web Audio in
 `src/audio/`. The noise buffer is generated from a fixed local seed. No recorded
 samples, licensed sound libraries or downloadable audio files are included.
+[night-03] `docs/audio/preview-*.wav` are our own offline renders of that engine (`npm run audio:previews`), for listening
+only; they are not shipped in the app.
 <!-- [task-23] Original procedural art for the temporary first-run vignette. -->
 ## Onboarding artwork (task 23)
 `src/ui/tutorial/index.ts` contains an original SVG-only illustrated globe, three airport terminals,
