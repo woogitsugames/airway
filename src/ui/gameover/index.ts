@@ -55,6 +55,8 @@ export interface GameOverAdapters {
 
 export interface GameOverController {
   show(snapshot: GameOverSnapshot): Promise<void>;
+  /** [night-11c] Hardware back / Escape: from the map view return to the report; false otherwise. */
+  back(): boolean;
   dispose(): void;
 }
 
@@ -232,7 +234,7 @@ function buildDialog(
   onSame: () => void,
   onNew: () => void,
   onMenu: () => void,
-): { overlay: HTMLDivElement; firstButton: HTMLButtonElement } {
+): { overlay: HTMLDivElement; firstButton: HTMLButtonElement; closeMap: () => boolean } {
   const overlay = element('div', 'airway-go-overlay');
   overlay.dataset.gameoverState = 'open';
   overlay.dataset.testid = 'game-over';
@@ -246,7 +248,13 @@ function buildDialog(
   mark.setAttribute('aria-hidden', 'true');
   const title = element('h1', 'airway-go-heading', t('gameover.title'));
   title.id = 'airway-gameover-heading';
-  sign.append(mark, title);
+  // [night-11c] "Map": the report hid the network the run ended on. The toggle lifts the report and the dim so the
+  // jammed airport, its tag and the routes can be looked at (and the globe turned); one paper tag brings it back.
+  const mapButton = element('button', 'airway-go-map', t('gameover.map'));
+  mapButton.type = 'button';
+  mapButton.dataset.testid = 'gameover-map';
+  mapButton.setAttribute('aria-label', t('gameover.mapLabel', { hub: snapshot.hubCode }));
+  sign.append(mark, title, mapButton);
 
   const board = element('section', 'airway-go-board');
   board.setAttribute('aria-label', t('gameover.departures', { hub: snapshot.hubCode }));
@@ -311,20 +319,43 @@ function buildDialog(
   menu.addEventListener('click', onMenu);
   actions.append(same, next, menu);
   content.append(sign, board, strip, ...(snapshot.extra ? [snapshot.extra] : []), actions);
-  overlay.append(content);
-  return { overlay, firstButton: same };
+  const mapBar = element('div', 'airway-go-mapbar');
+  mapBar.hidden = true;
+  const mapBack = element('button', 'airway-go-button airway-go-mapback', t('gameover.mapBack'));
+  mapBack.type = 'button';
+  mapBack.dataset.testid = 'gameover-map-back';
+  mapBar.append(element('span', 'airway-go-mapbar-hub', t('gameover.mapHub', { hub: snapshot.hubCode })), mapBack);
+  const setMap = (open: boolean): void => {
+    overlay.classList.toggle('is-map', open);
+    content.hidden = open;
+    mapBar.hidden = !open;
+    // While the map shows, the overlay is no dialog: the globe under it takes the gestures.
+    overlay.setAttribute('aria-modal', String(!open));
+    (open ? mapBack : mapButton).focus({ preventScroll: true });
+  };
+  mapButton.addEventListener('click', () => setMap(true));
+  mapBack.addEventListener('click', () => setMap(false));
+  overlay.append(content, mapBar);
+  const closeMap = (): boolean => {
+    if (!overlay.classList.contains('is-map')) return false;
+    setMap(false);
+    return true;
+  };
+  return { overlay, firstButton: same, closeMap };
 }
 
 /** Called once by game composition when a hub's jam countdown reaches zero. */
 export function createGameOverController(adapters: GameOverAdapters): GameOverController {
   let phase: 'idle' | 'opening' | 'open' | 'disposed' = 'idle';
   let overlay: HTMLDivElement | null = null;
+  let closeMap: (() => boolean) | null = null;
   const previousFocus = { element: null as HTMLElement | null };
   const isDisposed = (): boolean => phase === 'disposed';
 
   function removeOverlay(): void {
     overlay?.remove();
     overlay = null;
+    closeMap = null;
     previousFocus.element?.focus();
   }
 
@@ -394,10 +425,12 @@ export function createGameOverController(adapters: GameOverAdapters): GameOverCo
         () => closeThen(adapters.returnToMenu),
       );
       overlay = dialog.overlay;
+      closeMap = dialog.closeMap;
       adapters.host.append(overlay);
       phase = 'open';
       dialog.firstButton.focus();
     },
+    back(): boolean { return phase === 'open' && !!closeMap?.(); },
     dispose(): void {
       phase = 'disposed';
       removeOverlay();

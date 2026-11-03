@@ -17,13 +17,13 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATC / SLOTY 07 AMM · SLOT 0:54 Limit odlotów z AMM: 3 na godzinę, samoloty czekają na ziemi. Rozłóż loty albo weź „+2 sloty”. TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 23:48 PASAŻERÓW 29 0 0 0 1×",
+   "text": "ATC / SLOTY 07 AMM · SLOT 0:54 Limit odlotów z AMM: 3 na godzinę, samoloty czekają na ziemi. Rozłóż loty albo weź „+2 sloty”. TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 23:47 PASAŻERÓW 29 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
     "routes": 9.35,
     "airports": 9.03,
-    "planes": 9.16,
-    "tags": 12.22
+    "planes": 9.14,
+    "tags": 12.07
    },
    "warmth": {
     "gold": 0.002,
@@ -46,7 +46,7 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATC / SLOTY 07 AMM · SLOT 0:55 Limit odlotów z AMM: 3 na godzinę, samoloty czekają na ziemi. Rozłóż loty albo weź „+2 sloty”. TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 23:47 PASAŻERÓW 29 0 0 0 1×",
+   "text": "ATC / SLOTY 07 AMM · SLOT 0:54 Limit odlotów z AMM: 3 na godzinę, samoloty czekają na ziemi. Rozłóż loty albo weź „+2 sloty”. TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 23:47 PASAŻERÓW 29 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
     "routes": 9.36,
@@ -64,7 +64,7 @@
     "meanLuma": 100.1,
     "lumaStd": 82.2,
     "whiteShare": 0,
-    "colours": 358
+    "colours": 356
    }
   },
   {
@@ -80,7 +80,7 @@
    "contrast": {
     "routes": 9.36,
     "airports": 9.03,
-    "planes": 9.17,
+    "planes": 9.16,
     "tags": 11.33
    },
    "warmth": {
@@ -93,7 +93,7 @@
     "meanLuma": 94.3,
     "lumaStd": 79.6,
     "whiteShare": 0,
-    "colours": 359
+    "colours": 360
    }
   },
   {
@@ -104,25 +104,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 16:42 PASAŻERÓW 26 0 0 0 1×",
+   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 16:44 PASAŻERÓW 26 0 0 0 1×",
    "sun": "-70.7@31.2,38.2",
    "contrast": {
-    "routes": 7.9,
-    "airports": 6.92,
-    "planes": 7.42,
-    "tags": 9.28
+    "routes": 7.83,
+    "airports": 6.87,
+    "planes": 7.34,
+    "tags": 9.18
    },
    "warmth": {
-    "gold": 0.085,
-    "ratio": 1.064
+    "gold": 0.086,
+    "ratio": 1.066
    },
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 107.7,
+    "meanLuma": 107.4,
     "lumaStd": 73.4,
     "whiteShare": 0,
-    "colours": 606
+    "colours": 603
    }
   },
   {
@@ -136,19 +136,19 @@
    "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 16:43 PASAŻERÓW 26 0 0 0 1×",
    "sun": "-70.7@31.2,38.2",
    "contrast": {
-    "routes": 8.09,
-    "airports": 7.08,
-    "planes": 7.29,
+    "routes": 8.17,
+    "airports": 7.15,
+    "planes": 7.34,
     "tags": 8.89
    },
    "warmth": {
     "gold": 0.064,
-    "ratio": 0.944
+    "ratio": 0.942
    },
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 100.8,
+    "meanLuma": 100.9,
     "lumaStd": 69.3,
     "whiteShare": 0,
     "colours": 597
@@ -165,14 +165,14 @@
    "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 16:43 PASAŻERÓW 26 0 0 0 1×",
    "sun": "-70.7@31.2,38.2",
    "contrast": {
-    "routes": 8.26,
-    "airports": 7.26,
-    "planes": 7.21,
-    "tags": 4.85
+    "routes": 8.19,
+    "airports": 7.21,
+    "planes": 7.27,
+    "tags": 5
    },
    "warmth": {
     "gold": 0.068,
-    "ratio": 0.949
+    "ratio": 0.95
    },
    "png": {
     "width": 1536,
@@ -275,24 +275,24 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "TYDZIEŃ 02 DZIEŃ 3/3 GODZ. 14:38 PASAŻERÓW 59 1 0 0 1× SIATKA WSTRZYMANA ODLOTY · BGW LOT / CEL BRAMKA STATUS AW101 · AMM A1 ODWOŁANY ATC · RAPORT ZDARZENIA Dowiezieni pasażerowie: 59 Ukończone tygodnie: 1 PRZYCZYNY PRZEBIEG 25 pasażerów nie miało trasy do regionu docelowego. 62% oczekujących chciało dotrzeć do Europy Północnej (16 osób). Poczekalnia przepełniona: 26 osób na 24 miejsca. NOWY REKORD LOKALNY JESZCZE RAZ · TEN SAM ŚWIAT NOWY ŚWIAT MENU",
+   "text": "+13 +5 +20 0:00 +6 ULN BKO REC TUN NOWE TYDZIEŃ 02 DZIEŃ 3/3 GODZ. 14:38 PASAŻERÓW 59 1 0 0 1× SIATKA WSTRZYMANA MAPA ODLOTY · BGW LOT / CEL BRAMKA STATUS AW101 · AMM A1 ODWOŁANY ATC · RAPORT ZDARZENIA Dowiezieni pasażerowie: 59 Ukończone tygodnie: 1 PRZYCZYNY PRZEBIEG 25 pasażerów nie miało trasy do regionu docelowego. 62% oczekujących chciało dotrzeć do Europy Północnej (16 osób). Poczekalnia przepełniona: 26 osób na 24 miejsca. NOWY REKORD LOKALNY JESZCZE RAZ · TEN SAM ŚWIAT NOWY ŚWIAT MENU",
    "contrast": {
-    "routes": 4.42,
-    "airports": 4.14,
-    "planes": 3.29,
-    "tags": null
+    "routes": 4.64,
+    "airports": 4.49,
+    "planes": 3.42,
+    "tags": 1.36
    },
    "warmth": {
-    "gold": 0.005,
-    "ratio": 0.982
+    "gold": 0.027,
+    "ratio": 1.016
    },
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 144.9,
-    "lumaStd": 90.2,
+    "meanLuma": 145.9,
+    "lumaStd": 91.6,
     "whiteShare": 0,
-    "colours": 203
+    "colours": 215
    }
   },
   {
@@ -303,24 +303,24 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "TYDZIEŃ 02 DZIEŃ 3/3 GODZ. 14:38 PASAŻERÓW 59 1 0 0 1× SIATKA WSTRZYMANA ODLOTY · BGW LOT / CEL BRAMKA STATUS AW101 · AMM A1 ODWOŁANY ATC · RAPORT ZDARZENIA Dowiezieni pasażerowie: 59 Ukończone tygodnie: 1 PRZYCZYNY PRZEBIEG 25 pasażerów nie miało trasy do regionu docelowego. 62% oczekujących chciało dotrzeć do Europy Północnej (16 osób). Poczekalnia przepełniona: 26 osób na 24 miejsca. NOWY REKORD LOKALNY JESZCZE RAZ · TEN SAM ŚWIAT NOWY ŚWIAT MENU",
+   "text": "+13 +5 +20 0:00 +6 ULN BKO REC TUN NOWE TYDZIEŃ 02 DZIEŃ 3/3 GODZ. 14:38 PASAŻERÓW 59 1 0 0 1× SIATKA WSTRZYMANA MAPA ODLOTY · BGW LOT / CEL BRAMKA STATUS AW101 · AMM A1 ODWOŁANY ATC · RAPORT ZDARZENIA Dowiezieni pasażerowie: 59 Ukończone tygodnie: 1 PRZYCZYNY PRZEBIEG 25 pasażerów nie miało trasy do regionu docelowego. 62% oczekujących chciało dotrzeć do Europy Północnej (16 osób). Poczekalnia przepełniona: 26 osób na 24 miejsca. NOWY REKORD LOKALNY JESZCZE RAZ · TEN SAM ŚWIAT NOWY ŚWIAT MENU",
    "contrast": {
-    "routes": 4.42,
-    "airports": 4.11,
-    "planes": 2.98,
-    "tags": null
+    "routes": 4.65,
+    "airports": 4.48,
+    "planes": 3.4,
+    "tags": 1.47
    },
    "warmth": {
-    "gold": 0.006,
-    "ratio": 1.035
+    "gold": 0.036,
+    "ratio": 1.069
    },
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 129.2,
-    "lumaStd": 85.4,
+    "meanLuma": 129.7,
+    "lumaStd": 87.8,
     "whiteShare": 0,
-    "colours": 201
+    "colours": 205
    }
   },
   {
@@ -331,24 +331,24 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "TYDZIEŃ 02 DZIEŃ 3/3 GODZ. 14:38 PASAŻERÓW 59 1 0 0 1× SIATKA WSTRZYMANA ODLOTY · BGW LOT / CEL BRAMKA STATUS AW101 · AMM A1 ODWOŁANY ATC · RAPORT ZDARZENIA Dowiezieni pasażerowie: 59 Ukończone tygodnie: 1 PRZYCZYNY PRZEBIEG 25 pasażerów nie miało trasy do regionu docelowego. 62% oczekujących chciało dotrzeć do Europy Północnej (16 osób). Poczekalnia przepełniona: 26 osób na 24 miejsca. NOWY REKORD LOKALNY JESZCZE RAZ · TEN SAM ŚWIAT NOWY ŚWIAT MENU",
+   "text": "+13 +5 +20 0:00 +6 ULN BKO REC TUN NOWE TYDZIEŃ 02 DZIEŃ 3/3 GODZ. 14:38 PASAŻERÓW 59 1 0 0 1× SIATKA WSTRZYMANA MAPA ODLOTY · BGW LOT / CEL BRAMKA STATUS AW101 · AMM A1 ODWOŁANY ATC · RAPORT ZDARZENIA Dowiezieni pasażerowie: 59 Ukończone tygodnie: 1 PRZYCZYNY PRZEBIEG 25 pasażerów nie miało trasy do regionu docelowego. 62% oczekujących chciało dotrzeć do Europy Północnej (16 osób). Poczekalnia przepełniona: 26 osób na 24 miejsca. NOWY REKORD LOKALNY JESZCZE RAZ · TEN SAM ŚWIAT NOWY ŚWIAT MENU",
    "contrast": {
-    "routes": 4.42,
-    "airports": 4.12,
-    "planes": 3.02,
-    "tags": null
+    "routes": 4.66,
+    "airports": 4.48,
+    "planes": 3.4,
+    "tags": 1.42
    },
    "warmth": {
-    "gold": 0.006,
-    "ratio": 1.023
+    "gold": 0.035,
+    "ratio": 1.062
    },
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 99.8,
-    "lumaStd": 72.2,
+    "meanLuma": 97.3,
+    "lumaStd": 75.2,
     "whiteShare": 0,
-    "colours": 205
+    "colours": 210
    }
   },
   {
@@ -384,7 +384,7 @@
     "meanLuma": 91.6,
     "lumaStd": 70,
     "whiteShare": 0,
-    "colours": 640
+    "colours": 637
    }
   },
   {
@@ -399,10 +399,10 @@
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 93.7,
+    "meanLuma": 93.6,
     "lumaStd": 69.3,
     "whiteShare": 0,
-    "colours": 665
+    "colours": 668
    }
   },
   {
@@ -423,7 +423,7 @@
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.448
+    "ratio": 0.449
    },
    "png": {
     "width": 1080,
@@ -442,13 +442,13 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATC / SLOTS 07 AMM · SLOT 0:56 AMM launches 3 flights per hour; aircraft wait on the ground. Spread flights or pick “+2 slots”. WEEK 01 DAY 2/3 TIME 23:49 PASSENGERS 29 0 0 0 1×",
+   "text": "ATC / SLOTS 07 AMM · SLOT 0:55 AMM launches 3 flights per hour; aircraft wait on the ground. Spread flights or pick “+2 slots”. WEEK 01 DAY 2/3 TIME 23:47 PASSENGERS 29 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
     "routes": 9.36,
     "airports": 9.01,
     "planes": 9.17,
-    "tags": 12.25
+    "tags": 12.22
    },
    "warmth": {
     "gold": 0.002,
@@ -460,7 +460,7 @@
     "meanLuma": 100.1,
     "lumaStd": 82.2,
     "whiteShare": 0,
-    "colours": 363
+    "colours": 356
    }
   },
   {
@@ -489,7 +489,7 @@
     "meanLuma": 94.3,
     "lumaStd": 79.6,
     "whiteShare": 0,
-    "colours": 360
+    "colours": 361
    }
   },
   {
@@ -500,7 +500,7 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "WEEK 01 DAY 2/3 TIME 16:44 PASSENGERS 26 0 0 0 1×",
+   "text": "WEEK 01 DAY 2/3 TIME 16:43 PASSENGERS 26 0 0 0 1×",
    "sun": "-70.7@31.2,38.2",
    "contrast": {
     "routes": 7.79,
@@ -515,10 +515,10 @@
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 107.3,
+    "meanLuma": 107.5,
     "lumaStd": 73.5,
     "whiteShare": 0,
-    "colours": 591
+    "colours": 603
    }
   },
   {
@@ -529,25 +529,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "WEEK 01 DAY 2/3 TIME 16:44 PASSENGERS 26 0 0 0 1×",
+   "text": "WEEK 01 DAY 2/3 TIME 16:43 PASSENGERS 26 0 0 0 1×",
    "sun": "-70.7@31.2,38.2",
    "contrast": {
-    "routes": 8.09,
-    "airports": 7.08,
+    "routes": 8.02,
+    "airports": 7.03,
     "planes": 7.29,
     "tags": 8.89
    },
    "warmth": {
     "gold": 0.064,
-    "ratio": 0.944
+    "ratio": 0.946
    },
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 100.7,
+    "meanLuma": 100.9,
     "lumaStd": 69.3,
     "whiteShare": 0,
-    "colours": 593
+    "colours": 597
    }
   },
   {
@@ -558,25 +558,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "WEEK 01 DAY 2/3 TIME 16:44 PASSENGERS 26 0 0 0 1×",
+   "text": "WEEK 01 DAY 2/3 TIME 16:43 PASSENGERS 26 0 0 0 1×",
    "sun": "-70.7@31.2,38.2",
    "contrast": {
-    "routes": 8.5,
-    "airports": 7.49,
-    "planes": 7.18,
-    "tags": 5.14
+    "routes": 8.11,
+    "airports": 7.14,
+    "planes": 7.29,
+    "tags": 5.27
    },
    "warmth": {
     "gold": 0.068,
-    "ratio": 0.94
+    "ratio": 0.954
    },
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 97.7,
-    "lumaStd": 67.6,
+    "meanLuma": 98.3,
+    "lumaStd": 67.5,
     "whiteShare": 0,
-    "colours": 610
+    "colours": 605
    }
   },
   {
@@ -671,24 +671,24 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "WEEK 02 DAY 3/3 TIME 14:38 PASSENGERS 59 1 0 0 1× NETWORK CLOSED DEPARTURES · BGW FLIGHT / DEST. GATE STATUS AW101 · AMM A1 CANCELLED ATC · INCIDENT REPORT Passengers delivered: 59 Weeks completed: 1 CAUSES TIMELINE 25 passengers had no available route to their destination region. 62% of waiting passengers were headed to Northern Europe (16 people). The waiting area was full: 26 people for 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
+   "text": "+13 +5 +20 0:00 +6 ULN BKO REC TUN NEW WEEK 02 DAY 3/3 TIME 14:38 PASSENGERS 59 1 0 0 1× NETWORK CLOSED MAP DEPARTURES · BGW FLIGHT / DEST. GATE STATUS AW101 · AMM A1 CANCELLED ATC · INCIDENT REPORT Passengers delivered: 59 Weeks completed: 1 CAUSES TIMELINE 25 passengers had no available route to their destination region. 62% of waiting passengers were headed to Northern Europe (16 people). The waiting area was full: 26 people for 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
    "contrast": {
-    "routes": 4.42,
-    "airports": 4.14,
-    "planes": 3.29,
-    "tags": null
+    "routes": 4.64,
+    "airports": 4.49,
+    "planes": 3.4,
+    "tags": 1.36
    },
    "warmth": {
-    "gold": 0.005,
-    "ratio": 0.982
+    "gold": 0.027,
+    "ratio": 1.016
    },
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 140.2,
-    "lumaStd": 89,
+    "meanLuma": 141.1,
+    "lumaStd": 90.1,
     "whiteShare": 0,
-    "colours": 210
+    "colours": 206
    }
   },
   {
@@ -699,24 +699,24 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "WEEK 02 DAY 3/3 TIME 14:38 PASSENGERS 59 1 0 0 1× NETWORK CLOSED DEPARTURES · BGW FLIGHT / DEST. GATE STATUS AW101 · AMM A1 CANCELLED ATC · INCIDENT REPORT Passengers delivered: 59 Weeks completed: 1 CAUSES TIMELINE 25 passengers had no available route to their destination region. 62% of waiting passengers were headed to Northern Europe (16 people). The waiting area was full: 26 people for 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
+   "text": "+13 +5 +20 0:00 +6 ULN BKO REC TUN NEW WEEK 02 DAY 3/3 TIME 14:38 PASSENGERS 59 1 0 0 1× NETWORK CLOSED MAP DEPARTURES · BGW FLIGHT / DEST. GATE STATUS AW101 · AMM A1 CANCELLED ATC · INCIDENT REPORT Passengers delivered: 59 Weeks completed: 1 CAUSES TIMELINE 25 passengers had no available route to their destination region. 62% of waiting passengers were headed to Northern Europe (16 people). The waiting area was full: 26 people for 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
    "contrast": {
-    "routes": 4.42,
-    "airports": 4.11,
-    "planes": 2.98,
-    "tags": null
+    "routes": 4.65,
+    "airports": 4.48,
+    "planes": 3.4,
+    "tags": 1.47
    },
    "warmth": {
-    "gold": 0.006,
-    "ratio": 1.035
+    "gold": 0.036,
+    "ratio": 1.069
    },
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 129.4,
-    "lumaStd": 85.4,
+    "meanLuma": 129.9,
+    "lumaStd": 87.8,
     "whiteShare": 0,
-    "colours": 190
+    "colours": 195
    }
   },
   {
@@ -727,24 +727,24 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "WEEK 02 DAY 3/3 TIME 14:38 PASSENGERS 59 1 0 0 1× NETWORK CLOSED DEPARTURES · BGW FLIGHT / DEST. GATE STATUS AW101 · AMM A1 CANCELLED ATC · INCIDENT REPORT Passengers delivered: 59 Weeks completed: 1 CAUSES TIMELINE 25 passengers had no available route to their destination region. 62% of waiting passengers were headed to Northern Europe (16 people). The waiting area was full: 26 people for 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
+   "text": "+13 +5 +20 0:00 +6 ULN BKO REC TUN NEW WEEK 02 DAY 3/3 TIME 14:38 PASSENGERS 59 1 0 0 1× NETWORK CLOSED MAP DEPARTURES · BGW FLIGHT / DEST. GATE STATUS AW101 · AMM A1 CANCELLED ATC · INCIDENT REPORT Passengers delivered: 59 Weeks completed: 1 CAUSES TIMELINE 25 passengers had no available route to their destination region. 62% of waiting passengers were headed to Northern Europe (16 people). The waiting area was full: 26 people for 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
    "contrast": {
-    "routes": 4.42,
-    "airports": 4.12,
-    "planes": 3.02,
-    "tags": null
+    "routes": 4.66,
+    "airports": 4.48,
+    "planes": 3.4,
+    "tags": 1.42
    },
    "warmth": {
-    "gold": 0.006,
-    "ratio": 1.023
+    "gold": 0.035,
+    "ratio": 1.062
    },
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 100,
-    "lumaStd": 72.3,
+    "meanLuma": 97.4,
+    "lumaStd": 75.2,
     "whiteShare": 0,
-    "colours": 203
+    "colours": 209
    }
   },
   {
@@ -762,7 +762,7 @@
     "meanLuma": 83.3,
     "lumaStd": 69,
     "whiteShare": 0,
-    "colours": 638
+    "colours": 640
    }
   },
   {
