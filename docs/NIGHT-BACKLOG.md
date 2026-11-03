@@ -189,6 +189,12 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       streak" / "2-day streak · play today". Found on the way: every plural with a `localNumber` count of 1 000 or
       more leaked its token ("rekord 2 500 {count|pasażer|…}" on the menu record and Continue rows); `t()` now
       reads formatted counts. `src/game/dailyRow.ts`, `test:format` +2, `e2e/daily-row.mjs`.
+- [ ] N10e **Daily report: share the result; honest restart buttons** — `shareDailyResult` (task 18) was never
+      called: the daily game-over had no way to share, and `daily.finish` got no regions, so every ticket read "--".
+      The report gets a "Share result" action (native sheet, else clipboard, else the text to select), the ticket is
+      the regions the network served (8 glyphs, two new for ASI/OCE), the text adds the streak of days. On a daily,
+      "Same world" and "New world" both silently went to the menu: same world now starts a practice of today's
+      world (menu if the day changed), new world starts Endless.
 
 ## Log
 <!-- one line per finished item: date UTC · item · PR · gate summary -->
