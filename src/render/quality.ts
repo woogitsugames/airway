@@ -12,6 +12,8 @@ export interface DeviceHints {
   hardwareConcurrency?: number;
   deviceMemoryGb?: number;
   devicePixelRatio?: number;
+  /** [N12m] Unmasked WebGL renderer string (e.g. "Mali-G52 MC2"), read once by `readGpuRenderer`. */
+  gpu?: string;
 }
 
 /** Everything a render layer may vary by device tier; terrain/decor density keys off `preset`. */
@@ -35,6 +37,54 @@ export const SAVER_DECOR_DENSITY = 0.6;
 
 export const TONE_MAPPING_EXPOSURE = 1.05;
 
+/**
+ * [N12m] GPU families that start on `low` in auto (D-116): budget phones report 8 cores and 4 GB, so the
+ * core/memory rule alone gives them `medium` and only visible stutter steps them down. Matched against the
+ * unmasked renderer string, both the bare form ("Mali-G52 MC2", "Adreno (TM) 610", "PowerVR Rogue GE8320")
+ * and Chrome's ANGLE wrapper ("ANGLE (ARM, Mali-G57 MC2, OpenGL ES 3.2)"). `MC`/`MP` is the core count.
+ */
+export const LOW_GPU_FAMILIES: readonly { readonly name: string; readonly pattern: RegExp }[] = [
+  { name: 'Mali-G52', pattern: /\bMali-G52(?![0-9])(?!\s*M[CP]\s*[3-9])/i },
+  { name: 'Mali-G57 MC1-2', pattern: /\bMali-G57\s*M[CP]\s*[12](?![0-9])/i },
+  { name: 'Mali-G68 MC1-2', pattern: /\bMali-G68\s*M[CP]\s*[12](?![0-9])/i },
+  { name: 'Mali-T8xx', pattern: /\bMali-T8[0-9]{2}\b/i },
+  { name: 'PowerVR GE83xx', pattern: /\bPowerVR\b.*\bGE83[0-9]{2}\b/i },
+  { name: 'Adreno 5xx', pattern: /\bAdreno\s*(?:\(TM\)\s*)?5[0-9]{2}\b/i },
+  { name: 'Adreno 610/613', pattern: /\bAdreno\s*(?:\(TM\)\s*)?61[03]\b/i },
+];
+
+/** [N12m] Name of the matching low-end family, or null (unknown or capable GPU → the core/memory rule). */
+export function lowGpuFamily(renderer: string | undefined): string | null {
+  if (!renderer) return null;
+  for (const family of LOW_GPU_FAMILIES) if (family.pattern.test(renderer)) return family.name;
+  return null;
+}
+
+let gpuRendererCache: string | null | undefined;
+
+/**
+ * [N12m] Unmasked renderer of a throwaway WebGL context, read once per page and cached. Uses
+ * `WEBGL_debug_renderer_info` when offered, else `RENDERER` (Chrome ≥ 121 returns the unmasked string there
+ * too); the probe context is released at once. Never throws: no DOM, no WebGL or a denied extension → undefined.
+ */
+export function readGpuRenderer(): string | undefined {
+  if (gpuRendererCache !== undefined) return gpuRendererCache ?? undefined;
+  gpuRendererCache = null;
+  if (typeof document === 'undefined') return undefined;
+  try {
+    const canvas = document.createElement('canvas');
+    const gl = (canvas.getContext('webgl2') ?? canvas.getContext('webgl')) as WebGLRenderingContext | null;
+    if (!gl) return undefined;
+    const debug = gl.getExtension('WEBGL_debug_renderer_info');
+    const value: unknown = gl.getParameter(debug ? debug.UNMASKED_RENDERER_WEBGL : gl.RENDERER);
+    gl.getExtension('WEBGL_lose_context')?.loseContext();
+    if (typeof value === 'string' && value.trim()) gpuRendererCache = value.trim().slice(0, 200);
+  } catch {
+    gpuRendererCache = null;
+  }
+  return gpuRendererCache ?? undefined;
+}
+
 export function getDeviceHints(): DeviceHints {
   if (typeof navigator === 'undefined') return {};
   const device = navigator as Navigator & { deviceMemory?: number };
@@ -42,6 +92,7 @@ export function getDeviceHints(): DeviceHints {
     hardwareConcurrency: device.hardwareConcurrency,
     deviceMemoryGb: device.deviceMemory,
     devicePixelRatio: typeof window === 'undefined' ? 1 : window.devicePixelRatio,
+    gpu: readGpuRenderer(),
   };
 }
 
@@ -51,6 +102,7 @@ export function chooseQualityPreset(
 ): QualityPreset {
   if (preference === 'saver') return 'low';
   if (preference !== 'auto') return preference;
+  if (lowGpuFamily(hints.gpu)) return 'low';
   const cores = hints.hardwareConcurrency ?? 6;
   const memory = hints.deviceMemoryGb ?? 6;
   if (cores <= 4 || memory <= 3) return 'low';

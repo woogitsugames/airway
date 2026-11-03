@@ -837,3 +837,14 @@ language store that could disagree with the game's own; Android 12 and older hav
 AGP `generateLocaleConfig` (needs `resources.properties` and only sees Android string resources, while the game's
 text lives in `src/i18n`). A per-app change while the game runs applies at the next start (`locale` is in
 `configChanges`). **Status: in force (N12l); device check open.**
+
+## D-116 — Budget GPUs start on the low preset (2026-11-03, Claude, night N12m)
+R3f: Galaxy A06/A16, Redmi 14C and Moto G phones report 8 cores and 4 GB (`navigator.deviceMemory` is rounded
+and capped), so the core/memory rule started them on `medium` and only adaptive quality (D-73) stepped down after
+visible stutter. `auto` now reads the unmasked WebGL renderer once (a throwaway context, `WEBGL_debug_renderer_info`
+or `RENDERER`, released at once, cached) and starts `low` for Mali-G52, Mali-G57/G68 MC1–MC2, Mali-T8xx, PowerVR
+GE83xx and Adreno 5xx/610/613 (`LOW_GPU_FAMILIES` in `src/render/quality.ts`). An unknown string keeps today's rule,
+an explicit graphics choice wins, and remembered adaptation steps (D-74) apply only when they still fit the new
+ladder. Rejected: a benchmark at boot (costs seconds on exactly these phones, noisy under thermal throttling) and a
+User-Agent model list (Chrome reduces the UA to "K"; renderer strings name the GPU directly). The table is not
+verified on the devices themselves (R3i Test Lab would). **Status: in force (N12m).**
