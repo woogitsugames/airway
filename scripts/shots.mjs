@@ -60,6 +60,13 @@ const TARGETS = [
     ready: { selector: '[data-gameover-state="open"]' }, note: 'game-over board (dev preview)' },
   { id: 'puzzles', dir: '17', file: 'board', path: '', open: ['.airway-board [data-mode="puzzles"]'],
     ready: { selector: '.puzzle-departures .puzzle-flap' }, note: 'puzzle departure board' },
+  // [night-07d] Curfew airports marked on the puzzle strips (barrier mark + hours line).
+  ...[['08', 'pl'], ['30', 'en']].map(([level, lang]) => ({
+    id: `puzzle-curfew-${level}`, dir: 'night-07d', file: `puzzle${level}-${lang}`, path: '', lang,
+    open: ['.airway-board [data-mode="puzzles"]', `[data-action="open:${level}"]`],
+    ready: { selector: '[data-testid="puzzle-curfews"] .puzzle-curfew-mark' }, settle: 300,
+    note: `puzzle ${level} with curfew marks (${lang})`,
+  })),
 ];
 
 const args = process.argv.slice(2);

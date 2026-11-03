@@ -71,3 +71,12 @@
 }
 @media (min-width: 700px) { .puzzle-board { margin: 0 max(12px, calc((100% - 660px) / 2)); } }
 @media (prefers-reduced-motion: no-preference) { .puzzle-flap:active { transform: rotateX(3deg); transition: transform 80ms linear; } }
+/* [night-07d] Curfew airports: the globe's red-and-white boom barrier next to the code. */
+.puzzle-code { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+.puzzle-curfew-mark { display: inline-flex; line-height: 0; }
+.puzzle-route-codes { display: inline-flex; align-items: center; gap: 5px; flex-wrap: nowrap; min-width: 0; }
+.puzzle-curfews { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; font-size: 12px; }
+.puzzle-curfews .puzzle-code { font-family: 'Overpass Mono', monospace; font-weight: 700; }
+.puzzle-curfew-hours { font-weight: 400; margin-left: 3px; }
+/* [night-07d] The codes column never shrinks below its content (a curfew mark adds ~30 px); detail and CTA give way. */
+.puzzle-route { grid-template-columns: minmax(max-content, 1fr) minmax(32px, 85px) minmax(72px, 96px); }

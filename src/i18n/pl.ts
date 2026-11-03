@@ -254,7 +254,9 @@ export const pl = {
   'rank.practice': 'Gra treningowa: w rankingu liczy się tylko pierwsza gra dnia.',
   'puzzle.game.notes': 'Uwaga: {list}',
   'puzzle.mechanic.slots': 'sloty startowe (2 na godzinę, 3 w węźle)',
-  'puzzle.mechanic.curfew': 'cisza nocna 23:00–06:00',
+  'puzzle.mechanic.curfew': 'cisza nocna (bez startów i lądowań)',
+  'puzzle.curfew.line': 'Cisza nocna:',
+  'puzzle.curfew.mark': '{city} zamknięte nocą {hours}',
   'puzzle.mechanic.week': 'nowy ruch w drugim tygodniu',
   'puzzle.mechanic.mct': 'czas przesiadki w zatłoczonym węźle',
   // [task-18] Localized offline daily ticket.
