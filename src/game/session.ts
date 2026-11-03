@@ -235,6 +235,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       run = previous;
       previousPlanes = [];
       syncWorld(true);
+      syncUpgrade(true); // [night-07x] if the world is back on an open weekly board, show it (never a frozen clock)
     },
     preview: (model) => world.preview(model),
     warning: (info) => atc.show(info),
