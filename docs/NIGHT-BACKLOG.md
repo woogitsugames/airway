@@ -405,7 +405,7 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       `Library/NoCloud`). `test:android-config` +4 checks (14/18 on the old manifest), new `test:install-identity`
       6/6 (in `test:fast`). Resources pass `aapt2 compile`; Gradle lint and a device restore could not run here
       (Maven 429, no device) — `docs/ANDROID.md` lists the `bmgr` check.
-- [x] N12d **Server replay ends at the game over (R3c, D-93)** — `Sim.replay` kept ticking a finished world up to
+- [x] N12d **Server replay ends at the game over (R3c, D-97)** — `Sim.replay` kept ticking a finished world up to
       the claimed `endTick`, so a finished daily run sent with `endTick` = 30 weeks replayed a dead world for the
       whole budget and was stored with `weeks: 30`. `verifyDailySubmission` now replays with `stopAtEnd` (new optional
       `Sim.replay` argument; default unchanged for saves/undo/tests) and requires `endTick` to equal the game-over tick
@@ -414,13 +414,77 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       end ticks, empty 30-week claim, cost budgets — measured 30–48 ms per game week (30-week projection ~1.4 s),
       dense 5 000-command journal ~0.2 s. Note: an empty journal never ends (the world waits on the week-1 board),
       so it was already `not_finished`, not accepted as the R3c text assumed.
-- [x] N12e **Store-requirement guards (R1m, D-94)** — `test:android-config` now fails when `targetSdkVersion` is
+- [x] N12e **Store-requirement guards (R1m, D-98)** — `test:android-config` now fails when `targetSdkVersion` is
       below Play's floor (`PLAY_MIN_TARGET_SDK` = 36, raise each August) or `compileSdk` < target, and no longer pins
       target/compile to exactly 36 (that blocked the yearly bump). Every `npm run android*` build checks its APK/AAB
       with the new `scripts/native-align.mjs` (pure Node: ZIP directory + ELF program headers): 64-bit `.so` LOAD
       segments ≥ 16 KB, stored APK entries on a 16 KB boundary; release builds fail on a misaligned library, and the
       web-only app reports "no native libs". New `test:native-align` (in `test:fast`) on synthetic bundles, with a
       `zipalign -c -P 16` cross-check when the SDK is installed. `docs/ANDROID.md`.
+- [x] N12g **Owner decisions D-93…D-96 recorded** — Q-41 → A (in-app leaderboard data deletion + e-mail web path,
+      D-93), Q-42 → B (Play organisation account, D-94), Q-51 → B (week-1 airports within 2,500 km + slightly faster
+      pace, D-95), Q-43/Q-44/Q-48 → A (languages wave, worldwide except mainland China, T−12 weeks plan, D-96); marked
+      ✅ in `docs/OWNER-QUESTIONS.md`. N12d/N12e's own decisions renumbered D-93/D-94 → D-97/D-98 (docs and code
+      comments only).
+- [x] N12f **Fair week 1 + faster pace, Alexandria in ME (D-95, D-99, D-105, D-106, rules v5)** — before the first
+      weekly board a new airport opens only within turboprop range (2,500 km) of an open airport (weighted draw keeps
+      its proximity weights, falls back to the global draw only if nothing is in reach); the start radius is 2,500 km
+      (D-105); Alexandria joins Cairo in `ME` (Q-58). The fair week 1 alone lengthened the bot median 17.81 → 24.43 min,
+      so the pace rose: spawns every 12 h instead of 16 h and the new `DEMAND_RATE_PERCENT` = 130 (D-106, sweep in
+      `docs/balance/README.md`; Q-60). `test:balance` median 17.03 min, boards 100/66 %, week-1 losses at an airport
+      beyond reach 5/50 → 0/50 (new `week1_unreachable` gate and CSV column). `RULES_VERSION` 4 → 5,
+      `SPAWNER_PARAMS_VERSION` 1 → 2, `CITY_DATA_VERSION` 1 → 2. New `test:week1-reach` (fast, 2/5 on rules v4: 507 of
+      1,600 week-1 spawns and 33 start airports beyond reach). Re-locked deliberately: `test:sim-week` hashes and
+      failure tick 2619 → 2174 (demand 1.3×), `save-golden` regenerated on seed 0xA1A3 (this simple policy now loses
+      0xA1A1 in week 1) plus the frozen rules-v4 save as a D-76 replay check, `test:bot-policy` "+2 slots" check moved to
+      seed 0xA1A5 and unserved-jam ceiling 4 → 6 (6 airports a week; measured 6 of 19). Store shots regenerated (seed
+      0xA1A1 starts elsewhere: RIX VCE ATH… instead of ATH ZAG ANK…).
+- [x] N12h **Six airport codes corrected on screen, city data guard (R4a, R4b test, D-107)** — `City.displayCode`
+      (optional) for Kyiv IEV (was KIV, Chișinău's old code), Ho Chi Minh City SGN (HCM), Luanda LAD (LUA = Lukla),
+      Lusaka LUN (LUS), Isfahan IFN (ISF), Alexandria ALY (ALX); `displayCode()` in `src/data/index.ts`, read by
+      `airportLabel()` (code mode) and so by the airport tags, edge chips and their aria text, the game-over departures
+      board and title, timeline picks, upgrade stamps, pause summary, plus the puzzle board codes. Sim ids unchanged:
+      `test:replay`, `test:save-golden` and daily hashes identical. New `test:city-data` (fast, 1/5 before): ids frozen
+      in order and spelling, display codes 3 capital letters and unique, names, population, on land or ≤ ~30 km from
+      the coast of the game's land raster. `test:airport-labels` +1. The R4b "solar time" help line is left to the UI
+      agent (settings/help is its area).
+- [x] N12i **One top-50 document per board (R3a, D-108)** — `submitDaily` keeps `boards/{id}/meta/top` (≤ 50
+      `{uid, callSign, score}`, old query order: score desc, doc id desc) in its transaction, writes it only when the
+      run changes the list, and returns `rank` inside the daily top 50; `getBoards` reads 4 documents (two tops, two
+      own entries) plus `count()` only outside the top, instead of two 50-document queries (~105 reads). Pre-upgrade
+      boards are seeded from the old query at their first write. The top's `expireAt` is fixed at its first write
+      (TTL policy on `meta` added), so it never outlives the entries. Pure `mergeTop`/`rankInTop`/`readTopRows` in
+      `functions/src/logic.ts`; `docs/FIREBASE.md` (incl. step 9 manual deletion) updated.
+- [x] N12j **Per-player rate limit and split function caps (R3b, D-109)** — pure `RateLimiter` (token bucket per
+      uid per instance, burst = limit, 10 000 keys LRU) in `functions/src/logic.ts`; `getBoards` 20/min,
+      `submitDaily` 6/min, checked after auth and before Firestore/replay → `resource-exhausted`. `FUNCTION_OPTIONS`:
+      `getBoards` `maxInstances: 3`; `submitDaily` `maxInstances: 5`, `concurrency: 4`, `cpu: 1` (was one shared
+      `maxInstances: 10`, concurrency 80). Client fix found on the way: HTTP 429 counted as a final rejection and
+      dropped the run from the queue; it is now `retry`. `docs/FIREBASE.md` updated.
+- [x] N12k **In-app deletion of leaderboard data (R1a, D-93, D-114) + Q-60 → D-113** — new callable `deleteMyData`
+      (`functions/src/index.ts`): reads every daily/weekly board an entry can still live on (pure `retainedBoardIds`,
+      97 days, 113 boards), deletes the caller's entries, removes the uid from `meta/top` (pure `dropFromTop`, a full
+      top refilled by the 51st entry), then deletes the anonymous Auth user; idempotent; `maxInstances: 2`, 3/min per
+      player. Client `Leaderboards.hasData()` / `deleteMyData()` → `deleted | none | offline | failed`; token and
+      queue cleared only after the server's answer. Settings → Help row "Delete my ranking data" with inline
+      confirmation (PL/EN), shown only with an identity. New `test:e2e:delete-ranking` (page.route, no emulator).
+      `docs/FIREBASE.md`, `docs/legal/leaderboards-privacy.md` updated. Owner answer Q-60 → C recorded as D-113.
+- [x] N12l **Android per-app language (R1d, D-115)** — `res/xml/locales_config.xml` (en, pl) and
+      `android:localeConfig` so Android 13+ lists Airway under Settings → Apps → Language. `test:android-config`
+      +2 checks: the list equals the `Language` type in `src/i18n` and iOS `CFBundleLocalizations`, and the saved
+      in-game language is read before the device language (D-31). `aapt2 link` (android-36, minSdk 24) accepts the
+      attribute. `docs/ANDROID.md` section "Per-app language" with the device check (does the WebView's
+      `navigator.languages` follow the per-app locale — not verifiable here).
+- [x] N12m **Budget GPUs start on the low preset (R3f, D-116)** — `auto` quality read only cores and memory, so
+      8-core/4 GB budget phones began on `medium`. `readGpuRenderer` reads the unmasked WebGL renderer once (throwaway
+      context, released, cached) into `DeviceHints.gpu`; `LOW_GPU_FAMILIES` maps Mali-G52, Mali-G57/G68 MC1–MC2,
+      Mali-T8xx, PowerVR GE83xx, Adreno 5xx/610/613 to `low`. Unknown strings keep the old rule; explicit choice and
+      remembered adaptation still win. `test:quality` +38 checks; perf note in `docs/PERFORMANCE.md`.
+- [x] N12n **Play feature graphic 1024×500 (R2d, D-117)** — `npm run store:feature` renders
+      `docs/store/feature-graphic.png` from the real `game` scene (1024×500 @2 → @1, HUD hidden, DEV probe
+      `featureView` frames the network right of centre, `brand/wayfinding.svg` on the left third) and writes opaque
+      RGB. `test:store-shots` checks size, no alpha, ≤ 15 MB, centre band, dark share ≤ 0.2 and the new PL/EN field
+      "Play feature graphic alt text" (≤ 140). Console slot in `docs/store/README.md`, entry in `docs/ASSETS.md`.
 
 ## Research proposals (R-agent)
 Proposals from the research agent (findings and sources: `docs/RESEARCH.md`, sections "R1 — …"). Each item is
@@ -428,7 +492,7 @@ sized for one PR; **Area** says where it lands so the coordinator can route it. 
 the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
 
 ### R1 (2026-11-03) — release readiness, accessibility/localisation, onboarding
-- [ ] R1a **In-app deletion of leaderboard data** — Apple 5.1.1(v) requires deletion to start in the app and
+- [x] R1a → N12k **In-app deletion of leaderboard data** — Apple 5.1.1(v) requires deletion to start in the app and
       explicitly covers auto-created guest accounts; e-mail only (D-77) is not accepted outside regulated industries.
       Settings row "Delete my ranking data" (shown once an anonymous identity exists): confirm sheet → callable
       `deleteMyData` removes every `entries` doc of the caller's uid (daily + weekly) and deletes the anonymous Auth
@@ -444,7 +508,7 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
 - [x] R1c → N12b **iOS store plist keys** — add `ITSAppUsesNonExemptEncryption = false` (HTTPS only, exempt; avoids the
       export-compliance prompt on every upload) and `CFBundleLocalizations = [en, pl]` (App Store lists the game's
       languages from the bundle). `test:ios-config` asserts both. **Area:** `ios/App/App/Info.plist`, scripts.
-- [ ] R1d **Android per-app language** — `res/xml/locales_config.xml` (en, pl) and `android:localeConfig` so
+- [x] R1d → N12l **Android per-app language** — `res/xml/locales_config.xml` (en, pl) and `android:localeConfig` so
       Android 13+ shows Airway in system per-app language settings; check on a device that the WebView's
       `navigator.languages` follows the per-app locale (uncertain) and that the in-game language setting still wins
       (D-31). `test:android-config` asserts the config. **Area:** `android/`, `src/i18n/index.ts` only if needed.
@@ -520,7 +584,7 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
       Rename "captions" in `en.md`/`pl.md` to **Play alt text** (one unique line per screenshot, ≤ 140 chars, no "image
       of"); note that App Store has no caption field. Consider "puzzle" in the Play short description (80 chars).
       **Area:** docs (`docs/store/`).
-- [ ] R2d **Play feature graphic 1024×500** — required to publish on Google Play; also the cover of the preview
+- [x] R2d → N12n **Play feature graphic 1024×500** — required to publish on Google Play; also the cover of the preview
       video (play button drawn in the centre). Render it from the real game (store-shot `game` scene at dusk, network
       centred, wide landscape viewport 1024×500 @1 and @2 then downscale) with the "Airway" wordmark in the game font
       on the left third; avoid pure black/dark-grey fields (Google's rule — the night scene is unsuitable). Add to
@@ -563,7 +627,7 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
       testers report "no goal". **Area:** sim (`src/sim/upgrades.ts`, ledger) + UI (weekly board), i18n. *Needs Q-50.*
 
 ### R3 (2026-11-03) — leaderboard cost & abuse, closed-test playtest, device coverage
-- [ ] R3a **One "top 50" document per board** — `getBoards` reads ~105 documents per call today (two top-50 queries
+- [x] R3a → N12i **One "top 50" document per board** — `getBoards` reads ~105 documents per call today (two top-50 queries
       plus rank lookups), which is ~95 % of the Firestore bill and the main abuse vector. `submitDaily` keeps
       `boards/{id}/meta/top` (array of ≤ 50 `{callSign, score, uid-hash}`) up to date inside its transaction (read the
       doc, insert, trim, write; only when the new score beats the 50th) and returns the caller's rank in its response;
@@ -571,7 +635,7 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
       top 50. Same response shape (client unchanged). Emulator test: 60 submissions → `top` equals the old query
       result; read count per `getBoards` ≤ 4 (count via emulator request log). **Area:** platform (`functions/`,
       `scripts/emulator-checks.mjs`, `docs/FIREBASE.md`).
-- [ ] R3b **Per-caller rate limit and split function caps** — in-memory token bucket per uid per instance
+- [x] R3b → N12j **Per-caller rate limit and split function caps** — in-memory token bucket per uid per instance
       (`getBoards` 20/min, `submitDaily` 6/min; over the limit → `resource-exhausted` before any Firestore access);
       `getBoards` `maxInstances: 3`, `submitDaily` `concurrency: 4` (CPU-bound replay must not queue 80 players behind
       one vCPU) with `maxInstances: 5`. Pure limiter in `functions/src/logic.ts` with `test:net-server` cases; the
@@ -593,7 +657,7 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
       the token attached as `X-Firebase-AppCheck` by `src/net/client.ts`, `enforceAppCheck: true` on both callables,
       debug provider for emulator/dev builds, Play Integrity quota (10 000/day) noted in `docs/FIREBASE.md`; licence entry
       for the plugin. **Area:** platform (`src/net/**`, `android/`, `ios/`, `functions/`). *Needs Q-53.*
-- [ ] R3f **Quality preset from the GPU family** — budget phones (Galaxy A06/A16, Redmi 14C, Moto G) report 8 cores and
+- [x] R3f → N12m **Quality preset from the GPU family** — budget phones (Galaxy A06/A16, Redmi 14C, Moto G) report 8 cores and
       4 GB, so `chooseQualityPreset` starts them on medium and only adaptation (D-73) steps down after visible stutter.
       Read `UNMASKED_RENDERER_WEBGL` once (`WEBGL_debug_renderer_info`, guarded) into `DeviceHints.gpu`; a small table in
       `src/render/quality.ts` maps Mali-G52/G57/G68 MC1–MC2, Mali-T8xx, PowerVR GE83xx, Adreno 5xx/610/613 to `low`
@@ -626,7 +690,7 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
       engagement, feedback summary, changes made, readiness evidence). **Area:** docs. *Needs Q-42, Q-52.*
 
 ### R4 (2026-11-03) — real-world data facts, mid-game jam diagnosis, large screens
-- [ ] R4a **Correct six airport codes on screen, keep city IDs** — `KIV` (Chișinău's old code, now RMO) for Kyiv,
+- [x] R4a → N12h **Correct six airport codes on screen, keep city IDs** — `KIV` (Chișinău's old code, now RMO) for Kyiv,
       `HCM` for Ho Chi Minh, `LUA` (Lukla, Nepal) for Luanda, `LUS` for Lusaka, `ISF` for Isfahan and `ALX` for
       Alexandria are wrong. `City.code` is also the sim ID (saves, logbook, sorted curfew draw, puzzles, golden save), so
       do **not** rename it: add an optional `displayCode` to `City` (`IEV`, `SGN`, `LAD`, `LUN`, `IFN`, `ALY`) and read it
@@ -635,7 +699,7 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
       common city code, else main airport"). `test:replay`, `test:save-golden` and daily hashes must stay unchanged;
       shots of one affected airport. **Area:** content/UI (`src/data/cities.ts`, `src/ui/airportLabel.ts`,
       `src/ui/overlay.ts`).
-- [ ] R4b **City data guard + "solar time" line** — new fast test `test:city-data`: display codes are 3 uppercase
+- [ ] R4b (test part done → N12h; the help sentence remains, UI agent) **City data guard + "solar time" line** — new fast test `test:city-data`: display codes are 3 uppercase
       letters and unique, IDs unchanged against a frozen list (order and spelling, so a rename fails loudly), lat/lon in
       range and on land or within ~30 km of the coast using the existing land mask, PL/EN names non-empty, population
       > 0; add to `test:fast`. Plus one sentence in help/tutorial PL/EN that clocks show solar time, not official time
@@ -745,6 +809,15 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
 - 2026-11-03 · N12c Android backup without leaderboard identity (R1e, D-92) · night/12c-android-backup · test:android-config 18/18 (14/18 on the old manifest), test:install-identity 6/6 (new), aapt2 compile ok, test:fast 59/59, build ok, e2e:smoke 9/9 (boot path touched); Gradle lint not run (Maven 429), no device restore; ui:matrix/store:shots not run (no UI change)
 - 2026-11-03 · N11e privacy policy in the app (D-86) · night/11e-privacy · test:fast 60/60 (test:privacy-text 6/6, 1/6 before), build ok, test:e2e:privacy-page 4/4 (0/4 on the old settings), e2e:settings-groups 4/4, e2e:covered-pages 2/2, e2e:pseudo-locale 27/27; e2e:smoke/ui:matrix not run (settings only, no game screen)
 - 2026-11-03 · N11f one tip on the game-over report (D-87) · night/11f-gameover-tip · test:fast 61/61 (test:gameover-tip 7/7, 6/7 on the old catalogs), build ok, e2e:smoke 9/9, ui:matrix 32/32 (its game overs are at unserved airports: no tip, PNGs unchanged), e2e:pseudo-locale 27/27, e2e:gameover-short 4/4 (0/4 before the short-screen rule), e2e:gameover-unserved 4/4, e2e:gameover-map 3/3, e2e:run-timeline 4/4, e2e:daily-share 4/4, test:e2e:gameover-tip 4/4 (1/4 on the old report), store:shots 30 (test:store-shots 30/30)
-- 2026-11-03 · N12d server replay ends at the game over (R3c, D-93) · night/12d-replay-stop · test:replay-cost 7/7 (5/7 on the old replay), test:replay 23/23 (summary identical), test:net 8/8, test:net-server 5/5, test:fast 62/62, build ok, test:firebase 7/7 (emulator); e2e/ui:matrix/store:shots not run (no UI change)
-- 2026-11-03 · N12e store-requirement guards (R1m, D-94) · night/12e-store-guards · test:android-config 20/20 (19/20 on the old build script; 19/20 with targetSdk 35), test:native-align 7/7 incl. zipalign cross-check (new; module absent before), test:fast 63/63, build ok; Gradle `assembleDebug --offline` could not resolve plugins here, so no real APK/AAB was checked
+- 2026-11-03 · N12d server replay ends at the game over (R3c, D-97) · night/12d-replay-stop · test:replay-cost 7/7 (5/7 on the old replay), test:replay 23/23 (summary identical), test:net 8/8, test:net-server 5/5, test:fast 62/62, build ok, test:firebase 7/7 (emulator); e2e/ui:matrix/store:shots not run (no UI change)
+- 2026-11-03 · N12e store-requirement guards (R1m, D-98) · night/12e-store-guards · test:android-config 20/20 (19/20 on the old build script; 19/20 with targetSdk 35), test:native-align 7/7 incl. zipalign cross-check (new; module absent before), test:fast 63/63, build ok; Gradle `assembleDebug --offline` could not resolve plugins here, so no real APK/AAB was checked
 - 2026-11-03 · N11g reduce motion setting (D-88) · night/11g-reduce-motion · test:fast 63/63 (test:motion 8/8, 0/8 on the old code; test:flap 15/15 via the TS loader), build ok, test:e2e:reduce-motion 3/3 (0/3 on the old settings), e2e:settings-groups 4/4, e2e:screens-fit 18/18, e2e:screens-fit-320 12/12, e2e:pseudo-locale 27/27, e2e:privacy-page 4/4, e2e:covered-pages 2/2, e2e:airline-colour 3/3; e2e:smoke/ui:matrix not run (settings only; E2E pages emulate a reduce-motion system, game screens unchanged)
+- 2026-11-03 · N12g owner decisions D-93…D-96, own D-97/D-98 renumbered · night/12g-owner-decisions · test:fast 64/64, build ok (docs and comments only)
+- 2026-11-03 · N12f fair week 1 + faster pace, Alexandria in ME (D-95, D-99, D-105, D-106; rules v5) · night/12f-week1-reach · test:week1-reach 5/5 (new; 2/5 on rules v4: 507/1,600 week-1 spawns and 33 start airports beyond reach), test:balance median 17.81 → 17.03 min (reach rule alone 24.43; 200 seeds 17.53 → 16.52), upgrade1 0.88 → 1.00, upgrade2 0.56 → 0.66, week-1 losses beyond reach 5/50 → 0/50, test:replay 23/23 (summary changed with the rules: a1a1 min8640:upgrade:score109 → min4124:over:score48), test:sim-week 6/6 (re-locked), test:save-golden 20/20 (seed 0xA1A3, + v4 replay check), test:bot-policy 10/10 (2 checks re-pinned), test:daily-mode 20/20, test:net 8/8, test:fast 65/65, build ok, store:shots 30/30 regenerated and inspected (test:store-shots 30/30); e2e/ui:matrix not run (no UI code changed)
+- 2026-11-03 · N12h six airport codes on screen + city data guard (R4a, R4b test, D-107) · night/12h-display-codes · test:city-data 5/5 (new; 4/5 before the display codes), test:airport-labels 5/5 (+1), test:replay 23/23 and test:save-golden 20/20 with summaries/hashes identical to dev (sim ids unchanged), test:balance median 17.03 (unchanged), test:fast 66/66, build ok; e2e/ui:matrix/store:shots not run (none of the six airports is in those scenes); no shot of an affected airport taken
+- 2026-11-03 · N12i one top-50 document per board (R3a, D-108) · night/12i-top-board · test:net-server 9/9 (5/9 on the old functions), test:firebase 9/9 on the emulator (7/9 on the old functions: no `rank`, no `meta/top`), test:fast 66/66, build ok; e2e/ui:matrix/store:shots not run (client unchanged); read count proven behaviourally (a direct entry edit is not read back), no emulator request log
+- 2026-11-03 · N12j per-player rate limit + split function caps (R3b, D-109) · night/12j-rate-limit · test:net-server 13/13 (9/13 on the old functions), test:net 9/9 (8/9 on the old client: a 429 dropped the queued run), test:firebase 10/10 on the emulator (9/10 on the old functions: no limit), test:fast 66/66, build ok; e2e/ui:matrix/store:shots not run (no UI change); caps not verified on a real deploy
+- 2026-11-03 · N12k in-app deletion of leaderboard data (R1a, D-93, D-114) + Q-60 → D-113 · night/12k-delete-my-data · test:net-server 16/16 (12/16 on the old functions), test:net 12/12 (9/12 on the old client), test:firebase 12/12 on the emulator (new deletion checks; `deleteMyData` absent before), test:e2e:delete-ranking 4/4 (new; 2/4 on the old settings), test:fast 66/66, build ok; ui:matrix/store:shots not run (row hidden without Firebase config); no real deploy
+- 2026-11-03 · N12l Android per-app language (R1d, D-115) · night/12l-android-locales · test:android-config 22/22 (21/22 on the old manifest), aapt2 link ok (android-36, minSdk 24), test:fast 66/66, build ok; no device run (WebView `navigator.languages` under a per-app locale unverified); e2e/ui:matrix not run (no web code changed)
+- 2026-11-03 · N12m budget GPUs start on the low preset (R3f, D-116) · night/12m-gpu-preset · test:quality 95/95 (57 before; on the old quality.ts 19 of the new checks fail and the probe check throws: no `readGpuRenderer`), renderer probe checked in headless Chromium (SwiftShader string read, probe context lost after), test:fast 66/66, build ok; perf:scene not run (it forces `--preset`, SwiftShader is not in the table), e2e/ui:matrix/store:shots not run (SwiftShader keeps the old rule); table not verified on the phones themselves
+- 2026-11-03 · N12n Play feature graphic 1024×500 (R2d, D-117) · night/12n-feature-graphic · store:feature 1/1 (centre luma std 62.1, 506 colours, dark share 0.038, 297,787 bytes; PNG inspected), test:store-shots fields 12 → 14 + feature=1 (fails on the old repo state: no feature graphic, no alt-text field), test:fast 66/66, build ok; store:shots not re-run (store scenes unchanged), e2e/ui:matrix not run (DEV probe only); PNG not byte-identical between runs (SwiftShader)

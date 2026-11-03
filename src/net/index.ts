@@ -16,6 +16,12 @@ export interface Boards { readonly daily: Board; readonly weekly: Board }
 export interface SubmitResponse { readonly accepted: boolean; readonly reason?: RejectReason; readonly score?: number }
 
 export type LeaderboardStatus = 'disabled' | 'idle' | 'queued' | 'sent' | 'rejected';
+/**
+ * [night-12k] D-114: outcome of an in-app data deletion. `deleted`: the server removed the entries and the anonymous
+ * account (or found nothing left); `none`: this device never had an identity; `offline`: no connection, nothing
+ * changed (never reported as done); `failed`: the server refused or failed, the identity is kept for a retry.
+ */
+export type DeleteResult = 'deleted' | 'none' | 'offline' | 'failed';
 
 export interface Leaderboards {
   readonly enabled: boolean;
@@ -25,6 +31,10 @@ export interface Leaderboards {
   flush(): Promise<void>;
   /** Daily + weekly boards for a Warsaw day key; null when disabled or offline. */
   boards(dateKey: string): Promise<Boards | null>;
+  /** [night-12k] D-114: true once this device has an anonymous leaderboard identity or a queued run. */
+  hasData(): boolean;
+  /** [night-12k] D-114 (R1a): delete the player's entries and anonymous account; never throws. */
+  deleteMyData(): Promise<DeleteResult>;
 }
 
 const TOKEN_KEY = 'aw-net-session-v1';
@@ -41,6 +51,9 @@ function storageTokens(storage: QueueStorage | null): TokenStore {
       } catch { return null; }
     },
     save: (session) => { try { storage?.setItem(TOKEN_KEY, JSON.stringify(session)); } catch { /* blocked */ } },
+    clear: () => {
+      try { if (storage?.removeItem) storage.removeItem(TOKEN_KEY); else storage?.setItem(TOKEN_KEY, ''); } catch { /* blocked */ }
+    },
   };
 }
 
@@ -49,6 +62,8 @@ const DISABLED: Leaderboards = {
   submitDaily: async () => 'disabled',
   flush: async () => {},
   boards: async () => null,
+  hasData: () => false,
+  deleteMyData: async () => 'none',
 };
 
 export function createLeaderboards(options: {
@@ -95,6 +110,21 @@ export function createLeaderboards(options: {
         const ids = boardsForDaily(dateKey);
         return await client.call<Boards>('getBoards', { daily: ids.daily, weekly: ids.weekly });
       } catch { return null; }
+    },
+    hasData: () => client.uid !== null || queue.list().length > 0,
+    async deleteMyData() {
+      if (client.uid === null) { queue.clear(); return 'none'; }
+      try {
+        await client.call<{ deleted: boolean }>('deleteMyData', {});
+      } catch (error) {
+        if (error instanceof NetError && error.code === 'offline') return 'offline';
+        // The account is already gone (an earlier deletion whose answer was lost): nothing is left to delete.
+        if (!(error instanceof NetError && /USER_NOT_FOUND|USER_DISABLED/.test(error.message))) return 'failed';
+      }
+      client.forget();
+      queue.clear();
+      last = 'idle';
+      return 'deleted';
     },
   };
 }

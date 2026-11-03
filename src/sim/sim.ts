@@ -286,7 +286,7 @@ export class Sim {
 
   /**
    * Replay does not use a wall-clock accumulator or external randomness.
-   * [night-12d] `stopAtEnd` (D-93): stop after the tick on which the run ended ('over' or 'won'), even before
+   * [night-12d] `stopAtEnd` (D-97): stop after the tick on which the run ended ('over' or 'won'), even before
    * `untilTick`. The live game never ticks a finished world (EndlessRun.step), so a finished run replays to the
    * same tick and hash; the server uses it so a claimed `endTick` past the game over costs nothing extra.
    */

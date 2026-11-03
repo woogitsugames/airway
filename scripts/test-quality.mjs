@@ -270,5 +270,44 @@ for (const level of ['low', 'medium']) {
   check(memory.readAdaptiveSteps(NOW, throwing).length === 0, 'denied storage reads as no memory, never throws');
 }
 
+// [N12m] GPU family table (D-116): budget GPUs start on low even with 8 cores / 4 GB; an unknown or
+// capable renderer keeps the core/memory rule; an explicit choice still wins.
+{
+  const budget = { hardwareConcurrency: 8, deviceMemoryGb: 4, devicePixelRatio: 2 };
+  const flagship = { hardwareConcurrency: 8, deviceMemoryGb: 8, devicePixelRatio: 3 };
+  const lowGpus = [
+    'Mali-G52 MC2', 'Mali-G52', 'ANGLE (ARM, Mali-G52 MC2, OpenGL ES 3.2)', 'Mali-G57 MC1', 'Mali-G57 MC2',
+    'Mali-G68 MP2', 'Mali-G68 MC1', 'Mali-T830', 'Mali-T880 MP2', 'PowerVR Rogue GE8320', 'PowerVR Rogue GE8322',
+    'Adreno (TM) 505', 'Adreno (TM) 506', 'Adreno (TM) 512', 'ANGLE (Qualcomm, Adreno (TM) 610, OpenGL ES 3.2)',
+    'Adreno (TM) 613',
+  ];
+  for (const gpu of lowGpus) {
+    check(quality.chooseQualityPreset('auto', { ...budget, gpu }) === 'low', `auto + ${gpu} (8 cores, 4 GB) → low`);
+  }
+  check(quality.chooseQualityPreset('auto', { ...flagship, gpu: 'Mali-G52 MC2' }) === 'low', 'a low GPU wins over 8 GB');
+  check(quality.resolveQualityProfile('auto', { ...budget, gpu: 'Adreno (TM) 610' }).pixelRatio === 1,
+    'a low GPU also caps DPR at 1');
+  const capable = [
+    'Mali-G57 MC3', 'Mali-G68 MC4', 'Mali-G52 MC3', 'Mali-G710 MC10', 'Mali-G615 MC2', 'Mali-G720 MC7',
+    'Adreno (TM) 618', 'Adreno (TM) 619', 'Adreno (TM) 6100', 'Adreno (TM) 740', 'PowerVR Rogue GM9446',
+    'ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)',
+    'Apple GPU', '', undefined,
+  ];
+  for (const gpu of capable) {
+    const label = gpu === undefined ? 'no renderer string' : gpu === '' ? 'empty renderer string' : gpu;
+    check(quality.chooseQualityPreset('auto', { ...budget, gpu }) === quality.chooseQualityPreset('auto', budget) &&
+      quality.chooseQualityPreset('auto', { ...flagship, gpu }) === 'high', `${label} keeps the core/memory rule`);
+  }
+  for (const pref of ['medium', 'high']) {
+    check(quality.chooseQualityPreset(pref, { ...budget, gpu: 'Mali-G52 MC2' }) === pref, `explicit ${pref} wins over a low GPU`);
+  }
+  const ladder = quality.adaptiveSteps(quality.resolveQualityProfile('auto', { ...budget, gpu: 'Mali-G52 MC2' }));
+  check(!ladder.includes('terrain') && quality.applyAdaptiveSteps(
+    quality.resolveQualityProfile('auto', { ...budget, gpu: 'Mali-G52 MC2' }), ['pixel-ratio']) === null,
+    'a low-GPU start leaves no terrain step; a remembered medium ladder is ignored');
+  check(quality.readGpuRenderer() === undefined, 'renderer probe without a DOM returns undefined, never throws');
+  check(quality.getDeviceHints().gpu === undefined, 'device hints carry no gpu without a DOM');
+}
+
 console.log(`SUMMARY test:quality seed=0x${SEED.toString(16).toUpperCase()} passed=${passed} failed=${failed}`);
 if (failed) process.exitCode = 1;

@@ -56,6 +56,7 @@
 .airway-settings__groups { display:grid; gap:14px; }
 .airway-settings__group { min-width:0; }
 .airway-settings__group .airway-settings__licenses { margin-top:10px; }
+.airway-settings__delete [hidden] { display:none; } /* [night-12k] D-114: the class sets display:block */
 .airway-settings__group-title { margin:6px 0 0; padding:6px 10px 5px; background:#1e6f6a; color:#fbf8f1; font:800 13px/1.2 'Overpass Mono',monospace; letter-spacing:.08em; text-transform:uppercase; clip-path:polygon(0 0,calc(100% - 10px) 0,100% 50%,calc(100% - 10px) 100%,0 100%); width:max-content; max-width:100%; padding-right:20px; }
 @media (orientation:landscape) and (min-width:700px) { .airway-settings__groups { grid-template-columns:1fr 1fr; column-gap:22px; } }
 .airway-setting__hint { margin:4px 0 11px; font:400 12px/1.4 'Atkinson Hyperlegible Next',sans-serif; color:#55514a; }

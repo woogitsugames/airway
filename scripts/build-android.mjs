@@ -173,7 +173,7 @@ try {
   run('npm', ['exec', '--yes', '--package=@capacitor/cli@8.5.3', '--', 'cap', 'sync', 'android']);
   const task = mode === '--release-aab' ? 'bundleRelease' : mode === '--release-apk' ? 'assembleRelease' : 'assembleDebug';
   run(process.platform === 'win32' ? 'gradlew.bat' : './gradlew', [task], ANDROID);
-  // [night-12e] D-94: Play rejects 64-bit native libraries that are not 16 KB aligned; release builds fail here.
+  // [night-12e] D-98: Play rejects 64-bit native libraries that are not 16 KB aligned; release builds fail here.
   const output = mode === '--release-aab' ? 'app/build/outputs/bundle/release/app-release.aab'
     : mode === '--release-apk' ? 'app/build/outputs/apk/release/app-release.apk' : 'app/build/outputs/apk/debug/app-debug.apk';
   const alignment = checkNativeAlignment(readFileSync(join(ANDROID, output)), output.endsWith('.apk') ? 'apk' : 'aab');

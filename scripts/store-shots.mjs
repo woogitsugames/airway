@@ -2,10 +2,11 @@
 // [task-36] Every PNG is checked (size, not blank/white, no dev text, passenger glyphs only from the six
 // D-08 shapes) and a contact sheet is rendered. `--validate` re-checks the committed PNGs + manifest.
 // Preview one scene without publishing: `node scripts/store-shots.mjs --only=night --out=/some/dir`.
+// [N12n] `--feature` renders only the Google Play feature graphic (1024×500, opaque RGB PNG, D-117).
 import { spawn } from 'node:child_process';
 import { once } from 'node:events';
 import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
-import { inflateSync } from 'node:zlib';
+import { crc32, deflateSync, inflateSync } from 'node:zlib';
 import { createRequire } from 'node:module';
 import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
@@ -37,11 +38,22 @@ const DEVICES = [
 const EXPECTED = LANGUAGES.length * SCENES.length * DEVICES.length;
 const args = process.argv.slice(2);
 const validateOnly = args.includes('--validate');
+const featureOnly = args.includes('--feature');
 const baseArg = args.find((arg) => arg.startsWith('--base-url='));
 const onlyArg = args.find((arg) => arg.startsWith('--only='))?.slice('--only='.length);
 const outArg = args.find((arg) => arg.startsWith('--out='))?.slice('--out='.length);
 const MANIFEST = resolve(OUT, 'manifest.json');
 const CONTACT = resolve(ROOT, 'docs/store/contact-sheet.png');
+// [N12n] D-117: Google Play feature graphic, rendered from the real `game` scene in a wide landscape viewport
+// at DPR 2 and downscaled, the wayfinding wordmark (brand/wayfinding.svg) on the left third, saved without alpha.
+const FEATURE = resolve(ROOT, 'docs/store/feature-graphic.png');
+const FEATURE_SIZE = { w: 1024, h: 500 };
+// Disc centre at 62 % of the width and 0.45 radius below the middle: the network (northern half) is centred,
+// the limb shows at the top and the sky stays free for the wordmark.
+const FEATURE_VIEW = { cx: 0.62, dy: 0.45, zoom: 1.6 };
+const FEATURE_MAX_BYTES = 15 * 1024 * 1024; // Play: JPEG or 24-bit PNG, ≤ 15 MB
+// Google: no pure black/dark grey backgrounds. Share of dark, unsaturated pixels allowed in the whole image.
+const FEATURE_DARK_MAX = 0.2;
 // D-08: the six approved passenger glyphs. The provisional Asia/Oceania glyphs must not reach a store image.
 const D08_GLYPHS = ['chevron', 'bowtie', 'crescent', 'keyhole', 'fin', 'bracket'];
 // Developer-only text that must never be visible in a store image (raw i18n keys, debug words, NaN...).
@@ -68,6 +80,12 @@ function checkCopy() {
     const short = field(md, 'Google Play short description');
     const full = field(md, 'Full description');
     const keywords = field(md, 'App Store keywords');
+    // [N12n] D-117: Play asks for an alt text with the feature graphic.
+    const featureAlt = field(md, 'Play feature graphic alt text');
+    if ([...featureAlt].length > 140) throw new Error(lang + ': feature graphic alt text >140 characters');
+    if (/\b(?:image of|picture of|obraz|zdjęcie)\b|\b(?:free|darmow|gratis|price|cena)/i.test(featureAlt)) {
+      throw new Error(lang + ': feature graphic alt text says "image of" or names a price');
+    }
     const ownerTitle = lang === 'pl' ?
       'Airway: Buduj siatkę lotów na globusie' : 'Airway: Globe Route Builder';
     if (approved !== ownerTitle) throw new Error(lang + ': D-18 title modified');
@@ -81,8 +99,9 @@ function checkCopy() {
       throw new Error(lang + ': competitor name used');
     }
     console.log('listing ' + lang + ' name=' + [...name].length + '/30 short=' +
-      [...short].length + '/80 keywords=' + Buffer.byteLength(keywords, 'utf8') + '/100bytes');
-    fields += 6;
+      [...short].length + '/80 keywords=' + Buffer.byteLength(keywords, 'utf8') + '/100bytes featureAlt=' +
+      [...featureAlt].length + '/140');
+    fields += 7;
   }
   if (new Set(SCENES).size !== SCENES.length) throw new Error('Duplicate scenes');
   if (new Set(DEVICES.map((d) => d.id)).size !== DEVICES.length) throw new Error('Duplicate devices');
@@ -174,6 +193,83 @@ export function readPng(file) {
     previous = line;
   }
   return { width, height, pixels: out };
+}
+
+/** [N12n] Colour type of a PNG (2 = RGB, 6 = RGBA) and its size, from IHDR. */
+export function pngHeader(file) {
+  const data = readFileSync(file);
+  if (data.readUInt32BE(0) !== 0x89504e47 || data.toString('latin1', 12, 16) !== 'IHDR') throw new Error('Not a PNG: ' + file);
+  return { width: data.readUInt32BE(16), height: data.readUInt32BE(20), bitDepth: data[24], colourType: data[25], bytes: data.length };
+}
+
+/** [N12n] Writes RGBA pixels as an opaque 8-bit RGB PNG (alpha dropped; the pixels are already opaque). */
+export function writeRgbPng(file, width, height, rgba) {
+  const stride = width * 3 + 1;
+  const raw = Buffer.alloc(stride * height);
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const i = (y * width + x) * 4, o = y * stride + 1 + x * 3;
+      raw[o] = rgba[i]; raw[o + 1] = rgba[i + 1]; raw[o + 2] = rgba[i + 2];
+    }
+  }
+  const chunk = (kind, body) => {
+    const head = Buffer.alloc(8);
+    head.writeUInt32BE(body.length, 0); head.write(kind, 4, 'latin1');
+    const crc = Buffer.alloc(4);
+    crc.writeUInt32BE(crc32(Buffer.concat([head.subarray(4), body])) >>> 0, 0);
+    return Buffer.concat([head, body, crc]);
+  };
+  const ihdr = Buffer.alloc(13);
+  ihdr.writeUInt32BE(width, 0); ihdr.writeUInt32BE(height, 4);
+  ihdr[8] = 8; ihdr[9] = 2; ihdr[10] = 0; ihdr[11] = 0; ihdr[12] = 0;
+  writeFileSync(file, Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+    chunk('IHDR', ihdr), chunk('IDAT', deflateSync(raw, { level: 9 })), chunk('IEND', Buffer.alloc(0))]));
+}
+
+/**
+ * [N12n] D-117 feature-graphic contract: exactly 1024×500, 8-bit RGB without alpha, ≤ 15 MB, the centre band
+ * (middle third, where Play draws the video play button) carries the scene (not empty), and no large pure
+ * black/dark-grey field (Google's rule). Returns the measurements.
+ */
+export function checkFeatureGraphic(file) {
+  if (!existsSync(file)) throw new Error('Missing feature graphic ' + file + '; run npm run store:feature');
+  const header = pngHeader(file);
+  if (header.width !== FEATURE_SIZE.w || header.height !== FEATURE_SIZE.h) {
+    throw new Error('feature graphic: ' + header.width + 'x' + header.height + ' instead of 1024x500');
+  }
+  if (header.colourType !== 2 || header.bitDepth !== 8) {
+    throw new Error('feature graphic: PNG colour type ' + header.colourType + ' (need 8-bit RGB, no alpha)');
+  }
+  if (header.bytes > FEATURE_MAX_BYTES) throw new Error('feature graphic: ' + header.bytes + ' bytes > 15 MB');
+  const { width, height, pixels } = readPng(file);
+  let dark = 0, all = 0, n = 0, sum = 0, sq = 0;
+  const buckets = new Map();
+  for (let y = 0; y < height; y += 2) {
+    for (let x = 0; x < width; x += 2) {
+      const i = (y * width + x) * 4;
+      const r = pixels[i], g = pixels[i + 1], b = pixels[i + 2];
+      const l = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      all++;
+      if (l < 40 && Math.max(r, g, b) - Math.min(r, g, b) < 24) dark++;
+      if (x >= width / 3 && x < width * 2 / 3) {
+        n++; sum += l; sq += l * l;
+        const key = (r >> 4) << 8 | (g >> 4) << 4 | (b >> 4);
+        buckets.set(key, (buckets.get(key) ?? 0) + 1);
+      }
+    }
+  }
+  const mean = sum / n;
+  const centre = {
+    lumaStd: Math.round(Math.sqrt(Math.max(0, sq / n - mean * mean)) * 10) / 10,
+    dominantShare: Math.round(Math.max(...buckets.values()) / n * 1000) / 1000,
+    colours: buckets.size,
+  };
+  if (centre.lumaStd < 8 || centre.dominantShare > 0.85 || centre.colours < 60) {
+    throw new Error('feature graphic: empty centre band (' + JSON.stringify(centre) + ')');
+  }
+  const darkShare = Math.round(dark / all * 1000) / 1000;
+  if (darkShare > FEATURE_DARK_MAX) throw new Error('feature graphic: dark field ' + darkShare + ' > ' + FEATURE_DARK_MAX);
+  return { ...centre, darkShare, bytes: header.bytes };
 }
 
 /** Pixel statistics on a 4-px grid: luminance spread, white share, dominant colour share, colour count. */
@@ -401,6 +497,78 @@ async function renderContactSheet(browser, dir, target) {
   } finally { await page.close(); }
 }
 
+/**
+ * [N12n] D-117: the Play feature graphic from the real `game` scene (seed 0xA1A1, English page; the image has no
+ * words but the wordmark). The DOM HUD is hidden, only the globe canvas stays, and the original wayfinding sign
+ * (brand/wayfinding.svg, Overpass 800) sits on the left third, clear of the centre where Play draws the video
+ * play button. Captured at 1024×500 @2, downscaled in Chromium to @1 and written as opaque RGB.
+ */
+async function renderFeatureGraphic(browser, baseUrl, target) {
+  const page = await browser.newPage({ viewport: { width: FEATURE_SIZE.w, height: FEATURE_SIZE.h },
+    deviceScaleFactor: 2, locale: 'en-GB', reducedMotion: 'reduce' });
+  const hi = resolve(stageDir, 'feature@2.png'), lo = resolve(stageDir, 'feature@1.png');
+  let state;
+  try {
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    const url = new URL(baseUrl);
+    url.searchParams.set('storeShot', WARM_SCENE);
+    url.searchParams.set('seed', String(SEED));
+    url.searchParams.set('lang', 'en');
+    await page.goto(url.href, { waitUntil: 'networkidle', timeout: 30000 });
+    await page.waitForFunction((id) => document.documentElement.dataset.storeShotReady === id, WARM_SCENE,
+      { timeout: 120000 }).catch(() => { throw new Error('feature graphic: scene "' + WARM_SCENE + '" never became ready'); });
+    // A closer globe, slid right of the wordmark and down so the network sits in the middle of the frame.
+    const framed = await page.evaluate(({ cx, dy, zoom }) => {
+      const probe = window.__awWorld;
+      if (!probe?.featureView) return null;
+      probe.featureView(0, 0, zoom);
+      const disc = probe.disc();
+      if (!disc) return null;
+      probe.featureView(cx * innerWidth - disc.x, innerHeight / 2 + dy * disc.radius - disc.y, zoom);
+      return probe.disc();
+    }, FEATURE_VIEW);
+    if (!framed) throw new Error('feature graphic: DEV world probe has no featureView/disc');
+    await page.evaluate(() => new Promise((done) => { let n = 20; const step = () => (--n ? requestAnimationFrame(step) : done()); requestAnimationFrame(step); }));
+    const sign = readFileSync(resolve(ROOT, 'brand/wayfinding.svg'), 'utf8').replace(/<!--[\s\S]*?-->/g, '');
+    await page.addStyleTag({ content: '#app *:not(canvas){visibility:hidden!important}' +
+      '#aw-feature-sign{position:fixed;left:4%;top:50%;width:28%;transform:translateY(-50%);z-index:9;' +
+      'pointer-events:none}#aw-feature-sign svg{display:block;width:100%;height:auto}' });
+    state = await page.evaluate(async (markup) => {
+      const holder = document.createElement('div');
+      holder.id = 'aw-feature-sign';
+      holder.innerHTML = markup;
+      document.body.append(holder);
+      await document.fonts.load('800 126px Overpass');
+      await document.fonts.ready;
+      const box = holder.getBoundingClientRect();
+      return { overpass: document.fonts.check('800 126px Overpass'), signRight: box.right,
+        sun: document.documentElement.dataset.storeShotSun ?? null,
+        canvas: [...document.querySelectorAll('#app canvas')].some((c) => c.getBoundingClientRect().width > 500) };
+    }, sign);
+    if (!state.overpass) throw new Error('feature graphic: Overpass 800 not loaded for the wordmark');
+    if (!state.canvas) throw new Error('feature graphic: no globe canvas');
+    const disc = await page.evaluate(() => window.__awWorld?.disc?.() ?? null);
+    if (!disc || disc.y - disc.radius < 0 || disc.x - disc.radius < FEATURE_SIZE.w / 3 - 120) {
+      throw new Error('feature graphic: globe limb not in the frame or under the wordmark (' + JSON.stringify(disc) + ')');
+    }
+    if (state.signRight > FEATURE_SIZE.w / 3 + 1) throw new Error('feature graphic: wordmark leaves the left third');
+    if (errors.length) throw new Error('feature graphic: browser errors: ' + errors.join('; '));
+    await page.screenshot({ path: hi, animations: 'disabled', fullPage: false });
+  } finally { await page.close(); }
+  const down = await browser.newPage({ viewport: { width: FEATURE_SIZE.w, height: FEATURE_SIZE.h }, deviceScaleFactor: 1 });
+  try {
+    await down.route('http://store.local/**', (route) => route.fulfill({ path: hi }));
+    await down.setContent('<!doctype html><style>html,body{margin:0;background:#888}img{display:block;width:' +
+      FEATURE_SIZE.w + 'px;height:' + FEATURE_SIZE.h + 'px}</style><img src="http://store.local/hi.png">', { waitUntil: 'load' });
+    await down.evaluate(() => document.images[0].decode());
+    await down.screenshot({ path: lo, fullPage: false });
+  } finally { await down.close(); }
+  const { width, height, pixels } = readPng(lo);
+  writeRgbPng(target, width, height, pixels);
+  return { ...state, ...checkFeatureGraphic(target) };
+}
+
 /** `--validate`: committed PNGs, manifest and contact sheet still match the 30-shot contract. */
 // [task-40] `--validate --out=<dir>` checks a fresh full run in a scratch dir (manifest + sheet inside it).
 function validateShots(dir = OUT, manifestFile = MANIFEST, contactFile = CONTACT) {
@@ -435,7 +603,7 @@ function validateShots(dir = OUT, manifestFile = MANIFEST, contactFile = CONTACT
 }
 
 try {
-  const unknown = args.filter((arg) => arg !== '--validate' && !/^--(base-url|only|out)=/.test(arg));
+  const unknown = args.filter((arg) => arg !== '--validate' && arg !== '--feature' && !/^--(base-url|only|out)=/.test(arg));
   if (unknown.length) throw new Error('Unknown options: ' + unknown.join(', '));
   if (onlyArg && !SCENES.includes(onlyArg)) throw new Error('Unknown scene: ' + onlyArg);
   if (onlyArg && !outArg) throw new Error('--only needs --out=<dir>: a partial run never publishes');
@@ -443,8 +611,26 @@ try {
   if (validateOnly) {
     const shots = outArg ? validateShots(resolve(outArg), resolve(outArg, 'manifest.json'),
       resolve(outArg, 'contact-sheet.png')) : validateShots();
+    const feature = checkFeatureGraphic(outArg ? resolve(outArg, 'feature-graphic.png') : FEATURE);
+    console.log('feature graphic 1024x500 rgb centre=' + feature.lumaStd + ' dark=' + feature.darkShare +
+      ' bytes=' + feature.bytes);
     console.log('SUMMARY test:store-shots seed=0xA1A1 listings=2 fields=' + fields +
-      ' scenes=5 devices=3 shots=' + shots + ' passed=1 failed=0');
+      ' scenes=5 devices=3 shots=' + shots + ' feature=1 passed=1 failed=0');
+  } else if (featureOnly) {
+    const require = createRequire(import.meta.url);
+    const { chromium } = require('playwright');
+    const url = baseArg ? baseArg.slice('--base-url='.length) : await startVite();
+    stageDir = mkdtempSync(join(tmpdir(), 'airway-store-feature-'));
+    browser = await chromium.launch({ headless: true, args: [
+      '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist',
+    ] });
+    const target = outArg ? resolve(outArg, 'feature-graphic.png') : FEATURE;
+    mkdirSync(dirname(target), { recursive: true });
+    const result = await renderFeatureGraphic(browser, url, target);
+    captured = 1;
+    console.log('feature ' + target + ' 1024x500 rgb sun=' + result.sun + ' centre=' +
+      result.lumaStd + ' colours=' + result.colours + ' dark=' + result.darkShare + ' bytes=' + result.bytes);
+    console.log('SUMMARY store:feature seed=0xA1A1 captured=1 passed=1 failed=0');
   } else {
     const require = createRequire(import.meta.url);
     const { chromium } = require('playwright');
@@ -513,7 +699,7 @@ try {
   }
 } catch (error) {
   console.error('FAIL ' + (error instanceof Error ? error.message : String(error)));
-  console.log('SUMMARY ' + (validateOnly ? 'test:store-shots' : 'store:shots') +
+  console.log('SUMMARY ' + (validateOnly ? 'test:store-shots' : featureOnly ? 'store:feature' : 'store:shots') +
     ' seed=0xA1A1 captured=' + captured + ' passed=0 failed=1');
   process.exitCode = 1;
 } finally {

@@ -680,7 +680,41 @@ Android skins hide it) can now still the game. Rejected: a three-way "system / o
 for a choice the hint explains), a catch-all `* { animation: none }` rule (changes the timing of every screen and
 e2e suite at once). **Status: in force (N11g, `test:motion` 8 cases, `test:e2e:reduce-motion` 3 cases).**
 
-## D-93 — The server replay ends at the game over; endTick must be the game-over tick (2026-11-03, Claude, night N12d)
+## D-93 — Leaderboard data can be deleted from inside the app (2026-11-03, owner, Q-41 → A)
+Settings gain a "Delete my leaderboard data" action that removes the player's board entries and the anonymous
+Firebase account; e-mail stays as the web path that Google Play's data-deletion form needs. Extends D-77 (90-day TTL +
+e-mail). Reason: Apple 5.1.1(v) requires account deletion, guest accounts included, to start in the app; e-mail alone
+risks rejection. Rejected: e-mail only (B), first iOS release without leaderboards (C). Unblocks R1a.
+**Status: to implement (R1a).**
+
+## D-94 — Google Play organisation account (2026-11-03, owner, Q-42 → B)
+Airway is published from a Google Play organisation account (D-U-N-S number, the company from Q-01), which is exempt
+from the personal-account rule of a closed test with ≥ 12 testers × 14 days before production. A closed test is still
+run, as a playtest (R1o, Q-52). The DSA trader declaration (address and contact visible in the EU) applies.
+Rejected: personal account + mandatory closed test (A).
+**Status: decided (owner action: D-U-N-S and Play Console organisation account).**
+
+## D-95 — Week 1 is fair: new airports within reach, pace slightly faster (2026-11-03, owner, Q-51 → B)
+In week 1 (before the first weekly board, where the first widebody can be taken) new airports appear only within
+2,500 km of an active airport, so no loss is one the player could not have answered. To keep the session target, the
+pace gets slightly faster (e.g. more frequent airports) so the bot median stays inside 10–18 min (D-79). Reason: after
+N12a 5 of 50 bot runs were still lost in week 1 at an airport farther than 2,500 km from every other one. Rejected:
+leave the rules (A), widen the target to 10–20 min (C).
+**Status: in force (N12f, rules v5: spawner reach rule, D-105 start radius, D-106 pace; `test:week1-reach`,
+`test:balance` `week1_unreachable` = 0 of 50, was 5 of 50; median 17.81 → 17.03 min).**
+
+## D-96 — Post-launch languages, distribution and launch plan (2026-11-03, owner, Q-43 → A, Q-44 → A, Q-48 → A)
+- **Languages:** after launch wave 1 adds DE, FR, ES and PT-BR (no technical change), then JA (an OFL CJK typeface,
+  a few MB). Store listings first (R1k), then the game with a native-speaker review.
+- **Distribution:** worldwide except mainland China (Apple needs an ISBN/ICP licence there; Google Play is not
+  available).
+- **Launch plan:** the T−12 weeks plan from R2 (`docs/LAUNCH.md`, R2f): closed test → iOS pre-order / Play
+  pre-registration (≤ 90 days) → launch, Apple featuring nomination 6–12 weeks before. Showcases (Big Indie Pitch
+  Mobile at PG Connects London, Digital Dragons 2027) only once a playable build exists.
+Rejected: JA at launch, EU + UK + US only, no showcases or a silent launch.
+**Status: decided (R2f writes `docs/LAUNCH.md`).**
+
+## D-97 — The server replay ends at the game over; endTick must be the game-over tick (2026-11-03, Claude, night N12d) — merged as D-93 in PR #130, renumbered
 `verifyDailySubmission` replays with `Sim.replay(..., stopAtEnd = true)`: the loop stops after the tick on which the
 world reaches `over` (or `won`), and a submission whose `endTick` is not exactly that tick is `malformed` (one tick
 early stays `not_finished`). Before, a finished run sent with `endTick` = 30 weeks replayed a dead world for the whole
@@ -692,7 +726,7 @@ container: bot daily runs 30–48 ms per game week (a 30-week run ~1.4 s), a 5 0
 and the client shows any rejection the same way); shortening `MAX_REPLAY_TICKS` (would cap real long runs).
 **Status: in force (N12d, `test:replay-cost` 7 checks).**
 
-## D-94 — Store-requirement guards: target-API floor and 16 KB native alignment (2026-11-03, Claude, night N12e)
+## D-98 — Store-requirement guards: target-API floor and 16 KB native alignment (2026-11-03, Claude, night N12e) — merged as D-94 in PR #131, renumbered
 `test:android-config` asserts Play's target-API floor numerically (`targetSdkVersion` ≥ `PLAY_MIN_TARGET_SDK` = 36,
 the rule for new apps and updates from 31.08.2026; `compileSdkVersion` ≥ target; `app/build.gradle` reads the value
 from `variables.gradle` only). The old exact-string check (`targetSdkVersion = 36`) would have blocked next year's
@@ -705,3 +739,122 @@ the release builds; "no native libs" is the expected result for this web-only Ca
 cross-checks our verdict against `zipalign -c -P 16` when the SDK is present.
 **Status: in force (N12e, `test:android-config` 20 checks, `test:native-align` 7 cases).**
 
+## D-99 — Restricted-airspace cities stay; Alexandria joins Cairo in ME; auto-pause on focus loss (2026-11-03, owner, Q-57 → A, Q-58 → A, Q-59 → B)
+- **Q-57 → A:** cities in airspace that is closed or restricted today (Kyiv, Tel Aviv, Beirut, Baghdad, Tehran,
+  Isfahan) stay in the data and in the draw: the game is a timeless network, not a news simulator. Kyiv's screen code
+  is corrected (KIV → IEV, R4a) regardless.
+- **Q-58 → A:** Alexandria moves from `AFR` to `ME`, the region of Cairo 180 km away (one glyph for Egypt), in the same
+  sim-rules change as D-95 (it changes demand; old saves are replayed, D-76).
+- **Q-59 → B:** the game pauses when its window loses focus in split screen / multi-window and shows the pause screen
+  on return (the picture keeps refreshing, so multi-resume is still honoured). UI item for the UI agent, not done yet.
+**Status: Q-57 in force (no change); Q-58 in force (N12f, rules v5, `CITY_DATA_VERSION` 2, `test:week1-reach`);
+Q-59 to implement (UI).**
+
+## D-105 — The start group also sits within turboprop range (2026-11-03, Claude, night N12f)
+`SPAWNER_START_RADIUS_KM` 3,000 → 2,500: every start airport is within turboprop range of the start anchor, so the
+start group obeys the same rule as the week-1 spawns of D-95. Under the old radius 33 of 1,403 start airports on 400
+seeds were more than 2,500 km from every other start airport (e.g. Medellín–Mexico City 2,934 km); 78 of the 89 start
+clusters remain and they cover the same seven regions. Rejected: checking pairwise reach inside a 3,000 km cluster
+(more code for the same effect). **Status: in force (N12f, `test:week1-reach`).**
+
+## D-106 — Faster pace for the fair week 1: 12 h spawns and 130 % demand (2026-11-03, Claude, night N12f)
+D-95 asked for a slightly faster pace to keep the bot median inside 10–18 min (D-79). The reach rule alone made the
+bot sample much longer than expected (50 seeds 17.81 → 24.43 min; 200 seeds 17.53 → 23.48): a compact week 1 also
+keeps later weeks manageable. `SPAWNER_INTERVAL_HOURS` 16 → 12 (6 new airports per 3-day week instead of 4.5) and the
+new integer `DEMAND_RATE_PERCENT` = 130 (demand credit kept in hundredths, D-13) bring it to 17.03 min (200 seeds
+16.52), 1st/2nd board 100 % / 66 %, 0 week-1 losses beyond reach. Neither knob alone was enough without extremes
+(spawns only: 10 h; demand only: 140 % still 20.81 min); the sweep is in `docs/balance/README.md`. `RULES_VERSION`
+4 → 5, `SPAWNER_PARAMS_VERSION` 1 → 2. Rejected: smaller waiting rooms (24 → 20 seats still 22.7 min), widening the
+target (owner rejected C in Q-51). It is a bigger change than "slightly"; a human playtest should confirm it (Q-60).
+**Status: in force (N12f, `test:balance`).**
+
+## D-107 — Screen airport codes separate from sim ids (2026-11-03, Claude, night N12h)
+`City.code` stays the simulation id (saves, journals, logbook, puzzles, golden hashes, the sorted curfew draw), so
+the six wrong codes from R4 are not renamed: an optional `City.displayCode` holds the code travellers know from a
+ticket — the common city code, else the main airport (KIV → IEV, HCM → SGN, LUA → LAD, LUS → LUN, ISF → IFN,
+ALX → ALY) — and everything the player reads goes through `displayCode()` / `airportLabel()`. `test:city-data`
+freezes the id list (append only) and keeps display codes unique. Rejected: renaming the ids (would need a save,
+journal and logbook migration and a `RULES_VERSION` bump for no gameplay change). **Status: in force (N12h).**
+
+## D-108 — One top-50 document per board (2026-11-03, Claude, night N12i)
+R3a: `getBoards` ran two 50-document queries per call (~105 reads), most of the Firestore bill and the cheapest way
+to run it up. Each board now keeps `boards/{id}/meta/top` (`entries`: ≤ 50 `{uid, callSign, score}` in the old
+query's order, score desc then document id desc), written by `submitDaily` inside the same transaction as the entry
+and only when the run changes the list; `getBoards` reads the two top documents and the caller's two entries
+(4 reads) and runs `count()` only for a caller outside the top 50. Response shape unchanged; `submitDaily` adds
+`rank` while the caller is in the daily top 50. A board without a top document (written before the upgrade) is
+seeded from the old query at its first write and read with the old query until then. The top document's `expireAt`
+is fixed at its first write and never extended, so with its own TTL policy (`meta`) it never outlives the entries
+it copies (D-77). The uid is stored because `me` needs it and Firestore is server-only; the call sign alone can
+collide. Rejected: a scheduled job that rebuilds tops (extra function, stale boards between runs); sharded counters
+(not needed at this size). Every write to a board now contends on one document; at well below one accepted run per
+second per board this is fine, and the write is skipped once a run cannot reach the top. **Status: in force (N12i).**
+
+## D-109 — Per-player rate limit and split function caps (2026-11-03, Claude, night N12j)
+R3b: one shared `maxInstances: 10` with the 2nd-gen default concurrency of 80 neither capped a scripted caller nor
+kept the CPU-bound replay from queueing 80 players behind one vCPU. Now `getBoards` has `maxInstances: 3`;
+`submitDaily` has `maxInstances: 5`, `concurrency: 4` and `cpu: 1` (worst case 20 replays at once). Each instance
+keeps an in-memory token bucket per uid (`getBoards` 20/min, `submitDaily` 6/min, burst = the per-minute limit,
+at most 10 000 players remembered, least recently used forgotten), checked right after auth and before any
+Firestore access or replay; over the limit → `resource-exhausted`. Instances share nothing, so the effective cap is
+limit × instances (60 and 30/min), which still bounds the bill. The client used to treat every 4xx as a final
+rejection and would have dropped a rate-limited run from its queue; 429 now counts as a temporary server error
+(`retry`). Rejected: a Firestore counter per uid (a read and a write per call, the cost we are cutting); App Check
+(separate decision, needs the store builds). **Status: in force (N12j).**
+
+
+## D-113 — Week-1 pace stays 12 h × 130 %, tuned after the human playtest (2026-11-03, owner, Q-60 → C)
+Q-60: N12f (D-95, D-106) sped up the start more than "slightly" — a new airport every 12 game hours instead of 16 and
+130 % demand (bot median 17.03 min, 0/50 week-1 losses without a possible answer). The owner keeps that pace (rules
+v5 unchanged) and tunes it only after the closed test with people: the balance bot measures the network, not a
+player. Options rejected for now: B (11 h × 110 %, median 17.57) — no evidence from humans yet. **Status: in force
+(rules v5); revisit with closed-test data.**
+
+## D-114 — In-app deletion of leaderboard data (2026-11-03, Claude, night N12k)
+Implements D-93 (R1a, Apple 5.1.1(v)). Settings → Help gains "Delete my ranking data", shown only once the device has
+an anonymous identity or a queued run; it asks for an inline confirmation, then calls the new callable
+`deleteMyData`. Entries carry no uid field (the uid is the document id), so the function reads the paths of every
+daily and weekly board an entry can still live on — 97 days back (90-day retention, D-77, + yesterday's board +
+TTL lag), 113 boards, one batched existence read per board — and, per board where the player left something, in a
+transaction deletes the entry and removes the uid from `meta/top` (D-108; a full top is refilled from the 51 best
+entries read before the delete, so it equals the old query). Then it deletes the anonymous Auth account; an account
+already gone is not an error, so a repeat is a no-op. Capped at `maxInstances: 2` and 3 calls/min per player
+(D-109). The client clears the token and the offline queue only after the server's answer; offline or on a server
+error it says nothing was deleted and keeps the identity for a retry (never a faked success); a refresh that finds
+the account already deleted counts as done. The e-mail path (D-77) stays as the web resource for Google Play.
+Rejected: a `uid` field + collection-group query (needs a new index and a migration of existing entries); deleting
+the whole top document (the next reads would fall back to the 50-document query and the re-seeded top would get a
+later TTL than the entries it copies). **Status: in force (N12k).**
+
+## D-115 — Android per-app language list (2026-11-03, Claude, night N12l)
+R1d: Android 13+ offers a per-app language only for apps that declare their languages. The manifest now points
+`android:localeConfig` at `res/xml/locales_config.xml` with `en` and `pl` — the same set as `src/i18n` and iOS
+`CFBundleLocalizations` (D-91), kept equal by `test:android-config`. The in-game language setting stays the
+authority (D-31): a saved choice is read before the device language, and the system per-app language only changes
+what a player who never chose sees (through the WebView's `navigator.languages`, still to verify on a device).
+Rejected: AppCompat `setApplicationLocales` with a native picker and the `autoStoreLocales` service (a second
+language store that could disagree with the game's own; Android 12 and older have no system UI for it anyway);
+AGP `generateLocaleConfig` (needs `resources.properties` and only sees Android string resources, while the game's
+text lives in `src/i18n`). A per-app change while the game runs applies at the next start (`locale` is in
+`configChanges`). **Status: in force (N12l); device check open.**
+
+## D-116 — Budget GPUs start on the low preset (2026-11-03, Claude, night N12m)
+R3f: Galaxy A06/A16, Redmi 14C and Moto G phones report 8 cores and 4 GB (`navigator.deviceMemory` is rounded
+and capped), so the core/memory rule started them on `medium` and only adaptive quality (D-73) stepped down after
+visible stutter. `auto` now reads the unmasked WebGL renderer once (a throwaway context, `WEBGL_debug_renderer_info`
+or `RENDERER`, released at once, cached) and starts `low` for Mali-G52, Mali-G57/G68 MC1–MC2, Mali-T8xx, PowerVR
+GE83xx and Adreno 5xx/610/613 (`LOW_GPU_FAMILIES` in `src/render/quality.ts`). An unknown string keeps today's rule,
+an explicit graphics choice wins, and remembered adaptation steps (D-74) apply only when they still fit the new
+ladder. Rejected: a benchmark at boot (costs seconds on exactly these phones, noisy under thermal throttling) and a
+User-Agent model list (Chrome reduces the UA to "K"; renderer strings name the GPU directly). The table is not
+verified on the devices themselves (R3i Test Lab would). **Status: in force (N12m).**
+
+## D-117 — Play feature graphic from the real game scene (2026-11-03, Claude, night N12n)
+R2d: Google Play needs a 1024×500 feature graphic to publish, and it doubles as the preview-video cover. It is rendered,
+not drawn: the `game` store-shot scene (seed 0xA1A1, autoplayed network, evening sun) in a wide viewport at DPR 2 with
+the HUD hidden, the globe zoomed in and slid right so the network is central, the existing wayfinding sign
+(`brand/wayfinding.svg`) on the left third, downscaled to 1024×500 and saved as opaque RGB. One file for both
+languages (the only word is the brand name). Checked by `test:store-shots`: size, no alpha, ≤ 15 MB, centre not
+empty, ≤ 20 % dark unsaturated pixels (Google's rule — so not the night scene), plus PL/EN alt text ≤ 140 chars.
+Rejected: a hand-made illustration (a second art style next to the game) and a tagline in the image (localised text,
+risk of price/"free" wording; the store title already carries it). **Status: in force (N12n).**

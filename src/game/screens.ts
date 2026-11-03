@@ -2,7 +2,7 @@
 // composition root registers. Back/Escape is handled once here via src/platform/back.
 import { installBackHandler, type BackOptions } from '../platform';
 import { createMenu, type MenuData, type MenuHandle, type MenuMode } from '../ui/menu/menu';
-import { createSettings, createLicenses, createPrivacy } from '../ui/settings/settings';
+import { createSettings, createLicenses, createPrivacy, type RankingData } from '../ui/settings/settings';
 import { createLogbook, type LogbookData } from '../ui/logbook/logbook';
 
 export type ScreenName = 'menu' | 'settings' | 'licenses' | 'privacy' | 'logbook' | 'puzzles' | 'tutorial' | 'game';
@@ -25,6 +25,8 @@ export interface ScreensOptions {
   readonly onScreen?: (screen: ScreenName) => void;
   readonly onLanguageChanged?: () => void;
   readonly onReplayTutorial?: () => void;
+  /** [night-12k] D-114: leaderboard data the settings screen offers to delete (absent = no row). */
+  readonly ranking?: RankingData;
   readonly back?: BackOptions;
 }
 export interface ScreensHandle {
@@ -78,7 +80,7 @@ export function mountScreens(host: HTMLElement, options: ScreensOptions = {}): S
       replace('settings', createSettings(() => show('menu'), () => show('licenses'), () => {
         options.onLanguageChanged?.();
         show('settings', true);
-      }, options.onReplayTutorial, () => show('privacy')));
+      }, options.onReplayTutorial, () => show('privacy'), options.ranking));
     } else if (screen === 'logbook') {
       const data = options.getLogbookData?.();
       if (!data) return;

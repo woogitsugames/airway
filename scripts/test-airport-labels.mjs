@@ -36,6 +36,17 @@ check('name mode follows the language', () => {
   assert.equal(airportLabel('WAW'), 'Warsaw');
   assert.equal(airportLabel('NYC'), 'New York');
 });
+// [night-12h] R4a: the screen shows the code travellers know; the sim id stays (KIV is still the Kyiv id).
+check('code mode shows the display code, name mode the city', () => {
+  setMode('code');
+  assert.equal(airportLabel('KIV'), 'IEV');
+  assert.equal(airportLabel('HCM'), 'SGN');
+  assert.equal(airportLabel('ALX'), 'ALY');
+  assert.equal(airportLabel('WAW'), 'WAW');
+  setMode('name');
+  setLanguage('en');
+  assert.equal(airportLabel('KIV'), 'Kyiv');
+});
 check('unknown codes and corrupt storage fall back to the code', () => {
   assert.equal(airportLabel('ZZZ'), 'ZZZ');
   store.set('airway.settings', '{not json');

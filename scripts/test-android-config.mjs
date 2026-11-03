@@ -38,8 +38,8 @@ check('foldable-resize', manifest.includes('android:resizeableActivity="true"'))
 check('single-activity-launch', manifest.includes('android:launchMode="singleTask"') && manifest.includes('android:exported="true"'));
 const permissions = [...manifest.matchAll(/<uses-permission\s+android:name="([^"]+)"/g)].map((match) => match[1]);
 check('minimal-permissions', permissions.length === 1 && permissions[0] === 'android.permission.INTERNET');
-check('sdk-versions', variables.includes('minSdkVersion = 24')); // target/compile: play-target-sdk-floor (D-94)
-// [night-12e] D-94 store-requirement guards (R1m): Play requires targetSdk ≥ 36 for new apps and updates from
+check('sdk-versions', variables.includes('minSdkVersion = 24')); // target/compile: play-target-sdk-floor (D-98)
+// [night-12e] D-98 store-requirement guards (R1m): Play requires targetSdk ≥ 36 for new apps and updates from
 // 31.08.2026 (raise PLAY_MIN_TARGET_SDK every August), and release builds check 16 KB native-library alignment.
 const PLAY_MIN_TARGET_SDK = 36;
 const sdk = (name) => Number(variables.match(new RegExp(name + '\\s*=\\s*(\\d+)'))?.[1] ?? NaN);
@@ -80,5 +80,19 @@ const marker = installSource.match(/INSTALL_MARKER_PATH = '([^']+)'/)?.[1];
 check('backup-leaves-install-marker', !!marker && installSource.includes('Directory.LibraryNoCloud') &&
   !(legacyRules + modernRules).includes(marker) && !savePaths.includes('file:' + marker) &&
   read('src/main.ts').includes('forgetIdentityOnNewInstall(') && read('src/net/index.ts').includes('IDENTITY_KEYS'));
+// [night-12l] D-115 (R1d): Android 13+ per-app language lists exactly the game's languages (src/i18n), the same
+// set as iOS CFBundleLocalizations (D-91); the in-game choice is read before the device language (D-31).
+const localeFile = 'android/app/src/main/res/xml/locales_config.xml';
+const localeConfig = existsSync(join(ROOT, localeFile)) ? read(localeFile) : '';
+const declaredLocales = [...localeConfig.matchAll(/<locale\s+android:name="([^"]+)"\s*\/>/g)].map((m) => m[1]).sort();
+const gameLanguages = (read('src/i18n/index.ts').match(/export type Language = ([^;]+);/)?.[1] ?? '')
+  .split('|').map((part) => part.trim().replace(/'/g, '')).filter(Boolean).sort();
+const iosLocales = [...(read('ios/App/App/Info.plist').match(/<key>CFBundleLocalizations<\/key>\s*<array>([\s\S]*?)<\/array>/)?.[1] ?? '')
+  .matchAll(/<string>([^<]+)<\/string>/g)].map((m) => m[1]).sort();
+check('per-app-locale-config', manifest.includes('android:localeConfig="@xml/locales_config"') &&
+  localeConfig.includes('<locale-config') && declaredLocales.length === 2 &&
+  declaredLocales.join() === gameLanguages.join() && declaredLocales.join() === iosLocales.join());
+const i18nSource = read('src/i18n/index.ts');
+check('in-game-language-wins', /savedLanguage\(\) \?\? deviceLanguage\(\)/.test(i18nSource) && i18nSource.includes('navigator.languages'));
 console.log('SUMMARY test:android-config seed=0xA1A1 checks=' + (passed + failed) + ' passed=' + passed + ' failed=' + failed);
 if (failed) process.exitCode = 1;

@@ -2,7 +2,7 @@
 // One entry per day key (the official run is unique per day), persisted in local storage, bounded.
 import type { DailySubmission } from './submission.ts';
 
-export interface QueueStorage { getItem(key: string): string | null; setItem(key: string, value: string): void }
+export interface QueueStorage { getItem(key: string): string | null; setItem(key: string, value: string): void; removeItem?(key: string): void }
 export interface QueuedRun { readonly submission: DailySubmission; readonly attempts: number; readonly nextAttemptAt: number }
 
 export const QUEUE_KEY = 'aw-net-queue-v1';
@@ -30,6 +30,9 @@ export class SubmissionQueue {
     this.memory = items.slice();
     try { this.storage?.setItem(QUEUE_KEY, JSON.stringify(items)); } catch { /* storage full or blocked: memory copy */ }
   }
+
+  /** [night-12k] D-114: drop every queued run (the player deleted their leaderboard data). */
+  clear(): void { this.write([]); }
 
   /** Newest run for a day replaces an older one; the oldest days drop out beyond MAX_QUEUED. */
   add(submission: DailySubmission): void {

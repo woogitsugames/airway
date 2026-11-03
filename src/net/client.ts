@@ -10,6 +10,8 @@ export interface Session { readonly uid: string; readonly idToken: string; reado
 export interface TokenStore {
   load(): Session | null;
   save(session: Session): void;
+  /** [night-12k] D-114: forget the identity (after the server deleted the account). */
+  clear?(): void;
 }
 
 export class NetError extends Error {
@@ -28,6 +30,12 @@ export class FirebaseRestClient {
 
   get uid(): string | null { return this.session?.uid ?? null; }
 
+  /** [night-12k] D-114: drop the stored identity; the next call signs up a new anonymous account. */
+  forget(): void {
+    this.session = null;
+    this.tokens.clear?.();
+  }
+
   private async post(url: string, body: unknown, headers: Record<string, string> = {}): Promise<unknown> {
     let response;
     try {
@@ -38,7 +46,9 @@ export class FirebaseRestClient {
     const json = await response.json().catch(() => null);
     if (!response.ok) {
       const message = (json as { error?: { message?: string; status?: string } } | null)?.error;
-      const code = response.status === 401 || response.status === 403 ? 'auth' : response.status >= 500 ? 'server' : 'rejected';
+      // [night-12j] D-109: 429 (`resource-exhausted`, the server's per-player limit) is temporary: retry later.
+      const code = response.status === 401 || response.status === 403 ? 'auth'
+        : response.status >= 500 || response.status === 429 ? 'server' : 'rejected';
       throw new NetError(code, message?.message ?? `HTTP ${response.status}`, message?.status);
     }
     return json;

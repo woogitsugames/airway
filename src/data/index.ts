@@ -23,6 +23,15 @@ export function cityByCode(code: string): (City & CityUtcOffset) | undefined {
   return index === undefined ? undefined : CITY_RECORDS[index];
 }
 
+/**
+ * [night-12h] R4a: the airport code a player sees. `City.code` is also the sim id (saves, journals, logbook, puzzles,
+ * golden hashes) and never changes; a city whose id is not the code travellers know gets a `displayCode`.
+ * Unknown ids are shown as they are.
+ */
+export function displayCode(code: string): string {
+  return cityByCode(code)?.displayCode ?? code;
+}
+
 /** Precomputed integer great-circle kilometres between two city codes (undefined if unknown). */
 export function cityDistanceKm(a: string, b: string): number | undefined {
   const i = INDEX_BY_CODE.get(a);

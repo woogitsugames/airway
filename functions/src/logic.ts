@@ -47,3 +47,131 @@ export function reviewSubmission(submission: unknown, nowMs: number): ReviewedRu
 export function validBoardId(id: unknown): id is string {
   return typeof id === 'string' && parseBoardId(id) !== null;
 }
+
+/** [night-12i] D-108: one row of a board's `meta/top` document (server-only; the uid never leaves the server). */
+export interface TopEntry {
+  readonly uid: string;
+  readonly callSign: string;
+  readonly score: number;
+}
+
+/**
+ * [night-12i] D-108: the order of the old `orderBy('score', 'desc').limit(50)` query, which Firestore completes
+ * with an implicit `__name__` order in the direction of the last explicit order: score desc, then doc id desc.
+ */
+export function compareTop(a: TopEntry, b: TopEntry): number {
+  if (a.score !== b.score) return b.score - a.score;
+  return a.uid < b.uid ? 1 : a.uid > b.uid ? -1 : 0;
+}
+
+/** [night-12i] D-108: the caller's 1-based place in a top list, or null outside it. */
+export function rankInTop(top: readonly TopEntry[], uid: string): number | null {
+  const index = top.findIndex((entry) => entry.uid === uid);
+  return index < 0 ? null : index + 1;
+}
+
+/**
+ * [night-12i] D-108: `top` with `entry` put in its place (replacing the same uid), sorted and cut to `limit`.
+ * Returns null when the list would not change (a score that does not beat the last place of a full list), so
+ * the caller skips the write.
+ */
+export function mergeTop(top: readonly TopEntry[], entry: TopEntry, limit = TOP_ENTRIES): TopEntry[] | null {
+  const next = [...top.filter((row) => row.uid !== entry.uid), entry].sort(compareTop).slice(0, limit);
+  const same = next.length === top.length && next.every((row, i) =>
+    row.uid === top[i].uid && row.score === top[i].score && row.callSign === top[i].callSign);
+  return same ? null : next;
+}
+
+/** [night-12i] D-108: rows read back from a stored top document; anything malformed is dropped, order restored. */
+export function readTopRows(raw: unknown): TopEntry[] {
+  if (!Array.isArray(raw)) return [];
+  const rows: TopEntry[] = [];
+  for (const item of raw) {
+    const row = item as Partial<TopEntry> | null;
+    if (row && typeof row.uid === 'string' && typeof row.callSign === 'string' && Number.isFinite(row.score)) {
+      rows.push({ uid: row.uid, callSign: row.callSign, score: Number(row.score) });
+    }
+  }
+  return rows.sort(compareTop).slice(0, TOP_ENTRIES);
+}
+
+/**
+ * [night-12j] D-109: per-function deployment caps. `getBoards` is a few reads, so 3 instances serve plenty;
+ * `submitDaily` runs a CPU-bound replay, so one instance takes at most 4 at a time (not the 2nd-gen default of 80
+ * queued behind one vCPU) and up to 5 instances scale out instead.
+ */
+export const FUNCTION_OPTIONS = {
+  getBoards: { region: 'europe-west1', maxInstances: 3, memory: '512MiB', timeoutSeconds: 60 },
+  submitDaily: { region: 'europe-west1', maxInstances: 5, concurrency: 4, cpu: 1, memory: '512MiB', timeoutSeconds: 60 },
+  /** [night-12k] D-114: rare (a player deleting their data), a few hundred reads at most. */
+  deleteMyData: { region: 'europe-west1', maxInstances: 2, memory: '256MiB', timeoutSeconds: 60 },
+} as const;
+
+/** [night-12j] D-109: calls one player may make per minute and per instance, before any Firestore access. */
+export const RATE_LIMITS = { getBoards: 20, submitDaily: 6, deleteMyData: 3 } as const;
+/** Players remembered per instance and function; the oldest is forgotten first (memory bound). */
+export const RATE_LIMIT_KEYS = 10_000;
+const MINUTE_MS = 60_000;
+
+/**
+ * [night-12j] D-109: an in-memory token bucket per key (the uid): `perMinute` calls at once, refilled evenly over a
+ * minute. Per instance only (instances share nothing), so the real cap is `perMinute × maxInstances`.
+ */
+export class RateLimiter {
+  private readonly buckets = new Map<string, { tokens: number; at: number }>();
+
+  constructor(readonly perMinute: number, private readonly now: () => number = Date.now,
+    private readonly maxKeys = RATE_LIMIT_KEYS) {}
+
+  /** True when the call may go ahead (and spends a token); false = over the limit. */
+  take(key: string): boolean {
+    const now = this.now();
+    const bucket = this.buckets.get(key);
+    let tokens = this.perMinute;
+    if (bucket) {
+      tokens = Math.min(this.perMinute, bucket.tokens + ((now - bucket.at) * this.perMinute) / MINUTE_MS);
+      this.buckets.delete(key); // re-inserted below: Map order = least recently used first
+    }
+    const allowed = tokens >= 1;
+    this.buckets.set(key, { tokens: allowed ? tokens - 1 : tokens, at: now });
+    while (this.buckets.size > this.maxKeys) this.buckets.delete(this.buckets.keys().next().value as string);
+    return allowed;
+  }
+
+  get size(): number { return this.buckets.size; }
+}
+
+/**
+ * [night-12k] D-114: days back that `deleteMyData` scans. An entry lives 90 days after its last write (D-77), a run
+ * may be filed under yesterday's board, and TTL deletion runs "usually within a day" after `expireAt`, so a week of
+ * margin covers every board that can still hold the player's entry.
+ */
+export const DELETE_SCAN_DAYS = RETENTION_DAYS + 7;
+
+/**
+ * [night-12k] D-114: every daily and weekly board id that can still hold an entry written up to `nowMs`
+ * (newest first, no duplicates). Entries carry no uid field (the uid is the document id), so the deletion reads
+ * these paths directly instead of a collection-group query.
+ */
+export function retainedBoardIds(nowMs: number): string[] {
+  const ids = new Set<string>();
+  for (let day = 0; day <= DELETE_SCAN_DAYS; day++) {
+    const boards = boardsForDaily(dailyKey(new Date(nowMs - day * DAY_MS)));
+    ids.add(boards.daily);
+    ids.add(boards.weekly);
+  }
+  return [...ids];
+}
+
+/**
+ * [night-12k] D-114: a board's top without `uid`. A full top that loses a row is refilled from `candidates` (the
+ * board's entries ordered as the top, read before the delete: up to TOP_ENTRIES + 1 rows), so the 51st player moves
+ * up as the old query would show. Returns null when `uid` is not in the top (no write needed).
+ */
+export function dropFromTop(top: readonly TopEntry[], uid: string, candidates: readonly TopEntry[] = [],
+  limit = TOP_ENTRIES): TopEntry[] | null {
+  if (!top.some((row) => row.uid === uid)) return null;
+  const rows = new Map<string, TopEntry>();
+  for (const row of [...top, ...candidates]) if (row.uid !== uid && !rows.has(row.uid)) rows.set(row.uid, row);
+  return [...rows.values()].sort(compareTop).slice(0, limit);
+}

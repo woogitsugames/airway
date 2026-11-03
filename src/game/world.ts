@@ -288,6 +288,11 @@ function installWorldProbe(renderer: WorldRenderer, framing: () => { first: stri
     framing, // [task-39]
     frames, // [night-11a] globe frames drawn so far
     longitude: () => renderer.orbit.longitudeDeg,
+    /** [N12n] Store feature graphic (scripts/store-shots.mjs --feature): set the zoom and slide the view (CSS px). */
+    featureView(shiftX: number, shiftY: number, zoom: number): void {
+      renderer.orbit.setZoom(zoom);
+      renderer.orbit.setViewShift(shiftX, shiftY);
+    },
     /** [task-40] Globe disc on screen (CSS px, page coordinates) for the store-shot warmth check. */
     disc(): { x: number; y: number; radius: number } | null {
       const disc = renderer.orbit.getScreenDisc();

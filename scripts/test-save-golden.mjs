@@ -13,10 +13,14 @@ const { cityDistanceKm } = await import('../src/data/index.ts');
 const { encodeSave, decodeSave, saveSourceFromSim, restoreSimFromSave, restoreSimDetailed, loadSavedSim, loadSavedSimChecked, readGame, MAX_REPLAY_TICKS } = await import('../src/game/save.ts');
 const { GAME_SAVE_KEY } = await import('../src/platform/storage.ts');
 
-const SEED = 0xA1A1;
+// [night-12f] 0xA1A1 -> 0xA1A3: under rules v5 (D-95/D-106) this simple policy loses 0xA1A1 in week 1, before the
+// save point; 0xA1A3 is the first seed it carries into week 2 with a "+2 slots" pick.
+const SEED = 0xA1A3;
 const SAVE_AT = TICKS_PER_WEEK + 600; // past the first weekly board, inside week 2
 const CONTINUE = 1440;
 const FIXTURE = resolve(dirname(fileURLToPath(import.meta.url)), 'fixtures/save-golden.json');
+// [night-12f] The rules-v4 golden save, frozen when RULES_VERSION went 4 -> 5 (never regenerated).
+const FIXTURE_V4 = resolve(dirname(fileURLToPath(import.meta.url)), 'fixtures/save-golden-v4.json');
 let passed = 0;
 let failed = 0;
 function check(name, fn) {
@@ -122,6 +126,16 @@ check('older-rules save is replayed from its journal to the same tick (D-76)', (
   // Rules did not really change here, so the replay must land on the golden state exactly.
   assert(restored.sim.hash() === golden.hash, `replayed hash ${restored.sim.hash()} != ${golden.hash}`);
   assert(JSON.stringify(restored.sim.getCommandLog()) === JSON.stringify(save.commands), 'journal must be kept');
+});
+check('a real rules-v4 save is never restored directly and its replay never throws (D-76)', () => {
+  const v4 = JSON.parse(readFileSync(FIXTURE_V4, 'utf8'));
+  assert(v4.rulesVersion === 4 && v4.rulesVersion < RULES_VERSION, 'v4 fixture must stay rules v4');
+  const decodedV4 = decodeSave(v4.save);
+  assert(decodedV4.status === 'ok', 'v4 save must still decode');
+  const result = restoreSimDetailed(decodedV4.save);
+  // v5 opens other airports than v4, so the old journal replays into a different world: either it is still running
+  // at the saved tick (offered, replayed) or the new rules already ended it (not offered). Never a direct restore.
+  assert(result === null || (result.replayed && result.sim.tickCount === v4.saveAt), 'v4 save must be replayed or refused');
 });
 check('legacy save without a rules version whose snapshot no longer loads is replayed', () => {
   const legacy = { ...save, paramsVersion: null, stateHash: null,

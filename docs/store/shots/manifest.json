@@ -17,25 +17,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATC / SLOTY 07 AMM · SLOT 0:54 Limit odlotów z AMM: 3 na godzinę, samoloty czekają na ziemi. Rozłóż loty albo weź „+2 sloty”. TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 00:03 PASAŻERÓW 29 0 0 0 1×",
+   "text": "KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 00:05 PASAŻERÓW 40 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
-    "routes": 9.36,
-    "airports": 9.03,
-    "planes": 8.44,
-    "tags": 12.4
+    "routes": 9.35,
+    "airports": 9.04,
+    "planes": 8.13,
+    "tags": 11.82
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.447
+    "ratio": 0.464
    },
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 111.3,
-    "lumaStd": 89,
+    "meanLuma": 92.4,
+    "lumaStd": 80.9,
     "whiteShare": 0,
-    "colours": 361
+    "colours": 341
    }
   },
   {
@@ -46,25 +46,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATC / SLOTY 07 AMM · SLOT 0:54 Limit odlotów z AMM: 3 na godzinę, samoloty czekają na ziemi. Rozłóż loty albo weź „+2 sloty”. TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 00:02 PASAŻERÓW 29 0 0 0 1×",
+   "text": "KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 00:08 PASAŻERÓW 40 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
-    "routes": 9.36,
-    "airports": 9.02,
-    "planes": 8.33,
-    "tags": 12.29
+    "routes": 9.26,
+    "airports": 8.93,
+    "planes": 8.13,
+    "tags": 12.84
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.432
+    "ratio": 0.455
    },
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 100,
-    "lumaStd": 82.2,
+    "meanLuma": 86.7,
+    "lumaStd": 74,
     "whiteShare": 0,
-    "colours": 356
+    "colours": 344
    }
   },
   {
@@ -75,25 +75,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATC / SLOTY 07 AMM · SLOT 0:54 Limit odlotów z AMM: 3 na godzinę, samoloty czekają na ziemi. Rozłóż loty albo weź „+2 sloty”. TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 00:05 PASAŻERÓW 29 0 0 0 1×",
+   "text": "KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 00:06 PASAŻERÓW 40 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
-    "routes": 9.37,
-    "airports": 9.03,
-    "planes": 8.95,
+    "routes": 9.27,
+    "airports": 9.02,
+    "planes": 8.22,
     "tags": 11.33
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.425
+    "ratio": 0.444
    },
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 94.5,
-    "lumaStd": 79.8,
+    "meanLuma": 82.9,
+    "lumaStd": 71.8,
     "whiteShare": 0,
-    "colours": 360
+    "colours": 345
    }
   },
   {
@@ -104,25 +104,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 16:53 PASAŻERÓW 26 0 0 0 1×",
-   "sun": "-70.7@31.2,38.2",
+   "text": "KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 16:54 PASAŻERÓW 34 0 0 0 1×",
+   "sun": "-68.6@29.7,41.3",
    "contrast": {
-    "routes": 9,
-    "airports": 7.91,
-    "planes": 7.04,
-    "tags": 12.93
+    "routes": 9.13,
+    "airports": 7.57,
+    "planes": 6.31,
+    "tags": 10.26
    },
    "warmth": {
-    "gold": 0.083,
-    "ratio": 1.013
+    "gold": 0.082,
+    "ratio": 1.02
    },
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 105.9,
-    "lumaStd": 74.4,
+    "meanLuma": 108,
+    "lumaStd": 75.7,
     "whiteShare": 0,
-    "colours": 586
+    "colours": 591
    }
   },
   {
@@ -133,25 +133,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 16:59 PASAŻERÓW 26 0 0 0 1×",
-   "sun": "-70.7@31.2,38.2",
+   "text": "KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 16:57 PASAŻERÓW 34 0 0 0 1×",
+   "sun": "-68.6@29.7,41.3",
    "contrast": {
-    "routes": 9.89,
-    "airports": 8.54,
-    "planes": 7.26,
-    "tags": 13.57
+    "routes": 9.54,
+    "airports": 8.08,
+    "planes": 7.03,
+    "tags": 10.26
    },
    "warmth": {
-    "gold": 0.072,
-    "ratio": 0.898
+    "gold": 0.07,
+    "ratio": 0.91
    },
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 98.1,
-    "lumaStd": 70.3,
+    "meanLuma": 99.4,
+    "lumaStd": 70.9,
     "whiteShare": 0,
-    "colours": 569
+    "colours": 594
    }
   },
   {
@@ -162,25 +162,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 17:01 PASAŻERÓW 26 0 0 0 1×",
-   "sun": "-70.7@31.2,38.2",
+   "text": "KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 16:59 PASAŻERÓW 34 0 0 0 1×",
+   "sun": "-68.6@29.7,41.3",
    "contrast": {
-    "routes": 10.24,
-    "airports": 8.91,
-    "planes": 7.72,
-    "tags": 12.68
+    "routes": 9.74,
+    "airports": 8.22,
+    "planes": 7.37,
+    "tags": 1.65
    },
    "warmth": {
-    "gold": 0.079,
-    "ratio": 0.891
+    "gold": 0.074,
+    "ratio": 0.906
    },
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 94.3,
-    "lumaStd": 68.4,
+    "meanLuma": 96.1,
+    "lumaStd": 69.2,
     "whiteShare": 0,
-    "colours": 582
+    "colours": 605
    }
   },
   {
@@ -191,24 +191,24 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ULN BKO TYDZIEŃ 01 DZIEŃ 3/3 GODZ. 02:00 PASAŻERÓW 54 0 0 0 1× Tydzień 1 Hangar: przyszły trzy skrzynie. Otwierasz jedną. FRACHT · TP-48 1/3 Turbo­śmigłowiec ZASIĘG 2 500 km MIEJSC 48 NAJLEPSZY krótkie trasy FRACHT · WB-300 2/3 Szeroko­kadłubowiec ZASIĘG 11 000 km MIEJSC 300 NAJLEPSZY przez ocean FRACHT · SLOT+2 3/3 Sloty startowe ODLOTY +2 na godzinę DLA wybranego lotniska AMM 13 min",
+   "text": "+3 KHI TUN RIO TYDZIEŃ 01 DZIEŃ 3/3 GODZ. 02:00 PASAŻERÓW 79 0 0 0 1× Tydzień 1 Hangar: przyszły trzy skrzynie. Otwierasz jedną. FRACHT · TP-48 1/3 Turbo­śmigłowiec ZASIĘG 2 500 km MIEJSC 48 NAJLEPSZY krótkie trasy FRACHT · WB-300 2/3 Szeroko­kadłubowiec ZASIĘG 11 000 km MIEJSC 300 NAJLEPSZY przez ocean FRACHT · SLOT+2 3/3 Sloty startowe ODLOTY +2 na godzinę DLA wybranego lotniska",
    "contrast": {
-    "routes": 9.49,
-    "airports": 9.09,
-    "planes": 9.96,
-    "tags": 12.28
+    "routes": 9.39,
+    "airports": 8.92,
+    "planes": 9.23,
+    "tags": 14.14
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.453
+    "ratio": 0.488
    },
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 140.3,
-    "lumaStd": 63.9,
+    "meanLuma": 135.1,
+    "lumaStd": 65.2,
     "whiteShare": 0,
-    "colours": 182
+    "colours": 166
    }
   },
   {
@@ -219,24 +219,24 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ULN BKO TYDZIEŃ 01 DZIEŃ 3/3 GODZ. 02:00 PASAŻERÓW 54 0 0 0 1× Tydzień 1 Hangar: przyszły trzy skrzynie. Otwierasz jedną. FRACHT · TP-48 1/3 Turbo­śmigłowiec ZASIĘG 2 500 km MIEJSC 48 NAJLEPSZY krótkie trasy FRACHT · WB-300 2/3 Szeroko­kadłubowiec ZASIĘG 11 000 km MIEJSC 300 NAJLEPSZY przez ocean FRACHT · SLOT+2 3/3 Sloty startowe ODLOTY +2 na godzinę DLA wybranego lotniska AMM 13 min",
+   "text": "+3 KHI TUN RIO TYDZIEŃ 01 DZIEŃ 3/3 GODZ. 02:00 PASAŻERÓW 79 0 0 0 1× Tydzień 1 Hangar: przyszły trzy skrzynie. Otwierasz jedną. FRACHT · TP-48 1/3 Turbo­śmigłowiec ZASIĘG 2 500 km MIEJSC 48 NAJLEPSZY krótkie trasy FRACHT · WB-300 2/3 Szeroko­kadłubowiec ZASIĘG 11 000 km MIEJSC 300 NAJLEPSZY przez ocean FRACHT · SLOT+2 3/3 Sloty startowe ODLOTY +2 na godzinę DLA wybranego lotniska",
    "contrast": {
-    "routes": 9.5,
-    "airports": 9.04,
-    "planes": 9.96,
-    "tags": 12.5
+    "routes": 9.32,
+    "airports": 8.87,
+    "planes": 9.24,
+    "tags": 14.01
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.438
+    "ratio": 0.476
    },
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 159.1,
-    "lumaStd": 59.4,
+    "meanLuma": 159.4,
+    "lumaStd": 59.2,
     "whiteShare": 0,
-    "colours": 148
+    "colours": 133
    }
   },
   {
@@ -247,24 +247,24 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ULN BKO TYDZIEŃ 01 DZIEŃ 3/3 GODZ. 02:00 PASAŻERÓW 54 0 0 0 1× Tydzień 1 Hangar: przyszły trzy skrzynie. Otwierasz jedną. FRACHT · TP-48 1/3 Turbo­śmigłowiec ZASIĘG 2 500 km MIEJSC 48 NAJLEPSZY krótkie trasy FRACHT · WB-300 2/3 Szeroko­kadłubowiec ZASIĘG 11 000 km MIEJSC 300 NAJLEPSZY przez ocean FRACHT · SLOT+2 3/3 Sloty startowe ODLOTY +2 na godzinę DLA wybranego lotniska AMM 13 min",
+   "text": "+3 KHI TUN RIO TYDZIEŃ 01 DZIEŃ 3/3 GODZ. 02:00 PASAŻERÓW 79 0 0 0 1× Tydzień 1 Hangar: przyszły trzy skrzynie. Otwierasz jedną. FRACHT · TP-48 1/3 Turbo­śmigłowiec ZASIĘG 2 500 km MIEJSC 48 NAJLEPSZY krótkie trasy FRACHT · WB-300 2/3 Szeroko­kadłubowiec ZASIĘG 11 000 km MIEJSC 300 NAJLEPSZY przez ocean FRACHT · SLOT+2 3/3 Sloty startowe ODLOTY +2 na godzinę DLA wybranego lotniska",
    "contrast": {
-    "routes": 9.49,
-    "airports": 9.09,
-    "planes": 9.96,
-    "tags": 11.68
+    "routes": 9.35,
+    "airports": 8.92,
+    "planes": 9.27,
+    "tags": 13.55
    },
    "warmth": {
-    "gold": 0.002,
-    "ratio": 0.431
+    "gold": 0.003,
+    "ratio": 0.466
    },
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 110.5,
+    "meanLuma": 109.4,
     "lumaStd": 74.2,
     "whiteShare": 0,
-    "colours": 152
+    "colours": 137
    }
   },
   {
@@ -275,24 +275,24 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "+13 +5 +20 0:00 +6 ULN BKO REC TUN NOWE TYDZIEŃ 02 DZIEŃ 3/3 GODZ. 14:38 PASAŻERÓW 59 1 0 0 1× SIATKA WSTRZYMANA MAPA ODLOTY · BGW LOT / CEL BRAMKA STATUS AW101 · AMM A1 ODWOŁANY ATC · RAPORT ZDARZENIA Dowiezieni pasażerowie: 59 Ukończone tygodnie: 1 PRZYCZYNY PRZEBIEG 25 pasażerów nie miało trasy do regionu docelowego. WSKAZÓWKA Następnym razem: daj każdemu regionowi trasę, żeby żaden pasażer nie został bez lotu. NOWY REKORD LOKALNY JESZCZE RAZ · TEN SAM ŚWIAT NOWY ŚWIAT MENU",
+   "text": "ATH ANK AMM +3 VCE +23 0:00 TUN CPH TYDZIEŃ 01 DZIEŃ 3/3 GODZ. 22:44 PASAŻERÓW 51 0 0 0 1× SIATKA WSTRZYMANA MAPA ODLOTY · KHI LOT / CEL BRAMKA STATUS Żadna trasa nie obsługiwała KHI: pasażerowie nie mieli czym polecieć. Połącz nowe lotnisko, zanim zapełni się poczekalnia. ATC · RAPORT ZDARZENIA Dowiezieni pasażerowie: 51 Ukończone tygodnie: 0 PRZYCZYNY PRZEBIEG 29 pasażerów nie miało trasy do regionu docelowego. 76% oczekujących chciało dotrzeć do Bliskiego Wschodu (22 osoby). Poczekalnia przepełniona: 29 osób na 24 miejsca. NOWY REKORD LOKALNY JESZCZE RAZ · TEN SAM ŚWIAT NOWY ŚWIAT MENU",
    "contrast": {
-    "routes": 4.64,
-    "airports": 4.49,
-    "planes": 3.42,
-    "tags": 1.36
+    "routes": 9.75,
+    "airports": 8.33,
+    "planes": 9.6,
+    "tags": 1.79
    },
    "warmth": {
-    "gold": 0.027,
-    "ratio": 1.016
+    "gold": 0.001,
+    "ratio": 0.2
    },
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 145.4,
-    "lumaStd": 91.5,
+    "meanLuma": 142.8,
+    "lumaStd": 95.9,
     "whiteShare": 0,
-    "colours": 208
+    "colours": 184
    }
   },
   {
@@ -303,24 +303,24 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "+13 +5 +20 0:00 +6 ULN BKO REC TUN NOWE TYDZIEŃ 02 DZIEŃ 3/3 GODZ. 14:38 PASAŻERÓW 59 1 0 0 1× SIATKA WSTRZYMANA MAPA ODLOTY · BGW LOT / CEL BRAMKA STATUS AW101 · AMM A1 ODWOŁANY ATC · RAPORT ZDARZENIA Dowiezieni pasażerowie: 59 Ukończone tygodnie: 1 PRZYCZYNY PRZEBIEG 25 pasażerów nie miało trasy do regionu docelowego. 62% oczekujących chciało dotrzeć do Europy Północnej (16 osób). Poczekalnia przepełniona: 26 osób na 24 miejsca. WSKAZÓWKA Następnym razem: daj każdemu regionowi trasę, żeby żaden pasażer nie został bez lotu. NOWY REKORD LOKALNY JESZCZE RAZ · TEN SAM ŚWIAT NOWY ŚWIAT MENU",
+   "text": "ATH ANK AMM +3 VCE +23 0:00 TUN CPH TYDZIEŃ 01 DZIEŃ 3/3 GODZ. 22:44 PASAŻERÓW 51 0 0 0 1× SIATKA WSTRZYMANA MAPA ODLOTY · KHI LOT / CEL BRAMKA STATUS Żadna trasa nie obsługiwała KHI: pasażerowie nie mieli czym polecieć. Połącz nowe lotnisko, zanim zapełni się poczekalnia. ATC · RAPORT ZDARZENIA Dowiezieni pasażerowie: 51 Ukończone tygodnie: 0 PRZYCZYNY PRZEBIEG 29 pasażerów nie miało trasy do regionu docelowego. 76% oczekujących chciało dotrzeć do Bliskiego Wschodu (22 osoby). Poczekalnia przepełniona: 29 osób na 24 miejsca. NOWY REKORD LOKALNY JESZCZE RAZ · TEN SAM ŚWIAT NOWY ŚWIAT MENU",
    "contrast": {
-    "routes": 4.65,
-    "airports": 4.48,
-    "planes": 3.4,
-    "tags": 1.47
+    "routes": 10.04,
+    "airports": 8.26,
+    "planes": 2.82,
+    "tags": 1.78
    },
    "warmth": {
-    "gold": 0.036,
-    "ratio": 1.069
+    "gold": 0.001,
+    "ratio": 0.216
    },
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 137.4,
-    "lumaStd": 89.5,
+    "meanLuma": 124.9,
+    "lumaStd": 92.5,
     "whiteShare": 0,
-    "colours": 212
+    "colours": 185
    }
   },
   {
@@ -331,24 +331,24 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "+13 +5 +20 0:00 +6 ULN BKO REC TUN NOWE TYDZIEŃ 02 DZIEŃ 3/3 GODZ. 14:38 PASAŻERÓW 59 1 0 0 1× SIATKA WSTRZYMANA MAPA ODLOTY · BGW LOT / CEL BRAMKA STATUS AW101 · AMM A1 ODWOŁANY ATC · RAPORT ZDARZENIA Dowiezieni pasażerowie: 59 Ukończone tygodnie: 1 PRZYCZYNY PRZEBIEG 25 pasażerów nie miało trasy do regionu docelowego. 62% oczekujących chciało dotrzeć do Europy Północnej (16 osób). Poczekalnia przepełniona: 26 osób na 24 miejsca. WSKAZÓWKA Następnym razem: daj każdemu regionowi trasę, żeby żaden pasażer nie został bez lotu. NOWY REKORD LOKALNY JESZCZE RAZ · TEN SAM ŚWIAT NOWY ŚWIAT MENU",
+   "text": "ATH ANK AMM +3 VCE +23 0:00 TUN CPH TYDZIEŃ 01 DZIEŃ 3/3 GODZ. 22:44 PASAŻERÓW 51 0 0 0 1× SIATKA WSTRZYMANA MAPA ODLOTY · KHI LOT / CEL BRAMKA STATUS Żadna trasa nie obsługiwała KHI: pasażerowie nie mieli czym polecieć. Połącz nowe lotnisko, zanim zapełni się poczekalnia. ATC · RAPORT ZDARZENIA Dowiezieni pasażerowie: 51 Ukończone tygodnie: 0 PRZYCZYNY PRZEBIEG 29 pasażerów nie miało trasy do regionu docelowego. 76% oczekujących chciało dotrzeć do Bliskiego Wschodu (22 osoby). Poczekalnia przepełniona: 29 osób na 24 miejsca. NOWY REKORD LOKALNY JESZCZE RAZ · TEN SAM ŚWIAT NOWY ŚWIAT MENU",
    "contrast": {
-    "routes": 4.67,
-    "airports": 4.49,
-    "planes": 3.46,
-    "tags": 1.42
+    "routes": 10.04,
+    "airports": 8.28,
+    "planes": 2.53,
+    "tags": 1.78
    },
    "warmth": {
-    "gold": 0.036,
-    "ratio": 1.063
+    "gold": 0.001,
+    "ratio": 0.208
    },
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 98.3,
-    "lumaStd": 76.2,
+    "meanLuma": 89.2,
+    "lumaStd": 80.3,
     "whiteShare": 0,
-    "colours": 210
+    "colours": 182
    }
   },
   {
@@ -384,7 +384,7 @@
     "meanLuma": 91.6,
     "lumaStd": 70,
     "whiteShare": 0,
-    "colours": 637
+    "colours": 639
    }
   },
   {
@@ -400,9 +400,9 @@
     "width": 1536,
     "height": 2048,
     "meanLuma": 93.7,
-    "lumaStd": 69.3,
+    "lumaStd": 69.4,
     "whiteShare": 0,
-    "colours": 665
+    "colours": 663
    }
   },
   {
@@ -413,25 +413,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATC / SLOTS 07 AMM · SLOT 0:54 AMM launches 3 flights per hour; aircraft wait on the ground. Spread flights or pick “+2 slots”. WEEK 01 DAY 2/3 TIME 23:58 PASSENGERS 29 0 0 0 1×",
+   "text": "KHI WEEK 01 DAY 2/3 TIME 00:01 PASSENGERS 40 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
-    "routes": 9.36,
+    "routes": 9.35,
     "airports": 9.03,
-    "planes": 8.64,
-    "tags": 12.3
+    "planes": 7.9,
+    "tags": 11.82
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.448
+    "ratio": 0.463
    },
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 111.4,
-    "lumaStd": 89,
+    "meanLuma": 92.4,
+    "lumaStd": 80.9,
     "whiteShare": 0,
-    "colours": 368
+    "colours": 343
    }
   },
   {
@@ -442,25 +442,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATC / SLOTS 07 AMM · SLOT 0:54 AMM launches 3 flights per hour; aircraft wait on the ground. Spread flights or pick “+2 slots”. WEEK 01 DAY 2/3 TIME 00:01 PASSENGERS 29 0 0 0 1×",
+   "text": "KHI WEEK 01 DAY 2/3 TIME 00:05 PASSENGERS 40 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
-    "routes": 9.36,
-    "airports": 9.02,
-    "planes": 8.21,
-    "tags": 12.25
+    "routes": 9.25,
+    "airports": 8.94,
+    "planes": 8.17,
+    "tags": 12.59
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.432
+    "ratio": 0.454
    },
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 100.1,
-    "lumaStd": 82.2,
+    "meanLuma": 86.7,
+    "lumaStd": 74,
     "whiteShare": 0,
-    "colours": 354
+    "colours": 346
    }
   },
   {
@@ -471,25 +471,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATC / SLOTS 07 AMM · SLOT 0:54 AMM launches 3 flights per hour; aircraft wait on the ground. Spread flights or pick “+2 slots”. WEEK 01 DAY 2/3 TIME 00:06 PASSENGERS 29 0 0 0 1×",
+   "text": "KHI WEEK 01 DAY 2/3 TIME 00:03 PASSENGERS 40 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
-    "routes": 9.37,
+    "routes": 9.27,
     "airports": 9.03,
-    "planes": 9.07,
+    "planes": 8.23,
     "tags": 11.33
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.425
+    "ratio": 0.444
    },
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 94.5,
-    "lumaStd": 79.8,
+    "meanLuma": 82.9,
+    "lumaStd": 71.8,
     "whiteShare": 0,
-    "colours": 361
+    "colours": 346
    }
   },
   {
@@ -500,25 +500,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "WEEK 01 DAY 2/3 TIME 16:53 PASSENGERS 26 0 0 0 1×",
-   "sun": "-70.7@31.2,38.2",
+   "text": "KHI WEEK 01 DAY 2/3 TIME 16:52 PASSENGERS 34 0 0 0 1×",
+   "sun": "-68.6@29.7,41.3",
    "contrast": {
-    "routes": 9.13,
-    "airports": 7.98,
-    "planes": 7.13,
-    "tags": 12.93
+    "routes": 8.9,
+    "airports": 7.38,
+    "planes": 6.31,
+    "tags": 10.21
    },
    "warmth": {
     "gold": 0.083,
-    "ratio": 1.009
+    "ratio": 1.028
    },
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 105.9,
-    "lumaStd": 74.4,
+    "meanLuma": 108.7,
+    "lumaStd": 75.5,
     "whiteShare": 0,
-    "colours": 585
+    "colours": 596
    }
   },
   {
@@ -529,25 +529,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "WEEK 01 DAY 2/3 TIME 16:59 PASSENGERS 26 0 0 0 1×",
-   "sun": "-70.7@31.2,38.2",
+   "text": "KHI WEEK 01 DAY 2/3 TIME 17:05 PASSENGERS 34 0 0 0 1×",
+   "sun": "-68.6@29.7,41.3",
    "contrast": {
-    "routes": 10.02,
-    "airports": 8.61,
-    "planes": 7.42,
-    "tags": 13.84
+    "routes": 9.75,
+    "airports": 8.44,
+    "planes": 7.72,
+    "tags": 10.29
    },
    "warmth": {
-    "gold": 0.075,
-    "ratio": 0.895
+    "gold": 0.081,
+    "ratio": 0.899
    },
    "png": {
     "width": 1346,
     "height": 1682,
     "meanLuma": 98.1,
-    "lumaStd": 70.4,
+    "lumaStd": 71.3,
     "whiteShare": 0,
-    "colours": 566
+    "colours": 578
    }
   },
   {
@@ -558,25 +558,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "WEEK 01 DAY 2/3 TIME 17:02 PASSENGERS 26 0 0 0 1×",
-   "sun": "-70.7@31.2,38.2",
+   "text": "KHI WEEK 01 DAY 2/3 TIME 16:58 PASSENGERS 34 0 0 0 1×",
+   "sun": "-68.6@29.7,41.3",
    "contrast": {
-    "routes": 10.2,
-    "airports": 8.86,
-    "planes": 7.62,
-    "tags": 12.55
+    "routes": 9.65,
+    "airports": 8.08,
+    "planes": 7.16,
+    "tags": 1.65
    },
    "warmth": {
-    "gold": 0.078,
-    "ratio": 0.892
+    "gold": 0.073,
+    "ratio": 0.909
    },
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 94.2,
-    "lumaStd": 68.5,
+    "meanLuma": 96.4,
+    "lumaStd": 69.1,
     "whiteShare": 0,
-    "colours": 577
+    "colours": 605
    }
   },
   {
@@ -587,24 +587,24 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ULN BKO WEEK 01 DAY 3/3 TIME 02:00 PASSENGERS 54 0 0 0 1× Week 1 Hangar: three crates arrived. You open one. FREIGHT · TP-48 1/3 Turbo­prop RANGE 2,500 km SEATS 48 BEST FOR short hops FREIGHT · WB-300 2/3 Wide­body RANGE 11,000 km SEATS 300 BEST FOR ocean crossings FREIGHT · SLOT+2 3/3 Departure slots DEPARTURES +2 per hour FOR an airport you pick AMM 13 min",
+   "text": "+3 KHI TUN RIO WEEK 01 DAY 3/3 TIME 02:00 PASSENGERS 79 0 0 0 1× Week 1 Hangar: three crates arrived. You open one. FREIGHT · TP-48 1/3 Turbo­prop RANGE 2,500 km SEATS 48 BEST FOR short hops FREIGHT · WB-300 2/3 Wide­body RANGE 11,000 km SEATS 300 BEST FOR ocean crossings FREIGHT · SLOT+2 3/3 Departure slots DEPARTURES +2 per hour FOR an airport you pick",
    "contrast": {
-    "routes": 9.49,
-    "airports": 9.09,
-    "planes": 9.9,
-    "tags": 12.28
+    "routes": 9.39,
+    "airports": 8.92,
+    "planes": 8.79,
+    "tags": 14.14
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.453
+    "ratio": 0.486
    },
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 140.9,
-    "lumaStd": 63.6,
+    "meanLuma": 135.7,
+    "lumaStd": 65.1,
     "whiteShare": 0,
-    "colours": 182
+    "colours": 166
    }
   },
   {
@@ -615,24 +615,24 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ULN BKO WEEK 01 DAY 3/3 TIME 02:00 PASSENGERS 54 0 0 0 1× Week 1 Hangar: three crates arrived. You open one. FREIGHT · TP-48 1/3 Turbo­prop RANGE 2,500 km SEATS 48 BEST FOR short hops FREIGHT · WB-300 2/3 Wide­body RANGE 11,000 km SEATS 300 BEST FOR ocean crossings FREIGHT · SLOT+2 3/3 Departure slots DEPARTURES +2 per hour FOR an airport you pick AMM 13 min",
+   "text": "+3 KHI TUN RIO WEEK 01 DAY 3/3 TIME 02:00 PASSENGERS 79 0 0 0 1× Week 1 Hangar: three crates arrived. You open one. FREIGHT · TP-48 1/3 Turbo­prop RANGE 2,500 km SEATS 48 BEST FOR short hops FREIGHT · WB-300 2/3 Wide­body RANGE 11,000 km SEATS 300 BEST FOR ocean crossings FREIGHT · SLOT+2 3/3 Departure slots DEPARTURES +2 per hour FOR an airport you pick",
    "contrast": {
-    "routes": 9.5,
-    "airports": 9.04,
-    "planes": 9.96,
-    "tags": 12.5
+    "routes": 9.33,
+    "airports": 8.87,
+    "planes": 8.59,
+    "tags": 14.05
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.438
+    "ratio": 0.476
    },
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 159.6,
-    "lumaStd": 59.1,
+    "meanLuma": 159.9,
+    "lumaStd": 58.8,
     "whiteShare": 0,
-    "colours": 150
+    "colours": 135
    }
   },
   {
@@ -643,24 +643,24 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ULN BKO WEEK 01 DAY 3/3 TIME 02:00 PASSENGERS 54 0 0 0 1× Week 1 Hangar: three crates arrived. You open one. FREIGHT · TP-48 1/3 Turbo­prop RANGE 2,500 km SEATS 48 BEST FOR short hops FREIGHT · WB-300 2/3 Wide­body RANGE 11,000 km SEATS 300 BEST FOR ocean crossings FREIGHT · SLOT+2 3/3 Departure slots DEPARTURES +2 per hour FOR an airport you pick AMM 13 min",
+   "text": "+3 KHI TUN RIO WEEK 01 DAY 3/3 TIME 02:00 PASSENGERS 79 0 0 0 1× Week 1 Hangar: three crates arrived. You open one. FREIGHT · TP-48 1/3 Turbo­prop RANGE 2,500 km SEATS 48 BEST FOR short hops FREIGHT · WB-300 2/3 Wide­body RANGE 11,000 km SEATS 300 BEST FOR ocean crossings FREIGHT · SLOT+2 3/3 Departure slots DEPARTURES +2 per hour FOR an airport you pick",
    "contrast": {
-    "routes": 9.49,
-    "airports": 9.09,
-    "planes": 9.9,
-    "tags": 11.68
+    "routes": 9.35,
+    "airports": 8.92,
+    "planes": 9.29,
+    "tags": 13.55
    },
    "warmth": {
-    "gold": 0.002,
-    "ratio": 0.431
+    "gold": 0.003,
+    "ratio": 0.466
    },
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 109.9,
-    "lumaStd": 74.2,
+    "meanLuma": 108.8,
+    "lumaStd": 74.1,
     "whiteShare": 0,
-    "colours": 151
+    "colours": 137
    }
   },
   {
@@ -671,24 +671,24 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "+13 +5 +20 0:00 +6 ULN BKO REC TUN NEW WEEK 02 DAY 3/3 TIME 14:38 PASSENGERS 59 1 0 0 1× NETWORK CLOSED MAP DEPARTURES · BGW FLIGHT / DEST. GATE STATUS AW101 · AMM A1 CANCELLED ATC · INCIDENT REPORT Passengers delivered: 59 Weeks completed: 1 CAUSES TIMELINE 25 passengers had no available route to their destination region. TIP Next time: give every region a route, so no passenger is left without a flight. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
+   "text": "ATH ANK AMM +3 VCE +23 0:00 TUN CPH WEEK 01 DAY 3/3 TIME 22:44 PASSENGERS 51 0 0 0 1× NETWORK CLOSED MAP DEPARTURES · KHI FLIGHT / DEST. GATE STATUS No route served KHI: its passengers had no flight to board. Connect a new airport before its waiting area fills up. ATC · INCIDENT REPORT Passengers delivered: 51 Weeks completed: 0 CAUSES TIMELINE 29 passengers had no available route to their destination region. 76% of waiting passengers were headed to the Middle East (22 people). The waiting area was full: 29 people for 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
    "contrast": {
-    "routes": 4.64,
-    "airports": 4.49,
-    "planes": 3.4,
-    "tags": 1.36
+    "routes": 9.75,
+    "airports": 8.33,
+    "planes": 9.6,
+    "tags": 1.79
    },
    "warmth": {
-    "gold": 0.027,
-    "ratio": 1.016
+    "gold": 0.001,
+    "ratio": 0.201
    },
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 137.8,
-    "lumaStd": 88.9,
+    "meanLuma": 137.4,
+    "lumaStd": 94.9,
     "whiteShare": 0,
-    "colours": 214
+    "colours": 184
    }
   },
   {
@@ -699,24 +699,24 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "+13 +5 +20 0:00 +6 ULN BKO REC TUN NEW WEEK 02 DAY 3/3 TIME 14:38 PASSENGERS 59 1 0 0 1× NETWORK CLOSED MAP DEPARTURES · BGW FLIGHT / DEST. GATE STATUS AW101 · AMM A1 CANCELLED ATC · INCIDENT REPORT Passengers delivered: 59 Weeks completed: 1 CAUSES TIMELINE 25 passengers had no available route to their destination region. 62% of waiting passengers were headed to Northern Europe (16 people). The waiting area was full: 26 people for 24 places. TIP Next time: give every region a route, so no passenger is left without a flight. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
+   "text": "ATH ANK AMM +3 VCE +23 0:00 TUN CPH WEEK 01 DAY 3/3 TIME 22:44 PASSENGERS 51 0 0 0 1× NETWORK CLOSED MAP DEPARTURES · KHI FLIGHT / DEST. GATE STATUS No route served KHI: its passengers had no flight to board. Connect a new airport before its waiting area fills up. ATC · INCIDENT REPORT Passengers delivered: 51 Weeks completed: 0 CAUSES TIMELINE 29 passengers had no available route to their destination region. 76% of waiting passengers were headed to the Middle East (22 people). The waiting area was full: 29 people for 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
    "contrast": {
-    "routes": 4.67,
-    "airports": 4.49,
-    "planes": 3.08,
-    "tags": 1.47
+    "routes": 10.04,
+    "airports": 8.26,
+    "planes": 2.53,
+    "tags": 1.78
    },
    "warmth": {
-    "gold": 0.037,
-    "ratio": 1.068
+    "gold": 0.001,
+    "ratio": 0.216
    },
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 135.1,
-    "lumaStd": 89.1,
+    "meanLuma": 125,
+    "lumaStd": 92.5,
     "whiteShare": 0,
-    "colours": 201
+    "colours": 180
    }
   },
   {
@@ -727,24 +727,24 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "+13 +5 +20 0:00 +6 ULN BKO REC TUN NEW WEEK 02 DAY 3/3 TIME 14:38 PASSENGERS 59 1 0 0 1× NETWORK CLOSED MAP DEPARTURES · BGW FLIGHT / DEST. GATE STATUS AW101 · AMM A1 CANCELLED ATC · INCIDENT REPORT Passengers delivered: 59 Weeks completed: 1 CAUSES TIMELINE 25 passengers had no available route to their destination region. 62% of waiting passengers were headed to Northern Europe (16 people). The waiting area was full: 26 people for 24 places. TIP Next time: give every region a route, so no passenger is left without a flight. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
+   "text": "ATH ANK AMM +3 VCE +23 0:00 TUN CPH WEEK 01 DAY 3/3 TIME 22:44 PASSENGERS 51 0 0 0 1× NETWORK CLOSED MAP DEPARTURES · KHI FLIGHT / DEST. GATE STATUS No route served KHI: its passengers had no flight to board. Connect a new airport before its waiting area fills up. ATC · INCIDENT REPORT Passengers delivered: 51 Weeks completed: 0 CAUSES TIMELINE 29 passengers had no available route to their destination region. 76% of waiting passengers were headed to the Middle East (22 people). The waiting area was full: 29 people for 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
    "contrast": {
-    "routes": 4.67,
-    "airports": 4.49,
-    "planes": 3.54,
-    "tags": 1.42
+    "routes": 10.04,
+    "airports": 8.28,
+    "planes": 2.82,
+    "tags": 1.78
    },
    "warmth": {
-    "gold": 0.036,
-    "ratio": 1.063
+    "gold": 0.001,
+    "ratio": 0.208
    },
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 100.6,
-    "lumaStd": 78,
+    "meanLuma": 89.3,
+    "lumaStd": 80.4,
     "whiteShare": 0,
-    "colours": 206
+    "colours": 185
    }
   },
   {
@@ -762,7 +762,7 @@
     "meanLuma": 83.3,
     "lumaStd": 69,
     "whiteShare": 0,
-    "colours": 640
+    "colours": 636
    }
   },
   {
@@ -780,7 +780,7 @@
     "meanLuma": 91.6,
     "lumaStd": 70,
     "whiteShare": 0,
-    "colours": 637
+    "colours": 647
    }
   },
   {
@@ -798,7 +798,7 @@
     "meanLuma": 93.6,
     "lumaStd": 69.3,
     "whiteShare": 0,
-    "colours": 662
+    "colours": 658
    }
   }
  ]
