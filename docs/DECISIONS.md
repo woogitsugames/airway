@@ -625,7 +625,7 @@ Settings → Help gains a "Privacy policy / Polityka prywatności" row under the
 title, the draft warning, its five sections and date, plus one line that the copy is stored in the game and opens
 without a connection. The game catalogs hold a copy of the site's `privacy.*` strings; `test:privacy-text` fails when
 they differ from `site/i18n.js`, so the site stays the one source. No public URL is shown until the site is published
-(D-67); the leaderboard section waits for the owner (Q-52). Rationale: Google's User Data policy wants the policy
+(D-67); the leaderboard section waits for the owner (Q-55). Rationale: Google's User Data policy wants the policy
 reachable inside the app (RESEARCH R1, R1b); an offline page works on every build and in every store review.
 **Status: in force (N11e, `test:privacy-text`, `test:e2e:privacy-page`).**
 
