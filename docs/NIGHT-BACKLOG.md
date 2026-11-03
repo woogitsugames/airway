@@ -78,6 +78,8 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       673×841 fold the yellow week sign sat over the HUD numbers (week, day, time, passengers). Narrow screens start
       the board below the pass; phone landscape puts the sign beside the pass (its line wraps) so the labels keep
       their height. `ui:matrix` now fails when the board covers the pass or scrolls.
+- [x] N7o **Store shots after N7m/N7n** — the failure scene still showed the old capacity wording and the upgrade
+      scene the old board layout; all 30 store PNGs, the manifest and the contact sheet re-rendered and checked.
 - [ ] N7 When the queue is empty: pick the most valuable next improvement from `docs/HANDOVER*.md`, PR "Known issues"
       sections and the forbidden list review of current screenshots; add it here first, then do it.
 
@@ -105,3 +107,4 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
 - 2026-11-03 · N7l daily ranking e2e · night/07l-leaderboard-e2e · test:fast 48/48, build ok, e2e:smoke 9/9, ui:matrix 32/32, test:e2e:leaderboard 5/5 (emulators; fails 4/5 without the start-up flush)
 - 2026-11-03 · N7m capacity cause wording · night/07m-capacity-cause · test:fast 48/48, build ok, e2e:smoke 9/9, ui:matrix 32/32, test:format 11/11
 - 2026-11-03 · N7n weekly board clears the boarding pass · night/07n-landscape-banner · test:fast 48/48, build ok, e2e:smoke 9/9, ui:matrix 32/32 (new HUD-overlap check fails 4/32 on the old CSS), test:hud-targets 300/300
+- 2026-11-03 · N7o store shots refreshed · night/07o-store-shots · store:shots captured=30 failed=0, test:store-shots shots=30 failed=0, test:fast 48/48, build ok
