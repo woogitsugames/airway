@@ -164,6 +164,43 @@ for (const level of ['low', 'medium']) {
   let stepped = null;
   for (let i = 0; i < 1000; i++) stepped = stepped ?? resume.push(400);
   check(stepped === null, 'resume gaps (> 250 ms) are ignored');
+
+  // [night-07b] D-74: remembered steps re-apply only as a prefix of the current ladder.
+  const medium2 = quality.resolveQualityProfile('medium', { devicePixelRatio: 2 });
+  const two = quality.applyAdaptiveSteps(medium2, ['pixel-ratio', 'decorations']);
+  check(two && two.pixelRatio === 1 && two.decorDensity === quality.SAVER_DECOR_DENSITY && two.preset === 'medium',
+    'remembered DPR + decorations steps apply');
+  const all = quality.applyAdaptiveSteps(medium2, steps);
+  check(all && all.preset === 'low' && !all.shadowEnabled, 'remembered terrain step lowers the preset');
+  check(quality.applyAdaptiveSteps(medium2, ['decorations']) === null, 'out-of-order memory is ignored');
+  const lowDpr1 = quality.resolveQualityProfile('low', { devicePixelRatio: 1 });
+  check(quality.applyAdaptiveSteps(lowDpr1, ['pixel-ratio']) === null, 'a step the device ladder lacks is ignored');
+  check(quality.applyAdaptiveSteps(medium2, []) === medium2, 'no memory keeps the profile');
+  const rest = new quality.AdaptiveQualityMonitor(steps.slice(2));
+  let restTaken = [];
+  for (let i = 0; i < 3000; i++) { const s = rest.push(50); if (s) restTaken.push(s); }
+  check(restTaken.join() === 'terrain', 'a resumed ladder only offers the remaining steps');
+
+  const memory = await import('../src/game/adaptiveMemory.ts');
+  const NOW = Date.UTC(2026, 10, 3);
+  const map = new Map();
+  const store = { getItem: (k) => map.get(k) ?? null, setItem: (k, v) => map.set(k, v), removeItem: (k) => map.delete(k) };
+  memory.writeAdaptiveSteps(['pixel-ratio'], NOW, store);
+  check(memory.readAdaptiveSteps(NOW + 1000, store).join() === 'pixel-ratio', 'memory round-trips');
+  check(memory.readAdaptiveSteps(NOW + memory.ADAPTIVE_MEMORY_MAX_AGE_MS + 1, store).length === 0, 'memory expires after 30 days');
+  check(memory.readAdaptiveSteps(NOW - 1000, store).length === 0, 'memory from the future is ignored');
+  memory.writeAdaptiveSteps([], NOW, store);
+  check(!map.has(memory.ADAPTIVE_MEMORY_KEY), 'an empty ladder removes the record');
+  memory.writeAdaptiveSteps(['pixel-ratio', 'decorations'], NOW, store);
+  memory.forgetAdaptiveSteps(store);
+  check(memory.readAdaptiveSteps(NOW, store).length === 0, 'forget clears the record');
+  for (const bad of ['{', 'null', '{"v":2,"steps":["terrain"],"at":0}', `{"v":1,"steps":["turbo"],"at":${NOW}}`,
+    `{"v":1,"steps":["terrain","terrain"],"at":${NOW}}`, `{"v":1,"steps":[],"at":${NOW}}`]) {
+    check(memory.parseAdaptiveMemory(bad, NOW) === null, `malformed memory ${bad} is ignored`);
+  }
+  const throwing = { getItem() { throw new Error('denied'); }, setItem() { throw new Error('denied'); }, removeItem() { throw new Error('denied'); } };
+  memory.writeAdaptiveSteps(['terrain'], NOW, throwing);
+  check(memory.readAdaptiveSteps(NOW, throwing).length === 0, 'denied storage reads as no memory, never throws');
 }
 
 console.log(`SUMMARY test:quality seed=0x${SEED.toString(16).toUpperCase()} passed=${passed} failed=${failed}`);

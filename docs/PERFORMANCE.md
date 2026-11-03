@@ -69,8 +69,9 @@ overlay tags are allocated once; aircraft transforms reuse an `Object3D`
 and `Vector3` instances, with a preallocated `Float32Array` history.
 During the active half the camera orbits slowly and the 40 DOM tags are re-projected
 every frame with `world.project()` (DOM writes only when a pixel position changes).
-Note: the page also mounts the menu (`src/main.ts`), whose `src/ui/menu/demo-globe.ts`
-still creates a second WebGL context; numbers include that until the menu uses the world.
+The menu no longer owns a WebGL context (it draws over the shared world canvas, `src/game/world.ts`), and
+`src/main.ts` skips the game on the perf page, so the fixture measures a single context. The integration
+results below (2026-11-02) were recorded while the old menu globe still opened a second context.
 
 The output is `.perf/scene.json` (or `--output <path>`), including
 CPU render-submit mean/p95/max, frame-interval mean/p95, sample-time draw
@@ -91,7 +92,7 @@ ANGLE SwiftShader (Vulkan/Subzero), production world renderer:
 | Draw calls / triangles (max) | 33 / 228 837 | Not measured |
 | JS heap start / end / max | 6.5 MB / 7.1 MB / 11.0 MB (no growth trend) | Not measured |
 | Overlay DOM elements | 40 (stable) | Not measured |
-| Delivered FPS idle / active | 2.7 / 2.3 (software rasteriser; also hosts the menu's second WebGL context) | Not measured |
+| Delivered FPS idle / active | 2.7 / 2.3 (software rasteriser; at the time also hosted the old menu's second WebGL context) | Not measured |
 
 **SwiftShader figures are orientation-only**; they must never be compared
 directly against mobile GPU acceptance targets. A working script, by itself,
@@ -157,6 +158,9 @@ frames carry their dt to the camera).
 in a row with a median above 41.7 ms (under 24 fps) take one step: DPR → 1, then decorations → 60 %,
 then terrain one preset lower (rebuild). A step is followed by one window of cooldown; it never
 steps back up within a session. `world.stats().adaptations` lists the steps taken.
+[night-07b] The steps are remembered between sessions (D-74, `src/game/adaptiveMemory.ts`, key
+`airway.adaptiveQuality`, ignored after 30 days or when not a prefix of the device's ladder) and applied before the
+first frame; an explicit graphics choice forgets them.
 
 ### Budgets (per frame, 412×915 portrait)
 

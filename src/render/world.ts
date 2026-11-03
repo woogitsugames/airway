@@ -15,7 +15,7 @@ import { pickSphereNdc, setLatLonVec3, type LonLat } from './globe/geo-math';
 import { createModelPreviewRenderer, type ModelPreviewRenderer } from './modelPreview';
 import { PlaneLayer, type PlaneRenderSnapshot } from './planes';
 import {
-  AdaptiveQualityMonitor, adaptiveSteps, applyQualityProfile, frameDue, resolveQualityProfile,
+  AdaptiveQualityMonitor, adaptiveSteps, applyAdaptiveSteps, applyQualityProfile, frameDue, resolveQualityProfile,
   SAVER_DECOR_DENSITY, type AdaptiveStep, type QualityPreference, type QualityProfile,
 } from './quality';
 import { createRoutePreview, type RoutePreviewView } from './routePreview';
@@ -96,6 +96,13 @@ export interface WorldRendererOptions {
    * automation (`navigator.webdriver`), so SwiftShader harnesses keep the quality they ask for.
    */
   readonly adaptive?: boolean;
+  /**
+   * [night-07b] Adaptive steps taken in an earlier session (D-74), applied before the first frame
+   * when they are a prefix of the `auto` ladder; ignored for any other preference.
+   */
+  readonly adaptedSteps?: readonly AdaptiveStep[];
+  /** [night-07b] Called with every step taken so far (in order) whenever a new one is taken. */
+  readonly onAdapt?: (steps: readonly AdaptiveStep[]) => void;
 }
 
 export interface WorldRenderer {
@@ -147,6 +154,11 @@ export function createWorldRenderer(
 ): WorldRenderer {
   let preference: QualityPreference = opts.quality ?? 'auto';
   let quality = resolveQualityProfile(preference);
+  // [night-07b] Steps remembered from an earlier session start this one already stepped down.
+  const remembered = preference === 'auto' && opts.adaptedSteps?.length
+    ? applyAdaptiveSteps(quality, opts.adaptedSteps) : null;
+  const ladder = adaptiveSteps(quality);
+  if (remembered) quality = remembered;
   const renderer = new WebGLRenderer({
     canvas, antialias: quality.antialias, alpha: false, powerPreference: 'high-performance',
   });
@@ -187,10 +199,11 @@ export function createWorldRenderer(
   let lastPaintAt = 0;
   let pendingDt = 0;
   let forcedLevel: number | null = null;
-  const adaptations: AdaptiveStep[] = [];
+  const adaptations: AdaptiveStep[] = remembered ? opts.adaptedSteps!.slice() : [];
   const automated = typeof navigator !== 'undefined' && navigator.webdriver === true;
   const adaptiveWanted = (): boolean => opts.adaptive ?? (preference === 'auto' && !automated);
-  let monitor: AdaptiveQualityMonitor | null = adaptiveWanted() ? new AdaptiveQualityMonitor(adaptiveSteps(quality)) : null;
+  let monitor: AdaptiveQualityMonitor | null = adaptiveWanted()
+    ? new AdaptiveQualityMonitor(ladder.slice(adaptations.length)) : null;
 
   const loadGlobe = async (): Promise<void> => {
     const mine = ++globeEpoch;
@@ -254,6 +267,7 @@ export function createWorldRenderer(
       lights.applyQuality(quality);
       void loadGlobe().catch(() => { /* keep the current globe */ });
     }
+    opts.onAdapt?.(adaptations.slice());
   }
 
   /** Device pixels per degree of arc at the centre of the globe disc (0 when off screen). */
@@ -372,6 +386,8 @@ export function createWorldRenderer(
     resize,
     async setQuality(nextPreference) {
       preference = nextPreference;
+      // [night-07b] An explicit choice starts the ladder afresh (the caller forgets the memory).
+      adaptations.length = 0;
       monitor = adaptiveWanted() ? new AdaptiveQualityMonitor(adaptiveSteps(resolveQualityProfile(preference))) : null;
       const next = resolveQualityProfile(preference);
       const rebuild = next.preset !== quality.preset;
