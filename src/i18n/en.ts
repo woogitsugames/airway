@@ -168,6 +168,10 @@ export const en = {
   'gameover.sameWorld': 'Try again · same world',
   'gameover.newWorld': 'New world',
   'gameover.menu': 'Menu',
+  'gameover.map': 'Map', // [night-11c]
+  'gameover.mapLabel': 'Show the network around {hub} without the report',
+  'gameover.mapBack': 'Back to report',
+  'gameover.mapHub': 'Network closed at {hub}',
   'gameover.region.NAM': 'North America',
   'gameover.region.SAM': 'South America',
   'gameover.region.EUN': 'Northern Europe',

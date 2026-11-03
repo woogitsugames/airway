@@ -339,3 +339,28 @@
 @media (max-height: 550px) and (min-width: 620px) {
   .airway-go-share { margin-top: 5px; }
 }
+/* [night-11c] "Map" on the closed-network sign: an ink tab at the sign's end, 48 px square at least. */
+.airway-go-map {
+  margin-left: auto; flex: none; min-width: 48px; min-height: 48px; padding: 0 12px;
+  border: 2px solid #1c1e20; border-radius: 0; background: #fbf8f1; color: #1c1e20;
+  font: 800 13px/1 'Overpass', sans-serif; letter-spacing: .06em; text-transform: uppercase;
+  cursor: pointer; touch-action: manipulation;
+}
+.airway-go-map:focus-visible, .airway-go-mapback:focus-visible { outline: 3px solid #1c1e20; outline-offset: 2px; }
+.airway-go-content[hidden], .airway-go-mapbar[hidden] { display: none; }
+/* Map view: no dim and no dialog surface, so the globe under it can be turned; one paper strip at thumb height. */
+.airway-go-overlay.is-map[role] { background: transparent; pointer-events: none; align-items: end; }
+.airway-go-mapbar {
+  pointer-events: auto; display: flex; align-items: center; gap: 12px;
+  width: min(100%, 460px); padding: 8px 8px 8px 16px;
+  background: #fbf8f1; border-left: 8px solid #c8352a; color: #1c1e20;
+}
+.airway-go-mapbar-hub { flex: 1; min-width: 0; font: 800 14px/1.2 'Overpass Mono', monospace; letter-spacing: .04em; text-transform: uppercase; }
+.airway-go-mapback { flex: none; background: #ffc72c; color: #1c1e20; }
+/* [night-11c] 320 dp short phones: with the Map tab the sign title takes two lines; keep the sign as tall as before. */
+@media (max-height: 600px) and (max-width: 359px) {
+  .airway-go-heading { font-size: 17px; line-height: 1.02; }
+  .airway-go-sign { padding-block: 1px; }
+  .airway-go-map { padding: 0 8px; }
+  .airway-go-content { gap: 4px; }
+}

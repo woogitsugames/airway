@@ -169,6 +169,10 @@ export const pl = {
   'gameover.sameWorld': 'Jeszcze raz · ten sam świat',
   'gameover.newWorld': 'Nowy świat',
   'gameover.menu': 'Menu',
+  'gameover.map': 'Mapa', // [night-11c]
+  'gameover.mapLabel': 'Pokaż siatkę wokół {hub} bez raportu',
+  'gameover.mapBack': 'Wróć do raportu',
+  'gameover.mapHub': 'Siatka wstrzymana w {hub}',
   'gameover.region.NAM': 'Ameryki Północnej',
   'gameover.region.SAM': 'Ameryki Południowej',
   'gameover.region.EUN': 'Europy Północnej',

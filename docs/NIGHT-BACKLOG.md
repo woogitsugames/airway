@@ -329,6 +329,16 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       run of a fresh profile that delivered 0 passengers was announced as a "new local record" and the menu then read
       "record 0"; a 0-passenger flight is no record now (`test:causes` +2 asserts). `e2e/gameover-unserved.mjs`
       (`test:e2e:gameover-unserved`, in `test:ci`).
+- [x] N11c **Game-over map view** — the game-over report covered the network the run ended on; there was no way to
+      look at where it went wrong. The closed-network sign gets a "Map / Mapa" tab: the report and the dim lift, the
+      globe takes gestures (turn, zoom), and one paper strip at thumb height says "Network closed at REC" with "Back
+      to report" (hardware back/Escape does the same; a second back leaves to the menu as before). While building it:
+      the game over detached the frame hook, so airport tags and edge chips stayed where they were before the camera
+      flew to the jammed hub (the jammed airport itself showed as an off-screen chip) and the globe was lit like the
+      menu instead of at the final tick; the hook now stays (the paused run advances nothing). Route-end handles are
+      hidden at game over (they stayed pinned on screen), and Undo / aircraft drops are ignored on the game-over screen.
+      320×568: the sign keeps its height with the tab (title 17 px). Store PNGs refreshed. `e2e/gameover-map.mjs`
+      (`test:e2e:gameover-map`, in `test:ci`).
 
 ## Log
 <!-- one line per finished item: date UTC · item · PR · gate summary -->
@@ -403,3 +413,4 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
 - 2026-11-03 · N10z edge chips clear of airport tags · night/10z-chip-tags · test:fast 58/58, build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:edge-dock 5/5, e2e:edge-chip-airports 2/2, e2e:upgrade-picks 10/10, test:e2e:edge-chip-tags 6/6 twice (4/6 on the old overlay)
 - 2026-11-03 · N11a no globe frames behind opaque pages · night/11a-covered-pages · test:fast 58/58, build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:tutorial 21/21, e2e:screens-fit 18/18, e2e:logbook 4/4, e2e:settings-groups 4/4, e2e:puzzle-board-scroll 12/12, test:e2e:covered-pages 2/2 ×3 (0/2 before)
 - 2026-11-03 · N11b unserved game-over board + no record for 0 · night/11b-unserved-board · ui:long-play EN 673×841 2× runs=3 maxWeek=1 issues=0; test:fast 58/58 (test:causes 6/6), build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:gameover-short 4/4 (2/4 before the short-phone hint rule), e2e:run-timeline 4/4, e2e:pseudo-locale 27/27, e2e:daily-share 4/4, e2e:logbook 4/4, test:e2e:gameover-unserved 4/4
+- 2026-11-03 · N11c game-over map view + live tags at game over · night/11c-gameover-map · test:fast 58/58, build ok, e2e:smoke 9/9, ui:matrix 32/32, test:hud-targets 300/300, e2e:gameover-short 4/4 (2/4 before the 320 sign rule), e2e:run-timeline 4/4, e2e:daily-share 4/4, e2e:gameover-unserved 4/4, e2e:pseudo-locale 27/27, test:e2e:gameover-map 3/3, store:shots 30 (test:store-shots 30/30)

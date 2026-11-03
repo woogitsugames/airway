@@ -132,11 +132,12 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
   const slotHint = mountSlotHint(layer); // [task-32] one-time departure-slot step
   const handles = mountRouteHandles(layer);
   const hud: HudController = mountHud(layer, {
-    onUndo: () => tool.undo(),
+    onUndo: () => { if (screen !== 'gameover') tool.undo(); }, // [night-11c] the map view leaves the dock reachable
     onTogglePause: () => setPaused(!paused),
     onCycleSpeed: () => { speed = speed === 1 ? 2 : speed === 2 ? 4 : 1; renderHud(); },
     onSelectPlane: (type) => { selectedPlane = type; renderHud(); },
     onAssignPlane: (type, routeId) => {
+      if (screen === 'gameover') return; // [night-11c]
       hapticCommand('AssignPlane', run.queue({ type: 'AssignPlane', routeId, aircraft: type })); // [night-10f]
     },
     routeAtPoint: (clientX, clientY) => {
@@ -203,7 +204,10 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
   const gameOver: GameOverController = createGameOverController({
     host: layer,
     pauseSimulation: () => { paused = true; },
-    freezeScene: () => { world.onFrame(null); },
+    // [night-11c] The run is paused and off the 'game' screen, so the frame hook advances nothing; it keeps the
+    // airport tags on the camera (the game-over map can be turned) and the final tick's light. Detaching it
+    // left the tags where they were before the camera flew to the jammed hub and lit the globe like the menu.
+    freezeScene: () => undefined,
     focusHub: (hubId, progress) => {
       const city = run.cityList().find((item) => item.id === hubId);
       if (!city) return;
@@ -404,6 +408,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       setScreen('gameover');
       hapticNetworkClosed(); // [night-10f]
       tool.pointerCancel(ROUTE_POINTER);
+      handles.show([]); // [night-11c] route-end handles are edit controls; they stayed pinned where the camera was
       const extra = callbacks.onFailure?.(run) ?? undefined; // [night-06c]
       const share = callbacks.failureShare?.() ?? undefined; // [night-10e]
       const flights = failure.departures.map((departure, i) => ({
@@ -535,7 +540,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       }
     },
     back() {
-      if (screen === 'gameover') { callbacks.onMenu(); return true; }
+      if (screen === 'gameover') { if (!gameOver.back()) callbacks.onMenu(); return true; } // [night-11c] map view first
       if (screen === 'upgrade') {
         // The weekly board must be answered; from the airport pick, back returns to the crates. [task-39]
         const offer = run.weeklyUpgrade;
