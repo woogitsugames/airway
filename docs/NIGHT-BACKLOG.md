@@ -135,6 +135,17 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       scrolled 51–111 px, 320×568: 190–232 px). Short portrait (≤ 719 × ≤ 760 px) gets a compact board: smaller
       model window (wider text column, fewer wraps), tighter gaps. 360×640 fits, 320×568 scrolls ≤ 19 px. New
       `e2e/board-short.mjs` (`test:e2e:board-short`, in `test:ci`).
+- [x] N8d **Flaky `test:e2e:daily-continue`** — failed 1 of 6 runs in N7x (step 3, the route/aircraft drag).
+      Three causes: (1) the spec counted the dock drag from before the route, but a new route already flies one
+      aircraft, so a tick during a slow drag skipped the expected count (and a broken dock drag passed silently);
+      (2) Playwright awaits the press before the first move, and on a loaded machine that round trip alone
+      exceeded the 350 ms long press, so the globe opened the route menu; (3) the first gesture after start
+      could read the pre-HUD framing. The spec now counts from after the route and sends the first moves with the
+      press (CDP); `e2e/leaderboard.mjs` gets the same count fix. Game: the long press counts from when the
+      press was handled (a press queued behind a long frame is no hold), a move is judged at its own position,
+      a late frame defers the menu by one frame (`test:gestures` +4); the session measures pass and dock once
+      mounted. 12 consecutive green runs right after a build; 16/16 with 4 runs in parallel (old spec: 12/16).
+- [ ] N8e **320×568 PL week-2 board scrolls 19 px** — N8c leftover; fit it.
 - [ ] N7 When the queue is empty: pick the most valuable next improvement from `docs/HANDOVER*.md`, PR "Known issues"
       sections and the forbidden list review of current screenshots; add it here first, then do it.
 
@@ -182,3 +193,4 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
 - 2026-11-03 · N8c weekly board fits short phones · night/08c-board-short · test:fast 50/50, build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:upgrade-picks 10/10, e2e:pick-sign 10/10, e2e:tutorial 21/21, test:hud-targets 300/300, e2e:screens-fit 18/18, test:e2e:board-short 4/4 (0/4 on the old CSS)
 - 2026-11-03 · N8b edge buttons clear of the landscape dock · night/08b-edge-arrows · test:fast 50/50, build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:tutorial 21/21, test:hud-targets 300/300, e2e:upgrade-picks 10/10, e2e:continue-framing 2/2, shots airports 4/4, test:e2e:edge-dock 3/3 (1/3 on the old overlay)
 - 2026-11-03 · N8a store shots refreshed · night/08a-store-shots · store:shots captured=30 failed=0, test:store-shots shots=30 failed=0, test:fast 50/50, build ok
+- 2026-11-03 · N8d flaky daily-continue fixed · night/08d-daily-continue-flake · test:fast 50/50, build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:upgrade-picks 10/10, e2e:tutorial 21/21, e2e:continue-framing 2/2, e2e:edge-dock 3/3, test:gestures 35/35 (31/35 on the old recognizer), test:e2e:daily-continue 12/12 consecutive after a build, 16/16 at 4× parallel load (12/16 with the old spec)
