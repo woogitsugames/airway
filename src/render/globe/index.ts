@@ -5,6 +5,7 @@ import {
 import type { QualityProfile } from '../quality';
 import { applyDayNightGrading } from './daynight';
 import { createDecorations } from './decorations';
+import { createDecorCuller, type DecorCullStats } from './decor-cull';
 import { setLatLonVec3 } from './geo-math';
 import { loadLandMask } from './land-mask';
 import { chunkTerrain, createTerrainLod, TERRAIN_LOD_LEVELS, type TerrainLod } from './lod';
@@ -16,6 +17,7 @@ export {
 export type { LonLat, Vec3Like, MutableVec3 } from './geo-math';
 export type { QualityLevel } from './terrain';
 export type { TerrainLodStats } from './lod';
+export type { DecorCullStats } from './decor-cull';
 /** [night-04] Decorations thinned by `setDecorDensity` (clouds stay: they carry the sky). */
 const THINNED = new Set(['Conifers', 'BroadleafTrees', 'Rocks']);
 
@@ -36,6 +38,8 @@ export interface GlobeInstance {
   /** [night-04] 0..1 share of trees, rocks and city lights drawn (battery saver, adaptive quality). */
   setDecorDensity(density: number): void;
   readonly lod: TerrainLod;
+  /** [night-07f] Trees and rocks drawn after chunk culling (D-75). */
+  readonly decor: DecorCullStats;
   dispose(): void;
 }
 
@@ -131,11 +135,14 @@ export async function createGlobe(scene: Scene, opts: GlobeOptions): Promise<Glo
   const decorations = createDecorations(mask, quality, opts.seed ?? 7, opts.sunDirection);
   group.add(lod.group, decorations, createAtmosphere());
   // Instances are placed in random order, so any prefix is an even thinning of the whole set.
-  const thinned: { object: InstancedMesh | Points; full: number }[] = [];
+  // [night-07f] Trees and rocks: chunk-culled and thinned per chunk (decor-cull.ts); city lights: a prefix.
+  const culled: InstancedMesh[] = [];
+  const thinned: { object: Points; full: number }[] = [];
   decorations.traverse((object) => {
-    if (object instanceof InstancedMesh && THINNED.has(object.name)) thinned.push({ object, full: object.count });
+    if (object instanceof InstancedMesh && THINNED.has(object.name)) culled.push(object);
     else if (object instanceof Points) thinned.push({ object, full: object.geometry.getAttribute('position').count });
   });
+  const culler = createDecorCuller(culled);
   // [task-34] Warm terminator and cool night palette on the world (not on gameplay layers).
   group.traverse((object) => {
     if (object instanceof Mesh) {
@@ -146,15 +153,15 @@ export async function createGlobe(scene: Scene, opts: GlobeOptions): Promise<Glo
   scene.add(group);
   let disposed = false;
   return {
-    group, quality: opts.quality, lod,
-    update: (camera, pixelsPerDegree) => lod.update(camera, pixelsPerDegree),
+    group, quality: opts.quality, lod, decor: culler.stats,
+    update(camera, pixelsPerDegree) {
+      lod.update(camera, pixelsPerDegree);
+      culler.update(camera);
+    },
     setDecorDensity(density) {
       const share = Math.max(0, Math.min(1, density));
-      for (const { object, full } of thinned) {
-        const n = Math.round(full * share);
-        if (object instanceof InstancedMesh) object.count = n;
-        else object.geometry.setDrawRange(0, n);
-      }
+      culler.setDensity(share);
+      for (const { object, full } of thinned) object.geometry.setDrawRange(0, Math.round(full * share));
     },
     dispose() {
       if (disposed) return;

@@ -74,6 +74,9 @@ export interface WorldStats {
   readonly terrainTriangles: number;
   /** [night-04] Adaptive quality steps taken this session, in order. */
   readonly adaptations: readonly AdaptiveStep[];
+  /** [night-07f] Tree and rock instances drawn after chunk culling / all of them (D-75). */
+  readonly decorDrawn: number;
+  readonly decorTotal: number;
 }
 
 export interface WorldRendererOptions {
@@ -415,6 +418,7 @@ export function createWorldRenderer(
         terrainLevel: globe?.lod.stats.level ?? 0, terrainChunks: globe?.lod.stats.visibleChunks ?? 0,
         terrainChunksTotal: globe?.lod.stats.chunks ?? 0, terrainRuns: globe?.lod.stats.runs ?? 0,
         terrainTriangles: globe?.lod.stats.triangles ?? 0, adaptations: adaptations.slice(),
+        decorDrawn: globe?.decor.drawn ?? 0, decorTotal: globe?.decor.total ?? 0,
       };
     },
     measureLayerContrast() {

@@ -547,3 +547,13 @@ steps. The record is ignored when it is not a prefix of the device's current lad
 including picking Automatic again — forgets it. Nothing is shown to the player. Rationale: a downgrade costs
 seconds of bad frames every session; never stepping back up within a session (D-73) already accepts that the
 downgrade is sticky. **Status: in force; the 30-day window is a proposal for the owner.**
+
+## D-75 — Trees and rocks are culled per chunk (2026-11-03, Claude, night N7f)
+Trees and rocks were one instanced draw each over the whole globe, so about half were drawn behind the planet. Their
+instances are now sorted into the terrain's spatial chunks (D-73) and, when the set of visible chunks or the density
+changes, the visible chunks are packed to the front of the instance buffer: still **one draw call per mesh**, an
+upload only when a chunk enters or leaves the view. Thinning (battery saver, adaptive quality) takes the same share
+of every chunk. Rejected: one instanced mesh per chunk (~20 more draw calls, over the ≤ 50 budget). The rendered
+image is pixel-identical (`dev/world.html` shots); `test:quality` proves no visible tree or rock is dropped.
+**Status: in force.**
+

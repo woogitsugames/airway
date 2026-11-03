@@ -63,7 +63,8 @@ export function chunkLayout(): { sectors: number[]; offsets: number[]; total: nu
 }
 const LAYOUT = chunkLayout();
 
-function chunkOf(lon: number, lat: number): number {
+/** Chunk id of a lon/lat point (also used by decoration culling, decor-cull.ts). */
+export function chunkOf(lon: number, lat: number): number {
   const band = Math.min(LAYOUT.sectors.length - 1, Math.max(0, Math.floor((lat + 90) / BAND_DEG)));
   const n = LAYOUT.sectors[band];
   const sector = Math.min(n - 1, Math.max(0, Math.floor((lon + 180) / 360 * n)));
@@ -88,7 +89,8 @@ function storageOrder(): number[] {
   });
   return keyed.map((entry) => entry.id);
 }
-const ORDER = storageOrder();
+/** Chunk ids in storage order (sector-major), shared by terrain and decoration culling. */
+export const ORDER: readonly number[] = storageOrder();
 
 /** Reorders a non-indexed terrain into chunk order and measures every chunk. Pure (no GL). */
 export function chunkTerrain(arrays: TerrainArrays, level: QualityLevel): ChunkedLevel {
