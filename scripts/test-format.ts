@@ -63,8 +63,14 @@ test('t() fills plural tokens in real catalog strings', () => {
   assert.equal(t('puzzle.goal.nights', { nights: 5, passengers: 40 }), 'Przetrwaj 5 nocy z ciszą nocną i dowieź 40 pasażerów.');
   assert.equal(t('gameover.cause.capacity', { waiting: 26, capacity: 24 }), 'Poczekalnia przepełniona: 26 osób na 24 miejsca.');
   assert.equal(t('gameover.cause.capacity', { waiting: 22, capacity: 25 }), 'Poczekalnia przepełniona: 22 osoby na 25 miejsc.');
+  // [night-07r] Puzzle goals agree with a count of one (accusative after "dowieź").
+  assert.equal(t('puzzle.goal.deliver', { passengers: 1 }), 'Dowieź 1 pasażera przed końcem czasu.');
+  assert.equal(t('puzzle.goal.deliver', { passengers: 24 }), 'Dowieź 24 pasażerów przed końcem czasu.');
   setLanguage('en');
   assert.equal(t('airport.waiting', { code: 'LON', count: 1 }), 'LON: 1 passenger waiting');
+  assert.equal(t('gameover.cause.slotWait', { minutes: 1 }), 'Aircraft waited 1 minute on the ground for a departure slot.');
+  assert.equal(t('gameover.cause.slotWait', { minutes: 45 }), 'Aircraft waited 45 minutes on the ground for a departure slot.');
+  assert.equal(t('puzzle.goal.continents', { continents: 3, passengers: 1 }), 'Connect 3 continents and deliver 1 passenger without a jam.');
   assert.equal(t('puzzle.board.item', { number: 4, title: 'X', stars: 1 }), 'Puzzle 4: X, 1 star');
   assert.equal(t('airport.waiting', { code: 'LON' }), 'LON: {count} {count|passenger|passengers} waiting', 'missing param keeps the token');
 });
