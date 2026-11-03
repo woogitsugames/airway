@@ -34,17 +34,28 @@ as `SCENES` in `scripts/store-shots.mjs`, the contact-sheet columns, the manifes
 4. **failure**: overloaded hub, cancelled flights and cause report.
 5. **menu**: split-flap departures board and airport sign.
 
-Each is captured at three viewport sizes:
+Each is captured at six viewport sizes ([N12o] D-123 added the last three):
 
-| Device | CSS viewport | DPR | Output PNG |
-| --- | --- | --- | --- |
-| Phone | 360×640 | 3 | 1080×1920 (9:16) |
-| Foldable | 673×841 | 2 | 1346×1682 |
-| Tablet | 768×1024 | 2 | 1536×2048 |
+| Device | CSS viewport | DPR | Output PNG | Console slot |
+| --- | --- | --- | --- | --- |
+| `phone` | 360×640 | 3 | 1080×1920 (9:16) | Play → Phone screenshots |
+| `foldable` | 673×841 | 2 | 1346×1682 (4:5) | Play → 7-inch tablet screenshots (not eligible for large-screen promotion) |
+| `tablet` | 768×1024 | 2 | 1536×2048 (3:4) | Play → 10-inch tablet screenshots (not eligible for large-screen promotion) |
+| `iphone` | 440×956 | 3 | 1320×2868 | App Store Connect → iPhone 6.9" Display (scaled by Apple to the smaller iPhones) |
+| `ipad` | 1032×1376 | 2 | 2064×2752 | App Store Connect → iPad 13" Display (scaled to the smaller iPads) |
+| `landscape` | 960×540 | 2 | 1920×1080 (16:9) | Play → 10-inch tablet screenshots, first ones (16:9 with short side ≥ 1080 qualifies for large-screen / Chromebook promotion); landscape HUD |
 
-The expected output is **30 genuine game screenshots** in docs/store/shots/{pl,en}/{scene}-{device}.png. Captures are first staged in a temporary directory and only installed after the entire matrix succeeds. No promotional text, overlays, fake globes or mockup composites are inserted.
+Play allows up to 8 images per device type: upload the five scenes in store order per slot (for tablets the five
+`landscape` shots first, then `tablet`). App Store Connect takes up to 10 per size; upload the five scenes per class.
+Apple rejects screenshots with an alpha channel: every shot is written as 8-bit RGB and `test:store-shots` checks it.
 
-The phone profile matches the Google Play 9:16 minimum game screenshot dimensions. App Store Connect can require different exact sizes for selected iPhone/iPad device classes; capture the appropriate Apple sizes before submitting, rather than treating generic 1080×1920 as an iPhone slot.
+The expected output is **60 genuine game screenshots** in docs/store/shots/{pl,en}/{scene}-{device}.png. Captures are first staged in a temporary directory and only installed after the entire matrix succeeds. No promotional text, overlays, fake globes or mockup composites are inserted.
+
+The phone profile matches the Google Play 9:16 minimum game screenshot dimensions. Apple slots use their own exact
+sizes (`iphone`, `ipad`), never the generic 1080×1920 phone shot. `checkStoreSizes` in `scripts/store-shots.mjs`
+holds the accepted Apple sizes (6.9": 1320×2868, 1290×2796, 1260×2736; 13": 2064×2752, 2048×2732) and Play's rules
+(320–3840 px, at most 2:1, one 9:16 and one 16:9 profile with a short side ≥ 1080); re-check them against the
+console help pages before each submission, they change with new devices.
 
 ## Google Play feature graphic (N12n, D-117)
 
@@ -85,7 +96,7 @@ not reached (e.g. an early jam) never sets them and the capture fails.
 
 ## Automatic checks
 
-`npm run store:shots` stages all 30 PNGs and publishes them only when every one passes:
+`npm run store:shots` stages all 60 PNGs and publishes them only when every one passes:
 exact pixel size; not blank or white (pixel statistics from a built-in PNG reader); no developer text in the visible
 page text (raw i18n keys, `{param}` placeholders, DEV/debug/NaN/undefined/localhost); no Vite overlay; passenger
 glyphs painted on top only from the six D-08 shapes (chevron, bow-tie, crescent, keyhole, tail-fin, bracket — never
