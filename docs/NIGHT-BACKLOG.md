@@ -495,6 +495,12 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       RGB. `test:store-shots` checks size, no alpha, ≤ 15 MB, centre band, dark share ≤ 0.2 and the new PL/EN field
       "Play feature graphic alt text" (≤ 140). Console slot in `docs/store/README.md`, entry in `docs/ASSETS.md`.
 
+- [x] N12o **Store shots in the exact Apple sizes and 16:9 (R2a, D-123)** — `store:shots` gained three device profiles
+      next to phone/foldable/tablet: `iphone` 440×956 @3 (1320×2868, App Store iPhone 6.9"), `ipad` 1032×1376 @2
+      (2064×2752, iPad 13") and `landscape` 960×540 @2 (1920×1080, Play 16:9 large-screen slot, landscape HUD) → 60 real
+      shots. `checkStoreSizes` guards Apple's accepted sizes and Play's 320–3840 px / 2:1 / 9:16 + 16:9 ≥ 1080 rules,
+      every shot must be RGB without alpha; contact sheet with six rows per language (landscape thumbnails wider);
+      console slot per profile in `docs/store/README.md`.
 - [x] N12p **Play device filter for OpenGL ES 3.0 (R3h, D-124)** — three r170 renders only through WebGL 2, which
       Android WebView builds on ES 3.0, so the manifest requires `glEsVersion 0x00030000` and Play hides the game from
       ES 2.0 phones (blank globe). `aapt2 dump badging` of the linked manifest shows `uses-gl-es: '0x30000'`.
@@ -580,7 +586,7 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
       to paste into feedback — no network, no analytics (D-16). **Area:** `docs/`, `src/ui/logbook/**`, i18n.
 
 ### R2 (2026-11-03) — store page & ASO, launch marketing, gameplay depth
-- [ ] R2a **Store shots in Apple and 16:9 sizes** — Apple requires iPhone 1320×2868 (or 1206×2622) and iPad 13"
+- [x] R2a → N12o **Store shots in Apple and 16:9 sizes** — Apple requires iPhone 1320×2868 (or 1206×2622) and iPad 13"
       2064×2752; Play's large-screen promotion wants 9:16 or 16:9 (our foldable 4:5 and tablet 3:4 do not qualify).
       Add device profiles to `scripts/store-shots.mjs`: `iphone` 440×956 @3, `ipad` 1032×1376 @2, `landscape`
       960×540 @2 (1920×1080, game in landscape HUD); keep the existing three. Update the manifest, contact sheet,
