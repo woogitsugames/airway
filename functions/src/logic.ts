@@ -47,3 +47,50 @@ export function reviewSubmission(submission: unknown, nowMs: number): ReviewedRu
 export function validBoardId(id: unknown): id is string {
   return typeof id === 'string' && parseBoardId(id) !== null;
 }
+
+/** [night-12i] D-108: one row of a board's `meta/top` document (server-only; the uid never leaves the server). */
+export interface TopEntry {
+  readonly uid: string;
+  readonly callSign: string;
+  readonly score: number;
+}
+
+/**
+ * [night-12i] D-108: the order of the old `orderBy('score', 'desc').limit(50)` query, which Firestore completes
+ * with an implicit `__name__` order in the direction of the last explicit order: score desc, then doc id desc.
+ */
+export function compareTop(a: TopEntry, b: TopEntry): number {
+  if (a.score !== b.score) return b.score - a.score;
+  return a.uid < b.uid ? 1 : a.uid > b.uid ? -1 : 0;
+}
+
+/** [night-12i] D-108: the caller's 1-based place in a top list, or null outside it. */
+export function rankInTop(top: readonly TopEntry[], uid: string): number | null {
+  const index = top.findIndex((entry) => entry.uid === uid);
+  return index < 0 ? null : index + 1;
+}
+
+/**
+ * [night-12i] D-108: `top` with `entry` put in its place (replacing the same uid), sorted and cut to `limit`.
+ * Returns null when the list would not change (a score that does not beat the last place of a full list), so
+ * the caller skips the write.
+ */
+export function mergeTop(top: readonly TopEntry[], entry: TopEntry, limit = TOP_ENTRIES): TopEntry[] | null {
+  const next = [...top.filter((row) => row.uid !== entry.uid), entry].sort(compareTop).slice(0, limit);
+  const same = next.length === top.length && next.every((row, i) =>
+    row.uid === top[i].uid && row.score === top[i].score && row.callSign === top[i].callSign);
+  return same ? null : next;
+}
+
+/** [night-12i] D-108: rows read back from a stored top document; anything malformed is dropped, order restored. */
+export function readTopRows(raw: unknown): TopEntry[] {
+  if (!Array.isArray(raw)) return [];
+  const rows: TopEntry[] = [];
+  for (const item of raw) {
+    const row = item as Partial<TopEntry> | null;
+    if (row && typeof row.uid === 'string' && typeof row.callSign === 'string' && Number.isFinite(row.score)) {
+      rows.push({ uid: row.uid, callSign: row.callSign, score: Number(row.score) });
+    }
+  }
+  return rows.sort(compareTop).slice(0, TOP_ENTRIES);
+}

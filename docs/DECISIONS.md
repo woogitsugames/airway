@@ -776,3 +776,17 @@ ALX → ALY) — and everything the player reads goes through `displayCode()` / 
 freezes the id list (append only) and keeps display codes unique. Rejected: renaming the ids (would need a save,
 journal and logbook migration and a `RULES_VERSION` bump for no gameplay change). **Status: in force (N12h).**
 
+## D-108 — One top-50 document per board (2026-11-03, Claude, night N12i)
+R3a: `getBoards` ran two 50-document queries per call (~105 reads), most of the Firestore bill and the cheapest way
+to run it up. Each board now keeps `boards/{id}/meta/top` (`entries`: ≤ 50 `{uid, callSign, score}` in the old
+query's order, score desc then document id desc), written by `submitDaily` inside the same transaction as the entry
+and only when the run changes the list; `getBoards` reads the two top documents and the caller's two entries
+(4 reads) and runs `count()` only for a caller outside the top 50. Response shape unchanged; `submitDaily` adds
+`rank` while the caller is in the daily top 50. A board without a top document (written before the upgrade) is
+seeded from the old query at its first write and read with the old query until then. The top document's `expireAt`
+is fixed at its first write and never extended, so with its own TTL policy (`meta`) it never outlives the entries
+it copies (D-77). The uid is stored because `me` needs it and Firestore is server-only; the call sign alone can
+collide. Rejected: a scheduled job that rebuilds tops (extra function, stale boards between runs); sharded counters
+(not needed at this size). Every write to a board now contends on one document; at well below one accepted run per
+second per board this is fine, and the write is skipped once a run cannot reach the top. **Status: in force (N12i).**
+
