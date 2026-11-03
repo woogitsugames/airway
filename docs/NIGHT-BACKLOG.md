@@ -195,7 +195,7 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       the regions the network served (8 glyphs, two new for ASI/OCE), the text adds the streak of days. On a daily,
       "Same world" and "New world" both silently went to the menu: same world now starts a practice of today's
       world (menu if the day changed), new world starts Endless.
-- [ ] N10f **Haptics for every committed action** — native haptics fired only on route snaps/commits and on a jam
+- [x] N10f **Haptics for every committed action** — native haptics fired only on route snaps/commits and on a jam
       starting; dropping an aircraft on a route, picking the weekly card and the network closing were silent, and no
       test covered haptics at all. Light impact on an accepted aircraft drop and weekly pick, one heavy impact when
       the network closes; still behind the "Haptic feedback" switch, presentation only (D-13). `test:haptics`.
@@ -250,3 +250,4 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
 - 2026-11-03 · N10c saved-flight notice · night/10c-save-notice · test:fast 52/52, build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:daily-continue 7/7, test:save-golden 19/19, test:e2e:save-notice 4/4
 - 2026-11-03 · N10d daily row score/streak + plural fix · night/10d-daily-row · test:fast 52/52 (test:format 13/13), build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:save-notice 4/4, e2e:screens-fit-320 12/12, test:e2e:daily-row 4/4
 - 2026-11-03 · N10e daily share + restart buttons (D-81) · night/10e-share · test:fast 52/52 (test:daily-mode 20/20), build ok, e2e:smoke 9/9, ui:matrix 32/32, test:e2e:daily-share 4/4
+- 2026-11-03 · N10f haptics for every committed action · night/10f-haptics · test:fast 53/53 (test:haptics 6/6), build ok, e2e:smoke 9/9; ui:matrix not run (no visual change)

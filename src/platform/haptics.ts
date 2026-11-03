@@ -82,6 +82,17 @@ export const routeHaptics: Readonly<RouteHaptics> = Object.freeze({
   confirm: () => haptic('confirm'),
 });
 
+/**
+ * [night-10f] Commands the player commits outside the route tool: an aircraft dropped on a route and the weekly
+ * pick get a light confirm when the simulation accepted them; a refused one stays silent (nothing happened).
+ */
+export function hapticCommand(type: 'AssignPlane' | 'ChooseUpgrade', accepted: boolean): void {
+  if (accepted && (type === 'AssignPlane' || type === 'ChooseUpgrade')) haptic('confirm');
+}
+
+/** [night-10f] Once when the network closes (game over); the jam start already warned. */
+export function hapticNetworkClosed(): void { haptic('jam'); }
+
 /** Edge-triggered jam feedback for consumers rendering hub state each tick. */
 export function createJamHaptics(): {
   setJammed: (hubId: string, jammed: boolean) => void;

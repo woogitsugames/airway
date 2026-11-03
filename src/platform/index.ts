@@ -1,5 +1,5 @@
 // Platform boundary: one module per native concern. Nothing here may be imported by src/sim (D-13).
-export { configureHaptics, haptic, hapticSnap, hapticJam, routeHaptics, createJamHaptics } from './haptics';
+export { configureHaptics, haptic, hapticSnap, hapticJam, hapticCommand, hapticNetworkClosed, routeHaptics, createJamHaptics } from './haptics';
 export type { HapticKind, HapticsConfig, NativeHapticDriver, RouteHaptics } from './haptics';
 export { installBackHandler, ANDROID_BACK_EVENT } from './back';
 export type { BackOptions, RegisterNativeBack, RemoveBackListener } from './back';
