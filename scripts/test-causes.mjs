@@ -107,6 +107,9 @@ try {
     getItem: (key) => values.get(key) ?? null,
     setItem: (key, value) => values.set(key, value),
   };
+  // [night-11b] Zero delivered is never a record, not even on an empty profile.
+  assert.equal(persistBestRecord(storage, { score: 0, weeks: 1, seed: 25 }).isNewRecord, false);
+  assert.equal(readBestRecord(storage), null);
   const old = { score: 140, weeks: 2, seed: 25 };
   assert.equal(persistBestRecord(storage, old).isNewRecord, true);
   assert.deepEqual(readBestRecord(storage), old);

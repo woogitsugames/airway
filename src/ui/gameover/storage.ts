@@ -39,6 +39,9 @@ export function persistBestRecord(
 ): { readonly best: GameOverBest | null; readonly isNewRecord: boolean } {
   const prior = readBestRecord(storage);
   if (!validRecord(current)) return { best: prior, isNewRecord: false };
+  // [night-11b] A flight that delivered nobody is no record: the first run of a fresh profile jamming with 0
+  // passengers announced "New local record" and the menu then read "record 0".
+  if (current.score === 0) return { best: prior, isNewRecord: false };
   const beatsPrior = !prior || current.score > prior.score
     || (current.score === prior.score && current.weeks > prior.weeks);
   if (!beatsPrior) return { best: prior, isNewRecord: false };

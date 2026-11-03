@@ -145,7 +145,8 @@ export const pl = {
   'gameover.departures': 'ODLOTY · {hub}',
   'gameover.flight': 'LOT / CEL',
   'gameover.cancelled': 'ODWOŁANY',
-  'gameover.noDepartures': 'Brak zaplanowanych odlotów',
+  'gameover.unserved': 'Żadna trasa nie obsługiwała {hub}: pasażerowie nie mieli czym polecieć.', // [night-11b]
+  'gameover.unservedHint': 'Połącz nowe lotnisko, zanim zapełni się poczekalnia.',
   'gameover.report': 'ATC · RAPORT ZDARZENIA',
   'gameover.score': 'Dowiezieni pasażerowie: {score}',
   'gameover.weeks': 'Ukończone tygodnie: {weeks}',
