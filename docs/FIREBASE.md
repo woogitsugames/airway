@@ -52,3 +52,5 @@ Do gry w przeglądarce z emulatorem: `.env.local` z `VITE_FIREBASE_API_KEY=demo-
 `VITE_FIREBASE_PROJECT_ID=demo-airway`, `VITE_FIREBASE_FUNCTIONS_EMULATOR=127.0.0.1:5001`,
 `VITE_FIREBASE_AUTH_EMULATOR=127.0.0.1:9099`, a w drugim terminalu
 `./functions/node_modules/.bin/firebase emulators:start --project demo-airway --only auth,functions,firestore`.
+
+Zrzuty ekranu rankingu z emulatora: `docs/shots/night-06/` (`scripts/shots-n6.mjs`, polecenie w nagłówku skryptu).

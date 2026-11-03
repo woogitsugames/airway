@@ -1,0 +1,46 @@
+/* [night-06c] D-66 ranking board: same split-flap family as the departures board (airway-go-board). */
+.airway-rank {
+  min-width: 0;
+  padding: 11px 14px 12px;
+  background: #1c1e20;
+  color: #e9e3d4;
+  font-family: 'Overpass Mono', monospace;
+}
+.airway-rank-title {
+  margin: 0 0 8px;
+  color: #ffc72c;
+  font: 700 13px/1.2 'Overpass Mono', monospace;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+.airway-rank-body { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 14px; }
+.airway-rank-column { min-width: 0; }
+.airway-rank-column-title {
+  margin: 0 0 4px;
+  padding-bottom: 3px;
+  border-bottom: 1px solid #3b3e41;
+  color: #a9b3b1;
+  font: 700 11px/1.2 'Overpass Mono', monospace;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.airway-rank-list { margin: 0; padding: 0; list-style: none; }
+.airway-rank-row {
+  display: grid;
+  grid-template-columns: 2.2em minmax(0, 1fr) auto;
+  gap: 6px;
+  padding: 3px 0;
+  border-bottom: 1px solid #2c2f31;
+  font-size: 13px;
+  line-height: 1.3;
+}
+.airway-rank-row.is-me { color: #ffc72c; }
+.airway-rank-pos { text-align: right; }
+.airway-rank-sign { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.airway-rank-score { text-align: right; font-variant-numeric: tabular-nums; }
+.airway-rank-empty, .airway-rank-status {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: #a9b3b1;
+  font: 400 13px/1.35 'Atkinson Hyperlegible Next', sans-serif;
+}

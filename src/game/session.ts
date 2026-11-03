@@ -35,7 +35,8 @@ export interface SessionCallbacks {
   onMenu(): void;
   onRestart(seed: number): void;
   onSave(run: EndlessRun): Promise<boolean>;
-  onFailure?(run: EndlessRun): void;
+  /** May return an extra board for the game-over screen (daily ranking, D-66). */
+  onFailure?(run: EndlessRun): HTMLElement | void;
   onTick?(run: EndlessRun, speed: number): void;
   cue?(cue: AudioCue): void;
 }
@@ -353,7 +354,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     if (failure && screen !== 'gameover') {
       setScreen('gameover');
       tool.pointerCancel(ROUTE_POINTER);
-      callbacks.onFailure?.(run);
+      const extra = callbacks.onFailure?.(run) ?? undefined; // [night-06c]
       const flights = failure.departures.map((departure, i) => ({
         originHubId: failure.cityId, flightNumber: 'AW' + String(101 + i),
         destinationCode: departure.destination, gate: String.fromCharCode(65 + (i % 6)) + String(1 + i),
@@ -361,7 +362,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       void gameOver.show({
         seed: run.seed, initialHash: '', hubId: failure.cityId, hubCode: airportLabel(failure.cityId),
         delivered: run.passengers, completedWeeks: Math.floor(failure.tick / TICKS_PER_WEEK),
-        ledger: failure.ledger, departures: flights,
+        ledger: failure.ledger, departures: flights, ...(extra ? { extra } : {}),
       });
     }
   }

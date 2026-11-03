@@ -29,7 +29,7 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       `docs/PERFORMANCE.md`, `perf:scene` before/after. Needs 37–40 merged first (render files).
 - [x] N5 **Hub label setting (D-68)** — settings toggle code/name, applied to hub stamp and airport labels; PL/EN city
       names from `src/data/cities.ts`; test. Needs task 37 merged (upgrade card).
-- [ ] N6 **Online leaderboards (D-66)** — `src/net/**` + `functions/` (or equivalent) on the Firebase emulator:
+- [x] N6 **Online leaderboards (D-66)** — `src/net/**` + `functions/` (or equivalent) on the Firebase emulator:
       anonymous auth, daily + ISO-week boards, score submission with command journal, server-side replay validation using
       the same Sim (determinism D-13), offline queue, disabled without config, UI in the daily mode screen, privacy note
       draft in `docs/legal/`. Owner must later create the Firebase project — list exact steps in `docs/FIREBASE.md`.

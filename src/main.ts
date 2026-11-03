@@ -10,6 +10,8 @@ import { dailyKey } from './core/daily';
 import { PUZZLES } from './data/puzzles';
 import { registerDevGameAdapter, type AwDevState, type AwScreen } from './game/devHandle';
 import { createDailyMode } from './game/modes/daily';
+import { dailyRankingBoard } from './game/dailyRanking'; // [night-06c] D-66
+import { createBrowserLeaderboards } from './net'; // [night-06c] D-66
 import { EndlessRun } from './game/run';
 import { readGame, restoreSimFromSave, saveSourceFromSim, writeGame } from './game/save';
 import { LocalScoreService } from './game/scores';
@@ -68,6 +70,9 @@ async function boot(): Promise<void> {
   const storage: KeyValueStorage = await createDefaultStorage();
   const scores = new LocalScoreService();
   const daily = createDailyMode(scores);
+  // [night-06c] D-66: off without VITE_FIREBASE_* config; otherwise retry queued daily runs at start.
+  const leaderboards = createBrowserLeaderboards(import.meta.env);
+  void leaderboards.flush();
   let saved: SavedSummary | null = null;
   let session: GameSession | null = null;
   let pendingSeed: number | null = null;
@@ -157,12 +162,15 @@ async function boot(): Promise<void> {
       onRestart: (seed) => { if (mode === 'daily') screens.show('menu'); else startEndless(seed); },
       onSave: saveRun,
       onFailure: (failed) => {
+        let ranking: HTMLElement | undefined;
         if (mode === 'daily' && dailySession?.status === 'started') {
           daily.finish(dailySession.session, failed.passengers, Math.floor(failed.tick / TICKS_PER_WEEK), []); // [task-31]
+          ranking = dailyRankingBoard(leaderboards, failed, dailySession.session); // [night-06c]
           dailySession = null;
         }
         saved = null;
         void storage.remove('aw-save-v1').catch(() => undefined);
+        return ranking;
       },
       onTick: (current, speed) => {
         audio.setSimClock(current.clockMinute, speed);
