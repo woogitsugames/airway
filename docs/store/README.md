@@ -46,6 +46,22 @@ The expected output is **30 genuine game screenshots** in docs/store/shots/{pl,e
 
 The phone profile matches the Google Play 9:16 minimum game screenshot dimensions. App Store Connect can require different exact sizes for selected iPhone/iPad device classes; capture the appropriate Apple sizes before submitting, rather than treating generic 1080×1920 as an iPhone slot.
 
+## Google Play feature graphic (N12n, D-117)
+
+`docs/store/feature-graphic.png` — 1024×500, 24-bit RGB PNG without alpha (Play: JPEG or 24-bit PNG, ≤ 15 MB),
+console slot **Main store listing → Graphics → Feature graphic**; it is also the cover of the preview video once R2b
+exists (Play draws the play button in the centre, so the wordmark stays on the left third). One image for both
+languages: the only words are the "AIRWAY" wayfinding sign (`brand/wayfinding.svg`, Overpass 800). Alt text: field
+**Play feature graphic alt text** in [pl.md](pl.md) / [en.md](en.md).
+
+`npm run store:feature` renders it from the real `game` scene (seed 0xA1A1, the same autoplay and evening sun as the
+store shot) in a 1024×500 viewport at DPR 2: the DOM HUD is hidden, the DEV probe `featureView` sets zoom 1.6 and
+slides the globe right and down so the network sits in the middle, the sign is added on the left, then Chromium
+downscales to 1024×500 and the script writes opaque RGB. Checks (also in `test:store-shots`): exact size, no alpha,
+≤ 15 MB, middle third not empty, at most 20 % dark unsaturated pixels (Google's "no black/dark-grey fields" rule —
+the night scene is not used), wordmark inside the left third, globe limb visible. Re-render after a visual change
+of the globe or the `game` scene and inspect the PNG before committing.
+
 ## Development-only integration contract (task 36, D-48)
 
 `src/main.ts` serves `/?storeShot=<scene>&seed=41377&lang=<pl|en>` on DEV builds only. Every scene starts a real

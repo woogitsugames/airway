@@ -848,3 +848,13 @@ an explicit graphics choice wins, and remembered adaptation steps (D-74) apply o
 ladder. Rejected: a benchmark at boot (costs seconds on exactly these phones, noisy under thermal throttling) and a
 User-Agent model list (Chrome reduces the UA to "K"; renderer strings name the GPU directly). The table is not
 verified on the devices themselves (R3i Test Lab would). **Status: in force (N12m).**
+
+## D-117 — Play feature graphic from the real game scene (2026-11-03, Claude, night N12n)
+R2d: Google Play needs a 1024×500 feature graphic to publish, and it doubles as the preview-video cover. It is rendered,
+not drawn: the `game` store-shot scene (seed 0xA1A1, autoplayed network, evening sun) in a wide viewport at DPR 2 with
+the HUD hidden, the globe zoomed in and slid right so the network is central, the existing wayfinding sign
+(`brand/wayfinding.svg`) on the left third, downscaled to 1024×500 and saved as opaque RGB. One file for both
+languages (the only word is the brand name). Checked by `test:store-shots`: size, no alpha, ≤ 15 MB, centre not
+empty, ≤ 20 % dark unsaturated pixels (Google's rule — so not the night scene), plus PL/EN alt text ≤ 140 chars.
+Rejected: a hand-made illustration (a second art style next to the game) and a tagline in the image (localised text,
+risk of price/"free" wording; the store title already carries it). **Status: in force (N12n).**

@@ -480,6 +480,11 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       context, released, cached) into `DeviceHints.gpu`; `LOW_GPU_FAMILIES` maps Mali-G52, Mali-G57/G68 MC1–MC2,
       Mali-T8xx, PowerVR GE83xx, Adreno 5xx/610/613 to `low`. Unknown strings keep the old rule; explicit choice and
       remembered adaptation still win. `test:quality` +38 checks; perf note in `docs/PERFORMANCE.md`.
+- [x] N12n **Play feature graphic 1024×500 (R2d, D-117)** — `npm run store:feature` renders
+      `docs/store/feature-graphic.png` from the real `game` scene (1024×500 @2 → @1, HUD hidden, DEV probe
+      `featureView` frames the network right of centre, `brand/wayfinding.svg` on the left third) and writes opaque
+      RGB. `test:store-shots` checks size, no alpha, ≤ 15 MB, centre band, dark share ≤ 0.2 and the new PL/EN field
+      "Play feature graphic alt text" (≤ 140). Console slot in `docs/store/README.md`, entry in `docs/ASSETS.md`.
 
 ## Research proposals (R-agent)
 Proposals from the research agent (findings and sources: `docs/RESEARCH.md`, sections "R1 — …"). Each item is
@@ -579,7 +584,7 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
       Rename "captions" in `en.md`/`pl.md` to **Play alt text** (one unique line per screenshot, ≤ 140 chars, no "image
       of"); note that App Store has no caption field. Consider "puzzle" in the Play short description (80 chars).
       **Area:** docs (`docs/store/`).
-- [ ] R2d **Play feature graphic 1024×500** — required to publish on Google Play; also the cover of the preview
+- [x] R2d → N12n **Play feature graphic 1024×500** — required to publish on Google Play; also the cover of the preview
       video (play button drawn in the centre). Render it from the real game (store-shot `game` scene at dusk, network
       centred, wide landscape viewport 1024×500 @1 and @2 then downscale) with the "Airway" wordmark in the game font
       on the left third; avoid pure black/dark-grey fields (Google's rule — the night scene is unsuitable). Add to
@@ -815,3 +820,4 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
 - 2026-11-03 · N12k in-app deletion of leaderboard data (R1a, D-93, D-114) + Q-60 → D-113 · night/12k-delete-my-data · test:net-server 16/16 (12/16 on the old functions), test:net 12/12 (9/12 on the old client), test:firebase 12/12 on the emulator (new deletion checks; `deleteMyData` absent before), test:e2e:delete-ranking 4/4 (new; 2/4 on the old settings), test:fast 66/66, build ok; ui:matrix/store:shots not run (row hidden without Firebase config); no real deploy
 - 2026-11-03 · N12l Android per-app language (R1d, D-115) · night/12l-android-locales · test:android-config 22/22 (21/22 on the old manifest), aapt2 link ok (android-36, minSdk 24), test:fast 66/66, build ok; no device run (WebView `navigator.languages` under a per-app locale unverified); e2e/ui:matrix not run (no web code changed)
 - 2026-11-03 · N12m budget GPUs start on the low preset (R3f, D-116) · night/12m-gpu-preset · test:quality 95/95 (57 before; on the old quality.ts 19 of the new checks fail and the probe check throws: no `readGpuRenderer`), renderer probe checked in headless Chromium (SwiftShader string read, probe context lost after), test:fast 66/66, build ok; perf:scene not run (it forces `--preset`, SwiftShader is not in the table), e2e/ui:matrix/store:shots not run (SwiftShader keeps the old rule); table not verified on the phones themselves
+- 2026-11-03 · N12n Play feature graphic 1024×500 (R2d, D-117) · night/12n-feature-graphic · store:feature 1/1 (centre luma std 62.1, 506 colours, dark share 0.038, 297,787 bytes; PNG inspected), test:store-shots fields 12 → 14 + feature=1 (fails on the old repo state: no feature graphic, no alt-text field), test:fast 66/66, build ok; store:shots not re-run (store scenes unchanged), e2e/ui:matrix not run (DEV probe only); PNG not byte-identical between runs (SwiftShader)

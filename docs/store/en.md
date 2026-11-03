@@ -32,6 +32,9 @@ Airway is a strategy puzzle game about networks, connections and the changing rh
 ## App Store keywords
 airline,airport,globe,routes,network,strategy,hub,transfer,aircraft,puzzle,flight
 
+## Play feature graphic alt text
+Airway sign beside a 3D globe at dusk, airline routes linking airports across Europe and the Middle East.
+
 ## Screenshot order and captions
 Store-console captions only (never drawn into the images); files in `shots/en/`.
 Order per D-63 (the night globe is the first frame).
