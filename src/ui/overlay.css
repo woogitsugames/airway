@@ -165,12 +165,11 @@
 .airport-slot__label { font: 800 11px/1 'Overpass', sans-serif; letter-spacing: .06em; margin-right: 5px; }
 .airport-slot__time { font: 700 12px/1 'Overpass Mono', monospace; font-variant-numeric: tabular-nums; }
 .airport-slot__count { font: 800 12px/1 'Overpass', sans-serif; margin-left: 4px; }
-@media (prefers-reduced-motion: reduce) {
-  .airport-slot { transition: none; }
-  .airport-bubble, .airport-edge { transition: none; }
-  .airport-edge--jam { animation: none; }
-  .airport-bubble__new { animation: none; }
-}
+/* [night-11g] D-88: the game's "Reduce motion" switch (default: the system). */
+:root[data-airway-motion="reduce"] .airport-slot { transition: none; }
+:root[data-airway-motion="reduce"] .airport-bubble, :root[data-airway-motion="reduce"] .airport-edge { transition: none; }
+:root[data-airway-motion="reduce"] .airport-edge--jam { animation: none; }
+:root[data-airway-motion="reduce"] .airport-bubble__new { animation: none; }
 /* The fixture controls are not part of player HUD. */
 .airport-demo-controls {
   position: absolute;

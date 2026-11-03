@@ -126,6 +126,8 @@ export const en = {
   'settings.music': 'Music',
   'settings.haptics': 'Haptics',
   'settings.colorblind': 'Colour-vision mode',
+  'settings.reduceMotion': 'Reduce motion',
+  'settings.reduceMotion.hint': 'The menu globe stands still, the camera cuts instead of panning, boards change without flipping. Follows the system until you change it.',
   'settings.on': 'ON',
   'settings.off': 'OFF',
   'settings.licenses': 'ASSETS & LICENCES',

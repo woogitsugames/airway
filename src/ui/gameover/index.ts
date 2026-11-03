@@ -6,6 +6,7 @@ import { persistBestRecord, type BestStorage } from './storage';
 import type { TimelineWeek } from '../../game/runTimeline';
 import { gameOverTip, type GameOverTip, type TipKind } from '../../game/gameoverTip';
 import './gameover.css';
+import { reducedMotion } from '../motion'; // [night-11g] D-88
 
 export type { WorldIdentity } from './seed';
 export type { GameOverBest, BestStorage } from './storage';
@@ -124,7 +125,7 @@ function causeText(fact: CauseFact): string {
 }
 
 function preferredReducedMotion(): boolean {
-  return typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  return reducedMotion(); // [night-11g] D-88: the camera cuts to the jammed hub instead of panning
 }
 
 function eased(progress: number): number {

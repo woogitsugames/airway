@@ -6,7 +6,9 @@ import '../src/ui/theme/theme.css';
 import { CITIES } from '../src/data/cities';
 import { createWorldRenderer, AdaptiveFrameScheduler, type PlaneView, type RouteView } from '../src/render';
 import { createAirportOverlay } from '../src/ui/overlay';
+import { initializeMotion } from '../src/ui/motion'; // [night-11g] D-88: same motion attribute as the game
 import type { DestinationRegion } from '../src/ui/glyphs';
+initializeMotion();
 
 declare global {
   interface Window {

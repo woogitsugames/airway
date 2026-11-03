@@ -10,6 +10,7 @@ import {
 } from '../render'; // [task-34] [task-39] menuSpinRate
 import { cityByCode } from '../data'; // [task-34]
 import { forgetAdaptiveSteps, readAdaptiveSteps, writeAdaptiveSteps } from './adaptiveMemory'; // [night-07b]
+import { reducedMotion } from '../ui/motion'; // [night-11g] D-88
 
 // [task-34] HTML panels the globe must stay clear of. Their boxes become camera insets (D-47).
 const GAME_PANELS = ['.airway-pass', '.airway-dock'];
@@ -81,7 +82,6 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
   let menuShown = false; // [task-39] the menu sign is on screen (not settings, not mid-transition)
   let menuFramed = false; // [task-39] the first menu framing with a measured sign/board has been applied
   let menuShownAt = 0;
-  const reducedMotion = typeof matchMedia === 'function' ? matchMedia('(prefers-reduced-motion: reduce)') : null;
   // [task-39] Store shots and screenshot harnesses need a still menu (D-62).
   const frozenSpin = import.meta.env.DEV && new URLSearchParams(location.search).has('storeShot');
   let measureRaf = 0;
@@ -167,7 +167,7 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
   if (import.meta.env.DEV) installWorldProbe(renderer, () => ({ first: firstMenuFrame, now: framingKey(), menuSpin: menuSpin() }), () => drawn); // [task-34]
   /** [task-39] D-62: degrees per second the menu globe turns right now. */
   const menuSpin = (): number => menuSpinRate({
-    menuActive, menuShown, reducedMotion: !!reducedMotion?.matches || frozenSpin,
+    menuActive, menuShown, reducedMotion: reducedMotion() || frozenSpin, // [night-11g] D-88 the game's switch
     hidden: typeof document !== 'undefined' && document.hidden,
   });
   const loop = (now: number): void => {

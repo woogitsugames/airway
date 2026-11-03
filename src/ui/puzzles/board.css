@@ -73,7 +73,7 @@
   .puzzle-controls { grid-column: 1 / -1; }
 }
 @media (min-width: 700px) { .puzzle-board { margin: 0 max(12px, calc((100% - 660px) / 2)); } }
-@media (prefers-reduced-motion: no-preference) { .puzzle-flap:active { transform: rotateX(3deg); transition: transform 80ms linear; } }
+:root:not([data-airway-motion="reduce"]) .puzzle-flap:active { transform: rotateX(3deg); transition: transform 80ms linear; } /* [night-11g] D-88 */
 /* [night-07d] Curfew airports: the globe's red-and-white boom barrier next to the code. */
 .puzzle-code { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
 .puzzle-curfew-mark { display: inline-flex; line-height: 0; }
