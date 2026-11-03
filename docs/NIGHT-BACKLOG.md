@@ -882,6 +882,69 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
       checks: Android — music from another app keeps playing when Airway opens (WebView audio focus, unknown), and
       the snap/jam vibration on a budget phone (R6d/R6e). **Area:** docs.
 
+### R7 (2026-11-03) — legal/privacy launch pack, localisation wave 1 prep, site funnel
+- [ ] R7a **Privacy policy v1 (site + game)** — rewrite `privacy.*` in `site/i18n.js` (the game copy follows via
+      `test:privacy-text`) into the full structure from RESEARCH R7: controller (placeholder bound to Q-01), purposes
+      and legal basis per purpose (leaderboard, anti-cheat, e-mail), recipients (Google Firebase as processor,
+      `europe-west1`; host), transfers (EU-US DPF / SCC), retention (entries 90 days D-77; Auth IP logs "a few weeks";
+      Auth record until deletion + up to 180 days in backups; e-mails; host logs), rights incl. objection and complaint
+      to the Polish UODO, 13+ note, no profiling, effective date. Merge the leaderboard section from
+      `docs/legal/leaderboards-privacy.md` (Q-56 → A). Keep the draft banner until the owner approves.
+      **Area:** `site/`, `src/i18n` (copy), `docs/legal/`. *Needs Q-01, Q-56, Q-68.*
+- [ ] R7b **Terms of use page** — `site/terms.html` (PL/EN, same build/tests as `privacy.html`): licence to play,
+      leaderboard rules (one official run per day, server replay may reject, entries expire, no guarantee of service),
+      contact, governing law placeholder; a "Terms / Regulamin" row under Help in settings (offline copy like D-86);
+      reference Apple's standard EULA in `docs/store/`. Google shows a trader's ToS link from 1 Mar 2027.
+      **Area:** `site/`, `src/ui/settings/**`, i18n. *Needs Q-65.*
+- [ ] R7c **Publisher details block** — one source string set (`publisher.*`: legal name, address, e-mail, trader
+      status) rendered in the site footer, on the privacy/terms pages and in Settings → Help (Polish e-services act
+      art. 5; matches the Apple/Google trader card). Placeholders fail `test:site` in a release build until filled.
+      **Area:** `site/`, `src/ui/settings/**`, i18n. *Needs Q-01, Q-66.*
+- [ ] R7d **Legal launch register** — `docs/legal/README.md`: record of processing (GDPR art. 30: purposes,
+      categories, recipients, retention, security), Firebase processing-terms acceptance step (add to
+      `docs/FIREBASE.md`), trader declarations with dates (Google: at account creation / by 1 Feb 2027, display
+      1 Mar 2027; Apple: before EU submission), UK art. 27 decision (Q-67), US state app-store age laws to re-check
+      before the US launch (Texas in force, Louisiana 1 Jul 2026, Utah 6 May 2027, Alabama 1 Jan 2027). Link each line
+      from `docs/RELEASE.md` when R1l lands. **Area:** `docs/legal/`, `docs/FIREBASE.md`.
+- [ ] R7l **"Send my daily results" setting** — a settings switch (default on) that stops leaderboard submissions
+      and `getBoards` calls; when off, the daily report says the run is not ranked; queued submissions are dropped
+      when it is turned off. Gives the GDPR art. 21 objection a one-tap path. `test:net`, settings e2e.
+      **Area:** `src/net/**`, `src/ui/settings/**`, `src/ui/daily/**`, i18n. *Needs Q-68 (A).*
+- [ ] R7e **Plural form from the raw number** — `pluralValue` reads formatted strings and treats "." as a decimal
+      point, so with DE/ES/PT-BR grouping "1.000" picks `one` ("1.000 Passagier") and PT-BR "1.500" → 1.5 → `one`.
+      Let callers pass numbers (format inside `t()`), or parse with the active locale's group/decimal symbols from
+      `Intl.NumberFormat#formatToParts`. `test:i18n` cases with fake de/pt-BR catalogs for 0, 1, 2, 1 000, 1 500,
+      1 000 000. **Area:** `src/i18n/index.ts`, `src/core/format.ts`.
+- [ ] R7f **One language registry** — `src/i18n/languages.ts` lists each language once (code, Intl locale, plural
+      order incl. `many` after `other` for fr/es/pt, native name, store locale) and drives `Language`,
+      `normaliseLanguage`, `PLURAL_ORDER`, `formatNumber` locales, the settings select, airport/region names and a
+      check that `CFBundleLocalizations` and `locales_config.xml` list the same codes (`test:ios-config`,
+      `test:android-config`). `test:i18n` checks every catalog: same keys, same `{param}` set, plural tokens have
+      the category count of their language. Only PL/EN enabled until the translations exist.
+      **Area:** `src/i18n/**`, `src/core/format.ts`, `src/ui/settings/**`, `src/ui/airportLabel.ts`, scripts.
+- [ ] R7g **Glyph coverage test + French narrow space** — Atkinson Hyperlegible Next (body font, 362-glyph subset)
+      lacks U+202F, which `Intl` fr-FR uses as the thousands separator. Map U+202F → U+00A0 in `formatNumber`, and
+      add fast `test:glyphs` (reads the TTF `cmap` with a tiny parser, no new dependency) that fails when any catalog
+      string or city name uses a code point missing from the font that renders it. **Area:** `src/core/format.ts`,
+      `scripts/`, `test:fast` list.
+- [ ] R7h **Length budgets and a harsher pseudo-locale** — `src/i18n/limits.ts` maps fixed-width keys to budgets
+      (menu split-flap: half-row title 10, status 10, full title 20, gate 2; dock tags, stamps, select options);
+      `test:i18n` fails when any catalog exceeds a budget. Pseudo-locale stretches strings ≤ 20 chars by ×2 (IBM/W3C
+      expansion for short text), and `e2e/pseudo-locale.mjs` adds 320×568. **Area:** `src/i18n/**`, `e2e/`.
+- [ ] R7i **Translator export/import** — `npm run i18n:export -- de` writes `docs/i18n/de.json` (key, EN, PL,
+      context comment, max length from R7h, plural categories of the language, placeholder list) and
+      `i18n:import` turns a filled file back into `src/i18n/de.ts`, rejecting missing placeholders, over-budget text and
+      wrong plural counts. Also covers `site/i18n.js` and `docs/store/en.md` sections. **Area:** `scripts/`, `docs/i18n/`.
+- [ ] R7j **City and region names per language** — replace `namePl`/`nameEn` with `names: Record<Language,string>`
+      (sim `code` untouched, D-107); a one-off script fetches Wikidata labels (CC0) for de/fr/es/pt-BR into a
+      reviewed JSON (pt-BR "Nova York", not "Nova Iorque"); `docs/ASSETS.md` entry; `test:city-data` checks every
+      enabled language has every name. **Area:** `src/data/**`, `scripts/`, `docs/ASSETS.md`.
+- [ ] R7k **Site launch pack** — store badges (official Apple/Google artwork, brand rules, ASSETS entry) with
+      pre-registration/pre-order links from one config, hidden while empty; real shots from `docs/store/shots/`
+      instead of stage-0 concepts; `og:image` from the feature graphic (D-117); `hreflang` + `canonical`; a `404.html`
+      in the site style; footer links to terms (R7b) and publisher block (R7c). No newsletter (Q-70 → A).
+      `test:site` and `shots:site` updated. **Area:** `site/`, `docs/SITE.md`. After D-67's publish decision.
+
 ## Log
 <!-- one line per finished item: date UTC · item · PR · gate summary -->
 - 2026-11-03 · N1 puzzles 16–30 (D-70) · night/01-puzzles · test:fast 42/42, build ok, e2e:smoke 9/9, ui:matrix 32/32, test:puzzles levels=30 cases=168 failed=0 (merged tree with #40, #42)
