@@ -22,6 +22,8 @@ export interface GameOverSnapshot extends WorldIdentity {
   readonly completedWeeks: number;
   readonly ledger: HubCauseLedger;
   readonly departures: readonly FailedDeparture[];
+  /** [night-06c] Optional extra board under the report (daily ranking, D-66). */
+  readonly extra?: HTMLElement;
 }
 
 export interface GameOverAdapters {
@@ -179,7 +181,7 @@ function buildDialog(
   next.addEventListener('click', onNew);
   menu.addEventListener('click', onMenu);
   actions.append(same, next, menu);
-  content.append(sign, board, strip, actions);
+  content.append(sign, board, strip, ...(snapshot.extra ? [snapshot.extra] : []), actions);
   overlay.append(content);
   return { overlay, firstButton: same };
 }

@@ -122,5 +122,22 @@ await check('REST client: anonymous sign-up once, callable shape, emulator URLs,
   assert.equal(JSON.parse(store.get('aw-net-queue-v1')).length, 0, 'queue drained');
 });
 
+await check('[night-06c] the default fetch is bound (browsers throw "Illegal invocation" otherwise)', async () => {
+  const original = globalThis.fetch;
+  let seenThis = 'unset';
+  globalThis.fetch = function (url) {
+    seenThis = this;
+    if (this !== undefined && this !== globalThis) throw new TypeError('Illegal invocation');
+    return Promise.resolve({ ok: true, status: 200, json: async () => (String(url).includes('signUp')
+      ? { localId: 'u', idToken: 't', refreshToken: 'r', expiresIn: '3600' } : { result: { accepted: true } }) });
+  };
+  try {
+    const config = readNetConfig({ VITE_FIREBASE_API_KEY: 'k', VITE_FIREBASE_PROJECT_ID: 'p' });
+    const api = createLeaderboards({ config, storage: null });
+    assert.equal(await api.submitDaily(honest), 'sent');
+    assert.ok(seenThis === globalThis || seenThis === undefined);
+  } finally { globalThis.fetch = original; }
+});
+
 console.log(`SUMMARY test:net seed=0xA1A1 day=${DAY} score=${honest.claimedScore} ticks=${honest.endTick} passed=${passed} failed=${failed}`);
 if (failed) process.exitCode = 1;

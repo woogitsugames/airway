@@ -504,7 +504,11 @@ unfinished run or a run longer than 30 game weeks is rejected. The client talks 
 Identity Toolkit sign-up, callable functions) so the bundle carries no Firebase SDK; without `VITE_FIREBASE_API_KEY`
 and `VITE_FIREBASE_PROJECT_ID` the feature is off and makes no request. Finished runs wait in a bounded local queue
 (one per day, backoff) until the server answers. Players appear under a call sign derived from the anonymous uid, no
-names or e-mail. **Status: in force (client); server and UI follow in N6b/N6c.**
+names or e-mail. **Status: in force (client, server N6b, UI N6c).**
 _N6b:_ server in `functions/` — first accepted run per player and Warsaw day counts; the weekly board is the **sum** of a
 player's accepted daily scores in the ISO week (proposal for the owner; alternative: best single day). Accepted days
 are today and yesterday (late finishes, offline queue). Firestore is closed to clients. Owner steps: `docs/FIREBASE.md`.
+_N6c:_ the official daily game-over screen shows a second split-flap board "Ranking · date" (today / this week, top 3
++ own rank, call sign marked "Ty/You"), or a status line: sending, offline-queued, rejected, practice run (not ranked).
+Without Firebase config nothing is shown. Queued runs are retried at app start. A daily run resumed from a save is not
+submitted (known gap, the journal is complete, so it can be added later).
