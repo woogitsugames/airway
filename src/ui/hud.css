@@ -54,7 +54,7 @@
 .airway-pass__field { min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 3px; padding: 0 6px; }
 .airway-pass__label { font-size: 9px; font-weight: 700; letter-spacing: .075em; text-transform: uppercase; color: #665f55; }
 .airway-pass__field strong { overflow: hidden; text-overflow: clip; font: 800 17px/1 'Overpass', sans-serif; }
-.airway-pass__week { width: 48px; flex: 0 0 48px; }
+.airway-pass__week { min-width: 48px; flex: 0 0 auto; } /* [task-40] grows to fit the PL label "TYDZIEŃ" */
 .airway-pass__day { flex: 1 1 76px; min-width: 54px; }
 .airway-pass__time { flex: 0 0 60px; }
 .airway-pass__days { display: flex; gap: 3px; }
@@ -185,7 +185,7 @@
 }
 @media (max-width: 369px) {
   .airway-pass { width: calc(100% - var(--hud-safe-left) - var(--hud-safe-right) - 12px); left: calc(var(--hud-safe-left) + 6px); gap: 4px; }
-  .airway-pass__week { width: 39px; flex-basis: 39px; }
+  .airway-pass__week { min-width: 39px; } /* [task-40] auto width: never narrower than its label */
   .airway-pass__time { flex-basis: 47px; }
   .airway-pass__passengers { flex-basis: 74px; padding: 0 3px; }
   .airway-pass__field { padding-left: 3px; padding-right: 3px; }

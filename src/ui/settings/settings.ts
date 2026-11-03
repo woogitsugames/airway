@@ -2,7 +2,7 @@
 // ui/a11y (task 20). Graphics and audio toggles live here; the composition root applies them
 // (world.setQuality, audio.setSettings) through onSettingsChange.
 import { getLanguage, setLanguage, t, type Language, type TranslationKey } from '../../i18n';
-import type { QualityPreference } from '../../render';
+import { QUALITY_PREFERENCES, type QualityPreference } from '../../render';
 import { readAccessibilitySettings, updateAccessibilitySettings, type TextScale } from '../a11y';
 import { readAirportLabelMode, type AirportLabelMode } from '../airportLabel';
 import '../menu/menu.css';
@@ -21,7 +21,7 @@ export interface UserSettings {
 }
 const KEY='airway.settings';
 type LocalField='sound'|'music'|'graphics'|'airportLabels'|'hints'; // [m2] hints
-const QUALITY:readonly QualityPreference[]=['auto','low','medium','high'];
+const QUALITY:readonly QualityPreference[]=QUALITY_PREFERENCES;
 const listeners=new Set<(settings:UserSettings)=>void>();
 
 function storedRecord():Record<string,unknown> {
@@ -129,8 +129,8 @@ export function createSettings(onBack:()=>void,onLicenses:()=>void,onLanguageCha
     saveSettings({language:lang==='pl'?'pl':'en'});
     onLanguageChanged();
   });
-  selectField(t('settings.graphics'),values.graphics,[['auto',t('settings.auto')],['low',t('settings.low')],['medium',t('settings.medium')],['high',t('settings.high')]],(v)=>{
-    saveSettings({graphics:v==='low'||v==='medium'||v==='high'?v:'auto'});
+  selectField(t('settings.graphics'),values.graphics,[['auto',t('settings.auto')],['saver',t('settings.saver')],['low',t('settings.low')],['medium',t('settings.medium')],['high',t('settings.high')]],(v)=>{
+    saveSettings({graphics:QUALITY.includes(v as QualityPreference)?v as QualityPreference:'auto'});
   });
   selectField(t('settings.airportLabels'),values.airportLabels,[['code',t('settings.airportLabels.code')],['name',t('settings.airportLabels.name')]],(v)=>{
     saveSettings({airportLabels:v==='name'?'name':'code'});

@@ -12,6 +12,7 @@ const TEXT_ONLY = process.argv.includes('--text-only');
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = resolve(ROOT, 'docs/shots/13');
 const sizes = [
+  { w: 360, h: 800, label: 'portrait-360x800' }, // [task-40] narrow phone: boarding-pass labels must fit
   { w: 412, h: 915, label: 'portrait-412x915' },
   { w: 915, h: 412, label: 'landscape-915x412' },
   { w: 673, h: 841, label: 'foldable-673x841' },
@@ -222,6 +223,17 @@ async function geometry(page) {
     for (let a = 0; a < controls.length; a++) for (let b = a + 1; b < controls.length; b++) {
       const x = controls[a], y = controls[b];
       if (Math.min(x.right, y.right) - Math.max(x.x, y.x) > 1 && Math.min(x.bottom, y.bottom) - Math.max(x.y, y.y) > 1) violations.push(`${x.id} overlaps ${y.id}`);
+    }
+    // [task-40] Boarding-pass labels ("TYDZIEŃ", "DZIEŃ", …) stay inside their own field, so they never run together.
+    for (const label of document.querySelectorAll('.airway-pass__label')) {
+      const field = label.closest('.airway-pass__field');
+      if (!field) continue;
+      const range = document.createRange();
+      range.selectNodeContents(label);
+      const t = range.getBoundingClientRect(), f = field.getBoundingClientRect();
+      const style = getComputedStyle(field);
+      const right = f.right - parseFloat(style.paddingRight) + 1;
+      if (t.right > right) violations.push(`pass label "${label.textContent}" overflows its field by ${(t.right - right).toFixed(1)}px`);
     }
     return { violations, count: controls.length, layout: document.querySelector('.airway-hud')?.dataset.layout,
       horizontalOverflow: document.documentElement.scrollWidth > innerWidth,

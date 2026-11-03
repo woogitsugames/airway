@@ -33,14 +33,27 @@ export interface OfficialReservation {
   readonly attemptId: number;
 }
 
+/** [night-07a] The daily run behind the single save slot, so a resumed run keeps its kind. */
+export interface ActiveDailyRun {
+  readonly dateKey: string;
+  readonly kind: DailyRunKind;
+  readonly attemptId?: number;
+}
+
 export interface ScoreService {
   reserveOfficial(dateKey: string): OfficialReservation | null;
+  /** [night-07a] The open (reserved, unfinished) official attempt of the day, if any. */
+  pendingOfficial(dateKey: string): OfficialReservation | null;
+  /** [night-07a] Remember / forget the daily run currently being played (null clears). */
+  setActiveRun(run: ActiveDailyRun | null): void;
+  activeRun(): ActiveDailyRun | null;
   finishOfficial(reservation: OfficialReservation, score: number, weeks: number, ticket: string): DailyResult | null;
   recordPractice(dateKey: string, score: number, weeks: number, ticket: string): DailyResult;
   getProgress(dateKey: string): DailyProgress;
 }
 
 const STORAGE_KEY = 'aw-daily-scores-v1';
+const ACTIVE_KEY = 'aw-daily-active-v1';
 const DAY_MS = 86_400_000;
 const TICKET_PATTERN = /^(?:--|[‹⋈◖⌑⟆⟧]{1,12}\+?)$/u;
 
@@ -170,6 +183,34 @@ export class LocalScoreService implements ScoreService {
     // Reserve BEFORE gameplay, so quitting or crashing still uses today's official attempt.
     this.write(state);
     return { dateKey, attemptId };
+  }
+
+  pendingOfficial(dateKey: string): OfficialReservation | null {
+    const day = this.read().days[dateKey];
+    return day && day.attemptId !== undefined && !day.official ? { dateKey, attemptId: day.attemptId } : null;
+  }
+
+  setActiveRun(run: ActiveDailyRun | null): void {
+    const content = run ? JSON.stringify({ dateKey: run.dateKey, kind: run.kind, attemptId: run.attemptId }) : '';
+    this.backup.setItem(ACTIVE_KEY, content);
+    try { this.storage?.setItem(ACTIVE_KEY, content); }
+    catch { this.storage = null; }
+  }
+
+  activeRun(): ActiveDailyRun | null {
+    let raw: string | null;
+    try { raw = (this.storage ?? this.backup).getItem(ACTIVE_KEY); }
+    catch { raw = this.backup.getItem(ACTIVE_KEY); }
+    if (!raw) return null;
+    try {
+      const value: unknown = JSON.parse(raw);
+      if (!value || typeof value !== 'object') return null;
+      const { dateKey, kind, attemptId } = value as Record<string, unknown>;
+      if (typeof dateKey !== 'string' || (kind !== 'official' && kind !== 'practice')) return null;
+      dateIndex(dateKey);
+      if (kind === 'official' && !Number.isSafeInteger(attemptId)) return null;
+      return kind === 'official' ? { dateKey, kind, attemptId: attemptId as number } : { dateKey, kind };
+    } catch { return null; }
   }
 
   finishOfficial(reservation: OfficialReservation, score: number, weeks: number, ticket: string): DailyResult | null {

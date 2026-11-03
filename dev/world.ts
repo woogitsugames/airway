@@ -54,6 +54,7 @@ const world = createWorldRenderer(undefined, {
   camera: { longitude: 7, latitude: 35, zoom: Number(params.get('zoom')) || 3.3 },
 });
 host.appendChild(world.canvas);
+(window as unknown as { __world: unknown }).__world = world; // probes (perf, LOD tests)
 world.setCities(cities);
 world.setRoutes(ROUTES, 1);
 world.setHubLoad(Object.entries(HUBS).map(([id, hub]) => ({ id, used: hub.waiting.length, cap: hub.cap })));

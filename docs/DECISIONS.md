@@ -470,7 +470,13 @@ space Intl uses for five digits; tested by `npm run test:format`.
 About 1.2°/s, paused with `prefers-reduced-motion` and while the menu is hidden. **Status: in force (task 39).**
 
 ## D-63 — Store screenshot order: night, game, upgrade, failure, menu; dusk must read as dusk (2026-11-02, owner)
-The "game" scene uses clearly golden low-sun light (not daylight). **Status: to implement.**
+The "game" scene uses clearly golden low-sun light (not daylight). Implemented in task 40: the scene `game-dusk` is
+renamed `game`; `SCENES`, contact-sheet columns, manifest order (checked by `--validate`) and the captions in
+`docs/store/{pl,en}.md` follow the new order. The fixture puts the sun at elevation 0.05 (daynight.ts units) over the
+network centroid in the evening instead of a fixed −95° from the camera centre (which left the network past the
+terminator); `test:store-shots` requires a golden-pixel share ≥ 0.045 on the `game` globe and D-47 contrast ≥ 4.5:1
+in `game` and `night`. **Status: in force (task 40); a stronger warm band in `daynight.ts` is proposed for the
+render owner (task-40 PR).**
 
 ## D-64 — `main` follows green `dev` (2026-11-02, owner)
 `dev` stays the integration branch for all task PRs. The coordinator regularly fast-forwards `main` to `dev` after the
@@ -530,3 +536,19 @@ _N6c:_ the official daily game-over screen shows a second split-flap board "Rank
 + own rank, call sign marked "Ty/You"), or a status line: sending, offline-queued, rejected, practice run (not ranked).
 Without Firebase config nothing is shown. Queued runs are retried at app start. A daily run resumed from a save is not
 submitted (known gap, the journal is complete, so it can be added later).
+_N7a:_ fixed — the daily run being played is remembered next to the scores (`aw-daily-active-v1`: day, kind,
+attempt). A daily restored from the save slot stays **official** only if it is that day's open official attempt
+(same day/seed/attempt, no result yet; today or yesterday), otherwise it continues as practice; its game over then
+records the result and submits it like an uninterrupted run.
+
+## D-73 — Globe LOD, battery saver and adaptive quality (2026-11-03, Claude, night N4)
+The terrain is drawn in chunks culled by a conservative horizon test and the frustum (merged into ≤ 16
+draw runs), and `medium`/`high` carry a coarser far level chosen by on-screen facet size (far below
+4.5 device px, near above 5.5 px), so the zoomed-out globe never pays for sub-pixel coastlines; the
+low preset keeps one level. A new graphics option **Battery saver** (PL "Oszczędna") (`saver`: low terrain, DPR 1,
+no shadows, 60 % decorations, 30 fps cap) sits next to Automatic. `auto` steps down by itself when
+frames stay under 24 fps (DPR → decorations → terrain), never back up within a session, and never
+under automation. Budgets and before/after numbers in `docs/PERFORMANCE.md`.
+**Status: in force; the saver look and the 24 fps trigger are proposals until measured on a low-end
+Android phone.**
+
