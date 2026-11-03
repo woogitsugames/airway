@@ -320,6 +320,15 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       now marks those pages as covering the world and the frame loop skips all camera, demo and render work while
       no run is attached. `e2e/covered-pages.mjs` (`test:e2e:covered-pages`, in `test:ci`), DEV probe
       `__awWorld.frames()`, `docs/PERFORMANCE.md` § N11a.
+- [x] N11b **Game over at an unserved airport says so; no record for 0 passengers** — `ui:long-play` EN 673×841 2×
+      12 min (3 runs, max week 1, issues=0) ended both game overs at an airport no route served (IST), like the
+      673×841 matrix shot (REC): the departures board was an empty dark panel reading "No scheduled departures". Its
+      rows are the jammed airport's route neighbours, so an empty board always means no route served it; it now reads
+      "No route served IST: its passengers had no flight to board." with the hint "Connect a new airport before its
+      waiting area fills up." (hint hidden on ≤ 600 px short phones, where the board shows 1½ rows). Also: the first
+      run of a fresh profile that delivered 0 passengers was announced as a "new local record" and the menu then read
+      "record 0"; a 0-passenger flight is no record now (`test:causes` +2 asserts). `e2e/gameover-unserved.mjs`
+      (`test:e2e:gameover-unserved`, in `test:ci`).
 
 ## Log
 <!-- one line per finished item: date UTC · item · PR · gate summary -->
@@ -393,3 +402,4 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
 - 2026-11-03 · N10x long play 800×1280 PL 4× + edge buttons on the portrait Fold dock · night/10x-fold-dock · ui:long-play runs=2 maxWeek=3 issues=0; test:fast 58/58, build ok, e2e:smoke 9/9, ui:matrix 32/32, test:e2e:edge-dock 5/5 (3/5 on the old session), e2e:edge-chip-airports 2/2, e2e:continue-framing 2/2, store:shots 30 (test:store-shots 30/30)
 - 2026-11-03 · N10z edge chips clear of airport tags · night/10z-chip-tags · test:fast 58/58, build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:edge-dock 5/5, e2e:edge-chip-airports 2/2, e2e:upgrade-picks 10/10, test:e2e:edge-chip-tags 6/6 twice (4/6 on the old overlay)
 - 2026-11-03 · N11a no globe frames behind opaque pages · night/11a-covered-pages · test:fast 58/58, build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:tutorial 21/21, e2e:screens-fit 18/18, e2e:logbook 4/4, e2e:settings-groups 4/4, e2e:puzzle-board-scroll 12/12, test:e2e:covered-pages 2/2 ×3 (0/2 before)
+- 2026-11-03 · N11b unserved game-over board + no record for 0 · night/11b-unserved-board · ui:long-play EN 673×841 2× runs=3 maxWeek=1 issues=0; test:fast 58/58 (test:causes 6/6), build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:gameover-short 4/4 (2/4 before the short-phone hint rule), e2e:run-timeline 4/4, e2e:pseudo-locale 27/27, e2e:daily-share 4/4, e2e:logbook 4/4, test:e2e:gameover-unserved 4/4

@@ -267,7 +267,15 @@ function buildDialog(
     row.append(number, gate, status);
     flightList.append(row);
   }
-  if (departing.length === 0) flightList.append(element('p', 'airway-go-none', t('gameover.noDepartures')));
+  // [night-11b] The departures are the jammed airport's route neighbours, so an empty board always means no route
+  // served it: say so (and what would have helped) instead of a bare "no scheduled departures".
+  if (departing.length === 0) {
+    const none = element('div', 'airway-go-none');
+    none.dataset.testid = 'gameover-unserved';
+    none.append(element('p', 'airway-go-none-line', t('gameover.unserved', { hub: snapshot.hubCode })),
+      element('p', 'airway-go-none-hint', t('gameover.unservedHint')));
+    flightList.append(none);
+  }
   board.append(boardTitle, columns, flightList);
 
   const strip = element('section', 'airway-go-strip');

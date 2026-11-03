@@ -144,7 +144,8 @@ export const en = {
   'gameover.departures': 'DEPARTURES · {hub}',
   'gameover.flight': 'FLIGHT / DEST.',
   'gameover.cancelled': 'CANCELLED',
-  'gameover.noDepartures': 'No scheduled departures',
+  'gameover.unserved': 'No route served {hub}: its passengers had no flight to board.', // [night-11b]
+  'gameover.unservedHint': 'Connect a new airport before its waiting area fills up.',
   'gameover.report': 'ATC · INCIDENT REPORT',
   'gameover.score': 'Passengers delivered: {score}',
   'gameover.weeks': 'Weeks completed: {weeks}',
