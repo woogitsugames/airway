@@ -1,5 +1,6 @@
 // Requires Node 22+ with --experimental-strip-types (no third-party runner).
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { decodeSave, encodeSave, readGame, restoreGame, startOrRestore, writeGame, TICKS_PER_DAY } from '../src/game/save.ts';
 import { createNativeStorage, createBrowserStorage, GAME_SAVE_KEY, SETTINGS_KEY, readSettings, writeSettings } from '../src/platform/storage.ts';
 import { GameLifecycle } from '../src/platform/lifecycle.ts';
@@ -200,6 +201,41 @@ test('native App.pause / resume listener wiring and cleanup', async () => {
   assert.deepEqual([paused, saves, asked], [1, 1, 1]);
   await lifecycle.dispose();
   assert.equal(removed, 2);
+});
+
+// [night-11i] D-99 (Q-59 → B), D-119: window blur pauses and saves like a hidden tab; focus only asks for Resume.
+test('window blur pauses and saves, focus asks for Resume, never twice with visibility', async () => {
+  const doc = new EventTarget(); doc.hidden = false;
+  const win = new EventTarget();
+  let paused = 0, asked = 0, saves = 0;
+  const lifecycle = new GameLifecycle({ getTick: () => 7, pause: () => paused++, save: async () => { saves++; }, requireResume: () => asked++ });
+  await lifecycle.attach({ document: doc, window: win });
+  win.dispatchEvent(new Event('blur')); await lifecycle.flush();
+  assert.deepEqual([paused, saves, asked], [1, 1, 0], 'blur pauses and saves');
+  win.dispatchEvent(new Event('blur')); await lifecycle.flush();
+  assert.deepEqual([paused, saves], [1, 1], 'a second blur does nothing');
+  win.dispatchEvent(new Event('focus'));
+  assert.equal(asked, 1, 'focus asks for the explicit Resume');
+  win.dispatchEvent(new Event('focus'));
+  assert.equal(asked, 1, 'a second focus does nothing');
+  // Split screen, then the app is sent to the background and brought back: one pause, one Resume request.
+  win.dispatchEvent(new Event('blur'));
+  doc.hidden = true; doc.dispatchEvent(new Event('visibilitychange')); await lifecycle.flush();
+  win.dispatchEvent(new Event('focus')); // focus while still hidden is ignored
+  assert.deepEqual([paused, saves, asked], [2, 2, 1]);
+  doc.hidden = false; doc.dispatchEvent(new Event('visibilitychange'));
+  win.dispatchEvent(new Event('focus'));
+  assert.deepEqual([paused, saves, asked], [2, 2, 2]);
+  await lifecycle.dispose();
+  win.dispatchEvent(new Event('blur')); await lifecycle.flush();
+  assert.equal(paused, 2, 'disposed lifecycle ignores blur');
+});
+
+test('main.ts: the lifecycle pauses only a running flight (not the upgrade picker or game over)', () => {
+  const main = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
+  const hooks = main.slice(main.indexOf('new GameLifecycle({'), main.indexOf('void lifecycle.attach();'));
+  assert.match(hooks, /pause: \(\) => \{ if \(session\?\.screen === 'game'\) session\.setPaused\(true\); \}/);
+  assert.match(hooks, /requireResume: \(\) => \{ if \(session\?\.screen === 'game'\) session\.setPaused\(true\); \}/);
 });
 
 

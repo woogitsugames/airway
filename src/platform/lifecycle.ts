@@ -24,8 +24,8 @@ export interface VisibilityPort {
   removeEventListener(type: 'visibilitychange', listener: () => void): void;
 }
 export interface PagePort {
-  addEventListener(type: 'pagehide', listener: () => void): void;
-  removeEventListener(type: 'pagehide', listener: () => void): void;
+  addEventListener(type: 'pagehide' | 'blur' | 'focus', listener: () => void): void;
+  removeEventListener(type: 'pagehide' | 'blur' | 'focus', listener: () => void): void;
 }
 
 /**
@@ -71,7 +71,7 @@ export class GameLifecycle {
     return this.pending;
   }
 
-  /** Native App.pause, document.visibilitychange, or pagehide. */
+  /** Native App.pause, document.visibilitychange, pagehide, or [night-11i] window blur (D-99, D-119). */
   onBackground(): Promise<void> {
     if (this.disposed || this.background) return this.pending;
     this.background = true;
@@ -80,7 +80,7 @@ export class GameLifecycle {
     return this.queueSave();
   }
 
-  /** Native App.resume or visibility restored; player must explicitly resume. */
+  /** Native App.resume, visibility or [night-11i] window focus restored; player must explicitly resume. */
   onForeground(): void {
     if (this.disposed || !this.background) return;
     this.background = false;
@@ -93,6 +93,11 @@ export class GameLifecycle {
     else this.onForeground();
   };
   private readonly pageHideListener = () => { void this.onBackground(); };
+  // [night-11i] D-99 (Q-59 → B), D-119: split screen, a floating window or a desktop click elsewhere takes the focus
+  // while the page stays visible (no visibilitychange). The run pauses and saves like a hidden tab; the picture
+  // keeps drawing (multi-resume), and focus coming back only asks for the explicit Resume — never restarts the clock.
+  private readonly blurListener = () => { void this.onBackground(); };
+  private readonly focusListener = () => { if (!this.visibility?.hidden) this.onForeground(); };
 
   async attach(options: {
     app?: CapacitorAppPort;
@@ -104,6 +109,8 @@ export class GameLifecycle {
     this.page = options.window ?? (typeof window === 'undefined' ? undefined : window);
     this.visibility?.addEventListener('visibilitychange', this.visibilityListener);
     this.page?.addEventListener('pagehide', this.pageHideListener);
+    this.page?.addEventListener('blur', this.blurListener);
+    this.page?.addEventListener('focus', this.focusListener);
     if (options.app) {
       this.handles.push(await options.app.addListener('pause', () => { void this.onBackground(); }));
       this.handles.push(await options.app.addListener('resume', () => { this.onForeground(); }));
@@ -116,6 +123,8 @@ export class GameLifecycle {
   async dispose(): Promise<void> {
     this.visibility?.removeEventListener('visibilitychange', this.visibilityListener);
     this.page?.removeEventListener('pagehide', this.pageHideListener);
+    this.page?.removeEventListener('blur', this.blurListener);
+    this.page?.removeEventListener('focus', this.focusListener);
     await this.flush();
     this.disposed = true;
     for (const handle of this.handles) await handle.remove();
