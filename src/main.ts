@@ -15,7 +15,7 @@ import { createDailyMode } from './game/modes/daily';
 import { dailyRankingBoard } from './game/dailyRanking'; // [night-06c] D-66
 import { createBrowserLeaderboards } from './net'; // [night-06c] D-66
 import { EndlessRun } from './game/run';
-import { readGame, restoreSimFromSave, saveSourceFromSim, writeGame } from './game/save';
+import { loadSavedSim, saveSourceFromSim, writeGame } from './game/save';
 import { LocalScoreService } from './game/scores';
 import { mountScreens, type ScreenName } from './game/screens';
 import { startSession, type GameSession, type RunMode, type SessionScreen } from './game/session';
@@ -92,14 +92,9 @@ async function boot(): Promise<void> {
   let skipTutorialOnce = false;
   let dailySession: ReturnType<typeof daily.start> | null = null;
 
-  const loaded = await readGame(storage);
-  if (loaded.status === 'ok') {
-    const sim = restoreSimFromSave(loaded.save);
-    if (sim) {
-      const run = new EndlessRun(sim);
-      saved = summary(run);
-    }
-  }
+  // [night-07k] D-76: a save from older sim rules is replayed and written back here, once.
+  const loaded = await loadSavedSim(storage);
+  if (loaded) saved = summary(new EndlessRun(loaded.sim));
 
   function summary(run: EndlessRun): SavedSummary {
     return { mode: run.mode === 'daily' ? 'daily' : 'endless', week: Math.floor(run.clockMinute / TICKS_PER_WEEK) + 1, /* [task-31] */ passengers: run.passengers };
@@ -230,10 +225,7 @@ async function boot(): Promise<void> {
   }
 
   async function continueSaved(): Promise<void> {
-    const result = await readGame(storage);
-    if (result.status !== 'ok') { saved = null; screens.show('menu'); return; }
-    const save = result.save;
-    const sim = restoreSimFromSave(save);
+    const sim = (await loadSavedSim(storage))?.sim ?? null;
     if (!sim) {
       console.warn('Saved flight failed verification; starting fresh.');
       saved = null;

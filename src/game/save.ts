@@ -1,5 +1,6 @@
 import { GAME_SAVE_KEY, type KeyValueStorage } from '../platform/storage';
 import { Sim } from '../sim/sim.ts';
+import { TICKS_PER_WEEK } from '../sim/clock.ts';
 import { RULES_VERSION } from '../sim/state.ts';
 
 export const SAVE_VERSION = 1 as const;
@@ -253,8 +254,60 @@ export class SimRestoreTarget implements RestoreTarget {
   }
 }
 
-/** Validated restore (hash-checked); null for corrupt or incompatible saves. Never throws. */
+/** [night-07k] Longest run worth re-simulating on load; the leaderboard server uses the same 30-week cap (D-72). */
+export const MAX_REPLAY_TICKS = 30 * TICKS_PER_WEEK;
+
+/**
+ * [night-07k] D-76: a save written under older sim rules is re-simulated from its seed and full command journal
+ * under the current rules, to the same tick. The outcome can differ from the old build (that is the point of a rules
+ * change), so a run that the new rules already end is not offered. Null when the save cannot be replayed.
+ */
+export function replaySave(save: GameSaveV1): Sim | null {
+  try {
+    const state = save.snapshot.state;
+    const mode = isRecord(state) && isRecord(state.config) ? state.config.mode : undefined;
+    if ((mode !== 'endless' && mode !== 'daily') || save.tick > MAX_REPLAY_TICKS) return null;
+    const sim = Sim.replay(save.seed, save.commands as never, save.tick, { mode });
+    if (sim.world.status !== 'running' && sim.world.status !== 'upgrade') return null;
+    // Commands issued in the saved tick but not yet simulated still belong to the run.
+    const pending = save.snapshot.pending;
+    if (Array.isArray(pending)) for (const command of pending) if (isRecord(command)) sim.apply(command as never);
+    return sim;
+  } catch {
+    return null;
+  }
+}
+
+export type RestoredSim = { sim: Sim; replayed: boolean };
+
+/**
+ * Validated restore (hash-checked) of a current-rules save; a save from older rules (or a legacy save without a
+ * rules version whose snapshot no longer loads) is replayed instead (D-76). A current-rules save that fails its
+ * hash is corrupt and never replayed; a save from newer rules is refused. Null when nothing usable. Never throws.
+ */
+export function restoreSimDetailed(save: GameSaveV1): RestoredSim | null {
+  if (save.paramsVersion !== null && save.paramsVersion > RULES_VERSION) return null;
+  if (save.paramsVersion === null || save.paramsVersion === RULES_VERSION) {
+    const sim = restoreGame(save, () => new SimRestoreTarget())?.sim ?? null;
+    if (sim || save.paramsVersion === RULES_VERSION) return sim ? { sim, replayed: false } : null;
+  }
+  const sim = replaySave(save);
+  return sim ? { sim, replayed: true } : null;
+}
+
+/** Validated restore; see restoreSimDetailed. */
 export function restoreSimFromSave(save: GameSaveV1): Sim | null {
-  if (save.paramsVersion !== null && save.paramsVersion !== RULES_VERSION) return null;
-  return restoreGame(save, () => new SimRestoreTarget())?.sim ?? null;
+  return restoreSimDetailed(save)?.sim ?? null;
+}
+
+/**
+ * [night-07k] Read and restore the save slot. A replayed (migrated) save is written back under the current rules
+ * so the re-simulation is paid once, not at every launch. A failed write-back keeps the old save untouched.
+ */
+export async function loadSavedSim(storage: KeyValueStorage): Promise<RestoredSim | null> {
+  const loaded = await readGame(storage);
+  if (loaded.status !== 'ok') return null;
+  const restored = restoreSimDetailed(loaded.save);
+  if (restored?.replayed) await writeGame(storage, saveSourceFromSim(restored.sim));
+  return restored;
 }

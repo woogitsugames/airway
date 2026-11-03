@@ -1,6 +1,7 @@
 // [night-02] Golden save regression: a real-Sim save written by an earlier build must keep loading to the exact
 // same state hash, continue identically and replay from its journal alone. A save from an older RULES_VERSION
-// (e.g. v3 before the D-41 slots) must be refused cleanly, never half-restored. Regenerate the fixture only on an
+// (e.g. v3 before the D-41 slots) is never half-restored: it is replayed from its journal under the current rules
+// (D-76, night N7k) or refused. Regenerate the fixture only on an
 // intentional RULES_VERSION bump: `node scripts/test-save-golden.mjs --write`.
 import './ts-test-loader.mjs';
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -9,7 +10,8 @@ import { fileURLToPath } from 'node:url';
 const { createGame, Sim, TICKS_PER_WEEK } = await import('../src/sim/index.ts');
 const { RULES_VERSION } = await import('../src/sim/state.ts');
 const { cityDistanceKm } = await import('../src/data/index.ts');
-const { encodeSave, decodeSave, saveSourceFromSim, restoreSimFromSave } = await import('../src/game/save.ts');
+const { encodeSave, decodeSave, saveSourceFromSim, restoreSimFromSave, restoreSimDetailed, loadSavedSim, readGame, MAX_REPLAY_TICKS } = await import('../src/game/save.ts');
+const { GAME_SAVE_KEY } = await import('../src/platform/storage.ts');
 
 const SEED = 0xA1A1;
 const SAVE_AT = TICKS_PER_WEEK + 600; // past the first weekly board, inside week 2
@@ -108,13 +110,67 @@ check('the same game re-played today still produces the golden save', () => {
   const sim = play(createGame(SEED), golden.saveAt);
   assert(sim.hash() === golden.hash, `fresh run hash ${sim.hash()} != ${golden.hash} (rules changed without a RULES_VERSION bump?)`);
 });
-check('older rules (v3 save) is refused, not half-restored', () => {
-  const old = { ...save, paramsVersion: RULES_VERSION - 1 };
-  assert(restoreSimFromSave(old) === null, 'an older-rules save must start a new game');
-  const snapshot = { ...save.snapshot, state: { ...save.snapshot.state, rulesVersion: RULES_VERSION - 1 } };
+check('older-rules save is replayed from its journal to the same tick (D-76)', () => {
+  const old = { ...save, paramsVersion: RULES_VERSION - 1,
+    snapshot: { ...save.snapshot, state: { ...save.snapshot.state, rulesVersion: RULES_VERSION - 1 } } };
   let threw = false;
-  try { Sim.fromSnapshot(JSON.stringify(snapshot)); } catch { threw = true; }
-  assert(threw, 'Sim must reject an older-rules snapshot');
+  try { Sim.fromSnapshot(JSON.stringify(old.snapshot)); } catch { threw = true; }
+  assert(threw, 'Sim must reject an older-rules snapshot (never half-restored)');
+  const restored = restoreSimDetailed(old);
+  assert(restored && restored.replayed, 'an older-rules save must be replayed');
+  assert(restored.sim.tickCount === golden.saveAt, `replayed tick ${restored.sim.tickCount} != ${golden.saveAt}`);
+  // Rules did not really change here, so the replay must land on the golden state exactly.
+  assert(restored.sim.hash() === golden.hash, `replayed hash ${restored.sim.hash()} != ${golden.hash}`);
+  assert(JSON.stringify(restored.sim.getCommandLog()) === JSON.stringify(save.commands), 'journal must be kept');
+});
+check('legacy save without a rules version whose snapshot no longer loads is replayed', () => {
+  const legacy = { ...save, paramsVersion: null, stateHash: null,
+    snapshot: { ...save.snapshot, state: { ...save.snapshot.state, rulesVersion: RULES_VERSION - 1 } } };
+  const restored = restoreSimDetailed(legacy);
+  assert(restored && restored.replayed && restored.sim.hash() === golden.hash, 'legacy save must replay');
+});
+check('current-rules save with a wrong hash is corrupt, never replayed', () => {
+  assert(restoreSimFromSave({ ...save, stateHash: 'deadbeef' }) === null, 'hash mismatch must be refused');
+});
+check('save from newer rules is refused', () => {
+  assert(restoreSimFromSave({ ...save, paramsVersion: RULES_VERSION + 1 }) === null, 'newer rules must be refused');
+});
+check('older-rules run that the current rules already end is not offered', () => {
+  // Build nothing and take every first upgrade card: the start airports jam and the run ends.
+  const sim = createGame(SEED);
+  while (sim.world.status !== 'over' && sim.tickCount < MAX_REPLAY_TICKS) {
+    const offer = sim.world.status === 'upgrade' && !sim.pendingCount ? sim.world.offer : null;
+    if (offer) sim.apply({ type: 'ChooseUpgrade', week: offer.week, upgrade: offer.offers.find((o) => o.id === 'turboprop' || o.id === 'widebody')?.id ?? offer.offers[0].id });
+    sim.tick(); sim.drainEvents();
+  }
+  assert(sim.world.status === 'over', 'fixture run did not end');
+  const lost = { ...save, paramsVersion: RULES_VERSION - 1, commands: sim.getCommandLog(), tick: sim.tickCount,
+    snapshot: { ...save.snapshot, pending: [] } };
+  assert(restoreSimFromSave(lost) === null, 'a run that is over after replay must not be resumed');
+});
+check('older-rules save longer than the replay cap is refused', () => {
+  assert(restoreSimFromSave({ ...save, paramsVersion: RULES_VERSION - 1, tick: MAX_REPLAY_TICKS + 1 }) === null,
+    'over-long replay must be refused');
+});
+check('pending commands of the saved tick survive a replay', () => {
+  const command = { type: 'SetSpeed', speed: 2 };
+  const old = { ...save, paramsVersion: RULES_VERSION - 1, snapshot: { ...save.snapshot, pending: [command] } };
+  const restored = restoreSimDetailed(old);
+  assert(restored && restored.sim.pendingCount === 1, 'pending command lost');
+});
+const store = { values: new Map(), async get(k) { return this.values.get(k) ?? null; }, async set(k, v) { this.values.set(k, v); }, async remove(k) { this.values.delete(k); } };
+const oldEnvelope = encodeSave({ ...saveSourceFromSim(restoreSimFromSave(save)), paramsVersion: RULES_VERSION - 1 }, 0);
+await store.set(GAME_SAVE_KEY, JSON.stringify(oldEnvelope));
+const first = await loadSavedSim(store);
+const rewritten = await readGame(store);
+check('loading a migrated save writes it back under the current rules', () => {
+  assert(first && first.replayed, 'first load must replay');
+  assert(rewritten.status === 'ok' && rewritten.save.paramsVersion === RULES_VERSION, 'save not written back');
+  assert(rewritten.save.stateHash === first.sim.hash(), 'written-back hash differs');
+});
+const second = await loadSavedSim(store);
+check('the next load restores directly, without a second replay', () => {
+  assert(second && !second.replayed && second.sim.hash() === first.sim.hash(), 'second load must be a plain restore');
 });
 check('tampered golden save is rejected by the checksum', () => {
   const tampered = JSON.parse(golden.save);
