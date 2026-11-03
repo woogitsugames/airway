@@ -874,3 +874,11 @@ replaces the blank sky whose Play led nowhere. Rejected: re-creating the whole `
 restores its own state; a second renderer leaks the first context), and a WebGL 1 fallback (three.js r170 is
 WebGL 2 only; Play filter is R3h). **Status: in force (N11h, `test:webgl-context` 8 cases,
 `test:e2e:webgl-context` 4 cases).**
+
+## D-124 — Play device filter: OpenGL ES 3.0 required (2026-11-03, Claude, night N12p)
+R3h: three r170 has no WebGL 1 renderer, and Android WebView offers WebGL 2 only on OpenGL ES 3.0 GPUs, so on an
+ES 2.0 phone the game is a blank globe. The manifest now requires `glEsVersion 0x00030000`, so Play hides the game
+from those devices instead of selling them a broken install. Both owner options that change anything in Q-54 (A and
+B) include this filter, so it is done now; only the minSdk choice (24 vs 29) still waits for Q-54. Guarded by
+`test:android-config` (`play-gles3-filter`, also ties the filter to three ≥ r163). Not covered: ES 3.0 devices whose
+WebView blocklists WebGL 2 (R3g fallback page). **Status: in force (N12p); minSdk part open (Q-54).**
