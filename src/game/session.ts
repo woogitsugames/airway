@@ -8,7 +8,7 @@ import {
   RouteTool, hitTestRouteSegments, nearestCity, routeHandles,
   type ProjectedCity, type RouteToolCommand,
 } from '../input/routeTool';
-import { createJamHaptics, routeHaptics } from '../platform';
+import { createJamHaptics, hapticCommand, hapticNetworkClosed, routeHaptics } from '../platform';
 import { PLANE_TYPES, SIM_TICKS_PER_SECOND } from '../sim/params';
 import { TICKS_PER_WEEK } from '../sim/upgrades';
 import { calendarDayAt, calendarWeekAt } from '../sim/clock'; // [task-31]
@@ -129,7 +129,9 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     onTogglePause: () => setPaused(!paused),
     onCycleSpeed: () => { speed = speed === 1 ? 2 : speed === 2 ? 4 : 1; renderHud(); },
     onSelectPlane: (type) => { selectedPlane = type; renderHud(); },
-    onAssignPlane: (type, routeId) => { run.queue({ type: 'AssignPlane', routeId, aircraft: type }); },
+    onAssignPlane: (type, routeId) => {
+      hapticCommand('AssignPlane', run.queue({ type: 'AssignPlane', routeId, aircraft: type })); // [night-10f]
+    },
     routeAtPoint: (clientX, clientY) => {
       const rect = world.canvas.getBoundingClientRect();
       return hitTestRouteSegments(networkRoutes(), projectedCities(), clientX - rect.left, clientY - rect.top, 24);
@@ -141,7 +143,8 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
   let hubSelection: readonly string[] = [];
   const upgrade = new WeeklyUpgradeView(upgradeHost, {
     onCommand: (command) => {
-      run.queue({ type: 'ChooseUpgrade', week: command.week, upgrade: command.upgrade, ...(command.hubId ? { hubId: command.hubId } : {}) });
+      const accepted = run.queue({ type: 'ChooseUpgrade', week: command.week, upgrade: command.upgrade, ...(command.hubId ? { hubId: command.hubId } : {}) });
+      hapticCommand('ChooseUpgrade', accepted); // [night-10f]
       audioCues?.command('ChooseUpgrade'); // [night-03]
       run.resolveBoundary();
       syncUpgrade(true);
@@ -368,6 +371,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     const failure = run.failed;
     if (failure && screen !== 'gameover') {
       setScreen('gameover');
+      hapticNetworkClosed(); // [night-10f]
       tool.pointerCancel(ROUTE_POINTER);
       const extra = callbacks.onFailure?.(run) ?? undefined; // [night-06c]
       const share = callbacks.failureShare?.() ?? undefined; // [night-10e]
