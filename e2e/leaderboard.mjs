@@ -56,9 +56,11 @@ async function playDaily(page, { build = true } = {}) {
       null, { timeout: 10000 }).then((handle) => handle.jsonValue());
     await dragGesture(page, route);
     await page.waitForFunction((n) => window.aw.state().routeCount === n + 1, initial.routeCount, { timeout: 8000 });
+    // [night-08d] The new route already flies one aircraft: count from here (see e2e/daily-continue.mjs).
+    const routed = await state(page);
     await dragGesture(page, await page.evaluate(() => window.aw.gesture('plane')));
     await page.waitForFunction((n) => window.aw.state().aircraftAssignments === n + 1,
-      initial.aircraftAssignments, { timeout: 8000 });
+      routed.aircraftAssignments, { timeout: 8000 });
   }
   await page.evaluate(() => window.aw.advanceTicks(240));
   const { active } = await storage(page);
