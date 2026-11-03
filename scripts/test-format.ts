@@ -61,6 +61,8 @@ test('t() fills plural tokens in real catalog strings', () => {
   assert.equal(t('gameover.cause.noRoute', { count: 1500 }), `1${NBSP}500 pasażerów nie miało trasy do regionu docelowego.`);
   assert.equal(t('puzzle.board.progress', { done: 3, total: 30, stars: 22 }), '3/30 zaliczonych · 22 gwiazdki');
   assert.equal(t('puzzle.goal.nights', { nights: 5, passengers: 40 }), 'Przetrwaj 5 nocy z ciszą nocną i dowieź 40 pasażerów.');
+  assert.equal(t('gameover.cause.capacity', { waiting: 26, capacity: 24 }), 'Poczekalnia przepełniona: 26 osób na 24 miejsca.');
+  assert.equal(t('gameover.cause.capacity', { waiting: 22, capacity: 25 }), 'Poczekalnia przepełniona: 22 osoby na 25 miejsc.');
   setLanguage('en');
   assert.equal(t('airport.waiting', { code: 'LON', count: 1 }), 'LON: 1 passenger waiting');
   assert.equal(t('puzzle.board.item', { number: 4, title: 'X', stars: 1 }), 'Puzzle 4: X, 1 star');

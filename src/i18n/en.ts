@@ -149,7 +149,7 @@ export const en = {
   'gameover.cause.missedTransfer': '{count} {count|passenger|passengers} missed their connecting flight.',
   'gameover.cause.transferNotReady': '{count} {count|connection was|connections were} held by minimum transfer time.',
   'gameover.cause.longWait': '{count} {count|passenger|passengers} waited longer than the permitted time.',
-  'gameover.cause.capacity': 'The waiting area reached {waiting} of {capacity} places.',
+  'gameover.cause.capacity': 'The waiting area was full: {waiting} {waiting|person|people} for {capacity} {capacity|place|places}.',
   'gameover.cause.congestionDuration': 'The hub remained congested for {seconds} {seconds|second|seconds}.',
   'gameover.cause.slotWait': 'Aircraft waited {minutes} minutes on the ground for a departure slot.',
   'gameover.cause.unavailable': 'There is not enough recorded data to identify another cause.',

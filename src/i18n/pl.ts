@@ -150,7 +150,7 @@ export const pl = {
   'gameover.cause.missedTransfer': '{count} {count|pasażer nie zdążył|pasażerów nie zdążyło|pasażerów nie zdążyło} na lot przesiadkowy.',
   'gameover.cause.transferNotReady': '{count} {count|przesiadka nie spełniała|przesiadki nie spełniały|przesiadek nie spełniało} minimalnego czasu połączenia.',
   'gameover.cause.longWait': '{count} {count|pasażer czekał|pasażerów czekało|pasażerów czekało} dłużej niż dopuszczalny czas.',
-  'gameover.cause.capacity': 'Poczekalnia osiągnęła limit: {waiting} z {capacity} miejsc.',
+  'gameover.cause.capacity': 'Poczekalnia przepełniona: {waiting} {waiting|osoba|osoby|osób} na {capacity} {capacity|miejsce|miejsca|miejsc}.',
   'gameover.cause.congestionDuration': 'Zator utrzymywał się przez {seconds} {seconds|sekundę|sekundy|sekund}.',
   'gameover.cause.slotWait': 'Samoloty czekały na ziemi {minutes} min na slot startowy.',
   'gameover.cause.unavailable': 'Brakuje danych, aby wskazać kolejną przyczynę.',
