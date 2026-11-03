@@ -21,21 +21,21 @@
    "sun": "180@camera",
    "contrast": {
     "routes": 9.35,
-    "airports": 9.04,
-    "planes": 8.13,
+    "airports": 9.03,
+    "planes": 8.34,
     "tags": 11.82
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.464
+    "ratio": 0.465
    },
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 92.4,
+    "meanLuma": 92.5,
     "lumaStd": 80.9,
     "whiteShare": 0,
-    "colours": 341
+    "colours": 342
    }
   },
   {
@@ -46,17 +46,17 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 00:08 PASAŻERÓW 40 0 0 0 1×",
+   "text": "KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 00:07 PASAŻERÓW 40 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
     "routes": 9.26,
-    "airports": 8.93,
+    "airports": 8.94,
     "planes": 8.13,
-    "tags": 12.84
+    "tags": 12.74
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.455
+    "ratio": 0.454
    },
    "png": {
     "width": 1346,
@@ -75,25 +75,112 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 00:06 PASAŻERÓW 40 0 0 0 1×",
+   "text": "KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 00:11 PASAŻERÓW 40 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
-    "routes": 9.27,
+    "routes": 9.28,
     "airports": 9.02,
-    "planes": 8.22,
-    "tags": 11.33
+    "planes": 8.26,
+    "tags": 11.8
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.444
+    "ratio": 0.445
    },
    "png": {
     "width": 1536,
     "height": 2048,
     "meanLuma": 82.9,
-    "lumaStd": 71.8,
+    "lumaStd": 71.9,
     "whiteShare": 0,
-    "colours": 345
+    "colours": 341
+   }
+  },
+  {
+   "id": "pl/night-iphone",
+   "lang": "pl",
+   "scene": "night",
+   "device": "iphone",
+   "seed": 41377,
+   "glyphs": [],
+   "devOverlay": false,
+   "text": "KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 00:06 PASAŻERÓW 40 0 0 0 1×",
+   "sun": "180@camera",
+   "contrast": {
+    "routes": 9.34,
+    "airports": 9.03,
+    "planes": 8.43,
+    "tags": 12.14
+   },
+   "warmth": {
+    "gold": 0.001,
+    "ratio": 0.407
+   },
+   "png": {
+    "width": 1320,
+    "height": 2868,
+    "meanLuma": 85.6,
+    "lumaStd": 77.6,
+    "whiteShare": 0,
+    "colours": 352
+   }
+  },
+  {
+   "id": "pl/night-ipad",
+   "lang": "pl",
+   "scene": "night",
+   "device": "ipad",
+   "seed": 41377,
+   "glyphs": [],
+   "devOverlay": false,
+   "text": "KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 00:11 PASAŻERÓW 40 0 0 0 1×",
+   "sun": "180@camera",
+   "contrast": {
+    "routes": 9.33,
+    "airports": 9.03,
+    "planes": 8.34,
+    "tags": 1.58
+   },
+   "warmth": {
+    "gold": 0.002,
+    "ratio": 0.452
+   },
+   "png": {
+    "width": 2064,
+    "height": 2752,
+    "meanLuma": 77.7,
+    "lumaStd": 68.1,
+    "whiteShare": 0,
+    "colours": 361
+   }
+  },
+  {
+   "id": "pl/night-landscape",
+   "lang": "pl",
+   "scene": "night",
+   "device": "landscape",
+   "seed": 41377,
+   "glyphs": [],
+   "devOverlay": false,
+   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 00:04 PASAŻERÓW 40 0 0 0 1×",
+   "sun": "180@camera",
+   "contrast": {
+    "routes": 9.27,
+    "airports": 8.9,
+    "planes": 8,
+    "tags": 11.83
+   },
+   "warmth": {
+    "gold": 0.002,
+    "ratio": 0.509
+   },
+   "png": {
+    "width": 1920,
+    "height": 1080,
+    "meanLuma": 105.8,
+    "lumaStd": 78.2,
+    "whiteShare": 0,
+    "colours": 352
    }
   },
   {
@@ -104,25 +191,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 16:54 PASAŻERÓW 34 0 0 0 1×",
+   "text": "KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 17:03 PASAŻERÓW 34 0 0 0 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
-    "routes": 9.13,
-    "airports": 7.57,
-    "planes": 6.31,
-    "tags": 10.26
+    "routes": 9.89,
+    "airports": 8.36,
+    "planes": 7.63,
+    "tags": 10.79
    },
    "warmth": {
-    "gold": 0.082,
-    "ratio": 1.02
+    "gold": 0.08,
+    "ratio": 0.976
    },
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 108,
-    "lumaStd": 75.7,
+    "meanLuma": 105.9,
+    "lumaStd": 76.3,
     "whiteShare": 0,
-    "colours": 591
+    "colours": 581
    }
   },
   {
@@ -133,25 +220,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 16:57 PASAŻERÓW 34 0 0 0 1×",
+   "text": "KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 17:02 PASAŻERÓW 34 0 0 0 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
-    "routes": 9.54,
-    "airports": 8.08,
-    "planes": 7.03,
-    "tags": 10.26
+    "routes": 9.72,
+    "airports": 8.33,
+    "planes": 7.55,
+    "tags": 10.32
    },
    "warmth": {
-    "gold": 0.07,
-    "ratio": 0.91
+    "gold": 0.079,
+    "ratio": 0.901
    },
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 99.4,
-    "lumaStd": 70.9,
+    "meanLuma": 98.6,
+    "lumaStd": 71.1,
     "whiteShare": 0,
-    "colours": 594
+    "colours": 584
    }
   },
   {
@@ -165,14 +252,14 @@
    "text": "KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 16:59 PASAŻERÓW 34 0 0 0 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
-    "routes": 9.74,
-    "airports": 8.22,
-    "planes": 7.37,
+    "routes": 9.69,
+    "airports": 8.15,
+    "planes": 7.26,
     "tags": 1.65
    },
    "warmth": {
     "gold": 0.074,
-    "ratio": 0.906
+    "ratio": 0.907
    },
    "png": {
     "width": 1536,
@@ -180,7 +267,94 @@
     "meanLuma": 96.1,
     "lumaStd": 69.2,
     "whiteShare": 0,
-    "colours": 605
+    "colours": 604
+   }
+  },
+  {
+   "id": "pl/game-iphone",
+   "lang": "pl",
+   "scene": "game",
+   "device": "iphone",
+   "seed": 41377,
+   "glyphs": [],
+   "devOverlay": false,
+   "text": "KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 17:04 PASAŻERÓW 34 0 0 0 1×",
+   "sun": "-68.6@29.7,41.3",
+   "contrast": {
+    "routes": 9.83,
+    "airports": 8.27,
+    "planes": 7.48,
+    "tags": 10.54
+   },
+   "warmth": {
+    "gold": 0.067,
+    "ratio": 0.909
+   },
+   "png": {
+    "width": 1320,
+    "height": 2868,
+    "meanLuma": 99,
+    "lumaStd": 73,
+    "whiteShare": 0,
+    "colours": 624
+   }
+  },
+  {
+   "id": "pl/game-ipad",
+   "lang": "pl",
+   "scene": "game",
+   "device": "ipad",
+   "seed": 41377,
+   "glyphs": [],
+   "devOverlay": false,
+   "text": "KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 17:02 PASAŻERÓW 34 0 0 0 1×",
+   "sun": "-68.6@29.7,41.3",
+   "contrast": {
+    "routes": 9.89,
+    "airports": 8.52,
+    "planes": 7.93,
+    "tags": 1.65
+   },
+   "warmth": {
+    "gold": 0.087,
+    "ratio": 0.928
+   },
+   "png": {
+    "width": 2064,
+    "height": 2752,
+    "meanLuma": 91.2,
+    "lumaStd": 66.1,
+    "whiteShare": 0,
+    "colours": 622
+   }
+  },
+  {
+   "id": "pl/game-landscape",
+   "lang": "pl",
+   "scene": "game",
+   "device": "landscape",
+   "seed": 41377,
+   "glyphs": [],
+   "devOverlay": false,
+   "text": "TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 17:02 PASAŻERÓW 34 0 0 0 1×",
+   "sun": "-68.6@29.7,41.3",
+   "contrast": {
+    "routes": 9.83,
+    "airports": 8.57,
+    "planes": 7.71,
+    "tags": 11.15
+   },
+   "warmth": {
+    "gold": 0.073,
+    "ratio": 0.999
+   },
+   "png": {
+    "width": 1920,
+    "height": 1080,
+    "meanLuma": 122.7,
+    "lumaStd": 72.6,
+    "whiteShare": 0,
+    "colours": 584
    }
   },
   {
@@ -195,12 +369,12 @@
    "contrast": {
     "routes": 9.39,
     "airports": 8.92,
-    "planes": 9.23,
+    "planes": 9.35,
     "tags": 14.14
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.488
+    "ratio": 0.487
    },
    "png": {
     "width": 1080,
@@ -223,8 +397,8 @@
    "contrast": {
     "routes": 9.32,
     "airports": 8.87,
-    "planes": 9.24,
-    "tags": 14.01
+    "planes": 9.23,
+    "tags": 14.17
    },
    "warmth": {
     "gold": 0.002,
@@ -252,17 +426,101 @@
     "routes": 9.35,
     "airports": 8.92,
     "planes": 9.27,
-    "tags": 13.55
+    "tags": 13.74
    },
    "warmth": {
     "gold": 0.003,
-    "ratio": 0.466
+    "ratio": 0.465
    },
    "png": {
     "width": 1536,
     "height": 2048,
     "meanLuma": 109.4,
     "lumaStd": 74.2,
+    "whiteShare": 0,
+    "colours": 136
+   }
+  },
+  {
+   "id": "pl/upgrade-iphone",
+   "lang": "pl",
+   "scene": "upgrade",
+   "device": "iphone",
+   "seed": 41377,
+   "glyphs": [],
+   "devOverlay": false,
+   "text": "+3 KHI TUN RIO TYDZIEŃ 01 DZIEŃ 3/3 GODZ. 02:00 PASAŻERÓW 79 0 0 0 1× Tydzień 1 Hangar: przyszły trzy skrzynie. Otwierasz jedną. FRACHT · TP-48 1/3 Turbo­śmigłowiec ZASIĘG 2 500 km MIEJSC 48 NAJLEPSZY krótkie trasy FRACHT · WB-300 2/3 Szeroko­kadłubowiec ZASIĘG 11 000 km MIEJSC 300 NAJLEPSZY przez ocean FRACHT · SLOT+2 3/3 Sloty startowe ODLOTY +2 na godzinę DLA wybranego lotniska",
+   "contrast": {
+    "routes": 9.4,
+    "airports": 8.92,
+    "planes": 9.29,
+    "tags": 14.49
+   },
+   "warmth": {
+    "gold": 0.002,
+    "ratio": 0.43
+   },
+   "png": {
+    "width": 1320,
+    "height": 2868,
+    "meanLuma": 135.2,
+    "lumaStd": 69.9,
+    "whiteShare": 0,
+    "colours": 195
+   }
+  },
+  {
+   "id": "pl/upgrade-ipad",
+   "lang": "pl",
+   "scene": "upgrade",
+   "device": "ipad",
+   "seed": 41377,
+   "glyphs": [],
+   "devOverlay": false,
+   "text": "+3 KHI RIO TYDZIEŃ 01 DZIEŃ 3/3 GODZ. 02:00 PASAŻERÓW 79 0 0 0 1× Tydzień 1 Hangar: przyszły trzy skrzynie. Otwierasz jedną. FRACHT · TP-48 1/3 Turbo­śmigłowiec ZASIĘG 2 500 km MIEJSC 48 NAJLEPSZY krótkie trasy FRACHT · WB-300 2/3 Szeroko­kadłubowiec ZASIĘG 11 000 km MIEJSC 300 NAJLEPSZY przez ocean FRACHT · SLOT+2 3/3 Sloty startowe ODLOTY +2 na godzinę DLA wybranego lotniska",
+   "contrast": {
+    "routes": 9.38,
+    "airports": 8.92,
+    "planes": 9.22,
+    "tags": 1.58
+   },
+   "warmth": {
+    "gold": 0.003,
+    "ratio": 0.474
+   },
+   "png": {
+    "width": 2064,
+    "height": 2752,
+    "meanLuma": 92.7,
+    "lumaStd": 71.9,
+    "whiteShare": 0,
+    "colours": 137
+   }
+  },
+  {
+   "id": "pl/upgrade-landscape",
+   "lang": "pl",
+   "scene": "upgrade",
+   "device": "landscape",
+   "seed": 41377,
+   "glyphs": [],
+   "devOverlay": false,
+   "text": "+3 +1 RIO TYDZIEŃ 01 DZIEŃ 3/3 GODZ. 02:00 PASAŻERÓW 79 0 0 0 1× Tydzień 1 Hangar: przyszły trzy skrzynie. Otwierasz jedną. FRACHT · TP-48 1/3 Turbo­śmigłowiec ZASIĘG 2 500 km MIEJSC 48 NAJLEPSZY krótkie trasy FRACHT · WB-300 2/3 Szeroko­kadłubowiec ZASIĘG 11 000 km MIEJSC 300 NAJLEPSZY przez ocean FRACHT · SLOT+2 3/3 Sloty startowe ODLOTY +2 na godzinę DLA wybranego lotniska",
+   "contrast": {
+    "routes": 9.32,
+    "airports": 8.87,
+    "planes": 9.16,
+    "tags": 14.44
+   },
+   "warmth": {
+    "gold": 0.003,
+    "ratio": 0.528
+   },
+   "png": {
+    "width": 1920,
+    "height": 1080,
+    "meanLuma": 164.3,
+    "lumaStd": 59.5,
     "whiteShare": 0,
     "colours": 137
    }
@@ -292,7 +550,7 @@
     "meanLuma": 142.8,
     "lumaStd": 95.9,
     "whiteShare": 0,
-    "colours": 184
+    "colours": 183
    }
   },
   {
@@ -307,12 +565,12 @@
    "contrast": {
     "routes": 10.04,
     "airports": 8.26,
-    "planes": 2.82,
+    "planes": 1.77,
     "tags": 1.78
    },
    "warmth": {
     "gold": 0.001,
-    "ratio": 0.216
+    "ratio": 0.215
    },
    "png": {
     "width": 1346,
@@ -320,7 +578,7 @@
     "meanLuma": 124.9,
     "lumaStd": 92.5,
     "whiteShare": 0,
-    "colours": 185
+    "colours": 183
    }
   },
   {
@@ -335,7 +593,7 @@
    "contrast": {
     "routes": 10.04,
     "airports": 8.28,
-    "planes": 2.53,
+    "planes": 2.82,
     "tags": 1.78
    },
    "warmth": {
@@ -349,6 +607,90 @@
     "lumaStd": 80.3,
     "whiteShare": 0,
     "colours": 182
+   }
+  },
+  {
+   "id": "pl/failure-iphone",
+   "lang": "pl",
+   "scene": "failure",
+   "device": "iphone",
+   "seed": 41377,
+   "glyphs": [],
+   "devOverlay": false,
+   "text": "ATH ANK AMM +3 +23 0:00 TUN TYDZIEŃ 01 DZIEŃ 3/3 GODZ. 22:44 PASAŻERÓW 51 0 0 0 1× SIATKA WSTRZYMANA MAPA ODLOTY · KHI LOT / CEL BRAMKA STATUS Żadna trasa nie obsługiwała KHI: pasażerowie nie mieli czym polecieć. Połącz nowe lotnisko, zanim zapełni się poczekalnia. ATC · RAPORT ZDARZENIA Dowiezieni pasażerowie: 51 Ukończone tygodnie: 0 PRZYCZYNY PRZEBIEG 29 pasażerów nie miało trasy do regionu docelowego. 76% oczekujących chciało dotrzeć do Bliskiego Wschodu (22 osoby). Poczekalnia przepełniona: 29 osób na 24 miejsca. NOWY REKORD LOKALNY JESZCZE RAZ · TEN SAM ŚWIAT NOWY ŚWIAT MENU",
+   "contrast": {
+    "routes": 9.48,
+    "airports": 8.3,
+    "planes": 10.2,
+    "tags": 1.79
+   },
+   "warmth": {
+    "gold": 0.001,
+    "ratio": 0.178
+   },
+   "png": {
+    "width": 1320,
+    "height": 2868,
+    "meanLuma": 117.1,
+    "lumaStd": 89.4,
+    "whiteShare": 0,
+    "colours": 197
+   }
+  },
+  {
+   "id": "pl/failure-ipad",
+   "lang": "pl",
+   "scene": "failure",
+   "device": "ipad",
+   "seed": 41377,
+   "glyphs": [],
+   "devOverlay": false,
+   "text": "ATH ANK AMM +3 VCE +23 0:00 TUN CPH TYDZIEŃ 01 DZIEŃ 3/3 GODZ. 22:44 PASAŻERÓW 51 0 0 0 1× SIATKA WSTRZYMANA MAPA ODLOTY · KHI LOT / CEL BRAMKA STATUS Żadna trasa nie obsługiwała KHI: pasażerowie nie mieli czym polecieć. Połącz nowe lotnisko, zanim zapełni się poczekalnia. ATC · RAPORT ZDARZENIA Dowiezieni pasażerowie: 51 Ukończone tygodnie: 0 PRZYCZYNY PRZEBIEG 29 pasażerów nie miało trasy do regionu docelowego. 76% oczekujących chciało dotrzeć do Bliskiego Wschodu (22 osoby). Poczekalnia przepełniona: 29 osób na 24 miejsca. NOWY REKORD LOKALNY JESZCZE RAZ · TEN SAM ŚWIAT NOWY ŚWIAT MENU",
+   "contrast": {
+    "routes": 10.04,
+    "airports": 8.28,
+    "planes": 2.53,
+    "tags": 1.79
+   },
+   "warmth": {
+    "gold": 0.001,
+    "ratio": 0.208
+   },
+   "png": {
+    "width": 2064,
+    "height": 2752,
+    "meanLuma": 73.7,
+    "lumaStd": 71,
+    "whiteShare": 0,
+    "colours": 188
+   }
+  },
+  {
+   "id": "pl/failure-landscape",
+   "lang": "pl",
+   "scene": "failure",
+   "device": "landscape",
+   "seed": 41377,
+   "glyphs": [],
+   "devOverlay": false,
+   "text": "+3 +2 +23 0:00 CPH TYDZIEŃ 01 DZIEŃ 3/3 GODZ. 22:44 PASAŻERÓW 51 0 0 0 1× SIATKA WSTRZYMANA MAPA ODLOTY · KHI LOT / CEL BRAMKA STATUS Żadna trasa nie obsługiwała KHI: pasażerowie nie mieli czym polecieć. Połącz nowe lotnisko, zanim zapełni się poczekalnia. ATC · RAPORT ZDARZENIA Dowiezieni pasażerowie: 51 Ukończone tygodnie: 0 PRZYCZYNY PRZEBIEG 29 pasażerów nie miało trasy do regionu docelowego. 76% oczekujących chciało dotrzeć do Bliskiego Wschodu (22 osoby). Poczekalnia przepełniona: 29 osób na 24 miejsca. NOWY REKORD LOKALNY JESZCZE RAZ · TEN SAM ŚWIAT NOWY ŚWIAT MENU",
+   "contrast": {
+    "routes": 9.3,
+    "airports": 8.82,
+    "planes": 7.72,
+    "tags": 1.79
+   },
+   "warmth": {
+    "gold": 0.001,
+    "ratio": 0.295
+   },
+   "png": {
+    "width": 1920,
+    "height": 1080,
+    "meanLuma": 113.9,
+    "lumaStd": 85.5,
+    "whiteShare": 0,
+    "colours": 180
    }
   },
   {
@@ -366,7 +708,7 @@
     "meanLuma": 83.4,
     "lumaStd": 69,
     "whiteShare": 0,
-    "colours": 639
+    "colours": 630
    }
   },
   {
@@ -384,7 +726,7 @@
     "meanLuma": 91.6,
     "lumaStd": 70,
     "whiteShare": 0,
-    "colours": 639
+    "colours": 637
    }
   },
   {
@@ -402,7 +744,61 @@
     "meanLuma": 93.7,
     "lumaStd": 69.4,
     "whiteShare": 0,
-    "colours": 663
+    "colours": 661
+   }
+  },
+  {
+   "id": "pl/menu-iphone",
+   "lang": "pl",
+   "scene": "menu",
+   "device": "iphone",
+   "seed": 41377,
+   "glyphs": [],
+   "devOverlay": false,
+   "text": "Airway AIRWAY.GAMES · TERMINAL 1 ODLOTY BRAMKA STATUS L L O O T T B B E E Z Z K K O O Ń Ń C C A A brak rekordu A A 1 1 W W E E J J Ś Ś C C I I E E Z Z A A D D A A N N I I A A 0 z 30 rozwiązanych B B 4 4 P P L L A A N N O O W W O O D D Z Z I I Ś Ś 0 0 3 3 . . 1 1 1 1 ten sam świat dla wszystkich C C 2 2 N N O O W W Y Y U U S S T T A A W W I I E E N N I I A A D D 0 0 D D Z Z I I E E N N N N I I K K D D 1 1",
+   "png": {
+    "width": 1320,
+    "height": 2868,
+    "meanLuma": 91.7,
+    "lumaStd": 68.6,
+    "whiteShare": 0,
+    "colours": 692
+   }
+  },
+  {
+   "id": "pl/menu-ipad",
+   "lang": "pl",
+   "scene": "menu",
+   "device": "ipad",
+   "seed": 41377,
+   "glyphs": [],
+   "devOverlay": false,
+   "text": "Airway AIRWAY.GAMES · TERMINAL 1 ODLOTY BRAMKA STATUS L L O O T T B B E E Z Z K K O O Ń Ń C C A A brak rekordu A A 1 1 W W E E J J Ś Ś C C I I E E Z Z A A D D A A N N I I A A 0 z 30 rozwiązanych B B 4 4 P P L L A A N N O O W W O O D D Z Z I I Ś Ś 0 0 3 3 . . 1 1 1 1 ten sam świat dla wszystkich C C 2 2 N N O O W W Y Y U U S S T T A A W W I I E E N N I I A A D D 0 0 D D Z Z I I E E N N N N I I K K D D 1 1",
+   "png": {
+    "width": 2064,
+    "height": 2752,
+    "meanLuma": 96.6,
+    "lumaStd": 68.9,
+    "whiteShare": 0,
+    "colours": 705
+   }
+  },
+  {
+   "id": "pl/menu-landscape",
+   "lang": "pl",
+   "scene": "menu",
+   "device": "landscape",
+   "seed": 41377,
+   "glyphs": [],
+   "devOverlay": false,
+   "text": "Airway AIRWAY.GAMES · TERMINAL 1 ODLOTY BRAMKA STATUS L L O O T T B B E E Z Z K K O O Ń Ń C C A A brak rekordu A A 1 1 W W E E J J Ś Ś C C I I E E Z Z A A D D A A N N I I A A 0 z 30 rozwiązanych B B 4 4 P P L L A A N N O O W W O O D D Z Z I I Ś Ś 0 0 3 3 . . 1 1 1 1 ten sam świat dla wszystkich C C 2 2 N N O O W W Y Y U U S S T T A A W W I I E E N N I I A A D D 0 0 D D Z Z I I E E N N N N I I K K D D 1 1",
+   "png": {
+    "width": 1920,
+    "height": 1080,
+    "meanLuma": 123.2,
+    "lumaStd": 70.3,
+    "whiteShare": 0,
+    "colours": 647
    }
   },
   {
@@ -413,25 +809,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "KHI WEEK 01 DAY 2/3 TIME 00:01 PASSENGERS 40 0 0 0 1×",
+   "text": "KHI WEEK 01 DAY 2/3 TIME 00:08 PASSENGERS 40 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
     "routes": 9.35,
     "airports": 9.03,
-    "planes": 7.9,
-    "tags": 11.82
+    "planes": 8.2,
+    "tags": 11.83
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.463
+    "ratio": 0.465
    },
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 92.4,
+    "meanLuma": 92.5,
     "lumaStd": 80.9,
     "whiteShare": 0,
-    "colours": 343
+    "colours": 341
    }
   },
   {
@@ -442,17 +838,17 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "KHI WEEK 01 DAY 2/3 TIME 00:05 PASSENGERS 40 0 0 0 1×",
+   "text": "KHI WEEK 01 DAY 2/3 TIME 00:09 PASSENGERS 40 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
-    "routes": 9.25,
-    "airports": 8.94,
-    "planes": 8.17,
-    "tags": 12.59
+    "routes": 9.26,
+    "airports": 8.93,
+    "planes": 8.14,
+    "tags": 12.84
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.454
+    "ratio": 0.455
    },
    "png": {
     "width": 1346,
@@ -460,7 +856,7 @@
     "meanLuma": 86.7,
     "lumaStd": 74,
     "whiteShare": 0,
-    "colours": 346
+    "colours": 342
    }
   },
   {
@@ -471,25 +867,112 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "KHI WEEK 01 DAY 2/3 TIME 00:03 PASSENGERS 40 0 0 0 1×",
+   "text": "KHI WEEK 01 DAY 2/3 TIME 00:10 PASSENGERS 40 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
-    "routes": 9.27,
-    "airports": 9.03,
-    "planes": 8.23,
-    "tags": 11.33
+    "routes": 9.28,
+    "airports": 9.02,
+    "planes": 8.28,
+    "tags": 11.92
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.444
+    "ratio": 0.445
    },
    "png": {
     "width": 1536,
     "height": 2048,
     "meanLuma": 82.9,
-    "lumaStd": 71.8,
+    "lumaStd": 71.9,
     "whiteShare": 0,
     "colours": 346
+   }
+  },
+  {
+   "id": "en/night-iphone",
+   "lang": "en",
+   "scene": "night",
+   "device": "iphone",
+   "seed": 41377,
+   "glyphs": [],
+   "devOverlay": false,
+   "text": "KHI WEEK 01 DAY 2/3 TIME 00:08 PASSENGERS 40 0 0 0 1×",
+   "sun": "180@camera",
+   "contrast": {
+    "routes": 9.35,
+    "airports": 9.03,
+    "planes": 8.42,
+    "tags": 12.14
+   },
+   "warmth": {
+    "gold": 0.001,
+    "ratio": 0.407
+   },
+   "png": {
+    "width": 1320,
+    "height": 2868,
+    "meanLuma": 85.6,
+    "lumaStd": 77.6,
+    "whiteShare": 0,
+    "colours": 350
+   }
+  },
+  {
+   "id": "en/night-ipad",
+   "lang": "en",
+   "scene": "night",
+   "device": "ipad",
+   "seed": 41377,
+   "glyphs": [],
+   "devOverlay": false,
+   "text": "KHI WEEK 01 DAY 2/3 TIME 00:09 PASSENGERS 40 0 0 0 1×",
+   "sun": "180@camera",
+   "contrast": {
+    "routes": 9.33,
+    "airports": 9.03,
+    "planes": 8.33,
+    "tags": 1.58
+   },
+   "warmth": {
+    "gold": 0.002,
+    "ratio": 0.452
+   },
+   "png": {
+    "width": 2064,
+    "height": 2752,
+    "meanLuma": 77.8,
+    "lumaStd": 68.1,
+    "whiteShare": 0,
+    "colours": 365
+   }
+  },
+  {
+   "id": "en/night-landscape",
+   "lang": "en",
+   "scene": "night",
+   "device": "landscape",
+   "seed": 41377,
+   "glyphs": [],
+   "devOverlay": false,
+   "text": "WEEK 01 DAY 2/3 TIME 00:10 PASSENGERS 40 0 0 0 1×",
+   "sun": "180@camera",
+   "contrast": {
+    "routes": 9.28,
+    "airports": 8.88,
+    "planes": 8.04,
+    "tags": 11.83
+   },
+   "warmth": {
+    "gold": 0.002,
+    "ratio": 0.511
+   },
+   "png": {
+    "width": 1920,
+    "height": 1080,
+    "meanLuma": 105.9,
+    "lumaStd": 78.2,
+    "whiteShare": 0,
+    "colours": 354
    }
   },
   {
@@ -500,25 +983,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "KHI WEEK 01 DAY 2/3 TIME 16:52 PASSENGERS 34 0 0 0 1×",
+   "text": "KHI WEEK 01 DAY 2/3 TIME 17:01 PASSENGERS 34 0 0 0 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
-    "routes": 8.9,
-    "airports": 7.38,
-    "planes": 6.31,
-    "tags": 10.21
+    "routes": 9.84,
+    "airports": 8.25,
+    "planes": 7.38,
+    "tags": 10.86
    },
    "warmth": {
-    "gold": 0.083,
-    "ratio": 1.028
+    "gold": 0.08,
+    "ratio": 0.981
    },
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 108.7,
-    "lumaStd": 75.5,
+    "meanLuma": 106.4,
+    "lumaStd": 76.2,
     "whiteShare": 0,
-    "colours": 596
+    "colours": 576
    }
   },
   {
@@ -529,25 +1012,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "KHI WEEK 01 DAY 2/3 TIME 17:05 PASSENGERS 34 0 0 0 1×",
+   "text": "KHI WEEK 01 DAY 2/3 TIME 17:00 PASSENGERS 34 0 0 0 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
-    "routes": 9.75,
-    "airports": 8.44,
-    "planes": 7.72,
-    "tags": 10.29
+    "routes": 9.65,
+    "airports": 8.15,
+    "planes": 7.26,
+    "tags": 10.41
    },
    "warmth": {
-    "gold": 0.081,
-    "ratio": 0.899
+    "gold": 0.075,
+    "ratio": 0.905
    },
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 98.1,
-    "lumaStd": 71.3,
+    "meanLuma": 99.3,
+    "lumaStd": 71.2,
     "whiteShare": 0,
-    "colours": 578
+    "colours": 581
    }
   },
   {
@@ -558,25 +1041,112 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "KHI WEEK 01 DAY 2/3 TIME 16:58 PASSENGERS 34 0 0 0 1×",
+   "text": "KHI WEEK 01 DAY 2/3 TIME 17:04 PASSENGERS 34 0 0 0 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
-    "routes": 9.65,
-    "airports": 8.08,
-    "planes": 7.16,
+    "routes": 9.83,
+    "airports": 8.59,
+    "planes": 8.03,
     "tags": 1.65
    },
    "warmth": {
-    "gold": 0.073,
-    "ratio": 0.909
+    "gold": 0.082,
+    "ratio": 0.896
    },
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 96.4,
-    "lumaStd": 69.1,
+    "meanLuma": 94.9,
+    "lumaStd": 69.3,
     "whiteShare": 0,
-    "colours": 605
+    "colours": 599
+   }
+  },
+  {
+   "id": "en/game-iphone",
+   "lang": "en",
+   "scene": "game",
+   "device": "iphone",
+   "seed": 41377,
+   "glyphs": [],
+   "devOverlay": false,
+   "text": "KHI WEEK 01 DAY 2/3 TIME 17:01 PASSENGERS 34 0 0 0 1×",
+   "sun": "-68.6@29.7,41.3",
+   "contrast": {
+    "routes": 9.78,
+    "airports": 8.16,
+    "planes": 7.35,
+    "tags": 10.56
+   },
+   "warmth": {
+    "gold": 0.067,
+    "ratio": 0.912
+   },
+   "png": {
+    "width": 1320,
+    "height": 2868,
+    "meanLuma": 99.6,
+    "lumaStd": 72.8,
+    "whiteShare": 0,
+    "colours": 620
+   }
+  },
+  {
+   "id": "en/game-ipad",
+   "lang": "en",
+   "scene": "game",
+   "device": "ipad",
+   "seed": 41377,
+   "glyphs": [],
+   "devOverlay": false,
+   "text": "KHI WEEK 01 DAY 2/3 TIME 17:01 PASSENGERS 34 0 0 0 1×",
+   "sun": "-68.6@29.7,41.3",
+   "contrast": {
+    "routes": 9.84,
+    "airports": 8.36,
+    "planes": 7.59,
+    "tags": 1.65
+   },
+   "warmth": {
+    "gold": 0.082,
+    "ratio": 0.933
+   },
+   "png": {
+    "width": 2064,
+    "height": 2752,
+    "meanLuma": 91.3,
+    "lumaStd": 66.1,
+    "whiteShare": 0,
+    "colours": 621
+   }
+  },
+  {
+   "id": "en/game-landscape",
+   "lang": "en",
+   "scene": "game",
+   "device": "landscape",
+   "seed": 41377,
+   "glyphs": [],
+   "devOverlay": false,
+   "text": "WEEK 01 DAY 2/3 TIME 17:04 PASSENGERS 34 0 0 0 1×",
+   "sun": "-68.6@29.7,41.3",
+   "contrast": {
+    "routes": 9.85,
+    "airports": 8.62,
+    "planes": 7.82,
+    "tags": 11.12
+   },
+   "warmth": {
+    "gold": 0.074,
+    "ratio": 0.998
+   },
+   "png": {
+    "width": 1920,
+    "height": 1080,
+    "meanLuma": 122.4,
+    "lumaStd": 72.8,
+    "whiteShare": 0,
+    "colours": 588
    }
   },
   {
@@ -591,7 +1161,7 @@
    "contrast": {
     "routes": 9.39,
     "airports": 8.92,
-    "planes": 8.79,
+    "planes": 9.29,
     "tags": 14.14
    },
    "warmth": {
@@ -617,14 +1187,14 @@
    "devOverlay": false,
    "text": "+3 KHI TUN RIO WEEK 01 DAY 3/3 TIME 02:00 PASSENGERS 79 0 0 0 1× Week 1 Hangar: three crates arrived. You open one. FREIGHT · TP-48 1/3 Turbo­prop RANGE 2,500 km SEATS 48 BEST FOR short hops FREIGHT · WB-300 2/3 Wide­body RANGE 11,000 km SEATS 300 BEST FOR ocean crossings FREIGHT · SLOT+2 3/3 Departure slots DEPARTURES +2 per hour FOR an airport you pick",
    "contrast": {
-    "routes": 9.33,
+    "routes": 9.32,
     "airports": 8.87,
-    "planes": 8.59,
-    "tags": 14.05
+    "planes": 9.18,
+    "tags": 14.17
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.476
+    "ratio": 0.477
    },
    "png": {
     "width": 1346,
@@ -664,6 +1234,90 @@
    }
   },
   {
+   "id": "en/upgrade-iphone",
+   "lang": "en",
+   "scene": "upgrade",
+   "device": "iphone",
+   "seed": 41377,
+   "glyphs": [],
+   "devOverlay": false,
+   "text": "+3 KHI TUN RIO WEEK 01 DAY 3/3 TIME 02:00 PASSENGERS 79 0 0 0 1× Week 1 Hangar: three crates arrived. You open one. FREIGHT · TP-48 1/3 Turbo­prop RANGE 2,500 km SEATS 48 BEST FOR short hops FREIGHT · WB-300 2/3 Wide­body RANGE 11,000 km SEATS 300 BEST FOR ocean crossings FREIGHT · SLOT+2 3/3 Departure slots DEPARTURES +2 per hour FOR an airport you pick",
+   "contrast": {
+    "routes": 9.4,
+    "airports": 8.92,
+    "planes": 9.36,
+    "tags": 14.49
+   },
+   "warmth": {
+    "gold": 0.002,
+    "ratio": 0.429
+   },
+   "png": {
+    "width": 1320,
+    "height": 2868,
+    "meanLuma": 135.8,
+    "lumaStd": 69.7,
+    "whiteShare": 0,
+    "colours": 195
+   }
+  },
+  {
+   "id": "en/upgrade-ipad",
+   "lang": "en",
+   "scene": "upgrade",
+   "device": "ipad",
+   "seed": 41377,
+   "glyphs": [],
+   "devOverlay": false,
+   "text": "+3 KHI RIO WEEK 01 DAY 3/3 TIME 02:00 PASSENGERS 79 0 0 0 1× Week 1 Hangar: three crates arrived. You open one. FREIGHT · TP-48 1/3 Turbo­prop RANGE 2,500 km SEATS 48 BEST FOR short hops FREIGHT · WB-300 2/3 Wide­body RANGE 11,000 km SEATS 300 BEST FOR ocean crossings FREIGHT · SLOT+2 3/3 Departure slots DEPARTURES +2 per hour FOR an airport you pick",
+   "contrast": {
+    "routes": 9.38,
+    "airports": 8.92,
+    "planes": 9.23,
+    "tags": 1.58
+   },
+   "warmth": {
+    "gold": 0.003,
+    "ratio": 0.472
+   },
+   "png": {
+    "width": 2064,
+    "height": 2752,
+    "meanLuma": 92.5,
+    "lumaStd": 71.8,
+    "whiteShare": 0,
+    "colours": 138
+   }
+  },
+  {
+   "id": "en/upgrade-landscape",
+   "lang": "en",
+   "scene": "upgrade",
+   "device": "landscape",
+   "seed": 41377,
+   "glyphs": [],
+   "devOverlay": false,
+   "text": "+3 +1 RIO WEEK 01 DAY 3/3 TIME 02:00 PASSENGERS 79 0 0 0 1× Week 1 Hangar: three crates arrived. You open one. FREIGHT · TP-48 1/3 Turbo­prop RANGE 2,500 km SEATS 48 BEST FOR short hops FREIGHT · WB-300 2/3 Wide­body RANGE 11,000 km SEATS 300 BEST FOR ocean crossings FREIGHT · SLOT+2 3/3 Departure slots DEPARTURES +2 per hour FOR an airport you pick",
+   "contrast": {
+    "routes": 9.32,
+    "airports": 8.87,
+    "planes": 9.16,
+    "tags": 14.44
+   },
+   "warmth": {
+    "gold": 0.003,
+    "ratio": 0.528
+   },
+   "png": {
+    "width": 1920,
+    "height": 1080,
+    "meanLuma": 164,
+    "lumaStd": 59.5,
+    "whiteShare": 0,
+    "colours": 137
+   }
+  },
+  {
    "id": "en/failure-phone",
    "lang": "en",
    "scene": "failure",
@@ -674,13 +1328,13 @@
    "text": "ATH ANK AMM +3 VCE +23 0:00 TUN CPH WEEK 01 DAY 3/3 TIME 22:44 PASSENGERS 51 0 0 0 1× NETWORK CLOSED MAP DEPARTURES · KHI FLIGHT / DEST. GATE STATUS No route served KHI: its passengers had no flight to board. Connect a new airport before its waiting area fills up. ATC · INCIDENT REPORT Passengers delivered: 51 Weeks completed: 0 CAUSES TIMELINE 29 passengers had no available route to their destination region. 76% of waiting passengers were headed to the Middle East (22 people). The waiting area was full: 29 people for 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
    "contrast": {
     "routes": 9.75,
-    "airports": 8.33,
-    "planes": 9.6,
+    "airports": 8.34,
+    "planes": null,
     "tags": 1.79
    },
    "warmth": {
     "gold": 0.001,
-    "ratio": 0.201
+    "ratio": 0.2
    },
    "png": {
     "width": 1080,
@@ -688,7 +1342,7 @@
     "meanLuma": 137.4,
     "lumaStd": 94.9,
     "whiteShare": 0,
-    "colours": 184
+    "colours": 182
    }
   },
   {
@@ -703,7 +1357,7 @@
    "contrast": {
     "routes": 10.04,
     "airports": 8.26,
-    "planes": 2.53,
+    "planes": 2.82,
     "tags": 1.78
    },
    "warmth": {
@@ -716,7 +1370,7 @@
     "meanLuma": 125,
     "lumaStd": 92.5,
     "whiteShare": 0,
-    "colours": 180
+    "colours": 182
    }
   },
   {
@@ -744,7 +1398,91 @@
     "meanLuma": 89.3,
     "lumaStd": 80.4,
     "whiteShare": 0,
-    "colours": 185
+    "colours": 186
+   }
+  },
+  {
+   "id": "en/failure-iphone",
+   "lang": "en",
+   "scene": "failure",
+   "device": "iphone",
+   "seed": 41377,
+   "glyphs": [],
+   "devOverlay": false,
+   "text": "ATH ANK AMM +3 +23 0:00 TUN WEEK 01 DAY 3/3 TIME 22:44 PASSENGERS 51 0 0 0 1× NETWORK CLOSED MAP DEPARTURES · KHI FLIGHT / DEST. GATE STATUS No route served KHI: its passengers had no flight to board. Connect a new airport before its waiting area fills up. ATC · INCIDENT REPORT Passengers delivered: 51 Weeks completed: 0 CAUSES TIMELINE 29 passengers had no available route to their destination region. 76% of waiting passengers were headed to the Middle East (22 people). The waiting area was full: 29 people for 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
+   "contrast": {
+    "routes": 9.48,
+    "airports": 8.3,
+    "planes": 10.2,
+    "tags": 1.79
+   },
+   "warmth": {
+    "gold": 0.001,
+    "ratio": 0.178
+   },
+   "png": {
+    "width": 1320,
+    "height": 2868,
+    "meanLuma": 117.1,
+    "lumaStd": 89.3,
+    "whiteShare": 0,
+    "colours": 196
+   }
+  },
+  {
+   "id": "en/failure-ipad",
+   "lang": "en",
+   "scene": "failure",
+   "device": "ipad",
+   "seed": 41377,
+   "glyphs": [],
+   "devOverlay": false,
+   "text": "ATH ANK AMM +3 VCE +23 0:00 TUN CPH WEEK 01 DAY 3/3 TIME 22:44 PASSENGERS 51 0 0 0 1× NETWORK CLOSED MAP DEPARTURES · KHI FLIGHT / DEST. GATE STATUS No route served KHI: its passengers had no flight to board. Connect a new airport before its waiting area fills up. ATC · INCIDENT REPORT Passengers delivered: 51 Weeks completed: 0 CAUSES TIMELINE 29 passengers had no available route to their destination region. 76% of waiting passengers were headed to the Middle East (22 people). The waiting area was full: 29 people for 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
+   "contrast": {
+    "routes": 10.04,
+    "airports": 8.28,
+    "planes": 1.77,
+    "tags": 1.79
+   },
+   "warmth": {
+    "gold": 0.001,
+    "ratio": 0.208
+   },
+   "png": {
+    "width": 2064,
+    "height": 2752,
+    "meanLuma": 73.8,
+    "lumaStd": 71,
+    "whiteShare": 0,
+    "colours": 184
+   }
+  },
+  {
+   "id": "en/failure-landscape",
+   "lang": "en",
+   "scene": "failure",
+   "device": "landscape",
+   "seed": 41377,
+   "glyphs": [],
+   "devOverlay": false,
+   "text": "+3 +2 +23 0:00 CPH WEEK 01 DAY 3/3 TIME 22:44 PASSENGERS 51 0 0 0 1× NETWORK CLOSED MAP DEPARTURES · KHI FLIGHT / DEST. GATE STATUS No route served KHI: its passengers had no flight to board. Connect a new airport before its waiting area fills up. ATC · INCIDENT REPORT Passengers delivered: 51 Weeks completed: 0 CAUSES TIMELINE 29 passengers had no available route to their destination region. 76% of waiting passengers were headed to the Middle East (22 people). The waiting area was full: 29 people for 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
+   "contrast": {
+    "routes": 9.3,
+    "airports": 8.79,
+    "planes": 9.08,
+    "tags": 1.79
+   },
+   "warmth": {
+    "gold": 0.001,
+    "ratio": 0.296
+   },
+   "png": {
+    "width": 1920,
+    "height": 1080,
+    "meanLuma": 113.9,
+    "lumaStd": 85.4,
+    "whiteShare": 0,
+    "colours": 180
    }
   },
   {
@@ -762,7 +1500,7 @@
     "meanLuma": 83.3,
     "lumaStd": 69,
     "whiteShare": 0,
-    "colours": 636
+    "colours": 640
    }
   },
   {
@@ -780,7 +1518,7 @@
     "meanLuma": 91.6,
     "lumaStd": 70,
     "whiteShare": 0,
-    "colours": 647
+    "colours": 640
    }
   },
   {
@@ -798,7 +1536,61 @@
     "meanLuma": 93.6,
     "lumaStd": 69.3,
     "whiteShare": 0,
-    "colours": 658
+    "colours": 664
+   }
+  },
+  {
+   "id": "en/menu-iphone",
+   "lang": "en",
+   "scene": "menu",
+   "device": "iphone",
+   "seed": 41377,
+   "glyphs": [],
+   "devOverlay": false,
+   "text": "Airway AIRWAY.GAMES · TERMINAL 1 DEPARTURES GATE STATUS E E N N D D L L E E S S S S F F L L I I G G H H T T no record yet A A 1 1 B B O O A A R R D D I I N N G G P P U U Z Z Z Z L L E E S S 0 of 30 solved B B 4 4 O O N N T T I I M M E E T T O O D D A A Y Y 0 0 3 3 . . 1 1 1 1 same world for everyone C C 2 2 N N E E W W S S E E T T T T I I N N G G S S D D 0 0 L L O O G G B B O O O O K K D D 1 1",
+   "png": {
+    "width": 1320,
+    "height": 2868,
+    "meanLuma": 91.6,
+    "lumaStd": 68.6,
+    "whiteShare": 0,
+    "colours": 692
+   }
+  },
+  {
+   "id": "en/menu-ipad",
+   "lang": "en",
+   "scene": "menu",
+   "device": "ipad",
+   "seed": 41377,
+   "glyphs": [],
+   "devOverlay": false,
+   "text": "Airway AIRWAY.GAMES · TERMINAL 1 DEPARTURES GATE STATUS E E N N D D L L E E S S S S F F L L I I G G H H T T no record yet A A 1 1 B B O O A A R R D D I I N N G G P P U U Z Z Z Z L L E E S S 0 of 30 solved B B 4 4 O O N N T T I I M M E E T T O O D D A A Y Y 0 0 3 3 . . 1 1 1 1 same world for everyone C C 2 2 N N E E W W S S E E T T T T I I N N G G S S D D 0 0 L L O O G G B B O O O O K K D D 1 1",
+   "png": {
+    "width": 2064,
+    "height": 2752,
+    "meanLuma": 96.6,
+    "lumaStd": 68.9,
+    "whiteShare": 0,
+    "colours": 701
+   }
+  },
+  {
+   "id": "en/menu-landscape",
+   "lang": "en",
+   "scene": "menu",
+   "device": "landscape",
+   "seed": 41377,
+   "glyphs": [],
+   "devOverlay": false,
+   "text": "Airway AIRWAY.GAMES · TERMINAL 1 DEPARTURES GATE STATUS E E N N D D L L E E S S S S F F L L I I G G H H T T no record yet A A 1 1 B B O O A A R R D D I I N N G G P P U U Z Z Z Z L L E E S S 0 of 30 solved B B 4 4 O O N N T T I I M M E E T T O O D D A A Y Y 0 0 3 3 . . 1 1 1 1 same world for everyone C C 2 2 N N E E W W S S E E T T T T I I N N G G S S D D 0 0 L L O O G G B B O O O O K K D D 1 1",
+   "png": {
+    "width": 1920,
+    "height": 1080,
+    "meanLuma": 123.1,
+    "lumaStd": 70.3,
+    "whiteShare": 0,
+    "colours": 647
    }
   }
  ]

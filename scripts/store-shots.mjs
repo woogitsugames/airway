@@ -30,11 +30,20 @@ const SCENES = ['night', 'game', 'upgrade', 'failure', 'menu'];
 const WARM_SCENE = 'game';
 const GOLD_MIN = 0.045;
 const CONTRAST_MIN = 4.5; // D-47
+// [N12o] D-123: the three original profiles plus the exact console sizes. Apple needs iPhone 6.9" (1320×2868) and
+// iPad 13" (2064×2752) screenshots; Play's large-screen / promotion slots take only 9:16 or 16:9 (the foldable 4:5 and
+// tablet 3:4 do not qualify), so `landscape` is 1920×1080 with the game in its landscape HUD. `store` names the slot.
 const DEVICES = [
-  { id: 'phone', w: 360, h: 640, dpr: 3 }, // 1080x1920; 9:16
-  { id: 'foldable', w: 673, h: 841, dpr: 2 },
-  { id: 'tablet', w: 768, h: 1024, dpr: 2 },
+  { id: 'phone', w: 360, h: 640, dpr: 3, store: 'play' }, // 1080x1920; 9:16
+  { id: 'foldable', w: 673, h: 841, dpr: 2, store: 'play' },
+  { id: 'tablet', w: 768, h: 1024, dpr: 2, store: 'play' },
+  { id: 'iphone', w: 440, h: 956, dpr: 3, store: 'apple' }, // 1320x2868, iPhone 6.9"
+  { id: 'ipad', w: 1032, h: 1376, dpr: 2, store: 'apple' }, // 2064x2752, iPad 13"
+  { id: 'landscape', w: 960, h: 540, dpr: 2, store: 'play' }, // 1920x1080; 16:9
 ];
+// [N12o] Exact pixel sizes App Store Connect accepts for the two required device classes (portrait; Apple
+// "Screenshot specifications": 6.9" display 1320×2868 or 1290×2796 / 1260×2736, 13" iPad 2064×2752 or 2048×2732).
+const APPLE_SIZES = { iphone: ['1320x2868', '1290x2796', '1260x2736'], ipad: ['2064x2752', '2048x2732'] };
 const EXPECTED = LANGUAGES.length * SCENES.length * DEVICES.length;
 const args = process.argv.slice(2);
 const validateOnly = args.includes('--validate');
@@ -107,7 +116,34 @@ function checkCopy() {
   if (new Set(DEVICES.map((d) => d.id)).size !== DEVICES.length) throw new Error('Duplicate devices');
   if (DEVICES[0].w * DEVICES[0].dpr !== 1080 ||
       DEVICES[0].h * DEVICES[0].dpr !== 1920) throw new Error('Invalid 9:16 phone dimensions');
+  checkStoreSizes(DEVICES);
   return fields;
+}
+
+/**
+ * [N12o] D-123: every console slot has a profile of an accepted size. Apple: one iPhone 6.9" and one iPad 13" profile
+ * of an exact accepted size; Play: at least one 9:16 and one 16:9 profile with the short side ≥ 1080 px (the
+ * large-screen and promotion requirement), every Play size within 320–3840 px and the long side ≤ 2 × the short side.
+ * Returns the device count.
+ */
+export function checkStoreSizes(devices) {
+  const px = (d) => ({ w: d.w * d.dpr, h: d.h * d.dpr });
+  for (const [id, sizes] of Object.entries(APPLE_SIZES)) {
+    const device = devices.find((d) => d.id === id);
+    if (!device || device.store !== 'apple') throw new Error('No Apple ' + id + ' store-shot profile');
+    const { w, h } = px(device);
+    if (!sizes.includes(w + 'x' + h)) throw new Error('Apple ' + id + ' ' + w + 'x' + h + ' is not an accepted size');
+  }
+  const play = devices.filter((d) => d.store === 'play').map(px);
+  for (const { w, h } of play) {
+    if (Math.min(w, h) < 320 || Math.max(w, h) > 3840 || Math.max(w, h) > 2 * Math.min(w, h)) {
+      throw new Error('Play screenshot ' + w + 'x' + h + ' outside 320–3840 px or 2:1');
+    }
+  }
+  const has = (ratioW, ratioH) => play.some(({ w, h }) => w * ratioH === h * ratioW && Math.min(w, h) >= 1080);
+  if (!has(9, 16)) throw new Error('No Play 9:16 profile with a short side ≥ 1080 px');
+  if (!has(16, 9)) throw new Error('No Play 16:9 profile with a short side ≥ 1080 px');
+  return devices.length;
 }
 
 async function choosePort() {
@@ -301,6 +337,9 @@ export function pngStats(file) {
 
 /** Throws unless a captured PNG is a full-size, non-blank, non-white frame. */
 function checkPixels(file, device, where) {
+  // [N12o] Apple rejects screenshots with an alpha channel; Chromium writes opaque RGB, keep it that way.
+  const header = pngHeader(file);
+  if (header.colourType !== 2) throw new Error(where + ': PNG colour type ' + header.colourType + ' (need RGB, no alpha)');
   const stats = pngStats(file);
   if (stats.width !== device.w * device.dpr || stats.height !== device.h * device.dpr) {
     throw new Error(where + ': ' + stats.width + 'x' + stats.height + ' instead of ' +
@@ -466,6 +505,10 @@ function regionGlyphs() {
 /** Contact sheet: per language one row per device, one column per scene, rendered in Chromium. */
 async function renderContactSheet(browser, dir, target) {
   const thumbH = 420, gap = 18;
+  // [N12o] Portrait thumbnails share one height; the 16:9 landscape row is as wide as two portrait phones.
+  const thumbStyle = (device) => device.w > device.h ?
+    'width:' + Math.round(thumbH * 1.1) + 'px;height:' + Math.round(thumbH * 1.1 * device.h / device.w) + 'px' :
+    'width:' + Math.round(thumbH * device.w / device.h) + 'px';
   const page = await browser.newPage({ viewport: { width: 1200, height: 800 }, deviceScaleFactor: 1 });
   try {
     await page.route('http://store.local/**', (route) => {
@@ -475,7 +518,7 @@ async function renderContactSheet(browser, dir, target) {
     const blocks = LANGUAGES.map((lang) => '<h2>' + lang.toUpperCase() + '</h2>' + DEVICES.map((device) =>
       '<div class="row"><div class="dev">' + device.id + '<br><small>' + device.w * device.dpr + '×' +
       device.h * device.dpr + '</small></div>' + SCENES.map((scene) =>
-        '<figure><img style="width:' + Math.round(thumbH * device.w / device.h) + 'px" src="http://store.local/' +
+        '<figure><img style="' + thumbStyle(device) + '" src="http://store.local/' +
         lang + '/' + scene + '-' + device.id + '.png"><figcaption>' + (SCENES.indexOf(scene) + 1) + ' · ' + scene +
         '</figcaption></figure>').join('') +
       '</div>').join('')).join('');
@@ -486,7 +529,7 @@ async function renderContactSheet(browser, dir, target) {
       'h1{font:800 30px Overpass;margin:0 0 4px;letter-spacing:.02em}h2{font:800 22px Overpass;margin:' + gap + 'px 0 8px;color:#f2c230}' +
       '.row{display:flex;gap:' + gap + 'px;align-items:flex-start;margin-bottom:' + gap + 'px}' +
       '.dev{width:90px;font-size:14px;text-transform:uppercase}small{opacity:.7;font-size:11px}' +
-      'figure{margin:0}img{height:' + thumbH + 'px;display:block;border:1px solid #0b1312}' +
+      'figure{margin:0}img{height:' + thumbH + 'px;display:block;border:1px solid #0b1312;object-fit:contain}' +
       'figcaption{font-size:12px;margin-top:4px;text-transform:uppercase;letter-spacing:.06em}</style>' +
       '<h1>Airway — store screenshots (' + EXPECTED + ')</h1>' + blocks, { waitUntil: 'load' });
     await page.evaluate(() => Promise.all([document.fonts.ready,
@@ -569,7 +612,7 @@ async function renderFeatureGraphic(browser, baseUrl, target) {
   return { ...state, ...checkFeatureGraphic(target) };
 }
 
-/** `--validate`: committed PNGs, manifest and contact sheet still match the 30-shot contract. */
+/** `--validate`: committed PNGs, manifest and contact sheet still match the shot contract (60 since N12o). */
 // [task-40] `--validate --out=<dir>` checks a fresh full run in a scratch dir (manifest + sheet inside it).
 function validateShots(dir = OUT, manifestFile = MANIFEST, contactFile = CONTACT) {
   if (!existsSync(manifestFile)) throw new Error('Missing ' + manifestFile + '; run npm run store:shots');
@@ -615,7 +658,7 @@ try {
     console.log('feature graphic 1024x500 rgb centre=' + feature.lumaStd + ' dark=' + feature.darkShare +
       ' bytes=' + feature.bytes);
     console.log('SUMMARY test:store-shots seed=0xA1A1 listings=2 fields=' + fields +
-      ' scenes=5 devices=3 shots=' + shots + ' feature=1 passed=1 failed=0');
+      ' scenes=' + SCENES.length + ' devices=' + DEVICES.length + ' shots=' + shots + ' feature=1 passed=1 failed=0');
   } else if (featureOnly) {
     const require = createRequire(import.meta.url);
     const { chromium } = require('playwright');
