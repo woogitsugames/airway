@@ -290,7 +290,7 @@ page, ≥ 3 per 1.2 s on the menu and in a game.
 | Main JS chunk (largest `dist/assets/*.js`), raw | 1,150 kB | 1,033.8 kB | +11 % |
 | Main JS chunk, gzip (level 9) | 340 kB | 306.2 kB | +11 % |
 | All CSS | 90 kB | 70.2 kB | +28 % |
-| Everything under `dist/` (fonts, land mask, licences) | 2,200 kB | 1,804.8 kB | +22 % |
+| Everything under `dist/` (fonts, land mask, licences, globe textures) | 4,300 kB (D-171) | 3,597.7 kB with G1 globe textures (1,804.8 kB before) | +20 % |
 
 The app is one chunk on purpose (three.js is about 494 kB of it; splitting puzzles, logbook, leaderboard and
 tutorial would save < 40 kB, R5). Files come from disk in the Capacitor app, so size is not a download cost; the

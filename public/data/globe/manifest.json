@@ -1,0 +1,54 @@
+{
+  "format": "airway-globe-assets-v1",
+  "bake": "python3 -I dev/globe-look/bake.py",
+  "files": {
+    "clouds-2048.png": {
+      "bytes": 83576,
+      "sha256": "c0d79a2fdb7c675dfedc0f0fe9a51d5d347dd994ce0bb2bf126005c4c3ec8bc3",
+      "format": "png",
+      "width": 2048,
+      "height": 1024,
+      "source": "procedural cloud cover (dev/globe-look/bake.py); own work, CC0"
+    },
+    "day-2048.jpg": {
+      "bytes": 303234,
+      "sha256": "d3677b377bd72b30e2b272c0bf0d3f0ede8550c5d45400b06cb298d6cf575fcc",
+      "format": "jpeg",
+      "width": 2048,
+      "height": 1024,
+      "source": "NASA Blue Marble NG July 2004 (world.topo.bathy.200407), graded; public domain"
+    },
+    "day-4096.jpg": {
+      "bytes": 1018686,
+      "sha256": "d5f59effd4f142c901da8783da27792e07fbdd3b5c243ce9f243c894aa2fcd51",
+      "format": "jpeg",
+      "width": 4096,
+      "height": 2048,
+      "source": "NASA Blue Marble NG July 2004 (world.topo.bathy.200407), graded; public domain"
+    },
+    "elevation-2048.png": {
+      "bytes": 303161,
+      "sha256": "6064d3eedd810874b6df6c7f19c844c6107f33e1a97203feccf7de22bc3b2545",
+      "format": "png",
+      "width": 2048,
+      "height": 1024,
+      "source": "NOAA ETOPO5 land elevation, sqrt-encoded 8 bit (m = (v/255)^2 * 8000); public domain"
+    },
+    "night-1024.jpg": {
+      "bytes": 13637,
+      "sha256": "608017af70e0b2efca64fa4a65eb34ad3f1878d588576a3a5a005c774b2bd0a4",
+      "format": "jpeg",
+      "width": 1024,
+      "height": 512,
+      "source": "NASA Black Marble 2016 (BlackMarble_2016_3km), lights only; public domain"
+    },
+    "night-2048.jpg": {
+      "bytes": 51614,
+      "sha256": "97ccd43b19759b6aa43d07c0e17b70e544d39d3b340d388f6109262e8b38c3dc",
+      "format": "jpeg",
+      "width": 2048,
+      "height": 1024,
+      "source": "NASA Black Marble 2016 (BlackMarble_2016_3km), lights only; public domain"
+    }
+  }
+}

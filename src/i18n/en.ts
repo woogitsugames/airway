@@ -140,6 +140,8 @@ export const en = {
   'licenses.atkinson': 'Atkinson Hyperlegible Next typeface',
   'licenses.naturalEarth': 'Natural Earth geography',
   'licenses.worldAtlas': 'world-atlas map dataset',
+  'licenses.nasaEarth': 'Earth imagery: NASA Earth Observatory (Blue Marble, Black Marble)',
+  'licenses.noaaRelief': 'Relief: NOAA ETOPO5',
   'licenses.three': 'three.js 3D renderer',
   'licenses.ofl': 'SIL Open Font License 1.1',
   'licenses.publicDomain': 'Public domain',

@@ -113,3 +113,17 @@ Source URLs (2026-11-03): `https://assets.science.nasa.gov/content/dam/science/e
 `https://assets.science.nasa.gov/content/dam/science/esd/eo/images/imagerecords/144000/144898/BlackMarble_2016_3km.jpg`,
 `https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO5/TOPO/ETOPO5/ETOPO5.DAT`. NASA imagery policy: not copyrighted, use
 "NASA Earth Observatory" as credit; it must not imply NASA endorsement and may not use the NASA insignia (we do not).
+
+## Production globe textures (G1, D-170/D-171)
+`public/data/globe/` ships with the app (1.77 MB; checked by `npm run test:globe-assets` against `manifest.json`:
+SHA-256, size, format, 2:1 power-of-two dimensions, per-file caps, total ≤ 2 MB). Same bake and sources as the
+experiment table above (`python3 -I dev/globe-look/bake.py <downloads> satellite elevation clouds`, then copy and
+`node scripts/test-globe-assets.mjs --write`). Credited in Settings → Licences (PL/EN): "NASA Earth Observatory
+(Blue Marble, Black Marble)" and "NOAA ETOPO5", both public domain. Not yet drawn by the game: G2/G3 switch the globe.
+
+| File | Source | Licence |
+|---|---|---|
+| `day-4096.jpg`, `day-2048.jpg` | NASA Blue Marble NG, July 2004 (D-176), topography + bathymetry, graded | Public domain (NASA) |
+| `night-2048.jpg`, `night-1024.jpg` | NASA Black Marble 2016, lights only | Public domain (NASA) |
+| `elevation-2048.png` | NOAA ETOPO5, land elevation, `m = (v/255)² · 8000` | Public domain (NOAA) |
+| `clouds-2048.png` | procedural (bake.py) | Own work (CC0) |
