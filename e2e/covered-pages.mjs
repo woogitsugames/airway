@@ -35,7 +35,7 @@ async function journey(page) {
   log.push(`menu ${await expectDrawing(page, 'menu')}`);
   await clickTestId(page, 'menu-settings');
   await expectStill(page, 'settings');
-  await page.locator('.airway-settings__licenses').last().click();
+  await clickTestId(page, 'settings-licenses');
   await expectStill(page, 'licences');
   await page.keyboard.press('Escape'); // licences → settings
   await page.keyboard.press('Escape'); // settings → menu

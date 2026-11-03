@@ -1,5 +1,6 @@
 // [night-10k] Settings are grouped: Game (language, airport labels, airline colour), Display (graphics, text size,
-// colour-vision mode), Sound and touch (sound, music, haptics), Help (tutorial replay, licences). Each group is a
+// colour-vision mode), Sound and touch (sound, music, haptics), Help (tutorial replay, licences, privacy policy —
+// night-11e). Each group is a
 // labelled section in that order; wide landscape paper puts the groups in two columns, phones in one. PL/EN at
 // 412×915, 915×412, 1000×904 and 320×568; shots docs/shots/n10k/.
 import { mkdirSync } from 'node:fs';
@@ -18,7 +19,7 @@ const GROUPS = [
   ['settings-group-display', { en: 'Display', pl: 'Obraz' }, ['select', 'select', '[data-testid="settings-colorblind"]']],
   ['settings-group-sound', { en: 'Sound and touch', pl: 'Dźwięk i dotyk' },
     ['[data-testid="settings-sound"]', '[data-testid="settings-music"]', '[data-testid="settings-haptics"]']],
-  ['settings-group-help', { en: 'Help', pl: 'Pomoc' }, ['[data-testid="settings-tutorial-replay"]', 'button']],
+  ['settings-group-help', { en: 'Help', pl: 'Pomoc' }, ['[data-testid="settings-tutorial-replay"]', '[data-testid="settings-licenses"]', '[data-testid="settings-privacy"]']],
 ];
 
 let fatal = null;

@@ -349,6 +349,15 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       DEV `aw.state().airports` (waiting, capacity). Also recorded the owner's answers Q-37…Q-40 as D-82…D-85.
       `e2e/edge-chip-fill.mjs` (`test:e2e:edge-chip-fill`, in `test:ci`; 0/4 on the old overlay).
 
+- [x] N11e **Privacy policy reachable in the app (R1b, D-86)** — there was no "privacy" string in the game. Settings →
+      Help gains "Privacy policy / Polityka prywatności" (≥ 48 px, under the licences); it opens an in-app page with the
+      text of `site/privacy.html` (title, draft warning, five sections, date) in the player's language, offline, Back and
+      hardware back/Escape return to settings, the globe does not draw behind it. The game catalogs copy the site's
+      `privacy.*` strings and `test:privacy-text` (in `test:fast`) fails when they drift from `site/i18n.js`. No public
+      URL until D-67; the leaderboard section of the policy waits for Q-52. Also fixed conflict markers committed in
+      `docs/DECISIONS.md` (D-82…D-85 / D-90) and gave the licences row a test id (`e2e/covered-pages.mjs` clicked "the
+      last Help button"). `e2e/privacy-page.mjs` (`test:e2e:privacy-page`, in `test:ci`; 0/4 on the old settings).
+
 ## Continuous development round N12 (agent 2)
 - [x] N12a **Balance bot plays for reach (D-90)** — the handover gap "the DEV bot rarely connects new airports; long
       plays end in weeks 1–3": measured, 34 of 44 bot game overs (50 seeds) were at an airport no route served, 20 of
@@ -376,7 +385,7 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
       `test:firebase` (emulator: entries and user gone, second call idempotent), e2e on the settings row; update
       `docs/legal/leaderboards-privacy.md` and `docs/FIREBASE.md` step 9. **Area:** `functions/`, `src/net/**`,
       `src/ui/settings/**`, i18n. *Needs Q-41.*
-- [ ] R1b **Privacy policy reachable in the app** — Google's User Data policy wants the policy inside the app when
+- [x] R1b → N11e **Privacy policy reachable in the app** — Google's User Data policy wants the policy inside the app when
       user data is handled; there is no "privacy" string in `src/` today. Settings/licences gain a "Privacy" row that
       opens the policy (bundled offline copy of `site/privacy.html` content as an in-app page, PL/EN, plus the public
       URL once D-67 publishes the site). **Area:** `src/ui/settings/**`, i18n, `site/` (shared text source).

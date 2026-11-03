@@ -2,12 +2,12 @@
 // composition root registers. Back/Escape is handled once here via src/platform/back.
 import { installBackHandler, type BackOptions } from '../platform';
 import { createMenu, type MenuData, type MenuHandle, type MenuMode } from '../ui/menu/menu';
-import { createSettings, createLicenses } from '../ui/settings/settings';
+import { createSettings, createLicenses, createPrivacy } from '../ui/settings/settings';
 import { createLogbook, type LogbookData } from '../ui/logbook/logbook';
 
-export type ScreenName = 'menu' | 'settings' | 'licenses' | 'logbook' | 'puzzles' | 'tutorial' | 'game';
-export type ModeScreen = Exclude<ScreenName, 'menu' | 'settings' | 'licenses' | 'logbook'>;
-type RouterScreen = 'menu' | 'settings' | 'licenses' | 'logbook';
+export type ScreenName = 'menu' | 'settings' | 'licenses' | 'privacy' | 'logbook' | 'puzzles' | 'tutorial' | 'game';
+export type ModeScreen = Exclude<ScreenName, 'menu' | 'settings' | 'licenses' | 'privacy' | 'logbook'>;
+type RouterScreen = 'menu' | 'settings' | 'licenses' | 'privacy' | 'logbook';
 
 /** A registered screen. back() returns true when it consumed the press (e.g. closed a sheet). */
 export interface ScreenView {
@@ -78,16 +78,17 @@ export function mountScreens(host: HTMLElement, options: ScreensOptions = {}): S
       replace('settings', createSettings(() => show('menu'), () => show('licenses'), () => {
         options.onLanguageChanged?.();
         show('settings', true);
-      }, options.onReplayTutorial));
+      }, options.onReplayTutorial, () => show('privacy')));
     } else if (screen === 'logbook') {
       const data = options.getLogbookData?.();
       if (!data) return;
       replace('logbook', createLogbook(() => show('menu'), data));
-    } else replace('licenses', createLicenses(() => show('settings')));
+    } else if (screen === 'privacy') replace('privacy', createPrivacy(() => show('settings'))); // [night-11e]
+    else replace('licenses', createLicenses(() => show('settings')));
   }
   const back = (): boolean => {
     if (active.back?.()) return true;
-    if (name === 'licenses') { show('settings'); return true; }
+    if (name === 'licenses' || name === 'privacy') { show('settings'); return true; }
     if (name !== 'menu') { show('menu'); return true; }
     // On the root menu the OS owns app exit.
     return false;
