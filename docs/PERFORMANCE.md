@@ -131,6 +131,34 @@ The summary *mean* rises ~30% because the one-off geometry upload spike on the f
 software-GPU effect and says nothing about a mobile GPU; it must be re-measured on the
 hardware checklist below (the frame-triangle count is the number to watch on low-end Mali).
 
+## M1 — richer world (regional airports, landmarks, plane bank; D-53)
+
+Airports are now one shared instanced kit (12 meshes: pad, block, gable, hip, dome, tiered, pyramid, tower, palm,
+snow, lattice, arch) instead of 5 city + 7 hub part meshes; a piece with no instances issues no draw call. Plane
+bank adds a few vector operations per plane per frame (no allocation) and the livery adds ~70 triangles per aircraft.
+
+`perf:scene` (defaults: medium, 412x915, DPR 1, 120 s, SwiftShader), 2026-11-03, this container (4 cores,
+load average ~11-13 from parallel agents, hence ~130 frames instead of ~530). Six runs each, interleaved
+before/after (`dev` e057556 in a second worktree vs this branch), medians:
+
+| Metric (median of 6) | before (`dev`) | after (M1) | change |
+| --- | --- | --- | --- |
+| CPU render submit mean | 7.31 ms | 7.75 ms | +6% |
+| CPU render submit p95 | 14.0 ms | 11.35 ms | −19% |
+| Mean without the one-off first-frame upload spike | 4.64 ms | 5.24 ms | +13% |
+| 95%-trimmed mean of 1 s samples | 1.58 ms | 1.55 ms | −2% |
+| Median of 1 s samples (0.1 ms resolution) | 1.02 ms | 1.15 ms | +0.13 ms |
+| Frames rendered | 136 | 131.5 | −3% |
+| Draw calls (max) | 35 | 32 | −3 |
+| Triangles (max) | 423 022 | 433 450 | +2.5% |
+
+Raw runs — before: mean 7.61/6.82/7.02/8.47/5.97/8.09, p95 13.3/4.6/14.2/49.9/13.8/20.8; after: mean
+7.83/8.79/7.58/7.34/7.67/8.25, p95 12.2/10.5/12.8/6.5/22.0/7.2 ms. Run-to-run spread on this loaded machine
+(before: mean 5.97–8.47 ms) is larger than every difference above; the headline mean/p95 stay inside the 10%
+budget. Caveat: the fixture uses ids `C0…C39` (no dataset city), so it exercises regional roofs, palms and snow
+through the lon/lat fallback but **no landmarks**; a landmark is 1–10 instances on the shared meshes plus at most two
+extra draw calls (lattice, arch) for the whole world. Close-up evidence: `npm run shots:m1` (`docs/shots/m1/`).
+
 ## Allocation validation and hardware test checklist
 
 1. Run `perf:scene` and save JSON; check stable DOM node count (=40),
