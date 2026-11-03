@@ -16,7 +16,8 @@ import { calendarDayAt, calendarWeekAt } from '../sim/clock'; // [task-31]
 import type { PlaneView as PlaneRenderSnapshot } from '../render';
 import type { AudioCue } from '../audio/events';
 import { mountAtcStrip, mountRouteContextMenu, mountRouteHandles } from '../ui/atcStrip';
-import { createGameOverController, type GameOverController, type GameOverSnapshot } from '../ui/gameover';
+import { createGameOverController, type GameOverController, type GameOverSnapshot, type RunTimeline } from '../ui/gameover';
+import { buildRunTimeline } from './runTimeline'; // [night-10r]
 import { mountHud, type GameSpeed, type HudController, type PlaneType } from '../ui/hud';
 import { createAirportOverlay, type AirportOverlay } from '../ui/overlay';
 import { WeeklyUpgradeView } from '../ui/upgrade';
@@ -408,6 +409,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
         seed: run.seed, initialHash: '', hubId: failure.cityId, hubCode: airportLabel(failure.cityId),
         delivered: run.passengers, completedWeeks: Math.floor(failure.tick / TICKS_PER_WEEK),
         ledger: failure.ledger, departures: flights, ...(extra ? { extra } : {}), ...(share ? { share } : {}),
+        ...(run.mode === 'puzzle' ? {} : { timeline: runTimelineLoader(run) }),
       });
     }
   }
@@ -555,5 +557,24 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       jamHaptics.reset();
       layer.remove();
     },
+  };
+}
+
+/**
+ * [night-10r] Game-over timeline: the journal, rules and weekly choices are copied now, and the throw-away replay
+ * (src/game/runTimeline.ts) runs only when the player opens the tab, in slices between frames.
+ */
+function runTimelineLoader(run: EndlessRun): () => Promise<RunTimeline | null> {
+  const input = {
+    seed: run.seed, config: run.sim.config, journal: run.sim.getCommandLog(), endTick: run.sim.tickCount,
+    endMinute: run.sim.world.minute, upgrades: run.sim.world.upgrades.map((record) => ({ ...record })),
+  };
+  return async () => {
+    const weeks = await buildRunTimeline(input, () => new Promise((resolve) => setTimeout(resolve, 0)));
+    if (!weeks) return null;
+    return {
+      weeks: weeks.map((week) => week.pick?.hubId ? { ...week, pick: { ...week.pick, hubId: airportLabel(week.pick.hubId) } } : week),
+      endDay: calendarDayAt(input.endMinute),
+    };
   };
 }

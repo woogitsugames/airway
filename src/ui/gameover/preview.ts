@@ -32,5 +32,15 @@ export function mountGameOverPreview(host: HTMLElement): void {
       { originHubId: 'LIS', flightNumber: 'AW 018', destinationCode: 'CDG', gate: 'C2' },
       { originHubId: 'LHR', flightNumber: 'AW 901', destinationCode: 'LIS', gate: 'D0' },
     ],
+    // [night-10r] A seven-week timeline (more rows than the causes): the panel scrolls inside the causes' height.
+    timeline: () => Promise.resolve({ endDay: 2, weeks: [
+      { week: 1, routes: 3, extended: 0, removed: 0, aircraft: 4 },
+      { week: 2, routes: 1, extended: 2, removed: 0, aircraft: 1, pick: { upgrade: 'widebody' } },
+      { week: 3, routes: 0, extended: 1, removed: 1, aircraft: 2, pick: { upgrade: 'hub-expansion', hubId: 'LIS' } },
+      { week: 4, routes: 0, extended: 0, removed: 0, aircraft: 0, pick: { upgrade: 'departure-slots', hubId: 'LIS' } },
+      { week: 5, routes: 2, extended: 0, removed: 0, aircraft: 2, pick: { upgrade: 'turboprop' } },
+      { week: 6, routes: 0, extended: 1, removed: 0, aircraft: 1, pick: { upgrade: 'widebody' } },
+      { week: 7, routes: 1, extended: 0, removed: 0, aircraft: 0, pick: { upgrade: 'turboprop' } },
+    ] }),
   });
 }
