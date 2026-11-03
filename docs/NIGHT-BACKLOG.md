@@ -349,6 +349,14 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       DEV `aw.state().airports` (waiting, capacity). Also recorded the owner's answers Q-37…Q-40 as D-82…D-85.
       `e2e/edge-chip-fill.mjs` (`test:e2e:edge-chip-fill`, in `test:ci`; 0/4 on the old overlay).
 
+- [x] N11e **Privacy policy reachable in the app (R1b, D-86)** — there was no "privacy" string in the game. Settings →
+      Help gains "Privacy policy / Polityka prywatności" (≥ 48 px, under the licences); it opens an in-app page with the
+      text of `site/privacy.html` (title, draft warning, five sections, date) in the player's language, offline, Back and
+      hardware back/Escape return to settings, the globe does not draw behind it. The game catalogs copy the site's
+      `privacy.*` strings and `test:privacy-text` (in `test:fast`) fails when they drift from `site/i18n.js`. No public
+      URL until D-67; the leaderboard section of the policy waits for Q-56. The licences row got a test id
+      (`e2e/covered-pages.mjs` clicked "the last Help button", which is now the privacy row). `e2e/privacy-page.mjs` (`test:e2e:privacy-page`, in `test:ci`; 0/4 on the old settings).
+
 ## Continuous development round N12 (agent 2)
 - [x] N12a **Balance bot plays for reach (D-90)** — the handover gap "the DEV bot rarely connects new airports; long
       plays end in weeks 1–3": measured, 34 of 44 bot game overs (50 seeds) were at an airport no route served, 20 of
@@ -391,7 +399,7 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
       `test:firebase` (emulator: entries and user gone, second call idempotent), e2e on the settings row; update
       `docs/legal/leaderboards-privacy.md` and `docs/FIREBASE.md` step 9. **Area:** `functions/`, `src/net/**`,
       `src/ui/settings/**`, i18n. *Needs Q-41.*
-- [ ] R1b **Privacy policy reachable in the app** — Google's User Data policy wants the policy inside the app when
+- [x] R1b → N11e **Privacy policy reachable in the app** — Google's User Data policy wants the policy inside the app when
       user data is handled; there is no "privacy" string in `src/` today. Settings/licences gain a "Privacy" row that
       opens the policy (bundled offline copy of `site/privacy.html` content as an in-app page, PL/EN, plus the public
       URL once D-67 publishes the site). **Area:** `src/ui/settings/**`, i18n, `site/` (shared text source).
@@ -657,3 +665,4 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
 - 2026-11-03 · N11d edge-chip waiting gauge + owner decisions D-82…D-85 · night/11d-edge-gauge · ui:long-play EN 915×412 4× 10 min runs=3 maxWeek=1 issues=0; test:fast 58/58, build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:edge-chip-tags 6/6, e2e:edge-dock 5/5, e2e:edge-chip-airports 2/2, e2e:curfew-barrier 2/2, e2e:new-airport 4/4, test:e2e:edge-chip-fill 4/4 (0/4 on the old overlay), store:shots 30 (test:store-shots 30/30)
 - 2026-11-03 · N12b iOS store plist keys (R1c, D-91) · night/12b-ios-plist-keys · test:ios-config 23/23 (21/23 on the old plist), test:fast 58/58, build ok; e2e/ui:matrix/store:shots not run (no web code changed)
 - 2026-11-03 · N12c Android backup without leaderboard identity (R1e, D-92) · night/12c-android-backup · test:android-config 18/18 (14/18 on the old manifest), test:install-identity 6/6 (new), aapt2 compile ok, test:fast 59/59, build ok, e2e:smoke 9/9 (boot path touched); Gradle lint not run (Maven 429), no device restore; ui:matrix/store:shots not run (no UI change)
+- 2026-11-03 · N11e privacy policy in the app (D-86) · night/11e-privacy · test:fast 60/60 (test:privacy-text 6/6, 1/6 before), build ok, test:e2e:privacy-page 4/4 (0/4 on the old settings), e2e:settings-groups 4/4, e2e:covered-pages 2/2, e2e:pseudo-locale 27/27; e2e:smoke/ui:matrix not run (settings only, no game screen)

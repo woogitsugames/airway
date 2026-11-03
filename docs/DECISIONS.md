@@ -608,6 +608,7 @@ The share text keeps no link; `airway.games` is added once the domain and the la
 ## D-85 — Logbook entry stays half of the last menu board row (2026-11-03, owner, Q-40)
 "SETTINGS D0 · LOGBOOK D1" keeps sharing the last split-flap row (option A of Q-40); no separate row, the logbook is not
 moved into settings. **Status: in force.**
+
 ## D-90 — Balance bot plays for reach (2026-11-03, Claude, night N12a)
 The DEV/balance bot (`src/game/dev/bot-policy.ts`) values the widebody on the weekly board like a turboprop-only
 network needs it: +80 when the fleet owns no widebody or an active airport without a route lies beyond turboprop
@@ -617,6 +618,16 @@ one, it may pair two unserved airports with each other (a new network island). R
 were at an airport no route served, 20 of them beyond turboprop reach — a measuring-stick fault, not game balance.
 Now 7 of 40; `test:balance` median 14.55 → 17.81 min, 1st/2nd board 86/50 → 88/56 %. No game parameter changed;
 the median now sits near the D-79 upper bound (Q-51). **Status: in force (N12a, `test:bot-policy`).**
+
+## D-86 — Privacy policy inside the app, same text as the site (2026-11-03, Claude, night N11e)
+Settings → Help gains a "Privacy policy / Polityka prywatności" row under the licences. It opens an in-app page
+(router screen `privacy`, back → settings, the globe does not draw behind it) with the text of `site/privacy.html`:
+title, the draft warning, its five sections and date, plus one line that the copy is stored in the game and opens
+without a connection. The game catalogs hold a copy of the site's `privacy.*` strings; `test:privacy-text` fails when
+they differ from `site/i18n.js`, so the site stays the one source. No public URL is shown until the site is published
+(D-67); the leaderboard section waits for the owner (Q-56). Rationale: Google's User Data policy wants the policy
+reachable inside the app (RESEARCH R1, R1b); an offline page works on every build and in every store review.
+**Status: in force (N11e, `test:privacy-text`, `test:e2e:privacy-page`).**
 
 ## D-91 — iOS bundle declares export-exempt encryption and its languages (2026-11-03, Claude, night N12b)
 `Info.plist` carries `ITSAppUsesNonExemptEncryption = false` and `CFBundleLocalizations = [en, pl]`. The game only

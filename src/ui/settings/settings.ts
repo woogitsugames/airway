@@ -101,7 +101,7 @@ function header(title:string,onBack:()=>void):HTMLElement {
 
 export interface SettingsHandle { readonly element:HTMLElement; readonly firstFocus:HTMLElement; }
 
-export function createSettings(onBack:()=>void,onLicenses:()=>void,onLanguageChanged:()=>void,onReplayTutorial?:()=>void):SettingsHandle {
+export function createSettings(onBack:()=>void,onLicenses:()=>void,onLanguageChanged:()=>void,onReplayTutorial?:()=>void,onPrivacy?:()=>void):SettingsHandle {
   const values=readSettings();
   const root=e('section','airway-settings');
   const paper=e('div','airway-settings__paper');
@@ -182,8 +182,15 @@ export function createSettings(onBack:()=>void,onLicenses:()=>void,onLanguageCha
     host.append(replay);
   }
   const licences=e('button','airway-settings__licenses',t('settings.licenses'));
-  licences.type='button';licences.addEventListener('click',onLicenses);
-  host.append(licences);root.append(paper);
+  licences.type='button';licences.dataset.testid='settings-licenses';licences.addEventListener('click',onLicenses);
+  host.append(licences);
+  if(onPrivacy){ // [night-11e] R1b: the privacy policy is reachable inside the app, offline.
+    const privacy=e('button','airway-settings__licenses',t('settings.privacy'));
+    privacy.type='button';privacy.dataset.testid='settings-privacy';
+    privacy.addEventListener('click',onPrivacy);
+    host.append(privacy);
+  }
+  root.append(paper);
   return {element:root,firstFocus:top.querySelector('button') as HTMLElement};
 }
 
@@ -208,5 +215,23 @@ export function createLicenses(onBack:()=>void):SettingsHandle {
     list.append(item);
   }
   paper.append(list);root.append(paper);
+  return {element:root,firstFocus:top.querySelector('button') as HTMLElement};
+}
+
+/** [night-11e] Sections of the in-app privacy policy, in the order of site/privacy.html (test:privacy-text). */
+export const PRIVACY_SECTIONS=[1,2,3,4,5] as const;
+export function createPrivacy(onBack:()=>void):SettingsHandle {
+  const root=e('section','airway-settings');
+  const paper=e('div','airway-settings__paper airway-privacy');
+  paper.dataset.testid='privacy-page';
+  const top=header(t('privacy.title'),onBack);
+  paper.append(top,e('p','airway-privacy__overline',t('privacy.overline')),e('p','airway-privacy__warning',t('privacy.warning')));
+  for(const n of PRIVACY_SECTIONS){
+    const section=e('section','airway-privacy__section');
+    section.append(e('h2','',t(`privacy.s${n}.title` as TranslationKey)),e('p','',t(`privacy.s${n}.body` as TranslationKey)));
+    paper.append(section);
+  }
+  paper.append(e('p','airway-privacy__date',t('privacy.date')),e('p','airway-setting__hint',t('privacy.offline')));
+  root.append(paper);
   return {element:root,firstFocus:top.querySelector('button') as HTMLElement};
 }
