@@ -1,4 +1,4 @@
-// [night-12q] R5k, D-134: bundle budget guard. The Capacitor app loads its files from disk, so size is not a network
+// [night-12q] R5k, D-143: bundle budget guard. The Capacitor app loads its files from disk, so size is not a network
 // cost, but parse time on a budget Android phone grows with the main chunk; this guard makes growth a decision.
 //   node scripts/test-bundle.mjs           -> static checks + budgets of the built dist/ (run after `npm run build`)
 //   node scripts/test-bundle.mjs --static  -> static checks only (test:fast): no module is imported both statically
