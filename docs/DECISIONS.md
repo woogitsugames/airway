@@ -1253,3 +1253,12 @@ colour (hard rule: types and states by shape). Tap behaviour unchanged (the tag 
 Rejected: a higher opacity (still see-through), grey icon only (colour-only cue). **Status: in force (N11n,
 `test:e2e:dock-empty-tags`, `test:contrast` 17 pairs).**
 
+## D-183 — A NEW mark is checked per airport, and week-2 e2e reach week 2 through the week-1 board (2026-11-04, Claude, night N11o)
+Rules v5 (N12f) open an airport every 12 game hours, exactly the lifetime of the NEW mark (`NEW_MARK_TICKS`), so the
+moment the first mark expires the next airport opens marked; `test:e2e:new-airport` asserted that no tag at all was
+marked and failed on every seed. It now follows the first marked airport by its `data-airport` id: marked 40 ticks
+before its 12 hours end, unmarked 20 ticks after, and no airport that was already open carries a mark. This is
+stricter than before (it also proves the mark lasts) and still fails if the mark never expires. `transfer-glyphs`
+used `autoplay(2)`, whose seed-0xA1A1 run now ends before the week-2 board; like N11j (D-132) it plays to the week-1
+board and makes one plain pick. Rejected: another seed (the spawn interval is fixed, no seed avoids the overlap),
+a shorter mark (a rules/UI change made to suit a test). **Status: in force (N11o, new-airport 4/4, transfer-glyphs 2/2).**
