@@ -643,11 +643,15 @@ before/after `npm run shots -- globe` PNGs and look at them.
 - [ ] G8 **"Mapa" mode next to "Satelita" (D-172)** — second texture set from the owner's chosen map look, uniform
       swap without rebuild, `globeMode` setting (default satellite, PL/EN), dock tag toggle; dock/overlay tests,
       `ui:matrix` at 320 dp. Mapa look: owner's reference (Google-Maps-like) in our own palette (`map-*.jpg`).
-- [ ] G9 **Airport objects, routes and planes for the new globe (D-175)** — first 2–3 engine-rendered variants for the
+- [x] G9 **Airport objects, routes and planes for the new globe (D-175)** — done 2026-11-04: V3 Medalion (D-178), route ink outline, edge probe (D-177) — first 2–3 engine-rendered variants for the
       owner (Satelita + Mapa, seed 15 frame), wait for the owner's pick, then implement with a mode-dependent ink;
       D-47 ≥ 4.5:1 for routes/airports/planes in both modes (`measureLayerContrast`), `store:shots`. Blocked on owner.
       Variants ready: `docs/mockups/globe-2026-11/g9/` (V1 Tusz, V2 Płyta, V3 Medalion — Claude recommends V3);
       the probe must measure edge contrast first (D-177).
+- [ ] G9b **Close the D-47 gap after Medalion (D-178)** — airports (probe 2.6–3.2), planes (1.4–3.0) and the Mapa
+      tags (1.6) are still under 4.5:1: try a light inner rim on the pad, an ink outline on planes (instanced
+      inflated back faces, +1 draw call), a dark cord/shadow under the luggage tags in Mapa; re-measure with
+      `node dev/globe-look/shots.mjs --looks=diorama,satellite,map --sizes=phone --play=300`.
 
 ## Research proposals (R-agent)
 Proposals from the research agent (findings and sources: `docs/RESEARCH.md`, sections "R1 — …"). Each item is
@@ -1227,3 +1231,4 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
 - 2026-11-04 · N11n opaque empty dock tags (R5d, D-182) · night/11n-opaque-dock-tags · test:e2e:dock-empty-tags 3/3 (0/3 on the old tags), test:fast 73/73 (test:contrast 17 pairs), build ok, e2e:smoke 9/9, test:hud-targets 300/300, ui:matrix 48/48, store:shots 60
 - 2026-11-04 · N11o new-airport + transfer-glyphs e2e under rules v5/v6 (D-183) · night/11o-e2e-seeds · test:e2e:new-airport 4/4 (1/4 on origin/dev), test:e2e:transfer-glyphs 2/2 (0/2 on origin/dev), test:fast 73/73, build ok; e2e:smoke/ui:matrix not run (no game code changed)
 - 2026-11-04 · N11p 3-step training flight in the game's marks + first-time cards (R5b, R6a, R6b; D-184, D-190) · night/11p-short-tutorial · test:first-time 7/7 (new; the module does not exist on the old code), test:e2e:first-time-cards 4/4 (new; no cards on the old game), test:e2e:tutorial 28/28 (screenshots 8), test:e2e:tutorial-layout 7/7 (planet check fails on the old 228-unit planet at 412 px), test:fast 74/74, build ok, e2e:smoke 9/9, e2e:settings-groups 4/4, e2e:screens-fit 18/18, e2e:pseudo-locale 27/27; ui:matrix/store:shots not run (cards are off in seeded DEV runs, game screens unchanged)
+- 2026-11-04 · G9 Medalion airports + route ink outline + edge contrast probe (D-177, D-178; owner "Daj medalion i scalaj") · ext/03-g9-medalion · test:render-layers 40/40 (+1 outlined-disc case), test:fast 74/74 (130.8 s), build ok (main 1,058.6 kB / gzip 314.2 kB); probe seed 15 phone day routes 5.1/6.8/3.4, airports 2.6/3.2/3.1 (diorama/Satelita/Mapa); renders in docs/mockups/globe-2026-11/g9/final/; store:shots/ui:matrix not run (G6), follow-up G9b

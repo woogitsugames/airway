@@ -302,3 +302,9 @@ module and only warns (the old dynamic `import('@capacitor/core')` in `platform/
 Not done: WOFF2 fonts (about −40 % of the 624 kB TTF; OFL allows the conversion, `docs/ASSETS.md` would need the
 entry) — a size win only, no parse-time effect.
 
+
+## G9 — Medalion airports and route ink outline (2026-11-04, D-178)
+The outline ring is one more part in the two airport instanced meshes' part lists (regular and hub: +2 draw calls
+when both kinds exist) and the route ink outline one inflated back-face mesh per route batch (+2: widebody and
+turboprop). Worst case +4 draw calls, inside the ≤ 50 budget (perf fixture: 42–43 → ≤ 47). No new geometry per frame;
+routes still rebuild only on a network change.
