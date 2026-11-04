@@ -2,6 +2,8 @@
 
 The Polish and English copy is ready to paste from [pl.md](pl.md) and [en.md](en.md). Verify every described feature against the integrated release build before publishing.
 
+App Store accessibility labels, the evidence for each and the PL/EN accessibility paragraph for both listings: [accessibility.md](accessibility.md) (R1i; kept in sync with the code by `npm run test:a11y-evidence`).
+
 ## Naming and store limits
 
 - D-18 specifies **Airway: Globe Route Builder** (EN, 27 characters) and **Airway: Buduj siatkę lotów na globusie** (PL, 38 characters); D-203 (owner, Q-77 → B) changed the PL title to
