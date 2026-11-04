@@ -488,6 +488,12 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       Bosforem"), crate = skrzynia. Glossary `src/i18n/README.md`; `test:i18n` fails on a banned synonym in any
       catalog value (12 failures on the old catalogs; it also caught three "węzeł" titles that ext/05 added meanwhile).
       The PL store title (D-18, "siatkę lotów") is outside the catalogs: Q-77.
+- [x] N11s **Empty dock tags count down to the next crates (R6c, D-196)** — an empty turboprop, widebody or hub tag stacks
+      its icon over the wait for the weekly board from the run's clock ("2 days" / "2 dni", "5 h" / "5 godz.", "40 min")
+      instead of a bare "0"; aria adds "Next crates in 2 days 5 h"; N11n's opaque dashed look kept; Undo, the G8 globe
+      tag and puzzles unchanged. `src/ui/hud/crate-countdown.ts`, `test:dock-countdown` (new, in `test:fast`),
+      `test:e2e:dock-empty-tags` +R6c checks at night and by day + PL 320×568 (0/4 on the old dock), shots
+      `docs/shots/n11s/`.
 
 ## Continuous development round N12 (agent 2)
 - [x] N12a **Balance bot plays for reach (D-90)** — the handover gap "the DEV bot rarely connects new airports; long
@@ -1001,7 +1007,7 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
       the stored step list needs it (completed players must not see it again). `test:e2e:tutorial` and its shots
       updated; do it in the same PR as R5b (both redraw the tutorial). **Area:** UI (`src/game/tutorial/**`,
       `src/ui/tutorial/**`), i18n. Q-63 → B (D-130). Depends on R6a.
-- [ ] R6c **Empty dock tag counts down to the crates** — in week 1 the dock shows "0 / 0 / 0" for 7 minutes. While
+- [x] R6c → N11s **Empty dock tag counts down to the crates** — in week 1 the dock shows "0 / 0 / 0" for 7 minutes. While
       a tag is empty, its count line reads the arrival of the next weekly board ("crates day 3" / "skrzynie: dzień 3",
       or "tomorrow"/"jutro" on the last day) from the existing week/day clock; aria text the same. No sim change.
       Combine with R5d (opaque empty tags). DOM test + shots night/day. **Area:** UI (`src/ui/hud/**`, `hud.css`), i18n.
@@ -1266,6 +1272,7 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
 - 2026-11-04 · N11r crate stamp captions + "none yet" (R5e, D-194) + replay restores first-time cards (owner Q-76 → B, D-192) · night/11r-stamp-captions · after merging dev (#169–#171): test:fast 75/75 (test:crate-stamps 5/5, 1/5 on the old cards; test:pause-summary 6/6, 5/6 on the old summary; test:first-time 8/8, 7/8 on the old controller), build ok, test:hud-targets 300/300, e2e:smoke 9/9 (5/9 while another suite loaded the machine), store:shots 60 (test:store-shots ok); ui:matrix 38/48 — the upgrade screen at 904×1000 / 904×1088@2 / 1088×904@2 times out on origin/dev too since the new globe (G2+G3/G4, probe 12/16 on origin/dev); before the merge ui:matrix 48/48, e2e:smoke 9/9. e2e:board-short 0/4 on origin/dev and here (rules v5 game over before week 2, pre-existing); after merging dev again (#172–#179): test:fast 75/75, build ok, store:shots 60 (test:store-shots ok), e2e:smoke 5/9 — the weekly-board click times out on origin/dev alike since the new globe (9/9 on a quiet machine once)
 - 2026-11-04 · N11u Long haul hidden in release builds (owner Q-74 → B, D-193) · night/11u-release-packs · after merging dev (#176–#179): test:fast 76/76 (test:release-packs 4/4: release 30, DEV 40, override 40), build ok, e2e:puzzles 44/44 (levels=40); e2e:smoke/ui:matrix not run (no game screen changes in DEV)
 - 2026-11-04 · N11t one word per concept (R5g, D-195), owner question Q-77 · night/11t-one-word · after merging dev (#176–#180): test:fast 76/76 (test:i18n with the glossary check; 12 failures on the old catalogs, 3 on the ext/05 titles), build ok, e2e:screens-fit-320 12/12, e2e:gameover-unserved 5/5 (shots docs/shots/n11k: "SIEĆ ZAMKNIĘTA"), e2e:pseudo-locale 27/27; e2e:smoke/ui:matrix/store:shots not run here (text only; refreshed with N11s)
+- 2026-11-04 · N11s dock crate countdown (R6c, D-196) · night/11s-dock-countdown · after merging dev (#176–#182, G8 globe tag): test:fast 77/77 (test:dock-countdown 3/3, new module), build ok, test:e2e:dock-empty-tags 4/4 (0/4 on the old dock: no countdown), e2e:smoke 9/9, store:shots not refreshed (page.screenshot timed out after 52/60 and 4/60 shots under SwiftShader; store PNGs stay from N11r); ui:matrix 38/48 and test:hud-targets 293/300 fail the same way on origin/dev (upgrade screen timeouts on large viewports since the new globe; hud-targets still expects six dock controls, G8 added the globe tag — reported, not touched)
 - 2026-11-04 · G2+G3 satellite globe ships (D-179) · ext/03-g2g3-satellite · test:fast 74/74 (136.5 s), build ok (main 1,070.0 kB / gzip 317.7 kB), test:bundle 9/9 (dist 3,617.4 kB), test:e2e:smoke 9/9; built app (vite preview) loads data/globe/ day-2048 + night-1024 + elevation on auto→low, no fallback warning; game shots seed 15: routes 6.9/6.8, airports 3.2/6.0 (day/dusk); store:shots/ui:matrix not run (G6)
 - 2026-11-04 · G4 sea surface + haze folded into the terrain shader (D-173) · ext/03-g4-fillrate · transparent full-screen layers on the satellite globe 3→1 (low/saver: halo) and 4→2 (medium/high: halo + clouds); perf:scene SwiftShader 40 s low 397 frames (375 with shells), medium 168 (174), draw calls 41; game shots seed 15 match the layered look (routes 6.8/6.7, airports 3.1/5.5 day/dusk); `world.stats().transparentLayers` not added (G7 measures on devices)
 - 2026-11-04 · G6 store screenshots, feature graphic, ui:matrix and style doc on the satellite globe (D-170, D-178) · ext/03-g6-store · store:shots 60/60 (game: gold 0.13–0.17 ≥ 0.045, routes/airports/planes 9.4–11.6:1; night 9.4–11.4:1), store:feature 1/1, ui:matrix 48/48, contact sheet and feature graphic inspected; docs/styles/realistyczny.md (PL), D-11 globe superseded; shots:site not rerun
