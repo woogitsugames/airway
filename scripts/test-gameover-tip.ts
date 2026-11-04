@@ -3,7 +3,7 @@
 // tip, the first TIP_RUNS logged flights get tips, and both catalogs carry every tip text.
 import assert from 'node:assert/strict';
 import { buildCauseReport, type CauseFact, type CauseKind } from '../src/game/causes.ts';
-import { TIP_RUNS, gameOverTip, tipsForFlight, type TipKind } from '../src/game/gameoverTip.ts';
+import { TIP_RUNS, gameOverTip, tipsForFlight, unservedHint, type TipKind } from '../src/game/gameoverTip.ts';
 import { en } from '../src/i18n/en.ts';
 import { pl } from '../src/i18n/pl.ts';
 
@@ -45,6 +45,15 @@ test('from a real ledger: full waiting area → hub tip; slot holds lead → slo
   assert.equal(gameOverTip(buildCauseReport({ waiting: 30, capacity: 24 }), served)?.kind, 'hub-overflow');
   assert.equal(gameOverTip(buildCauseReport({ waiting: 5, capacity: 24, slotWaitMinutes: 300 }), served)?.kind, 'slot-wait');
   assert.equal(gameOverTip(buildCauseReport({ waiting: 0, capacity: 0 }), served), null);
+});
+// [night-12y] R8b, D-187: with an empty reserve the unserved line names moves that need no spare aircraft.
+test('unserved hint: no spare aircraft → extend or free a plane; a spare plane or unknown reserve → the old line', () => {
+  assert.equal(unservedHint(0), 'gameover.unservedNoSpare');
+  for (const spare of [1, 3, undefined]) assert.equal(unservedHint(spare), 'gameover.unservedHint', String(spare));
+  for (const catalog of [en, pl] as Array<Record<string, string>>) {
+    const text = catalog['gameover.unservedNoSpare'] ?? '';
+    assert.ok(text.trim() && text !== catalog['gameover.unservedHint'] && !/\{/.test(text), 'both catalogs, no placeholder');
+  }
 });
 test(`tips for the first ${TIP_RUNS} logged flights`, () => {
   assert.equal(TIP_RUNS, 10);

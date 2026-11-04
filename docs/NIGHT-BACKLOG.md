@@ -1092,7 +1092,7 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
       stays on the `upgrades` RNG stream; `RULES_VERSION` bump, save/daily golden updates. Metric (r8-audit
       `--policy=bot`): boards showing a card with no effect yet (no hub / no slot hold) 100 % → < 30 %; median stays in 10–18 (`test:balance`); slot holds
       still counted. **Area:** `src/sim/upgrades.ts`, `src/sim/world.ts`, tests. *Needs Q-71.*
-- [ ] R8b **"No spare aircraft" game-over hint** — 56 of 200 losses are at an airport with no route, and in 99 % of
+- [x] R8b → N12y **"No spare aircraft" game-over hint** — 56 of 200 losses are at an airport with no route, and in 99 % of
       all losses the reserve was empty, yet `gameover.unservedHint` says "Connect a new airport before its waiting area
       fills up". When the failed airport had 0 routes and the reserve was 0, show "No spare aircraft: drag a route end
       to it or take a plane off a quieter route" (PL + EN, i18n); keep the old line when a plane was free. Pure choice
