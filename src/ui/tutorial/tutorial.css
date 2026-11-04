@@ -5,7 +5,7 @@
 .aw-tutorial button { cursor: pointer; font: inherit; -webkit-tap-highlight-color: transparent; }
 .aw-tutorial button:focus-visible { outline: 3px solid #ff7a3d; outline-offset: 3px; }
 .aw-tutorial button:disabled { opacity: .55; cursor: wait; }
-.aw-tutorial-stage { display: none; position: absolute; inset: 0; pointer-events: auto; background: #8cc3d8; padding: calc(env(safe-area-inset-top, 0px) + 9px) calc(env(safe-area-inset-right, 0px) + 10px) calc(env(safe-area-inset-bottom, 0px) + 9px) calc(env(safe-area-inset-left, 0px) + 10px); grid-template-rows: 70px minmax(0,1fr) auto; gap: 5px; }
+.aw-tutorial-stage { display: none; position: absolute; inset: 0; pointer-events: auto; background: #8cc3d8; padding: calc(var(--aw-safe-top) + 9px) calc(var(--aw-safe-right) + 10px) calc(var(--aw-safe-bottom) + 9px) calc(var(--aw-safe-left) + 10px); grid-template-rows: 70px minmax(0,1fr) auto; gap: 5px; }
 .aw-tutorial.is-active .aw-tutorial-stage { display: grid; }
 .aw-tutorial-ticket { display: flex; min-width: 0; align-items: stretch; background: #fbf8f1; color: #2a2420; border: 2px solid #1e6f6a; height: 68px; }
 .aw-tutorial-ticket-id { min-width: 0; padding: 10px 13px 6px; display: flex; flex: 1; flex-direction: column; justify-content: space-between; }
@@ -56,15 +56,15 @@
 .aw-complete-action { display: none; background: #ffc72c; }
 .aw-tutorial[data-step="aircraft"] .aw-plane-tag { display: flex; }
 .aw-tutorial[data-step="complete"] .aw-complete-action { display: block; }
-.aw-settings-sign { display: none; position: absolute; right: calc(env(safe-area-inset-right,0px) + 12px); bottom: calc(env(safe-area-inset-bottom,0px) + 16px); background: #ffc72c; color: #1c1e20; border: 3px solid #1c1e20; font: 800 15px Overpass,sans-serif !important; min-width: 124px; min-height: 50px; pointer-events: auto; }
+.aw-settings-sign { display: none; position: absolute; right: calc(var(--aw-safe-right) + 12px); bottom: calc(var(--aw-safe-bottom) + 16px); background: #ffc72c; color: #1c1e20; border: 3px solid #1c1e20; font: 800 15px Overpass,sans-serif !important; min-width: 124px; min-height: 50px; pointer-events: auto; }
 .aw-tutorial:not(.is-active) .aw-settings-sign { display: block; }
-.aw-settings-dialog { position: absolute; z-index: 5; pointer-events: auto; bottom: calc(env(safe-area-inset-bottom,0px) + 80px); right: 12px; width: min(290px,calc(100% - 24px)); padding: 14px; background: #1c1e20; color: #fbf8f1; border: 3px solid #ffc72c; }
+.aw-settings-dialog { position: absolute; z-index: 5; pointer-events: auto; bottom: calc(var(--aw-safe-bottom) + 80px); right: calc(var(--aw-safe-right) + 12px); width: min(290px,calc(100% - 24px - var(--aw-safe-left) - var(--aw-safe-right))); padding: 14px; background: #1c1e20; color: #fbf8f1; border: 3px solid #ffc72c; }
 .aw-settings-dialog h2 { font: 800 20px Overpass,sans-serif; margin: 0 0 12px; }
 .aw-settings-dialog button { min-height: 50px; display: block; width: 100%; background: #2c2f32; border: 1px solid #9ba19e; color: #fbf8f1; margin-top: 7px; font-weight: 700; }
 @keyframes aw-route-guide { to { stroke-dashoffset: -44; } }
 :root[data-airway-motion="reduce"] .aw-guide { animation: none !important; } :root[data-airway-motion="reduce"] .aw-tutorial-world { transition: none !important; } /* [night-11g] D-88 */
 @media (max-height: 590px) and (min-width: 660px) {
- .aw-tutorial-stage { grid-template-columns: minmax(180px, 220px) minmax(220px, 1fr) minmax(160px, 215px); grid-template-rows: minmax(0,1fr); gap: 7px; padding: calc(env(safe-area-inset-top, 0px) + 5px) calc(env(safe-area-inset-right, 0px) + 7px) calc(env(safe-area-inset-bottom, 0px) + 5px) calc(env(safe-area-inset-left, 0px) + 7px); }
+ .aw-tutorial-stage { grid-template-columns: minmax(180px, 220px) minmax(220px, 1fr) minmax(160px, 215px); grid-template-rows: minmax(0,1fr); gap: 7px; padding: calc(var(--aw-safe-top) + 5px) calc(var(--aw-safe-right) + 7px) calc(var(--aw-safe-bottom) + 5px) calc(var(--aw-safe-left) + 7px); }
  .aw-tutorial-ticket { grid-column: 1; flex-direction: column; height: auto; max-height: 168px; align-self: start; }
  .aw-tutorial-ticket-id { min-height: 72px; padding: 10px; gap: 12px; }
  .aw-ticket-perf { height: 1px; width: auto; border-left: 0; border-top: 2px dashed #789b94; margin: 0 6px; }

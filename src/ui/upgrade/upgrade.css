@@ -11,8 +11,8 @@
   background: rgba(28, 30, 32, .62);
   /* [night-07n] Top padding clears the boarding pass (top 10 px + 60 px tall) so the board never covers the
      HUD numbers (week, day, time, passengers) on any size. */
-  padding: calc(80px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right))
-           calc(14px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left));
+  padding: calc(80px + var(--aw-safe-top)) calc(12px + var(--aw-safe-right))
+           calc(14px + var(--aw-safe-bottom)) calc(12px + var(--aw-safe-left));
   --upgrade-win: min(34vw, 21vh, 200px);
   --title-size: clamp(18px, 5.2vw, 23px);
 }
@@ -171,7 +171,7 @@
 /* Sits under the boarding pass (HUD top strip ~70 px) so neither covers the other. */
 .airway-upgrade-open.is-picking-hub {
   background: transparent; align-items: flex-start; justify-content: flex-start; pointer-events: none;
-  padding-top: calc(86px + env(safe-area-inset-top));
+  padding-top: calc(86px + var(--aw-safe-top));
 }
 .airway-upgrade-open.is-picking-hub .airway-upgrade { width: 100%; } /* [night-07u] was auto: the sign's % max-width needs a definite box */
 /* [task-39] Back from the airport pick: a black wayfinding tile set into the yellow sign (D-49). The
@@ -223,7 +223,7 @@
 @media (min-width: 720px) and (max-height: 520px) {
   /* [night-07n] No height to spare below the boarding pass here: the sign sits beside it instead (pass: left
      12 px, ≤ 420 px wide; peg rack: right 12 px, 78 px wide), its line wraps, and the board keeps its height. */
-  .airway-upgrade-open { align-items: flex-start; padding-top: calc(10px + env(safe-area-inset-top)); padding-bottom: calc(8px + env(safe-area-inset-bottom)); }
+  .airway-upgrade-open { align-items: flex-start; padding-top: calc(10px + var(--aw-safe-top)); padding-bottom: calc(8px + var(--aw-safe-bottom)); }
   .airway-upgrade-open .airway-upgrade-sign {
     margin-left: 432px; max-width: calc(100% - 432px - 100px); min-height: 60px; box-sizing: border-box;
   }
@@ -234,7 +234,7 @@
   .airway-upgrade-grid { margin-top: 6px; gap: 2px 12px; }
   .airway-upgrade-stamp { margin-top: 6px; }
   /* [night-07t] The airport pick too: the sign beside the pass leaves the low globe band free for tapping. */
-  .airway-upgrade-open.is-picking-hub { padding-top: calc(10px + env(safe-area-inset-top)); }
+  .airway-upgrade-open.is-picking-hub { padding-top: calc(10px + var(--aw-safe-top)); }
 }
 /* [night-07u] Narrow phone landscape: the Back tile keeps its arrow only (its aria-label still names it), so the
    instruction keeps one or two lines beside the pass. */
@@ -247,7 +247,7 @@
    half below the screen (the overlay scrolled 51–232 px). A smaller model window widens the text column, so the
    values stop wrapping, and the gaps tighten; the labels keep their 48 px+ targets and all their facts. */
 @media (max-width: 719px) and (max-height: 760px) {
-  .airway-upgrade-open { --upgrade-win: min(22vw, 13vh, 96px); --title-size: clamp(17px, 4.8vw, 21px); padding-top: calc(76px + env(safe-area-inset-top)); padding-bottom: calc(8px + env(safe-area-inset-bottom)); }
+  .airway-upgrade-open { --upgrade-win: min(22vw, 13vh, 96px); --title-size: clamp(17px, 4.8vw, 21px); padding-top: calc(76px + var(--aw-safe-top)); padding-bottom: calc(8px + var(--aw-safe-bottom)); }
   .airway-upgrade { gap: 8px; }
   .airway-upgrade-labels { gap: 8px; }
   .airway-upgrade-sign { padding: 8px 14px 8px 12px; gap: 6px 14px; }
@@ -263,7 +263,7 @@
 /* [night-08e] 320×568: the week-2 board (tall hub-expansion crate) still scrolled 19 px (EN week 1: 1 px). The
    smallest phones trim the remaining gaps; labels keep their 48 px+ targets, text sizes and torn edge. */
 @media (max-width: 359px) and (max-height: 600px) {
-  .airway-upgrade-open { padding-top: calc(72px + env(safe-area-inset-top)); padding-bottom: calc(6px + env(safe-area-inset-bottom)); }
+  .airway-upgrade-open { padding-top: calc(72px + var(--aw-safe-top)); padding-bottom: calc(6px + var(--aw-safe-bottom)); }
   .airway-upgrade { gap: 6px; }
   .airway-upgrade-labels { gap: 6px; }
   .airway-upgrade-sign { padding: 6px 12px 6px 10px; }
