@@ -2033,3 +2033,22 @@ long ≤ 120 chars) and three Play "Major update" promotions (title ≤ 30, text
 limits were not verified), never mentioning price, "free" or "best". Rejected: fixing a calendar date now (the owner's
 call), keeping R2's T+6 (contradicts D-131), a pre-registration reward. Guard: `test:launch-plan`. **Status: in force
 (T, Q-49, Q-50 open).**
+
+## D-239 — Legal launch register in `docs/legal/README.md`, bound to the privacy declarations (2026-11-04, Claude, night N12av)
+R7d. One Polish page for the owner and the lawyer, every section marked "to verify with the lawyer" and explicitly not
+legal advice: (1) a GDPR art. 30 record of processing for build B — leaderboard (P1), score replay/anti-cheat (P2),
+anonymous Auth account incl. IP in Auth logs and up to 180 days in backups (P3), deletion on request (P4), Cloud Run
+request logs (P5, the D-220 open point), contact mailbox (P6), site hosting logs (P7) — each with purpose, GDPR art. 6
+basis (legitimate interest per D-135; deletion as a legal obligation), data subjects, data, recipients, transfer,
+retention and security; the controller, contact and UK representative stay placeholders (Q-01, Q-67); (2) the
+Firebase Data Processing and Security Terms acceptance as an owner step in `docs/FIREBASE.md` step 1 with a date field
+(the exact console location is uncertain, with a Google Cloud fallback); (3) trader declarations with dates (Google:
+at account creation, existing accounts by 01.02.2027, shown from 01.03.2027; Apple: before the first EU submission;
+D-134); (4) UK art. 27 waiting for the lawyer (Q-67 → A, D-136); (5) US state app-store age laws to re-check before
+the US launch (Texas in force, Louisiana 01.07.2026, Alabama 01.01.2027, Utah 06.05.2027, COPPA); (6) other legal
+launch items; (7) questions for one lawyer consultation. Proposed but not decided: keeping deletion and contact
+e-mails 12 months (left to the lawyer). `docs/RELEASE.md` links the register (RL-03, RL-11, RL-15, new RL-29). Guard:
+`test:legal-register` reads the endpoint and stored-field tables of `docs/store/privacy-declarations.md` (which
+`test:privacy-declarations` keeps equal to the code), so a new data flow fails until the art. 30 record names it;
+the leaderboard retention must equal `RETENTION_DAYS`. Rejected: an English-only register (the owner and a Polish
+lawyer read it), filling the controller with guessed details. **Status: in force (Q-01, Q-67 and the lawyer open).**

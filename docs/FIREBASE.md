@@ -35,6 +35,14 @@ przed wydaniem. Kod: klient `src/net/`, funkcje `functions/`, reguły `firestore
 ## Kroki właściciela (jednorazowo, ok. 30 min)
 1. [console.firebase.google.com](https://console.firebase.google.com/) → **Add project**, np. `airway-prod`
    (ID projektu jest niezmienne). Google Analytics: **wyłącz** (nie używamy).
+   - **Warunki przetwarzania danych (R7d, umowa powierzenia — *tylko właściciel*):** zaraz po utworzeniu projektu
+     ⚙ **Project settings → General**, na dole sekcja o prywatności / *Data processing terms* → przeczytaj
+     **Firebase Data Processing and Security Terms** i **zaakceptuj**; w tym samym miejscu wpisz dane kontaktowe
+     administratora (Q-01) i — jeśli prawnik uzna go za potrzebnego — przedstawiciela w UK (Q-67). Gdzie dokładnie
+     jest ten przycisk, jest **NIEPEWNE** (konsola się zmienia); jeśli nie ma go w Firebase, szukaj w Google Cloud
+     console → **IAM & Admin → Privacy & Security**. Zapisz PDF zaakceptowanej wersji poza repo i wpisz datę
+     w `docs/legal/README.md`, sekcja 2. Bez tej akceptacji nie wysyłamy buildu z rankingami do testerów.
+     Do weryfikacji z prawnikiem.
 2. **Build → Firestore Database → Create database**, tryb produkcyjny, lokalizacja **`europe-west1` (Belgia)**.
 3. **Build → Authentication → Get started → Sign-in method → Anonymous → Enable**.
 4. **Usage and billing → Modify plan → Blaze** (funkcje 2. generacji wymagają rozliczeń). Potem budżet z alertami
