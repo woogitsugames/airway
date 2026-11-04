@@ -1,18 +1,19 @@
 // [night-10v] Found in a long play-through at 412×915 EN 4×: on the "+2 slots" airport pick the visible airport
 // nearest the left screen edge sat under the edge chip of an off-screen airport, so the tap went to the chip and
-// the pick never completed. Edge chips now slide clear of on-screen airport markers. Seed 41817: the week-2
-// board offers "+2 slots"; after a rotation the tap on the pick target (the first selectable airport on screen, here
+// the pick never completed. Edge chips now slide clear of on-screen airport markers. Seed 41817 (now e2e/seeds.mjs): a
+// board by week 5 offers "+2 slots"; after a rotation the tap on the pick target (the first selectable airport on screen, here
 // the one by the left edge) must reach the globe and complete the pick. Shots docs/shots/n10v/.
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { withBrowser, newGamePage, waitForScreen, assert, clickTestId, saveDiagnostics, ROOT } from './browser.mjs';
+import { E2E_SEEDS } from './seeds.mjs';
 
 const SHOTS = resolve(ROOT, 'docs/shots/n10v');
 
 const started = performance.now();
 const results = [];
-const SEED = 41817;
+const SEED = E2E_SEEDS['edge-chip-airports'].seeds[0]; // [night-12aa] 41817 until rules v6 (test:e2e-seeds)
 const CASES = [['en', 412, 915], ['pl', 915, 412]];
 
 async function reachSlotsBoard(page) {

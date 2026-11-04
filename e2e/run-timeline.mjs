@@ -6,7 +6,11 @@
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
-import { withBrowser, newGamePage, waitForScreen, clickTestId, state, assert, saveDiagnostics, ROOT, SEED } from './browser.mjs';
+import { withBrowser, newGamePage, waitForScreen, clickTestId, state, assert, saveDiagnostics, ROOT } from './browser.mjs';
+import { E2E_SEEDS } from './seeds.mjs';
+
+// [night-12aa] Per-suite seed, replayed headless by test:e2e-seeds (rules v6 ended 0xA1A1 in week 2).
+const SEED = E2E_SEEDS['run-timeline'].seeds[0];
 
 const started = performance.now();
 const SHOTS = resolve(ROOT, 'docs/shots/n10r');
