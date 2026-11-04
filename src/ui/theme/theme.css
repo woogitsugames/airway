@@ -91,7 +91,7 @@
   color: var(--airway-ink);
   background: var(--airway-ticket);
   padding: 12px;
-  padding-bottom: calc(12px + env(safe-area-inset-bottom));
+  padding-bottom: calc(12px + var(--aw-safe-bottom));
   font: var(--airway-font-body) / 1.4 'Atkinson Hyperlegible Next', sans-serif;
 }
 .airway-a11y-controls label {

@@ -2,8 +2,8 @@
 .airway-atc-strip {
   position: absolute;
   z-index: 40;
-  bottom: calc(92px + env(safe-area-inset-bottom, 0px));
-  left: max(12px, env(safe-area-inset-left, 0px));
+  bottom: calc(92px + var(--aw-safe-bottom));
+  left: max(12px, var(--aw-safe-left));
   max-width: min(740px, calc(100% - 24px));
   display: flex;
   flex-wrap: wrap;
@@ -50,9 +50,9 @@
 .airway-route-menu .airway-route-menu-danger { color: #ae2d23; }
 @media (orientation: landscape) and (max-height: 540px) {
   .airway-atc-strip {
-    bottom: max(14px, env(safe-area-inset-bottom, 0px));
-    left: calc(84px + env(safe-area-inset-left, 0px));
-    max-width: calc(100% - 100px - env(safe-area-inset-right, 0px));
+    bottom: max(14px, var(--aw-safe-bottom));
+    left: calc(84px + var(--aw-safe-left));
+    max-width: calc(100% - 100px - var(--aw-safe-right));
   }
 }
 

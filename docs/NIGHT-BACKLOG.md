@@ -498,6 +498,12 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       objection switch on the N12x net API (`Leaderboards.isSharing()` / `setSharing(on)`): PL/EN, on by default, ≥ 48 px,
       one hint line, only in builds with leaderboards (like the delete-data row). `e2e/ranking-switch.mjs`
       (`test:e2e:ranking-switch`, in `test:ci`; 2/4 on the old settings), shots `docs/shots/n11v/`.
+- [x] N11y **Safe-area tokens across the UI CSS + notch profile (R5j, D-203)** — the 56 raw `env(safe-area-inset-*)`
+      uses in menu, settings, upgrade, game over, tutorial, puzzles, ATC strip, overlay fixture and theme CSS now read
+      the `--aw-safe-*` tokens of `src/ui/base.css`; the menu notice, departures board and sign and the tutorial
+      settings dialog also keep clear of the left/right insets (landscape cut-out). `test:safe-area` (fast, headless)
+      fails on any raw use (56 on the old CSS); `test:e2e:notch` (ci) sets the tokens to iPhone-like values on six
+      screens mounted without the globe and fails on any control inside an inset. **Area:** UI CSS, `scripts/`, `e2e/`.
 
 ## Continuous development round N12 (agent 2)
 - [x] N12a **Balance bot plays for reach (D-90)** — the handover gap "the DEV bot rarely connects new airports; long
@@ -1014,7 +1020,7 @@ Evidence: `docs/RESEARCH.md` "R5 — …", PNGs in `docs/research/r5/`.
       `DAYNIGHT_PARAMS_VERSION`, `AIRPORT_LABEL_MODES`, `dailyGame` (check `functions/` first), keys
       `status.loading` / `status.ready`. Add an "every catalog key is referenced" check to `test:i18n` (allow
       template prefixes such as `privacy.s${n}`). `test:fast`, build. **Area:** UI/sim/net cleanup, i18n, docs.
-- [ ] R5j **Safe-area tokens everywhere + notch profile** — 56 direct `env(safe-area-inset-*)` uses in menu, upgrade,
+- [x] R5j → N11y **Safe-area tokens everywhere + notch profile** — 56 direct `env(safe-area-inset-*)` uses in menu, upgrade,
       game-over, tutorial, settings, puzzles and ATC strip CSS bypass the `--aw-safe-*` tokens, so only the HUD is
       tested with insets. Replace them with the tokens (menu notice gets a left/right inset in landscape) and add a
       `notch` profile to `ui:matrix` / `screens-fit` that sets the tokens to iPhone-like values (59/0/34/0 portrait,
