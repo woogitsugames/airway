@@ -12,7 +12,11 @@
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
-import { withBrowser, newGamePage, waitForScreen, assert, clickTestId, saveDiagnostics, ROOT, SEED } from './browser.mjs';
+import { withBrowser, newGamePage, waitForScreen, assert, clickTestId, saveDiagnostics, ROOT } from './browser.mjs';
+import { E2E_SEEDS } from './seeds.mjs';
+
+// [night-12ac] Seed from e2e/seeds.mjs, replayed headless by test:e2e-seeds (in test:fast).
+const SEED = E2E_SEEDS['gameover-unserved'].seeds[0];
 
 const SHOTS = resolve(ROOT, 'docs/shots/n11k');
 
@@ -74,7 +78,7 @@ async function unserved(page, language) {
 
 /** [night-11k] Rules v5 (N12f) end the bot's seed-0xA1A1 run at an unserved airport (RIO); on 0xA1A3 it jams at a
  * served hub (SEL, week 2, 2 departures). */
-const SERVED_SEED = 0xA1A3;
+const SERVED_SEED = E2E_SEEDS['gameover-unserved:served'].seeds[0]; // [night-12ac] 0xA1A3
 
 async function served(page) {
   await waitForScreen(page, 'menu');

@@ -5,7 +5,11 @@
 // width, the Back tile stays a 48 px target, and beside the pass (≥ 844 px landscape) the sign is no taller than
 // the pass. Fixed seed, fails closed.
 import { performance } from 'node:perf_hooks';
-import { withBrowser, newGamePage, waitForScreen, assert, clickTestId, saveDiagnostics, SEED } from './browser.mjs';
+import { withBrowser, newGamePage, waitForScreen, assert, clickTestId, saveDiagnostics } from './browser.mjs';
+import { E2E_SEEDS } from './seeds.mjs';
+
+// [night-12ac] Seed from e2e/seeds.mjs, replayed headless by test:e2e-seeds (in test:fast).
+const SEED = E2E_SEEDS['pick-sign'].seeds[0];
 
 const started = performance.now();
 const results = [];

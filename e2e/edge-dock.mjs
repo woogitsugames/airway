@@ -4,10 +4,11 @@
 // sizes, no visible edge button may overlap a dock tag or the boarding pass.
 import { performance } from 'node:perf_hooks';
 import { withBrowser, newGamePage, waitForScreen, assert, clickTestId, saveDiagnostics } from './browser.mjs';
+import { E2E_SEEDS } from './seeds.mjs';
 
 const started = performance.now();
 const results = [];
-const WIDE_SEED = 0xA1C2;
+const WIDE_SEED = E2E_SEEDS['edge-dock'].seeds[0]; // [night-12ac] e2e/seeds.mjs
 // [night-10x] + the unfolded Fold in portrait (673×841) and the tablet-sized 904×1000: their HUD layout is
 // 'foldable', with the dock as a right column, but only landscape reserved that column for the edge buttons.
 const CASES = [['pl', 915, 412], ['en', 841, 673], ['en', 412, 915], ['pl', 673, 841], ['en', 904, 1000]];

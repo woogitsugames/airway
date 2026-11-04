@@ -5,10 +5,11 @@
 // airports leave the screen) and every 2 h for 12 h after that (until the run closes), every visible chip is checked against the run's waiting count and capacity.
 import { performance } from 'node:perf_hooks';
 import { withBrowser, newGamePage, waitForScreen, assert, clickTestId, saveDiagnostics } from './browser.mjs';
+import { E2E_SEEDS } from './seeds.mjs';
 
 const started = performance.now();
 const results = [];
-const SEEDS = [0xA1C2, 41817];
+const SEEDS = E2E_SEEDS['edge-chip-fill'].seeds; // [night-12ac] e2e/seeds.mjs
 const SIZES = [['en', 412, 915], ['pl', 915, 412]];
 
 async function audit(page) {
