@@ -35,6 +35,8 @@ export interface GameOverSnapshot extends WorldIdentity {
   readonly tip?: boolean;
   /** [night-12y] R8b: aircraft left in the reserve at the jam (turboprops + widebodies); picks the unserved hint. */
   readonly spareAircraft?: number;
+  /** [night-11aj] R2g: the Endless home region the run started in (absent: Random or Daily). */
+  readonly homeRegion?: RegionCode;
 }
 
 /** [night-10r] Weeks of the run plus the day of the jam; hub ids in picks are already display labels. */
@@ -76,6 +78,11 @@ const REGION_KEYS: Record<RegionCode, TranslationKey> = {
   ME: 'gameover.region.ME',
   ASI: 'gameover.region.ASI',
   OCE: 'gameover.region.OCE',
+};
+/** [night-11aj] R2g: region names in the nominative ("Home region: Northern Europe"). */
+const REGION_NAME_KEYS: Record<RegionCode, TranslationKey> = {
+  NAM: 'region.name.NAM', SAM: 'region.name.SAM', EUN: 'region.name.EUN', EUS: 'region.name.EUS',
+  AFR: 'region.name.AFR', ME: 'region.name.ME', ASI: 'region.name.ASI', OCE: 'region.name.OCE',
 };
 const CAUSE_KEYS: Record<CauseKind, TranslationKey> = {
   'regional-demand': 'gameover.cause.regionalDemand',
@@ -345,6 +352,12 @@ function buildDialog(
   if (tip) {
     causesPanel = element('div', 'airway-go-causes-panel');
     causesPanel.append(causesList, tipLine(tip));
+  }
+  if (snapshot.homeRegion) {
+    const home = element('p', 'airway-go-home', t('gameover.homeRegion', { region: t(REGION_NAME_KEYS[snapshot.homeRegion]) }));
+    home.dataset.testid = 'gameover-home-region';
+    home.dataset.region = snapshot.homeRegion;
+    scoreRow.append(home);
   }
   strip.append(stripHeader, scoreRow);
   if (snapshot.share) strip.append(shareRow(snapshot.share));
