@@ -1459,6 +1459,21 @@ exception. The D-18 PL store title ("Buduj siatkę lotów") is outside the catal
 Rejected: "Siatka zamknięta" (keeps two words for the network).
 **Status: in force (N11t, `test:i18n` with the glossary check, 12 failures on the old catalogs).**
 
+## D-189 — e2e seeds live in one file and are replayed headless in test:fast (2026-11-04, Claude, night N12aa)
+Five browser suites were red on clean `dev` since rules v6 (N12v) because their fixed seeds ended the bot's run before
+the board they test: board-short 0/4, edge-chip-airports 0/2, edge-chip-tags 5/6, run-timeline 0/4, upgrade-picks 4/6.
+Their seeds and bot plans now sit in `e2e/seeds.mjs` (each suite reads its seed from there; the shared harness `SEED`
+0xA1A1 stays for the other suites). `scripts/lib/e2e-plans.ts` replays each plan headless on the current rules with
+the same `EndlessRun`, DEV bot, card click (queue + `resolveBoundary`) and forced overload as `window.aw`; because the
+browser clock keeps running between calls, a plan must hold on 7 idle offsets (0, 1, 3, 7, 15, 30, 60 ticks after the
+start and after every card). New fast suite `test:e2e-seeds` (7 cases, ~7 s; 2/7 on the old seeds) fails in
+`test:fast` as soon as a rule change breaks a suite's seed; `npm run e2e:seeds -- <suite>` prints the first seed after
+the current one that holds (deterministic scan). New seeds: board-short and run-timeline 0xA1A2, edge-chip-airports
+and upgrade-picks 0xA3AA (the first after 0xA1A1 with a "+2 slots" board on all offsets: "+2 slots" is drawn only
+after a departure hold, D-150), edge-chip-tags 0xA1C3 + 41817. Assertions unchanged; upgrade-picks' "Back took
+nothing" now compares with the count before the pick (the "+2 slots" board is week 3, earlier crates exist). The PL
+320×568 week-1 board scrolled 1 px since the N11r stamp caption (D-194): that size trims 3 px of stamp spacing.
+**Status: in force (N12aa).**
 
 ## D-196 — balance:report prints the spread and mechanic use, counted from sim events (2026-11-04, Claude, night N12ab)
 R8d. `game-summary.md` gains a "Spread and mechanic use" section: session length and game weeks at p10/p25/median/

@@ -1,14 +1,15 @@
 // [night-10z] Found in the N10x long play at 800×1280: a luggage tag of an on-screen airport by the left edge was
 // drawn over the edge chip of an off-screen airport, hiding its code ("←B…"). Edge chips now first look for a place
-// clear of the placed tags too (they may still sit under a tag only when the edge is too crowded). Seeds 0xA1C2 and
+// clear of the placed tags too (they may still sit under a tag only when the edge is too crowded). Seeds 0xA1C3 (0xA1C2 until rules v6) and
 // 41817 grow networks on several continents; at three sizes the run is sampled after the week-1 and week-2 boards and
 // a day later each: every visible chip must be clear of every visible tag (main tag and slot tag).
 import { performance } from 'node:perf_hooks';
 import { withBrowser, newGamePage, waitForScreen, assert, clickTestId, saveDiagnostics } from './browser.mjs';
+import { E2E_SEEDS } from './seeds.mjs';
 
 const started = performance.now();
 const results = [];
-const SEEDS = [0xA1C2, 41817];
+const SEEDS = E2E_SEEDS['edge-chip-tags'].seeds; // [night-12aa] 0xA1C2 → 0xA1C3 under rules v6 (test:e2e-seeds)
 const SIZES = [['en', 412, 915], ['pl', 915, 412], ['pl', 673, 841]];
 
 async function audit(page) {

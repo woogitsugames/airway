@@ -4,7 +4,11 @@
 // and phone landscape (the sign sits beside the boarding pass there, N7n). Fixed seed, fails closed; after the
 // first failure in a viewport the rest of that viewport is reported as SKIP.
 import { performance } from 'node:perf_hooks';
-import { withBrowser, newGamePage, waitForScreen, state, assert, clickTestId, saveDiagnostics, SEED } from './browser.mjs';
+import { withBrowser, newGamePage, waitForScreen, state, assert, clickTestId, saveDiagnostics } from './browser.mjs';
+import { E2E_SEEDS } from './seeds.mjs';
+
+// [night-12aa] Per-suite seed, replayed headless by test:e2e-seeds (rules v6: no "+2 slots" on 0xA1A1 before the end).
+const SEED = E2E_SEEDS['upgrade-picks'].seeds[0];
 
 const started = performance.now();
 const results = [];
@@ -67,11 +71,13 @@ function journeys() {
         memo.slotsWeek = await boardOffering(page, 'departure-slots', 1);
       }],
       ['"+2 slots" opens the airport pick; Back returns to the crates untaken', async (page) => {
+        // [night-12aa] Earlier boards' crates count too (the "+2 slots" board is no longer week 1).
+        const before = ((await state(page)).upgrades ?? []).length;
         await choose(page, 'departure-slots');
         await clickTestId(page, 'upgrade-pick-back');
         await page.locator('.airway-upgrade-open.is-picking-hub').waitFor({ state: 'detached', timeout: 5000 });
         assert((await offers(page)).length === 3, `crates after Back: ${(await offers(page)).join(',')}`);
-        assert(((await state(page)).upgrades ?? []).length === 0, 'Back took an upgrade');
+        assert(((await state(page)).upgrades ?? []).length === before, 'Back took an upgrade');
       }],
       ['a tap on an airport completes "+2 slots" for it', async (page) => {
         await choose(page, 'departure-slots');
