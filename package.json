@@ -60,6 +60,7 @@
     "test:crate-stamps": "node --import ./scripts/ts-test-loader.mjs scripts/test-crate-stamps.ts",
     "test:puzzle-best": "node --import ./scripts/ts-test-loader.mjs scripts/test-puzzle-best.ts",
     "test:logbook": "node --import ./scripts/ts-test-loader.mjs scripts/test-logbook.ts",
+    "playtest:decode": "node --import ./scripts/ts-test-loader.mjs scripts/playtest-decode.ts",
     "test:playtest": "node --import ./scripts/ts-test-loader.mjs scripts/test-playtest.ts",
     "test:doc-ids": "node scripts/test-doc-ids.mjs",
     "test:privacy-text": "node --import ./scripts/ts-test-loader.mjs scripts/test-privacy-text.ts",

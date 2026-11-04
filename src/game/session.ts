@@ -599,6 +599,8 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
   }
 
   world.onFrame((dt) => {
+    // [night-12ap] R3j: real play time for the logbook (game screen and weekly board, not paused).
+    if (!disposed && !paused && (screen === 'game' || screen === 'upgrade')) run.addPlayTime(dt);
     if (!disposed && !paused && screen === 'game') {
       accumulator += dt * SIM_TICKS_PER_SECOND * speed * slow;
       const ticks = Math.min(MAX_CATCH_UP_TICKS, Math.floor(accumulator));

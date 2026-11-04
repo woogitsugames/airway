@@ -1899,6 +1899,43 @@ is currently in English and Polish; it goes when the game itself is translated. 
 Guard: `test:store-shots` (review mark, language note, limits, keyword repeats). **Status: in force (texts await
 native review).**
 
+## D-231 — Playtest record: an `AW1:` line under "Copy summary", real minutes, cause, weekly picks, device setting (2026-11-04, Claude, night N12ap)
+R3j extends R1o (D-227). Each of the last 30 run notes in `airway.logbook.v1` may now also hold: real play time in
+tenths of a minute (frames on the game screen or weekly board, not paused, each frame counted up to 0.5 s, so the app in
+the background adds nothing; a resumed run counts from resuming), the first cause of the game-over board
+(`buildCauseReport`), the card picked each week as letters (`T`/`W`/`H`/`S`, week order), the training state at the end
+of the run, the graphics setting, the preset the renderer ended on and the number of adaptive downgrade steps (D-74),
+and the app version (`package.json` via a Vite `define`, `src/core/version.ts`; "dev" headless). Every field is
+optional and validated alone, so R1o notes and a bad field never drop a run. "Copy summary" adds two readable lines
+(game version; real play time median / longest) and, last, one machine line `AW1:` + base64url of ASCII JSON
+(`{v,d,app,f,dl,tut,pz,r}`, run columns fixed in `RUN_COLUMNS`), identical in PL and EN. `npm run playtest:decode --
+file.txt` finds every `AW1:` token in pasted survey answers and prints CSV, one row per run, re-validating each field
+with the logbook's own reader. Privacy: still counts, dates and fixed words only — no airport code, seed or identifier;
+nothing leaves the device unless the player copies it (D-16, D-220); `docs/store/privacy-declarations.md` names the
+line. Rejected: a per-run hub code (the one identifier-like field), compressed/encrypted payload (testers should be
+able to read what they paste), a separate "Copy record" button (one paste per survey is simpler). Guard:
+`test:playtest`. **Status: in force.**
+
+## D-232 — Closed-test decision table, recruitment and production-access answers written before the test (2026-11-04, Claude, night N12aq)
+R3k. `docs/PLAYTEST.md` now holds the recruitment plan (16–18 sign-ups, ≥ 6 PL and ≥ 6 EN, ≥ 3 budget Androids, ≥ 2
+tablets/foldables, own contacts, Polish communities and the airway.games form; no paid tester services; one Google
+Group), the final decision table and an answer sheet (EN drafts with placeholders) for the Play Console
+production-access questions. Each table row names the signal (a `playtest:decode` CSV column or a survey answer), the
+bot reference from the repo's own balance data (`docs/balance/game-summary.md` rules v6, the N12af 200-seed run, R8
+`r8-audit-200.csv`), a minimum sample, the decision at the threshold and the default without data (the current rule).
+Thresholds: **Q-73** → B (R8f review) when the median of testers' longest Endless runs is ≥ 22 min at 1× and ≥ 5 of 12
+want longer runs; A when the median run is 10–18 min (D-79); a median < 10 min reopens week-1 pace (Q-60) instead.
+**Q-78** → A at ≥ 10 % of offers picked and ≤ 3 of 12 not understanding the card; D (measure another effect) at < 5 %
+or ≥ 4 of 12 not understanding. **Q-80** → A when ≥ 20 % of runs held a departure and ≥ 2 testers picked the card; B
+(drop from the Endless/daily pool) when < 10 % of runs held one and the card was on < 3 % of boards. Plus rows for
+Q-35, game-over cause, "don't know why I lost", unfinished training, first run, performance/adaptation, daily habit
+(Q-45), what is missing (Q-50) and day-8 fix adoption. Changed from the R1o proposal (D-227): Q-73 B reads the testers'
+longest runs, not the p90 of all runs (people losing earlier than the bot is a week-1 pace signal, not the week-3
+wall). Thresholds are not moved after seeing data; a bad threshold becomes its own decision. The organisation account
+(D-94) is exempt from the 12 × 14 rule, so the answer sheet is a ready description of the test, not a filing. Q-52
+stays open for the owner; the plan follows its recommendation A. Guard: `test:playtest`. **Status: in force (Q-52 to
+confirm).**
+
 ## D-233 — Keyboard and mouse basics: key map, where keys act, hover only on hover devices (2026-11-04, Claude, night N11ai)
 R4g. `src/input/keyboard.ts` maps **Space** → pause/resume, **1/2/3** → speed 1×/2×/4× (the three speeds of the dock
 tag; the physical digit row by `code`, so AZERTY works), **+/=/Numpad+** and **−/_/Numpad−** → one zoom step of ×1.25

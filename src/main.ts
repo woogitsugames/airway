@@ -17,7 +17,8 @@ import { dailyRankingBoard } from './game/dailyRanking'; // [night-06c] D-66
 import { IDENTITY_KEYS, createBrowserLeaderboards } from './net'; // [night-06c] D-66
 import { EndlessRun } from './game/run';
 import { dailyRowHint } from './game/dailyRow'; // [night-10d]
-import { localDay, readLogbook, recordFlight, runHub } from './game/logbook'; // [night-10n]
+import { localDay, readLogbook, recordFlight, runHub, type RunRecord } from './game/logbook'; // [night-10n]
+import { APP_VERSION } from './core/version'; // [night-12ap] R3j
 import { tipsForFlight } from './game/gameoverTip'; // [night-11f]
 import { loadSavedSimChecked, saveSourceFromSim, writeGame, type SaveNotice } from './game/save';
 import { LocalScoreService, type DailyResult } from './game/scores';
@@ -200,6 +201,18 @@ async function boot(): Promise<void> {
     globalThis.crypto.getRandomValues(random);
     return random[0] ?? 1;
   }
+  /** [night-12ap] R3j: the device side of a run's playtest record (training, graphics, version); never throws. */
+  function deviceRecord(): RunRecord {
+    let tutorial: RunRecord['tutorial'];
+    try { tutorial = readTutorialOutcome(globalThis.localStorage); } catch { tutorial = undefined; }
+    let preset: RunRecord['preset'];
+    let adapt: number | undefined;
+    try {
+      preset = world?.renderer.quality.preset;
+      adapt = world?.renderer.stats().adaptations.length;
+    } catch { /* A lost context reads nothing. */ }
+    return { tutorial, quality: readSettings().graphics, preset, adapt, version: APP_VERSION };
+  }
   function endSession(): void {
     session?.dispose();
     session = null;
@@ -258,7 +271,7 @@ async function boot(): Promise<void> {
           recordFlight(globalThis.localStorage, {
             day: localDay(new Date()), mode, passengers: failed.passengers,
             weeks: Math.floor(failed.tick / TICKS_PER_WEEK), hub: runHub(failed.cityList(), failed.routeList()),
-          }, failed.playtestStats()); // [night-12am] R1o: closed-test notes (length, slot holds, hub/slots cards)
+          }, { ...failed.playtestStats(), ...deviceRecord() }); // [night-12am] R1o; [night-12ap] R3j playtest record
         } catch { /* Storage blocked: the flight is not logged. */ }
         saved = null;
         void storage.remove('aw-save-v1').catch(() => undefined);
