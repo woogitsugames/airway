@@ -1,4 +1,6 @@
-// [task-23] Browser contract: a real drag/selection through all six onboarding steps.
+// [task-23] Browser contract: a real drag/selection through every onboarding step.
+// [night-11p] D-129/D-130: three steps in the game's own marks (airport disc, hub ring, luggage tag with the crescent
+// glyph), the planet inside a 412 px phone, and the glyph legend in settings → help.
 import { createRequire } from 'node:module';
 import { spawn } from 'node:child_process';
 import { createServer } from 'node:net';
@@ -82,6 +84,23 @@ try {
   // [integration-ui] The training flight opens before the first Endless run, from the menu.
   await page.getByTestId('menu-endless').click();
   await step(page, 'route');
+  const progress = (await page.getByTestId('tutorial-progress').textContent())?.trim();
+  assert(progress === 'STEP 1 / 3', `progress reads "${progress}"`);
+  const marks = await page.evaluate(() => ({
+    discs: document.querySelectorAll('[data-testid^="city-"] .aw-airport').length,
+    hubRing: document.querySelectorAll('[data-testid="city-par"] .aw-airport-ring path').length,
+    plates: [...document.querySelectorAll('[data-testid^="city-"] .airport-bubble__plate')].map((n) => n.textContent),
+    lonGlyphs: document.querySelectorAll('[data-testid="city-lon"] [data-airway-destination="EUS"]').length,
+    diamonds: document.querySelectorAll('.aw-city-pin').length,
+  }));
+  assert(marks.discs === 3 && marks.hubRing > 0 && marks.diamonds === 0, `game marks ${JSON.stringify(marks)}`);
+  assert(marks.plates.join(',') === 'LON,PAR,ROM', `plates ${marks.plates.join(',')}`);
+  assert(marks.lonGlyphs === 2, `London tag glyphs ${marks.lonGlyphs}`);
+  const planet = await page.evaluate(() => {
+    const r = document.querySelector('.aw-world-art > circle').getBoundingClientRect();
+    return { left: r.left, right: r.right, width: innerWidth };
+  });
+  assert(planet.left >= 0 && planet.right <= planet.width, `planet ${planet.left.toFixed(1)}…${planet.right.toFixed(1)} outside 0…${planet.width}`);
   for (const id of ['city-lon', 'city-par', 'city-rom', 'tutorial-skip']) {
     const size = await page.getByTestId(id).boundingBox();
     assert(!!size && size.width >= 48 && size.height >= 48, `${id} touch target < 48px`);
@@ -93,18 +112,17 @@ try {
   await drag(page, 'tutorial-plane-tag', 'tutorial-route-drop');
   await step(page, 'transfer');
   await shot(page, '03-transfer-p');
+  const transfer = await page.evaluate(() => ({
+    par: document.querySelectorAll('[data-testid="city-par"] [data-airway-destination="EUS"]').length,
+    hint: document.querySelector('[data-testid="tutorial-hint"]').textContent,
+  }));
+  assert(transfer.par === 2, `Paris tag glyphs ${transfer.par}`);
+  assert(transfer.hint.startsWith('Crescent = Southern Europe'), `transfer hint "${transfer.hint}"`);
   await page.getByTestId('city-par').click();
-  await step(page, 'dawn');
-  await shot(page, '04-night-p');
-  await page.getByTestId('tutorial-dawn').click();
-  await step(page, 'upgrade');
-  await shot(page, '05-upgrade-p');
-  await page.getByTestId('tutorial-upgrade-hub').click();
-  await step(page, 'congestion');
-  await shot(page, '06-congestion-p');
-  await drag(page, 'city-lon', 'city-rom');
   await step(page, 'complete');
-  await shot(page, '07-complete-p');
+  const dawn = await page.getByTestId('tutorial-hint').textContent();
+  assert(/dawn/.test(dawn ?? ''), `the dawn sentence is missing on the last step: "${dawn}"`);
+  await shot(page, '04-complete-p');
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('aw-tutorial') || 'null'));
   assert(saved?.status === 'completed', 'Completed state was not persisted');
   await page.getByTestId('tutorial-continue').click();
@@ -127,6 +145,12 @@ try {
   const skipped = await page.evaluate(() => JSON.parse(localStorage.getItem('aw-tutorial') || 'null'));
   assert(skipped?.status === 'skipped', 'Skipped state was not persisted');
   await page.getByTestId('menu-settings').click();
+  const legend = await page.evaluate(() => [...document.querySelectorAll('[data-testid="settings-glyph-legend"] li')]
+    .map((row) => ({ region: row.dataset.region, glyph: !!row.querySelector('svg path'), text: row.textContent.trim() })));
+  assert(legend.length === 8 && legend.every((row) => row.glyph && row.text), `glyph legend ${JSON.stringify(legend)}`);
+  assert(legend.find((row) => row.region === 'ME')?.text === 'Middle East', 'legend: bow tie row is not Middle East');
+  await page.getByTestId('settings-glyph-legend').scrollIntoViewIfNeeded();
+  await shot(page, '11-legend-p');
   await page.getByTestId('settings-tutorial-replay').click();
   await step(page, 'route');
   for (const viewport of [{ width: 915, height: 412, name: '08-route-l' },

@@ -29,7 +29,8 @@ export interface AwDevState {
 export interface AwDevAdapter {
   // These actions MUST operate on production state and UI, not a shadow model.
   state(): AwDevState;
-  prepareSeed(seed: number): void | Promise<void>;
+  /** `options.firstTime`: [night-11p] show the R6a first-time cards in seeded runs (off by default). */
+  prepareSeed(seed: number, options?: { readonly firstTime?: boolean }): void | Promise<void>;
   advanceTicks(ticks: number): void | Promise<void>;
   gesture(kind: AwGesture): { from: AwPoint; to: AwPoint };
   forceHubOverload(): void | Promise<void>;
@@ -74,9 +75,9 @@ export function installDevHandle(): void {
     version: 1,
     get ready() { return adapter !== null; },
     state: () => requireAdapter().state(),
-    prepareSeed(seed) {
+    prepareSeed(seed, options) {
       validInteger(seed, 'seed', 0, 0xffffffff);
-      return requireAdapter().prepareSeed(seed);
+      return requireAdapter().prepareSeed(seed, options?.firstTime === true ? { firstTime: true } : undefined);
     },
     advanceTicks(ticks) {
       validInteger(ticks, 'ticks', 1, 1_000_000);

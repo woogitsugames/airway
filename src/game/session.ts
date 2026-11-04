@@ -24,6 +24,9 @@ import { resolveHudLayout } from '../ui/layout'; // [night-10x]
 import { WeeklyUpgradeView } from '../ui/upgrade';
 import { EndlessRun, cityDistanceKm, type RunCommand, type RunEvent } from './run';
 import { mountSlotHint } from './tutorial/slot-hint'; // [task-32]
+import { FirstTimeRegistry, beyondRange, curfewAirport, fillingHub } from './tutorial/first-time'; // [night-11p] R6a
+import { mountFirstTimeCards } from './tutorial/first-time-card';
+import { browserTutorialStorage } from './tutorial/controller';
 import { airportLabel } from '../ui/airportLabel'; // [night-05] D-68
 import { AudioCueMapper, cueRun } from './audioCues'; // [night-03]
 import type { World, ScreenPoint } from './world';
@@ -53,6 +56,8 @@ export interface SessionCallbacks {
   /** [night-11f] True while the player is in their first flights: the report shows one tip. */
   failureTip?(): boolean;
   onTick?(run: EndlessRun, speed: number): void;
+  /** [night-11p] R6a: one-time cards in this run (default true; DEV seeded e2e runs turn them off). */
+  readonly firstTimeCards?: boolean;
   cue?(cue: AudioCue): void;
 }
 
@@ -137,7 +142,10 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     },
   });
   const atc = mountAtcStrip(layer);
-  const slotHint = mountSlotHint(layer); // [task-32] one-time departure-slot step
+  const firstTimeRegistry = new FirstTimeRegistry(browserTutorialStorage()); // [night-11p] one flag per card
+  const slotHint = mountSlotHint(layer, firstTimeRegistry); // [task-32] one-time departure-slot step
+  const firstTime = mountFirstTimeCards(layer, firstTimeRegistry, callbacks.firstTimeCards !== false);
+  let boardSeen = false;
   const handles = mountRouteHandles(layer);
   const hud: HudController = mountHud(layer, {
     onUndo: () => { if (screen !== 'gameover') tool.undo(); }, // [night-11c] the map view leaves the dock reachable
@@ -339,8 +347,23 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     }
     // [night-10g] The curfew barrier: rebuilt only when the set of closed airports changes.
     const curfewKey = cities.filter((city) => city.curfewClosed).map((city) => city.id).join(',');
+    // [night-11p] R6a: the first hub at 70 % of its waiting places, and the first curfew night.
+    const filling = fillingHub(cities.map((city) => ({ id: city.id, hub: city.hub, waiting: city.waiting.length, capacity: city.capacity })));
+    if (filling) {
+      firstTime.offer('hub-full', () => ({
+        tag: t('firstTime.tag.hubFull', { airport: airportLabel(filling.id), waiting: filling.waiting, capacity: filling.capacity }),
+        hint: t('firstTime.hint.hubFull', { airport: airportLabel(filling.id) }),
+      }));
+    }
     if (curfewKey !== lastCurfewKey) {
       lastCurfewKey = curfewKey;
+      const closedCity = curfewAirport(cities);
+      if (closedCity) {
+        firstTime.offer('curfew', () => ({
+          tag: t('firstTime.tag.curfew', { airport: airportLabel(closedCity.id) }),
+          hint: t('firstTime.hint.curfew', { airport: airportLabel(closedCity.id) }),
+        }));
+      }
       const closed = curfewKey ? curfewKey.split(',') : [];
       world.setCurfew(closed);
       // [night-10h] The same state on the luggage tag and edge chip, readable at gameplay zoom.
@@ -390,6 +413,13 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     } else if (!state && screen === 'upgrade') {
       upgrade.render(null, []);
       setScreen('game');
+      if (!boardSeen) { // [night-11p] R6a: after the first weekly board, say what a crate was
+        boardSeen = true;
+        const week = upgradeWeek;
+        firstTime.offer('weekly-board', () => ({
+          tag: t('firstTime.tag.weeklyBoard', { week }), hint: t('firstTime.hint.weeklyBoard'),
+        }));
+      }
     }
   }
   function setScreen(next: SessionScreen): void {
@@ -402,8 +432,18 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     for (const event of events) {
       if (event.type === 'week') {
         slotHint.hide(); // [task-32] the weekly board replaces the hint
+        firstTime.hide(); // [night-11p] and the first-time card
       } else if (event.type === 'new-city') {
         newMarks.opened(event.cityId, run.tick); // [night-10a]
+        const rangeKm = PLANE_TYPES.turboprop.rangeKm; // [night-11p] R6a: first airport out of turboprop reach
+        const km = beyondRange(event.cityId, run.cityList().map((city) => city.id), rangeKm, cityDistanceKm);
+        if (km !== null) {
+          const id = event.cityId;
+          firstTime.offer('out-of-range', () => ({
+            tag: t('firstTime.tag.outOfRange', { airport: airportLabel(id), km: Math.round(km / 10) * 10 }),
+            hint: t('firstTime.hint.outOfRange', { airport: airportLabel(id), range: rangeKm }),
+          }));
+        }
       } else if (event.type === 'slot-held') { // [task-32]
         slotHint.held(event.cityId, event.limit, event.minutesToSlot);
       }
@@ -414,6 +454,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     audioCues?.hourly(cueRun(run)); // [night-03]
     syncWorld();
     syncUpgrade();
+    firstTime.flush(slotHint.visible || screen !== 'game'); // [night-11p] one card at a time, only in play
     const failure = run.failed;
     if (failure && screen !== 'gameover') {
       setScreen('gameover');
@@ -574,6 +615,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       handles.dispose();
       atc.dispose();
       slotHint.dispose();
+      firstTime.dispose();
       overlay.dispose();
       hud.destroy();
       gameOver.dispose();

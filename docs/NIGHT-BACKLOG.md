@@ -447,6 +447,21 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       pick puts it into week 2 (asserted), the hollow → filled checks are unchanged. Shots `docs/shots/n10a/`,
       `docs/shots/n10i/` refreshed.
 
+- [x] N11p **Training flight in 3 steps and the game's own marks; first-time cards in the real game (R5b, R6a, R6b;
+      D-129, D-130 → D-184, D-190)** — the vignette taught 7 steps with orange diamonds for cities and a teal ring for
+      the hub, and on a 412 px phone its planet ran ~11 px past both screen sides. Now 3 steps (route, aircraft,
+      transfer; "STEP n / 3"), cities drawn as the game's airport object (pad, runway, terminal; the hub with its
+      teal rim and ring of waiting places) under the game's luggage tag (code plate per D-68 + real region glyphs),
+      the transfer hint names one glyph ("Crescent = Southern Europe"), the dawn is one sentence on the last step;
+      the planet fits inside the art (r 228 → 196). Settings → help gains the 8-row glyph legend (shape + region).
+      Upgrades, congestion and the night became one-time cards in the real game (`src/game/tutorial/first-time.ts`
+      registry: one versioned key `aw-first-time`, the slot hint keeps its task-32 flag): first hub ≥ 70 % full,
+      first airport beyond turboprop range, first curfew night, after the first weekly board. ATC paper strip,
+      aria-live polite, 48 px OK, never stops time, one at a time; off in DEV seeded runs unless
+      `prepareSeed(seed, { firstTime: true })`. `test:first-time` (fast, 7), `test:e2e:first-time-cards` (ci, 4),
+      `test:e2e:tutorial` and `test:e2e:tutorial-layout` updated (night step → cleared step, planet check); shots
+      `docs/shots/23/`, `docs/shots/n11l/`, `docs/shots/n11p/`.
+
 ## Continuous development round N12 (agent 2)
 - [x] N12a **Balance bot plays for reach (D-90)** — the handover gap "the DEV bot rarely connects new airports; long
       plays end in weeks 1–3": measured, 34 of 44 bot game overs (50 seeds) were at an airport no route served, 20 of
@@ -885,7 +900,7 @@ Evidence: `docs/RESEARCH.md` "R5 — …", PNGs in `docs/research/r5/`.
       airports chosen in Q-61, placed with the existing `layoutTags` collision pass (never over a passenger tag or a
       48 dp target); aria unchanged. Overlay DOM test + shots portrait/landscape/320 wide, PL/EN. **Area:** UI
       (`src/ui/overlay.ts`, `overlay-layout.ts`, `src/game/session.ts`). Q-61 → C (D-128): hubs + named airports, all when zoomed in.
-- [ ] R5b **Tutorial speaks the game's visual language** — the vignette uses orange diamonds for cities and a teal ring
+- [x] R5b → N11p **Tutorial speaks the game's visual language** — the vignette uses orange diamonds for cities and a teal ring
       for the hub, while in the game airports are runway discs and yellow diamonds are route-end handles
       (`tutorial-vs-game-diamonds.png`); region glyphs are never taught and the game has no legend. Redraw the
       vignette's cities as the game's airport disc, the hub with the game's ring, passengers as the real glyph tag;
@@ -941,7 +956,7 @@ Evidence: `docs/RESEARCH.md` "R5 — …", PNGs in `docs/research/r5/`.
 
 ### R6 (2026-11-03) — content roadmap, first session on rules v5, haptics/audio on phones
 Evidence: `docs/RESEARCH.md` "R6 — …".
-- [ ] R6a **First-time cards in the real game** — today only the departure slot has a one-time in-game hint
+- [x] R6a → N11p **First-time cards in the real game** — today only the departure slot has a one-time in-game hint
       (`src/game/tutorial/slot-hint.ts`). Generalise it into a small "first time" registry (one storage key, one
       flag per card, versioned) and add four cards, each shown once per install, never stopping time except where the
       game already pauses: first hub ≥ 70 % full ("bypass it or expand it"), first airport beyond turboprop range
@@ -949,7 +964,7 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
       ≤ 2 short sentences, Diorama paper style of the slot hint, 48 dp dismiss, aria-live polite, reduced motion
       respected. E2E with a seed that triggers every card + a second run that shows none; shots portrait/landscape.
       **Area:** UI (`src/game/tutorial/**`, `src/game/session.ts`, `src/ui/tutorial/**`), i18n.
-- [ ] R6b **Shorter pre-run training** — the vignette teaches 7 steps before the first real run; upgrade and congestion
+- [x] R6b → N11p **Shorter pre-run training** — the vignette teaches 7 steps before the first real run; upgrade and congestion
       happen only after 7.2 min (week 1 at 1×). Keep route → aircraft → transfer in the vignette (dawn becomes one
       sentence on the "Start flying" step), move upgrade and congestion to R6a cards. Bump `TUTORIAL_VERSION` only if
       the stored step list needs it (completed players must not see it again). `test:e2e:tutorial` and its shots
@@ -1211,3 +1226,4 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
 - 2026-11-04 · N11m airport code plates on the luggage tags (D-128 → D-181, R5a) · night/11m-airport-plates · after merging dev (rules v6, #163): test:e2e:airport-plates 4/4, test:fast 73/73 (test:overlay-layout 21/21, 20/21 on the old layout), build ok, e2e:smoke 9/9, e2e:edge-chip-tags 6/6, e2e:curfew-barrier 2/2, ui:matrix 48/48, store:shots 60; before the merge also test:hud-targets 300/300, e2e:edge-chip-airports 2/2, e2e:edge-chip-fill 4/4, e2e:edge-dock 5/5, e2e:gameover-map 3/3. Pre-existing on origin/dev (same failure with the old src): e2e:new-airport 1/4 ("the mark goes after 12 game hours"), e2e:transfer-glyphs 0/2 (bot game over before the transfer)
 - 2026-11-04 · N11n opaque empty dock tags (R5d, D-182) · night/11n-opaque-dock-tags · test:e2e:dock-empty-tags 3/3 (0/3 on the old tags), test:fast 73/73 (test:contrast 17 pairs), build ok, e2e:smoke 9/9, test:hud-targets 300/300, ui:matrix 48/48, store:shots 60
 - 2026-11-04 · N11o new-airport + transfer-glyphs e2e under rules v5/v6 (D-183) · night/11o-e2e-seeds · test:e2e:new-airport 4/4 (1/4 on origin/dev), test:e2e:transfer-glyphs 2/2 (0/2 on origin/dev), test:fast 73/73, build ok; e2e:smoke/ui:matrix not run (no game code changed)
+- 2026-11-04 · N11p 3-step training flight in the game's marks + first-time cards (R5b, R6a, R6b; D-184, D-190) · night/11p-short-tutorial · test:first-time 7/7 (new; the module does not exist on the old code), test:e2e:first-time-cards 4/4 (new; no cards on the old game), test:e2e:tutorial 28/28 (screenshots 8), test:e2e:tutorial-layout 7/7 (planet check fails on the old 228-unit planet at 412 px), test:fast 74/74, build ok, e2e:smoke 9/9, e2e:settings-groups 4/4, e2e:screens-fit 18/18, e2e:pseudo-locale 27/27; ui:matrix/store:shots not run (cards are off in seeded DEV runs, game screens unchanged)

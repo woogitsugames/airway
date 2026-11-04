@@ -81,3 +81,9 @@
 @media (orientation:landscape) { .airway-sign { top:calc(env(safe-area-inset-top, 0px) + 12px); left:calc(env(safe-area-inset-left, 0px) + 16px); } .airway-sign__pictogram {width:42px;height:42px;} .airway-sign__title {font-size:39px;} .airway-board { left:calc(env(safe-area-inset-left,0px) + 16px); bottom:calc(env(safe-area-inset-bottom,0px) + 7px); right:auto; width:min(410px, calc(100% - env(safe-area-inset-left,0px) - env(safe-area-inset-right,0px) - 30px)); padding:8px 9px; } .airway-flight {min-height:59px;padding:5px 0;} .airway-notice {top:76px;left:auto;right:20px;} .airway-settings__paper {max-width:730px;} }
 @media (max-width:370px) { .airway-board {left:4px;right:4px;padding:6px;} .flap-tile{--flap-w:9px;--flap-font:11px;} .airway-board__header, .airway-flight { grid-template-columns:minmax(0,1fr) 46px 80px;gap:6px;} /* [task-37] BRAMKA (≈42px) needs ≥8px before STATUS */ }
 @media (max-height:470px) and (orientation:landscape) { .airway-flight{min-height:58px;} .airway-board__header{min-height:19px;} .airway-sign__subtitle{font-size:9px;} }
+/* [night-11p] D-129 glyph legend in settings → help: glyph and region name per row, two columns where they fit. */
+.airway-glyph-legend { margin-top:14px; }
+.airway-glyph-legend__title { margin:0; font:800 13px/1.3 'Overpass',sans-serif; color:#2a2420; }
+.airway-glyph-legend__rows { list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:0 12px; }
+.airway-glyph-legend__row { display:flex; align-items:center; gap:10px; min-height:32px; border-bottom:1px dashed #c2b5a6; font:400 14px/1.3 'Atkinson Hyperlegible Next',sans-serif; color:#2a2420; }
+.airway-glyph-legend__row svg { flex:none; }
