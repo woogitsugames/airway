@@ -14,7 +14,7 @@
 .aw-ticket-perf { width: 1px; border-left: 2px dashed #789b94; margin: 6px 0; }
 .aw-ticket-skip { border: 0; min-width: 80px; padding: 7px 12px; background: #fbf8f1; font-weight: 700; font-size: 14px; color: #1e6f6a; }
 .aw-tutorial-center { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 0; min-width: 0; gap: 8px; }
-.aw-tutorial-world { position: relative; flex: none; width: min(100%, 430px, calc((100dvh - 308px) * 0.792)); min-width: 225px; aspect-ratio: 412 / 520; overflow: visible; background: #8cc3d8; transition: background-color 200ms linear; touch-action: none; }
+.aw-tutorial-world { position: relative; flex: none; width: min(100%, 430px, calc((100dvh - 308px) * 0.792)); min-width: 150px; /* [night-11l] index.ts fits it to the row */ aspect-ratio: 412 / 520; overflow: visible; background: #8cc3d8; transition: background-color 200ms linear; touch-action: none; }
 .aw-world-art { position: absolute; width: 100%; height: 100%; inset: 0; display: block; overflow: visible; pointer-events: none; }
 .aw-route { fill: none; stroke: #f4f0db; stroke-width: 6; stroke-linecap: round; opacity: 0; stroke-dasharray: 2 1; }
 .aw-route-feeder { opacity: .95; stroke: #e6b666; stroke-width: 5; stroke-dasharray: 11 8; }
@@ -28,7 +28,7 @@
 .aw-tutorial.has-plane .aw-aircraft-symbol { opacity: 1; }
 .aw-night-wash { opacity: 0; transition: opacity 200ms linear; }
 .aw-tutorial.is-night .aw-night-wash { opacity: .78; }
-.aw-tutorial.is-night .aw-tutorial-world { background: #133e57; }
+/* [night-11l] Night darkens the globe only (the wash is clipped to it); a dark world box stuck out as a rectangle. */
 .aw-wave-awakening { opacity: 0; }
 .aw-tutorial[data-step="upgrade"] .aw-wave-awakening { opacity: 1; }
 .aw-congestion-ring { opacity: 0; }
@@ -52,10 +52,12 @@
 .aw-tutorial-strip { width: min(100%, 540px); min-height: 64px; display: flex; flex-direction: column; justify-content: center; gap: 5px; padding: 8px 13px; background: #f7f3ea; border-left: 7px solid #c8352a; color: #2a2420; }
 .aw-strip-index { font: 800 12px Overpass,sans-serif; color: #1e6f6a; letter-spacing: .05em; }
 .aw-strip-copy { font: 700 16px 'Atkinson Hyperlegible Next',sans-serif; line-height: 1.2; }
-.aw-tutorial-controls { width: 100%; max-width: 540px; justify-self: center; align-self: end; min-height: 44px; display: flex; flex-direction: column; gap: 7px; }
+.aw-tutorial-controls { width: 100%; max-width: 540px; justify-self: center; align-self: end; min-height: 44px; display: flex; flex-direction: column; gap: 7px; padding-top: 6px; /* [night-11l] the hint's own gap under the ATC card */ }
 .aw-tutorial-hint { min-height: 30px; margin: 0; display: flex; align-items: center; justify-content: center; text-align: center; color: #13302e; font-weight: 700; font-size: 13px; line-height: 1.25; }
 .aw-tutorial-dock { min-height: 80px; border-top: 5px solid #1e6f6a; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 7px 2px; background: #13302e; }
-.aw-plane-tag, .aw-action-tag { min-height: 58px; padding: 8px 16px; color: #2a2420; background: #f7f3ea; font-weight: 700; border: 0; clip-path: polygon(0 0, 90% 0, 90% 12%, 100% 12%, 100% 100%, 0 100%); }
+.aw-plane-tag, .aw-action-tag { min-height: 58px; padding: 8px 18px; color: #2a2420; background: #f7f3ea; font-weight: 700; border: 0;
+  /* [night-11l] The dock's luggage-tag outline (hud.css): the old notched corner read as a second button behind. */
+  clip-path: polygon(14px 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%, 0 14px); }
 .aw-plane-tag { display: none; width: 120px; flex-direction: column; align-items: center; gap: 1px; touch-action: none; }
 .aw-plane-tag svg { width: 38px; height: 29px; color: #1e6f6a; }
 .aw-plane-tag span { font-size: 12px; }

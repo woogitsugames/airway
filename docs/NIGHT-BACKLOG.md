@@ -413,6 +413,15 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       D-130/D-131 (the N11j decision renumbered to D-132). `e2e/gameover-unserved.mjs` asserts both (0/4 on the old
       UI), shots `docs/shots/n11k/`, matrix and store failure shots refreshed.
 
+- [x] N11l **Training flight on the Fold: hint gap, one-shape tags, night only on the globe (owner, D-180)** — owner
+      screenshots from a Galaxy Fold (unfolded): the hint line ("Drag the tag onto the route marker", "Simulation
+      paused…") overlapped the ATC card's bottom edge (the world was sized from `100dvh − 308 px`, blind to the status
+      and gesture bars); the TURBOPROP tag and "Watch the sunrise" had a stepped notch that read as a second button
+      behind; on the night step a dark rectangle stuck out beyond the globe over the header. The world is now fitted
+      to its row by a `ResizeObserver`, the hint has its own gap, action tags use the dock's luggage-tag outline, and
+      night darkens only the globe. `e2e/tutorial-layout.mjs` (`test:e2e:tutorial-layout`, in `test:ci`; 0/7 on the
+      old tutorial, the Fold case with status/gesture-bar padding), shots `docs/shots/n11l/`.
+
 ## Continuous development round N12 (agent 2)
 - [x] N12a **Balance bot plays for reach (D-90)** — the handover gap "the DEV bot rarely connects new airports; long
       plays end in weeks 1–3": measured, 34 of 44 bot game overs (50 seeds) were at an airport no route served, 20 of
