@@ -1488,3 +1488,19 @@ section's shape (ordered quantiles, losses + still flying = runs, hub + spoke + 
 choices, picked ≤ offered, delivered = score). The numbers match `r8-audit --seeds=50 --cap-min=30` except curfew
 aircraft-minutes, where r8's `canLand` wrapper also counted the check inside `canScheduleLeg` (r8 air 586 vs 89 here).
 **Status: in force (N12ab).**
+
+## D-200 — every bot-driven e2e suite reads its seed from e2e/seeds.mjs and is replayed headless (2026-11-04, Claude, night N12ac)
+Extends D-189 from five suites to all suites that play a fixed seed with the DEV bot or idle ticks. Moved (seed
+unchanged, assertions unchanged): airport-plates, continue-framing, curfew-barrier, edge-chip-fill, edge-dock,
+first-time-cards, focus-pause, gameover-map, gameover-short, gameover-tip, gameover-unserved (its served-jam seed
+0xA1A3 as `gameover-unserved:served`), logbook, new-airport, pause-summary, pick-sign, pseudo-locale, transfer-glyphs,
+undo-after-upgrade. The plan vocabulary in `scripts/lib/e2e-plans.ts` gains play-outs to a game over, a jam on a
+served/unserved airport with the spare-aircraft count, idle play without the bot (`drift`, `opens`), hourly bot play
+(`botStep` + 60 ticks) until a curfew closes or ends, minute stepping until a transfer is inside its connection time
+and that airport's clear, a minimum route count, and the four first-time card triggers (the same `fillingHub` /
+`beyondRange` / curfew / weekly-board conditions the session uses). Only sim state is checked: what is on screen
+(tag positions, edge chips, gauges) stays with the browser suite. Not moved: smoke, leaderboard, daily-share and
+daily-continue build their network by gestures on visible airports (or play the date's daily seed), so they have no
+bot plan; their forced overload needs no seed. `test:e2e-seeds` 5 suites / 7 cases → 24 / 30, all passing on the
+current seeds; on 0xA1A1 the curfew-barrier, gameover-tip, served-jam and first-time-cards plans fail as their suites
+did before N12v/N12y re-seeded them. **Status: in force (N12ac).**

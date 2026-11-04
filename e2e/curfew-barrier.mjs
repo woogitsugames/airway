@@ -5,11 +5,12 @@ import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { withBrowser, newGamePage, waitForScreen, clickTestId, state, assert, saveDiagnostics, ROOT } from './browser.mjs';
+import { E2E_SEEDS } from './seeds.mjs';
 
 const STEPS = 2;
 // [night-12v] Rules v5 (D-95) end the bot's 0xA1A1 run in week 2 (tick 6958), before any curfew; 0xA1A2 is the
 // first seed it carries into week 3, where the curfew now starts (D-151).
-const CURFEW_SEED = Number(process.env.CURFEW_SEED ?? 0xA1A2);
+const CURFEW_SEED = Number(process.env.CURFEW_SEED ?? E2E_SEEDS['curfew-barrier'].seeds[0]); // [night-12ac] e2e/seeds.mjs
 const started = performance.now();
 const SHOTS = resolve(ROOT, 'docs/shots/n10g');
 const results = [];

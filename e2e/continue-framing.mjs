@@ -5,10 +5,11 @@
 // 'route' finds a visible pair), in portrait and landscape.
 import { performance } from 'node:perf_hooks';
 import { withBrowser, newGamePage, waitForScreen, assert, clickTestId, saveDiagnostics } from './browser.mjs';
+import { E2E_SEEDS } from './seeds.mjs';
 
 const started = performance.now();
 const results = [];
-const WIDE_SEED = 0xA1C2;
+const WIDE_SEED = E2E_SEEDS['continue-framing'].seeds[0]; // [night-12ac] e2e/seeds.mjs
 const CASES = [['en', 412, 915], ['pl', 915, 412]];
 
 async function journey(page) {

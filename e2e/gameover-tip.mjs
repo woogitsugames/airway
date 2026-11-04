@@ -7,10 +7,11 @@ import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { withBrowser, newGamePage, waitForScreen, clickTestId, assert, saveDiagnostics, ROOT } from './browser.mjs';
+import { E2E_SEEDS } from './seeds.mjs';
 
 const started = performance.now();
 const SHOTS = resolve(ROOT, 'docs/shots/n11f');
-const SEED = 0xA1C2; // its forced jam lands on a served hub (0xA1A1 ends at an unserved airport: no tip, N11b hint)
+const SEED = E2E_SEEDS['gameover-tip'].seeds[0]; // [night-12ac] e2e/seeds.mjs (0xA1C2): its forced jam lands on a served hub (0xA1A1 ends at an unserved airport: no tip, N11b hint)
 const LOGBOOK_KEY = 'airway.logbook.v1';
 // [language, width, height, flights already logged before this run, tip expected]
 const cases = [['pl', 412, 915, 0, true], ['en', 915, 412, 0, true], ['en', 360, 640, 3, true], ['pl', 412, 915, 10, false]];

@@ -4,7 +4,11 @@
 // back with focus on "Map"; a second Escape leaves to the menu as before. Seed 0xA1A1 bot run to a jam.
 // EN 412×915, PL 915×412, PL 360×640.
 import { performance } from 'node:perf_hooks';
-import { withBrowser, newGamePage, waitForScreen, assert, clickTestId, saveDiagnostics, SEED } from './browser.mjs';
+import { withBrowser, newGamePage, waitForScreen, assert, clickTestId, saveDiagnostics } from './browser.mjs';
+import { E2E_SEEDS } from './seeds.mjs';
+
+// [night-12ac] Seed from e2e/seeds.mjs, replayed headless by test:e2e-seeds (in test:fast).
+const SEED = E2E_SEEDS['gameover-map'].seeds[0];
 
 const started = performance.now();
 const results = [];
