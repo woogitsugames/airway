@@ -36,6 +36,9 @@ export function cueRun(run: EndlessRun): CueRun {
  */
 export function audioClockTick(run: Pick<CueRun, 'tick'>): number { return run.tick; }
 
+/** [night-11af] The game hour a reading belongs to; shared by the drone readings and the fill trend (R4c). */
+export function gameHour(clockMinute: number): number { return Math.floor(clockMinute / GAME_TICKS_PER_HOUR); }
+
 function isNight(hour: number): boolean { return hour < DAWN_HOUR || hour >= 22; }
 
 export class AudioCueMapper {
@@ -79,7 +82,7 @@ export class AudioCueMapper {
 
   /** Once per game hour: graded hub load (tension drones) and dawn blooms at hubs. */
   hourly(run: CueRun): void {
-    const hour = Math.floor(run.clockMinute / GAME_TICKS_PER_HOUR);
+    const hour = gameHour(run.clockMinute);
     if (hour === this.hour) return;
     this.hour = hour;
     const hubs = run.cityList().filter((city) => city.hub || this.droning.has(city.id));

@@ -45,6 +45,25 @@
   font: 800 13px/1 'Overpass', sans-serif;
   margin-left: 3px;
 }
+/* [night-11af] R4c: fill trend mark beside the count, behind a hairline (up = filling, down = emptying; shape, not
+   colour). It steps in once when it appears (120 ms, no spring) and stands still after that. */
+.airport-bubble__trend {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  box-sizing: content-box;
+  width: 9px;
+  height: 14px;
+  margin-left: 3px;
+  padding-left: 3px;
+  border-left: 1.5px solid currentColor;
+  line-height: 0;
+  animation: airport-trend-in 120ms ease-out;
+}
+.airport-bubble__trend svg { display: block; width: 9px; height: 12px; }
+@keyframes airport-trend-in { from { opacity: 0; transform: translateY(var(--trend-from, 2px)); } to { opacity: 1; transform: none; } }
+.airport-bubble__trend--down { --trend-from: -2px; }
+.airport-bubble__trend--up { --trend-from: 2px; }
 .airport-bubble__timer {
   font: 700 12px/1 'Overpass Mono', monospace;
   margin-left: 4px;
@@ -186,6 +205,7 @@
 :root[data-airway-motion="reduce"] .airport-bubble, :root[data-airway-motion="reduce"] .airport-edge { transition: none; }
 :root[data-airway-motion="reduce"] .airport-edge--jam { animation: none; }
 :root[data-airway-motion="reduce"] .airport-bubble__new { animation: none; }
+:root[data-airway-motion="reduce"] .airport-bubble__trend { animation: none; }
 /* The fixture controls are not part of player HUD. */
 .airport-demo-controls {
   position: absolute;

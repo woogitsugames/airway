@@ -23,6 +23,8 @@ export const pl = {
   'airport.edgeFillAria': 'Zajęte miejsca w poczekalni: {count} z {capacity}.', // [night-11d]
   'airport.curfewAria': '{code} zamknięte na ciszę nocną.', // [night-10h]
   'airport.connectingAria': 'W trakcie przesiadki: {count}.', // [night-10i]
+  'airport.trendFillingAria': 'Zapełnia się w ostatniej godzinie gry.', // [night-11af]
+  'airport.trendEmptyingAria': 'Pustoszeje w ostatniej godzinie gry.', // [night-11af]
   'airport.slotHeld': '{code}: samoloty czekające na slot startowy: {count}, następny slot za {time}',
   // [task-07] Rysowanie tras, pasek ATC i działania na trasach.
   'route.aircraft.turboprop': 'turbośmigłowca',
