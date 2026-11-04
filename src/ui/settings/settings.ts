@@ -116,6 +116,30 @@ export interface SettingsHandle { readonly element:HTMLElement; readonly firstFo
 export interface RankingData {
   hasData():boolean;
   deleteMyData():Promise<'deleted'|'none'|'offline'|'failed'>;
+  /** [night-11v] D-197 (D-135): leaderboards configured in this build; the sharing switch is shown only then. */
+  readonly enabled?:boolean;
+  isSharing?():boolean;
+  setSharing?(on:boolean):void;
+}
+
+/** [night-11v] D-197: the D-135 objection switch; the net layer stores it and drops queued runs when it goes off. */
+function sharingRow(ranking:RankingData):HTMLElement {
+  const label=t('settings.shareRanking');
+  const wrap=e('div','airway-settings__share');
+  wrap.dataset.testid='settings-share-ranking-row';
+  const {outer,controlHost}=row(label);
+  const toggle=e('label','airway-setting__switch');
+  const input=e('input','');input.type='checkbox';input.checked=ranking.isSharing?.()??false;
+  input.dataset.testid='settings-share-ranking';
+  input.setAttribute('aria-label',label);
+  const status=e('span','',input.checked?t('settings.on'):t('settings.off'));
+  input.addEventListener('change',()=>{
+    ranking.setSharing?.(input.checked);
+    status.textContent=input.checked?t('settings.on'):t('settings.off');
+  });
+  toggle.append(input,status);controlHost.append(toggle);
+  wrap.append(outer,e('p','airway-setting__hint',t('settings.shareRanking.hint')));
+  return wrap;
 }
 
 /** [night-12k] D-114: "Delete my ranking data" → inline confirmation → the server's answer, never a faked success. */
@@ -255,6 +279,8 @@ export function createSettings(onBack:()=>void,onLicenses:()=>void,onLanguageCha
     privacy.addEventListener('click',onPrivacy);
     host.append(privacy);
   }
+  // [night-11v] D-197 (D-135, R7l): "Send results to the leaderboard", only when this build has leaderboards.
+  if(ranking?.enabled && ranking.isSharing && ranking.setSharing) host.append(sharingRow(ranking));
   // [night-12k] D-114: shown only once this device has a leaderboard identity (or a queued run).
   if(ranking?.hasData()) host.append(deleteRankingRow(ranking));
   root.append(paper);
