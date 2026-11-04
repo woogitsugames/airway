@@ -1973,6 +1973,25 @@ strings; "queued" is true), an emulator test (the Firestore emulator needs Java 
 loads the real handlers with stubbed Firebase modules instead). Who owns the project and budget stays **Q-07** (owner);
 the steps are generic. Guards: `test:leaderboard-brake`, `test:net`. **Status: in force (Q-07 open).**
 
+## D-235 — Release checklist: age-rating answers, target audience 13+, one version name for both native projects (2026-11-04, Claude, night N12at)
+R1l. `docs/RELEASE.md` is the one release checklist (accounts, closed test, privacy URL, Data safety, App Privacy, age
+questionnaires, DSA trader status, export compliance, accessibility labels, store shots per Apple device class,
+version bump, plus the rest of RESEARCH R1), each line with owner/agent, a state and its D-/Q- entry. Three lines
+had no entry, so they are decided here by RESEARCH R1's recommendations:
+- **Age rating answers** (IARC in Play Console, Apple's 2026 age questions): no violence, fear, gambling, chat or
+  user-generated content, no purchases or ads (D-16), no location sharing; the leaderboard shows generated call signs
+  only (Q-05 A), so "users interact" is answered **No**. Expected PEGI 3 / USK 0 / Apple 4+. A nickname, chat or ads
+  would reopen these answers.
+- **Play target audience 13 and older** — the game is not designed for children, and an under-13 group would bring
+  the Families policy (SDK and privacy duties for the leaderboard).
+- **Version:** `package.json` `version` is the one marketing version; Android `versionName` and iOS
+  `MARKETING_VERSION` equal it, Android `versionCode` grows by 1 per upload, the iOS build number comes from
+  `fastlane ios beta`. Rejected: a version script that rewrites the native files (two string edits per release do not
+  need tooling yet).
+Guard: `test:release-checklist` (every reference exists, every line has an owner and a reference, the three version
+names agree). The owner still files every console answer. **Status: in force (recommendations of RESEARCH R1; the
+owner may override in the consoles).**
+
 ## D-236 — Endless home region: a menu choice that moves only the start cluster (2026-11-04, Claude, night N11aj)
 R2g (Q-50 recommendation B). The Endless row of the menu board gets a native select in its status cell (the board
 keeps its height): **Random** (default, the pre-R2g draw) or one of the 7 regions that have a start cluster.
@@ -1996,3 +2015,21 @@ region row (the board would grow and overlap the sign in landscape), `Scenario.s
 off, so no airport would ever open), a rules-version bump (Random is unchanged; it would replay every save).
 Guards: `test:home-region` (`test:fast`), `test:e2e:home-region` and `test:balance:regions` (`test:ci`).
 **Status: in force (EUS median to be reviewed with the next balance pass).**
+
+## D-238 — Launch plan in `docs/LAUNCH.md`: weeks from an unset T, the D-131 rhythm over R2's T+6, store-event drafts (2026-11-04, Claude, night N12au)
+R2f + R6g. `docs/LAUNCH.md` (Polish, owner-facing) holds the launch timeline from RESEARCH R2 in weeks from **T**,
+which stays unset until the owner picks the launch date (D-96): T−12 closed test + Firebase project + press page and
+trailer, T−10 Apple featuring nomination, T−8 iOS pre-order and Play pre-registration (≤ 90 days, no reward: D-16 has
+no IAP) + site with store links + showcase entries, T−4 builds to video creators under embargo and the "Opening week"
+Apple event sent for review, T launch, T+4 / T+8 / T+12 updates. Where R2 put the first puzzle update and second event
+at T+6, the plan follows the owner's later 4-week rhythm (D-131): T+4 "Long haul" 31–40 (D-193 flag removed), T+8
+weather front (R2j) + puzzles 41–45, T+12 weekly contract (R2k) + Sunday daily variant — the mechanics after launch
+still wait for Q-50; puzzle numbers 41–50 and their themes are a proposal. Every row names who acts (`właściciel`,
+`agent` or both; owner-only steps in bold) and a D-/Q- reference. Showcases: Big Indie Pitch Mobile 18.01.2027
+(ticket, playable build only) and Digital Dragons 2027 (dates unknown). The creator list is a template only; the filled
+list with contact details is kept outside the repo (personal data). Draft PL/EN texts: four Apple In-App Events
+(Opening week and Weekly contract as Challenge, Long haul and Weather front as Major Update; name ≤ 30, short ≤ 50,
+long ≤ 120 chars) and three Play "Major update" promotions (title ≤ 30, text ≤ 80 — our own limit, the console's field
+limits were not verified), never mentioning price, "free" or "best". Rejected: fixing a calendar date now (the owner's
+call), keeping R2's T+6 (contradicts D-131), a pre-registration reward. Guard: `test:launch-plan`. **Status: in force
+(T, Q-49, Q-50 open).**
