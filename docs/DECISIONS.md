@@ -1915,3 +1915,23 @@ nothing leaves the device unless the player copies it (D-16, D-220); `docs/store
 line. Rejected: a per-run hub code (the one identifier-like field), compressed/encrypted payload (testers should be
 able to read what they paste), a separate "Copy record" button (one paste per survey is simpler). Guard:
 `test:playtest`. **Status: in force.**
+
+## D-232 — Closed-test decision table, recruitment and production-access answers written before the test (2026-11-04, Claude, night N12aq)
+R3k. `docs/PLAYTEST.md` now holds the recruitment plan (16–18 sign-ups, ≥ 6 PL and ≥ 6 EN, ≥ 3 budget Androids, ≥ 2
+tablets/foldables, own contacts, Polish communities and the airway.games form; no paid tester services; one Google
+Group), the final decision table and an answer sheet (EN drafts with placeholders) for the Play Console
+production-access questions. Each table row names the signal (a `playtest:decode` CSV column or a survey answer), the
+bot reference from the repo's own balance data (`docs/balance/game-summary.md` rules v6, the N12af 200-seed run, R8
+`r8-audit-200.csv`), a minimum sample, the decision at the threshold and the default without data (the current rule).
+Thresholds: **Q-73** → B (R8f review) when the median of testers' longest Endless runs is ≥ 22 min at 1× and ≥ 5 of 12
+want longer runs; A when the median run is 10–18 min (D-79); a median < 10 min reopens week-1 pace (Q-60) instead.
+**Q-78** → A at ≥ 10 % of offers picked and ≤ 3 of 12 not understanding the card; D (measure another effect) at < 5 %
+or ≥ 4 of 12 not understanding. **Q-80** → A when ≥ 20 % of runs held a departure and ≥ 2 testers picked the card; B
+(drop from the Endless/daily pool) when < 10 % of runs held one and the card was on < 3 % of boards. Plus rows for
+Q-35, game-over cause, "don't know why I lost", unfinished training, first run, performance/adaptation, daily habit
+(Q-45), what is missing (Q-50) and day-8 fix adoption. Changed from the R1o proposal (D-227): Q-73 B reads the testers'
+longest runs, not the p90 of all runs (people losing earlier than the bot is a week-1 pace signal, not the week-3
+wall). Thresholds are not moved after seeing data; a bad threshold becomes its own decision. The organisation account
+(D-94) is exempt from the 12 × 14 rule, so the answer sheet is a ready description of the test, not a filing. Q-52
+stays open for the owner; the plan follows its recommendation A. Guard: `test:playtest`. **Status: in force (Q-52 to
+confirm).**
