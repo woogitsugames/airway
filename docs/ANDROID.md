@@ -139,7 +139,7 @@ attribute. No in-app native picker is added: the game's own setting (Settings �
 authority (D-31) — `src/i18n` reads the saved choice first and only falls back to the device language
 (`navigator.languages`) when the player never chose one. `test:android-config` checks that the list equals the
 `Language` type in `src/i18n/index.ts` and iOS `CFBundleLocalizations` (D-91), and that the saved choice wins.
-`aapt2 link` against `android-36` accepts the attribute with `minSdk 24`.
+`aapt2 link` against `android-36` accepted the attribute with `minSdk 24` (N12l); minSdk is 29 since D-133.
 
 Device check (not possible here): on Android 13+ set Airway's per-app language to Polish while the phone is in
 English, start a fresh install and confirm the game opens in Polish (i.e. the WebView's `navigator.languages`
@@ -165,8 +165,18 @@ exposes WebGL 2 only on GPUs with OpenGL ES 3.0, so the manifest declares
 `<uses-feature android:glEsVersion="0x00030000" android:required="true"/>`: Google Play then does not offer the
 game to devices without ES 3.0 (they would show a blank globe). `aapt2 dump badging` reports `uses-gl-es: '0x30000'`
 for the linked manifest. ES 3.0 exists from Android 4.3 (API 18), so the filter does not change the supported
-Android versions; `minSdk 24` stays until the owner answers Q-54. A device with ES 3.0 whose WebView still blocks
+Android versions, which `minSdk 29` sets (next section, D-133). A device with ES 3.0 whose WebView still blocks
 WebGL 2 (driver blocklist) is not caught by the filter — the "graphics not supported" page (R3g) covers that case.
 `test:android-config` (`play-gles3-filter`) checks exactly one required `glEsVersion` = `0x00030000`, three ≥ r163
-and minSdk ≥ 18. Device check (not possible here): the Play Console device catalogue should list the ES 2.0-only
+and minSdk ≥ 29. Device check (not possible here): the Play Console device catalogue should list the ES 2.0-only
 models as "not supported" after the next upload.
+
+## Supported Android versions: minSdk 29 (D-133)
+
+The owner chose Q-54 → B: `minSdkVersion = 29` (Android 10) in `android/variables.gradle`, together with the ES 3.0
+filter above. Android 7–9 were about 8 % of Play devices, their WebView no longer receives Chrome updates (Chrome
+139+ needs Android 10) and none of them is tested; most are also below the low quality preset. Raising minSdk
+removes those devices from Play's compatible list for new installs; players who already installed an older build
+keep it but get no updates. `test:android-config` (`sdk-versions`) requires exactly `minSdkVersion = 29` in
+`variables.gradle` and no hard-coded minSdk in `app/build.gradle`; `play-gles3-filter` requires minSdk ≥ 29.
+Not checked here: a Gradle build with the new minSdk (no offline Gradle plugins) and the Play Console device count.

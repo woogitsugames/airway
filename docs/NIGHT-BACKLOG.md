@@ -531,6 +531,22 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       ES 2.0 phones (blank globe). `aapt2 dump badging` of the linked manifest shows `uses-gl-es: '0x30000'`.
       `test:android-config` check `play-gles3-filter` (one required declaration, three ≥ r163, minSdk ≥ 18).
       minSdk stays 24 until Q-54 (both A and B include the filter); note in `docs/ANDROID.md`.
+- [x] N12q **Bundle budget, dead code and unused keys, minSdk 29 (R5k, R5i, Q-54 → B; D-133, D-143, D-144)** — new
+      `test:bundle` (in `test:ci` after `build`) holds the main chunk ≤ 1,150 kB raw / 340 kB gzip, CSS ≤ 90 kB and
+      `dist/` ≤ 2,200 kB (`docs/PERFORMANCE.md` "Bundle budget"; today 1,033.8 / 306.2 / 70.2 / 1,804.8) and prints the
+      largest files; `test:bundle:static` (in `test:fast`) forbids a module imported both statically and with
+      `import()` — the dynamic `@capacitor/core` imports in `platform/install.ts` / `storage.ts` became static (Vite
+      warning gone). R5i: the four never-wired a11y adapters, their 13 keys and `status.loading/ready` removed, plus
+      `mountEmptyScene`, `createTerrain`, `AIRPORT_LABEL_MODES`, `dailyGame`; `test:i18n` fails on a catalog key not
+      referenced from `src/`. Owner D-133: `minSdkVersion` 24 → 29, guarded by `test:android-config`, `docs/ANDROID.md`.
+      CLAUDE.md "30 store PNGs" → 60.
+- [x] N12r **Route snap haptic actually fires (R6d, D-137) + owner decisions D-134…D-136** — `@capacitor/haptics`
+      8.0.2 drops `selectionChanged()` without `selectionStart()`, so the snap never vibrated. `NativeHapticDriver` and
+      `RouteHaptics` gained selection start/end; the route tool opens the selection at pointer-down and closes it once
+      on drop, refusal, cancel or undo; a snap outside a drag brackets itself; the switch never leaves a selection
+      open. Owner decisions recorded: D-134 (Q-65 A terms + Apple EULA, lawyer review; Q-66 A trader in both stores),
+      D-135 (Q-68 A legitimate interest, no age gate, leaderboard toggle R7l), D-136 (Q-67 A, Q-69 A, Q-70 A). Own
+      N12q decisions renumbered D-134/D-135 → D-143/D-144.
 
 ## Research proposals (R-agent)
 Proposals from the research agent (findings and sources: `docs/RESEARCH.md`, sections "R1 — …"). Each item is
@@ -715,7 +731,7 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
       ("This device's graphics are not supported", with the device's renderer string) instead of a blank canvas. E2E:
       `WEBGL_lose_context.loseContext()`/`restoreContext()` mid-run → game resumes with the same state hash. **Area:**
       render (`src/render/world.ts`) + UI (`src/game/world.ts`, i18n).
-- [x] R3h → N12p (filter; the minSdk part still waits for Q-54) **Play device filter for OpenGL ES 3.0** — Three r170 needs WebGL 2; declare
+- [x] R3h → N12p (filter), minSdk 29 → N12q (Q-54 → B, D-133) **Play device filter for OpenGL ES 3.0** — Three r170 needs WebGL 2; declare
       `<uses-feature android:glEsVersion="0x00030000" android:required="true"/>` so Play hides the game from devices
       that cannot run it, and make `test:android-config` assert it (and the minSdk chosen in Q-54). **Area:** platform
       (`android/app/src/main/AndroidManifest.xml`, `scripts/`). *minSdk part needs Q-54.*
@@ -819,7 +835,7 @@ Evidence: `docs/RESEARCH.md` "R5 — …", PNGs in `docs/research/r5/`.
       when there is room (N10z), deterministic output; a 150-airport case under a time budget (today O(n²·k) per
       frame). No visual change: e2e `edge-chip-*` and shots identical. **Area:** UI (`src/ui/overlay.ts`,
       `src/ui/overlay-layout.ts`, `scripts/test-overlay-layout.mjs`).
-- [ ] R5i **Remove dead code and unused keys** — `describeCity`, `createCityAnnouncer`, `bindCityAccessibility`,
+- [x] R5i → N12q **Remove dead code and unused keys** — `describeCity`, `createCityAnnouncer`, `bindCityAccessibility`,
       `labelAirportActions` (`src/ui/a11y.ts`, documented only in `src/ui/theme/README.md`) and their 13
       `a11y.city*` / `a11y.action.*` keys; unused exports `createTerrain`, `mountEmptyScene`, `SIM_TICK_MS`,
       `DAYNIGHT_PARAMS_VERSION`, `AIRPORT_LABEL_MODES`, `dailyGame` (check `functions/` first), keys
@@ -831,7 +847,7 @@ Evidence: `docs/RESEARCH.md` "R5 — …", PNGs in `docs/research/r5/`.
       `notch` profile to `ui:matrix` / `screens-fit` that sets the tokens to iPhone-like values (59/0/34/0 portrait,
       0/59/21/59 landscape) and fails on any button inside an inset. **Area:** UI CSS + platform/scripts
       (`scripts/ui-matrix.mjs`, `e2e/screens-fit.mjs`).
-- [ ] R5k **Bundle budget guard** — after `npm run build`, a small `test:bundle` reads `dist/assets`: main JS
+- [x] R5k → N12q (WOFF2 fonts not done) **Bundle budget guard** — after `npm run build`, a small `test:bundle` reads `dist/assets`: main JS
       ≤ 1,150 kB raw / 340 kB gzip (today 1,031.9 / 306.2), CSS ≤ 90 kB, total `dist/` ≤ 2.2 MB; prints the top
       chunks. Run it in `test:ci` after the build step. Also drop the useless dynamic `import('@capacitor/core')` in
       `src/platform/install.ts` / `storage.ts` (Vite warns: it is statically imported elsewhere). Optional: serve the
@@ -857,7 +873,7 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
       a tag is empty, its count line reads the arrival of the next weekly board ("crates day 3" / "skrzynie: dzień 3",
       or "tomorrow"/"jutro" on the last day) from the existing week/day clock; aria text the same. No sim change.
       Combine with R5d (opaque empty tags). DOM test + shots night/day. **Area:** UI (`src/ui/hud/**`, `hud.css`), i18n.
-- [ ] R6d **Snap haptic actually fires** — `haptic('snap')` calls `Haptics.selectionChanged()` without
+- [x] R6d → N12r **Snap haptic actually fires** — `haptic('snap')` calls `Haptics.selectionChanged()` without
       `selectionStart()`; in `@capacitor/haptics` 8.0.2 both Android (`selectionStarted` guard) and iOS (generator
       created only by `selectionStart`) ignore it, so the route snap never vibrates. Call `selectionStart()` when a
       route drag begins and `selectionEnd()` when it ends/cancels (add both to `NativeHapticDriver` and
@@ -890,6 +906,112 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
       "nothing to do" moment, what the glyph means, did they open the weekly board without help) plus two device
       checks: Android — music from another app keeps playing when Airway opens (WebView audio focus, unknown), and
       the snap/jam vibration on a budget phone (R6d/R6e). **Area:** docs.
+
+### R7 (2026-11-03) — legal/privacy launch pack, localisation wave 1 prep, site funnel
+- [ ] R7a **Privacy policy v1 (site + game)** — rewrite `privacy.*` in `site/i18n.js` (the game copy follows via
+      `test:privacy-text`) into the full structure from RESEARCH R7: controller (placeholder bound to Q-01), purposes
+      and legal basis per purpose (leaderboard, anti-cheat, e-mail), recipients (Google Firebase as processor,
+      `europe-west1`; host), transfers (EU-US DPF / SCC), retention (entries 90 days D-77; Auth IP logs "a few weeks";
+      Auth record until deletion + up to 180 days in backups; e-mails; host logs), rights incl. objection and complaint
+      to the Polish UODO, 13+ note, no profiling, effective date. Merge the leaderboard section from
+      `docs/legal/leaderboards-privacy.md` (Q-56 → A). Keep the draft banner until the owner approves.
+      **Area:** `site/`, `src/i18n` (copy), `docs/legal/`. *Needs Q-01, Q-56, Q-68.*
+- [ ] R7b **Terms of use page** — `site/terms.html` (PL/EN, same build/tests as `privacy.html`): licence to play,
+      leaderboard rules (one official run per day, server replay may reject, entries expire, no guarantee of service),
+      contact, governing law placeholder; a "Terms / Regulamin" row under Help in settings (offline copy like D-86);
+      reference Apple's standard EULA in `docs/store/`. Google shows a trader's ToS link from 1 Mar 2027.
+      **Area:** `site/`, `src/ui/settings/**`, i18n. *Needs Q-65.*
+- [ ] R7c **Publisher details block** — one source string set (`publisher.*`: legal name, address, e-mail, trader
+      status) rendered in the site footer, on the privacy/terms pages and in Settings → Help (Polish e-services act
+      art. 5; matches the Apple/Google trader card). Placeholders fail `test:site` in a release build until filled.
+      **Area:** `site/`, `src/ui/settings/**`, i18n. *Needs Q-01, Q-66.*
+- [ ] R7d **Legal launch register** — `docs/legal/README.md`: record of processing (GDPR art. 30: purposes,
+      categories, recipients, retention, security), Firebase processing-terms acceptance step (add to
+      `docs/FIREBASE.md`), trader declarations with dates (Google: at account creation / by 1 Feb 2027, display
+      1 Mar 2027; Apple: before EU submission), UK art. 27 decision (Q-67), US state app-store age laws to re-check
+      before the US launch (Texas in force, Louisiana 1 Jul 2026, Utah 6 May 2027, Alabama 1 Jan 2027). Link each line
+      from `docs/RELEASE.md` when R1l lands. **Area:** `docs/legal/`, `docs/FIREBASE.md`.
+- [ ] R7l **"Send my daily results" setting** — a settings switch (default on) that stops leaderboard submissions
+      and `getBoards` calls; when off, the daily report says the run is not ranked; queued submissions are dropped
+      when it is turned off. Gives the GDPR art. 21 objection a one-tap path. `test:net`, settings e2e.
+      **Area:** `src/net/**`, `src/ui/settings/**`, `src/ui/daily/**`, i18n. *Needs Q-68 (A).*
+- [ ] R7e **Plural form from the raw number** — `pluralValue` reads formatted strings and treats "." as a decimal
+      point, so with DE/ES/PT-BR grouping "1.000" picks `one` ("1.000 Passagier") and PT-BR "1.500" → 1.5 → `one`.
+      Let callers pass numbers (format inside `t()`), or parse with the active locale's group/decimal symbols from
+      `Intl.NumberFormat#formatToParts`. `test:i18n` cases with fake de/pt-BR catalogs for 0, 1, 2, 1 000, 1 500,
+      1 000 000. **Area:** `src/i18n/index.ts`, `src/core/format.ts`.
+- [ ] R7f **One language registry** — `src/i18n/languages.ts` lists each language once (code, Intl locale, plural
+      order incl. `many` after `other` for fr/es/pt, native name, store locale) and drives `Language`,
+      `normaliseLanguage`, `PLURAL_ORDER`, `formatNumber` locales, the settings select, airport/region names and a
+      check that `CFBundleLocalizations` and `locales_config.xml` list the same codes (`test:ios-config`,
+      `test:android-config`). `test:i18n` checks every catalog: same keys, same `{param}` set, plural tokens have
+      the category count of their language. Only PL/EN enabled until the translations exist.
+      **Area:** `src/i18n/**`, `src/core/format.ts`, `src/ui/settings/**`, `src/ui/airportLabel.ts`, scripts.
+- [ ] R7g **Glyph coverage test + French narrow space** — Atkinson Hyperlegible Next (body font, 362-glyph subset)
+      lacks U+202F, which `Intl` fr-FR uses as the thousands separator. Map U+202F → U+00A0 in `formatNumber`, and
+      add fast `test:glyphs` (reads the TTF `cmap` with a tiny parser, no new dependency) that fails when any catalog
+      string or city name uses a code point missing from the font that renders it. **Area:** `src/core/format.ts`,
+      `scripts/`, `test:fast` list.
+- [ ] R7h **Length budgets and a harsher pseudo-locale** — `src/i18n/limits.ts` maps fixed-width keys to budgets
+      (menu split-flap: half-row title 10, status 10, full title 20, gate 2; dock tags, stamps, select options);
+      `test:i18n` fails when any catalog exceeds a budget. Pseudo-locale stretches strings ≤ 20 chars by ×2 (IBM/W3C
+      expansion for short text), and `e2e/pseudo-locale.mjs` adds 320×568. **Area:** `src/i18n/**`, `e2e/`.
+- [ ] R7i **Translator export/import** — `npm run i18n:export -- de` writes `docs/i18n/de.json` (key, EN, PL,
+      context comment, max length from R7h, plural categories of the language, placeholder list) and
+      `i18n:import` turns a filled file back into `src/i18n/de.ts`, rejecting missing placeholders, over-budget text and
+      wrong plural counts. Also covers `site/i18n.js` and `docs/store/en.md` sections. **Area:** `scripts/`, `docs/i18n/`.
+- [ ] R7j **City and region names per language** — replace `namePl`/`nameEn` with `names: Record<Language,string>`
+      (sim `code` untouched, D-107); a one-off script fetches Wikidata labels (CC0) for de/fr/es/pt-BR into a
+      reviewed JSON (pt-BR "Nova York", not "Nova Iorque"); `docs/ASSETS.md` entry; `test:city-data` checks every
+      enabled language has every name. **Area:** `src/data/**`, `scripts/`, `docs/ASSETS.md`.
+- [ ] R7k **Site launch pack** — store badges (official Apple/Google artwork, brand rules, ASSETS entry) with
+      pre-registration/pre-order links from one config, hidden while empty; real shots from `docs/store/shots/`
+      instead of stage-0 concepts; `og:image` from the feature graphic (D-117); `hreflang` + `canonical`; a `404.html`
+      in the site style; footer links to terms (R7b) and publisher block (R7c). No newsletter (Q-70 → A).
+      `test:site` and `shots:site` updated. **Area:** `site/`, `docs/SITE.md`. After D-67's publish decision.
+
+### R8 (2026-11-03) — gameplay-depth and balance audit, rules v5 (data: `docs/RESEARCH.md` "R8", `scripts/research/r8-audit.ts`)
+- [ ] R8a **Weekly board offers only cards that can matter** — 200 bot seeds: "+2 slots" picked 0 % of the 239 times
+      it was offered, hub expansion 3 % of 235; forcing either costs ~1 min median and 12–14 % score, because every
+      board has at least one of them (a third have both) and the fleet is the bottleneck (99 % of losses with 0 spare
+      aircraft). Rule: "+2 slots" enters the draw only after the run's first `DepartureHeld`, hub expansion only while a
+      hub exists (Q-10's "disabled" stamp becomes rare); otherwise the slot is filled by the other aircraft card. Draw
+      stays on the `upgrades` RNG stream; `RULES_VERSION` bump, save/daily golden updates. Metric (r8-audit
+      `--policy=bot`): boards showing a card with no effect yet (no hub / no slot hold) 100 % → < 30 %; median stays in 10–18 (`test:balance`); slot holds
+      still counted. **Area:** `src/sim/upgrades.ts`, `src/sim/world.ts`, tests. *Needs Q-71.*
+- [ ] R8b **"No spare aircraft" game-over hint** — 56 of 200 losses are at an airport with no route, and in 99 % of
+      all losses the reserve was empty, yet `gameover.unservedHint` says "Connect a new airport before its waiting area
+      fills up". When the failed airport had 0 routes and the reserve was 0, show "No spare aircraft: drag a route end
+      to it or take a plane off a quieter route" (PL + EN, i18n); keep the old line when a plane was free. Pure choice
+      in `src/game/gameoverTip.ts`/game-over report, `test:gameover-tip` cases for both. Metric: share of unserved
+      losses whose hint names an action the player could take 0 → 100 %. **Area:** `src/game/`, `src/ui/gameover/`,
+      `src/i18n/`.
+- [ ] R8c **Curfew from week 3 in Endless** — only 29 of 200 bot runs (15 %) reach week 4, so the curfew (D-17), one
+      of the D-07 differentiators, is unseen in most runs; 66 % reach week 3. `CURFEW_ENDLESS_START_WEEK` 4 → 3,
+      rules/params version bump, `test:daynight`/`test:balance`/goldens. Metric (r8-audit): runs with a curfew hold
+      15 % → ≥ 50 %; median stays in 10–18 min (expect a small drop); week-1/2 untouched. **Area:** `src/sim/params.ts`,
+      tests, `docs/balance/README.md`. *Needs Q-72 (D-17 is the owner's).*
+- [ ] R8d **Balance report shows spread and mechanic use** — `balance:report`/`game-summary.md` print p10/p25/p75/p90,
+      a loss-week histogram, hub/spoke/unserved losses, spare aircraft at the loss, cards offered vs picked, runs with
+      curfew / slot holds and the transfer share (port the counters of `scripts/research/r8-audit.ts`, without
+      prototype wrapping: read `DepartureHeld`/`Delivered` events and `hubCauseLedger` in the adapter). No new gate.
+      Metric: the next balance PR can quote the tail, not only the median. **Area:** `scripts/balance-*.ts`,
+      `docs/balance/`.
+- [ ] R8e **Bot moves aircraft** — the bot never uses `UnassignPlane`/`RemoveRoute`, so with an empty reserve an
+      unserved airport is lost unless a route end is within range (56 / 200 losses). Add one step: when an active
+      airport has no route, no spare aircraft and no extendable route, take the plane from the route with the lowest
+      waiting per plane (keep ≥ 1 per route) and open the new route with it. `test:bot-policy` cases; report the new
+      median before touching any gate (if it leaves 10–18 min, ask the owner, D-79). Metric: unserved losses 56 → lower;
+      median and spread reported. **Area:** `src/game/dev/bot-policy.ts`, `scripts/`.
+- [ ] R8f **Prepared late-ramp sweep (apply only after the closed test, D-113)** — 0 of 200 runs see a 5th board;
+      p90 22.4 min, max 31.6; the network grows 6 airports/week, the fleet 1 plane/week. Script variant (no rule
+      change merged): sweep spawn interval after week 3 (12 → 14/16 h) and "aircraft card gives 2 turboprops from
+      week 3", reporting p50/p90/max and week-4/5 reach, so the owner can pick with tester data (Q-73). **Area:**
+      `scripts/research/`, `docs/balance/`.
+- [ ] R8g **R8 questions in the closed-test sheet** — add the seven R8 questions (hint understood? planes moved?
+      card that felt useless? SLOT stamp seen? curfew reached? run-length spread from the logbook, "anything to do in
+      the last minutes?") to the survey/observation sheet with the thresholds from RESEARCH R8. **Area:** docs
+      (`docs/PLAYTEST.md` with R3k/R6i).
 
 ## Log
 <!-- one line per finished item: date UTC · item · PR · gate summary -->
@@ -987,5 +1109,7 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
 - 2026-11-03 · N12p Play OpenGL ES 3.0 device filter (R3h, D-124) · night/12p-gles3-filter · test:android-config 23/23 (22/23 on the old manifest), aapt2 link ok + `dump badging` uses-gl-es 0x30000 (android-36, minSdk 24, manifest without resource refs), test:fast 66/66, build ok; minSdk unchanged (Q-54); no Play Console device-catalogue check; e2e/ui:matrix/store:shots not run (no web code changed)
 - 2026-11-03 · N11i pause on window focus loss (D-99, D-119) · night/11i-focus-pause · test:fast 67/67 (test:saves 13/13, 11/13 on the old code), build ok, test:e2e:focus-pause 3/3 (1/3 on the old code), e2e:save-notice 4/4; e2e:pause-summary 0/4 on this branch and on origin/dev alike (rules v5: `autoplay(2)` ends in a game over before week 2 — pre-existing, not this change); e2e:smoke/ui:matrix not run (no layout change)
 - 2026-11-03 · N12o store shots in the exact Apple sizes and 16:9 (R2a, D-123) · night/12o-store-sizes · store:shots 60/60 (30 → 60: + iphone 1320×2868, ipad 2064×2752, landscape 1920×1080; contact sheet 2556×5361; new device PNGs and the sheet inspected), test:store-shots devices=6 shots=60 (new validator on the old 30-shot set: FAIL "Manifest lists 30/60"), test:fast 67/67, build ok; e2e/ui:matrix not run (no game code changed); App Store Connect / Play Console upload not tried; origin/dev (N11h context-loss guard, no visual change while the context lives) was merged during the run, so early shots predate it
+- 2026-11-03 · N12q bundle budget + dead code/unused keys + minSdk 29 (R5k, R5i, Q-54 → B; D-133, D-143, D-144) · night/12q-bundle-guard · test:bundle 9/9 (main 1,034.1 kB / gzip 306.4 kB, CSS 70.2 kB, dist 1,805.1 kB), test:bundle:static 5/5 (4/5 on the old platform code: `@capacitor/core` mixed import; Vite warning gone), test:i18n keys 424 → 409 (15 unused keys on the old catalogs, 2 with the old a11y.ts), test:android-config 23/23 (21/23 on minSdk 24), aapt2 link + `dump badging` minSdkVersion 29 / uses-gl-es 0x30000, test:fast 68/68, build ok; e2e/ui:matrix/store:shots not run (no screen changed); no Gradle build, no device
+- 2026-11-03 · N12r route snap haptic inside a native selection (R6d, D-137) + owner D-134…D-136, own N12q decisions → D-143/D-144 · night/12r-snap-haptic · test:haptics 9/9 (4/9 on the old driver: no selection start/end, a lone snap only `selectionChanged`), test:route-tool 18/18 (16/18 on the old tool), test:fast 68/68, build ok, test:bundle 9/9 (main 1,034.5 kB / gzip 306.5 kB); e2e/ui:matrix/store:shots not run (no visual change); no Android/iPhone vibration check
 - 2026-11-03 · N11j pause-summary e2e under rules v5 + old-rules save notice (D-132, numbered D-130 in PR #147), owner D-128/D-129 · night/11j-pause-summary-v4-save · test:e2e:pause-summary 4/4 (0/4 on origin/dev), test:save-golden 21/21 (20/21 on the old code), test:e2e:save-notice 6/6 (4/6 on the old code), test:fast 67/67, build ok; e2e:smoke/ui:matrix not run (no layout change)
 - 2026-11-03 · N11k clean game-over report (R5f), owner D-130/D-131, N11j decision → D-132 · night/11k-clean-gameover · test:e2e:gameover-unserved 4/4 (0/4 on the old UI; its served case was 3/4-red on origin/dev since rules v5, now seed 0xA1A3), test:fast 67/67, build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:gameover-map 3/3, e2e:gameover-short 4/4, e2e:gameover-tip 4/4, store:shots 60 (test:store-shots ok); R5d stays a proposal

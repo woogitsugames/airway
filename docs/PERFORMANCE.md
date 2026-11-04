@@ -280,3 +280,25 @@ screen router now calls `world.setCovered(name !== 'menu' && name !== 'game')`; 
 the rAF loop returns before any camera, demo or render work (the loop itself stays, so the first frame after Back is
 drawn on the next vsync). `test:e2e:covered-pages` reads the DEV probe `__awWorld.frames()`: 0 frames behind every
 page, ≥ 3 per 1.2 s on the menu and in a game.
+
+## Bundle budget (N12q, R5k, D-143)
+
+`npm run test:bundle` (in `test:ci` right after `build`) measures the built `dist/` and fails above these budgets:
+
+| Measure | Budget | Measured 2026-11-03 | Headroom |
+| --- | --- | --- | --- |
+| Main JS chunk (largest `dist/assets/*.js`), raw | 1,150 kB | 1,033.8 kB | +11 % |
+| Main JS chunk, gzip (level 9) | 340 kB | 306.2 kB | +11 % |
+| All CSS | 90 kB | 70.2 kB | +28 % |
+| Everything under `dist/` (fonts, land mask, licences) | 2,200 kB | 1,804.8 kB | +22 % |
+
+The app is one chunk on purpose (three.js is about 494 kB of it; splitting puzzles, logbook, leaderboard and
+tutorial would save < 40 kB, R5). Files come from disk in the Capacitor app, so size is not a download cost; the
+risk is parse time on budget Android phones growing unnoticed. Raising a budget is a decision: record why in
+`docs/DECISIONS.md` and update this table. Vite's own 500 kB chunk warning is raised to 1,150 kB
+(`vite.config.ts`) so the build log does not cry wolf; this test is the authority. `test:bundle:static` (in
+`test:fast`) also fails when a module is imported both statically and with `import()`: Vite cannot split such a
+module and only warns (the old dynamic `import('@capacitor/core')` in `platform/install.ts` and `storage.ts`).
+Not done: WOFF2 fonts (about −40 % of the 624 kB TTF; OFL allows the conversion, `docs/ASSETS.md` would need the
+entry) — a size win only, no parse-time effect.
+

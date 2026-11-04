@@ -986,3 +986,290 @@ dwa). R6c razem z R5d. Reguł tempa (D-113) nie ruszać przed danymi z testu zam
 R6d przed testem zamkniętym (mały, pewny błąd). R6e po pierwszym teście na tanim Androidzie — jeśli wibracje
 brzęczą, natywny most do `performHapticFeedback`. Nowych zdarzeń haptycznych nie dodawać (zasada „mniej znaczy
 więcej” obu platform).
+
+## R7 — Pakiet prawny i prywatności na premierę (stan 2026-11-03)
+
+To lista kontrolna ze źródłami, **nie porada prawna**. Całość warto raz przejrzeć z prawnikiem (jedna konsultacja:
+polityka prywatności + regulamin + status przedsiębiorcy). Punkt wyjścia: gra darmowa bez reklam i analityki (D-16),
+rankingi z anonimowym kontem Firebase (D-66, D-72), konto Google Play organizacji (D-94), cały świat bez Chin (D-96).
+
+### Ustalenia
+| Obszar | Co mówią przepisy / sklepy | Airway dziś | Luka | Kto |
+|---|---|---|---|---|
+| **Administrator danych** | Polityka musi wskazać tożsamość i kontakt administratora (art. 13 RODO) | `site/privacy.html` § 1: „zostaną uzupełnione”; Q-01 otwarte | blokuje publikację strony (D-67), przedrejestrację i formularze sklepów | właściciel (Q-01) |
+| **Podstawa prawna rankingów** | Wiek 16 lat (art. 8 RODO, Polska nie obniżyła progu) dotyczy **tylko zgody** jako podstawy ([gdpr-text.com, art. 8](https://gdpr-text.com/pl/read/article-8/); [Bird & Bird — Polska](https://childreninthedigitalworld.twobirds.com/home/poland)) | szkic mówi „wykonanie usługi … do potwierdzenia” | jeśli podstawą będzie uzasadniony interes / umowa, nie potrzebujemy weryfikacji wieku; za to gracz musi móc **sprzeciwić się** (art. 21) — dziś nie ma przełącznika „nie wysyłaj wyników” | Q-68, R7l |
+| **Firebase jako podmiot przetwarzający** | Google jest procesorem; umowa = Firebase Data Processing and Security Terms (transfer: EU-US Data Privacy Framework / SCC). Auth zapisuje **adres IP przez kilka tygodni**; dane konta do usunięcia, potem do **180 dni** z kopii zapasowych; Cloud Functions trzymają IP tylko tymczasowo ([Firebase — Privacy](https://firebase.google.com/support/privacy), [Firebase DPST](https://firebase.google.com/terms/data-processing-terms), sprawdzone 2026-11-03) | szkic wspomina IP i transfer ogólnie | w polityce brakuje: IP w logach Auth (tygodnie), 180 dni kopii, mechanizm transferu (DPF), region `europe-west1`; w konsoli trzeba **zaakceptować** warunki przetwarzania (gdzie dokładnie — **NIEPEWNE**, opisać w `docs/FIREBASE.md` przy zakładaniu projektu) | agent (R7a, R7d), właściciel klika |
+| **Rejestr czynności (art. 30)** | Zwolnienie < 250 osób **nie** dotyczy przetwarzania, które nie jest sporadyczne — ranking działa codziennie | brak | jedna strona w `docs/legal/` (cele, kategorie, odbiorcy, okresy) | agent (R7d) |
+| **Przedstawiciel w UK (art. 27 UK GDPR)** | Administrator spoza UK oferujący usługę osobom w UK wyznacza przedstawiciela, chyba że przetwarzanie jest sporadyczne i niskiego ryzyka ([legislation.gov.uk](https://www.legislation.gov.uk/eur/2016/679/article/27/data.html); komentarze kancelarii: „sporadyczne” = poza zwykłą działalnością) | — | codzienny ranking raczej **nie** jest sporadyczny → prawdopodobnie potrzebny przedstawiciel albo rankingi wyłączone w UK; **NIEPEWNE**, do prawnika | Q-67 |
+| **Status przedsiębiorcy — Apple** | Deklaracja trader/non-trader w App Store Connect; od 17–18.02.2025 aplikacje bez deklaracji zdjęte z UE; trader pokazuje adres, telefon, e-mail na stronie produktu w UE ([Apple](https://developer.apple.com/news/?id=einwn76m), [MacRumors 17.10.2024](https://www.macrumors.com/2024/10/17/developers-eu-app-store-trader-requirements/)) | brak konta | dane kontaktowe firmy muszą być gotowe (telefon firmowy, nie prywatny) | Q-66 |
+| **Status przedsiębiorcy — Google (nowe)** | Na podstawie dyrektywy UCPD i brytyjskiej DMCCA: **nowe konta deklarują przy zakładaniu**, istniejące do **1.02.2027**; od **1.03.2027** trader ma na karcie: nazwę, adres, telefon, e-mail, D-U-N-S i link do regulaminu (jeśli podany), w EOG/UK nazwę zamiast „Google” w „Oferowane przez”. Non-trader: tylko e-mail i kraj + komunikat, że prawa konsumenta nie mają zastosowania. Fałszywe „non-trader” = zawieszenie konta ([Play Console Help — Trader status declaration](https://support.google.com/googleplay/android-developer/answer/17594752?hl=en-GB), pobrane 2026-11-03) | D-94: konto organizacji (D-U-N-S) | przy firmie i planach monetyzacji (D-16) deklaracja **trader** jest praktycznie przesądzona; Google pokaże link do regulaminu, którego nie mamy | Q-66, Q-65 |
+| **Dane usługodawcy i regulamin (Polska)** | Ustawa o świadczeniu usług drogą elektroniczną: art. 5 — dane identyfikacyjne i kontaktowe usługodawcy dostępne w systemie, którym posługuje się usługobiorca; art. 8 — usługodawca **określa regulamin** usług elektronicznych ([ISAP, t.j.](https://isap.sejm.gov.pl/isap.Nsf/download.xsp/WDU20190000123/U/D20190123Lj.pdf); najnowszy t.j. Dz.U. 2024 poz. 1513; projekt nowelizacji pod DSA z 18.09.2025 — **NIEPEWNE**, czy zmienia art. 5/8) | ani strona, ani gra nie mają danych usługodawcy ani regulaminu | ranking (usługa online) i strona to usługi elektroniczne → krótki regulamin PL/EN + blok „kto wydaje grę” w grze i na stronie (wniosek z ustawy, nie z orzeczenia o aplikacjach — **NIEPEWNE**) | Q-65, R7b, R7c |
+| **Warunki korzystania (sklepy)** | Apple ma standardową licencję EULA, której można użyć zamiast własnej; Google własnej nie narzuca, ale od 03.2027 pokaże link do regulaminu tradera | — | R7b: jeden regulamin dla obu sklepów (licencja gry + zasady rankingu: jedna gra oficjalna, odrzucanie oszustw, brak gwarancji dostępności serwera) | Q-65 |
+| **Dzieci — USA (COPPA)** | Zmieniona reguła COPPA: w mocy od 23.06.2025, pełna zgodność od **22.04.2026**; usługa „mixed audience” musi badać wiek przed zbieraniem danych; stały identyfikator to dane osobowe ([Federal Register 22.04.2025](https://www.federalregister.gov/documents/2025/04/22/2025-05904/childrens-online-privacy-protection-rule)) | grupa docelowa 13+ (R1), gra nie jest projektowana dla dzieci | przy grupie 13+ i braku wiedzy o dzieciach COPPA nie wymaga bramki wieku; **nie** zaznaczać w Play grup < 13 i nie kierować reklam/ASO do dzieci. Gdyby właściciel chciał „dla całej rodziny” → mixed audience → bramka wieku przed rankingiem | właściciel (potwierdzić 13+) |
+| **USA — ustawy stanowe o sklepach** | Texas App Store Accountability Act działa po wstrzymaniu nakazu przez 5. Okręg (28.05.2026); Utah przesunęło obowiązki do 6.05.2027, Luizjana od 1.07.2026, Alabama od 1.01.2027; Apple udostępnia Declared Age Range API ([AppleInsider 03.06.2026](https://appleinsider.com/articles/26/06/03/age-verification-now-mandatory-for-app-store-users-in-texas), [FPF](https://fpf.org/blog/comparing-enacted-app-store-accountability-acts/)) | brak | obowiązki deweloperów to głównie respektowanie sygnału wieku ze sklepu i zgód rodzica przy zmianach istotnych; dla gry 4+ bez treści wrażliwych **prawdopodobnie** nic do kodu — **NIEPEWNE**, sprawdzić przed premierą w USA | agent: obserwować (R7d) |
+| **Prawo konsumenckie / zwroty** | Gra darmowa → brak zwrotów. Dyrektywa o treściach cyfrowych 2019/770 obejmuje też treść „za dane”, ale nie, gdy dane służą wyłącznie dostarczeniu treści (art. 3 ust. 1) | D-16: bez płatności | dziś nic; przy płatnej wersji zwroty prowadzi sklep, a ekran zakupu podlega EAA (R1) | — |
+| **Strona airway.games** | Logi hostingu to dane osobowe; dostawca hostingu = procesor | polityka § 3 mówi „zależy od hostingu” | po wyborze hostingu (Cloudflare Pages / GitHub Pages, `docs/SITE.md`) wpisać dostawcę, okres logów i transfer | agent po decyzji o hostingu |
+
+### Luki w tekście polityki prywatności (`site/privacy.html` + kopia w grze, D-86)
+1. § 1 administrator: brak nazwy, adresu, kontaktu (Q-01); e-mail `contact@airway.games` „do potwierdzenia”.
+2. § 2 „bez przekazywania danych do naszych serwerów” jest **nieprawdziwe** dla buildu z rankingami — sekcja rankingów
+   czeka (Q-56). Do dopisania: cele i podstawy prawne osobno dla rankingu, ochrony przed oszustwami i e-maila.
+3. Brak: odbiorców (Google jako procesor, hosting), transferu poza EOG (DPF), okresów (90 dni wpisy — D-77; IP w logach
+   Auth — tygodnie; konto Auth do usunięcia + do 180 dni w kopiach; e-maile — ile?; logi hostingu), prawa sprzeciwu
+   i skargi do **Prezesa UODO**, informacji o wieku (13+), braku profilowania, daty wejścia w życie i historii zmian.
+4. Banner „Projekt informacyjny — wymaga potwierdzenia” (R5) musi zniknąć dopiero po akceptacji właściciela; dziś test
+   `test:privacy-text` pilnuje zgodności gry ze stroną — przy zmianie tekstu wystarczy jedna zmiana w `site/i18n.js`.
+
+### Co właściciel musi zdecydować albo podpisać
+- Q-01 dane administratora; Q-66 status przedsiębiorcy (Apple + Google, deklaracja Google przy zakładaniu konta
+  organizacji — D-94); Q-65 regulamin; Q-68 podstawa prawna rankingu; Q-67 UK.
+- Zaakceptować warunki przetwarzania danych Firebase w konsoli (przy krokach `docs/FIREBASE.md`).
+- Uruchomić skrzynkę `contact@airway.games` (lub inny adres) — wymagają jej: polityka, usuwanie danych (D-77), karta
+  tradera, Data safety.
+- Jedna konsultacja prawna z gotowymi szkicami R7a/R7b/R7d (taniej niż pisanie od zera).
+
+### Rekomendacja
+1. Teraz (agent, bez decyzji): **R7d** (rejestr czynności + lista kontrolna prawna z datami), **R7l** (przełącznik
+   „wysyłaj wyniki do rankingu”). 2. Po Q-01/Q-65/Q-68: **R7a** (polityka v1 z sekcją rankingów, Q-56 → A), **R7b**
+   (regulamin), **R7c** (dane wydawcy w grze i na stronie). 3. Trader: **tak** w obu sklepach (firma, D-94). 4. UK:
+   zapytać prawnika przy tej samej konsultacji; domyślnie rankingi działają też w UK.
+
+## R7 — Lokalizacja, fala 1 (DE/FR/ES/PT-BR): przygotowanie kodu i tekstów (stan 2026-11-03)
+
+D-96 zdecydowało: po premierze DE, FR, ES, PT-BR, najpierw opisy sklepowe (R1k). Ta sekcja mierzy, ile jest do
+przetłumaczenia i co w kodzie trzeba przygotować, żeby tłumaczenia weszły bez niespodzianek. Pomiary: skrypty na
+`origin/dev` z 2026-11-03 (Node 22.23, ICU 78.3; fontTools 4.68).
+
+### Ile tekstu
+| Źródło | Rozmiar (EN) |
+|---|---|
+| Katalog gry `src/i18n/en.ts` | **424 klucze, ok. 1 780 słów, 11 400 znaków**; 96 kluczy z parametrami, 29 z liczbą mnogą; PL jest o 8 % dłuższy niż EN |
+| Nazwy miast `src/data/cities.ts` | **165 miast** × `namePl`/`nameEn` (+ 8 regionów w `src/data/regions.ts`) |
+| Strona `site/i18n.js` | 73 teksty, ok. 640 słów (w tym polityka prywatności) |
+| Sklep `docs/store/en.md` | ok. 350 słów (R1k) |
+| **Razem na język** | **ok. 2 800 słów + 165 nazw miast** |
+
+Największe klucze to polityka prywatności (do 354 znaków) i zadania (80 kluczy `puzzle.*`). **61 % kluczy ma ≤ 20
+znaków** (125 ≤ 10, 136 w 11–20) — wg wytycznych IBM cytowanych przez W3C krótkie teksty po przetłumaczeniu z angielskiego
+rosną o **80–200 %**, długie o ok. 30 % ([W3C — Text size in translation](https://www.w3.org/International/articles/article-text-size.en)).
+Nasza pseudo-lokalizacja (`src/i18n/pseudo.ts`, N10p) wydłuża wszystko równo o ok. 40 % — dla krótkich etykiet to za
+mało, a w e2e sprawdza tylko 360×640 i 915×412 (nie 320×568).
+
+### Miejsca w kodzie, które znają tylko PL i EN
+`Language = 'pl' | 'en'` i `normaliseLanguage` (`src/i18n/index.ts`), `PLURAL_ORDER` (tamże), `NumberLanguage` +
+`LOCALES` (`src/core/format.ts`), trójargumentowe `getLanguage() === 'pl' ? namePl : nameEn` (`src/ui/airportLabel.ts`),
+`namePl`/`nameEn` w miastach i regionach, lista w ustawieniach (`src/ui/settings`, `lang==='pl'?'pl':'en'`),
+`CFBundleLocalizations` (iOS, D-91), `locales_config.xml` (Android, D-115), `site/i18n.js` i `test:privacy-text`.
+Każdy nowy język to dziś ok. 10 miejsc ręcznie — warto jedna tabela języków (R7f).
+
+### Liczba mnoga
+| Język | Kategorie CLDR (Intl, ICU 78) | Uwaga |
+|---|---|---|
+| de | one, other | jak EN |
+| fr | one, many, other | **0 i 1 → one** („0 passager”); many tylko dla milionów („1 000 000 de passagers”) |
+| es | one, many, other | many dla milionów |
+| pt-BR | one, many, other | **0 i 1 → one** (pt-PT: 0 → other); many dla milionów |
+
+Silnik (`pluralForm`) obsłuży to po dopisaniu kolejności form do `PLURAL_ORDER` — brakująca forma bierze ostatnią, więc
+tłumacz może podać 2 formy (one|other), jeśli `many` ustawimy po `other`. **Znalezisko (błąd uśpiony):** `pluralValue`
+czyta liczbę już sformatowaną i traktuje kropkę jako przecinek dziesiętny. W DE/ES/PT-BR separator tysięcy to kropka:
+„1.000” → 1 → forma **one** („1.000 Passagier”), a w PT-BR „1.500” → 1,5 → one („1.500 passageiro”). W PL/EN dziś
+działa. Poprawka: wybierać formę z liczby przed formatowaniem albo parsować wg separatorów języka (R7e).
+
+### Format liczb
+`de-DE` „2.500”, `fr-FR` „2 500” (wąska twarda spacja **U+202F**), `es-ES` „2500” (CLDR grupuje dopiero od 5 cyfr,
+jak pl-PL przed D-61), `pt-BR` „2.500”. Rekomendacja: zostawić CLDR (D-61 dotyczy tylko PL); ewentualne ujednolicenie
+ES zgłosić przy korekcie native speakera.
+
+### Fonty (OFL, `public/fonts/`)
+Sprawdzone `cmap` pięciu plików pod znaki DE/FR/ES/PT (ä ö ü ß ẞ „ “, à â æ ç é è ê ë î ï ô œ ù û ÿ « », á í ó ú ñ ¿ ¡,
+ã õ º ª, €, …, –, —): **Overpass 400/800 i Overpass Mono 700 — komplet.** **Atkinson Hyperlegible Next 400/700**
+(krój tekstu, 362 glify, podzbiór) ma wszystkie litery, ale **nie ma U+202F** — a tego znaku używa `Intl` fr-FR jako
+separatora tysięcy, a francuska typografia przed „: ; ! ?”. Skutek: przeglądarka weźmie spację z kroju systemowego
+(inna szerokość, w najgorszym razie pusty prostokąt — **NIEPEWNE**, zależy od WebView). Poprawka: w `formatNumber`
+zamieniać U+202F na U+00A0 (który Atkinson ma) i test pokrycia glifów dla każdego katalogu (R7g).
+
+### Najciaśniejsze miejsca
+- **Tablica split-flap w menu** (`src/ui/menu/menu.ts`): tytuł wiersza 20 komórek, **pół wiersza 10**, status 10, bramka
+  2; dłuższy tekst kończy się „…”. Przykładowe tłumaczenia słownikowe (orientacyjne, **nie** finalne): USTAWIENIA/SETTINGS
+  → DE „EINSTELLUNGEN” (13) i PT „CONFIGURAÇÕES” (13) nie mieszczą się w 10; BOARDING → FR „EMBARQUEMENT” (12) nie
+  mieści się w statusie. Tłumacz musi dostać **limit znaków przy kluczu** (np. DE „OPTIONEN”, PT „AJUSTES”, FR „À BORD”).
+- **320×568** (`e2e/screens-fit-320.mjs`): pilnuje celów ≥ 48 px, braku przycinania i zapasu 8 px w selectach — dziś tylko
+  PL/EN. Najdłuższe opcje selectów (np. „Automatyczna”) w DE/FR będą dłuższe.
+- **D-51 (bez łamania w środku wyrazu bez dywizu)** + niemieckie złożenia (np. „Großraumflugzeug”, 16 liter, na stemplu
+  lub w doku). `hyphens: auto` w Chromium działa na Androidzie z wzorcami AOSP, ale pokrycie języków jest „nierówne”
+  ([blink-dev — Intent to Ship](https://groups.google.com/a/chromium.org/g/blink-dev/c/sIRXYKA4jGE),
+  [web-features #1714](https://github.com/web-platform-dx/web-features/pull/1714)) — **NIEPEWNE** dla DE/FR/ES/PT w WebView.
+  Bezpieczniej: miękkie dywizy (`­`) w katalogu DE tam, gdzie test wykryje ryzyko (zgodne z kierunkiem Q-23).
+
+### Nazwy miast
+Egzonimy różnią się między językami: Monachium/Munich/**München**, Mediolan/Milan/**Mailand**, Londyn/**Londres** (FR/ES/PT),
+Nowy Jork/**Nueva York**/**Nova York** (BR; PT-PT „Nova Iorque”), Pekin/**Pékin**. 165 miast × 4 języki = 660 nazw.
+Źródło: etykiety Wikidata (licencja **CC0**, zgodna z naszą zasadą „own or CC0”) + przegląd; wpis w `docs/ASSETS.md`.
+Zapis danych trzeba zmienić z `namePl`/`nameEn` na mapę języków bez ruszania `code` (D-107: id symulacji stałe).
+
+### Rekomendacja
+1. Przed zamówieniem tłumaczeń (agent, bez decyzji): **R7e** (liczba mnoga z surowej liczby), **R7f** (tabela języków),
+   **R7g** (U+202F + test glifów), **R7h** (limity długości + ostrzejsza pseudo-lokalizacja na 320×568).
+2. Potem **R7i** (eksport/import dla tłumacza z kontekstem i limitem) i **R7j** (nazwy miast z Wikidata).
+3. Tłumaczenie: agent + korekta native speakera na język (Q-69); ok. 2 800 słów na język. Stawki rynkowe korekty /
+   tłumaczenia gier w EU to rząd 0,05–0,15 EUR za słowo (**NIEPEWNE**, brak świeżego źródła) → orientacyjnie
+   150–400 EUR na język za korektę, więcej za pełne tłumaczenie. Polityka prywatności i regulamin w nowych językach
+   dopiero po wersji v1 PL/EN (R7a/R7b).
+
+## R7 — Strona airway.games i przedrejestracja (stan 2026-11-03)
+
+Krótko, bo prasę opisuje R2e, a plan wydania R2f. Co strona ma, a czego brakuje do lejka „zobacz → zapisz się
+w sklepie”:
+
+| Element | `site/` dziś | Potrzebne na T−8 tygodni (przedrejestracja, D-96) |
+|---|---|---|
+| Wezwanie do działania | „Wkrótce na Android i iOS”, bez linków | przyciski sklepów (oficjalne odznaki Apple / Google wg ich wytycznych marki — wpis w `docs/ASSETS.md`), ukryte, dopóki adres nie jest ustawiony w konfiguracji |
+| Obrazy | koncepcyjne makiety etapu 0 (`docs/SITE.md` sam ostrzega) | prawdziwe zrzuty z `docs/store/shots/` (D-123) i grafika z D-117 jako `og:image` (dziś brak `og:image`) |
+| Prasa | brak | R2e (`press.html`, ZIP) |
+| Dane wydawcy / kontakt | tylko e-mail „do potwierdzenia” | blok wydawcy (UŚUDE art. 5, trader) — R7c |
+| Regulamin | brak | R7b (link wymagany też na karcie Google tradera od 03.2027) |
+| Newsletter | brak (polityka: „bez formularzy”) | **rekomendacja: bez newslettera na start** — przedrejestracja w Play i pre-order w App Store same powiadamiają gracza; newsletter oznacza dostawcę (procesora), zgodę, double opt-in i zmianę polityki |
+| SEO | `<title>`/`og:title` per język, bez `hreflang`, bez `canonical`, brak `404.html` | `hreflang` pl/en (+ fala 1), `canonical`, prosta 404 w stylu strony |
+
+Rekomendacja: jeden PR **R7k** po decyzji o hostingu i adresach sklepów; bez newslettera (Q-70).
+
+## R8 — Audyt głębi rozgrywki i balansu przy regułach v5 (stan 2026-11-03)
+
+Pomiar, nie sieć: bot DEV (`src/game/dev/bot-policy.ts`) gra na prawdziwym `Sim` przez
+`scripts/balance-game-adapter.ts`, ten sam rytm co `balance:report` (decyzja co 30 ticków), **200 seedów od 0xA1A1**,
+limit 60 min (żaden bieg go nie dobił, więc nic nie jest ucięte). Żaden parametr gry nie został zmieniony. Nowy skrypt
+pomiarowy `scripts/research/r8-audit.ts` tylko liczy zdarzenia (opakowuje w swoim procesie `alightAt` pasażerów
+i bramkę ciszy nocnej, wyniku nie zmienia); kontrola zgodności: 50 seedów z limitem 30 min daje medianę **17,03 min**,
+dokładnie jak `npm run test:balance`. Dane per bieg: `docs/balance/r8-audit-200.csv` (1000 wierszy, 5 polityk).
+Dodatkowo krótki `ui:long-play` (PL, 412×915, 4×, 4 min) — 0 problemów, plansza tygodnia 1 bez szerokokadłubowca
+(karty: rozbudowa huba, +2 sloty, turboprop), czyli w ok. połowie tygodni karta „samolot” to turboprop.
+
+**Zastrzeżenie:** bot nie zdejmuje samolotów z tras, nie usuwa tras i nie skraca ich (`UnassignPlane`, `RemoveRoute`,
+`ShortenRoute` istnieją w `src/sim/commands.ts`, bot ich nie używa), a wydłuża trasę najwyżej do 5 przystanków.
+Liczby opisują sieć grana „prostym” graczem; człowiek może grać lepiej lub gorzej (D-79, D-113).
+
+### Długość sesji (bot, 200 seedów, 1×)
+
+| p10 | p25 | mediana | p75 | p90 | min | max | średnia | ≥ tydz. 4 (curfew) | ≥ tydz. 5 |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 9,8 min | 13,1 | **16,52** | 20,2 | 22,4 | 4,3 | 31,6 | 16,42 | **29 / 200 (15 %)** | 1 / 200 |
+
+Rozrzut jest wąski i ma twardy sufit: tydzień = 7,2 min, więc 85 % biegów kończy się w tygodniu 2–3,
+a żaden nie dożywa 6. planszy tygodnia (tydzień 5 kończy się po 36 min). Tablice tygodnia: 1. — 97 %, 2. — 66 %,
+3. — 15 %, 4. — 1 %. 10 % biegów kończy się przed 10 min (dolna granica celu D-79).
+
+### Przyczyny porażek wg tygodnia
+
+„Przyczyna” to pierwszy fakt raportu końca gry (`buildCauseReport`, `src/game/causes.ts`) dla lotniska, które się
+zapchało; „bez trasy” = lotnisko z 0 tras w chwili porażki.
+
+| Tydzień porażki | Biegi | W hubie | Lotnisko bez trasy | Główna przyczyna z raportu |
+|---|---:|---:|---:|---|
+| 1 | 6 | 2 | 0 | region 6 |
+| 2 | 63 | 19 | 16 | region 41 · brak trasy 17 · pojemność 5 |
+| 3 | 102 | 34 | 28 | region 41 · brak trasy 33 · pojemność 28 |
+| 4 | 28 | 9 | 12 | brak trasy 15 · pojemność 8 · region 5 |
+| 5 | 1 | 1 | 0 | pojemność 1 |
+| **Razem** | **200** | **65 (33 %)** | **56 (28 %)** | region 47 % · brak trasy 33 % · pojemność 21 % |
+
+- Tylko **⅓ porażek dzieje się w hubie**; lotnisko z 1 trasą (szprycha) to 79 porażek, bez trasy 56. Teza „przegrywasz,
+  gdy zapcha się hub” (CLAUDE.md) opisuje mniejszość biegów.
+- **99 % porażek: 0 wolnych samolotów w rezerwie.** Lotnisko bez trasy zapycha się po medianie **2 422 min gry**
+  (~40 h gry, ~4 min rzeczywistych; p10 1 255 min) od otwarcia — czasu jest dość, brakuje samolotu. W chwili porażki
+  mediana 1,5 lotniska bez obsługi (p90: 4). Sieć rośnie o 6 lotnisk na tydzień (D-106), flota o 1 samolot na tydzień.
+- Raport końca gry dla takiego lotniska radzi „Połącz nowe lotnisko, zanim zapełni się poczekalnia”
+  (`gameover.unservedHint`) — w 99 % przypadków nie było czym. Gracz potrzebuje innej rady: przenieść samolot albo
+  przedłużyć obsługiwaną trasę (R8b).
+- Fakt „region” (np. „62 % czeka na Azję”) jest główny w 47 % biegów; jest prawdziwy, ale nie mówi, co zrobić.
+
+### Ulepszenia tygodnia: co bot wybiera i ile to daje
+
+Plansza losuje 3 z 4 kart, zawsze z jednym samolotem (`drawUpgradeOffers`, `src/sim/upgrades.ts`).
+
+| Karta | Pokazana | Wybrana | Wybór, gdy pokazana | Plansza 1 | Plansza 2 | Plansza 3 |
+|---|---:|---:|---:|---:|---:|---:|
+| Turboprop | 290 | 201 | 69 % | 70 | 108 | 23 |
+| Szerokokadłubowiec | 301 | 148 | 49 % | 123 | 21 | 4 |
+| Rozbudowa huba | 235 | 6 | **3 %** | 1 | 2 | 2 |
+| +2 sloty | 239 | 0 | **0 %** | 0 | 0 | 0 |
+
+Wpływ na wynik — ten sam bot, ale zawsze bierze wskazaną kartę, gdy jest na planszy (inaczej swój wybór):
+
+| Polityka kart | Mediana | p25 | p90 | Wynik (mediana) | 2. / 3. plansza | Dożywa tyg. 4 | Porażki bez trasy | Samoloty na końcu |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Bot (normalnie) | 16,52 | 13,1 | 22,4 | 268 | 66 % / 15 % | 15 % | 56 | 6 |
+| **Zawsze szerokokadłubowiec** | **17,05** | 13,5 | 23,3 | **295 (+10 %)** | 70 % / 18 % | 18 % | 25 | 6 |
+| Zawsze turboprop | 15,49 | 12,0 | 21,9 | 238 (−11 %) | 59 % / 12 % | 12 % | 93 | 6 |
+| Zawsze rozbudowa huba | 15,59 | 12,3 | 21,4 | 236 (−12 %) | 59 % / 10 % | 10 % | 113 | 4 |
+| Zawsze +2 sloty | 15,49 | 12,1 | 21,3 | 231 (−14 %) | 58 % / 9 % | 9 % | 107 | 4 |
+
+- **Strategia dominująca:** samolot, a jeśli jest — szerokokadłubowiec (300 miejsc, 11 000 km). Przewaga jest mniejsza
+  niż przy N7w (D-78: 21,8 vs 15,8 min), ale nadal +10 % wyniku; to zgodne z D-78 („zostaje do playtestu”).
+- **Opcje bezużyteczne:** rozbudowa huba i +2 sloty kosztują samolot, a flota jest wąskim gardłem (99 % porażek bez
+  rezerwy). Wymuszone obniżają medianę o ~1 min, wynik o 12–14 % i podwajają porażki na lotniskach bez trasy.
+  Z losowania wynika, że **każda** plansza ma co najmniej jedną z tych dwóch kart, a co trzecia obie (pokazane
+  235 + 239 razy na 355 plansz) — wtedy realny wybór sprowadza się do jednej karty z samolotem.
+
+### Czy cisza nocna, sloty i przesiadki mają znaczenie
+
+| Mechanika (decyzja) | Ile biegów jej dotyka | Skala |
+|---|---|---|
+| Cisza nocna od tyg. 4 (D-17) | **29 / 200 (15 %)** dożywa tygodnia 4; 20 z nich ma choć jedno wstrzymanie | mediana 123 samolotominut na ziemi + 123 w kręgu nad lotniskiem w tych biegach |
+| Sloty odlotów 2/3 na godzinę (D-41) | **9 / 200** biegów ma jakiekolwiek wstrzymanie | max 32 samolotominut na bieg, mediana 0; „+2 sloty” nigdy nie jest potrzebne |
+| Przesiadki, MCT 25/15 min | **200 / 200** | **49 %** dowiezionych pasażerów miało ≥ 1 przesiadkę (mediana per bieg 48 %) |
+
+- Przesiadki to rdzeń, który działa: co drugi pasażer przesiada się w hubie, bo popyt jest „do regionu”, a nie
+  „do miasta”.
+- Sloty są niewidoczne dla sieci 4–6 samolotów rozłożonych po ~6 trasach (mediana na końcu: 17 lotnisk, 6 tras,
+  2 huby, 6 samolotów). To samo pokazał już pomiar zadania 32 (`docs/balance/README.md`); D-41 („+2 sloty to
+  realny wybór”) nie jest spełnione dla bota. Człowiek, który stawia kilka samolotów na jednym lotnisku, spotka limit
+  wcześniej — to trzeba sprawdzić w teście zamkniętym.
+- Cisza nocna, jeden z wyróżników gry (D-07), pojawia się w 1 na 7 biegów bota.
+
+### Zgodność z założeniami decyzji
+
+| Decyzja | Założenie | Pomiar R8 | Ocena |
+|---|---|---|---|
+| D-05 | świat bogaty, info w świecie | — (audyt mechaniki, nie grafiki) | — |
+| D-17 | cisza nocna od tygodnia 4 w Endless | 15 % biegów dożywa tygodnia 4 | mechanika prawie niewidoczna (Q-72) |
+| D-40 | tydzień 3 dni, plansza ok. 4–5 min | plansza po 7,2 min; 97 % / 66 % / 15 % dociera do 1./2./3. | OK dla 1. i 2., trzecia rzadka |
+| D-41 | +2 sloty to realny wybór | wybór 0 %, wstrzymania w 9 / 200 biegach | nie działa (Q-71) |
+| D-79 | mediana bota 10–18 min | 16,52 (200 seedów), 17,03 (50, bramka) | OK, blisko górnej granicy; 10 % biegów < 10 min |
+| D-95 | brak porażek w tyg. 1 bez możliwej odpowiedzi | 6 / 200 porażek w tyg. 1, wszystkie na lotnisku w zasięgu | OK |
+| D-106 | 6 lotnisk/tydz., popyt 130 % | flota +1/tydz.; 99 % porażek bez wolnego samolotu | tempo dyktuje flota, nie projekt sieci |
+| D-113 | tempo v5 do playtestu | — | propozycje R8 tylko po teście zamkniętym albo w osobnych regułach |
+
+### Propozycje (w `docs/NIGHT-BACKLOG.md`, R8a–R8g)
+- **R8a** plansza z kartami, które mają sens: „+2 sloty” dopiero po pierwszym wstrzymaniu odlotu, „rozbudowa huba”
+  tylko gdy hub istnieje (miara: odsetek plansz z kartą bez sensu → 0; wybór huba/slotów, gdy pokazane, > 3 % / > 0 %).
+- **R8b** rada na końcu gry „brak wolnego samolotu” (miara: odsetek porażek bez trasy, w których rada mówi
+  o przeniesieniu samolotu: 0 → 100 %).
+- **R8c** cisza nocna od tygodnia 3 w Endless, po Q-72 (miara: biegi z ciszą nocną 15 % → ~66 %, mediana w 10–18).
+- **R8d** `balance:report` pokazuje rozrzut i użycie mechanik (p10/p90, tydzień porażki, cisza, sloty, przesiadki).
+- **R8e** bot, który przenosi samoloty (lepszy zastępca człowieka; miara: porażki bez trasy 56 / 200 → mniej).
+- **R8f** przygotowany przegląd „późnej rampy” (flota vs lotniska po tygodniu 3), stosowany dopiero po teście (D-113).
+- **R8g** pytania R8 do arkusza testu zamkniętego (R3k/R6i).
+
+### Pytania do testu zamkniętego (R3k / R6i)
+1. Z ekranu końca gry: „Czy wiedziałeś, co mogło uratować lotnisko?” (tak / nie / zgadywałem) — i czy gracz miał wtedy
+   wolny samolot (z dziennika). Cel: rada R8b ma sens, jeśli „nie” > 30 %.
+2. Ile razy gracz przeniósł samolot z jednej trasy na inną (dziennik: `UnassignPlane` + `AssignPlane`)? Jeśli prawie
+   nigdy — przenoszenie jest ukryte i to ono, nie tempo, skraca biegi.
+3. Na planszy tygodnia: jaką kartę wybrał i dlaczego (jedno zdanie)? Czy którakolwiek karta wydała się „bez sensu”?
+   Próg: ≥ 1/3 testerów → R8a.
+4. Czy gracz kiedykolwiek zobaczył wstrzymany odlot (stempel SLOT)? Ile samolotów miał na najbardziej obciążonym
+   lotnisku? Odpowiada na D-41 dla ludzi.
+5. Czy gracz doszedł do ciszy nocnej (tydzień 4) i czy zrozumiał zamknięcie lotniska? Odsetek < 30 % → Q-72 B.
+6. Długość biegów: rozkład (p10/p50/p90) z dziennika, nie sama mediana; czy najlepsi testerzy przekraczają 30 min.
+7. „Czy w ostatnich minutach miałeś na co wydać decyzję, czy tylko patrzyłeś?” — sufit tygodnia 4–5 (R8f).
+
+### Powtórzenie pomiarów
+```sh
+npm ci
+npm run test:balance                                       # bramka: median_min=17.03 (50 seedów)
+node --import ./scripts/ts-test-loader.mjs scripts/research/r8-audit.ts --seeds=50 --cap-min=30   # kontrola: p50=17.03
+node --import ./scripts/ts-test-loader.mjs scripts/research/r8-audit.ts --seeds=200 --cap-min=60 \
+  --policy=all --csv=docs/balance/r8-audit-200.csv          # ~2,5 min, wszystkie tabele powyżej
+npm install --no-save playwright@1.63.0 && npm run ui:long-play -- pl 412 915 4 4 r8-pl-4x
+```

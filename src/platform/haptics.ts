@@ -8,7 +8,13 @@ export type HapticKind = 'snap' | 'confirm' | 'jam';
 
 /** Native bridge; tests and other shells may inject their own. Web is a no-op. */
 export interface NativeHapticDriver {
+  /**
+   * [night-12r] D-137: @capacitor/haptics 8 only ticks `selectionChanged` inside `selectionStart`…`selectionEnd`
+   * (Android checks a `selectionStarted` flag, iOS needs the generator `selectionStart` creates).
+   */
+  selectionStart(): void | Promise<void>;
   selectionChanged(): void | Promise<void>;
+  selectionEnd(): void | Promise<void>;
   impactLight(): void | Promise<void>;
   impactHeavy(): void | Promise<void>;
 }
@@ -21,7 +27,9 @@ export interface HapticsConfig {
 }
 
 const capacitorDriver: NativeHapticDriver = {
+  selectionStart: () => Haptics.selectionStart(),
   selectionChanged: () => Haptics.selectionChanged(),
+  selectionEnd: () => Haptics.selectionEnd(),
   impactLight: () => Haptics.impact({ style: ImpactStyle.Light }),
   impactHeavy: () => Haptics.impact({ style: ImpactStyle.Heavy }),
 };
@@ -36,6 +44,8 @@ function defaultDriver(): NativeHapticDriver | null {
 
 let isEnabled: () => boolean = () => readAccessibilitySettings().hapticsEnabled;
 let driver: NativeHapticDriver | null | undefined;
+/** The driver a native selection was opened on (null: none open), so it is closed even if the switch flips. */
+let selection: NativeHapticDriver | null = null;
 
 /**
  * Composition root hook. Call once at boot if the settings screen keeps its own
@@ -43,26 +53,60 @@ let driver: NativeHapticDriver | null | undefined;
  */
 export function configureHaptics(config: HapticsConfig): void {
   if (config.isEnabled) isEnabled = config.isEnabled;
-  if (config.driver !== undefined) driver = config.driver;
+  if (config.driver !== undefined) { driver = config.driver; selection = null; }
 }
 
 function enabled(): boolean {
   try { return isEnabled(); } catch { return false; }
 }
 
-/** Fire-and-forget; a missing vibrator or denied service never interrupts a gesture. */
-export function haptic(kind: HapticKind): void {
-  if (!enabled()) return;
+function nativeDriver(): NativeHapticDriver | null {
   if (driver === undefined) driver = defaultDriver();
-  const native = driver;
-  if (!native) return;
+  return driver;
+}
+
+function call(effect: () => void | Promise<void>): void {
   try {
-    const result = kind === 'snap' ? native.selectionChanged() :
-      kind === 'confirm' ? native.impactLight() : native.impactHeavy();
-    void Promise.resolve(result).catch(() => { /* optional effect */ });
+    void Promise.resolve(effect()).catch(() => { /* optional effect */ });
   } catch {
     // Native service unavailable.
   }
+}
+
+/**
+ * Fire-and-forget; a missing vibrator or denied service never interrupts a gesture. A `snap` inside an open
+ * selection (a route drag) is one selection tick; outside one it opens and closes its own selection around the tick.
+ */
+export function haptic(kind: HapticKind): void {
+  if (!enabled()) return;
+  const native = nativeDriver();
+  if (!native) return;
+  if (kind !== 'snap') {
+    call(kind === 'confirm' ? () => native.impactLight() : () => native.impactHeavy());
+  } else if (selection === native) {
+    call(() => native.selectionChanged());
+  } else {
+    call(() => native.selectionStart());
+    call(() => native.selectionChanged());
+    call(() => native.selectionEnd());
+  }
+}
+
+/** [night-12r] D-137: a route drag began; following snaps tick inside one native selection. */
+export function hapticSelectionStart(): void {
+  if (selection || !enabled()) return;
+  const native = nativeDriver();
+  if (!native) return;
+  selection = native;
+  call(() => native.selectionStart());
+}
+
+/** [night-12r] D-137: the drag ended or was cancelled; always closes an open selection, even with the switch off. */
+export function hapticSelectionEnd(): void {
+  const native = selection;
+  if (!native) return;
+  selection = null;
+  call(() => native.selectionEnd());
 }
 
 /** Call after a route end or airport snaps into place. */
@@ -72,13 +116,17 @@ export function hapticJam(): void { haptic('jam'); }
 
 /** Route-tool port shape (`RouteToolPorts.haptics` in src/input/routeTool.ts). */
 export interface RouteHaptics {
+  start(): void;
   snap(): void;
   confirm(): void;
+  end(): void;
 }
 
 /** Port for the route tool; the accessibility toggle is checked on every call. */
 export const routeHaptics: Readonly<RouteHaptics> = Object.freeze({
+  start: hapticSelectionStart,
   snap: () => haptic('snap'),
+  end: hapticSelectionEnd,
   confirm: () => haptic('confirm'),
 });
 

@@ -9,26 +9,17 @@ It supplies adapters and tokens but does not invent a production HUD.
 Preferences use the existing `airway.settings` JSON record without overwriting
 the language chosen through `src/i18n`.
 
-## Task 06: airport overlays
+## Airport overlays
 
-Mount one `createCityAnnouncer(container)` instance with the overlay.
-For each interactive city target, call `bindCityAccessibility(button, city,
-onActivate, announcer)`; retain its `update` and `dispose` methods.
-For the best TalkBack/VoiceOver behavior, use a native `<button>` with a
-48×48 dp hit area rather than a canvas-only click target. The city description
-is translated and contains the city name, waiting count and hub condition.
-Only selecting a city triggers speech; rendering and simulation ticks do not.
+[night-12q] The original task-20 city announcer and action-label adapters were never wired in and were removed
+(R5i). The overlay (`src/ui/overlay.ts`) and the HUD give their native buttons translated labels themselves.
 
 Destination glyph SVG elements need `data-airway-destination` (or class
 `airway-destination-glyph`) and their six region fills from
 `src/ui/theme/tokens.json`. Preserve the six distinct silhouettes. The
 enhanced setting changes size from 16 to 21 px and outline from 1.5 to 3 px.
 
-## Task 13 / 14: HUD, dock and menu
-
-Give button elements `data-airway-action="undo|turboprop|widebody|hub|
-speed|pause|resume|menu|settings|back"`; run `labelAirportActions(root)`
-once after mounting and after language changes. Always use actual buttons.
+## HUD, dock and menu
 
 Use `airway-text-label`, `airway-text-body`, `airway-text-value` and
 `airway-text-title` on role text; these consume 100/115/130% typography

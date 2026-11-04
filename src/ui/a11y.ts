@@ -1,5 +1,6 @@
-// Accessibility adapters (task 20). HUD (13), overlays (06) and the settings screen bind to these APIs.
-import { t, type TranslationKey } from '../i18n';
+// Accessibility settings (task 20): text scale, enhanced glyphs and haptics, read by the settings screen,
+// haptics and the composition root. [night-12q] R5i: the unused city announcer and action-label adapters were
+// removed (overlays and the HUD label their own buttons through i18n).
 
 export type TextScale = 100 | 115 | 130;
 export interface AccessibilitySettings {
@@ -7,14 +8,6 @@ export interface AccessibilitySettings {
   enhancedGlyphs: boolean;
   hapticsEnabled: boolean;
 }
-export interface CityStatus {
-  name: string;
-  waiting: number;
-  hubCapacity?: number;
-  jammed?: boolean;
-}
-export type AirportAction = 'undo' | 'turboprop' | 'widebody' | 'hub' |
-  'speed' | 'pause' | 'resume' | 'menu' | 'settings' | 'back';
 
 const SETTINGS_KEY = 'airway.settings';
 const DEFAULT_SETTINGS: Readonly<AccessibilitySettings> = Object.freeze({
@@ -22,18 +15,6 @@ const DEFAULT_SETTINGS: Readonly<AccessibilitySettings> = Object.freeze({
   enhancedGlyphs: false,
   hapticsEnabled: true,
 });
-const ACTION_KEYS: Record<AirportAction, TranslationKey> = {
-  undo: 'a11y.action.undo',
-  turboprop: 'a11y.action.turboprop',
-  widebody: 'a11y.action.widebody',
-  hub: 'a11y.action.hub',
-  speed: 'a11y.action.speed',
-  pause: 'action.pause',
-  resume: 'action.resume',
-  menu: 'a11y.action.menu',
-  settings: 'a11y.action.settings',
-  back: 'a11y.action.back',
-};
 let memorySettings: AccessibilitySettings | null = null;
 
 function record(value: unknown): Record<string, unknown> {
@@ -101,93 +82,4 @@ export function initializeAccessibility(root?: HTMLElement): () => void {
   };
   window.addEventListener('storage', onStorage);
   return () => window.removeEventListener('storage', onStorage);
-}
-
-/** Set translated action names on native buttons (dock and split-flap menu). */
-export function labelAirportActions(container: ParentNode): number {
-  let count = 0;
-  for (const element of container.querySelectorAll<HTMLElement>('[data-airway-action]')) {
-    const action = element.dataset.airwayAction as AirportAction | undefined;
-    if (!action || !Object.prototype.hasOwnProperty.call(ACTION_KEYS, action)) continue;
-    element.setAttribute('aria-label', t(ACTION_KEYS[action]));
-    count++;
-  }
-  return count;
-}
-function cityCondition(city: CityStatus, waiting: number): string {
-  if (city.jammed) return t('a11y.cityJammed');
-  const capacity = city.hubCapacity;
-  if (capacity === undefined || !Number.isFinite(capacity) || capacity <= 0) {
-    return t('a11y.cityAirport');
-  }
-  if (waiting >= capacity) return t('a11y.cityJammed');
-  if (waiting >= capacity * 0.8) return t('a11y.cityBusy');
-  return t('a11y.cityNormal');
-}
-export function describeCity(city: CityStatus): string {
-  const waiting = Number.isSafeInteger(city.waiting) ? Math.max(0, city.waiting) : 0;
-  return t('a11y.cityDescription', { city: city.name, waiting, state: cityCondition(city, waiting) });
-}
-
-/** Polite status region; only announce on user selection, never during each render frame. */
-export function createCityAnnouncer(container: HTMLElement): {
-  announce: (city: CityStatus) => void;
-  dispose: () => void;
-} {
-  const region = document.createElement('div');
-  region.className = 'airway-sr-only';
-  region.setAttribute('role', 'status');
-  region.setAttribute('aria-live', 'polite');
-  region.setAttribute('aria-atomic', 'true');
-  container.appendChild(region);
-  let disposed = false;
-  return {
-    announce(city) {
-      if (disposed) return;
-      const message = describeCity(city);
-      region.textContent = '';
-      queueMicrotask(() => { if (!disposed) region.textContent = message; });
-    },
-    dispose() { disposed = true; region.remove(); },
-  };
-}
-
-/** Attach to an airport hit target once, update its accessible state at simulation ticks. */
-export function bindCityAccessibility(
-  element: HTMLElement,
-  initial: CityStatus,
-  onActivate: () => void,
-  announcer: ReturnType<typeof createCityAnnouncer>,
-): { update: (city: CityStatus) => void; dispose: () => void } {
-  let current = initial;
-  const nativeButton = element.tagName === 'BUTTON';
-  if (!nativeButton) {
-    element.setAttribute('role', 'button');
-    if (element.tabIndex < 0) element.tabIndex = 0;
-  }
-  element.setAttribute('aria-label', describeCity(current));
-  const click = () => {
-    onActivate();
-    announcer.announce(current);
-  };
-  const key = (event: KeyboardEvent) => {
-    if (!nativeButton && (event.key === 'Enter' || event.key === ' ')) {
-      event.preventDefault();
-      if (!event.repeat) element.click();
-    }
-  };
-  element.addEventListener('click', click);
-  if (!nativeButton) element.addEventListener('keydown', key);
-  return {
-    update(city) {
-      if (city.name === current.name && city.waiting === current.waiting &&
-        city.hubCapacity === current.hubCapacity && city.jammed === current.jammed) return;
-      current = city;
-      element.setAttribute('aria-label', describeCity(current));
-    },
-    dispose() {
-      element.removeEventListener('click', click);
-      if (!nativeButton) element.removeEventListener('keydown', key);
-    },
-  };
 }

@@ -907,7 +907,7 @@ ES 2.0 phone the game is a blank globe. The manifest now requires `glEsVersion 0
 from those devices instead of selling them a broken install. Both owner options that change anything in Q-54 (A and
 B) include this filter, so it is done now; only the minSdk choice (24 vs 29) still waits for Q-54. Guarded by
 `test:android-config` (`play-gles3-filter`, also ties the filter to three ≥ r163). Not covered: ES 3.0 devices whose
-WebView blocklists WebGL 2 (R3g fallback page). **Status: in force (N12p); minSdk part open (Q-54).**
+WebView blocklists WebGL 2 (R3g fallback page). **Status: in force (N12p); minSdk part decided in D-133 (Q-54 → B).**
 
 ## D-128 — Airport code plates at hubs and named airports; all when zoomed in (2026-11-03, owner, Q-61 → C)
 R5 found that an on-screen airport shows neither code nor name, while the pause summary, crate stamps and the
@@ -949,3 +949,67 @@ continue it." / "Zapisany lot ze starszej wersji zasad: obecne zasady nie pozwal
 rules version (legacy) or with the current version that fails stays `corrupt`: there it really is damage. The save
 is still not deleted. Rejected: silently dropping the notice (the Continue row would vanish without a word, N10c).
 (Numbered D-130 in PR #147; renumbered because the owner's Q-63/Q-64 answers took D-130/D-131.) **Status: in force (N11j, `test:save-golden` 21 checks, `test:e2e:save-notice` 6 steps).**
+
+## D-133 — Android minSdk 29 (Android 10) (2026-11-03, owner, Q-54 → B)
+The owner chose B: raise `minSdkVersion` from 24 (Android 7) to 29 (Android 10) and keep the OpenGL ES 3.0 Play
+filter (D-124). Android 7–9 are about 8 % of Play devices, their WebView no longer receives Chrome updates (Chrome
+139+ needs Android 10), the game is never tested on them, and most are below the low quality preset. Fewer untested
+web engines outweigh the lost reach. `android/variables.gradle` sets 29; `test:android-config` (`sdk-versions`)
+requires exactly 29 and no hard-coded minSdk in `app/build.gradle`, and `play-gles3-filter` requires minSdk ≥ 29.
+Rejected: A (24 + filter) and C (no change). Not checked: a Gradle build and the Play device count with the new
+floor. **Status: in force (N12q).**
+
+## D-134 — Terms of use and trader status (2026-11-03, owner, Q-65 → A, Q-66 → A)
+Q-65 A: short PL/EN terms of use on the site plus a line in the game (R7b), and Apple's standard EULA in the App
+Store; the terms are reviewed by a lawyer in the same consultation as the privacy policy. Q-66 A: the publisher
+declares **trader** status in both App Store and Google Play, with the company address and phone from Q-01 (business,
+not private details). Rationale: Polish e-services law requires terms for the leaderboard and site, Google shows the
+trader's terms link from 1.03.2027, and a non-trader declaration conflicts with the organisation account (D-94) and
+the business model (D-16). **Status: decided; terms text and store declarations not written yet.**
+
+## D-135 — Leaderboard on legitimate interest, no age gate, opt-out toggle (2026-11-03, owner, Q-68 → A)
+The daily leaderboard and its anti-cheat checks run on legitimate interest (GDPR art. 6(1)(f)), not consent, so no age
+gate is needed (the 16-year limit of art. 8 applies to consent only). The player can object: settings gain a toggle
+"Send results to the leaderboard" / „Wysyłaj wyniki do rankingu” (R7l); when off, official daily runs are not
+submitted. The privacy policy names the basis and the right to object. **Status: decided; toggle not implemented yet
+(R7l).**
+
+## D-136 — UK representative, wave-1 translations, no newsletter (2026-11-03, owner, Q-67 → A, Q-69 → A, Q-70 → A)
+Q-67 A: ask the lawyer, in the same consultation as D-134, whether a UK GDPR art. 27 representative is needed, and
+appoint one if so. Q-69 A: wave-1 languages (DE, FR, ES, PT-BR, D-96) are translated by an agent and corrected by a
+native speaker; city names from Wikidata (CC0); code preparation (R7e–R7j) comes first. Q-70 A: no newsletter on
+airway.games — Play pre-registration and the App Store pre-order notify players; the site keeps store links and the
+press kit only (no new data processor). **Status: decided.**
+
+## D-137 — Route snap haptic inside a native selection (2026-11-03, Claude, night N12r)
+R6d: `haptic('snap')` called `Haptics.selectionChanged()` alone, and `@capacitor/haptics` 8.0.2 drops that on both
+platforms (Android ignores it unless `selectionStarted`; iOS ticks only the generator `selectionStart` created), so
+the game's most frequent haptic never fired. The route tool now opens a selection when a drag begins
+(`RouteHaptics.start` → `selectionStart`) and closes it once when the drag ends, is refused, cancelled or undone
+(`end` → `selectionEnd`); snaps tick inside it. A `snap` outside a drag sends its own start → changed → end. The
+player switch silences ticks but an open selection is always closed. Rejected: replacing the snap with `impactLight`
+(the plugin's selection tick is the platform's lighter "detent" feel, and confirm already uses the light impact).
+`test:haptics` models the plugin's rule (every snap must vibrate) and `test:route-tool` asserts start/end order.
+Not checked: a real Android phone and iPhone. **Status: in force (N12r).**
+
+## D-143 — Bundle budget guard instead of code splitting (2026-11-03, Claude, night N12q)
+R5k: the game ships as one 1,033.8 kB main chunk (306.2 kB gzip); in the Capacitor app files come from disk, so the
+cost is parse time on budget phones, not download. Splitting the rare screens would save < 40 kB, so the decision is a
+budget with ~11 % headroom instead: main JS ≤ 1,150 kB raw / 340 kB gzip, CSS ≤ 90 kB, all of `dist/` ≤ 2,200 kB
+(`docs/PERFORMANCE.md` "Bundle budget"), enforced by `npm run test:bundle` in `test:ci` after the build. Raising a
+budget needs a new decision. `test:bundle:static` in `test:fast` also forbids importing one module both statically and
+with `import()`; the two useless dynamic `import('@capacitor/core')` calls (`platform/install.ts`, `storage.ts`)
+became static imports (the module was already in the main chunk through `platform/haptics.ts`), which removes Vite's
+warning. Vite's chunk warning limit is set to the same 1,150 kB. Rejected: `manualChunks` for three.js (one more file
+to parse at boot, no gain from disk) and WOFF2 fonts for now (size only). **Status: in force (N12q).**
+
+## D-144 — Every catalog key is used; dead adapters removed (2026-11-03, Claude, night N12q)
+R5i: the task-20 adapters `describeCity`, `createCityAnnouncer`, `bindCityAccessibility` and `labelAirportActions`
+(`src/ui/a11y.ts`) were never wired into the overlay or HUD, which label their own buttons; they and their 13
+`a11y.city*` / `a11y.action.*` keys are removed, with `status.loading` / `status.ready` (408 keys left). Also removed:
+the unused `mountEmptyScene` (`src/render/scene.ts`), `createTerrain`, `AIRPORT_LABEL_MODES` and `dailyGame`.
+`test:i18n` now fails when an English key is not referenced from `src/` as a literal or under a template or
+concatenation prefix (`privacy.s${n}`, `'settings.airline.' + id`); on the old catalogs it reports 15 unused keys.
+Kept: `SIM_TICK_MS` and `DAYNIGHT_PARAMS_VERSION` (versioned simulation parameters, documentation of the rules).
+**Status: in force (N12q).**
+
