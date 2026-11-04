@@ -333,6 +333,7 @@ export const en = {
   'rank.queued': 'Offline: the result is saved and will be sent later.',
   'rank.rejected': 'The server did not accept this result.',
   'rank.practice': 'Practice run: only the first game of the day is ranked.',
+  'rank.optedOut': 'Not ranked: sending results is off in Settings.', // [night-12x] D-135
   'puzzle.game.notes': 'Watch for: {list}',
   'puzzle.mechanic.slots': 'departure slots (2 per hour, 3 at a hub)',
   'puzzle.mechanic.curfew': 'night curfew (no take-offs or landings)',
