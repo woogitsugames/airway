@@ -1301,3 +1301,21 @@ stays in `routeTool` and does not depend on paint order. Rejected: hiding handle
 have no visible start), a hover state (touch first; the finger case is the drag itself).
 **Status: in force (N11q, `test:e2e:route-handles` 2).**
 
+## D-192 — "Replay tutorial" also brings the first-time cards back (2026-11-04, owner Q-76 → B, Claude, night N11r)
+The owner chose B for Q-76: one button. `TutorialController.replay()` (both the settings "Replay tutorial" and the
+training flight's own replay) now calls `clearFirstTimeCards()` (`src/game/tutorial/first-time.ts`), which writes
+an empty `aw-first-time` list and clears the task-32 slot-hint flag, so a player coming back after a break sees each
+card again at its own moment in the next run. The run in progress keeps its registry (read when the game screen
+opens); a fresh game reads the cleared flags. Rejected: A (cards stay gone), C (a second help button).
+**Status: in force (N11r, `test:first-time` 8, 7/8 on the old controller).**
+
+## D-194 — Crate stamps name what they measure; an empty hub reads "none yet" (2026-11-04, Claude, night N11r)
+R5e: the red stamps "BEG 9/36" and "BEG 13 min" were a code and a number with no word. Each stamp now carries a
+small caption line inside the same red box ("fullest hub" / "longest slot wait"; PL "najpełniejszy hub" /
+"najdłuższe czekanie na slot", 10 px Atkinson caps above the 12 px mono value) and the card's aria text reads
+"caption: value". When the fullest hub has nobody waiting, both the hub stamp and the pause sheet's "Fullest hub" row
+say "none yet" / "jeszcze brak" instead of "MAD 0/36" (a 0 next to a capacity read as a measurement of a jam).
+"No hub yet" stays without a caption (it is not a measurement). Rejected: caption outside the stamp (it would read as
+a card field), "MAD 0/36 · nobody waiting" (longer, wraps on 320 px).
+**Status: in force (N11r, `test:crate-stamps` 5, `test:pause-summary` 6).**
+

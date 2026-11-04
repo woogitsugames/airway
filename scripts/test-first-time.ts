@@ -81,5 +81,17 @@ await test('training flight: old saves (7-step list) — completed stays done, a
   assert.equal(midway.getState().step, 'route');
 });
 
+await test('[night-11r] D-192: "Replay tutorial" brings every first-time card back (slot hint included)', () => {
+  const storage = memory();
+  const registry = new FirstTimeRegistry(storage);
+  registry.mark('hub-full'); registry.mark('weekly-board'); registry.mark('slots');
+  storage.setItem(TUTORIAL_KEY, JSON.stringify({ version: 1, status: 'completed', step: 'complete' }));
+  const controller = new TutorialController(port(), storage);
+  controller.replay();
+  const after = new FirstTimeRegistry(storage);
+  for (const card of ['slots', 'hub-full', 'out-of-range', 'curfew', 'weekly-board'] as const) assert.equal(after.seen(card), false, card);
+  after.mark('curfew');
+  assert.equal(new FirstTimeRegistry(storage).seen('curfew'), true);
+});
 console.log(`SUMMARY test:first-time seed=0xA1A1 passed=${passed} failed=${failed}`);
 if (failed) process.exitCode = 1;

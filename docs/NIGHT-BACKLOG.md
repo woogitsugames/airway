@@ -469,6 +469,14 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       now paints below the airport overlay. Hit testing in `routeTool` unchanged (`RouteTool.activeRouteId`, the
       `handles` port gets it). `e2e/route-handles.mjs` (`test:e2e:route-handles`, in `test:ci`; 0/2 on the old
       handles), shots `docs/shots/n11q/`.
+- [x] N11r **Crate stamps say what they measure; "none yet" for an empty hub; replay brings first-time cards back (R5e,
+      D-194; owner Q-76 → B, D-192)** — the red stamps "BEG 9/36" / "BEG 13 min" carry a small caption inside the stamp
+      ("fullest hub" / "longest slot wait", PL "najpełniejszy hub" / "najdłuższe czekanie na slot") and the card's aria
+      text reads "caption: value"; a hub with nobody waiting reads "none yet" / "jeszcze brak" on the stamp and in the
+      pause sheet instead of "MAD 0/36". "Replay tutorial" now also clears the first-time cards (slot hint included).
+      `scripts/test-crate-stamps.ts` (`test:crate-stamps`, in `test:fast`; 1/5 on the old cards), `test:pause-summary`
+      +1 (5/6 on the old summary), `test:first-time` +1 (7/8 on the old controller); board shots `docs/shots/35`, `37`,
+      matrix and store upgrade shots refreshed.
 
 ## Continuous development round N12 (agent 2)
 - [x] N12a **Balance bot plays for reach (D-90)** — the handover gap "the DEV bot rarely connects new airports; long
@@ -923,7 +931,7 @@ Evidence: `docs/RESEARCH.md` "R5 — …", PNGs in `docs/research/r5/`.
       at night a cloud hides the turboprop icon (`dock-disabled-night.png`). Use an opaque muted fill plus a dashed
       outline (shape cue for "empty"), keep the count ≥ 4.5:1 against the tag; add the pair to `check-contrast`.
       **Area:** UI (`src/ui/hud.css`, `scripts/check-contrast.mjs`).
-- [ ] R5e **Stamps say what they measure** — crate stamps "BEG 13 min" / "BEG 9/36" get a short caption line
+- [x] R5e → N11r **Stamps say what they measure** — crate stamps "BEG 13 min" / "BEG 9/36" get a short caption line
       ("longest slot wait" / "fullest hub", PL "najdłuższe czekanie na slot" / "najpełniejszy hub") and the aria
       text; the pause summary shows "none yet" (`pause.summary.noHub`) when the fullest hub has 0 waiting
       (`pause-fullest-hub-0.png`). `test:pause-summary` +1, `test:format`, shots. **Area:** UI

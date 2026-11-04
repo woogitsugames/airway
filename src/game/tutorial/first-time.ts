@@ -51,6 +51,14 @@ export class FirstTimeRegistry {
   }
 }
 
+/** [night-11r] D-192 (Q-76 → B): "Replay tutorial" brings every first-time card back, the slot hint included. */
+export function clearFirstTimeCards(storage: TutorialStorage | null): void {
+  try {
+    storage?.setItem(FIRST_TIME_KEY, JSON.stringify({ v: FIRST_TIME_VERSION, seen: [] }));
+    storage?.setItem(LEGACY_SLOT_KEY, '0');
+  } catch { /* Storage is optional. */ }
+}
+
 export interface FirstTimeCity {
   readonly id: string;
   readonly hub: boolean;
