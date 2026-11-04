@@ -2,7 +2,7 @@
 // The setting lives in the settings store ('airway.settings'); this module only reads it, so callers in the
 // game layer can label hubs without importing the settings screen.
 import { cityByCode, displayCode } from '../data/index.ts';
-import { getLanguage } from '../i18n';
+import { getLanguage, localName } from '../i18n';
 
 export type AirportLabelMode = 'code' | 'name';
 const KEY = 'airway.settings';
@@ -21,5 +21,5 @@ export function airportLabel(code: string, mode: AirportLabelMode = readAirportL
   if (mode !== 'name') return displayCode(code);
   const city = cityByCode(code);
   if (!city) return code;
-  return getLanguage() === 'pl' ? city.namePl : city.nameEn;
+  return localName(city, getLanguage());
 }

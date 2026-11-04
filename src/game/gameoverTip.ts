@@ -44,3 +44,13 @@ export function gameOverTip(facts: readonly CauseFact[], options: { readonly uns
 export function tipsForFlight(loggedFlights: number): boolean {
   return Number.isFinite(loggedFlights) && loggedFlights <= TIP_RUNS;
 }
+
+/**
+ * [night-12y] R8b, D-187: the action line under "no route served {hub}". With a plane in the reserve the old line
+ * ("connect a new airport…") is something the player could do; with none it was not (99 % of losses had an empty
+ * reserve), so the line names the two moves that work without a spare aircraft. Unknown reserve = the old line.
+ */
+export type UnservedHint = 'gameover.unservedHint' | 'gameover.unservedNoSpare';
+export function unservedHint(spareAircraft: number | undefined): UnservedHint {
+  return spareAircraft === 0 ? 'gameover.unservedNoSpare' : 'gameover.unservedHint';
+}

@@ -10,6 +10,7 @@ export type RankingState =
   | { readonly kind: 'queued' }
   | { readonly kind: 'rejected' }
   | { readonly kind: 'practice' }
+  | { readonly kind: 'opted-out' } // [night-12x] D-135
   | { readonly kind: 'ready'; readonly daily: RankingBoard; readonly weekly: RankingBoard };
 
 const TOP = 3;
@@ -46,6 +47,7 @@ export interface RankingView {
 
 const STATUS: Record<Exclude<RankingState['kind'], 'ready'>, TranslationKey> = {
   sending: 'rank.sending', queued: 'rank.queued', rejected: 'rank.rejected', practice: 'rank.practice',
+  'opted-out': 'rank.optedOut',
 };
 
 export function createRankingView(dateLabel: string): RankingView {

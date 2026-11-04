@@ -1,7 +1,7 @@
 // Settings screen (task 14). One store per concern: language → i18n, text scale / glyphs / haptics →
 // ui/a11y (task 20). Graphics and audio toggles live here; the composition root applies them
 // (world.setQuality, audio.setSettings) through onSettingsChange.
-import { getLanguage, setLanguage, t, type Language, type TranslationKey } from '../../i18n';
+import { getLanguage, LANGUAGES, setLanguage, t, type Language, type TranslationKey } from '../../i18n';
 import { QUALITY_PREFERENCES, type GlobeMode, type QualityPreference } from '../../render';
 import { readAccessibilitySettings, updateAccessibilitySettings, type TextScale } from '../a11y';
 import { reducedMotion, setReducedMotion } from '../motion';
@@ -194,8 +194,8 @@ export function createSettings(onBack:()=>void,onLicenses:()=>void,onLanguageCha
     wrap.append(input,status);controlHost.append(wrap);host.append(outer);
   }
   group(t('settings.group.game'),'settings-group-game');
-  selectField(t('settings.language'),values.language,[['pl',t('language.polish')],['en',t('language.english')]],(lang)=>{
-    saveSettings({language:lang==='pl'?'pl':'en'});
+  selectField(t('settings.language'),values.language,LANGUAGES.entries.map((entry)=>[entry.code,t(entry.labelKey as TranslationKey)]),(lang)=>{
+    saveSettings({language:LANGUAGES.normalise(lang)??LANGUAGES.fallback}); // [night-12w] R7f
     onLanguageChanged();
   });
   selectField(t('settings.airportLabels'),values.airportLabels,[['code',t('settings.airportLabels.code')],['name',t('settings.airportLabels.name')]],(v)=>{

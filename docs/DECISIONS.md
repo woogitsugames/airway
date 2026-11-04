@@ -1329,3 +1329,37 @@ below the airport overlay (2), so a tag or edge chip always covers a handle, nev
 stays in `routeTool` and does not depend on paint order. Rejected: hiding handles at rest (the extend gesture would
 have no visible start), a hover state (touch first; the finger case is the drag itself).
 **Status: in force (N11q, `test:e2e:route-handles` 2).**
+
+## D-185 — One language table drives every language list (2026-11-04, Claude, night N12w)
+R7f. `src/i18n/languages.ts` lists each game language once (code, Intl locale, plural order and the forms a token
+must give, settings label key, store locale, which data name field it shows) and builds the lookups with
+`createLanguageTable`. The `Language` type, `normaliseLanguage`, the plural order of `{n|…}` tokens, the number locale
+of `formatNumber`, the settings select, airport city names (`localName`), the `test:android-config` check against
+`locales_config.xml`/`CFBundleLocalizations` and the catalog checks of `test:i18n` all derive from it; behaviour is
+unchanged (PL/EN only). `test:i18n` proves that a stub entry is enough for the derived lookups and fails when a module
+outside the table or the catalogs spells out `'pl'`/`'en'` again. City and region names stay in the data's
+`namePl`/`nameEn` fields until R7j (the table maps a language to one of them; a new language shows English names until
+then). Rejected: a registry in `src/core/` (the catalogs and their checks live in `src/i18n/`) and generating the
+native locale files from the table (they change rarely; a check is enough). **Status: in force (N12w).**
+
+## D-186 — Leaderboard opt-out lives in the net layer, takes effect at once (2026-11-04, Claude, night N12x)
+R7l, implementing D-135's objection path. `Leaderboards.isSharing()` / `setSharing(on)` (default on, stored on the
+device as `aw-net-share-v1` = `'0'` when off, not in `IDENTITY_KEYS`: a restored backup keeps the player's choice).
+Off: `submitDaily` answers `opted-out` without queueing, `flush` and `boards` make no network call, and turning it
+off drops the runs still waiting in the offline queue (an objection must stop processing, not just delay it). The
+anonymous identity is kept (removing it is the separate D-114 deletion). The official daily report shows
+"Not ranked: sending results is off in Settings." / „Poza rankingiem: wysyłanie wyników jest wyłączone w
+Ustawieniach.” (`rank.optedOut`). The settings switch itself is agent #1's UI work on this API. Rejected: keeping
+the choice in `airway.settings` (the net layer would read the settings store; the deletion row already talks to
+`Leaderboards`), and still submitting but hiding the result (the objection is about processing). **Status: in force
+for the net layer (N12x); switch pending.**
+
+## D-187 — The unserved game-over line follows the reserve (2026-11-04, Claude, night N12y)
+R8b. When no route served the airport that jammed, the departures board's action line is chosen by the aircraft left
+in the reserve at the jam (`GameOverSnapshot.spareAircraft`, pure `unservedHint` in `src/game/gameoverTip.ts`): with a
+spare plane the old "Connect a new airport before its waiting area fills up."; with none (99 % of R8 losses) "No spare
+aircraft: drag a route end to it, or remove a quieter route to free its plane." / „Brak wolnych samolotów: przeciągnij
+do niego koniec trasy albo usuń mniej obłożoną trasę, żeby zwolnić jej samolot.” The backlog's "take a plane off a
+route" became "remove a quieter route": the game UI has no single-plane unassign, only removing a route returns its
+aircraft. Unknown reserve (older callers) keeps the old line. Metric: unserved losses whose hint names a move the player
+could make, 0 → 100 % (both branches). **Status: in force (N12y).**
