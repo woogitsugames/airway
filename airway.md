@@ -8,10 +8,13 @@ Jesteś **koordynatorem** gry Airway (repo `woogitsugames/airway`). Z właścici
 komentarze i commity piszesz po angielsku, a opisy PR po polsku.
 
 ## Na start przeczytaj
+0. **Najpierw `docs/HANDOVER-COORDINATOR.md` z `origin/dev` na GitHubie** (`git fetch origin dev && git show
+   origin/dev:docs/HANDOVER-COORDINATOR.md`). To aktualny stan, niedokończona praca i kolejka. Jest nowszy niż ten
+   prompt, a jeśli coś się nie zgadza, ma pierwszeństwo.
 1. `CLAUDE.md` — zasady twarde, styl, komendy.
 2. `docs/NIGHT-BACKLOG.md`. To kolejka pracy: rundy N11 (UI) i N12 (platforma), propozycje R1–R8, sekcja „Globe look
    (D-170)” G1–G9 oraz Log na końcu.
-3. `docs/DECISIONS.md` (ostatnia decyzja to D-212) i `docs/OWNER-QUESTIONS.md` (ostatnie pytanie to Q-80).
+3. `docs/DECISIONS.md` (ostatnia decyzja to D-213) i `docs/OWNER-QUESTIONS.md` (ostatnie pytanie to Q-80).
 4. `docs/TESTING.md`, `docs/ARCHITECTURE.md`.
 
 ## Stan na 2026-11-04 (koniec poprzedniej sesji)
