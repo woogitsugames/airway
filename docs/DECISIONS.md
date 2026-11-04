@@ -1610,3 +1610,14 @@ inset (content inside a scroller that can still scroll toward an inset may pass 
 old CSS. Rejected: a notch profile in `ui:matrix` (it plays the real game on the globe, which times out under
 SwiftShader since G2–G4; the component mounts test the same CSS), per-screen inset variables (one token set is the
 contract). **Status: in force (N11y).**
+
+## D-207 — "+2 slots" keeps the D-150 offer rule; the card's value is measured, its future is a closed-test question (2026-11-04, Claude, night N12af)
+The card has appeared about 3 times per 50 runs since D-150. `scripts/research/card-value.ts --card=slots` (now with
+offer counts, the first-hold minute and a research-only `--slots-rule=always` what-if) on 200 seeds, 60 min cap: under
+the rule 4 of 364 boards offered it (3 runs), the bot never took it, and forcing it lost −2.82 min on average (0 of 4
+longer). Only 12 of 200 runs ever hold a departure (median at 11.6 min), so the rule is rarely met because the hourly
+cap (D-46) rarely binds for the bot, not because the rule is too strict. With the card eligible from week 1 it is on
+240 of 358 boards (161 runs), still never picked, worth −1.10 min when forced (−0.42 instead of a turboprop, no
+positive subset), and the bot's mean drops 16.74 → 16.45 min because the card takes a place from the hub card or the
+second aircraft. No rule changed (D-113); whether people reach the cap is asked in Q-80. Numbers in
+`docs/balance/README.md` "N12af". **Status: in force (no change); revisit with Q-80 after the closed test.**
