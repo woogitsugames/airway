@@ -13,6 +13,14 @@ the target language's plural categories with sample numbers. The translator fill
 Exporting again keeps translations whose English text did not change. Wave-1 languages (de, fr, es, pt = pt-BR) are
 listed in `PLANNED_LANGUAGE_ENTRIES` of `languages.ts`; a language ships only when it joins `LANGUAGE_ENTRIES`.
 
+## Length budgets (R7h, D-213)
+
+`limits.ts` gives fixed-width keys a budget in code points (`max`, `where`, sample `{param}` values): split-flap titles
+15 cells, half-row titles 10, statuses 8 (what the 320 px board shows), dock countdowns 8, select options 14, Back
+tiles 6, and so on. `test:i18n` fails when a catalog or the pseudo-locale goes over; `i18n:export` writes the budget
+as `maxLength`. The DEV pseudo-locale fills budgeted keys to their budget; `?pseudo=harsh` doubles every other string
+of up to 20 code points (`test:e2e:pseudo-320`).
+
 ## Glossary: one word per concept (R5g, D-195)
 
 | Concept | EN | PL | Not (banned in the catalogs) |

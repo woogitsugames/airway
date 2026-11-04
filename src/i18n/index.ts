@@ -3,7 +3,8 @@ import { formatNumber, numberLocale, parseLocalNumber } from '../core/format';
 import { en } from './en';
 import { LANGUAGES, type Language } from './languages';
 import { pl } from './pl';
-import { pseudoText } from './pseudo';
+import { lengthBudget } from './limits';
+import { pseudoText, type PseudoMode } from './pseudo';
 
 export type { Language } from './languages';
 export { LANGUAGE_CODES, LANGUAGES, localName } from './languages';
@@ -14,10 +15,13 @@ const SETTINGS_KEY = 'airway.settings';
 /** [night-12w] R7f: one catalog per entry of the language table (src/i18n/languages.ts). */
 const catalogs: Record<Language, Record<TranslationKey, string>> = { en, pl };
 let activeLanguage: Language | null = null;
-let pseudo = false;
+let pseudo: PseudoMode | null = null;
 
-/** [night-10p] DEV layout check: stretch every translated string (src/i18n/pseudo.ts). */
-export function setPseudoLocale(enabled: boolean): void { pseudo = enabled; }
+/** [night-10p] DEV layout check: stretch every translated string (src/i18n/pseudo.ts).
+ *  [night-11ac] R7h: `'harsh'` doubles short strings; `true` is the classic ~40 % stretch. */
+export function setPseudoLocale(enabled: boolean | PseudoMode): void {
+  pseudo = enabled === true ? 'stretch' : enabled === false ? null : enabled;
+}
 
 function normaliseLanguage(value: unknown): Language | null {
   return LANGUAGES.normalise(value);
@@ -106,7 +110,7 @@ export function t(key: TranslationKey, params?: TranslationParams): string {
   const text = template.replace(/\{([A-Za-z][A-Za-z0-9_]*)\}/g, (token, name: string) =>
     params?.[name] === undefined ? token : typeof params[name] === 'number' ? localNumber(params[name]) : String(params[name]),
   );
-  return pseudo ? pseudoText(text) : text;
+  return pseudo ? pseudoText(text, { mode: pseudo, budget: lengthBudget(key) }) : text;
 }
 
 /** [task-37] D-61: the player-facing number format of the active language ("2 500" PL, "2,500" EN).
