@@ -1053,7 +1053,7 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
       Let callers pass numbers (format inside `t()`), or parse with the active locale's group/decimal symbols from
       `Intl.NumberFormat#formatToParts`. `test:i18n` cases with fake de/pt-BR catalogs for 0, 1, 2, 1 000, 1 500,
       1 000 000. **Area:** `src/i18n/index.ts`, `src/core/format.ts`.
-- [ ] R7f **One language registry** — `src/i18n/languages.ts` lists each language once (code, Intl locale, plural
+- [x] R7f → N12w **One language registry** — `src/i18n/languages.ts` lists each language once (code, Intl locale, plural
       order incl. `many` after `other` for fr/es/pt, native name, store locale) and drives `Language`,
       `normaliseLanguage`, `PLURAL_ORDER`, `formatNumber` locales, the settings select, airport/region names and a
       check that `CFBundleLocalizations` and `locales_config.xml` list the same codes (`test:ios-config`,

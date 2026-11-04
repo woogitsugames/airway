@@ -1325,3 +1325,15 @@ below the airport overlay (2), so a tag or edge chip always covers a handle, nev
 stays in `routeTool` and does not depend on paint order. Rejected: hiding handles at rest (the extend gesture would
 have no visible start), a hover state (touch first; the finger case is the drag itself).
 **Status: in force (N11q, `test:e2e:route-handles` 2).**
+
+## D-185 — One language table drives every language list (2026-11-04, Claude, night N12w)
+R7f. `src/i18n/languages.ts` lists each game language once (code, Intl locale, plural order and the forms a token
+must give, settings label key, store locale, which data name field it shows) and builds the lookups with
+`createLanguageTable`. The `Language` type, `normaliseLanguage`, the plural order of `{n|…}` tokens, the number locale
+of `formatNumber`, the settings select, airport city names (`localName`), the `test:android-config` check against
+`locales_config.xml`/`CFBundleLocalizations` and the catalog checks of `test:i18n` all derive from it; behaviour is
+unchanged (PL/EN only). `test:i18n` proves that a stub entry is enough for the derived lookups and fails when a module
+outside the table or the catalogs spells out `'pl'`/`'en'` again. City and region names stay in the data's
+`namePl`/`nameEn` fields until R7j (the table maps a language to one of them; a new language shows English names until
+then). Rejected: a registry in `src/core/` (the catalogs and their checks live in `src/i18n/`) and generating the
+native locale files from the table (they change rarely; a check is enough). **Status: in force (N12w).**
