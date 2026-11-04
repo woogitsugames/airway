@@ -1325,3 +1325,15 @@ below the airport overlay (2), so a tag or edge chip always covers a handle, nev
 stays in `routeTool` and does not depend on paint order. Rejected: hiding handles at rest (the extend gesture would
 have no visible start), a hover state (touch first; the finger case is the drag itself).
 **Status: in force (N11q, `test:e2e:route-handles` 2).**
+
+## D-193 — "Long haul" (31–35) stays out of release builds until T+4 (2026-11-04, owner Q-74 → B, Claude, night N11u)
+The owner chose B: the first puzzle pack is the content of the T+4 "Major update" store event (D-131), so a release
+build shows puzzles 01–30. A build-time flag, no remote config: `PuzzlePack.hiddenInRelease` in
+`src/data/puzzles/packs.ts` (set on `longHaul`) and `releasedLevels()` drop a hidden pack's levels (from its first
+level to the next pack) unless the build is DEV (`npm run dev`, every e2e, shots and the UI matrix, so
+`e2e:puzzles` and `screens-fit-320` keep covering 31–35) or was made with `VITE_AW_ALL_PACKS=1` (a release check
+build before T+4). Node tests have no Vite env and see all 35. At T+4: add 36–40 and remove `hiddenInRelease`. Saved
+progress for 31–35 from a DEV build is ignored in a release build (the board lists only exposed levels). Rejected:
+deleting the JSON files from the branch (the pack would rot untested), a remote switch (no server for it, D-16).
+**Status: in force (N11u, `test:release-packs` 4).**
+
