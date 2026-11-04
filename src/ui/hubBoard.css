@@ -1,0 +1,112 @@
+/* [night-11ag] R4d: hub cause board. A small split-flap-board panel (the game-over board's ink and type), never a
+   rounded floating card: square corners, a hard paper offset instead of a soft shadow. It sits under the boarding pass
+   and clear of the tag dock: above the bottom dock in portrait, left of the side rack in landscape and on foldables. */
+.airway-hub-board {
+  position: absolute;
+  z-index: 45;
+  top: calc(var(--aw-safe-top) + 80px);
+  left: calc(var(--aw-safe-left) + 12px);
+  right: calc(var(--aw-safe-right) + 12px);
+  max-width: 440px;
+  max-height: calc(100% - var(--aw-safe-top) - var(--aw-safe-bottom) - 80px - 104px);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  background: #1c1e20;
+  color: #f2efe6;
+  border-top: 4px solid #ffc72c;
+  box-shadow: 3px 3px 0 #fbf8f1;
+  font: 700 13px/1.3 'Atkinson Hyperlegible Next', sans-serif;
+  animation: airway-hub-board-in 140ms ease-out;
+}
+.airway-hub-board[hidden] { display: none; }
+/* Landscape phones: left of the 78 px peg rack (12 px from the edge) with a 12 px gap; under the boarding pass. */
+.airway-hub-board[data-layout='landscape'] {
+  right: calc(var(--aw-safe-right) + 102px);
+  max-width: 400px;
+  margin: 0 0 0 auto;
+  max-height: calc(100% - var(--aw-safe-top) - var(--aw-safe-bottom) - 80px - 10px);
+}
+/* Foldables: the rack is a permanent side panel (right 10 px, 78 px wide). */
+.airway-hub-board[data-layout='foldable'] {
+  right: calc(var(--aw-safe-right) + 100px);
+  margin: 0 0 0 auto;
+  max-height: calc(100% - var(--aw-safe-top) - var(--aw-safe-bottom) - 80px - 22px);
+}
+/* A jammed hub: the yellow rule turns to the jam red and gets a hatched edge (shape as well as colour). */
+.airway-hub-board--jammed {
+  border-top-color: #c8352a;
+  border-image: repeating-linear-gradient(135deg, #c8352a 0 6px, #1c1e20 6px 9px) 4;
+}
+.airway-hub-board__head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding-left: 12px;
+  border-bottom: 1px solid #4b4a44;
+}
+.airway-hub-board__title {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: #ffc72c;
+  font: 700 13px/1.2 'Overpass Mono', monospace;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+.airway-hub-board__fill {
+  flex: none;
+  color: #d5cfbf;
+  font: 700 12px/1 'Overpass Mono', monospace;
+}
+.airway-hub-board__close {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 0;
+  border-left: 1px solid #4b4a44;
+  background: transparent;
+  color: #f2efe6;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.airway-hub-board__close:focus-visible { outline: 3px solid #ffc72c; outline-offset: -4px; }
+.airway-hub-board__rows {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 0;
+  padding: 0 12px;
+  list-style: none;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.airway-hub-board__row {
+  display: grid;
+  grid-template-columns: 18px 26px 18px minmax(0, 1fr);
+  column-gap: 8px;
+  align-items: start;
+  padding: 7px 0;
+  border-bottom: 1px dashed #4b4a44;
+}
+.airway-hub-board__row:last-child { border-bottom: 0; }
+.airway-hub-board__glyph, .airway-hub-board__mark { display: block; margin-top: 0; }
+.airway-hub-board__count {
+  font: 700 15px/18px 'Overpass Mono', monospace;
+  text-align: right;
+}
+.airway-hub-board__mark { color: #ffc72c; }
+.airway-hub-board__row[data-cause='none'] .airway-hub-board__mark { color: #8f8a7c; }
+.airway-hub-board__text { min-width: 0; overflow-wrap: anywhere; padding-top: 1px; }
+.airway-hub-board__row[data-cause='none'] .airway-hub-board__text { color: #d5cfbf; font-weight: 400; }
+.airway-hub-board__empty { margin: 0; padding: 12px; color: #d5cfbf; }
+.airway-hub-board__empty[hidden] { display: none; }
+@keyframes airway-hub-board-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+:root[data-airway-motion="reduce"] .airway-hub-board { animation: none; }

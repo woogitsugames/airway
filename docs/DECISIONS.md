@@ -1847,6 +1847,30 @@ manual copy. No airport codes, seed or identifiers in the text; no network, no a
 the store privacy answers (D-220: the app transmits nothing). Rejected: a JSON/base64 export now (R3j adds the
 `AW1:` line), wall-clock timing (needs session hooks; R3j), a hub column (a city code is the one non-count field).
 Guard: `test:playtest`. **Status: in force.**
+## D-228 — Hub cause board: long press (or tap from 70 % full), last game hour, one cause per region row (2026-11-04, Claude, night N11ag)
+R4d. A long press on an airport (the gesture's `city` hit) opens a small departures-board sheet for it; a tap opens it
+when the airport is at least 70 % full (`HUB_FULL_SHARE`, the same share as the "hub filling" first-time card); any
+other tap, Back/Escape, the weekly board and the game-over report close it. Elsewhere a long press is still the route
+menu; on an airport it is now the board (the route menu stays on the route body). Hit testing uses the session's
+existing projected-city test, no `src/render/**` change. The view is `src/game/hubBoard.ts` (`HubDepartureLog`), a
+read-only rolling window of the last 60 game minutes taken after every simulated stretch: a departure is a plane seen in
+flight on a new leg since the last look (the Sim has no departure event; `EndlessRun.planeList()` now also copies each
+plane's `phase`, `cityIndex` and `slotWaitTicks`), kept with whether it left without a free seat; slot holds are
+aircraft-minutes of planes waiting on the ground for a slot. Nothing enters the sim or its hash (D-13); an undo (clock
+back) starts the window over. Rows: one per destination region waiting there, most first, with the region glyph, the
+count and one cause mark, strongest first: **no onward flight** (the sim's own router, rebuilt on the run's routes,
+finds no first leg towards that region), **curfew** (the airport is closed now; "until 06:00", `CURFEW_END_HOUR`),
+**left full** (the latest departure on that region's first leg in the hour had no free seat; a later one with seats
+clears it), **waiting for a slot** (minutes held on that leg in the hour), else a quiet dash "waiting for the next
+departure". Sentences reuse the game-over strings `gameover.cause.noRoute`, `.seatShortage` and `.slotWait` with the
+row's count (same wording and plural rules); curfew and the dash have their own lines (`hubBoard.cause.*`, PL/EN). Marks
+differ by shape: broken leg, striped barrier, filled seat block, hourglass, dash; a jammed hub's board gets a hatched red
+top rule. The sheet sits under the boarding pass: above the bottom dock in portrait (8 rows fit at 360×640), left of the
+side rack in landscape and on foldables (rows scroll when they do not fit); close target 48 px; 140 ms step-in, none
+under Reduce motion (D-88). Rejected: hourly buckets like D-221 (a cause from 59 minutes ago would vanish at the hour
+boundary), the cumulative ledger counters (per hub, not per region, and run-long), a new sim departure event (sim change).
+Guards: `test:hub-board` (`test:fast`), `test:e2e:hub-board` (menu-page fixture with a real run forced into a jam, G7-safe;
+`test:ci`). **Status: in force.**
 
 ## D-229 — Store keywords without repeats, Play alt texts, "puzzle" in the Play short description (2026-11-04, Claude, night N12an)
 R2c with D-223. App Store indexes name + subtitle + keywords as one set, so the keyword field repeats no word of
