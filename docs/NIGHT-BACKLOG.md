@@ -633,10 +633,10 @@ before/after `npm run shots -- globe` PNGs and look at them.
 - [x] G1 **Production globe assets** — reproducible bake into `public/data/globe/` (day 4096/2048, night 2048/1024,
       elevation 2048, clouds 2048, ~1.9 MB) with a SHA-256 manifest; NASA/NOAA entries in `docs/ASSETS.md`; credit
       line (PL/EN i18n) on the About page; bundle `total` budget → 4 300 kB (D-171); new fast test `test:globe-assets`.
-- [ ] G2 **Terrain from ETOPO5 elevation** (one PR with G3: G2 alone draws a white globe; gate + smoke/ui:matrix/store:shots) — production `textured` TerrainStyle: real heights (sqrt exaggeration),
+- [x] G2 **Terrain from ETOPO5 elevation** (one PR with G3: G2 alone draws a white globe; gate + smoke/ui:matrix/store:shots) — production `textured` TerrainStyle: real heights (sqrt exaggeration),
       airport pads flattened, smooth normals, sea floor under the ocean shell; elevation decoded in parallel with the
       land mask; `test:land`/`test:quality`/`test:framing` green, triangle budgets unchanged.
-- [ ] G3 **Textured surface material and night lights** — Blue Marble by direction (seam-safe), shipped day/night
+- [x] G3 **Textured surface material and night lights** — Blue Marble by direction (seam-safe), shipped day/night
       grade, Black Marble emission replaces the city-light points; texture size per preset + adaptive step (D-173);
       D-63 golden gate and D-47 contrast ≥ 4.5:1 re-checked (`test:daynight`, `test:store-shots`).
 - [ ] G4 **Ocean, atmosphere, clouds within fill-rate budget** — glint/fresnel and limb haze folded into the terrain
@@ -1241,3 +1241,4 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
 - 2026-11-04 · N11p 3-step training flight in the game's marks + first-time cards (R5b, R6a, R6b; D-184, D-190) · night/11p-short-tutorial · test:first-time 7/7 (new; the module does not exist on the old code), test:e2e:first-time-cards 4/4 (new; no cards on the old game), test:e2e:tutorial 28/28 (screenshots 8), test:e2e:tutorial-layout 7/7 (planet check fails on the old 228-unit planet at 412 px), test:fast 74/74, build ok, e2e:smoke 9/9, e2e:settings-groups 4/4, e2e:screens-fit 18/18, e2e:pseudo-locale 27/27; ui:matrix/store:shots not run (cards are off in seeded DEV runs, game screens unchanged)
 - 2026-11-04 · G9 Medalion airports + route ink outline + edge contrast probe (D-177, D-178; owner "Daj medalion i scalaj") · ext/03-g9-medalion · test:render-layers 40/40 (+1 outlined-disc case), test:fast 74/74 (130.8 s), build ok (main 1,058.6 kB / gzip 314.2 kB); probe seed 15 phone day routes 5.1/6.8/3.4, airports 2.6/3.2/3.1 (diorama/Satelita/Mapa); renders in docs/mockups/globe-2026-11/g9/final/; store:shots/ui:matrix not run (G6), follow-up G9b
 - 2026-11-04 · N11q quiet route-end handles below the tags (R5c, D-191) · night/11q-quiet-handles · test:e2e:route-handles 2/2 (0/2 on the old handles), test:fast 74/74, build ok, test:hud-targets 300/300, e2e:smoke 9/9, e2e:airport-plates 4/4, e2e:gameover-map 3/3, ui:matrix 48/48, store:shots 60 (test:store-shots ok); owner question Q-76
+- 2026-11-04 · G2+G3 satellite globe ships (D-179) · ext/03-g2g3-satellite · test:fast 74/74 (136.5 s), build ok (main 1,070.0 kB / gzip 317.7 kB), test:bundle 9/9 (dist 3,617.4 kB), test:e2e:smoke 9/9; built app (vite preview) loads data/globe/ day-2048 + night-1024 + elevation on auto→low, no fallback warning; game shots seed 15: routes 6.9/6.8, airports 3.2/6.0 (day/dusk); store:shots/ui:matrix not run (G6)

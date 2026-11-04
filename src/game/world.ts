@@ -24,7 +24,8 @@ function devAirportStyle(): AirportStyle | undefined {
 /** [ext-03] `?globeLook=` in DEV builds (docs/mockups/globe-2026-11/). */
 function devGlobeLook(): GlobeLook | undefined {
   const value = new URLSearchParams(location.search).get('globeLook');
-  return value === 'refined' || value === 'satellite' || value === 'painted' || value === 'map' ? value : undefined;
+  return value === 'diorama' || value === 'refined' || value === 'satellite' || value === 'painted' || value === 'map'
+    ? value : undefined;
 }
 
 // [task-34] HTML panels the globe must stay clear of. Their boxes become camera insets (D-47).
