@@ -35,3 +35,39 @@ a.store-tag{padding:6px 14px 6px 34px;background:var(--board)}a.store-tag img{he
 .notfound-main .ticket-link{width:max-content;max-width:100%}
 @media(max-width:1100px) and (min-width:751px){.screenshot-strip{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:750px){.store-tag{min-width:0;flex:1 1 180px}}
+
+/* [night-11ae] R2e, D-219: press page — a fact sheet like a cargo manifest, store shots on paper, one ZIP. */
+.press-main{max-width:1340px;margin:auto;padding:clamp(44px,6vw,90px) clamp(22px,5vw,78px) 96px}
+.press-heading{border-bottom:2px solid var(--ink);padding-bottom:34px}
+.press-heading h1{font-size:clamp(38px,5.4vw,68px);letter-spacing:-.055em;line-height:1;margin:16px 0 18px}
+.press-lead{max-width:640px;font-size:clamp(16px,1.3vw,19px);color:#494238;margin-bottom:26px}
+.press-download{width:max-content;max-width:100%}
+.press-note{max-width:640px;font-size:14px;color:var(--muted);line-height:1.55;margin:14px 0 0}
+.press-block{padding-top:clamp(44px,5vw,72px)}
+.press-block h2{font-size:clamp(26px,2.6vw,36px);letter-spacing:-.045em;line-height:1.1;margin:0 0 18px}
+.fact-sheet{margin:0;max-width:930px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));background:var(--pass);border:1px solid var(--edge);border-left:9px solid var(--teal)}
+.fact-row{display:flex;flex-direction:column;gap:7px;padding:16px 19px;border-bottom:1px solid var(--edge)}
+.fact-row:nth-child(even){border-left:1px dashed #b4ab9b}
+.fact-row:nth-last-child(-n+2){border-bottom:0}
+.fact-row dd{margin:0;font:800 17px/1.3 Overpass,Arial,sans-serif;letter-spacing:-.01em;overflow-wrap:anywhere}
+.fact-row dd a{text-decoration-color:var(--teal);text-underline-offset:4px}
+.press-copy{display:grid;grid-template-columns:.8fr 1.2fr;gap:clamp(28px,6vw,90px)}
+.press-short{font:800 clamp(20px,2vw,26px)/1.35 Overpass,Arial,sans-serif;letter-spacing:-.02em;border-left:6px solid var(--sign);padding-left:18px}
+.press-long{max-width:720px;color:#4c453b}.press-long p{line-height:1.7}
+.press-long ul{list-style:none;padding:0;margin:0 0 18px}
+.press-long li{position:relative;padding:7px 0 7px 26px;border-top:1px solid var(--edge);line-height:1.5}
+.press-long li::before{content:'';position:absolute;left:2px;top:15px;width:10px;height:10px;background:var(--teal);clip-path:polygon(0 0,100% 50%,0 100%)}
+.press-shots{display:grid;gap:16px;margin-top:24px}
+.press-shots--phone{grid-template-columns:repeat(4,minmax(0,1fr))}
+.press-shots--landscape{grid-template-columns:repeat(2,minmax(0,1fr))}
+.press-shot{margin:0;background:#ede7da;border:1px solid #d5cdbf;padding:10px}
+.press-shot img{width:100%;height:auto;border:3px solid var(--ink)}
+.press-shot figcaption{padding:12px 4px 2px;gap:4px}
+.press-shot figcaption strong{font-size:16px}
+.press-shot-id{font:700 10px OverpassMono,monospace;color:#655947}
+.press-pair{display:grid;grid-template-columns:1.2fr .8fr;gap:clamp(28px,6vw,90px)}
+.press-pair h2+p+h2,.press-pair .press-note+h2{margin-top:34px}
+.press-logos{display:grid;grid-template-columns:3fr 1fr;gap:16px;align-items:center;background:#ede7da;border:1px solid #d5cdbf;padding:16px}
+.press-logos img{width:100%;height:auto}
+@media(max-width:750px){.fact-sheet{grid-template-columns:1fr;border-left-width:7px}.fact-row:nth-child(even){border-left:0}.fact-row:nth-last-child(2){border-bottom:1px solid var(--edge)}
+.press-copy,.press-pair{grid-template-columns:1fr}.press-shots--phone{grid-template-columns:repeat(2,minmax(0,1fr))}.press-shots--landscape{grid-template-columns:1fr}.press-logos{grid-template-columns:2fr 1fr;padding:12px}}

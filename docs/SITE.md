@@ -33,9 +33,9 @@ game's `src/i18n` catalog.
 ## Verification
 
 ```sh
-npm run test:site       # local paths, alt texts, translated keys, privacy links, launch pack
+npm run test:site       # local paths, alt texts, translated keys, privacy links, launch pack, press page + ZIP
 npm run site:assets     # after store:shots: refresh site/assets/shots/ (Playwright)
-npm run build:site      # copy the static site into site/dist (+ og-image.png)
+npm run build:site      # copy the static site into site/dist (+ og-image.png, airway-press-kit.zip)
 npm run shots:site      # builds site/dist first; Playwright must be available
 npm run typecheck
 npm run test:fast
@@ -44,8 +44,9 @@ npm run build            # game build; does NOT deploy the site
 
 `npm run shots:site` renders `site/dist/index.html` at 412x915 and 915x412 at DPR
 1, writing `docs/shots/29/site-p.png` and `site-l.png`, plus the 404 page
-(`site-404-p.png` 412x915, `site-404-l.png` 1280x800) and the screenshot/store
-section (`site-preview-p.png`, `site-preview-l.png`). Review every image for
+(`site-404-p.png` 412x915, `site-404-l.png` 1280x800), the screenshot/store
+section (`site-preview-p.png`, `site-preview-l.png`) and the whole press page (`site-press-p.png` PL 412 wide,
+`site-press-l.png` EN 1280 wide). Review every image for
 typography, visible globe, horizontal overflow and forbidden "template UI".
 Also check 673x841, 904x1000, English copy, keyboard navigation, reduced motion
 and Canvas fallback manually. Without Playwright, the screenshot task reports a
@@ -118,6 +119,34 @@ pauses. Device pixel ratio is capped at 2.
   `build:site`. Cloudflare Pages and GitHub Pages pick it up by name.
 - **Still open:** terms page (R7b) and publisher block (R7c) are not written yet, so the footer has no links to them;
   no newsletter (Q-70 → A).
+
+## Press page (N11ae / R2e, D-219)
+
+- **Page:** `site/press.html` (`?lang=pl|en`, same header, footer, fonts and `site.js` as the rest), linked from the
+  home navigation and from every footer. Fact sheet (developer, genre, platforms, release, price, languages, contact,
+  website), short and full description, eight screenshots (four scenes × phone and landscape, in the visitor's
+  language), logo and icon, video slot, usage note, one ZIP download. No forms, scripts beyond `site.js`, trackers or
+  external requests (D-67 still keeps the site unpublished).
+- **Copy:** every visible string is in `site/i18n.js` (`press.*`). `press.short` / `press.long` are the Google Play
+  short and full description from `docs/store/{pl,en}.md`; `test:site` fails when the store text changes and the page
+  does not follow. The EN store text still says "a terminal" twice (D-216 left it unchanged); the page applies the
+  D-195 glossary and says "a hub". The price row says what is absent ("no ads and no in-app purchases", D-16) and
+  never a price or "free". The developer row says "publisher details to follow" until R7c; the release date is
+  "to be announced"; contact is the proposed `contact@airway.games`.
+- **ZIP:** `npm run build:site` writes `site/dist/airway-press-kit.zip` (`site/press-kit.mjs`, dependency-free ZIP
+  writer, fixed timestamps, so the same sources give the same bytes): `airway-press-kit/README-{pl,en}.txt` (fact sheet,
+  descriptions, usage, contents), `screenshots/{pl,en}/airway-<scene>-{phone,landscape}.png` (the full-size store PNGs,
+  8 per language), `logo/airway-wordmark.{svg,png}`, `logo/airway-icon.{svg,png}`. About 11.7 MB; never committed.
+- **One config:** `PRESS_KIT` in `site/launch.js` (ZIP name, contact, formats, logos, video). The scenes are
+  `SITE_SHOTS.scenes`, so the "failure" scene joins page and ZIP together once store:shots has the N11t wording.
+- **Thumbnails and logo PNGs:** `npm run site:assets` also writes `site/assets/shots/<lang>/<scene>-landscape.jpg`
+  (960×540) and renders `brand/wayfinding.svg` / `resources/icon.svg` to `site/assets/press/airway-wordmark.png`
+  (1920×520, with the site's Overpass 800, since the SVG wordmark is live text) and `airway-icon.png` (1024×1024).
+  `sources.json` holds their source hashes.
+- **Video:** `PRESS_KIT.video` is empty until R2b (`npm run store:video`) produces a file; the page shows
+  `press.video.pending`. Once set (path relative to `site/`), switch the paragraph to `press.video.ready`: `test:site`
+  then requires the file and its place in the ZIP. A video over 10 MB is git-ignored by R2b, so `build:site` must
+  run where the file exists, or the build fails on the missing source.
 
 ## Scope
 
