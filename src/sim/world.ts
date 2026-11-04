@@ -106,7 +106,8 @@ export type SimEvent =
   | { readonly type: 'RouteRemoved'; readonly minute: number; readonly routeId: string }
   | { readonly type: 'PlaneAssigned'; readonly minute: number; readonly planeId: string; readonly routeId: string }
   | { readonly type: 'PlaneUnassigned'; readonly minute: number; readonly planeId: string }
-  | { readonly type: 'Delivered'; readonly minute: number; readonly cityId: string; readonly count: number }
+  /** [night-12ab] `afterTransfer`: how many of them changed planes on the way. */
+  | { readonly type: 'Delivered'; readonly minute: number; readonly cityId: string; readonly count: number; readonly afterTransfer: number }
   | { readonly type: 'HubUpgraded'; readonly minute: number; readonly hubId: string }
   | { readonly type: 'CommandRejected'; readonly minute: number; readonly command: Command; readonly reason: RejectReason }
   | { readonly type: 'CurfewAnnounced'; readonly minute: number; readonly week: number; readonly cityIds: readonly string[] }
@@ -116,6 +117,8 @@ export type SimEvent =
   | { readonly type: 'HubJamCleared'; readonly minute: number; readonly cityId: string }
   /** [task-32] An aircraft became ready but its airport had no departure slot left this hour. */
   | { readonly type: 'DepartureHeld'; readonly minute: number; readonly cityId: string; readonly planeId: string; readonly first: boolean }
+  /** [night-12ab] One aircraft-minute held by a curfew: on the ground (departure refused) or in the air (landing refused). */
+  | { readonly type: 'CurfewHeld'; readonly minute: number; readonly cityId: string; readonly where: 'ground' | 'air' }
   | { readonly type: 'GameOver'; readonly minute: number; readonly failure: HubFailure | null; readonly status: 'won' | 'over' };
 
 /** Read-only per-city view for HUD, overlay, render and audio. */
@@ -542,15 +545,23 @@ export class World implements WorldView {
       const result = this.passengers.alightAt(cityId, routeId, manifest, onwardCityId);
       this.manifests.set(planeId, [...result.stayingOnboard]);
       if (result.delivered.length) {
-        this.events.push({ type: 'Delivered', minute: this.minuteValue, cityId, count: result.delivered.length });
+        this.events.push({ type: 'Delivered', minute: this.minuteValue, cityId, count: result.delivered.length, afterTransfer: result.deliveredAfterTransfer });
       }
       return onBoard - result.stayingOnboard.length;
     },
   };
 
   private readonly gate: PlaneCurfewGate = {
-    canDepart: (from, to, duration) => this.curfew.canScheduleLeg(from, to, this.minuteValue, duration),
-    canLand: (cityId) => this.curfew.canLand(cityId, this.minuteValue),
+    canDepart: (from, to, duration) => {
+      const ok = this.curfew.canScheduleLeg(from, to, this.minuteValue, duration);
+      if (!ok) this.events.push({ type: 'CurfewHeld', minute: this.minuteValue, cityId: from, where: 'ground' });
+      return ok;
+    },
+    canLand: (cityId) => {
+      const ok = this.curfew.canLand(cityId, this.minuteValue);
+      if (!ok) this.events.push({ type: 'CurfewHeld', minute: this.minuteValue, cityId, where: 'air' });
+      return ok;
+    },
   };
 
   // [task-32] D-41: per-airport hourly departure allowance; slots reset at every game hour.

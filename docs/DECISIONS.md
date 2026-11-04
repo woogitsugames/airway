@@ -1474,3 +1474,17 @@ after a departure hold, D-150), edge-chip-tags 0xA1C3 + 41817. Assertions unchan
 nothing" now compares with the count before the pick (the "+2 slots" board is week 3, earlier crates exist). The PL
 320×568 week-1 board scrolled 1 px since the N11r stamp caption (D-194): that size trims 3 px of stamp spacing.
 **Status: in force (N12aa).**
+
+## D-196 — balance:report prints the spread and mechanic use, counted from sim events (2026-11-04, Claude, night N12ab)
+R8d. `game-summary.md` gains a "Spread and mechanic use" section: session length and game weeks at p10/p25/median/
+p75/p90, loss-week histogram, losing airport hub / spoke / unserved, spare aircraft at the loss, weekly cards offered
+vs picked, runs reaching the curfew and with a curfew hold, slot holds and slot-wait, and the share of delivered
+passengers who changed planes. Counted in `scripts/balance-game-adapter.ts` (`RunMechanics`) from the sim's own
+events and read-only views, not by wrapping prototypes as `r8-audit.ts` does; for that the sim gains two
+non-authoritative event facts (never hashed or saved): `CurfewHeld` (one aircraft-minute refused by the curfew gate,
+ground or air) and `Delivered.afterTransfer` (passenger had alighted at a hub before, `arrivedOnRoute` set). Gameplay,
+goldens and the gate are unchanged (median 17.25 min before and after). No new gate: `test:balance` only checks the
+section's shape (ordered quantiles, losses + still flying = runs, hub + spoke + unserved = losses, picks = accepted
+choices, picked ≤ offered, delivered = score). The numbers match `r8-audit --seeds=50 --cap-min=30` except curfew
+aircraft-minutes, where r8's `canLand` wrapper also counted the check inside `canScheduleLeg` (r8 air 586 vs 89 here).
+**Status: in force (N12ab).**

@@ -18,6 +18,8 @@ export interface AlightResult {
   readonly delivered: readonly number[];
   readonly transferred: readonly number[];
   readonly stayingOnboard: readonly number[];
+  /** [night-12ab] How many of `delivered` changed planes on the way (alighted at a hub before). */
+  readonly deliveredAfterTransfer: number;
 }
 /** Task 09 integration point; optional next-stop arguments select the correct travel direction. */
 export interface PassengerTransport {
@@ -185,6 +187,7 @@ export class PassengerSimulation implements PassengerTransport {
     if (this.failed) throw new Error('Cannot alight in a finished run');
     if (!this.citiesById.has(cityId)) throw new Error('Unknown arrival city');
     const delivered: number[] = [], transferred: number[] = [], stayingOnboard: number[] = [];
+    let deliveredAfterTransfer = 0;
     const seen = new Set<number>();
     // Validate the whole manifest before making any mutation (no partial unload).
     for (const id of passengerIds) {
@@ -201,6 +204,7 @@ export class PassengerSimulation implements PassengerTransport {
         this.inFlight.delete(id);
         this.ledger.record('delivered', cityId, passenger.destinationRegion);
         delivered.push(id);
+        if (passenger.arrivedOnRoute !== undefined) deliveredAfterTransfer++;
         continue;
       }
       const leg = this.router.nextLeg(cityId, passenger.destinationRegion, routeId);
@@ -215,7 +219,7 @@ export class PassengerSimulation implements PassengerTransport {
       this.hubs.enqueue(cityId, passenger, this.ledger);
       transferred.push(id);
     }
-    return { delivered, transferred, stayingOnboard };
+    return { delivered, transferred, stayingOnboard, deliveredAfterTransfer };
   }
 
   /** Conservation: all passengers are delivered, queued, or carried; no other states. */
