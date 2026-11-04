@@ -413,6 +413,15 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       D-130/D-131 (the N11j decision renumbered to D-132). `e2e/gameover-unserved.mjs` asserts both (0/4 on the old
       UI), shots `docs/shots/n11k/`, matrix and store failure shots refreshed.
 
+- [x] N11l **Training flight on the Fold: hint gap, one-shape tags, night only on the globe (owner, D-180)** — owner
+      screenshots from a Galaxy Fold (unfolded): the hint line ("Drag the tag onto the route marker", "Simulation
+      paused…") overlapped the ATC card's bottom edge (the world was sized from `100dvh − 308 px`, blind to the status
+      and gesture bars); the TURBOPROP tag and "Watch the sunrise" had a stepped notch that read as a second button
+      behind; on the night step a dark rectangle stuck out beyond the globe over the header. The world is now fitted
+      to its row by a `ResizeObserver`, the hint has its own gap, action tags use the dock's luggage-tag outline, and
+      night darkens only the globe. `e2e/tutorial-layout.mjs` (`test:e2e:tutorial-layout`, in `test:ci`; 0/7 on the
+      old tutorial, the Fold case with status/gesture-bar padding), shots `docs/shots/n11l/`.
+
 ## Continuous development round N12 (agent 2)
 - [x] N12a **Balance bot plays for reach (D-90)** — the handover gap "the DEV bot rarely connects new airports; long
       plays end in weeks 1–3": measured, 34 of 44 bot game overs (50 seeds) were at an airport no route served, 20 of
@@ -1168,3 +1177,4 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
 - 2026-11-03 · N11k clean game-over report (R5f), owner D-130/D-131, N11j decision → D-132 · night/11k-clean-gameover · after merging dev (#154–#158): test:fast 72/72, build ok, e2e:gameover-unserved 4/4, e2e:gameover-map 3/3, e2e:smoke 9/9, ui:matrix 32/32; before: test:e2e:gameover-unserved 4/4 (0/4 on the old UI; its served case was 3/4-red on origin/dev since rules v5, now seed 0xA1A3), test:fast 67/67, build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:gameover-map 3/3, e2e:gameover-short 4/4, e2e:gameover-tip 4/4, store:shots 60 (test:store-shots ok); R5d stays a proposal
 - 2026-11-04 · N12t sound survives the phone (D-153) + owner D-150…D-152 · night/12t-music-device · test:audio-unlock 7/7 (new; 6/7 fail on the old engine: tap listener gone after a still-suspended first resume, no re-arm after a system suspension or refused resume, no frozen-clock rebuild, no status; with the old minute clock a chime 40 ticks ahead does not play within 0.3 s), test:fast 73/73, build ok, test:e2e:smoke 9/9 (boot/audio path touched); desktop Chromium probe: context running, chimes scheduled; not verified on the Fold (checklist in docs/ANDROID.md)
 - 2026-11-04 · N12u unfolded foldable in ui:matrix (D-154) · night/12u-fold-matrix · ui:matrix 48/48 (32 before; the 16 new 904×1088@2 / 1088×904@2 shots PL/EN inspected, older 32 not re-committed), test:fast 73/73, build ok
+- 2026-11-04 · N11l training flight on the Fold: hint gap, one-shape tags, night only on the globe (owner feedback, D-180) · night/11l-tutorial-device · test:e2e:tutorial-layout 7/7 (0/7 on the old tutorial; Fold 686×762 with status/gesture-bar padding), after merging dev #160: test:fast 73/73, build ok, tutorial-layout 7/7; before: test:fast 72/72, build ok, e2e:tutorial 21/21 (shots docs/shots/23 refreshed), e2e:screens-fit 18/18, e2e:reduce-motion 3/3; e2e:smoke/ui:matrix not run (game screens unchanged)

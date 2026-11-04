@@ -1197,3 +1197,15 @@ shots with the same overlap/scroll checks. All 16 new shots pass and were inspec
 sits small in the lower-left corner with much empty sky (layout is agent #1's; noted, not changed). The cover screen
 is covered by 412×915. **Status: in force (N12u).**
 
+## D-180 — Training flight fits its row; one tag outline; night darkens only the globe (2026-11-04, Claude, night N11l)
+Owner feedback from a real Galaxy Fold (unfolded). (1) The world vignette was sized from `100dvh − 308 px`, which
+ignores the status and gesture bars (`env(safe-area-inset-*)` padding), so the ATC card overflowed into the hint line
+under it. The world is now fitted by a `ResizeObserver` to the height its row really has (minus the card, which may
+wrap); the CSS estimate stays as the first-frame fallback, and the hint row gets its own 6 px gap. (2) The plane tag
+and the dawn/continue actions were cut with a stepped notch that read as a second button behind them; they now use
+the dock's luggage-tag outline (`hud.css`, chamfered top corners) — one shape, the game's own. (3) At night the world
+box turned dark blue, a rectangle wider than the globe that also covered the header's lower strip; the night wash was
+already clipped to the globe, so the box now keeps the stage colour. Rejected: container-query units (iOS 15 target
+has none), clipping the card (hides text). The vignette's marks are redrawn later with R5b/R6a/R6b (D-129, D-130).
+**Status: in force (N11l, `test:e2e:tutorial-layout` 7 sizes).**
+
