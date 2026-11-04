@@ -1707,6 +1707,19 @@ the puzzle sign, game-over buttons and crate values; the game-over title wraps s
 puzzle Back tile no longer shrinks; the airport NEW stub's estimated width is a floor (min-width), not a cap. Real PL/EN text renders as before (row heights unchanged at 320/360/568).
 **Status: in force.**
 
+## D-214 — Daily e2e suites run on a fixed date, replayed headless by test:e2e-seeds (2026-11-04, Claude, night N12aj)
+The two browser suites seeded by the date (`test:e2e:daily-share`, `test:e2e:daily-continue`) played whatever daily
+world the real calendar gave, so a rule change or simply the next day could break them and no headless check saw it
+(D-189/D-200/D-208 cover only the fixed-seed suites). Their day is now `dates: ['2026-11-04']` in `e2e/seeds.mjs`: the
+page clock starts at Warsaw noon of that day (`e2e/browser.mjs` `pinDate`, an init script that shifts `Date`/`Date.now`
+by a fixed offset and lets time run; Playwright's `clock.setFixedTime` froze `Date` and stalled the game screens under
+SwiftShader), daily-share seeds the day before as "yesterday" for the streak, and daily-continue asserts the official
+run is of that day. `test:e2e-seeds` replays their plans in daily mode (`mode: 'daily'`, `createGame(seed, 'daily')`)
+on `dailySeedForKey(date)` (route drag; route + aircraft drags; practice idle) and adds clock checks (both suites
+declare a date; the init script lands on the right Warsaw day for four dates across both DST switches).
+`npm run e2e:seeds -- daily-share` walks forward day by day to the next date that holds after a rule change.
+**Status: in force.**
+
 ## D-215 — "+2 slots" card stays as it is; the closed playtest checks the departure limit (2026-11-04, owner, Q-80 → A)
 Owner's answer to Q-80 (N12af, D-207): no rule change for the "+2 slots" card (D-150 offer rule stays). The closed
 playtest (R3 playtest plan) records whether players hit the hourly departure limit (held departures, slot waits) before

@@ -2,10 +2,15 @@
 // The official attempt is saved, left, continued from the menu and finished: its result must be recorded as
 // the day's official score. A second daily of the same day is practice and must stay practice after Continue.
 // Steps depend on each other: after the first failure the rest are reported as SKIP. Fixed seed, fails closed.
+// [night-12aj] The browser clock is pinned to E2E_SEEDS['daily-continue'].dates[0], so the daily world is the one
+// test:e2e-seeds replays headless (D-214).
 import { performance } from 'node:perf_hooks';
 import {
-  withBrowser, newGamePage, waitForScreen, state, assert, clickTestId, saveDiagnostics, SEED,
+  withBrowser, newGamePage, waitForScreen, state, assert, clickTestId, saveDiagnostics, SEED, dailyInstant,
 } from './browser.mjs';
+import { E2E_SEEDS } from './seeds.mjs';
+
+const DATE = E2E_SEEDS['daily-continue'].dates[0];
 
 const started = performance.now();
 const results = [];
@@ -79,6 +84,7 @@ const steps = [
     await waitForScreen(page, 'game');
     const { active, scores } = await storage(page);
     assert(active?.kind === 'official' && Number.isSafeInteger(active.attemptId), `active run ${JSON.stringify(active)}`);
+    assert(active.dateKey === DATE, `daily of ${active.dateKey}, the clock is pinned to ${DATE}`);
     const day = scores?.days?.[active.dateKey];
     assert(day?.attemptId === active.attemptId && !day.official, `reservation ${JSON.stringify(day)}`);
     memo.active = active;
@@ -146,7 +152,7 @@ try {
     let page;
     let errors = [];
     try {
-      ({ page, errors } = await newGamePage(browser, url, 'pl'));
+      ({ page, errors } = await newGamePage(browser, url, 'pl', undefined, { fixedTime: dailyInstant(DATE) }));
     } catch (error) {
       results.push({ label: steps[0][0], status: 'FAIL', why: 'page load: ' + message(error) });
       for (const [label] of steps.slice(1)) results.push({ label, status: 'SKIP', why: `after "${steps[0][0]}"` });
@@ -182,6 +188,6 @@ try {
   const failed = results.filter((item) => item.status === 'FAIL').length + (fatal ? 1 : 0);
   const skipped = results.filter((item) => item.status === 'SKIP').length;
   const elapsedMs = Math.round(performance.now() - started);
-  console.log(`SUMMARY test:e2e:daily-continue seed=0x${SEED.toString(16).toUpperCase()} steps=${steps.length} passed=${passed} failed=${failed} skipped=${skipped} durationMs=${elapsedMs}`);
+  console.log(`SUMMARY test:e2e:daily-continue seed=0x${SEED.toString(16).toUpperCase()} date=${DATE} steps=${steps.length} passed=${passed} failed=${failed} skipped=${skipped} durationMs=${elapsedMs}`);
   if (failed || passed !== steps.length) process.exitCode = 1;
 }
