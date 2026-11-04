@@ -37,10 +37,30 @@ przed wydaniem. Kod: klient `src/net/`, funkcje `functions/`, reguły `firestore
    (ID projektu jest niezmienne). Google Analytics: **wyłącz** (nie używamy).
 2. **Build → Firestore Database → Create database**, tryb produkcyjny, lokalizacja **`europe-west1` (Belgia)**.
 3. **Build → Authentication → Get started → Sign-in method → Anonymous → Enable**.
-4. **Usage and billing → Modify plan → Blaze** (funkcje 2. generacji wymagają rozliczeń). W Google Cloud Billing ustaw
-   budżet (propozycja 10 EUR/mies.) z alertami 50/90/100%. Uwaga: budżet tylko powiadamia, nie blokuje wydatków;
-   pułapy funkcji (D-109): `getBoards` `maxInstances: 3`, `submitDaily` `maxInstances: 5` i `concurrency: 4`
-   (1 vCPU), plus limit na gracza w każdej instancji (20 `getBoards` i 6 `submitDaily` na minutę).
+4. **Usage and billing → Modify plan → Blaze** (funkcje 2. generacji wymagają rozliczeń). Potem budżet z alertami
+   (D-234, *tylko właściciel — Q-07: kto jest właścicielem projektu i konta rozliczeniowego*):
+   1. [console.cloud.google.com](https://console.cloud.google.com/) → menu ☰ → **Billing** → wybierz konto
+      rozliczeniowe projektu → **Budgets & alerts** → **Create budget**.
+   2. **Scope:** *Name* `airway-monthly`, *Time range* **Monthly**, *Projects* — zaznacz tylko projekt Airway
+      (np. `airway-prod`), *Services* **All services**, *Credits* zostaw zaznaczone → **Next**.
+   3. **Amount:** *Budget type* **Specified amount**, *Target amount* **10** (waluta konta rozliczeniowego; konto
+      w EUR = 10 EUR, w innej walucie wpisz równowartość 10 EUR) → **Next**.
+   4. **Actions → Alert threshold rules** — cztery wiersze (**Add threshold** dla kolejnych):
+      | Percent of budget | Trigger on |
+      |---|---|
+      | 50 % | **Actual** |
+      | 90 % | **Actual** |
+      | 100 % | **Actual** |
+      | 100 % | **Forecasted** |
+   5. **Manage notifications:** zaznacz **Email alerts to billing admins and users** (adres właściciela musi być
+      administratorem konta rozliczeniowego); jeśli alerty mają iść na inny adres, zaznacz też **Link Monitoring
+      email notification channels to this budget** i dodaj kanał e-mail → **Finish**.
+   6. Sprawdź listę budżetów: wiersz `airway-monthly`, kwota 10, cztery progi. Alert prognozy zaczyna działać po
+      kilku dniach danych.
+
+   Uwaga: budżet tylko powiadamia, nie blokuje wydatków — hamulcem jest parametr `LEADERBOARDS_PAUSED` (sekcja
+   „Gdy przyjdzie alert”). Pułapy funkcji (D-109): `getBoards` `maxInstances: 3`, `submitDaily` `maxInstances: 5`
+   i `concurrency: 4` (1 vCPU), plus limit na gracza w każdej instancji (20 `getBoards` i 6 `submitDaily` na minutę).
 5. **Project settings → General → Your apps → Web (`</>`)**, nazwa „Airway”, bez Hostingu. Skopiuj `apiKey`
    i `projectId` (to nie są sekrety — trafiają do aplikacji).
 6. Lokalnie w repo:
@@ -48,6 +68,7 @@ przed wydaniem. Kod: klient `src/net/`, funkcje `functions/`, reguły `firestore
    npm ci
    npm install --prefix functions --package-lock=false --no-audit --no-fund
    cp .firebaserc.example .firebaserc        # wpisz ID projektu zamiast YOUR_FIREBASE_PROJECT_ID
+   echo LEADERBOARDS_PAUSED=false > functions/.env.airway-prod   # nazwa = ID projektu; hamulec wyłączony (D-234), plik poza Gitem
    ./functions/node_modules/.bin/firebase login
    npm run test:firebase                      # emulator: musi skończyć się SUMMARY … failed=0
    ./functions/node_modules/.bin/firebase deploy --only firestore:rules,firestore:indexes,functions
@@ -72,6 +93,41 @@ przed wydaniem. Kod: klient `src/net/`, funkcje `functions/`, reguły `firestore
 10. Opcjonalnie później: **App Check** (Play Integrity / App Attest), żeby ograniczyć wywołania spoza aplikacji.
 11. Przed wydaniem uzupełnij politykę prywatności (`docs/legal/leaderboards-privacy.md` → `site/privacy.html`)
    oraz Data Safety / App Privacy w sklepach.
+
+## Gdy przyjdzie alert (D-234)
+*Tylko właściciel (Q-07) albo osoba z dostępem do projektu i do `firebase deploy`.* Hamulec nie kasuje danych
+i niczego nie wyłącza w aplikacji: gracze grają dalej, wynik gry dnia czeka w kolejce na urządzeniu.
+
+1. **Skąd koszt.** Billing → **Reports** → filtr *Projects* = projekt Airway, *Group by* **SKU**: czy rosną odczyty
+   Firestore (*Cloud Firestore Read Ops*), zapisy, czy CPU funkcji (*Cloud Run* / *Cloud Functions*).
+2. **Firestore według kolekcji.** Firebase console → **Firestore Database → Usage**: odczyty, zapisy i usunięcia
+   na dzień. Konsola nie dzieli ich na kolekcje, ale u nas każda kolekcja ma jedną funkcję, więc porównaj z
+   **Functions → Dashboard** (wywołania na funkcję):
+   - `boards/{id}/meta/top` i `boards/{id}/entries` przez `getBoards`: 4 odczyty na wywołanie (+1 `count()` dla
+     gracza spoza top 50);
+   - te same kolekcje przez `submitDaily`: 4 odczyty i do 4 zapisów na przyjętą grę (D-108);
+   - `deleteMyData`: ok. 226 odczytów na wywołanie (rzadkie).
+   Odczyty ≫ 4 × wywołania `getBoards` + 4 × `submitDaily` albo wywołania ≫ liczba graczy = błąd albo nadużycie.
+   Logi: **Functions → Logs** (fale `resource-exhausted` to limit na gracza, D-109).
+3. **Hamulec.** W repo, w pliku `functions/.env.<ID projektu>` (poza Gitem) ustaw:
+   ```dotenv
+   LEADERBOARDS_PAUSED=true
+   ```
+   i wdroż same funkcje:
+   ```bash
+   ./functions/node_modules/.bin/firebase deploy --only functions
+   ```
+   Od tej chwili `submitDaily` odpowiada `{ accepted: false, reason: 'paused' }`, a `getBoards` zwraca puste
+   rankingi — obie bez dostępu do Firestore i bez powtórki gry. Aplikacja pokazuje przy wyniku istniejący stan
+   „w kolejce” i ponawia wysyłkę później. `deleteMyData` działa dalej (prawo do usunięcia danych). Sprawdź w
+   **Firestore Database → Usage**, że odczyty spadły do zera w ciągu kilkunastu minut.
+4. **Zwolnienie hamulca** po usunięciu przyczyny (poprawka, App Check — R3e, niższe limity): ustaw
+   `LEADERBOARDS_PAUSED=false` i ponownie `firebase deploy --only functions`. Gry z kolejki wysyłają się przy
+   następnym uruchomieniu aplikacji; serwer przyjmuje tylko dzisiejszą i wczorajszą grę (D-66), starsze przepadają
+   jako `wrong_day`.
+5. **Ostateczność**, gdy koszt rośnie mimo hamulca (np. ruch spoza funkcji): Billing → **Account management** →
+   przy projekcie **Disable billing**. Zatrzymuje wszystkie płatne usługi projektu (także `deleteMyData`); przed
+   tym zapisz, co się dzieje, i włącz rozliczenia z powrotem najszybciej, jak to możliwe.
 
 ## Emulator (deweloperzy)
 `npm install --prefix functions --package-lock=false` i Java 11+, potem `npm run test:firebase` — buduje funkcje,
