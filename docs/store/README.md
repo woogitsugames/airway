@@ -3,6 +3,7 @@
 The Polish and English copy is ready to paste from [pl.md](pl.md) and [en.md](en.md). Verify every described feature against the integrated release build before publishing.
 
 Data safety (Google Play) and App Privacy (App Store) answers for builds with and without leaderboards: [privacy-declarations.md](privacy-declarations.md) (R1f, D-220; kept in sync with the code by `npm run test:privacy-declarations`).
+App Store accessibility labels, the evidence for each and the PL/EN accessibility paragraph for both listings: [accessibility.md](accessibility.md) (R1i; kept in sync with the code by `npm run test:a11y-evidence`).
 
 ## Naming and store limits
 
