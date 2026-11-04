@@ -1044,7 +1044,7 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
       1 Mar 2027; Apple: before EU submission), UK art. 27 decision (Q-67), US state app-store age laws to re-check
       before the US launch (Texas in force, Louisiana 1 Jul 2026, Utah 6 May 2027, Alabama 1 Jan 2027). Link each line
       from `docs/RELEASE.md` when R1l lands. **Area:** `docs/legal/`, `docs/FIREBASE.md`.
-- [ ] R7l **"Send my daily results" setting** — a settings switch (default on) that stops leaderboard submissions
+- [ ] R7l **"Send my daily results" setting** — [night-12x → N12x: net layer + daily report done (`Leaderboards.isSharing/setSharing`, D-186); the settings switch is agent #1's] — a settings switch (default on) that stops leaderboard submissions
       and `getBoards` calls; when off, the daily report says the run is not ranked; queued submissions are dropped
       when it is turned off. Gives the GDPR art. 21 objection a one-tap path. `test:net`, settings e2e.
       **Area:** `src/net/**`, `src/ui/settings/**`, `src/ui/daily/**`, i18n. *Needs Q-68 (A).*
@@ -1245,3 +1245,4 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
 - 2026-11-04 · G4 sea surface + haze folded into the terrain shader (D-173) · ext/03-g4-fillrate · transparent full-screen layers on the satellite globe 3→1 (low/saver: halo) and 4→2 (medium/high: halo + clouds); perf:scene SwiftShader 40 s low 397 frames (375 with shells), medium 168 (174), draw calls 41; game shots seed 15 match the layered look (routes 6.8/6.7, airports 3.1/5.5 day/dusk); `world.stats().transparentLayers` not added (G7 measures on devices)
 - 2026-11-04 · G6 store screenshots, feature graphic, ui:matrix and style doc on the satellite globe (D-170, D-178) · ext/03-g6-store · store:shots 60/60 (game: gold 0.13–0.17 ≥ 0.045, routes/airports/planes 9.4–11.6:1; night 9.4–11.4:1), store:feature 1/1, ui:matrix 48/48, contact sheet and feature graphic inspected; docs/styles/realistyczny.md (PL), D-11 globe superseded; shots:site not rerun
 - 2026-11-04 · N12w one language table (R7f, D-185) · night/12w-language-registry · test:i18n 1/1 (now per table entry: catalogs, plural form counts, labels, number locales; stub `de` entry gives every derived lookup; fails on the old code: no table, `=== 'pl'` in airportLabel.ts), test:android-config 23/23 (reads the table), test:fast 74/74, build ok, test:e2e:settings-groups 4/4; behaviour unchanged (PL/EN)
+- 2026-11-04 · N12x leaderboard opt-out, net layer + daily report line (R7l, D-135, D-186) · night/12x-leaderboard-optout · test:net 13/13 (new opt-out case fails on the old net layer: no isSharing/setSharing, run queued and sent), test:fast 74/74, build ok, test:e2e:delete-ranking 4/4; settings switch left to agent #1 (API: Leaderboards.isSharing/setSharing)

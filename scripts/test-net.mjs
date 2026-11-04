@@ -240,5 +240,35 @@ await check('disabled leaderboards have nothing to delete', async () => {
   assert.equal(await api.deleteMyData(), 'none');
 });
 
+// [night-12x] D-135, R7l: "Send my daily results" off is an objection that takes effect at once and is remembered.
+await check('opt-out: nothing is sent, queued or fetched; queued runs are dropped; remembered; on again sends', async () => {
+  const server = fakeServer();
+  const api = server.make();
+  assert.equal(api.isSharing(), true, 'default on');
+  server.state.mode = 'queue';
+  assert.equal(await api.submitDaily(honest), 'queued');
+  api.setSharing(false);
+  assert.equal(JSON.parse(server.store.get('aw-net-queue-v1')).length, 0, 'the waiting run is dropped');
+  assert.equal(server.store.get('aw-net-share-v1'), '0');
+  server.state.mode = 'ok';
+  const before = server.calls.length;
+  assert.equal(await api.submitDaily(honest), 'opted-out');
+  await api.flush();
+  assert.equal(await api.boards(DAY), null);
+  assert.equal(server.calls.length, before, 'no submitDaily or getBoards call while off');
+  assert.equal(JSON.parse(server.store.get('aw-net-queue-v1')).length, 0, 'nothing queued while off');
+  const restarted = server.make();
+  assert.equal(restarted.isSharing(), false, 'the choice survives a restart');
+  assert.equal(await restarted.submitDaily(honest), 'opted-out');
+  restarted.setSharing(true);
+  assert.equal(server.store.has('aw-net-share-v1'), false, 'on = the default, no record');
+  assert.equal(await restarted.submitDaily(honest), 'sent');
+  assert.equal(server.calls.at(-1), 'submitDaily');
+  const disabled = createLeaderboards({ config: null });
+  assert.equal(disabled.isSharing(), false, 'disabled leaderboards never share');
+  disabled.setSharing(true);
+  assert.equal(await disabled.submitDaily(honest), 'disabled');
+});
+
 console.log(`SUMMARY test:net seed=0xA1A1 day=${DAY} score=${honest.claimedScore} ticks=${honest.endTick} passed=${passed} failed=${failed}`);
 if (failed) process.exitCode = 1;

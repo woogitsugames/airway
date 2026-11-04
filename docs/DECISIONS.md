@@ -1338,3 +1338,15 @@ outside the table or the catalogs spells out `'pl'`/`'en'` again. City and regio
 `namePl`/`nameEn` fields until R7j (the table maps a language to one of them; a new language shows English names until
 then). Rejected: a registry in `src/core/` (the catalogs and their checks live in `src/i18n/`) and generating the
 native locale files from the table (they change rarely; a check is enough). **Status: in force (N12w).**
+
+## D-186 — Leaderboard opt-out lives in the net layer, takes effect at once (2026-11-04, Claude, night N12x)
+R7l, implementing D-135's objection path. `Leaderboards.isSharing()` / `setSharing(on)` (default on, stored on the
+device as `aw-net-share-v1` = `'0'` when off, not in `IDENTITY_KEYS`: a restored backup keeps the player's choice).
+Off: `submitDaily` answers `opted-out` without queueing, `flush` and `boards` make no network call, and turning it
+off drops the runs still waiting in the offline queue (an objection must stop processing, not just delay it). The
+anonymous identity is kept (removing it is the separate D-114 deletion). The official daily report shows
+"Not ranked: sending results is off in Settings." / „Poza rankingiem: wysyłanie wyników jest wyłączone w
+Ustawieniach.” (`rank.optedOut`). The settings switch itself is agent #1's UI work on this API. Rejected: keeping
+the choice in `airway.settings` (the net layer would read the settings store; the deletion row already talks to
+`Leaderboards`), and still submitting but hiding the result (the objection is about processing). **Status: in force
+for the net layer (N12x); switch pending.**
