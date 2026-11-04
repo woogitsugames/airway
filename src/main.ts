@@ -7,6 +7,7 @@ import './ui/theme/theme.css';
 import './ui/game.css';
 import { bootAudio, audioSettingsFromToggles } from './audio';
 import { createFlapRattle } from './game/flapSound'; // [night-07e]
+import { audioClockTick } from './game/audioCues'; // [night-12t] D-153
 import { onSplitFlapAnimate } from './ui/flap'; // [night-07e]
 import { dailyKey, dailySeedForKey } from './core/daily';
 import { PUZZLES } from './data/puzzles';
@@ -75,6 +76,9 @@ interface SavedSummary { readonly mode: RunMode; readonly week: number; readonly
 async function boot(): Promise<void> {
   configureHaptics({ isEnabled: () => readSettings().haptics });
   const { audio } = bootAudio({ toggles: readSettings() });
+  // [night-12t] D-153: read-only audio health for device checks over chrome://inspect / Safari Web Inspector
+  // (docs/ANDROID.md "Sound check"); no setter, nothing persisted.
+  (globalThis as { airwayAudioStatus?: () => unknown }).airwayAudioStatus = () => audio.status;
   // [night-07e] Departure boards rattle when they flip (menu, puzzles, game over, ranking).
   const rattle = createFlapRattle(() => { audio.emit({ type: 'flap' }); });
   onSplitFlapAnimate((cells, durationMs) => rattle.animate(cells, durationMs));
@@ -263,7 +267,7 @@ async function boot(): Promise<void> {
         return () => shareDailyResult(result, t, { streak });
       },
       onTick: (current, speed) => {
-        audio.setSimClock(current.clockMinute, speed);
+        audio.setSimClock(audioClockTick(current), speed); // [night-12t] cues carry run.tick, not the world minute
         lifecycle.onTick(current.tick);
       },
       cue: (cue) => { audio.emit(cue); },

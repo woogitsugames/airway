@@ -1137,3 +1137,40 @@ out in the PNGs while the probe moves only 1.4 → 1.6–2.2, and on Satelita th
 the core against the edge, and the gate takes the better of the two (WCAG non-text contrast reads either boundary).
 Rejected: keeping the median (penalises the standard map-symbol design) and a pixel-count threshold (fragile at
 different zooms). **Status: proposed; implement with G9.**
+
+## D-150 — Weekly board offers only cards that can act (2026-11-03 22:20 CET, owner, Q-71 → B)
+R8a: the "+2 slots" card enters the weekly draw only after the run's first departure hold, the hub expansion card only
+while the network has a hub; an empty place is filled by the other aircraft card. To be measured with `r8-audit`
+and `test:balance` (median 10–18 min, D-79). **Status: decided, to implement (R8a).**
+
+## D-151 — Curfew from week 3 in Endless (2026-11-03 22:20 CET, owner, Q-72 → B)
+R8c: the night curfew (D-17) starts in week 3 instead of week 4 in Endless; Daily the same; puzzles unchanged.
+Check the median 10–18 min (D-79) and question 5 of R8 in the closed test. **Status: decided, to implement (R8c).**
+
+## D-152 — Run length decided after the closed test (2026-11-03 22:20 CET, owner, Q-73 → C)
+The end-of-run shape (network +6 airports a week vs fleet +1 aircraft; no bot run past 31.6 min) stays as in rules v5
+until the closed test gives the distribution of human run lengths (D-113); the R8f review is prepared before it.
+**Status: decided (wait for the closed test).**
+
+## D-153 — Sound survives the phone: tap retries, system suspension, frozen clock, tick clock (2026-11-04, Claude, night N12t)
+Owner report: no music on a Galaxy Z Fold (APK debug from ce9ef74, music on by default). Not reproducible in desktop
+Chromium (the context runs and the chimes play), so the fix closes every path in the engine that can leave a
+phone silent for the rest of the session, and adds a way to read the engine's state on the device:
+1. The first-gesture listener removed itself before `resume()` settled. A first resume that stays suspended (another
+   app holds audio focus, WebView keeps the context suspended) or is refused left the game silent until restart. The
+   listener now stays until the context really runs.
+2. A context the system suspends or interrupts later (call, audio focus, Samsung sound settings) fired nothing. A
+   `statechange` away from "running" that the game did not cause re-arms the tap listener; so does a lifecycle
+   `resume()` refused outside a gesture (back from the background).
+3. A context can report "running" while its clock stands still; then nothing scheduled ever plays. If `currentTime`
+   has moved < 0.3 s after 1.2 s (page visible, not paused), the context is closed and the next tap builds a new
+   one with `latencyHint: 'playback'` (larger buffer, the more compatible output path) instead of `'interactive'`.
+4. `main.ts` set the engine clock to the world minute while every cue carries `run.tick`; the minute stands still for
+   the ticks weekly offer commands take (hub pick, back from a pick), so every later chime was placed 0.1 s (1x)
+   further ahead per such tick. The engine clock is now the tick (`audioClockTick`).
+`globalThis.airwayAudioStatus()` returns state, clock, latency hint, unlock attempts, rebuilds, scheduled/dropped
+cues and volumes (read-only, no setter) for `chrome://inspect`; the device checklist is `docs/ANDROID.md`
+"Sound check". `test:audio-unlock` (fake AudioContext) covers 1–4; 6 of its 7 checks fail on the old engine.
+Not changed: the sound design (D-71); whether "music" should also play on the menu is Q-75. Not verified: the Fold
+itself. **Status: in force (N12t).**
+

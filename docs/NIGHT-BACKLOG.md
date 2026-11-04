@@ -545,6 +545,12 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       362-glyph subset, used on the upgrade card) from Overpass via `unicode-range`. New fast `test:glyphs` reads every
       TTF `cmap` + borrowed ranges against the PL/EN catalogs, city/region names, numbers in six locales and the
       PL/EN/DE/FR/ES/PT-BR letter set. PL/EN output unchanged.
+- [x] N12t **Sound survives the phone (owner device bug, D-153) + owner decisions D-150…D-152** — no music on the
+      owner's Galaxy Z Fold. The tap listener now stays until the AudioContext really runs, re-arms on a system
+      suspension and on a lifecycle resume refused outside a gesture; a "running" context with a frozen clock is rebuilt
+      with `latencyHint: 'playback'`; the engine clock is the sim tick (cues carry `run.tick`, main.ts passed the world
+      minute). `airwayAudioStatus()` + `docs/ANDROID.md` "Sound check" for the device. New Q-75 (menu music / low
+      chords). Recorded: D-150 (Q-71 B, R8a), D-151 (Q-72 B, R8c), D-152 (Q-73 C).
 
 ## Globe look (D-170)
 Owner's choice 2026-11-03: the satellite globe (direction B). Plan, budgets and test lists per step:
@@ -1147,3 +1153,4 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
 - 2026-11-03 · R6h puzzle pack "Long haul" 31–35 (D-162, D-163; Q-74) · ext/02-puzzles-31-35 · test:long-haul 10/10 (0/10 on dev: no pack, no levels 31–35), test:puzzles levels=35 cases=204 passed=204, test:puzzle-packs 7/7, test:fast 71/71 (108.1 s), build ok, test:e2e:puzzles levels=35 steps=39 passed=39, test:e2e:screens-fit-320 12/12, shots ext-02 4/4 inspected (merged tree with dev at f1e4d53)
 - 2026-11-03 · G1 production globe assets (D-170, D-171, D-176) · ext/03-g1-globe-assets · test:globe-assets 45/45 (new: 6 files, 1,773,908 B, manifest SHA-256), test:fast 72/72 (129.2 s), build ok (main 1,050.3 kB / gzip 310.6 kB), test:bundle 9/9 (dist 3,597.7 kB ≤ 4,300 kB); textures not drawn yet (G2/G3), licences screen lists NASA Earth Observatory + NOAA ETOPO5 (PL/EN); ui:matrix not run
 - 2026-11-03 · G9 airport/route variants for the owner (D-175, D-177) · ext/03-g9-airport-variants · DEV-only `?airportStyle=ink|apron|medal` (default objects unchanged), 15 engine renders (Satelita/Mapa day, Satelita dusk; phone + Fold), comparison sheets in docs/mockups/globe-2026-11/g9/, probe numbers; test:fast 72/72 (102.2 s), build ok (main 1,051.6 kB / gzip 311.0 kB); waits for the owner pick (Claude recommends V3 Medalion)
+- 2026-11-04 · N12t sound survives the phone (D-153) + owner D-150…D-152 · night/12t-music-device · test:audio-unlock 7/7 (new; 6/7 fail on the old engine: tap listener gone after a still-suspended first resume, no re-arm after a system suspension or refused resume, no frozen-clock rebuild, no status; with the old minute clock a chime 40 ticks ahead does not play within 0.3 s), test:fast 73/73, build ok, test:e2e:smoke 9/9 (boot/audio path touched); desktop Chromium probe: context running, chimes scheduled; not verified on the Fold (checklist in docs/ANDROID.md)
