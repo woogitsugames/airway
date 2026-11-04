@@ -17,13 +17,13 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATH ANK AMM BGW VCE RIX KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 00:01 PASAŻERÓW 40 0 0 0 1×",
+   "text": "ATH ANK AMM BGW VCE RIX KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 00:00 PASAŻERÓW 40 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
     "routes": 10.14,
     "airports": 11.36,
-    "planes": 10.68,
-    "tags": 14.06
+    "planes": 9.96,
+    "tags": 14.16
    },
    "warmth": {
     "gold": 0.002,
@@ -33,9 +33,9 @@
     "width": 1080,
     "height": 1920,
     "meanLuma": 96.7,
-    "lumaStd": 92.1,
+    "lumaStd": 91.8,
     "whiteShare": 0,
-    "colours": 312
+    "colours": 315
    }
   },
   {
@@ -46,13 +46,13 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATH ANK AMM BGW VCE RIX KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 00:04 PASAŻERÓW 40 0 0 0 1×",
+   "text": "ATH ANK AMM BGW VCE RIX KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 00:03 PASAŻERÓW 40 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
     "routes": 9.95,
     "airports": 10.78,
-    "planes": 9.57,
-    "tags": 13.65
+    "planes": 9.46,
+    "tags": 13.45
    },
    "warmth": {
     "gold": 0.002,
@@ -61,8 +61,8 @@
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 85.5,
-    "lumaStd": 82.7,
+    "meanLuma": 85.9,
+    "lumaStd": 82.9,
     "whiteShare": 0,
     "colours": 308
    }
@@ -75,25 +75,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATH ANK AMM BGW VCE RIX KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 00:04 PASAŻERÓW 40 0 0 0 1×",
+   "text": "ATH ANK AMM BGW VCE RIX KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 00:06 PASAŻERÓW 40 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
     "routes": 9.95,
-    "airports": 10.02,
-    "planes": 10.03,
-    "tags": 12.63
+    "airports": 10.03,
+    "planes": 9.46,
+    "tags": 12.98
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.809
+    "ratio": 0.81
    },
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 80.2,
-    "lumaStd": 80.4,
+    "meanLuma": 80.3,
+    "lumaStd": 80.5,
     "whiteShare": 0,
-    "colours": 322
+    "colours": 326
    }
   },
   {
@@ -104,7 +104,7 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATH ANK AMM BGW VCE RIX KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 00:01 PASAŻERÓW 40 0 0 0 1×",
+   "text": "ATH ANK AMM BGW VCE RIX KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 00:03 PASAŻERÓW 40 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
     "routes": 10.06,
@@ -119,10 +119,10 @@
    "png": {
     "width": 1320,
     "height": 2868,
-    "meanLuma": 83.6,
-    "lumaStd": 88.1,
+    "meanLuma": 85.1,
+    "lumaStd": 88.3,
     "whiteShare": 0,
-    "colours": 332
+    "colours": 336
    }
   },
   {
@@ -133,25 +133,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATH ANK AMM BGW VCE RIX KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 00:05 PASAŻERÓW 40 0 0 0 1×",
+   "text": "ATH ANK AMM BGW VCE RIX KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 00:10 PASAŻERÓW 40 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
     "routes": 9.87,
     "airports": 10.03,
-    "planes": 9.64,
+    "planes": 9.63,
     "tags": 4.47
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.817
+    "ratio": 0.818
    },
    "png": {
     "width": 2064,
     "height": 2752,
     "meanLuma": 74,
-    "lumaStd": 75.8,
+    "lumaStd": 75.9,
     "whiteShare": 0,
-    "colours": 345
+    "colours": 349
    }
   },
   {
@@ -180,7 +180,7 @@
     "meanLuma": 106.4,
     "lumaStd": 83.1,
     "whiteShare": 0,
-    "colours": 301
+    "colours": 300
    }
   },
   {
@@ -191,25 +191,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATH ANK AMM BGW VCE RIX KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 16:50 PASAŻERÓW 34 0 0 0 1×",
+   "text": "ATH ANK AMM BGW VCE RIX KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 16:53 PASAŻERÓW 34 0 0 0 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
     "routes": 10.06,
     "airports": 11.41,
-    "planes": 9.15,
-    "tags": 14.11
+    "planes": 9.14,
+    "tags": 14.12
    },
    "warmth": {
-    "gold": 0.171,
+    "gold": 0.169,
     "ratio": 1.405
    },
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 106.2,
+    "meanLuma": 105.9,
     "lumaStd": 87.4,
     "whiteShare": 0,
-    "colours": 437
+    "colours": 432
    }
   },
   {
@@ -220,23 +220,23 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATH ANK AMM BGW VCE RIX KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 17:00 PASAŻERÓW 34 0 0 0 1×",
+   "text": "ATH ANK AMM BGW VCE RIX KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 16:58 PASAŻERÓW 34 0 0 0 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
-    "routes": 9.94,
-    "airports": 11.53,
-    "planes": 9.47,
-    "tags": 14.42
+    "routes": 9.89,
+    "airports": 11.52,
+    "planes": 9.46,
+    "tags": 14.47
    },
    "warmth": {
-    "gold": 0.163,
+    "gold": 0.164,
     "ratio": 1.294
    },
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 93.8,
-    "lumaStd": 79.9,
+    "meanLuma": 94.3,
+    "lumaStd": 80,
     "whiteShare": 0,
     "colours": 430
    }
@@ -249,25 +249,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATH ANK AMM BGW VCE RIX KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 17:01 PASAŻERÓW 34 0 0 0 1×",
+   "text": "ATH ANK AMM BGW VCE RIX KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 16:59 PASAŻERÓW 34 0 0 0 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
     "routes": 9.87,
-    "airports": 11.2,
-    "planes": 9.41,
-    "tags": 14.29
+    "airports": 11.18,
+    "planes": 9.47,
+    "tags": 14.1
    },
    "warmth": {
-    "gold": 0.159,
-    "ratio": 1.304
+    "gold": 0.158,
+    "ratio": 1.306
    },
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 88.1,
-    "lumaStd": 77.7,
+    "meanLuma": 88.8,
+    "lumaStd": 77.9,
     "whiteShare": 0,
-    "colours": 447
+    "colours": 453
    }
   },
   {
@@ -278,25 +278,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATH ANK AMM BGW VCE RIX KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 16:57 PASAŻERÓW 34 0 0 0 1×",
+   "text": "ATH ANK AMM BGW VCE RIX KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 16:56 PASAŻERÓW 34 0 0 0 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
     "routes": 9.95,
     "airports": 11.55,
-    "planes": 9.49,
-    "tags": 14.92
+    "planes": 9.54,
+    "tags": 14.88
    },
    "warmth": {
     "gold": 0.135,
-    "ratio": 1.389
+    "ratio": 1.391
    },
    "png": {
     "width": 1320,
     "height": 2868,
-    "meanLuma": 91.7,
+    "meanLuma": 93.3,
     "lumaStd": 84.7,
     "whiteShare": 0,
-    "colours": 458
+    "colours": 461
    }
   },
   {
@@ -307,25 +307,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATH ANK AMM BGW VCE RIX KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 17:02 PASAŻERÓW 34 0 0 0 1×",
+   "text": "ATH ANK AMM BGW VCE RIX KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 16:59 PASAŻERÓW 34 0 0 0 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
     "routes": 9.87,
-    "airports": 11.2,
-    "planes": 9.38,
+    "airports": 11.06,
+    "planes": 9.37,
     "tags": 1.59
    },
    "warmth": {
-    "gold": 0.17,
-    "ratio": 1.323
+    "gold": 0.169,
+    "ratio": 1.325
    },
    "png": {
     "width": 2064,
     "height": 2752,
-    "meanLuma": 82.5,
+    "meanLuma": 83,
     "lumaStd": 73.6,
     "whiteShare": 0,
-    "colours": 473
+    "colours": 477
    }
   },
   {
@@ -336,25 +336,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATH ANK AMM BGW VCE RIX KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 16:55 PASAŻERÓW 34 0 0 0 1×",
+   "text": "ATH ANK AMM BGW VCE RIX KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 17:00 PASAŻERÓW 34 0 0 0 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
     "routes": 9.95,
-    "airports": 9.97,
-    "planes": 9.24,
+    "airports": 9.98,
+    "planes": 9.3,
     "tags": 1.83
    },
    "warmth": {
-    "gold": 0.142,
+    "gold": 0.144,
     "ratio": 1.205
    },
    "png": {
     "width": 1920,
     "height": 1080,
-    "meanLuma": 120.9,
-    "lumaStd": 77.2,
+    "meanLuma": 121,
+    "lumaStd": 77.4,
     "whiteShare": 0,
-    "colours": 421
+    "colours": 423
    }
   },
   {
@@ -369,7 +369,7 @@
    "contrast": {
     "routes": 10.06,
     "airports": 11.28,
-    "planes": 8.76,
+    "planes": 8.4,
     "tags": 14.66
    },
    "warmth": {
@@ -380,7 +380,7 @@
     "width": 1080,
     "height": 1920,
     "meanLuma": 143.6,
-    "lumaStd": 62.9,
+    "lumaStd": 62.8,
     "whiteShare": 0,
     "colours": 181
    }
@@ -463,8 +463,8 @@
    "png": {
     "width": 1320,
     "height": 2868,
-    "meanLuma": 137.1,
-    "lumaStd": 69.4,
+    "meanLuma": 137.7,
+    "lumaStd": 68.7,
     "whiteShare": 0,
     "colours": 194
    }
@@ -481,8 +481,8 @@
    "contrast": {
     "routes": 9.85,
     "airports": 10.03,
-    "planes": 8.35,
-    "tags": 4.66
+    "planes": 8.05,
+    "tags": 13.36
    },
    "warmth": {
     "gold": 0.003,
@@ -491,10 +491,10 @@
    "png": {
     "width": 2064,
     "height": 2752,
-    "meanLuma": 95.3,
-    "lumaStd": 73.9,
+    "meanLuma": 95.1,
+    "lumaStd": 74,
     "whiteShare": 0,
-    "colours": 152
+    "colours": 151
    }
   },
   {
@@ -509,7 +509,7 @@
    "contrast": {
     "routes": 9.95,
     "airports": 10.03,
-    "planes": 8.41,
+    "planes": 8.89,
     "tags": 1.81
    },
    "warmth": {
@@ -522,7 +522,7 @@
     "meanLuma": 164.5,
     "lumaStd": 59.2,
     "whiteShare": 0,
-    "colours": 137
+    "colours": 139
    }
   },
   {
@@ -533,11 +533,11 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "BGW +3 RIX KHI +23 0:00 TYDZIEŃ 01 DZIEŃ 3/3 GODZ. 22:44 PASAŻERÓW 51 SIATKA WSTRZYMANA MAPA ODLOTY · KHI Żadna trasa nie obsługiwała KHI: pasażerowie nie mieli czym polecieć. Połącz nowe lotnisko, zanim zapełni się poczekalnia. ATC · RAPORT ZDARZENIA Dowiezieni pasażerowie: 51 Ukończone tygodnie: 0 PRZYCZYNY PRZEBIEG 29 pasażerów nie miało trasy do regionu docelowego. 76% oczekujących chciało dotrzeć do Bliskiego Wschodu (22 osoby). Poczekalnia przepełniona: 29 osób na 24 miejsca. NOWY REKORD LOKALNY JESZCZE RAZ · TEN SAM ŚWIAT NOWY ŚWIAT MENU",
+   "text": "BGW +3 RIX KHI +23 0:00 TYDZIEŃ 01 DZIEŃ 3/3 GODZ. 22:44 PASAŻERÓW 51 SIATKA WSTRZYMANA MAPA ODLOTY · KHI Żadna trasa nie obsługiwała KHI: pasażerowie nie mieli czym polecieć. Brak wolnych samolotów: przeciągnij do niego koniec trasy albo usuń mniej obłożoną trasę, żeby zwolnić jej samolot. ATC · RAPORT ZDARZENIA Dowiezieni pasażerowie: 51 Ukończone tygodnie: 0 PRZYCZYNY PRZEBIEG 29 pasażerów nie miało trasy do regionu docelowego. 76% oczekujących chciało dotrzeć do Bliskiego Wschodu (22 osoby). Poczekalnia przepełniona: 29 osób na 24 miejsca. NOWY REKORD LOKALNY JESZCZE RAZ · TEN SAM ŚWIAT NOWY ŚWIAT MENU",
    "contrast": {
     "routes": 9.95,
     "airports": 3.38,
-    "planes": 3.14,
+    "planes": 2.82,
     "tags": 1.81
    },
    "warmth": {
@@ -547,10 +547,10 @@
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 141.8,
-    "lumaStd": 96.8,
+    "meanLuma": 142,
+    "lumaStd": 97.1,
     "whiteShare": 0,
-    "colours": 178
+    "colours": 179
    }
   },
   {
@@ -561,7 +561,7 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "BGW +3 RIX KHI +23 0:00 TYDZIEŃ 01 DZIEŃ 3/3 GODZ. 22:44 PASAŻERÓW 51 SIATKA WSTRZYMANA MAPA ODLOTY · KHI Żadna trasa nie obsługiwała KHI: pasażerowie nie mieli czym polecieć. Połącz nowe lotnisko, zanim zapełni się poczekalnia. ATC · RAPORT ZDARZENIA Dowiezieni pasażerowie: 51 Ukończone tygodnie: 0 PRZYCZYNY PRZEBIEG 29 pasażerów nie miało trasy do regionu docelowego. 76% oczekujących chciało dotrzeć do Bliskiego Wschodu (22 osoby). Poczekalnia przepełniona: 29 osób na 24 miejsca. NOWY REKORD LOKALNY JESZCZE RAZ · TEN SAM ŚWIAT NOWY ŚWIAT MENU",
+   "text": "BGW +3 RIX KHI +23 0:00 TYDZIEŃ 01 DZIEŃ 3/3 GODZ. 22:44 PASAŻERÓW 51 SIATKA WSTRZYMANA MAPA ODLOTY · KHI Żadna trasa nie obsługiwała KHI: pasażerowie nie mieli czym polecieć. Brak wolnych samolotów: przeciągnij do niego koniec trasy albo usuń mniej obłożoną trasę, żeby zwolnić jej samolot. ATC · RAPORT ZDARZENIA Dowiezieni pasażerowie: 51 Ukończone tygodnie: 0 PRZYCZYNY PRZEBIEG 29 pasażerów nie miało trasy do regionu docelowego. 76% oczekujących chciało dotrzeć do Bliskiego Wschodu (22 osoby). Poczekalnia przepełniona: 29 osób na 24 miejsca. NOWY REKORD LOKALNY JESZCZE RAZ · TEN SAM ŚWIAT NOWY ŚWIAT MENU",
    "contrast": {
     "routes": 9.95,
     "airports": 1.33,
@@ -575,10 +575,10 @@
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 123.8,
-    "lumaStd": 93.6,
+    "meanLuma": 123.5,
+    "lumaStd": 93.4,
     "whiteShare": 0,
-    "colours": 175
+    "colours": 179
    }
   },
   {
@@ -589,7 +589,7 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "BGW +3 RIX KHI +23 0:00 TYDZIEŃ 01 DZIEŃ 3/3 GODZ. 22:44 PASAŻERÓW 51 SIATKA WSTRZYMANA MAPA ODLOTY · KHI Żadna trasa nie obsługiwała KHI: pasażerowie nie mieli czym polecieć. Połącz nowe lotnisko, zanim zapełni się poczekalnia. ATC · RAPORT ZDARZENIA Dowiezieni pasażerowie: 51 Ukończone tygodnie: 0 PRZYCZYNY PRZEBIEG 29 pasażerów nie miało trasy do regionu docelowego. 76% oczekujących chciało dotrzeć do Bliskiego Wschodu (22 osoby). Poczekalnia przepełniona: 29 osób na 24 miejsca. NOWY REKORD LOKALNY JESZCZE RAZ · TEN SAM ŚWIAT NOWY ŚWIAT MENU",
+   "text": "BGW +3 RIX KHI +23 0:00 TYDZIEŃ 01 DZIEŃ 3/3 GODZ. 22:44 PASAŻERÓW 51 SIATKA WSTRZYMANA MAPA ODLOTY · KHI Żadna trasa nie obsługiwała KHI: pasażerowie nie mieli czym polecieć. Brak wolnych samolotów: przeciągnij do niego koniec trasy albo usuń mniej obłożoną trasę, żeby zwolnić jej samolot. ATC · RAPORT ZDARZENIA Dowiezieni pasażerowie: 51 Ukończone tygodnie: 0 PRZYCZYNY PRZEBIEG 29 pasażerów nie miało trasy do regionu docelowego. 76% oczekujących chciało dotrzeć do Bliskiego Wschodu (22 osoby). Poczekalnia przepełniona: 29 osób na 24 miejsca. NOWY REKORD LOKALNY JESZCZE RAZ · TEN SAM ŚWIAT NOWY ŚWIAT MENU",
    "contrast": {
     "routes": 9.88,
     "airports": 1.31,
@@ -603,10 +603,10 @@
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 86.4,
+    "meanLuma": 86.5,
     "lumaStd": 82.2,
     "whiteShare": 0,
-    "colours": 175
+    "colours": 177
    }
   },
   {
@@ -617,11 +617,11 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "BGW +3 RIX KHI +23 0:00 TYDZIEŃ 01 DZIEŃ 3/3 GODZ. 22:44 PASAŻERÓW 51 SIATKA WSTRZYMANA MAPA ODLOTY · KHI Żadna trasa nie obsługiwała KHI: pasażerowie nie mieli czym polecieć. Połącz nowe lotnisko, zanim zapełni się poczekalnia. ATC · RAPORT ZDARZENIA Dowiezieni pasażerowie: 51 Ukończone tygodnie: 0 PRZYCZYNY PRZEBIEG 29 pasażerów nie miało trasy do regionu docelowego. 76% oczekujących chciało dotrzeć do Bliskiego Wschodu (22 osoby). Poczekalnia przepełniona: 29 osób na 24 miejsca. NOWY REKORD LOKALNY JESZCZE RAZ · TEN SAM ŚWIAT NOWY ŚWIAT MENU",
+   "text": "BGW +3 RIX KHI +23 0:00 TYDZIEŃ 01 DZIEŃ 3/3 GODZ. 22:44 PASAŻERÓW 51 SIATKA WSTRZYMANA MAPA ODLOTY · KHI Żadna trasa nie obsługiwała KHI: pasażerowie nie mieli czym polecieć. Brak wolnych samolotów: przeciągnij do niego koniec trasy albo usuń mniej obłożoną trasę, żeby zwolnić jej samolot. ATC · RAPORT ZDARZENIA Dowiezieni pasażerowie: 51 Ukończone tygodnie: 0 PRZYCZYNY PRZEBIEG 29 pasażerów nie miało trasy do regionu docelowego. 76% oczekujących chciało dotrzeć do Bliskiego Wschodu (22 osoby). Poczekalnia przepełniona: 29 osób na 24 miejsca. NOWY REKORD LOKALNY JESZCZE RAZ · TEN SAM ŚWIAT NOWY ŚWIAT MENU",
    "contrast": {
     "routes": 10.03,
     "airports": 1.37,
-    "planes": 8.95,
+    "planes": 8.45,
     "tags": 1.81
    },
    "warmth": {
@@ -632,9 +632,9 @@
     "width": 1320,
     "height": 2868,
     "meanLuma": 113.9,
-    "lumaStd": 92,
+    "lumaStd": 91.9,
     "whiteShare": 0,
-    "colours": 186
+    "colours": 179
    }
   },
   {
@@ -645,7 +645,7 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "BGW +3 RIX KHI +23 0:00 TYDZIEŃ 01 DZIEŃ 3/3 GODZ. 22:44 PASAŻERÓW 51 SIATKA WSTRZYMANA MAPA ODLOTY · KHI Żadna trasa nie obsługiwała KHI: pasażerowie nie mieli czym polecieć. Połącz nowe lotnisko, zanim zapełni się poczekalnia. ATC · RAPORT ZDARZENIA Dowiezieni pasażerowie: 51 Ukończone tygodnie: 0 PRZYCZYNY PRZEBIEG 29 pasażerów nie miało trasy do regionu docelowego. 76% oczekujących chciało dotrzeć do Bliskiego Wschodu (22 osoby). Poczekalnia przepełniona: 29 osób na 24 miejsca. NOWY REKORD LOKALNY JESZCZE RAZ · TEN SAM ŚWIAT NOWY ŚWIAT MENU",
+   "text": "BGW +3 RIX KHI +23 0:00 TYDZIEŃ 01 DZIEŃ 3/3 GODZ. 22:44 PASAŻERÓW 51 SIATKA WSTRZYMANA MAPA ODLOTY · KHI Żadna trasa nie obsługiwała KHI: pasażerowie nie mieli czym polecieć. Brak wolnych samolotów: przeciągnij do niego koniec trasy albo usuń mniej obłożoną trasę, żeby zwolnić jej samolot. ATC · RAPORT ZDARZENIA Dowiezieni pasażerowie: 51 Ukończone tygodnie: 0 PRZYCZYNY PRZEBIEG 29 pasażerów nie miało trasy do regionu docelowego. 76% oczekujących chciało dotrzeć do Bliskiego Wschodu (22 osoby). Poczekalnia przepełniona: 29 osób na 24 miejsca. NOWY REKORD LOKALNY JESZCZE RAZ · TEN SAM ŚWIAT NOWY ŚWIAT MENU",
    "contrast": {
     "routes": 9.85,
     "airports": 1.31,
@@ -659,10 +659,10 @@
    "png": {
     "width": 2064,
     "height": 2752,
-    "meanLuma": 70.6,
+    "meanLuma": 70.7,
     "lumaStd": 72.9,
     "whiteShare": 0,
-    "colours": 182
+    "colours": 184
    }
   },
   {
@@ -673,11 +673,11 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATH ANK +3 AMM +2 KHI +23 0:00 TYDZIEŃ 01 DZIEŃ 3/3 GODZ. 22:44 PASAŻERÓW 51 SIATKA WSTRZYMANA MAPA ODLOTY · KHI Żadna trasa nie obsługiwała KHI: pasażerowie nie mieli czym polecieć. Połącz nowe lotnisko, zanim zapełni się poczekalnia. ATC · RAPORT ZDARZENIA Dowiezieni pasażerowie: 51 Ukończone tygodnie: 0 PRZYCZYNY PRZEBIEG 29 pasażerów nie miało trasy do regionu docelowego. 76% oczekujących chciało dotrzeć do Bliskiego Wschodu (22 osoby). Poczekalnia przepełniona: 29 osób na 24 miejsca. NOWY REKORD LOKALNY JESZCZE RAZ · TEN SAM ŚWIAT NOWY ŚWIAT MENU",
+   "text": "ATH ANK +3 AMM +2 KHI +23 0:00 TYDZIEŃ 01 DZIEŃ 3/3 GODZ. 22:44 PASAŻERÓW 51 SIATKA WSTRZYMANA MAPA ODLOTY · KHI Żadna trasa nie obsługiwała KHI: pasażerowie nie mieli czym polecieć. Brak wolnych samolotów: przeciągnij do niego koniec trasy albo usuń mniej obłożoną trasę, żeby zwolnić jej samolot. ATC · RAPORT ZDARZENIA Dowiezieni pasażerowie: 51 Ukończone tygodnie: 0 PRZYCZYNY PRZEBIEG 29 pasażerów nie miało trasy do regionu docelowego. 76% oczekujących chciało dotrzeć do Bliskiego Wschodu (22 osoby). Poczekalnia przepełniona: 29 osób na 24 miejsca. NOWY REKORD LOKALNY JESZCZE RAZ · TEN SAM ŚWIAT NOWY ŚWIAT MENU",
    "contrast": {
     "routes": 9.95,
     "airports": 4.25,
-    "planes": 7.19,
+    "planes": 5.93,
     "tags": 1.81
    },
    "warmth": {
@@ -687,10 +687,10 @@
    "png": {
     "width": 1920,
     "height": 1080,
-    "meanLuma": 112.8,
+    "meanLuma": 113.1,
     "lumaStd": 86.5,
     "whiteShare": 0,
-    "colours": 166
+    "colours": 169
    }
   },
   {
@@ -708,7 +708,7 @@
     "meanLuma": 75.7,
     "lumaStd": 70.9,
     "whiteShare": 0,
-    "colours": 431
+    "colours": 430
    }
   },
   {
@@ -726,7 +726,7 @@
     "meanLuma": 83.3,
     "lumaStd": 72.6,
     "whiteShare": 0,
-    "colours": 449
+    "colours": 453
    }
   },
   {
@@ -744,7 +744,7 @@
     "meanLuma": 82.5,
     "lumaStd": 73.3,
     "whiteShare": 0,
-    "colours": 459
+    "colours": 458
    }
   },
   {
@@ -780,7 +780,7 @@
     "meanLuma": 82.4,
     "lumaStd": 74.8,
     "whiteShare": 0,
-    "colours": 506
+    "colours": 504
    }
   },
   {
@@ -809,25 +809,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATH ANK AMM BGW VCE RIX KHI WEEK 01 DAY 2/3 TIME 23:57 PASSENGERS 40 0 0 0 1×",
+   "text": "ATH ANK AMM BGW VCE RIX KHI WEEK 01 DAY 2/3 TIME 00:00 PASSENGERS 40 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
     "routes": 10.14,
     "airports": 11.36,
-    "planes": 9.13,
-    "tags": 14.3
+    "planes": 10.75,
+    "tags": 13.97
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.82
+    "ratio": 0.821
    },
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 96.6,
-    "lumaStd": 92,
+    "meanLuma": 96.8,
+    "lumaStd": 91.9,
     "whiteShare": 0,
-    "colours": 311
+    "colours": 314
    }
   },
   {
@@ -838,13 +838,13 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATH ANK AMM BGW VCE RIX KHI WEEK 01 DAY 2/3 TIME 00:03 PASSENGERS 40 0 0 0 1×",
+   "text": "ATH ANK AMM BGW VCE RIX KHI WEEK 01 DAY 2/3 TIME 00:06 PASSENGERS 40 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
     "routes": 9.95,
-    "airports": 10.78,
-    "planes": 9.49,
-    "tags": 13.43
+    "airports": 10.79,
+    "planes": 9.48,
+    "tags": 13.57
    },
    "warmth": {
     "gold": 0.002,
@@ -853,10 +853,10 @@
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 85.5,
-    "lumaStd": 82.7,
+    "meanLuma": 85.9,
+    "lumaStd": 82.9,
     "whiteShare": 0,
-    "colours": 307
+    "colours": 312
    }
   },
   {
@@ -867,13 +867,13 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATH ANK AMM BGW VCE RIX KHI WEEK 01 DAY 2/3 TIME 00:05 PASSENGERS 40 0 0 0 1×",
+   "text": "ATH ANK AMM BGW VCE RIX KHI WEEK 01 DAY 2/3 TIME 00:07 PASSENGERS 40 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
     "routes": 9.95,
     "airports": 10.02,
-    "planes": 9.53,
-    "tags": 12.8
+    "planes": 9.59,
+    "tags": 12.77
    },
    "warmth": {
     "gold": 0.002,
@@ -882,10 +882,10 @@
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 80.2,
-    "lumaStd": 80.4,
+    "meanLuma": 80.3,
+    "lumaStd": 80.5,
     "whiteShare": 0,
-    "colours": 324
+    "colours": 323
    }
   },
   {
@@ -901,8 +901,8 @@
    "contrast": {
     "routes": 10.06,
     "airports": 11.03,
-    "planes": 10.58,
-    "tags": 13.46
+    "planes": 10.61,
+    "tags": 13.43
    },
    "warmth": {
     "gold": 0.002,
@@ -911,10 +911,10 @@
    "png": {
     "width": 1320,
     "height": 2868,
-    "meanLuma": 83.6,
-    "lumaStd": 88.1,
+    "meanLuma": 85.1,
+    "lumaStd": 88.3,
     "whiteShare": 0,
-    "colours": 335
+    "colours": 333
    }
   },
   {
@@ -925,23 +925,23 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATH ANK AMM BGW VCE RIX KHI WEEK 01 DAY 2/3 TIME 00:08 PASSENGERS 40 0 0 0 1×",
+   "text": "ATH ANK AMM BGW VCE RIX KHI WEEK 01 DAY 2/3 TIME 00:10 PASSENGERS 40 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
     "routes": 9.87,
     "airports": 10.03,
-    "planes": 9.63,
+    "planes": 9.68,
     "tags": 4.47
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.817
+    "ratio": 0.818
    },
    "png": {
     "width": 2064,
     "height": 2752,
     "meanLuma": 74,
-    "lumaStd": 75.8,
+    "lumaStd": 75.9,
     "whiteShare": 0,
     "colours": 347
    }
@@ -954,12 +954,12 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATH ANK AMM BGW VCE RIX KHI WEEK 01 DAY 2/3 TIME 00:02 PASSENGERS 40 0 0 0 1×",
+   "text": "ATH ANK AMM BGW VCE RIX KHI WEEK 01 DAY 2/3 TIME 00:06 PASSENGERS 40 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
     "routes": 9.95,
-    "airports": 10.78,
-    "planes": 9.22,
+    "airports": 10.7,
+    "planes": 9.15,
     "tags": 1.83
    },
    "warmth": {
@@ -972,7 +972,7 @@
     "meanLuma": 106.4,
     "lumaStd": 83.1,
     "whiteShare": 0,
-    "colours": 300
+    "colours": 301
    }
   },
   {
@@ -983,25 +983,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATH ANK AMM BGW VCE RIX KHI WEEK 01 DAY 2/3 TIME 16:53 PASSENGERS 34 0 0 0 1×",
+   "text": "ATH ANK AMM BGW VCE RIX KHI WEEK 01 DAY 2/3 TIME 16:50 PASSENGERS 34 0 0 0 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
     "routes": 10.06,
-    "airports": 11.47,
-    "planes": 9.33,
-    "tags": 14.16
+    "airports": 11.41,
+    "planes": 9.07,
+    "tags": 14.09
    },
    "warmth": {
-    "gold": 0.168,
-    "ratio": 1.404
+    "gold": 0.171,
+    "ratio": 1.405
    },
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 105.9,
-    "lumaStd": 87.6,
+    "meanLuma": 106.4,
+    "lumaStd": 87.2,
     "whiteShare": 0,
-    "colours": 431
+    "colours": 443
    }
   },
   {
@@ -1012,13 +1012,13 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATH ANK AMM BGW VCE RIX KHI WEEK 01 DAY 2/3 TIME 17:00 PASSENGERS 34 0 0 0 1×",
+   "text": "ATH ANK AMM BGW VCE RIX KHI WEEK 01 DAY 2/3 TIME 16:59 PASSENGERS 34 0 0 0 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
-    "routes": 9.89,
+    "routes": 9.94,
     "airports": 11.52,
-    "planes": 9.47,
-    "tags": 14.47
+    "planes": 9.46,
+    "tags": 14.45
    },
    "warmth": {
     "gold": 0.164,
@@ -1027,10 +1027,10 @@
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 93.4,
-    "lumaStd": 79.7,
+    "meanLuma": 94.2,
+    "lumaStd": 80.1,
     "whiteShare": 0,
-    "colours": 428
+    "colours": 433
    }
   },
   {
@@ -1041,11 +1041,11 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATH ANK AMM BGW VCE RIX KHI WEEK 01 DAY 2/3 TIME 17:02 PASSENGERS 34 0 0 0 1×",
+   "text": "ATH ANK AMM BGW VCE RIX KHI WEEK 01 DAY 2/3 TIME 17:00 PASSENGERS 34 0 0 0 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
     "routes": 9.87,
-    "airports": 11.22,
+    "airports": 11.2,
     "planes": 9.36,
     "tags": 14.29
    },
@@ -1056,10 +1056,10 @@
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 88.1,
-    "lumaStd": 77.8,
+    "meanLuma": 88.6,
+    "lumaStd": 77.9,
     "whiteShare": 0,
-    "colours": 452
+    "colours": 456
    }
   },
   {
@@ -1074,21 +1074,21 @@
    "sun": "-68.6@29.7,41.3",
    "contrast": {
     "routes": 9.95,
-    "airports": 11.55,
-    "planes": 9.47,
-    "tags": 14.91
+    "airports": 11.5,
+    "planes": 9.55,
+    "tags": 14.88
    },
    "warmth": {
     "gold": 0.135,
-    "ratio": 1.388
+    "ratio": 1.392
    },
    "png": {
     "width": 1320,
     "height": 2868,
-    "meanLuma": 91.9,
-    "lumaStd": 84.6,
+    "meanLuma": 93.3,
+    "lumaStd": 84.7,
     "whiteShare": 0,
-    "colours": 461
+    "colours": 457
    }
   },
   {
@@ -1099,25 +1099,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATH ANK AMM BGW VCE RIX KHI WEEK 01 DAY 2/3 TIME 17:00 PASSENGERS 34 0 0 0 1×",
+   "text": "ATH ANK AMM BGW VCE RIX KHI WEEK 01 DAY 2/3 TIME 17:01 PASSENGERS 34 0 0 0 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
     "routes": 9.87,
     "airports": 11.19,
-    "planes": 9.35,
+    "planes": 9.38,
     "tags": 1.59
    },
    "warmth": {
     "gold": 0.17,
-    "ratio": 1.324
+    "ratio": 1.323
    },
    "png": {
     "width": 2064,
     "height": 2752,
-    "meanLuma": 82.7,
-    "lumaStd": 73.5,
+    "meanLuma": 82.6,
+    "lumaStd": 73.6,
     "whiteShare": 0,
-    "colours": 470
+    "colours": 475
    }
   },
   {
@@ -1128,25 +1128,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATH ANK AMM BGW VCE RIX KHI WEEK 01 DAY 2/3 TIME 16:58 PASSENGERS 34 0 0 0 1×",
+   "text": "ATH ANK AMM BGW VCE RIX KHI WEEK 01 DAY 2/3 TIME 16:55 PASSENGERS 34 0 0 0 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
     "routes": 9.95,
-    "airports": 10.03,
-    "planes": 9.27,
+    "airports": 9.96,
+    "planes": 9.34,
     "tags": 1.83
    },
    "warmth": {
-    "gold": 0.144,
-    "ratio": 1.205
+    "gold": 0.142,
+    "ratio": 1.204
    },
    "png": {
     "width": 1920,
     "height": 1080,
-    "meanLuma": 121,
-    "lumaStd": 77.4,
+    "meanLuma": 120.9,
+    "lumaStd": 77.2,
     "whiteShare": 0,
-    "colours": 420
+    "colours": 416
    }
   },
   {
@@ -1161,7 +1161,7 @@
    "contrast": {
     "routes": 10.06,
     "airports": 11.28,
-    "planes": 8.96,
+    "planes": 8.88,
     "tags": 14.66
    },
    "warmth": {
@@ -1171,10 +1171,10 @@
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 144.4,
-    "lumaStd": 62.6,
+    "meanLuma": 144.5,
+    "lumaStd": 62.5,
     "whiteShare": 0,
-    "colours": 182
+    "colours": 181
    }
   },
   {
@@ -1217,7 +1217,7 @@
    "contrast": {
     "routes": 9.88,
     "airports": 10.03,
-    "planes": 8.61,
+    "planes": 8.6,
     "tags": 14.01
    },
    "warmth": {
@@ -1245,8 +1245,8 @@
    "contrast": {
     "routes": 10.03,
     "airports": 10.92,
-    "planes": 8.74,
-    "tags": 14.87
+    "planes": 8.7,
+    "tags": 14.89
    },
    "warmth": {
     "gold": 0.002,
@@ -1255,8 +1255,8 @@
    "png": {
     "width": 1320,
     "height": 2868,
-    "meanLuma": 137.9,
-    "lumaStd": 69.1,
+    "meanLuma": 138.5,
+    "lumaStd": 68.4,
     "whiteShare": 0,
     "colours": 194
    }
@@ -1273,8 +1273,8 @@
    "contrast": {
     "routes": 9.85,
     "airports": 10.03,
-    "planes": 7.38,
-    "tags": 13.54
+    "planes": 8.35,
+    "tags": 4.66
    },
    "warmth": {
     "gold": 0.003,
@@ -1283,10 +1283,10 @@
    "png": {
     "width": 2064,
     "height": 2752,
-    "meanLuma": 95.1,
+    "meanLuma": 94.9,
     "lumaStd": 73.9,
     "whiteShare": 0,
-    "colours": 152
+    "colours": 153
    }
   },
   {
@@ -1301,7 +1301,7 @@
    "contrast": {
     "routes": 9.95,
     "airports": 10.03,
-    "planes": 8.89,
+    "planes": 8.41,
     "tags": 1.81
    },
    "warmth": {
@@ -1311,10 +1311,10 @@
    "png": {
     "width": 1920,
     "height": 1080,
-    "meanLuma": 164.4,
-    "lumaStd": 59.1,
+    "meanLuma": 164.5,
+    "lumaStd": 59,
     "whiteShare": 0,
-    "colours": 136
+    "colours": 138
    }
   },
   {
@@ -1325,7 +1325,7 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "BGW +3 RIX KHI +23 0:00 WEEK 01 DAY 3/3 TIME 22:44 PASSENGERS 51 NETWORK CLOSED MAP DEPARTURES · KHI No route served KHI: its passengers had no flight to board. Connect a new airport before its waiting area fills up. ATC · INCIDENT REPORT Passengers delivered: 51 Weeks completed: 0 CAUSES TIMELINE 29 passengers had no available route to their destination region. 76% of waiting passengers were headed to the Middle East (22 people). The waiting area was full: 29 people for 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
+   "text": "BGW +3 RIX KHI +23 0:00 WEEK 01 DAY 3/3 TIME 22:44 PASSENGERS 51 NETWORK CLOSED MAP DEPARTURES · KHI No route served KHI: its passengers had no flight to board. No spare aircraft: drag a route end to it, or remove a quieter route to free its plane. ATC · INCIDENT REPORT Passengers delivered: 51 Weeks completed: 0 CAUSES TIMELINE 29 passengers had no available route to their destination region. 76% of waiting passengers were headed to the Middle East (22 people). The waiting area was full: 29 people for 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
    "contrast": {
     "routes": 9.95,
     "airports": 3.38,
@@ -1339,8 +1339,8 @@
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 135.4,
-    "lumaStd": 96.3,
+    "meanLuma": 135,
+    "lumaStd": 96.6,
     "whiteShare": 0,
     "colours": 177
    }
@@ -1353,7 +1353,7 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "BGW +3 RIX KHI +23 0:00 WEEK 01 DAY 3/3 TIME 22:44 PASSENGERS 51 NETWORK CLOSED MAP DEPARTURES · KHI No route served KHI: its passengers had no flight to board. Connect a new airport before its waiting area fills up. ATC · INCIDENT REPORT Passengers delivered: 51 Weeks completed: 0 CAUSES TIMELINE 29 passengers had no available route to their destination region. 76% of waiting passengers were headed to the Middle East (22 people). The waiting area was full: 29 people for 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
+   "text": "BGW +3 RIX KHI +23 0:00 WEEK 01 DAY 3/3 TIME 22:44 PASSENGERS 51 NETWORK CLOSED MAP DEPARTURES · KHI No route served KHI: its passengers had no flight to board. No spare aircraft: drag a route end to it, or remove a quieter route to free its plane. ATC · INCIDENT REPORT Passengers delivered: 51 Weeks completed: 0 CAUSES TIMELINE 29 passengers had no available route to their destination region. 76% of waiting passengers were headed to the Middle East (22 people). The waiting area was full: 29 people for 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
    "contrast": {
     "routes": 9.95,
     "airports": 1.33,
@@ -1370,7 +1370,7 @@
     "meanLuma": 124,
     "lumaStd": 93.5,
     "whiteShare": 0,
-    "colours": 170
+    "colours": 172
    }
   },
   {
@@ -1381,24 +1381,24 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "BGW +3 RIX KHI +23 0:00 WEEK 01 DAY 3/3 TIME 22:44 PASSENGERS 51 NETWORK CLOSED MAP DEPARTURES · KHI No route served KHI: its passengers had no flight to board. Connect a new airport before its waiting area fills up. ATC · INCIDENT REPORT Passengers delivered: 51 Weeks completed: 0 CAUSES TIMELINE 29 passengers had no available route to their destination region. 76% of waiting passengers were headed to the Middle East (22 people). The waiting area was full: 29 people for 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
+   "text": "BGW +3 RIX KHI +23 0:00 WEEK 01 DAY 3/3 TIME 22:44 PASSENGERS 51 NETWORK CLOSED MAP DEPARTURES · KHI No route served KHI: its passengers had no flight to board. No spare aircraft: drag a route end to it, or remove a quieter route to free its plane. ATC · INCIDENT REPORT Passengers delivered: 51 Weeks completed: 0 CAUSES TIMELINE 29 passengers had no available route to their destination region. 76% of waiting passengers were headed to the Middle East (22 people). The waiting area was full: 29 people for 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
    "contrast": {
     "routes": 9.88,
     "airports": 1.31,
-    "planes": 2.78,
+    "planes": 2.62,
     "tags": 1.81
    },
    "warmth": {
     "gold": 0.001,
-    "ratio": 0.7
+    "ratio": 0.701
    },
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 86.5,
+    "meanLuma": 86.6,
     "lumaStd": 82.3,
     "whiteShare": 0,
-    "colours": 179
+    "colours": 183
    }
   },
   {
@@ -1409,11 +1409,11 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "BGW +3 RIX KHI +23 0:00 WEEK 01 DAY 3/3 TIME 22:44 PASSENGERS 51 NETWORK CLOSED MAP DEPARTURES · KHI No route served KHI: its passengers had no flight to board. Connect a new airport before its waiting area fills up. ATC · INCIDENT REPORT Passengers delivered: 51 Weeks completed: 0 CAUSES TIMELINE 29 passengers had no available route to their destination region. 76% of waiting passengers were headed to the Middle East (22 people). The waiting area was full: 29 people for 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
+   "text": "BGW +3 RIX KHI +23 0:00 WEEK 01 DAY 3/3 TIME 22:44 PASSENGERS 51 NETWORK CLOSED MAP DEPARTURES · KHI No route served KHI: its passengers had no flight to board. No spare aircraft: drag a route end to it, or remove a quieter route to free its plane. ATC · INCIDENT REPORT Passengers delivered: 51 Weeks completed: 0 CAUSES TIMELINE 29 passengers had no available route to their destination region. 76% of waiting passengers were headed to the Middle East (22 people). The waiting area was full: 29 people for 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
    "contrast": {
     "routes": 10.03,
     "airports": 1.37,
-    "planes": 8.97,
+    "planes": 8.95,
     "tags": 1.81
    },
    "warmth": {
@@ -1423,10 +1423,10 @@
    "png": {
     "width": 1320,
     "height": 2868,
-    "meanLuma": 113.9,
-    "lumaStd": 92,
+    "meanLuma": 113.7,
+    "lumaStd": 91.9,
     "whiteShare": 0,
-    "colours": 186
+    "colours": 178
    }
   },
   {
@@ -1437,24 +1437,24 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "BGW +3 RIX KHI +23 0:00 WEEK 01 DAY 3/3 TIME 22:44 PASSENGERS 51 NETWORK CLOSED MAP DEPARTURES · KHI No route served KHI: its passengers had no flight to board. Connect a new airport before its waiting area fills up. ATC · INCIDENT REPORT Passengers delivered: 51 Weeks completed: 0 CAUSES TIMELINE 29 passengers had no available route to their destination region. 76% of waiting passengers were headed to the Middle East (22 people). The waiting area was full: 29 people for 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
+   "text": "BGW +3 RIX KHI +23 0:00 WEEK 01 DAY 3/3 TIME 22:44 PASSENGERS 51 NETWORK CLOSED MAP DEPARTURES · KHI No route served KHI: its passengers had no flight to board. No spare aircraft: drag a route end to it, or remove a quieter route to free its plane. ATC · INCIDENT REPORT Passengers delivered: 51 Weeks completed: 0 CAUSES TIMELINE 29 passengers had no available route to their destination region. 76% of waiting passengers were headed to the Middle East (22 people). The waiting area was full: 29 people for 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
    "contrast": {
     "routes": 9.85,
     "airports": 1.31,
-    "planes": 2.08,
+    "planes": 1.87,
     "tags": 1.81
    },
    "warmth": {
     "gold": 0.001,
-    "ratio": 0.708
+    "ratio": 0.709
    },
    "png": {
     "width": 2064,
     "height": 2752,
-    "meanLuma": 70.6,
+    "meanLuma": 70.7,
     "lumaStd": 73,
     "whiteShare": 0,
-    "colours": 176
+    "colours": 180
    }
   },
   {
@@ -1465,11 +1465,11 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATH ANK +3 AMM +2 KHI +23 0:00 WEEK 01 DAY 3/3 TIME 22:44 PASSENGERS 51 NETWORK CLOSED MAP DEPARTURES · KHI No route served KHI: its passengers had no flight to board. Connect a new airport before its waiting area fills up. ATC · INCIDENT REPORT Passengers delivered: 51 Weeks completed: 0 CAUSES TIMELINE 29 passengers had no available route to their destination region. 76% of waiting passengers were headed to the Middle East (22 people). The waiting area was full: 29 people for 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
+   "text": "ATH ANK +3 AMM +2 KHI +23 0:00 WEEK 01 DAY 3/3 TIME 22:44 PASSENGERS 51 NETWORK CLOSED MAP DEPARTURES · KHI No route served KHI: its passengers had no flight to board. No spare aircraft: drag a route end to it, or remove a quieter route to free its plane. ATC · INCIDENT REPORT Passengers delivered: 51 Weeks completed: 0 CAUSES TIMELINE 29 passengers had no available route to their destination region. 76% of waiting passengers were headed to the Middle East (22 people). The waiting area was full: 29 people for 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
    "contrast": {
     "routes": 9.95,
     "airports": 4.25,
-    "planes": 6.95,
+    "planes": 7,
     "tags": 1.81
    },
    "warmth": {
@@ -1479,7 +1479,7 @@
    "png": {
     "width": 1920,
     "height": 1080,
-    "meanLuma": 112.8,
+    "meanLuma": 112.9,
     "lumaStd": 86.5,
     "whiteShare": 0,
     "colours": 168
@@ -1500,7 +1500,7 @@
     "meanLuma": 75.6,
     "lumaStd": 70.9,
     "whiteShare": 0,
-    "colours": 434
+    "colours": 432
    }
   },
   {
@@ -1554,7 +1554,7 @@
     "meanLuma": 76.1,
     "lumaStd": 73.6,
     "whiteShare": 0,
-    "colours": 477
+    "colours": 476
    }
   },
   {
@@ -1572,7 +1572,7 @@
     "meanLuma": 82.4,
     "lumaStd": 74.8,
     "whiteShare": 0,
-    "colours": 503
+    "colours": 509
    }
   },
   {
@@ -1590,7 +1590,7 @@
     "meanLuma": 114.2,
     "lumaStd": 76.7,
     "whiteShare": 0,
-    "colours": 429
+    "colours": 427
    }
   }
  ]

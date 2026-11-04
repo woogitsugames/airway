@@ -47,6 +47,7 @@ export const pl = {
   'hud.widebodyCount': 'Szerokokadłubowce: {count}. Wybierz lub przeciągnij na trasę',
   'hud.hubCount': 'Dostępne rozbudowy hubów: {count}',
   'hud.speed': 'Prędkość gry: {speed}×. Zmień prędkość',
+  'hud.globeMode': 'Widok globusa: {mode}. Zmień widok',
   // [task-12] Weekly freight labels
   'upgrade.freight': 'FRACHT',
   'upgrade.selectHub': 'Wskaż hub na globusie',
@@ -110,6 +111,9 @@ export const pl = {
   'settings.group.help': 'Pomoc',
   'settings.language': 'Język',
   'settings.graphics': 'Jakość grafiki',
+  'settings.globeMode': 'Widok globusa',
+  'settings.globeMode.satellite': 'Satelita',
+  'settings.globeMode.map': 'Mapa',
   // [night-05] D-68 airport label setting.
   'settings.airportLabels': 'Lotniska',
   'settings.airportLabels.code': 'Kod',

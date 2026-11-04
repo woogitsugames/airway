@@ -86,12 +86,13 @@ async function boot(): Promise<void> {
   onSettingsChange((settings) => {
     audio.setSettings(audioSettingsFromToggles(settings));
     if (settings.graphics !== appliedQuality) { appliedQuality = settings.graphics; world?.setQuality(settings.graphics); }
+    world?.setGlobeMode(settings.globeMode); // [G8] D-172 (no-op when unchanged)
     document.title = t('app.title');
   });
 
   let world: World | null = null;
   try {
-    world = createWorld(app, t('canvas.label'), readSettings().graphics);
+    world = createWorld(app, t('canvas.label'), readSettings().graphics, readSettings().globeMode);
     world.showMenuBackdrop();
   } catch (error) {
     // [night-11h] D-118: no WebGL 2 (three.js r170 needs it). A plain page says so instead of a blank sky whose
