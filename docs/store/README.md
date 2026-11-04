@@ -2,6 +2,8 @@
 
 The Polish and English copy is ready to paste from [pl.md](pl.md) and [en.md](en.md). Verify every described feature against the integrated release build before publishing.
 
+Data safety (Google Play) and App Privacy (App Store) answers for builds with and without leaderboards: [privacy-declarations.md](privacy-declarations.md) (R1f, D-219; kept in sync with the code by `npm run test:privacy-declarations`).
+
 ## Naming and store limits
 
 - D-18 specifies **Airway: Globe Route Builder** (EN, 27 characters) and **Airway: Buduj siatkę lotów na globusie** (PL, 38 characters); D-203 (owner, Q-77 → B) changed the PL title to
