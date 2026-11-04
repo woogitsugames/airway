@@ -93,6 +93,16 @@ let fileCount = 0;
 await import('./ts-test-loader.mjs');
 const { LANGUAGE_ENTRIES, LANGUAGES, createLanguageTable, localName } = await import('../src/i18n/languages.ts');
 const { formatNumberIn, numberLocale } = await import('../src/core/format.ts');
+const { LENGTH_BUDGETS, textLength } = await import('../src/i18n/limits.ts');
+const { pseudoText } = await import('../src/i18n/pseudo.ts');
+const { fillPluralTokens } = await import('../src/i18n/index.ts');
+let budgetCount = 0;
+/** A catalog template with sample parameters filled in, as t() renders it (numbers in the language's format). */
+function fillSample(template, sample = {}, entry) {
+  const filled = fillPluralTokens(template, sample, entry.locale, entry.plural);
+  return filled.replace(/\{([A-Za-z][A-Za-z0-9_]*)\}/g, (token, name) => sample[name] === undefined ? token
+    : typeof sample[name] === 'number' ? formatNumberIn(entry.locale, sample[name]) : String(sample[name]));
+}
 try {
   const english = dictionary('en');
   keyCount = english.size;
@@ -160,11 +170,45 @@ try {
   // Self-check: the matcher catches the old game-over title and spares the diegetic terminal sign.
   if (!BANNED.pl.some(({ re }) => re.test('Pokaż siatkę wokół')) || !BANNED.pl.some(({ re }) => re.test('Siatka wstrzymana')) || BANNED.pl.some(({ re, allow = [] }) =>
     re.test('AIRWAY.GAMES · TERMINAL 1') && !allow.includes('menu.terminal'))) failures.push('banned-synonym matcher self-check');
+  // [night-11ac] R7h, D-211: length budgets (src/i18n/limits.ts). Each budgeted key, with its sample parameters
+  // filled in, fits its budget in every catalog and in the pseudo-locale (both modes); the pseudo text fills the
+  // budget, so the layout is tested at the longest allowed translation.
+  budgetCount = Object.keys(LENGTH_BUDGETS).length;
+  for (const [key, budget] of Object.entries(LENGTH_BUDGETS)) {
+    if (!english.has(key)) { failures.push('length budget for an unknown key ' + key); continue; }
+    if (!Number.isInteger(budget.max) || budget.max < 1 || !budget.where) failures.push('length budget ' + key + ': max and where');
+    for (const entry of LANGUAGE_ENTRIES) {
+      const text = fillSample(catalogs.get(entry.code).get(key), budget.sample, entry);
+      if (/\{[A-Za-z]/.test(text)) failures.push(entry.code + ': ' + key + ' sample leaves a token: ' + text);
+      if (textLength(text) > budget.max) failures.push(`${entry.code}: ${key} is ${textLength(text)} > ${budget.max} (${budget.where}): "${text}"`);
+      for (const mode of ['stretch', 'harsh']) {
+        const pseudo = pseudoText(text, { mode, budget: budget.max });
+        if (textLength(pseudo) > budget.max) failures.push(`pseudo ${mode} ${entry.code}: ${key} is ${textLength(pseudo)} > ${budget.max}: "${pseudo}"`);
+        else if (textLength(text) + 2 <= budget.max && textLength(pseudo) !== budget.max) failures.push(`pseudo ${mode} ${entry.code}: ${key} does not fill its budget: "${pseudo}"`);
+      }
+    }
+  }
+  // The flap budgets are the board's own cell counts.
+  const menuSource = readFileSync(resolve(ROOT, 'src/ui/menu/menu.ts'), 'utf8');
+  if ((menuSource.match(/maxCells:\s*[^,}]*FLAP_CELLS/g) ?? []).length !== 3 || /maxCells:\s*\d/.test(menuSource)) {
+    failures.push('menu split-flaps must take maxCells from FLAP_CELLS (src/i18n/limits.ts)');
+  }
+  // Self-checks: an over-budget translation fails; the harsh mode doubles short text and leaves long text at ~1.4x.
+  const fake = fillSample('USTAWIENIA GRY', undefined, LANGUAGE_ENTRIES[0]);
+  if (textLength(fake) <= LENGTH_BUDGETS['menu.settings'].max) failures.push('length-budget self-check: over-budget text passes');
+  if (textLength(pseudoText('Back', { mode: 'harsh' })) !== 8 || textLength(pseudoText('Back')) !== 7 ||
+    textLength(pseudoText('SETTINGS', { budget: 10 })) !== 10 || textLength(pseudoText('USTAWIENIA', { budget: 10 })) !== 10 ||
+    pseudoText('USTAWIENIA', { budget: 10 }).includes('[')) failures.push('pseudo-locale self-check: ' +
+    [pseudoText('Back', { mode: 'harsh' }), pseudoText('SETTINGS', { budget: 10 }), pseudoText('USTAWIENIA', { budget: 10 })].join(' '));
+  for (const text of ['Graphics quality', 'Passengers delivered: 1,284', 'Choose a departure to plan the network']) {
+    const ratio = textLength(pseudoText(text, { mode: 'harsh' })) / textLength(text);
+    if (text.length <= 20 ? ratio !== 2 : ratio < 1.2 || ratio > 1.6) failures.push(`pseudo harsh ratio ${ratio.toFixed(2)} for "${text}"`);
+  }
   if (english.size === 0) failures.push('dictionaries must not be empty');
 } catch (error) {
   failures.push(error instanceof Error ? error.message : String(error));
 }
 for (const failure of failures) console.error('FAIL ' + failure);
-console.log('SUMMARY test:i18n seed=' + SEED + ' files=' + fileCount + ' keys=' + keyCount +
+console.log('SUMMARY test:i18n seed=' + SEED + ' files=' + fileCount + ' keys=' + keyCount + ' budgets=' + budgetCount +
   ' passed=' + (failures.length ? 0 : 1) + ' failed=' + failures.length);
 if (failures.length) process.exitCode = 1;

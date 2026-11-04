@@ -1,5 +1,6 @@
 import { localNumber, t } from '../../i18n';
 import { SplitFlap } from '../flap';
+import { FLAP_CELLS } from '../../i18n/limits'; // [night-11ac] R7h: the same cell counts as the length budgets
 import './menu.css';
 
 export type MenuMode = 'continue' | 'endless' | 'puzzles' | 'daily';
@@ -95,9 +96,9 @@ export function createMenu(onFlight:(mode:MenuMode|MenuService)=>void,initial:Me
     button.dataset.mode=flight.id;
     button.dataset.testid='menu-'+flight.id;
     const main=el('span','airway-flight__main');
-    const title=new SplitFlap(flight.title,{highlight:flight.hot,initialAnimation:true,maxCells:half?10:20});
-    const gate=new SplitFlap(flight.gate,{initialAnimation:true,maxCells:2});
-    const status=new SplitFlap(flight.status,{highlight:flight.hot,initialAnimation:true,maxCells:10});
+    const title=new SplitFlap(flight.title,{highlight:flight.hot,initialAnimation:true,maxCells:half?FLAP_CELLS.half:FLAP_CELLS.title});
+    const gate=new SplitFlap(flight.gate,{initialAnimation:true,maxCells:FLAP_CELLS.gate});
+    const status=new SplitFlap(flight.status,{highlight:flight.hot,initialAnimation:true,maxCells:FLAP_CELLS.status});
     flaps.push(title,gate,status);
     const sub=el('span','airway-flight__sub',flight.sub);
     if(!flight.sub) sub.hidden=true;

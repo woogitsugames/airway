@@ -87,7 +87,7 @@ test(`every city is on land or within ${COAST_TOLERANCE_DEG}° (~30 km) of the c
   assert.deepEqual(wet, [], `cities at sea: ${wet.join(', ')}`);
 });
 
-// [night-12ai] R7j, D-213: wave-1 names (de, fr, es, pt = pt-BR) from Wikidata labels + reviewed overrides.
+// [night-12ai] R7j, D-217: wave-1 names (de, fr, es, pt = pt-BR) from Wikidata labels + reviewed overrides.
 const { createHash } = await import('node:crypto');
 const { REGIONS, REGION_IDS } = await import('../src/data/regions.ts');
 const { PLANNED_LANGUAGE_ENTRIES } = await import('../src/i18n/languages.ts');

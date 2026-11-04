@@ -30,7 +30,8 @@ const fill = (file: ExchangeFile, forms: number): ExchangeFile => ({
   ...file,
   rows: file.rows.map((row) => ({
     ...row,
-    translation: '«' + row.en.replace(/\{([A-Za-z][A-Za-z0-9_]*)\|([^{}]*)\}/g, (_t, name: string, list: string) => {
+    // [night-11ac] No marker where the English text already uses its whole R7h budget (e.g. "BOARDING", 8 of 8).
+    translation: (row.maxLength !== null && Array.from(row.en).length >= row.maxLength ? '' : '«') + row.en.replace(/\{([A-Za-z][A-Za-z0-9_]*)\|([^{}]*)\}/g, (_t, name: string, list: string) => {
       const given = list.split('|');
       return `{${name}|${Array.from({ length: forms }, (_, i) => given[Math.min(i, given.length - 1)] + (i ? i : '')).join('|')}}`;
     }),

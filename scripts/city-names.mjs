@@ -1,4 +1,4 @@
-// [night-12ai] R7j, D-213: city and region names for the wave-1 languages (de, fr, es, pt = pt-BR) from Wikidata
+// [night-12ai] R7j, D-217: city and region names for the wave-1 languages (de, fr, es, pt = pt-BR) from Wikidata
 // labels (CC0). Three steps, each reproducible; only the last runs in tests and it needs no network:
 //   node scripts/city-names.mjs --resolve   map new cities to Wikidata ids (search by English name, nearest item
 //                                           within 40 km of our coordinates) → scripts/data/city-wikidata.json

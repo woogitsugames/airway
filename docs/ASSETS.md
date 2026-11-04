@@ -26,7 +26,7 @@ Rejected: **B612 / B612 Mono** (OFL, Airbus cockpit face) — no Polish diacriti
 - [N12ai] `src/data/city-names.json` — German, French, Spanish and Brazilian Portuguese names of the 165 cities and
   8 regions from **Wikidata** labels (CC0 1.0, https://www.wikidata.org/wiki/Wikidata:Licensing), snapshot
   `scripts/data/wikidata-labels.json` (retrieved 2026-11-04), item ids `scripts/data/city-wikidata.json`, 19 reviewed
-  corrections in `scripts/data/city-names-overrides.json` (own work). Rebuilt by `npm run data:city-names` (D-213).
+  corrections in `scripts/data/city-names-overrides.json` (own work). Rebuilt by `npm run data:city-names` (D-217).
   Not shown in the game until those languages ship.
 
 ## Libraries (dev only, mockups)

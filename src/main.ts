@@ -57,7 +57,8 @@ const STORE_SHOT_PLAY_TICKS = 1500;
  */
 const STORE_GAME_SUN_DOT = 0.05;
 
-if (import.meta.env.DEV && query.has('pseudo')) setPseudoLocale(true); // [night-10p] layout check only
+// [night-10p] layout check only; [night-11ac] R7h: `?pseudo=harsh` doubles short strings.
+if (import.meta.env.DEV && query.has('pseudo')) setPseudoLocale(query.get('pseudo') === 'harsh' ? 'harsh' : true);
 
 // The airport-model fixture lives in dev/world.html (render agent, shared world renderer).
 if (import.meta.env.DEV && query.get('preview') === 'gameover') {
