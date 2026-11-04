@@ -87,5 +87,61 @@ test(`every city is on land or within ${COAST_TOLERANCE_DEG}° (~30 km) of the c
   assert.deepEqual(wet, [], `cities at sea: ${wet.join(', ')}`);
 });
 
+// [night-12ai] R7j, D-217: wave-1 names (de, fr, es, pt = pt-BR) from Wikidata labels + reviewed overrides.
+const { createHash } = await import('node:crypto');
+const { REGIONS, REGION_IDS } = await import('../src/data/regions.ts');
+const { PLANNED_LANGUAGE_ENTRIES } = await import('../src/i18n/languages.ts');
+const { buildNames } = await import('./city-names.mjs');
+const readJson = (path) => JSON.parse(readFileSync(resolve(ROOT, path), 'utf8'));
+const NAMES = readJson('src/data/city-names.json');
+const MAPPING = readJson('scripts/data/city-wikidata.json');
+const PLANNED = PLANNED_LANGUAGE_ENTRIES.map((entry) => entry.code);
+// SHA-256 of "code\tnamePl\tnameEn" per city, then per region: the PL/EN names on screen today (D-107).
+const PL_EN_DIGEST = 'c59cb8320449049d00998ffc74c650f64f9b1bb2ceae098c7ba95c07aa396d99';
+
+test('every city and region has a name in every planned language (R7j)', () => {
+  assert.deepEqual(NAMES.languages, PLANNED);
+  assert.deepEqual(Object.keys(NAMES.cities), CITIES.map((city) => city.code));
+  assert.deepEqual(Object.keys(NAMES.regions), [...REGION_IDS]);
+  const missing = [];
+  for (const [kind, table] of [['city', NAMES.cities], ['region', NAMES.regions]]) {
+    for (const [key, names] of Object.entries(table)) {
+      assert.deepEqual(Object.keys(names).sort(), [...PLANNED].sort(), `${kind} ${key} languages`);
+      for (const code of PLANNED) if (!names[code]?.trim() || /[()]/.test(names[code])) missing.push(`${kind} ${key} ${code}: "${names[code]}"`);
+    }
+  }
+  assert.deepEqual(missing, [], missing.join(', '));
+});
+
+test('the names file is the offline rebuild of the Wikidata snapshot and the reviewed overrides', () => {
+  const { names, problems } = buildNames(MAPPING, readJson('scripts/data/wikidata-labels.json'), readJson('scripts/data/city-names-overrides.json'));
+  assert.deepEqual(problems, []);
+  assert.deepEqual(names, NAMES, 'run node scripts/city-names.mjs');
+  assert.match(NAMES.source, /CC0/);
+});
+
+test('every city maps to its own Wikidata item; every override names a known item and says why', () => {
+  const ids = CITIES.map((city) => MAPPING.cities[city.code]);
+  assert.ok(ids.every((id) => /^Q\d+$/.test(id)), 'unmapped city');
+  assert.equal(new Set(ids).size, ids.length, 'two cities share a Wikidata item');
+  const overrides = readJson('scripts/data/city-names-overrides.json');
+  for (const [kind, table] of [['cities', overrides.cities], ['regions', overrides.regions]]) {
+    for (const [key, byLanguage] of Object.entries(table)) {
+      assert.ok(MAPPING[kind][key], `override for unknown ${kind} ${key}`);
+      for (const [code, value] of Object.entries(byLanguage)) {
+        assert.ok(PLANNED.includes(code) && value.name && value.why, `${kind} ${key} ${code}: name + why`);
+      }
+    }
+  }
+});
+
+test('PL and EN city and region names are unchanged (no planned language replaces them)', () => {
+  const text = [...CITIES.map((c) => `${c.code}\t${c.namePl}\t${c.nameEn}`),
+    ...REGION_IDS.map((r) => `${r}\t${REGIONS[r].namePl}\t${REGIONS[r].nameEn}`)].join('\n');
+  assert.equal(createHash('sha256').update(text).digest('hex'), PL_EN_DIGEST);
+  assert.ok(!('pl' in NAMES.cities.LON) && !('en' in NAMES.cities.LON));
+  assert.equal(NAMES.cities.NYC.pt, 'Nova York', 'pt is Brazilian (D-212)');
+});
+
 console.log(`SUMMARY test:city-data seed=0 cities=${CITIES.length} passed=${passed} failed=${failed}`);
 if (failed) process.exitCode = 1;

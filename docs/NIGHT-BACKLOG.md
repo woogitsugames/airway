@@ -763,6 +763,12 @@ before/after `npm run shots -- globe` PNGs and look at them.
       `i18n:import` writes `src/i18n/de.ts` only when every row passes (params, plural form counts, budget, stale EN,
       missing/unknown rows). Wave-1 de/fr/es/pt(-BR) are `PLANNED_LANGUAGE_ENTRIES`, not shipped. Not covered:
       `site/i18n.js`, `docs/store/` texts.
+- [x] N12ai **City and region names for de/fr/es/pt from Wikidata (R7j, D-217) + owner Q-79/Q-80 (D-215, D-216)** —
+      `npm run data:city-names` maps the 165 cities to Wikidata items (enwiki article + 40 km check, 8 titles pinned),
+      snapshots the labels and rebuilds `src/data/city-names.json` offline with 19 reviewed overrides (Frankfurt short
+      forms, "Nova York", pt-BR over pt-PT spellings, "Naher Osten"); ASSETS entry; `test:city-data` +4 checks. PL/EN
+      names and `namePl`/`nameEn` untouched; the game does not read the file until a language ships. Q-80 → A (card
+      unchanged, playtest checks the departure limit), Q-79 → A (titles stay), PL store text "terminal" → "hub".
 - [x] G1 **Production globe assets** — reproducible bake into `public/data/globe/` (day 4096/2048, night 2048/1024,
       elevation 2048, clouds 2048, ~1.9 MB) with a SHA-256 manifest; NASA/NOAA entries in `docs/ASSETS.md`; credit
       line (PL/EN i18n) on the About page; bundle `total` budget → 4 300 kB (D-171); new fast test `test:globe-assets`.
@@ -1209,7 +1215,7 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
       context comment, max length from R7h, plural categories of the language, placeholder list) and
       `i18n:import` turns a filled file back into `src/i18n/de.ts`, rejecting missing placeholders, over-budget text and
       wrong plural counts. Also covers `site/i18n.js` and `docs/store/en.md` sections. **Area:** `scripts/`, `docs/i18n/`.
-- [ ] R7j **City and region names per language** — replace `namePl`/`nameEn` with `names: Record<Language,string>`
+- [x] R7j → N12ai (data file + test; `names` field switch waits for a shipped language) **City and region names per language** — replace `namePl`/`nameEn` with `names: Record<Language,string>`
       (sim `code` untouched, D-107); a one-off script fetches Wikidata labels (CC0) for de/fr/es/pt-BR into a
       reviewed JSON (pt-BR "Nova York", not "Nova Iorque"); `docs/ASSETS.md` entry; `test:city-data` checks every
       enabled language has every name. **Area:** `src/data/**`, `scripts/`, `docs/ASSETS.md`.
@@ -1407,3 +1413,4 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
 - 2026-11-04 · N11ab airport-pick sign on narrow landscape boards (D-210) · night/11ab-hub-pick-sign · origin/dev a9908f4 merged first: test:e2e:notch 60/60 in 84 s (56/60 on the old CSS: sign 72–89 px tall beside the 60 px pass, instruction 68 px wide, week text 23 px past the sign at 812×375; two later runs at the gate were red on my own first CSS — EN slots pick 63 px, then the Back tile 2 px out of the tighter sign — fixed before this green run), test:fast 80/80, build ok; shots docs/shots/n11y/upgrade-pick-* (6, inspected). Not run: ui:matrix (globe timeouts under SwiftShader, G7); boards ≥ 760 px unchanged
 - 2026-11-04 · N12ah translator export/import (R7i, D-211, D-212) · night/12ah-i18n-export · test:i18n-exchange 12/12 (new module; absent before), export de/fr 449 rows (de one|other, fr one|other|many), JSON + CSV round-trip, import rejects bad params/plurals/budget/stale EN; test:i18n 1/1, test:doc-ids 8/8 (173 decisions, max D-212), test:fast 81/81 (236.9 s), build ok on origin/dev 87a146c; no browser suite (no UI change)
 - 2026-11-04 · N11ac length budgets + harsh pseudo-locale at 320 px (R7h, D-213) · night/11ac-i18n-length-budgets · origin/dev 794e9a7 merged first (#197 i18n export reads the budgets): test:i18n budgets=63 passed (228 failures with the old pseudo-locale; crashes without limits.ts), test:e2e:pseudo-320 16/16 in 35 s (6/16 on the old code), test:e2e:pseudo-locale 27/27 (26/27 before the NEW-stub min-width), test:i18n-exchange 12/12 (11/12 before its stand-in fix), test:fast 81/81 (356.7 s), build ok, test:overlay-layout 36/36 after the stub change; shots .e2e/pseudo-320/ (16, inspected, not committed)
+- 2026-11-04 · N12ai wave-1 city/region names from Wikidata (R7j, D-217) + owner Q-80 → A (D-215), Q-79 → A + PL store "hub" (D-216) · night/12ai-city-names · 165/165 cities resolved (enwiki article, all within 40 km), 173 items × de/fr/es/pt-br/pt/mul labels, 165 cities + 8 regions × 4 languages, 19 reviewed overrides, offline rebuild identical; test:city-data 9/9 (4 new; the module and data file are absent on the old code), test:doc-ids 8/8 (177 decisions, max D-217), test:fast 81/81, build ok after merging origin/dev 9dbfc27; no browser suite (no UI change)
