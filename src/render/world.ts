@@ -82,14 +82,19 @@ export interface WorldStats {
   readonly decorTotal: number;
 }
 
+/** [G8] D-172: the two surfaces the player can choose. */
+export type GlobeMode = 'satellite' | 'map';
+
 export interface WorldRendererOptions {
   /** Device tier preference; persistence is owned by the settings screen. */
   readonly quality?: QualityPreference;
   /** Decorative (non-simulation) seed for trees, rocks, clouds and lights. */
   readonly seed?: number;
   readonly landUrl?: string;
-  /** [ext-03] Experimental globe look (DEV only, docs/mockups/globe-2026-11/); default the diorama. */
+  /** [ext-03] Globe look override (DEV comparisons, docs/mockups/globe-2026-11/); default from `globeMode`. */
   readonly look?: GlobeLook;
+  /** [G8] D-172: the player's globe mode, Satelita (default) or Mapa; change it later with `setGlobeMode`. */
+  readonly globeMode?: GlobeMode;
   /** [ext-03] D-175/D-178 airport/route style; default `medal` (owner, D-178). DEV `?airportStyle=` compares. */
   readonly airportStyle?: AirportStyle;
   readonly camera?: OrbitCameraOptions;
@@ -130,6 +135,8 @@ export interface WorldRenderer {
   /** [night-11h] Called with true on context loss and false once it is restored and the quality re-applied. */
   onContextChange(listener: (lost: boolean) => void): () => void;
   setSun(lon: number, lat: number): void;
+  /** [G8] D-172: Satelita ↔ Mapa; swaps the surface textures of the current globe and keeps the mode across rebuilds. */
+  setGlobeMode(mode: GlobeMode): void;
   /** Day/night from the authoritative tick plus render interpolation fraction. */
   setTime(tick: number, fraction?: number): void;
   setCities(cities: readonly CityView[]): void;
@@ -210,6 +217,7 @@ export function createWorldRenderer(
   const toCamera = new Vector3();
   const point: ScreenPoint = { x: 0, y: 0, visible: false };
   let globe: GlobeInstance | null = null;
+  let globeMode: GlobeMode = opts.globeMode ?? 'satellite';
   let globeEpoch = 0;
   let disposed = false;
   let lastZoom = -1;
@@ -226,11 +234,14 @@ export function createWorldRenderer(
   const loadGlobe = async (): Promise<void> => {
     const mine = ++globeEpoch;
     const next = await createGlobe(scene, {
-      quality, seed: opts.seed ?? 0xA1A1, landUrl: opts.landUrl, sunDirection: lights.direction, look: opts.look,
+      quality, seed: opts.seed ?? 0xA1A1, landUrl: opts.landUrl, sunDirection: lights.direction,
+      look: opts.look ?? globeMode,
     });
     if (disposed || mine !== globeEpoch) { next.dispose(); return; }
     globe?.dispose();
     globe = next;
+    // [G8] The mode may have changed while the globe was loading.
+    if (!opts.look && globe.surfaceLook !== 'diorama' && globe.surfaceLook !== globeMode) void globe.setSurfaceLook(globeMode);
     globe.setDecorDensity(quality.decorDensity);
     globe.lod.forceLevel(forcedLevel);
   };
@@ -317,6 +328,12 @@ export function createWorldRenderer(
     onContextChange: (listener) => guard.onChange(listener),
     get quality() { return quality; },
     setSun: (lon, lat) => lights.setSun(lon, lat),
+    setGlobeMode(mode) {
+      if (mode === globeMode) return;
+      globeMode = mode;
+      // A DEV look override pins the surface; otherwise swap the textures of the globe already in the scene.
+      if (!opts.look && globe) void globe.setSurfaceLook(mode);
+    },
     setTime(tick, fraction = 0) {
       sun.setViewCenter(orbit.longitudeDeg, orbit.latitudeDeg);
       sun.update(tick, fraction);

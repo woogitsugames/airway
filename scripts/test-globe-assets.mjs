@@ -14,8 +14,9 @@ const MANIFEST = join(DIR, 'manifest.json');
 const KB = 1000;
 /** Per-file caps and the folder total (D-171: ~1.8 MB; the bundle `total` budget is raised with G1). */
 const CAP = { 'day-4096.jpg': 1200 * KB, 'day-2048.jpg': 400 * KB, 'night-2048.jpg': 120 * KB,
-  'night-1024.jpg': 40 * KB, 'elevation-2048.png': 350 * KB, 'clouds-2048.png': 120 * KB };
-const TOTAL_CAP = 2000 * KB;
+  'night-1024.jpg': 40 * KB, 'elevation-2048.png': 350 * KB, 'clouds-2048.png': 120 * KB,
+  'map-4096.jpg': 480 * KB, 'map-2048.jpg': 200 * KB }; // [G8] D-172 "Mapa" mode
+const TOTAL_CAP = 2600 * KB;
 const SOURCES = {
   'day-4096.jpg': 'NASA Blue Marble NG July 2004 (world.topo.bathy.200407), graded; public domain',
   'day-2048.jpg': 'NASA Blue Marble NG July 2004 (world.topo.bathy.200407), graded; public domain',
@@ -23,6 +24,8 @@ const SOURCES = {
   'night-1024.jpg': 'NASA Black Marble 2016 (BlackMarble_2016_3km), lights only; public domain',
   'elevation-2048.png': 'NOAA ETOPO5 land elevation, sqrt-encoded 8 bit (m = (v/255)^2 * 8000); public domain',
   'clouds-2048.png': 'procedural cloud cover (dev/globe-look/bake.py); own work, CC0',
+  'map-4096.jpg': 'D-172 Mapa: Blue Marble NG July classified into an own palette + ETOPO5 hillshade + Natural Earth borders; public domain sources, own processing (CC0)',
+  'map-2048.jpg': 'D-172 Mapa: Blue Marble NG July classified into an own palette + ETOPO5 hillshade + Natural Earth borders; public domain sources, own processing (CC0)',
 };
 
 /** Width/height from a PNG IHDR or a JPEG SOFn marker. */
