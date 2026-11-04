@@ -554,6 +554,12 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       362-glyph subset, used on the upgrade card) from Overpass via `unicode-range`. New fast `test:glyphs` reads every
       TTF `cmap` + borrowed ranges against the PL/EN catalogs, city/region names, numbers in six locales and the
       PL/EN/DE/FR/ES/PT-BR letter set. PL/EN output unchanged.
+- [x] N12t **Sound survives the phone (owner device bug, D-153) + owner decisions D-150…D-152** — no music on the
+      owner's Galaxy Z Fold. The tap listener now stays until the AudioContext really runs, re-arms on a system
+      suspension and on a lifecycle resume refused outside a gesture; a "running" context with a frozen clock is rebuilt
+      with `latencyHint: 'playback'`; the engine clock is the sim tick (cues carry `run.tick`, main.ts passed the world
+      minute). `airwayAudioStatus()` + `docs/ANDROID.md` "Sound check" for the device. New Q-75 (menu music / low
+      chords). Recorded: D-150 (Q-71 B, R8a), D-151 (Q-72 B, R8c), D-152 (Q-73 C).
 
 ## Globe look (D-170)
 Owner's choice 2026-11-03: the satellite globe (direction B). Plan, budgets and test lists per step:
@@ -1157,3 +1163,4 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
 - 2026-11-03 · G9 airport/route variants for the owner (D-175, D-177) · ext/03-g9-airport-variants · DEV-only `?airportStyle=ink|apron|medal` (default objects unchanged), 15 engine renders (Satelita/Mapa day, Satelita dusk; phone + Fold), comparison sheets in docs/mockups/globe-2026-11/g9/, probe numbers; test:fast 72/72 (102.2 s), build ok (main 1,051.6 kB / gzip 311.0 kB); waits for the owner pick (Claude recommends V3 Medalion)
 - 2026-11-03 · N11j pause-summary e2e under rules v5 + old-rules save notice (D-132, numbered D-130 in PR #147), owner D-128/D-129 · night/11j-pause-summary-v4-save · test:e2e:pause-summary 4/4 (0/4 on origin/dev), test:save-golden 21/21 (20/21 on the old code), test:e2e:save-notice 6/6 (4/6 on the old code), test:fast 67/67, build ok; e2e:smoke/ui:matrix not run (no layout change)
 - 2026-11-03 · N11k clean game-over report (R5f), owner D-130/D-131, N11j decision → D-132 · night/11k-clean-gameover · after merging dev (#154–#158): test:fast 72/72, build ok, e2e:gameover-unserved 4/4, e2e:gameover-map 3/3, e2e:smoke 9/9, ui:matrix 32/32; before: test:e2e:gameover-unserved 4/4 (0/4 on the old UI; its served case was 3/4-red on origin/dev since rules v5, now seed 0xA1A3), test:fast 67/67, build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:gameover-map 3/3, e2e:gameover-short 4/4, e2e:gameover-tip 4/4, store:shots 60 (test:store-shots ok); R5d stays a proposal
+- 2026-11-04 · N12t sound survives the phone (D-153) + owner D-150…D-152 · night/12t-music-device · test:audio-unlock 7/7 (new; 6/7 fail on the old engine: tap listener gone after a still-suspended first resume, no re-arm after a system suspension or refused resume, no frozen-clock rebuild, no status; with the old minute clock a chime 40 ticks ahead does not play within 0.3 s), test:fast 73/73, build ok, test:e2e:smoke 9/9 (boot/audio path touched); desktop Chromium probe: context running, chimes scheduled; not verified on the Fold (checklist in docs/ANDROID.md)
