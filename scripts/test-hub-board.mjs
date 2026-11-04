@@ -153,5 +153,5 @@ check('real run: a forced jam (no routes) gives one no-route row per waiting reg
   console.log(`  jam at ${jammed.id} minute ${run.clockMinute}: ${model.rows.map((row) => row.region + '×' + row.waiting).join(' ')}`);
 });
 
-console.log(`SUMMARY test:hub-board passed=${passed} failed=${failed}`);
+console.log(`SUMMARY test:hub-board seed=0xA1A1 cases=${passed + failed} passed=${passed} failed=${failed}`);
 if (failed) process.exitCode = 1;
