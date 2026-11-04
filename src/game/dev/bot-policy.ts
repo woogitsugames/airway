@@ -236,6 +236,11 @@ function freeAircraft(snapshot: BotSnapshot): BotDecision | null {
   return null;
 }
 
+/** [night-12ad] D-201: the hub-expansion card beats a turboprop from this fill share of the fullest hub ... */
+export const HUB_CARD_FILL = 0.6;
+/** ... while at most this many airports have no route (more: the aircraft is worth more than the places). */
+export const HUB_CARD_MAX_UNSERVED = 1;
+
 function chooseUpgrade(snapshot: BotSnapshot): BotDecision | null {
   if (!snapshot.offers.length) return null;
   // Only interchange hubs can be expanded (task 12); rank them by pressure and overflow history.
@@ -255,10 +260,16 @@ function chooseUpgrade(snapshot: BotSnapshot): BotDecision | null {
   // every run in which an airport opened beyond turboprop range of all others. Count those airports.
   const outOfReach = unreachableByTurboprop(snapshot).length;
   const ownsWidebody = snapshot.inventory.widebody > 0 || snapshot.routes.some((route) => route.assigned.widebody > 0);
+  const turbopropValue = 40 + routeLoad / 4 + loadByKind('longWait');
+  const unserved = snapshot.cities.filter((city) => city.active && city.connectedRoutes === 0).length;
   const rankedOffers = snapshot.offers.map((offer) => {
     let value = 0;
     if (offer.kind === 'hub') value = worst ? 30 + worst.impact + loadByKind('hubOverflow') : -Infinity;
-    if (offer.kind === 'turboprop') value = 40 + routeLoad / 4 + loadByKind('longWait');
+    // [night-12ad] D-201: when the fullest hub is HUB_CARD_FILL full and at most HUB_CARD_MAX_UNSERVED airport waits
+    // for a route, +6 places and the shorter connection beat one more turboprop (paired replays, 200 seeds, hub
+    // >= 70 % and turboprop: +0.55 min, +17.5 score); a needed widebody still wins (the card costs it -2.5 min).
+    if (offer.kind === 'hub' && worst && pressure(worst.city) >= HUB_CARD_FILL && unserved <= HUB_CARD_MAX_UNSERVED) value = Math.max(value, turbopropValue + 1);
+    if (offer.kind === 'turboprop') value = turbopropValue;
     if (offer.kind === 'widebody') value = 35 + (hasLongRoute || outOfReach > 0 || !ownsWidebody ? 80 : 0) + routeLoad / 6 + loadByKind('range');
     if (offer.kind === 'slots') value = 20 + loadByKind('slots') * 2;
     return { offer, value };
