@@ -14,7 +14,7 @@ komentarze i commity piszesz po angielsku, a opisy PR po polsku.
 1. `CLAUDE.md` — zasady twarde, styl, komendy.
 2. `docs/NIGHT-BACKLOG.md`. To kolejka pracy: rundy N11 (UI) i N12 (platforma), propozycje R1–R8, sekcja „Globe look
    (D-170)” G1–G9 oraz Log na końcu.
-3. `docs/DECISIONS.md` (ostatnia decyzja to D-213) i `docs/OWNER-QUESTIONS.md` (ostatnie pytanie to Q-80).
+3. `docs/DECISIONS.md` (ostatnia decyzja to D-217) i `docs/OWNER-QUESTIONS.md` (ostatnie pytanie to Q-80).
 4. `docs/TESTING.md`, `docs/ARCHITECTURE.md`.
 
 ## Stan na 2026-11-04 (koniec poprzedniej sesji)

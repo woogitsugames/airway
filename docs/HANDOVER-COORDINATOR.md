@@ -1,17 +1,18 @@
 # Przekazanie koordynatora Airway
 
-Ostatnia aktualizacja: 2026-11-04, ok. 17:55 UTC. Poprzednia sesja kończy pracę, bo wyczerpał się tygodniowy limit.
+Ostatnia aktualizacja: 2026-11-04, ok. 18:00 UTC. Poprzednia sesja kończy pracę, bo wyczerpał się tygodniowy limit.
 
 ## Stan repo
-- `main` = `dev` = `9dbfc27` po scaleniu #199.
+- `main` = `dev` = `a902909` po scaleniu #201.
 - Ostatnie scalone PR-y:
   - #194 plan smoke;
   - #195 tablica i samouczek przy notchu;
   - #196 znak wyboru huba;
   - #197 eksport/import tłumaczeń (N12ah);
-  - #198 limity długości i8n + `?pseudo=harsh` + `test:e2e:pseudo-320` (N11ac, D-213);
-  - #199 prompt startowy.
-- Ostatnie numery: decyzja **D-213** (następna wolna to D-214), pytanie **Q-80**. D-160…D-179 należą do sesji ext.
+  - #198 limity długości i18n + `?pseudo=harsh` + `test:e2e:pseudo-320` (N11ac, D-213);
+  - #199/#200 prompt startowy i handover;
+  - #201 nazwy miast z Wikidata (N12ai, D-217; plus D-215 Q-80 i D-216 Q-79);
+- Ostatnie numery: decyzja **D-217** (następna wolna to D-218), pytanie **Q-80**. D-160…D-179 należą do sesji ext.
 - Budziki :15 i :45 koordynatora są **wyłączone**:
   - `trig_01FNqUvAkWFVY9Jj8XnYzoXr`;
   - `trig_013Ke8JAt631r4TpcSEpMBqm`.
@@ -30,14 +31,10 @@ Ostatnia aktualizacja: 2026-11-04, ok. 17:55 UTC. Poprzednia sesja kończy prac�
    - **Zostało:**
      - skrypt `site:assets` w `package.json`;
      - wpisy w `docs/SITE.md`, `docs/ASSETS.md` i `docs/TESTING.md`;
-     - decyzja D-214;
+     - decyzja D-218;
      - pozycja w backlogu i linia w Logu;
      - scalenie z `dev`, potem `test:fast` + build i PR.
-2. **N12ai / R7j: nazwy miast z Wikidata (CC0) dla DE/FR/ES/PT-BR.** Agent #2 kończył to zadanie, kiedy limit się
-   wyczerpał.
-   - Sprawdź, czy jest PR od `night/12ai*`, albo czy na tej gałęzi został WIP.
-   - Ostatnio widziałam błędy „no de label” dla części miast (np. ABV, OSL). Trzeba wtedy dodać fallback albo
-     ręczne nadpisanie.
+2. **N12ai / R7j — nazwy miast z Wikidata** — scalone w #201.
 3. **N12aj: seedy ze stałą datą dla daily-share i daily-continue.** Nie zaczęte.
 4. **R2e: strona dla prasy (`site/press.html`).** Nie zaczęte.
 
