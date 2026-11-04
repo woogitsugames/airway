@@ -175,3 +175,16 @@ export function dropFromTop(top: readonly TopEntry[], uid: string, candidates: r
   for (const row of [...top, ...candidates]) if (row.uid !== uid && !rows.has(row.uid)) rows.set(row.uid, row);
   return [...rows.values()].sort(compareTop).slice(0, limit);
 }
+
+/**
+ * [night-12as] D-234 (R3d): the manual brake. The owner sets this deploy-time param (`functions/.env.<project>`)
+ * to `true` and redeploys when a budget alert fires; `submitDaily` and `getBoards` then answer from these constants
+ * without touching Firestore or replaying a run. `deleteMyData` stays on (a player's right to erase, rare and capped).
+ */
+export const PAUSE_PARAM = 'LEADERBOARDS_PAUSED';
+/** The paused `submitDaily` answer; the client keeps the run queued and retries later (shown as "queued"). */
+export const PAUSED_SUBMIT = { accepted: false, reason: 'paused' } as const;
+/** The paused `getBoards` answer: the two requested boards, empty, the caller unranked. */
+export function pausedBoards(daily: string, weekly: string) {
+  return { daily: { id: daily, entries: [], me: null }, weekly: { id: weekly, entries: [], me: null } };
+}

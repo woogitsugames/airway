@@ -182,6 +182,26 @@ await check('a rate-limited submission (429) stays queued and is sent on the nex
   assert.equal(JSON.parse(store.get('aw-net-queue-v1')).length, 0, 'sent after the limit');
 });
 
+// [night-12as] D-234 (R3d): the server's budget brake answers `paused`; the run stays queued (not rejected).
+await check('a paused server ("paused" answer) keeps the run queued and sends it after the brake is released', async () => {
+  const config = readNetConfig({ VITE_FIREBASE_API_KEY: 'k', VITE_FIREBASE_PROJECT_ID: 'p' });
+  let paused = true;
+  const fakeFetch = async (url) => {
+    if (url.includes('accounts:signUp')) return { ok: true, status: 200, json: async () => ({ localId: 'u', idToken: 't', refreshToken: 'r', expiresIn: '3600' }) };
+    if (paused) return { ok: true, status: 200, json: async () => ({ result: { accepted: false, reason: 'paused' } }) };
+    return { ok: true, status: 200, json: async () => ({ result: { accepted: true, score: honest.claimedScore } }) };
+  };
+  const store = new Map();
+  let clock = 1_000;
+  const api = createLeaderboards({ config, fetch: fakeFetch, now: () => clock, storage: { getItem: (k) => store.get(k) ?? null, setItem: (k, v) => store.set(k, v) } });
+  assert.equal(await api.submitDaily(honest), 'queued');
+  assert.equal(JSON.parse(store.get('aw-net-queue-v1')).length, 1, 'still in the queue');
+  paused = false;
+  clock += 10 * 60_000;
+  await api.flush();
+  assert.equal(JSON.parse(store.get('aw-net-queue-v1')).length, 0, 'sent after the brake');
+});
+
 // [night-12k] D-114 (R1a): in-app deletion clears the identity and the queue only after the server confirmed.
 function fakeServer() {
   const calls = [];
