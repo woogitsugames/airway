@@ -1633,3 +1633,19 @@ range (6 on 0xA1A1) × the 7 idle offsets: a superset of what any viewport can p
 board, plain card, forced overload; leaderboard = drags, 240 ticks alive, forced overload. Both suites now take
 `E2E_SEEDS.smoke/leaderboard.seeds[0]` (0xA1A1, unchanged). Still outside: daily-share and daily-continue (seeded by
 the date). The on-screen filter itself and the drag hit-testing remain browser-only. **Status: in force (N12ag).**
+
+## D-209 — Weekly board fits phone landscape with cut-outs; ATC strip clears both side insets (2026-11-04, Claude, night N11z/N11aa)
+On a landscape phone with side cut-outs (852×393, 0/59/21/59) the weekly board left the sign beside the boarding pass
+178 px wide, its line wrapped into a 15–44 px column (6–7 lines, sign 117–134 px tall), and the three labels ran
+63–117 px past the bottom inset (the overlay scrolled 71–125 px); 720–740 × 360 phones without insets did the same.
+Phone landscape (≥ 720 px wide, ≤ 520 px tall) now: the model window takes what the height leaves (`100vh − 300 px −
+top/bottom insets`, 48–230 px; no 96 px floor); a board narrower than 860 px (container query) sets the week small
+above its line and lets the sign run over the dimmed peg rack (not tappable while the board is open) up to 300 px, so
+the line keeps 230–274 px and two lines; below 700 px the label columns tighten so the PL hub values stay on one
+line. Boards ≥ 860 px wide (915×412 and up) are unchanged (ui:matrix PNGs unaffected). The sign's line is balanced
+(no lone last word). The ATC paper strip (range warning and first-time cards) subtracted only the right inset from
+its landscape width, so a first-time card ended 34–43 px under the right cut-out; it now subtracts both. Guards:
+`test:e2e:notch` gains a small landscape profile (812×375, 0/50/21/50), checks the board over the real HUD (no scroll,
+labels above the bottom inset, sign line ≥ 120 px and ≤ 3 lines, sign clear of the pass), the training flight through
+its controller (route → aircraft → transfer → cleared) and the ATC strip and a first-time card as panels (46/54 on
+the old CSS). **Status: in force.**
