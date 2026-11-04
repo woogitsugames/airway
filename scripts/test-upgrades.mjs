@@ -57,5 +57,19 @@ test('[task-39] cancelling the airport pick restores the untouched offer (D-49)'
     assert.throws(() => cancelUpgradePick(chosen, 3));
   }
 });
-console.log(`SUMMARY test:upgrades seed=0xA1A1 cases=6 passed=${passed} failed=${6-passed}`);
-if (passed !== 6) process.exitCode = 1;
+// [night-12v] R8a, D-150: a card that cannot act is not drawn; its place goes to the other aircraft.
+test('only cards that can act are drawn (R8a, D-150)', () => {
+  for (let seed = 0; seed < 200; seed++) {
+    const none = drawUpgradeOffers(2, rng(seed), { hub: false, slots: false }).map((o) => o.id).sort();
+    assert.deepEqual(none, ['turboprop', 'widebody']);
+    const hub = drawUpgradeOffers(2, rng(seed), { hub: true, slots: false }).map((o) => o.id).sort();
+    assert.deepEqual(hub, ['hub-expansion', 'turboprop', 'widebody']);
+    const slots = drawUpgradeOffers(2, rng(seed), { hub: false, slots: true }).map((o) => o.id).sort();
+    assert.deepEqual(slots, ['departure-slots', 'turboprop', 'widebody']);
+    const both = drawUpgradeOffers(2, rng(seed), { hub: true, slots: true });
+    assert.equal(new Set(both.map((o) => o.id)).size, 3);
+    assert.deepEqual(startWeeklyUpgrade(TICKS_PER_WEEK, rng(seed), { hub: false, slots: false })?.offers.map((o) => o.id).sort(), none);
+  }
+});
+console.log(`SUMMARY test:upgrades seed=0xA1A1 cases=7 passed=${passed} failed=${7-passed}`);
+if (passed !== 7) process.exitCode = 1;

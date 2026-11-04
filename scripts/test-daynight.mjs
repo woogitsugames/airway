@@ -45,6 +45,8 @@ try {
   check('local hour handles negative offset', sim.localHourAt(30, -5) === 19);
   check('local hour handles east offset', sim.localHourAt(23 * 60, 8) === 7);
   check('24h and weekly UTC wrap', sim.localHourAt(1440 + 90, 0) === 1 && sim.weekAtTick(w4) === 4);
+  // [night-12v] R8c, D-151: Endless/Daily curfew from week 3 (was 4).
+  const wStart = (params.CURFEW_ENDLESS_START_WEEK - 1) * params.DAYNIGHT_MINUTES_PER_WEEK;
   check('all timezone bands integer', [-180, -74, 0, 2.4, 21, 179.9, 180].every((lon) =>
     Number.isInteger(cities.utcOffsetHFromLongitude(lon))));
   check('timezone west/east boundaries', cities.utcOffsetHFromLongitude(-180) === -12 &&
@@ -61,25 +63,25 @@ try {
 
   const a = new sim.CurfewPlanner('endless', cityData, rootRng(seed));
   const b = new sim.CurfewPlanner('endless', [...cityData].reverse(), rootRng(seed));
-  check('no endless curfew before week four', a.advance(0) === null && a.advance(w4 - 1) === null &&
+  check('no endless curfew before week three (D-151)', a.advance(0) === null && a.advance(wStart - 1) === null &&
     a.curfewCityIds.length === 0);
-  const announce = a.advance(w4);
-  const announceB = b.advance(w4);
-  check('week four announcement', announce?.week === 4 && announce.firstTick === w4 && announce.cityIds.length === 2);
+  const announce = a.advance(wStart);
+  const announceB = b.advance(wStart);
+  check('week three announcement (D-151)', params.CURFEW_ENDLESS_START_WEEK === 3 && announce?.week === 3 && announce.firstTick === wStart && announce.cityIds.length === 2);
   check('seed and shuffled catalog deterministic', JSON.stringify(announce.cityIds) === JSON.stringify(announceB.cityIds));
-  check('announcement once per week', a.advance(w4 + 1) === null);
+  check('announcement once per week', a.advance(wStart + 1) === null);
   check('selected airport closed during curfew', (() => {
     const picked = cityData.find((city) => city.cityId === announce.cityIds[0]);
     const utcHour = (23 - picked.utcOffsetH + 24) % 24;
-    return a.isClosed(picked.cityId, w4 + utcHour * 60) &&
-      !a.isClosed(picked.cityId, w4 + ((12 - picked.utcOffsetH + 24) % 24) * 60);
+    return a.isClosed(picked.cityId, wStart + utcHour * 60) &&
+      !a.isClosed(picked.cityId, wStart + ((12 - picked.utcOffsetH + 24) % 24) * 60);
   })());
   const selected = cityData.find((city) => city.cityId === announce.cityIds[0]);
-  const midnight = w4 + ((23 - selected.utcOffsetH + 24) % 24) * 60;
+  const midnight = wStart + ((23 - selected.utcOffsetH + 24) % 24) * 60;
   a.advance(midnight);
   check('departures blocked', !a.canDepart(selected.cityId, midnight));
   check('landing blocked', !a.canLand(selected.cityId, midnight));
-  const beforeCurfew = w4 + ((22 - selected.utcOffsetH + 24) % 24) * 60;
+  const beforeCurfew = wStart + ((22 - selected.utcOffsetH + 24) % 24) * 60;
   check('arrival in curfew prevents leg', !a.canScheduleLeg(selected.cityId, selected.cityId, beforeCurfew, 90));
   a.setActiveCities(cityIds.slice(0, 14));
   const snapshot = a.snapshot();
@@ -90,7 +92,7 @@ try {
   check('active cities may change midweek', snapshot.selectionCityIds.length === 24 &&
     snapshot.activeCityIds.length === 14);
   throws('cross-week target validates city', () =>
-    a.canScheduleLeg(selected.cityId, 'UNKNOWN', w4 + 10_000, 180));
+    a.canScheduleLeg(selected.cityId, 'UNKNOWN', wStart + 10_000, 180));
   throws('tampered snapshot rejected', () => restored.restore({ ...snapshot, selectedCityIds: ['C23'] }));
   check('curfew progression week 6', a.advance(5 * params.DAYNIGHT_MINUTES_PER_WEEK)?.cityIds.length === 3);
   const puzzle = new sim.CurfewPlanner('puzzle', cityData, rootRng(seed), ['C02', 'C05']);
@@ -102,7 +104,7 @@ try {
     return !puzzle.canScheduleLeg('C03', 'C02', departure, 610);
   })());
   throws('unknown city rejected', () => puzzle.isClosed('UNKNOWN', 30));
-  throws('curfew check needs current tick', () => puzzle.isClosed('C02', w4));
+  throws('curfew check needs current tick', () => puzzle.isClosed('C02', wStart));
 
   check('midnight sun opposite Greenwich', sun.subsolarLongitudeAt(0) === -180);
   check('noon sun on Greenwich', sun.subsolarLongitudeAt(720) === 0);

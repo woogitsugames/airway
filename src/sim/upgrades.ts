@@ -20,13 +20,20 @@ export interface UpgradeEffects { grantPlane?: (type: 'turboprop' | 'widebody', 
 /** `pendingHub` = an airport pick is pending; `selected` tells which upgrade it is for. */
 export interface WeeklyUpgradeState { readonly week: number; readonly paused: boolean; readonly offers: readonly UpgradeOffer[]; readonly pendingHub: boolean; readonly selected?: UpgradeKind; readonly lastChoice?: UpgradeCommand }
 const POOL: readonly UpgradeKind[] = ['turboprop', 'widebody', 'hub-expansion', 'departure-slots'];
-export function drawUpgradeOffers(week: number, rng: UpgradeRng): UpgradeOffer[] {
+/**
+ * [night-12v] R8a, D-150: which targeted cards can act this week. "+2 slots" only after the run's first departure
+ * hold, the hub expansion only while the network has a hub; a card that cannot act is not drawn, so its place goes
+ * to the other aircraft card (a board may then show only the two aircraft). Omitted = both eligible (old pool).
+ */
+export interface UpgradeEligibility { readonly hub: boolean; readonly slots: boolean }
+export function drawUpgradeOffers(week: number, rng: UpgradeRng, eligible: UpgradeEligibility = { hub: true, slots: true }): UpgradeOffer[] {
   if (!Number.isSafeInteger(week) || week < 1) throw new RangeError('Invalid week');
   const airplane = rng.nextInt(2);
   if (!Number.isInteger(airplane) || airplane < 0 || airplane > 1) throw new RangeError('Invalid RNG draw');
-  const remaining = POOL.filter((_, index) => index !== airplane);
+  const remaining = POOL.filter((id, index) => index !== airplane &&
+    (id !== 'hub-expansion' || eligible.hub) && (id !== 'departure-slots' || eligible.slots));
   const result: UpgradeKind[] = [POOL[airplane]];
-  for (let i = 0; i < 2; i++) {
+  for (let i = 0; i < 2 && remaining.length > 0; i++) {
     const index = rng.nextInt(remaining.length);
     if (!Number.isInteger(index) || index < 0 || index >= remaining.length) throw new RangeError('Invalid RNG draw');
     result.push(remaining.splice(index, 1)[0]!);
@@ -39,10 +46,10 @@ export function drawUpgradeOffers(week: number, rng: UpgradeRng): UpgradeOffer[]
   }
   return result.map(id => ({ id, week }));
 }
-export function startWeeklyUpgrade(tick: number, rng: UpgradeRng): WeeklyUpgradeState | null {
+export function startWeeklyUpgrade(tick: number, rng: UpgradeRng, eligible?: UpgradeEligibility): WeeklyUpgradeState | null {
   if (!Number.isSafeInteger(tick) || tick <= 0 || tick % TICKS_PER_WEEK !== 0) return null;
   const week = tick / TICKS_PER_WEEK;
-  return { week, paused: true, offers: drawUpgradeOffers(week, rng), pendingHub: false };
+  return { week, paused: true, offers: drawUpgradeOffers(week, rng, eligible), pendingHub: false };
 }
 /** Stable tie-breaking: larger fill ratio, then more waiting, then lexical ID. */
 export function mostLoadedHub(hubs: readonly HubPressure[]): HubPressure | undefined {

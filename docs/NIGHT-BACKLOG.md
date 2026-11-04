@@ -572,6 +572,10 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
 - [x] N12u **Unfolded Fold size in the screen matrix (D-154)** — `ui:matrix` 4 → 6 sizes: 904×1088@2 and 1088×904@2
       (Galaxy Z Fold inner screen ~1812×2176 px), 32 → 48 shots, same overlap/scroll checks; `newGamePage` takes a
       DPR. Landscape menu board looks small on the big screen (for agent #1).
+- [x] N12v **Rules v6: weekly cards that can act + curfew from week 3 (R8a, R8c; D-150, D-151, D-155)** — "+2 slots"
+      enters the draw only after the first departure hold, hub expansion only while a hub exists (the other aircraft
+      takes the place); Endless/Daily curfew from week 3. `RULES_VERSION` 6, v5 golden frozen, older saves replayed
+      (D-76). Bot median 17.03 → 17.25 min (50 seeds), 16.52 → 16.64 (200); runs with a curfew hold 10 % → 62 %.
 
 ## Globe look (D-170)
 Owner's choice 2026-11-03: the satellite globe (direction B). Plan, budgets and test lists per step:
@@ -1028,7 +1032,7 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
       `test:site` and `shots:site` updated. **Area:** `site/`, `docs/SITE.md`. After D-67's publish decision.
 
 ### R8 (2026-11-03) — gameplay-depth and balance audit, rules v5 (data: `docs/RESEARCH.md` "R8", `scripts/research/r8-audit.ts`)
-- [ ] R8a **Weekly board offers only cards that can matter** — 200 bot seeds: "+2 slots" picked 0 % of the 239 times
+- [x] R8a → N12v **Weekly board offers only cards that can matter** — 200 bot seeds: "+2 slots" picked 0 % of the 239 times
       it was offered, hub expansion 3 % of 235; forcing either costs ~1 min median and 12–14 % score, because every
       board has at least one of them (a third have both) and the fleet is the bottleneck (99 % of losses with 0 spare
       aircraft). Rule: "+2 slots" enters the draw only after the run's first `DepartureHeld`, hub expansion only while a
@@ -1043,7 +1047,7 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
       in `src/game/gameoverTip.ts`/game-over report, `test:gameover-tip` cases for both. Metric: share of unserved
       losses whose hint names an action the player could take 0 → 100 %. **Area:** `src/game/`, `src/ui/gameover/`,
       `src/i18n/`.
-- [ ] R8c **Curfew from week 3 in Endless** — only 29 of 200 bot runs (15 %) reach week 4, so the curfew (D-17), one
+- [x] R8c → N12v **Curfew from week 3 in Endless** — only 29 of 200 bot runs (15 %) reach week 4, so the curfew (D-17), one
       of the D-07 differentiators, is unseen in most runs; 66 % reach week 3. `CURFEW_ENDLESS_START_WEEK` 4 → 3,
       rules/params version bump, `test:daynight`/`test:balance`/goldens. Metric (r8-audit): runs with a curfew hold
       15 % → ≥ 50 %; median stays in 10–18 min (expect a small drop); week-1/2 untouched. **Area:** `src/sim/params.ts`,
@@ -1178,3 +1182,4 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
 - 2026-11-04 · N12t sound survives the phone (D-153) + owner D-150…D-152 · night/12t-music-device · test:audio-unlock 7/7 (new; 6/7 fail on the old engine: tap listener gone after a still-suspended first resume, no re-arm after a system suspension or refused resume, no frozen-clock rebuild, no status; with the old minute clock a chime 40 ticks ahead does not play within 0.3 s), test:fast 73/73, build ok, test:e2e:smoke 9/9 (boot/audio path touched); desktop Chromium probe: context running, chimes scheduled; not verified on the Fold (checklist in docs/ANDROID.md)
 - 2026-11-04 · N12u unfolded foldable in ui:matrix (D-154) · night/12u-fold-matrix · ui:matrix 48/48 (32 before; the 16 new 904×1088@2 / 1088×904@2 shots PL/EN inspected, older 32 not re-committed), test:fast 73/73, build ok
 - 2026-11-04 · N11l training flight on the Fold: hint gap, one-shape tags, night only on the globe (owner feedback, D-180) · night/11l-tutorial-device · test:e2e:tutorial-layout 7/7 (0/7 on the old tutorial; Fold 686×762 with status/gesture-bar padding), after merging dev #160: test:fast 73/73, build ok, tutorial-layout 7/7; before: test:fast 72/72, build ok, e2e:tutorial 21/21 (shots docs/shots/23 refreshed), e2e:screens-fit 18/18, e2e:reduce-motion 3/3; e2e:smoke/ui:matrix not run (game screens unchanged)
+- 2026-11-04 · N12v rules v6: cards that can act + curfew from week 3 (R8a, R8c; D-150, D-151, D-155) · night/12v-board-curfew · test:upgrades 7/7 (new eligibility case fails on the old draw: 6/7), test:daynight 44/44 and test:week-source 6/6 (curfew week 3 = day 7), test:save-golden 21/21 (rules 6, v5 golden frozen + replay check), test:slots 5/5 (+ bonus survives a snapshot), test:bot-policy 10/10 (slots check on 0xA1AA board 2), test:replay 23/23 (slots board on seed 0x0001; summaries unchanged), test:balance median 17.03 → 17.25 min (upgrade1 1.00, upgrade2 0.66), r8-audit 200 seeds median 16.52 → 16.64, curfew hold 20 → 123 runs, "+2 slots" offered 239 → 4, hub 235 → 360, test:e2e:curfew-barrier 2/2 (seed 0xA1A2; 0/2 on 0xA1A1, which ends in week 2 since v5), test:e2e:smoke 9/9, test:fast 73/73, build ok; store:shots/ui:matrix not regenerated (week-1 boards on 0xA1A1 now show turboprop/widebody/hub instead of slots)

@@ -165,6 +165,10 @@ test('"+2 slots" on the chosen airport raises its hourly throughput', () => {
   assert.ok(firstHour(boostedHours) > firstHour(baseHours),
     `boosted ${firstHour(boostedHours)} vs base ${firstHour(baseHours)} departures in hour 0`);
   assert.equal(firstHour(boostedHours), Math.min(4, baseLimit + DEPARTURE_SLOT_UPGRADE));
+  // [night-12v] The bonus survives a snapshot (moved here from test:save-golden, whose rules-v6 run has no hold).
+  const copy = Sim.fromSnapshot(boosted.sim.snapshot());
+  assert.equal(copy.world.departureSlotLimit(boosted.from), baseLimit + DEPARTURE_SLOT_UPGRADE);
+  assert.equal(copy.hash(), boosted.sim.hash());
 });
 
 test('game-over cause ledger reports "aircraft waited for a slot" only with evidence', () => {
