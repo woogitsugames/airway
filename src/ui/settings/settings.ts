@@ -9,6 +9,7 @@ import { readAirportLabelMode, type AirportLabelMode } from '../airportLabel';
 import { AIRLINE_COLOURS, airlineColourHex, applyAirlineColour, isAirlineColour, readAirlineColour, type AirlineColourId } from '../airlineColour';
 import { regionGlyph } from '../glyphs';
 import { REGION_IDS } from '../../data/regions';
+import { SHORTCUT_HELP } from '../../input/keyboard';
 import '../menu/menu.css';
 
 export interface UserSettings {
@@ -270,6 +271,7 @@ export function createSettings(onBack:()=>void,onLicenses:()=>void,onLanguageCha
     rows.append(row);
   }
   legend.append(rows);host.append(legend);
+  host.append(shortcutList()); // [night-11ai] R4g
   const licences=e('button','airway-settings__licenses',t('settings.licenses'));
   licences.type='button';licences.dataset.testid='settings-licenses';licences.addEventListener('click',onLicenses);
   host.append(licences);
@@ -285,6 +287,28 @@ export function createSettings(onBack:()=>void,onLicenses:()=>void,onLanguageCha
   if(ranking?.hasData()) host.append(deleteRankingRow(ranking));
   root.append(paper);
   return {element:root,firstFocus:top.querySelector('button') as HTMLElement};
+}
+
+/**
+ * [night-11ai] R4g: keyboard and mouse controls (Settings → Help). Hidden by CSS on screens where no input can hover
+ * (a phone without a mouse), so touch players do not read about keys they do not have.
+ */
+function shortcutList():HTMLElement {
+  const box=e('div','airway-keys');box.dataset.testid='settings-keys';
+  box.append(e('p','airway-glyph-legend__title',t('settings.keys')));
+  const rows=e('ul','airway-keys__rows');
+  for(const item of SHORTCUT_HELP){
+    const row=e('li','airway-keys__row');row.dataset.keys=item.label.slice('settings.keys.'.length);
+    if(item.keys.length){
+      const caps=e('span','airway-keys__caps');
+      for(const cap of item.keys) caps.append(e('kbd','airway-keys__cap',cap.startsWith('settings.keys.')?t(cap as TranslationKey):cap));
+      row.append(caps);
+    }
+    row.append(e('span','airway-keys__label',t(item.label)));
+    rows.append(row);
+  }
+  box.append(rows);
+  return box;
 }
 
 /** Data transcribed from docs/ASSETS.md; all names are displayed through i18n. */

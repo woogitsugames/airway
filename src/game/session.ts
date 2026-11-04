@@ -4,7 +4,7 @@
 import { pauseSummary } from './pauseSummary';
 import { t } from '../i18n';
 import { framingPoints } from './framing';
-import { cameraGestureCallbacks, attachPointerGestures, type AttachedGestures, type GestureHit } from '../input';
+import { cameraGestureCallbacks, attachPointerGestures, attachKeyboardShortcuts, shortcutAllowed, KEY_ZOOM_STEP, type AttachedGestures, type GestureHit, type ShortcutAction } from '../input';
 import {
   RouteTool, hitTestRouteSegments, nearestCity, routeHandles,
   type ProjectedCity, type RouteToolCommand,
@@ -340,6 +340,42 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     },
   }));
 
+  // [night-11ai] R4g: Space pause/resume, 1/2/3 speed, +/- zoom (the camera API the wheel uses). Escape/Back stays
+  // in src/platform/back.ts (main.ts → back()).
+  const keyAction = (action: ShortcutAction): boolean => {
+    if (disposed || !shortcutAllowed(action, screen)) return false;
+    if (action.type === 'toggle-pause') { setPaused(!paused); return true; }
+    if (action.type === 'speed') {
+      if (paused) return false; // the pause sheet is open: speed changes after Resume
+      if (speed !== action.speed) { speed = action.speed; renderHud(); }
+      return true;
+    }
+    world.orbit.zoomBy(action.direction > 0 ? KEY_ZOOM_STEP : 1 / KEY_ZOOM_STEP);
+    return true;
+  };
+  const detachKeys = attachKeyboardShortcuts(window, keyAction);
+  // [night-11ai] R4g: a mouse over an airport or a route handle shows it can be pressed (pointer cursor, tag outline).
+  let hoverAirport: string | null = null;
+  const setHover = (hit: GestureHit | null): void => {
+    const kind = hit && hit.kind !== 'empty' && hit.kind !== 'route-body' ? hit.kind : '';
+    if ((world.canvas.dataset.hover ?? '') !== kind) {
+      if (kind) world.canvas.dataset.hover = kind; else delete world.canvas.dataset.hover;
+    }
+    const id = hit?.kind === 'city' ? hit.id : null;
+    if (id === hoverAirport) return;
+    if (hoverAirport) layer.querySelector(`.airport-bubble[data-airport="${CSS.escape(hoverAirport)}"]`)?.classList.remove('is-hover');
+    hoverAirport = id;
+    if (id) layer.querySelector(`.airport-bubble[data-airport="${CSS.escape(id)}"]`)?.classList.add('is-hover');
+  };
+  const hoverMove = (event: PointerEvent): void => {
+    if (event.pointerType !== 'mouse' || event.buttons !== 0 || screen === 'gameover') { setHover(null); return; }
+    const rect = world.canvas.getBoundingClientRect();
+    setHover(hitTest(event.clientX - rect.left, event.clientY - rect.top, 28));
+  };
+  const hoverLeave = (): void => setHover(null);
+  world.canvas.addEventListener('pointermove', hoverMove);
+  world.canvas.addEventListener('pointerleave', hoverLeave);
+
   // ---- read-only sync -----------------------------------------------------------------------
   let lastCurfewKey = '';
   const closedTags = new Set<string>();
@@ -659,6 +695,10 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       window.removeEventListener('resize', applyInsets);
       world.preview(null);
       gestures.dispose();
+      detachKeys(); // [night-11ai]
+      setHover(null);
+      world.canvas.removeEventListener('pointermove', hoverMove);
+      world.canvas.removeEventListener('pointerleave', hoverLeave);
       routeMenu.dispose();
       handles.dispose();
       hubBoard.dispose(); // [night-11ag]

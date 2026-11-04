@@ -16,7 +16,8 @@ const cases = [
 ];
 const GROUPS = [
   ['settings-group-game', { en: 'Game', pl: 'Gra' }, ['select', 'select', '[data-testid="settings-airline"] select']],
-  ['settings-group-display', { en: 'Display', pl: 'Obraz' }, ['select', 'select', '[data-testid="settings-colorblind"]', '[data-testid="settings-reduce-motion"]']],
+  // [night-11ai] G8 (D-172) added the globe-view select to Display: three selects (globe view, graphics, text size).
+  ['settings-group-display', { en: 'Display', pl: 'Obraz' }, ['select', 'select', 'select', '[data-testid="settings-colorblind"]', '[data-testid="settings-reduce-motion"]']],
   ['settings-group-sound', { en: 'Sound and touch', pl: 'Dźwięk i dotyk' },
     ['[data-testid="settings-sound"]', '[data-testid="settings-music"]', '[data-testid="settings-haptics"]']],
   ['settings-group-help', { en: 'Help', pl: 'Pomoc' }, ['[data-testid="settings-tutorial-replay"]', '[data-testid="settings-licenses"]', '[data-testid="settings-privacy"]']],

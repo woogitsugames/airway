@@ -1898,3 +1898,21 @@ is currently in English and Polish; it goes when the game itself is translated. 
 (loses the local search words), machine translation without the review mark, localised screenshots of an English game.
 Guard: `test:store-shots` (review mark, language note, limits, keyword repeats). **Status: in force (texts await
 native review).**
+
+## D-233 — Keyboard and mouse basics: key map, where keys act, hover only on hover devices (2026-11-04, Claude, night N11ai)
+R4g. `src/input/keyboard.ts` maps **Space** → pause/resume, **1/2/3** → speed 1×/2×/4× (the three speeds of the dock
+tag; the physical digit row by `code`, so AZERTY works), **+/=/Numpad+** and **−/_/Numpad−** → one zoom step of ×1.25
+through `GlobeOrbitCamera.zoomBy` (the same call as the wheel; one step ≈ one wheel notch). **Escape** stays the single
+back entry point (`src/platform/back.ts`). Keys never act with Ctrl/Cmd/Alt (Ctrl + is browser zoom), in a text field
+or select, or inside an open dialog (pause sheet, settings, boards): there Space activates the focused button, so on the
+pause sheet Space resumes through the focused "Resume" and never toggles twice. Pause and speed act only on the running
+`game` screen (not on the weekly board, the game-over report or behind the pause sheet); zoom also on the airport pick
+and the game-over map. Space pressed on a focused HUD tag pauses and its release clicks nothing (consumed on press and
+release). The globe canvas cancels `contextmenu` (right click and touch long press), the game's own long press stays.
+Hover: under `@media (hover: hover) and (pointer: fine)` HUD buttons, airport tags (globe hit test, `.is-hover`) and
+off-screen airport buttons get one inset rule in their own ink; the canvas shows a pointer cursor over an airport or a
+route end. Settings → Help lists keys and mouse actions (PL/EN, key caps as `<kbd>`), hidden on `(any-hover: none)`
+devices; pause and speed controls carry `aria-keyshortcuts`. Kept deliberately small and token-based for the UI
+redesign (docs/styles/ui-2026-11). Rejected: arrow keys to turn the globe (not asked; drag and edge pan cover it),
+showing the key list on touch-only phones, Space as a global toggle inside dialogs. Guards: `test:keyboard`
+(`test:fast`), `test:e2e:keyboard-mouse` (`test:ci`). **Status: in force.**

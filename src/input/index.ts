@@ -1,5 +1,8 @@
 // [task-04] Export the standalone pointer recognizer and the camera adapter.
 export { attachPointerGestures, GestureRecognizer } from './gestures';
+// [night-11ai] R4g keyboard shortcuts.
+export { attachKeyboardShortcuts, shortcutFor, shortcutAllowed, KEY_ZOOM_STEP, ARIA_KEYSHORTCUTS, SHORTCUT_HELP } from './keyboard';
+export type { ShortcutAction, ShortcutScreen, ShortcutHelpKey } from './keyboard';
 export type { GestureCallbacks, GestureHit, GestureMode, GesturePointerSample, AttachedGestures } from './gestures';
 import type { GlobeOrbitCamera } from '../render/camera';
 import type { GestureCallbacks } from './gestures';

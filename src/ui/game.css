@@ -48,3 +48,6 @@
   /* [task-35] Keep clear of the right-hand tag dock (78 px tags + cord) instead of covering it. */
   .airway-pause { left: auto; right: calc(var(--aw-safe-right) + 112px); bottom: calc(var(--aw-safe-bottom) + 16px); width: 360px; }
 }
+
+/* [night-11ai] R4g: the globe shows that an airport or a route end under the mouse can be pressed. */
+.airway-world[data-hover='city'], .airway-world[data-hover='route-handle'] { cursor: pointer; }

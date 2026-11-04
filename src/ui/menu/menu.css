@@ -87,3 +87,11 @@
 .airway-glyph-legend__rows { list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:0 12px; }
 .airway-glyph-legend__row { display:flex; align-items:center; gap:10px; min-height:32px; border-bottom:1px dashed #c2b5a6; font:400 14px/1.3 'Atkinson Hyperlegible Next',sans-serif; color:#2a2420; }
 .airway-glyph-legend__row svg { flex:none; }
+/* [night-11ai] R4g: keyboard and mouse list. Plain rows like the glyph legend, key caps as outlined mono text.
+   Hidden where no input can hover (a touch-only phone). */
+.airway-keys { margin-top:14px; }
+.airway-keys__rows { list-style:none; margin:0; padding:0; }
+.airway-keys__row { display:flex; align-items:center; flex-wrap:wrap; gap:4px 10px; min-height:32px; border-bottom:1px dashed #c2b5a6; font:400 14px/1.3 'Atkinson Hyperlegible Next',sans-serif; color:var(--airway-ink); }
+.airway-keys__caps { display:inline-flex; gap:4px; flex:none; }
+.airway-keys__cap { min-width:22px; padding:1px 5px; border:1px solid currentColor; font:700 12px/1.3 'Overpass Mono',monospace; text-align:center; }
+@media (any-hover: none) { .airway-keys { display:none; } }
