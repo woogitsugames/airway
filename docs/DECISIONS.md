@@ -1649,3 +1649,15 @@ its landscape width, so a first-time card ended 34–43 px under the right cut-o
 labels above the bottom inset, sign line ≥ 120 px and ≤ 3 lines, sign clear of the pass), the training flight through
 its controller (route → aircraft → transfer → cleared) and the ATC strip and a first-time card as panels (46/54 on
 the old CSS). **Status: in force.**
+
+## D-210 — Airport-pick sign on narrow landscape boards drops the repeated week (2026-11-04, Claude, night N11ab)
+After the hub or "+2 slots" crate the sign beside the boarding pass holds the Back tile, the week and the instruction.
+On a board under 760 px (720–852 px landscape phones, or wider ones with side cut-outs) the instruction was a
+68–96 px column (2–3 lines), the sign grew to 72–89 px beside a 60 px pass, and at 812×375 with cut-outs "Tydzień 7" /
+"Week 7" ran 23 px past the sign's edge. Unlike the crates board, the peg rack stays live during the pick, so the
+sign cannot widen over it (D-209); it may only reach the rack's cable (86 px + 6 px gap, was 100 px). The week is
+already printed on the boarding pass right beside the sign, so here it is visually hidden (screen readers still read
+it, and the dialog's label names the week); the instruction takes both rows (13 px/1.15, balanced, 4 px sign padding): 82–120 px wide, 2–3 lines,
+the sign ≤ 60 px like the pass. Boards ≥ 760 px keep the week. Guard: `test:e2e:notch` "upgrade-pick" (hub, then slots
+pick): sign parts and their text inside the sign, instruction ≥ 80 px and ≤ 3 lines, clear of the pass and the rack's
+cable, no taller than the pass beside it (56/60 on the old CSS). **Status: in force.**

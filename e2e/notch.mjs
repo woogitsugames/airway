@@ -22,7 +22,7 @@ const PROFILES = [
   { name: 'landscape', width: 852, height: 393, inset: { top: 0, right: 59, bottom: 21, left: 59 } },
   { name: 'landscape-mini', width: 812, height: 375, inset: { top: 0, right: 50, bottom: 21, left: 50 } },
 ];
-const SCREENS = ['menu', 'settings', 'puzzles', 'upgrade', 'gameover', 'hud', 'tutorial', 'atc', 'first-time'];
+const SCREENS = ['menu', 'settings', 'puzzles', 'upgrade', 'upgrade-pick', 'gameover', 'hud', 'tutorial', 'atc', 'first-time'];
 /** [night-11z] Text panels (no control of their own) that must keep clear of every inset as well. */
 const PANELS = '#app .airway-atc-strip:not([hidden]), #app .aw-tutorial-strip, #app .aw-tutorial-ticket, #app .aw-tutorial-hint, #app .airway-upgrade-sign';
 const TUTORIAL_STEPS = [
@@ -50,7 +50,7 @@ async function mount(page, screen, language) {
     } else if (screen === 'puzzles') {
       const { mountPuzzleSelector } = await import('/src/ui/puzzles/index.ts');
       mountPuzzleSelector(host, () => {});
-    } else if (screen === 'upgrade') {
+    } else if (screen === 'upgrade' || screen === 'upgrade-pick') {
       // [night-11z] Over the real HUD (its own fixed host, as in the game layer), so the sign can be checked
       // against the boarding pass it sits beside.
       const hudHost = document.createElement('div');
@@ -61,8 +61,12 @@ async function mount(page, screen, language) {
         selectedPlane: 'turboprop', stock: { turboprop: 2, widebody: 1, hub: 0 } });
       const { WeeklyUpgradeView } = await import('/src/ui/upgrade/index.ts');
       const view = new WeeklyUpgradeView(host, { onCommand: () => {}, onCancelPick: () => {}, onPreviewModel: () => {} });
-      view.render({ week: 7, paused: true, pendingHub: false, offers: ['turboprop', 'widebody', 'hub-expansion'].map((id) => ({ id, week: 7 })) },
+      // [night-11ab] D-210: 'upgrade-pick' is the airport pick after the hub crate (the slots pick follows in auditPick).
+      const pick = screen === 'upgrade-pick';
+      view.render({ week: 7, paused: true, pendingHub: pick, ...(pick ? { selected: 'hub-expansion' } : {}),
+        offers: ['turboprop', 'widebody', 'hub-expansion'].map((id) => ({ id, week: 7 })) },
         [{ hubId: 'LON', waiting: 11, capacity: 12, label: 'LON' }]);
+      window.__notchView = view;
     } else if (screen === 'gameover') {
       const { mountGameOverPreview } = await import('/src/ui/gameover/preview.ts');
       mountGameOverPreview(host);
@@ -164,6 +168,54 @@ function audit(page, inset) {
  * [night-11z] D-209: the weekly board fits the safe height without scrolling, every label ends above the bottom
  * inset, and the sign keeps a readable line (≥ 120 px wide, ≤ 3 lines) clear of the boarding pass.
  */
+/**
+ * [night-11ab] D-210: the airport pick (hub crate, then the "+2 slots" crate). Its sign must hold the Back tile, the
+ * week (when shown) and the instruction inside its own box, keep the instruction ≥ 80 px wide and ≤ 3 lines, stay
+ * clear of the boarding pass and of the live peg rack (its cable reaches 8 px left of the rack) and, beside the pass,
+ * be no taller than the pass.
+ */
+async function auditPick(page) {
+  const problems = [];
+  for (const selected of ['hub-expansion', 'departure-slots']) {
+    problems.push(...await page.evaluate(async (selected) => {
+      if (selected !== 'hub-expansion') {
+        window.__notchView.render({ week: 7, paused: true, pendingHub: true, selected,
+          offers: ['turboprop', 'widebody', selected].map((id) => ({ id, week: 7 })) }, [], []);
+        await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
+      }
+      const out = [];
+      const signEl = document.querySelector('.airway-upgrade-sign');
+      if (!signEl) return [`${selected}: no sign`];
+      const sign = signEl.getBoundingClientRect();
+      for (const child of signEl.children) {
+        const r = child.getBoundingClientRect();
+        if (r.width <= 1 || r.height <= 1) continue; // visually hidden
+        if (r.left < sign.left - 0.5 || r.right > sign.right + 0.5 || r.top < sign.top - 0.5 || r.bottom > sign.bottom + 0.5) {
+          out.push(`${selected}: .${child.classList[0]} outside the sign (${Math.round(r.right)} > ${Math.round(sign.right)})`);
+        }
+        if (child.scrollWidth > child.clientWidth + 1) out.push(`${selected}: .${child.classList[0]} text overflows by ${child.scrollWidth - child.clientWidth} px`);
+      }
+      const sub = signEl.querySelector('.airway-upgrade-sub');
+      const r = sub.getBoundingClientRect();
+      const lines = Math.round(r.height / parseFloat(getComputedStyle(sub).lineHeight));
+      if (r.width < 80) out.push(`${selected}: instruction ${Math.round(r.width)} px wide`);
+      if (lines > 3) out.push(`${selected}: instruction wraps to ${lines} lines`);
+      const over = (a, b) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+      const pass = document.querySelector('.airway-pass')?.getBoundingClientRect();
+      if (pass && over(sign, pass)) out.push(`${selected}: sign over the boarding pass`);
+      const dock = document.querySelector('.airway-dock')?.getBoundingClientRect();
+      if (dock && over(sign, { left: dock.left - 8, right: dock.right, top: dock.top, bottom: dock.bottom })) {
+        out.push(`${selected}: sign over the peg rack (${Math.round(sign.right)} > ${Math.round(dock.left - 8)})`);
+      }
+      if (pass && sign.top < pass.bottom && sign.height > pass.height + 1) {
+        out.push(`${selected}: sign ${Math.round(sign.height)} px tall beside a ${Math.round(pass.height)} px pass`);
+      }
+      return out;
+    }, selected));
+  }
+  return problems;
+}
+
 function auditBoard(page, inset) {
   return page.evaluate((inset) => {
     const problems = [];
@@ -219,7 +271,7 @@ try {
         await page.goto(url + '?perf=scene', { waitUntil: 'networkidle' });
         await mount(page, screen, language);
         const first = await audit(page, profile.inset);
-        const extra = screen === 'upgrade' ? await auditBoard(page, profile.inset) : [];
+        const extra = screen === 'upgrade' ? await auditBoard(page, profile.inset) : screen === 'upgrade-pick' ? await auditPick(page) : [];
         // [night-11z] The training flight: each later step through the controller, audited again.
         for (const action of screen === 'tutorial' ? TUTORIAL_STEPS.slice(1) : []) {
           const ok = await page.evaluate((action) => window.__notchTutorial.submit(action), action);
@@ -234,7 +286,7 @@ try {
         }
         const scrolled = await scrollToEnd(page);
         const second = scrolled ? await audit(page, profile.inset) : { problems: [], seen: 0 };
-        if (language === 'en' || screen === 'menu' || screen === 'upgrade') {
+        if (language === 'en' || screen === 'menu' || screen.startsWith('upgrade')) {
           await page.screenshot({ path: resolve(SHOTS, `${screen}-${language}-${profile.name}.png`), animations: 'disabled' });
         }
         const problems = [...first.problems, ...extra, ...second.problems.map((p) => 'scrolled: ' + p)];
