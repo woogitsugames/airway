@@ -9,11 +9,14 @@ import { createRequire } from 'node:module';
 const root = dirname(fileURLToPath(import.meta.url));
 const output = resolve(root, '../docs/shots/29');
 const require = createRequire(import.meta.url);
-const mime = {'.jpg':'image/jpeg','.html':'text/html','.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml','.png':'image/png','.ttf':'font/ttf'};
+const mime = {'.zip':'application/zip','.jpg':'image/jpeg','.html':'text/html','.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml','.png':'image/png','.ttf':'font/ttf'};
 // [night-11ad] + the 404 page and the screenshot/store section (full page, preview to footer) for review.
 const views = [{name:'site-p.png',width:412,height:915},{name:'site-l.png',width:915,height:412},
   {name:'site-404-p.png',width:412,height:915,path:'missing/page',globe:false},{name:'site-404-l.png',width:1280,height:800,path:'missing/page',globe:false},
-  {name:'site-preview-p.png',width:412,height:915,section:'#preview'},{name:'site-preview-l.png',width:1280,height:800,section:'#preview'}];
+  {name:'site-preview-p.png',width:412,height:915,section:'#preview'},{name:'site-preview-l.png',width:1280,height:800,section:'#preview'},
+  // [night-11ae] R2e: the press page, whole page (PL portrait, EN landscape).
+  {name:'site-press-p.png',width:412,height:915,path:'press.html',globe:false,section:'body'},
+  {name:'site-press-l.png',width:1280,height:800,path:'press.html',globe:false,section:'body',lang:'en'}];
 let server, browser, count=0, failed=0;
 try {
   const { chromium } = require('playwright');
@@ -39,7 +42,7 @@ try {
     const errors=[];
     page.on('pageerror',e=>errors.push(e.message));
     try {
-      await page.goto(base+(view.path??'')+'?lang=pl',{waitUntil:'networkidle'});
+      await page.goto(base+(view.path??'')+'?lang='+(view.lang??'pl'),{waitUntil:'networkidle'});
       await page.evaluate(()=>document.fonts.ready);
       if (errors.length) throw new Error(errors.join('; '));
       const ready=await page.evaluate(()=>Boolean(document.querySelector('.hero-visual.globe-ready')));
