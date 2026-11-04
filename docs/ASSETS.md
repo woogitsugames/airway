@@ -17,6 +17,9 @@ from Google Fonts (static TTF per weight) on 2026-11-02 by `mockups/fetch-fonts.
 | IBM Plex Sans Condensed | 400, 600 | Mapa pilota (rejected) | yes |
 | IBM Plex Mono | 400, 600 | Mapa pilota (rejected) | yes |
 | Martian Mono, Overpass Mono | 400, 700 | downloaded for evaluation, currently unused | yes |
+| Barlow Condensed | 500, 700 | UI direction mockups 2026-11 "Karta" (`mockups/ui-2026-11/`) | yes |
+| Archivo Narrow | 500, 700 | UI direction mockups 2026-11 "Kokpit" | yes |
+| Atkinson Hyperlegible Mono | 400, 700 | UI direction mockups 2026-11 "Kokpit" | yes |
 
 Rejected: **B612 / B612 Mono** (OFL, Airbus cockpit face) — no Polish diacritics (ą ć ę ł ń ś ź ż missing), checked with fontTools.
 
@@ -33,6 +36,9 @@ Rejected: **B612 / B612 Mono** (OFL, Airbus cockpit face) — no Polish diacriti
 - `d3-geo` 3.x (ISC), `topojson-client` 3.x (ISC), `three` 0.170 (MIT). Playwright is pre-installed in the environment (Apache-2.0), not a dependency.
 
 ## Graphics
+- [night-11ah] `docs/mockups/ui-2026-11/_frames/*.png` are captures of the game itself (DEV `storeShot` fixture,
+  seed 0xA1A1, UI hidden for the backgrounds); every UI element in the direction mockups is drawn in SVG in
+  `mockups/ui-2026-11/` (own work). Fonts above fetched 2026-11-04 by `mockups/fetch-fonts.sh`, licences next to them.
 All mockup graphics (globes, terrain, planes, glyphs, stamps, medallions, icons, 3D models) are drawn procedurally in code in this
 repository. No third-party images, icon packs or stock art. No CC0 assets used yet.
 
