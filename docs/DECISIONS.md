@@ -1096,7 +1096,7 @@ routes, planes and the paper/airport-artefact UI of D-11 stay; only the globe su
 globe part of D-11 (world style A "Diorama"); D-05 (not minimal) is met by a real, lit, relief-rich Earth. Plan in
 `docs/mockups/globe-2026-11/PLAN.md`, steps G1–G9 in `docs/NIGHT-BACKLOG.md`. Rejected: A (still reads as a
 diagram where mountains are hand-traced bands), C (muddy at phone size, the simplification removes the realism the
-owner asked for). **Status: accepted by the owner 2026-11-03; implementation pending (G1–G9).**
+owner asked for). **Status: accepted by the owner 2026-11-03; shipped on `dev` with G1–G3 and G9 (2026-11-04); G4–G8, G9b pending.**
 
 ## D-171 — Bundle `total` budget for the satellite globe (2026-11-03, Claude, ext/03)
 B ships ~1.8 MB of textures (day 4096 + 2048, night 2048 + 1024, elevation, clouds) and the Mapa mode (D-172) ~0.55 MB more. The D-143 `total` budget
@@ -1119,7 +1119,10 @@ rebuilt in our own palette with ETOPO5 hillshade and Natural Earth borders (no c
 ## D-173 — Adaptive quality steps down the globe texture first (2026-11-03, Claude, ext/03)
 With B the largest GPU cost is the 4096×2048 day texture (~43 MB with mips, uncompressed). The D-73 ladder gets a
 first step "day texture 4096 → 2048, cloud shell off" before DPR → 1; `low`/`saver` start on 2048 without clouds.
-If devices still run out of memory, G7b moves to KTX2/ETC1S compression (D-174 follow-up). **Status: proposed; G3/G4.**
+If devices still run out of memory, G7b moves to KTX2/ETC1S compression (D-174 follow-up). **Status: in force for the start
+sizes and the cloud shell (G2/G3: low/saver load 2048 + 1024, no clouds; G4: sea surface and haze folded into the terrain
+shader, so low/saver draw one transparent layer — the halo — and medium/high two); the adaptive texture step itself is
+still open (G7).**
 
 ## D-174 — The look experiment stays in the tree behind a DEV flag (2026-11-03, Claude, ext/03)
 `src/render/globe/look.ts` (loaded with a DEV-guarded dynamic `import()`, so Vite drops it from the production
@@ -1151,7 +1154,29 @@ out in the PNGs while the probe moves only 1.4 → 1.6–2.2, and on Satelita th
 (3.8 → 2.3). Before G9 ships, the probe reports per layer the contrast of the outer edge against the globe and of
 the core against the edge, and the gate takes the better of the two (WCAG non-text contrast reads either boundary).
 Rejected: keeping the median (penalises the standard map-symbol design) and a pixel-count threshold (fragile at
-different zooms). **Status: proposed; implement with G9.**
+different zooms). **Status: in force (G9, `layerContrast(…, width)` returns `edge`, `core`, `median`; `ratio` = max(edge,
+core); `test:render-layers` checks an outlined disc on a dark sea).**
+
+## D-178 — Airport objects: V3 "Medalion" (2026-11-04, owner)
+Owner on the G9 variants (`docs/mockups/globe-2026-11/g9/`): "Daj medalion i scalaj." The airport keeps the D-11
+diorama object (light pad, dark runway, terminal with a type-coloured roof, hub tower) and gets a thick dark outline
+ring (r = 0.037–0.038·s under the pad); route tubes get a dark ink outline (inflated back faces, +1 draw call per
+route batch, 2 in total). `createWorldRenderer` defaults to `airportStyle: 'medal'`; `current`, `ink` and `apron`
+stay for DEV comparison only (`?airportStyle=`). Probe (D-177, seed 15, phone, day): routes 5.1 diorama / 6.8
+Satelita / 3.4 Mapa (were 2.2 / 3.8 / 1.3), airports 2.6 / 3.2 / 3.1 (were 2.3 / 4.9 / 1.4 with the median probe).
+Airports, planes and the Mapa tags still miss 4.5:1: follow-up G9b. Store screenshots are regenerated with G6.
+**Status: in force (owner).**
+
+## D-179 — The satellite globe ships; the diorama stays only as a fallback (2026-11-04, Claude, G2/G3)
+`createGlobe` defaults to `look: 'satellite'` (D-170): land heights from `public/data/globe/elevation-2048.png`
+(ETOPO5, `0.0004 + 0.0052·√km`, airport pads flattened), smooth normals, the Blue Marble day texture by surface
+direction, the shipped day/night grade (D-63/D-49) and Black Marble lights on the night side, the ocean shell, the
+sun-aware halo and haze; the cloud shell from `medium` up (none on `low`/`saver`, D-173). Trees, rocks, puffy clouds and
+the city-light points are not built (G5 deletes their code). If any texture fails to load, `createGlobe` logs once and
+builds the diorama, so the game never starts without a world. `?globeLook=diorama|refined|painted|map` remains a DEV
+comparison. G2 and G3 land as one PR because the textured terrain alone is white. The ocean/haze shells are shipped as
+separate transparent layers for now; folding them into the terrain shader (fill rate, G4) and measuring on phones
+(G7) are still open. Store screenshots are regenerated in G6. **Status: in force (G2/G3).**
 
 ## D-150 — Weekly board offers only cards that can act (2026-11-03 22:20 CET, owner, Q-71 → B)
 R8a: the "+2 slots" card enters the weekly draw only after the run's first departure hold, the hub expansion card only

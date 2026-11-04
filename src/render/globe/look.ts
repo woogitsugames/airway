@@ -1,7 +1,6 @@
-// [ext-03] Experimental globe looks for the owner's choice (docs/mockups/globe-2026-11/). DEV only: the game
-// passes a look only when `import.meta.env.DEV` and `?globeLook=` say so, and the textures live under
-// dev/globe-look/assets/ (served by the Vite dev server, never copied into the build). `diorama` is the
-// shipped look and takes none of this code path.
+// [ext-03, G2/G3] Globe looks (docs/mockups/globe-2026-11/). `satellite` is the shipped globe (D-170): its textures
+// are in public/data/globe/ (G1). The other looks are DEV comparisons (`?globeLook=`), their textures served by the
+// Vite dev server from dev/globe-look/assets/ (never in the build); `diorama` is the fallback when textures fail.
 //   refined   A "Dopracowana diorama": same illustrated world, smooth mesh, muted biomes, tidy decorations.
 //   satellite B "Realistyczny": NASA Blue Marble / Black Marble textures, ETOPO5 relief, cloud shell.
 //   painted   C "Pomiędzy": Blue Marble colours simplified into painted areas, ETOPO5 relief, diorama clouds.
@@ -31,6 +30,8 @@ interface LookConfig {
   /** City-light gain on the night side (texture looks). */
   readonly nightGain: number;
   readonly clouds: string | null;
+  /** [G2/G3] Files ship in `public/data/globe/` (production, D-170) rather than the dev-server experiment folder. */
+  readonly production?: boolean;
   /** Ocean shell: tint alpha (how much it veils the sea floor colour) and glint strength. */
   readonly ocean: { readonly veil: number; readonly glint: number };
 }
@@ -45,8 +46,10 @@ export const LOOKS: Record<Exclude<GlobeLook, 'diorama'>, LookConfig> = {
   satellite: {
     terrain: 'textured',
     decor: { trees: 0, rocks: 0, clouds: 0, lights: 0, tidy: true },
-    day: { low: 'satellite-day-2048.jpg', medium: 'satellite-day-4096.jpg', high: 'satellite-day-4096.jpg' },
-    night: { low: 'satellite-night-1024.jpg', medium: 'satellite-night-2048.jpg', high: 'satellite-night-2048.jpg' },
+    // [G2/G3] The shipped globe (D-170): G1 files, 2048 + 1024 and no cloud shell on low/saver (D-173).
+    production: true,
+    day: { low: 'day-2048.jpg', medium: 'day-4096.jpg', high: 'day-4096.jpg' },
+    night: { low: 'night-1024.jpg', medium: 'night-2048.jpg', high: 'night-2048.jpg' },
     nightGain: 1.6, clouds: 'clouds-2048.png',
     ocean: { veil: .1, glint: .8 },
   },
@@ -123,9 +126,10 @@ async function loadTexture(blob: Blob, srgb: boolean): Promise<Texture> {
 }
 
 /** Fetch everything a look needs before the terrain is built (heights must exist at build time). */
-export async function loadLookAssets(look: Exclude<GlobeLook, 'diorama'>, preset: QualityLevel, base: string,
-  signal?: AbortSignal): Promise<LookAssets> {
+export async function loadLookAssets(look: Exclude<GlobeLook, 'diorama'>, preset: QualityLevel, devBase: string,
+  signal?: AbortSignal, productionBase = 'data/globe/'): Promise<LookAssets> {
   const config = LOOKS[look];
+  const base = config.production ? productionBase : devBase;
   let bytes = 0;
   const get = async (name: string): Promise<Blob> => {
     const blob = await fetchBytes(base + name, signal);
@@ -137,7 +141,8 @@ export async function loadLookAssets(look: Exclude<GlobeLook, 'diorama'>, preset
   if (config.terrain === 'textured') {
     const [elevation, dayBlob, nightBlob, cloudBlob] = await Promise.all([
       get('elevation-2048.png'), get(config.day![preset]),
-      config.night ? get(config.night[preset]) : null, config.clouds ? get(config.clouds) : null,
+      config.night ? get(config.night[preset]) : null,
+      config.clouds && preset !== 'low' ? get(config.clouds) : null, // D-173: no cloud shell on low/saver
     ]);
     style = { id: 'textured', elevation: await loadElevation(elevation) };
     day = await loadTexture(dayBlob, true);
@@ -171,9 +176,12 @@ export function createTexturedTerrainMaterial(assets: LookAssets, sunDirection: 
     shader.uniforms['awDay'] = { value: assets.day };
     shader.uniforms['awNightLights'] = { value: assets.night };
     shader.uniforms['awNightGain'] = { value: assets.night ? assets.config.nightGain : 0 };
+    shader.uniforms['awVeil'] = { value: assets.config.ocean.veil };
+    shader.uniforms['awGlint'] = { value: assets.config.ocean.glint };
     shader.vertexShader = 'varying vec3 vAwDir;\n' + shader.vertexShader.replace(
       '#include <begin_vertex>', '#include <begin_vertex>\n  vAwDir = position;');
     shader.fragmentShader = 'uniform sampler2D awDay;\nuniform sampler2D awNightLights;\nuniform float awNightGain;\n' +
+      'uniform float awVeil;\nuniform float awGlint;\n' +
       'varying vec3 vAwDir;\n' + SAMPLE_GLSL + shader.fragmentShader.replace(
       '#include <map_fragment>', '#include <map_fragment>\n  diffuseColor.rgb *= awSampleSphere(awDay, vAwDir).rgb;');
     patchDayNightShader(shader, sun);
@@ -183,6 +191,28 @@ export function createTexturedTerrainMaterial(assets: LookAssets, sunDirection: 
     float awDark = 1.0 - smoothstep(-0.14, 0.04, awLit);
     float awCity = awSampleSphere(awNightLights, vAwDir).r;
     outgoingLight += vec3(1.0, 0.70, 0.36) * awCity * awDark * awNightGain;
+  }
+  {
+    // [G4] D-173: the sea surface (glint, fresnel sheen) and the near-limb haze, folded into the terrain pass
+    // instead of two transparent full-screen shells. Same formulas as createOceanShell/createScatterAtmosphere,
+    // tints converted to linear because this runs before tone mapping.
+    vec3 awN = normalize(vAwSurface);
+    vec3 awV = normalize(cameraPosition - vAwSurface);
+    float awNs = dot(awN, awSunDirection);
+    float awDay = smoothstep(-0.12, 0.2, awNs);
+    float awSea = 1.0 - smoothstep(0.9995, 1.0002, length(vAwSurface));
+    float awFacing = max(dot(awN, awV), 0.0);
+    float awFresnel = pow(1.0 - awFacing, 4.0);
+    vec3 awH = normalize(awSunDirection + awV);
+    float awSpec = pow(max(dot(awN, awH), 0.0), 600.0) * 0.6 + pow(max(dot(awN, awH), 0.0), 60.0) * 0.05;
+    vec3 awSky = mix(vec3(0.34, 0.6, 0.79), vec3(1.0, 0.49, 0.18), 1.0 - smoothstep(0.0, 0.25, awNs));
+    vec3 awWater = mix(vec3(0.002, 0.013, 0.033), awSky, awFresnel) * (0.25 + 0.75 * awDay);
+    outgoingLight = mix(outgoingLight, awWater, (awVeil + 0.45 * awFresnel * awDay) * awSea);
+    outgoingLight += vec3(1.0, 0.78, 0.52) * awSpec * awGlint * awDay * awSea * 0.55;
+    float awLitHaze = smoothstep(-0.3, 0.25, awNs);
+    float awDuskHaze = 1.0 - smoothstep(0.0, 0.35, abs(awNs + 0.02));
+    vec3 awTint = mix(vec3(0.21, 0.51, 0.91), vec3(1.0, 0.34, 0.11), awDuskHaze * 0.7);
+    outgoingLight = mix(outgoingLight, awTint, pow(1.0 - awFacing, 2.4) * (0.04 + 0.34 * awLitHaze));
   }
   #include <opaque_fragment>`);
   };
@@ -225,8 +255,11 @@ export function createOceanShell(look: LookConfig, sunDirection: Vector3, segmen
   return mesh;
 }
 
-/** Sun-aware limb glow (blue by day, warm at the terminator, none at night) plus a thin haze over the land. */
-export function createScatterAtmosphere(sunDirection: Vector3): Mesh[] {
+/**
+ * Sun-aware limb glow (blue by day, warm at the terminator, none at night) plus a thin haze over the land.
+ * [G4] Texture looks fold the haze into the terrain shader and use only the outer halo (`haloOnly`).
+ */
+export function createScatterAtmosphere(sunDirection: Vector3, haloOnly = false): Mesh[] {
   const common = `uniform vec3 sunDirection; varying vec3 vNormal; varying vec3 vWorld;`;
   const vertexShader = `${common}
     void main() {
@@ -266,6 +299,7 @@ export function createScatterAtmosphere(sunDirection: Vector3): Mesh[] {
   const inner = new Mesh(new SphereGeometry(1.0125, 96, 60), haze);
   inner.name = 'LookHaze';
   inner.renderOrder = 3;
+  if (haloOnly) { inner.geometry.dispose(); haze.dispose(); return [outer]; }
   return [outer, inner];
 }
 

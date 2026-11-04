@@ -10,7 +10,10 @@ import { setLatLonVec3 } from './geo-math';
 import { loadLandMask } from './land-mask';
 import { chunkTerrain, createTerrainLod, TERRAIN_LOD_LEVELS, type TerrainLod } from './lod';
 import { buildTerrainArrays, createTerrainMaterial, DIORAMA_STYLE } from './terrain';
-import type { GlobeLook } from './look';
+import {
+  createCloudShell, createOceanShell, createScatterAtmosphere, createTexturedTerrainMaterial, loadLookAssets,
+  type GlobeLook, type LookAssets,
+} from './look';
 
 export {
   latLonToVec3, setLatLonVec3, vec3ToLatLon, intersectUnitSphere, pickSphereNdc, normalizeLon,
@@ -31,7 +34,7 @@ export interface GlobeOptions {
   readonly signal?: AbortSignal;
   /** `SunLights.direction`; drives the night-side city lights. */
   readonly sunDirection: Vector3;
-  /** [ext-03] Experimental look (DEV only; production always builds the diorama). */
+  /** [G2/G3] Globe look; default `satellite` (D-170). Other looks are DEV comparisons; `diorama` is the fallback. */
   readonly look?: GlobeLook;
   /** [ext-03] Where the experimental textures live (default: the dev server's dev/globe-look/assets/). */
   readonly lookAssetBase?: string;
@@ -132,11 +135,21 @@ export async function createGlobe(scene: Scene, opts: GlobeOptions): Promise<Glo
   const landUrl = opts.landUrl ?? `${import.meta.env.BASE_URL}data/land-50m.json`;
   const mask = await loadLandMask(landUrl, opts.signal);
   if (opts.signal?.aborted) throw new DOMException('Aborted', 'AbortError');
-  // [ext-03] Experimental looks (docs/mockups/globe-2026-11/): the ternary lets Vite drop look.ts from production.
-  const look = opts.look ?? 'diorama';
-  const lookModule = import.meta.env.DEV && look !== 'diorama' ? await import('./look') : null;
-  const assets = lookModule && look !== 'diorama' ? await lookModule.loadLookAssets(look, quality,
-    opts.lookAssetBase ?? `${import.meta.env.BASE_URL}dev/globe-look/assets/`, opts.signal) : null;
+  // [G2/G3] D-170: the satellite globe (Blue Marble, Black Marble, ETOPO5; public/data/globe/). If its textures cannot
+  // be loaded the diorama is built instead, so the game never starts without a world. refined/painted/map are
+  // DEV comparisons served from dev/globe-look/assets/.
+  const look = opts.look ?? 'satellite';
+  let assets: LookAssets | null = null;
+  if (look !== 'diorama') {
+    try {
+      assets = await loadLookAssets(look, quality,
+        opts.lookAssetBase ?? `${import.meta.env.BASE_URL}dev/globe-look/assets/`, opts.signal,
+        `${import.meta.env.BASE_URL}data/globe/`);
+    } catch (error) {
+      if (opts.signal?.aborted) throw error;
+      console.warn('Globe textures unavailable; drawing the diorama globe.', error);
+    }
+  }
   if (opts.signal?.aborted) throw new DOMException('Aborted', 'AbortError');
   const style = assets?.style ?? DIORAMA_STYLE;
   const group = new Group();
@@ -144,15 +157,16 @@ export async function createGlobe(scene: Scene, opts: GlobeOptions): Promise<Glo
   // [night-04] D-73: near (preset) level plus a coarser far level, both chunked for culling.
   const lod = createTerrainLod(
     TERRAIN_LOD_LEVELS[quality].map((level) => chunkTerrain(buildTerrainArrays(mask, level, style), level)),
-    lookModule && assets?.config.terrain === 'textured'
-      ? lookModule.createTexturedTerrainMaterial(assets, opts.sunDirection) : createTerrainMaterial(style));
+    assets?.config.terrain === 'textured'
+      ? createTexturedTerrainMaterial(assets, opts.sunDirection) : createTerrainMaterial(style));
   const decorations = createDecorations(mask, quality, opts.seed ?? 7, opts.sunDirection, assets?.decor);
   group.add(lod.group, decorations);
-  if (lookModule && assets) {
+  if (assets) {
     const segments = quality === 'low' ? 96 : quality === 'medium' ? 128 : 160;
-    group.add(lookModule.createOceanShell(assets.config, opts.sunDirection, segments),
-      ...lookModule.createScatterAtmosphere(opts.sunDirection));
-    if (assets.clouds) group.add(lookModule.createCloudShell(assets.clouds, opts.sunDirection, segments));
+    // [G4] Texture looks carry the sea surface and haze in the terrain shader: only the halo (and clouds) stay layers.
+    if (assets.config.terrain === 'textured') group.add(...createScatterAtmosphere(opts.sunDirection, true));
+    else group.add(createOceanShell(assets.config, opts.sunDirection, segments), ...createScatterAtmosphere(opts.sunDirection));
+    if (assets.clouds) group.add(createCloudShell(assets.clouds, opts.sunDirection, segments));
     group.userData['lookBytes'] = assets.bytes;
   } else group.add(createAtmosphere());
   // Instances are placed in random order, so any prefix is an even thinning of the whole set.

@@ -14,7 +14,15 @@ export function relativeLuminance(r: number, g: number, b: number): number {
   return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
 }
 
-export interface LayerContrast { readonly ratio: number; readonly pixels: number }
+export interface LayerContrast {
+  readonly ratio: number;
+  readonly pixels: number;
+  /** [ext-03 G9] D-177: outer edge vs the globe, and core vs the edge colour (when the buffer width is known). */
+  readonly edge?: number;
+  readonly core?: number;
+  /** The plain median of every layer pixel against the globe (the pre-D-177 measure). */
+  readonly median?: number;
+}
 /** CSS-pixel rectangle relative to the canvas' top-left corner. */
 export interface PixelRect { readonly x: number; readonly y: number; readonly width: number; readonly height: number }
 
@@ -30,21 +38,54 @@ export function contrastRatio(a: number, b: number): number {
  * Returns `null` when the layer covers fewer than `minPixels` pixels.
  */
 export function layerContrast(
-  withLayer: Uint8Array, without: Uint8Array, minDelta = 24, minPixels = 20,
+  withLayer: Uint8Array, without: Uint8Array, minDelta = 24, minPixels = 20, width = 0,
 ): LayerContrast | null {
+  const n = withLayer.length >> 2;
+  const changed = new Uint8Array(n);
   const ratios: number[] = [];
-  for (let i = 0; i + 3 < withLayer.length; i += 4) {
+  for (let p = 0, i = 0; p < n; p++, i += 4) {
     const d = Math.abs(withLayer[i] - without[i]) + Math.abs(withLayer[i + 1] - without[i + 1]) +
       Math.abs(withLayer[i + 2] - without[i + 2]);
     if (d < minDelta) continue;
+    changed[p] = 1;
     ratios.push(contrastRatio(
       relativeLuminance(withLayer[i], withLayer[i + 1], withLayer[i + 2]),
       relativeLuminance(without[i], without[i + 1], without[i + 2]),
     ));
   }
   if (ratios.length < minPixels) return null;
-  ratios.sort((x, y) => x - y);
-  return { ratio: Math.round(ratios[ratios.length >> 1] * 100) / 100, pixels: ratios.length };
+  const median = (values: number[]): number => {
+    values.sort((x, y) => x - y);
+    return Math.round(values[values.length >> 1] * 100) / 100;
+  };
+  const all = median(ratios);
+  if (!(width > 0) || n % width) return { ratio: all, pixels: ratios.length };
+  // [ext-03 G9] D-177: a symbol reads when its outer edge stands off the globe OR its core stands off its own edge
+  // (WCAG non-text contrast reads either boundary), so an outlined light pad on a light map is not averaged to grey.
+  const height = n / width;
+  const edgeRatios: number[] = [];
+  const edgeLums: number[] = [];
+  const coreLums: number[] = [];
+  for (let p = 0; p < n; p++) {
+    if (!changed[p]) continue;
+    const x = p % width, y = (p - x) / width;
+    const outside = (x > 0 && !changed[p - 1]) || (x < width - 1 && !changed[p + 1]) ||
+      (y > 0 && !changed[p - width]) || (y < height - 1 && !changed[p + width]);
+    const i = p * 4;
+    const lum = relativeLuminance(withLayer[i], withLayer[i + 1], withLayer[i + 2]);
+    if (outside) {
+      edgeLums.push(lum);
+      edgeRatios.push(contrastRatio(lum, relativeLuminance(without[i], without[i + 1], without[i + 2])));
+    } else coreLums.push(lum);
+  }
+  const edge = edgeRatios.length ? median(edgeRatios) : all;
+  let core = 1;
+  if (coreLums.length >= minPixels && edgeLums.length) {
+    edgeLums.sort((x, y) => x - y);
+    const edgeLum = edgeLums[edgeLums.length >> 1];
+    core = median(coreLums.map((lum) => contrastRatio(lum, edgeLum)));
+  }
+  return { ratio: Math.max(edge, core), pixels: ratios.length, edge, core, median: all };
 }
 
 function grab(renderer: WebGLRenderer, scene: Scene, camera: Camera, out: Uint8Array): void {
@@ -74,7 +115,7 @@ export function measureLayerContrast(
     grab(renderer, scene, camera, bare);
     object.visible = visible;
     for (const [o, v] of others) o.visible = v;
-    result[name] = layerContrast(full, bare);
+    result[name] = layerContrast(full, bare, 24, 20, gl.drawingBufferWidth);
   }
   renderer.render(scene, camera);
   return result;

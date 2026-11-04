@@ -15,16 +15,17 @@ import { reducedMotion } from '../ui/motion'; // [night-11g] D-88
 import type { GlobeLook } from '../render/globe';
 import type { AirportStyle } from '../render/airports';
 
-/** [ext-03] `?airportStyle=` in DEV builds: D-175 airport/route variants for the owner's choice. */
+/** [ext-03] `?airportStyle=` in DEV builds: compare the D-178 default (`medal`) with the other D-175 variants. */
 function devAirportStyle(): AirportStyle | undefined {
   const value = new URLSearchParams(location.search).get('airportStyle');
-  return value === 'ink' || value === 'apron' || value === 'medal' ? value : undefined;
+  return value === 'current' || value === 'ink' || value === 'apron' || value === 'medal' ? value : undefined;
 }
 
 /** [ext-03] `?globeLook=` in DEV builds (docs/mockups/globe-2026-11/). */
 function devGlobeLook(): GlobeLook | undefined {
   const value = new URLSearchParams(location.search).get('globeLook');
-  return value === 'refined' || value === 'satellite' || value === 'painted' || value === 'map' ? value : undefined;
+  return value === 'diorama' || value === 'refined' || value === 'satellite' || value === 'painted' || value === 'map'
+    ? value : undefined;
 }
 
 // [task-34] HTML panels the globe must stay clear of. Their boxes become camera insets (D-47).

@@ -177,6 +177,27 @@ try {
   for (let i = 0; i < 100; i++) fg.set([240, 236, 226], i * 4);
   const lc = layerContrast(fg, bg);
   check(lc && lc.pixels === 100 && lc.ratio > 4.5, 'layer contrast counts only changed pixels');
+  // [ext-03 G9] D-177: a light disc with a dark outline on a dark sea reads by its core vs the outline (the outline
+  // itself barely differs from the sea); a plain light disc on a light ground does not read at all.
+  const W = 40, ground = new Uint8Array(W * W * 4).fill(16);
+  const disc = (outline) => {
+    const out = ground.slice();
+    for (let y = 0; y < W; y++) for (let x = 0; x < W; x++) {
+      const r = Math.hypot(x - 20, y - 20);
+      if (r < 12) out.set(r > 9 && outline ? [27, 36, 39] : [244, 240, 230], (y * W + x) * 4);
+    }
+    return out;
+  };
+  const outlined = layerContrast(disc(true), ground, 24, 20, W);
+  const lightGround = new Uint8Array(W * W * 4).fill(236);
+  const plainDisc = lightGround.slice();
+  for (let y = 0; y < W; y++) for (let x = 0; x < W; x++) {
+    if (Math.hypot(x - 20, y - 20) < 12) plainDisc.set([250, 248, 244], (y * W + x) * 4);
+  }
+  const plain = layerContrast(plainDisc, lightGround, 24, 20, W);
+  check(outlined && outlined.core > 4.5 && outlined.ratio >= outlined.core && outlined.edge < 2,
+    'outlined symbol: core vs outline counts (D-177) ' + JSON.stringify(outlined));
+  check(plain === null || plain.ratio < 1.5, 'a light disc on a light ground stays unreadable (D-177)');
 
   // Menu decorative network: sets and clears its own layers; planes advance on a private clock.
   const calls = [];
