@@ -101,7 +101,7 @@ export function mountRouteContextMenu(host: HTMLElement, callbacks: {
 
 /** Visual 48dp end-handle targets. Hit testing remains in routeTool, below this overlay. */
 export function mountRouteHandles(host: HTMLElement): {
-  show(handles: readonly RouteHandle[]): void;
+  show(handles: readonly RouteHandle[], activeRouteId?: string | null): void;
   dispose(): void;
 } {
   const layer = document.createElement('div');
@@ -110,7 +110,7 @@ export function mountRouteHandles(host: HTMLElement): {
   host.appendChild(layer);
   const elements = new Map<string, HTMLSpanElement>();
   return {
-    show(handles) {
+    show(handles, activeRouteId = null) {
       const visible = new Set<string>();
       for (const handle of handles) {
         const id = handle.routeId + ':' + handle.end;
@@ -125,6 +125,9 @@ export function mountRouteHandles(host: HTMLElement): {
         element.hidden = false;
         element.style.left = handle.x + 'px';
         element.style.top = handle.y + 'px';
+        // [night-11q] R5c: quiet hollow marker at rest; the full yellow diamond only on the route in hand.
+        const active = handle.routeId === activeRouteId;
+        if (element.classList.contains('airway-route-handle--active') !== active) element.classList.toggle('airway-route-handle--active', active);
       }
       for (const [id, element] of elements) {
         if (!visible.has(id)) element.hidden = true;

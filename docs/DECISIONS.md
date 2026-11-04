@@ -1291,3 +1291,13 @@ board is up, and only one is on screen. Endless and Daily only (puzzles teach th
 run flowing), a card on the weekly board itself (covers crates in landscape).
 **Status: in force (N11p, `test:first-time` 7, `test:e2e:first-time-cards` 4).**
 
+## D-191 — Route-end handles: a quiet hollow mark at rest, full only on the route in hand, under the tags (2026-11-04, Claude, night N11q)
+R5c: the 20 px yellow diamonds on every route end out-shouted the airports and their luggage tags, and their layer
+(z-index 18) painted over the tags. At rest a handle is now a 10 px hollow diamond (2 px ink rim, paper halo) centred
+in the unchanged 48 dp area; the full yellow diamond shows only on the route being extended from its end or selected
+with the long-press menu (`RouteTool.activeRouteId`, passed to the `handles` port). The handle layer sits at z-index 1,
+below the airport overlay (2), so a tag or edge chip always covers a handle, never the reverse; touch hit testing
+stays in `routeTool` and does not depend on paint order. Rejected: hiding handles at rest (the extend gesture would
+have no visible start), a hover state (touch first; the finger case is the drag itself).
+**Status: in force (N11q, `test:e2e:route-handles` 2).**
+
