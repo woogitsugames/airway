@@ -51,7 +51,7 @@ If dependencies are stale: `cd ios/App && pod install`. Do not commit `Pods/`, g
   The install marker `aw-install-v1.json` is written to `Library/NoCloud` (`Directory.LibraryNoCloud`), which is
   not backed up, so a restored iPhone drops the leaderboard token and queue on first launch like Android.
 - `AppDelegate.swift` sets `AVAudioSession.Category.ambient`: the device's Ring/Silent switch mutes the game by default, without stopping other apps' audio. The Web Audio engine (`src/audio`) also requests `navigator.audioSession.type = 'ambient'` where WKWebView supports it; a play-in-silent-mode override would need a reviewed native bridge.
-- No camera, photo library, location, contacts, microphone, tracking or background privileges are requested. Native plugins: Haptics, Share, Preferences (UserDefaults, reason CA92.1) and Filesystem (file timestamps, reason C617.1), each with a pod in the `Podfile`; `test:ios-config` checks the pod list against `package.json` and forbids ad/analytics/billing SDKs. Review `PrivacyInfo.xcprivacy` whenever a plugin is added.
+- No camera, photo library, location, contacts, microphone, tracking or background privileges are requested. Native plugins: Haptics, Share, Preferences (UserDefaults, reason CA92.1) and Filesystem (file timestamps, reason C617.1), each with a pod in the `Podfile`; `test:ios-config` checks the pod list against `package.json` and forbids ad/analytics/billing SDKs. Review `PrivacyInfo.xcprivacy` whenever a plugin is added. Its `NSPrivacyCollectedDataTypes` declare the leaderboard build's data (User ID + Gameplay Content, linked, no tracking, App Functionality; R1f, D-220) in every build; the App Store Connect answers are in `docs/store/privacy-declarations.md`.
 
 ## Original icon and launch art
 

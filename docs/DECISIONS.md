@@ -1775,3 +1775,18 @@ until R7c, release "to be announced", contact the proposed `contact@airway.games
 follows until R2b sets `PRESS_KIT.video`. The "failure" scene stays out with the landing page until store:shots has
 the N11t wording. Rejected: committing the ZIP (large binary churn on every store:shots) and an SVG-only wordmark (its
 `<text>` needs Overpass installed, so the PNG render ships too). Guard: `test:site`. **Status: in force.**
+
+## D-220 — Privacy declarations derived from the code and guarded by a test; one privacy manifest for both builds (2026-11-04, Claude, night N12ak)
+R1f. `docs/store/privacy-declarations.md` holds the Google Play Data safety and App Store App Privacy answers for
+build (A) without a Firebase config (nothing collected: the leaderboard layer is the only network path besides bundled
+assets) and build (B) with leaderboards: the anonymous Firebase uid (Play "Device or other IDs", Apple "User ID") and
+the official daily run (Play "App activity → Other actions", Apple "Gameplay Content"), not shared, not for tracking,
+encrypted in transit, optional through the "Send my daily results" switch (D-135), deletable in the app (D-114),
+kept 90 days (D-77); purposes App functionality + fraud prevention (Apple: App Functionality only, which covers fraud
+prevention). The sheet lists every endpoint, body field, command-journal field and stored Firestore field; the
+journal is replayed, not stored. `test:privacy-declarations` (in `test:fast`) records every request against a fake
+Firebase and reads the Cloud Functions' writes and the `Command` union, so a new field or endpoint without a
+declaration fails. `PrivacyInfo.xcprivacy` declares the (B) types in both builds (one static file; over-declaring in
+build A is harmless, under-declaring in B would be wrong); `test:ios-config` checks it. Play "Device or other IDs"
+rather than "User IDs" is a recommendation for the owner's Q-03 answer, not a decision; Q-01 (data controller), Q-07
+(Firebase project) and the lawyer's view on Cloud Run request logs (IP, user agent) stay open. **Status: in force.**

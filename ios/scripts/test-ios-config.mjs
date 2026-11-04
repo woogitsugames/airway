@@ -65,6 +65,20 @@ const capConfig = read('capacitor.config.ts');
 check('capacitor appId and name', capConfig.includes("appId: 'pl.samsufi.airway'") && capConfig.includes("appName: 'Airway'"));
 check('silent switch respected by ambient session', /setCategory\(\.ambient,\s*mode:\s*\.default\)/.test(delegate));
 check('privacy manifest bundled', project.includes('PrivacyInfo.xcprivacy in Resources') && existsSync(join(IOS, 'PrivacyInfo.xcprivacy')));
+// [night-12ak] R1f, D-220: the manifest declares the leaderboard build's data (docs/store/privacy-declarations.md).
+const manifest = read('ios/App/App/PrivacyInfo.xcprivacy');
+const collected = (manifest.match(/<key>NSPrivacyCollectedDataTypes<\/key>\s*<array>([\s\S]*?)\n    <\/array>/) || [])[1] || '';
+const collectedDicts = [...collected.matchAll(/<dict>([\s\S]*?)<\/dict>/g)].map((m) => m[1]);
+const typeOf = (dict) => (dict.match(/<key>NSPrivacyCollectedDataType<\/key>\s*<string>([^<]+)</) || [])[1];
+check('privacy manifest: no tracking', /<key>NSPrivacyTracking<\/key>\s*<false\s*\/>/.test(manifest) &&
+  /<key>NSPrivacyTrackingDomains<\/key>\s*<array\s*\/>/.test(manifest));
+check('privacy manifest: leaderboard data types (User ID, Gameplay Content)',
+  collectedDicts.map(typeOf).sort().join() === 'NSPrivacyCollectedDataTypeGameplayContent,NSPrivacyCollectedDataTypeUserID');
+check('privacy manifest: linked, not tracking, app functionality only', collectedDicts.length === 2 &&
+  collectedDicts.every((dict) => /<key>NSPrivacyCollectedDataTypeLinked<\/key>\s*<true\s*\/>/.test(dict) &&
+    /<key>NSPrivacyCollectedDataTypeTracking<\/key>\s*<false\s*\/>/.test(dict) &&
+    [...dict.matchAll(/<string>(NSPrivacyCollectedDataTypePurpose[^<]+)</g)].map((m) => m[1]).join() ===
+      'NSPrivacyCollectedDataTypePurposeAppFunctionality'));
 check('shared archive scheme', existsSync(join(ROOT, 'ios/App/App.xcodeproj/xcshareddata/xcschemes/App.xcscheme')));
 check('viewport-fit cover', read('index.html').includes('viewport-fit=cover'));
 check('HUD safe-area tokens', read('src/ui/base.css').includes('--aw-safe-top: env(safe-area-inset-top'));
