@@ -41,7 +41,42 @@ export interface RunStats {
   readonly slotsPicked: number;
 }
 
-export interface RunNote extends RunStats {
+/** [night-12ap] R3j: game-over cause kinds as the board ranks them (src/game/causes.ts; a literal so this file loads alone). */
+export const RECORD_CAUSES = ['no-route', 'regional-demand', 'seat-shortage', 'missed-transfer', 'transfer-not-ready',
+  'long-wait', 'capacity', 'congestion-duration', 'slot-wait', 'unavailable'] as const;
+export type RecordCause = typeof RECORD_CAUSES[number];
+/** [night-12ap] Weekly picks as letters: Turboprop, Widebody, Hub expansion, departure Slots (in week order). */
+export const PICK_LETTERS = { turboprop: 'T', widebody: 'W', 'hub-expansion': 'H', 'departure-slots': 'S' } as const;
+export const RECORD_TUTORIAL = ['completed', 'skipped', 'in-progress', 'none'] as const;
+export const RECORD_QUALITY = ['auto', 'saver', 'low', 'medium', 'high'] as const;
+export const RECORD_PRESETS = ['low', 'medium', 'high'] as const;
+const MAX_PICKS = 60;
+const MAX_ADAPT = 3;
+const VERSION = /^[0-9A-Za-z.+-]{1,24}$/;
+const PICKS = new RegExp(`^[${Object.values(PICK_LETTERS).join('')}]{0,${MAX_PICKS}}$`);
+
+/**
+ * [night-12ap] R3j playtest record of one run (all optional: runs logged before R3j, or a field the device could not
+ * read, simply lack it). Counts and fixed words only, no identifiers (D-16).
+ */
+export interface RunRecord {
+  /** Real (wall-clock) play time in tenths of a minute: game screen and weekly board, app in front, not paused. */
+  readonly real?: number;
+  /** The first cause on the game-over board. */
+  readonly cause?: RecordCause;
+  /** Weekly card picked each week, in order, as PICK_LETTERS (e.g. "WHT"). */
+  readonly picks?: string;
+  /** Flight training state when the run ended. */
+  readonly tutorial?: typeof RECORD_TUTORIAL[number];
+  /** Graphics setting, the preset the renderer ran at the end, adaptive downgrade steps taken (0–3). */
+  readonly quality?: typeof RECORD_QUALITY[number];
+  readonly preset?: typeof RECORD_PRESETS[number];
+  readonly adapt?: number;
+  /** App version that played the run (package.json; "dev" outside a Vite build). */
+  readonly version?: string;
+}
+
+export interface RunNote extends RunStats, RunRecord {
   readonly day: string;
   readonly mode: LogMode;
   readonly passengers: number;
@@ -99,11 +134,31 @@ function stats(value: unknown): RunStats | null {
   return { ...clean, hubOffered: Math.max(clean.hubOffered, clean.hubPicked),
     slotsOffered: Math.max(clean.slotsOffered, clean.slotsPicked) };
 }
+const oneOf = <T extends string>(list: readonly T[], value: unknown): T | undefined =>
+  (list as readonly unknown[]).includes(value) ? value as T : undefined;
+/** [night-12ap] The R3j fields that are valid; a bad one is dropped alone, the note stays. */
+export function runRecord(value: unknown): RunRecord {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+  const item = value as Record<string, unknown>;
+  const real = count(item.real);
+  const adapt = count(item.adapt);
+  const fields: Record<string, unknown> = {
+    real: real ?? undefined,
+    cause: oneOf(RECORD_CAUSES, item.cause),
+    picks: typeof item.picks === 'string' && PICKS.test(item.picks) ? item.picks : undefined,
+    tutorial: oneOf(RECORD_TUTORIAL, item.tutorial),
+    quality: oneOf(RECORD_QUALITY, item.quality),
+    preset: oneOf(RECORD_PRESETS, item.preset),
+    adapt: adapt !== null && adapt <= MAX_ADAPT ? adapt : undefined,
+    version: typeof item.version === 'string' && VERSION.test(item.version) ? item.version : undefined,
+  };
+  return Object.fromEntries(Object.entries(fields).filter(([, v]) => v !== undefined)) as RunRecord;
+}
 function note(value: unknown): RunNote | null {
   const base = entry(value);
   const extra = stats(value);
   if (!base || !extra) return null;
-  return { day: base.day, mode: base.mode, passengers: base.passengers, weeks: base.weeks, ...extra };
+  return { day: base.day, mode: base.mode, passengers: base.passengers, weeks: base.weeks, ...extra, ...runRecord(value) };
 }
 
 /** The stored logbook; a missing, malformed or unreadable record is an empty one (never throws). */
@@ -140,8 +195,9 @@ export function readLogbook(storage: StorageLike | undefined): Logbook {
 /**
  * Add one finished flight and write it back. A failed write still returns the updated book for this session.
  * [night-12am] `run` (closed-test stats) adds a line to `runs`; without it the flight counts but leaves no note.
+ * [night-12ap] R3j: `run` may also carry the playtest record (RunRecord); invalid fields are dropped.
  */
-export function recordFlight(storage: StorageLike | undefined, flight: LogEntry, run?: RunStats): Logbook {
+export function recordFlight(storage: StorageLike | undefined, flight: LogEntry, run?: RunStats & RunRecord): Logbook {
   const prior = readLogbook(storage);
   const clean = entry(flight);
   if (!clean) return prior;

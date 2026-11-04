@@ -2,6 +2,9 @@
 // hub / "+2 slots" card offers and picks) for the last 30 runs and a daily-challenge count; EndlessRun reports them
 // at game over (checked on a fake sim and on a real bot run); "Copy summary" prints them in PL and EN exactly as
 // docs/PLAYTEST.md shows; the protocol covers Q-73, Q-78 and Q-80; the export stays local (no network path).
+// [night-12ap] R3j, D-231: each note also keeps the playtest record (real minutes, game-over cause, weekly picks,
+// training state, graphics setting/preset/adaptation steps, app version); the summary ends with the `AW1:` line,
+// which decodes back to the same notes and to CSV (`npm run playtest:decode`).
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { EMPTY_LOGBOOK, LOGBOOK_KEY, RUN_NOTES, readLogbook, recordFlight, type LogEntry, type Logbook, type RunNote,
@@ -10,6 +13,9 @@ import { EndlessRun } from '../src/game/run.ts';
 import { AUTOPLAY_ACTION_INTERVAL, nextAutoplayCommand } from '../src/game/dev/autoplay.ts';
 import { readTutorialOutcome, TUTORIAL_KEY } from '../src/game/tutorial/controller.ts';
 import { logbookSummary } from '../src/ui/logbook/summary.ts';
+import { decodePlaytestRecord, encodePlaytestRecord, playtestCsv, RECORD_PREFIX, RUN_COLUMNS, SUMMARY_COLUMNS } from '../src/game/playtestRecord.ts';
+import { buildCauseReport } from '../src/game/causes.ts';
+import { APP_VERSION } from '../src/core/version.ts';
 import { setLanguage } from '../src/i18n/index.ts';
 import { en } from '../src/i18n/en.ts';
 import { pl } from '../src/i18n/pl.ts';
@@ -61,8 +67,22 @@ test('older records load with no notes; malformed notes are dropped; offered is 
   assert.equal(recordFlight(memory(), flight(), stats({ tenths: 1.5 })).runs.length, 0, 'a bad note is not logged');
 });
 
+test('R3j record fields are kept per run; a bad field is dropped alone; R1o notes load without them', () => {
+  const storage = memory();
+  const record = { real: 253, cause: 'capacity', picks: 'WHS', tutorial: 'completed', quality: 'auto', preset: 'medium',
+    adapt: 1, version: '0.1.0' } as const;
+  let book = recordFlight(storage, flight(), { ...stats(), ...record });
+  assert.deepEqual(book.runs[0], { day: '2026-11-18', mode: 'endless', passengers: 120, weeks: 2, ...stats(), ...record });
+  assert.deepEqual(readLogbook(storage).runs[0], book.runs[0], 'stored and read back');
+  book = recordFlight(storage, flight(), { ...stats(), ...record, cause: 'boredom', picks: 'WX', adapt: 4, quality: 'ultra',
+    preset: 'auto', tutorial: 'won', version: 'v 1', real: -1 } as never);
+  assert.deepEqual(Object.keys(book.runs[0]!).sort(), ['day', 'held', 'hubOffered', 'hubPicked', 'mode', 'passengers',
+    'slotsOffered', 'slotsPicked', 'tenths', 'weeks'], 'every bad R3j field dropped, the R1o note kept');
+  assert.equal(book.runs.length, 2);
+});
+
 /** The slice of Sim that EndlessRun.playtestStats and drainEvents read. */
-function fakeSim(over: { events: unknown[]; upgrades: { upgrade: UpgradeKind }[]; wait: Record<string, number>; tick: number }): Sim {
+function fakeSim(over: { events: unknown[]; upgrades: { week: number; upgrade: UpgradeKind }[]; wait: Record<string, number>; tick: number }): Sim {
   const world = {
     activeCityIds: () => ['LON'],
     cities: () => Object.keys(over.wait).map((id) => ({ id })),
@@ -77,14 +97,15 @@ test('EndlessRun.playtestStats: length at 1x, held minutes over airports, card o
   const sim = fakeSim({
     events: [offered(1, ['turboprop', 'widebody', 'hub-expansion']), offered(2, ['hub-expansion', 'departure-slots', 'widebody']),
       { type: 'DepartureHeld', minute: 0, cityId: 'LON', planeId: 'p1', first: true }, offered(3, ['turboprop', 'widebody', 'departure-slots'])],
-    upgrades: [{ upgrade: 'widebody' }, { upgrade: 'hub-expansion' }, { upgrade: 'departure-slots' }],
+    upgrades: [{ week: 1, upgrade: 'widebody' }, { week: 3, upgrade: 'departure-slots' }, { week: 2, upgrade: 'hub-expansion' }],
     wait: { LON: 12, PAR: 0, NYC: 7 }, tick: 8_523,
   });
   const run = new EndlessRun(sim);
-  assert.deepEqual(run.playtestStats(), { tenths: 142, held: 19, hubOffered: 1, hubPicked: 1, slotsOffered: 1, slotsPicked: 1 },
+  const r3j = { real: 0, picks: 'WHS' };
+  assert.deepEqual(run.playtestStats(), { tenths: 142, held: 19, hubOffered: 1, hubPicked: 1, slotsOffered: 1, slotsPicked: 1, ...r3j },
     'before draining, offers fall back to picks');
   run.drainEvents();
-  assert.deepEqual(run.playtestStats(), { tenths: 142, held: 19, hubOffered: 2, hubPicked: 1, slotsOffered: 2, slotsPicked: 1 });
+  assert.deepEqual(run.playtestStats(), { tenths: 142, held: 19, hubOffered: 2, hubPicked: 1, slotsOffered: 2, slotsPicked: 1, ...r3j });
 });
 test('a real bot run reports what its weekly boards showed and what it picked', () => {
   const run = EndlessRun.create(42); // two boards, one hub pick on rules v5
@@ -109,8 +130,40 @@ test('a real bot run reports what its weekly boards showed and what it picked', 
     tenths: Math.round(run.tick / 60), held: Math.round(held),
     hubOffered: count('hub-expansion'), hubPicked: picks('hub-expansion'),
     slotsOffered: count('departure-slots'), slotsPicked: picks('departure-slots'),
+    real: 0, picks: [...run.sim.world.upgrades].sort((a, b) => a.week - b.week).map((item) => item.upgrade[0]!.toUpperCase()
+      .replace('D', 'S')).join(''),
+    ...(run.failed ? { cause: buildCauseReport(run.failed.ledger)[0]!.kind } : {}),
   });
   assert.ok(got.tenths > 0 && got.hubOffered >= got.hubPicked && got.slotsOffered >= got.slotsPicked);
+});
+
+test('R3j: real play time counts frames up to 0.5 s each; a failed run reports the board\'s first cause', () => {
+  const run = EndlessRun.create(42);
+  for (let i = 0; i < 600; i++) run.addPlayTime(1 / 60); // 10 s of frames
+  run.addPlayTime(3600); // back from the background: one frame, capped
+  run.addPlayTime(Number.NaN);
+  run.addPlayTime(-5);
+  assert.equal(run.playtestStats().real, Math.round(10.5 / 6), '10.5 s = 0.2 min in tenths');
+  for (let i = 0; i < 1800; i++) run.addPlayTime(0.1); // +180 s
+  assert.equal(run.playtestStats().real, Math.round(190.5 / 6));
+  assert.equal(run.playtestStats().cause, undefined, 'no cause while flying');
+  for (let tick = 0; tick < 60 * 60 * 60 && !run.failed; tick++) { run.step(); run.drainEvents(); } // no network: a hub jams
+  assert.ok(run.failed, 'the empty network jammed');
+  const cause = run.playtestStats().cause;
+  assert.equal(cause, buildCauseReport(run.failed.ledger)[0]?.kind);
+  assert.notEqual(cause, 'unavailable');
+  assert.equal(run.playtestStats().picks, '');
+});
+test('session counts real time on the game screen and the weekly board only, never paused', () => {
+  const session = read('src/game/session.ts');
+  assert.match(session, /if \(!disposed && !paused && \(screen === 'game' \|\| screen === 'upgrade'\)\) run\.addPlayTime\(dt\);/);
+  const main = read('src/main.ts');
+  assert.match(main, /\.\.\.failed\.playtestStats\(\), \.\.\.deviceRecord\(\)/, 'game over logs the record');
+  for (const field of ['tutorial', 'quality: readSettings().graphics', 'preset', 'adapt', 'version: APP_VERSION']) {
+    assert.ok(main.includes(field), `deviceRecord sets ${field}`);
+  }
+  assert.match(read('vite.config.ts'), /__AIRWAY_VERSION__: JSON\.stringify\(version\)/);
+  assert.equal(APP_VERSION, 'dev', 'headless reads "dev"; the build reads package.json');
 });
 
 test('tutorial outcome for the summary: none, started, finished, skipped, malformed', () => {
@@ -125,14 +178,17 @@ test('tutorial outcome for the summary: none, started, finished, skipped, malfor
 
 // The three-run phone of docs/PLAYTEST.md.
 const note = (day: string, mode: 'endless' | 'daily', tenths: number, weeks: number, passengers: number,
-  card: [number, number, number, number], held: number): RunNote =>
-  ({ day, mode, tenths, weeks, passengers, hubPicked: card[0], hubOffered: card[1], slotsPicked: card[2], slotsOffered: card[3], held });
+  card: [number, number, number, number], held: number, record: RunNote extends infer N ? Partial<N> : never = {}): RunNote =>
+  ({ day, mode, tenths, weeks, passengers, hubPicked: card[0], hubOffered: card[1], slotsPicked: card[2], slotsOffered: card[3], held, ...record });
 const sample: Logbook = { ...EMPTY_LOGBOOK, flights: 14, dailies: 4, runs: [
-  note('2026-11-18', 'endless', 218, 3, 412, [1, 1, 0, 1], 34),
-  note('2026-11-17', 'daily', 142, 2, 233, [0, 1, 0, 0], 0),
-  note('2026-11-16', 'endless', 96, 1, 88, [0, 0, 0, 0], 0),
+  note('2026-11-18', 'endless', 218, 3, 412, [1, 1, 0, 1], 34,
+    { real: 163, cause: 'capacity', picks: 'WHT', tutorial: 'completed', quality: 'auto', preset: 'medium', adapt: 1, version: '0.1.1' }),
+  note('2026-11-17', 'daily', 142, 2, 233, [0, 1, 0, 0], 0,
+    { real: 121, cause: 'no-route', picks: 'TW', tutorial: 'completed', quality: 'auto', preset: 'medium', adapt: 0, version: '0.1.0' }),
+  note('2026-11-16', 'endless', 96, 1, 88, [0, 0, 0, 0], 0), // logged before R3j: no record fields
 ] };
-const input = { book: sample, tutorial: 'completed' as const, puzzlesSolved: 6, puzzlesTotal: 40, today: '2026-11-18' };
+const input = { book: sample, tutorial: 'completed' as const, puzzlesSolved: 6, puzzlesTotal: 40, today: '2026-11-18',
+  version: '0.1.1' };
 const doc = read('docs/PLAYTEST.md');
 
 test('EN summary is the example printed in docs/PLAYTEST.md', () => {
@@ -145,20 +201,70 @@ test('PL summary: Polish labels, local numbers, every run, no template token', (
   setLanguage('pl');
   const text = logbookSummary(input);
   const lines = text.split('\n');
-  assert.equal(lines.length, 11 + sample.runs.length);
+  assert.equal(lines.length, 14 + sample.runs.length);
+  assert.match(text, /Wersja gry: 0\.1\.1/);
+  assert.match(text, /Czas gry naprawdę \(bez pauz\): mediana 14,2 min · najdłuższy 16,3 min · zmierzony w 2 biegach/);
+  assert.ok(lines.at(-1)!.startsWith(RECORD_PREFIX), 'AW1 line last');
   assert.match(text, /Długość biegu przy prędkości 1×: mediana 14,2 min · najdłuższy 21,8 min/);
   assert.match(text, /Karta „Rozbudowa huba”: w ofercie 2 · wybrana 1/);
   assert.match(text, /Karta „Sloty startowe”: w ofercie 1 · wybrana 0/);
   assert.match(text, /Odlot czekał na slot: w 1 z 3 biegów/);
-  assert.equal(lines.at(-1), '2026-11-16 · Bez końca · 9,6 · 1 · 88 · 0/0 · 0/0 · 0');
+  assert.equal(lines.at(-2), '2026-11-16 · Bez końca · 9,6 · 1 · 88 · 0/0 · 0/0 · 0');
   assert.doesNotMatch(text, /[{}]/);
   assert.doesNotMatch(text, /\b(LIS|FRA|SIN|seed|0x)\b/i, 'no airport code or seed');
 });
 test('no runs yet: totals and the "no details" line only', () => {
   setLanguage('en');
   const text = logbookSummary({ ...input, book: { ...EMPTY_LOGBOOK, flights: 2 }, tutorial: 'none' });
-  assert.deepEqual(text.split('\n').slice(1), ['Flights: 2 (Endless 2, daily challenges 0)', 'Flight training: not opened',
-    'Puzzles solved: 6 of 40', en['logbook.summary.noRuns']]);
+  const lines = text.split('\n');
+  assert.deepEqual(lines.slice(1, -1), ['Flights: 2 (Endless 2, daily challenges 0)', 'Flight training: not opened',
+    'Puzzles solved: 6 of 40', 'Game version: 0.1.1', en['logbook.summary.noRuns']]);
+  assert.deepEqual(decodePlaytestRecord(lines.at(-1)!), { copied: '2026-11-18', version: '0.1.1', flights: 2, dailies: 0,
+    tutorial: 'none', puzzlesSolved: 6, puzzlesTotal: 40, runs: [] });
+});
+
+test('AW1 line: base64url of ASCII JSON, same in PL and EN, decodes to the same notes', () => {
+  setLanguage('pl');
+  const pl = logbookSummary(input).split('\n').at(-1)!;
+  setLanguage('en');
+  const line = logbookSummary(input).split('\n').at(-1)!;
+  assert.equal(pl, line, 'the machine line does not depend on the language');
+  assert.equal(line, encodePlaytestRecord(input));
+  assert.match(line, /^AW1:[A-Za-z0-9_-]+$/);
+  const json = JSON.parse(Buffer.from(line.slice(4), 'base64url').toString('utf8'));
+  assert.deepEqual(Object.keys(json), ['v', 'd', 'app', 'f', 'dl', 'tut', 'pz', 'r']);
+  assert.equal(json.r[0].length, RUN_COLUMNS.length);
+  assert.deepEqual(json.r[2].slice(RUN_COLUMNS.indexOf('min_real')), [null, 1, 88, null, null, 0, 0, 0, 0, 0, null, null, null, null, null],
+    'a pre-R3j note writes null for what it lacks');
+  const back = decodePlaytestRecord(line);
+  assert.ok(back);
+  assert.deepEqual(back.runs, sample.runs);
+  assert.deepEqual({ ...back, runs: [] }, { copied: '2026-11-18', version: '0.1.1', flights: 14, dailies: 4, tutorial: 'completed',
+    puzzlesSolved: 6, puzzlesTotal: 40, runs: [] });
+  assert.doesNotMatch(JSON.stringify(json), /\b(LIS|FRA|SIN|seed|hub":)/i, 'no airport code, seed or hub field');
+  for (const bad of ['AW2:' + line.slice(4), 'AW1:!!!', 'AW1:' + Buffer.from('{"v":2,"r":[]}').toString('base64url'), 'AW1:']) {
+    assert.equal(decodePlaytestRecord(bad), null, bad.slice(0, 12));
+  }
+});
+test('playtest:decode CSV: one row per run, summaries numbered, bad tokens skipped, forged fields dropped', () => {
+  setLanguage('en');
+  const forged = { v: 1, d: '2026-11-18', app: '0.1.0', f: 1, dl: 0, tut: 'none', pz: [0, 40],
+    r: [['2026-11-18', 'endless', 5, 6, 0, 7, 'cause=1,2', 'HHX', 0, 0, 0, 0, 0, 'none', 'auto', 'low', 9, 'x y']] };
+  const pasted = `Survey answer 1\n${logbookSummary(input)}\n\nanswer 2: AW1:@@@ and AW1:${Buffer.from(JSON.stringify(forged)).toString('base64url')}\n`;
+  const out = playtestCsv(pasted);
+  assert.deepEqual([out.records, out.rows, out.skipped], [2, 4, 0]);
+  const rows = out.csv.trim().split('\n');
+  assert.equal(rows[0], [...SUMMARY_COLUMNS, ...RUN_COLUMNS].join(','));
+  assert.equal(rows[1], '1,2026-11-18,0.1.1,14,4,completed,6,40,2026-11-18,endless,21.8,16.3,3,412,capacity,WHT,1,1,0,1,34,completed,auto,medium,1,0.1.1');
+  assert.equal(rows[3], '1,2026-11-18,0.1.1,14,4,completed,6,40,2026-11-16,endless,9.6,,1,88,,,0,0,0,0,0,,,,,');
+  assert.equal(rows[4], '2,2026-11-18,0.1.0,1,0,none,0,40,2026-11-18,endless,5,6,0,7,,,0,0,0,0,0,none,auto,low,,',
+    'invalid cause, picks, adapt and version become empty cells');
+  assert.equal(playtestCsv('AW1:AAAA').skipped, 1);
+  const docCsv = doc.match(/```csv\n([\s\S]*?)\n```/)?.[1];
+  assert.equal(docCsv + '\n', playtestCsv(logbookSummary(input)).csv, 'PLAYTEST.md CSV example = decoder output');
+  const script = read('scripts/playtest-decode.ts');
+  assert.match(script, /playtestCsv/);
+  assert.match(read('package.json'), /"playtest:decode": "node --import \.\/scripts\/ts-test-loader\.mjs scripts\/playtest-decode\.ts"/);
 });
 
 test('PLAYTEST.md: 14-day protocol, PL/EN questions, Q-73/Q-78/Q-80 each with what to count', () => {
@@ -173,11 +279,15 @@ test('PLAYTEST.md: 14-day protocol, PL/EN questions, Q-73/Q-78/Q-80 each with wh
   assert.ok(doc.includes('D-16') && doc.includes('D-227'));
 });
 test('local only: the export has no network path and the privacy sheet and decision record it', () => {
-  for (const path of ['src/ui/logbook/summary.ts', 'src/ui/logbook/logbook.ts', 'src/game/logbook.ts']) {
+  for (const path of ['src/ui/logbook/summary.ts', 'src/ui/logbook/logbook.ts', 'src/game/logbook.ts',
+    'src/game/playtestRecord.ts', 'src/core/version.ts', 'scripts/playtest-decode.ts']) {
     const code = read(path);
     assert.doesNotMatch(code, /fetch\(|XMLHttpRequest|sendBeacon|WebSocket|https?:\/\//, path);
   }
   assert.match(read('docs/store/privacy-declarations.md'), /"Copy summary" \(R1o, D-227/);
+  assert.match(read('docs/store/privacy-declarations.md'), /`AW1:` line, D-231/);
+  assert.match(read('docs/DECISIONS.md'), /^## D-231 — .*AW1/m);
+  assert.match(doc, /npm run playtest:decode -- /);
   assert.match(read('docs/DECISIONS.md'), /^## D-227 — .*logbook/m);
   const logbookUi = read('src/ui/logbook/logbook.ts');
   assert.doesNotMatch(logbookUi, /import\.meta\.env\.DEV/, 'Copy summary ships in release builds');

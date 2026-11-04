@@ -2,6 +2,7 @@
 // Presentation only; the composition root gathers the local stores (src/game/logbook.ts, best record, daily
 // scores, puzzle stars). Opened from the departure board's service row; Back returns to the menu.
 import { airportLabel } from '../airportLabel';
+import { APP_VERSION } from '../../core/version'; // [night-12ap] R3j
 import { favouriteHub, localDay, type Logbook, type LogEntry } from '../../game/logbook';
 import type { TutorialOutcome } from '../../game/tutorial/controller';
 import { localNumber, t } from '../../i18n';
@@ -163,7 +164,7 @@ function summarySection(data: LogbookData, copy: ClipboardWriter): HTMLElement {
   area.dataset.testid = 'logbook-summary-text';
   button.addEventListener('click', () => {
     const text = logbookSummary({ book: data.book, tutorial: data.tutorial, puzzlesSolved: data.puzzlesSolved,
-      puzzlesTotal: data.puzzlesTotal, today: localDay(new Date()) });
+      puzzlesTotal: data.puzzlesTotal, today: localDay(new Date()), version: APP_VERSION });
     area.value = text;
     void copy(text).catch(() => false).then((ok) => {
       status.textContent = t(ok ? 'logbook.copied' : 'logbook.copyFailed');
