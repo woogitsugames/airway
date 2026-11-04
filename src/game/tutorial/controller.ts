@@ -1,4 +1,5 @@
 // [task-23] Training progression is independent of renderer and simulation implementations.
+import { clearFirstTimeCards } from './first-time';
 export const TUTORIAL_KEY = 'aw-tutorial';
 // [night-11p] D-130: three steps before the first run; upgrades, congestion and the night became first-time cards in
 // the real game (first-time.ts). The version stays 1: completed and skipped saves are still valid, and an
@@ -135,6 +136,7 @@ export class TutorialController {
     this.port.reset?.();
     this.change({ visible: true, step: 'route', busy: false });
     this.save({ version: TUTORIAL_VERSION, status: 'in-progress', step: 'route' });
+    clearFirstTimeCards(this.storage); // [night-11r] D-192: the first-time cards come back with the training flight
     this.port.setPaused(true);
   }
   dispose(): void {

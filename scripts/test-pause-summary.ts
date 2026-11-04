@@ -37,6 +37,15 @@ test('equal share: more waiting wins, then label order; zero-capacity hubs ignor
   assert.equal(value(pauseSummary({ routes: 2, assigned: 2, spare: 0, hubs, minutesToBoard: null }), 'hub'), 'CCC 10/20');
   assert.equal(value(pauseSummary({ routes: 2, assigned: 2, spare: 0, hubs: hubs.slice(0, 2), minutesToBoard: null }), 'hub'), 'AAA 5/10');
 });
+test('[night-11r] R5e: a hub with nobody waiting reads "none yet", not "MAD 0/36" (EN/PL)', () => {
+  setLanguage('en');
+  const hubs = [{ label: 'MAD', waiting: 0, capacity: 36 }, { label: 'BEG', waiting: 0, capacity: 24 }];
+  assert.equal(value(pauseSummary({ routes: 3, assigned: 3, spare: 0, hubs, minutesToBoard: null }), 'hub'), 'none yet');
+  setLanguage('pl');
+  assert.equal(value(pauseSummary({ routes: 3, assigned: 3, spare: 0, hubs, minutesToBoard: null }), 'hub'), 'jeszcze brak');
+  setLanguage('en');
+  assert.equal(value(pauseSummary({ routes: 3, assigned: 3, spare: 0, hubs: [...hubs, { label: 'JED', waiting: 1, capacity: 36 }], minutesToBoard: null }), 'hub'), 'JED 1/36');
+});
 test('no weekly boards: no countdown row', () => {
   assert.equal(pauseSummary({ routes: 0, assigned: 0, spare: 3, hubs: [], minutesToBoard: null }).length, 2);
 });

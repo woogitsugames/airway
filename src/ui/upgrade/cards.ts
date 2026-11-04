@@ -42,6 +42,8 @@ export interface CardModel {
   readonly rows: readonly CardRow[];
   /** Red context stamp; only the card the context is about carries one. */
   readonly stamp?: string;
+  /** [night-11r] R5e: what the stamp measures ("fullest hub", "longest slot wait"); absent for "No hub yet". */
+  readonly stampCaption?: string;
   /** True when the upgrade cannot be applied right now (e.g. hub expansion without any hub). */
   readonly unavailable: boolean;
 }
@@ -108,9 +110,11 @@ export function cardModel(kind: UpgradeKind, index: number, total: number, hubs:
         { label: t('upgrade.field.transfer'), value: t('upgrade.value.transfer', { from: facts.hub.transferFrom, to: facts.hub.transferTo }) },
         { label: t('upgrade.field.for'), value: t('upgrade.value.hubFor') },
       ],
-      stamp: busiest
+      // [night-11r] R5e: a hub with nobody waiting is not "fullest" at 0/36: the stamp says "none yet".
+      stamp: !busiest ? t('upgrade.noHub') : busiest.waiting > 0
         ? t('upgrade.stamp', { hub: busiest.label.toUpperCase(), waiting: busiest.waiting, capacity: busiest.capacity })
-        : t('upgrade.noHub'),
+        : t('upgrade.stampNone'),
+      ...(busiest ? { stampCaption: t('upgrade.stampCaption.hub') } : {}),
     };
   }
   // Departure slots (D-28/D-41, task 32): same label grid; the stamp names the airport whose aircraft
@@ -118,7 +122,10 @@ export function cardModel(kind: UpgradeKind, index: number, total: number, hubs:
   const starved = mostSlotStarved(airports);
   return {
     kind, counter, title, unavailable: false,
-    ...(starved ? { stamp: t('upgrade.slotStamp', { airport: starved.label.toUpperCase(), minutes: number(starved.waitMinutes) }) } : {}),
+    ...(starved ? {
+      stamp: t('upgrade.slotStamp', { airport: starved.label.toUpperCase(), minutes: number(starved.waitMinutes) }),
+      stampCaption: t('upgrade.stampCaption.slots'),
+    } : {}),
     code: t('upgrade.code.slots', { count: facts.slots.count }),
     rows: [
       { label: t('upgrade.field.departures'), value: t('upgrade.value.slots', { count: facts.slots.count }) },
