@@ -17,12 +17,12 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATH ANK AMM BGW VCE RIX KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 00:08 PASAŻERÓW 40 0 0 0 1×",
+   "text": "ATH ANK AMM BGW VCE RIX KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 00:06 PASAŻERÓW 40 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
-    "routes": 9.35,
+    "routes": 9.36,
     "airports": 9.03,
-    "planes": 8.22,
+    "planes": 8.3,
     "tags": 11.82
    },
    "warmth": {
@@ -32,10 +32,10 @@
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 102.6,
-    "lumaStd": 86.7,
+    "meanLuma": 102,
+    "lumaStd": 86.5,
     "whiteShare": 0,
-    "colours": 333
+    "colours": 346
    }
   },
   {
@@ -46,25 +46,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATH ANK AMM BGW VCE RIX KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 00:10 PASAŻERÓW 40 0 0 0 1×",
+   "text": "ATH ANK AMM BGW VCE RIX KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 00:07 PASAŻERÓW 40 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
     "routes": 9.27,
-    "airports": 8.93,
+    "airports": 8.94,
     "planes": 8.18,
     "tags": 13.39
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.456
+    "ratio": 0.455
    },
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 91,
-    "lumaStd": 77.2,
+    "meanLuma": 90.7,
+    "lumaStd": 77,
     "whiteShare": 0,
-    "colours": 339
+    "colours": 337
    }
   },
   {
@@ -75,7 +75,7 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATH ANK AMM BGW VCE RIX KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 00:11 PASAŻERÓW 40 0 0 0 1×",
+   "text": "ATH ANK AMM BGW VCE RIX KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 00:10 PASAŻERÓW 40 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
     "routes": 9.28,
@@ -85,13 +85,13 @@
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.444
+    "ratio": 0.445
    },
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 86.1,
-    "lumaStd": 74.5,
+    "meanLuma": 85.9,
+    "lumaStd": 74.3,
     "whiteShare": 0,
     "colours": 345
    }
@@ -119,10 +119,10 @@
    "png": {
     "width": 1320,
     "height": 2868,
-    "meanLuma": 91.4,
-    "lumaStd": 81.6,
+    "meanLuma": 91.1,
+    "lumaStd": 81.4,
     "whiteShare": 0,
-    "colours": 353
+    "colours": 358
    }
   },
   {
@@ -133,12 +133,12 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATH ANK AMM BGW VCE RIX KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 00:13 PASAŻERÓW 40 0 0 0 1×",
+   "text": "ATH ANK AMM BGW VCE RIX KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 00:12 PASAŻERÓW 40 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
     "routes": 9.33,
     "airports": 9.03,
-    "planes": 8.33,
+    "planes": 8.35,
     "tags": 1.61
    },
    "warmth": {
@@ -148,10 +148,10 @@
    "png": {
     "width": 2064,
     "height": 2752,
-    "meanLuma": 79.5,
-    "lumaStd": 69.8,
+    "meanLuma": 79.4,
+    "lumaStd": 69.6,
     "whiteShare": 0,
-    "colours": 359
+    "colours": 357
    }
   },
   {
@@ -162,25 +162,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATH ANK AMM BGW VCE RIX KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 00:09 PASAŻERÓW 40 0 0 0 1×",
+   "text": "ATH ANK AMM BGW VCE RIX KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 00:13 PASAŻERÓW 40 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
-    "routes": 9.28,
+    "routes": 9.29,
     "airports": 8.88,
-    "planes": 8.04,
+    "planes": 8.02,
     "tags": 5.34
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.511
+    "ratio": 0.51
    },
    "png": {
     "width": 1920,
     "height": 1080,
-    "meanLuma": 109,
-    "lumaStd": 79.9,
+    "meanLuma": 108.6,
+    "lumaStd": 79.8,
     "whiteShare": 0,
-    "colours": 356
+    "colours": 354
    }
   },
   {
@@ -194,10 +194,10 @@
    "text": "ATH ANK AMM BGW VCE RIX KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 17:02 PASAŻERÓW 34 0 0 0 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
-    "routes": 9.88,
-    "airports": 8.28,
-    "planes": 7.58,
-    "tags": 10.69
+    "routes": 9.87,
+    "airports": 8.26,
+    "planes": 7.47,
+    "tags": 10.67
    },
    "warmth": {
     "gold": 0.08,
@@ -206,10 +206,10 @@
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 115.4,
-    "lumaStd": 81,
+    "meanLuma": 114.7,
+    "lumaStd": 80.8,
     "whiteShare": 0,
-    "colours": 570
+    "colours": 575
    }
   },
   {
@@ -220,25 +220,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATH ANK AMM BGW VCE RIX KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 17:04 PASAŻERÓW 34 0 0 0 1×",
+   "text": "ATH ANK AMM BGW VCE RIX KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 17:06 PASAŻERÓW 34 0 0 0 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
-    "routes": 9.75,
-    "airports": 8.39,
-    "planes": 7.65,
-    "tags": 10.54
+    "routes": 9.82,
+    "airports": 8.59,
+    "planes": 8.05,
+    "tags": 10.68
    },
    "warmth": {
-    "gold": 0.08,
-    "ratio": 0.9
+    "gold": 0.087,
+    "ratio": 0.892
    },
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 102.3,
-    "lumaStd": 73.9,
+    "meanLuma": 101.8,
+    "lumaStd": 73.8,
     "whiteShare": 0,
-    "colours": 576
+    "colours": 574
    }
   },
   {
@@ -252,22 +252,22 @@
    "text": "ATH ANK AMM BGW VCE RIX KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 17:03 PASAŻERÓW 34 0 0 0 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
-    "routes": 9.74,
-    "airports": 8.24,
-    "planes": 7.36,
-    "tags": 9.03
+    "routes": 9.77,
+    "airports": 8.42,
+    "planes": 7.6,
+    "tags": 9.28
    },
    "warmth": {
-    "gold": 0.076,
-    "ratio": 0.905
+    "gold": 0.079,
+    "ratio": 0.9
    },
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 98.3,
-    "lumaStd": 71.3,
+    "meanLuma": 98.1,
+    "lumaStd": 71.2,
     "whiteShare": 0,
-    "colours": 596
+    "colours": 595
    }
   },
   {
@@ -278,25 +278,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATH ANK AMM BGW VCE RIX KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 17:06 PASAŻERÓW 34 0 0 0 1×",
+   "text": "ATH ANK AMM BGW VCE RIX KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 17:04 PASAŻERÓW 34 0 0 0 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
     "routes": 9.9,
-    "airports": 8.51,
+    "airports": 8.48,
     "planes": 7.94,
-    "tags": 10.71
+    "tags": 10.68
    },
    "warmth": {
     "gold": 0.068,
-    "ratio": 0.899
+    "ratio": 0.901
    },
    "png": {
     "width": 1320,
     "height": 2868,
-    "meanLuma": 103.9,
-    "lumaStd": 76.6,
+    "meanLuma": 104.1,
+    "lumaStd": 76.1,
     "whiteShare": 0,
-    "colours": 617
+    "colours": 625
    }
   },
   {
@@ -310,22 +310,22 @@
    "text": "ATH ANK AMM BGW VCE RIX KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 17:06 PASAŻERÓW 34 0 0 0 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
-    "routes": 9.92,
-    "airports": 8.62,
-    "planes": 8.04,
+    "routes": 9.91,
+    "airports": 8.57,
+    "planes": 8.06,
     "tags": 1.65
    },
    "warmth": {
-    "gold": 0.091,
-    "ratio": 0.922
+    "gold": 0.089,
+    "ratio": 0.925
    },
    "png": {
     "width": 2064,
     "height": 2752,
     "meanLuma": 92.1,
-    "lumaStd": 67.7,
+    "lumaStd": 67.5,
     "whiteShare": 0,
-    "colours": 620
+    "colours": 623
    }
   },
   {
@@ -336,25 +336,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATH ANK AMM BGW VCE RIX KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 17:02 PASAŻERÓW 34 0 0 0 1×",
+   "text": "ATH ANK AMM BGW VCE RIX KHI TYDZIEŃ 01 DZIEŃ 2/3 GODZ. 17:05 PASAŻERÓW 34 0 0 0 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
-    "routes": 9.86,
-    "airports": 8.64,
-    "planes": 7.91,
+    "routes": 9.85,
+    "airports": 8.62,
+    "planes": 7.73,
     "tags": 6.13
    },
    "warmth": {
-    "gold": 0.075,
+    "gold": 0.074,
     "ratio": 0.998
    },
    "png": {
     "width": 1920,
     "height": 1080,
-    "meanLuma": 125.7,
+    "meanLuma": 125,
     "lumaStd": 73.9,
     "whiteShare": 0,
-    "colours": 583
+    "colours": 596
    }
   },
   {
@@ -369,12 +369,12 @@
    "contrast": {
     "routes": 9.39,
     "airports": 8.92,
-    "planes": 9.24,
+    "planes": 9.29,
     "tags": 12.11
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.488
+    "ratio": 0.486
    },
    "png": {
     "width": 1080,
@@ -382,7 +382,7 @@
     "meanLuma": 143.9,
     "lumaStd": 62.2,
     "whiteShare": 0,
-    "colours": 181
+    "colours": 180
    }
   },
   {
@@ -397,7 +397,7 @@
    "contrast": {
     "routes": 9.32,
     "airports": 8.87,
-    "planes": 9.25,
+    "planes": 9.29,
     "tags": 13.28
    },
    "warmth": {
@@ -451,14 +451,14 @@
    "devOverlay": false,
    "text": "ATH ANK AMM +3 BGW VCE RIX KHI TUN CPH RIO TYDZIEŃ 01 DZIEŃ 3/3 GODZ. 02:00 PASAŻERÓW 79 0 0 0 1× Tydzień 1 Hangar: przyszły trzy skrzynie. Otwierasz jedną. FRACHT · TP-48 1/3 Turbo­śmigłowiec ZASIĘG 2 500 km MIEJSC 48 NAJLEPSZY krótkie trasy FRACHT · WB-300 2/3 Szeroko­kadłubowiec ZASIĘG 11 000 km MIEJSC 300 NAJLEPSZY przez ocean FRACHT · HUB+6 3/3 Rozbudowa huba MIEJSCA +6 w poczekalni PRZESIADKA 25 → 15 min DLA wybranego huba AMM 9/36",
    "contrast": {
-    "routes": 9.4,
+    "routes": 9.41,
     "airports": 8.92,
-    "planes": 9.2,
+    "planes": 8.67,
     "tags": 11.96
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.43
+    "ratio": 0.429
    },
    "png": {
     "width": 1320,
@@ -481,8 +481,8 @@
    "contrast": {
     "routes": 9.38,
     "airports": 8.92,
-    "planes": 9.23,
-    "tags": 11.98
+    "planes": 8.7,
+    "tags": 12.32
    },
    "warmth": {
     "gold": 0.003,
@@ -494,7 +494,7 @@
     "meanLuma": 96.6,
     "lumaStd": 72.5,
     "whiteShare": 0,
-    "colours": 152
+    "colours": 153
    }
   },
   {
@@ -509,12 +509,12 @@
    "contrast": {
     "routes": 9.32,
     "airports": 8.87,
-    "planes": 9.04,
+    "planes": 9.16,
     "tags": 5.11
    },
    "warmth": {
     "gold": 0.003,
-    "ratio": 0.527
+    "ratio": 0.528
    },
    "png": {
     "width": 1920,
@@ -537,7 +537,7 @@
    "contrast": {
     "routes": 9.75,
     "airports": 8.34,
-    "planes": 2.85,
+    "planes": null,
     "tags": 1.79
    },
    "warmth": {
@@ -578,7 +578,7 @@
     "meanLuma": 124.9,
     "lumaStd": 92.4,
     "whiteShare": 0,
-    "colours": 185
+    "colours": 184
    }
   },
   {
@@ -593,7 +593,7 @@
    "contrast": {
     "routes": 10.04,
     "airports": 8.28,
-    "planes": 2.53,
+    "planes": 2.82,
     "tags": 1.78
    },
    "warmth": {
@@ -606,7 +606,7 @@
     "meanLuma": 88.6,
     "lumaStd": 80.5,
     "whiteShare": 0,
-    "colours": 181
+    "colours": 180
    }
   },
   {
@@ -677,7 +677,7 @@
    "contrast": {
     "routes": 9.3,
     "airports": 8.82,
-    "planes": 8.16,
+    "planes": 8.13,
     "tags": 1.79
    },
    "warmth": {
@@ -708,7 +708,7 @@
     "meanLuma": 83.4,
     "lumaStd": 69,
     "whiteShare": 0,
-    "colours": 630
+    "colours": 633
    }
   },
   {
@@ -726,7 +726,7 @@
     "meanLuma": 91.6,
     "lumaStd": 70,
     "whiteShare": 0,
-    "colours": 643
+    "colours": 637
    }
   },
   {
@@ -744,7 +744,7 @@
     "meanLuma": 93.7,
     "lumaStd": 69.4,
     "whiteShare": 0,
-    "colours": 661
+    "colours": 665
    }
   },
   {
@@ -762,7 +762,7 @@
     "meanLuma": 91.7,
     "lumaStd": 68.6,
     "whiteShare": 0,
-    "colours": 694
+    "colours": 696
    }
   },
   {
@@ -777,7 +777,7 @@
    "png": {
     "width": 2064,
     "height": 2752,
-    "meanLuma": 96.6,
+    "meanLuma": 96.7,
     "lumaStd": 68.9,
     "whiteShare": 0,
     "colours": 705
@@ -798,7 +798,7 @@
     "meanLuma": 123.2,
     "lumaStd": 70.3,
     "whiteShare": 0,
-    "colours": 647
+    "colours": 648
    }
   },
   {
@@ -809,25 +809,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATH ANK AMM BGW VCE RIX KHI WEEK 01 DAY 2/3 TIME 00:10 PASSENGERS 40 0 0 0 1×",
+   "text": "ATH ANK AMM BGW VCE RIX KHI WEEK 01 DAY 2/3 TIME 00:12 PASSENGERS 40 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
-    "routes": 9.36,
+    "routes": 9.37,
     "airports": 9.03,
-    "planes": 8.3,
+    "planes": 8.42,
     "tags": 11.82
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.465
+    "ratio": 0.466
    },
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 102.6,
-    "lumaStd": 86.8,
+    "meanLuma": 102.1,
+    "lumaStd": 86.5,
     "whiteShare": 0,
-    "colours": 335
+    "colours": 342
    }
   },
   {
@@ -838,12 +838,12 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATH ANK AMM BGW VCE RIX KHI WEEK 01 DAY 2/3 TIME 00:10 PASSENGERS 40 0 0 0 1×",
+   "text": "ATH ANK AMM BGW VCE RIX KHI WEEK 01 DAY 2/3 TIME 00:11 PASSENGERS 40 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
     "routes": 9.27,
     "airports": 8.94,
-    "planes": 8.17,
+    "planes": 8.18,
     "tags": 13.39
    },
    "warmth": {
@@ -853,10 +853,10 @@
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 91,
-    "lumaStd": 77.2,
+    "meanLuma": 90.7,
+    "lumaStd": 77,
     "whiteShare": 0,
-    "colours": 341
+    "colours": 338
    }
   },
   {
@@ -867,23 +867,23 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATH ANK AMM BGW VCE RIX KHI WEEK 01 DAY 2/3 TIME 00:10 PASSENGERS 40 0 0 0 1×",
+   "text": "ATH ANK AMM BGW VCE RIX KHI WEEK 01 DAY 2/3 TIME 00:11 PASSENGERS 40 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
     "routes": 9.28,
     "airports": 9.02,
-    "planes": 8.28,
+    "planes": 8.29,
     "tags": 11.98
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.445
+    "ratio": 0.446
    },
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 86.1,
-    "lumaStd": 74.5,
+    "meanLuma": 85.9,
+    "lumaStd": 74.3,
     "whiteShare": 0,
     "colours": 343
    }
@@ -896,25 +896,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATH ANK AMM BGW VCE RIX KHI WEEK 01 DAY 2/3 TIME 00:06 PASSENGERS 40 0 0 0 1×",
+   "text": "ATH ANK AMM BGW VCE RIX KHI WEEK 01 DAY 2/3 TIME 00:10 PASSENGERS 40 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
-    "routes": 9.34,
+    "routes": 9.35,
     "airports": 9.03,
     "planes": 8.43,
     "tags": 12.78
    },
    "warmth": {
     "gold": 0.001,
-    "ratio": 0.407
+    "ratio": 0.408
    },
    "png": {
     "width": 1320,
     "height": 2868,
-    "meanLuma": 91.4,
-    "lumaStd": 81.6,
+    "meanLuma": 91.2,
+    "lumaStd": 81.4,
     "whiteShare": 0,
-    "colours": 353
+    "colours": 359
    }
   },
   {
@@ -925,25 +925,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATH ANK AMM BGW VCE RIX KHI WEEK 01 DAY 2/3 TIME 00:12 PASSENGERS 40 0 0 0 1×",
+   "text": "ATH ANK AMM BGW VCE RIX KHI WEEK 01 DAY 2/3 TIME 00:11 PASSENGERS 40 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
     "routes": 9.33,
-    "airports": 9.04,
-    "planes": 8.34,
-    "tags": 1.61
+    "airports": 9.03,
+    "planes": 8.25,
+    "tags": 1.59
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.452
+    "ratio": 0.451
    },
    "png": {
     "width": 2064,
     "height": 2752,
-    "meanLuma": 79.5,
-    "lumaStd": 69.8,
+    "meanLuma": 79.4,
+    "lumaStd": 69.6,
     "whiteShare": 0,
-    "colours": 360
+    "colours": 356
    }
   },
   {
@@ -954,13 +954,13 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATH ANK AMM BGW VCE RIX KHI WEEK 01 DAY 2/3 TIME 00:11 PASSENGERS 40 0 0 0 1×",
+   "text": "ATH ANK AMM BGW VCE RIX KHI WEEK 01 DAY 2/3 TIME 00:09 PASSENGERS 40 0 0 0 1×",
    "sun": "180@camera",
    "contrast": {
     "routes": 9.28,
     "airports": 8.88,
-    "planes": 8.1,
-    "tags": 5.34
+    "planes": 8.02,
+    "tags": 5.33
    },
    "warmth": {
     "gold": 0.002,
@@ -969,10 +969,10 @@
    "png": {
     "width": 1920,
     "height": 1080,
-    "meanLuma": 109,
-    "lumaStd": 80,
+    "meanLuma": 108.6,
+    "lumaStd": 79.8,
     "whiteShare": 0,
-    "colours": 355
+    "colours": 359
    }
   },
   {
@@ -983,25 +983,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATH ANK AMM BGW VCE RIX KHI WEEK 01 DAY 2/3 TIME 17:02 PASSENGERS 34 0 0 0 1×",
+   "text": "ATH ANK AMM BGW VCE RIX KHI WEEK 01 DAY 2/3 TIME 17:06 PASSENGERS 34 0 0 0 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
-    "routes": 9.84,
-    "airports": 8.23,
-    "planes": 7.41,
-    "tags": 10.67
+    "routes": 9.97,
+    "airports": 8.48,
+    "planes": 7.95,
+    "tags": 10.74
    },
    "warmth": {
-    "gold": 0.08,
-    "ratio": 0.981
+    "gold": 0.081,
+    "ratio": 0.969
    },
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 115.5,
-    "lumaStd": 81,
+    "meanLuma": 114.1,
+    "lumaStd": 81.2,
     "whiteShare": 0,
-    "colours": 569
+    "colours": 574
    }
   },
   {
@@ -1012,25 +1012,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATH ANK AMM BGW VCE RIX KHI WEEK 01 DAY 2/3 TIME 16:56 PASSENGERS 34 0 0 0 1×",
+   "text": "ATH ANK AMM BGW VCE RIX KHI WEEK 01 DAY 2/3 TIME 17:04 PASSENGERS 34 0 0 0 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
-    "routes": 9.58,
-    "airports": 8.12,
-    "planes": 7.13,
-    "tags": 10.41
+    "routes": 9.75,
+    "airports": 8.46,
+    "planes": 7.81,
+    "tags": 10.59
    },
    "warmth": {
-    "gold": 0.071,
-    "ratio": 0.909
+    "gold": 0.083,
+    "ratio": 0.898
    },
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 103.9,
-    "lumaStd": 73.4,
+    "meanLuma": 102.1,
+    "lumaStd": 73.7,
     "whiteShare": 0,
-    "colours": 586
+    "colours": 580
    }
   },
   {
@@ -1041,25 +1041,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATH ANK AMM BGW VCE RIX KHI WEEK 01 DAY 2/3 TIME 16:58 PASSENGERS 34 0 0 0 1×",
+   "text": "ATH ANK AMM BGW VCE RIX KHI WEEK 01 DAY 2/3 TIME 17:03 PASSENGERS 34 0 0 0 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
-    "routes": 9.65,
-    "airports": 8.08,
-    "planes": 7.16,
-    "tags": 8.89
+    "routes": 9.8,
+    "airports": 8.53,
+    "planes": 7.91,
+    "tags": 9.54
    },
    "warmth": {
-    "gold": 0.073,
-    "ratio": 0.909
+    "gold": 0.081,
+    "ratio": 0.898
    },
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 99.3,
-    "lumaStd": 71.1,
+    "meanLuma": 97.9,
+    "lumaStd": 71.3,
     "whiteShare": 0,
-    "colours": 607
+    "colours": 599
    }
   },
   {
@@ -1070,25 +1070,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATH ANK AMM BGW VCE RIX KHI WEEK 01 DAY 2/3 TIME 17:04 PASSENGERS 34 0 0 0 1×",
+   "text": "ATH ANK AMM BGW VCE RIX KHI WEEK 01 DAY 2/3 TIME 17:03 PASSENGERS 34 0 0 0 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
-    "routes": 9.83,
-    "airports": 8.27,
-    "planes": 7.48,
-    "tags": 10.62
+    "routes": 9.9,
+    "airports": 8.48,
+    "planes": 7.87,
+    "tags": 10.66
    },
    "warmth": {
-    "gold": 0.067,
-    "ratio": 0.909
+    "gold": 0.068,
+    "ratio": 0.901
    },
    "png": {
     "width": 1320,
     "height": 2868,
-    "meanLuma": 104.4,
-    "lumaStd": 76.4,
+    "meanLuma": 104.1,
+    "lumaStd": 76.2,
     "whiteShare": 0,
-    "colours": 617
+    "colours": 624
    }
   },
   {
@@ -1099,25 +1099,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "ATH ANK AMM BGW VCE RIX KHI WEEK 01 DAY 2/3 TIME 16:59 PASSENGERS 34 0 0 0 1×",
+   "text": "ATH ANK AMM BGW VCE RIX KHI WEEK 01 DAY 2/3 TIME 17:05 PASSENGERS 34 0 0 0 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
-    "routes": 9.83,
-    "airports": 8.26,
-    "planes": 7.47,
+    "routes": 9.91,
+    "airports": 8.56,
+    "planes": 8.03,
     "tags": 1.65
    },
    "warmth": {
-    "gold": 0.081,
-    "ratio": 0.935
+    "gold": 0.088,
+    "ratio": 0.926
    },
    "png": {
     "width": 2064,
     "height": 2752,
-    "meanLuma": 93.6,
-    "lumaStd": 67.4,
+    "meanLuma": 92.1,
+    "lumaStd": 67.5,
     "whiteShare": 0,
-    "colours": 629
+    "colours": 627
    }
   },
   {
@@ -1131,22 +1131,22 @@
    "text": "ATH ANK AMM BGW VCE RIX KHI WEEK 01 DAY 2/3 TIME 17:04 PASSENGERS 34 0 0 0 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
-    "routes": 9.83,
-    "airports": 8.62,
-    "planes": 7.77,
-    "tags": 6.13
+    "routes": 9.87,
+    "airports": 8.68,
+    "planes": 7.92,
+    "tags": 6.12
    },
    "warmth": {
-    "gold": 0.074,
-    "ratio": 0.998
+    "gold": 0.075,
+    "ratio": 0.997
    },
    "png": {
     "width": 1920,
     "height": 1080,
-    "meanLuma": 125.5,
+    "meanLuma": 125.1,
     "lumaStd": 73.9,
     "whiteShare": 0,
-    "colours": 584
+    "colours": 595
    }
   },
   {
@@ -1174,7 +1174,7 @@
     "meanLuma": 144.8,
     "lumaStd": 61.9,
     "whiteShare": 0,
-    "colours": 181
+    "colours": 180
    }
   },
   {
@@ -1189,7 +1189,7 @@
    "contrast": {
     "routes": 9.32,
     "airports": 8.87,
-    "planes": 9.22,
+    "planes": 8.7,
     "tags": 13.28
    },
    "warmth": {
@@ -1199,7 +1199,7 @@
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 160,
+    "meanLuma": 159.9,
     "lumaStd": 58.5,
     "whiteShare": 0,
     "colours": 154
@@ -1243,9 +1243,9 @@
    "devOverlay": false,
    "text": "ATH ANK AMM +3 BGW VCE RIX KHI TUN CPH RIO WEEK 01 DAY 3/3 TIME 02:00 PASSENGERS 79 0 0 0 1× Week 1 Hangar: three crates arrived. You open one. FREIGHT · TP-48 1/3 Turbo­prop RANGE 2,500 km SEATS 48 BEST FOR short hops FREIGHT · WB-300 2/3 Wide­body RANGE 11,000 km SEATS 300 BEST FOR ocean crossings FREIGHT · HUB+6 3/3 Expand hub WAITING +6 seats TRANSFER 25 → 15 min FOR a hub you pick AMM 9/36",
    "contrast": {
-    "routes": 9.41,
+    "routes": 9.4,
     "airports": 8.92,
-    "planes": 8.67,
+    "planes": 8.89,
     "tags": 11.96
    },
    "warmth": {
@@ -1273,12 +1273,12 @@
    "contrast": {
     "routes": 9.38,
     "airports": 8.92,
-    "planes": 9.22,
-    "tags": 12.13
+    "planes": 9.16,
+    "tags": 4.6
    },
    "warmth": {
     "gold": 0.003,
-    "ratio": 0.472
+    "ratio": 0.473
    },
    "png": {
     "width": 2064,
@@ -1286,7 +1286,7 @@
     "meanLuma": 96.4,
     "lumaStd": 72.4,
     "whiteShare": 0,
-    "colours": 153
+    "colours": 154
    }
   },
   {
@@ -1301,12 +1301,12 @@
    "contrast": {
     "routes": 9.32,
     "airports": 8.87,
-    "planes": 9.16,
+    "planes": 8.76,
     "tags": 5.11
    },
    "warmth": {
     "gold": 0.003,
-    "ratio": 0.528
+    "ratio": 0.527
    },
    "png": {
     "width": 1920,
@@ -1328,13 +1328,13 @@
    "text": "BGW +3 RIX KHI +23 0:00 WEEK 01 DAY 3/3 TIME 22:44 PASSENGERS 51 NETWORK CLOSED MAP DEPARTURES · KHI No route served KHI: its passengers had no flight to board. Connect a new airport before its waiting area fills up. ATC · INCIDENT REPORT Passengers delivered: 51 Weeks completed: 0 CAUSES TIMELINE 29 passengers had no available route to their destination region. 76% of waiting passengers were headed to the Middle East (22 people). The waiting area was full: 29 people for 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
    "contrast": {
     "routes": 9.75,
-    "airports": 8.33,
-    "planes": 9.6,
+    "airports": 8.34,
+    "planes": 2.85,
     "tags": 1.79
    },
    "warmth": {
     "gold": 0.001,
-    "ratio": 0.201
+    "ratio": 0.2
    },
    "png": {
     "width": 1080,
@@ -1342,7 +1342,7 @@
     "meanLuma": 136.1,
     "lumaStd": 95.5,
     "whiteShare": 0,
-    "colours": 187
+    "colours": 185
    }
   },
   {
@@ -1357,7 +1357,7 @@
    "contrast": {
     "routes": 10.04,
     "airports": 8.26,
-    "planes": 2.53,
+    "planes": 1.95,
     "tags": 1.78
    },
    "warmth": {
@@ -1385,7 +1385,7 @@
    "contrast": {
     "routes": 10.04,
     "airports": 8.28,
-    "planes": 2.82,
+    "planes": 2.85,
     "tags": 1.78
    },
    "warmth": {
@@ -1398,7 +1398,7 @@
     "meanLuma": 88.7,
     "lumaStd": 80.5,
     "whiteShare": 0,
-    "colours": 183
+    "colours": 184
    }
   },
   {
@@ -1441,7 +1441,7 @@
    "contrast": {
     "routes": 10.04,
     "airports": 8.28,
-    "planes": 2.53,
+    "planes": 1.77,
     "tags": 1.79
    },
    "warmth": {
@@ -1468,8 +1468,8 @@
    "text": "ATH ANK +3 AMM +2 KHI +23 0:00 WEEK 01 DAY 3/3 TIME 22:44 PASSENGERS 51 NETWORK CLOSED MAP DEPARTURES · KHI No route served KHI: its passengers had no flight to board. Connect a new airport before its waiting area fills up. ATC · INCIDENT REPORT Passengers delivered: 51 Weeks completed: 0 CAUSES TIMELINE 29 passengers had no available route to their destination region. 76% of waiting passengers were headed to the Middle East (22 people). The waiting area was full: 29 people for 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
    "contrast": {
     "routes": 9.3,
-    "airports": 8.82,
-    "planes": 8.22,
+    "airports": 8.79,
+    "planes": 8.87,
     "tags": 1.79
    },
    "warmth": {
@@ -1482,7 +1482,7 @@
     "meanLuma": 113.7,
     "lumaStd": 85.6,
     "whiteShare": 0,
-    "colours": 176
+    "colours": 177
    }
   },
   {
@@ -1498,9 +1498,9 @@
     "width": 1080,
     "height": 1920,
     "meanLuma": 83.3,
-    "lumaStd": 68.9,
+    "lumaStd": 69,
     "whiteShare": 0,
-    "colours": 632
+    "colours": 631
    }
   },
   {
@@ -1518,7 +1518,7 @@
     "meanLuma": 91.6,
     "lumaStd": 70,
     "whiteShare": 0,
-    "colours": 646
+    "colours": 639
    }
   },
   {
@@ -1536,7 +1536,7 @@
     "meanLuma": 93.6,
     "lumaStd": 69.4,
     "whiteShare": 0,
-    "colours": 661
+    "colours": 659
    }
   },
   {
@@ -1554,7 +1554,7 @@
     "meanLuma": 91.6,
     "lumaStd": 68.6,
     "whiteShare": 0,
-    "colours": 693
+    "colours": 694
    }
   },
   {
@@ -1572,7 +1572,7 @@
     "meanLuma": 96.6,
     "lumaStd": 68.9,
     "whiteShare": 0,
-    "colours": 703
+    "colours": 705
    }
   },
   {
@@ -1590,7 +1590,7 @@
     "meanLuma": 123.1,
     "lumaStd": 70.3,
     "whiteShare": 0,
-    "colours": 647
+    "colours": 646
    }
   }
  ]

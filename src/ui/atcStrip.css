@@ -56,7 +56,9 @@
   }
 }
 
-.airway-route-handles { position: absolute; inset: 0; z-index: 18; pointer-events: none; }
+/* [night-11q] R5c: below the airport overlay (z-index 2), so a route end never covers a luggage tag or edge chip;
+   hit testing stays in routeTool, unaffected by paint order. */
+.airway-route-handles { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
 .airway-route-handle {
   position: absolute;
   width: 48px;
@@ -69,14 +71,26 @@
 .airway-route-handle::before {
   content: '';
   position: absolute;
+  /* [night-11q] R5c: at rest a small hollow diamond (ink rim, paper halo) inside the same 48 dp area */
+  left: 19px;
+  top: 19px;
+  width: 10px;
+  height: 10px;
+  box-sizing: border-box;
+  border: 2px solid #13302e;
+  outline: 1.5px solid #fbf8f1;
+  background: transparent;
+  transform: rotate(45deg);
+}
+.airway-route-handle--active::before {
   left: 14px;
   top: 14px;
   width: 20px;
   height: 20px;
-  border: 3px solid #13302e;
-  outline: 2px solid #fbf8f1;
+  box-sizing: content-box;
+  border-width: 3px;
+  outline-width: 2px;
   background: #ffc72c;
-  transform: rotate(45deg);
 }
 
 /* [night-11p] R6a first-time card: the slot hint's strip with a yellow luggage-tag "OK" (48 dp, thumb side). */

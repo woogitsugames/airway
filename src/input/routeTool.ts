@@ -54,7 +54,8 @@ export interface RouteToolPorts {
   /** Hit-test from the network renderer, independent of the camera gesture recognizer. */
   routeAt?(x: number, y: number): string | null;
   menu?(request: RouteMenuRequest | null): void;
-  handles?(handles: readonly RouteHandle[]): void;
+  /** [night-11q] R5c: `activeRouteId` is the route being extended or selected (its ends drawn in full). */
+  handles?(handles: readonly RouteHandle[], activeRouteId?: string | null): void;
   /**
    * [night-12r] D-137: `start` opens a native selection when a drag begins and `end` closes it when the drag ends
    * or is cancelled; `snap` ticks inside it (Capacitor Haptics drops a selection tick without a started selection).
@@ -161,7 +162,12 @@ export class RouteTool {
 
   /** Call after a camera projection or network snapshot changes to redraw handle overlays. */
   refreshHandles(): void {
-    this.ports.handles?.(routeHandles(this.ports.routes(), this.ports.cities()));
+    this.ports.handles?.(routeHandles(this.ports.routes(), this.ports.cities()), this.activeRouteId);
+  }
+
+  /** [night-11q] R5c: the route under the finger (extended from a handle) or selected in its menu, else null. */
+  get activeRouteId(): string | null {
+    return this.active?.route?.id ?? this.context?.routeId ?? null;
   }
 
   /** Return false to let task-04 gestures rotate/zoom the globe instead. */
@@ -193,6 +199,7 @@ export class RouteTool {
     this.ports.haptics?.snap();
     this.ports.warning(null);
     this.renderPreview(city);
+    this.refreshHandles(); // [night-11q] the grabbed route's ends turn full
     return true;
   }
 
@@ -265,6 +272,7 @@ export class RouteTool {
     const endDist = last ? (x - last.x) ** 2 + (y - last.y) ** 2 : Infinity;
     this.context = { routeId: route.id, x, y, end: startDist < endDist ? 'start' : 'end', canShorten: route.cityIds.length > 2 };
     this.ports.menu?.(this.context);
+    this.refreshHandles(); // [night-11q] the selected route's ends turn full
     return true;
   }
 
@@ -285,7 +293,7 @@ export class RouteTool {
   }
 
   closeMenu(): void {
-    if (this.context) { this.context = null; this.ports.menu?.(null); }
+    if (this.context) { this.context = null; this.ports.menu?.(null); this.refreshHandles(); }
   }
 
   undo(): void {
@@ -349,6 +357,6 @@ export class RouteTool {
     this.ports.preview(null);
     if (accepted) this.ports.warning(null);
     this.ports.dispatch({ type: 'SetSpeed', speed: edit.previousSpeed });
-    if (accepted) this.refreshHandles();
+    this.refreshHandles(); // [night-11q] back to quiet ends (and the new network when accepted)
   }
 }
