@@ -18,7 +18,7 @@ disagree. Tick a line only when it is true for the build that goes to the store.
 |---|---|---|---|---|---|
 | RL-01 | Google Play **organisation** account: D-U-N-S number, Play Console registration, developer verification | owner | open | D-94, Q-01 | Company data from Q-01; the organisation account is exempt from the 12 × 14 rule |
 | RL-02 | Apple Developer Program account (organisation), App Store Connect record for `pl.samsufi.airway` | owner | open | D-96, Q-52 | `docs/IOS.md` (signing certificate + App Store profile); TestFlight in the closed test only if ready (Q-52 B) |
-| RL-03 | Firebase project, Blaze plan, 10 EUR budget with 50/90/100 % actual + 100 % forecast alerts | owner | open | Q-07, D-66, D-109, D-234 | `docs/FIREBASE.md` steps 1–8; the release build gets `.env.production` |
+| RL-03 | Firebase project, Blaze plan, 10 EUR budget with 50/90/100 % actual + 100 % forecast alerts | owner | open | Q-07, D-66, D-109, D-234 | `docs/FIREBASE.md` steps 1–8 (step 1 includes accepting the Firebase Data Processing and Security Terms, date in `docs/legal/README.md` §2); the release build gets `.env.production` |
 | RL-04 | App Check for the callables (Play Integrity / App Attest) | owner + agent | open | Q-53 | Backlog R3e; optional for the first release, recommended before featuring |
 | RL-05 | Trademark check "Airway" (EUIPO / USPTO / UPRP, classes 9 and 41) | owner | open | Q-34 | RESEARCH §7 and R1 "Nazwa"; before pre-registration |
 | RL-06 | Release signing: Android upload keystore outside the repo + Play App Signing; iOS distribution certificate | owner | open | D-94, D-98 | `docs/ANDROID.md` (release scripts refuse keys inside the repo), `docs/IOS.md` |
@@ -28,11 +28,11 @@ disagree. Tick a line only when it is true for the build that goes to the store.
 | ID | Item | Who | State | Refs | Where / how |
 |---|---|---|---|---|---|
 | RL-10 | Closed test, 14 days, 16–18 testers (also the playtest) | owner + agent | ready | D-94, D-227, D-231, D-232, Q-52 | `docs/PLAYTEST.md`: recruitment, day plan, `AW1:` record, decision table, production-access answers |
-| RL-11 | Privacy policy online (URL in both consoles) and the same text in the game | owner + agent | open | Q-01, Q-56, D-86, D-135, D-136 | `site/privacy.html` + `docs/legal/leaderboards-privacy.md`; data controller and the leaderboard section need the owner and a lawyer (Cloud Run request logs) |
+| RL-11 | Privacy policy online (URL in both consoles) and the same text in the game | owner + agent | open | Q-01, Q-56, D-86, D-135, D-136 | `site/privacy.html` + `docs/legal/leaderboards-privacy.md`; data controller and the leaderboard section need the owner and a lawyer (Cloud Run request logs); record of processing: `docs/legal/README.md` §1 |
 | RL-12 | Site `airway.games` published, store links set when the store pages exist | owner + agent | ready | D-67, D-218 | `site/launch.js` (origin + two store links), `npm run build:site`, `docs/SITE.md` |
 | RL-13 | Press page and press kit ZIP; contact address confirmed | owner + agent | ready | D-219 | `site/press.html`; confirm `contact@airway.games`; video slot waits for RL-25 |
 | RL-14 | Terms of use (site + one line in the game), Apple standard EULA | owner + agent | open | D-134 | Backlog R7b; reviewed by the lawyer with the privacy policy |
-| RL-15 | DSA **trader** status in Play Console and App Store Connect (address, phone, e-mail) | owner | open | D-134, D-94, Q-01 | Business details from Q-01, never private ones |
+| RL-15 | DSA **trader** status in Play Console and App Store Connect (address, phone, e-mail) | owner | open | D-134, D-94, Q-01 | Business details from Q-01, never private ones; deadlines (Google at account creation / existing accounts by 1 Feb 2027, shown from 1 Mar 2027; Apple before the EU submission) and filing dates in `docs/legal/README.md` §3 |
 | RL-16 | Play **Data safety** form | owner + agent | ready | D-220, D-224 | `docs/store/privacy-declarations.md` (build A: nothing; build B: Device or other IDs + Other actions/Gameplay content) |
 | RL-17 | Account deletion: in-app path + web resource for the Data safety form | agent | done | D-93, D-114, D-77 | Settings → Help → "Delete my ranking data"; e-mail path in `docs/FIREBASE.md` step 9 |
 | RL-18 | App Store **App Privacy** answers and `PrivacyInfo.xcprivacy` | owner + agent | ready | D-220 | Same sheet as RL-16; `test:privacy-declarations` keeps the manifest equal to the answers |
@@ -46,6 +46,7 @@ disagree. Tick a line only when it is true for the build that goes to the store.
 | RL-26 | Play feature graphic 1024×500 | agent | done | D-117 | `docs/store/feature-graphic.png` |
 | RL-27 | Distribution: worldwide except mainland China (both consoles) | owner | ready | D-96 | Q-44 → A |
 | RL-28 | Wave-1 store listings DE, FR, ES, PT-BR (stating the game is in English and Polish) | owner + agent | ready | D-230, D-96 | `docs/store/{de,fr,es,pt-br}.md`; each needs a native review before it is published |
+| RL-29 | Legal register: GDPR art. 30 record, UK art. 27 representative answer, US state app-store age laws re-checked before the US launch, one lawyer consultation | owner + agent | ready | D-239, D-136, Q-67, Q-01 | `docs/legal/README.md` (§1 record, §4 UK, §5 US, §7 questions for the lawyer); the data controller stays a Q-01 placeholder |
 
 ## C — Each store build
 
