@@ -1992,6 +1992,24 @@ Guard: `test:release-checklist` (every reference exists, every line has an owner
 names agree). The owner still files every console answer. **Status: in force (recommendations of RESEARCH R1; the
 owner may override in the consoles).**
 
+## D-238 — Launch plan in `docs/LAUNCH.md`: weeks from an unset T, the D-131 rhythm over R2's T+6, store-event drafts (2026-11-04, Claude, night N12au)
+R2f + R6g. `docs/LAUNCH.md` (Polish, owner-facing) holds the launch timeline from RESEARCH R2 in weeks from **T**,
+which stays unset until the owner picks the launch date (D-96): T−12 closed test + Firebase project + press page and
+trailer, T−10 Apple featuring nomination, T−8 iOS pre-order and Play pre-registration (≤ 90 days, no reward: D-16 has
+no IAP) + site with store links + showcase entries, T−4 builds to video creators under embargo and the "Opening week"
+Apple event sent for review, T launch, T+4 / T+8 / T+12 updates. Where R2 put the first puzzle update and second event
+at T+6, the plan follows the owner's later 4-week rhythm (D-131): T+4 "Long haul" 31–40 (D-193 flag removed), T+8
+weather front (R2j) + puzzles 41–45, T+12 weekly contract (R2k) + Sunday daily variant — the mechanics after launch
+still wait for Q-50; puzzle numbers 41–50 and their themes are a proposal. Every row names who acts (`właściciel`,
+`agent` or both; owner-only steps in bold) and a D-/Q- reference. Showcases: Big Indie Pitch Mobile 18.01.2027
+(ticket, playable build only) and Digital Dragons 2027 (dates unknown). The creator list is a template only; the filled
+list with contact details is kept outside the repo (personal data). Draft PL/EN texts: four Apple In-App Events
+(Opening week and Weekly contract as Challenge, Long haul and Weather front as Major Update; name ≤ 30, short ≤ 50,
+long ≤ 120 chars) and three Play "Major update" promotions (title ≤ 30, text ≤ 80 — our own limit, the console's field
+limits were not verified), never mentioning price, "free" or "best". Rejected: fixing a calendar date now (the owner's
+call), keeping R2's T+6 (contradicts D-131), a pre-registration reward. Guard: `test:launch-plan`. **Status: in force
+(T, Q-49, Q-50 open).**
+
 ## D-239 — Legal launch register in `docs/legal/README.md`, bound to the privacy declarations (2026-11-04, Claude, night N12av)
 R7d. One Polish page for the owner and the lawyer, every section marked "to verify with the lawyer" and explicitly not
 legal advice: (1) a GDPR art. 30 record of processing for build B — leaderboard (P1), score replay/anti-cheat (P2),
