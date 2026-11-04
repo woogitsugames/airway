@@ -2,6 +2,10 @@
 
 The Polish and English copy is ready to paste from [pl.md](pl.md) and [en.md](en.md). Verify every described feature against the integrated release build before publishing.
 
+Wave-1 listings (D-96, R1k, D-230): [de.md](de.md), [fr.md](fr.md), [es.md](es.md), [pt-br.md](pt-br.md) — translated
+from en.md, every text **needs native review** before upload; they use the EN screenshots and say the game is in English
+and Polish until the game itself is translated. Same limits and keyword rules (`test:store-shots`).
+
 Data safety (Google Play) and App Privacy (App Store) answers for builds with and without leaderboards: [privacy-declarations.md](privacy-declarations.md) (R1f, D-220; kept in sync with the code by `npm run test:privacy-declarations`).
 App Store accessibility labels, the evidence for each and the PL/EN accessibility paragraph for both listings: [accessibility.md](accessibility.md) (R1i; kept in sync with the code by `npm run test:a11y-evidence`).
 
