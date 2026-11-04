@@ -644,7 +644,7 @@ before/after `npm run shots -- globe` PNGs and look at them.
       `world.stats()`; `test:quality`.
 - [ ] G5 **Remove diorama decorations and dead code** — trees, rocks, puffy clouds, decor culling (D-75 superseded),
       `relief.ts`, diorama colouring, `refined`/`painted` experiment; new adaptive ladder; PERFORMANCE.md tables.
-- [ ] G6 **Menu, store, site, style docs** — menu contrast, `store:shots` (60 + feature graphic), `ui:matrix`,
+- [x] G6 **Menu, store, site, style docs** — menu contrast, `store:shots` (60 + feature graphic), `ui:matrix`,
       `shots:site`, `docs/styles/realistyczny.md` (PL), D-11 status note; inspect every PNG.
 - [ ] G7 **Performance and device check** — `perf:scene` saver/low/medium/high, `perf:overlay`, hardware checklist
       (GPU memory, first frame, 30 FPS on low); KTX2/ETC1S fallback only if a budget phone fails (D-174 follow-up).
@@ -1243,3 +1243,4 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
 - 2026-11-04 · N11q quiet route-end handles below the tags (R5c, D-191) · night/11q-quiet-handles · test:e2e:route-handles 2/2 (0/2 on the old handles), test:fast 74/74, build ok, test:hud-targets 300/300, e2e:smoke 9/9, e2e:airport-plates 4/4, e2e:gameover-map 3/3, ui:matrix 48/48, store:shots 60 (test:store-shots ok); owner question Q-76
 - 2026-11-04 · G2+G3 satellite globe ships (D-179) · ext/03-g2g3-satellite · test:fast 74/74 (136.5 s), build ok (main 1,070.0 kB / gzip 317.7 kB), test:bundle 9/9 (dist 3,617.4 kB), test:e2e:smoke 9/9; built app (vite preview) loads data/globe/ day-2048 + night-1024 + elevation on auto→low, no fallback warning; game shots seed 15: routes 6.9/6.8, airports 3.2/6.0 (day/dusk); store:shots/ui:matrix not run (G6)
 - 2026-11-04 · G4 sea surface + haze folded into the terrain shader (D-173) · ext/03-g4-fillrate · transparent full-screen layers on the satellite globe 3→1 (low/saver: halo) and 4→2 (medium/high: halo + clouds); perf:scene SwiftShader 40 s low 397 frames (375 with shells), medium 168 (174), draw calls 41; game shots seed 15 match the layered look (routes 6.8/6.7, airports 3.1/5.5 day/dusk); `world.stats().transparentLayers` not added (G7 measures on devices)
+- 2026-11-04 · G6 store screenshots, feature graphic, ui:matrix and style doc on the satellite globe (D-170, D-178) · ext/03-g6-store · store:shots 60/60 (game: gold 0.13–0.17 ≥ 0.045, routes/airports/planes 9.4–11.6:1; night 9.4–11.4:1), store:feature 1/1, ui:matrix 48/48, contact sheet and feature graphic inspected; docs/styles/realistyczny.md (PL), D-11 globe superseded; shots:site not rerun
