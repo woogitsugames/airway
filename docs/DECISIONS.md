@@ -1861,3 +1861,16 @@ chroń huby przed zatorem." (78/80); the press page follows (`test:site`). D-223
 sentences say "hub". Rejected: keeping the old short descriptions (Play has no keyword field, so the genre word must be
 in the text), per-device alt texts (the same scene shows the same content). All texts await the owner's review before
 upload. Guard: `test:store-shots` (keyword repeats, "terminal", alt-text lines). **Status: in force.**
+
+## D-230 — Wave-1 store listings DE, FR, ES, PT-BR as text-only drafts awaiting native review (2026-11-04, Claude, night N12ao)
+R1k after Q-43 → A (D-96). `docs/store/{de,fr,es,pt-br}.md` translate the R2c `en.md` (D-229) field by field: store
+title, subtitle, short and full description, keywords, feature-graphic alt text and one Play alt text per scene. Each
+file is marked `needs native review` and nothing is uploaded before that review. The store title is localised
+("Airway: Flugrouten am Globus", "Airway : routes sur le globe", "Airway: rutas sobre el globo", "Airway: rotas pelo
+globo"), always starting with the brand; the keyword field follows D-229 (no word of title/subtitle, no repeats,
+≤ 100 bytes) and "hub" stays the glossary word (D-195, D-223). The full description ends with one line saying the game
+is currently in English and Polish; it goes when the game itself is translated. These listings use the EN screenshots
+(`shots/en/`); no localised screenshots until the game speaks the language. Rejected: the EN title in every store
+(loses the local search words), machine translation without the review mark, localised screenshots of an English game.
+Guard: `test:store-shots` (review mark, language note, limits, keyword repeats). **Status: in force (texts await
+native review).**

@@ -862,7 +862,7 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
       without a route → connect it; slot wait → "+2 slots" or spread departures; unserved airport → route to it),
       shown as one line under the cause, only in the player's first ~10 runs (count from the logbook), never during
       play. PL/EN with plural tokens; `test:format`, game-over DOM test, shots. **Area:** `src/ui/gameover/**`, i18n.
-- [ ] R1k **Store listing localisation, wave 1** — DE, FR, ES, PT-BR store texts from `docs/store/en.md` (title
+- [x] R1k → N12ao (D-230) **Store listing localisation, wave 1** — DE, FR, ES, PT-BR store texts from `docs/store/en.md` (title
       within 30 chars, short description 80, keywords) stating the game is in English and Polish until the game
       itself is translated; mark every text "needs native review". **Area:** `docs/store/`. *Needs Q-43.*
 - [ ] R1l **Release checklist** — `docs/RELEASE.md`: one list from RESEARCH R1 (accounts, closed test 12×14, privacy

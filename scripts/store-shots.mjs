@@ -21,6 +21,14 @@ const SEED = 41377; // 0xA1A1
 const WEEK_SEED = SEED;
 const seedFor = (scene) => (scene === 'upgrade' ? WEEK_SEED : SEED);
 const LANGUAGES = ['pl', 'en'];
+// [N12ao] R1k, D-230: wave-1 store listings (D-96) without own screenshots (the game is EN/PL), with the words for
+// "English" and "Polish" their language note must name.
+const STORE_WAVE1 = [
+  ['de', /Englisch/, /Polnisch/],
+  ['fr', /anglais/, /polonais/],
+  ['es', /inglés/, /polaco/],
+  ['pt-br', /inglês/, /polonês/],
+];
 // [task-36] The light is chosen by the fixture in src/main.ts (sun hour angle over the camera centre).
 // [task-40] D-63: store order night, game, upgrade, failure, menu (SCENES order = contact sheet columns,
 // manifest order, listing order in docs/store/{pl,en}.md). `game` is lit by golden low sun (was game-dusk).
@@ -79,63 +87,88 @@ function field(markdown, heading) {
   return value;
 }
 
+/**
+ * Limits and wording shared by every listing (pl/en with screenshots, wave-1 text-only listings): title/subtitle ≤ 30,
+ * short description ≤ 80, full ≤ 4000, keywords ≤ 100 bytes without repeats (D-229), no "terminal" (D-223), no
+ * competitor names, feature-graphic alt text and one Play alt text per scene. Returns the number of fields read.
+ */
+function checkListing(lang, md) {
+  const name = field(md, 'Store title');
+  const subtitle = field(md, 'App Store subtitle');
+  const short = field(md, 'Google Play short description');
+  const full = field(md, 'Full description');
+  const keywords = field(md, 'App Store keywords');
+  // [N12n] D-117: Play asks for an alt text with the feature graphic.
+  const featureAlt = field(md, 'Play feature graphic alt text');
+  if ([...featureAlt].length > 140) throw new Error(lang + ': feature graphic alt text >140 characters');
+  if (/\b(?:image of|picture of|obraz|zdjęcie)\b|\b(?:free|darmow|gratis|price|cena)/i.test(featureAlt)) {
+    throw new Error(lang + ': feature graphic alt text says "image of" or names a price');
+  }
+  if ([...name].length > 30) throw new Error(lang + ': title >30 characters');
+  if (!name.startsWith('Airway')) throw new Error(lang + ': store title does not start with "Airway"');
+  if ([...subtitle].length > 30) throw new Error(lang + ': subtitle >30 characters');
+  if ([...short].length > 80) throw new Error(lang + ': short description >80 characters');
+  if ([...full].length > 4000) throw new Error(lang + ': full description >4000 characters');
+  if (Buffer.byteLength(keywords, 'utf8') > 100) throw new Error(lang + ': keyword field >100 UTF-8 bytes');
+  if (/mini metro|mini airways|tiny airline|fly corp/i.test(
+    [name, subtitle, short, full, keywords].join(' '))) {
+    throw new Error(lang + ': competitor name used');
+  }
+  // [N12an] R2c, D-229: App Store indexes name + subtitle + keywords together, so a keyword that repeats a word of
+  // the name or subtitle (or another keyword) is wasted; commas without spaces, nothing empty, not the app name.
+  const words = (text) => text.toLowerCase().match(/[\p{L}\p{N}]+/gu) || [];
+  const indexed = new Set(words(name + ' ' + subtitle));
+  const terms = keywords.split(',');
+  if (terms.some((term) => !term || term !== term.trim())) throw new Error(lang + ': empty keyword or space around a comma');
+  const keywordWords = terms.flatMap(words);
+  const repeated = keywordWords.filter((word, i) => indexed.has(word) || keywordWords.indexOf(word) !== i);
+  if (repeated.length) throw new Error(lang + ': keyword repeats the name/subtitle or another keyword: ' + repeated.join(', '));
+  // [N12an] D-223: the glossary word is "hub" in the store texts too, never "terminal" (D-195).
+  if (/terminal/i.test(md)) throw new Error(lang + ': store text says "terminal" (D-223: "hub")');
+  // [N12an] R2c: one Play alt text per scene in store order (D-63), unique, ≤ 140 characters, no "image of".
+  const alts = [...field(md, 'Play alt text').matchAll(/^(\d+)\. ([a-z]+) — (.+)$/gm)];
+  if (alts.map((m) => m[2]).join() !== SCENES.join() || alts.some((m, i) => Number(m[1]) !== i + 1)) {
+    throw new Error(lang + ': Play alt text lines do not follow the scenes ' + SCENES.join(', '));
+  }
+  if (new Set(alts.map((m) => m[3])).size !== alts.length) throw new Error(lang + ': repeated Play alt text');
+  for (const [, , scene, alt] of alts) {
+    if ([...alt].length > 140) throw new Error(lang + ': Play alt text ' + scene + ' >140 characters');
+    if (/\b(?:image of|picture of|screenshot of|obraz|zdjęcie|zrzut)\b|\b(?:free|darmow|gratis|price|cena)/i.test(alt)) {
+      throw new Error(lang + ': Play alt text ' + scene + ' says "image of" or names a price');
+    }
+  }
+  console.log('listing ' + lang + ' name=' + [...name].length + '/30 subtitle=' + [...subtitle].length + '/30 short=' +
+    [...short].length + '/80 keywords=' + Buffer.byteLength(keywords, 'utf8') + '/100bytes featureAlt=' +
+    [...featureAlt].length + '/140 keywordTerms=' + terms.length + ' alts=' + alts.length);
+  return { fields: 7, full };
+}
+
 function checkCopy() {
   let fields = 0;
   for (const lang of LANGUAGES) {
     const md = readFileSync(resolve(ROOT, 'docs/store/' + lang + '.md'), 'utf8').replace(/\r\n/g, '\n');
     const approved = field(md, 'Approved full title');
-    const name = field(md, 'Store title');
-    const subtitle = field(md, 'App Store subtitle');
-    const short = field(md, 'Google Play short description');
-    const full = field(md, 'Full description');
-    const keywords = field(md, 'App Store keywords');
-    // [N12n] D-117: Play asks for an alt text with the feature graphic.
-    const featureAlt = field(md, 'Play feature graphic alt text');
-    if ([...featureAlt].length > 140) throw new Error(lang + ': feature graphic alt text >140 characters');
-    if (/\b(?:image of|picture of|obraz|zdjęcie)\b|\b(?:free|darmow|gratis|price|cena)/i.test(featureAlt)) {
-      throw new Error(lang + ': feature graphic alt text says "image of" or names a price');
-    }
     const ownerTitle = lang === 'pl' ?
       'Airway: Buduj sieć lotów na globusie' : 'Airway: Globe Route Builder';
     if (approved !== ownerTitle) throw new Error(lang + ': D-18/D-203 title modified');
     // [N12ae] D-203 (Q-77 → B): the network is "sieć" in the store as in the game (D-195), never "siatka".
     if (lang === 'pl' && /siat(?:k|ce|ek)/i.test(md)) throw new Error('pl: store text says "siatka" (D-203: "sieć")');
-    if ([...name].length > 30) throw new Error(lang + ': title >30 characters');
-    if ([...subtitle].length > 30) throw new Error(lang + ': subtitle >30 characters');
-    if ([...short].length > 80) throw new Error(lang + ': short description >80 characters');
-    if ([...full].length > 4000) throw new Error(lang + ': full description >4000 characters');
-    if (Buffer.byteLength(keywords, 'utf8') > 100) throw new Error(lang + ': keyword field >100 UTF-8 bytes');
-    if (/mini metro|mini airways|tiny airline|fly corp/i.test(
-      [name, subtitle, short, full, keywords].join(' '))) {
-      throw new Error(lang + ': competitor name used');
+    fields += 1 + checkListing(lang, md).fields;
+  }
+  // [N12ao] R1k, D-230 (D-96 wave 1): text-only listings translated from en.md. Each is marked "needs native review"
+  // and its full description says the game is in English and Polish (until the game itself is translated).
+  for (const [lang, english, polish] of STORE_WAVE1) {
+    const file = resolve(ROOT, 'docs/store/' + lang + '.md');
+    if (!existsSync(file)) throw new Error('Missing wave-1 listing docs/store/' + lang + '.md');
+    const md = readFileSync(file, 'utf8').replace(/\r\n/g, '\n');
+    if (field(md, 'Review status') !== 'needs native review') throw new Error(lang + ': not marked "needs native review"');
+    const { fields: read, full } = checkListing(lang, md);
+    const note = full.split('\n').filter((line) => english.test(line) && polish.test(line));
+    if (note.length !== 1) throw new Error(lang + ': full description does not say the game is in English and Polish');
+    if (/\b(?:free|gratuit|gratis|kostenlos|grátis|price|prix|precio|preço|preis)\b/i.test(md)) {
+      throw new Error(lang + ': listing names a price or "free"');
     }
-    // [N12an] R2c, D-228: App Store indexes name + subtitle + keywords together, so a keyword that repeats a word of
-    // the name or subtitle (or another keyword) is wasted; commas without spaces, nothing empty, not the app name.
-    const words = (text) => text.toLowerCase().match(/[\p{L}\p{N}]+/gu) || [];
-    const indexed = new Set(words(name + ' ' + subtitle));
-    const terms = keywords.split(',');
-    if (terms.some((term) => !term || term !== term.trim())) throw new Error(lang + ': empty keyword or space around a comma');
-    const keywordWords = terms.flatMap(words);
-    const repeated = keywordWords.filter((word, i) => indexed.has(word) || keywordWords.indexOf(word) !== i);
-    if (repeated.length) throw new Error(lang + ': keyword repeats the name/subtitle or another keyword: ' + repeated.join(', '));
-    // [N12an] D-223: the glossary word is "hub" in the store texts too, never "terminal" (D-195).
-    if (/terminal/i.test(md)) throw new Error(lang + ': store text says "terminal" (D-223: "hub")');
-    // [N12an] R2c: one Play alt text per scene in store order (D-63), unique, ≤ 140 characters, no "image of".
-    const alts = [...field(md, 'Play alt text').matchAll(/^(\d+)\. ([a-z]+) — (.+)$/gm)];
-    if (alts.map((m) => m[2]).join() !== SCENES.join() || alts.some((m, i) => Number(m[1]) !== i + 1)) {
-      throw new Error(lang + ': Play alt text lines do not follow the scenes ' + SCENES.join(', '));
-    }
-    if (new Set(alts.map((m) => m[3])).size !== alts.length) throw new Error(lang + ': repeated Play alt text');
-    for (const [, , scene, alt] of alts) {
-      if ([...alt].length > 140) throw new Error(lang + ': Play alt text ' + scene + ' >140 characters');
-      if (/\b(?:image of|picture of|screenshot of|obraz|zdjęcie|zrzut)\b|\b(?:free|darmow|gratis|price|cena)/i.test(alt)) {
-        throw new Error(lang + ': Play alt text ' + scene + ' says "image of" or names a price');
-      }
-    }
-    console.log('listing ' + lang + ' name=' + [...name].length + '/30 short=' +
-      [...short].length + '/80 keywords=' + Buffer.byteLength(keywords, 'utf8') + '/100bytes featureAlt=' +
-      [...featureAlt].length + '/140 keywordTerms=' + terms.length + ' alts=' + alts.length);
-    fields += 8;
+    fields += 1 + read;
   }
   if (new Set(SCENES).size !== SCENES.length) throw new Error('Duplicate scenes');
   if (new Set(DEVICES.map((d) => d.id)).size !== DEVICES.length) throw new Error('Duplicate devices');
@@ -682,7 +715,7 @@ try {
     const feature = checkFeatureGraphic(outArg ? resolve(outArg, 'feature-graphic.png') : FEATURE);
     console.log('feature graphic 1024x500 rgb centre=' + feature.lumaStd + ' dark=' + feature.darkShare +
       ' bytes=' + feature.bytes);
-    console.log('SUMMARY test:store-shots seed=0xA1A1 listings=2 fields=' + fields +
+    console.log('SUMMARY test:store-shots seed=0xA1A1 listings=' + (LANGUAGES.length + STORE_WAVE1.length) + ' fields=' + fields +
       ' scenes=' + SCENES.length + ' devices=' + DEVICES.length + ' shots=' + shots + ' feature=1 passed=1 failed=0');
   } else if (featureOnly) {
     const require = createRequire(import.meta.url);
