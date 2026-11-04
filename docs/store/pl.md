@@ -10,7 +10,7 @@ Airway: Buduj sieć lotów
 Łącz miasta. Ratuj huby.
 
 ## Google Play short description
-Buduj trasy na globusie 3D. Łącz miasta i chroń huby przed zatorem.
+Logiczna gra o trasach na globusie 3D. Łącz miasta i chroń huby przed zatorem.
 
 ## Full description
 Stwórz własną sieć połączeń lotniczych na trójwymiarowym globusie. Łącz miasta trasami, rozbudowuj lotniska i planuj przesiadki pasażerów. Samoloty latają samodzielnie — Ty decydujesz, którędy prowadzą połączenia.
@@ -30,16 +30,17 @@ Nie musisz kierować każdym samolotem. Twoim zadaniem jest zbudowanie takiej si
 Airway to gra strategiczno-logiczna o połączeniach, przesiadkach i planowaniu na prawdziwym globusie.
 
 ## App Store keywords
-loty,lotnisko,globus,trasy,sieć,strategia,hub,przesiadki,samoloty,zagadki
+linie lotnicze,lotnisko,lot,samolot,przesiadka,strategia,logiczna,zagadka,ziemia,podróż,3d
 
 ## Play feature graphic alt text
 Szyld Airway obok globusa 3D o zmierzchu, trasy lotnicze łączą lotniska Europy i Bliskiego Wschodu.
 
-## Kolejność zrzutów i podpisy
-Podpisy tylko do konsoli sklepu (nigdy nie są rysowane na obrazach); pliki w `shots/pl/`.
-Kolejność wg D-63 (nocny globus jako pierwszy kadr).
-1. night — Zapada noc, sieć lata dalej.
-2. game — Rysujesz trasy, samoloty latają same.
-3. upgrade — Co tydzień otwierasz jedną z trzech skrzyń.
-4. failure — Zapchany hub kończy grę, a raport mówi dlaczego.
-5. menu — Gra bez końca, zadania i świat dnia.
+## Play alt text
+Google Play: jeden tekst alternatywny na zrzut (≤ 140 znaków, nigdy nie jest rysowany na obrazach), ten sam dla każdego
+rozmiaru urządzenia danej sceny; pliki w `shots/pl/`. App Store Connect nie ma pola podpisu ani tekstu alternatywnego
+dla zrzutów. Kolejność wg D-63 (nocny globus jako pierwszy kadr).
+1. night — Nocna strona globusa 3D: światła miast Europy i Bliskiego Wschodu, trasy lotnicze i plakietki lotnisk z czekającymi pasażerami.
+2. game — Globus 3D w niskim wieczornym słońcu: trasy między lotniskami Europy i Bliskiego Wschodu, samoloty w locie, dok samolotów na dole.
+3. upgrade — Koniec tygodnia gry: trzy skrzynie z etykietami frachtowymi — turbośmigłowiec, szerokokadłubowiec, rozbudowa huba; gracz wybiera jedną.
+4. failure — Ekran „Sieć zamknięta”: zapchany hub zakończył grę, a raport zdarzenia podaje przyczyny i ich przebieg w czasie.
+5. menu — Menu w formie tablicy odlotów pod szyldem Airway: gra bez końca, zadania, świat dnia i ustawienia obok globusa.
