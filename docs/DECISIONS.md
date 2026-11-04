@@ -1595,6 +1595,7 @@ normalised); the ext/05 puzzle-title question became Q-79 (N11t kept Q-77, which
 `test:doc-ids` (`scripts/test-doc-ids.mjs`): every `## D-NN` heading once and ascending, every `| Q-NN` row of
 `docs/OWNER-QUESTIONS.md` once, plus a self-check on synthetic text. A new decision goes in its numeric place, not at the
 end of the file. **Status: in force (N12ae).**
+
 ## D-206 — Every safe-area inset goes through the --aw-safe-* tokens; a notch profile tests them (2026-11-04, Claude, night N11y)
 R5j: only the HUD read the `--aw-safe-*` tokens (`src/ui/base.css`, task 25); menu, settings, upgrade, game over,
 tutorial, puzzles, ATC strip, the overlay fixture and theme CSS used 56 raw `env(safe-area-inset-*)`. Chromium
