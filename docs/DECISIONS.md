@@ -1973,6 +1973,28 @@ strings; "queued" is true), an emulator test (the Firestore emulator needs Java 
 loads the real handlers with stubbed Firebase modules instead). Who owns the project and budget stays **Q-07** (owner);
 the steps are generic. Guards: `test:leaderboard-brake`, `test:net`. **Status: in force (Q-07 open).**
 
+<<<<<<< HEAD
+## D-235 — Release checklist: age-rating answers, target audience 13+, one version name for both native projects (2026-11-04, Claude, night N12at)
+R1l. `docs/RELEASE.md` is the one release checklist (accounts, closed test, privacy URL, Data safety, App Privacy, age
+questionnaires, DSA trader status, export compliance, accessibility labels, store shots per Apple device class,
+version bump, plus the rest of RESEARCH R1), each line with owner/agent, a state and its D-/Q- entry. Three lines
+had no entry, so they are decided here by RESEARCH R1's recommendations:
+- **Age rating answers** (IARC in Play Console, Apple's 2026 age questions): no violence, fear, gambling, chat or
+  user-generated content, no purchases or ads (D-16), no location sharing; the leaderboard shows generated call signs
+  only (Q-05 A), so "users interact" is answered **No**. Expected PEGI 3 / USK 0 / Apple 4+. A nickname, chat or ads
+  would reopen these answers.
+- **Play target audience 13 and older** — the game is not designed for children, and an under-13 group would bring
+  the Families policy (SDK and privacy duties for the leaderboard).
+- **Version:** `package.json` `version` is the one marketing version; Android `versionName` and iOS
+  `MARKETING_VERSION` equal it, Android `versionCode` grows by 1 per upload, the iOS build number comes from
+  `fastlane ios beta`. Rejected: a version script that rewrites the native files (two string edits per release do not
+  need tooling yet).
+Guard: `test:release-checklist` (every reference exists, every line has an owner and a reference, the three version
+names agree). The owner still files every console answer. **Status: in force (recommendations of RESEARCH R1; the
+owner may override in the consoles).**
+
+>>>>>>> origin/dev
+
 ## D-237 — The leaderboard objection also stops a submission already under way (2026-11-04, Claude, night N11ak)
 R7l closed (Q-68 answered A = D-135, legitimate interest with a one-tap objection; switch D-197, net layer D-186).
 A gap remained when "Send results to the leaderboard" is switched off while a run is on its way (the start-up
@@ -1985,3 +2007,4 @@ the boards load). The write-back now merges with the queue as it is at the end, 
 in flight is no longer overwritten. No new UI or strings. Rejected: aborting the in-flight fetch (the server may
 already have counted it; deletion is the D-114 path). Guards: `test:net` (3 new cases), `test:e2e:ranking-switch`
 (a waiting run is dropped by the switch). **Status: in force.**
+=======
