@@ -96,8 +96,10 @@ function checkCopy() {
       throw new Error(lang + ': feature graphic alt text says "image of" or names a price');
     }
     const ownerTitle = lang === 'pl' ?
-      'Airway: Buduj siatkę lotów na globusie' : 'Airway: Globe Route Builder';
-    if (approved !== ownerTitle) throw new Error(lang + ': D-18 title modified');
+      'Airway: Buduj sieć lotów na globusie' : 'Airway: Globe Route Builder';
+    if (approved !== ownerTitle) throw new Error(lang + ': D-18/D-202 title modified');
+    // [N12ae] D-202 (Q-77 → B): the network is "sieć" in the store as in the game (D-195), never "siatka".
+    if (lang === 'pl' && /siat(?:k|ce|ek)/i.test(md)) throw new Error('pl: store text says "siatka" (D-202: "sieć")');
     if ([...name].length > 30) throw new Error(lang + ': title >30 characters');
     if ([...subtitle].length > 30) throw new Error(lang + ': subtitle >30 characters');
     if ([...short].length > 80) throw new Error(lang + ': short description >80 characters');

@@ -90,7 +90,7 @@ full-screen ads during play, no timers, no dark patterns. Supersedes the recomme
 ## D-17 — Night curfew: from week 4 in Endless, always available in Puzzles (2026-11-02, owner)
 **Status: in force.**
 
-## D-18 — Store title: "Airway: Globe Route Builder" (PL: "Airway: Buduj siatkę lotów na globusie") (2026-11-02, owner)
+## D-18 — Store title: "Airway: Globe Route Builder" (PL: "Airway: Buduj siatkę lotów na globusie") (2026-11-02, owner) — PL title superseded by D-202
 **Status: in force.**
 
 ## Production decisions from the parallel tasks (integration, 2026-11-02)
@@ -310,7 +310,6 @@ seeds (`docs/balance/`). **Status: provisional; the weekly time scale vs 8–15 
 an owner decision.** _Task 31: the time scale was decided by D-40; the spawn interval and capacities were
 re-tuned in D-43 (16 h, 36/24) — 50-seed bot median 12.92 min._
 
-
 ## D-40 — A game week lasts 3 in-game days (2026-11-02, owner)
 With 7-day weeks the bot survived week 1 on ~5% of seeds, so players would almost never see the weekly upgrade. The cycle
 keeps its name ("week" / "Tydzień") but is 3 days long, so the first choice lands around minutes 4–5 of a run. Curfew still
@@ -397,7 +396,6 @@ sun's hour angle over the camera centre (−95° and 180°, the `sun.ts` formula
 clock. The failure scene stops building and lets real demand jam a hub. Every PNG is checked automatically (size,
 blank/white, developer text, only the six D-08 passenger glyphs, which also keeps the provisional Asia/Oceania glyphs
 out of store images) and recorded in `docs/store/shots/manifest.json`. **Status: in force.**
-
 
 ## D-49 — Back from the airport pick, framed first menu frame, darker night deserts (2026-11-02, task 39)
 **Back from the pick.** A targeted weekly upgrade (hub expansion, "+2 slots") is two `ChooseUpgrade` commands; between
@@ -539,7 +537,6 @@ under automation. Budgets and before/after numbers in `docs/PERFORMANCE.md`.
 **Status: in force; the saver look and the 24 fps trigger are proposals until measured on a low-end
 Android phone.**
 
-
 ## D-74 — Adaptive quality is remembered between sessions (2026-11-03, Claude, night N7b)
 With graphics on **Automatic**, the steps the adaptive monitor takes (D-73: DPR → decorations → terrain) are stored
 in `airway.adaptiveQuality` (`{v:1, steps, at}`) and applied before the first frame of the next launch, so a slow
@@ -610,16 +607,6 @@ The share text keeps no link; `airway.games` is added once the domain and the la
 "SETTINGS D0 · LOGBOOK D1" keeps sharing the last split-flap row (option A of Q-40); no separate row, the logbook is not
 moved into settings. **Status: in force.**
 
-## D-90 — Balance bot plays for reach (2026-11-03, Claude, night N12a)
-The DEV/balance bot (`src/game/dev/bot-policy.ts`) values the widebody on the weekly board like a turboprop-only
-network needs it: +80 when the fleet owns no widebody or an active airport without a route lies beyond turboprop
-range (2,500 km) of every other active airport (before, only an existing long route counted, which a turboprop-only
-network never has, so the bot never took a widebody in 50 seeds). When no served airport is eligible for an unserved
-one, it may pair two unserved airports with each other (a new network island). Rationale: 34 of 44 bot game overs
-were at an airport no route served, 20 of them beyond turboprop reach — a measuring-stick fault, not game balance.
-Now 7 of 40; `test:balance` median 14.55 → 17.81 min, 1st/2nd board 86/50 → 88/56 %. No game parameter changed;
-the median now sits near the D-79 upper bound (Q-51). **Status: in force (N12a, `test:bot-policy`).**
-
 ## D-86 — Privacy policy inside the app, same text as the site (2026-11-03, Claude, night N11e)
 Settings → Help gains a "Privacy policy / Polityka prywatności" row under the licences. It opens an in-app page
 (router screen `privacy`, back → settings, the globe does not draw behind it) with the text of `site/privacy.html`:
@@ -629,28 +616,6 @@ they differ from `site/i18n.js`, so the site stays the one source. No public URL
 (D-67); the leaderboard section waits for the owner (Q-56). Rationale: Google's User Data policy wants the policy
 reachable inside the app (RESEARCH R1, R1b); an offline page works on every build and in every store review.
 **Status: in force (N11e, `test:privacy-text`, `test:e2e:privacy-page`).**
-
-## D-91 — iOS bundle declares export-exempt encryption and its languages (2026-11-03, Claude, night N12b)
-`Info.plist` carries `ITSAppUsesNonExemptEncryption = false` and `CFBundleLocalizations = [en, pl]`. The game only
-uses the system's HTTPS (WKWebView, Firebase over TLS), which Apple treats as exempt, so the key answers the
-export-compliance question once instead of on every TestFlight upload; any own cryptography would reopen it. The
-language list is what the App Store shows as the game's languages and what WKWebView may report in
-`navigator.languages`; `test:ios-config` keeps it equal to the i18n catalogs (`src/i18n/<xx>.ts`, pseudo excluded),
-so a third language cannot ship without the bundle knowing it. Rejected: answering the export question in App Store
-Connect by hand per build (repetitive, easy to forget). **Status: in force (N12b, `test:ios-config` 23 checks).**
-
-## D-92 — Backup carries the game to a new phone, not the leaderboard identity (2026-11-03, Claude, night N12c)
-Android Auto Backup is on with include-only rules (`res/xml/data_extraction_rules.xml` for Android 12+ cloud backup
-and device transfer, `res/xml/backup_rules.xml` for older versions): the Preferences file, the two save slots and the
-WebView `localStorage` (logbook, streak, scores, settings, puzzle stars, tutorial). Before, `allowBackup="false"`
-lost all of it on a phone change. The leaderboard session token and offline queue live in the same `localStorage`,
-so instead of a file rule an install marker that no backup reaches (`aw-install-v1.json` in
-`Directory.LibraryNoCloud`; on iOS `Library/NoCloud`) decides: no marker → write it, then remove `aw-net-session-v1`
-and `aw-net-queue-v1` before the leaderboards start; a marker that cannot be written resets nothing. A restored phone
-is a new anonymous player (Q-55); queued runs are not resent from a second device. Rejected: backing up everything
-(identity copied to two phones), backing up only native files (logbook and streak still lost), moving the identity
-into a separate store now (bigger net change; follow-up so the token is not in the encrypted backup at all).
-**Status: in force (N12c, `test:android-config` 18 checks, `test:install-identity` 6 cases).**
 
 ## D-87 — One tip on the game-over report in the first ten flights (2026-11-03, Claude, night N11f)
 The game-over report adds one line under the causes, "TIP / WSKAZÓWKA", chosen by the first ranked cause that has a
@@ -680,6 +645,38 @@ Motion" label needs an in-app control or full system support, and a player whose
 Android skins hide it) can now still the game. Rejected: a three-way "system / on / off" select (one more control
 for a choice the hint explains), a catch-all `* { animation: none }` rule (changes the timing of every screen and
 e2e suite at once). **Status: in force (N11g, `test:motion` 8 cases, `test:e2e:reduce-motion` 3 cases).**
+
+## D-90 — Balance bot plays for reach (2026-11-03, Claude, night N12a)
+The DEV/balance bot (`src/game/dev/bot-policy.ts`) values the widebody on the weekly board like a turboprop-only
+network needs it: +80 when the fleet owns no widebody or an active airport without a route lies beyond turboprop
+range (2,500 km) of every other active airport (before, only an existing long route counted, which a turboprop-only
+network never has, so the bot never took a widebody in 50 seeds). When no served airport is eligible for an unserved
+one, it may pair two unserved airports with each other (a new network island). Rationale: 34 of 44 bot game overs
+were at an airport no route served, 20 of them beyond turboprop reach — a measuring-stick fault, not game balance.
+Now 7 of 40; `test:balance` median 14.55 → 17.81 min, 1st/2nd board 86/50 → 88/56 %. No game parameter changed;
+the median now sits near the D-79 upper bound (Q-51). **Status: in force (N12a, `test:bot-policy`).**
+
+## D-91 — iOS bundle declares export-exempt encryption and its languages (2026-11-03, Claude, night N12b)
+`Info.plist` carries `ITSAppUsesNonExemptEncryption = false` and `CFBundleLocalizations = [en, pl]`. The game only
+uses the system's HTTPS (WKWebView, Firebase over TLS), which Apple treats as exempt, so the key answers the
+export-compliance question once instead of on every TestFlight upload; any own cryptography would reopen it. The
+language list is what the App Store shows as the game's languages and what WKWebView may report in
+`navigator.languages`; `test:ios-config` keeps it equal to the i18n catalogs (`src/i18n/<xx>.ts`, pseudo excluded),
+so a third language cannot ship without the bundle knowing it. Rejected: answering the export question in App Store
+Connect by hand per build (repetitive, easy to forget). **Status: in force (N12b, `test:ios-config` 23 checks).**
+
+## D-92 — Backup carries the game to a new phone, not the leaderboard identity (2026-11-03, Claude, night N12c)
+Android Auto Backup is on with include-only rules (`res/xml/data_extraction_rules.xml` for Android 12+ cloud backup
+and device transfer, `res/xml/backup_rules.xml` for older versions): the Preferences file, the two save slots and the
+WebView `localStorage` (logbook, streak, scores, settings, puzzle stars, tutorial). Before, `allowBackup="false"`
+lost all of it on a phone change. The leaderboard session token and offline queue live in the same `localStorage`,
+so instead of a file rule an install marker that no backup reaches (`aw-install-v1.json` in
+`Directory.LibraryNoCloud`; on iOS `Library/NoCloud`) decides: no marker → write it, then remove `aw-net-session-v1`
+and `aw-net-queue-v1` before the leaderboards start; a marker that cannot be written resets nothing. A restored phone
+is a new anonymous player (Q-55); queued runs are not resent from a second device. Rejected: backing up everything
+(identity copied to two phones), backing up only native files (logbook and streak still lost), moving the identity
+into a separate store now (bigger net change; follow-up so the token is not in the encrypted backup at all).
+**Status: in force (N12c, `test:android-config` 18 checks, `test:install-identity` 6 cases).**
 
 ## D-93 — Leaderboard data can be deleted from inside the app (2026-11-03, owner, Q-41 → A)
 Settings gain a "Delete my leaderboard data" action that removes the player's board entries and the anonymous
@@ -802,7 +799,6 @@ limit × instances (60 and 30/min), which still bounds the bill. The client used
 rejection and would have dropped a rate-limited run from its queue; 429 now counts as a temporary server error
 (`retry`). Rejected: a Firestore counter per uid (a read and a write per call, the cost we are cutting); App Check
 (separate decision, needs the store builds). **Status: in force (N12j).**
-
 
 ## D-113 — Week-1 pace stays 12 h × 130 %, tuned after the human playtest (2026-11-03, owner, Q-60 → C)
 Q-60: N12f (D-95, D-106) sped up the start more than "slightly" — a new airport every 12 game hours instead of 16 and
@@ -1014,7 +1010,6 @@ concatenation prefix (`privacy.s${n}`, `'settings.airline.' + id`); on the old c
 Kept: `SIM_TICK_MS` and `DAYNIGHT_PARAMS_VERSION` (versioned simulation parameters, documentation of the rules).
 **Status: in force (N12q).**
 
-
 ## D-145 — Plural form from the number, read with the language's own separators (2026-11-03, Claude, night N12s)
 R7e: callers pass counts already formatted by `localNumber`, and the plural reader took "." as a decimal point, so
 with German/Spanish/Brazilian grouping "1.000" picked the singular ("1.000 Passagier"), pt-BR "1.500" read as 1.5,
@@ -1041,6 +1036,70 @@ string (stricter than the real CSS mapping) so a key may move between faces free
 Atkinson file with U+202F/U+2192 (a rebuilt font file and licence trail for two glyphs). Not covered: French
 typography's narrow space before ": ; ! ?" in future catalogs, which a translator must write as U+00A0 — the test
 will fail on U+202F. **Status: in force (N12s).**
+
+## D-150 — Weekly board offers only cards that can act (2026-11-03 22:20 CET, owner, Q-71 → B)
+R8a: the "+2 slots" card enters the weekly draw only after the run's first departure hold, the hub expansion card only
+while the network has a hub; an empty place is filled by the other aircraft card. To be measured with `r8-audit`
+and `test:balance` (median 10–18 min, D-79). **Status: in force (N12v, rules v6; numbers in D-155).**
+
+## D-151 — Curfew from week 3 in Endless (2026-11-03 22:20 CET, owner, Q-72 → B)
+R8c: the night curfew (D-17) starts in week 3 instead of week 4 in Endless; Daily the same; puzzles unchanged.
+Check the median 10–18 min (D-79) and question 5 of R8 in the closed test. **Status: in force (N12v, rules v6; numbers in D-155).**
+
+## D-152 — Run length decided after the closed test (2026-11-03 22:20 CET, owner, Q-73 → C)
+The end-of-run shape (network +6 airports a week vs fleet +1 aircraft; no bot run past 31.6 min) stays as in rules v5
+until the closed test gives the distribution of human run lengths (D-113); the R8f review is prepared before it.
+**Status: decided (wait for the closed test).**
+
+## D-153 — Sound survives the phone: tap retries, system suspension, frozen clock, tick clock (2026-11-04, Claude, night N12t)
+Owner report: no music on a Galaxy Z Fold (APK debug from ce9ef74, music on by default). Not reproducible in desktop
+Chromium (the context runs and the chimes play), so the fix closes every path in the engine that can leave a
+phone silent for the rest of the session, and adds a way to read the engine's state on the device:
+1. The first-gesture listener removed itself before `resume()` settled. A first resume that stays suspended (another
+   app holds audio focus, WebView keeps the context suspended) or is refused left the game silent until restart. The
+   listener now stays until the context really runs.
+2. A context the system suspends or interrupts later (call, audio focus, Samsung sound settings) fired nothing. A
+   `statechange` away from "running" that the game did not cause re-arms the tap listener; so does a lifecycle
+   `resume()` refused outside a gesture (back from the background).
+3. A context can report "running" while its clock stands still; then nothing scheduled ever plays. If `currentTime`
+   has moved < 0.3 s after 1.2 s (page visible, not paused), the context is closed and the next tap builds a new
+   one with `latencyHint: 'playback'` (larger buffer, the more compatible output path) instead of `'interactive'`.
+4. `main.ts` set the engine clock to the world minute while every cue carries `run.tick`; the minute stands still for
+   the ticks weekly offer commands take (hub pick, back from a pick), so every later chime was placed 0.1 s (1x)
+   further ahead per such tick. The engine clock is now the tick (`audioClockTick`).
+`globalThis.airwayAudioStatus()` returns state, clock, latency hint, unlock attempts, rebuilds, scheduled/dropped
+cues and volumes (read-only, no setter) for `chrome://inspect`; the device checklist is `docs/ANDROID.md`
+"Sound check". `test:audio-unlock` (fake AudioContext) covers 1–4; 6 of its 7 checks fail on the old engine.
+Not changed: the sound design (D-71); whether "music" should also play on the menu is Q-75. Not verified: the Fold
+itself. **Status: in force (N12t).**
+
+## D-154 — Unfolded large foldable in the screen matrix (2026-11-04, Claude, night N12u)
+The owner plays on a Galaxy Z Fold class phone; its inner screen (~1812×2176 px) is ~904×1088 CSS px at device pixel
+ratio 2, taller than the matrix's 904×1000. `ui:matrix` gained 904×1088 and 1088×904 (unfolded, held in landscape),
+both rendered at DPR 2 like the device (`newGamePage` takes `deviceScaleFactor`): 6 sizes × 4 screens × PL/EN = 48
+shots with the same overlap/scroll checks. All 16 new shots pass and were inspected; in landscape the menu board
+sits small in the lower-left corner with much empty sky (layout is agent #1's; noted, not changed). The cover screen
+is covered by 412×915. **Status: in force (N12u).**
+
+## D-155 — Rules v6: eligible weekly cards and curfew from week 3 (2026-11-04, Claude, night N12v)
+Implements D-150 (R8a) and D-151 (R8c) as `RULES_VERSION` 5 → 6. `drawUpgradeOffers` takes an eligibility
+(`hub`: the network has a hub, `slots`: the run had its first `DepartureHeld`); an ineligible card is removed from
+the pool before the draw, so its place goes to the other aircraft and a board can show only the two aircraft
+(the board UI already lays out any count). The draw stays on the `upgrades` RNG stream. `CURFEW_ENDLESS_START_WEEK`
+4 → 3 (Endless and Daily; puzzles keep their own curfew lists; extra curfew airports still every 2 weeks from the
+start week). Older saves are replayed under v6 (D-76); the v5 golden is frozen as `save-golden-v5.json`.
+Numbers (bot, before → after): `test:balance` 50 seeds median 17.03 → 17.25 min (inside 10–18, D-79), board 1/2
+reach 100 %/66 % unchanged; `r8-audit` 200 seeds median 16.52 → 16.64 min, p90 22.4 → 22.8; "+2 slots" offered
+239 → 4 times and hub expansion 235 → 360 (hubs exist on almost every board, so the hub card now takes the place
+slots used to); boards with a card that could not act 100 % → 0 % by construction; runs reaching curfew weeks
+29 → 134 of 200 and runs with a curfew hold 20 → 123 (10 % → 62 %, target ≥ 50 %). The bot still almost never takes
+the hub card (2 of 360), so the share of boards with a card it values did not change much — a human may.
+Test changes: the golden save's policy never causes a departure hold before its save point, so its "+2 slots"
+coverage moved to `test:slots` (the bonus survives a snapshot); `test:bot-policy`'s week-1 "+2 slots" check now
+answers the first board that offers the card (seed 0xA1AA, board 2) and checks the pick is accepted and the run lasts
+another game day (it takes 2 boards vs 3 with a turboprop — the R8 finding, left for humans); `test:replay` finds
+its slots board on seed 0x0001; `test:e2e:curfew-barrier` uses 0xA1A2 (0xA1A1 ends in week 2 since rules v5, so the
+e2e had no curfew to see). **Status: in force (N12v).**
 
 ## D-160 — Puzzle list generated from the folder, not `import.meta.glob` (2026-11-03, Claude, ext/01)
 R6f: `src/data/puzzles/index.ts` imported 30 JSON files by hand and `test:puzzles` hard-coded 30 levels. The list is
@@ -1085,6 +1144,43 @@ Johannesburg, and the single hub upgrade must go to Sydney; 1 of 1 525 networks 
 give the reference +16 % (31–33) and +15 % (34–35), below 26–30 (+17…18 %). `test:long-haul` pins the curve and one
 tempting decoy per level that must lose. Titles are short enough not to break words on the 320 px board.
 **Status: in force; difficulty is a proposal for the owner to playtest (as D-70).**
+
+## D-164 — A puzzle's reference network must win in any order of its strips (2026-11-04, Claude, ext/04)
+Each connect costs one game minute, so the order in which a player taps the strips shifts every plane's first
+departure. On long legs this can decide a jam: puzzle 35 (ext-02) cleared in its reference order but jammed
+Singapore in 17 of 40 random orders. `test:long-haul` now replays every long-haul reference in 8 orders (forward,
+reverse, 6 seeded shuffles; hub upgrades after the strips, because a city is a hub only once it has routes) and each
+must clear the goal; the ≥ 15 % margin stays a property of the reference order (in other orders the result moves by a
+few per cent, e.g. 40: 1 224–1 376). Fix for 35: Singapore holds 210 instead of 190 waiting passengers and the
+target is 1 147 (was 1 154): still 1 of 1 525 networks, still only with the Sydney upgrade, now 60 of 60 orders.
+Rejected: knife-edge capacities that make a hub upgrade decisive only in some orders (tried for 37 and 40).
+**Status: in force (ext/04).**
+
+## D-165 — "Long haul" 36–40: the second half of the pack (2026-11-04, Claude, ext/04)
+Same method as D-163 (every network the stock allows, on the real Sim, plus D-164's order check), two 3-day weeks
+each, all starts outside Europe, every one with an ocean leg only a widebody flies:
+36 North Pacific (Tokyo feeds Los Angeles-bound traffic; chaining Osaka–Busan and Seoul–Shanghai instead of a star,
+Osaka under curfew, Shanghai wave in week 2; 1 of 284 networks), 37 Two oceans (Johannesburg to Bombay and Perth,
+Cape Town under curfew must not get its own ocean leg; 2 of 681), 38 Andes queue (four turboprop spokes queue for
+Bogotá's slots, Lima's week-2 wave needs its own widebody to Accra; 11 of 1 583, all with the same two widebodies),
+39 Gulf to Sydney (Dubai–Sydney is beyond range, Singapore is the stopover, Sydney under curfew, Johannesburg wave in
+week 2; 16 of 3 647, all with the same Singapore pair), 40 Last call (5 continents from Nairobi, São Paulo under
+curfew, Bombay–Sydney at the edge of widebody range; 3 of 2 444, all with the same four widebodies). Reference margins
++15 % (36–39) and +16 % (40), below 26–30 (+17…18 %). No hub upgrade in 36–40: in 37 and 40 the +6 seats decided only
+on a knife edge that broke in some strip orders (D-164), so robustness won over an MCT tag; each level carries at
+least two of slots/curfew/week. Titles keep every word ≤ 8 letters so the 320 px board never splits one.
+**Status: in force; difficulty is a proposal for the owner to playtest (as D-70).**
+
+## D-166 — Puzzle titles never split a word on the 320 px board (2026-11-04, Claude, ext/05)
+The departures board sets titles in a narrow mono column with `overflow-wrap: anywhere`, so at 320×568 every word of
+9+ letters broke mid-word ("ATLANTYK-U", "CONNECTIN-G"): 12 PL and 10 EN titles of 1–30. They are shortened with the
+same sense, every word ≤ 8 letters: EN 02 Change of planes, 06 Three lands, 07 Change at Accra, 08 Night flights,
+13 A long chain of flights, 14 Four lands, one path, 16 Hourly bank on the Main, 21 Bosporus link, 22 Gulf junction;
+PL 02 Lot przez węzeł, 03 Lot do Afryki, 06 Trzy lądy, 07 Węzeł w Akrze, 13 Łańcuch lotów, 14 Cztery lądy, jedna
+trasa, 16 Godzinna fala nad Menem, 17 Obok śpiącego węzła, 21 Węzeł nad Bosforem, 22 Rozstaje nad Zatoką, 23 Noce na
+południu, 29 Brama na Atlantyk. `test:e2e:screens-fit-320` measures each title word with a DOM `Range` (one line box
+per word) in PL/EN at 320×568 and 568×320. Rejected: `overflow-wrap: normal` (a long word would then overflow the
+column instead) and a smaller font (already 12 px at this width). **Status: in force (ext/05); wording is a proposal.**
 
 ## D-170 — Globe look: direction B "Realistyczny" (satellite Earth) (2026-11-03, owner)
 On the owner's Galaxy Fold the low-poly diorama globe read as large angular terrain facets, blocky mountains, orange
@@ -1182,70 +1278,6 @@ comparison. G2 and G3 land as one PR because the textured terrain alone is white
 separate transparent layers for now; folding them into the terrain shader (fill rate, G4) and measuring on phones
 (G7) are still open. Store screenshots are regenerated in G6. **Status: in force (G2/G3).**
 
-## D-150 — Weekly board offers only cards that can act (2026-11-03 22:20 CET, owner, Q-71 → B)
-R8a: the "+2 slots" card enters the weekly draw only after the run's first departure hold, the hub expansion card only
-while the network has a hub; an empty place is filled by the other aircraft card. To be measured with `r8-audit`
-and `test:balance` (median 10–18 min, D-79). **Status: in force (N12v, rules v6; numbers in D-155).**
-
-## D-151 — Curfew from week 3 in Endless (2026-11-03 22:20 CET, owner, Q-72 → B)
-R8c: the night curfew (D-17) starts in week 3 instead of week 4 in Endless; Daily the same; puzzles unchanged.
-Check the median 10–18 min (D-79) and question 5 of R8 in the closed test. **Status: in force (N12v, rules v6; numbers in D-155).**
-
-## D-152 — Run length decided after the closed test (2026-11-03 22:20 CET, owner, Q-73 → C)
-The end-of-run shape (network +6 airports a week vs fleet +1 aircraft; no bot run past 31.6 min) stays as in rules v5
-until the closed test gives the distribution of human run lengths (D-113); the R8f review is prepared before it.
-**Status: decided (wait for the closed test).**
-
-## D-153 — Sound survives the phone: tap retries, system suspension, frozen clock, tick clock (2026-11-04, Claude, night N12t)
-Owner report: no music on a Galaxy Z Fold (APK debug from ce9ef74, music on by default). Not reproducible in desktop
-Chromium (the context runs and the chimes play), so the fix closes every path in the engine that can leave a
-phone silent for the rest of the session, and adds a way to read the engine's state on the device:
-1. The first-gesture listener removed itself before `resume()` settled. A first resume that stays suspended (another
-   app holds audio focus, WebView keeps the context suspended) or is refused left the game silent until restart. The
-   listener now stays until the context really runs.
-2. A context the system suspends or interrupts later (call, audio focus, Samsung sound settings) fired nothing. A
-   `statechange` away from "running" that the game did not cause re-arms the tap listener; so does a lifecycle
-   `resume()` refused outside a gesture (back from the background).
-3. A context can report "running" while its clock stands still; then nothing scheduled ever plays. If `currentTime`
-   has moved < 0.3 s after 1.2 s (page visible, not paused), the context is closed and the next tap builds a new
-   one with `latencyHint: 'playback'` (larger buffer, the more compatible output path) instead of `'interactive'`.
-4. `main.ts` set the engine clock to the world minute while every cue carries `run.tick`; the minute stands still for
-   the ticks weekly offer commands take (hub pick, back from a pick), so every later chime was placed 0.1 s (1x)
-   further ahead per such tick. The engine clock is now the tick (`audioClockTick`).
-`globalThis.airwayAudioStatus()` returns state, clock, latency hint, unlock attempts, rebuilds, scheduled/dropped
-cues and volumes (read-only, no setter) for `chrome://inspect`; the device checklist is `docs/ANDROID.md`
-"Sound check". `test:audio-unlock` (fake AudioContext) covers 1–4; 6 of its 7 checks fail on the old engine.
-Not changed: the sound design (D-71); whether "music" should also play on the menu is Q-75. Not verified: the Fold
-itself. **Status: in force (N12t).**
-
-## D-154 — Unfolded large foldable in the screen matrix (2026-11-04, Claude, night N12u)
-The owner plays on a Galaxy Z Fold class phone; its inner screen (~1812×2176 px) is ~904×1088 CSS px at device pixel
-ratio 2, taller than the matrix's 904×1000. `ui:matrix` gained 904×1088 and 1088×904 (unfolded, held in landscape),
-both rendered at DPR 2 like the device (`newGamePage` takes `deviceScaleFactor`): 6 sizes × 4 screens × PL/EN = 48
-shots with the same overlap/scroll checks. All 16 new shots pass and were inspected; in landscape the menu board
-sits small in the lower-left corner with much empty sky (layout is agent #1's; noted, not changed). The cover screen
-is covered by 412×915. **Status: in force (N12u).**
-
-## D-155 — Rules v6: eligible weekly cards and curfew from week 3 (2026-11-04, Claude, night N12v)
-Implements D-150 (R8a) and D-151 (R8c) as `RULES_VERSION` 5 → 6. `drawUpgradeOffers` takes an eligibility
-(`hub`: the network has a hub, `slots`: the run had its first `DepartureHeld`); an ineligible card is removed from
-the pool before the draw, so its place goes to the other aircraft and a board can show only the two aircraft
-(the board UI already lays out any count). The draw stays on the `upgrades` RNG stream. `CURFEW_ENDLESS_START_WEEK`
-4 → 3 (Endless and Daily; puzzles keep their own curfew lists; extra curfew airports still every 2 weeks from the
-start week). Older saves are replayed under v6 (D-76); the v5 golden is frozen as `save-golden-v5.json`.
-Numbers (bot, before → after): `test:balance` 50 seeds median 17.03 → 17.25 min (inside 10–18, D-79), board 1/2
-reach 100 %/66 % unchanged; `r8-audit` 200 seeds median 16.52 → 16.64 min, p90 22.4 → 22.8; "+2 slots" offered
-239 → 4 times and hub expansion 235 → 360 (hubs exist on almost every board, so the hub card now takes the place
-slots used to); boards with a card that could not act 100 % → 0 % by construction; runs reaching curfew weeks
-29 → 134 of 200 and runs with a curfew hold 20 → 123 (10 % → 62 %, target ≥ 50 %). The bot still almost never takes
-the hub card (2 of 360), so the share of boards with a card it values did not change much — a human may.
-Test changes: the golden save's policy never causes a departure hold before its save point, so its "+2 slots"
-coverage moved to `test:slots` (the bonus survives a snapshot); `test:bot-policy`'s week-1 "+2 slots" check now
-answers the first board that offers the card (seed 0xA1AA, board 2) and checks the pick is accepted and the run lasts
-another game day (it takes 2 boards vs 3 with a turboprop — the R8 finding, left for humans); `test:replay` finds
-its slots board on seed 0x0001; `test:e2e:curfew-barrier` uses 0xA1A2 (0xA1A1 ends in week 2 since rules v5, so the
-e2e had no curfew to see). **Status: in force (N12v).**
-
 ## D-180 — Training flight fits its row; one tag outline; night darkens only the globe (2026-11-04, Claude, night N11l)
 Owner feedback from a real Galaxy Fold (unfolded). (1) The world vignette was sized from `100dvh − 308 px`, which
 ignores the status and gesture bars (`env(safe-area-inset-*)` padding), so the ATC card overflowed into the hint line
@@ -1306,30 +1338,6 @@ Rejected: a hollow (in-connection) glyph in the vignette (one more idea in a 3-s
 as text (the ring says it, as in the game; the button's aria-label still says "hub").
 **Status: in force (N11p, `test:e2e:tutorial` 28, `test:e2e:tutorial-layout` 7).**
 
-## D-190 — First-time cards: one registry, four cards, never stopping time (2026-11-04, Claude, night N11p)
-Implements D-130 (R6a). `src/game/tutorial/first-time.ts` holds one versioned storage key (`aw-first-time`,
-`{v:1, seen:[…]}`) and pure triggers; the task-32 slot hint is the registry's `slots` card but keeps its old flag
-(`aw-tutorial-slots`) so existing installs do not see it again. Cards: first hub at ≥ 70 % of its waiting places
-(bypass or expand), first new airport whose nearest open airport is beyond turboprop range (widebody from a crate),
-first curfew night, and right after the first weekly board closes (what a crate is and where its aircraft wait) —
-after, not on, the board, which already fills a phone screen. A card is marked when shown, uses the slot hint's ATC
-strip with a 48 px OK, leaves after 12 s, is `aria-live=polite`, never pauses, waits while the slot hint or the
-board is up, and only one is on screen. Endless and Daily only (puzzles teach their own mechanic). DEV seeded runs
-(`aw.prepareSeed`, store shots) turn them off so existing E2E, matrix and store screens are unchanged;
-`prepareSeed(seed, { firstTime: true })` turns them on. Rejected: pausing for each card (the owner's B keeps the
-run flowing), a card on the weekly board itself (covers crates in landscape).
-**Status: in force (N11p, `test:first-time` 7, `test:e2e:first-time-cards` 4).**
-
-## D-191 — Route-end handles: a quiet hollow mark at rest, full only on the route in hand, under the tags (2026-11-04, Claude, night N11q)
-R5c: the 20 px yellow diamonds on every route end out-shouted the airports and their luggage tags, and their layer
-(z-index 18) painted over the tags. At rest a handle is now a 10 px hollow diamond (2 px ink rim, paper halo) centred
-in the unchanged 48 dp area; the full yellow diamond shows only on the route being extended from its end or selected
-with the long-press menu (`RouteTool.activeRouteId`, passed to the `handles` port). The handle layer sits at z-index 1,
-below the airport overlay (2), so a tag or edge chip always covers a handle, never the reverse; touch hit testing
-stays in `routeTool` and does not depend on paint order. Rejected: hiding handles at rest (the extend gesture would
-have no visible start), a hover state (touch first; the finger case is the drag itself).
-**Status: in force (N11q, `test:e2e:route-handles` 2).**
-
 ## D-185 — One language table drives every language list (2026-11-04, Claude, night N12w)
 R7f. `src/i18n/languages.ts` lists each game language once (code, Intl locale, plural order and the forms a token
 must give, settings label key, store locale, which data name field it shows) and builds the lookups with
@@ -1364,61 +1372,6 @@ route" became "remove a quieter route": the game UI has no single-plane unassign
 aircraft. Unknown reserve (older callers) keeps the old line. Metric: unserved losses whose hint names a move the player
 could make, 0 → 100 % (both branches). **Status: in force (N12y).**
 
-## D-164 — A puzzle's reference network must win in any order of its strips (2026-11-04, Claude, ext/04)
-Each connect costs one game minute, so the order in which a player taps the strips shifts every plane's first
-departure. On long legs this can decide a jam: puzzle 35 (ext-02) cleared in its reference order but jammed
-Singapore in 17 of 40 random orders. `test:long-haul` now replays every long-haul reference in 8 orders (forward,
-reverse, 6 seeded shuffles; hub upgrades after the strips, because a city is a hub only once it has routes) and each
-must clear the goal; the ≥ 15 % margin stays a property of the reference order (in other orders the result moves by a
-few per cent, e.g. 40: 1 224–1 376). Fix for 35: Singapore holds 210 instead of 190 waiting passengers and the
-target is 1 147 (was 1 154): still 1 of 1 525 networks, still only with the Sydney upgrade, now 60 of 60 orders.
-Rejected: knife-edge capacities that make a hub upgrade decisive only in some orders (tried for 37 and 40).
-**Status: in force (ext/04).**
-
-## D-165 — "Long haul" 36–40: the second half of the pack (2026-11-04, Claude, ext/04)
-Same method as D-163 (every network the stock allows, on the real Sim, plus D-164's order check), two 3-day weeks
-each, all starts outside Europe, every one with an ocean leg only a widebody flies:
-36 North Pacific (Tokyo feeds Los Angeles-bound traffic; chaining Osaka–Busan and Seoul–Shanghai instead of a star,
-Osaka under curfew, Shanghai wave in week 2; 1 of 284 networks), 37 Two oceans (Johannesburg to Bombay and Perth,
-Cape Town under curfew must not get its own ocean leg; 2 of 681), 38 Andes queue (four turboprop spokes queue for
-Bogotá's slots, Lima's week-2 wave needs its own widebody to Accra; 11 of 1 583, all with the same two widebodies),
-39 Gulf to Sydney (Dubai–Sydney is beyond range, Singapore is the stopover, Sydney under curfew, Johannesburg wave in
-week 2; 16 of 3 647, all with the same Singapore pair), 40 Last call (5 continents from Nairobi, São Paulo under
-curfew, Bombay–Sydney at the edge of widebody range; 3 of 2 444, all with the same four widebodies). Reference margins
-+15 % (36–39) and +16 % (40), below 26–30 (+17…18 %). No hub upgrade in 36–40: in 37 and 40 the +6 seats decided only
-on a knife edge that broke in some strip orders (D-164), so robustness won over an MCT tag; each level carries at
-least two of slots/curfew/week. Titles keep every word ≤ 8 letters so the 320 px board never splits one.
-**Status: in force; difficulty is a proposal for the owner to playtest (as D-70).**
-
-## D-166 — Puzzle titles never split a word on the 320 px board (2026-11-04, Claude, ext/05)
-The departures board sets titles in a narrow mono column with `overflow-wrap: anywhere`, so at 320×568 every word of
-9+ letters broke mid-word ("ATLANTYK-U", "CONNECTIN-G"): 12 PL and 10 EN titles of 1–30. They are shortened with the
-same sense, every word ≤ 8 letters: EN 02 Change of planes, 06 Three lands, 07 Change at Accra, 08 Night flights,
-13 A long chain of flights, 14 Four lands, one path, 16 Hourly bank on the Main, 21 Bosporus link, 22 Gulf junction;
-PL 02 Lot przez węzeł, 03 Lot do Afryki, 06 Trzy lądy, 07 Węzeł w Akrze, 13 Łańcuch lotów, 14 Cztery lądy, jedna
-trasa, 16 Godzinna fala nad Menem, 17 Obok śpiącego węzła, 21 Węzeł nad Bosforem, 22 Rozstaje nad Zatoką, 23 Noce na
-południu, 29 Brama na Atlantyk. `test:e2e:screens-fit-320` measures each title word with a DOM `Range` (one line box
-per word) in PL/EN at 320×568 and 568×320. Rejected: `overflow-wrap: normal` (a long word would then overflow the
-column instead) and a smaller font (already 12 px at this width). **Status: in force (ext/05); wording is a proposal.**
-
-## D-192 — "Replay tutorial" also brings the first-time cards back (2026-11-04, owner Q-76 → B, Claude, night N11r)
-The owner chose B for Q-76: one button. `TutorialController.replay()` (both the settings "Replay tutorial" and the
-training flight's own replay) now calls `clearFirstTimeCards()` (`src/game/tutorial/first-time.ts`), which writes
-an empty `aw-first-time` list and clears the task-32 slot-hint flag, so a player coming back after a break sees each
-card again at its own moment in the next run. The run in progress keeps its registry (read when the game screen
-opens); a fresh game reads the cleared flags. Rejected: A (cards stay gone), C (a second help button).
-**Status: in force (N11r, `test:first-time` 8, 7/8 on the old controller).**
-
-## D-194 — Crate stamps name what they measure; an empty hub reads "none yet" (2026-11-04, Claude, night N11r)
-R5e: the red stamps "BEG 9/36" and "BEG 13 min" were a code and a number with no word. Each stamp now carries a
-small caption line inside the same red box ("fullest hub" / "longest slot wait"; PL "najpełniejszy hub" /
-"najdłuższe czekanie na slot", 10 px Atkinson caps above the 12 px mono value) and the card's aria text reads
-"caption: value". When the fullest hub has nobody waiting, both the hub stamp and the pause sheet's "Fullest hub" row
-say "none yet" / "jeszcze brak" instead of "MAD 0/36" (a 0 next to a capacity read as a measurement of a jam).
-"No hub yet" stays without a caption (it is not a measurement). Rejected: caption outside the stamp (it would read as
-a card field), "MAD 0/36 · nobody waiting" (longer, wraps on 320 px).
-**Status: in force (N11r, `test:crate-stamps` 5, `test:pause-summary` 6).**
-
 ## D-188 — The balance bot frees an idle aircraft for an unserved airport (2026-11-04, Claude, night N12z)
 R8e. `src/game/dev/bot-policy.ts` gets one last step: when an active airport has no route, the reserve is empty and
 no served route end can reach it, the bot sends one aircraft that is on the ground and empty back to the reserve
@@ -1432,32 +1385,6 @@ leaves little to move. A variant that also closed a redundant one-plane route (a
 cut unserved losses to 46 but lowered the median to 16.15 min and the score, so it was not kept. Note for the UI: a
 player cannot take a single aircraft off a route today (no unassign gesture; only removing a route frees its planes,
 D-187). **Status: in force (N12z); no gate changed.**
-
-## D-193 — "Long haul" (31–40) stays out of release builds until T+4 (2026-11-04, owner Q-74 → B, Claude, night N11u)
-The owner chose B: the first puzzle pack is the content of the T+4 "Major update" store event (D-131), so a release
-build shows puzzles 01–30 (DEV builds 40). A build-time flag, no remote config: `PuzzlePack.hiddenInRelease` in
-`src/data/puzzles/packs.ts` (set on `longHaul`) and `releasedLevels()` drop a hidden pack's levels (from its first
-level to the next pack) unless the build is DEV (`npm run dev`, every e2e, shots and the UI matrix, so
-`e2e:puzzles` and `screens-fit-320` keep covering 31–40) or was made with `VITE_AW_ALL_PACKS=1` (a release check
-build before T+4). Node tests have no Vite env and see all 40. At T+4: remove `hiddenInRelease`. Saved
-progress for 31–40 from a DEV build is ignored in a release build (the board lists only exposed levels). Rejected:
-deleting the JSON files from the branch (the pack would rot untested), a remote switch (no server for it, D-16).
-**Status: in force (N11u, `test:release-packs` 4).**
-
-## D-195 — One word per concept in PL/EN, guarded by test:i18n (2026-11-04, Claude, night N11t)
-R5g: the catalogs mixed "siatka" and "sieć" for the network, "terminal" and "węzeł" for a hub, and the PL game-over
-title "Siatka wstrzymana" (a pause you come back from) did not mean the same as "Network closed" (the end). The
-glossary in `src/i18n/README.md` fixes crate/skrzynia (what a crate holds is an upgrade/ulepszenie), hub/hub,
-network/sieć; PL game over is now "Sieć zamknięta" (title, map view, timeline: "sieć zamknięta", "bez zmian w
-sieci"), puzzle copy says "hub" ("Pojemność hubów" / "Hub capacity", "hub {city} jest przepełniony", "Ciasny hub" /
-"A tight hub", "Obok śpiącego huba", and the ext/05 short titles "Lot przez hub", "Hub w Akrze", "Hub nad
-Bosforem"). `test:i18n` fails on a banned synonym in any catalog value (EN grid, node,
-terminal, cargo/freight label, simulation; PL siatka, węzeł, terminal, etykieta frachtowa, symulacja, all inflected
-forms, Unicode word boundaries), except the two diegetic signs `menu.terminal` and `puzzle.board.subtitle`.
-Puzzle 17's title (ext/05: "Obok śpiącego węzła") becomes "Obok śpiącego huba"; the old word read better; it follows the rule unless the owner prefers the
-exception. The D-18 PL store title ("Buduj siatkę lotów") is outside the catalogs: Q-77.
-Rejected: "Siatka zamknięta" (keeps two words for the network).
-**Status: in force (N11t, `test:i18n` with the glossary check, 12 failures on the old catalogs).**
 
 ## D-189 — e2e seeds live in one file and are replayed headless in test:fast (2026-11-04, Claude, night N12aa)
 Five browser suites were red on clean `dev` since rules v6 (N12v) because their fixed seeds ended the bot's run before
@@ -1475,6 +1402,74 @@ nothing" now compares with the count before the pick (the "+2 slots" board is we
 320×568 week-1 board scrolled 1 px since the N11r stamp caption (D-194): that size trims 3 px of stamp spacing.
 **Status: in force (N12aa).**
 
+## D-190 — First-time cards: one registry, four cards, never stopping time (2026-11-04, Claude, night N11p)
+Implements D-130 (R6a). `src/game/tutorial/first-time.ts` holds one versioned storage key (`aw-first-time`,
+`{v:1, seen:[…]}`) and pure triggers; the task-32 slot hint is the registry's `slots` card but keeps its old flag
+(`aw-tutorial-slots`) so existing installs do not see it again. Cards: first hub at ≥ 70 % of its waiting places
+(bypass or expand), first new airport whose nearest open airport is beyond turboprop range (widebody from a crate),
+first curfew night, and right after the first weekly board closes (what a crate is and where its aircraft wait) —
+after, not on, the board, which already fills a phone screen. A card is marked when shown, uses the slot hint's ATC
+strip with a 48 px OK, leaves after 12 s, is `aria-live=polite`, never pauses, waits while the slot hint or the
+board is up, and only one is on screen. Endless and Daily only (puzzles teach their own mechanic). DEV seeded runs
+(`aw.prepareSeed`, store shots) turn them off so existing E2E, matrix and store screens are unchanged;
+`prepareSeed(seed, { firstTime: true })` turns them on. Rejected: pausing for each card (the owner's B keeps the
+run flowing), a card on the weekly board itself (covers crates in landscape).
+**Status: in force (N11p, `test:first-time` 7, `test:e2e:first-time-cards` 4).**
+
+## D-191 — Route-end handles: a quiet hollow mark at rest, full only on the route in hand, under the tags (2026-11-04, Claude, night N11q)
+R5c: the 20 px yellow diamonds on every route end out-shouted the airports and their luggage tags, and their layer
+(z-index 18) painted over the tags. At rest a handle is now a 10 px hollow diamond (2 px ink rim, paper halo) centred
+in the unchanged 48 dp area; the full yellow diamond shows only on the route being extended from its end or selected
+with the long-press menu (`RouteTool.activeRouteId`, passed to the `handles` port). The handle layer sits at z-index 1,
+below the airport overlay (2), so a tag or edge chip always covers a handle, never the reverse; touch hit testing
+stays in `routeTool` and does not depend on paint order. Rejected: hiding handles at rest (the extend gesture would
+have no visible start), a hover state (touch first; the finger case is the drag itself).
+**Status: in force (N11q, `test:e2e:route-handles` 2).**
+
+## D-192 — "Replay tutorial" also brings the first-time cards back (2026-11-04, owner Q-76 → B, Claude, night N11r)
+The owner chose B for Q-76: one button. `TutorialController.replay()` (both the settings "Replay tutorial" and the
+training flight's own replay) now calls `clearFirstTimeCards()` (`src/game/tutorial/first-time.ts`), which writes
+an empty `aw-first-time` list and clears the task-32 slot-hint flag, so a player coming back after a break sees each
+card again at its own moment in the next run. The run in progress keeps its registry (read when the game screen
+opens); a fresh game reads the cleared flags. Rejected: A (cards stay gone), C (a second help button).
+**Status: in force (N11r, `test:first-time` 8, 7/8 on the old controller).**
+
+## D-193 — "Long haul" (31–40) stays out of release builds until T+4 (2026-11-04, owner Q-74 → B, Claude, night N11u)
+The owner chose B: the first puzzle pack is the content of the T+4 "Major update" store event (D-131), so a release
+build shows puzzles 01–30 (DEV builds 40). A build-time flag, no remote config: `PuzzlePack.hiddenInRelease` in
+`src/data/puzzles/packs.ts` (set on `longHaul`) and `releasedLevels()` drop a hidden pack's levels (from its first
+level to the next pack) unless the build is DEV (`npm run dev`, every e2e, shots and the UI matrix, so
+`e2e:puzzles` and `screens-fit-320` keep covering 31–40) or was made with `VITE_AW_ALL_PACKS=1` (a release check
+build before T+4). Node tests have no Vite env and see all 40. At T+4: remove `hiddenInRelease`. Saved
+progress for 31–40 from a DEV build is ignored in a release build (the board lists only exposed levels). Rejected:
+deleting the JSON files from the branch (the pack would rot untested), a remote switch (no server for it, D-16).
+**Status: in force (N11u, `test:release-packs` 4).**
+
+## D-194 — Crate stamps name what they measure; an empty hub reads "none yet" (2026-11-04, Claude, night N11r)
+R5e: the red stamps "BEG 9/36" and "BEG 13 min" were a code and a number with no word. Each stamp now carries a
+small caption line inside the same red box ("fullest hub" / "longest slot wait"; PL "najpełniejszy hub" /
+"najdłuższe czekanie na slot", 10 px Atkinson caps above the 12 px mono value) and the card's aria text reads
+"caption: value". When the fullest hub has nobody waiting, both the hub stamp and the pause sheet's "Fullest hub" row
+say "none yet" / "jeszcze brak" instead of "MAD 0/36" (a 0 next to a capacity read as a measurement of a jam).
+"No hub yet" stays without a caption (it is not a measurement). Rejected: caption outside the stamp (it would read as
+a card field), "MAD 0/36 · nobody waiting" (longer, wraps on 320 px).
+**Status: in force (N11r, `test:crate-stamps` 5, `test:pause-summary` 6).**
+
+## D-195 — One word per concept in PL/EN, guarded by test:i18n (2026-11-04, Claude, night N11t)
+R5g: the catalogs mixed "siatka" and "sieć" for the network, "terminal" and "węzeł" for a hub, and the PL game-over
+title "Siatka wstrzymana" (a pause you come back from) did not mean the same as "Network closed" (the end). The
+glossary in `src/i18n/README.md` fixes crate/skrzynia (what a crate holds is an upgrade/ulepszenie), hub/hub,
+network/sieć; PL game over is now "Sieć zamknięta" (title, map view, timeline: "sieć zamknięta", "bez zmian w
+sieci"), puzzle copy says "hub" ("Pojemność hubów" / "Hub capacity", "hub {city} jest przepełniony", "Ciasny hub" /
+"A tight hub", "Obok śpiącego huba", and the ext/05 short titles "Lot przez hub", "Hub w Akrze", "Hub nad
+Bosforem"). `test:i18n` fails on a banned synonym in any catalog value (EN grid, node,
+terminal, cargo/freight label, simulation; PL siatka, węzeł, terminal, etykieta frachtowa, symulacja, all inflected
+forms, Unicode word boundaries), except the two diegetic signs `menu.terminal` and `puzzle.board.subtitle`.
+Puzzle 17's title (ext/05: "Obok śpiącego węzła") becomes "Obok śpiącego huba"; the old word read better; it follows the rule unless the owner prefers the
+exception. The D-18 PL store title ("Buduj siatkę lotów") is outside the catalogs: Q-77.
+Rejected: "Siatka zamknięta" (keeps two words for the network).
+**Status: in force (N11t, `test:i18n` with the glossary check, 12 failures on the old catalogs).**
+
 ## D-196 — balance:report prints the spread and mechanic use, counted from sim events (2026-11-04, Claude, night N12ab)
 R8d. `game-summary.md` gains a "Spread and mechanic use" section: session length and game weeks at p10/p25/median/
 p75/p90, loss-week histogram, losing airport hub / spoke / unserved, spare aircraft at the loss, weekly cards offered
@@ -1489,6 +1484,16 @@ choices, picked ≤ offered, delivered = score). The numbers match `r8-audit --s
 aircraft-minutes, where r8's `canLand` wrapper also counted the check inside `canScheduleLeg` (r8 air 586 vs 89 here).
 **Status: in force (N12ab).**
 
+## D-197 — The leaderboard objection switch in settings (2026-11-04, Claude, night N11v)
+D-135 / R7l: the net layer has `Leaderboards.isSharing()` / `setSharing(on)` since N12x (D-186). Settings → Help
+now shows "Send results to the leaderboard" / "Wysyłaj wyniki do rankingu", an ordinary settings switch (on by
+default, ≥ 48 px, the ON/OFF ink of the other switches) with one hint line saying what off does (results stay on the
+device, waiting runs are dropped). It sits after the privacy policy and before "Delete my ranking data" and, like
+that row, exists only when the build has leaderboards (`Leaderboards.enabled`). The choice lives in the net layer's
+own key (`aw-net-share-v1`), not in the settings record, so the daily report and the board read the same truth.
+Rejected: the switch in the Game group (it is a privacy choice next to the policy and the deletion).
+**Status: in force (N11v, `test:e2e:ranking-switch` 4).**
+
 ## D-198 — An empty dock tag counts down to the next crates (2026-11-04, Claude, night N11s)
 R6c: in week 1 the turboprop, widebody and hub tags read "0" for about 7 minutes. An empty aircraft or hub tag now
 stacks its icon over a small wait line, the game minutes left to the weekly board from the run's own clock
@@ -1499,6 +1504,19 @@ so the line says when the next choice comes, not that this aircraft will arrive.
 Rejected: "crates day 3" (the D-40 three-day week makes "day 3" ambiguous across weeks and does not fit a 52 px tag),
 a separate countdown chip (one more HUD element, D-05/minimal HUD).
 **Status: in force (N11s, `test:dock-countdown` 3, `test:e2e:dock-empty-tags` 4).**
+
+## D-199 — The HUD target test counts seven controls; the landscape rack shrinks its tags to fit (2026-11-04, Claude, night N11w)
+G8 (#178, D-172) added the globe-view tag to the dock, so the HUD has seven controls (pause on the boarding pass and
+six dock tags) and `test:hud-targets` failed 293/300 on clean dev (five "six controls" checks plus the landscape
+case below). The test now expects seven and asserts the new tag on its own: ≥ 48 dp, in line with the dock (same row
+in portrait, same column on the landscape/foldable rack), in order between hub and speed, also after a live
+rotation, and a tap emits `onToggleGlobeMode`. The count was not loosened to "≥ 6". Fixing the test showed a real
+fault the count had hidden: on a 915×412 landscape phone with 24/16/22/16 insets six 58 px tags need 348 px but the
+rack has 326, flex items do not shrink below their content, and the speed tag ended 1 px inside the bottom safe area.
+The rack holders now shrink (`min-height: 48px`) and the tag fills its holder (`height: 100%`, max 58 px): 54 px tags
+at that size, unchanged on foldables and wherever there is room. Rejected: dropping a tag from the rack in landscape
+(every control must stay reachable), a smaller fixed height everywhere (foldables have room).
+**Status: in force (N11w, `test:hud-targets`).**
 
 ## D-200 — every bot-driven e2e suite reads its seed from e2e/seeds.mjs and is replayed headless (2026-11-04, Claude, night N12ac)
 Extends D-189 from five suites to all suites that play a fixed seed with the DEV bot or idle ticks. Moved (seed
@@ -1515,16 +1533,6 @@ daily-continue build their network by gestures on visible airports (or play the 
 bot plan; their forced overload needs no seed. `test:e2e-seeds` 5 suites / 7 cases → 24 / 30, all passing on the
 current seeds; on 0xA1A1 the curfew-barrier, gameover-tip, served-jam and first-time-cards plans fail as their suites
 did before N12v/N12y re-seeded them. **Status: in force (N12ac).**
-
-## D-197 — The leaderboard objection switch in settings (2026-11-04, Claude, night N11v)
-D-135 / R7l: the net layer has `Leaderboards.isSharing()` / `setSharing(on)` since N12x (D-186). Settings → Help
-now shows "Send results to the leaderboard" / "Wysyłaj wyniki do rankingu", an ordinary settings switch (on by
-default, ≥ 48 px, the ON/OFF ink of the other switches) with one hint line saying what off does (results stay on the
-device, waiting runs are dropped). It sits after the privacy policy and before "Delete my ranking data" and, like
-that row, exists only when the build has leaderboards (`Leaderboards.enabled`). The choice lives in the net layer's
-own key (`aw-net-share-v1`), not in the settings record, so the daily report and the board read the same truth.
-Rejected: the switch in the Game group (it is a privacy choice next to the policy and the deletion).
-**Status: in force (N11v, `test:e2e:ranking-switch` 4).**
 
 ## D-201 — the balance bot takes the hub expansion when a hub is filling up; the card itself waits for the closed test (2026-11-04, Claude, night N12ad)
 The bot took "Rozbudowa huba" 1 of 94 offers (N12ab). New read-only tool `scripts/research/card-value.ts` replays,
@@ -1545,15 +1553,30 @@ test). Card tuning measured for the owner (Q-78): +12 or +18 places and a 10-min
 14.99 / 15.02 min); a hub card that also brings a turboprop (forced 15.34 / 231 vs always-turboprop 15.10 / 216.5)
 would beat the plain turboprop and empty the board choice. **Status: in force (N12ad); card tuning: Q-78.**
 
-## D-199 — The HUD target test counts seven controls; the landscape rack shrinks its tags to fit (2026-11-04, Claude, night N11w)
-G8 (#178, D-172) added the globe-view tag to the dock, so the HUD has seven controls (pause on the boarding pass and
-six dock tags) and `test:hud-targets` failed 293/300 on clean dev (five "six controls" checks plus the landscape
-case below). The test now expects seven and asserts the new tag on its own: ≥ 48 dp, in line with the dock (same row
-in portrait, same column on the landscape/foldable rack), in order between hub and speed, also after a live
-rotation, and a tap emits `onToggleGlobeMode`. The count was not loosened to "≥ 6". Fixing the test showed a real
-fault the count had hidden: on a 915×412 landscape phone with 24/16/22/16 insets six 58 px tags need 348 px but the
-rack has 326, flex items do not shrink below their content, and the speed tag ended 1 px inside the bottom safe area.
-The rack holders now shrink (`min-height: 48px`) and the tag fills its holder (`height: 100%`, max 58 px): 54 px tags
-at that size, unchanged on foldables and wherever there is room. Rejected: dropping a tag from the rack in landscape
-(every control must stay reachable), a smaller fixed height everywhere (foldables have room).
-**Status: in force (N11w, `test:hud-targets`).**
+## D-202 — "Sieć" in the Polish store title and description (2026-11-04, owner, Q-77 → B)
+The game calls the network "sieć" everywhere (D-195), while the D-18 PL store title read "Buduj siatkę lotów" and the
+description said "siatka połączeń" / "siatka lata dalej". The owner chose B: the player reads the same word in the store
+as in the game, and the title can still change before the first release. Approved full PL title **"Airway: Buduj sieć
+lotów na globusie"** (36 characters, supersedes the D-18 PL title), store-field title **"Airway: Buduj sieć lotów"**
+(24 characters, ≤ 30; was "Airway: Buduj trasy lotów"), description and the night caption say "sieć". EN title
+unchanged. `test:store-shots` holds the new title and fails on "siatka" in `docs/store/pl.md`. The committed store
+screenshots still show the old game-over title "SIATKA WSTRZYMANA" in `docs/store/shots/manifest.json` text; they are
+regenerated with the next `store:shots`. Rejected: A (keep "siatkę", the D-18 title), C (description only).
+**Status: in force (N12ae).**
+
+## D-203 — Hub-expansion card stays as it is until the closed test (2026-11-04, owner, Q-78 → A)
+N12ad measured "Rozbudowa huba" (+6 places, connection 25 → 15 min) as weak on its own and useful only at a full hub
+instead of a turboprop, which the bot now does (D-201). The owner keeps the card unchanged (rules v6) and evaluates it in
+the closed playtest with people (D-113: tune after it). Rejected for now: B (hub + turboprop in one card — always better
+than a turboprop, the board choice disappears), C (+12/+18 places — no measurable effect), D (another hub effect — not
+measured yet). **Status: in force; revisit after the closed test.**
+
+## D-204 — Decision and owner-question numbers are unique and decisions ascend, guarded in test:fast (2026-11-04, Claude, night N12ae)
+Two agents take D- and Q-numbers in parallel, and dev had D-196 twice (N12ab's balance report and N11s's dock
+countdown, the latter renumbered D-198 in N11v), Q-77 twice (N11t's store wording and ext/05's puzzle titles) and
+decisions appended out of order (D-86 after D-90, D-150 after D-179, D-164 after D-187, D-197 after D-200, …). The
+sections of `docs/DECISIONS.md` are now sorted by number (text unchanged, only blank lines between sections
+normalised); the ext/05 puzzle-title question became Q-79 (N11t kept Q-77, which the owner answered as D-202). New fast
+`test:doc-ids` (`scripts/test-doc-ids.mjs`): every `## D-NN` heading once and ascending, every `| Q-NN` row of
+`docs/OWNER-QUESTIONS.md` once, plus a self-check on synthetic text. A new decision goes in its numeric place, not at the
+end of the file. **Status: in force (N12ae).**
