@@ -709,6 +709,12 @@ Owner's choice 2026-11-03: the satellite globe (direction B). Plan, budgets and 
 `docs/mockups/globe-2026-11/PLAN.md`; the DEV experiment to start from: `?globeLook=satellite`
 (`src/render/globe/look.ts`, `dev/globe-look/`). One PR per step, in order; G2+ change the shipped look, so attach
 before/after `npm run shots -- globe` PNGs and look at them.
+- [x] N12af **"+2 slots" card value and its offer rule (D-207, Q-80)** — `card-value.ts` prints offer counts for any
+      card, the first-hold minute for "+2 slots" and a research-only `--slots-rule=always` what-if (pre-D-150 pool).
+      200 seeds, 60 min: under D-150 the card is on 4 of 364 boards (3 runs), never taken, forced −2.82 min; only 12 of
+      200 runs ever hold a departure (median 11.6 min). Eligible from week 1: 240 of 358 boards, still never taken,
+      forced −1.10 min (−0.42 instead of a turboprop, no positive subset), bot mean 16.74 → 16.45 min. The rule is not too
+      strict — the hourly cap rarely binds for the bot. No rule change (D-113) → Q-80. `docs/balance/README.md` "N12af".
 - [x] G1 **Production globe assets** — reproducible bake into `public/data/globe/` (day 4096/2048, night 2048/1024,
       elevation 2048, clouds 2048, ~1.9 MB) with a SHA-256 manifest; NASA/NOAA entries in `docs/ASSETS.md`; credit
       line (PL/EN i18n) on the About page; bundle `total` budget → 4 300 kB (D-171); new fast test `test:globe-assets`.
@@ -1346,3 +1352,4 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
 - 2026-11-04 · N11w HUD target test knows the G8 globe tag (D-199) · night/11w-hud-targets-globe-tag · after merging dev (#186–#188): test:hud-targets 312/312 (293/300 on clean dev; 308/312 with the new checks before the CSS fix: speed tag 1 px in the bottom inset at 915×412 + its rotation case, plus a too-strict neighbour gap on foldables, dropped), test:fast 78/78, build ok; shots docs/shots/13 (5, seven controls)
 - 2026-11-04 · N11x edge-chip placement as a pure function (R5h, D-202) · night/11x-edge-chip-placement · after merging dev (#188, #189): test:overlay-layout 36/36 (crashes on the old module; 200/200 scenes identical to the old loop; 150 airports 0.14–0.16 ms vs 0.43–0.50 ms per frame), test:fast 78/78, build ok, e2e:edge-chip-airports 2/2, e2e:edge-chip-fill 4/4, e2e:edge-dock 5/5, e2e:edge-chip-tags 6/6 chips=53 (same as origin/dev; a first run 4/6 timed out on the upgrade-card click at 673×841 under SwiftShader, G7)
 - 2026-11-04 · N12ae docs numbering guard, Q-77 → B, Q-78 → A (D-203, D-204, D-205) · night/12ae-docs-consistency · test:doc-ids 8/8 (6/8 on origin/dev 728502c: order + Q-77), 166 decisions max D-205, 79 questions max Q-79; reserved D-202 was taken by N11x (#190) meanwhile → own numbers D-203…D-205; after merging dev (#190): test:store-shots 1/1, test:fast 79/79 (258.4 s), build ok; no browser suite (docs and store text only; store PNG manifest still carries the old game text, regenerated with the next store:shots)
+- 2026-11-04 · N12af "+2 slots" card value and offer rule (D-207, Q-80) · night/12af-slots-card-value · card-value --card=slots 200 seeds/60 min: D-150 pool 4/364 boards offered (3 runs), 0 picks, forced −2.82 min (0 longer / 3 shorter / 1 same), holds in 12/200 runs (median 11.6 min); what-if always eligible 240/358 boards (161 runs), 0 picks, forced −1.10 min (16/96/128), turboprop alternative −0.42, bot mean 16.74 → 16.45 min; no rule change; test:doc-ids 8/8 (167 decisions, 80 questions), test:fast 79/79 (230.1 s), build ok

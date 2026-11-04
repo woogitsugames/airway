@@ -1595,3 +1595,14 @@ normalised); the ext/05 puzzle-title question became Q-79 (N11t kept Q-77, which
 `test:doc-ids` (`scripts/test-doc-ids.mjs`): every `## D-NN` heading once and ascending, every `| Q-NN` row of
 `docs/OWNER-QUESTIONS.md` once, plus a self-check on synthetic text. A new decision goes in its numeric place, not at the
 end of the file. **Status: in force (N12ae).**
+
+## D-207 — "+2 slots" keeps the D-150 offer rule; the card's value is measured, its future is a closed-test question (2026-11-04, Claude, night N12af)
+The card has appeared about 3 times per 50 runs since D-150. `scripts/research/card-value.ts --card=slots` (now with
+offer counts, the first-hold minute and a research-only `--slots-rule=always` what-if) on 200 seeds, 60 min cap: under
+the rule 4 of 364 boards offered it (3 runs), the bot never took it, and forcing it lost −2.82 min on average (0 of 4
+longer). Only 12 of 200 runs ever hold a departure (median at 11.6 min), so the rule is rarely met because the hourly
+cap (D-46) rarely binds for the bot, not because the rule is too strict. With the card eligible from week 1 it is on
+240 of 358 boards (161 runs), still never picked, worth −1.10 min when forced (−0.42 instead of a turboprop, no
+positive subset), and the bot's mean drops 16.74 → 16.45 min because the card takes a place from the hub card or the
+second aircraft. No rule changed (D-113); whether people reach the cap is asked in Q-80. Numbers in
+`docs/balance/README.md` "N12af". **Status: in force (no change); revisit with Q-80 after the closed test.**

@@ -1,5 +1,41 @@
 # Task 22 — autoplay and balance evidence
 
+## N12af — value of the "+2 slots" card and its offer rule (2026-11-04, D-207, Q-80)
+
+`card-value.ts` now prints, for any `--card`, how often the card was offered and taken, and for "+2 slots" when the
+run's first departure hold came (the D-150 rule: the card is drawn only after one). `--slots-rule=always` is a
+research what-if of the pre-D-150 pool (the card eligible from week 1): it sets the World's private hold flag in the
+script's own process only; no rule changed.
+
+```sh
+node --import ./scripts/ts-test-loader.mjs scripts/research/card-value.ts --seeds=200 --card=slots [--slots-rule=always] [--csv=path]
+```
+
+200 seeds from 0xA1A1, 60 min cap, rules v6, bot after N12ad:
+
+| Pool | Bot mean min / score | Boards with the card | Runs with an offer | Bot took it | Runs with a departure hold |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| D-150 (after the first hold, in force) | 16.74 / 301.8 | 4 of 364 | 3 of 200 | 0 | 12 of 200 (median at 11.6 min; 352 of 364 boards came before it) |
+| always eligible (what-if) | 16.45 / 290.4 | 240 of 358 | 161 of 200 | 0 | — |
+
+Paired replays, the card instead of the bot's pick (Δ session minutes):
+
+| Boards | n | Δ min mean | Δ score mean | longer | shorter | same |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| D-150 pool, all offers | 4 | −2.82 | −113.0 | 0 | 3 | 1 |
+| what-if, all offers | 240 | −1.10 | −41.8 | 16 | 96 | 128 |
+| what-if, bot took a turboprop | 130 | −0.42 | −18.1 | 6 | 30 | 94 |
+| what-if, bot took a widebody | 99 | −1.99 | −73.3 | 10 | 62 | 27 |
+| what-if, fullest hub ≥ 70 % + turboprop | 30 | −0.45 | | 1 | 9 | 20 |
+| what-if, baseline lost at a hub + turboprop | 38 | −0.38 | | 6 | 13 | 19 |
+
+Reading: the rule is not what keeps the card away — the bot's network almost never meets the hourly departure cap
+(2/h airport, 3/h hub, D-46): 94 % of runs never hold a departure, so the card has nothing to lift. Where it is offered
+it costs the aircraft it displaces (no subset of boards where it pays; the best, a turboprop alternative, is −0.42 min).
+Loosening the rule back makes the bot's runs shorter (16.74 → 16.45 min mean) without a single pick, because the card
+takes a board place from the hub card or the second aircraft. So no rule change is warranted by bot data; whether
+people stack enough aircraft on one airport to hit the cap is a closed-test question → Q-80 (D-113).
+
 ## N12ad — value of the hub-expansion card; bot takes it when a hub fills up (2026-11-04, D-201, Q-78)
 
 `scripts/research/card-value.ts` (read-only, not a test) plays the bot's baseline run per seed, then replays the seed
