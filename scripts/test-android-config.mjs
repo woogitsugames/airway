@@ -87,12 +87,14 @@ check('backup-leaves-install-marker', !!marker && installSource.includes('Direct
 const localeFile = 'android/app/src/main/res/xml/locales_config.xml';
 const localeConfig = existsSync(join(ROOT, localeFile)) ? read(localeFile) : '';
 const declaredLocales = [...localeConfig.matchAll(/<locale\s+android:name="([^"]+)"\s*\/>/g)].map((m) => m[1]).sort();
-const gameLanguages = (read('src/i18n/index.ts').match(/export type Language = ([^;]+);/)?.[1] ?? '')
-  .split('|').map((part) => part.trim().replace(/'/g, '')).filter(Boolean).sort();
+// [night-12w] R7f: the game's languages are the entries of the one language table (src/i18n/languages.ts).
+const languageTable = read('src/i18n/languages.ts');
+const gameLanguages = [...(languageTable.slice(languageTable.indexOf('export const LANGUAGE_ENTRIES'),
+  languageTable.indexOf('satisfies readonly LanguageEntry')).matchAll(/\bcode: '([a-z-]+)'/g))].map((m) => m[1]).sort();
 const iosLocales = [...(read('ios/App/App/Info.plist').match(/<key>CFBundleLocalizations<\/key>\s*<array>([\s\S]*?)<\/array>/)?.[1] ?? '')
   .matchAll(/<string>([^<]+)<\/string>/g)].map((m) => m[1]).sort();
 check('per-app-locale-config', manifest.includes('android:localeConfig="@xml/locales_config"') &&
-  localeConfig.includes('<locale-config') && declaredLocales.length === 2 &&
+  localeConfig.includes('<locale-config') && gameLanguages.length >= 2 &&
   declaredLocales.join() === gameLanguages.join() && declaredLocales.join() === iosLocales.join());
 // [night-12p] D-124: three r163+ has no WebGL 1 path, and Android WebView's WebGL 2 needs OpenGL ES 3.0, so the
 // manifest declares exactly one required glEsVersion of 0x00030000 (Play device filter). ES 3.0 exists from API 18,

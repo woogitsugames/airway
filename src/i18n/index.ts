@@ -1,14 +1,17 @@
 // Resolve saved settings before device language and fall back to English.
 import { formatNumber, numberLocale, parseLocalNumber } from '../core/format';
 import { en } from './en';
+import { LANGUAGES, type Language } from './languages';
 import { pl } from './pl';
 import { pseudoText } from './pseudo';
 
-export type Language = 'pl' | 'en';
+export type { Language } from './languages';
+export { LANGUAGE_CODES, LANGUAGES, localName } from './languages';
 export type TranslationKey = keyof typeof en;
 export type TranslationParams = Readonly<Record<string, number | string>>;
 
 const SETTINGS_KEY = 'airway.settings';
+/** [night-12w] R7f: one catalog per entry of the language table (src/i18n/languages.ts). */
 const catalogs: Record<Language, Record<TranslationKey, string>> = { en, pl };
 let activeLanguage: Language | null = null;
 let pseudo = false;
@@ -17,9 +20,7 @@ let pseudo = false;
 export function setPseudoLocale(enabled: boolean): void { pseudo = enabled; }
 
 function normaliseLanguage(value: unknown): Language | null {
-  if (typeof value !== 'string') return null;
-  const base = value.toLowerCase().split(/[-_]/, 1)[0];
-  return base === 'pl' || base === 'en' ? base : null;
+  return LANGUAGES.normalise(value);
 }
 
 function savedLanguage(): Language | null {
@@ -46,7 +47,7 @@ function deviceLanguage(): Language | null {
 }
 
 export function getLanguage(): Language {
-  return activeLanguage ?? (activeLanguage = savedLanguage() ?? deviceLanguage() ?? 'en');
+  return activeLanguage ?? (activeLanguage = savedLanguage() ?? deviceLanguage() ?? LANGUAGES.fallback);
 }
 
 export function setLanguage(language: Language): void {
@@ -62,17 +63,14 @@ export function setLanguage(language: Language): void {
   if (typeof document !== 'undefined') document.documentElement.lang = language;
 }
 
-/** Plural categories in the order a `{name|form|…}` token lists its forms; a missing form falls back to the last. */
-const PLURAL_ORDER: Record<Language, readonly Intl.LDMLPluralRule[]> = {
-  en: ['one', 'other'],
-  pl: ['one', 'few', 'many', 'other'],
-};
+/** Plural categories in the order a `{name|form|…}` token lists its forms (from the language table). */
+const pluralOrder = (language: Language): readonly Intl.LDMLPluralRule[] => LANGUAGES.entry(language).plural;
 const pluralRules = new Map<string, Intl.PluralRules>();
 
 /** [night-07j] `{count|pasażer|pasażerów|pasażerów}` picks the word form for the number in `count` (PL: one|few|many,
  *  EN: one|other); it prints only the word, so templates write `{count} {count|…}`. */
 export function pluralForm(language: Language, value: number, forms: readonly string[]): string {
-  return pluralFormIn(language, PLURAL_ORDER[language], value, forms);
+  return pluralFormIn(numberLocale(language), pluralOrder(language), value, forms);
 }
 
 /** [night-12s] The same choice for any Intl locale and form order (tests use it for languages not shipped yet). */
@@ -104,7 +102,7 @@ export function fillPluralTokens(template: string, params: TranslationParams | u
 
 export function t(key: TranslationKey, params?: TranslationParams): string {
   const language = getLanguage();
-  const template = fillPluralTokens(catalogs[language][key] ?? en[key], params, numberLocale(language), PLURAL_ORDER[language]);
+  const template = fillPluralTokens(catalogs[language][key] ?? en[key], params, numberLocale(language), pluralOrder(language));
   const text = template.replace(/\{([A-Za-z][A-Za-z0-9_]*)\}/g, (token, name: string) =>
     params?.[name] === undefined ? token : typeof params[name] === 'number' ? localNumber(params[name]) : String(params[name]),
   );
