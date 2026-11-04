@@ -78,3 +78,25 @@
   background: #ffc72c;
   transform: rotate(45deg);
 }
+
+/* [night-11p] R6a first-time card: the slot hint's strip with a yellow luggage-tag "OK" (48 dp, thumb side). */
+.airway-first-time { align-items: stretch; }
+.airway-first-time .airway-atc-hint { flex: 1 1 200px; }
+.airway-first-time__ok {
+  flex: none;
+  min-width: 64px;
+  min-height: 48px;
+  margin-left: auto;
+  padding: 0 14px;
+  border: 0;
+  border-left: 1px dashed #9e916c;
+  background: #ffc72c;
+  color: #1c1e20;
+  font: 800 14px/1 'Overpass', sans-serif;
+  letter-spacing: .04em;
+  pointer-events: auto;
+  touch-action: manipulation;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.airway-first-time__ok:focus-visible { outline: 3px solid #13302e; outline-offset: -4px; }

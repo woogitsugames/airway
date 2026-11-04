@@ -123,6 +123,8 @@ async function boot(): Promise<void> {
   let session: GameSession | null = null;
   let pendingSeed: number | null = null;
   let skipTutorialOnce = false;
+  // [night-11p] DEV: seeded E2E/store runs keep their screens free of first-time cards unless a test asks for them.
+  let devFirstTimeCards = true;
   let dailySession: ReturnType<typeof daily.start> | null = null;
   let lastDaily: DailyResult | null = null; // [night-10e] the finished daily run, for the share action
   let failedDailySeed: number | null = null;
@@ -226,6 +228,7 @@ async function boot(): Promise<void> {
     // The router's onScreen('game') does not tear down; build the session after it.
     session = startSession(app, world, run, {
       mode,
+      firstTimeCards: devFirstTimeCards,
       onScreen: (next: SessionScreen) => { screenName = next; },
       onMenu: () => screens.show('menu'),
       // [night-10e] Daily: "same world" is a practice of the same day's world (menu once the day changed),
@@ -379,7 +382,9 @@ async function boot(): Promise<void> {
   if (import.meta.env.DEV) {
     registerDevGameAdapter({
       state: () => devState(),
-      prepareSeed: (seed) => { pendingSeed = seed >>> 0; skipTutorialOnce = true; },
+      prepareSeed: (seed, options) => {
+        pendingSeed = seed >>> 0; skipTutorialOnce = true; devFirstTimeCards = options?.firstTime === true;
+      },
       advanceTicks: (ticks) => session?.advance(ticks),
       gesture: (kind) => {
         const drag = kind === 'route' ? session?.routeGesture() : kind === 'pick' ? session?.pickGesture() : session?.planeGesture();
@@ -423,6 +428,7 @@ async function boot(): Promise<void> {
     });
     if (scene === 'menu') { await frames(30); done(); return; }
     skipTutorialOnce = true;
+    devFirstTimeCards = false; // [night-11p]
     startEndless(seed);
     const active = session as GameSession | null;
     if (!active || !world) return;

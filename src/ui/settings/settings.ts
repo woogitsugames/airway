@@ -7,6 +7,8 @@ import { readAccessibilitySettings, updateAccessibilitySettings, type TextScale 
 import { reducedMotion, setReducedMotion } from '../motion';
 import { readAirportLabelMode, type AirportLabelMode } from '../airportLabel';
 import { AIRLINE_COLOURS, airlineColourHex, applyAirlineColour, isAirlineColour, readAirlineColour, type AirlineColourId } from '../airlineColour';
+import { regionGlyph } from '../glyphs';
+import { REGION_IDS } from '../../data/regions';
 import '../menu/menu.css';
 
 export interface UserSettings {
@@ -227,6 +229,16 @@ export function createSettings(onBack:()=>void,onLicenses:()=>void,onLanguageCha
     replay.addEventListener('click',onReplayTutorial);
     host.append(replay);
   }
+  // [night-11p] D-129: the glyph legend: the shape on a luggage tag is the destination region (shape, not colour).
+  const legend=e('div','airway-glyph-legend');legend.dataset.testid='settings-glyph-legend';
+  legend.append(e('p','airway-glyph-legend__title',t('settings.legend')),e('p','airway-setting__hint',t('settings.legend.hint')));
+  const rows=e('ul','airway-glyph-legend__rows');
+  for(const region of REGION_IDS){
+    const row=e('li','airway-glyph-legend__row');row.dataset.region=region;
+    row.append(regionGlyph(region,20),e('span','',t(`settings.legend.${region}` as TranslationKey)));
+    rows.append(row);
+  }
+  legend.append(rows);host.append(legend);
   const licences=e('button','airway-settings__licenses',t('settings.licenses'));
   licences.type='button';licences.dataset.testid='settings-licenses';licences.addEventListener('click',onLicenses);
   host.append(licences);

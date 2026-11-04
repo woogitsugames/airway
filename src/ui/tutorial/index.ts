@@ -1,21 +1,25 @@
 // [task-23] Airport-object overlay for the isolated three-city training flight.
 import { t, type TranslationKey } from '../../i18n';
 import {
+  TUTORIAL_ACTION_STEPS,
+  TUTORIAL_STEPS,
   TutorialController,
   type TutorialAction,
   type TutorialState,
   type TutorialStep,
 } from '../../game/tutorial/controller';
+import { regionGlyph } from '../glyphs';
+import { airportLabel } from '../airportLabel';
+import '../overlay.css'; // [night-11p] D-129: the vignette uses the game's own luggage tag
 import './tutorial.css';
 
 const SVG = `
 <svg class="aw-world-art" viewBox="0 0 412 520" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
  <defs>
-  <clipPath id="aw-planet-clip"><circle cx="206" cy="271" r="224"/></clipPath>
-  <pattern id="aw-runway-stripes" width="12" height="8" patternUnits="userSpaceOnUse"><path d="M6 0v4" stroke="#f8f3e8" stroke-width="2"/></pattern>
+  <clipPath id="aw-planet-clip"><circle cx="206" cy="271" r="192"/></clipPath>
  </defs>
- <ellipse cx="210" cy="488" rx="166" ry="16" fill="#265c69" opacity=".18"/>
- <circle cx="206" cy="271" r="228" fill="#1b5e7f"/>
+ <ellipse cx="210" cy="476" rx="142" ry="13" fill="#265c69" opacity=".18"/>
+ <circle class="aw-planet" cx="206" cy="271" r="196" fill="#1b5e7f"/>
  <g clip-path="url(#aw-planet-clip)">
   <path d="M-25 85L140 27 279 44 469 107 463 491 300 532 35 517Z" fill="#3c9cb0"/>
   <path d="M28 119L90 71 157 84 172 126 230 113 292 159 261 203 311 241 287 297 252 330 245 396 192 419 145 392 90 430 34 380 -18 302Z" fill="#86b35a"/>
@@ -38,26 +42,46 @@ const SVG = `
   <path d="M-5 85c120 -22 268 15 384 20" fill="none" stroke="#f5f2db" stroke-width="24" opacity=".15"/>
   <path d="M0 390c119 89 286 92 419 13" fill="none" stroke="#1f5f86" stroke-width="26" opacity=".20"/>
   <g fill="#f5f0de" opacity=".85"><ellipse cx="92" cy="143" rx="36" ry="9"/><ellipse cx="102" cy="136" rx="24" ry="12"/><ellipse cx="314" cy="320" rx="38" ry="9"/><ellipse cx="304" cy="313" rx="24" ry="11"/></g>
-  <path class="aw-night-wash" d="M-20 -20h460v590H-20z" fill="#102c39" opacity=".66"/>
   <path class="aw-route aw-route-feeder" d="M257 229 Q310 289 232 359"/>
   <path class="aw-route aw-route-primary" d="M133 174 Q205 143 257 229"/>
-  <path class="aw-route aw-route-relief" d="M133 174 Q89 282 232 359"/>
   <path class="aw-guide aw-guide-primary" d="M133 174 Q205 143 257 229"/>
-  <path class="aw-guide aw-guide-relief" d="M133 174 Q89 282 232 359"/>
   <path class="aw-live-path" d=""/>
-  <g class="aw-aircraft-symbol" transform="translate(205 183) rotate(44)"><path d="M0 -16l4 12 14 8v6L3 6l-1 12 4 4v3L0 23l-6 2v-3l4 -4 -1 -12 -15 4V4l14 -8Z" fill="#f8f1de" stroke="#13302e" stroke-width="2"/></g>
-  <g class="aw-wave-awakening" fill="none" stroke="#ffbd77" stroke-width="3"><circle cx="257" cy="229" r="32"/><circle cx="257" cy="229" r="45"/><circle cx="257" cy="229" r="57"/></g>
-  <g class="aw-congestion-ring" fill="none" stroke="#c8352a" stroke-width="8"><circle cx="257" cy="229" r="30" stroke-dasharray="12 5"/></g>
-  <g class="aw-terminal" transform="translate(133 174)"><ellipse cy="12" rx="25" ry="10" fill="#265f64"/><rect x="-17" y="-2" width="34" height="9" fill="#f7f3ea"/><path d="M-18 -2L0 -13 18 -2Z" fill="#1e6f6a"/><path d="M-2 9h4v23h-4z" fill="url(#aw-runway-stripes)"/></g>
-  <g class="aw-terminal" transform="translate(257 229)"><ellipse cy="12" rx="29" ry="12" fill="#1b585c"/><rect x="-20" y="-2" width="40" height="11" fill="#f7f3ea"/><path d="M-21 -2L0 -16 21 -2Z" fill="#1e6f6a"/><rect x="17" y="-20" width="7" height="21" fill="#f7f3ea"/><path d="M15 -20h11l-5 -7Z" fill="#ff7a3d"/></g>
-  <g class="aw-terminal" transform="translate(232 359)"><ellipse cy="12" rx="25" ry="10" fill="#265f64"/><rect x="-17" y="-2" width="34" height="9" fill="#f7f3ea"/><path d="M-18 -2L0 -13 18 -2Z" fill="#dcb36e"/></g>
+  <g class="aw-aircraft-symbol" transform="translate(186 168) rotate(52)"><path d="M0 -16l4 12 14 8v6L3 6l-1 12 4 4v3L0 23l-6 2v-3l4 -4 -1 -12 -15 4V4l14 -8Z" fill="#f8f1de" stroke="#13302e" stroke-width="2"/></g>
  </g>
- <circle cx="206" cy="271" r="224" fill="none" stroke="#d5ecdf" stroke-opacity=".7" stroke-width="4"/>
+ <circle cx="206" cy="271" r="192" fill="none" stroke="#d5ecdf" stroke-opacity=".7" stroke-width="4"/>
 </svg>`;
 
 const CITY_POSITIONS = { LON: [133, 174], PAR: [257, 229], ROM: [232, 359] } as const;
 type City = keyof typeof CITY_POSITIONS;
-type DragKind = 'route' | 'aircraft' | 'relieve';
+type DragKind = 'route' | 'aircraft';
+
+/** [night-11p] D-129: the game's airport object (src/render/airports.ts colours, read only): a pad with a rim, a
+ *  dark runway with its centre line and a small terminal; a hub has a teal rim and roof and its ring of waiting
+ *  places (white seats, the taken ones orange) like the hub load ring on the globe. */
+function airportSvg(hub: boolean, seats = 24, taken = 0): string {
+  const ring = hub ? Array.from({ length: seats }, (_, i) => {
+    const a0 = (i / seats) * Math.PI * 2 - Math.PI / 2 + 0.04;
+    const a1 = ((i + 1) / seats) * Math.PI * 2 - Math.PI / 2 - 0.04;
+    const r = 23.5;
+    const p = (a: number) => `${(Math.cos(a) * r).toFixed(2)} ${(Math.sin(a) * r).toFixed(2)}`;
+    return `<path d="M${p(a0)}A${r} ${r} 0 0 1 ${p(a1)}" stroke="${i < taken ? '#FF9A3D' : '#F2EFE6'}"/>`;
+  }).join('') : '';
+  return `<svg class="aw-airport" viewBox="-27 -27 54 54" aria-hidden="true">
+   <ellipse cx="1" cy="4" rx="21" ry="19" fill="#13302e" opacity=".28"/>
+   ${hub ? `<g class="aw-airport-ring" fill="none" stroke-width="4">${ring}</g>` : ''}
+   <circle r="${hub ? 19 : 17}" fill="${hub ? '#2FA39A' : '#E3743E'}"/>
+   <circle r="${hub ? 17 : 15}" fill="#EFE9DA"/>
+   <g transform="rotate(-35)"><rect x="${hub ? -15 : -13}" y="-3.4" width="${hub ? 30 : 26}" height="6.8" fill="#3B4046"/>
+   <path d="M${hub ? -12 : -10} 0H${hub ? 12 : 10}" stroke="#F5F1E6" stroke-width="1" stroke-dasharray="3 2"/></g>
+   <rect x="2" y="4.5" width="10" height="6" fill="#F2EFE6"/><rect x="2" y="3" width="10" height="2.6" fill="${hub ? '#2A8F8A' : '#C96F4A'}"/>
+  </svg>`;
+}
+/** Passengers in the vignette fly London → Paris (hub) → Rome: Southern Europe, the crescent glyph. */
+const PASSENGER_REGION = 'EUS' as const;
+/** Where the passenger glyphs wait at each step (the game's luggage tag; a plate alone when nobody waits). */
+const WAITING: Record<TutorialStep, Partial<Record<City, number>>> = {
+  route: { LON: 2 }, aircraft: { LON: 2 }, transfer: { PAR: 2 }, complete: {},
+};
 
 function translate(key: TranslationKey): string { return t(key); }
 
@@ -79,12 +103,10 @@ export function mountTutorialUi(host: HTMLElement, controller: TutorialControlle
       <main class="aw-tutorial-center">
         <div class="aw-tutorial-world" data-testid="tutorial-world">
           ${SVG}
-          <button type="button" class="aw-city aw-city-lon" data-city="LON" data-testid="city-lon"><span class="aw-city-pin"></span><span class="aw-city-name" data-copy="tutorial.city.london"></span></button>
-          <button type="button" class="aw-city aw-city-par" data-city="PAR" data-testid="city-par"><span class="aw-city-pin aw-city-hub"></span><span class="aw-city-name" data-copy="tutorial.city.paris"></span></button>
-          <button type="button" class="aw-city aw-city-rom" data-city="ROM" data-testid="city-rom"><span class="aw-city-pin"></span><span class="aw-city-name" data-copy="tutorial.city.rome"></span></button>
+          <button type="button" class="aw-city aw-city-lon" data-city="LON" data-testid="city-lon"><span class="airport-bubble aw-city-tag"><span class="airport-bubble__plate"></span><span class="aw-city-glyphs"></span></span>${airportSvg(false)}</button>
+          <button type="button" class="aw-city aw-city-par aw-city--hub" data-city="PAR" data-testid="city-par"><span class="airport-bubble aw-city-tag"><span class="airport-bubble__plate"></span><span class="aw-city-glyphs"></span></span>${airportSvg(true, 24, 8)}</button>
+          <button type="button" class="aw-city aw-city-rom" data-city="ROM" data-testid="city-rom"><span class="airport-bubble aw-city-tag"><span class="airport-bubble__plate"></span><span class="aw-city-glyphs"></span></span>${airportSvg(false)}</button>
           <button type="button" class="aw-route-drop" data-testid="tutorial-route-drop"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 5V35M5 20H35" stroke="currentColor" stroke-width="3"/><circle cx="20" cy="20" r="18" fill="none" stroke="currentColor" stroke-width="2"/></svg></button>
-          <div class="aw-passenger-card" aria-hidden="true"><span class="aw-passenger-shape">❯</span><span class="aw-passenger-arrow">→</span><span class="aw-passenger-shape">❯</span></div>
-          <div class="aw-jam-label" data-copy="tutorial.jam"></div>
         </div>
         <div class="aw-tutorial-strip" role="status" aria-live="polite" aria-atomic="true">
           <span class="aw-strip-index" data-testid="tutorial-step-label"></span><span class="aw-strip-copy" data-testid="tutorial-instruction"></span>
@@ -94,12 +116,6 @@ export function mountTutorialUi(host: HTMLElement, controller: TutorialControlle
         <p class="aw-tutorial-hint" data-testid="tutorial-hint"></p>
         <div class="aw-tutorial-dock">
           <button type="button" class="aw-plane-tag" data-testid="tutorial-plane-tag"><svg viewBox="0 0 48 36" aria-hidden="true"><path d="M24 3L29 17 45 25V31L27 26 26 34 22 34 21 26 3 31V25L19 17Z" fill="currentColor"/></svg><span data-copy="tutorial.tag.aircraft"></span></button>
-          <button type="button" class="aw-action-tag aw-dawn-action" data-testid="tutorial-dawn" data-copy="tutorial.action.dawn"></button>
-          <div class="aw-upgrades" data-testid="tutorial-upgrades">
-            <button type="button" class="aw-upgrade" data-choice="hub" data-testid="tutorial-upgrade-hub"><span data-copy="tutorial.upgrade.hub"></span></button>
-            <button type="button" class="aw-upgrade" data-choice="aircraft" data-testid="tutorial-upgrade-aircraft"><span data-copy="tutorial.upgrade.aircraft"></span></button>
-            <button type="button" class="aw-upgrade" data-choice="slots" data-testid="tutorial-upgrade-slots"><span data-copy="tutorial.upgrade.slots"></span></button>
-          </div>
           <button type="button" class="aw-action-tag aw-complete-action" data-testid="tutorial-continue" data-copy="tutorial.action.continue"></button>
         </div>
       </footer>
@@ -126,34 +142,50 @@ export function mountTutorialUi(host: HTMLElement, controller: TutorialControlle
   const settings = query<HTMLElement>('.aw-settings-dialog');
   const cityButtons = Object.fromEntries(['LON', 'PAR', 'ROM'].map((city) =>
     [city, query<HTMLButtonElement>(`[data-city="${city}"]`)])) as Record<City, HTMLButtonElement>;
+  // [night-11p] Plates follow the D-68 code/name setting like the game; the button says the city (and "hub").
+  const cityNames: Record<City, TranslationKey> = { LON: 'tutorial.city.london', PAR: 'tutorial.city.paris', ROM: 'tutorial.city.rome' };
+  for (const city of Object.keys(cityButtons) as City[]) {
+    const button = cityButtons[city];
+    button.querySelector('.airport-bubble__plate')!.textContent = airportLabel(city);
+    const name = translate(cityNames[city]);
+    button.setAttribute('aria-label', city === 'PAR' ? t('tutorial.city.hubAria', { city: name }) : name);
+  }
+  const shownWaiting: Partial<Record<City, number>> = {};
+  function renderWaiting(step: TutorialStep): void {
+    for (const city of Object.keys(cityButtons) as City[]) {
+      const count = WAITING[step][city] ?? 0;
+      if (shownWaiting[city] === count) continue;
+      shownWaiting[city] = count;
+      const tag = cityButtons[city].querySelector<HTMLElement>('.aw-city-tag')!;
+      const glyphs = tag.querySelector<HTMLElement>('.aw-city-glyphs')!;
+      glyphs.replaceChildren(...Array.from({ length: count }, () => regionGlyph(PASSENGER_REGION, 16)));
+      tag.classList.toggle('airport-bubble--plate-only', count === 0);
+    }
+  }
   let dragging: { kind: DragKind; pointerId: number; source: City | 'tag' } | null = null;
   let keyboardSource: City | 'tag' | null = null;
   let closed = false;
 
   function render(state: TutorialState): void {
     root.classList.toggle('is-active', state.visible);
-    root.classList.toggle('has-primary', ['aircraft','transfer','dawn','upgrade','congestion','complete'].includes(state.step));
-    root.classList.toggle('has-plane', ['transfer','dawn','upgrade','congestion','complete'].includes(state.step));
-    root.classList.toggle('has-relief', state.step === 'complete');
-    root.classList.toggle('is-night', state.step === 'dawn');
-    root.classList.toggle('is-jammed', state.step === 'congestion');
+    root.classList.toggle('has-primary', state.step !== 'route');
+    root.classList.toggle('has-plane', state.step === 'transfer' || state.step === 'complete');
     root.dataset.step = state.step;
+    const index = TUTORIAL_STEPS.indexOf(state.step);
     query<HTMLElement>('[data-testid="tutorial-progress"]').textContent = t('tutorial.progress', {
-      current: String(Math.min(6, ['route','aircraft','transfer','dawn','upgrade','congestion'].indexOf(state.step) + 1) || 6), total: 6,
+      current: Math.min(TUTORIAL_ACTION_STEPS, index + 1), total: TUTORIAL_ACTION_STEPS,
     });
+    renderWaiting(state.step);
     const titles: Record<TutorialStep, TranslationKey> = {
       route: 'tutorial.step.route', aircraft: 'tutorial.step.aircraft', transfer: 'tutorial.step.transfer',
-      dawn: 'tutorial.step.dawn', upgrade: 'tutorial.step.upgrade', congestion: 'tutorial.step.congestion',
       complete: 'tutorial.step.complete',
     };
     const instructions: Record<TutorialStep, TranslationKey> = {
       route: 'tutorial.instruction.route', aircraft: 'tutorial.instruction.aircraft', transfer: 'tutorial.instruction.transfer',
-      dawn: 'tutorial.instruction.dawn', upgrade: 'tutorial.instruction.upgrade',
-      congestion: 'tutorial.instruction.congestion', complete: 'tutorial.instruction.complete',
+      complete: 'tutorial.instruction.complete',
     };
     const hints: Record<TutorialStep, TranslationKey> = {
       route: 'tutorial.hint.route', aircraft: 'tutorial.hint.aircraft', transfer: 'tutorial.hint.transfer',
-      dawn: 'tutorial.hint.dawn', upgrade: 'tutorial.hint.upgrade', congestion: 'tutorial.hint.congestion',
       complete: 'tutorial.hint.complete',
     };
     query<HTMLElement>('[data-testid="tutorial-step-label"]').textContent = translate(titles[state.step]);
@@ -162,7 +194,7 @@ export function mountTutorialUi(host: HTMLElement, controller: TutorialControlle
     query<HTMLButtonElement>('[data-testid="tutorial-skip"]').disabled = state.busy;
     routeDrop.disabled = state.busy;
     for (const city of Object.keys(cityButtons) as City[]) cityButtons[city].disabled = state.busy;
-    if (state.step !== 'route' && state.step !== 'congestion') keyboardSource = null;
+    if (state.step !== 'route' && state.step !== 'aircraft') keyboardSource = null;
   }
 
   function viewPoint(clientX: number, clientY: number): [number, number] {
@@ -177,7 +209,8 @@ export function mountTutorialUi(host: HTMLElement, controller: TutorialControlle
     root.classList.add('is-dragging');
   }
   function hit(target: HTMLElement, x: number, y: number): boolean {
-    const rect = target.getBoundingClientRect();
+    // [night-11p] Aim at the airport disc (the button also holds its luggage tag above it).
+    const rect = (target.querySelector('.aw-airport') ?? target).getBoundingClientRect();
     const cx = rect.left + rect.width / 2;
     const cy = rect.top + rect.height / 2;
     return Math.hypot(cx - x, cy - y) <= Math.max(34, rect.width / 2 + 10);
@@ -189,16 +222,13 @@ export function mountTutorialUi(host: HTMLElement, controller: TutorialControlle
       attempt({ type: 'inspect-transfer', hub: 'PAR' });
       return;
     }
-    if ((step === 'route' || step === 'congestion') && city === 'LON') {
+    if (step === 'route' && city === 'LON') {
       keyboardSource = 'LON';
       return;
     }
     if (keyboardSource === 'LON' && step === 'route' && city === 'PAR') {
       keyboardSource = null;
       attempt({ type: 'route', from: 'LON', to: 'PAR' });
-    } else if (keyboardSource === 'LON' && step === 'congestion' && city === 'ROM') {
-      keyboardSource = null;
-      attempt({ type: 'relieve', from: 'LON', to: 'ROM' });
     }
   }
   for (const city of Object.keys(cityButtons) as City[]) {
@@ -207,9 +237,7 @@ export function mountTutorialUi(host: HTMLElement, controller: TutorialControlle
     button.addEventListener('pointerdown', (event: PointerEvent) => {
       const step = controller.getState().step;
       if (city !== 'LON' || !controller.getState().visible) return;
-      if (step === 'route' || step === 'congestion') {
-        dragging = { kind: step === 'route' ? 'route' : 'relieve', pointerId: event.pointerId, source: 'LON' };
-      }
+      if (step === 'route') dragging = { kind: 'route', pointerId: event.pointerId, source: 'LON' };
     });
   }
   const planeTag = query<HTMLButtonElement>('[data-testid="tutorial-plane-tag"]');
@@ -236,8 +264,6 @@ export function mountTutorialUi(host: HTMLElement, controller: TutorialControlle
       attempt({ type: 'route', from: 'LON', to: 'PAR' });
     else if (drag.kind === 'aircraft' && hit(routeDrop, event.clientX, event.clientY))
       attempt({ type: 'assign-aircraft', route: 'LON-PAR' });
-    else if (drag.kind === 'relieve' && hit(cityButtons.ROM, event.clientX, event.clientY))
-      attempt({ type: 'relieve', from: 'LON', to: 'ROM' });
   };
   const pointerCancel = (): void => {
     dragging = null;
@@ -249,10 +275,6 @@ export function mountTutorialUi(host: HTMLElement, controller: TutorialControlle
   document.addEventListener('pointercancel', pointerCancel);
 
   query<HTMLButtonElement>('[data-testid="tutorial-skip"]').addEventListener('click', () => controller.skip());
-  query<HTMLButtonElement>('[data-testid="tutorial-dawn"]').addEventListener('click', () => attempt({ type: 'watch-dawn' }));
-  root.querySelectorAll<HTMLButtonElement>('[data-choice]').forEach((button) => {
-    button.addEventListener('click', () => attempt({ type: 'upgrade', choice: button.dataset.choice as 'hub' | 'aircraft' | 'slots' }));
-  });
   query<HTMLButtonElement>('[data-testid="tutorial-continue"]').addEventListener('click', () => controller.close());
   query<HTMLButtonElement>('[data-testid="tutorial-settings"]').addEventListener('click', () => { settings.hidden = false; });
   query<HTMLButtonElement>('[data-testid="tutorial-settings-close"]').addEventListener('click', () => { settings.hidden = true; });

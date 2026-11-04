@@ -1,19 +1,18 @@
 // [task-23] Training progression is independent of renderer and simulation implementations.
 export const TUTORIAL_KEY = 'aw-tutorial';
+// [night-11p] D-130: three steps before the first run; upgrades, congestion and the night became first-time cards in
+// the real game (first-time.ts). The version stays 1: completed and skipped saves are still valid, and an
+// in-progress save at a removed step fails `isStep` and simply starts the (now short) flight again.
 export const TUTORIAL_VERSION = 1;
-export const TUTORIAL_STEPS = [
-  'route', 'aircraft', 'transfer', 'dawn', 'upgrade', 'congestion', 'complete',
-] as const;
+export const TUTORIAL_STEPS = ['route', 'aircraft', 'transfer', 'complete'] as const;
+/** Steps the player acts on (the progress counter's total). */
+export const TUTORIAL_ACTION_STEPS = TUTORIAL_STEPS.length - 1;
 
 export type TutorialStep = (typeof TUTORIAL_STEPS)[number];
-export type UpgradeChoice = 'hub' | 'aircraft' | 'slots';
 export type TutorialAction =
   | { type: 'route'; from: 'LON'; to: 'PAR' }
   | { type: 'assign-aircraft'; route: 'LON-PAR' }
-  | { type: 'inspect-transfer'; hub: 'PAR' }
-  | { type: 'watch-dawn' }
-  | { type: 'upgrade'; choice: UpgradeChoice }
-  | { type: 'relieve'; from: 'LON'; to: 'ROM' };
+  | { type: 'inspect-transfer'; hub: 'PAR' };
 
 export interface TutorialPort {
   /** Return true only after the game accepted the actual command or observed the event. */
@@ -33,30 +32,22 @@ export interface TutorialState {
   readonly visible: boolean;
   readonly step: TutorialStep;
   readonly busy: boolean;
-  readonly selectedUpgrade: UpgradeChoice | null;
 }
 
 type SavedTutorial = {
   version: number;
   status: 'in-progress' | 'completed' | 'skipped';
   step?: TutorialStep;
-  selectedUpgrade?: UpgradeChoice;
 };
 
 const ACTION_FOR_STEP: Record<Exclude<TutorialStep, 'complete'>, TutorialAction['type']> = {
   route: 'route',
   aircraft: 'assign-aircraft',
   transfer: 'inspect-transfer',
-  dawn: 'watch-dawn',
-  upgrade: 'upgrade',
-  congestion: 'relieve',
 };
 
 function isStep(value: unknown): value is TutorialStep {
   return typeof value === 'string' && TUTORIAL_STEPS.some((step) => step === value);
-}
-function isUpgrade(value: unknown): value is UpgradeChoice {
-  return value === 'hub' || value === 'aircraft' || value === 'slots';
 }
 function readSave(storage: TutorialStorage | null): SavedTutorial | null {
   try {
@@ -68,7 +59,6 @@ function readSave(storage: TutorialStorage | null): SavedTutorial | null {
     if (candidate.version !== TUTORIAL_VERSION) return null;
     if (!['in-progress', 'completed', 'skipped'].includes(candidate.status ?? '')) return null;
     if (candidate.step !== undefined && !isStep(candidate.step)) return null;
-    if (candidate.selectedUpgrade !== undefined && !isUpgrade(candidate.selectedUpgrade)) return null;
     return candidate as SavedTutorial;
   } catch {
     // Quota, unavailable storage and malformed saves must not block play.
@@ -92,7 +82,6 @@ export class TutorialController {
       visible,
       step: saved?.status === 'in-progress' && saved.step ? saved.step : 'route',
       busy: false,
-      selectedUpgrade: saved?.selectedUpgrade ?? null,
     };
     this.port.setPaused(visible && this.current.step !== 'complete');
   }
@@ -119,13 +108,12 @@ export class TutorialController {
       return false;
     }
     const next = TUTORIAL_STEPS[TUTORIAL_STEPS.indexOf(before.step) + 1];
-    const selectedUpgrade = action.type === 'upgrade' ? action.choice : before.selectedUpgrade;
-    this.change({ visible: true, step: next, busy: false, selectedUpgrade });
+    this.change({ visible: true, step: next, busy: false });
     if (next === 'complete') {
-      this.save({ version: TUTORIAL_VERSION, status: 'completed', step: next, selectedUpgrade: selectedUpgrade ?? undefined });
+      this.save({ version: TUTORIAL_VERSION, status: 'completed', step: next });
       this.port.setPaused(false);
     } else {
-      this.save({ version: TUTORIAL_VERSION, status: 'in-progress', step: next, selectedUpgrade: selectedUpgrade ?? undefined });
+      this.save({ version: TUTORIAL_VERSION, status: 'in-progress', step: next });
       this.port.setPaused(true);
     }
     return true;
@@ -145,7 +133,7 @@ export class TutorialController {
   replay(): void {
     this.generation++;
     this.port.reset?.();
-    this.change({ visible: true, step: 'route', busy: false, selectedUpgrade: null });
+    this.change({ visible: true, step: 'route', busy: false });
     this.save({ version: TUTORIAL_VERSION, status: 'in-progress', step: 'route' });
     this.port.setPaused(true);
   }
@@ -167,9 +155,6 @@ export class TutorialController {
       case 'route': return action.type === 'route' && action.from === 'LON' && action.to === 'PAR';
       case 'aircraft': return action.type === 'assign-aircraft' && action.route === 'LON-PAR';
       case 'transfer': return action.type === 'inspect-transfer' && action.hub === 'PAR';
-      case 'dawn': return action.type === 'watch-dawn';
-      case 'upgrade': return action.type === 'upgrade' && isUpgrade(action.choice);
-      case 'congestion': return action.type === 'relieve' && action.from === 'LON' && action.to === 'ROM';
       case 'complete': return false;
     }
   }

@@ -1262,3 +1262,32 @@ stricter than before (it also proves the mark lasts) and still fails if the mark
 used `autoplay(2)`, whose seed-0xA1A1 run now ends before the week-2 board; like N11j (D-132) it plays to the week-1
 board and makes one plain pick. Rejected: another seed (the spawn interval is fixed, no seed avoids the overlap),
 a shorter mark (a rules/UI change made to suit a test). **Status: in force (N11o, new-airport 4/4, transfer-glyphs 2/2).**
+
+## D-184 — Training flight: three steps in the game's own marks, glyph legend in help (2026-11-04, Claude, night N11p)
+Implements D-129 and D-130 (R5b, R6b). The vignette keeps route → aircraft → transfer and then "cleared"; "STEP n / 3".
+Its cities are the game's airport object (the colours of `src/render/airports.ts`: pad, rim, runway, terminal; the
+hub with a teal rim and its ring of waiting places) under the game's own luggage tag (`.airport-bubble` with the code
+plate per D-68 and the real region glyphs), so nothing in the vignette looks unlike the game: the old orange
+diamonds read like the route-end handles. The passengers fly London → Paris → Rome, so the one glyph sentence is
+"Crescent = Southern Europe" (true for the drawing), not the R5b example "bow tie = Middle East". The dawn is one
+sentence on the last step. `TUTORIAL_VERSION` stays 1: completed/skipped saves stay valid and an in-progress save
+at a removed step simply restarts the short flight. The planet radius went 228 → 196 of the 412 art units, so it no
+longer crosses the sides of a 412 px phone. Settings → help shows 8 rows of glyph + region name (own i18n keys).
+Rejected: a hollow (in-connection) glyph in the vignette (one more idea in a 3-step flight), keeping "Paris · HUB"
+as text (the ring says it, as in the game; the button's aria-label still says "hub").
+**Status: in force (N11p, `test:e2e:tutorial` 28, `test:e2e:tutorial-layout` 7).**
+
+## D-190 — First-time cards: one registry, four cards, never stopping time (2026-11-04, Claude, night N11p)
+Implements D-130 (R6a). `src/game/tutorial/first-time.ts` holds one versioned storage key (`aw-first-time`,
+`{v:1, seen:[…]}`) and pure triggers; the task-32 slot hint is the registry's `slots` card but keeps its old flag
+(`aw-tutorial-slots`) so existing installs do not see it again. Cards: first hub at ≥ 70 % of its waiting places
+(bypass or expand), first new airport whose nearest open airport is beyond turboprop range (widebody from a crate),
+first curfew night, and right after the first weekly board closes (what a crate is and where its aircraft wait) —
+after, not on, the board, which already fills a phone screen. A card is marked when shown, uses the slot hint's ATC
+strip with a 48 px OK, leaves after 12 s, is `aria-live=polite`, never pauses, waits while the slot hint or the
+board is up, and only one is on screen. Endless and Daily only (puzzles teach their own mechanic). DEV seeded runs
+(`aw.prepareSeed`, store shots) turn them off so existing E2E, matrix and store screens are unchanged;
+`prepareSeed(seed, { firstTime: true })` turns them on. Rejected: pausing for each card (the owner's B keeps the
+run flowing), a card on the weekly board itself (covers crates in landscape).
+**Status: in force (N11p, `test:first-time` 7, `test:e2e:first-time-cards` 4).**
+

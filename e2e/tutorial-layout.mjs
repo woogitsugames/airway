@@ -13,6 +13,8 @@ import { withBrowser, newGamePage, assert, clickTestId, saveDiagnostics, ROOT, S
 const started = performance.now();
 const SHOTS = resolve(ROOT, 'docs/shots/n11l');
 const results = [];
+// [night-11p] D-130: the night step is gone; the last ("cleared") step is measured instead, and the planet must stay
+// inside the screen sides (it overflowed a 412 px phone by ~11 px a side).
 // 686×762 "insets": the unfolded Fold; Chromium cannot emulate env(safe-area-inset-*), so the stage gets the
 // device's status bar (40 px) and gesture bar (20 px) as padding — the layout that overflowed on the phone.
 const INSETS = '.aw-tutorial-stage { padding-top: 49px !important; padding-bottom: 29px !important; }';
@@ -59,6 +61,9 @@ async function measure(page, tagId) {
       world: world && { top: world.top, bottom: world.bottom }, center: center && { top: center.top, bottom: center.bottom },
       tagShape: tag ? getComputedStyle(tag).clipPath : null,
       worldBg: getComputedStyle(document.querySelector('.aw-tutorial-world')).backgroundColor,
+      // [night-11p] the planet (first circle of the art) must stay inside the screen sides
+      planet: (() => { const r = document.querySelector('.aw-world-art > circle').getBoundingClientRect(); return { left: r.left, right: r.right }; })(),
+      width: innerWidth,
       stageBg: getComputedStyle(stage).backgroundColor,
     };
   }, tagId);
@@ -78,6 +83,8 @@ function check(m, label) {
   assert(m.world.top >= m.center.top - 0.5 && m.world.bottom <= m.center.bottom + 0.5 && m.strip.bottom <= m.center.bottom + 0.5,
     `${label}: world/card overflow their row ${JSON.stringify({ world: m.world, strip: m.strip.bottom, center: m.center })}`);
   assert(m.tagShape === TAG_SHAPE, `${label}: tag outline ${m.tagShape}`);
+  assert(m.planet.left >= -0.5 && m.planet.right <= m.width + 0.5,
+    `${label}: planet ${m.planet.left.toFixed(1)}…${m.planet.right.toFixed(1)} crosses the screen sides (0…${m.width})`);
 }
 
 let fatal = null;
@@ -99,13 +106,14 @@ try {
         await drag(page, 'tutorial-plane-tag', 'tutorial-route-drop');
         await atStep(page, 'transfer');
         await page.getByTestId('city-par').click();
-        await atStep(page, 'dawn');
+        // [night-11p] D-130: no night step any more; the last step ("Start flying") carries the dawn sentence.
+        await atStep(page, 'complete');
         await page.waitForTimeout(250);
-        const night = await measure(page, 'tutorial-dawn');
-        check(night, `${label} night`);
-        assert(night.worldBg === night.stageBg || night.worldBg === 'rgba(0, 0, 0, 0)',
-          `${label} night: world box ${night.worldBg} differs from the stage ${night.stageBg} (a dark rectangle)`);
-        await page.screenshot({ path: resolve(SHOTS, `night-${language}-${width}x${height}${insets ? '-insets' : ''}.png`) });
+        const last = await measure(page, 'tutorial-continue');
+        check(last, `${label} cleared`);
+        assert(last.worldBg === last.stageBg || last.worldBg === 'rgba(0, 0, 0, 0)',
+          `${label} cleared: world box ${last.worldBg} differs from the stage ${last.stageBg} (a dark rectangle)`);
+        await page.screenshot({ path: resolve(SHOTS, `cleared-${language}-${width}x${height}${insets ? '-insets' : ''}.png`) });
         if (errors.length) throw new Error(`Browser errors: ${errors.join('; ')}`);
         results.push({ label, status: 'PASS' });
       } catch (error) {

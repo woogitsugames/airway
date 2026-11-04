@@ -2,10 +2,11 @@
 // vignette: it appears in a live run the first time an aircraft is held for a slot, once per install,
 // as an ATC paper strip (D-11) that leaves on the next tap or after a few seconds.
 import { t } from '../../i18n';
-import { browserTutorialStorage, type TutorialStorage } from './controller';
+import { browserTutorialStorage } from './controller';
+import { FirstTimeRegistry, LEGACY_SLOT_KEY } from './first-time';
 import '../../ui/atcStrip.css';
 
-export const SLOT_HINT_KEY = 'aw-tutorial-slots';
+export const SLOT_HINT_KEY = LEGACY_SLOT_KEY;
 const VISIBLE_MS = 9000;
 
 export interface SlotHint {
@@ -23,11 +24,8 @@ export function slotClock(minutes: number): string {
   return `${Math.floor(whole / 60)}:${String(whole % 60).padStart(2, '0')}`;
 }
 
-function seen(storage: TutorialStorage | null): boolean {
-  try { return storage?.getItem(SLOT_HINT_KEY) === '1'; } catch { return false; }
-}
-
-export function mountSlotHint(host: HTMLElement, storage: TutorialStorage | null = browserTutorialStorage()): SlotHint {
+/** [night-11p] The slot hint is the registry's 'slots' card (its flag keeps the task-32 key). */
+export function mountSlotHint(host: HTMLElement, registry = new FirstTimeRegistry(browserTutorialStorage())): SlotHint {
   const strip = document.createElement('aside');
   strip.className = 'airway-atc-strip airway-slot-hint';
   strip.dataset.testid = 'slot-hint';
@@ -42,7 +40,7 @@ export function mountSlotHint(host: HTMLElement, storage: TutorialStorage | null
   hint.className = 'airway-atc-field airway-atc-hint';
   strip.append(step, tag, hint);
   host.append(strip);
-  let shown = seen(storage);
+  let shown = registry.seen('slots');
   let timer: ReturnType<typeof setTimeout> | null = null;
   const hide = (): void => {
     strip.hidden = true;
@@ -53,7 +51,7 @@ export function mountSlotHint(host: HTMLElement, storage: TutorialStorage | null
     held(airport, limit, minutesToSlot) {
       if (shown) return;
       shown = true;
-      try { storage?.setItem(SLOT_HINT_KEY, '1'); } catch { /* storage is optional */ }
+      registry.mark('slots');
       step.textContent = t('tutorial.step.slots');
       tag.textContent = t('tutorial.slots.tag', { airport, time: slotClock(minutesToSlot) });
       hint.textContent = t('tutorial.slots.hint', { airport, limit });
