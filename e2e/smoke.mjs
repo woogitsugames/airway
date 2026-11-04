@@ -2,8 +2,12 @@
 // Steps depend on each other: after the first failure the rest are reported as SKIP.
 import { performance } from 'node:perf_hooks';
 import {
-  withBrowser, newGamePage, waitForScreen, dragGesture, state, assert, clickTestId, saveDiagnostics, SEED,
+  withBrowser, newGamePage, waitForScreen, dragGesture, state, assert, clickTestId, saveDiagnostics,
 } from './browser.mjs';
+import { E2E_SEEDS } from './seeds.mjs';
+
+// [night-12ag] Per-suite seed, replayed headless by test:e2e-seeds (route + aircraft drags for every start pair).
+const SEED = E2E_SEEDS.smoke.seeds[0];
 
 const fixture = process.argv.includes('--fixture');
 const started = performance.now();

@@ -1621,3 +1621,15 @@ cap (D-46) rarely binds for the bot, not because the rule is too strict. With th
 positive subset), and the bot's mean drops 16.74 → 16.45 min because the card takes a place from the hub card or the
 second aircraft. No rule changed (D-113); whether people reach the cap is asked in Q-80. Numbers in
 `docs/balance/README.md` "N12af". **Status: in force (no change); revisit with Q-80 after the closed test.**
+
+## D-208 — smoke and leaderboard read their seed from e2e/seeds.mjs; their pointer drags are replayed headless for every start pair (2026-11-04, Claude, night N12ag)
+N12ac left smoke and leaderboard outside `test:e2e-seeds` because they build their first route with pointer drags
+(`window.aw.gesture`), not with the bot. The drags are two Commands: the route tool's `AddRoute` between the pair that
+`session.routeGesture()` finds (first pair of on-screen start airports within the dock's turboprop range) and the
+dock-tag drop's `AssignPlane` on the first route whose aircraft is in reserve. New plan step `{ gesture: 'route-plane' }`
+in `scripts/lib/e2e-plans.ts` sends exactly these. Which airports are on screen depends on the camera and viewport
+(`src/render`, not replayable without a browser), so `checkPlan` runs a gesture plan for **every** start pair within
+range (6 on 0xA1A1) × the 7 idle offsets: a superset of what any viewport can pick. Plans: smoke = drags, week-1
+board, plain card, forced overload; leaderboard = drags, 240 ticks alive, forced overload. Both suites now take
+`E2E_SEEDS.smoke/leaderboard.seeds[0]` (0xA1A1, unchanged). Still outside: daily-share and daily-continue (seeded by
+the date). The on-screen filter itself and the drag hit-testing remain browser-only. **Status: in force (N12ag).**

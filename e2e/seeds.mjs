@@ -27,8 +27,9 @@
 //   { routes: n }                      the run is going and has at least n routes
 //   { triggers: [cards], ticks, every, take }  botStep() + advanceTicks(every) for `ticks`, answering boards, until
 //                                      each first-time card's trigger fired (hub-full, out-of-range, curfew, weekly-board)
-// Suites driven only by gestures on screen or by the date seed (smoke, leaderboard, daily-share, daily-continue)
-// have no bot plan to replay; their forced overload needs no seed.
+//   { gesture: 'route-plane' }         [night-12ag] the route drag + the dock-tag drag of smoke/leaderboard
+//                                      (AddRoute turboprop + AssignPlane), checked for every start-airport pair in range
+// Suites seeded by the date (daily-share, daily-continue) have no fixed seed to replay.
 
 /** @type {Record<string, { seeds: number[], plans: { name: string, steps: object[] }[] }>} */
 export const E2E_SEEDS = {
@@ -162,6 +163,19 @@ export const E2E_SEEDS = {
       { name: 'week-1 board', steps: [{ board: 1 }] },
       { name: 'forced overload', steps: [{ overload: true }] },
     ],
+  },
+  // [night-12ag] The two suites that build their first route with pointer drags.
+  'smoke': {
+    seeds: [0xA1A1],
+    plans: [{ name: 'route + aircraft drags, week-1 board, plain card, forced overload', steps: [
+      { gesture: 'route-plane' }, { board: 1 }, { take: 'plain' }, { overload: true },
+    ] }],
+  },
+  'leaderboard': {
+    seeds: [0xA1A1],
+    plans: [{ name: 'route + aircraft drags, 240 ticks alive, forced overload', steps: [
+      { gesture: 'route-plane' }, { ticks: 240, alive: true }, { overload: true },
+    ] }],
   },
   'airport-plates': {
     seeds: [0xA1A1],
