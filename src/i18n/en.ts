@@ -46,6 +46,7 @@ export const en = {
   'hud.widebodyCount': 'Widebody aircraft: {count}. Select or drag onto a route',
   'hud.hubCount': 'Hub upgrades available: {count}',
   'hud.speed': 'Game speed: {speed}×. Change speed',
+  'hud.globeMode': 'Globe view: {mode}. Switch view',
   // [task-12] Weekly freight labels
   'upgrade.freight': 'FREIGHT',
   'upgrade.selectHub': 'Select a hub on the globe',
@@ -109,6 +110,9 @@ export const en = {
   'settings.group.help': 'Help',
   'settings.language': 'Language',
   'settings.graphics': 'Graphics quality',
+  'settings.globeMode': 'Globe view',
+  'settings.globeMode.satellite': 'Satellite',
+  'settings.globeMode.map': 'Map',
   // [night-05] D-68 airport label setting.
   'settings.airportLabels': 'Airports',
   'settings.airportLabels.code': 'Code',

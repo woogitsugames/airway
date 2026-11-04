@@ -1115,7 +1115,10 @@ default** on first launch; the mode is switched in **Settings (remembered) and b
 dock** for quick changes. The Mapa mode must still respect the forbidden list (no flat pastel background, no
 subway-map look) and D-05: it stays a lit 3D globe with relief. Mapa look: the owner's Google-Maps-like reference,
 rebuilt in our own palette with ETOPO5 hillshade and Natural Earth borders (no copied colours, no labels).
-**Status: accepted by the owner 2026-11-03; plan step G8 (readability via D-175).**
+**Status: in force (G8, 2026-11-04): Settings → Display → Globe view (`globeMode`, default `satellite`) and a sixth dock
+tag (own globe/folded-map icons) swap the surface textures (`GlobeInstance.setSurfaceLook`, no rebuild; clouds only in
+Satelita); `public/data/globe/map-{4096,2048}.jpg` (+0.54 MB); the dock grid has six columns (60 px at 412, 49 px at
+320). Mapa readability: G9b.**
 
 ## D-173 — Adaptive quality steps down the globe texture first (2026-11-03, Claude, ext/03)
 With B the largest GPU cost is the 4096×2048 day texture (~43 MB with mips, uncompressed). The D-73 ladder gets a
