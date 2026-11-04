@@ -1661,3 +1661,29 @@ it, and the dialog's label names the week); the instruction takes both rows (13 
 the sign ≤ 60 px like the pass. Boards ≥ 760 px keep the week. Guard: `test:e2e:notch` "upgrade-pick" (hub, then slots
 pick): sign parts and their text inside the sign, instruction ≥ 80 px and ≤ 3 lines, clear of the pass and the rack's
 cable, no taller than the pass beside it (56/60 on the old CSS). **Status: in force.**
+
+## D-211 — Translator files: JSON or CSV export, strict import into `src/i18n/<code>.ts` (2026-11-04, Claude, night N12ah)
+R7i. `npm run i18n:export -- <code>` writes `docs/i18n/<code>.json` (format `airway-i18n/1`; `--csv` gives the same
+rows as RFC 4180 CSV with `#` header rows for spreadsheets): per key the EN source, the PL reference, the catalog's
+section/line comment as context, the `{param}`s, the plural parameters and the length budget (read from
+`src/i18n/limits.ts` once R7h adds it; any exported `Record<key, number | { max }>`), plus the language's plural
+categories in token order with sample counts. JSON was chosen over XLIFF: no dependency, diffable, and every CAT tool
+and spreadsheet reads JSON or CSV; XLIFF can be generated from the same rows later if an agency asks. Re-export keeps a
+translation while its EN source is unchanged. `npm run i18n:import -- <code>` writes the catalog only when every row
+passes: all EN keys present once, no unknown key, non-empty text, the same `{param}` set as EN, plural tokens with
+`requiredForms`…`plural.length` non-empty forms naming an EN parameter, no stray brace, length ≤ budget (plural tokens
+count as their longest form, `{param}` as nothing), and the EN source of the row equal to today's EN (a stale
+translation is rejected, not silently shipped). A count without its own plural token is only a warning (German
+"Rekord: {count}" is fine). The written file has en.ts's key order and `satisfies Record<keyof typeof en, string>`,
+so `tsc` and `test:i18n` check it as soon as the language is listed. Not covered yet: `site/i18n.js` and the store
+texts in `docs/store/` (owned by the UI/site agent; same rows can be added as extra sources). Guard:
+`test:i18n-exchange` (fast). **Status: in force.**
+
+## D-212 — Wave-1 languages are planned entries, not shipped; `pt` means Brazilian Portuguese (2026-11-04, Claude, night N12ah)
+`PLANNED_LANGUAGE_ENTRIES` in `src/i18n/languages.ts` lists de (de-DE), fr (fr-FR), es (es-ES) and pt (pt-BR) with the
+plural order of their `{n|…}` tokens (de one|other; fr/es/pt one|other|many, `many` last so a two-form token falls back
+to `other` for round millions) and the Wikidata label languages used for city names (R7j). They are not in
+`LANGUAGE_CODES`, the settings select or the native locale lists, and no `src/i18n/<code>.ts` is committed until a
+reviewed translation exists (`test:i18n-exchange` fails otherwise). The code is the base `pt` because `normalise`
+reads base codes: a pt-PT device would get Brazilian text, the usual first choice of games that ship one Portuguese
+(the larger market; R7 research). A separate pt-PT would need a region-aware `normalise`. **Status: in force.**
