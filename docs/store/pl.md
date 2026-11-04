@@ -1,10 +1,10 @@
 # Airway — Polish store listing
 
 ## Approved full title
-Airway: Buduj siatkę lotów na globusie
+Airway: Buduj sieć lotów na globusie
 
 ## Store title
-Airway: Buduj trasy lotów
+Airway: Buduj sieć lotów
 
 ## App Store subtitle
 Łącz miasta. Ratuj huby.
@@ -15,7 +15,7 @@ Buduj trasy na globusie 3D. Łącz miasta i chroń huby przed zatorem.
 ## Full description
 Stwórz własną sieć połączeń lotniczych na trójwymiarowym globusie. Łącz miasta trasami, rozbudowuj lotniska i planuj przesiadki pasażerów. Samoloty latają samodzielnie — Ty decydujesz, którędy prowadzą połączenia.
 
-Spójrz na planetę z bliska: morza, góry, chmury i lotniska tworzą barwny świat dioramy. Wraz z obrotem Ziemi zmieniają się pory dnia, a świt przynosi nowe fale podróżnych. Każda decyzja dotycząca siatki połączeń ma znaczenie.
+Spójrz na planetę z bliska: morza, góry, chmury i lotniska tworzą barwny świat dioramy. Wraz z obrotem Ziemi zmieniają się pory dnia, a świt przynosi nowe fale podróżnych. Każda decyzja dotycząca sieci połączeń ma znaczenie.
 
 • Rysuj trasy między miastami bez ręcznego sterowania samolotami.
 • Wybieraj typ samolotu odpowiedni do zasięgu i liczby pasażerów.
@@ -38,7 +38,7 @@ Szyld Airway obok globusa 3D o zmierzchu, trasy lotnicze łączą lotniska Europ
 ## Kolejność zrzutów i podpisy
 Podpisy tylko do konsoli sklepu (nigdy nie są rysowane na obrazach); pliki w `shots/pl/`.
 Kolejność wg D-63 (nocny globus jako pierwszy kadr).
-1. night — Zapada noc, siatka lata dalej.
+1. night — Zapada noc, sieć lata dalej.
 2. game — Rysujesz trasy, samoloty latają same.
 3. upgrade — Co tydzień otwierasz jedną z trzech skrzyń.
 4. failure — Zapchany hub kończy grę, a raport mówi dlaczego.

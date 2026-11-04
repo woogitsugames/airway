@@ -1,4 +1,4 @@
-// [night-11y] R5j, D-203: every safe-area inset in the UI CSS goes through the four `--aw-safe-*` tokens of
+// [night-11y] R5j, D-206: every safe-area inset in the UI CSS goes through the four `--aw-safe-*` tokens of
 // src/ui/base.css. Chromium cannot emulate env(safe-area-inset-*), so a raw env() is invisible to every browser suite
 // (test:e2e:notch sets the tokens to iPhone-like values); this headless check fails on any raw use outside the token
 // definitions and on a missing/duplicated token. src/render/** (globe, owned by the ext session) has no insets.

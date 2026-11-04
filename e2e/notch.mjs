@@ -1,4 +1,4 @@
-// [night-11y] R5j, D-203: a notch / cut-out profile. Chromium cannot emulate env(safe-area-inset-*), so the four
+// [night-11y] R5j, D-206: a notch / cut-out profile. Chromium cannot emulate env(safe-area-inset-*), so the four
 // `--aw-safe-*` tokens (src/ui/base.css; every inset in the UI CSS goes through them, see test:safe-area) are set
 // on :root to iPhone-like values — portrait 393×852 with 59/0/34/0 (top/right/bottom/left), landscape 852×393 with
 // 0/59/21/59 — and each screen is mounted alone through its public API on ?perf=scene (no game, no globe, so the
