@@ -432,6 +432,11 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       (`test:e2e:airport-plates`, in `test:ci`), `test:overlay-layout` +2, DEV `aw.state().airports[].hub`, shots
       `docs/shots/n11m/`.
 
+- [x] N11n **Opaque empty dock tags (R5d, D-182)** — owner's Fold screenshot and R5: empty dock tags were 42 %
+      transparent, so the globe showed through and hid the icon. They are now an opaque muted kraft with muted ink
+      (5.1:1, new `test:contrast` pair) and a dashed rack outline (shape cue). `e2e/dock-empty-tags.mjs`
+      (`test:e2e:dock-empty-tags`, in `test:ci`; 0/3 on the old tags), dock crops `docs/shots/n11n/`.
+
 ## Continuous development round N12 (agent 2)
 - [x] N12a **Balance bot plays for reach (D-90)** — the handover gap "the DEV bot rarely connects new airports; long
       plays end in weeks 1–3": measured, 34 of 44 bot game overs (50 seeds) were at an airport no route served, 20 of
@@ -881,7 +886,7 @@ Evidence: `docs/RESEARCH.md` "R5 — …", PNGs in `docs/research/r5/`.
       on the map. At rest draw them as a small hollow marker inside the same 48 dp hit area; full diamond only while
       a route is selected, being drawn, or under the finger. Hit testing in `routeTool` unchanged. Shots; `test:hud-targets`
       / `test:route-tool` unchanged. **Area:** UI (`src/ui/atcStrip.ts`, `atcStrip.css`).
-- [ ] R5d **Opaque disabled dock tags** — `.airway-dock__tag.is-empty { opacity: .42 }` lets the world show through;
+- [x] R5d → N11n **Opaque disabled dock tags** — `.airway-dock__tag.is-empty { opacity: .42 }` lets the world show through;
       at night a cloud hides the turboprop icon (`dock-disabled-night.png`). Use an opaque muted fill plus a dashed
       outline (shape cue for "empty"), keep the count ≥ 4.5:1 against the tag; add the pair to `check-contrast`.
       **Area:** UI (`src/ui/hud.css`, `scripts/check-contrast.mjs`).

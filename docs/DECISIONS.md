@@ -1244,3 +1244,12 @@ names the airport; the plate is `aria-hidden`). Rejected: a separate signboard o
 collision system and a third tag-like mark), plates only above zoom 3.5 (the opening view would stay unlabelled).
 **Status: in force (N11m, `test:e2e:airport-plates` 4 sizes, `test:overlay-layout` 21).**
 
+## D-182 — Empty dock tags are opaque, muted and dashed (2026-11-04, Claude, night N11n)
+R5d and the owner's Fold screenshot: an empty dock tag (no widebody, no hub upgrade, nothing to undo) was drawn at
+42 % opacity, so the globe — at night, under a cloud — showed through and hid its icon. It is now opaque: a paler,
+greyer kraft (`--airway-kraft-empty` #D9CDB8) with muted ink (`--airway-kraft-empty-ink` #5A4E44, 5.1:1, a declared
+pair in `test:contrast`) and a dashed "empty rack" outline under the eyelet — a shape cue that does not depend on
+colour (hard rule: types and states by shape). Tap behaviour unchanged (the tag still says why it is empty).
+Rejected: a higher opacity (still see-through), grey icon only (colour-only cue). **Status: in force (N11n,
+`test:e2e:dock-empty-tags`, `test:contrast` 17 pairs).**
+

@@ -9,6 +9,7 @@ const failures = [];
 for (const [token, variable] of Object.entries({
   panel: 'panel', paper: 'paper', dim: 'dim', jam: 'jam', jamText: 'jam-text',
   ticket: 'ticket', ink: 'ink', kraftLabel: 'kraft-label',
+  kraftEmpty: 'kraft-empty', kraftEmptyInk: 'kraft-empty-ink', // [night-11n] R5d
 })) {
   const match = css.match(new RegExp('--airway-' + variable + '\\s*:\\s*(#[0-9a-fA-F]{6})', 'i'));
   if (!match || match[1].toLowerCase() !== tokens.colors[token].toLowerCase()) {

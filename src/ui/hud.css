@@ -120,7 +120,18 @@
   border-radius: 50%;
 }
 .airway-dock__tag.is-selected { background: var(--hud-pass); }
-.airway-dock__tag.is-empty { opacity: .42; }
+.airway-dock__tag.is-empty { background: var(--airway-kraft-empty); color: var(--airway-kraft-empty-ink); }
+/* [night-11n] R5d: an empty tag was 42 % transparent, so a night globe or a cloud showed through and hid its icon.
+   It is now opaque: a paler, greyer kraft with muted ink (5.1:1, test:contrast) and a dashed rack outline under the
+   eyelet, a shape cue for "nothing here" that does not depend on colour. */
+.airway-dock__tag.is-empty::after {
+  content: '';
+  position: absolute;
+  inset: 17px 5px 5px;
+  border: 2px dashed currentColor;
+  opacity: .6;
+  pointer-events: none;
+}
 .airway-dock__count { font-size: 17px; font-variant-numeric: tabular-nums; }
 .airway-dock__tag[data-hud-action='undo'] .airway-dock__count { display: none; }
 .airway-dock__tag[data-hud-action='speed'] .airway-dock__count { font-size: 14px; }
