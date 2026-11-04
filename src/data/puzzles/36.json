@@ -1,0 +1,217 @@
+{
+  "version": 1,
+  "id": "36",
+  "titleKey": "puzzle.36.title",
+  "durationTicks": 8640,
+  "demandSeed": 3836,
+  "startCities": [
+    {
+      "id": "TYO",
+      "continent": "AS",
+      "latitude": 35.7,
+      "longitude": 139.7,
+      "hubCapacity": 180
+    },
+    {
+      "id": "OSA",
+      "continent": "AS",
+      "latitude": 34.7,
+      "longitude": 135.5,
+      "hubCapacity": 50,
+      "curfew": {
+        "startMinuteOfDay": 1380,
+        "endMinuteOfDay": 360
+      }
+    },
+    {
+      "id": "SEL",
+      "continent": "AS",
+      "latitude": 37.6,
+      "longitude": 127.0,
+      "hubCapacity": 60
+    },
+    {
+      "id": "PUS",
+      "continent": "AS",
+      "latitude": 35.2,
+      "longitude": 129.1,
+      "hubCapacity": 50
+    },
+    {
+      "id": "SHA",
+      "continent": "AS",
+      "latitude": 31.2,
+      "longitude": 121.5,
+      "hubCapacity": 60
+    },
+    {
+      "id": "SFO",
+      "continent": "NA",
+      "latitude": 37.8,
+      "longitude": -122.4,
+      "hubCapacity": 150
+    },
+    {
+      "id": "SEA",
+      "continent": "NA",
+      "latitude": 47.6,
+      "longitude": -122.3,
+      "hubCapacity": 120
+    }
+  ],
+  "stock": {
+    "turboprops": 4,
+    "jets": 1,
+    "hubUpgrades": 0
+  },
+  "goal": {
+    "kind": "deliver",
+    "targetDelivered": 1330
+  },
+  "mechanics": [
+    "curfew",
+    "week",
+    "transfer"
+  ],
+  "demand": [
+    {
+      "from": "OSA",
+      "to": "SFO",
+      "passengers": 6,
+      "firstTick": 20,
+      "everyTicks": 180
+    },
+    {
+      "from": "SEL",
+      "to": "SFO",
+      "passengers": 10,
+      "firstTick": 40,
+      "everyTicks": 180
+    },
+    {
+      "from": "PUS",
+      "to": "SFO",
+      "passengers": 6,
+      "firstTick": 60,
+      "everyTicks": 180
+    },
+    {
+      "from": "TYO",
+      "to": "SFO",
+      "passengers": 8,
+      "firstTick": 80,
+      "everyTicks": 180
+    },
+    {
+      "from": "SHA",
+      "to": "SFO",
+      "passengers": 12,
+      "firstTick": 4320,
+      "everyTicks": 180
+    }
+  ],
+  "availableRoutes": [
+    {
+      "from": "TYO",
+      "to": "OSA",
+      "plane": "turboprop",
+      "flightTicks": 50,
+      "intervalTicks": 120
+    },
+    {
+      "from": "TYO",
+      "to": "SEL",
+      "plane": "turboprop",
+      "flightTicks": 144,
+      "intervalTicks": 120
+    },
+    {
+      "from": "TYO",
+      "to": "PUS",
+      "plane": "turboprop",
+      "flightTicks": 121,
+      "intervalTicks": 120
+    },
+    {
+      "from": "TYO",
+      "to": "SHA",
+      "plane": "turboprop",
+      "flightTicks": 220,
+      "intervalTicks": 120
+    },
+    {
+      "from": "OSA",
+      "to": "PUS",
+      "plane": "turboprop",
+      "flightTicks": 74,
+      "intervalTicks": 120
+    },
+    {
+      "from": "SEL",
+      "to": "SHA",
+      "plane": "turboprop",
+      "flightTicks": 109,
+      "intervalTicks": 120
+    },
+    {
+      "from": "TYO",
+      "to": "SFO",
+      "plane": "jet",
+      "flightTicks": 591,
+      "intervalTicks": 120
+    },
+    {
+      "from": "TYO",
+      "to": "SEA",
+      "plane": "jet",
+      "flightTicks": 550,
+      "intervalTicks": 120
+    },
+    {
+      "from": "SEL",
+      "to": "SFO",
+      "plane": "jet",
+      "flightTicks": 645,
+      "intervalTicks": 120
+    },
+    {
+      "from": "OSA",
+      "to": "SEA",
+      "plane": "jet",
+      "flightTicks": 575,
+      "intervalTicks": 120
+    }
+  ],
+  "referenceCommands": [
+    {
+      "type": "connect",
+      "from": "TYO",
+      "to": "OSA",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "TYO",
+      "to": "SEL",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "OSA",
+      "to": "PUS",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "SEL",
+      "to": "SHA",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "TYO",
+      "to": "SEA",
+      "plane": "jet"
+    }
+  ]
+}
