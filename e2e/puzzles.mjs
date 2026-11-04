@@ -35,13 +35,13 @@ const steps = [
     await page.locator('.puzzle-departures .puzzle-flap').first().waitFor({ timeout: 8000 });
     const count = await page.locator('.puzzle-departures .puzzle-flap').count();
     assert(levels.length > 0 && count === levels.length, `board shows ${count} puzzles, data has ${levels.length}`);
-    // [ext-02] D-162: the "Long haul" pack header sits right above flap 31.
+    // [ext-02] D-162: the "Long haul" pack header sits right above flap 31 and counts 31…last (ext-04: 10).
     if (levels.length >= 31) {
       const pack = await page.evaluate(() => {
         const row = document.querySelector('.puzzle-departures .puzzle-pack');
         return row ? { text: row.textContent, next: row.nextElementSibling?.getAttribute('data-action') } : null;
       });
-      assert(pack && pack.next === 'open:31' && /Long haul · 5 puzzles/.test(pack.text ?? ''), `pack header ${JSON.stringify(pack)}`);
+      assert(pack && pack.next === 'open:31' && pack.text?.includes(`Long haul · ${levels.length - 30} puzzles`), `pack header ${JSON.stringify(pack)}`);
     }
   }],
   ['no action until the deadline loses puzzle 01', async (page) => {

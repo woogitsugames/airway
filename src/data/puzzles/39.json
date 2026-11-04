@@ -1,0 +1,273 @@
+{
+  "version": 1,
+  "id": "39",
+  "titleKey": "puzzle.39.title",
+  "durationTicks": 8640,
+  "demandSeed": 3839,
+  "startCities": [
+    {
+      "id": "DXB",
+      "continent": "AS",
+      "latitude": 25.2,
+      "longitude": 55.3,
+      "hubCapacity": 250
+    },
+    {
+      "id": "DOH",
+      "continent": "AS",
+      "latitude": 25.3,
+      "longitude": 51.5,
+      "hubCapacity": 50
+    },
+    {
+      "id": "MCT",
+      "continent": "AS",
+      "latitude": 23.6,
+      "longitude": 58.4,
+      "hubCapacity": 50
+    },
+    {
+      "id": "KWI",
+      "continent": "AS",
+      "latitude": 29.4,
+      "longitude": 48.0,
+      "hubCapacity": 50
+    },
+    {
+      "id": "RUH",
+      "continent": "AS",
+      "latitude": 24.7,
+      "longitude": 46.7,
+      "hubCapacity": 50
+    },
+    {
+      "id": "SIN",
+      "continent": "AS",
+      "latitude": 1.3,
+      "longitude": 103.8,
+      "hubCapacity": 300
+    },
+    {
+      "id": "BOM",
+      "continent": "AS",
+      "latitude": 19.1,
+      "longitude": 72.9,
+      "hubCapacity": 120
+    },
+    {
+      "id": "SYD",
+      "continent": "OC",
+      "latitude": -33.9,
+      "longitude": 151.2,
+      "hubCapacity": 150,
+      "curfew": {
+        "startMinuteOfDay": 1380,
+        "endMinuteOfDay": 360
+      }
+    },
+    {
+      "id": "JNB",
+      "continent": "AF",
+      "latitude": -26.2,
+      "longitude": 28.0,
+      "hubCapacity": 80
+    }
+  ],
+  "stock": {
+    "turboprops": 4,
+    "jets": 3,
+    "hubUpgrades": 0
+  },
+  "goal": {
+    "kind": "curfewNights",
+    "targetDelivered": 1090,
+    "nights": 5
+  },
+  "mechanics": [
+    "slots",
+    "curfew",
+    "week",
+    "transfer"
+  ],
+  "demand": [
+    {
+      "from": "DOH",
+      "to": "SYD",
+      "passengers": 6,
+      "firstTick": 20,
+      "everyTicks": 180
+    },
+    {
+      "from": "MCT",
+      "to": "SYD",
+      "passengers": 6,
+      "firstTick": 40,
+      "everyTicks": 180
+    },
+    {
+      "from": "KWI",
+      "to": "SYD",
+      "passengers": 6,
+      "firstTick": 60,
+      "everyTicks": 180
+    },
+    {
+      "from": "RUH",
+      "to": "SYD",
+      "passengers": 6,
+      "firstTick": 80,
+      "everyTicks": 180
+    },
+    {
+      "from": "DXB",
+      "to": "SYD",
+      "passengers": 6,
+      "firstTick": 100,
+      "everyTicks": 180
+    },
+    {
+      "from": "JNB",
+      "to": "SYD",
+      "passengers": 8,
+      "firstTick": 4320,
+      "everyTicks": 180
+    }
+  ],
+  "availableRoutes": [
+    {
+      "from": "DXB",
+      "to": "DOH",
+      "plane": "turboprop",
+      "flightTicks": 48,
+      "intervalTicks": 120
+    },
+    {
+      "from": "DXB",
+      "to": "MCT",
+      "plane": "turboprop",
+      "flightTicks": 46,
+      "intervalTicks": 120
+    },
+    {
+      "from": "DXB",
+      "to": "KWI",
+      "plane": "turboprop",
+      "flightTicks": 108,
+      "intervalTicks": 120
+    },
+    {
+      "from": "DXB",
+      "to": "RUH",
+      "plane": "turboprop",
+      "flightTicks": 109,
+      "intervalTicks": 120
+    },
+    {
+      "from": "DOH",
+      "to": "KWI",
+      "plane": "turboprop",
+      "flightTicks": 72,
+      "intervalTicks": 120
+    },
+    {
+      "from": "DOH",
+      "to": "RUH",
+      "plane": "turboprop",
+      "flightTicks": 61,
+      "intervalTicks": 120
+    },
+    {
+      "from": "DXB",
+      "to": "SIN",
+      "plane": "jet",
+      "flightTicks": 417,
+      "intervalTicks": 120
+    },
+    {
+      "from": "SIN",
+      "to": "SYD",
+      "plane": "jet",
+      "flightTicks": 451,
+      "intervalTicks": 120
+    },
+    {
+      "from": "DXB",
+      "to": "BOM",
+      "plane": "jet",
+      "flightTicks": 139,
+      "intervalTicks": 120
+    },
+    {
+      "from": "BOM",
+      "to": "SIN",
+      "plane": "jet",
+      "flightTicks": 279,
+      "intervalTicks": 120
+    },
+    {
+      "from": "DXB",
+      "to": "JNB",
+      "plane": "jet",
+      "flightTicks": 459,
+      "intervalTicks": 120
+    },
+    {
+      "from": "JNB",
+      "to": "SIN",
+      "plane": "jet",
+      "flightTicks": 619,
+      "intervalTicks": 120
+    },
+    {
+      "from": "BOM",
+      "to": "SYD",
+      "plane": "jet",
+      "flightTicks": 726,
+      "intervalTicks": 120
+    }
+  ],
+  "referenceCommands": [
+    {
+      "type": "connect",
+      "from": "DXB",
+      "to": "DOH",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "DXB",
+      "to": "MCT",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "DXB",
+      "to": "KWI",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "DXB",
+      "to": "RUH",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "DXB",
+      "to": "SIN",
+      "plane": "jet"
+    },
+    {
+      "type": "connect",
+      "from": "SIN",
+      "to": "SYD",
+      "plane": "jet"
+    },
+    {
+      "type": "connect",
+      "from": "JNB",
+      "to": "SIN",
+      "plane": "jet"
+    }
+  ]
+}
