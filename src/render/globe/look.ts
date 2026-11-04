@@ -176,9 +176,12 @@ export function createTexturedTerrainMaterial(assets: LookAssets, sunDirection: 
     shader.uniforms['awDay'] = { value: assets.day };
     shader.uniforms['awNightLights'] = { value: assets.night };
     shader.uniforms['awNightGain'] = { value: assets.night ? assets.config.nightGain : 0 };
+    shader.uniforms['awVeil'] = { value: assets.config.ocean.veil };
+    shader.uniforms['awGlint'] = { value: assets.config.ocean.glint };
     shader.vertexShader = 'varying vec3 vAwDir;\n' + shader.vertexShader.replace(
       '#include <begin_vertex>', '#include <begin_vertex>\n  vAwDir = position;');
     shader.fragmentShader = 'uniform sampler2D awDay;\nuniform sampler2D awNightLights;\nuniform float awNightGain;\n' +
+      'uniform float awVeil;\nuniform float awGlint;\n' +
       'varying vec3 vAwDir;\n' + SAMPLE_GLSL + shader.fragmentShader.replace(
       '#include <map_fragment>', '#include <map_fragment>\n  diffuseColor.rgb *= awSampleSphere(awDay, vAwDir).rgb;');
     patchDayNightShader(shader, sun);
@@ -188,6 +191,28 @@ export function createTexturedTerrainMaterial(assets: LookAssets, sunDirection: 
     float awDark = 1.0 - smoothstep(-0.14, 0.04, awLit);
     float awCity = awSampleSphere(awNightLights, vAwDir).r;
     outgoingLight += vec3(1.0, 0.70, 0.36) * awCity * awDark * awNightGain;
+  }
+  {
+    // [G4] D-173: the sea surface (glint, fresnel sheen) and the near-limb haze, folded into the terrain pass
+    // instead of two transparent full-screen shells. Same formulas as createOceanShell/createScatterAtmosphere,
+    // tints converted to linear because this runs before tone mapping.
+    vec3 awN = normalize(vAwSurface);
+    vec3 awV = normalize(cameraPosition - vAwSurface);
+    float awNs = dot(awN, awSunDirection);
+    float awDay = smoothstep(-0.12, 0.2, awNs);
+    float awSea = 1.0 - smoothstep(0.9995, 1.0002, length(vAwSurface));
+    float awFacing = max(dot(awN, awV), 0.0);
+    float awFresnel = pow(1.0 - awFacing, 4.0);
+    vec3 awH = normalize(awSunDirection + awV);
+    float awSpec = pow(max(dot(awN, awH), 0.0), 600.0) * 0.6 + pow(max(dot(awN, awH), 0.0), 60.0) * 0.05;
+    vec3 awSky = mix(vec3(0.34, 0.6, 0.79), vec3(1.0, 0.49, 0.18), 1.0 - smoothstep(0.0, 0.25, awNs));
+    vec3 awWater = mix(vec3(0.002, 0.013, 0.033), awSky, awFresnel) * (0.25 + 0.75 * awDay);
+    outgoingLight = mix(outgoingLight, awWater, (awVeil + 0.45 * awFresnel * awDay) * awSea);
+    outgoingLight += vec3(1.0, 0.78, 0.52) * awSpec * awGlint * awDay * awSea * 0.55;
+    float awLitHaze = smoothstep(-0.3, 0.25, awNs);
+    float awDuskHaze = 1.0 - smoothstep(0.0, 0.35, abs(awNs + 0.02));
+    vec3 awTint = mix(vec3(0.21, 0.51, 0.91), vec3(1.0, 0.34, 0.11), awDuskHaze * 0.7);
+    outgoingLight = mix(outgoingLight, awTint, pow(1.0 - awFacing, 2.4) * (0.04 + 0.34 * awLitHaze));
   }
   #include <opaque_fragment>`);
   };
@@ -230,8 +255,11 @@ export function createOceanShell(look: LookConfig, sunDirection: Vector3, segmen
   return mesh;
 }
 
-/** Sun-aware limb glow (blue by day, warm at the terminator, none at night) plus a thin haze over the land. */
-export function createScatterAtmosphere(sunDirection: Vector3): Mesh[] {
+/**
+ * Sun-aware limb glow (blue by day, warm at the terminator, none at night) plus a thin haze over the land.
+ * [G4] Texture looks fold the haze into the terrain shader and use only the outer halo (`haloOnly`).
+ */
+export function createScatterAtmosphere(sunDirection: Vector3, haloOnly = false): Mesh[] {
   const common = `uniform vec3 sunDirection; varying vec3 vNormal; varying vec3 vWorld;`;
   const vertexShader = `${common}
     void main() {
@@ -271,6 +299,7 @@ export function createScatterAtmosphere(sunDirection: Vector3): Mesh[] {
   const inner = new Mesh(new SphereGeometry(1.0125, 96, 60), haze);
   inner.name = 'LookHaze';
   inner.renderOrder = 3;
+  if (haloOnly) { inner.geometry.dispose(); haze.dispose(); return [outer]; }
   return [outer, inner];
 }
 

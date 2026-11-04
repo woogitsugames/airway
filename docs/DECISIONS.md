@@ -1119,7 +1119,10 @@ rebuilt in our own palette with ETOPO5 hillshade and Natural Earth borders (no c
 ## D-173 — Adaptive quality steps down the globe texture first (2026-11-03, Claude, ext/03)
 With B the largest GPU cost is the 4096×2048 day texture (~43 MB with mips, uncompressed). The D-73 ladder gets a
 first step "day texture 4096 → 2048, cloud shell off" before DPR → 1; `low`/`saver` start on 2048 without clouds.
-If devices still run out of memory, G7b moves to KTX2/ETC1S compression (D-174 follow-up). **Status: proposed; G3/G4.**
+If devices still run out of memory, G7b moves to KTX2/ETC1S compression (D-174 follow-up). **Status: in force for the start
+sizes and the cloud shell (G2/G3: low/saver load 2048 + 1024, no clouds; G4: sea surface and haze folded into the terrain
+shader, so low/saver draw one transparent layer — the halo — and medium/high two); the adaptive texture step itself is
+still open (G7).**
 
 ## D-174 — The look experiment stays in the tree behind a DEV flag (2026-11-03, Claude, ext/03)
 `src/render/globe/look.ts` (loaded with a DEV-guarded dynamic `import()`, so Vite drops it from the production
