@@ -26,4 +26,10 @@
 .airway-logbook__flights tr[data-mode="daily"] .airway-logbook__mode::before { content:''; display:inline-block; width:8px; height:10px; margin-right:5px; background:#1e6f6a; clip-path:polygon(0 0,100% 0,100% 100%,50% 70%,0 100%); vertical-align:-1px; }
 .airway-logbook__empty { margin:10px 0 0; font:400 14px/1.4 'Atkinson Hyperlegible Next',sans-serif; color:#2a2420; }
 .airway-logbook__local { margin-top:4px; }
+/* [night-12am] R1o: "Copy summary" — the settings' dark action strip; the fallback text is ruled logbook paper. */
+.airway-logbook__summary { margin-top:4px; }
+.airway-logbook__summary .airway-logbook__copy { margin-top:0; }
+.airway-logbook__copy-status:empty { display:none; }
+.airway-logbook__summary-text { display:block; box-sizing:border-box; width:100%; margin-top:6px; padding:8px; border:1px solid #2a2420; background:#fbf6ec; color:#13302e; font:400 12px/1.4 'Overpass Mono',monospace; resize:vertical; }
+.airway-logbook__summary-text[hidden] { display:none; }
 @media (max-width:370px) { .airway-logbook__totals dd { font-size:20px; } .airway-logbook__records .airway-logbook__cell { grid-template-columns:1fr; gap:3px; } .airway-logbook__records dd { text-align:left; } .airway-logbook__flights { font-size:11px; } .airway-logbook__flights td, .airway-logbook__flights th { padding-left:2px; padding-right:2px; } }
