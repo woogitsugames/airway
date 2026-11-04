@@ -251,6 +251,19 @@
     .airway-upgrade-open:not(.is-picking-hub) .airway-upgrade-week { font-size: 18px; }
     .airway-upgrade-open:not(.is-picking-hub) .airway-upgrade-sub { font-size: 13px; line-height: 1.2; }
   }
+  /* [night-11ab] D-210: the airport pick on a board under 760 px (720–852 px phones, side cut-outs) left the instruction
+     a 68–96 px column beside the Back tile, the week ran past the sign's edge at 812×375 and the sign grew to 72–89 px.
+     The peg rack stays live here, so the sign cannot widen over it (only to the rack's cable, 86 px + 6 px gap); the
+     week, already on the boarding pass beside it, leaves the sign (still read by screen readers), and the instruction
+     takes both rows. */
+  @container upgrade-board (max-width: 760px) {
+    .airway-upgrade-open.is-picking-hub .airway-upgrade-sign { max-width: calc(100% - 432px - 92px); padding-top: 4px; padding-bottom: 4px; padding-right: 12px; }
+    .airway-upgrade-open.is-picking-hub .airway-upgrade-back { margin-top: -4px; margin-bottom: -4px; } /* flush with the 4 px padding */
+    .airway-upgrade-open.is-picking-hub .airway-upgrade-week {
+      position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+    }
+    .airway-upgrade-open.is-picking-hub .airway-upgrade-sub { grid-row: 1 / span 2; align-self: center; font-size: 13px; line-height: 1.15; text-wrap: balance; }
+  }
   /* Under 700 px (720×360, 812×375 with cut-outs) the PL hub values wrapped to two lines each and the labels ran
      13–19 px past the bottom: tighter columns keep every value on one line. */
   @container upgrade-board (max-width: 700px) {
