@@ -1,6 +1,7 @@
 // [night-07w] The DEV/balance bot (src/game/dev/bot-policy.ts) as a fair balance signal: with no spare
 // aircraft it extends a served route to an unserved city instead of waiting for the hub to jam, and a run that
 // takes "+2 slots" (no aircraft) in week 1 is no longer an automatic loss. Fixed seed.
+// [night-12z] R8e: with an empty reserve it frees an idle plane from the quietest multi-plane route.
 // [night-12a] It also takes a widebody when its fleet has none or an airport is out of turboprop reach, and pairs
 // two unserved airports beyond the network with each other.
 import assert from 'node:assert/strict';
@@ -161,6 +162,39 @@ function unservedJams(n: number): { over: number; unserved: number } {
   }
   return { over, unserved };
 }
+
+// [night-12z] R8e, D-188: with an empty reserve and no route end in reach, the bot takes one idle aircraft from the
+// route with the least waiting per plane (each route keeps one) and opens the new route with it next.
+function farBer(routes: BotRoute[]): BotSnapshot {
+  const base = snapshot(2600, 2700, routes);
+  return { ...base, cities: [city('LON', routes.length, true), city('PAR', routes.length), city('BER', 0)] };
+}
+const withMovable = (r: BotRoute, ids: Array<[string, 'turboprop' | 'widebody']>, waiting: number): BotRoute =>
+  ({ ...r, waiting, movable: ids.map(([id, type]) => ({ id, type })) });
+
+test('no spare aircraft, no route end in reach: free an idle plane from the quietest two-plane route', () => {
+  const busy = withMovable(route('r1', ['LON', 'PAR'], 1, 1), [['P1', 'turboprop'], ['P2', 'widebody']], 60);
+  const quiet = withMovable(route('r2', ['PAR', 'LON'], 1, 1), [['P3', 'turboprop'], ['P4', 'widebody']], 10);
+  const decision = chooseBotAction(farBer([busy, quiet]));
+  // BER is 2 600 km from LON: beyond a turboprop, so the widebody of the quieter route goes.
+  assert.deepEqual(decision?.command, { type: 'UnassignPlane', planeId: 'P4' });
+});
+
+test('every route keeps one aircraft; a plane in the air or loaded stays; a spare plane is used instead', () => {
+  // A one-turboprop route (it cannot reach BER either way) and a two-plane route whose widebody is busy.
+  assert.equal(chooseBotAction(farBer([withMovable(route('r1', ['LON', 'PAR'], 1), [['P1', 'turboprop']], 0)])), null);
+  assert.equal(chooseBotAction(farBer([withMovable(route('r1', ['LON', 'PAR'], 1, 1), [['P1', 'turboprop']], 0)])), null);
+  const spare = { ...farBer([withMovable(route('r1', ['LON', 'PAR'], 1, 1), [['P2', 'widebody']], 0)]),
+    inventory: { turboprop: 0, widebody: 1 } };
+  assert.equal(chooseBotAction(spare)?.command.type, 'AddRoute');
+});
+
+test('a jam at an airport without a route is connected before aircraft go to busy routes', () => {
+  const base = snapshot(930, 880, [{ ...route('r1', ['LON', 'PAR'], 1), waiting: 90 }]);
+  const jam = { ...base, inventory: { turboprop: 1, widebody: 0 },
+    cities: [city('LON', 1, true), city('PAR', 1), { ...city('BER', 0), warningTicksRemaining: 50 }] };
+  assert.deepEqual(chooseBotAction(jam)?.command, { type: 'AddRoute', from: 'BER', to: 'LON' });
+});
 
 // [night-12f] 4 -> 6: D-106 opens 6 airports a week instead of 4.5, so more of them are still unserved when a run
 // ends (rules v4: 4 of 16 game overs; rules v5: 6 of 19). The old bot is far above this (14 of 18).

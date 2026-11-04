@@ -18,10 +18,15 @@ export function botSnapshot(sim: Sim): BotSnapshot {
   const waiting = new Map(cities.map((city) => [city.id, city.waiting]));
   const routes = world.routes().map((route) => {
     const assigned = { turboprop: 0, widebody: 0 };
-    for (const plane of world.planes) if (plane.routeId === route.id) assigned[plane.type]++;
+    const movable: { id: string; type: 'turboprop' | 'widebody' }[] = [];
+    for (const plane of world.planes) {
+      if (plane.routeId !== route.id) continue;
+      assigned[plane.type]++;
+      if (plane.phase === 'ground' && plane.load === 0) movable.push({ id: plane.id, type: plane.type }); // [night-12z]
+    }
     return {
       id: route.id, stops: route.cityIds, distanceKm: Math.max(...route.legKm),
-      waiting: route.cityIds.reduce((sum, id) => sum + (waiting.get(id) ?? 0), 0), assigned,
+      waiting: route.cityIds.reduce((sum, id) => sum + (waiting.get(id) ?? 0), 0), assigned, movable,
     };
   });
   const distancesKm: Record<string, Record<string, number>> = {};
@@ -67,6 +72,7 @@ export function botCommandToSim(sim: Sim, command: BotCommand): Command {
     return { type: 'ExtendRoute', routeId: command.routeId, end: command.end, cityIds };
   }
   if (command.type === 'AssignPlane') return { type: 'AssignPlane', routeId: command.routeId, aircraft: command.aircraftType };
+  if (command.type === 'UnassignPlane') return { type: 'UnassignPlane', planeId: command.planeId }; // [night-12z] R8e
   const week = sim.world.offer?.week ?? 0;
   const upgrade = command.offerId as UpgradeKind;
   return command.cityId && (upgrade === 'hub-expansion' || upgrade === 'departure-slots') // [task-32]
