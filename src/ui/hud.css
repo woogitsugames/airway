@@ -133,6 +133,13 @@
   pointer-events: none;
 }
 .airway-dock__count { font-size: 17px; font-variant-numeric: tabular-nums; }
+/* [night-11s] R6c: an empty tag counting down to the next crates stacks its icon over a small wait line ("2 days",
+   "5 godz.") inside the dashed rack; same muted ink as the empty tag (N11n), never a "0". */
+.airway-dock__tag.is-countdown { flex-direction: column; gap: 1px; padding-top: 16px; }
+.airway-dock__tag.is-countdown .airway-hud__icon { width: 22px; height: 22px; }
+.airway-dock__tag.is-countdown .airway-dock__count {
+  font-size: 11px; line-height: 1.1; letter-spacing: -.01em; white-space: nowrap; max-width: 100%;
+}
 .airway-dock__tag[data-hud-action='undo'] .airway-dock__count { display: none; }
 .airway-dock__tag[data-hud-action='speed'] .airway-dock__count { font-size: 14px; }
 .airway-dock__tag[data-hud-action='hub'] .airway-hud__icon { width: 25px; }

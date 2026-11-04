@@ -1325,3 +1325,15 @@ below the airport overlay (2), so a tag or edge chip always covers a handle, nev
 stays in `routeTool` and does not depend on paint order. Rejected: hiding handles at rest (the extend gesture would
 have no visible start), a hover state (touch first; the finger case is the drag itself).
 **Status: in force (N11q, `test:e2e:route-handles` 2).**
+
+## D-196 — An empty dock tag counts down to the next crates (2026-11-04, Claude, night N11s)
+R6c: in week 1 the turboprop, widebody and hub tags read "0" for about 7 minutes. An empty aircraft or hub tag now
+stacks its icon over a small wait line, the game minutes left to the weekly board from the run's own clock
+(`nextWeekTick − tick`): "2 days" / "2 dni" (PL plural forms), then "5 h" / "5 godz.", then "40 min"; its aria-label
+adds "Next crates in 2 days 5 h" (the pause sheet's wording). The tag keeps the N11n opaque muted fill and dashed
+outline; Undo (never a count) and puzzles (no weekly board) are unchanged. A crate can hold any of the four upgrades,
+so the line says when the next choice comes, not that this aircraft will arrive. No sim change.
+Rejected: "crates day 3" (the D-40 three-day week makes "day 3" ambiguous across weeks and does not fit a 52 px tag),
+a separate countdown chip (one more HUD element, D-05/minimal HUD).
+**Status: in force (N11s, `test:dock-countdown` 3, `test:e2e:dock-empty-tags` 4).**
+

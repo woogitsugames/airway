@@ -14,6 +14,8 @@ export interface HudState {
   readonly canUndo: boolean;
   readonly selectedPlane: PlaneType | null;
   readonly stock: Readonly<{ turboprop: number; widebody: number; hub: number }>;
+  /** [night-11s] R6c: game minutes until the next weekly board; null/absent without weekly boards (puzzles). */
+  readonly minutesToBoard?: number | null;
 }
 
 export interface HudActions {

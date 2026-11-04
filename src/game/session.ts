@@ -396,6 +396,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       paused, speed, canUndo: run.networkUndoable,
       selectedPlane,
       stock: { turboprop: stock.turboprop, widebody: stock.widebody, hub: stock.hub },
+      minutesToBoard: run.mode === 'puzzle' ? null : run.nextWeekTick - run.tick, // [night-11s] R6c
     });
   }
   /** [task-39] Back from the hub/airport pick to the week's crates: one journaled sim command (D-49). */
