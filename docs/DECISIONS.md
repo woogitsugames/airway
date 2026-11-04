@@ -1433,6 +1433,32 @@ cut unserved losses to 46 but lowered the median to 16.15 min and the score, so 
 player cannot take a single aircraft off a route today (no unassign gesture; only removing a route frees its planes,
 D-187). **Status: in force (N12z); no gate changed.**
 
+## D-193 — "Long haul" (31–40) stays out of release builds until T+4 (2026-11-04, owner Q-74 → B, Claude, night N11u)
+The owner chose B: the first puzzle pack is the content of the T+4 "Major update" store event (D-131), so a release
+build shows puzzles 01–30 (DEV builds 40). A build-time flag, no remote config: `PuzzlePack.hiddenInRelease` in
+`src/data/puzzles/packs.ts` (set on `longHaul`) and `releasedLevels()` drop a hidden pack's levels (from its first
+level to the next pack) unless the build is DEV (`npm run dev`, every e2e, shots and the UI matrix, so
+`e2e:puzzles` and `screens-fit-320` keep covering 31–40) or was made with `VITE_AW_ALL_PACKS=1` (a release check
+build before T+4). Node tests have no Vite env and see all 40. At T+4: remove `hiddenInRelease`. Saved
+progress for 31–40 from a DEV build is ignored in a release build (the board lists only exposed levels). Rejected:
+deleting the JSON files from the branch (the pack would rot untested), a remote switch (no server for it, D-16).
+**Status: in force (N11u, `test:release-packs` 4).**
+
+## D-195 — One word per concept in PL/EN, guarded by test:i18n (2026-11-04, Claude, night N11t)
+R5g: the catalogs mixed "siatka" and "sieć" for the network, "terminal" and "węzeł" for a hub, and the PL game-over
+title "Siatka wstrzymana" (a pause you come back from) did not mean the same as "Network closed" (the end). The
+glossary in `src/i18n/README.md` fixes crate/skrzynia (what a crate holds is an upgrade/ulepszenie), hub/hub,
+network/sieć; PL game over is now "Sieć zamknięta" (title, map view, timeline: "sieć zamknięta", "bez zmian w
+sieci"), puzzle copy says "hub" ("Pojemność hubów" / "Hub capacity", "hub {city} jest przepełniony", "Ciasny hub" /
+"A tight hub", "Obok śpiącego huba", and the ext/05 short titles "Lot przez hub", "Hub w Akrze", "Hub nad
+Bosforem"). `test:i18n` fails on a banned synonym in any catalog value (EN grid, node,
+terminal, cargo/freight label, simulation; PL siatka, węzeł, terminal, etykieta frachtowa, symulacja, all inflected
+forms, Unicode word boundaries), except the two diegetic signs `menu.terminal` and `puzzle.board.subtitle`.
+Puzzle 17's title (ext/05: "Obok śpiącego węzła") becomes "Obok śpiącego huba"; the old word read better; it follows the rule unless the owner prefers the
+exception. The D-18 PL store title ("Buduj siatkę lotów") is outside the catalogs: Q-77.
+Rejected: "Siatka zamknięta" (keeps two words for the network).
+**Status: in force (N11t, `test:i18n` with the glossary check, 12 failures on the old catalogs).**
+
 ## D-189 — e2e seeds live in one file and are replayed headless in test:fast (2026-11-04, Claude, night N12aa)
 Five browser suites were red on clean `dev` since rules v6 (N12v) because their fixed seeds ended the bot's run before
 the board they test: board-short 0/4, edge-chip-airports 0/2, edge-chip-tags 5/6, run-timeline 0/4, upgrade-picks 4/6.

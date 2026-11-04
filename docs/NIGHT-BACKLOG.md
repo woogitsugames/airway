@@ -477,6 +477,17 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       `scripts/test-crate-stamps.ts` (`test:crate-stamps`, in `test:fast`; 1/5 on the old cards), `test:pause-summary`
       +1 (5/6 on the old summary), `test:first-time` +1 (7/8 on the old controller); board shots `docs/shots/35`, `37`,
       matrix and store upgrade shots refreshed.
+- [x] N11u **"Long haul" hidden in release builds until T+4 (owner Q-74 → B, D-193)** — a build-time flag, no remote
+      config: `hiddenInRelease` on the pack (`src/data/puzzles/packs.ts`) and `releasedLevels()`; `npm run build` shows
+      01–30, DEV builds (dev server, every e2e, shots, matrix) all 40, `VITE_AW_ALL_PACKS=1` makes a release check build
+      with the pack. `scripts/test-release-packs.mjs` (`test:release-packs`, in `test:fast`) builds the puzzle index
+      with Vite and counts the levels (crashes on the old index).
+- [x] N11t **One word per concept in PL/EN (R5g, D-195)** — network = sieć (PL game over "Sieć zamknięta" now means the
+      same as "Network closed"; map view, timeline), hub = hub (puzzle copy "Pojemność hubów" / "Hub capacity", "hub
+      {city} jest przepełniony", titles "Ciasny hub", "Obok śpiącego huba", "Lot przez hub", "Hub w Akrze", "Hub nad
+      Bosforem"), crate = skrzynia. Glossary `src/i18n/README.md`; `test:i18n` fails on a banned synonym in any
+      catalog value (12 failures on the old catalogs; it also caught three "węzeł" titles that ext/05 added meanwhile).
+      The PL store title (D-18, "siatkę lotów") is outside the catalogs: Q-77.
 
 ## Continuous development round N12 (agent 2)
 - [x] N12a **Balance bot plays for reach (D-90)** — the handover gap "the DEV bot rarely connects new airports; long
@@ -955,7 +966,7 @@ Evidence: `docs/RESEARCH.md` "R5 — …", PNGs in `docs/research/r5/`.
       on the "Map" view); drop the "FLIGHT / DEST · GATE · STATUS" column header when the departures board has no
       rows (unserved-airport cause shows only a sentence). E2E `gameover-unserved` asserts both; shots PL/EN.
       **Area:** UI (`src/ui/gameover/**`, `src/game/session.ts`).
-- [ ] R5g **One word per concept in PL/EN** — weekly reward = "crates / skrzynie" (not "cargo label / etykieta
+- [x] R5g → N11t **One word per concept in PL/EN** — weekly reward = "crates / skrzynie" (not "cargo label / etykieta
       frachtowa"; "upgrade / ulepszenie" stays the generic word for what a crate holds), hub = "hub" (not "węzeł", "terminal"),
       network = "sieć" (not "siatka"; game-over title "Sieć zamknięta" to match "Network closed"), "Simulation
       paused" → "Time is stopped / Czas stoi". Add a glossary table to `src/i18n/README.md` (or the top of `en.ts`)
@@ -1264,6 +1275,8 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
 - 2026-11-04 · G9 Medalion airports + route ink outline + edge contrast probe (D-177, D-178; owner "Daj medalion i scalaj") · ext/03-g9-medalion · test:render-layers 40/40 (+1 outlined-disc case), test:fast 74/74 (130.8 s), build ok (main 1,058.6 kB / gzip 314.2 kB); probe seed 15 phone day routes 5.1/6.8/3.4, airports 2.6/3.2/3.1 (diorama/Satelita/Mapa); renders in docs/mockups/globe-2026-11/g9/final/; store:shots/ui:matrix not run (G6), follow-up G9b
 - 2026-11-04 · N11q quiet route-end handles below the tags (R5c, D-191) · night/11q-quiet-handles · test:e2e:route-handles 2/2 (0/2 on the old handles), test:fast 74/74, build ok, test:hud-targets 300/300, e2e:smoke 9/9, e2e:airport-plates 4/4, e2e:gameover-map 3/3, ui:matrix 48/48, store:shots 60 (test:store-shots ok); owner question Q-76
 - 2026-11-04 · N11r crate stamp captions + "none yet" (R5e, D-194) + replay restores first-time cards (owner Q-76 → B, D-192) · night/11r-stamp-captions · after merging dev (#169–#171): test:fast 75/75 (test:crate-stamps 5/5, 1/5 on the old cards; test:pause-summary 6/6, 5/6 on the old summary; test:first-time 8/8, 7/8 on the old controller), build ok, test:hud-targets 300/300, e2e:smoke 9/9 (5/9 while another suite loaded the machine), store:shots 60 (test:store-shots ok); ui:matrix 38/48 — the upgrade screen at 904×1000 / 904×1088@2 / 1088×904@2 times out on origin/dev too since the new globe (G2+G3/G4, probe 12/16 on origin/dev); before the merge ui:matrix 48/48, e2e:smoke 9/9. e2e:board-short 0/4 on origin/dev and here (rules v5 game over before week 2, pre-existing); after merging dev again (#172–#179): test:fast 75/75, build ok, store:shots 60 (test:store-shots ok), e2e:smoke 5/9 — the weekly-board click times out on origin/dev alike since the new globe (9/9 on a quiet machine once)
+- 2026-11-04 · N11u Long haul hidden in release builds (owner Q-74 → B, D-193) · night/11u-release-packs · after merging dev (#176–#179): test:fast 76/76 (test:release-packs 4/4: release 30, DEV 40, override 40), build ok, e2e:puzzles 44/44 (levels=40); e2e:smoke/ui:matrix not run (no game screen changes in DEV)
+- 2026-11-04 · N11t one word per concept (R5g, D-195), owner question Q-77 · night/11t-one-word · after merging dev (#176–#180): test:fast 76/76 (test:i18n with the glossary check; 12 failures on the old catalogs, 3 on the ext/05 titles), build ok, e2e:screens-fit-320 12/12, e2e:gameover-unserved 5/5 (shots docs/shots/n11k: "SIEĆ ZAMKNIĘTA"), e2e:pseudo-locale 27/27; e2e:smoke/ui:matrix/store:shots not run here (text only; refreshed with N11s)
 - 2026-11-04 · G2+G3 satellite globe ships (D-179) · ext/03-g2g3-satellite · test:fast 74/74 (136.5 s), build ok (main 1,070.0 kB / gzip 317.7 kB), test:bundle 9/9 (dist 3,617.4 kB), test:e2e:smoke 9/9; built app (vite preview) loads data/globe/ day-2048 + night-1024 + elevation on auto→low, no fallback warning; game shots seed 15: routes 6.9/6.8, airports 3.2/6.0 (day/dusk); store:shots/ui:matrix not run (G6)
 - 2026-11-04 · G4 sea surface + haze folded into the terrain shader (D-173) · ext/03-g4-fillrate · transparent full-screen layers on the satellite globe 3→1 (low/saver: halo) and 4→2 (medium/high: halo + clouds); perf:scene SwiftShader 40 s low 397 frames (375 with shells), medium 168 (174), draw calls 41; game shots seed 15 match the layered look (routes 6.8/6.7, airports 3.1/5.5 day/dusk); `world.stats().transparentLayers` not added (G7 measures on devices)
 - 2026-11-04 · G6 store screenshots, feature graphic, ui:matrix and style doc on the satellite globe (D-170, D-178) · ext/03-g6-store · store:shots 60/60 (game: gold 0.13–0.17 ≥ 0.045, routes/airports/planes 9.4–11.6:1; night 9.4–11.4:1), store:feature 1/1, ui:matrix 48/48, contact sheet and feature graphic inspected; docs/styles/realistyczny.md (PL), D-11 globe superseded; shots:site not rerun

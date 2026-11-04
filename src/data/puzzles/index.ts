@@ -40,5 +40,11 @@ export interface PuzzleLevel {
 }
 // [ext-01] R6f, D-160: the level list is generated from the NN.json files (npm run build:puzzles).
 import { PUZZLE_LEVELS } from './levels.generated.ts';
+import { releasedLevels } from './packs.ts';
 
-export const PUZZLES: readonly PuzzleLevel[] = PUZZLE_LEVELS;
+/** [night-11u] D-193: DEV/test builds (and Node tests, which have no Vite env) show every pack; a release build
+ *  shows the packs not marked `hiddenInRelease`, unless it was built with `VITE_AW_ALL_PACKS=1`. */
+export function showHiddenPacks(env: { readonly DEV?: boolean; readonly VITE_AW_ALL_PACKS?: string } | undefined): boolean {
+  return !env || env.DEV === true || env.VITE_AW_ALL_PACKS === '1';
+}
+export const PUZZLES: readonly PuzzleLevel[] = releasedLevels(PUZZLE_LEVELS, showHiddenPacks(import.meta.env));
