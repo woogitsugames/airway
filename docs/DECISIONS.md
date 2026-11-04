@@ -1898,3 +1898,20 @@ is currently in English and Polish; it goes when the game itself is translated. 
 (loses the local search words), machine translation without the review mark, localised screenshots of an English game.
 Guard: `test:store-shots` (review mark, language note, limits, keyword repeats). **Status: in force (texts await
 native review).**
+
+## D-231 — Playtest record: an `AW1:` line under "Copy summary", real minutes, cause, weekly picks, device setting (2026-11-04, Claude, night N12ap)
+R3j extends R1o (D-227). Each of the last 30 run notes in `airway.logbook.v1` may now also hold: real play time in
+tenths of a minute (frames on the game screen or weekly board, not paused, each frame counted up to 0.5 s, so the app in
+the background adds nothing; a resumed run counts from resuming), the first cause of the game-over board
+(`buildCauseReport`), the card picked each week as letters (`T`/`W`/`H`/`S`, week order), the training state at the end
+of the run, the graphics setting, the preset the renderer ended on and the number of adaptive downgrade steps (D-74),
+and the app version (`package.json` via a Vite `define`, `src/core/version.ts`; "dev" headless). Every field is
+optional and validated alone, so R1o notes and a bad field never drop a run. "Copy summary" adds two readable lines
+(game version; real play time median / longest) and, last, one machine line `AW1:` + base64url of ASCII JSON
+(`{v,d,app,f,dl,tut,pz,r}`, run columns fixed in `RUN_COLUMNS`), identical in PL and EN. `npm run playtest:decode --
+file.txt` finds every `AW1:` token in pasted survey answers and prints CSV, one row per run, re-validating each field
+with the logbook's own reader. Privacy: still counts, dates and fixed words only — no airport code, seed or identifier;
+nothing leaves the device unless the player copies it (D-16, D-220); `docs/store/privacy-declarations.md` names the
+line. Rejected: a per-run hub code (the one identifier-like field), compressed/encrypted payload (testers should be
+able to read what they paste), a separate "Copy record" button (one paste per survey is simpler). Guard:
+`test:playtest`. **Status: in force.**

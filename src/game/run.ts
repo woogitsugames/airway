@@ -10,10 +10,12 @@ import type { Sim } from '../sim';
 import type { HubPressure } from '../sim/upgrades';
 import type { SlotPressure } from '../ui/upgrade/cards'; // [task-32]
 import { airportLabel, readAirportLabelMode } from '../ui/airportLabel'; // [night-05] D-68
-import type { HubCauseLedger } from './causes';
-import type { RunStats } from './logbook';
+import { buildCauseReport, type HubCauseLedger } from './causes';
+import { PICK_LETTERS, type RunRecord, type RunStats } from './logbook';
 
 export type AircraftType = 'turboprop' | 'widebody';
+/** [night-12ap] Longest single frame counted as real play time (seconds). */
+const MAX_PLAY_FRAME_S = 0.5;
 export type RunCommand = Command;
 export type JournalEntry = CommandEntry;
 
@@ -75,6 +77,8 @@ export class EndlessRun {
   private revisionValue = 0;
   /** [night-12am] R1o: weekly-board offers drained so far (a resumed run counts the boards after resuming). */
   private readonly offered = { hub: 0, slots: 0 };
+  /** [night-12ap] R3j: real seconds on the game screen or weekly board this session (not paused, app in front). */
+  private playSeconds = 0;
   private readonly homeOffsetMinutes: number;
 
   constructor(readonly sim: Sim) {
@@ -243,7 +247,15 @@ export class EndlessRun {
    * [night-12am] R1o closed-test stats for the logbook at game over: length at 1x, slot-held aircraft-minutes over
    * every airport, and how often the hub expansion and "+2 slots" cards were offered and picked (Q-73, Q-78, Q-80).
    */
-  playtestStats(): RunStats {
+  /**
+   * [night-12ap] R3j: add real time from one frame on the game screen or weekly board. A frame longer than
+   * MAX_PLAY_FRAME_S (app in the background, a debugger stop) counts only up to it.
+   */
+  addPlayTime(seconds: number): void {
+    if (Number.isFinite(seconds) && seconds > 0) this.playSeconds += Math.min(seconds, MAX_PLAY_FRAME_S);
+  }
+
+  playtestStats(): RunStats & Pick<RunRecord, 'real' | 'cause' | 'picks'> {
     const world = this.sim.world;
     let held = 0;
     for (const city of world.cities()) held += world.hubCauseLedger(city.id).slotWaitMinutes;
@@ -254,6 +266,10 @@ export class EndlessRun {
       tenths: Math.round(this.sim.tickCount * 10 / (TICKS_PER_SECOND_1X * 60)), held: Math.round(held),
       hubOffered: Math.max(this.offered.hub, hubPicked), hubPicked,
       slotsOffered: Math.max(this.offered.slots, slotsPicked), slotsPicked,
+      // [night-12ap] R3j: real minutes (a resumed run counts this session only), the board's first cause, weekly picks.
+      real: Math.round(this.playSeconds / 6),
+      ...(this.failed ? { cause: buildCauseReport(this.failed.ledger)[0]!.kind } : {}),
+      picks: [...world.upgrades].sort((a, b) => a.week - b.week).map((item) => PICK_LETTERS[item.upgrade]).join('').slice(0, 60),
     };
   }
 
