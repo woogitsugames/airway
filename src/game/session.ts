@@ -30,6 +30,8 @@ import { browserTutorialStorage } from './tutorial/controller';
 import { airportLabel } from '../ui/airportLabel'; // [night-05] D-68
 import { AudioCueMapper, cueRun } from './audioCues'; // [night-03]
 import { FillReadings } from './fillTrend'; // [night-11af] R4c
+import { HubDepartureLog, boardOpensOnTap } from './hubBoard'; // [night-11ag] R4d
+import { mountHubBoard } from '../ui/hubBoard';
 import type { World, ScreenPoint } from './world';
 import { NewAirportMarks } from './newAirports'; // [night-10a]
 import { onSettingsChange, readSettings, saveSettings } from '../ui/settings/settings'; // [G8] D-172
@@ -112,6 +114,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
   const newMarks = new NewAirportMarks(); // [night-10a]
   const audioCues = callbacks.cue ? new AudioCueMapper(callbacks.cue) : null; // [night-03]
   const fillReadings = new FillReadings(); // [night-11af] R4c: hourly waiting counts → trend chevron
+  const hubLog = new HubDepartureLog(); // [night-11ag] R4d: last game hour of departures and slot holds per airport
   let lastHubKey = '';
   const waitingKeys = new Map<string, string>();
   const jamKeys = new Map<string, number | null>();
@@ -155,6 +158,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
   const firstTime = mountFirstTimeCards(layer, firstTimeRegistry, callbacks.firstTimeCards !== false);
   let boardSeen = false;
   const handles = mountRouteHandles(layer);
+  const hubBoard = mountHubBoard(layer, { close: () => hubBoard.show(null) }); // [night-11ag] R4d
   const hud: HudController = mountHud(layer, {
     onUndo: () => { if (screen !== 'gameover') tool.undo(); }, // [night-11c] the map view leaves the dock reachable
     onTogglePause: () => setPaused(!paused),
@@ -292,7 +296,9 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       run = previous;
       previousPlanes = [];
       fillReadings.hourly(run); // [night-11af] an undo across the hour boundary starts the trend history over
+      hubLog.observe(run); // [night-11ag] the clock went back: the rolling view starts over
       syncWorld(true);
+      syncHubBoard();
       syncUpgrade(true); // [night-07x] if the world is back on an open weekly board, show it (never a frozen clock)
     },
     preview: (model) => world.preview(model),
@@ -319,9 +325,18 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     onRouteMove: (x, y) => tool.pointerMove(ROUTE_POINTER, x, y),
     onRouteEnd: (x, y) => { tool.pointerUp(ROUTE_POINTER, x, y); },
     onRouteCancel: () => tool.pointerCancel(ROUTE_POINTER),
-    onContextMenu: (_hit, x, y) => { tool.longPress(x, y); },
+    onContextMenu: (hit, x, y) => {
+      // [night-11ag] R4d: a long press on an airport opens its cause board; elsewhere it is the route menu.
+      if (hit.kind === 'city' && screen === 'game' && !paused) { openHubBoard(hit.id); return; }
+      tool.longPress(x, y);
+    },
     onTap: (hit) => {
-      if (hit.kind === 'city' && hubSelection.includes(hit.id)) upgrade.selectHub(hit.id);
+      if (hit.kind === 'city' && hubSelection.includes(hit.id)) { upgrade.selectHub(hit.id); return; }
+      if (screen !== 'game' || paused) return;
+      // [night-11ag] R4d: a tap opens the board of an airport at least 70 % full; any other tap closes it.
+      const city = hit.kind === 'city' ? run.cityList().find((item) => item.id === hit.id) : undefined;
+      if (city && boardOpensOnTap(city.waiting.length, city.capacity)) openHubBoard(city.id);
+      else if (hubBoard.openId) hubBoard.show(null);
     },
   }));
 
@@ -436,9 +451,23 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       }
     }
   }
+  // [night-11ag] R4d: the board follows the run while it is open (rebuilt only when a row changes).
+  function syncHubBoard(): void {
+    const id = hubBoard.openId;
+    if (!id) return;
+    const model = screen === 'game' ? hubLog.board(run, id) : null;
+    hubBoard.show(model ? { ...model, code: airportLabel(id) } : null);
+  }
+  function openHubBoard(id: string): void {
+    const model = hubLog.board(run, id);
+    if (!model) return;
+    tool.closeMenu();
+    hubBoard.show({ ...model, code: airportLabel(id) });
+  }
   function setScreen(next: SessionScreen): void {
     if (screen === next) return;
     screen = next;
+    if (next !== 'game') hubBoard.show(null); // [night-11ag] the weekly board and the game-over report replace it
     callbacks.onScreen(next);
   }
   function emit(events: readonly RunEvent[]): void {
@@ -467,7 +496,9 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     emit(run.drainEvents());
     audioCues?.hourly(cueRun(run)); // [night-03]
     fillReadings.hourly(run); // [night-11af] R4c: same game-hour boundary as the drone readings
+    hubLog.observe(run); // [night-11ag] R4d: departures and slot holds since the last look
     syncWorld();
+    syncHubBoard();
     syncUpgrade();
     firstTime.flush(slotHint.visible || screen !== 'game'); // [night-11p] one card at a time, only in play
     const failure = run.failed;
@@ -610,6 +641,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       }
     },
     back() {
+      if (hubBoard.openId) { hubBoard.show(null); return true; } // [night-11ag] R4d: the board closes first
       if (screen === 'gameover') { if (!gameOver.back()) callbacks.onMenu(); return true; } // [night-11c] map view first
       if (screen === 'upgrade') {
         // The weekly board must be answered; from the airport pick, back returns to the crates. [task-39]
@@ -629,6 +661,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       gestures.dispose();
       routeMenu.dispose();
       handles.dispose();
+      hubBoard.dispose(); // [night-11ag]
       atc.dispose();
       slotHint.dispose();
       firstTime.dispose();

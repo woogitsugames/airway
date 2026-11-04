@@ -24,6 +24,16 @@ export const en = {
   'airport.connectingAria': 'Making a connection: {count}.', // [night-10i]
   'airport.trendFillingAria': 'Filling up over the last game hour.', // [night-11af]
   'airport.trendEmptyingAria': 'Emptying over the last game hour.', // [night-11af]
+  // [night-11ag] R4d: hub cause board (long press on an airport). The no-route, left-full and slot rows reuse the
+  // gameover.cause.* sentences; these are the board's own lines.
+  'hubBoard.title': '{code} · departures',
+  'hubBoard.label': 'Departures board of {code}: why passengers are waiting, over the last game hour',
+  'hubBoard.fill': '{waiting}/{capacity} waiting',
+  'hubBoard.close': 'Close the departures board',
+  'hubBoard.rowAria': '{count} to {region}:',
+  'hubBoard.empty': 'Nobody is waiting here.',
+  'hubBoard.cause.curfew': 'Night curfew: no take-offs until {time}.',
+  'hubBoard.cause.none': '{count} {count|passenger is|passengers are} waiting for the next departure.',
   'airport.slotHeld': '{code}: {count} aircraft waiting for a departure slot, next slot in {time}',
   // [task-07] Route drawing, airport-paper ATC hint and route actions.
   'route.aircraft.turboprop': 'turboprop',
