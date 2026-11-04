@@ -10,7 +10,7 @@ disagree. Tick a line only when it is true for the build that goes to the store.
 - **State** (2026-11-04): `done` = in the repo or decided and nothing left before release; `ready` = prepared, the
   owner still has to file or confirm it; `open` = work or a decision is missing.
 - Order: blocks A → B → C. A is needed before the closed test, B before pre-registration / pre-order, C for each
-  store build. Dates follow the launch plan (D-96; `docs/LAUNCH.md` once R2f writes it).
+  store build. Dates follow the launch plan (D-96, D-238: `docs/LAUNCH.md` — timeline in weeks from launch day T, showcases, store-event texts).
 
 ## A — Accounts and back end (before the closed test)
 
