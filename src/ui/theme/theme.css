@@ -16,6 +16,8 @@
   --airway-ticket: #fbf8f1;
   --airway-kraft-label: #564532;
   --airway-kraft: #d6b88a;
+  --airway-kraft-empty: #d9cdb8; /* [night-11n] R5d disabled dock tag */
+  --airway-kraft-empty-ink: #5a4e44;
   --airway-label-ink: #7a6f62;
   --airway-accent: #ff7a3d;
   --airway-board: #1c1e20;
