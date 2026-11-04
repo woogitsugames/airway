@@ -469,6 +469,25 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       now paints below the airport overlay. Hit testing in `routeTool` unchanged (`RouteTool.activeRouteId`, the
       `handles` port gets it). `e2e/route-handles.mjs` (`test:e2e:route-handles`, in `test:ci`; 0/2 on the old
       handles), shots `docs/shots/n11q/`.
+- [x] N11r **Crate stamps say what they measure; "none yet" for an empty hub; replay brings first-time cards back (R5e,
+      D-194; owner Q-76 → B, D-192)** — the red stamps "BEG 9/36" / "BEG 13 min" carry a small caption inside the stamp
+      ("fullest hub" / "longest slot wait", PL "najpełniejszy hub" / "najdłuższe czekanie na slot") and the card's aria
+      text reads "caption: value"; a hub with nobody waiting reads "none yet" / "jeszcze brak" on the stamp and in the
+      pause sheet instead of "MAD 0/36". "Replay tutorial" now also clears the first-time cards (slot hint included).
+      `scripts/test-crate-stamps.ts` (`test:crate-stamps`, in `test:fast`; 1/5 on the old cards), `test:pause-summary`
+      +1 (5/6 on the old summary), `test:first-time` +1 (7/8 on the old controller); board shots `docs/shots/35`, `37`,
+      matrix and store upgrade shots refreshed.
+- [x] N11u **"Long haul" hidden in release builds until T+4 (owner Q-74 → B, D-193)** — a build-time flag, no remote
+      config: `hiddenInRelease` on the pack (`src/data/puzzles/packs.ts`) and `releasedLevels()`; `npm run build` shows
+      01–30, DEV builds (dev server, every e2e, shots, matrix) all 40, `VITE_AW_ALL_PACKS=1` makes a release check build
+      with the pack. `scripts/test-release-packs.mjs` (`test:release-packs`, in `test:fast`) builds the puzzle index
+      with Vite and counts the levels (crashes on the old index).
+- [x] N11t **One word per concept in PL/EN (R5g, D-195)** — network = sieć (PL game over "Sieć zamknięta" now means the
+      same as "Network closed"; map view, timeline), hub = hub (puzzle copy "Pojemność hubów" / "Hub capacity", "hub
+      {city} jest przepełniony", titles "Ciasny hub", "Obok śpiącego huba", "Lot przez hub", "Hub w Akrze", "Hub nad
+      Bosforem"), crate = skrzynia. Glossary `src/i18n/README.md`; `test:i18n` fails on a banned synonym in any
+      catalog value (12 failures on the old catalogs; it also caught three "węzeł" titles that ext/05 added meanwhile).
+      The PL store title (D-18, "siatkę lotów") is outside the catalogs: Q-77.
 
 ## Continuous development round N12 (agent 2)
 - [x] N12a **Balance bot plays for reach (D-90)** — the handover gap "the DEV bot rarely connects new airports; long
@@ -648,7 +667,7 @@ before/after `npm run shots -- globe` PNGs and look at them.
       `shots:site`, `docs/styles/realistyczny.md` (PL), D-11 status note; inspect every PNG.
 - [ ] G7 **Performance and device check** — `perf:scene` saver/low/medium/high, `perf:overlay`, hardware checklist
       (GPU memory, first frame, 30 FPS on low); KTX2/ETC1S fallback only if a budget phone fails (D-174 follow-up).
-- [ ] G8 **"Mapa" mode next to "Satelita" (D-172)** — second texture set from the owner's chosen map look, uniform
+- [x] G8 **"Mapa" mode next to "Satelita" (D-172)** — second texture set from the owner's chosen map look, uniform
       swap without rebuild, `globeMode` setting (default satellite, PL/EN), dock tag toggle; dock/overlay tests,
       `ui:matrix` at 320 dp. Mapa look: owner's reference (Google-Maps-like) in our own palette (`map-*.jpg`).
 - [x] G9 **Airport objects, routes and planes for the new globe (D-175)** — done 2026-11-04: V3 Medalion (D-178), route ink outline, edge probe (D-177) — first 2–3 engine-rendered variants for the
@@ -927,7 +946,7 @@ Evidence: `docs/RESEARCH.md` "R5 — …", PNGs in `docs/research/r5/`.
       at night a cloud hides the turboprop icon (`dock-disabled-night.png`). Use an opaque muted fill plus a dashed
       outline (shape cue for "empty"), keep the count ≥ 4.5:1 against the tag; add the pair to `check-contrast`.
       **Area:** UI (`src/ui/hud.css`, `scripts/check-contrast.mjs`).
-- [ ] R5e **Stamps say what they measure** — crate stamps "BEG 13 min" / "BEG 9/36" get a short caption line
+- [x] R5e → N11r **Stamps say what they measure** — crate stamps "BEG 13 min" / "BEG 9/36" get a short caption line
       ("longest slot wait" / "fullest hub", PL "najdłuższe czekanie na slot" / "najpełniejszy hub") and the aria
       text; the pause summary shows "none yet" (`pause.summary.noHub`) when the fullest hub has 0 waiting
       (`pause-fullest-hub-0.png`). `test:pause-summary` +1, `test:format`, shots. **Area:** UI
@@ -936,7 +955,7 @@ Evidence: `docs/RESEARCH.md` "R5 — …", PNGs in `docs/research/r5/`.
       on the "Map" view); drop the "FLIGHT / DEST · GATE · STATUS" column header when the departures board has no
       rows (unserved-airport cause shows only a sentence). E2E `gameover-unserved` asserts both; shots PL/EN.
       **Area:** UI (`src/ui/gameover/**`, `src/game/session.ts`).
-- [ ] R5g **One word per concept in PL/EN** — weekly reward = "crates / skrzynie" (not "cargo label / etykieta
+- [x] R5g → N11t **One word per concept in PL/EN** — weekly reward = "crates / skrzynie" (not "cargo label / etykieta
       frachtowa"; "upgrade / ulepszenie" stays the generic word for what a crate holds), hub = "hub" (not "węzeł", "terminal"),
       network = "sieć" (not "siatka"; game-over title "Sieć zamknięta" to match "Network closed"), "Simulation
       paused" → "Time is stopped / Czas stoi". Add a glossary table to `src/i18n/README.md` (or the top of `en.ts`)
@@ -1010,10 +1029,13 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
       (with R2f; Polish): the T / T+4 / T+8 / T+12 weeks table from RESEARCH R6, one new mechanic per update with its
       teaching puzzles, and draft PL/EN texts for an Apple In-App Event (name ≤ 30, short ≤ 50, long ≤ 120 chars) and
       a Play "Major update" promotion (28 days, submit ≤ 60 days ahead, unique art). **Area:** docs. Q-64 → A (D-131).
-- [x] R6h → ext/02 (31–35; 36–40 open, Q-74) **Puzzle pack 31–35 "Long haul"** (then 36–40 in a second PR) — five levels outside Europe that teach
+- [x] R6h → ext/02 (31–35), ext/04 (36–40; release visibility Q-74) **Puzzle pack 31–35 "Long haul"** (then 36–40 in a second PR) — five levels outside Europe that teach
       widebody range and ocean legs with today's rules only (no new mechanic tags): start cities in the Pacific /
       South Atlantic, stock with 1–2 widebodies, a `continents` goal in the last one. Each with `referenceCommands`,
       PL/EN titles, `test:puzzles` green, shots. **Area:** content (`src/data/puzzles/**`, i18n). Q-64 → A (D-131): ready before launch; after R6f.
+- [x] R6h2 → ext/05 **Puzzle titles never split a word at 320 px** (owner request after ext/02) — 12 PL and 10 EN titles of 1–30
+      broke mid-word on the 320×568 departures board (29 „ATLANTYK-U”). Shorter titles, same sense (D-166, Q-77);
+      `test:e2e:screens-fit-320` checks every title word stays on one line. **Area:** i18n, `e2e/`.
 - [ ] R6i **First-session observation sheet** — extends R1o/R3k in `docs/PLAYTEST.md`: what the observer notes in
       a tester's first 10 minutes (seconds to the first own route on the real globe, did they find the dock, first
       "nothing to do" moment, what the glyph means, did they open the weekly board without help) plus two device
@@ -1092,7 +1114,7 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
       stays on the `upgrades` RNG stream; `RULES_VERSION` bump, save/daily golden updates. Metric (r8-audit
       `--policy=bot`): boards showing a card with no effect yet (no hub / no slot hold) 100 % → < 30 %; median stays in 10–18 (`test:balance`); slot holds
       still counted. **Area:** `src/sim/upgrades.ts`, `src/sim/world.ts`, tests. *Needs Q-71.*
-- [ ] R8b **"No spare aircraft" game-over hint** — 56 of 200 losses are at an airport with no route, and in 99 % of
+- [x] R8b → N12y **"No spare aircraft" game-over hint** — 56 of 200 losses are at an airport with no route, and in 99 % of
       all losses the reserve was empty, yet `gameover.unservedHint` says "Connect a new airport before its waiting area
       fills up". When the failed airport had 0 routes and the reserve was 0, show "No spare aircraft: drag a route end
       to it or take a plane off a quieter route" (PL + EN, i18n); keep the old line when a plane was free. Pure choice
@@ -1110,7 +1132,7 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
       prototype wrapping: read `DepartureHeld`/`Delivered` events and `hubCauseLedger` in the adapter). No new gate.
       Metric: the next balance PR can quote the tail, not only the median. **Area:** `scripts/balance-*.ts`,
       `docs/balance/`.
-- [ ] R8e **Bot moves aircraft** — the bot never uses `UnassignPlane`/`RemoveRoute`, so with an empty reserve an
+- [x] R8e → N12z **Bot moves aircraft** — the bot never uses `UnassignPlane`/`RemoveRoute`, so with an empty reserve an
       unserved airport is lost unless a route end is within range (56 / 200 losses). Add one step: when an active
       airport has no route, no spare aircraft and no extendable route, take the plane from the route with the lowest
       waiting per plane (keep ≥ 1 per route) and open the new route with it. `test:bot-policy` cases; report the new
@@ -1241,8 +1263,16 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
 - 2026-11-04 · N11p 3-step training flight in the game's marks + first-time cards (R5b, R6a, R6b; D-184, D-190) · night/11p-short-tutorial · test:first-time 7/7 (new; the module does not exist on the old code), test:e2e:first-time-cards 4/4 (new; no cards on the old game), test:e2e:tutorial 28/28 (screenshots 8), test:e2e:tutorial-layout 7/7 (planet check fails on the old 228-unit planet at 412 px), test:fast 74/74, build ok, e2e:smoke 9/9, e2e:settings-groups 4/4, e2e:screens-fit 18/18, e2e:pseudo-locale 27/27; ui:matrix/store:shots not run (cards are off in seeded DEV runs, game screens unchanged)
 - 2026-11-04 · G9 Medalion airports + route ink outline + edge contrast probe (D-177, D-178; owner "Daj medalion i scalaj") · ext/03-g9-medalion · test:render-layers 40/40 (+1 outlined-disc case), test:fast 74/74 (130.8 s), build ok (main 1,058.6 kB / gzip 314.2 kB); probe seed 15 phone day routes 5.1/6.8/3.4, airports 2.6/3.2/3.1 (diorama/Satelita/Mapa); renders in docs/mockups/globe-2026-11/g9/final/; store:shots/ui:matrix not run (G6), follow-up G9b
 - 2026-11-04 · N11q quiet route-end handles below the tags (R5c, D-191) · night/11q-quiet-handles · test:e2e:route-handles 2/2 (0/2 on the old handles), test:fast 74/74, build ok, test:hud-targets 300/300, e2e:smoke 9/9, e2e:airport-plates 4/4, e2e:gameover-map 3/3, ui:matrix 48/48, store:shots 60 (test:store-shots ok); owner question Q-76
+- 2026-11-04 · N11r crate stamp captions + "none yet" (R5e, D-194) + replay restores first-time cards (owner Q-76 → B, D-192) · night/11r-stamp-captions · after merging dev (#169–#171): test:fast 75/75 (test:crate-stamps 5/5, 1/5 on the old cards; test:pause-summary 6/6, 5/6 on the old summary; test:first-time 8/8, 7/8 on the old controller), build ok, test:hud-targets 300/300, e2e:smoke 9/9 (5/9 while another suite loaded the machine), store:shots 60 (test:store-shots ok); ui:matrix 38/48 — the upgrade screen at 904×1000 / 904×1088@2 / 1088×904@2 times out on origin/dev too since the new globe (G2+G3/G4, probe 12/16 on origin/dev); before the merge ui:matrix 48/48, e2e:smoke 9/9. e2e:board-short 0/4 on origin/dev and here (rules v5 game over before week 2, pre-existing); after merging dev again (#172–#179): test:fast 75/75, build ok, store:shots 60 (test:store-shots ok), e2e:smoke 5/9 — the weekly-board click times out on origin/dev alike since the new globe (9/9 on a quiet machine once)
+- 2026-11-04 · N11u Long haul hidden in release builds (owner Q-74 → B, D-193) · night/11u-release-packs · after merging dev (#176–#179): test:fast 76/76 (test:release-packs 4/4: release 30, DEV 40, override 40), build ok, e2e:puzzles 44/44 (levels=40); e2e:smoke/ui:matrix not run (no game screen changes in DEV)
+- 2026-11-04 · N11t one word per concept (R5g, D-195), owner question Q-77 · night/11t-one-word · LOGPLACEHOLDER
 - 2026-11-04 · G2+G3 satellite globe ships (D-179) · ext/03-g2g3-satellite · test:fast 74/74 (136.5 s), build ok (main 1,070.0 kB / gzip 317.7 kB), test:bundle 9/9 (dist 3,617.4 kB), test:e2e:smoke 9/9; built app (vite preview) loads data/globe/ day-2048 + night-1024 + elevation on auto→low, no fallback warning; game shots seed 15: routes 6.9/6.8, airports 3.2/6.0 (day/dusk); store:shots/ui:matrix not run (G6)
 - 2026-11-04 · G4 sea surface + haze folded into the terrain shader (D-173) · ext/03-g4-fillrate · transparent full-screen layers on the satellite globe 3→1 (low/saver: halo) and 4→2 (medium/high: halo + clouds); perf:scene SwiftShader 40 s low 397 frames (375 with shells), medium 168 (174), draw calls 41; game shots seed 15 match the layered look (routes 6.8/6.7, airports 3.1/5.5 day/dusk); `world.stats().transparentLayers` not added (G7 measures on devices)
 - 2026-11-04 · G6 store screenshots, feature graphic, ui:matrix and style doc on the satellite globe (D-170, D-178) · ext/03-g6-store · store:shots 60/60 (game: gold 0.13–0.17 ≥ 0.045, routes/airports/planes 9.4–11.6:1; night 9.4–11.4:1), store:feature 1/1, ui:matrix 48/48, contact sheet and feature graphic inspected; docs/styles/realistyczny.md (PL), D-11 globe superseded; shots:site not rerun
 - 2026-11-04 · N12w one language table (R7f, D-185) · night/12w-language-registry · test:i18n 1/1 (now per table entry: catalogs, plural form counts, labels, number locales; stub `de` entry gives every derived lookup; fails on the old code: no table, `=== 'pl'` in airportLabel.ts), test:android-config 23/23 (reads the table), test:fast 74/74, build ok, test:e2e:settings-groups 4/4; behaviour unchanged (PL/EN)
 - 2026-11-04 · N12x leaderboard opt-out, net layer + daily report line (R7l, D-135, D-186) · night/12x-leaderboard-optout · test:net 13/13 (new opt-out case fails on the old net layer: no isSharing/setSharing, run queued and sent), test:fast 74/74, build ok, test:e2e:delete-ranking 4/4; settings switch left to agent #1 (API: Leaderboards.isSharing/setSharing)
+- 2026-11-04 · N12y no-spare-aircraft hint on the unserved game-over board (R8b, D-187) · night/12y-no-spare-tip · test:gameover-tip 8/8 (new case fails on the old code: no unservedHint), test:e2e:gameover-unserved 5/5 (+1 bot run on 0xA1A1 ending unserved with an empty reserve, PL 360×640 unclipped; docs/shots/n11k/gameover-nospare-pl-360x640.png), test:fast 74/74, build ok; ui:matrix not run (its game-over is a forced hub overload)
+- 2026-11-04 · R6h "Long haul" 36–40 + strip-order robustness, puzzle 35 fix (D-164, D-165) · ext/04-puzzles-36-40 · test:long-haul 25/25 (10/25 on dev: 36–40 missing, 35 jammed SIN in 1 of 8 strip orders), test:puzzles levels=40 cases=239 passed=239, test:fast 74/74 (143.1 s), build ok, test:e2e:puzzles levels=40 steps=44 passed=44, test:e2e:screens-fit-320 12/12, shots ext-02 6 new/updated inspected; networks clearing 36–40: 1/284, 2/681, 11/1583, 16/3647, 3/2444 (merged tree with dev at b2a805a)
+- 2026-11-04 · G8 Mapa mode: setting + dock tag + texture swap (D-172) · ext/03-g8-map-mode · test:globe-assets 59/59 (8 files, 2,313,491 B), test:fast 74/74 (133.9 s), build ok (main 1,075.0 kB / gzip 318.6 kB), test:bundle 9/9 (dist 4,162.8 kB ≤ 4,300), e2e smoke 9/9, edge-dock 5/5, screens-fit-320 12/12, ui:matrix 48/48, store:shots 60/60 + feature 1/1 (six-tag dock), live switch on seed 15 (aria label, stored setting, icon) at 412 and 320 px; the warm terminator band shows more on the light Mapa (kept: it is the day line)
+- 2026-11-04 · R6h2 puzzle titles never split a word at 320 px (D-166, Q-77) · ext/05-puzzle-titles-320 · test:e2e:screens-fit-320 12/12 (10/12 on the old titles: 12 PL and 10 EN titles split a word), test:fast 74/74 (143.4 s), build ok, test:puzzles levels=40 cases=239 passed=239, test:long-haul 25/25, test:e2e:puzzles levels=40 steps=44 passed=44 (merged tree with dev at 72ce218)
+- 2026-11-04 · N12z balance bot frees an idle aircraft for an unserved airport (R8e, D-188) · night/12z-bot-moves-aircraft · test:bot-policy 13/13 (3 new cases fail on the old bot: no UnassignPlane, an unserved jam got aircraft elsewhere first), r8-audit 200 seeds unserved losses 52 → 48, median 16.64 → 16.64 min, test:balance median 17.25 → 17.25 (D-79 10–18), test:fast 75/75 (after merging #176), build ok; e2e before the merge: smoke 9/9 and 15 more autoplay suites green; board-short 0/4, edge-chip-airports 0/2, edge-chip-tags 5/6, run-timeline 0/4, upgrade-picks 4/6 fail identically on origin/dev (fixed-seed runs end in week 2 since rules v6 — needs new seeds, not this change)

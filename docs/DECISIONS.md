@@ -1115,7 +1115,10 @@ default** on first launch; the mode is switched in **Settings (remembered) and b
 dock** for quick changes. The Mapa mode must still respect the forbidden list (no flat pastel background, no
 subway-map look) and D-05: it stays a lit 3D globe with relief. Mapa look: the owner's Google-Maps-like reference,
 rebuilt in our own palette with ETOPO5 hillshade and Natural Earth borders (no copied colours, no labels).
-**Status: accepted by the owner 2026-11-03; plan step G8 (readability via D-175).**
+**Status: in force (G8, 2026-11-04): Settings → Display → Globe view (`globeMode`, default `satellite`) and a sixth dock
+tag (own globe/folded-map icons) swap the surface textures (`GlobeInstance.setSurfaceLook`, no rebuild; clouds only in
+Satelita); `public/data/globe/map-{4096,2048}.jpg` (+0.54 MB); the dock grid has six columns (60 px at 412, 49 px at
+320). Mapa readability: G9b.**
 
 ## D-173 — Adaptive quality steps down the globe texture first (2026-11-03, Claude, ext/03)
 With B the largest GPU cost is the 4096×2048 day texture (~43 MB with mips, uncompressed). The D-73 ladder gets a
@@ -1351,16 +1354,107 @@ the choice in `airway.settings` (the net layer would read the settings store; th
 `Leaderboards`), and still submitting but hiding the result (the objection is about processing). **Status: in force
 for the net layer (N12x); switch pending.**
 
+## D-187 — The unserved game-over line follows the reserve (2026-11-04, Claude, night N12y)
+R8b. When no route served the airport that jammed, the departures board's action line is chosen by the aircraft left
+in the reserve at the jam (`GameOverSnapshot.spareAircraft`, pure `unservedHint` in `src/game/gameoverTip.ts`): with a
+spare plane the old "Connect a new airport before its waiting area fills up."; with none (99 % of R8 losses) "No spare
+aircraft: drag a route end to it, or remove a quieter route to free its plane." / „Brak wolnych samolotów: przeciągnij
+do niego koniec trasy albo usuń mniej obłożoną trasę, żeby zwolnić jej samolot.” The backlog's "take a plane off a
+route" became "remove a quieter route": the game UI has no single-plane unassign, only removing a route returns its
+aircraft. Unknown reserve (older callers) keeps the old line. Metric: unserved losses whose hint names a move the player
+could make, 0 → 100 % (both branches). **Status: in force (N12y).**
+
+## D-164 — A puzzle's reference network must win in any order of its strips (2026-11-04, Claude, ext/04)
+Each connect costs one game minute, so the order in which a player taps the strips shifts every plane's first
+departure. On long legs this can decide a jam: puzzle 35 (ext-02) cleared in its reference order but jammed
+Singapore in 17 of 40 random orders. `test:long-haul` now replays every long-haul reference in 8 orders (forward,
+reverse, 6 seeded shuffles; hub upgrades after the strips, because a city is a hub only once it has routes) and each
+must clear the goal; the ≥ 15 % margin stays a property of the reference order (in other orders the result moves by a
+few per cent, e.g. 40: 1 224–1 376). Fix for 35: Singapore holds 210 instead of 190 waiting passengers and the
+target is 1 147 (was 1 154): still 1 of 1 525 networks, still only with the Sydney upgrade, now 60 of 60 orders.
+Rejected: knife-edge capacities that make a hub upgrade decisive only in some orders (tried for 37 and 40).
+**Status: in force (ext/04).**
+
+## D-165 — "Long haul" 36–40: the second half of the pack (2026-11-04, Claude, ext/04)
+Same method as D-163 (every network the stock allows, on the real Sim, plus D-164's order check), two 3-day weeks
+each, all starts outside Europe, every one with an ocean leg only a widebody flies:
+36 North Pacific (Tokyo feeds Los Angeles-bound traffic; chaining Osaka–Busan and Seoul–Shanghai instead of a star,
+Osaka under curfew, Shanghai wave in week 2; 1 of 284 networks), 37 Two oceans (Johannesburg to Bombay and Perth,
+Cape Town under curfew must not get its own ocean leg; 2 of 681), 38 Andes queue (four turboprop spokes queue for
+Bogotá's slots, Lima's week-2 wave needs its own widebody to Accra; 11 of 1 583, all with the same two widebodies),
+39 Gulf to Sydney (Dubai–Sydney is beyond range, Singapore is the stopover, Sydney under curfew, Johannesburg wave in
+week 2; 16 of 3 647, all with the same Singapore pair), 40 Last call (5 continents from Nairobi, São Paulo under
+curfew, Bombay–Sydney at the edge of widebody range; 3 of 2 444, all with the same four widebodies). Reference margins
++15 % (36–39) and +16 % (40), below 26–30 (+17…18 %). No hub upgrade in 36–40: in 37 and 40 the +6 seats decided only
+on a knife edge that broke in some strip orders (D-164), so robustness won over an MCT tag; each level carries at
+least two of slots/curfew/week. Titles keep every word ≤ 8 letters so the 320 px board never splits one.
+**Status: in force; difficulty is a proposal for the owner to playtest (as D-70).**
+
+## D-166 — Puzzle titles never split a word on the 320 px board (2026-11-04, Claude, ext/05)
+The departures board sets titles in a narrow mono column with `overflow-wrap: anywhere`, so at 320×568 every word of
+9+ letters broke mid-word ("ATLANTYK-U", "CONNECTIN-G"): 12 PL and 10 EN titles of 1–30. They are shortened with the
+same sense, every word ≤ 8 letters: EN 02 Change of planes, 06 Three lands, 07 Change at Accra, 08 Night flights,
+13 A long chain of flights, 14 Four lands, one path, 16 Hourly bank on the Main, 21 Bosporus link, 22 Gulf junction;
+PL 02 Lot przez węzeł, 03 Lot do Afryki, 06 Trzy lądy, 07 Węzeł w Akrze, 13 Łańcuch lotów, 14 Cztery lądy, jedna
+trasa, 16 Godzinna fala nad Menem, 17 Obok śpiącego węzła, 21 Węzeł nad Bosforem, 22 Rozstaje nad Zatoką, 23 Noce na
+południu, 29 Brama na Atlantyk. `test:e2e:screens-fit-320` measures each title word with a DOM `Range` (one line box
+per word) in PL/EN at 320×568 and 568×320. Rejected: `overflow-wrap: normal` (a long word would then overflow the
+column instead) and a smaller font (already 12 px at this width). **Status: in force (ext/05); wording is a proposal.**
+
+## D-192 — "Replay tutorial" also brings the first-time cards back (2026-11-04, owner Q-76 → B, Claude, night N11r)
+The owner chose B for Q-76: one button. `TutorialController.replay()` (both the settings "Replay tutorial" and the
+training flight's own replay) now calls `clearFirstTimeCards()` (`src/game/tutorial/first-time.ts`), which writes
+an empty `aw-first-time` list and clears the task-32 slot-hint flag, so a player coming back after a break sees each
+card again at its own moment in the next run. The run in progress keeps its registry (read when the game screen
+opens); a fresh game reads the cleared flags. Rejected: A (cards stay gone), C (a second help button).
+**Status: in force (N11r, `test:first-time` 8, 7/8 on the old controller).**
+
+## D-194 — Crate stamps name what they measure; an empty hub reads "none yet" (2026-11-04, Claude, night N11r)
+R5e: the red stamps "BEG 9/36" and "BEG 13 min" were a code and a number with no word. Each stamp now carries a
+small caption line inside the same red box ("fullest hub" / "longest slot wait"; PL "najpełniejszy hub" /
+"najdłuższe czekanie na slot", 10 px Atkinson caps above the 12 px mono value) and the card's aria text reads
+"caption: value". When the fullest hub has nobody waiting, both the hub stamp and the pause sheet's "Fullest hub" row
+say "none yet" / "jeszcze brak" instead of "MAD 0/36" (a 0 next to a capacity read as a measurement of a jam).
+"No hub yet" stays without a caption (it is not a measurement). Rejected: caption outside the stamp (it would read as
+a card field), "MAD 0/36 · nobody waiting" (longer, wraps on 320 px).
+**Status: in force (N11r, `test:crate-stamps` 5, `test:pause-summary` 6).**
+
+## D-188 — The balance bot frees an idle aircraft for an unserved airport (2026-11-04, Claude, night N12z)
+R8e. `src/game/dev/bot-policy.ts` gets one last step: when an active airport has no route, the reserve is empty and
+no served route end can reach it, the bot sends one aircraft that is on the ground and empty back to the reserve
+(`UnassignPlane`), taken from the route with the least waiting per plane that has two or more (every route keeps one),
+of a type that reaches the airport; the next decision opens the new route with it. A jam at an airport without a
+route is now connected before spare aircraft go to busy routes. Measured (`r8-audit --policy=bot`, 200 seeds, before
+→ after): unserved-airport losses 52 → 48, median 16.64 → 16.64 min (p10 9.8, p90 22.8 unchanged), score p50 271.5;
+`test:balance` 50 seeds median 17.25 → 17.25 (inside D-79's 10–18). The effect is small because the bot opens a route
+per aircraft (at the loss every route has one plane in 35 of 37 sampled unserved losses), so "keep one per route"
+leaves little to move. A variant that also closed a redundant one-plane route (all its airports keep another route)
+cut unserved losses to 46 but lowered the median to 16.15 min and the score, so it was not kept. Note for the UI: a
+player cannot take a single aircraft off a route today (no unassign gesture; only removing a route frees its planes,
+D-187). **Status: in force (N12z); no gate changed.**
+
+## D-193 — "Long haul" (31–40) stays out of release builds until T+4 (2026-11-04, owner Q-74 → B, Claude, night N11u)
+The owner chose B: the first puzzle pack is the content of the T+4 "Major update" store event (D-131), so a release
+build shows puzzles 01–30 (DEV builds 40). A build-time flag, no remote config: `PuzzlePack.hiddenInRelease` in
+`src/data/puzzles/packs.ts` (set on `longHaul`) and `releasedLevels()` drop a hidden pack's levels (from its first
+level to the next pack) unless the build is DEV (`npm run dev`, every e2e, shots and the UI matrix, so
+`e2e:puzzles` and `screens-fit-320` keep covering 31–40) or was made with `VITE_AW_ALL_PACKS=1` (a release check
+build before T+4). Node tests have no Vite env and see all 40. At T+4: remove `hiddenInRelease`. Saved
+progress for 31–40 from a DEV build is ignored in a release build (the board lists only exposed levels). Rejected:
+deleting the JSON files from the branch (the pack would rot untested), a remote switch (no server for it, D-16).
+**Status: in force (N11u, `test:release-packs` 4).**
+
 ## D-195 — One word per concept in PL/EN, guarded by test:i18n (2026-11-04, Claude, night N11t)
 R5g: the catalogs mixed "siatka" and "sieć" for the network, "terminal" and "węzeł" for a hub, and the PL game-over
 title "Siatka wstrzymana" (a pause you come back from) did not mean the same as "Network closed" (the end). The
 glossary in `src/i18n/README.md` fixes crate/skrzynia (what a crate holds is an upgrade/ulepszenie), hub/hub,
 network/sieć; PL game over is now "Sieć zamknięta" (title, map view, timeline: "sieć zamknięta", "bez zmian w
 sieci"), puzzle copy says "hub" ("Pojemność hubów" / "Hub capacity", "hub {city} jest przepełniony", "Ciasny hub" /
-"A tight hub", "Obok zamkniętego huba"). `test:i18n` fails on a banned synonym in any catalog value (EN grid, node,
+"A tight hub", "Obok śpiącego huba", and the ext/05 short titles "Lot przez hub", "Hub w Akrze", "Hub nad
+Bosforem"). `test:i18n` fails on a banned synonym in any catalog value (EN grid, node,
 terminal, cargo/freight label, simulation; PL siatka, węzeł, terminal, etykieta frachtowa, symulacja, all inflected
 forms, Unicode word boundaries), except the two diegetic signs `menu.terminal` and `puzzle.board.subtitle`.
-Puzzle 17's old title "Obok zamkniętego węzła" read better; it follows the rule unless the owner prefers the
+Puzzle 17's title (ext/05: "Obok śpiącego węzła") becomes "Obok śpiącego huba"; the old word read better; it follows the rule unless the owner prefers the
 exception. The D-18 PL store title ("Buduj siatkę lotów") is outside the catalogs: Q-77.
 Rejected: "Siatka zamknięta" (keeps two words for the network).
 **Status: in force (N11t, `test:i18n` with the glossary check, 12 failures on the old catalogs).**

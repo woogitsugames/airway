@@ -34,6 +34,8 @@ interface LookConfig {
   readonly production?: boolean;
   /** Ocean shell: tint alpha (how much it veils the sea floor colour) and glint strength. */
   readonly ocean: { readonly veil: number; readonly glint: number };
+  /** [G8] Strength of the near-limb haze folded into the terrain (1 = satellite; the light Mapa takes less). */
+  readonly haze?: number;
 }
 
 export const LOOKS: Record<Exclude<GlobeLook, 'diorama'>, LookConfig> = {
@@ -64,10 +66,12 @@ export const LOOKS: Record<Exclude<GlobeLook, 'diorama'>, LookConfig> = {
   map: {
     terrain: 'textured',
     decor: { trees: 0, rocks: 0, clouds: 0, lights: 0, tidy: true },
+    // [G8] D-172: the shipped second globe mode; same night lights as the satellite (Black Marble).
+    production: true,
     day: { low: 'map-2048.jpg', medium: 'map-4096.jpg', high: 'map-4096.jpg' },
-    night: { low: 'painted-night-1024.jpg', medium: 'painted-night-2048.jpg', high: 'painted-night-2048.jpg' },
+    night: { low: 'night-1024.jpg', medium: 'night-2048.jpg', high: 'night-2048.jpg' },
     nightGain: 1.1, clouds: null,
-    ocean: { veil: .05, glint: .3 },
+    ocean: { veil: .05, glint: .3 }, haze: .35,
   },
 };
 
@@ -168,20 +172,61 @@ vec4 awSampleSphere(sampler2D tex, vec3 dir) {
  * Terrain material for the texture looks: the colour comes from the day texture by surface direction,
  * the day/night grade is the shipped one (daynight.ts), and the night side adds the city-light texture.
  */
+/** [G8] Uniforms of the textured terrain, shared with the compiled program so a mode switch is a value swap. */
+interface SurfaceUniforms {
+  awDay: { value: Texture | null };
+  awNightLights: { value: Texture | null };
+  awNightGain: { value: number };
+  awVeil: { value: number };
+  awGlint: { value: number };
+  awHaze: { value: number };
+}
+
+/** [G8] D-172: point the textured terrain at another surface (Satelita ↔ Mapa) without rebuilding anything. */
+export function setSurface(material: MeshStandardMaterial, day: Texture, night: Texture | null, config: LookConfig): void {
+  const u = material.userData['awSurface'] as SurfaceUniforms | undefined;
+  if (!u) return;
+  u.awDay.value = day;
+  u.awNightLights.value = night;
+  u.awNightGain.value = night ? config.nightGain : 0;
+  u.awVeil.value = config.ocean.veil;
+  u.awGlint.value = config.ocean.glint;
+  u.awHaze.value = config.haze ?? 1;
+}
+
+/** [G8] One texture by URL (the cloud shell added later when switching Mapa → Satelita). */
+export async function fetchTexture(url: string, srgb: boolean, signal?: AbortSignal): Promise<Texture> {
+  return loadTexture(await fetchBytes(url, signal), srgb);
+}
+
+/** [G8] Day and night textures of a texture look for a preset (no elevation, no clouds). */
+export async function loadSurfaceTextures(look: Exclude<GlobeLook, 'diorama'>, preset: QualityLevel, devBase: string,
+  productionBase: string, signal?: AbortSignal): Promise<{ day: Texture; night: Texture | null; config: LookConfig }> {
+  const config = LOOKS[look];
+  const base = config.production ? productionBase : devBase;
+  if (!config.day) throw new Error('look ' + look + ' has no surface texture');
+  const [dayBlob, nightBlob] = await Promise.all([fetchBytes(base + config.day[preset], signal),
+    config.night ? fetchBytes(base + config.night[preset], signal) : null]);
+  return { day: await loadTexture(dayBlob, true), night: nightBlob ? await loadTexture(nightBlob, false) : null, config };
+}
+
 export function createTexturedTerrainMaterial(assets: LookAssets, sunDirection: Vector3): MeshStandardMaterial {
   const material = new MeshStandardMaterial({ color: '#ffffff', vertexColors: true, roughness: .95, metalness: 0 });
   material.userData['awDayNight'] = true; // the grade is applied here, inside this material's own patch
   const sun = { value: sunDirection };
+  const surface: SurfaceUniforms = {
+    awDay: { value: assets.day }, awNightLights: { value: assets.night },
+    awNightGain: { value: assets.night ? assets.config.nightGain : 0 },
+    awVeil: { value: assets.config.ocean.veil }, awGlint: { value: assets.config.ocean.glint },
+    awHaze: { value: assets.config.haze ?? 1 },
+  };
+  material.userData['awSurface'] = surface;
   material.onBeforeCompile = (shader) => {
-    shader.uniforms['awDay'] = { value: assets.day };
-    shader.uniforms['awNightLights'] = { value: assets.night };
-    shader.uniforms['awNightGain'] = { value: assets.night ? assets.config.nightGain : 0 };
-    shader.uniforms['awVeil'] = { value: assets.config.ocean.veil };
-    shader.uniforms['awGlint'] = { value: assets.config.ocean.glint };
+    Object.assign(shader.uniforms, surface);
     shader.vertexShader = 'varying vec3 vAwDir;\n' + shader.vertexShader.replace(
       '#include <begin_vertex>', '#include <begin_vertex>\n  vAwDir = position;');
     shader.fragmentShader = 'uniform sampler2D awDay;\nuniform sampler2D awNightLights;\nuniform float awNightGain;\n' +
-      'uniform float awVeil;\nuniform float awGlint;\n' +
+      'uniform float awVeil;\nuniform float awGlint;\nuniform float awHaze;\n' +
       'varying vec3 vAwDir;\n' + SAMPLE_GLSL + shader.fragmentShader.replace(
       '#include <map_fragment>', '#include <map_fragment>\n  diffuseColor.rgb *= awSampleSphere(awDay, vAwDir).rgb;');
     patchDayNightShader(shader, sun);
@@ -212,7 +257,7 @@ export function createTexturedTerrainMaterial(assets: LookAssets, sunDirection: 
     float awLitHaze = smoothstep(-0.3, 0.25, awNs);
     float awDuskHaze = 1.0 - smoothstep(0.0, 0.35, abs(awNs + 0.02));
     vec3 awTint = mix(vec3(0.21, 0.51, 0.91), vec3(1.0, 0.34, 0.11), awDuskHaze * 0.7);
-    outgoingLight = mix(outgoingLight, awTint, pow(1.0 - awFacing, 2.4) * (0.04 + 0.34 * awLitHaze));
+    outgoingLight = mix(outgoingLight, awTint, pow(1.0 - awFacing, 2.4) * (0.04 + 0.34 * awLitHaze) * awHaze);
   }
   #include <opaque_fragment>`);
   };

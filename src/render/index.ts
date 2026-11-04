@@ -2,7 +2,7 @@
 export {
   createWorldRenderer, DIORAMA_SKY, CITY_PICK_RADIUS_DP,
   type WorldRenderer, type WorldRendererOptions, type WorldStats, type CityView, type HubLoadView,
-  type RouteView, type PlaneView, type RoutePreviewView, type ScreenPoint, type PickResult,
+  type RouteView, type PlaneView, type RoutePreviewView, type ScreenPoint, type PickResult, type GlobeMode,
 } from './world';
 export { GlobeOrbitCamera, clampCameraDpr } from './camera';
 export type { OrbitCameraOptions, OrbitCameraState, SafeAreaInsets, GeoPoint } from './camera';

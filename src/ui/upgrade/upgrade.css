@@ -159,6 +159,13 @@
   max-width: 100%;
   white-space: normal;
 }
+/* [night-11r] R5e: the caption is part of the stamp (same red ink, same box), smaller and set above the value. */
+.airway-upgrade-stamp-caption, .airway-upgrade-stamp-value { display: block; }
+.airway-upgrade-stamp-caption {
+  font: 700 10px/1.2 'Atkinson Hyperlegible Next', sans-serif;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
 
 /* Hub pick: only the sign stays, the globe underneath is live and tappable. */
 /* Sits under the boarding pass (HUD top strip ~70 px) so neither covers the other. */

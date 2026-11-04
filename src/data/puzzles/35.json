@@ -42,7 +42,7 @@
       "continent": "AS",
       "latitude": 1.3,
       "longitude": 103.8,
-      "hubCapacity": 190
+      "hubCapacity": 210
     },
     {
       "id": "JNB",
@@ -73,7 +73,7 @@
   },
   "goal": {
     "kind": "continents",
-    "targetDelivered": 1154,
+    "targetDelivered": 1147,
     "continents": 5
   },
   "mechanics": [

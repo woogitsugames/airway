@@ -4,7 +4,7 @@ import { localNumber, t, type TranslationKey } from '../../i18n';
 import { nextWorldSeed, sameWorldIdentity, type WorldIdentity } from './seed';
 import { persistBestRecord, type BestStorage } from './storage';
 import type { TimelineWeek } from '../../game/runTimeline';
-import { gameOverTip, type GameOverTip, type TipKind } from '../../game/gameoverTip';
+import { gameOverTip, unservedHint, type GameOverTip, type TipKind } from '../../game/gameoverTip';
 import './gameover.css';
 import { reducedMotion } from '../motion'; // [night-11g] D-88
 
@@ -33,6 +33,8 @@ export interface GameOverSnapshot extends WorldIdentity {
   readonly timeline?: () => Promise<RunTimeline | null>;
   /** [night-11f] Show one tip from the leading cause (the player's first flights, src/game/gameoverTip.ts). */
   readonly tip?: boolean;
+  /** [night-12y] R8b: aircraft left in the reserve at the jam (turboprops + widebodies); picks the unserved hint. */
+  readonly spareAircraft?: number;
 }
 
 /** [night-10r] Weeks of the run plus the day of the jam; hub ids in picks are already display labels. */
@@ -309,7 +311,7 @@ function buildDialog(
     const none = element('div', 'airway-go-none');
     none.dataset.testid = 'gameover-unserved';
     none.append(element('p', 'airway-go-none-line', t('gameover.unserved', { hub: snapshot.hubCode })),
-      element('p', 'airway-go-none-hint', t('gameover.unservedHint')));
+      element('p', 'airway-go-none-hint', t(unservedHint(snapshot.spareAircraft))));
     flightList.append(none);
   }
   // [night-11k] R5f: column headings only above real rows; over the unserved sentence they read as an unfinished table.

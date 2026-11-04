@@ -7,6 +7,8 @@
 // [night-11k] R5f: the unserved board has no "FLIGHT / GATE / STATUS" column headings (they stay above real rows),
 // and while the report is open no edge chip and no dock tag shows over it; the "Map" view brings both back.
 // Shots docs/shots/n11k/.
+// [night-12y] R8b, D-187: the bot's seed-0xA1A1 run ends at an unserved airport with an empty reserve; its hint then
+// names the moves that need no spare aircraft ("drag a route end…"), wrapped inside the board at 360×640.
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
@@ -100,6 +102,34 @@ async function served(page) {
   return b.rows;
 }
 
+const NO_SPARE = { en: 'No spare aircraft', pl: 'Brak wolnych samolotów' };
+
+async function noSpare(page, language) {
+  await waitForScreen(page, 'menu');
+  await page.evaluate((seed) => window.aw.prepareSeed(seed), SEED);
+  await clickTestId(page, 'menu-endless');
+  await waitForScreen(page, 'game');
+  for (let week = 1; week <= 30; week++) {
+    const s = await page.evaluate((w) => window.aw.autoplay(w), week);
+    if (s.screen === 'gameover') break;
+    if (s.screen === 'upgrade') {
+      const offers = await page.evaluate(() => [...document.querySelectorAll('[data-testid^="upgrade-option-"]')].map((n) => n.dataset.upgrade));
+      const plane = offers.findIndex((o) => o === 'turboprop' || o === 'widebody');
+      await clickTestId(page, `upgrade-option-${Math.max(0, plane)}`);
+      await waitForScreen(page, 'game');
+    }
+  }
+  await waitForScreen(page, 'gameover');
+  await page.waitForTimeout(400);
+  const b = await board(page);
+  const hint = await page.evaluate(() => document.querySelector('[data-testid="gameover-unserved"] .airway-go-none-hint')?.textContent ?? '');
+  assert(b.rows === 0 && b.text !== null, `the bot run should end unserved: rows=${b.rows} (${b.title})`);
+  assert(hint.startsWith(NO_SPARE[language]), `no-spare hint "${hint}"`);
+  assert(!b.clipped && b.inside, `no-spare text clipped=${b.clipped} inside=${b.inside}`);
+  await page.screenshot({ path: resolve(SHOTS, `gameover-nospare-${language}-${page.viewportSize().width}x${page.viewportSize().height}.png`) });
+  return hint;
+}
+
 let fatal = null;
 try {
   await withBrowser(async ({ browser, url }) => {
@@ -113,6 +143,19 @@ try {
         results.push({ label: `${label} (${hub})`, status: 'PASS' });
       } catch (error) {
         const shot = await saveDiagnostics(page, `gameover-unserved-${results.length + 1}`);
+        results.push({ label, status: 'FAIL', why: String(error?.message ?? error).split('\n')[0] + (shot ? ` (${shot})` : '') });
+      }
+      await page.close();
+    }
+    {
+      const label = 'pl 360×640 bot run: an unserved jam with an empty reserve names moves that need no spare aircraft';
+      const { page, errors } = await newGamePage(browser, url, 'pl', { width: 360, height: 640 });
+      try {
+        await noSpare(page, 'pl');
+        if (errors.length) throw new Error(`Browser errors: ${errors.join('; ')}`);
+        results.push({ label, status: 'PASS' });
+      } catch (error) {
+        const shot = await saveDiagnostics(page, `gameover-nospare-${results.length + 1}`);
         results.push({ label, status: 'FAIL', why: String(error?.message ?? error).split('\n')[0] + (shot ? ` (${shot})` : '') });
       }
       await page.close();
@@ -134,6 +177,6 @@ try {
 for (const r of results) console.log(`${r.status} ${r.label}${r.why ? ` — ${r.why}` : ''}`);
 if (fatal) console.log(`FAIL harness — ${fatal.message}`);
 const failed = results.filter((r) => r.status === 'FAIL').length + (fatal ? 1 : 0);
-const steps = CASES.length + 1;
+const steps = CASES.length + 2;
 console.log(`SUMMARY test:e2e:gameover-unserved seed=0x${SEED.toString(16).toUpperCase()} steps=${steps} passed=${results.filter((r) => r.status === 'PASS').length} failed=${failed} durationMs=${Math.round(performance.now() - started)}`);
 process.exitCode = failed || results.length !== steps ? 1 : 0;

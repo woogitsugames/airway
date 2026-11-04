@@ -14,12 +14,16 @@ export interface HudState {
   readonly canUndo: boolean;
   readonly selectedPlane: PlaneType | null;
   readonly stock: Readonly<{ turboprop: number; widebody: number; hub: number }>;
+  /** [G8] D-172: the globe view shown on the dock's view tag (default satellite). */
+  readonly globeMode?: 'satellite' | 'map';
 }
 
 export interface HudActions {
   onUndo?(): void;
   onTogglePause?(): void;
   onCycleSpeed?(): void;
+  /** [G8] D-172: switch the globe between Satelita and Mapa. */
+  onToggleGlobeMode?(): void;
   onSelectPlane?(type: PlaneType): void;
   /** Signals an intent to select an airport for a hub upgrade. */
   onUpgradeHub?(): void;
