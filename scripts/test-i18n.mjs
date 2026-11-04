@@ -64,47 +64,107 @@ export function unusedKeys(keys, sources) {
   return [...keys].filter((key) => !literals.has(key) && ![...prefixes].some((prefix) => key.startsWith(prefix)));
 }
 
+// [night-11t] R5g, D-195: banned synonyms per language. `allow` lists keys where the word names something else (the
+// "TERMINAL 1" sign on the menu, the puzzle board's "route planning terminal"), not the concept it would duplicate.
+const TERMINAL_SIGNS = ['menu.terminal', 'puzzle.board.subtitle'];
+export const BANNED = {
+  en: [
+    { re: /\bgrid\b/i, word: 'network' },
+    { re: /\bnodes?\b/i, word: 'hub' },
+    { re: /\bterminals?\b/i, word: 'hub', allow: TERMINAL_SIGNS },
+    { re: /\b(cargo|freight)[ -]labels?\b/i, word: 'crate' },
+    { re: /\bsimulation\b/i, word: 'time / the game' },
+  ],
+  pl: [
+    { re: /(?<!\p{L})siat(ka|ki|ce|kę|ką|ek|kach|kami|kom)(?!\p{L})/iu, word: 'sieć' },
+    { re: /(?<!\p{L})węz(eł|ła|łowi|łem|le|ły|łów|łom|łami|łach)(?!\p{L})/iu, word: 'hub' },
+    { re: /(?<!\p{L})terminal(a|e|i|u|owi|em|ów|ach|ami)?(?!\p{L})/iu, word: 'hub', allow: TERMINAL_SIGNS },
+    { re: /(?<!\p{L})etykiet(a|y|ę|ą|om|ach|ami)? frachtow/iu, word: 'skrzynia' },
+    { re: /(?<!\p{L})symulacj/iu, word: 'czas / gra' },
+  ],
+};
+
 const placeholders = (value) => [...value.matchAll(/\{([A-Za-z][A-Za-z0-9_]*)\}/g)]
   .map((match) => match[1]).sort().join(',');
 let keyCount = 0;
+let fileCount = 0;
+// [night-12w] R7f, D-185: the catalogs, their plural form counts and the derived lookups all come from the one
+// language table; a new language is one entry there plus its catalog file.
+await import('./ts-test-loader.mjs');
+const { LANGUAGE_ENTRIES, LANGUAGES, createLanguageTable, localName } = await import('../src/i18n/languages.ts');
+const { formatNumberIn, numberLocale } = await import('../src/core/format.ts');
 try {
   const english = dictionary('en');
-  const polish = dictionary('pl');
   keyCount = english.size;
-  for (const key of english.keys()) {
-    if (!polish.has(key)) failures.push('pl: missing key ' + key);
-    else if (placeholders(english.get(key)) !== placeholders(polish.get(key))) {
-      failures.push('placeholder mismatch: ' + key);
-    }
-    // [night-07j] Plural tokens `{name|form|…}`: PL lists one|few|many(|other), EN one|other; the name must be a
-    // parameter of the English template so callers pass it.
-    if (polish.has(key)) {
+  const catalogs = new Map(LANGUAGE_ENTRIES.map((entry) => [entry.code, dictionary(entry.code)]));
+  fileCount = catalogs.size;
+  for (const entry of LANGUAGE_ENTRIES) {
+    const catalog = catalogs.get(entry.code);
+    for (const key of english.keys()) {
+      if (!catalog.has(key)) { failures.push(entry.code + ': missing key ' + key); continue; }
+      if (placeholders(english.get(key)) !== placeholders(catalog.get(key))) failures.push(entry.code + ': placeholder mismatch: ' + key);
+      // [night-07j] Plural tokens `{name|form|…}` give the language's categories in table order (at least
+      // `requiredForms`, at most all of them); the name must be a parameter of the English template.
       const params = new Set([...english.get(key).matchAll(/\{([A-Za-z][A-Za-z0-9_]*)[}|]/g)].map((m) => m[1]));
-      for (const [language, value, min, max] of [['en', english.get(key), 2, 2], ['pl', polish.get(key), 3, 4]]) {
-        for (const match of value.matchAll(/\{([A-Za-z][A-Za-z0-9_]*)\|([^{}]*)\}/g)) {
-          const forms = match[2].split('|');
-          if (forms.length < min || forms.length > max || forms.some((form) => !form.trim())) {
-            failures.push(language + ': plural token ' + match[0] + ' in ' + key + ' needs ' + min + '-' + max + ' forms');
-          }
-          if (!params.has(match[1])) failures.push(language + ': plural token parameter ' + match[1] + ' unknown in ' + key);
+      for (const match of catalog.get(key).matchAll(/\{([A-Za-z][A-Za-z0-9_]*)\|([^{}]*)\}/g)) {
+        const forms = match[2].split('|');
+        if (forms.length < entry.requiredForms || forms.length > entry.plural.length || forms.some((form) => !form.trim())) {
+          failures.push(entry.code + ': plural token ' + match[0] + ' in ' + key + ' needs ' + entry.requiredForms + '-' +
+            entry.plural.length + ' forms');
         }
+        if (!params.has(match[1])) failures.push(entry.code + ': plural token parameter ' + match[1] + ' unknown in ' + key);
       }
     }
+    for (const key of catalog.keys()) if (!english.has(key)) failures.push('en: missing key ' + key + ' (in ' + entry.code + ')');
+    if (!english.has(entry.labelKey)) failures.push(entry.code + ': settings label ' + entry.labelKey + ' not in the catalogs');
+    if (numberLocale(entry.code) !== entry.locale) failures.push(entry.code + ': number locale ' + numberLocale(entry.code));
   }
-  for (const key of polish.keys()) if (!english.has(key)) failures.push('en: missing key ' + key);
+  if (LANGUAGES.normalise('pl-PL') !== 'pl' || LANGUAGES.normalise('EN_us') !== 'en' || LANGUAGES.normalise('de') !== null ||
+    LANGUAGES.fallback !== 'en') failures.push('language table: normalise/fallback');
+  if (localName({ namePl: 'Londyn', nameEn: 'London' }, 'pl') !== 'Londyn' ||
+    localName({ namePl: 'Londyn', nameEn: 'London' }, 'en') !== 'London') failures.push('language table: city names');
+  // A stub language needs exactly one entry: every derived lookup knows it.
+  const stub = { code: 'de', locale: 'de-DE', plural: ['one', 'other'], requiredForms: 2, labelKey: 'language.german',
+    storeLocale: 'de-DE', names: 'nameEn' };
+  const table = createLanguageTable([...LANGUAGE_ENTRIES, stub], 'en');
+  if (table.normalise('de-AT') !== 'de' || table.codes.join() !== 'pl,en,de' || table.entry('de').plural.join() !== 'one,other' ||
+    formatNumberIn(table.entry('de').locale, 1000) !== '1.000' || table.entry('xx').code !== 'en') {
+    failures.push('stub language: one entry should give normalise, codes, plural order, number locale and fallback');
+  }
+  let duplicate = false;
+  try { createLanguageTable([stub, stub], 'de'); } catch { duplicate = true; }
+  if (!duplicate) failures.push('language table accepts a duplicate code');
+  // No module outside the table and the catalogs may spell out a language code again.
+  const hardCoded = sourceFiles(resolve(ROOT, 'src'))
+    .filter((file) => !/src\/i18n\/(en|pl|languages)\.ts$/.test(file.replace(/\\/g, '/')))
+    .filter((file) => /=== ?['"](pl|en)['"]|['"]pl['"] ?\| ?['"]en['"]|namePl : |\.namePl\b/.test(readFileSync(file, 'utf8')));
+  for (const file of hardCoded) failures.push('hard-coded language in ' + file.slice(ROOT.length + 1) + ' (use src/i18n/languages.ts)');
   const catalogDir = resolve(ROOT, 'src/i18n');
   const sources = sourceFiles(resolve(ROOT, 'src'))
-    .filter((file) => !['en.ts', 'pl.ts', 'pseudo.ts'].some((name) => file === join(catalogDir, name)))
+    .filter((file) => ![...LANGUAGE_ENTRIES.map((entry) => entry.code + '.ts'), 'pseudo.ts'].some((name) => file === join(catalogDir, name)))
     .map((file) => readFileSync(file, 'utf8'));
   // Self-check of the matcher: a literal, a template prefix and a concatenated prefix count; a bare key does not.
   const probe = unusedKeys(['a.used', 'b.s1', 'c.x.y', 'd.unused'], ["t('a.used')", "t(`b.s${n}`)", "t('c.x.' + v)"]);
   if (probe.join() !== 'd.unused') failures.push('unused-key matcher self-check: got ' + probe.join());
   for (const key of unusedKeys(english.keys(), sources)) failures.push('unused key (not referenced in src/): ' + key);
+  // [night-11t] R5g, D-195: one word per concept (glossary in src/i18n/README.md). A banned synonym in any player
+  // string fails, so "siatka", "węzeł", "terminal" (for a hub), "cargo label" or "simulation" cannot creep back.
+  const pl = catalogs.get('pl');
+  for (const [code, catalog] of [['en', english], ['pl', pl]]) {
+    for (const [key, value] of catalog) {
+      for (const { re, word, allow = [] } of BANNED[code]) {
+        if (re.test(value) && !allow.includes(key)) failures.push(`${code}: banned synonym "${value.match(re)[0]}" in ${key} (use "${word}")`);
+      }
+    }
+  }
+  // Self-check: the matcher catches the old game-over title and spares the diegetic terminal sign.
+  if (!BANNED.pl.some(({ re }) => re.test('Pokaż siatkę wokół')) || !BANNED.pl.some(({ re }) => re.test('Siatka wstrzymana')) || BANNED.pl.some(({ re, allow = [] }) =>
+    re.test('AIRWAY.GAMES · TERMINAL 1') && !allow.includes('menu.terminal'))) failures.push('banned-synonym matcher self-check');
   if (english.size === 0) failures.push('dictionaries must not be empty');
 } catch (error) {
   failures.push(error instanceof Error ? error.message : String(error));
 }
 for (const failure of failures) console.error('FAIL ' + failure);
-console.log('SUMMARY test:i18n seed=' + SEED + ' files=2 keys=' + keyCount +
+console.log('SUMMARY test:i18n seed=' + SEED + ' files=' + fileCount + ' keys=' + keyCount +
   ' passed=' + (failures.length ? 0 : 1) + ' failed=' + failures.length);
 if (failures.length) process.exitCode = 1;

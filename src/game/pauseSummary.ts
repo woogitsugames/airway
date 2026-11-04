@@ -38,7 +38,8 @@ export function pauseSummary(input: PauseSummaryInput): PauseSummaryRow[] {
   const hub = busiestHub(input.hubs);
   rows.push({
     key: 'hub', label: t('pause.summary.hub'),
-    value: hub ? t('pause.summary.hubValue', { hub: hub.label, waiting: hub.waiting, capacity: hub.capacity })
+    // [night-11r] R5e: "MAD 0/36" read as a jam figure; with nobody waiting anywhere the row says "none yet".
+    value: hub && hub.waiting > 0 ? t('pause.summary.hubValue', { hub: hub.label, waiting: hub.waiting, capacity: hub.capacity })
       : t('pause.summary.noHub'),
   });
   if (input.minutesToBoard !== null) {

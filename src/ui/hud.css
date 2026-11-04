@@ -75,7 +75,7 @@
   right: calc(var(--hud-safe-right) + 14px);
   bottom: calc(var(--hud-safe-bottom) + 12px);
   display: grid;
-  grid-template-columns: repeat(5, minmax(48px, 64px));
+  grid-template-columns: repeat(6, minmax(48px, 64px)); /* [G8] D-172: + the globe-view tag */
   justify-content: space-between;
   gap: 5px;
   pointer-events: none;
@@ -212,7 +212,7 @@
   .airway-pass__field strong { font-size: 14px; }
   .airway-pass__label { font-size: 8px; }
   .airway-pass__pause { flex-basis: 52px; width: 52px; }
-  .airway-dock { left: calc(var(--hud-safe-left) + 6px); right: calc(var(--hud-safe-right) + 6px); }
+  .airway-dock { left: calc(var(--hud-safe-left) + 6px); right: calc(var(--hud-safe-right) + 6px); gap: 3px; } /* [G8] six tags ≥ 48 px at 320 */
   .airway-dock__tag { gap: 0; }
   .airway-dock__count { font-size: 14px; }
   .airway-hud__icon { width: 24px; }
