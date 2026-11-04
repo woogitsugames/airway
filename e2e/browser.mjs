@@ -36,10 +36,11 @@ export async function withBrowser(callback, { fixture = false } = {}) {
   }
 }
 
-/** `options.reducedMotion`: the emulated system setting ('reduce' by default; night-11g e2e uses 'no-preference'). */
+/** `options.deviceScaleFactor`: [night-12u] DPR (ui:matrix renders the unfolded foldable at 2).
+ *  `options.reducedMotion`: the emulated system setting ('reduce' by default; night-11g e2e uses 'no-preference'). */
 export async function newGamePage(browser, url, language, viewport = { width: 412, height: 915 }, options = {}) {
   const page = await browser.newPage({
-    viewport, deviceScaleFactor: 1, hasTouch: true,
+    viewport, deviceScaleFactor: options.deviceScaleFactor ?? 1, hasTouch: true,
     reducedMotion: options.reducedMotion ?? 'reduce', locale: language === 'pl' ? 'pl-PL' : 'en-US',
   });
   const errors = [];

@@ -151,7 +151,7 @@ not switch language mid-run).
 ## Pre-release device checklist (not covered by static tests)
 
 Test on a physical Android 15+ device and emulator/API 36: 412x915 and 915x412,
-foldables 673x841 and 904x1000, back navigation, startup splash, safe-area
+foldables 673x841, 904x1000 and the unfolded large foldable 904x1088 / 1088x904 at DPR 2 (`ui:matrix`, D-154), back navigation, startup splash, safe-area
 at status/navigation bars, split-screen resize, losing/restoring focus, and
 unfolding without resetting a session, a backup restore and the per-app language (sections above). No device run was performed in this task
 environment; passing `test:android-config` is a static guarantee only.
