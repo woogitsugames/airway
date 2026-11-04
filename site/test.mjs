@@ -150,13 +150,12 @@ const pressCopy = (language) => Object.entries(translations[language]).filter(([
 check('press: price row says "no ads, no purchases"', () => /bez reklam/i.test(translations.pl['press.fact.price.value']) &&
   /zakup/i.test(translations.pl['press.fact.price.value']) && /no ads/i.test(translations.en['press.fact.price.value']) && /purchase/i.test(translations.en['press.fact.price.value']));
 check('press: no price or "free" in the press copy', () => !/\bfree\b|darmow|bezpłatn|za darmo|\d\s?(zł|pln|usd|eur)\b|[$€£]\s?\d/i.test(pressCopy('pl') + pressCopy('en')));
-// Short and long description from docs/store/ (EN keeps the glossary of D-195: "a terminal" there reads "a hub" here).
-const glossary = (text) => text.replace(/\ba terminal\b/g, 'a hub');
+// Short and long description from docs/store/, verbatim (D-223: the store texts say "hub" too, D-195).
 for (const language of SITE_SHOTS.languages) {
   check(`press ${language}: short description = docs/store/${language}.md`, () =>
-    translations[language]['press.short'] === glossary(storeSection(language, 'Google Play short description')));
+    translations[language]['press.short'] === storeSection(language, 'Google Play short description'));
   check(`press ${language}: full description = docs/store/${language}.md`, () =>
-    translations[language]['press.long'] === glossary(storeSection(language, 'Full description')));
+    translations[language]['press.long'] === storeSection(language, 'Full description'));
 }
 check('press: descriptions on the page', () => press.includes('data-i18n="press.short"') && press.includes('data-i18n-paragraphs="press.long"') &&
   /createElement\('li'\)/.test(script) && !/innerHTML/.test(script));

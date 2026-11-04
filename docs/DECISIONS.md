@@ -1871,3 +1871,17 @@ under Reduce motion (D-88). Rejected: hourly buckets like D-221 (a cause from 59
 boundary), the cumulative ledger counters (per hub, not per region, and run-long), a new sim departure event (sim change).
 Guards: `test:hub-board` (`test:fast`), `test:e2e:hub-board` (menu-page fixture with a real run forced into a jam, G7-safe;
 `test:ci`). **Status: in force.**
+
+## D-229 — Store keywords without repeats, Play alt texts, "puzzle" in the Play short description (2026-11-04, Claude, night N12an)
+R2c with D-223. App Store indexes name + subtitle + keywords as one set, so the keyword field repeats no word of
+either and no other keyword. EN (96 bytes):
+`airline,airport,flight,plane,aircraft,network,transfer,strategy,puzzle,logistics,travel,earth,3d`; PL (92 bytes):
+`linie lotnicze,lotnisko,lot,samolot,przesiadka,strategia,logiczna,zagadka,ziemia,podróż,3d` — the backlog proposal
+without `sieć`, which the PL store title "Airway: Buduj sieć lotów" already indexes. The "captions" section becomes
+**Play alt text**: one descriptive line per scene in store order (D-63), unique, ≤ 140 characters, no "image of" or
+price; App Store Connect has no caption field. The Play short description names the genre: EN "Route puzzle on a 3D
+globe. Connect cities and keep airport hubs moving." (72/80), PL "Logiczna gra o trasach na globusie 3D. Łącz miasta i
+chroń huby przed zatorem." (78/80); the press page follows (`test:site`). D-223 applied: the two EN "terminal"
+sentences say "hub". Rejected: keeping the old short descriptions (Play has no keyword field, so the genre word must be
+in the text), per-device alt texts (the same scene shows the same content). All texts await the owner's review before
+upload. Guard: `test:store-shots` (keyword repeats, "terminal", alt-text lines). **Status: in force.**

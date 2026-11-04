@@ -109,10 +109,33 @@ function checkCopy() {
       [name, subtitle, short, full, keywords].join(' '))) {
       throw new Error(lang + ': competitor name used');
     }
+    // [N12an] R2c, D-229: App Store indexes name + subtitle + keywords together, so a keyword that repeats a word of
+    // the name or subtitle (or another keyword) is wasted; commas without spaces, nothing empty, not the app name.
+    const words = (text) => text.toLowerCase().match(/[\p{L}\p{N}]+/gu) || [];
+    const indexed = new Set(words(name + ' ' + subtitle));
+    const terms = keywords.split(',');
+    if (terms.some((term) => !term || term !== term.trim())) throw new Error(lang + ': empty keyword or space around a comma');
+    const keywordWords = terms.flatMap(words);
+    const repeated = keywordWords.filter((word, i) => indexed.has(word) || keywordWords.indexOf(word) !== i);
+    if (repeated.length) throw new Error(lang + ': keyword repeats the name/subtitle or another keyword: ' + repeated.join(', '));
+    // [N12an] D-223: the glossary word is "hub" in the store texts too, never "terminal" (D-195).
+    if (/terminal/i.test(md)) throw new Error(lang + ': store text says "terminal" (D-223: "hub")');
+    // [N12an] R2c: one Play alt text per scene in store order (D-63), unique, ≤ 140 characters, no "image of".
+    const alts = [...field(md, 'Play alt text').matchAll(/^(\d+)\. ([a-z]+) — (.+)$/gm)];
+    if (alts.map((m) => m[2]).join() !== SCENES.join() || alts.some((m, i) => Number(m[1]) !== i + 1)) {
+      throw new Error(lang + ': Play alt text lines do not follow the scenes ' + SCENES.join(', '));
+    }
+    if (new Set(alts.map((m) => m[3])).size !== alts.length) throw new Error(lang + ': repeated Play alt text');
+    for (const [, , scene, alt] of alts) {
+      if ([...alt].length > 140) throw new Error(lang + ': Play alt text ' + scene + ' >140 characters');
+      if (/\b(?:image of|picture of|screenshot of|obraz|zdjęcie|zrzut)\b|\b(?:free|darmow|gratis|price|cena)/i.test(alt)) {
+        throw new Error(lang + ': Play alt text ' + scene + ' says "image of" or names a price');
+      }
+    }
     console.log('listing ' + lang + ' name=' + [...name].length + '/30 short=' +
       [...short].length + '/80 keywords=' + Buffer.byteLength(keywords, 'utf8') + '/100bytes featureAlt=' +
-      [...featureAlt].length + '/140');
-    fields += 7;
+      [...featureAlt].length + '/140 keywordTerms=' + terms.length + ' alts=' + alts.length);
+    fields += 8;
   }
   if (new Set(SCENES).size !== SCENES.length) throw new Error('Duplicate scenes');
   if (new Set(DEVICES.map((d) => d.id)).size !== DEVICES.length) throw new Error('Duplicate devices');

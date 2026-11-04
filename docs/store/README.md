@@ -11,6 +11,11 @@ App Store accessibility labels, the evidence for each and the PL/EN accessibilit
   **Airway: Buduj sieć lotów na globusie** (36 characters), the word the game uses (D-195).
 - Both Google Play and App Store cap localized names at 30 characters. The approved Polish title cannot fit; the store-field value in pl.md is **Airway: Buduj sieć lotów** (24 characters, D-203; was "Airway: Buduj trasy lotów"). PL store texts say "sieć", never "siatka" (`test:store-shots`).
 - App Store subtitles: up to 30 characters; App Store keyword field: up to 100 characters. Google Play short description: 80 characters; long description: 4,000 characters.
+- [N12an] R2c, D-229: App Store indexes the name, subtitle and keyword field together, so the keyword field repeats no
+  word of the name or subtitle and no other keyword (EN drops `globe`, `routes`, `hub`; PL drops `globus`, `trasy`,
+  `hub`, `sieć`), commas without spaces, ≤ 100 bytes (Apple counts characters; bytes are the safe bound for "ł", "ś").
+  Play alt text: one unique line per scene (≤ 140 characters, no "image of"), entered for every device size of that
+  scene. All checked by `test:store-shots`; D-223: the store texts say "hub", never "terminal".
 - Google Play has no separate keyword field. Its keywords should occur naturally in the descriptions. Store copy contains no competitor names, prices, rankings, or unverifiable accolades.
 
 Official sources:
@@ -30,7 +35,7 @@ When the gameplay is integrated, run these commands:
 The capture uses the environment-provided Playwright/Chromium and launches Vite. A running server can be selected with the option --base-url=http://127.0.0.1:5173/ (after the npm run store:shots -- separator).
 
 Five deterministic scenes are captured for both Polish and English, in the store order of D-63 (the same order
-as `SCENES` in `scripts/store-shots.mjs`, the contact-sheet columns, the manifest and the captions in pl.md/en.md):
+as `SCENES` in `scripts/store-shots.mjs`, the contact-sheet columns, the manifest and the **Play alt text** lines in pl.md/en.md; App Store Connect has no caption field):
 1. **night**: night-side globe with real city and airport lights.
 2. **game**: the network in golden low-sun light just before sunset, active routes and in-world HUD
    (called `game-dusk` before task 40).
