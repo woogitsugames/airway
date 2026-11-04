@@ -1790,3 +1790,19 @@ declaration fails. `PrivacyInfo.xcprivacy` declares the (B) types in both builds
 build A is harmless, under-declaring in B would be wrong); `test:ios-config` checks it. Play "Device or other IDs"
 rather than "User IDs" is a recommendation for the owner's Q-03 answer, not a decision; Q-01 (data controller), Q-07
 (Firebase project) and the lawyer's view on Cloud Run request logs (IP, user agent) stay open. **Status: in force.**
+
+## D-221 — Fill trend mark on the passenger tag: last game hour's balance, from half full, hairline double chevron (2026-11-04, Claude, night N11af)
+R4c. `src/game/fillTrend.ts` (`FillReadings`) notes every airport's waiting count once per game hour, on the same
+boundary as the audio drone readings (`gameHour()` shared with `audioCues.ts`), and keeps the last two readings; their
+difference is the hour's balance (arrivals minus departures). The rule (`fillTrend`): no mark below half the waiting
+places (a calm airport needs no forecast), none while the balance is within ±1 (steady), up "filling" above +1, down
+"emptying" below −1, none without two consecutive readings (new airport, undo across an hour, restored save). The
+gate uses the live count, the balance the readings, so the mark disappears the moment a tag drops below half.
+Presentation only: nothing enters the sim or its hash (D-13). The overlay draws a thin ink double chevron behind a
+hairline right after the count (`+N` or the last glyph), not a single V: the Northern Europe region glyph is a solid
+green V and a plain chevron read as one more passenger in the first shots. Ink is the tag's text colour (paper on a
+jammed tag), so up/down differ by shape only. Aria appends "Filling up / Emptying over the last game hour"
+(PL "Zapełnia się / Pustoszeje w ostatniej godzinie gry"). It steps in once (120 ms opacity + 2 px, ease-out, no
+spring); none under "Reduce motion" (D-88). The tag grows by 17 px only while the mark shows. Rejected: a per-tick
+rolling window (needs per-hub history of run events, which R4d may add), colour-coded counts (colour alone).
+Guards: `test:fill-trend` (rule + readings, `test:fast`), `test:e2e:fill-trend` (overlay DOM, PL/EN). **Status: in force.**
