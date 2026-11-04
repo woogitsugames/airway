@@ -1386,3 +1386,14 @@ curfew, Bombay–Sydney at the edge of widebody range; 3 of 2 444, all with the 
 on a knife edge that broke in some strip orders (D-164), so robustness won over an MCT tag; each level carries at
 least two of slots/curfew/week. Titles keep every word ≤ 8 letters so the 320 px board never splits one.
 **Status: in force; difficulty is a proposal for the owner to playtest (as D-70).**
+
+## D-166 — Puzzle titles never split a word on the 320 px board (2026-11-04, Claude, ext/05)
+The departures board sets titles in a narrow mono column with `overflow-wrap: anywhere`, so at 320×568 every word of
+9+ letters broke mid-word ("ATLANTYK-U", "CONNECTIN-G"): 12 PL and 10 EN titles of 1–30. They are shortened with the
+same sense, every word ≤ 8 letters: EN 02 Change of planes, 06 Three lands, 07 Change at Accra, 08 Night flights,
+13 A long chain of flights, 14 Four lands, one path, 16 Hourly bank on the Main, 21 Bosporus link, 22 Gulf junction;
+PL 02 Lot przez węzeł, 03 Lot do Afryki, 06 Trzy lądy, 07 Węzeł w Akrze, 13 Łańcuch lotów, 14 Cztery lądy, jedna
+trasa, 16 Godzinna fala nad Menem, 17 Obok śpiącego węzła, 21 Węzeł nad Bosforem, 22 Rozstaje nad Zatoką, 23 Noce na
+południu, 29 Brama na Atlantyk. `test:e2e:screens-fit-320` measures each title word with a DOM `Range` (one line box
+per word) in PL/EN at 320×568 and 568×320. Rejected: `overflow-wrap: normal` (a long word would then overflow the
+column instead) and a smaller font (already 12 px at this width). **Status: in force (ext/05); wording is a proposal.**

@@ -1014,6 +1014,9 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
       widebody range and ocean legs with today's rules only (no new mechanic tags): start cities in the Pacific /
       South Atlantic, stock with 1–2 widebodies, a `continents` goal in the last one. Each with `referenceCommands`,
       PL/EN titles, `test:puzzles` green, shots. **Area:** content (`src/data/puzzles/**`, i18n). Q-64 → A (D-131): ready before launch; after R6f.
+- [x] R6h2 → ext/05 **Puzzle titles never split a word at 320 px** (owner request after ext/02) — 12 PL and 10 EN titles of 1–30
+      broke mid-word on the 320×568 departures board (29 „ATLANTYK-U”). Shorter titles, same sense (D-166, Q-77);
+      `test:e2e:screens-fit-320` checks every title word stays on one line. **Area:** i18n, `e2e/`.
 - [ ] R6i **First-session observation sheet** — extends R1o/R3k in `docs/PLAYTEST.md`: what the observer notes in
       a tester's first 10 minutes (seconds to the first own route on the real globe, did they find the dock, first
       "nothing to do" moment, what the glyph means, did they open the weekly board without help) plus two device

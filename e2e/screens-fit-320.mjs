@@ -1,6 +1,6 @@
 // [night-07v] The smallest phones (320×568 portrait, 568×320 landscape): the same audit as screens-fit.mjs
 // (≥ 48 px targets inside the viewport, no clipped button text, no horizontal scroll) on settings, puzzle board
-// and pause sheet in PL/EN, and every select keeps ≥ 8 px to spare beside its longest option, so "Automatyczna"
+// and pause sheet in PL/EN (ext-05: no puzzle title splits a word), and every select keeps ≥ 8 px to spare beside its longest option, so "Automatyczna"
 // no longer runs into the arrow. screens-fit.mjs keeps the 360/412/915 sizes with the plain fit rule.
 import { performance } from 'node:perf_hooks';
 import { withBrowser, newGamePage, waitForScreen, assert, clickTestId, saveDiagnostics, SEED } from './browser.mjs';
@@ -38,6 +38,19 @@ function audit(page, root) {
     for (const row of host.querySelectorAll('.puzzle-pack')) {
       const r = row.getBoundingClientRect();
       if (r.right > innerWidth + 0.5 || row.scrollWidth > row.clientWidth + 1) problems.push(`pack header overflows (${row.textContent})`);
+    }
+    // [ext-05] D-166: no puzzle title on the departures board splits a word across lines ("ATLANTYK-U").
+    for (const title of host.querySelectorAll('.puzzle-flap-title')) {
+      const text = title.firstChild;
+      if (!text || text.nodeType !== Node.TEXT_NODE) continue;
+      const value = text.textContent ?? '';
+      for (const match of value.matchAll(/\S+/g)) {
+        const range = document.createRange();
+        range.setStart(text, match.index);
+        range.setEnd(text, match.index + match[0].length);
+        const lines = new Set([...range.getClientRects()].filter((r) => r.width > 0).map((r) => Math.round(r.top)));
+        if (lines.size > 1) problems.push(`title "${value}" splits "${match[0]}"`);
+      }
     }
     if (document.documentElement.scrollWidth > innerWidth + 2) problems.push('horizontal page scroll');
     return problems;
