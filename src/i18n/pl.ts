@@ -78,6 +78,10 @@ export const pl = {
   'upgrade.value.slots': '+{count} na godzinę',
   'upgrade.stamp': '{hub} {waiting}/{capacity}',
   'upgrade.noHub': 'Brak huba',
+  // [night-11r] R5e: what each crate stamp measures, above its code and number.
+  'upgrade.stampCaption.hub': 'najpełniejszy hub',
+  'upgrade.stampCaption.slots': 'najdłuższe czekanie na slot',
+  'upgrade.stampNone': 'jeszcze brak',
   'upgrade.selectAirport': 'Wskaż lotnisko na globusie',
   'upgrade.back': 'Wróć', // [task-39]
   'upgrade.backLabel': 'Wróć do skrzyń',
