@@ -422,6 +422,16 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       night darkens only the globe. `e2e/tutorial-layout.mjs` (`test:e2e:tutorial-layout`, in `test:ci`; 0/7 on the
       old tutorial, the Fold case with status/gesture-bar padding), shots `docs/shots/n11l/`.
 
+- [x] N11m **Airport code plates on the globe (D-128 → D-181, R5a)** — owner's Fold screenshot: in game no airport
+      had a code or name, and a pink "⋈⋈⋈" tag (Middle-East passengers) sat next to a disc nobody could name. The luggage
+      tag now carries a code plate (code or name per D-68, departure-board mono) before its glyphs; with nobody waiting
+      the tag is the plate alone. At the gameplay zoom (the run's opening view) every on-screen airport has one; zoomed
+      out to the whole network only hubs and named airports (jam, NEW, slot hold, curfew). Plate-only tags are placed
+      after passenger tags (`layoutTags`), so they never push a passenger tag off. G9 (#158) only restyles the 3D
+      airport objects (DEV `?airportStyle=`); the plates are DOM and independent of it. `e2e/airport-plates.mjs`
+      (`test:e2e:airport-plates`, in `test:ci`), `test:overlay-layout` +2, DEV `aw.state().airports[].hub`, shots
+      `docs/shots/n11m/`.
+
 ## Continuous development round N12 (agent 2)
 - [x] N12a **Balance bot plays for reach (D-90)** — the handover gap "the DEV bot rarely connects new airports; long
       plays end in weeks 1–3": measured, 34 of 44 bot game overs (50 seeds) were at an airport no route served, 20 of
@@ -850,7 +860,7 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
 
 ### R5 (2026-11-03) — quality audit: first-time player, store reviewer, code health
 Evidence: `docs/RESEARCH.md` "R5 — …", PNGs in `docs/research/r5/`.
-- [ ] R5a **Airport code plates on the globe** — on-screen airports have no code or name (only off-screen edge chips
+- [x] R5a → N11m **Airport code plates on the globe** — on-screen airports have no code or name (only off-screen edge chips
       do), yet the pause summary ("Fullest hub JED 3/36"), crate stamps ("BEG 9/36") and the game-over board speak in
       codes. Draw a small Diorama signboard (code, or name per the D-68 setting) beside the airport disc for the
       airports chosen in Q-61, placed with the existing `layoutTags` collision pass (never over a passenger tag or a

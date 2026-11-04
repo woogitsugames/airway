@@ -1209,3 +1209,18 @@ already clipped to the globe, so the box now keeps the stage colour. Rejected: c
 has none), clipping the card (hides text). The vignette's marks are redrawn later with R5b/R6a/R6b (D-129, D-130).
 **Status: in force (N11l, `test:e2e:tutorial-layout` 7 sizes).**
 
+## D-181 — Airport code plates: on the luggage tag, all at gameplay zoom (2026-11-04, Claude, night N11m)
+Implements D-128 (Q-61 → C, R5a) after the owner's Fold screenshot: four runway discs and a pink glyph tag
+("⋈⋈⋈", Middle-East passengers) with no airport to read. The plate is the airport's code (or name, D-68) in the
+departure-board mono, written on the address field of the existing luggage tag before the passenger glyphs and
+closed by a hairline; with nobody waiting the tag is the plate alone. So it reuses the tag's collision pass, never
+sits on a passenger tag and needs no new marker. Who carries one: hubs, airports the UI is naming (jam countdown,
+NEW stub, a departure-slot hold, curfew barrier), and every on-screen airport while the camera is at the gameplay zoom
+or closer (`PLATES_ALL_ZOOM` 2.75; the run opens at 3 of [1, 4]). Interpretation of "zoomed in": the run opens
+zoomed in on its region, and that is exactly the view the owner found unlabelled; the whole-network view (zoomed out
+below 2.75) keeps only hubs and named airports, as D-128 intends. In `layoutTags` plate-only tags are placed last
+(jam → passengers → plates): a plate never takes a passenger tag's room. Aria unchanged (the tag's label already
+names the airport; the plate is `aria-hidden`). Rejected: a separate signboard object beside the disc (a second
+collision system and a third tag-like mark), plates only above zoom 3.5 (the opening view would stay unlabelled).
+**Status: in force (N11m, `test:e2e:airport-plates` 4 sizes, `test:overlay-layout` 21).**
+

@@ -23,6 +23,8 @@ export interface OverlayAirport {
   lon: number;
   lat: number;
   hub?: boolean;
+  /** [night-11m] D-128: text of the airport's code plate (code or city name per the D-68 setting); default `code`. */
+  label?: string;
 }
 
 export interface AirportOverlayOptions {
@@ -64,6 +66,10 @@ interface BubbleEntry {
   more: HTMLSpanElement;
   children: Node[];
   ariaLabel: string;
+  /** [night-11m] D-128 code plate at the front of the tag, and whether this airport is a hub now. */
+  plate: HTMLSpanElement;
+  plateWidth: number;
+  hub: boolean;
   /** [night-10h] Red-white boom-barrier stub while the night curfew closes the airport. */
   barrier: HTMLSpanElement;
   closed: boolean;
@@ -112,6 +118,10 @@ export interface AirportOverlay {
   setNew(id: string, isNew: boolean): void;
   /** [night-10h] Closed by the night curfew: barrier stub on its tag and a striped bar on its edge chip. */
   setCurfew(id: string, closed: boolean): void;
+  /** [night-11m] D-128: hubs always carry their code plate. */
+  setHub(id: string, hub: boolean): void;
+  /** [night-11m] D-128: zoomed in past the gameplay framing, every on-screen airport carries its code plate. */
+  setZoomedIn(zoomedIn: boolean): void;
   update(): void;
   getPoolStats(): { airports: number; bubbles: number; slotTags: number; edgeButtons: number; domElements: number };
   dispose(): void;
@@ -176,6 +186,9 @@ const BARRIER_SVG = '<svg viewBox="0 0 22 12" width="26" height="14" aria-hidden
   '<rect x="4" y="3" width="17" height="4" fill="#fbf8f1" stroke="#13302e" stroke-width="1"/>' +
   '<path d="M7 3h3l-2 4H5zM13 3h3l-2 4h-3zM19 3h2v1.6L20 7h-3z" fill="#b8322a"/></svg>';
 const NEW_PAD = 10;
+/** [night-11m] Code plate: Overpass Mono 12 px (fixed advance) plus padding and the divider, as in overlay.css. */
+const PLATE_CHAR = 7.2;
+const PLATE_PAD = 9;
 
 /** [night-10i] A transfer passenger still inside the minimum connection time: the region glyph drawn hollow. */
 function connectingGlyph(region: DestinationRegion): SVGSVGElement {
@@ -206,6 +219,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
   const projected = { x: 0, y: 0, visible: false };
   const bounds: TagBounds = { width: host.clientWidth, height: host.clientHeight, top: 0, bottom: 0, gap: 4 };
   let reservedRight = 0; // [night-08b] edge buttons only; tag layout keeps using `bounds`
+  let zoomedIn = false; // [night-11m] D-128
   const radius = options.radius ?? 1;
   let disposed = false;
   let width = Math.max(1, host.clientWidth);
@@ -243,6 +257,11 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
     want.length = 0;
     usedKinds.clear();
     const limit = Math.min(MAX_GLYPHS, entry.waiting.length);
+    const jammedNow = entry.jamSeconds !== null;
+    // [night-11m] D-128: the plate names the airport wherever the UI speaks of it (hub, jam countdown, NEW stub, slot
+    // hold, curfew) and on every airport once the player zooms in; otherwise the disc stays unlabelled.
+    const plated = zoomedIn || entry.hub || jammedNow || entry.isNew || entry.slotHeld > 0 || entry.closed;
+    if (plated) want.push(entry.plate);
     let freshWidth = 0;
     if (entry.isNew) {
       const label = t('airport.new');
@@ -281,9 +300,13 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
     entry.edge.classList.toggle('airport-edge--jam', jammed);
     entry.tag.jammed = jammed;
     // [task-38] mainWidth 0 = no passenger tag; the group box also holds the slot tag.
-    entry.mainWidth = entry.waiting.length > 0 || jammed || entry.isNew || entry.closed
+    const plateOnly = plated && !(entry.waiting.length > 0 || jammed || entry.isNew || entry.closed);
+    bubble.classList.toggle('airport-bubble--plate-only', plateOnly);
+    entry.tag.minor = plateOnly; // a plate never takes the place of a passenger tag
+    entry.mainWidth = entry.waiting.length > 0 || jammed || entry.isNew || entry.closed || plated
       ? Math.max(30, 23 + limit * 18 + (entry.waiting.length > MAX_GLYPHS ? 27 : 0) + (jammed ? 53 : 0) +
-        (freshWidth ? freshWidth + (limit || jammed ? 4 : 0) : 0) + (entry.closed ? BARRIER_WIDTH : 0)) : 0;
+        (freshWidth ? freshWidth + (limit || jammed ? 4 : 0) : 0) + (entry.closed ? BARRIER_WIDTH : 0) +
+        (plated ? entry.plateWidth - (plateOnly ? 8 : 0) : 0)) : 0;
     bubble.classList.toggle('airport-bubble--new', entry.isNew);
     entry.edge.classList.toggle('airport-edge--new', entry.isNew && !jammed);
     entry.edge.classList.toggle('airport-edge--curfew', entry.closed && !jammed); // [night-10h]
@@ -344,6 +367,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
     } else {
       entry.slotRect.width = 0;
     }
+    if (held !== entry.plate.isConnected) rebuildBubble(entry); // [night-11m] a slot hold names the airport
     sizeTagGroup(entry.tag, entry.mainWidth, entry.slotRect);
   }
 
@@ -432,12 +456,21 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       const anchor = normal.clone().multiplyScalar(radius * (airport.hub ? 1.075 : 1.045));
       const bubble = document.createElement('div');
       bubble.className = 'airport-bubble';
+      bubble.dataset.airport = airport.id; // [night-11m] which airport a tag belongs to (E2E, DEV checks)
       bubble.hidden = true;
       bubble.setAttribute('role', 'img');
       const timer = document.createElement('span');
       timer.className = 'airport-bubble__timer';
       const fresh = document.createElement('span');
       fresh.className = 'airport-bubble__new';
+      // [night-11m] D-128 code plate; the tag's role="img" label already names the airport for assistive tech.
+      const plate = document.createElement('span');
+      plate.className = 'airport-bubble__plate';
+      plate.setAttribute('aria-hidden', 'true');
+      const plateText = airport.label ?? airport.code;
+      plate.textContent = plateText;
+      const plateWidth = Math.ceil(PLATE_PAD + plateText.length * PLATE_CHAR);
+      plate.style.width = plateWidth + 'px';
       const barrier = document.createElement('span');
       barrier.className = 'airport-bubble__curfew';
       barrier.innerHTML = BARRIER_SVG;
@@ -477,6 +510,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       const tag: TagSlot = { id: airport.id, anchorX: 0, anchorY: 0, width: 30, height: 30, active: false, jammed: false, x: 0, y: 0, placed: false };
       const entry: BubbleEntry = {
         airport, normal, anchor, bubble, edge, gauge, gaugeFill, capacity: 0, lastGauge: '', timer, fresh, isNew: false, barrier, closed: false, tag,
+        plate, plateWidth, hub: airport.hub === true,
         glyphPool: new Map(), more, children: [], ariaLabel: '',
         slot, slotLabel, slotTime, slotCount, slotRect: { width: 0, x: 0, y: 0, visible: false }, slotHeld: 0, slotMinutes: 0,
         mainWidth: 0, slotVisible: false, lastSlotX: NaN, lastSlotY: NaN,
@@ -527,6 +561,17 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       if (entry.closed === closed) return;
       entry.closed = closed;
       rebuildBubble(entry);
+    },
+    setHub(id, hub): void {
+      const entry = get(id);
+      if (entry.hub === hub) return;
+      entry.hub = hub;
+      rebuildBubble(entry);
+    },
+    setZoomedIn(next): void {
+      if (zoomedIn === next || disposed) return;
+      zoomedIn = next;
+      for (const entry of entries) rebuildBubble(entry);
     },
     setNew(id, isNew): void {
       const entry = get(id);

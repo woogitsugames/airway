@@ -97,6 +97,22 @@
 @keyframes airport-edge-alert { from { opacity: 1; } to { opacity: .42; } }
 /* [night-10a] Newly opened airport: an ink stub with gold lettering at the front of the luggage tag (a shape
    of its own, readable without colour) and an ink edge chip with a gold top bar (no clip-path: it would cut the focus outline). One short stamp-in, no spring. */
+/* [night-11m] D-128 code plate: the airport's code (or name, D-68) written on the tag's address field, ink on paper
+   in the departure-board mono, closed by a hairline before the passenger glyphs. Alone it is the whole tag. */
+.airport-bubble__plate {
+  box-sizing: border-box;
+  flex: none;
+  height: 20px;
+  margin-right: 3px;
+  padding-right: 6px;
+  border-right: 1.5px solid #2A2420;
+  color: #13302E;
+  font: 800 12px/20px 'Overpass Mono', monospace;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  overflow: hidden;
+}
+.airport-bubble--plate-only .airport-bubble__plate { margin-right: 0; padding-right: 0; border-right: 0; width: auto !important; }
 .airport-bubble__new {
   box-sizing: border-box;
   flex: none;

@@ -30,6 +30,23 @@ const crowd = Array.from({ length: 50 }, (_, i) => ({ id: String(i), anchorX: 50
 const visible = layoutTags(crowd, { width: 140, height: 230, top: 20, bottom: 20, gap: 3 });
 assert('crowded labels suppressed', visible < crowd.length);
 assert('out-of-range label suppressed', layoutTags([{ ...crowd[0], width: 500 }], bounds) === 0);
+// [night-11m] D-128: a plate-only tag never takes the place of a passenger tag, whatever the insertion order.
+{
+  const tight = { width: 140, height: 150, top: 20, bottom: 20, gap: 3 }; // room for 3 tags
+  const plate = { id: 'plate', anchorX: 70, anchorY: 90, width: 100, height: 30, active: true, jammed: false, minor: true, x: 0, y: 0, placed: false };
+  const people = { id: 'people', anchorX: 70, anchorY: 90, width: 100, height: 30, active: true, jammed: false, x: 0, y: 0, placed: false };
+  const crowdOf = (n) => Array.from({ length: n }, (_, i) => ({ ...people, id: 'p' + i }));
+  const alone = crowdOf(3);
+  const fit = layoutTags(alone, tight); // the crowd fills the space (not all of it fits)
+  const order = [plate, ...crowdOf(3)];
+  layoutTags(order, tight);
+  assert('passenger tags placed before a plate-only tag',
+    fit < 3 && order.slice(1).filter((s) => s.placed).length === fit && !plate.placed);
+  const roomy = [plate, people];
+  plate.placed = false; people.placed = false;
+  layoutTags(roomy, bounds);
+  assert('plate-only tag placed when there is room', plate.placed && people.placed);
+}
 // [task-38] Slot tag hung under the passenger tag: one group box, deterministic, never overlapping.
 {
   state = seed;

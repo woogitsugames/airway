@@ -7,6 +7,8 @@ export interface TagSlot {
   height: number;
   active: boolean;
   jammed: boolean;
+  /** [night-11m] A tag that only names the airport (code plate, no passengers): placed after every other tag. */
+  minor?: boolean;
   x: number;
   y: number;
   placed: boolean;
@@ -29,7 +31,8 @@ function collides(a: TagSlot, b: TagSlot, gap: number): boolean {
 
 /**
  * Fixed insertion order prevents labels from swapping on sub-pixel camera motion.
- * Jammed labels have first claim; other tags move upward, then below as fallback.
+ * Jammed labels have first claim, then passenger tags, then plate-only tags (night-11m); a tag moves upward, then
+ * below as fallback.
  * If no room remains they hide instead of overlapping a readable label.
  */
 export function layoutTags(slots: readonly TagSlot[], bounds: TagBounds): number {
@@ -38,10 +41,10 @@ export function layoutTags(slots: readonly TagSlot[], bounds: TagBounds): number
   const bottom = Math.min(bounds.height, bounds.height - bounds.bottom);
   let placed = 0;
   for (let i = 0; i < slots.length; i++) slots[i].placed = false;
-  for (let priority = 1; priority >= 0; priority--) {
+  for (let priority = 2; priority >= 0; priority--) {
     for (let i = 0; i < slots.length; i++) {
       const slot = slots[i];
-      if (!slot.active || Number(slot.jammed) !== priority || slot.width > bounds.width - left * 2 || slot.height > bottom - top) continue;
+      if (!slot.active || (slot.jammed ? 2 : slot.minor ? 0 : 1) !== priority || slot.width > bounds.width - left * 2 || slot.height > bottom - top) continue;
       slot.x = Math.round(clamp(slot.anchorX - slot.width / 2, left, bounds.width - left - slot.width));
       const idealY = Math.round(clamp(slot.anchorY - slot.height - 11, top, bottom - slot.height));
       slot.y = idealY;
