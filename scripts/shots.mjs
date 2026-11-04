@@ -67,8 +67,8 @@ const TARGETS = [
     ready: { selector: '[data-testid="puzzle-curfews"] .puzzle-curfew-mark' }, settle: 300,
     note: `puzzle ${level} with curfew marks (${lang})`,
   })),
-  // [ext-02] R6h: the "Long haul" pack (31–35), two levels with curfew marks.
-  ...[['32', 'en'], ['35', 'pl']].map(([level, lang]) => ({
+  // [ext-02/ext-04] R6h: the "Long haul" pack (31–40), four levels with curfew marks.
+  ...[['32', 'en'], ['35', 'pl'], ['39', 'en'], ['40', 'pl']].map(([level, lang]) => ({
     id: `puzzle-long-haul-${level}`, dir: 'ext-02', file: `puzzle${level}-${lang}`, path: '', lang,
     open: ['.airway-board [data-mode="puzzles"]', `[data-action="open:${level}"]`],
     ready: { selector: '[data-testid="puzzle-curfews"] .puzzle-curfew-mark' }, settle: 300,

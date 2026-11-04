@@ -41,9 +41,16 @@ function cargoLabel(model: CardModel, index: number): { card: HTMLButtonElement;
   const grid = span('airway-upgrade-grid');
   for (const row of model.rows) grid.append(span('airway-upgrade-key', row.label), span('airway-upgrade-value', row.value));
   body.append(heading, title, grid);
-  if (model.stamp) body.append(span('airway-upgrade-stamp', model.stamp));
+  if (model.stamp) {
+    // [night-11r] R5e: a small caption line names what the stamp measures; the aria text reads "caption: stamp".
+    const stamp = span('airway-upgrade-stamp');
+    if (model.stampCaption) stamp.append(span('airway-upgrade-stamp-caption', model.stampCaption));
+    stamp.append(span('airway-upgrade-stamp-value', model.stamp));
+    body.append(stamp);
+  }
   card.append(window, body);
-  card.setAttribute('aria-label', [model.title, ...model.rows.map((row) => `${row.label}: ${row.value}`), model.stamp]
+  const stampText = model.stamp && model.stampCaption ? `${model.stampCaption}: ${model.stamp}` : model.stamp;
+  card.setAttribute('aria-label', [model.title, ...model.rows.map((row) => `${row.label}: ${row.value}`), stampText]
     .filter(Boolean).join('. '));
   return { card, window };
 }

@@ -1,0 +1,247 @@
+{
+  "version": 1,
+  "id": "38",
+  "titleKey": "puzzle.38.title",
+  "durationTicks": 8640,
+  "demandSeed": 3838,
+  "startCities": [
+    {
+      "id": "BOG",
+      "continent": "SA",
+      "latitude": 4.7,
+      "longitude": -74.1,
+      "hubCapacity": 130
+    },
+    {
+      "id": "MDE",
+      "continent": "SA",
+      "latitude": 6.2,
+      "longitude": -75.6,
+      "hubCapacity": 50
+    },
+    {
+      "id": "UIO",
+      "continent": "SA",
+      "latitude": -0.2,
+      "longitude": -78.5,
+      "hubCapacity": 50
+    },
+    {
+      "id": "PTY",
+      "continent": "NA",
+      "latitude": 9.0,
+      "longitude": -79.5,
+      "hubCapacity": 50
+    },
+    {
+      "id": "GYE",
+      "continent": "SA",
+      "latitude": -2.2,
+      "longitude": -79.9,
+      "hubCapacity": 50
+    },
+    {
+      "id": "LIM",
+      "continent": "SA",
+      "latitude": -12.0,
+      "longitude": -77.0,
+      "hubCapacity": 60
+    },
+    {
+      "id": "DKR",
+      "continent": "AF",
+      "latitude": 14.7,
+      "longitude": -17.4,
+      "hubCapacity": 120
+    },
+    {
+      "id": "ACC",
+      "continent": "AF",
+      "latitude": 5.6,
+      "longitude": -0.2,
+      "hubCapacity": 120
+    }
+  ],
+  "stock": {
+    "turboprops": 4,
+    "jets": 2,
+    "hubUpgrades": 0
+  },
+  "goal": {
+    "kind": "deliver",
+    "targetDelivered": 1542
+  },
+  "mechanics": [
+    "slots",
+    "week",
+    "transfer"
+  ],
+  "demand": [
+    {
+      "from": "MDE",
+      "to": "ACC",
+      "passengers": 8,
+      "firstTick": 20,
+      "everyTicks": 180
+    },
+    {
+      "from": "UIO",
+      "to": "ACC",
+      "passengers": 8,
+      "firstTick": 40,
+      "everyTicks": 180
+    },
+    {
+      "from": "PTY",
+      "to": "ACC",
+      "passengers": 8,
+      "firstTick": 60,
+      "everyTicks": 180
+    },
+    {
+      "from": "GYE",
+      "to": "ACC",
+      "passengers": 6,
+      "firstTick": 80,
+      "everyTicks": 180
+    },
+    {
+      "from": "BOG",
+      "to": "ACC",
+      "passengers": 8,
+      "firstTick": 100,
+      "everyTicks": 180
+    },
+    {
+      "from": "LIM",
+      "to": "ACC",
+      "passengers": 10,
+      "firstTick": 4320,
+      "everyTicks": 180
+    }
+  ],
+  "availableRoutes": [
+    {
+      "from": "BOG",
+      "to": "MDE",
+      "plane": "turboprop",
+      "flightTicks": 30,
+      "intervalTicks": 120
+    },
+    {
+      "from": "BOG",
+      "to": "UIO",
+      "plane": "turboprop",
+      "flightTicks": 92,
+      "intervalTicks": 120
+    },
+    {
+      "from": "BOG",
+      "to": "PTY",
+      "plane": "turboprop",
+      "flightTicks": 96,
+      "intervalTicks": 120
+    },
+    {
+      "from": "BOG",
+      "to": "GYE",
+      "plane": "turboprop",
+      "flightTicks": 126,
+      "intervalTicks": 120
+    },
+    {
+      "from": "UIO",
+      "to": "GYE",
+      "plane": "turboprop",
+      "flightTicks": 34,
+      "intervalTicks": 120
+    },
+    {
+      "from": "UIO",
+      "to": "LIM",
+      "plane": "turboprop",
+      "flightTicks": 166,
+      "intervalTicks": 120
+    },
+    {
+      "from": "MDE",
+      "to": "PTY",
+      "plane": "turboprop",
+      "flightTicks": 67,
+      "intervalTicks": 120
+    },
+    {
+      "from": "BOG",
+      "to": "DKR",
+      "plane": "jet",
+      "flightTicks": 450,
+      "intervalTicks": 120
+    },
+    {
+      "from": "BOG",
+      "to": "ACC",
+      "plane": "jet",
+      "flightTicks": 585,
+      "intervalTicks": 120
+    },
+    {
+      "from": "PTY",
+      "to": "DKR",
+      "plane": "jet",
+      "flightTicks": 484,
+      "intervalTicks": 120
+    },
+    {
+      "from": "LIM",
+      "to": "ACC",
+      "plane": "jet",
+      "flightTicks": 623,
+      "intervalTicks": 120
+    },
+    {
+      "from": "BOG",
+      "to": "LIM",
+      "plane": "jet",
+      "flightTicks": 135,
+      "intervalTicks": 120
+    }
+  ],
+  "referenceCommands": [
+    {
+      "type": "connect",
+      "from": "BOG",
+      "to": "MDE",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "BOG",
+      "to": "UIO",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "BOG",
+      "to": "PTY",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "BOG",
+      "to": "GYE",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "BOG",
+      "to": "DKR",
+      "plane": "jet"
+    },
+    {
+      "type": "connect",
+      "from": "LIM",
+      "to": "ACC",
+      "plane": "jet"
+    }
+  ]
+}

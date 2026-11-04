@@ -2,8 +2,9 @@ import { getLanguage, t } from '../../i18n';
 import { iconSvg } from './icons';
 import type { HudActions, HudState, PlaneType } from './types';
 
-type TagId = 'undo' | PlaneType | 'hub' | 'speed';
-const TAGS: readonly TagId[] = ['undo', 'turboprop', 'widebody', 'hub', 'speed'];
+type TagId = 'undo' | PlaneType | 'hub' | 'globe' | 'speed';
+// [G8] D-172: the globe-view tag sits before speed (the two non-network tags together).
+const TAGS: readonly TagId[] = ['undo', 'turboprop', 'widebody', 'hub', 'globe', 'speed'];
 const DRAG_THRESHOLD_SQUARED = 64;
 
 interface DragState {
@@ -31,7 +32,7 @@ export function createTagDock(root: HTMLElement, actions: HudActions): { render(
     button.type = 'button';
     button.className = 'airway-dock__tag';
     button.dataset.hudAction = tag;
-    button.innerHTML = `<span class="airway-dock__eyelet" aria-hidden="true"></span>${iconSvg(tag === 'speed' ? 'speed' : tag)}<span class="airway-dock__count" aria-hidden="true"></span>`;
+    button.innerHTML = `<span class="airway-dock__eyelet" aria-hidden="true"></span>${iconSvg(tag === 'globe' ? 'satellite' : tag)}<span class="airway-dock__count" aria-hidden="true"></span>`;
     holder.appendChild(button);
     dock.appendChild(holder);
     controls.set(tag, button);
@@ -45,6 +46,7 @@ export function createTagDock(root: HTMLElement, actions: HudActions): { render(
   let active: DragState | null = null;
   let locale = '';
   let lastSpeed = 0;
+  let lastMode = 'satellite';
 
   function hideGhost(): void {
     if (!ghost.hidden) ghost.hidden = true;
@@ -63,6 +65,7 @@ export function createTagDock(root: HTMLElement, actions: HudActions): { render(
     if (name === 'undo') button.addEventListener('click', () => actions.onUndo?.());
     else if (name === 'hub') button.addEventListener('click', () => actions.onUpgradeHub?.());
     else if (name === 'speed') button.addEventListener('click', () => actions.onCycleSpeed?.());
+    else if (name === 'globe') button.addEventListener('click', () => actions.onToggleGlobeMode?.());
     else {
       const plane: PlaneType = name;
       button.addEventListener('click', (event) => {
@@ -120,7 +123,7 @@ export function createTagDock(root: HTMLElement, actions: HudActions): { render(
           : name === 'widebody' ? state.stock.widebody
           : name === 'hub' ? state.stock.hub : 0;
         const count = button.querySelector('.airway-dock__count');
-        const nextCount = name === 'speed' ? `${state.speed}×` : name === 'undo' ? '' : formatCount(stock);
+        const nextCount = name === 'speed' ? `${state.speed}×` : name === 'undo' || name === 'globe' ? '' : formatCount(stock);
         if (count && count.textContent !== nextCount) count.textContent = nextCount;
         const disabled = (name === 'undo' && !state.canUndo)
           || ((isPlane || name === 'hub') && (!Number.isFinite(stock) || stock <= 0));
@@ -133,8 +136,16 @@ export function createTagDock(root: HTMLElement, actions: HudActions): { render(
           : name === 'hub' ? t('hud.hubCount', { count: nextCount })
           : name === 'turboprop' ? t('hud.turbopropCount', { count: nextCount })
           : name === 'widebody' ? t('hud.widebodyCount', { count: nextCount })
+          : name === 'globe' ? t('hud.globeMode', { mode: t(state.globeMode === 'map' ? 'settings.globeMode.map' : 'settings.globeMode.satellite') })
           : t('hud.speed', { speed: state.speed });
         if (button.getAttribute('aria-label') !== label) button.setAttribute('aria-label', label);
+      }
+      const mode = state.globeMode ?? 'satellite';
+      if (lastMode !== mode) {
+        lastMode = mode;
+        const tag = controls.get('globe');
+        tag?.querySelector('svg')?.replaceWith(document.createRange().createContextualFragment(iconSvg(mode === 'map' ? 'map' : 'satellite')));
+        tag?.setAttribute('data-globe-mode', mode);
       }
       if (lastSpeed !== state.speed) {
         lastSpeed = state.speed;

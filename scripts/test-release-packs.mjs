@@ -1,8 +1,8 @@
-// [night-11u] D-193 (owner Q-74 → B): the "Long haul" pack (31–35) stays out of release builds until it ships as the
+// [night-11u] D-193 (owner Q-74 → B): the "Long haul" pack (31–40) stays out of release builds until it ships as the
 // T+4 store event; DEV/test builds keep it, so e2e:puzzles and screens-fit-320 still cover it. The puzzle index is
 // built with Vite itself (production, development, and production with VITE_AW_ALL_PACKS=1) and the bundled PUZZLES
-// are counted: release 30 (01–30, no pack heading level), DEV 35, override 35. Also the pure releasedLevels() rules.
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+// are counted: release 30 (01–30, no pack heading level), DEV and override every level in the folder (40 today). Also the pure releasedLevels() rules.
+import { mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -18,6 +18,8 @@ async function test(name, fn) {
   }
 }
 const assert = (ok, message) => { if (!ok) throw new Error(message); };
+const ALL = readdirSync(resolve(ROOT, 'src/data/puzzles')).filter((name) => /^\d{2}\.json$/.test(name)).length;
+const LAST = String(ALL).padStart(2, '0');
 const temp = mkdtempSync(join(tmpdir(), 'airway-release-packs-'));
 
 /** Bundles src/data/puzzles/index.ts the way `npm run build` / `npm run dev` would and returns its exports. */
@@ -47,14 +49,14 @@ try {
     assert(PUZZLES.length === 30, `expected 30, got ${PUZZLES.length}`);
     assert(PUZZLES[0].id === '01' && PUZZLES.at(-1).id === '30', `range ${PUZZLES[0].id}–${PUZZLES.at(-1).id}`);
   });
-  await test('DEV build (development mode): 35 puzzles, Long haul 31–35 included', async () => {
+  await test(`DEV build (development mode): all ${ALL} puzzles, Long haul 31–${LAST} included`, async () => {
     const { PUZZLES } = await bundled('development', { NODE_ENV: 'development' });
-    assert(PUZZLES.length === 35, `expected 35, got ${PUZZLES.length}`);
-    assert(PUZZLES.at(-1).id === '35', `last ${PUZZLES.at(-1).id}`);
+    assert(ALL >= 31 && PUZZLES.length === ALL, `expected ${ALL}, got ${PUZZLES.length}`);
+    assert(PUZZLES.at(-1).id === LAST, `last ${PUZZLES.at(-1).id}`);
   });
-  await test('release build with VITE_AW_ALL_PACKS=1 (the T+4 check build): 35 puzzles', async () => {
+  await test(`release build with VITE_AW_ALL_PACKS=1 (the T+4 check build): ${ALL} puzzles`, async () => {
     const { PUZZLES } = await bundled('production', { NODE_ENV: 'production', VITE_AW_ALL_PACKS: '1' });
-    assert(PUZZLES.length === 35, `expected 35, got ${PUZZLES.length}`);
+    assert(PUZZLES.length === ALL, `expected ${ALL}, got ${PUZZLES.length}`);
   });
   await test('releasedLevels: a hidden pack ends at the next pack; visible packs and showHidden keep everything', async () => {
     const levels = ['01', '02', '03', '04', '05', '06'].map((id) => ({ id }));

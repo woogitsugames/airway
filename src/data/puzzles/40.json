@@ -1,0 +1,266 @@
+{
+  "version": 1,
+  "id": "40",
+  "titleKey": "puzzle.40.title",
+  "durationTicks": 8640,
+  "demandSeed": 3840,
+  "startCities": [
+    {
+      "id": "NBO",
+      "continent": "AF",
+      "latitude": -1.3,
+      "longitude": 36.8,
+      "hubCapacity": 200
+    },
+    {
+      "id": "ADD",
+      "continent": "AF",
+      "latitude": 9.0,
+      "longitude": 38.8,
+      "hubCapacity": 50
+    },
+    {
+      "id": "DAR",
+      "continent": "AF",
+      "latitude": -6.8,
+      "longitude": 39.3,
+      "hubCapacity": 50
+    },
+    {
+      "id": "KGL",
+      "continent": "AF",
+      "latitude": -1.9,
+      "longitude": 30.1,
+      "hubCapacity": 50
+    },
+    {
+      "id": "BOM",
+      "continent": "AS",
+      "latitude": 19.1,
+      "longitude": 72.9,
+      "hubCapacity": 160
+    },
+    {
+      "id": "SYD",
+      "continent": "OC",
+      "latitude": -33.9,
+      "longitude": 151.2,
+      "hubCapacity": 120
+    },
+    {
+      "id": "GRU",
+      "continent": "SA",
+      "latitude": -23.6,
+      "longitude": -46.6,
+      "hubCapacity": 180,
+      "curfew": {
+        "startMinuteOfDay": 1380,
+        "endMinuteOfDay": 360
+      }
+    },
+    {
+      "id": "MIA",
+      "continent": "NA",
+      "latitude": 25.8,
+      "longitude": -80.2,
+      "hubCapacity": 120
+    },
+    {
+      "id": "DXB",
+      "continent": "AS",
+      "latitude": 25.2,
+      "longitude": 55.3,
+      "hubCapacity": 100
+    }
+  ],
+  "stock": {
+    "turboprops": 3,
+    "jets": 4,
+    "hubUpgrades": 0
+  },
+  "goal": {
+    "kind": "continents",
+    "targetDelivered": 1186,
+    "continents": 5
+  },
+  "mechanics": [
+    "slots",
+    "curfew",
+    "week",
+    "transfer"
+  ],
+  "demand": [
+    {
+      "from": "DAR",
+      "to": "SYD",
+      "passengers": 8,
+      "firstTick": 20,
+      "everyTicks": 180
+    },
+    {
+      "from": "ADD",
+      "to": "MIA",
+      "passengers": 8,
+      "firstTick": 40,
+      "everyTicks": 180
+    },
+    {
+      "from": "KGL",
+      "to": "GRU",
+      "passengers": 6,
+      "firstTick": 60,
+      "everyTicks": 180
+    },
+    {
+      "from": "NBO",
+      "to": "BOM",
+      "passengers": 8,
+      "firstTick": 80,
+      "everyTicks": 180
+    },
+    {
+      "from": "BOM",
+      "to": "MIA",
+      "passengers": 8,
+      "firstTick": 4320,
+      "everyTicks": 180
+    },
+    {
+      "from": "ADD",
+      "to": "SYD",
+      "passengers": 6,
+      "firstTick": 4340,
+      "everyTicks": 180
+    }
+  ],
+  "availableRoutes": [
+    {
+      "from": "NBO",
+      "to": "ADD",
+      "plane": "turboprop",
+      "flightTicks": 146,
+      "intervalTicks": 120
+    },
+    {
+      "from": "NBO",
+      "to": "DAR",
+      "plane": "turboprop",
+      "flightTicks": 84,
+      "intervalTicks": 120
+    },
+    {
+      "from": "NBO",
+      "to": "KGL",
+      "plane": "turboprop",
+      "flightTicks": 94,
+      "intervalTicks": 120
+    },
+    {
+      "from": "ADD",
+      "to": "DAR",
+      "plane": "turboprop",
+      "flightTicks": 220,
+      "intervalTicks": 120
+    },
+    {
+      "from": "NBO",
+      "to": "BOM",
+      "plane": "jet",
+      "flightTicks": 325,
+      "intervalTicks": 120
+    },
+    {
+      "from": "NBO",
+      "to": "DXB",
+      "plane": "jet",
+      "flightTicks": 255,
+      "intervalTicks": 120
+    },
+    {
+      "from": "BOM",
+      "to": "SYD",
+      "plane": "jet",
+      "flightTicks": 726,
+      "intervalTicks": 120
+    },
+    {
+      "from": "NBO",
+      "to": "GRU",
+      "plane": "jet",
+      "flightTicks": 663,
+      "intervalTicks": 120
+    },
+    {
+      "from": "GRU",
+      "to": "MIA",
+      "plane": "jet",
+      "flightTicks": 470,
+      "intervalTicks": 120
+    },
+    {
+      "from": "BOM",
+      "to": "DXB",
+      "plane": "jet",
+      "flightTicks": 139,
+      "intervalTicks": 120
+    },
+    {
+      "from": "DAR",
+      "to": "GRU",
+      "plane": "jet",
+      "flightTicks": 664,
+      "intervalTicks": 120
+    },
+    {
+      "from": "ADD",
+      "to": "DXB",
+      "plane": "jet",
+      "flightTicks": 180,
+      "intervalTicks": 120
+    }
+  ],
+  "referenceCommands": [
+    {
+      "type": "connect",
+      "from": "NBO",
+      "to": "ADD",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "NBO",
+      "to": "DAR",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "NBO",
+      "to": "KGL",
+      "plane": "turboprop"
+    },
+    {
+      "type": "connect",
+      "from": "NBO",
+      "to": "BOM",
+      "plane": "jet"
+    },
+    {
+      "type": "connect",
+      "from": "BOM",
+      "to": "SYD",
+      "plane": "jet"
+    },
+    {
+      "type": "connect",
+      "from": "NBO",
+      "to": "GRU",
+      "plane": "jet"
+    },
+    {
+      "type": "connect",
+      "from": "GRU",
+      "to": "MIA",
+      "plane": "jet"
+    }
+  ]
+}

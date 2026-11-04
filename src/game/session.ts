@@ -31,6 +31,7 @@ import { airportLabel } from '../ui/airportLabel'; // [night-05] D-68
 import { AudioCueMapper, cueRun } from './audioCues'; // [night-03]
 import type { World, ScreenPoint } from './world';
 import { NewAirportMarks } from './newAirports'; // [night-10a]
+import { onSettingsChange, readSettings, saveSettings } from '../ui/settings/settings'; // [G8] D-172
 
 /**
  * [night-11m] D-128: at the gameplay zoom and closer (the run opens at 3 of [1, 4]) every on-screen airport carries
@@ -95,6 +96,11 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
   let speed: GameSpeed = 1;
   let slow = 1;
   let selectedPlane: PlaneType = 'turboprop';
+  // [G8] D-172: the globe view on the dock tag; kept in sync with Settings → Globe view.
+  let globeMode = readSettings().globeMode;
+  const offGlobeMode = onSettingsChange((settings) => {
+    if (settings.globeMode !== globeMode) { globeMode = settings.globeMode; renderHud(); }
+  });
   let accumulator = 0;
   let disposed = false;
   let renderRevision = 0;
@@ -151,6 +157,8 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     onUndo: () => { if (screen !== 'gameover') tool.undo(); }, // [night-11c] the map view leaves the dock reachable
     onTogglePause: () => setPaused(!paused),
     onCycleSpeed: () => { speed = speed === 1 ? 2 : speed === 2 ? 4 : 1; renderHud(); },
+    // [G8] D-172: the same setting as Settings → Globe view; main.ts applies it to the world.
+    onToggleGlobeMode: () => { saveSettings({ globeMode: globeMode === 'map' ? 'satellite' : 'map' }); },
     onSelectPlane: (type) => { selectedPlane = type; renderHud(); },
     onAssignPlane: (type, routeId) => {
       if (screen === 'gameover') return; // [night-11c]
@@ -396,6 +404,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       paused, speed, canUndo: run.networkUndoable,
       selectedPlane,
       stock: { turboprop: stock.turboprop, widebody: stock.widebody, hub: stock.hub },
+      globeMode,
     });
   }
   /** [task-39] Back from the hub/airport pick to the week's crates: one journaled sim command (D-49). */
@@ -473,6 +482,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
         delivered: run.passengers, completedWeeks: Math.floor(failure.tick / TICKS_PER_WEEK),
         ledger: failure.ledger, departures: flights, ...(extra ? { extra } : {}), ...(share ? { share } : {}),
         ...(run.mode === 'puzzle' ? {} : { timeline: runTimelineLoader(run) }), ...(tip ? { tip } : {}),
+        spareAircraft: run.inventory.turboprop + run.inventory.widebody, // [night-12y] R8b
       });
     }
   }
@@ -618,6 +628,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       firstTime.dispose();
       overlay.dispose();
       hud.destroy();
+      offGlobeMode();
       gameOver.dispose();
       jamHaptics.reset();
       layer.remove();
