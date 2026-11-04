@@ -1360,3 +1360,17 @@ do niego koniec trasy albo usuń mniej obłożoną trasę, żeby zwolnić jej sa
 route" became "remove a quieter route": the game UI has no single-plane unassign, only removing a route returns its
 aircraft. Unknown reserve (older callers) keeps the old line. Metric: unserved losses whose hint names a move the player
 could make, 0 → 100 % (both branches). **Status: in force (N12y).**
+
+## D-188 — The balance bot frees an idle aircraft for an unserved airport (2026-11-04, Claude, night N12z)
+R8e. `src/game/dev/bot-policy.ts` gets one last step: when an active airport has no route, the reserve is empty and
+no served route end can reach it, the bot sends one aircraft that is on the ground and empty back to the reserve
+(`UnassignPlane`), taken from the route with the least waiting per plane that has two or more (every route keeps one),
+of a type that reaches the airport; the next decision opens the new route with it. A jam at an airport without a
+route is now connected before spare aircraft go to busy routes. Measured (`r8-audit --policy=bot`, 200 seeds, before
+→ after): unserved-airport losses 52 → 48, median 16.64 → 16.64 min (p10 9.8, p90 22.8 unchanged), score p50 271.5;
+`test:balance` 50 seeds median 17.25 → 17.25 (inside D-79's 10–18). The effect is small because the bot opens a route
+per aircraft (at the loss every route has one plane in 35 of 37 sampled unserved losses), so "keep one per route"
+leaves little to move. A variant that also closed a redundant one-plane route (all its airports keep another route)
+cut unserved losses to 46 but lowered the median to 16.15 min and the score, so it was not kept. Note for the UI: a
+player cannot take a single aircraft off a route today (no unassign gesture; only removing a route frees its planes,
+D-187). **Status: in force (N12z); no gate changed.**

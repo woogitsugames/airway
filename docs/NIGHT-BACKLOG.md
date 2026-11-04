@@ -1110,7 +1110,7 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
       prototype wrapping: read `DepartureHeld`/`Delivered` events and `hubCauseLedger` in the adapter). No new gate.
       Metric: the next balance PR can quote the tail, not only the median. **Area:** `scripts/balance-*.ts`,
       `docs/balance/`.
-- [ ] R8e **Bot moves aircraft** — the bot never uses `UnassignPlane`/`RemoveRoute`, so with an empty reserve an
+- [x] R8e → N12z **Bot moves aircraft** — the bot never uses `UnassignPlane`/`RemoveRoute`, so with an empty reserve an
       unserved airport is lost unless a route end is within range (56 / 200 losses). Add one step: when an active
       airport has no route, no spare aircraft and no extendable route, take the plane from the route with the lowest
       waiting per plane (keep ≥ 1 per route) and open the new route with it. `test:bot-policy` cases; report the new

@@ -23,6 +23,8 @@ export interface BotRoute {
   readonly distanceKm: number;
   readonly waiting: number;
   readonly assigned: Readonly<Record<AircraftType, number>>;
+  /** [night-12z] R8e: assigned aircraft that may leave the route now (on the ground, empty). */
+  readonly movable?: readonly { readonly id: string; readonly type: AircraftType }[];
 }
 
 export interface LedgerCause {
@@ -53,7 +55,9 @@ export type BotCommand =
   | { readonly type: 'AssignPlane'; readonly routeId: string; readonly aircraftType: AircraftType }
   // [night-07w] Append a stop at one end of a served route (the route tool's drag from a route end).
   | { readonly type: 'ExtendRoute'; readonly routeId: string; readonly end: 'start' | 'end'; readonly cityId: string }
-  | { readonly type: 'ChooseUpgrade'; readonly offerId: string; readonly cityId?: string };
+  | { readonly type: 'ChooseUpgrade'; readonly offerId: string; readonly cityId?: string }
+  // [night-12z] R8e: send one aircraft back to the reserve (it opens a new route on the next decision).
+  | { readonly type: 'UnassignPlane'; readonly planeId: string };
 
 export interface BotDecision {
   readonly command: BotCommand;
@@ -191,6 +195,47 @@ function extendToCity(snapshot: BotSnapshot): BotDecision | null {
   };
 }
 
+// [night-12z] R8e, D-188: an active airport has no route, the reserve is empty and no served route can be extended
+// to it, so it jams unless a plane moves. Take one idle, empty aircraft from the route with the least waiting per
+// plane (a route keeps at least one), choosing a type that can reach the unserved airport from some other active
+// airport; the next decision opens the new route with it (connectCity). A player does the same by hand.
+function freeAircraft(snapshot: BotSnapshot): BotDecision | null {
+  const active = snapshot.cities.filter((city) => city.active);
+  const unserved = active.filter((city) => city.connectedRoutes === 0);
+  if (!unserved.length || snapshot.inventory.turboprop > 0 || snapshot.inventory.widebody > 0) return null;
+  // Shortest leg from any unserved airport to another active airport: the range the freed plane needs.
+  let need = Infinity;
+  for (const city of unserved) {
+    for (const other of active) {
+      const km = snapshot.distancesKm[city.id]?.[other.id];
+      if (other.id !== city.id && Number.isFinite(km) && km > 0 && km < need) need = km;
+    }
+  }
+  if (!Number.isFinite(need) || need > WIDEBODY_RANGE_KM) return null;
+  let best: { planeId: string; perPlane: number; routeId: string } | null = null;
+  for (const route of snapshot.routes) {
+    const planes = route.assigned.turboprop + route.assigned.widebody;
+    if (planes < 2 || !route.movable?.length) continue;
+    const perPlane = route.waiting / planes;
+    // Prefer the type that just fits: a turboprop when it reaches, else a widebody.
+    const fit = route.movable.filter((plane) => (plane.type === 'turboprop' ? TURBOPROP_RANGE_KM : WIDEBODY_RANGE_KM) >= need)
+      .sort((a, b) => Number(a.type === 'widebody') - Number(b.type === 'widebody') || compareId(a.id, b.id))[0];
+    if (!fit) continue;
+    if (!best || perPlane < best.perPlane || (perPlane === best.perPlane && compareId(route.id, best.routeId) < 0)) {
+      best = { planeId: fit.id, perPlane, routeId: route.id };
+    }
+  }
+  if (best) {
+    return {
+      command: { type: 'UnassignPlane', planeId: best.planeId },
+      reason: 'No spare aircraft and no route end in reach: free a plane from the quietest route',
+    };
+  }
+  // Measured (D-188): closing a redundant one-plane route instead cut unserved losses 52 → 46 / 200 but the median
+  // 16.64 → 16.15 min and the score; not taken.
+  return null;
+}
+
 function chooseUpgrade(snapshot: BotSnapshot): BotDecision | null {
   if (!snapshot.offers.length) return null;
   // Only interchange hubs can be expanded (task 12); rank them by pressure and overflow history.
@@ -255,9 +300,12 @@ export function chooseBotAction(snapshot: BotSnapshot): BotDecision | null {
   if (snapshot.status === 'finished') return null;
   if (snapshot.status === 'upgrade') return chooseUpgrade(snapshot);
   const urgent = snapshot.cities.some((city) => city.warningTicksRemaining !== null);
-  if (urgent) {
+  // [night-12z] R8e: a jam at an airport without a route is not eased by more aircraft elsewhere; connect it first.
+  const unservedJam = snapshot.cities.some((city) => city.active && city.connectedRoutes === 0 &&
+    city.warningTicksRemaining !== null);
+  if (urgent && !unservedJam) {
     const aircraft = chooseAircraft(snapshot);
     if (aircraft) return aircraft;
   }
-  return connectCity(snapshot) ?? chooseAircraft(snapshot) ?? extendToCity(snapshot);
+  return connectCity(snapshot) ?? chooseAircraft(snapshot) ?? extendToCity(snapshot) ?? freeAircraft(snapshot);
 }
