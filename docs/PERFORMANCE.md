@@ -308,3 +308,10 @@ The outline ring is one more part in the two airport instanced meshes' part list
 when both kinds exist) and the route ink outline one inflated back-face mesh per route batch (+2: widebody and
 turboprop). Worst case +4 draw calls, inside the ≤ 50 budget (perf fixture: 42–43 → ≤ 47). No new geometry per frame;
 routes still rebuild only on a network change.
+
+## G4 — satellite globe fill rate (2026-11-04, D-173)
+The satellite terrain material draws the sea surface (glint, fresnel sheen, night darkening) and the near-limb haze
+itself; the ocean shell (r 1.0002) and the haze shell (r 1.0125) are no longer added for texture looks. Full-screen
+transparent layers: low/saver 1 (the outer halo), medium/high 2 (halo + cloud shell). `perf:scene` (SwiftShader,
+412×915, DPR 1, 40 s; orientation only): low 397 frames / 10.5–9.4 fps / 209 k triangles / 41 draw calls (375 frames
+with the shells), medium 168 frames / 228 k / 41 (174). SwiftShader does not model mobile fill rate; G7 measures it.

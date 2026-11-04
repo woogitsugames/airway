@@ -163,8 +163,9 @@ export async function createGlobe(scene: Scene, opts: GlobeOptions): Promise<Glo
   group.add(lod.group, decorations);
   if (assets) {
     const segments = quality === 'low' ? 96 : quality === 'medium' ? 128 : 160;
-    group.add(createOceanShell(assets.config, opts.sunDirection, segments),
-      ...createScatterAtmosphere(opts.sunDirection));
+    // [G4] Texture looks carry the sea surface and haze in the terrain shader: only the halo (and clouds) stay layers.
+    if (assets.config.terrain === 'textured') group.add(...createScatterAtmosphere(opts.sunDirection, true));
+    else group.add(createOceanShell(assets.config, opts.sunDirection, segments), ...createScatterAtmosphere(opts.sunDirection));
     if (assets.clouds) group.add(createCloudShell(assets.clouds, opts.sunDirection, segments));
     group.userData['lookBytes'] = assets.bytes;
   } else group.add(createAtmosphere());
