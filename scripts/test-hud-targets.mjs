@@ -235,7 +235,24 @@ async function geometry(page) {
       const right = f.right - parseFloat(style.paddingRight) + 1;
       if (t.right > right) violations.push(`pass label "${label.textContent}" overflows its field by ${(t.right - right).toFixed(1)}px`);
     }
+    // [N11w] G8 (D-172) added the globe-view tag: it must sit in the dock between the hub and speed tags, on the dock's
+    // own row (portrait) or column (landscape/foldable rail), in DOM order along it, so it stays in thumb reach with the
+    // other dock tags.
+    const dockIds = ['undo', 'turboprop', 'widebody', 'hub', 'globe', 'speed'];
+    const dock = dockIds.map((id) => controls.find((c) => c.id === id));
+    const globe = controls.find((c) => c.id === 'globe');
+    let globePlacement = 'missing';
+    if (globe && dock.every(Boolean)) {
+      const xs = dock.map((c) => (c.x + c.right) / 2), ys = dock.map((c) => (c.y + c.bottom) / 2);
+      const horizontal = Math.max(...xs) - Math.min(...xs) >= Math.max(...ys) - Math.min(...ys);
+      const along = horizontal ? xs : ys, across = horizontal ? ys : xs;
+      const sorted = along.every((v, i) => i === 0 || v > along[i - 1]) || along.every((v, i) => i === 0 || v < along[i - 1]);
+      const inLine = Math.max(...across) - Math.min(...across) <= 24;
+      globePlacement = sorted && inLine ? 'ok'
+        : `order=${sorted} line=${inLine} (${dock.map((c) => `${c.id}@${Math.round(c.x)},${Math.round(c.y)}`).join(' ')})`;
+    }
     return { violations, count: controls.length, layout: document.querySelector('.airway-hud')?.dataset.layout,
+      globe, globePlacement,
       horizontalOverflow: document.documentElement.scrollWidth > innerWidth,
       controls };
   });
@@ -271,6 +288,7 @@ try {
           onSelectPlane: (type) => window.__hudEvents.push('select:' + type),
           onUpgradeHub: () => window.__hudEvents.push('hub'),
           onAssignPlane: (type, id) => window.__hudEvents.push('assign:' + type + ':' + id),
+          onToggleGlobeMode: () => window.__hudEvents.push('globe'),
         });
         // Synthetic safe-area values validate offsets even outside a notched iOS device.
         for (const [side, amount] of Object.entries({ top: 24, right: 16, bottom: 22, left: 16 })) {
@@ -281,7 +299,11 @@ try {
       }, state);
       await page.waitForFunction(() => document.querySelector('.airway-hud')?.dataset.layout !== undefined);
       const bounds = await geometry(page);
-      check(bounds.count === 6, `${view.label}: six accessible controls`);
+      // [N11w] Pause + six dock tags (undo, turboprop, widebody, hub, globe view — G8 / D-172 — and speed).
+      check(bounds.count === 7, `${view.label}: seven accessible controls (${bounds.count})`);
+      check(!!bounds.globe && bounds.globe.width >= 48 && bounds.globe.height >= 48,
+        `${view.label}: globe-view tag ≥48px (${bounds.globe ? `${bounds.globe.width}x${bounds.globe.height}` : 'missing'})`);
+      check(bounds.globePlacement === 'ok', `${view.label}: globe-view tag in the dock between hub and speed (${bounds.globePlacement})`);
       check(bounds.violations.length === 0, `${view.label}: ≥48px targets, no overlap or safe-area violations (${bounds.violations.join(', ')})`);
       check(!bounds.horizontalOverflow, `${view.label}: no horizontal overflow`);
       check(bounds.layout === (view.w >= 600 && view.h >= 600 ? 'foldable' : view.w > view.h ? 'landscape' : 'portrait'), `${view.label}: responsive layout`);
@@ -292,6 +314,8 @@ try {
       if (view.label === 'portrait-412x915') {
         await page.getByRole('button', { name: /Pauza|Pause/ }).click();
         check(await page.evaluate(() => window.__hudEvents.includes('pause')), 'pause callback');
+        await page.locator('[data-hud-action="globe"]').click();
+        check(await page.evaluate(() => window.__hudEvents.includes('globe')), 'globe-view tag emits ToggleGlobeMode');
         const plane = page.locator('[data-hud-action="turboprop"]');
         const start = await plane.boundingBox();
         const target = await page.locator('[data-route-id="test-route-11"]').boundingBox();
@@ -314,6 +338,7 @@ try {
         await page.waitForFunction(() => document.querySelector('.airway-hud')?.dataset.layout === 'landscape');
         const rotated = await geometry(page);
         check(rotated.violations.length === 0 && !rotated.horizontalOverflow, 'live orientation change keeps targets and safe areas');
+        check(rotated.count === 7 && rotated.globePlacement === 'ok', `live orientation change keeps the globe-view tag in the dock (${rotated.globePlacement})`);
       }
     } finally { await page.close(); }
   }
