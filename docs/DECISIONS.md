@@ -1350,3 +1350,18 @@ Ustawieniach.” (`rank.optedOut`). The settings switch itself is agent #1's UI 
 the choice in `airway.settings` (the net layer would read the settings store; the deletion row already talks to
 `Leaderboards`), and still submitting but hiding the result (the objection is about processing). **Status: in force
 for the net layer (N12x); switch pending.**
+
+## D-195 — One word per concept in PL/EN, guarded by test:i18n (2026-11-04, Claude, night N11t)
+R5g: the catalogs mixed "siatka" and "sieć" for the network, "terminal" and "węzeł" for a hub, and the PL game-over
+title "Siatka wstrzymana" (a pause you come back from) did not mean the same as "Network closed" (the end). The
+glossary in `src/i18n/README.md` fixes crate/skrzynia (what a crate holds is an upgrade/ulepszenie), hub/hub,
+network/sieć; PL game over is now "Sieć zamknięta" (title, map view, timeline: "sieć zamknięta", "bez zmian w
+sieci"), puzzle copy says "hub" ("Pojemność hubów" / "Hub capacity", "hub {city} jest przepełniony", "Ciasny hub" /
+"A tight hub", "Obok zamkniętego huba"). `test:i18n` fails on a banned synonym in any catalog value (EN grid, node,
+terminal, cargo/freight label, simulation; PL siatka, węzeł, terminal, etykieta frachtowa, symulacja, all inflected
+forms, Unicode word boundaries), except the two diegetic signs `menu.terminal` and `puzzle.board.subtitle`.
+Puzzle 17's old title "Obok zamkniętego węzła" read better; it follows the rule unless the owner prefers the
+exception. The D-18 PL store title ("Buduj siatkę lotów") is outside the catalogs: Q-77.
+Rejected: "Siatka zamknięta" (keeps two words for the network).
+**Status: in force (N11t, `test:i18n` with the glossary check, 12 failures on the old catalogs).**
+

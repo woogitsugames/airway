@@ -64,6 +64,26 @@ export function unusedKeys(keys, sources) {
   return [...keys].filter((key) => !literals.has(key) && ![...prefixes].some((prefix) => key.startsWith(prefix)));
 }
 
+// [night-11t] R5g, D-195: banned synonyms per language. `allow` lists keys where the word names something else (the
+// "TERMINAL 1" sign on the menu, the puzzle board's "route planning terminal"), not the concept it would duplicate.
+const TERMINAL_SIGNS = ['menu.terminal', 'puzzle.board.subtitle'];
+export const BANNED = {
+  en: [
+    { re: /\bgrid\b/i, word: 'network' },
+    { re: /\bnodes?\b/i, word: 'hub' },
+    { re: /\bterminals?\b/i, word: 'hub', allow: TERMINAL_SIGNS },
+    { re: /\b(cargo|freight)[ -]labels?\b/i, word: 'crate' },
+    { re: /\bsimulation\b/i, word: 'time / the game' },
+  ],
+  pl: [
+    { re: /(?<!\p{L})siat(ka|ki|ce|kę|ką|ek|kach|kami|kom)(?!\p{L})/iu, word: 'sieć' },
+    { re: /(?<!\p{L})węz(eł|ła|łowi|łem|le|ły|łów|łom|łami|łach)(?!\p{L})/iu, word: 'hub' },
+    { re: /(?<!\p{L})terminal(a|e|i|u|owi|em|ów|ach|ami)?(?!\p{L})/iu, word: 'hub', allow: TERMINAL_SIGNS },
+    { re: /(?<!\p{L})etykiet(a|y|ę|ą|om|ach|ami)? frachtow/iu, word: 'skrzynia' },
+    { re: /(?<!\p{L})symulacj/iu, word: 'czas / gra' },
+  ],
+};
+
 const placeholders = (value) => [...value.matchAll(/\{([A-Za-z][A-Za-z0-9_]*)\}/g)]
   .map((match) => match[1]).sort().join(',');
 let keyCount = 0;
@@ -127,6 +147,19 @@ try {
   const probe = unusedKeys(['a.used', 'b.s1', 'c.x.y', 'd.unused'], ["t('a.used')", "t(`b.s${n}`)", "t('c.x.' + v)"]);
   if (probe.join() !== 'd.unused') failures.push('unused-key matcher self-check: got ' + probe.join());
   for (const key of unusedKeys(english.keys(), sources)) failures.push('unused key (not referenced in src/): ' + key);
+  // [night-11t] R5g, D-195: one word per concept (glossary in src/i18n/README.md). A banned synonym in any player
+  // string fails, so "siatka", "węzeł", "terminal" (for a hub), "cargo label" or "simulation" cannot creep back.
+  const pl = catalogs.get('pl');
+  for (const [code, catalog] of [['en', english], ['pl', pl]]) {
+    for (const [key, value] of catalog) {
+      for (const { re, word, allow = [] } of BANNED[code]) {
+        if (re.test(value) && !allow.includes(key)) failures.push(`${code}: banned synonym "${value.match(re)[0]}" in ${key} (use "${word}")`);
+      }
+    }
+  }
+  // Self-check: the matcher catches the old game-over title and spares the diegetic terminal sign.
+  if (!BANNED.pl.some(({ re }) => re.test('Pokaż siatkę wokół')) || !BANNED.pl.some(({ re }) => re.test('Siatka wstrzymana')) || BANNED.pl.some(({ re, allow = [] }) =>
+    re.test('AIRWAY.GAMES · TERMINAL 1') && !allow.includes('menu.terminal'))) failures.push('banned-synonym matcher self-check');
   if (english.size === 0) failures.push('dictionaries must not be empty');
 } catch (error) {
   failures.push(error instanceof Error ? error.message : String(error));
