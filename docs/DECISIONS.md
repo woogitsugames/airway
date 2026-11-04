@@ -1544,3 +1544,45 @@ picks 1 → 7 of 95; `game-50.csv` and `game-summary.md` regenerated. No game ru
 test). Card tuning measured for the owner (Q-78): +12 or +18 places and a 10-minute connection change nothing (forced
 14.99 / 15.02 min); a hub card that also brings a turboprop (forced 15.34 / 231 vs always-turboprop 15.10 / 216.5)
 would beat the plain turboprop and empty the board choice. **Status: in force (N12ad); card tuning: Q-78.**
+
+## D-199 — The HUD target test counts seven controls; the landscape rack shrinks its tags to fit (2026-11-04, Claude, night N11w)
+G8 (#178, D-172) added the globe-view tag to the dock, so the HUD has seven controls (pause on the boarding pass and
+six dock tags) and `test:hud-targets` failed 293/300 on clean dev (five "six controls" checks plus the landscape
+case below). The test now expects seven and asserts the new tag on its own: ≥ 48 dp, in line with the dock (same row
+in portrait, same column on the landscape/foldable rack), in order between hub and speed, also after a live
+rotation, and a tap emits `onToggleGlobeMode`. The count was not loosened to "≥ 6". Fixing the test showed a real
+fault the count had hidden: on a 915×412 landscape phone with 24/16/22/16 insets six 58 px tags need 348 px but the
+rack has 326, flex items do not shrink below their content, and the speed tag ended 1 px inside the bottom safe area.
+The rack holders now shrink (`min-height: 48px`) and the tag fills its holder (`height: 100%`, max 58 px): 54 px tags
+at that size, unchanged on foldables and wherever there is room. Rejected: dropping a tag from the rack in landscape
+(every control must stay reachable), a smaller fixed height everywhere (foldables have room).
+**Status: in force (N11w, `test:hud-targets`).**
+
+## D-202 — Edge-chip placement is a pure function in overlay-layout.ts, with the old loop as its test oracle (2026-11-04, Claude, night N11x)
+R5h: `distributeEdges` (+ `edgeLayout`) lived inside `createAirportOverlay`, was patched three times (N10v markers,
+N10z tags, N11 jammed priority) without a unit test and scanned every airport for every candidate place
+(O(n²·k) per frame). It is now `projectEdgeChip(chip, dx, dy, lon, bounds)` and `placeEdgeChips(chips, tags,
+bounds)` in `src/ui/overlay-layout.ts`: no DOM, no three.js, no per-frame allocation (module scratch arrays); the
+overlay keeps one `EdgeChip` per airport parallel to its tag slots and the right dock band moved into `EdgeBounds`.
+Behaviour is meant to be identical, so `test:overlay-layout` carries a verbatim port of the old loop and compares
+the two on 200 random portrait/landscape scenes (200/200 identical), plus rule tests (jammed chip wins, a full edge
+hides chips, never on an on-screen marker, avoids tags while there is room, projection sides and dock band,
+deterministic). Cost on a 150-airport scene (100 off screen, Node, same harness): old 0.43–0.50 ms, new 0.14–0.16
+ms per frame (~3×): on-screen airports are collected once and filtered per chip to its strip along the edge,
+placed chips are kept per side, and the slide stops when both directions leave the edge. Budget in the test: < 1 ms.
+Rejected: a spatial grid (more code for the same result at ≤ 165 airports). **Status: in force (N11x).**
+
+## D-203 — Every safe-area inset goes through the --aw-safe-* tokens; a notch profile tests them (2026-11-04, Claude, night N11y)
+R5j: only the HUD read the `--aw-safe-*` tokens (`src/ui/base.css`, task 25); menu, settings, upgrade, game over,
+tutorial, puzzles, ATC strip, the overlay fixture and theme CSS used 56 raw `env(safe-area-inset-*)`. Chromium
+cannot emulate `env()`, so no browser suite ever saw those insets. All 56 now read the tokens (same values on
+devices: the tokens are `env()` with a 0 px fallback), and where a screen ignored a side it now keeps clear of it:
+the menu notice (left/right, and its landscape top/right), the departures board and the sign's width (left/right),
+the tutorial settings dialog (right). Guards: `test:safe-area` (fast, headless) fails on any raw `env()` outside the
+four token definitions (56 on the old CSS); `test:e2e:notch` (ci, ~40 s, no globe so SwiftShader does not slow it)
+sets the tokens on `:root` to iPhone-like values (portrait 393×852 59/0/34/0, landscape 852×393 0/59/21/59) on
+menu, settings, puzzle board, upgrade board, game over and HUD in PL/EN and fails on any visible control inside an
+inset (content inside a scroller that can still scroll toward an inset may pass under it). 24/24 now, 14/24 on the
+old CSS. Rejected: a notch profile in `ui:matrix` (it plays the real game on the globe, which times out under
+SwiftShader since G2–G4; the component mounts test the same CSS), per-screen inset variables (one token set is the
+contract). **Status: in force (N11y).**

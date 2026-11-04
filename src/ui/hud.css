@@ -180,7 +180,7 @@
   height: 2px;
 }
 .airway-hud[data-layout='landscape'] .airway-dock__holder,
-.airway-hud[data-layout='foldable'] .airway-dock__holder { padding: 0; height: 58px; flex: 0 1 58px; }
+.airway-hud[data-layout='foldable'] .airway-dock__holder { padding: 0; height: 58px; flex: 0 1 58px; min-height: 48px; }
 .airway-hud[data-layout='landscape'] .airway-dock__holder::before,
 .airway-hud[data-layout='foldable'] .airway-dock__holder::before {
   top: 8px;
@@ -189,8 +189,10 @@
   width: auto;
   height: 2px;
 }
+/* [N11w] D-199: with the G8 globe tag six tags no longer fit 58 px each on a 412 px landscape phone with insets; the
+   holders shrink (never below 48 px) and the tag fills its holder instead of spilling into the bottom safe area. */
 .airway-hud[data-layout='landscape'] .airway-dock__tag,
-.airway-hud[data-layout='foldable'] .airway-dock__tag { width: 100%; height: 58px; }
+.airway-hud[data-layout='foldable'] .airway-dock__tag { width: 100%; height: 100%; max-height: 58px; }
 /* On foldables the rack becomes a permanent side panel; the world has the remaining screen. */
 .airway-hud[data-layout='foldable'] .airway-dock {
   right: calc(var(--hud-safe-right) + 10px);
