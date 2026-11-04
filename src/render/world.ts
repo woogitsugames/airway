@@ -90,7 +90,7 @@ export interface WorldRendererOptions {
   readonly landUrl?: string;
   /** [ext-03] Experimental globe look (DEV only, docs/mockups/globe-2026-11/); default the diorama. */
   readonly look?: GlobeLook;
-  /** [ext-03] D-175 airport/route variant (DEV only, `?airportStyle=`); default the shipped objects. */
+  /** [ext-03] D-175/D-178 airport/route style; default `medal` (owner, D-178). DEV `?airportStyle=` compares. */
   readonly airportStyle?: AirportStyle;
   readonly camera?: OrbitCameraOptions;
   readonly maxAirports?: number;
@@ -186,13 +186,14 @@ export function createWorldRenderer(
   const lights = createSunLights(quality);
   scene.add(lights.group);
   const sun: SunController = createSunController(lights, renderer);
+  const airportStyle: AirportStyle = opts.airportStyle ?? 'medal';
   const airports: AirportsLayer = createAirports(scene, {
-    style: opts.airportStyle,
+    style: airportStyle,
     maxAirports: opts.maxAirports ?? 64, maxHubSeats: opts.maxHubSeats ?? 48,
   });
-  const routes = opts.airportStyle && opts.airportStyle !== 'current'
-    ? new RouteLayer({ outline: true, turboprop: opts.airportStyle === 'apron' ? '#F39A2E' : undefined })
-    : new RouteLayer();
+  // [ext-03 G9] D-178: route tubes carry a dark ink outline unless the pre-D-178 `current` style is asked for.
+  const routes = airportStyle === 'current' ? new RouteLayer()
+    : new RouteLayer({ outline: true, turboprop: airportStyle === 'apron' ? '#F39A2E' : undefined });
   scene.add(routes.group);
   const planes = new PlaneLayer(routes, {
     maxPlanes: opts.maxPlanes ?? 120, progressScale: opts.progressScale,

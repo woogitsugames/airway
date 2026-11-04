@@ -1151,7 +1151,18 @@ out in the PNGs while the probe moves only 1.4 → 1.6–2.2, and on Satelita th
 (3.8 → 2.3). Before G9 ships, the probe reports per layer the contrast of the outer edge against the globe and of
 the core against the edge, and the gate takes the better of the two (WCAG non-text contrast reads either boundary).
 Rejected: keeping the median (penalises the standard map-symbol design) and a pixel-count threshold (fragile at
-different zooms). **Status: proposed; implement with G9.**
+different zooms). **Status: in force (G9, `layerContrast(…, width)` returns `edge`, `core`, `median`; `ratio` = max(edge,
+core); `test:render-layers` checks an outlined disc on a dark sea).**
+
+## D-178 — Airport objects: V3 "Medalion" (2026-11-04, owner)
+Owner on the G9 variants (`docs/mockups/globe-2026-11/g9/`): "Daj medalion i scalaj." The airport keeps the D-11
+diorama object (light pad, dark runway, terminal with a type-coloured roof, hub tower) and gets a thick dark outline
+ring (r = 0.037–0.038·s under the pad); route tubes get a dark ink outline (inflated back faces, +1 draw call per
+route batch, 2 in total). `createWorldRenderer` defaults to `airportStyle: 'medal'`; `current`, `ink` and `apron`
+stay for DEV comparison only (`?airportStyle=`). Probe (D-177, seed 15, phone, day): routes 5.1 diorama / 6.8
+Satelita / 3.4 Mapa (were 2.2 / 3.8 / 1.3), airports 2.6 / 3.2 / 3.1 (were 2.3 / 4.9 / 1.4 with the median probe).
+Airports, planes and the Mapa tags still miss 4.5:1: follow-up G9b. Store screenshots are regenerated with G6.
+**Status: in force (owner).**
 
 ## D-150 — Weekly board offers only cards that can act (2026-11-03 22:20 CET, owner, Q-71 → B)
 R8a: the "+2 slots" card enters the weekly draw only after the run's first departure hold, the hub expansion card only
@@ -1300,4 +1311,3 @@ below the airport overlay (2), so a tag or edge chip always covers a handle, nev
 stays in `routeTool` and does not depend on paint order. Rejected: hiding handles at rest (the extend gesture would
 have no visible start), a hover state (touch first; the finger case is the drag itself).
 **Status: in force (N11q, `test:e2e:route-handles` 2).**
-

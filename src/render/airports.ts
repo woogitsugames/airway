@@ -39,9 +39,9 @@ export interface AirportDefinition {
 }
 
 /**
- * [ext-03] D-175 variants for the owner's choice (DEV only, `?airportStyle=`): `current` is the shipped diorama
- * object; `ink` a dark pad with a light runway; `apron` an asphalt apron with a type-coloured rim; `medal` the
- * shipped light pad with a thick dark outline.
+ * [ext-03] D-175 variants: `medal` (the owner's pick, D-178; the default through `createWorldRenderer`) is the light
+ * diorama pad with a thick dark outline; `current` the pre-D-178 object; `ink` a dark pad with a light runway;
+ * `apron` an asphalt apron with a type-coloured rim (the last three only for DEV comparison, `?airportStyle=`).
  */
 export type AirportStyle = 'current' | 'ink' | 'apron' | 'medal';
 
@@ -98,7 +98,8 @@ function createParts(group: Group, max: number, hub: boolean, style: AirportStyl
   if (style === 'apron') {
     parts.push({ geometry: new CylinderGeometry(.031 * s, .032 * s, .003, 24).translate(0, .0003, 0), color: hub ? '#2FA39A' : '#E3743E' });
   } else if (style === 'medal' || style === 'ink') {
-    parts.push({ geometry: new CylinderGeometry(.0315 * s, .0325 * s, .003, 24).translate(0, .0003, 0), color: style === 'ink' ? '#F4F0E6' : '#1B2427' });
+    parts.push({ geometry: new CylinderGeometry((style === 'medal' ? .037 : .0315) * s, (style === 'medal' ? .038 : .0325) * s, .003, 24)
+      .translate(0, .0003, 0), color: style === 'ink' ? '#F4F0E6' : '#1B2427' });
   }
   if (hub) {
     parts.push(
