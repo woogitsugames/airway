@@ -5,10 +5,13 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import assert from 'node:assert/strict';
 import { translations } from './i18n.js';
 import { createHash } from 'node:crypto';
-import { LAUNCH, STORE_BADGES, STORE_HOSTS, SITE_SHOTS, storeLink } from './launch.js';
+import { LAUNCH, PRESS_KIT, STORE_BADGES, STORE_HOSTS, SITE_SHOTS, storeLink } from './launch.js';
+import { tmpdir } from 'node:os';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { buildPressKit, pressShots, unzip } from './press-kit.mjs';
 
 const root = dirname(fileURLToPath(import.meta.url));
-const pages = ['index.html', 'privacy.html', '404.html'];
+const pages = ['index.html', 'privacy.html', 'press.html', '404.html'];
 let count = 0, failures = 0;
 const check = (name, test) => {
   try { assert.ok(test(), name); count++; }
@@ -39,6 +42,7 @@ for (const page of pages) {
   for (const href of html.matchAll(/\bhref="([^"]+)"/g)) {
     const url = href[1];
     if (/^(mailto:|https?:)/.test(url)) continue;
+    if (url === PRESS_KIT.zip) continue; // [night-11ae] built by build:site; checked below
     const [path, fragment] = url.split('#');
     // [night-11ad] 404.html uses root-absolute URLs ("/" is the site root, i.e. index.html).
     const resolved = path.split('?')[0].replace(/^\/$/, './').replace(/^\//, '');
@@ -94,7 +98,7 @@ check('og:image is the feature graphic, absolute, copied by build:site', () => m
 check('og:image size matches the file', () => Number(meta(home, 'og:image:width')) === og.width && Number(meta(home, 'og:image:height')) === og.height);
 check('og:image alt, og:url, twitter card', () => Boolean(meta(home, 'og:image:alt')) && meta(home, 'og:url') === LAUNCH.origin + '/' &&
   meta(home, 'twitter:card') === 'summary_large_image' && keys.includes('meta.ogimage'));
-for (const [page, path] of [['index.html', '/'], ['privacy.html', '/privacy.html']]) {
+for (const [page, path] of [['index.html', '/'], ['privacy.html', '/privacy.html'], ['press.html', '/press.html']]) {
   const html = readFileSync(join(root, page), 'utf8');
   check(`${page}: canonical and hreflang pl/en/x-default`, () => html.includes(`<link rel="canonical" href="${LAUNCH.origin}${path}">`) &&
     ['pl', 'en'].every(code => html.includes(`<link rel="alternate" hreflang="${code}" href="${LAUNCH.origin}${path}?lang=${code}">`)) &&
@@ -126,9 +130,95 @@ check('Font licenses present', () => ['OFL-Overpass.txt','OFL-OverpassMono.txt',
 const css = readFileSync(join(root,'styles.css'),'utf8');
 check('Small screen and reduced motion layouts', () => css.includes('@media(max-width:750px)') && css.includes('prefers-reduced-motion'));
 check('No third-party font loads', () => !/@import|fonts\.googleapis/.test(css));
-check('No analytics or tracking', () => ['site.js','globe.js','launch.js','index.html','privacy.html','404.html'].every(p=>!/gtag\(|google-analytics|googletagmanager|facebook\.com\/tr|document\.cookie|localStorage|sendBeacon|fetch\(/.test(readFileSync(join(root,p),'utf8'))));
+check('No analytics or tracking', () => ['site.js','globe.js','launch.js','index.html','privacy.html','press.html','404.html'].every(p=>!/gtag\(|google-analytics|googletagmanager|facebook\.com\/tr|document\.cookie|localStorage|sendBeacon|fetch\(/.test(readFileSync(join(root,p),'utf8'))));
 const script = readFileSync(join(root,'site.js'),'utf8');
 check('Translation insertion is text-only', () => !script.includes('innerHTML') && script.includes('createTextNode'));
 check('No undisclosed external assets', () => [...home.matchAll(/\b(src|href)="(https?:\/\/[^"]*)"/g)].every(m => m[2].startsWith(LAUNCH.origin + '/') && /rel="(canonical|alternate)"/.test(home.slice(home.lastIndexOf('<', m.index), m.index))));
+// [night-11ae] R2e, D-219: press page — fact sheet, store copy, 8–10 store shots, logo, video slot, one ZIP.
+const press = readFileSync(join(root, 'press.html'), 'utf8');
+const storeSection = (language, heading) => readFileSync(join(root, `../docs/store/${language}.md`), 'utf8')
+  .match(new RegExp(`^## ${heading}\n([\\s\\S]*?)(?=^## )`, 'm'))?.[1].trim();
+check('press: linked from the home, privacy and 404 footers', () => /href="press\.html"/.test(home) &&
+  /href="press\.html"/.test(readFileSync(join(root, 'privacy.html'), 'utf8')) && /href="\/press\.html"/.test(notFound));
+check('press: no forms, inputs or iframes', () => !/<(form|input|textarea|select|iframe)\b/i.test(press));
+const facts = ['developer', 'genre', 'platforms', 'release', 'price', 'languages', 'contact', 'website'];
+for (const fact of facts) check(`press: fact sheet row ${fact}`, () => press.includes(`data-i18n="press.fact.${fact}.label"`) &&
+  (['contact', 'website'].includes(fact) || press.includes(`data-i18n="press.fact.${fact}.value"`)));
+check('press: contact is the site address', () => press.includes(`href="mailto:${PRESS_KIT.contact}"`) && home.includes(`mailto:${PRESS_KIT.contact}`));
+// D-16 is free with no ads/IAP, but launch copy never names a price or "free" (RESEARCH R2): the price row says what is not there.
+const pressCopy = (language) => Object.entries(translations[language]).filter(([key]) => key.startsWith('press.')).map(([, value]) => value).join('\n');
+check('press: price row says "no ads, no purchases"', () => /bez reklam/i.test(translations.pl['press.fact.price.value']) &&
+  /zakup/i.test(translations.pl['press.fact.price.value']) && /no ads/i.test(translations.en['press.fact.price.value']) && /purchase/i.test(translations.en['press.fact.price.value']));
+check('press: no price or "free" in the press copy', () => !/\bfree\b|darmow|bezpłatn|za darmo|\d\s?(zł|pln|usd|eur)\b|[$€£]\s?\d/i.test(pressCopy('pl') + pressCopy('en')));
+// Short and long description from docs/store/ (EN keeps the glossary of D-195: "a terminal" there reads "a hub" here).
+const glossary = (text) => text.replace(/\ba terminal\b/g, 'a hub');
+for (const language of SITE_SHOTS.languages) {
+  check(`press ${language}: short description = docs/store/${language}.md`, () =>
+    translations[language]['press.short'] === glossary(storeSection(language, 'Google Play short description')));
+  check(`press ${language}: full description = docs/store/${language}.md`, () =>
+    translations[language]['press.long'] === glossary(storeSection(language, 'Full description')));
+}
+check('press: descriptions on the page', () => press.includes('data-i18n="press.short"') && press.includes('data-i18n-paragraphs="press.long"') &&
+  /createElement\('li'\)/.test(script) && !/innerHTML/.test(script));
+const pressShotTags = [...press.matchAll(/<img\b[^>]*data-shot="([a-z]+)" data-shot-format="([a-z]+)"[^>]*>/g)];
+check('press: 8–10 store shots on the page', () => pressShotTags.length >= 8 && pressShotTags.length <= 10);
+check('press: every scene in every kit format', () => SITE_SHOTS.scenes.every(scene => PRESS_KIT.formats.every(format =>
+  pressShotTags.some(m => m[1] === scene && m[2] === format))));
+for (const language of SITE_SHOTS.languages) for (const scene of SITE_SHOTS.scenes) {
+  const file = join(root, 'assets/shots', language, `${scene}-landscape.jpg`);
+  check(`shot ${language}/${scene}-landscape: ${PRESS_KIT.landscape.width}x${PRESS_KIT.landscape.height} JPEG`, () => {
+    const size = existsSync(file) && jpegSize(readFileSync(file));
+    return size && size.width === PRESS_KIT.landscape.width && size.height === PRESS_KIT.landscape.height && readFileSync(file).length < 250000;
+  });
+  const store = join(root, '../docs/store/shots', language, scene + '-landscape.png');
+  check(`shot ${language}/${scene}-landscape: made from the current store PNG (npm run site:assets)`, () =>
+    sources[`${language}/${scene}-landscape.jpg`] === createHash('sha256').update(readFileSync(store)).digest('hex').slice(0, 16));
+}
+for (const logo of PRESS_KIT.logos) {
+  check(`press logo ${logo.name}: source exists`, () => existsSync(join(root, logo.source)));
+  if (logo.width) check(`press logo ${logo.name}: ${logo.width}x${logo.height} PNG from the current SVG (npm run site:assets)`, () => {
+    const size = pngSize(readFileSync(join(root, logo.source)));
+    const svg = PRESS_KIT.logos.find(item => item.name === logo.name.replace(/\.png$/, '.svg'));
+    return size.width === logo.width && size.height === logo.height &&
+      sources[logo.source.replace(/^assets\//, '')] === createHash('sha256').update(readFileSync(join(root, svg.source), 'utf8')).digest('hex').slice(0, 16);
+  });
+}
+check('press: logo and icon shown', () => PRESS_KIT.logos.filter(logo => logo.width).every(logo => press.includes(`src="${logo.source}"`)));
+check('press: video slot matches PRESS_KIT.video', () => PRESS_KIT.video
+  ? press.includes('data-i18n="press.video.ready"') && existsSync(join(root, PRESS_KIT.video))
+  : press.includes('data-i18n="press.video.pending"') && !press.includes('press.video.ready'));
+check('press: one ZIP link, built by build:site', () => (press.match(new RegExp(`href="${PRESS_KIT.zip.replace('.', '\\.')}"`, 'g')) || []).length === 1 &&
+  /buildPressKit\(root, join\(output, PRESS_KIT\.zip\)\)/.test(buildSource) && /'press\.html'/.test(buildSource));
+const kitDir = mkdtempSync(join(tmpdir(), 'airway-press-'));
+try {
+  const kitFile = join(kitDir, PRESS_KIT.zip);
+  let built = null, entries = [];
+  check('press ZIP: builds from the sources', () => { built = buildPressKit(root, kitFile); return existsSync(kitFile); });
+  check('press ZIP: reads back with valid CRCs', () => { entries = unzip(readFileSync(kitFile)); return entries.length === built?.entries.length; });
+  const names = entries.map(entry => entry.name);
+  const prefix = PRESS_KIT.folder + '/';
+  check('press ZIP: one top folder', () => names.length > 0 && names.every(name => name.startsWith(prefix)));
+  for (const language of SITE_SHOTS.languages) {
+    const shots = names.filter(name => name.startsWith(`${prefix}screenshots/${language}/`));
+    check(`press ZIP ${language}: 8–10 full-size store shots`, () => shots.length >= 8 && shots.length <= 10);
+    const readme = entries.find(entry => entry.name === `${prefix}README-${language}.txt`)?.data.toString('utf8') ?? '';
+    check(`press ZIP ${language}: README with facts, both descriptions, contents`, () => readme.includes(translations[language]['press.long']) &&
+      readme.includes(translations[language]['press.short']) && readme.includes(PRESS_KIT.contact) &&
+      readme.includes(translations[language]['press.fact.price.value']) && shots.every(name => readme.includes(name.slice(prefix.length))));
+  }
+  for (const shot of pressShots()) {
+    check(`press ZIP: ${shot.name} is the store PNG byte for byte`, () =>
+      entries.find(entry => entry.name === prefix + shot.name)?.data.equals(readFileSync(join(root, shot.source))));
+  }
+  check('press ZIP: full-size shots (1080×1920 phone, 1920×1080 landscape)', () => pressShots().every(shot => {
+    const size = pngSize(readFileSync(join(root, shot.source)));
+    return shot.format === 'phone' ? size.width === 1080 && size.height === 1920 : size.width === 1920 && size.height === 1080;
+  }));
+  check('press ZIP: every logo file', () => PRESS_KIT.logos.every(logo => names.includes(`${prefix}logo/${logo.name}`)));
+  check('press ZIP: video when configured', () => !PRESS_KIT.video || names.some(name => name.startsWith(`${prefix}video/`)));
+  check('press ZIP: reproducible', () => { buildPressKit(root, kitFile + '.2'); return readFileSync(kitFile).equals(readFileSync(kitFile + '.2')); });
+} finally {
+  rmSync(kitDir, { recursive: true, force: true });
+}
 console.log(`SUMMARY test:site seed=0xA1A1 assertions=${count+failures} passed=${count} failed=${failures}`);
 if (failures) process.exitCode = 1;
