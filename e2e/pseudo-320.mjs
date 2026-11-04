@@ -37,8 +37,8 @@ async function mount(page, screen, language) {
       const { createLogbook } = await import('/src/ui/logbook/logbook.ts');
       const recent = [['2026-11-03', 'endless', 1284, 6, 'FRA'], ['2026-11-02', 'daily', 412, 2, 'SIN'], ['2026-11-01', 'endless', 96, 1, null]]
         .map(([day, mode, passengers, weeks, hub]) => ({ day, mode, passengers, weeks, hub }));
-      host.append(createLogbook(() => {}, { book: { flights: 12, passengers: 4180, weeks: 19, longestWeeks: 6, hubs: { FRA: 5, SIN: 2 }, recent },
-        best: { score: 1284, weeks: 6 }, dailyBest: 412, longestStreak: 4, puzzlesSolved: 3, puzzlesTotal: 40, stars: 7 }).element);
+      host.append(createLogbook(() => {}, { book: { flights: 12, dailies: 4, passengers: 4180, weeks: 19, longestWeeks: 6, hubs: { FRA: 5, SIN: 2 }, recent, runs: [] },
+        best: { score: 1284, weeks: 6 }, dailyBest: 412, longestStreak: 4, puzzlesSolved: 3, puzzlesTotal: 40, stars: 7, tutorial: 'completed' }).element);
     } else if (screen === 'puzzles') {
       const { mountPuzzleSelector } = await import('/src/ui/puzzles/index.ts');
       mountPuzzleSelector(host, () => {});

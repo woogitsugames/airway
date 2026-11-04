@@ -1831,3 +1831,19 @@ planes and tags in Map mode to ≥ 4.5:1 and `test:contrast` covers them. Correc
 ## D-226 — Overnight queue: the whole backlog in order (2026-11-04, owner)
 Agents keep taking `[ ]` items in backlog order (#1: R4g, R2g, R1g, R7a–c, R7l; #2: R1k, R1l, R2c, R2f, R3d/e/i/j/k,
 R6g, R6i, R7d), document items included; never globe steps (G, `src/render/**`), puzzles or N9d. **Status: in force.**
+
+## D-227 — Closed-test protocol and a local "Copy summary" of the logbook (2026-11-04, Claude, night N12am)
+R1o. `docs/PLAYTEST.md` holds the 14-day closed test (RESEARCH R3 calendar, fix release on day 8), the tester brief
+and surveys A/B/C in PL and EN, and a reading of the logbook data for the owner's open questions Q-73 (run length),
+Q-78 (hub expansion card) and Q-80 ("+2 slots" card); its thresholds are proposals for the R3k decision table. The
+logbook (`airway.logbook.v1`, same key, older records load) now also counts finished daily challenges and keeps a note
+for each of the last 30 runs: date, mode, passengers, weeks completed, length in tenths of a minute **at 1x** (sim
+ticks / 600, the balance report's unit, so human runs compare with the bot; wall-clock minutes come with R3j),
+aircraft-minutes held for a departure slot over all airports, and how many weekly boards showed the hub expansion and
+"+2 slots" cards and how often they were picked (`EndlessRun.playtestStats()`; a resumed run counts the boards after
+resuming, never fewer than its picks). "Copy summary" on the logbook page (release builds too) puts a plain-text
+summary in the player's language on the clipboard; when the clipboard is refused the text is shown selected for a
+manual copy. No airport codes, seed or identifiers in the text; no network, no analytics (D-16); nothing to add to
+the store privacy answers (D-220: the app transmits nothing). Rejected: a JSON/base64 export now (R3j adds the
+`AW1:` line), wall-clock timing (needs session hooks; R3j), a hub column (a city code is the one non-count field).
+Guard: `test:playtest`. **Status: in force.**

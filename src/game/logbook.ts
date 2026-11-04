@@ -8,6 +8,8 @@ export const RECENT_FLIGHTS = 6;
 /** Distinct hubs counted; the least-used one is dropped beyond this so the record stays small. */
 const MAX_HUBS = 40;
 const MAX_COUNT = 1_000_000_000;
+/** [night-12am] R1o: closed-test notes kept for the last runs ("Copy summary"; Q-73, Q-78, Q-80). */
+export const RUN_NOTES = 30;
 
 type StorageLike = Pick<Storage, 'getItem' | 'setItem'>;
 export type LogMode = 'endless' | 'daily';
@@ -22,17 +24,47 @@ export interface LogEntry {
   readonly hub: string | null;
 }
 
+/**
+ * [night-12am] R1o: what one finished run adds to the closed-test summary, read from the sim at game over.
+ * Counts only, no identifiers; kept on the device and leaves it only when the player copies the summary (D-16).
+ */
+export interface RunStats {
+  /** Run length in tenths of a minute at 1x speed (sim ticks / 60), the balance report's unit (Q-73). */
+  readonly tenths: number;
+  /** Aircraft-minutes held on the ground for a departure slot; 0 = the hourly limit never bit (Q-80). */
+  readonly held: number;
+  /** Weekly boards that showed the hub expansion card / runs' picks of it (Q-78). */
+  readonly hubOffered: number;
+  readonly hubPicked: number;
+  /** Weekly boards that showed the "+2 slots" card / picks of it (Q-80). */
+  readonly slotsOffered: number;
+  readonly slotsPicked: number;
+}
+
+export interface RunNote extends RunStats {
+  readonly day: string;
+  readonly mode: LogMode;
+  readonly passengers: number;
+  readonly weeks: number;
+}
+
 export interface Logbook {
   readonly flights: number;
+  /** [night-12am] Finished daily challenges (official and practice) since R1o. */
+  readonly dailies: number;
   readonly passengers: number;
   readonly weeks: number;
   readonly longestWeeks: number;
   /** Flights per hub city code. */
   readonly hubs: Readonly<Record<string, number>>;
   readonly recent: readonly LogEntry[];
+  /** [night-12am] The last RUN_NOTES runs with closed-test stats, newest first. */
+  readonly runs: readonly RunNote[];
 }
 
-export const EMPTY_LOGBOOK: Logbook = { flights: 0, passengers: 0, weeks: 0, longestWeeks: 0, hubs: {}, recent: [] };
+export const EMPTY_LOGBOOK: Logbook = {
+  flights: 0, dailies: 0, passengers: 0, weeks: 0, longestWeeks: 0, hubs: {}, recent: [], runs: [],
+};
 
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
 const CODE = /^[A-Z]{3}$/;
@@ -52,6 +84,28 @@ function entry(value: unknown): LogEntry | null {
   return { day: item.day, mode: item.mode, passengers, weeks, hub };
 }
 
+const STAT_KEYS = ['tenths', 'held', 'hubOffered', 'hubPicked', 'slotsOffered', 'slotsPicked'] as const;
+function stats(value: unknown): RunStats | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const item = value as Record<string, unknown>;
+  const out: Record<string, number> = {};
+  for (const key of STAT_KEYS) {
+    const n = count(item[key]);
+    if (n === null) return null;
+    out[key] = n;
+  }
+  const clean = out as unknown as RunStats;
+  // A resumed run counts only the boards shown after resuming; a pick proves its card was offered.
+  return { ...clean, hubOffered: Math.max(clean.hubOffered, clean.hubPicked),
+    slotsOffered: Math.max(clean.slotsOffered, clean.slotsPicked) };
+}
+function note(value: unknown): RunNote | null {
+  const base = entry(value);
+  const extra = stats(value);
+  if (!base || !extra) return null;
+  return { day: base.day, mode: base.mode, passengers: base.passengers, weeks: base.weeks, ...extra };
+}
+
 /** The stored logbook; a missing, malformed or unreadable record is an empty one (never throws). */
 export function readLogbook(storage: StorageLike | undefined): Logbook {
   try {
@@ -61,6 +115,7 @@ export function readLogbook(storage: StorageLike | undefined): Logbook {
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return EMPTY_LOGBOOK;
     const record = parsed as Record<string, unknown>;
     const flights = count(record.flights);
+    const dailies = count(record.dailies) ?? 0;
     const passengers = count(record.passengers);
     const weeks = count(record.weeks);
     const longestWeeks = count(record.longestWeeks);
@@ -74,14 +129,19 @@ export function readLogbook(storage: StorageLike | undefined): Logbook {
     }
     const recent = Array.isArray(record.recent)
       ? record.recent.map(entry).filter((item): item is LogEntry => item !== null).slice(0, RECENT_FLIGHTS) : [];
-    return { flights, passengers, weeks, longestWeeks, hubs, recent };
+    const runs = Array.isArray(record.runs)
+      ? record.runs.map(note).filter((item): item is RunNote => item !== null).slice(0, RUN_NOTES) : [];
+    return { flights, dailies: Math.min(dailies, flights), passengers, weeks, longestWeeks, hubs, recent, runs };
   } catch {
     return EMPTY_LOGBOOK;
   }
 }
 
-/** Add one finished flight and write it back. A failed write still returns the updated book for this session. */
-export function recordFlight(storage: StorageLike | undefined, flight: LogEntry): Logbook {
+/**
+ * Add one finished flight and write it back. A failed write still returns the updated book for this session.
+ * [night-12am] `run` (closed-test stats) adds a line to `runs`; without it the flight counts but leaves no note.
+ */
+export function recordFlight(storage: StorageLike | undefined, flight: LogEntry, run?: RunStats): Logbook {
   const prior = readLogbook(storage);
   const clean = entry(flight);
   if (!clean) return prior;
@@ -94,13 +154,16 @@ export function recordFlight(storage: StorageLike | undefined, flight: LogEntry)
       .sort((a, b) => (hubs[a] ?? 0) - (hubs[b] ?? 0) || b.localeCompare(a))[0];
     if (drop) delete hubs[drop];
   }
+  const runNote = run ? note({ ...clean, ...run }) : null;
   const next: Logbook = {
     flights: Math.min(MAX_COUNT, prior.flights + 1),
+    dailies: Math.min(MAX_COUNT, prior.dailies + (clean.mode === 'daily' ? 1 : 0)),
     passengers: Math.min(MAX_COUNT, prior.passengers + clean.passengers),
     weeks: Math.min(MAX_COUNT, prior.weeks + clean.weeks),
     longestWeeks: Math.max(prior.longestWeeks, clean.weeks),
     hubs,
     recent: [clean, ...prior.recent].slice(0, RECENT_FLIGHTS),
+    runs: runNote ? [runNote, ...prior.runs].slice(0, RUN_NOTES) : prior.runs,
   };
   try { storage?.setItem(LOGBOOK_KEY, JSON.stringify(next)); } catch { /* Storage denied: session value only. */ }
   return next;

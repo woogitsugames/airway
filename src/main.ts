@@ -24,7 +24,7 @@ import { LocalScoreService, type DailyResult } from './game/scores';
 import { mountScreens, type ScreenName } from './game/screens';
 import { startSession, type GameSession, type RunMode, type SessionScreen } from './game/session';
 import { mountTutorial } from './game/tutorial';
-import { TUTORIAL_KEY } from './game/tutorial/controller';
+import { browserTutorialStorage, readTutorialOutcome, TUTORIAL_KEY } from './game/tutorial/controller';
 import { createWorld, type World } from './game/world';
 import { getLanguage, setPseudoLocale, t } from './i18n';
 import { configureHaptics, createDefaultStorage, createNativeInstallMarker, forgetIdentityOnNewInstall, GameLifecycle, shareDailyResult, type KeyValueStorage } from './platform';
@@ -173,6 +173,7 @@ async function boot(): Promise<void> {
         puzzlesSolved: Object.keys(progress).length,
         puzzlesTotal: PUZZLES.length,
         stars: Object.values(progress).reduce((sum, value) => sum + value, 0),
+        tutorial: readTutorialOutcome(browserTutorialStorage()), // [night-12am] R1o
       };
     },
     onMode: (mode) => {
@@ -257,7 +258,7 @@ async function boot(): Promise<void> {
           recordFlight(globalThis.localStorage, {
             day: localDay(new Date()), mode, passengers: failed.passengers,
             weeks: Math.floor(failed.tick / TICKS_PER_WEEK), hub: runHub(failed.cityList(), failed.routeList()),
-          });
+          }, failed.playtestStats()); // [night-12am] R1o: closed-test notes (length, slot holds, hub/slots cards)
         } catch { /* Storage blocked: the flight is not logged. */ }
         saved = null;
         void storage.remove('aw-save-v1').catch(() => undefined);

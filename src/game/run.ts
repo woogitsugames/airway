@@ -3,7 +3,7 @@
 import { cityByCode, cityDistanceKm as dataDistanceKm } from '../data';
 import { REGION_IDS, type RegionId } from '../data/regions';
 import {
-  createGame, PLANE_TYPES, TICKS_PER_WEEK,
+  createGame, PLANE_TYPES, TICKS_PER_SECOND_1X, TICKS_PER_WEEK,
   type Command, type CommandEntry, type GameMode, type SimEvent, type UpgradeKind, type WeeklyUpgradeState,
 } from '../sim';
 import type { Sim } from '../sim';
@@ -11,6 +11,7 @@ import type { HubPressure } from '../sim/upgrades';
 import type { SlotPressure } from '../ui/upgrade/cards'; // [task-32]
 import { airportLabel, readAirportLabelMode } from '../ui/airportLabel'; // [night-05] D-68
 import type { HubCauseLedger } from './causes';
+import type { RunStats } from './logbook';
 
 export type AircraftType = 'turboprop' | 'widebody';
 export type RunCommand = Command;
@@ -65,6 +66,8 @@ function isRegion(value: string): value is RegionId {
 
 export class EndlessRun {
   private revisionValue = 0;
+  /** [night-12am] R1o: weekly-board offers drained so far (a resumed run counts the boards after resuming). */
+  private readonly offered = { hub: 0, slots: 0 };
   private readonly homeOffsetMinutes: number;
 
   constructor(readonly sim: Sim) {
@@ -154,7 +157,10 @@ export class EndlessRun {
         case 'RouteAdded': case 'RouteChanged': case 'RouteRemoved': case 'PlaneAssigned': case 'PlaneUnassigned':
           this.revisionValue++; break;
         case 'Delivered': out.push({ type: 'arrival', cityId: event.cityId }); break;
-        case 'UpgradeOffered': out.push({ type: 'week', week: event.week }); break;
+        case 'UpgradeOffered':
+          if (event.offers.includes('hub-expansion')) this.offered.hub++;
+          if (event.offers.includes('departure-slots')) this.offered.slots++;
+          out.push({ type: 'week', week: event.week }); break;
         case 'HubJamStarted': out.push({ type: 'jam', cityId: event.cityId, jammed: true }); break;
         case 'HubJamCleared': out.push({ type: 'jam', cityId: event.cityId, jammed: false }); break;
         case 'DepartureHeld': { // [task-32]
@@ -223,6 +229,24 @@ export class EndlessRun {
     return world.cities().map((city) => ({
       cityId: city.id, label: airportLabel(city.id, mode), held: city.slotHeldPlanes, waitMinutes: world.hubCauseLedger(city.id).slotWaitMinutes,
     }));
+  }
+
+  /**
+   * [night-12am] R1o closed-test stats for the logbook at game over: length at 1x, slot-held aircraft-minutes over
+   * every airport, and how often the hub expansion and "+2 slots" cards were offered and picked (Q-73, Q-78, Q-80).
+   */
+  playtestStats(): RunStats {
+    const world = this.sim.world;
+    let held = 0;
+    for (const city of world.cities()) held += world.hubCauseLedger(city.id).slotWaitMinutes;
+    const picks = (kind: UpgradeKind): number => world.upgrades.filter((item) => item.upgrade === kind).length;
+    const hubPicked = picks('hub-expansion');
+    const slotsPicked = picks('departure-slots');
+    return {
+      tenths: Math.round(this.sim.tickCount * 10 / (TICKS_PER_SECOND_1X * 60)), held: Math.round(held),
+      hubOffered: Math.max(this.offered.hub, hubPicked), hubPicked,
+      slotsOffered: Math.max(this.offered.slots, slotsPicked), slotsPicked,
+    };
   }
 
   hash(): string { return this.sim.hash(); }
