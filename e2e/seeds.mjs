@@ -29,9 +29,12 @@
 //                                      each first-time card's trigger fired (hub-full, out-of-range, curfew, weekly-board)
 //   { gesture: 'route-plane' }         [night-12ag] the route drag + the dock-tag drag of smoke/leaderboard
 //                                      (AddRoute turboprop + AssignPlane), checked for every start-airport pair in range
-// Suites seeded by the date (daily-share, daily-continue) have no fixed seed to replay.
+//   { gesture: 'route' }               [night-12aj] the route drag alone (daily-share)
+// [night-12aj] Suites seeded by the date (daily-share, daily-continue) start the page calendar at `dates[0]`
+// (e2e/browser.mjs pinDate, Warsaw noon) and replay in daily mode (`mode: 'daily'`) with seed
+// dailySeedForKey(date); `npm run e2e:seeds -- daily-share` finds the next date that holds.
 
-/** @type {Record<string, { seeds: number[], plans: { name: string, steps: object[] }[] }>} */
+/** @type {Record<string, { seeds: number[], dates?: string[], plans: { name: string, mode?: 'daily', steps: object[] }[] }>} */
 export const E2E_SEEDS = {
   'board-short': {
     seeds: [0xA1A2], // 0xA1A1 until rules v6 (its run ends in week 2)
@@ -165,6 +168,23 @@ export const E2E_SEEDS = {
     ],
   },
   // [night-12ag] The two suites that build their first route with pointer drags.
+  'daily-share': {
+    seeds: [],
+    dates: ['2026-11-04'],
+    plans: [{ name: 'daily: route drag, 120 ticks alive, forced overload', mode: 'daily', steps: [
+      { gesture: 'route' }, { ticks: 120, alive: true }, { overload: true },
+    ] }],
+  },
+  'daily-continue': {
+    seeds: [],
+    dates: ['2026-11-04'],
+    plans: [
+      { name: 'official: route + aircraft drags, 120 ticks alive, forced overload', mode: 'daily', steps: [
+        { gesture: 'route-plane' }, { ticks: 120, alive: true }, { overload: true },
+      ] },
+      { name: 'practice: 60 ticks alive, forced overload', mode: 'daily', steps: [{ ticks: 60, alive: true }, { overload: true }] },
+    ],
+  },
   'smoke': {
     seeds: [0xA1A1],
     plans: [{ name: 'route + aircraft drags, week-1 board, plain card, forced overload', steps: [

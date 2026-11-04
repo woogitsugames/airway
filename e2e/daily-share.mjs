@@ -5,8 +5,13 @@
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
-import { withBrowser, waitForScreen, clickTestId, dragGesture, state, assert, saveDiagnostics, ROOT, SEED } from './browser.mjs';
+import { withBrowser, waitForScreen, clickTestId, dragGesture, state, assert, saveDiagnostics, ROOT, SEED, dailyInstant, pinDate } from './browser.mjs';
 import { presetLanguage } from '../scripts/lib/harness.mjs';
+import { E2E_SEEDS } from './seeds.mjs';
+
+// [night-12aj] The page's calendar starts on this day (pinDate), so the daily world is the one test:e2e-seeds replays (D-214).
+const DATE = E2E_SEEDS['daily-share'].dates[0];
+const YESTERDAY = new Date(dailyInstant(DATE).getTime() - 86_400_000).toISOString().slice(0, 10);
 
 const STEPS = 4;
 const started = performance.now();
@@ -15,12 +20,11 @@ const results = [];
 
 /** Yesterday's official run, so today's official makes a streak of two days. */
 function seedYesterday(page) {
-  return page.addInitScript(() => {
+  return page.addInitScript((dateKey) => {
     if (localStorage.getItem('aw-daily-scores-v1')) return;
-    const dateKey = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Warsaw' }).format(new Date(Date.now() - 86_400_000));
     const official = { dateKey, kind: 'official', score: 90, weeks: 1, ticket: '--' };
     localStorage.setItem('aw-daily-scores-v1', JSON.stringify({ version: 1, nextAttemptId: 2, days: { [dateKey]: { attemptId: 1, official } } }));
-  });
+  }, YESTERDAY);
 }
 
 /** No share sheet anywhere; optionally no clipboard either (the "select the text" path). */
@@ -44,6 +48,8 @@ async function playDaily(page) {
   await page.evaluate(() => window.aw.advanceTicks(120));
   await page.evaluate(() => window.aw.forceHubOverload());
   await waitForScreen(page, 'gameover', 20000);
+  const active = await page.evaluate(() => JSON.parse(localStorage.getItem('aw-daily-scores-v1') || 'null'));
+  assert(active?.days?.[DATE], `no daily of ${DATE} recorded (clock pinned to ${DATE})`);
   return initial.seed;
 }
 
@@ -110,6 +116,7 @@ try {
       const errors = [];
       page.on('pageerror', (error) => errors.push(error.message));
       try {
+        await pinDate(page, dailyInstant(DATE));
         await presetLanguage(page, language, { clear: true });
         await seedYesterday(page);
         await stubPlatform(page, platform);
@@ -133,7 +140,7 @@ try {
   if (fatal) console.error('FAIL harness: ' + fatal);
   const passed = results.filter((item) => item.status === 'PASS').length;
   const failedCount = results.length - passed + (fatal ? 1 : 0);
-  console.log(`SUMMARY test:e2e:daily-share seed=0x${SEED.toString(16).toUpperCase()} steps=${results.length} ` +
+  console.log(`SUMMARY test:e2e:daily-share seed=0x${SEED.toString(16).toUpperCase()} date=${DATE} steps=${results.length} ` +
     `passed=${passed} failed=${failedCount} durationMs=${Math.round(performance.now() - started)}`);
   if (failedCount || results.length !== STEPS) process.exitCode = 1;
 }

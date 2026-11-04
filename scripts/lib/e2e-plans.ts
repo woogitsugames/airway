@@ -13,6 +13,8 @@
 // aircraft with pointer drags (window.aw.gesture). The browser's routeGesture picks the first pair of on-screen
 // airports within turboprop range; which ones are on screen depends on the camera (src/render), so the step is checked
 // for every such pair of the start airports (checkPlan), a superset of what any viewport can pick.
+// [night-12aj] Plans can run in daily mode (`mode: 'daily'`, the rules of createGame(seed, 'daily')) for the suites
+// seeded by a fixed date (daily-share, daily-continue), and `{ gesture: 'route' }` is the route drag alone.
 import { EndlessRun, cityDistanceKm } from '../../src/game/run.ts';
 import { AUTOPLAY_ACTION_INTERVAL, nextAutoplayCommand } from '../../src/game/dev/autoplay.ts';
 import { beyondRange, fillingHub } from '../../src/game/tutorial/first-time.ts';
@@ -40,9 +42,14 @@ export type PlanStep =
   | { opens: number; chunk: number }
   | { routes: number }
   | { triggers: readonly FirstTimeTrigger[]; ticks: number; every: number; take: Take }
-  | { gesture: 'route-plane' };
+  | { gesture: 'route' | 'route-plane' };
 
-export interface E2ePlan { name: string; steps: readonly PlanStep[] }
+export interface E2ePlan {
+  name: string;
+  steps: readonly PlanStep[];
+  /** [night-12aj] 'daily' = the run the menu's daily button starts (createGame(seed, 'daily')). */
+  mode?: 'endless' | 'daily';
+}
 export interface PlanResult { ok: boolean; why?: string; week: number; minute: number; trace: string[] }
 
 /** Idle ticks that may pass in the browser between two window.aw calls (10 ticks ≈ 1 s at 1x). */
@@ -142,7 +149,7 @@ const weekOf = (run: EndlessRun) => run.weeklyUpgrade?.week ?? Math.floor(run.si
 
 /** Replay one plan on one seed with `idle` real-time ticks after the start and after every card. */
 export function playPlan(seed: number, plan: E2ePlan, idle = 0, pair = 0): PlanResult {
-  const run = EndlessRun.create(seed);
+  const run = EndlessRun.create(seed, plan.mode ?? 'endless');
   const trace: string[] = [];
   const watch: { city: string | null } = { city: null };
   const result = (ok: boolean, why?: string): PlanResult => ({ ok, why, week: weekOf(run), minute: run.sim.world.minute, trace });
@@ -254,6 +261,7 @@ export function playPlan(seed: number, plan: E2ePlan, idle = 0, pair = 0): PlanR
       run.queue({ type: 'AddRoute', cityIds: target, aircraft: 'turboprop' });
       advance(run, Math.max(1, idle));
       if (run.routeList().length !== routes + 1) return result(false, `route ${target.join('–')} not added (run ${status(run)})`);
+      if (step.gesture === 'route') { trace.push(`route ${target.join('–')}`); continue; }
       const route = run.routeList().find((item) => run.inventory[item.aircraft] > 0);
       if (!route) return result(false, 'no route with its aircraft type in reserve: the plane drag has no target');
       const assignments = run.assignments;
@@ -288,7 +296,7 @@ export function playPlan(seed: number, plan: E2ePlan, idle = 0, pair = 0): PlanR
 export function checkPlan(seed: number, plan: E2ePlan): { idle: number; pair?: number; result: PlanResult } | null {
   // [night-12ag] A gesture plan holds only when it holds for every airport pair the route drag could take.
   const gesture = plan.steps.some((step) => 'gesture' in step);
-  const pairs = gesture ? Math.max(1, routeGesturePairs(EndlessRun.create(seed)).length) : 1;
+  const pairs = gesture ? Math.max(1, routeGesturePairs(EndlessRun.create(seed, plan.mode ?? 'endless')).length) : 1;
   for (let pair = 0; pair < pairs; pair++) for (const idle of IDLE_OFFSETS) {
     const result = playPlan(seed, plan, idle, pair);
     if (!result.ok) return { idle, ...(gesture ? { pair } : {}), result };
