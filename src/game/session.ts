@@ -473,6 +473,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
         delivered: run.passengers, completedWeeks: Math.floor(failure.tick / TICKS_PER_WEEK),
         ledger: failure.ledger, departures: flights, ...(extra ? { extra } : {}), ...(share ? { share } : {}),
         ...(run.mode === 'puzzle' ? {} : { timeline: runTimelineLoader(run) }), ...(tip ? { tip } : {}),
+        spareAircraft: run.inventory.turboprop + run.inventory.widebody, // [night-12y] R8b
       });
     }
   }

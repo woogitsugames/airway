@@ -1351,6 +1351,16 @@ the choice in `airway.settings` (the net layer would read the settings store; th
 `Leaderboards`), and still submitting but hiding the result (the objection is about processing). **Status: in force
 for the net layer (N12x); switch pending.**
 
+## D-187 — The unserved game-over line follows the reserve (2026-11-04, Claude, night N12y)
+R8b. When no route served the airport that jammed, the departures board's action line is chosen by the aircraft left
+in the reserve at the jam (`GameOverSnapshot.spareAircraft`, pure `unservedHint` in `src/game/gameoverTip.ts`): with a
+spare plane the old "Connect a new airport before its waiting area fills up."; with none (99 % of R8 losses) "No spare
+aircraft: drag a route end to it, or remove a quieter route to free its plane." / „Brak wolnych samolotów: przeciągnij
+do niego koniec trasy albo usuń mniej obłożoną trasę, żeby zwolnić jej samolot.” The backlog's "take a plane off a
+route" became "remove a quieter route": the game UI has no single-plane unassign, only removing a route returns its
+aircraft. Unknown reserve (older callers) keeps the old line. Metric: unserved losses whose hint names a move the player
+could make, 0 → 100 % (both branches). **Status: in force (N12y).**
+
 ## D-164 — A puzzle's reference network must win in any order of its strips (2026-11-04, Claude, ext/04)
 Each connect costs one game minute, so the order in which a player taps the strips shifts every plane's first
 departure. On long legs this can decide a jam: puzzle 35 (ext-02) cleared in its reference order but jammed

@@ -181,6 +181,7 @@ export const en = {
   'gameover.cancelled': 'CANCELLED',
   'gameover.unserved': 'No route served {hub}: its passengers had no flight to board.', // [night-11b]
   'gameover.unservedHint': 'Connect a new airport before its waiting area fills up.',
+  'gameover.unservedNoSpare': 'No spare aircraft: drag a route end to it, or remove a quieter route to free its plane.', // [night-12y] R8b
   'gameover.report': 'ATC · INCIDENT REPORT',
   'gameover.score': 'Passengers delivered: {score}',
   'gameover.weeks': 'Weeks completed: {weeks}',
