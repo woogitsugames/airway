@@ -498,6 +498,11 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       objection switch on the N12x net API (`Leaderboards.isSharing()` / `setSharing(on)`): PL/EN, on by default, ≥ 48 px,
       one hint line, only in builds with leaderboards (like the delete-data row). `e2e/ranking-switch.mjs`
       (`test:e2e:ranking-switch`, in `test:ci`; 2/4 on the old settings), shots `docs/shots/n11v/`.
+- [x] N11w **HUD target test knows the G8 globe tag (D-199)** — `test:hud-targets` expected six HUD controls; G8 (#178)
+      added the globe-view tag (293/300 on clean dev). It now expects seven and checks the globe tag ≥ 48 dp, in line
+      with the dock between hub and speed (portrait row, landscape/foldable rack, after rotation) and tap →
+      `onToggleGlobeMode`. The stricter count exposed the speed tag 1 px inside the bottom safe area at 915×412: the
+      landscape rack's tags now shrink to fit (never below 48 px). **Area:** `scripts/test-hud-targets.mjs`, `src/ui/hud.css`.
 - [x] N11x **Edge-chip placement as a pure function (R5h, D-202)** — `distributeEdges` and `edgeLayout` left
       `createAirportOverlay` for `placeEdgeChips(chips, tags, bounds)` / `projectEdgeChip` in `src/ui/overlay-layout.ts`
       (no DOM, no three.js, no per-frame allocation); the overlay keeps one `EdgeChip` per airport parallel to its tag
@@ -684,6 +689,13 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       Not moved (no bot plan): smoke, leaderboard, daily-share, daily-continue (gestures on screen / the date seed).
       Browser: 86/93 steps; the 7 red (transfer-glyphs 1, first-time-cards 4, continue-framing 1, edge-dock 1) are all
       the G7 weekly-card click timeout under SwiftShader (or follow from it), same seeds as on `dev`.
+- [x] N12ad **Hub-expansion card value: bot policy fixed, card tuning to the owner (D-201, Q-78)** — the bot took
+      "Rozbudowa huba" 1 of 94 offers. New `scripts/research/card-value.ts` (paired replays per board): the card costs
+      −0.99 min on average (−2.49 instead of a widebody) but pays +0.55 min / +17.5 score when the fullest hub is ≥ 70 %
+      full and the alternative is a turboprop. The bot now ranks it above a turboprop from 60 % fill with at most one
+      airport without a route: 200 seeds mean 16.57 → 16.74 min, score p50 271.5 → 279, hub picks 1 → 11 %; gate
+      median 17.25 → 17.41 (10–18). The card stays weak (forced 14.93 min; +12/+18 places no effect) → Q-78, no rule
+      change (D-113).
 
 ## Globe look (D-170)
 Owner's choice 2026-11-03: the satellite globe (direction B). Plan, budgets and test lists per step:
@@ -1323,3 +1335,5 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
 - 2026-11-04 · N12aa five e2e suites green again under rules v6, seeds replayed headless (D-189) · night/12aa-e2e-seeds · test:e2e-seeds 7/7 (2/7 on the old seeds), test:fast 77/77, build ok after merging dev (#181, #182); board-short 4/4 (0/4 on origin/dev; 3/4 with new seeds only, PL 320×568 1 px scroll from the N11r caption), edge-chip-airports 2/2 (0/2), run-timeline 4/4 (0/4), upgrade-picks 10/10 steps (4/10, 2 failed + 4 skipped); edge-chip-tags 2/6 at the gate and 5/6 before the merge (5/6 on origin/dev): every failure is the weekly-card click timing out (5 s; ~15 s needed under SwiftShader, rAF ~10/s, G7), 6/6 with a 30 s click — seeds verified headless
 - 2026-11-04 · N12ab balance:report spread and mechanic use (R8d, D-196) · night/12ab-balance-spread · game-summary.md 50 seeds: session p10/p25/median/p75/p90 9.94/13.27/17.25/20.58/24.25 min, loss weeks W2 17 W3 23 W4 9 W5 1, losses hub/spoke/unserved 22/14/14, 49/50 with no spare aircraft, curfew hold 32 of 33 runs reaching week 3, slot hold 5/50, 49 % of delivered changed planes; test:balance spread=ok (spread=bad when picks are dropped), median 17.25 → 17.25; after merging dev (#183): test:fast 77/77, build ok, balance:report unchanged; no browser suite run (no UI change)
 - 2026-11-04 · N12ac every bot-driven e2e suite guarded by test:e2e-seeds (D-200) · night/12ac-e2e-seeds-all · test:e2e-seeds suites 5 → 24, cases 7 → 30, 30/30 passed (~18 s); negative check on 0xA1A1: curfew-barrier, gameover-tip, gameover-unserved:served and first-time-cards plans fail; test:fast 77/77, build ok (origin/dev c45e76a); 18 moved browser suites 86/93 steps — pause-summary 4/4, curfew-barrier 2/2, gameover-map 3/3, gameover-short 4/4, gameover-tip 4/4, gameover-unserved 5/5, new-airport 4/4, focus-pause 3/3, logbook 4/4, pick-sign 10/10, undo-after-upgrade 2/2, edge-chip-fill 4/4, pseudo-locale 27/27, airport-plates 4/4; transfer-glyphs 1/2, first-time-cards 0/4, continue-framing 1/2, edge-dock 4/5: every failure is the weekly-card click timeout (G7, SwiftShader ~10 fps), seeds unchanged
+- 2026-11-04 · N12ad hub-expansion card value, bot policy (D-201, Q-78) · night/12ad-hub-card · card-value 200 seeds/60 min: 358 skipped boards −0.99 min, hub ≥ 70 % + turboprop +0.55 min (18/8); r8 200 seeds mean 16.57 → 16.74, p50 16.64 → 16.75, score 271.5 → 279, unserved losses 48 → 54, hub picks 2 → 39 of 363; forced hub 14.93 (+12 places 14.99, +18 15.02, +turboprop 15.34 vs always-turboprop 15.10); test:balance median 17.25 → 17.41, test:bot-policy 13/13 (unserved 5/20; 12/13 without the unserved limit); after merging dev (#186): test:fast 78/78 (test:e2e-seeds 30/30 with the new bot), build ok
+- 2026-11-04 · N11w HUD target test knows the G8 globe tag (D-199) · night/11w-hud-targets-globe-tag · after merging dev (#186–#188): test:hud-targets 312/312 (293/300 on clean dev; 308/312 with the new checks before the CSS fix: speed tag 1 px in the bottom inset at 915×412 + its rotation case, plus a too-strict neighbour gap on foldables, dropped), test:fast 78/78, build ok; shots docs/shots/13 (5, seven controls)

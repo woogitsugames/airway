@@ -1526,6 +1526,37 @@ own key (`aw-net-share-v1`), not in the settings record, so the daily report and
 Rejected: the switch in the Game group (it is a privacy choice next to the policy and the deletion).
 **Status: in force (N11v, `test:e2e:ranking-switch` 4).**
 
+## D-201 — the balance bot takes the hub expansion when a hub is filling up; the card itself waits for the closed test (2026-11-04, Claude, night N12ad)
+The bot took "Rozbudowa huba" 1 of 94 offers (N12ab). New read-only tool `scripts/research/card-value.ts` replays,
+for every board that offered a card the bot skipped, the same seed with only that board answered by the card (paired,
+deterministic). Hub expansion on 200 seeds, 60 min cap, 358 such boards: −0.99 min and −39 score on average; −2.49 min
+where the bot took a widebody, −0.06 where it took a turboprop, but **+0.55 min / +17.5 score (18 longer, 8 shorter)
+when the fullest hub was ≥ 70 % full and the bot took a turboprop**. So both: the card is weak in general (forced on
+every board: mean 16.57 → 14.93 min, score 271.5 → 201.5 on 200 seeds; unserved losses 14 → 35 of 50), and the
+policy ignored the one spot where it pays. Policy fix in `src/game/dev/bot-policy.ts`: the hub card outranks a
+turboprop when the fullest hub is ≥ 60 % full (`HUB_CARD_FILL`) and at most one airport has no route
+(`HUB_CARD_MAX_UNSERVED`); a needed widebody still wins. Sweep (200 seeds, 60 min; mean / p50 / score / unserved
+losses / hub picks): off 16.57 / 16.64 / 271.5 / 48 / 1 %; fill 0.6 without the unserved limit 16.72 / 16.75 / 279 /
+65 / 22 % (test:bot-policy failed: 7 of 19 unserved, limit 6); **0.6 + ≤ 1 unserved 16.74 / 16.75 / 279 / 54 / 11 %**;
+0.7 or 0.8 + ≤ 1: 16.68 / 16.75 / 278 / 51 / 6–7 %. After the fix the skipped boards with a hub ≥ 70 % are neutral
+(+0.02 min, n = 30). Gate (50 seeds, 30 min): median 17.25 → 17.41 min (10–18), 1st/2nd board 100 % / 66 %, hub
+picks 1 → 7 of 95; `game-50.csv` and `game-summary.md` regenerated. No game rule changed (D-113: tune after the closed
+test). Card tuning measured for the owner (Q-78): +12 or +18 places and a 10-minute connection change nothing (forced
+14.99 / 15.02 min); a hub card that also brings a turboprop (forced 15.34 / 231 vs always-turboprop 15.10 / 216.5)
+would beat the plain turboprop and empty the board choice. **Status: in force (N12ad); card tuning: Q-78.**
+
+## D-199 — The HUD target test counts seven controls; the landscape rack shrinks its tags to fit (2026-11-04, Claude, night N11w)
+G8 (#178, D-172) added the globe-view tag to the dock, so the HUD has seven controls (pause on the boarding pass and
+six dock tags) and `test:hud-targets` failed 293/300 on clean dev (five "six controls" checks plus the landscape
+case below). The test now expects seven and asserts the new tag on its own: ≥ 48 dp, in line with the dock (same row
+in portrait, same column on the landscape/foldable rack), in order between hub and speed, also after a live
+rotation, and a tap emits `onToggleGlobeMode`. The count was not loosened to "≥ 6". Fixing the test showed a real
+fault the count had hidden: on a 915×412 landscape phone with 24/16/22/16 insets six 58 px tags need 348 px but the
+rack has 326, flex items do not shrink below their content, and the speed tag ended 1 px inside the bottom safe area.
+The rack holders now shrink (`min-height: 48px`) and the tag fills its holder (`height: 100%`, max 58 px): 54 px tags
+at that size, unchanged on foldables and wherever there is room. Rejected: dropping a tag from the rack in landscape
+(every control must stay reachable), a smaller fixed height everywhere (foldables have room).
+**Status: in force (N11w, `test:hud-targets`).**
 
 ## D-202 — Edge-chip placement is a pure function in overlay-layout.ts, with the old loop as its test oracle (2026-11-04, Claude, night N11x)
 R5h: `distributeEdges` (+ `edgeLayout`) lived inside `createAirportOverlay`, was patched three times (N10v markers,

@@ -1,5 +1,43 @@
 # Task 22 — autoplay and balance evidence
 
+## N12ad — value of the hub-expansion card; bot takes it when a hub fills up (2026-11-04, D-201, Q-78)
+
+`scripts/research/card-value.ts` (read-only, not a test) plays the bot's baseline run per seed, then replays the seed
+once per board that offered `--card` but where the bot took another card, answering only that board with the card.
+Both runs are deterministic, so the difference is the card's value at that decision under the bot's later play.
+
+```sh
+node --import ./scripts/ts-test-loader.mjs scripts/research/card-value.ts --seeds=200 --cap-min=60 --card=hub [--csv=path]
+```
+
+Hub expansion, 200 seeds, 60 min cap, bot before the fix (358 boards where it skipped the card):
+
+| Boards | n | Δ min mean | Δ score mean | longer | shorter |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| all | 358 | −0.99 | −39.1 | 52 | 147 |
+| board 1 / 2 / 3 | 192 / 134 / 31 | −1.73 / −0.17 / −0.05 | −67.5 / −7.3 / −3.8 | | |
+| bot took a widebody | 137 | −2.49 | −95.0 | 10 | 99 |
+| bot took a turboprop | 221 | −0.06 | −4.5 | 42 | 48 |
+| fullest hub ≥ 70 %, bot took a turboprop | 51 | **+0.55** | **+17.5** | 18 | 8 |
+
+Policy sweep (r8-audit, 200 seeds, 60 min): hub card above the turboprop from a fill share, with at most N airports
+without a route.
+
+| Rule | Mean | p50 | Score p50 | Unserved losses | Hub picked |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| before (off) | 16.57 | 16.64 | 271.5 | 48 | 1 % |
+| fill ≥ 0.6 | 16.72 | 16.75 | 279 | 65 | 22 % |
+| **fill ≥ 0.6, ≤ 1 unserved (chosen)** | **16.74** | **16.75** | **279** | **54** | **11 %** |
+| fill ≥ 0.7 / 0.8, ≤ 1 unserved | 16.68 | 16.75 | 278 | 51 | 7 % / 6 % |
+
+Without the unserved limit `test:bot-policy` fails (7 of 19 game overs unserved, limit 6); with it 5 of 20. After the
+fix the remaining skipped boards with a hub ≥ 70 % are neutral (+0.02 min, n = 30). Gate (50 seeds, 30 min): median
+17.25 → **17.41 min**, 1st/2nd board 100 % / 66 %, hub picked 1 → 7 of 95 offers.
+
+The card itself is weak: forced on every board 14.93 min / score 201.5 (bot 16.74 / 279). More places do not help
+(+12: 14.99, +18: 15.02; 10-min connection: no change); a card that also grants a turboprop reaches 15.34 / 231, above
+"always turboprop" 15.10 / 216.5, so it would replace the turboprop card. No rule changed (D-113) → Q-78.
+
 ## N12ab — spread and mechanic use in `balance:report` (R8d, 2026-11-04, D-196, no gate)
 
 `npm run balance:report` now ends `game-summary.md` with a "Spread and mechanic use" section, so a balance PR can
