@@ -1,6 +1,6 @@
 # Przekazanie koordynatora Airway
 
-Ostatnia aktualizacja: 2026-11-04, ok. 18:00 UTC. Poprzednia sesja kończy pracę, bo wyczerpał się tygodniowy limit.
+Ostatnia aktualizacja: 2026-11-04, ok. 18:05 UTC (obaj agenci zatrzymani). Poprzednia sesja kończy pracę, bo wyczerpał się tygodniowy limit.
 
 ## Stan repo
 - `main` = `dev` = `a902909` po scaleniu #201.
@@ -12,7 +12,7 @@ Ostatnia aktualizacja: 2026-11-04, ok. 18:00 UTC. Poprzednia sesja kończy prac�
   - #198 limity długości i18n + `?pseudo=harsh` + `test:e2e:pseudo-320` (N11ac, D-213);
   - #199/#200 prompt startowy i handover;
   - #201 nazwy miast z Wikidata (N12ai, D-217; plus D-215 Q-80 i D-216 Q-79);
-- Ostatnie numery: decyzja **D-217** (następna wolna to D-218), pytanie **Q-80**. D-160…D-179 należą do sesji ext.
+- Ostatnie numery: decyzja **D-217** (D-214 jest zarezerwowane dla N12aj; następna wolna to D-218), pytanie **Q-80**. D-160…D-179 należą do sesji ext.
 - Budziki :15 i :45 koordynatora są **wyłączone**:
   - `trig_01FNqUvAkWFVY9Jj8XnYzoXr`;
   - `trig_013Ke8JAt631r4TpcSEpMBqm`.
@@ -35,10 +35,17 @@ Ostatnia aktualizacja: 2026-11-04, ok. 18:00 UTC. Poprzednia sesja kończy prac�
      - pozycja w backlogu i linia w Logu;
      - scalenie z `dev`, potem `test:fast` + build i PR.
 2. **N12ai / R7j — nazwy miast z Wikidata** — scalone w #201.
-3. **N12aj: seedy ze stałą datą dla daily-share i daily-continue.** Nie zaczęte.
+3. **N12aj — seedy ze stałą datą dla daily-share i daily-continue.** WIP jest na `night/12aj-daily-date-seed`, bez PR.
+   - **Gotowe:**
+     - `pinDate` w `e2e/browser.mjs`;
+     - data `2026-11-04` w `e2e/seeds.mjs`;
+     - wyniki: `test:e2e-seeds` 35/35, daily-share 4/4, daily-continue 7/7.
+   - **Zostało:** `docs/TESTING.md`, decyzja **D-214** (numer zarezerwowany i użyty już w komentarzach), wpis w
+     backlogu i Logu, merge `dev`, bramka i PR.
 4. **R2e: strona dla prasy (`site/press.html`).** Nie zaczęte.
 
 ## Znane problemy
+- Eksport tłumaczeń nie obejmuje `site/i18n.js` ani tekstów sklepu. Nazwy miast z Wikidata (np. Kiew/Kiev, Bombay, Bangalore) wymagają oceny native speakera. Pole `city-names.json` zostanie podłączone dopiero przy wydaniu języka.
 - **G7:** pod SwiftShader nowy glob chodzi w ~10 fps. Przez to padają lub nie mieszczą się w czasie `ui:matrix`,
   `e2e:smoke`, `store:shots` i `edge-chip-tags`. Naprawia to **sesja ext od globu**, nie nasi agenci (decyzja
   właściciela).
