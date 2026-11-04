@@ -17,4 +17,4 @@ below.
 
 Exceptions (`allow` in `scripts/test-i18n.mjs`): `menu.terminal` ("AIRWAY.GAMES · TERMINAL 1", the airport sign on
 the menu) and `puzzle.board.subtitle` ("Route planning terminal"), where "terminal" is a building, not a hub.
-Store texts in `docs/store/` are owner decisions outside the catalogs; since D-202 they use "sieć" too (PL title "Buduj sieć lotów").
+Store texts in `docs/store/` are owner decisions outside the catalogs; since D-203 they use "sieć" too (PL title "Buduj sieć lotów").

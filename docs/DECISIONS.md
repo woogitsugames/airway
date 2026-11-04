@@ -90,7 +90,7 @@ full-screen ads during play, no timers, no dark patterns. Supersedes the recomme
 ## D-17 — Night curfew: from week 4 in Endless, always available in Puzzles (2026-11-02, owner)
 **Status: in force.**
 
-## D-18 — Store title: "Airway: Globe Route Builder" (PL: "Airway: Buduj siatkę lotów na globusie") (2026-11-02, owner) — PL title superseded by D-202
+## D-18 — Store title: "Airway: Globe Route Builder" (PL: "Airway: Buduj siatkę lotów na globusie") (2026-11-02, owner) — PL title superseded by D-203
 **Status: in force.**
 
 ## Production decisions from the parallel tasks (integration, 2026-11-02)
@@ -1553,7 +1553,21 @@ test). Card tuning measured for the owner (Q-78): +12 or +18 places and a 10-min
 14.99 / 15.02 min); a hub card that also brings a turboprop (forced 15.34 / 231 vs always-turboprop 15.10 / 216.5)
 would beat the plain turboprop and empty the board choice. **Status: in force (N12ad); card tuning: Q-78.**
 
-## D-202 — "Sieć" in the Polish store title and description (2026-11-04, owner, Q-77 → B)
+## D-202 — Edge-chip placement is a pure function in overlay-layout.ts, with the old loop as its test oracle (2026-11-04, Claude, night N11x)
+R5h: `distributeEdges` (+ `edgeLayout`) lived inside `createAirportOverlay`, was patched three times (N10v markers,
+N10z tags, N11 jammed priority) without a unit test and scanned every airport for every candidate place
+(O(n²·k) per frame). It is now `projectEdgeChip(chip, dx, dy, lon, bounds)` and `placeEdgeChips(chips, tags,
+bounds)` in `src/ui/overlay-layout.ts`: no DOM, no three.js, no per-frame allocation (module scratch arrays); the
+overlay keeps one `EdgeChip` per airport parallel to its tag slots and the right dock band moved into `EdgeBounds`.
+Behaviour is meant to be identical, so `test:overlay-layout` carries a verbatim port of the old loop and compares
+the two on 200 random portrait/landscape scenes (200/200 identical), plus rule tests (jammed chip wins, a full edge
+hides chips, never on an on-screen marker, avoids tags while there is room, projection sides and dock band,
+deterministic). Cost on a 150-airport scene (100 off screen, Node, same harness): old 0.43–0.50 ms, new 0.14–0.16
+ms per frame (~3×): on-screen airports are collected once and filtered per chip to its strip along the edge,
+placed chips are kept per side, and the slide stops when both directions leave the edge. Budget in the test: < 1 ms.
+Rejected: a spatial grid (more code for the same result at ≤ 165 airports). **Status: in force (N11x).**
+
+## D-203 — "Sieć" in the Polish store title and description (2026-11-04, owner, Q-77 → B)
 The game calls the network "sieć" everywhere (D-195), while the D-18 PL store title read "Buduj siatkę lotów" and the
 description said "siatka połączeń" / "siatka lata dalej". The owner chose B: the player reads the same word in the store
 as in the game, and the title can still change before the first release. Approved full PL title **"Airway: Buduj sieć
@@ -1564,19 +1578,20 @@ screenshots still show the old game-over title "SIATKA WSTRZYMANA" in `docs/stor
 regenerated with the next `store:shots`. Rejected: A (keep "siatkę", the D-18 title), C (description only).
 **Status: in force (N12ae).**
 
-## D-203 — Hub-expansion card stays as it is until the closed test (2026-11-04, owner, Q-78 → A)
+## D-204 — Hub-expansion card stays as it is until the closed test (2026-11-04, owner, Q-78 → A)
 N12ad measured "Rozbudowa huba" (+6 places, connection 25 → 15 min) as weak on its own and useful only at a full hub
 instead of a turboprop, which the bot now does (D-201). The owner keeps the card unchanged (rules v6) and evaluates it in
 the closed playtest with people (D-113: tune after it). Rejected for now: B (hub + turboprop in one card — always better
 than a turboprop, the board choice disappears), C (+12/+18 places — no measurable effect), D (another hub effect — not
 measured yet). **Status: in force; revisit after the closed test.**
 
-## D-204 — Decision and owner-question numbers are unique and decisions ascend, guarded in test:fast (2026-11-04, Claude, night N12ae)
+## D-205 — Decision and owner-question numbers are unique and decisions ascend, guarded in test:fast (2026-11-04, Claude, night N12ae)
 Two agents take D- and Q-numbers in parallel, and dev had D-196 twice (N12ab's balance report and N11s's dock
-countdown, the latter renumbered D-198 in N11v), Q-77 twice (N11t's store wording and ext/05's puzzle titles) and
+countdown, the latter renumbered D-198 in N11v), Q-77 twice (N11t's store wording and ext/05's puzzle titles), D-202 taken by N11x while this item had reserved it
+(this item moved to D-203…D-205), and
 decisions appended out of order (D-86 after D-90, D-150 after D-179, D-164 after D-187, D-197 after D-200, …). The
 sections of `docs/DECISIONS.md` are now sorted by number (text unchanged, only blank lines between sections
-normalised); the ext/05 puzzle-title question became Q-79 (N11t kept Q-77, which the owner answered as D-202). New fast
+normalised); the ext/05 puzzle-title question became Q-79 (N11t kept Q-77, which the owner answered as D-203). New fast
 `test:doc-ids` (`scripts/test-doc-ids.mjs`): every `## D-NN` heading once and ascending, every `| Q-NN` row of
 `docs/OWNER-QUESTIONS.md` once, plus a self-check on synthetic text. A new decision goes in its numeric place, not at the
 end of the file. **Status: in force (N12ae).**

@@ -1,4 +1,4 @@
-// [N12ae] D-204: decision and owner-question numbers stay unique.
+// [N12ae] D-205: decision and owner-question numbers stay unique.
 // docs/DECISIONS.md: every "## D-NN" heading is used once and the headings ascend (a new decision goes in its place,
 // not at the end). docs/OWNER-QUESTIONS.md: every "| Q-NN" table row is used once (✅ markers allowed).
 // Two agents take numbers in parallel; this catches a clash in test:fast before it reaches dev.

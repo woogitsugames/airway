@@ -4,9 +4,9 @@ The Polish and English copy is ready to paste from [pl.md](pl.md) and [en.md](en
 
 ## Naming and store limits
 
-- D-18 specifies **Airway: Globe Route Builder** (EN, 27 characters) and **Airway: Buduj siatkę lotów na globusie** (PL, 38 characters); D-202 (owner, Q-77 → B) changed the PL title to
+- D-18 specifies **Airway: Globe Route Builder** (EN, 27 characters) and **Airway: Buduj siatkę lotów na globusie** (PL, 38 characters); D-203 (owner, Q-77 → B) changed the PL title to
   **Airway: Buduj sieć lotów na globusie** (36 characters), the word the game uses (D-195).
-- Both Google Play and App Store cap localized names at 30 characters. The approved Polish title cannot fit; the store-field value in pl.md is **Airway: Buduj sieć lotów** (24 characters, D-202; was "Airway: Buduj trasy lotów"). PL store texts say "sieć", never "siatka" (`test:store-shots`).
+- Both Google Play and App Store cap localized names at 30 characters. The approved Polish title cannot fit; the store-field value in pl.md is **Airway: Buduj sieć lotów** (24 characters, D-203; was "Airway: Buduj trasy lotów"). PL store texts say "sieć", never "siatka" (`test:store-shots`).
 - App Store subtitles: up to 30 characters; App Store keyword field: up to 100 characters. Google Play short description: 80 characters; long description: 4,000 characters.
 - Google Play has no separate keyword field. Its keywords should occur naturally in the descriptions. Store copy contains no competitor names, prices, rankings, or unverifiable accolades.
 
