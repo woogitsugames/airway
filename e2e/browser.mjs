@@ -45,6 +45,9 @@ export async function newGamePage(browser, url, language, viewport = { width: 41
   });
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
+  // [night-12aj] `fixedTime`: the page's calendar starts at this instant, so suites seeded by the date play a known
+  // daily world (e2e/seeds.mjs `dates`).
+  if (options.fixedTime) await pinDate(page, options.fixedTime);
   await presetLanguage(page, language, { clear: true });
   await page.goto(url, { waitUntil: 'load' });
   await page.locator('#app').waitFor({ timeout: 12000 });
@@ -112,4 +115,27 @@ export async function saveDiagnostics(page, name) {
   } catch {
     return null;
   }
+}
+
+/** [night-12aj] Warsaw-noon instant of a YYYY-MM-DD daily key (10:00 UTC is the same Warsaw day all year). */
+export function dailyInstant(date) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error('daily date must be YYYY-MM-DD: ' + date);
+  return new Date(date + 'T10:00:00Z');
+}
+
+/**
+ * [night-12aj] Shifts the page's wall clock so it starts at `instant` and keeps running: `Date.now()` and `new Date()`
+ * read real time + a fixed offset. performance.now, timers and frames are untouched. (Playwright's clock.setFixedTime
+ * froze Date and stalled the game screens under SwiftShader: screenshots and the pause sheet timed out.)
+ */
+export function pinDate(page, instant) {
+  return page.addInitScript((target) => {
+    const RealDate = Date;
+    const offset = target - RealDate.now();
+    class ShiftedDate extends RealDate {
+      constructor(...args) { super(...(args.length ? args : [RealDate.now() + offset])); }
+      static now() { return RealDate.now() + offset; }
+    }
+    globalThis.Date = ShiftedDate;
+  }, instant.getTime());
 }
