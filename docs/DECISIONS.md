@@ -1762,7 +1762,21 @@ the D-195 glossary ("hub", not "terminal", in `about.p1`). Footer links to terms
 wait for those pages; no newsletter (Q-70 → A). Guard: `test:site` (shots size/freshness, store host + badge rule,
 og:image, canonical/hreflang, 404, glossary, `site:assets` script). **Status: in force.**
 
-## D-219 — Privacy declarations derived from the code and guarded by a test; one privacy manifest for both builds (2026-11-04, Claude, night N12ak)
+## D-219 — Press page and one press kit ZIP built from the store sources (2026-11-04, Claude, night N11ae)
+R2e. `site/press.html` (PL/EN through `site/i18n.js`) holds the fact sheet, the store short/full description, eight
+screenshots, logo/icon, a video slot and one ZIP link. The ZIP is built by `build:site` (`site/press-kit.mjs`, no
+library, fixed timestamps) from the files that already exist: full-size store PNGs of the four `SITE_SHOTS` scenes in
+the phone (1080×1920) and landscape (1920×1080) formats, 8 per language and both languages, plus the wordmark and
+icon as SVG and PNG and a README per language. Built, not committed (~11.7 MB). The descriptions are copies of
+`docs/store/{pl,en}.md` guarded by `test:site`; the EN copy says "a hub" where the EN store text says "a terminal"
+(D-195 on the site; the store text itself stays as D-216 left it — the owner may align it). Price row: "no ads and no
+in-app purchases" (D-16), never a price or "free" (launch rule of RESEARCH R2). Developer "publisher details to follow"
+until R7c, release "to be announced", contact the proposed `contact@airway.games`. The video row says the capture
+follows until R2b sets `PRESS_KIT.video`. The "failure" scene stays out with the landing page until store:shots has
+the N11t wording. Rejected: committing the ZIP (large binary churn on every store:shots) and an SVG-only wordmark (its
+`<text>` needs Overpass installed, so the PNG render ships too). Guard: `test:site`. **Status: in force.**
+
+## D-220 — Privacy declarations derived from the code and guarded by a test; one privacy manifest for both builds (2026-11-04, Claude, night N12ak)
 R1f. `docs/store/privacy-declarations.md` holds the Google Play Data safety and App Store App Privacy answers for
 build (A) without a Firebase config (nothing collected: the leaderboard layer is the only network path besides bundled
 assets) and build (B) with leaderboards: the anonymous Firebase uid (Play "Device or other IDs", Apple "User ID") and

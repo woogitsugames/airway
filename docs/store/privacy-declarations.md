@@ -1,4 +1,4 @@
-# Privacy declarations — Google Play Data safety and App Store App Privacy (R1f, D-219)
+# Privacy declarations — Google Play Data safety and App Store App Privacy (R1f, D-220)
 
 Ready-to-paste answers for both store questionnaires, derived from what the code actually sends. Two builds exist
 (D-66): **(A)** without a Firebase web config — the leaderboard layer is off and the app makes no network request of
@@ -107,7 +107,7 @@ from "Data Not Collected" to the (B) answers **before** submitting the first bui
 ### `PrivacyInfo.xcprivacy`
 `ios/App/App/PrivacyInfo.xcprivacy` declares the (B) data types above in `NSPrivacyCollectedDataTypes`
 (`NSPrivacyCollectedDataTypeUserID`, `NSPrivacyCollectedDataTypeGameplayContent`, linked, not tracking, purpose
-`NSPrivacyCollectedDataTypePurposeAppFunctionality`). The manifest is one static file for both builds (D-219): a build
+`NSPrivacyCollectedDataTypePurposeAppFunctionality`). The manifest is one static file for both builds (D-220): a build
 without Firebase then declares more than it collects, which is harmless, while the opposite would be a wrong
 declaration. `test:ios-config` and `test:privacy-declarations` check it.
 

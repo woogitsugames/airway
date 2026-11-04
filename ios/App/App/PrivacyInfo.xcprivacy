@@ -6,7 +6,7 @@
     <false/>
     <key>NSPrivacyTrackingDomains</key>
     <array/>
-    <!-- R1f, D-219: the leaderboard build (D-66) — anonymous uid + official daily run; docs/store/privacy-declarations.md -->
+    <!-- R1f, D-220: the leaderboard build (D-66) — anonymous uid + official daily run; docs/store/privacy-declarations.md -->
     <key>NSPrivacyCollectedDataTypes</key>
     <array>
         <dict>

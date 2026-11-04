@@ -65,7 +65,7 @@ const capConfig = read('capacitor.config.ts');
 check('capacitor appId and name', capConfig.includes("appId: 'pl.samsufi.airway'") && capConfig.includes("appName: 'Airway'"));
 check('silent switch respected by ambient session', /setCategory\(\.ambient,\s*mode:\s*\.default\)/.test(delegate));
 check('privacy manifest bundled', project.includes('PrivacyInfo.xcprivacy in Resources') && existsSync(join(IOS, 'PrivacyInfo.xcprivacy')));
-// [night-12ak] R1f, D-219: the manifest declares the leaderboard build's data (docs/store/privacy-declarations.md).
+// [night-12ak] R1f, D-220: the manifest declares the leaderboard build's data (docs/store/privacy-declarations.md).
 const manifest = read('ios/App/App/PrivacyInfo.xcprivacy');
 const collected = (manifest.match(/<key>NSPrivacyCollectedDataTypes<\/key>\s*<array>([\s\S]*?)\n    <\/array>/) || [])[1] || '';
 const collectedDicts = [...collected.matchAll(/<dict>([\s\S]*?)<\/dict>/g)].map((m) => m[1]);

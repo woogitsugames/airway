@@ -48,4 +48,4 @@ and the score.
    adres e-mail administratora (pkt 1).
 3. Czy Data Safety (Google Play) i App Privacy (App Store) mają deklarować „identyfikatory: User ID (anonimowy)”
    i „dane o grze”. Gotowe odpowiedzi do formularzy obu sklepów (zgodne z kodem, test `test:privacy-declarations`):
-   `docs/store/privacy-declarations.md` (R1f, D-219) — czekają na potwierdzenie Q-03.
+   `docs/store/privacy-declarations.md` (R1f, D-220) — czekają na potwierdzenie Q-03.

@@ -1,10 +1,20 @@
 {
   "pl/night.jpg": "66200b366c230d8e",
+  "pl/night-landscape.jpg": "09c2981fe0693707",
   "pl/game.jpg": "b9c0999e15980bb5",
+  "pl/game-landscape.jpg": "ac326c6d25b44440",
   "pl/upgrade.jpg": "6716883dd9df0e2d",
+  "pl/upgrade-landscape.jpg": "d008a5a92d435722",
   "pl/menu.jpg": "8ad78e32414e7711",
+  "pl/menu-landscape.jpg": "fe386eeea257a143",
   "en/night.jpg": "8b8f4fcf5394a834",
+  "en/night-landscape.jpg": "ee550c5c8268ef6f",
   "en/game.jpg": "afc6c606de77923a",
+  "en/game-landscape.jpg": "ed28521d96f63356",
   "en/upgrade.jpg": "a775739c928cc185",
-  "en/menu.jpg": "4419215d67c64b6f"
+  "en/upgrade-landscape.jpg": "4fbc3459ef4a4819",
+  "en/menu.jpg": "4419215d67c64b6f",
+  "en/menu-landscape.jpg": "7519f429a6f74fa1",
+  "press/airway-wordmark.png": "f29c4f841fe74338",
+  "press/airway-icon.png": "40ae9311ecd7e0cb"
 }

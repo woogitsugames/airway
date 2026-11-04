@@ -1,4 +1,4 @@
-// [night-12ak] R1f, D-219: docs/store/privacy-declarations.md must match what the code sends and stores.
+// [night-12ak] R1f, D-220: docs/store/privacy-declarations.md must match what the code sends and stores.
 // Records every request of the leaderboard layer against a fake network (build B) and of a build without Firebase
 // config (build A, must be none), reads the fields the Cloud Functions write, the command journal's fields and the
 // iOS privacy manifest, and compares each with the tables between the `<!-- privacy:* -->` markers in both directions.
