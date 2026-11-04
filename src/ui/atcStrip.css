@@ -4,7 +4,7 @@
   z-index: 40;
   bottom: calc(92px + var(--aw-safe-bottom));
   left: max(12px, var(--aw-safe-left));
-  max-width: min(740px, calc(100% - 24px));
+  max-width: min(740px, calc(100% - 24px - var(--aw-safe-left) - var(--aw-safe-right))); /* [night-11z] D-208 */
   display: flex;
   flex-wrap: wrap;
   border-left: 10px solid #c8352a;
@@ -52,7 +52,8 @@
   .airway-atc-strip {
     bottom: max(14px, var(--aw-safe-bottom));
     left: calc(84px + var(--aw-safe-left));
-    max-width: calc(100% - 100px - var(--aw-safe-right));
+    /* [night-11z] D-208: minus both side insets (it ended under the right cut-out by the left inset) */
+    max-width: calc(100% - 100px - var(--aw-safe-left) - var(--aw-safe-right));
   }
 }
 

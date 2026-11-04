@@ -5,6 +5,10 @@
 // suite stays fast under SwiftShader): departures menu (with a notice), settings, puzzle board, weekly upgrade board,
 // game over, in-game HUD. Every visible, unclipped button/select/link must lie inside the safe rectangle; scrolling
 // containers are checked at the top and again scrolled to the end. PL + EN. Shots docs/shots/n11y/.
+// [night-11z] D-208: + a small landscape phone (812×375, 0/50/21/50); the weekly board is mounted over the real HUD
+// and must fit without scrolling (every label above the bottom inset), its sign beside the boarding pass with the
+// line at least 120 px wide and at most 3 lines; + the training flight through its controller (route, aircraft and
+// cleared steps), the ATC range strip and a first-time card: their paper panels must lie inside the safe rectangle too.
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
@@ -16,8 +20,17 @@ const SHOTS = resolve(ROOT, 'docs/shots/n11y');
 const PROFILES = [
   { name: 'portrait', width: 393, height: 852, inset: { top: 59, right: 0, bottom: 34, left: 0 } },
   { name: 'landscape', width: 852, height: 393, inset: { top: 0, right: 59, bottom: 21, left: 59 } },
+  { name: 'landscape-mini', width: 812, height: 375, inset: { top: 0, right: 50, bottom: 21, left: 50 } },
 ];
-const SCREENS = ['menu', 'settings', 'puzzles', 'upgrade', 'gameover', 'hud'];
+const SCREENS = ['menu', 'settings', 'puzzles', 'upgrade', 'gameover', 'hud', 'tutorial', 'atc', 'first-time'];
+/** [night-11z] Text panels (no control of their own) that must keep clear of every inset as well. */
+const PANELS = '#app .airway-atc-strip:not([hidden]), #app .aw-tutorial-strip, #app .aw-tutorial-ticket, #app .aw-tutorial-hint, #app .airway-upgrade-sign';
+const TUTORIAL_STEPS = [
+  null,
+  { type: 'route', from: 'LON', to: 'PAR' },
+  { type: 'assign-aircraft', route: 'LON-PAR' },
+  { type: 'inspect-transfer', hub: 'PAR' },
+];
 const results = [];
 
 /** Mounts one screen into #app (the same modules the screen router and session use). */
@@ -38,6 +51,14 @@ async function mount(page, screen, language) {
       const { mountPuzzleSelector } = await import('/src/ui/puzzles/index.ts');
       mountPuzzleSelector(host, () => {});
     } else if (screen === 'upgrade') {
+      // [night-11z] Over the real HUD (its own fixed host, as in the game layer), so the sign can be checked
+      // against the boarding pass it sits beside.
+      const hudHost = document.createElement('div');
+      hudHost.style.cssText = 'position:fixed;inset:0;pointer-events:none';
+      document.body.prepend(hudHost);
+      const { mountHud } = await import('/src/ui/hud/index.ts');
+      mountHud(hudHost, {}).render({ week: 7, day: 3, timeMinutes: 642, passengers: 1284, paused: true, speed: 1, canUndo: true,
+        selectedPlane: 'turboprop', stock: { turboprop: 2, widebody: 1, hub: 0 } });
       const { WeeklyUpgradeView } = await import('/src/ui/upgrade/index.ts');
       const view = new WeeklyUpgradeView(host, { onCommand: () => {}, onCancelPick: () => {}, onPreviewModel: () => {} });
       view.render({ week: 7, paused: true, pendingHub: false, offers: ['turboprop', 'widebody', 'hub-expansion'].map((id) => ({ id, week: 7 })) },
@@ -45,6 +66,31 @@ async function mount(page, screen, language) {
     } else if (screen === 'gameover') {
       const { mountGameOverPreview } = await import('/src/ui/gameover/preview.ts');
       mountGameOverPreview(host);
+    } else if (screen === 'tutorial') {
+      // [night-11z] The training flight through its controller, exactly as main.ts opens it.
+      const { mountTutorial } = await import('/src/game/tutorial/index.ts');
+      const screenHost = document.createElement('div');
+      screenHost.className = 'airway-tutorial-screen';
+      screenHost.style.cssText = 'position:fixed;inset:0';
+      host.append(screenHost);
+      window.__notchTutorial = mountTutorial(screenHost).controller;
+      window.__notchTutorial.replay();
+    } else if (screen === 'atc' || screen === 'first-time') {
+      const layer = document.createElement('div');
+      layer.className = 'airway-game-layer';
+      host.append(layer);
+      if (screen === 'atc') {
+        const { mountAtcStrip } = await import('/src/ui/atcStrip.ts');
+        mountAtcStrip(layer).show({ from: 'LON', to: 'SYD', distanceKm: 16990, rangeKm: 2500, aircraft: 'turboprop' });
+      } else {
+        const { t } = await import('/src/i18n/index.ts');
+        const { FirstTimeRegistry } = await import('/src/game/tutorial/first-time.ts');
+        const { mountFirstTimeCards } = await import('/src/game/tutorial/first-time-card.ts');
+        const cards = mountFirstTimeCards(layer, new FirstTimeRegistry(null));
+        cards.offer('hub-full', () => ({ tag: t('firstTime.tag.hubFull', { airport: 'LON', waiting: 26, capacity: 36 }),
+          hint: t('firstTime.hint.hubFull', { airport: 'LON' }) }));
+        cards.flush(false);
+      }
     } else if (screen === 'hud') {
       const { mountHud } = await import('/src/ui/hud/index.ts');
       mountHud(host, {}).render({ week: 3, day: 3, timeMinutes: 642, passengers: 1284, paused: false, speed: 1, canUndo: true,
@@ -68,7 +114,7 @@ async function mount(page, screen, language) {
  * so that side is not checked; the audit runs at the top and again at the end of every scroller.
  */
 function audit(page, inset) {
-  return page.evaluate((inset) => {
+  return page.evaluate(({ inset, panels }) => {
     const safe = { left: inset.left, top: inset.top, right: innerWidth - inset.right, bottom: innerHeight - inset.bottom };
     const problems = [];
     let seen = 0;
@@ -98,7 +144,48 @@ function audit(page, inset) {
       if (!downOpen && v.bottom > safe.bottom + 0.5) out.push(`bottom ${Math.round(v.bottom)} > ${safe.bottom}`);
       if (out.length) problems.push(`"${name}" in the inset (${out.join(', ')})`);
     }
+    // [night-11z] Paper panels: the whole box inside the safe rectangle (they never scroll).
+    for (const el of document.querySelectorAll(panels)) {
+      const r = el.getBoundingClientRect();
+      if (r.width === 0 || r.height === 0 || el.closest('[hidden]')) continue;
+      seen++;
+      const out = [];
+      if (r.left < safe.left - 0.5) out.push(`left ${Math.round(r.left)} < ${safe.left}`);
+      if (r.top < safe.top - 0.5) out.push(`top ${Math.round(r.top)} < ${safe.top}`);
+      if (r.right > safe.right + 0.5) out.push(`right ${Math.round(r.right)} > ${safe.right}`);
+      if (r.bottom > safe.bottom + 0.5) out.push(`bottom ${Math.round(r.bottom)} > ${safe.bottom}`);
+      if (out.length) problems.push(`panel .${el.classList[0]} in the inset (${out.join(', ')})`);
+    }
     return { problems, seen };
+  }, { inset, panels: PANELS });
+}
+
+/**
+ * [night-11z] D-208: the weekly board fits the safe height without scrolling, every label ends above the bottom
+ * inset, and the sign keeps a readable line (≥ 120 px wide, ≤ 3 lines) clear of the boarding pass.
+ */
+function auditBoard(page, inset) {
+  return page.evaluate((inset) => {
+    const problems = [];
+    const overlay = document.querySelector('.airway-upgrade-open');
+    if (!overlay) return ['no board'];
+    const overflow = overlay.scrollHeight - overlay.clientHeight;
+    if (overflow > 1) problems.push(`board scrolls ${overflow} px`);
+    for (const tag of document.querySelectorAll('.airway-upgrade-tag')) {
+      const bottom = tag.getBoundingClientRect().bottom;
+      if (bottom > innerHeight - inset.bottom + 0.5) problems.push(`${tag.dataset.testid} ends at ${Math.round(bottom)} > ${innerHeight - inset.bottom}`);
+    }
+    const sub = document.querySelector('.airway-upgrade-sub');
+    const r = sub.getBoundingClientRect();
+    const lines = Math.round(r.height / parseFloat(getComputedStyle(sub).lineHeight));
+    if (r.width < 120) problems.push(`sign line ${Math.round(r.width)} px wide`);
+    if (lines > 3) problems.push(`sign line wraps to ${lines} lines`);
+    const sign = document.querySelector('.airway-upgrade-sign').getBoundingClientRect();
+    const pass = document.querySelector('.airway-pass')?.getBoundingClientRect();
+    if (pass && sign.left < pass.right && sign.right > pass.left && sign.top < pass.bottom && sign.bottom > pass.top) {
+      problems.push(`sign over the boarding pass (${Math.round(sign.left)} < ${Math.round(pass.right)})`);
+    }
+    return problems;
   }, inset);
 }
 
@@ -132,12 +219,25 @@ try {
         await page.goto(url + '?perf=scene', { waitUntil: 'networkidle' });
         await mount(page, screen, language);
         const first = await audit(page, profile.inset);
+        const extra = screen === 'upgrade' ? await auditBoard(page, profile.inset) : [];
+        // [night-11z] The training flight: each later step through the controller, audited again.
+        for (const action of screen === 'tutorial' ? TUTORIAL_STEPS.slice(1) : []) {
+          const ok = await page.evaluate((action) => window.__notchTutorial.submit(action), action);
+          if (!ok) extra.push(`controller refused ${action.type}`);
+          await page.waitForTimeout(150);
+          const step = await audit(page, profile.inset);
+          first.seen += step.seen;
+          first.problems.push(...step.problems.map((p) => `${action.type}: ${p}`));
+          if (language === 'en' && action.type === 'assign-aircraft') {
+            await page.screenshot({ path: resolve(SHOTS, `${screen}-${language}-${profile.name}-transfer.png`), animations: 'disabled' });
+          }
+        }
         const scrolled = await scrollToEnd(page);
         const second = scrolled ? await audit(page, profile.inset) : { problems: [], seen: 0 };
-        if (language === 'en' || screen === 'menu') {
+        if (language === 'en' || screen === 'menu' || screen === 'upgrade') {
           await page.screenshot({ path: resolve(SHOTS, `${screen}-${language}-${profile.name}.png`), animations: 'disabled' });
         }
-        const problems = [...first.problems, ...second.problems.map((p) => 'scrolled: ' + p)];
+        const problems = [...first.problems, ...extra, ...second.problems.map((p) => 'scrolled: ' + p)];
         if (first.seen + second.seen === 0) problems.push('no visible control found');
         if (errors.length) problems.push(`page errors: ${errors.join('; ')}`);
         if (problems.length) throw new Error(problems.join('; '));
