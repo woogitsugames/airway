@@ -925,7 +925,22 @@ sentence naming a glyph's region in the transfer step, and a glyph legend (shape
 in one PR. Rejected for now: A (keep), C (a new tutorial on the real globe) — reconsidered after the closed test.
 **Status: decided; implementation R5b.**
 
-## D-130 — A save the new rules cannot continue says "older rules version", not "damaged" (2026-11-03, Claude, night N11j)
+## D-130 — Pre-run training shortened to 3 steps; the rest as first-time cards in the game (2026-11-03, owner, Q-63 → B)
+The pre-run vignette teaches 7 steps, though upgrades and congestion first happen about 7 minutes into a real run,
+and the game has only one in-game "first time" hint (departure slot). The owner chose B: the vignette keeps three
+steps (route, aircraft, transfer) and the others become one-time cards in the real game at the moment the event
+happens (R6a + R6b), done in one PR with R5b (D-129). Rejected for now: A (keep 7 steps), C (no vignette, straight
+into a real run with cards only) — reconsidered after the closed test. **Status: decided; implementation R6a/R6b
+with R5b.**
+
+## D-131 — An update every 4 weeks after launch; first pack ready before launch (2026-11-03, owner, Q-64 → A)
+Apple In-App Events last up to 31 days and a Play "Major update" promotion 28 days, so a 4-week rhythm keeps one
+store event running in both stores. The owner chose A: every 4 weeks one new mechanic plus 5–10 puzzles that teach it
+(T+4 pack 31–40 "Long haul", T+8 weather front R2j + 41–45, T+12 weekly contract R2k + a Sunday daily variant), and
+the first pack (R6h) is prepared before launch as a buffer. Rejected: B (6–8 weeks, bigger updates — gaps without a
+store event), C (no plan until launch data). **Status: decided; unblocks R6g/R6h.**
+
+## D-132 — A save the new rules cannot continue says "older rules version", not "damaged" (2026-11-03, Claude, night N11j)
 Rules v5 (N12f) replay a v4 save from its journal (D-76); when the replay already ends the run, or the save is longer
 than the replay cap, nothing can be offered. The menu said "The saved flight is damaged", which is untrue and reads
 like a bug. `loadSavedSimChecked` now reports `old-rules` for any save with a rules version below `RULES_VERSION`
@@ -933,7 +948,7 @@ that cannot be continued, and the menu shows "Saved flight from an older rules v
 continue it." / "Zapisany lot ze starszej wersji zasad: obecne zasady nie pozwalają go kontynuować." A save without a
 rules version (legacy) or with the current version that fails stays `corrupt`: there it really is damage. The save
 is still not deleted. Rejected: silently dropping the notice (the Continue row would vanish without a word, N10c).
-**Status: in force (N11j, `test:save-golden` 21 checks, `test:e2e:save-notice` 6 steps).**
+(Numbered D-130 in PR #147; renumbered because the owner's Q-63/Q-64 answers took D-130/D-131.) **Status: in force (N11j, `test:save-golden` 21 checks, `test:e2e:save-notice` 6 steps).**
 
 ## D-133 — Android minSdk 29 (Android 10) (2026-11-03, owner, Q-54 → B)
 The owner chose B: raise `minSdkVersion` from 24 (Android 7) to 29 (Android 10) and keep the OpenGL ES 3.0 Play
