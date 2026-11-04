@@ -167,6 +167,9 @@ export const en = {
   'settings.deleteRanking.offline': 'No connection — nothing was deleted. Try again when you are online.',
   'settings.deleteRanking.failed': 'The data could not be deleted right now. Try again later.',
   'settings.privacy': 'PRIVACY POLICY',
+  // [night-11v] D-197 (D-135): the leaderboard objection switch.
+  'settings.shareRanking': 'Send results to the leaderboard',
+  'settings.shareRanking.hint': 'Off: your daily results stay on this device and runs waiting to be sent are dropped.',
   'privacy.offline': 'This copy is stored in the game and opens without a connection.',
   'privacy.overline': 'DOCUMENT / PRY-001',
   'privacy.title': 'Privacy policy',

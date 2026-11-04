@@ -1459,3 +1459,13 @@ exception. The D-18 PL store title ("Buduj siatkę lotów") is outside the catal
 Rejected: "Siatka zamknięta" (keeps two words for the network).
 **Status: in force (N11t, `test:i18n` with the glossary check, 12 failures on the old catalogs).**
 
+## D-197 — The leaderboard objection switch in settings (2026-11-04, Claude, night N11v)
+D-135 / R7l: the net layer has `Leaderboards.isSharing()` / `setSharing(on)` since N12x (D-186). Settings → Help
+now shows "Send results to the leaderboard" / "Wysyłaj wyniki do rankingu", an ordinary settings switch (on by
+default, ≥ 48 px, the ON/OFF ink of the other switches) with one hint line saying what off does (results stay on the
+device, waiting runs are dropped). It sits after the privacy policy and before "Delete my ranking data" and, like
+that row, exists only when the build has leaderboards (`Leaderboards.enabled`). The choice lives in the net layer's
+own key (`aw-net-share-v1`), not in the settings record, so the daily report and the board read the same truth.
+Rejected: the switch in the Game group (it is a privacy choice next to the policy and the deletion).
+**Status: in force (N11v, `test:e2e:ranking-switch` 4).**
+
