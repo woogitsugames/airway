@@ -76,6 +76,7 @@
     "test:daily": "node --import ./scripts/ts-test-loader.mjs scripts/test-daily.ts",
     "test:cities": "node scripts/test-cities.mjs",
     "test:city-data": "node scripts/test-city-data.mjs",
+    "data:city-names": "node scripts/city-names.mjs",
     "test:spawner": "node scripts/test-spawner.mjs",
     "test:week1-reach": "node scripts/test-week1-reach.mjs",
     "test:land": "node scripts/build-land.mjs --check",

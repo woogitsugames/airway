@@ -20,12 +20,12 @@ Spójrz na planetę z bliska: morza, góry, chmury i lotniska tworzą barwny św
 • Rysuj trasy między miastami bez ręcznego sterowania samolotami.
 • Wybieraj typ samolotu odpowiedni do zasięgu i liczby pasażerów.
 • Buduj huby, w których podróżni przesiadają się na kolejne loty.
-• Obserwuj liczbę oczekujących i reaguj, zanim terminal się przepełni.
+• Obserwuj liczbę oczekujących i reaguj, zanim hub się przepełni.
 • Wybieraj ulepszenie po zakończeniu tygodnia gry.
 • Sprawdzaj różne rozwiązania w zadaniach i buduj sieć w trybie bez końca.
 • Podejmuj wyzwanie dnia na przygotowanym dla wszystkich układzie.
 
-Nie musisz kierować każdym samolotem. Twoim zadaniem jest zbudowanie takiej sieci, w której pasażerowie dotrą do celu, a żaden hub nie utknie w zatorze. Gdy terminal się przepełni, raport pokaże, co poszło nie tak — i pomoże zaplanować kolejną próbę.
+Nie musisz kierować każdym samolotem. Twoim zadaniem jest zbudowanie takiej sieci, w której pasażerowie dotrą do celu, a żaden hub nie utknie w zatorze. Gdy któryś się przepełni, raport pokaże, co poszło nie tak — i pomoże zaplanować kolejną próbę.
 
 Airway to gra strategiczno-logiczna o połączeniach, przesiadkach i planowaniu na prawdziwym globusie.
 

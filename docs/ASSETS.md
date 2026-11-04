@@ -23,6 +23,12 @@ Rejected: **B612 / B612 Mono** (OFL, Airbus cockpit face) — no Polish diacriti
 ## Map data
 - `world-atlas` 2.0.2 (ISC) — TopoJSON of **Natural Earth** land 110m/50m (public domain). npm dev dependency.
 
+- [N12ai] `src/data/city-names.json` — German, French, Spanish and Brazilian Portuguese names of the 165 cities and
+  8 regions from **Wikidata** labels (CC0 1.0, https://www.wikidata.org/wiki/Wikidata:Licensing), snapshot
+  `scripts/data/wikidata-labels.json` (retrieved 2026-11-04), item ids `scripts/data/city-wikidata.json`, 19 reviewed
+  corrections in `scripts/data/city-names-overrides.json` (own work). Rebuilt by `npm run data:city-names` (D-213).
+  Not shown in the game until those languages ship.
+
 ## Libraries (dev only, mockups)
 - `d3-geo` 3.x (ISC), `topojson-client` 3.x (ISC), `three` 0.170 (MIT). Playwright is pre-installed in the environment (Apache-2.0), not a dependency.
 

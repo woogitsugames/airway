@@ -753,6 +753,12 @@ before/after `npm run shots -- globe` PNGs and look at them.
       `i18n:import` writes `src/i18n/de.ts` only when every row passes (params, plural form counts, budget, stale EN,
       missing/unknown rows). Wave-1 de/fr/es/pt(-BR) are `PLANNED_LANGUAGE_ENTRIES`, not shipped. Not covered:
       `site/i18n.js`, `docs/store/` texts.
+- [x] N12ai **City and region names for de/fr/es/pt from Wikidata (R7j, D-213) + owner Q-79/Q-80 (D-215, D-216)** —
+      `npm run data:city-names` maps the 165 cities to Wikidata items (enwiki article + 40 km check, 8 titles pinned),
+      snapshots the labels and rebuilds `src/data/city-names.json` offline with 19 reviewed overrides (Frankfurt short
+      forms, "Nova York", pt-BR over pt-PT spellings, "Naher Osten"); ASSETS entry; `test:city-data` +4 checks. PL/EN
+      names and `namePl`/`nameEn` untouched; the game does not read the file until a language ships. Q-80 → A (card
+      unchanged, playtest checks the departure limit), Q-79 → A (titles stay), PL store text "terminal" → "hub".
 - [x] G1 **Production globe assets** — reproducible bake into `public/data/globe/` (day 4096/2048, night 2048/1024,
       elevation 2048, clouds 2048, ~1.9 MB) with a SHA-256 manifest; NASA/NOAA entries in `docs/ASSETS.md`; credit
       line (PL/EN i18n) on the About page; bundle `total` budget → 4 300 kB (D-171); new fast test `test:globe-assets`.
@@ -1199,7 +1205,7 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
       context comment, max length from R7h, plural categories of the language, placeholder list) and
       `i18n:import` turns a filled file back into `src/i18n/de.ts`, rejecting missing placeholders, over-budget text and
       wrong plural counts. Also covers `site/i18n.js` and `docs/store/en.md` sections. **Area:** `scripts/`, `docs/i18n/`.
-- [ ] R7j **City and region names per language** — replace `namePl`/`nameEn` with `names: Record<Language,string>`
+- [x] R7j → N12ai (data file + test; `names` field switch waits for a shipped language) **City and region names per language** — replace `namePl`/`nameEn` with `names: Record<Language,string>`
       (sim `code` untouched, D-107); a one-off script fetches Wikidata labels (CC0) for de/fr/es/pt-BR into a
       reviewed JSON (pt-BR "Nova York", not "Nova Iorque"); `docs/ASSETS.md` entry; `test:city-data` checks every
       enabled language has every name. **Area:** `src/data/**`, `scripts/`, `docs/ASSETS.md`.

@@ -1,0 +1,1422 @@
+{
+  "source": "https://www.wikidata.org (CC0 1.0)",
+  "retrieved": "2026-11-04",
+  "labels": {
+    "Q100": {
+      "de": "Boston",
+      "en": "Boston",
+      "es": "Boston",
+      "fr": "Boston",
+      "mul": "Boston",
+      "pt": "Boston",
+      "pt-br": "Boston"
+    },
+    "Q1055": {
+      "de": "Hamburg",
+      "en": "Hamburg",
+      "es": "Hamburgo",
+      "fr": "Hambourg",
+      "pt": "Hamburgo",
+      "pt-br": "Hamburgo"
+    },
+    "Q1085": {
+      "de": "Prag",
+      "en": "Prague",
+      "es": "Praga",
+      "fr": "Prague",
+      "pt": "Praga",
+      "pt-br": "Praga"
+    },
+    "Q11194": {
+      "de": "Sarajevo",
+      "en": "Sarajevo",
+      "es": "Sarajevo",
+      "fr": "Sarajevo",
+      "pt": "Sarajevo",
+      "pt-br": "Sarajevo"
+    },
+    "Q1156": {
+      "de": "Mumbai",
+      "en": "Mumbai",
+      "es": "Bombay",
+      "fr": "Bombay",
+      "pt": "Bombaim",
+      "pt-br": "Bombaim"
+    },
+    "Q11739": {
+      "de": "Lahore",
+      "en": "Lahore",
+      "es": "Lahore",
+      "fr": "Lahore",
+      "pt": "Laore",
+      "pt-br": "Laore"
+    },
+    "Q11746": {
+      "de": "Wuhan",
+      "en": "Wuhan",
+      "es": "Wuhan",
+      "fr": "Wuhan",
+      "pt": "Wuhan",
+      "pt-br": "Wuhan"
+    },
+    "Q1297": {
+      "de": "Chicago",
+      "en": "Chicago",
+      "es": "Chicago",
+      "fr": "Chicago",
+      "pt": "Chicago",
+      "pt-br": "Chicago"
+    },
+    "Q1335": {
+      "de": "Montevideo",
+      "en": "Montevideo",
+      "es": "Montevideo",
+      "fr": "Montevideo",
+      "mul": "Montevideo",
+      "pt": "Montevidéu",
+      "pt-br": "Montevidéu"
+    },
+    "Q1348": {
+      "de": "Kolkata",
+      "en": "Kolkata",
+      "es": "Calcuta",
+      "fr": "Calcutta",
+      "pt": "Calcutá",
+      "pt-br": "Calcutá"
+    },
+    "Q1352": {
+      "de": "Chennai",
+      "en": "Chennai",
+      "es": "Chennai",
+      "fr": "Madras",
+      "pt": "Chennai",
+      "pt-br": "Chennai"
+    },
+    "Q1353": {
+      "de": "Delhi",
+      "en": "Delhi",
+      "es": "Delhi",
+      "fr": "Delhi",
+      "pt": "Deli",
+      "pt-br": "Deli"
+    },
+    "Q1354": {
+      "de": "Dhaka",
+      "en": "Dhaka",
+      "es": "Daca",
+      "fr": "Dacca",
+      "pt": "Daca",
+      "pt-br": "Daca"
+    },
+    "Q1355": {
+      "de": "Bengaluru",
+      "en": "Bengaluru",
+      "es": "Bangalore",
+      "fr": "Bengaluru",
+      "pt": "Bangalore",
+      "pt-br": "Bengalúru"
+    },
+    "Q1361": {
+      "de": "Hyderabad",
+      "en": "Hyderabad",
+      "es": "Haidrābād",
+      "fr": "Hyderabad",
+      "pt": "Hyderabad",
+      "pt-br": "Hyderabad"
+    },
+    "Q1435": {
+      "de": "Zagreb",
+      "en": "Zagreb",
+      "es": "Zagreb",
+      "fr": "Zagreb",
+      "mul": "Zagreb",
+      "pt": "Zagreb",
+      "pt-br": "Zagreb"
+    },
+    "Q1461": {
+      "de": "Manila",
+      "en": "Manila",
+      "es": "Manila",
+      "fr": "Manille",
+      "pt": "Manila",
+      "pt-br": "Manila"
+    },
+    "Q1486": {
+      "de": "Buenos Aires",
+      "en": "Buenos Aires",
+      "es": "Buenos Aires",
+      "fr": "Buenos Aires",
+      "pt": "Buenos Aires",
+      "pt-br": "Buenos Aires"
+    },
+    "Q1489": {
+      "de": "Mexiko-Stadt",
+      "en": "Mexico City",
+      "es": "Ciudad de México",
+      "fr": "Mexico",
+      "pt": "Cidade do México",
+      "pt-br": "Cidade do México"
+    },
+    "Q1490": {
+      "de": "Tokio",
+      "en": "Tokyo",
+      "es": "Tokio",
+      "fr": "Tokyo",
+      "pt": "Tóquio",
+      "pt-br": "Tóquio"
+    },
+    "Q1491": {
+      "de": "La Paz",
+      "en": "La Paz",
+      "es": "La Paz",
+      "fr": "La Paz",
+      "pt": "La Paz",
+      "pt-br": "La Paz"
+    },
+    "Q1492": {
+      "de": "Barcelona",
+      "en": "Barcelona",
+      "es": "Barcelona",
+      "fr": "Barcelone",
+      "pt": "Barcelona",
+      "pt-br": "Barcelona"
+    },
+    "Q15": {
+      "de": "Afrika",
+      "en": "Africa",
+      "es": "África",
+      "fr": "Afrique",
+      "pt": "África",
+      "pt-br": "África"
+    },
+    "Q1515": {
+      "de": "Abidjan",
+      "en": "Abidjan",
+      "es": "Abiyán",
+      "fr": "Abidjan",
+      "pt": "Abidjan",
+      "pt-br": "Abidjã"
+    },
+    "Q1524": {
+      "de": "Athen",
+      "en": "Athens",
+      "es": "Atenas",
+      "fr": "Athènes",
+      "pt": "Atenas",
+      "pt-br": "Atenas"
+    },
+    "Q1530": {
+      "de": "Bagdad",
+      "en": "Baghdad",
+      "es": "Bagdad",
+      "fr": "Bagdad",
+      "mul": "Baghdad",
+      "pt": "Bagdá",
+      "pt-br": "Bagdá"
+    },
+    "Q1563": {
+      "de": "Havanna",
+      "en": "Havana",
+      "es": "La Habana",
+      "fr": "La Havane",
+      "pt": "Havana",
+      "pt-br": "Havana"
+    },
+    "Q16520": {
+      "de": "Busan",
+      "en": "Busan",
+      "es": "Busan",
+      "fr": "Pusan",
+      "pt": "Busan",
+      "pt-br": "Busan"
+    },
+    "Q16554": {
+      "de": "Denver",
+      "en": "Denver",
+      "es": "Denver",
+      "fr": "Denver",
+      "mul": "Denver",
+      "pt": "Denver",
+      "pt-br": "Denver"
+    },
+    "Q16555": {
+      "de": "Houston",
+      "en": "Houston",
+      "es": "Houston",
+      "fr": "Houston",
+      "pt": "Houston",
+      "pt-br": "Houston"
+    },
+    "Q16556": {
+      "de": "Phoenix",
+      "en": "Phoenix",
+      "es": "Phoenix",
+      "fr": "Phoenix",
+      "mul": "Phoenix",
+      "pt": "Phoenix",
+      "pt-br": "Phoenix"
+    },
+    "Q16557": {
+      "de": "Dallas",
+      "en": "Dallas",
+      "es": "Dallas",
+      "fr": "Dallas",
+      "mul": "Dallas",
+      "pt": "Dallas",
+      "pt-br": "Dallas"
+    },
+    "Q16572": {
+      "de": "Guangzhou",
+      "en": "Guangzhou",
+      "es": "Cantón",
+      "fr": "Canton",
+      "pt": "Cantão",
+      "pt-br": "Cantão"
+    },
+    "Q170688": {
+      "de": "Santa Cruz de la Sierra",
+      "en": "Santa Cruz de la Sierra",
+      "es": "Santa Cruz de la Sierra",
+      "fr": "Santa Cruz de la Sierra",
+      "pt": "Santa Cruz de la Sierra",
+      "pt-br": "Santa Cruz de la Sierra"
+    },
+    "Q17151": {
+      "de": "Thessaloniki",
+      "en": "Thessaloniki",
+      "es": "Salónica",
+      "fr": "Thessalonique",
+      "pt": "Salonica",
+      "pt-br": "Salônica"
+    },
+    "Q172": {
+      "de": "Toronto",
+      "en": "Toronto",
+      "es": "Toronto",
+      "fr": "Toronto",
+      "mul": "Toronto",
+      "pt": "Toronto",
+      "pt-br": "Toronto"
+    },
+    "Q1726": {
+      "de": "München",
+      "en": "Munich",
+      "es": "Múnich",
+      "fr": "Munich",
+      "pt": "Munique",
+      "pt-br": "Munique"
+    },
+    "Q174": {
+      "de": "São Paulo",
+      "en": "São Paulo",
+      "es": "São Paulo",
+      "fr": "São Paulo",
+      "mul": "São Paulo",
+      "pt": "São Paulo",
+      "pt-br": "São Paulo"
+    },
+    "Q1741": {
+      "de": "Wien",
+      "en": "Vienna",
+      "es": "Viena",
+      "fr": "Vienne",
+      "pt": "Viena"
+    },
+    "Q1748": {
+      "de": "Kopenhagen",
+      "en": "Copenhagen",
+      "es": "Copenhague",
+      "fr": "Copenhague",
+      "pt": "Copenhaga",
+      "pt-br": "Copenhague"
+    },
+    "Q1754": {
+      "de": "Stockholm",
+      "en": "Stockholm",
+      "es": "Estocolmo",
+      "fr": "Stockholm",
+      "mul": "Stockholm",
+      "pt": "Estocolmo",
+      "pt-br": "Estocolmo"
+    },
+    "Q1757": {
+      "de": "Helsinki",
+      "en": "Helsinki",
+      "es": "Helsinki",
+      "fr": "Helsinki",
+      "pt": "Helsínquia",
+      "pt-br": "Helsinque"
+    },
+    "Q1761": {
+      "de": "Dublin",
+      "en": "Dublin",
+      "es": "Dublín",
+      "fr": "Dublin",
+      "mul": "Dublin",
+      "pt": "Dublin",
+      "pt-br": "Dublin"
+    },
+    "Q1764": {
+      "de": "Reykjavík",
+      "en": "Reykjavík",
+      "es": "Reikiavik",
+      "fr": "Reykjavik",
+      "pt": "Reykjavík",
+      "pt-br": "Reykjavík"
+    },
+    "Q1770": {
+      "de": "Tallinn",
+      "en": "Tallinn",
+      "es": "Tallin",
+      "fr": "Tallinn",
+      "pt": "Tallinn",
+      "pt-br": "Tallinn"
+    },
+    "Q1773": {
+      "de": "Riga",
+      "en": "Riga",
+      "es": "Riga",
+      "fr": "Riga",
+      "mul": "Rīga",
+      "pt": "Riga",
+      "pt-br": "Riga"
+    },
+    "Q1781": {
+      "de": "Budapest",
+      "en": "Budapest",
+      "es": "Budapest",
+      "fr": "Budapest",
+      "pt": "Budapeste",
+      "pt-br": "Budapeste"
+    },
+    "Q1792": {
+      "de": "Danzig",
+      "en": "Gdańsk",
+      "es": "Gdansk",
+      "fr": "Gdańsk",
+      "mul": "Gdańsk",
+      "pt": "Gdansk",
+      "pt-br": "Gdansk"
+    },
+    "Q1794": {
+      "de": "Frankfurt am Main",
+      "en": "Frankfurt",
+      "es": "Fráncfort del Meno",
+      "fr": "Francfort-sur-le-Main",
+      "mul": "Frankfurt am Main",
+      "pt": "Frankfurt am Main",
+      "pt-br": "Frankfurt am Main"
+    },
+    "Q18": {
+      "de": "Südamerika",
+      "en": "South America",
+      "es": "América del Sur",
+      "fr": "Amérique du Sud",
+      "pt": "América do Sul",
+      "pt-br": "América do Sul"
+    },
+    "Q18125": {
+      "de": "Manchester",
+      "en": "Manchester",
+      "es": "Mánchester",
+      "fr": "Manchester",
+      "mul": "Manchester",
+      "pt": "Manchester",
+      "pt-br": "Manchester"
+    },
+    "Q1854": {
+      "de": "Ho-Chi-Minh-Stadt",
+      "en": "Ho Chi Minh City",
+      "es": "Ciudad Ho Chi Minh",
+      "fr": "Hô Chi Minh-Ville",
+      "mul": "Thành phố Hồ Chí Minh",
+      "pt": "Cidade de Ho Chi Minh",
+      "pt-br": "Cidade de Ho Chi Minh"
+    },
+    "Q1858": {
+      "de": "Hanoi",
+      "en": "Hanoi",
+      "es": "Hanói",
+      "fr": "Hanoï",
+      "pt": "Hanói",
+      "pt-br": "Hanói"
+    },
+    "Q1861": {
+      "de": "Bangkok",
+      "en": "Bangkok",
+      "es": "Bangkok",
+      "fr": "Bangkok",
+      "pt": "Banguecoque",
+      "pt-br": "Bancoque"
+    },
+    "Q1865": {
+      "de": "Kuala Lumpur",
+      "en": "Kuala Lumpur",
+      "es": "Kuala Lumpur",
+      "fr": "Kuala Lumpur",
+      "pt": "Kuala Lumpur",
+      "pt-br": "Kuala Lumpur"
+    },
+    "Q1867": {
+      "de": "Taipeh",
+      "en": "Taipei",
+      "es": "Taipéi",
+      "fr": "Taipei",
+      "pt": "Taipé",
+      "pt-br": "Taipé"
+    },
+    "Q1899": {
+      "de": "Kiew",
+      "en": "Kyiv",
+      "es": "Kiev",
+      "fr": "Kiev",
+      "pt": "Kiev",
+      "pt-br": "Kiev"
+    },
+    "Q1960": {
+      "de": "Daressalam",
+      "en": "Dar es Salaam",
+      "es": "Dar es-Salaam",
+      "fr": "Dar es Salam",
+      "pt": "Dar es Salaam",
+      "pt-br": "Dar es Salaam"
+    },
+    "Q19660": {
+      "de": "Bukarest",
+      "en": "Bucharest",
+      "es": "Bucarest",
+      "fr": "Bucarest",
+      "pt": "Bucareste",
+      "pt-br": "Bucareste"
+    },
+    "Q19689": {
+      "de": "Tirana",
+      "en": "Tirana",
+      "es": "Tirana",
+      "fr": "Tirana",
+      "pt": "Tirana",
+      "pt-br": "Tirana"
+    },
+    "Q220": {
+      "de": "Rom",
+      "en": "Rome",
+      "es": "Roma",
+      "fr": "Rome",
+      "pt": "Roma",
+      "pt-br": "Roma"
+    },
+    "Q23430": {
+      "de": "Ulaanbaatar",
+      "en": "Ulaanbaatar",
+      "es": "Ulán Bator",
+      "fr": "Oulan-Bator",
+      "pt": "Ulã Bator",
+      "pt-br": "Ulan Bator"
+    },
+    "Q23436": {
+      "de": "Edinburgh",
+      "en": "Edinburgh",
+      "es": "Edimburgo",
+      "fr": "Édimbourg",
+      "mul": "Edinburgh",
+      "pt": "Edimburgo",
+      "pt-br": "Edimburgo"
+    },
+    "Q23556": {
+      "de": "Atlanta",
+      "en": "Atlanta",
+      "es": "Atlanta",
+      "fr": "Atlanta",
+      "mul": "Atlanta",
+      "pt": "Atlanta",
+      "pt-br": "Atlanta"
+    },
+    "Q23661": {
+      "de": "Wellington",
+      "en": "Wellington",
+      "es": "Wellington",
+      "fr": "Wellington",
+      "mul": "Wellington",
+      "pt": "Wellington",
+      "pt-br": "Wellington"
+    },
+    "Q239": {
+      "de": "Brüssel",
+      "en": "Brussels",
+      "es": "Bruselas",
+      "fr": "Bruxelles",
+      "pt": "Bruxelas",
+      "pt-br": "Cidade de Bruxelas"
+    },
+    "Q24639": {
+      "de": "Vancouver",
+      "en": "Vancouver",
+      "es": "Vancouver",
+      "fr": "Vancouver",
+      "mul": "Vancouver",
+      "pt": "Vancouver",
+      "pt-br": "Vancouver"
+    },
+    "Q2634": {
+      "de": "Neapel",
+      "en": "Naples",
+      "es": "Nápoles",
+      "fr": "Naples",
+      "mul": "Napoli",
+      "pt": "Nápoles"
+    },
+    "Q269": {
+      "de": "Taschkent",
+      "en": "Tashkent",
+      "es": "Taskent",
+      "fr": "Tachkent",
+      "pt": "Tasquente",
+      "pt-br": "Tashkent"
+    },
+    "Q270": {
+      "de": "Warschau",
+      "en": "Warsaw",
+      "es": "Varsovia",
+      "fr": "Varsovie",
+      "pt": "Varsóvia",
+      "pt-br": "Varsóvia"
+    },
+    "Q27449": {
+      "de": "Südeuropa",
+      "en": "Southern Europe",
+      "es": "Europa del Sur",
+      "fr": "Europe du Sud",
+      "pt": "Europa meridional",
+      "pt-br": "Europa meridional"
+    },
+    "Q27479": {
+      "de": "Nordeuropa",
+      "en": "Northern Europe",
+      "es": "Europa del Norte",
+      "fr": "Europe du Nord",
+      "pt": "Europa Setentrional",
+      "pt-br": "Europa Setentrional"
+    },
+    "Q2807": {
+      "de": "Madrid",
+      "en": "Madrid",
+      "es": "Madrid",
+      "fr": "Madrid",
+      "mul": "Madrid",
+      "pt": "Madrid",
+      "pt-br": "Madri"
+    },
+    "Q2841": {
+      "de": "Bogotá",
+      "en": "Bogotá",
+      "es": "Bogotá",
+      "fr": "Bogota",
+      "mul": "Bogotá",
+      "pt": "Bogotá",
+      "pt-br": "Bogotá"
+    },
+    "Q2844": {
+      "de": "Brasília",
+      "en": "Brasília",
+      "es": "Brasilia",
+      "fr": "Brasilia",
+      "mul": "Brasilia",
+      "pt": "Brasília",
+      "pt-br": "Brasília"
+    },
+    "Q2868": {
+      "de": "Lima",
+      "en": "Lima",
+      "es": "Lima",
+      "fr": "Lima",
+      "mul": "Lima",
+      "pt": "Lima",
+      "pt-br": "Lima"
+    },
+    "Q2887": {
+      "de": "Santiago de Chile",
+      "en": "Santiago",
+      "es": "Santiago de Chile",
+      "fr": "Santiago",
+      "pt": "Santiago",
+      "pt-br": "Santiago"
+    },
+    "Q2900": {
+      "de": "Quito",
+      "en": "Quito",
+      "es": "Quito",
+      "fr": "Quito",
+      "pt": "Quito",
+      "pt-br": "Quito"
+    },
+    "Q2933": {
+      "de": "Asunción",
+      "en": "Asunción",
+      "es": "Asunción",
+      "fr": "Asuncion",
+      "mul": "Asunción",
+      "pt": "Assunção",
+      "pt-br": "Assunção"
+    },
+    "Q30002": {
+      "de": "Chengdu",
+      "en": "Chengdu",
+      "es": "Chengdu",
+      "fr": "Chengdu",
+      "pt": "Chengdu",
+      "pt-br": "Chengdu"
+    },
+    "Q3037": {
+      "de": "Kathmandu",
+      "en": "Kathmandu",
+      "es": "Katmandú",
+      "fr": "Katmandou",
+      "pt": "Catmandu",
+      "pt-br": "Catmandu"
+    },
+    "Q3114": {
+      "de": "Canberra",
+      "en": "Canberra",
+      "es": "Canberra",
+      "fr": "Canberra",
+      "mul": "Canberra",
+      "pt": "Camberra",
+      "pt-br": "Camberra"
+    },
+    "Q3130": {
+      "de": "Sydney",
+      "en": "Sydney",
+      "es": "Sídney",
+      "fr": "Sydney",
+      "pt": "Sydney",
+      "pt-br": "Sydney"
+    },
+    "Q3141": {
+      "de": "Melbourne",
+      "en": "Melbourne",
+      "es": "Melbourne",
+      "fr": "Melbourne",
+      "pt": "Melbourne",
+      "pt-br": "Melbourne"
+    },
+    "Q31487": {
+      "de": "Krakau",
+      "en": "Kraków",
+      "es": "Cracovia",
+      "fr": "Cracovie",
+      "mul": "Kraków",
+      "pt": "Cracóvia",
+      "pt-br": "Cracóvia"
+    },
+    "Q3183": {
+      "de": "Perth",
+      "en": "Perth",
+      "es": "Perth",
+      "fr": "Perth",
+      "mul": "Perth",
+      "pt": "Perth",
+      "pt-br": "Perth"
+    },
+    "Q3306": {
+      "de": "Panama-Stadt",
+      "en": "Panama City",
+      "es": "Ciudad de Panamá",
+      "fr": "Panama",
+      "pt": "Cidade do Panamá",
+      "pt-br": "Cidade do Panamá"
+    },
+    "Q334": {
+      "de": "Singapur",
+      "en": "Singapore",
+      "es": "Singapur",
+      "fr": "Singapour",
+      "pt": "Singapura",
+      "pt-br": "Singapura"
+    },
+    "Q33935": {
+      "de": "Tel Aviv-Jaffa",
+      "en": "Tel Aviv",
+      "es": "Tel Aviv",
+      "fr": "Tel Aviv",
+      "mul": "תל אביב-יפו",
+      "pt": "Tel Aviv",
+      "pt-br": "Tel Aviv"
+    },
+    "Q340": {
+      "de": "Montreal",
+      "en": "Montreal",
+      "es": "Montreal",
+      "fr": "Montréal",
+      "pt": "Montreal",
+      "pt-br": "Montreal"
+    },
+    "Q34647": {
+      "de": "Johannesburg",
+      "en": "Johannesburg",
+      "es": "Johannesburgo",
+      "fr": "Johannesbourg",
+      "pt": "Joanesburgo"
+    },
+    "Q34932": {
+      "de": "Brisbane",
+      "en": "Brisbane",
+      "es": "Brisbane",
+      "fr": "Brisbane",
+      "mul": "Brisbane",
+      "pt": "Brisbane",
+      "pt-br": "Brisbane"
+    },
+    "Q35178": {
+      "de": "Kuweit-Stadt",
+      "en": "Kuwait City",
+      "es": "Ciudad de Kuwait",
+      "fr": "Koweït",
+      "pt": "Kuwait"
+    },
+    "Q35493": {
+      "de": "Almaty",
+      "en": "Almaty",
+      "es": "Alma Ata",
+      "fr": "Almaty",
+      "pt": "Almaty",
+      "pt-br": "Almaty"
+    },
+    "Q3561": {
+      "de": "Algier",
+      "en": "Algiers",
+      "es": "Argel",
+      "fr": "Alger",
+      "pt": "Argel",
+      "pt-br": "Argel"
+    },
+    "Q3572": {
+      "de": "Tunis",
+      "en": "Tunis",
+      "es": "Túnez",
+      "fr": "Tunis",
+      "pt": "Tunes",
+      "pt-br": "Túnis"
+    },
+    "Q35765": {
+      "de": "Osaka",
+      "en": "Osaka",
+      "es": "Osaka",
+      "fr": "Osaka",
+      "mul": "Ōsaka-shi",
+      "pt": "Osaka",
+      "pt-br": "Osaka"
+    },
+    "Q3616": {
+      "de": "Teheran",
+      "en": "Tehran",
+      "es": "Teherán",
+      "fr": "Téhéran",
+      "mul": "Tehrān",
+      "pt": "Teerão",
+      "pt-br": "Teerã"
+    },
+    "Q3624": {
+      "de": "Addis Abeba",
+      "en": "Addis Ababa",
+      "es": "Adís Abeba",
+      "fr": "Addis-Abeba",
+      "pt": "Adis Abeba",
+      "pt-br": "Adis Abeba"
+    },
+    "Q3630": {
+      "de": "Jakarta",
+      "en": "Jakarta",
+      "es": "Yakarta",
+      "fr": "Jakarta",
+      "pt": "Jacarta",
+      "pt-br": "Jacarta"
+    },
+    "Q36312": {
+      "de": "Calgary",
+      "en": "Calgary",
+      "es": "Calgary",
+      "fr": "Calgary",
+      "mul": "Calgary",
+      "pt": "Calgary",
+      "pt-br": "Calgary"
+    },
+    "Q3640": {
+      "de": "Ankara",
+      "en": "Ankara",
+      "es": "Ankara",
+      "fr": "Ankara",
+      "mul": "Ankara",
+      "pt": "Ancara",
+      "pt-br": "Ancara"
+    },
+    "Q36433": {
+      "de": "Porto",
+      "en": "Porto",
+      "es": "Oporto",
+      "fr": "Porto",
+      "mul": "Porto",
+      "pt": "Porto",
+      "pt-br": "Porto"
+    },
+    "Q36526": {
+      "de": "Port Moresby",
+      "en": "Port Moresby",
+      "es": "Puerto Moresby",
+      "fr": "Port Moresby",
+      "pt": "Port Moresby"
+    },
+    "Q3692": {
+      "de": "Riad",
+      "en": "Riyadh",
+      "es": "Riad",
+      "fr": "Riyad",
+      "pt": "Riade",
+      "pt-br": "Riade"
+    },
+    "Q36947": {
+      "de": "Salvador",
+      "en": "Salvador",
+      "es": "Salvador",
+      "fr": "Salvador",
+      "pt": "Salvador",
+      "pt-br": "Salvador"
+    },
+    "Q3703": {
+      "de": "Bamako",
+      "en": "Bamako",
+      "es": "Bamako",
+      "fr": "Bamako",
+      "pt": "Bamako",
+      "pt-br": "Bamaco"
+    },
+    "Q37100": {
+      "de": "Auckland",
+      "en": "Auckland",
+      "es": "Auckland",
+      "fr": "Auckland",
+      "pt": "Auckland"
+    },
+    "Q3711": {
+      "de": "Belgrad",
+      "en": "Belgrade",
+      "es": "Belgrado",
+      "fr": "Belgrade",
+      "pt": "Belgrado",
+      "pt-br": "Belgrado"
+    },
+    "Q3718": {
+      "de": "Dakar",
+      "en": "Dakar",
+      "es": "Dakar",
+      "fr": "Dakar",
+      "mul": "Dakar",
+      "pt": "Dacar"
+    },
+    "Q374365": {
+      "de": "Dschidda",
+      "en": "Jeddah",
+      "es": "Yeda",
+      "fr": "Djeddah",
+      "pt": "Jidá",
+      "pt-br": "Gidá"
+    },
+    "Q3761": {
+      "de": "Accra",
+      "en": "Accra",
+      "es": "Acra",
+      "fr": "Accra",
+      "mul": "Accra",
+      "pt": "Acra",
+      "pt-br": "Acra"
+    },
+    "Q3777": {
+      "de": "Ouagadougou",
+      "en": "Ouagadougou",
+      "es": "Uagadugú",
+      "fr": "Ouagadougou",
+      "mul": "Ouagadougou",
+      "pt": "Uagadugu",
+      "pt-br": "Uagadugu"
+    },
+    "Q3787": {
+      "en": "Abuja",
+      "es": "Abuya",
+      "fr": "Abuja",
+      "mul": "Abuja"
+    },
+    "Q37995": {
+      "de": "Rangun",
+      "en": "Yangon",
+      "es": "Rangún",
+      "fr": "Rangoun",
+      "pt": "Rangum",
+      "pt-br": "Rangum"
+    },
+    "Q3805": {
+      "de": "Amman",
+      "en": "Amman",
+      "es": "Amán",
+      "fr": "Amman",
+      "pt": "Amã",
+      "pt-br": "Amã"
+    },
+    "Q3820": {
+      "de": "Beirut",
+      "en": "Beirut",
+      "es": "Beirut",
+      "fr": "Beyrouth",
+      "pt": "Beirute",
+      "pt-br": "Beirute"
+    },
+    "Q3826": {
+      "de": "Maskat",
+      "en": "Muscat",
+      "es": "Mascate",
+      "fr": "Mascate",
+      "pt": "Mascate",
+      "pt-br": "Mascate"
+    },
+    "Q3859": {
+      "de": "Kigali",
+      "en": "Kigali",
+      "es": "Kigali",
+      "fr": "Kigali",
+      "pt": "Quigali",
+      "pt-br": "Kigali"
+    },
+    "Q3861": {
+      "de": "Doha",
+      "en": "Doha",
+      "es": "Doha",
+      "fr": "Doha",
+      "pt": "Doha",
+      "pt-br": "Doha"
+    },
+    "Q3870": {
+      "de": "Nairobi",
+      "en": "Nairobi",
+      "es": "Nairobi",
+      "fr": "Nairobi",
+      "pt": "Nairóbi",
+      "pt-br": "Nairóbi"
+    },
+    "Q38807": {
+      "de": "Suva",
+      "en": "Suva",
+      "es": "Suva",
+      "fr": "Suva",
+      "pt": "Suva"
+    },
+    "Q3881": {
+      "de": "Lusaka",
+      "en": "Lusaka",
+      "es": "Lusaka",
+      "fr": "Lusaka",
+      "mul": "Lusaka",
+      "pt": "Lusaca"
+    },
+    "Q3897": {
+      "de": "Luanda",
+      "en": "Luanda",
+      "es": "Luanda",
+      "fr": "Luanda",
+      "pt": "Luanda",
+      "pt-br": "Luanda"
+    },
+    "Q3915": {
+      "de": "Antananarivo",
+      "en": "Antananarivo",
+      "es": "Antananarivo",
+      "fr": "Antananarivo",
+      "pt": "Antananarivo"
+    },
+    "Q40236": {
+      "de": "Manaus",
+      "en": "Manaus",
+      "es": "Manaos",
+      "fr": "Manaus",
+      "pt": "Manaus",
+      "pt-br": "Manaus"
+    },
+    "Q406": {
+      "de": "Istanbul",
+      "en": "Istanbul",
+      "es": "Estambul",
+      "fr": "Istanbul",
+      "mul": "İstanbul",
+      "pt": "Istambul",
+      "pt-br": "Istambul"
+    },
+    "Q42053": {
+      "de": "Isfahan",
+      "en": "Isfahan",
+      "es": "Isfahán",
+      "fr": "Ispahan",
+      "pt": "Isfahan"
+    },
+    "Q43463": {
+      "de": "Fortaleza",
+      "en": "Fortaleza",
+      "es": "Fortaleza",
+      "fr": "Fortaleza",
+      "mul": "Fortaleza",
+      "pt": "Fortaleza",
+      "pt-br": "Fortaleza"
+    },
+    "Q43509": {
+      "de": "Guayaquil",
+      "en": "Guayaquil",
+      "es": "Guayaquil",
+      "fr": "Guayaquil",
+      "mul": "Guayaquil",
+      "pt": "Guaiaquil"
+    },
+    "Q44210": {
+      "de": "Córdoba",
+      "en": "Córdoba",
+      "es": "Córdoba",
+      "fr": "Córdoba",
+      "mul": "Córdoba",
+      "pt": "Córdova",
+      "pt-br": "Córdova"
+    },
+    "Q472": {
+      "de": "Sofia",
+      "en": "Sofia",
+      "es": "Sofía",
+      "fr": "Sofia",
+      "pt": "Sófia",
+      "pt-br": "Sófia"
+    },
+    "Q48": {
+      "de": "Asien",
+      "en": "Asia",
+      "es": "Asia",
+      "fr": "Asie",
+      "pt": "Ásia",
+      "pt-br": "Ásia"
+    },
+    "Q48278": {
+      "de": "Medellín",
+      "en": "Medellín",
+      "es": "Medellín",
+      "fr": "Medellín",
+      "mul": "Medellín",
+      "pt": "Medellín",
+      "pt-br": "Medellín"
+    },
+    "Q48344": {
+      "de": "Recife",
+      "en": "Recife",
+      "es": "Recife",
+      "fr": "Recife",
+      "pt": "Recife",
+      "pt-br": "Recife"
+    },
+    "Q49": {
+      "de": "Nordamerika",
+      "en": "North America",
+      "es": "América del Norte",
+      "fr": "Amérique du Nord",
+      "pt": "América do Norte",
+      "pt-br": "América do Norte"
+    },
+    "Q490": {
+      "de": "Mailand",
+      "en": "Milan",
+      "es": "Milán",
+      "fr": "Milan",
+      "pt": "Milão",
+      "pt-br": "Milão"
+    },
+    "Q5083": {
+      "de": "Seattle",
+      "en": "Seattle",
+      "es": "Seattle",
+      "fr": "Seattle",
+      "mul": "Seattle",
+      "pt": "Seattle",
+      "pt-br": "Seattle"
+    },
+    "Q5112": {
+      "de": "Adelaide",
+      "en": "Adelaide",
+      "es": "Adelaida",
+      "fr": "Adélaïde",
+      "pt": "Adelaide",
+      "pt-br": "Adelaide"
+    },
+    "Q5465": {
+      "de": "Kapstadt",
+      "en": "Cape Town",
+      "es": "Ciudad del Cabo",
+      "fr": "Le Cap",
+      "pt": "Cidade do Cabo",
+      "pt-br": "Cidade do Cabo"
+    },
+    "Q5468": {
+      "de": "Durban",
+      "en": "Durban",
+      "es": "Durban",
+      "fr": "Durban",
+      "mul": "Durban",
+      "pt": "Durban"
+    },
+    "Q55643": {
+      "de": "Ozeanien",
+      "en": "Oceania",
+      "es": "Oceanía",
+      "fr": "Océanie",
+      "pt": "Oceania"
+    },
+    "Q5582862": {
+      "de": "Cusco",
+      "en": "Cusco",
+      "es": "Cusco",
+      "fr": "Cuzco",
+      "mul": "Cusco",
+      "pt": "Cusco"
+    },
+    "Q585": {
+      "en": "Oslo",
+      "mul": "Oslo"
+    },
+    "Q597": {
+      "de": "Lissabon",
+      "en": "Lisbon",
+      "es": "Lisboa",
+      "fr": "Lisbonne",
+      "pt": "Lisboa",
+      "pt-br": "Lisboa"
+    },
+    "Q60": {
+      "de": "New York City",
+      "en": "New York City",
+      "es": "Nueva York",
+      "fr": "New York",
+      "pt": "Nova Iorque",
+      "pt-br": "Nova Iorque"
+    },
+    "Q61": {
+      "de": "Washington, D.C.",
+      "en": "Washington, D.C.",
+      "es": "Washington D. C.",
+      "fr": "Washington",
+      "pt": "Washington, D.C."
+    },
+    "Q612": {
+      "de": "Dubai",
+      "en": "Dubai",
+      "es": "Dubái",
+      "fr": "Dubaï",
+      "pt": "Dubai",
+      "pt-br": "Dubai"
+    },
+    "Q62": {
+      "de": "San Francisco",
+      "en": "San Francisco",
+      "es": "San Francisco",
+      "fr": "San Francisco",
+      "mul": "San Francisco",
+      "pt": "São Francisco",
+      "pt-br": "São Francisco"
+    },
+    "Q64": {
+      "de": "Berlin",
+      "en": "Berlin",
+      "es": "Berlín",
+      "fr": "Berlin",
+      "pt": "Berlim",
+      "pt-br": "Berlim"
+    },
+    "Q641": {
+      "de": "Venedig",
+      "en": "Venice",
+      "es": "Venecia",
+      "fr": "Venise",
+      "pt": "Veneza",
+      "pt-br": "Veneza"
+    },
+    "Q65": {
+      "de": "Los Angeles",
+      "en": "Los Angeles",
+      "es": "Los Ángeles",
+      "fr": "Los Angeles",
+      "mul": "Los Angeles",
+      "pt": "Los Angeles",
+      "pt-br": "Los Angeles"
+    },
+    "Q7204": {
+      "de": "Middle East",
+      "en": "Middle East",
+      "es": "Medio Oriente",
+      "fr": "Moyen-Orient",
+      "pt": "Médio Oriente",
+      "pt-br": "Oriente Médio"
+    },
+    "Q727": {
+      "de": "Amsterdam",
+      "en": "Amsterdam",
+      "es": "Ámsterdam",
+      "fr": "Amsterdam",
+      "mul": "Amsterdam",
+      "pt": "Amesterdão",
+      "pt-br": "Amsterdã"
+    },
+    "Q7903": {
+      "de": "Casablanca",
+      "en": "Casablanca",
+      "es": "Casablanca",
+      "fr": "Casablanca",
+      "pt": "Casablanca",
+      "pt-br": "Casablanca"
+    },
+    "Q79990": {
+      "de": "Christchurch",
+      "en": "Christchurch",
+      "es": "Christchurch",
+      "fr": "Christchurch",
+      "pt": "Christchurch"
+    },
+    "Q81033": {
+      "de": "Monterrey",
+      "en": "Monterrey",
+      "es": "Monterrey",
+      "fr": "Monterrey",
+      "pt": "Monterrei",
+      "pt-br": "Monterrey"
+    },
+    "Q84": {
+      "de": "London",
+      "en": "London",
+      "es": "Londres",
+      "fr": "Londres",
+      "pt": "Londres",
+      "pt-br": "Londres"
+    },
+    "Q85": {
+      "de": "Kairo",
+      "en": "Cairo",
+      "es": "El Cairo",
+      "fr": "Le Caire",
+      "mul": "القاهرة",
+      "pt": "Cairo",
+      "pt-br": "Cairo"
+    },
+    "Q8646": {
+      "de": "Hongkong",
+      "en": "Hong Kong",
+      "es": "Hong Kong",
+      "fr": "Hong Kong",
+      "pt": "Hong Kong",
+      "pt-br": "Hong Kong"
+    },
+    "Q8652": {
+      "de": "Miami",
+      "en": "Miami",
+      "es": "Miami",
+      "fr": "Miami",
+      "mul": "Miami",
+      "pt": "Miami",
+      "pt-br": "Miami"
+    },
+    "Q8660": {
+      "de": "Karatschi",
+      "en": "Karachi",
+      "es": "Karachi",
+      "fr": "Karachi",
+      "pt": "Carachi"
+    },
+    "Q8673": {
+      "de": "Lagos",
+      "en": "Lagos",
+      "es": "Lagos",
+      "fr": "Lagos",
+      "mul": "Lagos",
+      "pt": "Lagos"
+    },
+    "Q8678": {
+      "de": "Rio de Janeiro",
+      "en": "Rio de Janeiro",
+      "es": "Río de Janeiro",
+      "fr": "Rio de Janeiro",
+      "mul": "Rio de Janeiro",
+      "pt": "Rio de Janeiro",
+      "pt-br": "Rio de Janeiro"
+    },
+    "Q8684": {
+      "de": "Seoul",
+      "en": "Seoul",
+      "es": "Seúl",
+      "fr": "Séoul",
+      "pt": "Seul",
+      "pt-br": "Seul"
+    },
+    "Q8686": {
+      "de": "Shanghai",
+      "en": "Shanghai",
+      "es": "Shanghái",
+      "fr": "Shanghaï",
+      "pt": "Xangai",
+      "pt-br": "Xangai"
+    },
+    "Q87": {
+      "de": "Alexandria",
+      "en": "Alexandria",
+      "es": "Alejandría",
+      "fr": "Alexandrie",
+      "pt": "Alexandria",
+      "pt-br": "Alexandria"
+    },
+    "Q8717": {
+      "de": "Sevilla",
+      "en": "Seville",
+      "es": "Sevilla",
+      "fr": "Séville",
+      "mul": "Sevilla",
+      "pt": "Sevilha",
+      "pt-br": "Sevilha"
+    },
+    "Q8818": {
+      "de": "Valencia",
+      "en": "Valencia",
+      "es": "Valencia",
+      "fr": "Valence",
+      "mul": "Valencia",
+      "pt": "Valência",
+      "pt-br": "Valência"
+    },
+    "Q90": {
+      "de": "Paris",
+      "en": "Paris",
+      "es": "París",
+      "fr": "Paris",
+      "pt": "Paris",
+      "pt-br": "Paris"
+    },
+    "Q9022": {
+      "de": "Guadalajara",
+      "en": "Guadalajara",
+      "es": "Guadalajara",
+      "fr": "Guadalajara",
+      "pt": "Guadalajara",
+      "pt-br": "Guadalajara"
+    },
+    "Q956": {
+      "de": "Peking",
+      "en": "Beijing",
+      "es": "Pekín",
+      "fr": "Pékin",
+      "pt": "Pequim",
+      "pt-br": "Pequim"
+    },
+    "Q9733": {
+      "de": "Nouméa",
+      "en": "Nouméa",
+      "es": "Numea",
+      "fr": "Nouméa",
+      "pt": "Nouméa",
+      "pt-br": "Numeá"
+    }
+  }
+}
