@@ -11,7 +11,7 @@ App Store accessibility labels, the evidence for each and the PL/EN accessibilit
   **Airway: Buduj sieć lotów na globusie** (36 characters), the word the game uses (D-195).
 - Both Google Play and App Store cap localized names at 30 characters. The approved Polish title cannot fit; the store-field value in pl.md is **Airway: Buduj sieć lotów** (24 characters, D-203; was "Airway: Buduj trasy lotów"). PL store texts say "sieć", never "siatka" (`test:store-shots`).
 - App Store subtitles: up to 30 characters; App Store keyword field: up to 100 characters. Google Play short description: 80 characters; long description: 4,000 characters.
-- [N12an] R2c, D-228: App Store indexes the name, subtitle and keyword field together, so the keyword field repeats no
+- [N12an] R2c, D-229: App Store indexes the name, subtitle and keyword field together, so the keyword field repeats no
   word of the name or subtitle and no other keyword (EN drops `globe`, `routes`, `hub`; PL drops `globus`, `trasy`,
   `hub`, `sieć`), commas without spaces, ≤ 100 bytes (Apple counts characters; bytes are the safe bound for "ł", "ś").
   Play alt text: one unique line per scene (≤ 140 characters, no "image of"), entered for every device size of that

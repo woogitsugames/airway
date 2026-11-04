@@ -1848,7 +1848,7 @@ the store privacy answers (D-220: the app transmits nothing). Rejected: a JSON/b
 `AW1:` line), wall-clock timing (needs session hooks; R3j), a hub column (a city code is the one non-count field).
 Guard: `test:playtest`. **Status: in force.**
 
-## D-228 — Store keywords without repeats, Play alt texts, "puzzle" in the Play short description (2026-11-04, Claude, night N12an)
+## D-229 — Store keywords without repeats, Play alt texts, "puzzle" in the Play short description (2026-11-04, Claude, night N12an)
 R2c with D-223. App Store indexes name + subtitle + keywords as one set, so the keyword field repeats no word of
 either and no other keyword. EN (96 bytes):
 `airline,airport,flight,plane,aircraft,network,transfer,strategy,puzzle,logistics,travel,earth,3d`; PL (92 bytes):

@@ -109,7 +109,7 @@ function checkCopy() {
       [name, subtitle, short, full, keywords].join(' '))) {
       throw new Error(lang + ': competitor name used');
     }
-    // [N12an] R2c, D-228: App Store indexes name + subtitle + keywords together, so a keyword that repeats a word of
+    // [N12an] R2c, D-229: App Store indexes name + subtitle + keywords together, so a keyword that repeats a word of
     // the name or subtitle (or another keyword) is wasted; commas without spaces, nothing empty, not the app name.
     const words = (text) => text.toLowerCase().match(/[\p{L}\p{N}]+/gu) || [];
     const indexed = new Set(words(name + ' ' + subtitle));
