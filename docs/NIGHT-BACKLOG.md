@@ -747,6 +747,12 @@ before/after `npm run shots -- globe` PNGs and look at them.
       alive, overload; both suites read `E2E_SEEDS` (0xA1A1 unchanged). Seeds 0xA1A1…+99: the smoke plan fails on 15
       (week-1 board not reached), leaderboard on 0. Not covered: daily-share/daily-continue (date seed), the on-screen
       filter and drag hit-testing (browser only).
+- [x] N12ah **Translator export/import (R7i, D-211, D-212)** — `npm run i18n:export -- de` writes `docs/i18n/de.json`
+      (or `--csv`): 449 rows of key, EN, PL reference, catalog comment as context, `{param}`s, plural parameters, length
+      budget (from `src/i18n/limits.ts` once R7h lands) and the language's plural categories with sample counts;
+      `i18n:import` writes `src/i18n/de.ts` only when every row passes (params, plural form counts, budget, stale EN,
+      missing/unknown rows). Wave-1 de/fr/es/pt(-BR) are `PLANNED_LANGUAGE_ENTRIES`, not shipped. Not covered:
+      `site/i18n.js`, `docs/store/` texts.
 - [x] G1 **Production globe assets** — reproducible bake into `public/data/globe/` (day 4096/2048, night 2048/1024,
       elevation 2048, clouds 2048, ~1.9 MB) with a SHA-256 manifest; NASA/NOAA entries in `docs/ASSETS.md`; credit
       line (PL/EN i18n) on the About page; bundle `total` budget → 4 300 kB (D-171); new fast test `test:globe-assets`.
@@ -1189,7 +1195,7 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
       (menu split-flap: half-row title 10, status 10, full title 20, gate 2; dock tags, stamps, select options);
       `test:i18n` fails when any catalog exceeds a budget. Pseudo-locale stretches strings ≤ 20 chars by ×2 (IBM/W3C
       expansion for short text), and `e2e/pseudo-locale.mjs` adds 320×568. **Area:** `src/i18n/**`, `e2e/`.
-- [ ] R7i **Translator export/import** — `npm run i18n:export -- de` writes `docs/i18n/de.json` (key, EN, PL,
+- [x] R7i → N12ah (site and store texts not covered) **Translator export/import** — `npm run i18n:export -- de` writes `docs/i18n/de.json` (key, EN, PL,
       context comment, max length from R7h, plural categories of the language, placeholder list) and
       `i18n:import` turns a filled file back into `src/i18n/de.ts`, rejecting missing placeholders, over-budget text and
       wrong plural counts. Also covers `site/i18n.js` and `docs/store/en.md` sections. **Area:** `scripts/`, `docs/i18n/`.
@@ -1389,3 +1395,4 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
 - 2026-11-04 · N12ag smoke and leaderboard guarded by test:e2e-seeds (D-208) · night/12ag-smoke-plan · test:e2e-seeds suites 24 → 26, cases 30 → 32, 32/32 (smoke 0xA1A1: 6 start pairs × 7 offsets; route ATH–BGW, week-1 board, overload at minute 6958); seeds 0xA1A1…+99: smoke plan fails 15/100, leaderboard 0/100; test:doc-ids 8/8 (169 decisions); test:fast 80/80 (266.2 s), build ok on origin/dev; browser suites not run (only the seed source moved, value 0xA1A1 unchanged; G7 SwiftShader slowness)
 - 2026-11-04 · N11z weekly board in phone landscape with cut-outs + N11aa notch profile for the training flight and the ATC strip (D-209) · night/11z-notch-board-tutorial · origin/dev cfb1dd8 merged first (then 860b429, #194: its D-208 kept, this decision renumbered D-208 → D-209): test:e2e:notch 54/54 in 75 s (46/54 on the old CSS: board scrolls 71–125 px, labels 63–117 px under the bottom inset, sign line 0–44 px wide / 6–7 lines; first-time card 34–43 px under the right cut-out), test:fast 80/80, build ok; shots docs/shots/n11y/ (+22 new, 4 refreshed, all inspected). Not run: ui:matrix (globe timeouts under SwiftShader, G7); boards ≥ 860 px wide unchanged, so its 915×412 PNGs are unaffected
 - 2026-11-04 · N11ab airport-pick sign on narrow landscape boards (D-210) · night/11ab-hub-pick-sign · origin/dev a9908f4 merged first: test:e2e:notch 60/60 in 84 s (56/60 on the old CSS: sign 72–89 px tall beside the 60 px pass, instruction 68 px wide, week text 23 px past the sign at 812×375; two later runs at the gate were red on my own first CSS — EN slots pick 63 px, then the Back tile 2 px out of the tighter sign — fixed before this green run), test:fast 80/80, build ok; shots docs/shots/n11y/upgrade-pick-* (6, inspected). Not run: ui:matrix (globe timeouts under SwiftShader, G7); boards ≥ 760 px unchanged
+- 2026-11-04 · N12ah translator export/import (R7i, D-211, D-212) · night/12ah-i18n-export · test:i18n-exchange 12/12 (new module; absent before), export de/fr 449 rows (de one|other, fr one|other|many), JSON + CSV round-trip, import rejects bad params/plurals/budget/stale EN; test:i18n 1/1, test:doc-ids 8/8 (173 decisions, max D-212), test:fast 81/81 (236.9 s), build ok on origin/dev 87a146c; no browser suite (no UI change)

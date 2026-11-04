@@ -73,3 +73,20 @@ export const LANGUAGE_CODES: readonly Language[] = LANGUAGES.codes;
 export function localName(item: { readonly namePl: string; readonly nameEn: string }, language: Language): string {
   return item[LANGUAGES.entry(language).names];
 }
+
+/**
+ * [night-12ah] R7i/R7j, D-212: wave-1 languages being prepared (translator files, city names). Not shipped: not in
+ * `LANGUAGE_CODES`, the settings select or the native locale lists until a reviewed catalog exists. `pt` is
+ * Brazilian Portuguese (locale pt-BR; a pt-PT device gets it too, as the base-code rule of `normalise` reads it).
+ * `many` (fr/es/pt: round millions) comes after `other`, so a token with two forms falls back to `other`.
+ */
+export const PLANNED_LANGUAGE_ENTRIES = [
+  { code: 'de', locale: 'de-DE', plural: ['one', 'other'], requiredForms: 2, storeLocale: 'de-DE', wikidata: ['de'] },
+  { code: 'fr', locale: 'fr-FR', plural: ['one', 'other', 'many'], requiredForms: 2, storeLocale: 'fr-FR', wikidata: ['fr'] },
+  { code: 'es', locale: 'es-ES', plural: ['one', 'other', 'many'], requiredForms: 2, storeLocale: 'es-ES', wikidata: ['es'] },
+  { code: 'pt', locale: 'pt-BR', plural: ['one', 'other', 'many'], requiredForms: 2, storeLocale: 'pt-BR', wikidata: ['pt-br', 'pt'] },
+] as const satisfies readonly (Pick<LanguageEntry, 'code' | 'locale' | 'plural' | 'requiredForms' | 'storeLocale'> & {
+  /** Wikidata label languages, first match wins (R7j). */
+  readonly wikidata: readonly string[];
+})[];
+export type PlannedLanguage = (typeof PLANNED_LANGUAGE_ENTRIES)[number]['code'];
