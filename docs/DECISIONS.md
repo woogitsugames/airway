@@ -1596,6 +1596,21 @@ normalised); the ext/05 puzzle-title question became Q-79 (N11t kept Q-77, which
 `docs/OWNER-QUESTIONS.md` once, plus a self-check on synthetic text. A new decision goes in its numeric place, not at the
 end of the file. **Status: in force (N12ae).**
 
+## D-206 — Every safe-area inset goes through the --aw-safe-* tokens; a notch profile tests them (2026-11-04, Claude, night N11y)
+R5j: only the HUD read the `--aw-safe-*` tokens (`src/ui/base.css`, task 25); menu, settings, upgrade, game over,
+tutorial, puzzles, ATC strip, the overlay fixture and theme CSS used 56 raw `env(safe-area-inset-*)`. Chromium
+cannot emulate `env()`, so no browser suite ever saw those insets. All 56 now read the tokens (same values on
+devices: the tokens are `env()` with a 0 px fallback), and where a screen ignored a side it now keeps clear of it:
+the menu notice (left/right, and its landscape top/right), the departures board and the sign's width (left/right),
+the tutorial settings dialog (right). Guards: `test:safe-area` (fast, headless) fails on any raw `env()` outside the
+four token definitions (56 on the old CSS); `test:e2e:notch` (ci, ~40 s, no globe so SwiftShader does not slow it)
+sets the tokens on `:root` to iPhone-like values (portrait 393×852 59/0/34/0, landscape 852×393 0/59/21/59) on
+menu, settings, puzzle board, upgrade board, game over and HUD in PL/EN and fails on any visible control inside an
+inset (content inside a scroller that can still scroll toward an inset may pass under it). 24/24 now, 14/24 on the
+old CSS. Rejected: a notch profile in `ui:matrix` (it plays the real game on the globe, which times out under
+SwiftShader since G2–G4; the component mounts test the same CSS), per-screen inset variables (one token set is the
+contract). **Status: in force (N11y).**
+
 ## D-207 — "+2 slots" keeps the D-150 offer rule; the card's value is measured, its future is a closed-test question (2026-11-04, Claude, night N12af)
 The card has appeared about 3 times per 50 runs since D-150. `scripts/research/card-value.ts --card=slots` (now with
 offer counts, the first-hold minute and a research-only `--slots-rule=always` what-if) on 200 seeds, 60 min cap: under

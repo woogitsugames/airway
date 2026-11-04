@@ -9,10 +9,10 @@
   background: rgba(17, 35, 33, .63);
   /* [night-07p] Top padding clears the boarding pass (top 10 px + 60 px tall): the final week, day, time and
      passenger count stay readable under the report instead of being cut by the sign. */
-  padding: calc(env(safe-area-inset-top, 0px) + 80px)
-           calc(env(safe-area-inset-right, 0px) + 12px)
-           calc(env(safe-area-inset-bottom, 0px) + 12px)
-           calc(env(safe-area-inset-left, 0px) + 12px);
+  padding: calc(var(--aw-safe-top) + 80px)
+           calc(var(--aw-safe-right) + 12px)
+           calc(var(--aw-safe-bottom) + 12px)
+           calc(var(--aw-safe-left) + 12px);
   color: #2a2420;
   font-family: 'Atkinson Hyperlegible Next', sans-serif;
 }
@@ -269,8 +269,8 @@
 }
 @media (max-height: 550px) and (min-width: 620px) {
   .airway-go-overlay {
-    padding-top: calc(env(safe-area-inset-top, 0px) + 78px);
-    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 5px);
+    padding-top: calc(var(--aw-safe-top) + 78px);
+    padding-bottom: calc(var(--aw-safe-bottom) + 5px);
   }
   .airway-go-content {
     width: min(100%, 910px);

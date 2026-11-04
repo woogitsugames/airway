@@ -510,6 +510,12 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       cheaper: on-screen airports are collected once and filtered per chip to its strip along the edge, placed chips
       are kept per side, and the slide stops once both directions leave the edge (150 airports ~3× faster). **Area:** `src/ui/overlay.ts`,
       `src/ui/overlay-layout.ts`, `scripts/test-overlay-layout.mjs`.
+- [x] N11y **Safe-area tokens across the UI CSS + notch profile (R5j, D-206)** — the 56 raw `env(safe-area-inset-*)`
+      uses in menu, settings, upgrade, game over, tutorial, puzzles, ATC strip, overlay fixture and theme CSS now read
+      the `--aw-safe-*` tokens of `src/ui/base.css`; the menu notice, departures board and sign and the tutorial
+      settings dialog also keep clear of the left/right insets (landscape cut-out). `test:safe-area` (fast, headless)
+      fails on any raw use (56 on the old CSS); `test:e2e:notch` (ci) sets the tokens to iPhone-like values on six
+      screens mounted without the globe and fails on any control inside an inset. **Area:** UI CSS, `scripts/`, `e2e/`.
 
 ## Continuous development round N12 (agent 2)
 - [x] N12a **Balance bot plays for reach (D-90)** — the handover gap "the DEV bot rarely connects new airports; long
@@ -1039,7 +1045,7 @@ Evidence: `docs/RESEARCH.md` "R5 — …", PNGs in `docs/research/r5/`.
       `DAYNIGHT_PARAMS_VERSION`, `AIRPORT_LABEL_MODES`, `dailyGame` (check `functions/` first), keys
       `status.loading` / `status.ready`. Add an "every catalog key is referenced" check to `test:i18n` (allow
       template prefixes such as `privacy.s${n}`). `test:fast`, build. **Area:** UI/sim/net cleanup, i18n, docs.
-- [ ] R5j **Safe-area tokens everywhere + notch profile** — 56 direct `env(safe-area-inset-*)` uses in menu, upgrade,
+- [x] R5j → N11y **Safe-area tokens everywhere + notch profile** — 56 direct `env(safe-area-inset-*)` uses in menu, upgrade,
       game-over, tutorial, settings, puzzles and ATC strip CSS bypass the `--aw-safe-*` tokens, so only the HUD is
       tested with insets. Replace them with the tokens (menu notice gets a left/right inset in landscape) and add a
       `notch` profile to `ui:matrix` / `screens-fit` that sets the tokens to iPhone-like values (59/0/34/0 portrait,
@@ -1352,4 +1358,5 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
 - 2026-11-04 · N11w HUD target test knows the G8 globe tag (D-199) · night/11w-hud-targets-globe-tag · after merging dev (#186–#188): test:hud-targets 312/312 (293/300 on clean dev; 308/312 with the new checks before the CSS fix: speed tag 1 px in the bottom inset at 915×412 + its rotation case, plus a too-strict neighbour gap on foldables, dropped), test:fast 78/78, build ok; shots docs/shots/13 (5, seven controls)
 - 2026-11-04 · N11x edge-chip placement as a pure function (R5h, D-202) · night/11x-edge-chip-placement · after merging dev (#188, #189): test:overlay-layout 36/36 (crashes on the old module; 200/200 scenes identical to the old loop; 150 airports 0.14–0.16 ms vs 0.43–0.50 ms per frame), test:fast 78/78, build ok, e2e:edge-chip-airports 2/2, e2e:edge-chip-fill 4/4, e2e:edge-dock 5/5, e2e:edge-chip-tags 6/6 chips=53 (same as origin/dev; a first run 4/6 timed out on the upgrade-card click at 673×841 under SwiftShader, G7)
 - 2026-11-04 · N12ae docs numbering guard, Q-77 → B, Q-78 → A (D-203, D-204, D-205) · night/12ae-docs-consistency · test:doc-ids 8/8 (6/8 on origin/dev 728502c: order + Q-77), 166 decisions max D-205, 79 questions max Q-79; reserved D-202 was taken by N11x (#190) meanwhile → own numbers D-203…D-205; after merging dev (#190): test:store-shots 1/1, test:fast 79/79 (258.4 s), build ok; no browser suite (docs and store text only; store PNG manifest still carries the old game text, regenerated with the next store:shots)
-- 2026-11-04 · N12af "+2 slots" card value and offer rule (D-207, Q-80) · night/12af-slots-card-value · card-value --card=slots 200 seeds/60 min: D-150 pool 4/364 boards offered (3 runs), 0 picks, forced −2.82 min (0 longer / 3 shorter / 1 same), holds in 12/200 runs (median 11.6 min); what-if always eligible 240/358 boards (161 runs), 0 picks, forced −1.10 min (16/96/128), turboprop alternative −0.42, bot mean 16.74 → 16.45 min; no rule change; test:doc-ids 8/8 (167 decisions, 80 questions), test:fast 79/79 (230.1 s), build ok
+- 2026-11-04 · N11y safe-area tokens across the UI CSS + notch profile (R5j, D-206) · night/11y-safe-area-tokens · after merging dev (#189–#191; D-203 → D-206, N12ae took D-203…D-205): test:safe-area 6/6 (raw=0, 56 on the old CSS), test:e2e:notch 24/24 in 37 s (14/24 on the old CSS), test:fast 80/80, build ok, e2e:screens-fit 18/18; shots docs/shots/n11y/ (14). Not run: ui:matrix (upgrade screen times out at Fold sizes under SwiftShader since the new globe, G7); the CSS is unchanged at zero insets, which is all Chromium can show
+- 2026-11-04 · N12af "+2 slots" card value and offer rule (D-207, Q-80) · night/12af-slots-card-value · card-value --card=slots 200 seeds/60 min: D-150 pool 4/364 boards offered (3 runs), 0 picks, forced −2.82 min (0 longer / 3 shorter / 1 same), holds in 12/200 runs (median 11.6 min); what-if always eligible 240/358 boards (161 runs), 0 picks, forced −1.10 min (16/96/128), turboprop alternative −0.42, bot mean 16.74 → 16.45 min; no rule change; after merging dev (#192): test:doc-ids 8/8 (168 decisions, 80 questions), test:fast 80/80 (213.8 s), build ok
