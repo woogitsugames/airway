@@ -1096,7 +1096,7 @@ routes, planes and the paper/airport-artefact UI of D-11 stay; only the globe su
 globe part of D-11 (world style A "Diorama"); D-05 (not minimal) is met by a real, lit, relief-rich Earth. Plan in
 `docs/mockups/globe-2026-11/PLAN.md`, steps G1–G9 in `docs/NIGHT-BACKLOG.md`. Rejected: A (still reads as a
 diagram where mountains are hand-traced bands), C (muddy at phone size, the simplification removes the realism the
-owner asked for). **Status: accepted by the owner 2026-11-03; implementation pending (G1–G9).**
+owner asked for). **Status: accepted by the owner 2026-11-03; shipped on `dev` with G1–G3 and G9 (2026-11-04); G4–G8, G9b pending.**
 
 ## D-171 — Bundle `total` budget for the satellite globe (2026-11-03, Claude, ext/03)
 B ships ~1.8 MB of textures (day 4096 + 2048, night 2048 + 1024, elevation, clouds) and the Mapa mode (D-172) ~0.55 MB more. The D-143 `total` budget
@@ -1163,6 +1163,17 @@ stay for DEV comparison only (`?airportStyle=`). Probe (D-177, seed 15, phone, d
 Satelita / 3.4 Mapa (were 2.2 / 3.8 / 1.3), airports 2.6 / 3.2 / 3.1 (were 2.3 / 4.9 / 1.4 with the median probe).
 Airports, planes and the Mapa tags still miss 4.5:1: follow-up G9b. Store screenshots are regenerated with G6.
 **Status: in force (owner).**
+
+## D-179 — The satellite globe ships; the diorama stays only as a fallback (2026-11-04, Claude, G2/G3)
+`createGlobe` defaults to `look: 'satellite'` (D-170): land heights from `public/data/globe/elevation-2048.png`
+(ETOPO5, `0.0004 + 0.0052·√km`, airport pads flattened), smooth normals, the Blue Marble day texture by surface
+direction, the shipped day/night grade (D-63/D-49) and Black Marble lights on the night side, the ocean shell, the
+sun-aware halo and haze; the cloud shell from `medium` up (none on `low`/`saver`, D-173). Trees, rocks, puffy clouds and
+the city-light points are not built (G5 deletes their code). If any texture fails to load, `createGlobe` logs once and
+builds the diorama, so the game never starts without a world. `?globeLook=diorama|refined|painted|map` remains a DEV
+comparison. G2 and G3 land as one PR because the textured terrain alone is white. The ocean/haze shells are shipped as
+separate transparent layers for now; folding them into the terrain shader (fill rate, G4) and measuring on phones
+(G7) are still open. Store screenshots are regenerated in G6. **Status: in force (G2/G3).**
 
 ## D-150 — Weekly board offers only cards that can act (2026-11-03 22:20 CET, owner, Q-71 → B)
 R8a: the "+2 slots" card enters the weekly draw only after the run's first departure hold, the hub expansion card only

@@ -1,7 +1,6 @@
-// [ext-03] Experimental globe looks for the owner's choice (docs/mockups/globe-2026-11/). DEV only: the game
-// passes a look only when `import.meta.env.DEV` and `?globeLook=` say so, and the textures live under
-// dev/globe-look/assets/ (served by the Vite dev server, never copied into the build). `diorama` is the
-// shipped look and takes none of this code path.
+// [ext-03, G2/G3] Globe looks (docs/mockups/globe-2026-11/). `satellite` is the shipped globe (D-170): its textures
+// are in public/data/globe/ (G1). The other looks are DEV comparisons (`?globeLook=`), their textures served by the
+// Vite dev server from dev/globe-look/assets/ (never in the build); `diorama` is the fallback when textures fail.
 //   refined   A "Dopracowana diorama": same illustrated world, smooth mesh, muted biomes, tidy decorations.
 //   satellite B "Realistyczny": NASA Blue Marble / Black Marble textures, ETOPO5 relief, cloud shell.
 //   painted   C "Pomiędzy": Blue Marble colours simplified into painted areas, ETOPO5 relief, diorama clouds.
@@ -31,6 +30,8 @@ interface LookConfig {
   /** City-light gain on the night side (texture looks). */
   readonly nightGain: number;
   readonly clouds: string | null;
+  /** [G2/G3] Files ship in `public/data/globe/` (production, D-170) rather than the dev-server experiment folder. */
+  readonly production?: boolean;
   /** Ocean shell: tint alpha (how much it veils the sea floor colour) and glint strength. */
   readonly ocean: { readonly veil: number; readonly glint: number };
 }
@@ -45,8 +46,10 @@ export const LOOKS: Record<Exclude<GlobeLook, 'diorama'>, LookConfig> = {
   satellite: {
     terrain: 'textured',
     decor: { trees: 0, rocks: 0, clouds: 0, lights: 0, tidy: true },
-    day: { low: 'satellite-day-2048.jpg', medium: 'satellite-day-4096.jpg', high: 'satellite-day-4096.jpg' },
-    night: { low: 'satellite-night-1024.jpg', medium: 'satellite-night-2048.jpg', high: 'satellite-night-2048.jpg' },
+    // [G2/G3] The shipped globe (D-170): G1 files, 2048 + 1024 and no cloud shell on low/saver (D-173).
+    production: true,
+    day: { low: 'day-2048.jpg', medium: 'day-4096.jpg', high: 'day-4096.jpg' },
+    night: { low: 'night-1024.jpg', medium: 'night-2048.jpg', high: 'night-2048.jpg' },
     nightGain: 1.6, clouds: 'clouds-2048.png',
     ocean: { veil: .1, glint: .8 },
   },
@@ -123,9 +126,10 @@ async function loadTexture(blob: Blob, srgb: boolean): Promise<Texture> {
 }
 
 /** Fetch everything a look needs before the terrain is built (heights must exist at build time). */
-export async function loadLookAssets(look: Exclude<GlobeLook, 'diorama'>, preset: QualityLevel, base: string,
-  signal?: AbortSignal): Promise<LookAssets> {
+export async function loadLookAssets(look: Exclude<GlobeLook, 'diorama'>, preset: QualityLevel, devBase: string,
+  signal?: AbortSignal, productionBase = 'data/globe/'): Promise<LookAssets> {
   const config = LOOKS[look];
+  const base = config.production ? productionBase : devBase;
   let bytes = 0;
   const get = async (name: string): Promise<Blob> => {
     const blob = await fetchBytes(base + name, signal);
@@ -137,7 +141,8 @@ export async function loadLookAssets(look: Exclude<GlobeLook, 'diorama'>, preset
   if (config.terrain === 'textured') {
     const [elevation, dayBlob, nightBlob, cloudBlob] = await Promise.all([
       get('elevation-2048.png'), get(config.day![preset]),
-      config.night ? get(config.night[preset]) : null, config.clouds ? get(config.clouds) : null,
+      config.night ? get(config.night[preset]) : null,
+      config.clouds && preset !== 'low' ? get(config.clouds) : null, // D-173: no cloud shell on low/saver
     ]);
     style = { id: 'textured', elevation: await loadElevation(elevation) };
     day = await loadTexture(dayBlob, true);
