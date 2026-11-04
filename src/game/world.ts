@@ -1,7 +1,7 @@
 // Frame loop and menu/game framing around the single render facade (src/render, "Render API").
 // The renderer has no clock of its own; this owns requestAnimationFrame and feeds render(alpha, dt).
 import {
-  createWorldRenderer, createMenuNetwork, type CityView, type HubLoadView, type PlaneView, type QualityPreference,
+  createWorldRenderer, createMenuNetwork, type CityView, type GlobeMode, type HubLoadView, type PlaneView, type QualityPreference,
   type RouteView, type SafeAreaInsets, type ScreenPoint, type WorldRenderer,
 } from '../render';
 import type { RoutePreviewModel } from '../input/routeTool';
@@ -59,6 +59,8 @@ export interface World {
   project(lon: number, lat: number, out: ScreenPoint): ScreenPoint;
   pickGlobe(x: number, y: number): { lon: number; lat: number } | null;
   setQuality(preference: QualityPreference): void;
+  /** [G8] D-172: Satelita ↔ Mapa (texture swap, no rebuild). */
+  setGlobeMode(mode: GlobeMode): void;
   /** Clear all game layers (menu ↔ new run). */
   reset(): void;
   /** [night-11a] An opaque full-screen page (settings, logbook, puzzles, tutorial) hides the globe: stop drawing it. */
@@ -76,7 +78,8 @@ const MENU_TARGET = { lon: -16, lat: 40 };
 /** [task-39] First menu show only: longest wait for the sign/board before the globe renders anyway. */
 const MENU_HOLD_MS = 1500;
 
-export function createWorld(host: HTMLElement, label: string, quality: QualityPreference): World {
+export function createWorld(host: HTMLElement, label: string, quality: QualityPreference,
+  globeMode: GlobeMode = 'satellite'): World {
   let insets: SafeAreaInsets = {};
   // [task-39] Insets last applied by the framing; the renderer's own resize observer reuses them
   // instead of falling back to the bare safe-area insets between two measurements.
@@ -87,6 +90,7 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
     camera: { longitude: -18, latitude: 40, zoom: 2 }, maxAirports: 64, maxPlanes: 120,
     // [ext-03] DEV-only experimental globe look (`?globeLook=refined|satellite|painted`); production: diorama.
     look: import.meta.env.DEV ? devGlobeLook() : undefined,
+    globeMode,
     airportStyle: import.meta.env.DEV ? devAirportStyle() : undefined, // [ext-03] D-175 variants
     // [night-07b] D-74: a slow device starts where its last session ended up.
     adaptedSteps: quality === 'auto' ? readAdaptiveSteps() : [],
@@ -271,6 +275,7 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
     preview: (model) => renderer.setRoutePreview(model),
     project: (lon, lat, out) => renderer.project(lon, lat, 1.01, out),
     pickGlobe: (x, y) => renderer.pickGlobe(x, y),
+    setGlobeMode(mode) { renderer.setGlobeMode(mode); },
     setQuality(preference) {
       forgetAdaptiveSteps(); // [night-07b] an explicit choice (also back to auto) detects afresh
       void renderer.setQuality(preference).catch((error: unknown) => console.warn('Quality change failed', error));

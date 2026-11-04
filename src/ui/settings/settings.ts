@@ -2,7 +2,7 @@
 // ui/a11y (task 20). Graphics and audio toggles live here; the composition root applies them
 // (world.setQuality, audio.setSettings) through onSettingsChange.
 import { getLanguage, setLanguage, t, type Language, type TranslationKey } from '../../i18n';
-import { QUALITY_PREFERENCES, type QualityPreference } from '../../render';
+import { QUALITY_PREFERENCES, type GlobeMode, type QualityPreference } from '../../render';
 import { readAccessibilitySettings, updateAccessibilitySettings, type TextScale } from '../a11y';
 import { reducedMotion, setReducedMotion } from '../motion';
 import { readAirportLabelMode, type AirportLabelMode } from '../airportLabel';
@@ -25,9 +25,11 @@ export interface UserSettings {
   airlineColour: AirlineColourId;
   /** [night-11g] D-88: still the game's own motion; the system setting until the player changes it. */
   reduceMotion: boolean;
+  /** [G8] D-172: Satelita (default) or Mapa; also switched by the dock tag in game. */
+  globeMode: GlobeMode;
 }
 const KEY='airway.settings';
-type LocalField='sound'|'music'|'graphics'|'airportLabels'|'airlineColour';
+type LocalField='sound'|'music'|'graphics'|'airportLabels'|'airlineColour'|'globeMode';
 const QUALITY:readonly QualityPreference[]=QUALITY_PREFERENCES;
 const listeners=new Set<(settings:UserSettings)=>void>();
 
@@ -53,6 +55,7 @@ export function readSettings():UserSettings {
     airportLabels:readAirportLabelMode(),
     airlineColour:readAirlineColour(),
     reduceMotion:reducedMotion(),
+    globeMode:record.globeMode==='map'?'map':'satellite',
   };
 }
 
@@ -65,7 +68,8 @@ export function saveSettings(change:Partial<UserSettings>):UserSettings {
   if(change.textScale!==undefined) a11y.textScale=change.textScale;
   if(Object.keys(a11y).length) updateAccessibilitySettings(a11y);
   if(change.reduceMotion!==undefined) setReducedMotion(change.reduceMotion);
-  const local:Partial<Record<LocalField,boolean|QualityPreference|AirportLabelMode|AirlineColourId>>={};
+  const local:Partial<Record<LocalField,boolean|QualityPreference|AirportLabelMode|AirlineColourId|GlobeMode>>={};
+  if(change.globeMode!==undefined) local.globeMode=change.globeMode==='map'?'map':'satellite';
   if(change.sound!==undefined) local.sound=change.sound;
   if(change.music!==undefined) local.music=change.music;
   if(change.graphics!==undefined) local.graphics=change.graphics;
@@ -208,6 +212,9 @@ export function createSettings(onBack:()=>void,onLicenses:()=>void,onLanguageCha
   swatch.style.background=airlineColourHex(values.airlineColour);
   airlineRow.firstElementChild?.prepend(swatch);
   group(t('settings.group.display'),'settings-group-display');
+  selectField(t('settings.globeMode'),values.globeMode,[['satellite',t('settings.globeMode.satellite')],['map',t('settings.globeMode.map')]],(v)=>{
+    saveSettings({globeMode:v==='map'?'map':'satellite'});
+  });
   selectField(t('settings.graphics'),values.graphics,[['auto',t('settings.auto')],['saver',t('settings.saver')],['low',t('settings.low')],['medium',t('settings.medium')],['high',t('settings.high')]],(v)=>{
     saveSettings({graphics:QUALITY.includes(v as QualityPreference)?v as QualityPreference:'auto'});
   });
