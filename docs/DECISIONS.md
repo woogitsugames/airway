@@ -1544,3 +1544,16 @@ picks 1 → 7 of 95; `game-50.csv` and `game-summary.md` regenerated. No game ru
 test). Card tuning measured for the owner (Q-78): +12 or +18 places and a 10-minute connection change nothing (forced
 14.99 / 15.02 min); a hub card that also brings a turboprop (forced 15.34 / 231 vs always-turboprop 15.10 / 216.5)
 would beat the plain turboprop and empty the board choice. **Status: in force (N12ad); card tuning: Q-78.**
+
+## D-199 — The HUD target test counts seven controls; the landscape rack shrinks its tags to fit (2026-11-04, Claude, night N11w)
+G8 (#178, D-172) added the globe-view tag to the dock, so the HUD has seven controls (pause on the boarding pass and
+six dock tags) and `test:hud-targets` failed 293/300 on clean dev (five "six controls" checks plus the landscape
+case below). The test now expects seven and asserts the new tag on its own: ≥ 48 dp, in line with the dock (same row
+in portrait, same column on the landscape/foldable rack), in order between hub and speed, also after a live
+rotation, and a tap emits `onToggleGlobeMode`. The count was not loosened to "≥ 6". Fixing the test showed a real
+fault the count had hidden: on a 915×412 landscape phone with 24/16/22/16 insets six 58 px tags need 348 px but the
+rack has 326, flex items do not shrink below their content, and the speed tag ended 1 px inside the bottom safe area.
+The rack holders now shrink (`min-height: 48px`) and the tag fills its holder (`height: 100%`, max 58 px): 54 px tags
+at that size, unchanged on foldables and wherever there is room. Rejected: dropping a tag from the rack in landscape
+(every control must stay reachable), a smaller fixed height everywhere (foldables have room).
+**Status: in force (N11w, `test:hud-targets`).**
