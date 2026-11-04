@@ -1489,7 +1489,7 @@ choices, picked ≤ offered, delivered = score). The numbers match `r8-audit --s
 aircraft-minutes, where r8's `canLand` wrapper also counted the check inside `canScheduleLeg` (r8 air 586 vs 89 here).
 **Status: in force (N12ab).**
 
-## D-196 — An empty dock tag counts down to the next crates (2026-11-04, Claude, night N11s)
+## D-198 — An empty dock tag counts down to the next crates (2026-11-04, Claude, night N11s)
 R6c: in week 1 the turboprop, widebody and hub tags read "0" for about 7 minutes. An empty aircraft or hub tag now
 stacks its icon over a small wait line, the game minutes left to the weekly board from the run's own clock
 (`nextWeekTick − tick`): "2 days" / "2 dni" (PL plural forms), then "5 h" / "5 godz.", then "40 min"; its aria-label
@@ -1515,6 +1515,16 @@ daily-continue build their network by gestures on visible airports (or play the 
 bot plan; their forced overload needs no seed. `test:e2e-seeds` 5 suites / 7 cases → 24 / 30, all passing on the
 current seeds; on 0xA1A1 the curfew-barrier, gameover-tip, served-jam and first-time-cards plans fail as their suites
 did before N12v/N12y re-seeded them. **Status: in force (N12ac).**
+
+## D-197 — The leaderboard objection switch in settings (2026-11-04, Claude, night N11v)
+D-135 / R7l: the net layer has `Leaderboards.isSharing()` / `setSharing(on)` since N12x (D-186). Settings → Help
+now shows "Send results to the leaderboard" / "Wysyłaj wyniki do rankingu", an ordinary settings switch (on by
+default, ≥ 48 px, the ON/OFF ink of the other switches) with one hint line saying what off does (results stay on the
+device, waiting runs are dropped). It sits after the privacy policy and before "Delete my ranking data" and, like
+that row, exists only when the build has leaderboards (`Leaderboards.enabled`). The choice lives in the net layer's
+own key (`aw-net-share-v1`), not in the settings record, so the daily report and the board read the same truth.
+Rejected: the switch in the Game group (it is a privacy choice next to the policy and the deletion).
+**Status: in force (N11v, `test:e2e:ranking-switch` 4).**
 
 ## D-201 — the balance bot takes the hub expansion when a hub is filling up; the card itself waits for the closed test (2026-11-04, Claude, night N12ad)
 The bot took "Rozbudowa huba" 1 of 94 offers (N12ab). New read-only tool `scripts/research/card-value.ts` replays,

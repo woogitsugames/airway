@@ -173,6 +173,9 @@ export const pl = {
   'settings.deleteRanking.offline': 'Brak połączenia — nic nie zostało usunięte. Spróbuj ponownie po połączeniu z siecią.',
   'settings.deleteRanking.failed': 'Nie udało się teraz usunąć danych. Spróbuj później.',
   'settings.privacy': 'POLITYKA PRYWATNOŚCI',
+  // [night-11v] D-197 (D-135): the leaderboard objection switch.
+  'settings.shareRanking': 'Wysyłaj wyniki do rankingu',
+  'settings.shareRanking.hint': 'Wyłączone: wyniki dnia zostają na tym urządzeniu, a biegi czekające na wysłanie są usuwane.',
   'privacy.offline': 'Ta kopia jest zapisana w grze i otwiera się bez połączenia.',
   'privacy.overline': 'DOKUMENT / PRY-001',
   'privacy.title': 'Polityka prywatności',
