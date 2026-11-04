@@ -127,3 +127,4 @@ experiment table above (`python3 -I dev/globe-look/bake.py <downloads> satellite
 | `night-2048.jpg`, `night-1024.jpg` | NASA Black Marble 2016, lights only | Public domain (NASA) |
 | `elevation-2048.png` | NOAA ETOPO5, land elevation, `m = (v/255)² · 8000` | Public domain (NOAA) |
 | `clouds-2048.png` | procedural (bake.py) | Own work (CC0) |
+| `map-4096.jpg`, `map-2048.jpg` (G8, D-172) | Mapa mode: Blue Marble NG July classified into an own palette, ETOPO5 hillshade, Natural Earth admin-0 borders (`dev/globe-look/bake.py map`) | Public domain sources; own processing (CC0) |
