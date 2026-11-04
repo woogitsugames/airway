@@ -262,10 +262,29 @@ export function mountTutorialUi(host: HTMLElement, controller: TutorialControlle
     controller.replay();
   });
 
-  const unsubscribe = controller.subscribe(render);
+  // [night-11l] Size the world from the space its row really has (safe areas, a wrapped ATC card). The CSS estimate
+  // (100dvh minus a fixed allowance) ignored the status and gesture bars, so on an unfolded Fold the card overflowed
+  // into the hint line below it.
+  const center = query<HTMLElement>('.aw-tutorial-center');
+  const world = query<HTMLElement>('.aw-tutorial-world');
+  const strip = query<HTMLElement>('.aw-tutorial-strip');
+  const fitWorld = (): void => {
+    if (!center.clientHeight) return;
+    const gap = parseFloat(getComputedStyle(center).rowGap) || 0;
+    const height = center.clientHeight - strip.offsetHeight - gap;
+    const width = Math.max(150, Math.min(center.clientWidth, 430, height * 412 / 520));
+    world.style.width = `${Math.floor(width)}px`;
+  };
+  const resize = typeof ResizeObserver === 'function' ? new ResizeObserver(fitWorld) : null;
+  resize?.observe(center);
+  resize?.observe(strip);
+  fitWorld();
+
+  const unsubscribe = controller.subscribe((state) => { render(state); fitWorld(); });
   return { dispose(): void {
     if (closed) return;
     closed = true;
+    resize?.disconnect();
     document.removeEventListener('pointermove', pointerMove);
     document.removeEventListener('pointerup', pointerUp);
     document.removeEventListener('pointercancel', pointerCancel);
