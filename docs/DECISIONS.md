@@ -1432,3 +1432,15 @@ leaves little to move. A variant that also closed a redundant one-plane route (a
 cut unserved losses to 46 but lowered the median to 16.15 min and the score, so it was not kept. Note for the UI: a
 player cannot take a single aircraft off a route today (no unassign gesture; only removing a route frees its planes,
 D-187). **Status: in force (N12z); no gate changed.**
+
+## D-193 — "Long haul" (31–40) stays out of release builds until T+4 (2026-11-04, owner Q-74 → B, Claude, night N11u)
+The owner chose B: the first puzzle pack is the content of the T+4 "Major update" store event (D-131), so a release
+build shows puzzles 01–30 (DEV builds 40). A build-time flag, no remote config: `PuzzlePack.hiddenInRelease` in
+`src/data/puzzles/packs.ts` (set on `longHaul`) and `releasedLevels()` drop a hidden pack's levels (from its first
+level to the next pack) unless the build is DEV (`npm run dev`, every e2e, shots and the UI matrix, so
+`e2e:puzzles` and `screens-fit-320` keep covering 31–40) or was made with `VITE_AW_ALL_PACKS=1` (a release check
+build before T+4). Node tests have no Vite env and see all 40. At T+4: remove `hiddenInRelease`. Saved
+progress for 31–40 from a DEV build is ignored in a release build (the board lists only exposed levels). Rejected:
+deleting the JSON files from the branch (the pack would rot untested), a remote switch (no server for it, D-16).
+**Status: in force (N11u, `test:release-packs` 4).**
+
