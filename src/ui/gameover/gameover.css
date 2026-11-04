@@ -52,6 +52,7 @@
 }
 .airway-go-heading {
   margin: 0;
+  min-width: 0; overflow-wrap: anywhere; /* [night-11ac] R7h: a long title wraps, the Map tab stays on the sign */
   font: 800 clamp(19px, 4.4vw, 28px)/1.1 'Overpass', sans-serif;
   letter-spacing: .045em;
   text-transform: uppercase;
@@ -246,6 +247,7 @@
   cursor: pointer;
   touch-action: manipulation;
   text-transform: uppercase;
+  overflow-wrap: anywhere; /* [night-11ac] R7h */
 }
 .airway-go-button:focus-visible { outline: 3px solid #ffc72c; outline-offset: 2px; }
 .airway-go-button:active { translate: 0 1px; }

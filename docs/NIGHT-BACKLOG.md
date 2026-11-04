@@ -535,6 +535,16 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       cable; the week (already on the pass beside it) is visually hidden and the instruction takes both rows (2–3
       lines, sign ≤ 60 px). `test:e2e:notch` "upgrade-pick" checks the hub and the slots pick. **Area:**
       `src/ui/upgrade/upgrade.css`, `e2e/notch.mjs`.
+- [x] N11ac **Length budgets and a harsh pseudo-locale at 320 px (R7h, D-213)** — `src/i18n/limits.ts` gives 63
+      fixed-width keys a budget (split-flap title 15 / half 10 / status 8 cells — the 320 px board holds no more, the old
+      20/10 hid cells behind the column — dock countdowns, crate fields, select options, Back tiles, logbook heads…);
+      `test:i18n` fails over budget in PL, EN and the pseudo-locale, which now fills budgeted keys to their budget.
+      `?pseudo=harsh` doubles strings ≤ 20 code points; `test:e2e:pseudo-320` runs it globe-less at 320×568 on eight
+      screens (6/16 on the old code). Fixed: menu hints and logbook cells wrap instead of an ellipsis, long words wrap
+      in settings labels, titles, the puzzle sign, game-over buttons and crate values, the game-over Map tab stays on
+      screen, the puzzle Back tile keeps its width, the airport NEW stub grows instead of clipping wide letters (min-width).
+      `test:i18n-exchange`'s stand-in translation skips its marker on keys already at their budget. **Area:**
+      `src/i18n/**`, `src/ui/**` CSS, `src/ui/overlay.ts`, `e2e/pseudo-320.mjs`, `scripts/test-i18n-exchange.ts`.
 
 ## Continuous development round N12 (agent 2)
 - [x] N12a **Balance bot plays for reach (D-90)** — the handover gap "the DEV bot rarely connects new airports; long
@@ -1191,7 +1201,7 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
       add fast `test:glyphs` (reads the TTF `cmap` with a tiny parser, no new dependency) that fails when any catalog
       string or city name uses a code point missing from the font that renders it. **Area:** `src/core/format.ts`,
       `scripts/`, `test:fast` list.
-- [ ] R7h **Length budgets and a harsher pseudo-locale** — `src/i18n/limits.ts` maps fixed-width keys to budgets
+- [x] R7h → N11ac **Length budgets and a harsher pseudo-locale** — `src/i18n/limits.ts` maps fixed-width keys to budgets
       (menu split-flap: half-row title 10, status 10, full title 20, gate 2; dock tags, stamps, select options);
       `test:i18n` fails when any catalog exceeds a budget. Pseudo-locale stretches strings ≤ 20 chars by ×2 (IBM/W3C
       expansion for short text), and `e2e/pseudo-locale.mjs` adds 320×568. **Area:** `src/i18n/**`, `e2e/`.
@@ -1396,3 +1406,4 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
 - 2026-11-04 · N11z weekly board in phone landscape with cut-outs + N11aa notch profile for the training flight and the ATC strip (D-209) · night/11z-notch-board-tutorial · origin/dev cfb1dd8 merged first (then 860b429, #194: its D-208 kept, this decision renumbered D-208 → D-209): test:e2e:notch 54/54 in 75 s (46/54 on the old CSS: board scrolls 71–125 px, labels 63–117 px under the bottom inset, sign line 0–44 px wide / 6–7 lines; first-time card 34–43 px under the right cut-out), test:fast 80/80, build ok; shots docs/shots/n11y/ (+22 new, 4 refreshed, all inspected). Not run: ui:matrix (globe timeouts under SwiftShader, G7); boards ≥ 860 px wide unchanged, so its 915×412 PNGs are unaffected
 - 2026-11-04 · N11ab airport-pick sign on narrow landscape boards (D-210) · night/11ab-hub-pick-sign · origin/dev a9908f4 merged first: test:e2e:notch 60/60 in 84 s (56/60 on the old CSS: sign 72–89 px tall beside the 60 px pass, instruction 68 px wide, week text 23 px past the sign at 812×375; two later runs at the gate were red on my own first CSS — EN slots pick 63 px, then the Back tile 2 px out of the tighter sign — fixed before this green run), test:fast 80/80, build ok; shots docs/shots/n11y/upgrade-pick-* (6, inspected). Not run: ui:matrix (globe timeouts under SwiftShader, G7); boards ≥ 760 px unchanged
 - 2026-11-04 · N12ah translator export/import (R7i, D-211, D-212) · night/12ah-i18n-export · test:i18n-exchange 12/12 (new module; absent before), export de/fr 449 rows (de one|other, fr one|other|many), JSON + CSV round-trip, import rejects bad params/plurals/budget/stale EN; test:i18n 1/1, test:doc-ids 8/8 (173 decisions, max D-212), test:fast 81/81 (236.9 s), build ok on origin/dev 87a146c; no browser suite (no UI change)
+- 2026-11-04 · N11ac length budgets + harsh pseudo-locale at 320 px (R7h, D-213) · night/11ac-i18n-length-budgets · origin/dev 794e9a7 merged first (#197 i18n export reads the budgets): test:i18n budgets=63 passed (228 failures with the old pseudo-locale; crashes without limits.ts), test:e2e:pseudo-320 16/16 in 35 s (6/16 on the old code), test:e2e:pseudo-locale 27/27 (26/27 before the NEW-stub min-width), test:i18n-exchange 12/12 (11/12 before its stand-in fix), test:fast 81/81 (356.7 s), build ok, test:overlay-layout 36/36 after the stub change; shots .e2e/pseudo-320/ (16, inspected, not committed)
