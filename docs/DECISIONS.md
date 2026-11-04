@@ -1488,3 +1488,15 @@ section's shape (ordered quantiles, losses + still flying = runs, hub + spoke + 
 choices, picked ≤ offered, delivered = score). The numbers match `r8-audit --seeds=50 --cap-min=30` except curfew
 aircraft-minutes, where r8's `canLand` wrapper also counted the check inside `canScheduleLeg` (r8 air 586 vs 89 here).
 **Status: in force (N12ab).**
+
+## D-196 — An empty dock tag counts down to the next crates (2026-11-04, Claude, night N11s)
+R6c: in week 1 the turboprop, widebody and hub tags read "0" for about 7 minutes. An empty aircraft or hub tag now
+stacks its icon over a small wait line, the game minutes left to the weekly board from the run's own clock
+(`nextWeekTick − tick`): "2 days" / "2 dni" (PL plural forms), then "5 h" / "5 godz.", then "40 min"; its aria-label
+adds "Next crates in 2 days 5 h" (the pause sheet's wording). The tag keeps the N11n opaque muted fill and dashed
+outline; Undo (never a count) and puzzles (no weekly board) are unchanged. A crate can hold any of the four upgrades,
+so the line says when the next choice comes, not that this aircraft will arrive. No sim change.
+Rejected: "crates day 3" (the D-40 three-day week makes "day 3" ambiguous across weeks and does not fit a 52 px tag),
+a separate countdown chip (one more HUD element, D-05/minimal HUD).
+**Status: in force (N11s, `test:dock-countdown` 3, `test:e2e:dock-empty-tags` 4).**
+

@@ -45,6 +45,11 @@ export const en = {
   'hud.turbopropCount': 'Turboprop aircraft: {count}. Select or drag onto a route',
   'hud.widebodyCount': 'Widebody aircraft: {count}. Select or drag onto a route',
   'hud.hubCount': 'Hub upgrades available: {count}',
+  // [night-11s] R6c: an empty dock tag counts down to the next weekly crates.
+  'hud.crates.days': '{days} {days|day|days}',
+  'hud.crates.hours': '{hours} h',
+  'hud.crates.minutes': '{minutes} min',
+  'hud.crates.next': 'Next crates {when}',
   'hud.speed': 'Game speed: {speed}×. Change speed',
   'hud.globeMode': 'Globe view: {mode}. Switch view',
   // [task-12] Weekly freight labels
