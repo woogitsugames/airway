@@ -18,7 +18,7 @@ disagree. Tick a line only when it is true for the build that goes to the store.
 |---|---|---|---|---|---|
 | RL-01 | Google Play **organisation** account: D-U-N-S number, Play Console registration, developer verification | owner | open | D-94, Q-01 | Company data from Q-01; the organisation account is exempt from the 12 × 14 rule |
 | RL-02 | Apple Developer Program account (organisation), App Store Connect record for `pl.samsufi.airway` | owner | open | D-96, Q-52 | `docs/IOS.md` (signing certificate + App Store profile); TestFlight in the closed test only if ready (Q-52 B) |
-| RL-03 | Firebase project, Blaze plan, 10 EUR budget with 50/90/100 % actual + 100 % forecast alerts | owner | open | Q-07, D-66, D-109 | `docs/FIREBASE.md` steps 1–8; the release build gets `.env.production` |
+| RL-03 | Firebase project, Blaze plan, 10 EUR budget with 50/90/100 % actual + 100 % forecast alerts | owner | open | Q-07, D-66, D-109, D-234 | `docs/FIREBASE.md` steps 1–8; the release build gets `.env.production` |
 | RL-04 | App Check for the callables (Play Integrity / App Attest) | owner + agent | open | Q-53 | Backlog R3e; optional for the first release, recommended before featuring |
 | RL-05 | Trademark check "Airway" (EUIPO / USPTO / UPRP, classes 9 and 41) | owner | open | Q-34 | RESEARCH §7 and R1 "Nazwa"; before pre-registration |
 | RL-06 | Release signing: Android upload keystore outside the repo + Play App Signing; iOS distribution certificate | owner | open | D-94, D-98 | `docs/ANDROID.md` (release scripts refuse keys inside the repo), `docs/IOS.md` |

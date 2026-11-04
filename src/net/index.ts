@@ -13,7 +13,10 @@ export { buildDailySubmission, verifyDailySubmission, type DailySubmission, type
 export interface BoardEntry { readonly rank: number; readonly callSign: string; readonly score: number; readonly me: boolean }
 export interface Board { readonly id: string; readonly entries: readonly BoardEntry[]; readonly me: BoardEntry | null }
 export interface Boards { readonly daily: Board; readonly weekly: Board }
-export interface SubmitResponse { readonly accepted: boolean; readonly reason?: RejectReason; readonly score?: number }
+/** [night-12as] D-234: `paused` = the server's budget brake is on; the run stays queued (not a rejection). */
+export interface SubmitResponse {
+  readonly accepted: boolean; readonly reason?: RejectReason | 'duplicate' | 'paused'; readonly score?: number;
+}
 
 /** [night-12x] `opted-out`: the player objected (D-135, R7l); the run was not sent and nothing was queued. */
 export type LeaderboardStatus = 'disabled' | 'idle' | 'queued' | 'sent' | 'rejected' | 'opted-out';
@@ -109,6 +112,7 @@ export function createLeaderboards(options: {
   async function send(submission: DailySubmission): Promise<SendResult> {
     try {
       const response = await client.call<SubmitResponse>('submitDaily', { submission });
+      if (!response.accepted && response.reason === 'paused') { last = 'queued'; return 'retry'; }
       last = response.accepted ? 'sent' : 'rejected';
       return response.accepted ? 'accepted' : 'rejected';
     } catch (error) {

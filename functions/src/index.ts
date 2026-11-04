@@ -11,14 +11,21 @@ import { getAuth } from 'firebase-admin/auth';
 import {
   FieldValue, Timestamp, getFirestore, type DocumentSnapshot, type QuerySnapshot, type Transaction,
 } from 'firebase-admin/firestore';
+import { defineBoolean } from 'firebase-functions/params';
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
 import {
-  FUNCTION_OPTIONS, RATE_LIMITS, RateLimiter, TOP_ENTRIES, callSign, dropFromTop, expiresAt, mergeTop, rankInTop,
-  readTopRows, retainedBoardIds, reviewSubmission, validBoardId, type TopEntry,
+  FUNCTION_OPTIONS, PAUSED_SUBMIT, PAUSE_PARAM, RATE_LIMITS, RateLimiter, TOP_ENTRIES, callSign, dropFromTop, expiresAt,
+  mergeTop, pausedBoards, rankInTop, readTopRows, retainedBoardIds, reviewSubmission, validBoardId, type TopEntry,
 } from './logic.ts';
 
 initializeApp();
 const db = getFirestore();
+// [night-12as] D-234 (R3d): the manual brake after a budget alert (docs/FIREBASE.md, "Gdy przyjdzie alert").
+// A deploy-time param: `LEADERBOARDS_PAUSED=true` in functions/.env.<project>, then redeploy; default off.
+const leaderboardsPaused = defineBoolean(PAUSE_PARAM, {
+  default: false,
+  description: 'Budget brake: submitDaily and getBoards answer without Firestore (runs stay queued on devices).',
+});
 // [night-12j] D-109: split caps per function and a per-player limit per instance, checked before any Firestore
 // access or replay; over the limit the client keeps the run queued and retries later.
 const limits = {
@@ -50,6 +57,8 @@ async function topInTx(tx: Transaction, board: string, doc: DocumentSnapshot): P
 
 export const submitDaily = onCall(FUNCTION_OPTIONS.submitDaily, async (request) => {
   const uid = uidOf(request);
+  // D-234: before the limiter, the request body and the replay; nothing is read or written.
+  if (leaderboardsPaused.value()) return PAUSED_SUBMIT;
   throttle('submitDaily', uid);
   const reviewed = reviewSubmission((request.data as { submission?: unknown } | null)?.submission, Date.now());
   if (!reviewed.verdict.ok || !reviewed.daily || !reviewed.weekly) {
@@ -111,6 +120,7 @@ export const getBoards = onCall(FUNCTION_OPTIONS.getBoards, async (request) => {
   throttle('getBoards', uid);
   const data = request.data as { daily?: unknown; weekly?: unknown } | null;
   if (!validBoardId(data?.daily) || !validBoardId(data?.weekly)) throw new HttpsError('invalid-argument', 'Unknown board');
+  if (leaderboardsPaused.value()) return pausedBoards(data.daily, data.weekly); // D-234: no Firestore read
   const [dailyTop, weeklyTop, dailyMine, weeklyMine] = await db.getAll(
     topRefOf(data.daily), topRefOf(data.weekly), entriesOf(data.daily).doc(uid), entriesOf(data.weekly).doc(uid));
   const [daily, weekly] = await Promise.all([

@@ -1954,6 +1954,25 @@ redesign (docs/styles/ui-2026-11). Rejected: arrow keys to turn the globe (not a
 showing the key list on touch-only phones, Space as a global toggle inside dialogs. Guards: `test:keyboard`
 (`test:fast`), `test:e2e:keyboard-mouse` (`test:ci`). **Status: in force.**
 
+## D-234 — Leaderboard budget brake: a `LEADERBOARDS_PAUSED` param, and budget alert steps (2026-11-04, Claude, night N12as)
+R3d. `functions/src/index.ts` declares one deploy-time `defineBoolean('LEADERBOARDS_PAUSED', { default: false })`.
+When it is `true`, `submitDaily` answers `{ accepted: false, reason: 'paused' }` right after the sign-in check and
+`getBoards` answers the two requested boards empty after the board-id check — before the per-player limiter, the
+request body, the replay and any Firestore access. The client (`src/net/index.ts`) treats `paused` as "retry later":
+the run stays in the device queue and the result screen shows the existing "queued" state; when the brake is released
+the queue sends it (the server still accepts only today and yesterday, D-66, so a long pause loses older runs).
+`deleteMyData` is **not** braked: erasure is a player's right (D-93, D-114), rare and capped (2 instances, 3/min).
+`docs/FIREBASE.md` step 4 gives exact console clicks for a 10 EUR monthly budget on the Airway project with alerts at
+50/90/100 % actual and 100 % forecasted to billing admins (owner e-mail), and a section "Gdy przyjdzie alert": find
+the SKU in Billing reports, read Firestore usage against invocations per function (each collection belongs to one
+function; the console has no per-collection split), set `LEADERBOARDS_PAUSED=true` in `functions/.env.<project>` and
+`firebase deploy --only functions`, release with `false`; disabling billing only as a last resort. The param is
+deploy-time (redeploy, ~2 min) rather than a Firestore flag, because a flag would cost a read per call — the very cost
+the brake stops. Rejected: also pausing `deleteMyData` (legal right), a client-side "paused" message (no new UI or
+strings; "queued" is true), an emulator test (the Firestore emulator needs Java and a download, not offline; the test
+loads the real handlers with stubbed Firebase modules instead). Who owns the project and budget stays **Q-07** (owner);
+the steps are generic. Guards: `test:leaderboard-brake`, `test:net`. **Status: in force (Q-07 open).**
+
 ## D-235 — Release checklist: age-rating answers, target audience 13+, one version name for both native projects (2026-11-04, Claude, night N12at)
 R1l. `docs/RELEASE.md` is the one release checklist (accounts, closed test, privacy URL, Data safety, App Privacy, age
 questionnaires, DSA trader status, export compliance, accessibility labels, store shots per Apple device class,
