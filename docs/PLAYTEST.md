@@ -7,9 +7,10 @@ Protokół 14-dniowego testu zamkniętego Google Play (≥ 12 testerów przez 14
 
 Zakres R1o: przebieg dni 1–14, o co pytamy, pytania PL/EN, eksport dziennika. **R3j** (D-231) dodał zapis
 playtestu: linię maszynową `AW1:` pod tekstem, prawdziwe minuty gry, przyczynę porażki, kartę z każdego tygodnia, stan
-szkolenia, ustawienie i preset grafiki, kroki adaptacji i wersję gry, oraz `npm run playtest:decode` (CSV). Uzupełnią go:
-**R3k** (rekrutacja, ostateczna tabela decyzji z progami, odpowiedzi do wniosku o produkcję; *Q-42, Q-52*),
-**R6i** (arkusz obserwacji pierwszych 10 minut).
+szkolenia, ustawienie i preset grafiki, kroki adaptacji i wersję gry, oraz `npm run playtest:decode` (CSV). **R3k**
+(D-232) dodał rekrutację, ostateczną tabelę decyzji z progami spisanymi przed testem i arkusz odpowiedzi do wniosku o
+produkcję (Q-42 → D-94; Q-52 wg rekomendacji A, do potwierdzenia). Uzupełni go **R6i** (arkusz obserwacji pierwszych
+10 minut).
 
 ## Prywatność (D-16, D-220)
 
@@ -116,6 +117,27 @@ summary,copied,app_version,flights,dailies,tutorial_now,puzzles_solved,puzzles_t
 Dane nie zawierają kodów lotnisk, ziarna świata ani identyfikatorów; tester może je przeczytać (base64 to nie
 szyfrowanie). Arkusz z wynikami trzymamy prywatnie, poza repozytorium.
 
+## Rekrutacja (R3k; Q-52 — rekomendacja A, do potwierdzenia przez właściciela)
+
+Konto Google Play jest kontem organizacji (D-94), więc reguła „≥ 12 testerów × 14 dni” nas formalnie nie dotyczy; test
+robimy i tak, jako prawdziwy playtest (D-113, D-152, D-204, D-215). Plan zakłada jednak liczby z reguły — gdyby konto
+skończyło jako osobiste, ten sam test spełnia wymóg, a arkusz odpowiedzi niżej jest gotowy.
+
+| Co | Plan |
+|---|---|
+| Liczba | **16–18 zapisanych** (zapas na odpadających), cel ≥ 12 aktywnych do dnia 14 |
+| Języki | ≥ 6 PL i ≥ 6 EN (obie wersje gry i ankiet) |
+| Doświadczenie | 4–5 osób znających gry sieciowe / strategiczne, reszta „zwykli gracze” |
+| Urządzenia | ≥ 3 budżetowe Androidy (Mali-G52/G57, 4 GB RAM), ≥ 2 tablety lub składaki, reszta dowolna; iOS tylko przez TestFlight, jeśli konto Apple jest gotowe (Q-52 B) |
+| Nagrania | 3–5 osób nagrywa pierwsze 10 minut (systemowe nagrywanie ekranu + komentarz); obserwator wypełnia arkusz pierwszej sesji (R6i) |
+| Źródła | znajomi i rodzina, polskie społeczności gamedev i grupy graczy mobilnych, formularz zapisu na `airway.games` (D-67). **Bez** płatnych serwisów testerów i wymian „test za test” (instalują i nic nie mówią; ryzyko odrzucenia wniosku) |
+| Kanał | jedna Grupa Google „airway-testers” (lista testu w Play Console = ta grupa); adres opinii w konsoli = Grupa |
+| Podziękowanie | opt-in w napisach (znak wywoławczy lub imię); bez nagród rzeczowych i kodów |
+| Zgoda | e-mail powitalny mówi wprost: gra nic nie wysyła sama, „Kopiuj podsumowanie” to liczby, które tester wkleja z własnej woli; nagranie ekranu tylko za zgodą, nie trafia do repozytorium |
+
+Kto w dniu 7 nie wkleił podsumowania i nie grał od 3 dni, dostaje jedno przypomnienie w Grupie (bez nacisku). Nikogo
+nie usuwamy z listy — Google liczy ciągłość zapisu.
+
 ## Przebieg (14 dni)
 
 Kalendarz z RESEARCH R3; zadania testerów są w instrukcji niżej.
@@ -135,14 +157,10 @@ do decyzji o poprawce z dnia 8. Kto zagrał ponad 30 biegów, ma w tabeli tylko 
 
 ## Otwarte pytania, które test rozstrzyga
 
-Liczby czytamy ze wszystkich podsumowań z dnia 14 razem (wiersze tabeli biegów). Progi niżej to **propozycja** do
-zatwierdzenia w tabeli decyzji R3k, przed startem testu — żeby wyniki nie były naginane.
-
-| Pytanie | Co policzyć | Odniesienie z bota | Propozycja odczytu |
-|---|---|---|---|
-| **Q-73** (D-152) kształt końca biegu: zostawić tempo (A) czy łagodniejsza rampa po 3. tygodniu (B) | mediana i p90 „min przy 1×” wszystkich biegów Endless; odsetek biegów z ≥ 4 ukończonymi tygodniami; ankieta C2–C3 | 200 biegów: średnio 16,7 min, p90 22,4, max 31,6, nikt nie widzi 5. tablicy | A zostaje, gdy mediana ludzi mieści się w 10–18 min (D-79) i ≤ 4 z 12 osób pisze „za krótko / za szybko się kończy”. B (przegląd R8f), gdy p90 ludzi < p90 bota **i** ≥ 5 z 12 osób chce dłuższych biegów |
-| **Q-78** (D-204) karta „Rozbudowa huba” | suma „wybrana / w ofercie” dla karty huba; ankieta B (która karta zawsze najlepsza, czy karta huba jest zrozumiała) | bot bierze ją w 7–11 % wyborów (D-201) | A zostaje, gdy ludzie biorą ją w ≥ 10 % ofert i ankieta nie wskazuje niezrozumienia. Mierzymy D (inny efekt), gdy < 5 % ofert albo ≥ 4 osoby piszą, że nie wiedzą, co robi |
-| **Q-80** (D-215) karta „+2 sloty” | odsetek biegów z „czekanie na slot” > 0; suma „wybrana / w ofercie” dla karty slotów | limit blokuje w 12 z 200 biegów (6 %); karta na 4 z 364 tablic, bot nigdy jej nie bierze | A zostaje, gdy limit bije w ≥ 20 % biegów ludzi (człowiek stawia kilka samolotów na jednym lotnisku) i kartę ktoś bierze. B (usunąć z puli Endless i gry dnia), gdy limit bije w < 10 % biegów i karta prawie się nie pojawia |
+Test rozstrzyga **Q-73** (D-152, koniec biegu), **Q-78** (D-204, karta „Rozbudowa huba”) i **Q-80** (D-215, karta
+„+2 sloty”). Progi są w **Tabeli decyzji** niżej (R3k, D-232) — spisane przed testem, żeby wyników nie naginać.
+Propozycje z R1o (D-227) zastąpiła ta tabela; zmiana: Q-73 B patrzy na najdłuższe biegi testerów, nie na p90 wszystkich
+biegów (ludzie przegrywający szybciej niż bot to sprawa tempa tygodnia 1, nie ściany po tygodniu 3).
 
 Przy okazji test daje dane do Q-35 (która karta „zawsze najlepsza”, ankieta B), Q-45 (gra dnia ≥ 5 z 7 dni),
 Q-50 (czego brakuje po kilku godzinach), Q-14 i Q-29 (noc, dźwięk; ankieta C) i progu „samouczek nieukończony”.
@@ -210,10 +228,61 @@ odpowiadają na nie wprost.
 | C6 | Dźwięk (włączony / wyciszony; czy przeszkadza) — Q-29; noc na globusie (za ciemna / w sam raz / za jasna) — Q-14 | Sound (on / muted; does it bother you) — Q-29; night on the globe (too dark / right / too bright) — Q-14 |
 | C7 | Ile zapłaciłbyś za tę grę? (tylko sygnał; gra zostaje bez reklam i zakupów, D-16) | What would you pay for this game? (a signal only; the game stays without ads or purchases, D-16) |
 
+## Tabela decyzji (R3k, D-232) — progi spisane przed testem
+
+Liczymy z podsumowań z **dnia 14** (`npm run playtest:decode`, jeden wiersz na bieg) i z ankiet. „Tester” = osoba z
+wklejonym podsumowaniem z dnia 14; mianownik „z 12” skaluje się do faktycznej liczby (np. „≥ 4 z 12” = ≥ 33 %).
+**Minimum danych:** decyzję z wiersza podejmujemy, gdy ≥ 8 testerów wkleiło podsumowanie i spełniony jest warunek
+w kolumnie „Minimum”; inaczej obowiązuje stan obecny (kolumna „Bez danych”) i pytanie wraca po premierze.
+
+Odniesienie z bota: `docs/balance/game-summary.md` (50 ziaren, 30 min, reguły v6, bot po N12ad) i pomiary 200 ziaren
+z `docs/balance/README.md` (N12af) oraz R8 (`docs/balance/r8-audit-200.csv`, reguły v5). Bot gra na 1× i nie pauzuje,
+więc porównujemy z kolumną `min_1x`; `min_real` mówi tylko, ile życia zajmuje bieg.
+
+| Pytanie | Sygnał (kolumna CSV / ankieta) | Odniesienie z bota | Minimum | Decyzja przy progu | Bez danych |
+|---|---|---|---|---|---|
+| **Q-73** (D-152) koniec biegu | (a) mediana `min_1x` biegów `endless`; (b) mediana najdłuższego biegu `endless` każdego testera; (c) C3 „tak” i C2 „za wcześnie” | 50 biegów: p10 11,16 · mediana 17,41 · p90 24,25 min; tygodnie mediana 2,42, W5 w 1 z 50; 200 biegów: max 31,6 min, nikt nie widzi 5. tablicy | ≥ 40 biegów `endless` od ≥ 8 testerów | **B** (łagodniejsza rampa po tygodniu 3, przegląd R8f), gdy (b) ≥ 22 min **i** ≥ 5 z 12 odpowiada „tak” w C3 albo „za wcześnie” w C2 — dobrzy gracze dochodzą do ściany bota. **A**, gdy (a) mieści się w 10–18 min (D-79) i ≤ 3 z 12 chce dłuższych biegów. (a) < 10 min → to nie Q-73, tylko tempo 1. tygodnia: wraca Q-60 (D-113, wariant 11 h × 110 %) | A (reguły v6) |
+| **Q-78** (D-204) karta „Rozbudowa huba” | `hub_picked / hub_offered` (suma); B5 (czy wiedzą, co robi) | 50 biegów: w ofercie 95, wybrana 7 (7 %); N12ad: 7–11 % wyborów | ≥ 40 ofert karty huba | **A** (bez zmian), gdy ≥ 10 % ofert i ≤ 3 z 12 odpowiada „nie wiem” / błędnie w B5. **D** (zmierzyć inny efekt huba), gdy < 5 % ofert **albo** ≥ 4 z 12 nie rozumie karty. 5–10 % i zrozumiała → A, ponownie po premierze | A |
+| **Q-80** (D-215) karta „+2 sloty” | odsetek biegów z `held_min` > 0; `slots_picked / slots_offered`; B6 | 50 biegów: wstrzymanie w 5 (10 %), karta na 3 tablicach, 0 wyborów; 200 biegów: wstrzymanie w 12 (6 %), karta na 4 z 364 tablic, bot nie bierze nigdy | ≥ 60 biegów (endless + daily) | **A**, gdy `held_min` > 0 w ≥ 20 % biegów **i** kartę wybrało ≥ 2 testerów. **B** (usunąć kartę z puli Endless i gry dnia; zagadki bez zmian), gdy `held_min` > 0 w < 10 % biegów **i** karta była w ofercie na < 3 % tablic (tablice = suma `weeks`). Pomiędzy → A | A |
+| Q-35 karta zawsze najlepsza | pierwszy znak `picks` (tydzień 1); B4 | R8: tydzień 1 — szerokokadłubowiec 63 %, turbośmigłowiec 36 %, hub 1 % (194 biegi) | ≥ 30 biegów z `picks` | Q-35 → wariant B (przegląd kart), gdy jedna karta ≥ 70 % wyborów tygodnia 1 **albo** ≥ 6 z 12 wskazuje tę samą kartę w B4 | bez zmian |
+| Przyczyna porażki | `cause` (pierwsza przyczyna tablicy) | R8: `regional-demand` 47 %, `no-route` 33 %, `capacity` 21 % | ≥ 30 porażek z `cause` | `no-route` ≥ 50 % porażek → nowe lotniska są przeoczane: przegląd sygnału nowego lotniska przed premierą. `slot-wait` ≥ 10 % → potwierdza Q-80 A | bez zmian |
+| „Nie wiem, czemu przegrałem” | A1 = „nie” | — | ≥ 8 odpowiedzi A | ≥ 4 z 12 → wskazówka na raporcie końca (R1j) mocniej i przegląd tablicy przyczyn przed premierą | bez zmian |
+| Szkolenie nieukończone | `tutorial_now` ≠ `completed` | — | ≥ 8 podsumowań | ≥ 3 z 12 → skrócić / przebudować krok, w którym odpadają (nagrania, arkusz R6i) | bez zmian |
+| Pierwszy bieg | najstarszy bieg każdego testera (`min_1x`) w podsumowaniu z dnia 7 | bot: p10 11,16 min | ≥ 8 testerów | mediana < 6 min albo > 20 min → przestroić tydzień 1 (Q-51, D-79, D-113) | bez zmian |
+| Wydajność | A4 „często”, B8 „mocno”; `preset`, `adapt_steps` | — | — | ≥ 2 osoby z tą samą rodziną GPU → R3f/R3i dla niej (Q-31/Q-32); ≥ 3 testerów z `adapt_steps` ≥ 2 → przegląd drabiny adaptacji (D-74) | bez zmian |
+| Gra dnia | `dailies` i dni z `mode = daily` w podsumowaniu | — | ≥ 8 podsumowań | < 4 z 12 gra ≥ 5 z 7 dni (dni 8–14) → wraca Q-45 (przypomnienie) | bez zmian |
+| Czego brakuje | C4 = cel / odmiana | — | ≥ 8 odpowiedzi C | ≥ 5 z 12 → Q-50: R2g + R2h przed premierą | bez zmian |
+| Poprawka z dnia 8 | `version` biegów z dni 9–14 | — | — | < 9 z 12 testerów gra na nowej wersji do dnia 11 → przypomnienie w Grupie (aktualizacja w Play) | — |
+
+Wyniki wpisujemy pod tabelą (kolumna „Wynik”, liczby z CSV) i każdą decyzję jako nowe D-xx. Progów **nie zmieniamy**
+po zobaczeniu danych; jeśli próg okaże się źle postawiony, zapisujemy to jako osobną decyzję z uzasadnieniem i
+rozstrzygamy po premierze.
+
+## Arkusz odpowiedzi do wniosku o produkcję (R3k)
+
+Play Console pyta o to po teście zamkniętym kont osobistych (Play Console Help 14151465). Konto organizacji (D-94)
+tego wniosku nie składa — arkusz zostaje jako gotowy opis testu (prasa, Apple, własne notatki) i jako zapas, gdyby
+konto było osobiste. Odpowiedzi wpisujemy **po angielsku** (formularz konsoli); `[…]` uzupełniamy liczbami z tabeli
+decyzji i z listy zmian PR poprawki.
+
+| Pytanie Google | Skąd odpowiedź | Szkic (EN) |
+|---|---|---|
+| How easy was it to recruit testers? | tabela „Rekrutacja”, lista Grupy | "We recruited [N] testers ([n PL] Polish, [n EN] English speakers) from friends, Polish game-dev and mobile-gaming communities and a sign-up form on airway.games, without paid testing services. [n] testers used budget Android phones and [n] tablets or foldables." |
+| Describe the engagement of your testers | podsumowania z dnia 14: `flights`, `dailies`, liczba biegów, zagadki | "[n] of [N] testers played until day 14. Median [x] flights per tester ([x] Endless runs, [x] daily challenges); [x] testers solved puzzles 1–10, [x] reached 11–30. Testers used every mode: flight training, Endless, the daily challenge and puzzles." |
+| Was the usage similar to what you expect in production? | `min_real`, `dailies`, ankieta B2 | "Yes: short sessions on phones (median [x] real minutes per run), a daily challenge most days ([x] of [N] testers on ≥ 5 of 7 days), longer Endless runs at weekends." |
+| Summarise the feedback and how you collected it | ankiety A/B/C, nagrania, Grupa | "Three surveys (day 1, 7, 14) in Polish and English, a logbook summary the testers pasted themselves (no analytics in the app), [n] screen recordings of the first ten minutes and bug reports in the Google Group. Top five points: 1. […] 2. […] 3. […] 4. […] 5. […]" |
+| Intended audience | D-16, `docs/store/en.md` | "Adults and teenagers who like calm strategy and puzzle games on phones and tablets; Polish and English at launch, more languages later." |
+| How does your app provide value? | opis sklepu | "A premium-feel, ad-free network builder on a 3D globe: players design an airline's routes, planes fly on their own and passengers change planes at hubs. Daily challenge and 40 hand-made puzzles." |
+| Expected installs in the first year | MONETIZATION / plan marketingu | "[x]–[y] (organic store search, press kit, communities)." |
+| What changes did you make based on the test? | PR poprawki z dnia 8 + decyzje D-xx po teście | "Release [version] on day 8: […]. After day 14: […] (each change linked to the survey signal that caused it)." |
+| How did you decide the app is ready for production? | dowód gotowości | "No crash or blocking report from day 9 to 14; the Play pre-launch report without crashes; our full automated test suite (`test:ci`) green on the release build; every decision rule from the test plan evaluated and recorded." |
+
+Dowód gotowości do zachowania (zrzuty / linki): raport przed wydaniem z konsoli, przebieg `test:ci` na commicie wydania,
+tabela decyzji z wynikami, lista zmian poprawki (PR), liczba zgłoszeń blokujących w dniach 9–14 (= 0).
+
 ## Po teście
 
 1. Zebrać biegi z podsumowań z dnia 14 w jeden arkusz: `npm run playtest:decode -- plik.txt > biegi.csv` (linie
    `AW1:`, sekcja wyżej).
-2. Policzyć wiersze z tabeli „Otwarte pytania” i z tabeli decyzji R3k; wpisać wyniki i decyzje jako D-xx.
-3. Odpowiedzi do wniosku o produkcję (R3k): liczba testerów i dni, sposób zbierania (ankiety + podsumowania z dziennika
-   + nagrania), 5 najczęstszych uwag, zmiany w poprawce z dnia 8, dowód gotowości.
+2. Policzyć każdy wiersz **Tabeli decyzji** (najpierw kolumna „Minimum”); wpisać wyniki i decyzje jako D-xx.
+3. Wypełnić **Arkusz odpowiedzi do wniosku o produkcję** liczbami z punktu 2 i listą zmian poprawki z dnia 8.

@@ -5,6 +5,9 @@
 // [night-12ap] R3j, D-231: each note also keeps the playtest record (real minutes, game-over cause, weekly picks,
 // training state, graphics setting/preset/adaptation steps, app version); the summary ends with the `AW1:` line,
 // which decodes back to the same notes and to CSV (`npm run playtest:decode`).
+// [night-12aq] R3k, D-232: PLAYTEST.md has the recruitment plan, a decision table whose bot references are the numbers in
+// docs/balance (game-summary.md, README N12af, r8-audit-200.csv), each row with a minimum sample and a default, and the
+// production-access answer sheet with every Play Console question.
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { EMPTY_LOGBOOK, LOGBOOK_KEY, RUN_NOTES, readLogbook, recordFlight, type LogEntry, type Logbook, type RunNote,
@@ -277,6 +280,69 @@ test('PLAYTEST.md: 14-day protocol, PL/EN questions, Q-73/Q-78/Q-80 each with wh
   }
   assert.ok(doc.includes(en['logbook.copy']) && doc.includes(pl['logbook.copy']), 'button named as the game names it');
   assert.ok(doc.includes('D-16') && doc.includes('D-227'));
+});
+/** Rows of the markdown table under a `## heading` (cells, header and separator dropped). */
+function docTable(heading: string): string[][] {
+  const start = doc.indexOf('\n## ' + heading);
+  assert.ok(start >= 0, `section "${heading}"`);
+  const body = doc.slice(start + 1).split('\n## ')[0]!;
+  return body.split('\n').filter((line) => line.startsWith('|')).slice(2).map((line) => line.split(' | ').map((cell) => cell.replace(/^\| |\s*\|$/g, '').trim()));
+}
+const pl1 = (n: number, digits = 2): string => n.toFixed(digits).replace('.', ',');
+test('R3k decision table: Q-73/Q-78/Q-80 thresholds with the bot numbers from docs/balance, a minimum and a default', () => {
+  const rows = docTable('Tabela decyzji');
+  assert.ok(rows.length >= 10, `${rows.length} rows`);
+  for (const row of rows) {
+    assert.equal(row.length, 6, row[0]);
+    assert.ok(row.every((cell) => cell.length > 0), `${row[0]}: empty cell`);
+    assert.match(row[4]!, /\d/, `${row[0]}: a numeric threshold`);
+  }
+  const row = (q: string): string => rows.find((cells) => cells[0]!.startsWith(`**${q}**`))?.join(' | ') ?? '';
+  // Bot reference: the gate's 50 runs (game-summary.md) and the 200-seed N12af measurement (balance README).
+  const summary = read('docs/balance/game-summary.md');
+  const session = summary.match(/\| Session, min at 1x \| ([\d.]+) \| [\d.]+ \| ([\d.]+) \| [\d.]+ \| ([\d.]+) \|/);
+  assert.ok(session, 'game-summary session quantiles');
+  for (const value of session.slice(1)) assert.ok(row('Q-73').includes(pl1(Number(value))), `Q-73 cites ${value}`);
+  const weeks = summary.match(/\| Game weeks \| [\d.]+ \| [\d.]+ \| ([\d.]+) \|/)?.[1];
+  assert.ok(weeks && row('Q-73').includes(pl1(Number(weeks))), 'Q-73 cites the median weeks');
+  const hub = summary.match(/\| hub-expansion \| (\d+) \| (\d+) \| (\d+) % \|/);
+  assert.ok(hub && row('Q-78').includes(`w ofercie ${hub[1]}, wybrana ${hub[2]} (${hub[3]} %)`), 'Q-78 cites the hub card');
+  const slot = summary.match(/\| Slot hold \| (\d+) \| (\d+) % \|/);
+  assert.ok(slot && row('Q-80').includes(`wstrzymanie w ${slot[1]} (${slot[2]} %)`), 'Q-80 cites slot holds');
+  const readme = read('docs/balance/README.md');
+  assert.match(readme, /\| 4 of 364 \| 3 of 200 \| 0 \| 12 of 200/);
+  assert.ok(row('Q-80').includes('karta na 4 z 364 tablic') && row('Q-80').includes('wstrzymanie w 12 (6 %)'));
+  // Decisions per option, as the owner's questions name them.
+  assert.match(row('Q-73'), /\*\*B\*\*.*≥ 22 min.*\*\*A\*\*.*10–18 min \(D-79\)/);
+  assert.match(row('Q-78'), /\*\*A\*\*.*≥ 10 % ofert.*\*\*D\*\*.*< 5 % ofert/);
+  assert.match(row('Q-80'), /\*\*A\*\*.*≥ 20 % biegów.*\*\*B\*\*.*< 10 % biegów/);
+  // R8 per-run data: week-1 card shares and the losing cause, quoted for Q-35 and the cause row.
+  const csv = read('docs/balance/r8-audit-200.csv').trim().split('\n');
+  const head = csv[0]!.split(',');
+  const bot = csv.slice(1).map((line) => line.split(',')).filter((cells) => cells[0] === 'bot');
+  const share = (values: string[], value: string) => Math.round(100 * values.filter((v) => v === value).length / values.length);
+  const first = bot.map((cells) => cells[head.indexOf('picks')]!.split('|')[0]!).filter(Boolean);
+  const q35 = rows.find((cells) => cells[0]!.startsWith('Q-35'))!.join(' | ');
+  assert.ok(q35.includes(`szerokokadłubowiec ${share(first, 'widebody')} %, turbośmigłowiec ${share(first, 'turboprop')} %, hub ${share(first, 'hub')} % (${first.length} biegi)`), 'Q-35 week-1 shares');
+  const causes = bot.map((cells) => cells[head.indexOf('fail_top_cause')]!);
+  const causeRow = rows.find((cells) => cells[0]!.startsWith('Przyczyna'))!.join(' | ');
+  for (const kind of ['regional-demand', 'no-route', 'capacity']) assert.ok(causeRow.includes(`\`${kind}\` ${share(causes, kind)} %`), kind);
+});
+test('R3k recruitment and production-access answer sheet', () => {
+  const recruit = docTable('Rekrutacja').map((cells) => cells.join(' | ')).join('\n');
+  for (const needle of ['16–18 zapisanych', '≥ 6 PL i ≥ 6 EN', '≥ 3 budżetowe Androidy', '≥ 2 tablety', 'airway-testers', '**Bez** płatnych']) {
+    assert.ok(recruit.includes(needle), needle);
+  }
+  assert.match(doc, /\| 8 \| \*\*poprawka\*\*/, 'day-8 fix release');
+  const sheet = docTable('Arkusz odpowiedzi do wniosku o produkcję');
+  const questions = ['How easy was it to recruit testers?', 'Describe the engagement of your testers',
+    'Was the usage similar to what you expect in production?', 'Summarise the feedback and how you collected it',
+    'Intended audience', 'How does your app provide value?', 'Expected installs in the first year',
+    'What changes did you make based on the test?', 'How did you decide the app is ready for production?'];
+  assert.deepEqual(sheet.map((cells) => cells[0]), questions);
+  for (const cells of sheet) assert.match(cells[2]!, /^".+"$/, `${cells[0]}: an EN draft`);
+  assert.match(read('docs/DECISIONS.md'), /^## D-232 — .*decision table/m);
+  assert.ok(doc.includes('D-94') && doc.includes('Q-52'));
 });
 test('local only: the export has no network path and the privacy sheet and decision record it', () => {
   for (const path of ['src/ui/logbook/summary.ts', 'src/ui/logbook/logbook.ts', 'src/game/logbook.ts',
