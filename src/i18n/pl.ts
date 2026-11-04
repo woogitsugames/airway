@@ -25,6 +25,15 @@ export const pl = {
   'airport.connectingAria': 'W trakcie przesiadki: {count}.', // [night-10i]
   'airport.trendFillingAria': 'Zapełnia się w ostatniej godzinie gry.', // [night-11af]
   'airport.trendEmptyingAria': 'Pustoszeje w ostatniej godzinie gry.', // [night-11af]
+  // [night-11ag] R4d: tablica przyczyn (długie przytrzymanie lotniska); reszta wierszy to zdania gameover.cause.*.
+  'hubBoard.title': '{code} · odloty',
+  'hubBoard.label': 'Tablica odlotów {code}: dlaczego pasażerowie czekają, w ostatniej godzinie gry',
+  'hubBoard.fill': 'czeka {waiting}/{capacity}',
+  'hubBoard.close': 'Zamknij tablicę odlotów',
+  'hubBoard.rowAria': '{count} do {region}:',
+  'hubBoard.empty': 'Nikt tu nie czeka.',
+  'hubBoard.cause.curfew': 'Cisza nocna: brak startów do {time}.',
+  'hubBoard.cause.none': '{count} {count|pasażer czeka|pasażerowie czekają|pasażerów czeka} na najbliższy odlot.',
   'airport.slotHeld': '{code}: samoloty czekające na slot startowy: {count}, następny slot za {time}',
   // [task-07] Rysowanie tras, pasek ATC i działania na trasach.
   'route.aircraft.turboprop': 'turbośmigłowca',

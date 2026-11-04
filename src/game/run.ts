@@ -38,6 +38,13 @@ export interface RunPlane {
   readonly id: string; readonly routeId: string; readonly type: AircraftType;
   readonly segment: number; readonly progress01: number; readonly direction: 1 | -1;
   readonly load: number; readonly capacity: number;
+  /**
+   * [night-11ag] R4d: 'ground' at `route.cityIds[cityIndex]`, or 'flight' that left `cityIndex` towards
+   * `cityIndex + direction`; `slotWaitTicks` > 0 while held on the ground for a departure slot (read-only copies).
+   */
+  readonly phase?: 'ground' | 'flight';
+  readonly cityIndex?: number;
+  readonly slotWaitTicks?: number;
 }
 export interface RunFailure {
   readonly tick: number;
@@ -207,6 +214,7 @@ export class EndlessRun {
       id: plane.id, routeId: plane.routeId, type: plane.type, segment: plane.segment,
       progress01: plane.progress01, direction: plane.direction, load: plane.load,
       capacity: PLANE_TYPES[plane.type].seats,
+      phase: plane.phase, cityIndex: plane.cityIndex, slotWaitTicks: plane.slotWaitTicks, // [night-11ag] R4d
     }));
   }
 
