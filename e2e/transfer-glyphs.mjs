@@ -1,6 +1,6 @@
 // [night-10i] Transfer passengers inside the minimum connection time are drawn as hollow region glyphs on the
 // hub's luggage tag and named in its screen-reader label; they fill in once the connection time runs out. The bot
-// plays Endless on the fixed seed into week 2 (hubs with transfers), then the game is stepped one minute at a time.
+// plays Endless on the fixed seed to the week-1 board, one pick puts it into week 2 (hubs with transfers), then the game is stepped one minute at a time.
 // Real game at 412×915 (EN) and 915×412 (PL); fails closed; shots docs/shots/n10i/.
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -48,16 +48,19 @@ try {
         await page.evaluate((seed) => window.aw.prepareSeed(seed), SEED);
         await clickTestId(page, 'menu-endless');
         await waitForScreen(page, 'game');
-        let s = await page.evaluate(() => window.aw.autoplay(2));
-        if (s.screen === 'upgrade') {
-          // An extra aircraft keeps the bot's network growing; any card that needs no airport pick will do.
-          const list = await page.evaluate(() =>
-            [...document.querySelectorAll('[data-testid^="upgrade-option-"]')].map((node) => node.dataset.upgrade));
-          const plain = list.findIndex((item) => item !== 'hub-expansion' && item !== 'departure-slots');
-          await clickTestId(page, `upgrade-option-${plain}`);
-          await waitForScreen(page, 'game');
-          s = await state(page);
-        }
+        // [night-11o] Rules v5/v6 end the bot's seed-0xA1A1 run in week 2, before the week-2 board, so (as in
+        // N11j) the bot plays to the week-1 board and one pick (not a hub or slot upgrade) puts it into week 2.
+        const atBoard = await page.evaluate(() => window.aw.autoplay(1));
+        assert(atBoard.screen === 'upgrade', `bot did not reach the week-1 board: ${atBoard.screen}`);
+        // An extra aircraft keeps the bot's network growing; any card that needs no airport pick will do.
+        const list = await page.evaluate(() =>
+          [...document.querySelectorAll('[data-testid^="upgrade-option-"]')].map((node) => node.dataset.upgrade));
+        const plain = list.findIndex((item) => item !== 'hub-expansion' && item !== 'departure-slots');
+        assert(plain >= 0, `no plain card on the week-1 board: ${list.join(', ')}`);
+        await clickTestId(page, `upgrade-option-${plain}`);
+        await waitForScreen(page, 'game');
+        let s = await state(page);
+        assert(s.nextWeekTick > atBoard.tick, `not in week 2: tick ${s.tick}, next board ${s.nextWeekTick}`);
         assert(s.screen === 'game', `bot left the game: ${s.screen}`);
         // Step minute by minute until a visible tag carries a hollow glyph (a plane has just dropped transfers).
         let tags = [];

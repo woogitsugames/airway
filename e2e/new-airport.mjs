@@ -1,5 +1,8 @@
 // [night-10a] A newly opened airport is marked in the real app: no mark on the opening airports, the airport that
 // opens mid-run carries the "NEW/NOWE" stub on its luggage tag, and the mark goes after 12 game hours.
+// [night-11o] Since rules v5 an airport opens every 12 game hours (SPAWNER_INTERVAL_TICKS = NEW_MARK_TICKS), so
+// when the first mark expires the next airport opens marked: step 2 follows the first marked airport by id (still
+// marked 40 ticks before the 12 hours, unmarked 20 after) and allows marks only on airports opened after it.
 // EN and PL at 412×915, fixed seed, fails closed; screenshots into docs/shots/n10a/ (inspect before committing).
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -19,6 +22,9 @@ try {
     mkdirSync(SHOTS, { recursive: true });
     for (const [language, word, aria] of [['en', 'NEW', 'New airport'], ['pl', 'NOWE', 'Nowe lotnisko']]) {
       const { page, errors } = await newGamePage(browser, url, language, { width: 412, height: 915 });
+      let markedId = null;
+      let known = [];
+      let openedAt = 0;
       const step = async (label, run) => {
         if (results.some((item) => item.status !== 'PASS')) { results.push({ label, status: 'SKIP' }); return; }
         try {
@@ -45,20 +51,35 @@ try {
           ticks += 20;
         }
         const marked = page.locator('.airport-bubble--new');
+        openedAt = ticks;
         assert(await marked.count() === 1, `marked airports: ${await marked.count()}`);
         await marked.waitFor({ state: 'visible', timeout: 3000 });
         const text = (await marked.locator('.airport-bubble__new').textContent())?.trim();
         assert(text === word, `stub text ${text}`);
         const label = await marked.getAttribute('aria-label');
+        markedId = await marked.getAttribute('data-airport');
+        assert(markedId, 'marked tag has no airport id');
+        known = await page.evaluate(() => window.aw.state().airports.map((airport) => airport.id));
+        assert(known.includes(markedId), `marked ${markedId} is not an open airport`);
         assert(label?.startsWith(aria), `aria-label ${label}`);
         await page.waitForTimeout(400);
         await page.screenshot({ path: resolve(SHOTS, `new-airport-${language}-412x915.png`) });
       });
       await step(`${language}: the mark goes after 12 game hours`, async () => {
-        await page.evaluate((ticks) => window.aw.advanceTicks(ticks), MARK_TICKS + 20);
+        const isMarked = () => page.evaluate((id) =>
+          document.querySelector(`.airport-bubble[data-airport="${id}"]`)?.classList.contains('airport-bubble--new') ?? false, markedId);
+        // The opening was seen within 20 ticks of the spawn, so MARK_TICKS - 40 more is still inside the 12 hours.
+        await page.evaluate((ticks) => window.aw.advanceTicks(ticks), MARK_TICKS - 40);
         await page.waitForTimeout(200);
-        const left = await page.locator('.airport-bubble--new, .airport-edge--new').count();
-        assert(left === 0, `still marked: ${left}`);
+        assert(await isMarked(), `${markedId} lost its mark before 12 game hours`);
+        await page.evaluate(() => window.aw.advanceTicks(60));
+        await page.waitForTimeout(200);
+        assert(!(await isMarked()), `${markedId} still marked after 12 game hours`);
+        const left = await page.evaluate(() => [...document.querySelectorAll('.airport-bubble--new')].map((node) => node.dataset.airport));
+        const stale = left.filter((id) => known.includes(id));
+        assert(stale.length === 0, `airports open since tick ${openedAt} still marked: ${stale.join(', ')}`);
+        const edges = await page.locator('.airport-edge--new').count();
+        assert(edges <= left.length, `edge marks ${edges} > newer marked airports ${left.length}`);
       });
       await page.close();
     }
