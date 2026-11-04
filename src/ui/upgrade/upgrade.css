@@ -269,7 +269,9 @@
   .airway-upgrade-sign { padding: 6px 12px 6px 10px; }
   .airway-upgrade-title { margin-top: 2px; }
   .airway-upgrade-grid { margin-top: 2px; }
-  .airway-upgrade-stamp { margin-top: 4px; }
+  /* [night-12aa] The N11r caption line made the PL week-1 board (hub crate first) scroll 1 px here. */
+  .airway-upgrade-stamp { margin-top: 2px; }
+  .airway-upgrade-stamp-caption { line-height: 1.1; }
 }
 
 /* [task-37] Fit-to-width: the longest word of the title (--title-chars, set in index.ts; Overpass 800

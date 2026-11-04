@@ -633,6 +633,17 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       takes the place); Endless/Daily curfew from week 3. `RULES_VERSION` 6, v5 golden frozen, older saves replayed
       (D-76). Bot median 17.03 → 17.25 min (50 seeds), 16.52 → 16.64 (200); runs with a curfew hold 10 % → 62 %.
 
+- [x] N12aa **Five e2e suites green again under rules v6; seeds replayed headless in test:fast (D-189)** — board-short,
+      edge-chip-airports, edge-chip-tags, run-timeline and upgrade-picks were red on clean `dev` since rules v6: their
+      fixed seeds ended the bot's run in week 2, before the board they test. Seeds and bot plans now live in
+      `e2e/seeds.mjs`; `scripts/lib/e2e-plans.ts` replays each plan with the same EndlessRun, bot, card click and forced
+      overload as `window.aw`, on 7 idle offsets (the browser clock keeps running between calls). New fast
+      `test:e2e-seeds` fails in `test:fast` when a rule change breaks a suite's seed; `npm run e2e:seeds -- <suite>`
+      prints the next seed that holds. New seeds: 0xA1A2 (board-short, run-timeline), 0xA3AA (edge-chip-airports,
+      upgrade-picks), 0xA1C3 + 41817 (edge-chip-tags). Assertions unchanged; upgrade-picks' "Back took nothing" compares
+      with the count before the pick (its board is now week 3). PL 320×568 week-1 board scrolled 1 px since the N11r stamp
+      caption: 3 px less stamp spacing at that size. Shots `docs/shots/n10r/`, `docs/shots/n10v/` refreshed.
+
 ## Globe look (D-170)
 Owner's choice 2026-11-03: the satellite globe (direction B). Plan, budgets and test lists per step:
 `docs/mockups/globe-2026-11/PLAN.md`; the DEV experiment to start from: `?globeLook=satellite`
