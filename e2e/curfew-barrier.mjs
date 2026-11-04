@@ -1,12 +1,15 @@
 // [night-10g] An airport closed by the night curfew is drawn with the red-white barrier ring (task 11): the bot plays
-// Endless into week 4+, and whenever the sim closes airports the renderer draws exactly that many barriers; it
+// Endless into the curfew weeks (week 3+, D-151), and whenever the sim closes airports the renderer draws exactly that many barriers; it
 // also clears them when the night ends. [night-10h] The tags carry the barrier stub and the edge chips a striped bar. Real game at 412×915 (EN) and 915×412 (PL); fails closed; shots docs/shots/n10g/.
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
-import { withBrowser, newGamePage, waitForScreen, clickTestId, state, assert, saveDiagnostics, ROOT, SEED } from './browser.mjs';
+import { withBrowser, newGamePage, waitForScreen, clickTestId, state, assert, saveDiagnostics, ROOT } from './browser.mjs';
 
 const STEPS = 2;
+// [night-12v] Rules v5 (D-95) end the bot's 0xA1A1 run in week 2 (tick 6958), before any curfew; 0xA1A2 is the
+// first seed it carries into week 3, where the curfew now starts (D-151).
+const CURFEW_SEED = Number(process.env.CURFEW_SEED ?? 0xA1A2);
 const started = performance.now();
 const SHOTS = resolve(ROOT, 'docs/shots/n10g');
 const results = [];
@@ -16,7 +19,7 @@ const frames = (page, n) => page.evaluate((count) => new Promise((done) => {
 
 /** Endless on the fixed seed, bot to the week-3 board, then one bot decision per game hour until a curfew closes. */
 async function playIntoCurfew(page) {
-  await page.evaluate((seed) => window.aw.prepareSeed(seed), SEED);
+  await page.evaluate((seed) => window.aw.prepareSeed(seed), CURFEW_SEED);
   await clickTestId(page, 'menu-endless');
   await waitForScreen(page, 'game');
   let s = await page.evaluate(() => window.aw.autoplay(3));
@@ -98,7 +101,7 @@ try {
   if (fatal) console.error('FAIL harness: ' + fatal);
   const passed = results.filter((item) => item.status === 'PASS').length;
   const failedCount = results.length - passed + (fatal ? 1 : 0);
-  console.log(`SUMMARY test:e2e:curfew-barrier seed=0x${SEED.toString(16).toUpperCase()} steps=${results.length} ` +
+  console.log(`SUMMARY test:e2e:curfew-barrier seed=0x${CURFEW_SEED.toString(16).toUpperCase()} steps=${results.length} ` +
     `passed=${passed} failed=${failedCount} durationMs=${Math.round(performance.now() - started)}`);
   if (failedCount || results.length !== STEPS) process.exitCode = 1;
 }

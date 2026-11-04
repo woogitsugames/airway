@@ -563,6 +563,10 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
 - [x] N12u **Unfolded Fold size in the screen matrix (D-154)** — `ui:matrix` 4 → 6 sizes: 904×1088@2 and 1088×904@2
       (Galaxy Z Fold inner screen ~1812×2176 px), 32 → 48 shots, same overlap/scroll checks; `newGamePage` takes a
       DPR. Landscape menu board looks small on the big screen (for agent #1).
+- [x] N12v **Rules v6: weekly cards that can act + curfew from week 3 (R8a, R8c; D-150, D-151, D-155)** — "+2 slots"
+      enters the draw only after the first departure hold, hub expansion only while a hub exists (the other aircraft
+      takes the place); Endless/Daily curfew from week 3. `RULES_VERSION` 6, v5 golden frozen, older saves replayed
+      (D-76). Bot median 17.03 → 17.25 min (50 seeds), 16.52 → 16.64 (200); runs with a curfew hold 10 % → 62 %.
 
 ## Globe look (D-170)
 Owner's choice 2026-11-03: the satellite globe (direction B). Plan, budgets and test lists per step:
@@ -1019,7 +1023,7 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
       `test:site` and `shots:site` updated. **Area:** `site/`, `docs/SITE.md`. After D-67's publish decision.
 
 ### R8 (2026-11-03) — gameplay-depth and balance audit, rules v5 (data: `docs/RESEARCH.md` "R8", `scripts/research/r8-audit.ts`)
-- [ ] R8a **Weekly board offers only cards that can matter** — 200 bot seeds: "+2 slots" picked 0 % of the 239 times
+- [x] R8a → N12v **Weekly board offers only cards that can matter** — 200 bot seeds: "+2 slots" picked 0 % of the 239 times
       it was offered, hub expansion 3 % of 235; forcing either costs ~1 min median and 12–14 % score, because every
       board has at least one of them (a third have both) and the fleet is the bottleneck (99 % of losses with 0 spare
       aircraft). Rule: "+2 slots" enters the draw only after the run's first `DepartureHeld`, hub expansion only while a
@@ -1034,7 +1038,7 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
       in `src/game/gameoverTip.ts`/game-over report, `test:gameover-tip` cases for both. Metric: share of unserved
       losses whose hint names an action the player could take 0 → 100 %. **Area:** `src/game/`, `src/ui/gameover/`,
       `src/i18n/`.
-- [ ] R8c **Curfew from week 3 in Endless** — only 29 of 200 bot runs (15 %) reach week 4, so the curfew (D-17), one
+- [x] R8c → N12v **Curfew from week 3 in Endless** — only 29 of 200 bot runs (15 %) reach week 4, so the curfew (D-17), one
       of the D-07 differentiators, is unseen in most runs; 66 % reach week 3. `CURFEW_ENDLESS_START_WEEK` 4 → 3,
       rules/params version bump, `test:daynight`/`test:balance`/goldens. Metric (r8-audit): runs with a curfew hold
       15 % → ≥ 50 %; median stays in 10–18 min (expect a small drop); week-1/2 untouched. **Area:** `src/sim/params.ts`,

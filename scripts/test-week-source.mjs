@@ -37,10 +37,11 @@ check('every week constant equals the params source', () => {
   assert(clock.DAYS_PER_WEEK === params.SIM_DAYS_PER_WEEK && facade.DAYS_PER_WEEK === params.SIM_DAYS_PER_WEEK,
     'DAYS_PER_WEEK re-exports must equal SIM_DAYS_PER_WEEK');
 });
-check('curfew starts in week 4 = day 10 (D-17)', () => {
+// [night-12v] R8c, D-151: week 4 -> 3.
+check('curfew starts in week 3 = day 7 (D-17, D-151)', () => {
   const firstCurfewDay = (params.CURFEW_ENDLESS_START_WEEK - 1) * params.SIM_DAYS_PER_WEEK + 1;
-  assert(firstCurfewDay === 10, `curfew starts on day ${firstCurfewDay}`);
-  assert(daynight.weekAtTick(9 * DAY - 1) === 3 && daynight.weekAtTick(9 * DAY) === 4, 'weekAtTick boundary');
+  assert(firstCurfewDay === 7, `curfew starts on day ${firstCurfewDay}`);
+  assert(daynight.weekAtTick(6 * DAY - 1) === 2 && daynight.weekAtTick(6 * DAY) === 3, 'weekAtTick boundary');
 });
 check('clock and calendar follow the week', () => {
   const at = clock.clockAt(params.SIM_MINUTES_PER_WEEK + DAY + 5);
