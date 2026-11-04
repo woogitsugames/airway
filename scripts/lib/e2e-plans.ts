@@ -9,6 +9,10 @@
 // [night-12ac] The vocabulary also covers the suites that play the run without a board in mind: play-outs to a
 // game over (with the jam on a served or unserved airport), hourly bot play, minute stepping until a transfer is
 // connecting or a curfew closes, idle play with no bot, the first airport opening, and the first-time card triggers.
+// [night-12ag] `{ gesture: 'route-plane' }` covers smoke and leaderboard, which build their first route and assign an
+// aircraft with pointer drags (window.aw.gesture). The browser's routeGesture picks the first pair of on-screen
+// airports within turboprop range; which ones are on screen depends on the camera (src/render), so the step is checked
+// for every such pair of the start airports (checkPlan), a superset of what any viewport can pick.
 import { EndlessRun, cityDistanceKm } from '../../src/game/run.ts';
 import { AUTOPLAY_ACTION_INTERVAL, nextAutoplayCommand } from '../../src/game/dev/autoplay.ts';
 import { beyondRange, fillingHub } from '../../src/game/tutorial/first-time.ts';
@@ -35,7 +39,8 @@ export type PlanStep =
   | { minutes: number; until: Until; botEvery?: number }
   | { opens: number; chunk: number }
   | { routes: number }
-  | { triggers: readonly FirstTimeTrigger[]; ticks: number; every: number; take: Take };
+  | { triggers: readonly FirstTimeTrigger[]; ticks: number; every: number; take: Take }
+  | { gesture: 'route-plane' };
 
 export interface E2ePlan { name: string; steps: readonly PlanStep[] }
 export interface PlanResult { ok: boolean; why?: string; week: number; minute: number; trace: string[] }
@@ -116,12 +121,27 @@ function click(run: EndlessRun, index: number, idle: number): string {
   return card.id;
 }
 
+/**
+ * [night-12ag] Airport pairs session.routeGesture() can drag between, in its order (city list × city list, lower id
+ * first, 0 < distance ≤ the selected aircraft's range — turboprop, the default dock selection), before the on-screen
+ * filter that only the browser knows.
+ */
+export function routeGesturePairs(run: EndlessRun): [string, string][] {
+  const ids = run.cityList().map((city) => city.id);
+  const pairs: [string, string][] = [];
+  for (const a of ids) for (const b of ids) {
+    const km = cityDistanceKm(a, b);
+    if (a < b && km > 0 && km <= PLANE_TYPES.turboprop.rangeKm) pairs.push([a, b]);
+  }
+  return pairs;
+}
+
 const status = (run: EndlessRun) => (run.failed ? `over at minute ${run.sim.world.minute}` : `running at minute ${run.sim.world.minute}`);
 
 const weekOf = (run: EndlessRun) => run.weeklyUpgrade?.week ?? Math.floor(run.sim.world.minute / TICKS_PER_WEEK) + 1;
 
 /** Replay one plan on one seed with `idle` real-time ticks after the start and after every card. */
-export function playPlan(seed: number, plan: E2ePlan, idle = 0): PlanResult {
+export function playPlan(seed: number, plan: E2ePlan, idle = 0, pair = 0): PlanResult {
   const run = EndlessRun.create(seed);
   const trace: string[] = [];
   const watch: { city: string | null } = { city: null };
@@ -223,6 +243,24 @@ export function playPlan(seed: number, plan: E2ePlan, idle = 0): PlanResult {
       const missing = step.triggers.filter((t) => !seen.has(t));
       if (missing.length) return result(false, `first-time triggers never fired: ${missing.join(', ')} (run ${status(run)})`);
       trace.push(`triggers ${[...seen].join(',')} by minute ${run.sim.world.minute}`);
+    } else if ('gesture' in step) {
+      // smoke / leaderboard: the route drag (RouteTool → AddRoute with the dock's turboprop), then the dock-tag drag
+      // onto it (session planeGesture → AssignPlane for the first route whose aircraft is in reserve). The suites
+      // wait for routeCount / aircraftAssignments to grow, so at least one tick passes after each drag.
+      const pairs = routeGesturePairs(run);
+      const target = pairs[pair];
+      if (!target) return result(false, `no airport pair ${pair} within turboprop range (${pairs.length} pairs)`);
+      const routes = run.routeList().length;
+      run.queue({ type: 'AddRoute', cityIds: target, aircraft: 'turboprop' });
+      advance(run, Math.max(1, idle));
+      if (run.routeList().length !== routes + 1) return result(false, `route ${target.join('–')} not added (run ${status(run)})`);
+      const route = run.routeList().find((item) => run.inventory[item.aircraft] > 0);
+      if (!route) return result(false, 'no route with its aircraft type in reserve: the plane drag has no target');
+      const assignments = run.assignments;
+      run.queue({ type: 'AssignPlane', routeId: route.id, aircraft: route.aircraft });
+      advance(run, Math.max(1, idle));
+      if (run.assignments !== assignments + 1) return result(false, `aircraft not assigned to ${route.id} (run ${status(run)})`);
+      trace.push(`route ${target.join('–')} + ${route.aircraft}`);
     } else if ('take' in step) {
       if (!onBoard(run)) {
         if (step.ifBoard) continue;
@@ -247,10 +285,13 @@ export function playPlan(seed: number, plan: E2ePlan, idle = 0): PlanResult {
 }
 
 /** The plan on every idle offset; the first failing offset, or null when it holds for all. */
-export function checkPlan(seed: number, plan: E2ePlan): { idle: number; result: PlanResult } | null {
-  for (const idle of IDLE_OFFSETS) {
-    const result = playPlan(seed, plan, idle);
-    if (!result.ok) return { idle, result };
+export function checkPlan(seed: number, plan: E2ePlan): { idle: number; pair?: number; result: PlanResult } | null {
+  // [night-12ag] A gesture plan holds only when it holds for every airport pair the route drag could take.
+  const gesture = plan.steps.some((step) => 'gesture' in step);
+  const pairs = gesture ? Math.max(1, routeGesturePairs(EndlessRun.create(seed)).length) : 1;
+  for (let pair = 0; pair < pairs; pair++) for (const idle of IDLE_OFFSETS) {
+    const result = playPlan(seed, plan, idle, pair);
+    if (!result.ok) return { idle, ...(gesture ? { pair } : {}), result };
   }
   return null;
 }

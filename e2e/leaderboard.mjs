@@ -19,8 +19,10 @@ const EMULATOR_ENV = {
 // Vite reads VITE_* from the environment when the dev server starts (inside withBrowser).
 Object.assign(process.env, EMULATOR_ENV);
 const {
-  withBrowser, newGamePage, waitForScreen, dragGesture, state, assert, clickTestId, saveDiagnostics, SEED,
+  withBrowser, newGamePage, waitForScreen, dragGesture, state, assert, clickTestId, saveDiagnostics,
 } = await import('./browser.mjs');
+// [night-12ag] Per-suite seed, replayed headless by test:e2e-seeds (route + aircraft drags for every start pair).
+const SEED = (await import('./seeds.mjs')).E2E_SEEDS.leaderboard.seeds[0];
 const { presetLanguage } = await import('../scripts/lib/harness.mjs');
 const { readNetConfig, boardsForDaily } = await import('../src/net/index.ts');
 const { FirebaseRestClient } = await import('../src/net/client.ts');

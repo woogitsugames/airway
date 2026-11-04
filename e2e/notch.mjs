@@ -5,7 +5,7 @@
 // suite stays fast under SwiftShader): departures menu (with a notice), settings, puzzle board, weekly upgrade board,
 // game over, in-game HUD. Every visible, unclipped button/select/link must lie inside the safe rectangle; scrolling
 // containers are checked at the top and again scrolled to the end. PL + EN. Shots docs/shots/n11y/.
-// [night-11z] D-208: + a small landscape phone (812×375, 0/50/21/50); the weekly board is mounted over the real HUD
+// [night-11z] D-209: + a small landscape phone (812×375, 0/50/21/50); the weekly board is mounted over the real HUD
 // and must fit without scrolling (every label above the bottom inset), its sign beside the boarding pass with the
 // line at least 120 px wide and at most 3 lines; + the training flight through its controller (route, aircraft and
 // cleared steps), the ATC range strip and a first-time card: their paper panels must lie inside the safe rectangle too.
@@ -161,7 +161,7 @@ function audit(page, inset) {
 }
 
 /**
- * [night-11z] D-208: the weekly board fits the safe height without scrolling, every label ends above the bottom
+ * [night-11z] D-209: the weekly board fits the safe height without scrolling, every label ends above the bottom
  * inset, and the sign keeps a readable line (≥ 120 px wide, ≤ 3 lines) clear of the boarding pass.
  */
 function auditBoard(page, inset) {

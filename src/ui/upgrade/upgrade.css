@@ -236,11 +236,11 @@
   .airway-upgrade-stamp { margin-top: 6px; }
   /* [night-07t] The airport pick too: the sign beside the pass leaves the low globe band free for tapping. */
   .airway-upgrade-open.is-picking-hub { padding-top: calc(10px + var(--aw-safe-top)); }
-  /* [night-11z] D-208: the model window takes what the height leaves (no 96 px floor, minus the top/bottom insets),
+  /* [night-11z] D-209: the model window takes what the height leaves (no 96 px floor, minus the top/bottom insets),
      so the three labels end above the bottom inset on 360–393 px tall phones (they ran 70–100 px off-screen). */
   .airway-upgrade-open { --upgrade-win: clamp(48px, calc(100vh - 300px - var(--aw-safe-top) - var(--aw-safe-bottom)), 230px); }
   .airway-upgrade { container: upgrade-board / inline-size; }
-  /* [night-11z] D-208: a board narrower than 860 px (side cut-outs, 720–852 px phones) left the sign beside the pass
+  /* [night-11z] D-209: a board narrower than 860 px (side cut-outs, 720–852 px phones) left the sign beside the pass
      178 px or less and its line wrapped into a 1–50 px column (6–7 lines). The week now sits small above the line,
      and the sign may run over the dimmed peg rack (unreachable while the board is open) up to 300 px wide. */
   @container upgrade-board (max-width: 860px) {
