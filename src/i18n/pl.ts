@@ -182,6 +182,7 @@ export const pl = {
   'gameover.cancelled': 'ODWOŁANY',
   'gameover.unserved': 'Żadna trasa nie obsługiwała {hub}: pasażerowie nie mieli czym polecieć.', // [night-11b]
   'gameover.unservedHint': 'Połącz nowe lotnisko, zanim zapełni się poczekalnia.',
+  'gameover.unservedNoSpare': 'Brak wolnych samolotów: przeciągnij do niego koniec trasy albo usuń mniej obłożoną trasę, żeby zwolnić jej samolot.', // [night-12y] R8b
   'gameover.report': 'ATC · RAPORT ZDARZENIA',
   'gameover.score': 'Dowiezieni pasażerowie: {score}',
   'gameover.weeks': 'Ukończone tygodnie: {weeks}',
