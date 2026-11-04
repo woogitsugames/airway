@@ -8,6 +8,9 @@
 // [night-12aq] R3k, D-232: PLAYTEST.md has the recruitment plan, a decision table whose bot references are the numbers in
 // docs/balance (game-summary.md, README N12af, r8-audit-200.csv), each row with a minimum sample and a default, and the
 // production-access answer sheet with every Play Console question.
+// [night-12ar] R6i: PLAYTEST.md has the first-session observation sheet (O1–O8 incl. seconds to the first route, dock,
+// "nothing to do", glyph, weekly board), the two device checks (Android music focus, budget-phone vibration) and a
+// threshold for each; no names in the sheet.
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { EMPTY_LOGBOOK, LOGBOOK_KEY, RUN_NOTES, readLogbook, recordFlight, type LogEntry, type Logbook, type RunNote,
@@ -343,6 +346,28 @@ test('R3k recruitment and production-access answer sheet', () => {
   for (const cells of sheet) assert.match(cells[2]!, /^".+"$/, `${cells[0]}: an EN draft`);
   assert.match(read('docs/DECISIONS.md'), /^## D-232 — .*decision table/m);
   assert.ok(doc.includes('D-94') && doc.includes('Q-52'));
+});
+test('R6i first-session observation sheet: observations, device checks, thresholds, pseudonyms only', () => {
+  const rows = docTable('Arkusz obserwacji pierwszej sesji').filter((cells) => !['#', 'Sygnał'].includes(cells[0]!) && !cells[0]!.startsWith('|-'));
+  const ids = rows.map((cells) => cells[0]);
+  assert.deepEqual(ids, ['O1', 'O2', 'O3', 'O4', 'O5', 'O6', 'O7', 'O8', 'U1', 'U2', ...ids.slice(10)]);
+  const text = (id: string): string => rows.find((cells) => cells[0] === id)!.join(' | ');
+  assert.match(text('O2'), /Sekundy do pierwszej własnej trasy/);
+  assert.match(text('O3'), /Czy znalazł dok/);
+  assert.match(text('O4'), /nie ma nic do roboty/);
+  assert.match(text('O5'), /Co znaczy glif/);
+  assert.match(text('O6'), /Tablica tygodnia.*bez pomocy/);
+  assert.match(text('U1'), /Android: muzyka z innej aplikacji/);
+  assert.match(text('U2'), /Wibracje na tanim telefonie.*R6d, R6e/);
+  const thresholds = rows.slice(10);
+  for (const id of ['O2', 'O3', 'O4', 'O5', 'O6', 'U1', 'U2']) {
+    const row = thresholds.find((cells) => cells[0]!.startsWith(id));
+    assert.ok(row, `threshold for ${id}`);
+    assert.match(row[1]!, /\d/, `${id}: numeric threshold`);
+    assert.ok(row[2]!.length > 10, `${id}: decision`);
+  }
+  assert.match(doc, /pseudonimem \(`T01`/);
+  assert.match(doc, /\*\*nie podpowiada\*\*/);
 });
 test('local only: the export has no network path and the privacy sheet and decision record it', () => {
   for (const path of ['src/ui/logbook/summary.ts', 'src/ui/logbook/logbook.ts', 'src/game/logbook.ts',

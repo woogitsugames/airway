@@ -9,8 +9,8 @@ Zakres R1o: przebieg dni 1–14, o co pytamy, pytania PL/EN, eksport dziennika. 
 playtestu: linię maszynową `AW1:` pod tekstem, prawdziwe minuty gry, przyczynę porażki, kartę z każdego tygodnia, stan
 szkolenia, ustawienie i preset grafiki, kroki adaptacji i wersję gry, oraz `npm run playtest:decode` (CSV). **R3k**
 (D-232) dodał rekrutację, ostateczną tabelę decyzji z progami spisanymi przed testem i arkusz odpowiedzi do wniosku o
-produkcję (Q-42 → D-94; Q-52 wg rekomendacji A, do potwierdzenia). Uzupełni go **R6i** (arkusz obserwacji pierwszych
-10 minut).
+produkcję (Q-42 → D-94; Q-52 wg rekomendacji A, do potwierdzenia). **R6i** dodał arkusz obserwacji pierwszej sesji
+(pierwsze 10 minut) i dwa sprawdzenia na urządzeniu (muzyka z innej aplikacji, wibracje na tanim telefonie).
 
 ## Prywatność (D-16, D-220)
 
@@ -227,6 +227,48 @@ odpowiadają na nie wprost.
 | C5 | Czy poleciłbyś grę? (0–10) | Would you recommend the game? (0–10) |
 | C6 | Dźwięk (włączony / wyciszony; czy przeszkadza) — Q-29; noc na globusie (za ciemna / w sam raz / za jasna) — Q-14 | Sound (on / muted; does it bother you) — Q-29; night on the globe (too dark / right / too bright) — Q-14 |
 | C7 | Ile zapłaciłbyś za tę grę? (tylko sygnał; gra zostaje bez reklam i zakupów, D-16) | What would you pay for this game? (a signal only; the game stays without ads or purchases, D-16) |
+
+## Arkusz obserwacji pierwszej sesji (R6i)
+
+Dla 3–5 testerów z nagraniem (dzień 1) i dla każdej sesji, którą obserwujemy na żywo. Jeden arkusz na osobę,
+oznaczoną pseudonimem (`T01`, `T02`, …) — bez imienia, e-maila i modelu konta. Obserwator wypełnia go z nagrania albo
+na bieżąco; nagrania zostają prywatne, poza repozytorium, i kasujemy je po teście.
+
+**Zasady obserwacji.** Tester dostaje tylko instrukcję z e-maila (PL/EN wyżej). Obserwator **nie podpowiada** przez
+10 minut; gdy tester utknie na ponad 60 s i prosi o pomoc, obserwator mówi jedno zdanie i zaznacza „po podpowiedzi”.
+Czas liczymy od pierwszego ekranu z globusem w biegu **Lot bez końca** (po szkoleniu albo jego pominięciu), w sekundach
+z licznika nagrania. Tester mówi na głos, co myśli; obserwator zapisuje cytaty dosłownie.
+
+| # | Co notujemy | Jak | Wynik (wpisać) |
+|---|---|---|---|
+| O1 | Szkolenie: ukończone / pominięte / porzucone; krok, na którym się zawahał (> 10 s bez ruchu) | z nagrania | |
+| O2 | **Sekundy do pierwszej własnej trasy** na prawdziwym globusie (od pierwszego ekranu z globusem do pierwszej trasy, po której leci samolot) | licznik nagrania | s |
+| O3 | **Czy znalazł dok** (samoloty na przywieszkach) i przypisał samolot do trasy: sam / po podpowiedzi / nie; sekunda | z nagrania | |
+| O4 | **Pierwszy moment „nie ma nic do roboty”** (tester czeka, przewija globus bez celu albo to mówi): minuta i co było na ekranie | z nagrania + cytat | min |
+| O5 | **Co znaczy glif** pasażera: po biegu pokazać glif przy lotnisku i zapytać „co oznacza ten znak?” — dobrze (region docelowy) / częściowo / źle | pytanie po biegu | |
+| O6 | **Tablica tygodnia (skrzynia)**: czy wybrał kartę i umieścił nowy samolot z doku **bez pomocy**; czy umie powiedzieć, co wybrał | z nagrania + pytanie | |
+| O7 | Pierwsza porażka: minuta; czy umie powiedzieć dlaczego (porównać z A1 i `cause` w CSV) | pytanie po biegu | |
+| O8 | Inne miejsca, gdzie utknął > 10 s (ekran, element, cytat) | z nagrania | |
+
+**Sprawdzenia na urządzeniu** (obserwator albo tester według krótkiej instrukcji w Grupie; jedna próba na telefon):
+
+| # | Sprawdzenie | Kroki | Wynik |
+|---|---|---|---|
+| U1 | **Android: muzyka z innej aplikacji** (focus audio WebView, dziś nieznane) | włączyć muzykę w innej aplikacji (np. odtwarzacz muzyki), otworzyć Airway; zagrać 1 min z dźwiękiem gry włączonym, potem wyłączonym w Ustawieniach | muzyka gra dalej / ścisza się / zatrzymuje się (osobno dla dźwięku gry wł./wył.) |
+| U2 | **Wibracje na tanim telefonie** (R6d, R6e) | Ustawienia → Wibracje włączone; przeciągnąć trasę do lotniska (przyciągnięcie, „snap”), potem doczekać zatoru albo końca gry (zator / koniec) | snap: wyraźna / słaba / brak / brzęczy; zator: wyraźna / słaba / brak / brzęczy; model telefonu |
+
+Arkusz trafia do tabeli zbiorczej (jeden wiersz na testera). **Progi** (jak tabela decyzji — spisane przed testem;
+obserwowanych jest mało, więc liczymy osoby, nie procenty):
+
+| Sygnał | Próg | Decyzja |
+|---|---|---|
+| O2 sekundy do pierwszej trasy | mediana > 60 s albo ≥ 2 osoby > 120 s | przegląd pierwszego ekranu biegu i podpowiedzi trasy przed premierą |
+| O3 dok nieznaleziony sam | ≥ 2 osoby | mocniejsza wskazówka doku (pierwsza karta) |
+| O4 „nic do roboty” przed 3. minutą | ≥ 2 osoby | wraca tempo tygodnia 1 (Q-60, D-113) |
+| O5 glif źle | ≥ 2 osoby | legenda glifów w szkoleniu / na przywieszce |
+| O6 tablica tygodnia z pomocą | ≥ 2 osoby | przegląd tablicy tygodnia (skrzynia, dok) |
+| U1 muzyka zatrzymuje się przy wyłączonym dźwięku gry | 1 telefon | zadanie platformy: nie przejmować focusu audio, gdy dźwięk gry jest wyłączony |
+| U2 wibracja brak / brzęczy na tanim telefonie | ≥ 2 telefony | R6e (stałe systemowe Androida) przed premierą |
 
 ## Tabela decyzji (R3k, D-232) — progi spisane przed testem
 
