@@ -1360,3 +1360,29 @@ do niego koniec trasy albo usuń mniej obłożoną trasę, żeby zwolnić jej sa
 route" became "remove a quieter route": the game UI has no single-plane unassign, only removing a route returns its
 aircraft. Unknown reserve (older callers) keeps the old line. Metric: unserved losses whose hint names a move the player
 could make, 0 → 100 % (both branches). **Status: in force (N12y).**
+
+## D-164 — A puzzle's reference network must win in any order of its strips (2026-11-04, Claude, ext/04)
+Each connect costs one game minute, so the order in which a player taps the strips shifts every plane's first
+departure. On long legs this can decide a jam: puzzle 35 (ext-02) cleared in its reference order but jammed
+Singapore in 17 of 40 random orders. `test:long-haul` now replays every long-haul reference in 8 orders (forward,
+reverse, 6 seeded shuffles; hub upgrades after the strips, because a city is a hub only once it has routes) and each
+must clear the goal; the ≥ 15 % margin stays a property of the reference order (in other orders the result moves by a
+few per cent, e.g. 40: 1 224–1 376). Fix for 35: Singapore holds 210 instead of 190 waiting passengers and the
+target is 1 147 (was 1 154): still 1 of 1 525 networks, still only with the Sydney upgrade, now 60 of 60 orders.
+Rejected: knife-edge capacities that make a hub upgrade decisive only in some orders (tried for 37 and 40).
+**Status: in force (ext/04).**
+
+## D-165 — "Long haul" 36–40: the second half of the pack (2026-11-04, Claude, ext/04)
+Same method as D-163 (every network the stock allows, on the real Sim, plus D-164's order check), two 3-day weeks
+each, all starts outside Europe, every one with an ocean leg only a widebody flies:
+36 North Pacific (Tokyo feeds Los Angeles-bound traffic; chaining Osaka–Busan and Seoul–Shanghai instead of a star,
+Osaka under curfew, Shanghai wave in week 2; 1 of 284 networks), 37 Two oceans (Johannesburg to Bombay and Perth,
+Cape Town under curfew must not get its own ocean leg; 2 of 681), 38 Andes queue (four turboprop spokes queue for
+Bogotá's slots, Lima's week-2 wave needs its own widebody to Accra; 11 of 1 583, all with the same two widebodies),
+39 Gulf to Sydney (Dubai–Sydney is beyond range, Singapore is the stopover, Sydney under curfew, Johannesburg wave in
+week 2; 16 of 3 647, all with the same Singapore pair), 40 Last call (5 continents from Nairobi, São Paulo under
+curfew, Bombay–Sydney at the edge of widebody range; 3 of 2 444, all with the same four widebodies). Reference margins
++15 % (36–39) and +16 % (40), below 26–30 (+17…18 %). No hub upgrade in 36–40: in 37 and 40 the +6 seats decided only
+on a knife edge that broke in some strip orders (D-164), so robustness won over an MCT tag; each level carries at
+least two of slots/curfew/week. Titles keep every word ≤ 8 letters so the 320 px board never splits one.
+**Status: in force; difficulty is a proposal for the owner to playtest (as D-70).**
