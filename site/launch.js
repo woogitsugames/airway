@@ -1,4 +1,4 @@
-// [night-11ad] R7k, D-214: launch settings of the static site, in one place. Every store link stays empty until the
+// [night-11ad] R7k, D-218: launch settings of the static site, in one place. Every store link stays empty until the
 // store page exists: an empty link shows a disabled "coming soon" tag, never a guess. Filling one requires the
 // official badge artwork for that store in assets/badges/ (Apple and Google brand rules; test:site enforces it).
 export const LAUNCH = {

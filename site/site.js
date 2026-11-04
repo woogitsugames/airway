@@ -34,7 +34,7 @@ for (const element of document.querySelectorAll('[data-nav-lang]')) {
 for (const element of document.querySelectorAll('[data-language]')) {
   element.setAttribute('aria-current', element.dataset.language === lang ? 'true' : 'false');
 }
-// [night-11ad] R7k, D-214: real screenshots in the page's language; store tags become links only once configured.
+// [night-11ad] R7k, D-218: real screenshots in the page's language; store tags become links only once configured.
 for (const image of document.querySelectorAll('img[data-shot]')) {
   image.src = `assets/shots/${lang}/${image.dataset.shot}.jpg`;
 }

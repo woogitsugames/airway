@@ -1733,3 +1733,18 @@ ships (D-212), when `localName` gains the planned codes. Kept as Wikidata has th
 "Kiew/Kiev", Bombay/Calcutta/Madras in French and Spanish, Spanish "Bangalore". Guard: `test:city-data` (every city and
 region has every planned name, the file equals the offline rebuild, one item per city, overrides carry a reason).
 **Status: in force.**
+
+## D-218 — Site launch pack: one launch config, disabled store tags, real 540×960 shots, og:image, hreflang, 404 (2026-11-04, Claude, night N11ad)
+R7k. `site/launch.js` is the single place for the public origin and the two store links. Both links stay empty until
+the store pages exist; an empty link shows a disabled "link after the store page opens" tag (luggage-tag style), never
+a guessed URL. A link counts only on the store's own host (`play.google.com`, `apps.apple.com`) and only together
+with the official badge artwork in `site/assets/badges/` (Google/Apple brand rules, `docs/ASSETS.md` entry), so no
+badge files are committed today. The stage-0 concept mockups leave the site: the four previews (night, game, upgrade,
+menu) are real store screenshots, downscaled by `npm run site:assets` (`site/make-assets.mjs`, Chromium canvas, no
+image library) to 540×960 JPEG under 250 kB per language; `sources.json` stores the source PNG hashes so a stale copy
+fails `test:site`. The "failure" scene waits for a store:shots run with the N11t game-over wording. `og:image` is the
+Play feature graphic (D-117), copied at build time instead of a second file in git; canonical points to the
+language-neutral URL with `hreflang` pl/en/x-default; `404.html` is `noindex` with root-absolute URLs. Site copy follows
+the D-195 glossary ("hub", not "terminal", in `about.p1`). Footer links to terms (R7b) and the publisher block (R7c)
+wait for those pages; no newsletter (Q-70 → A). Guard: `test:site` (shots size/freshness, store host + badge rule,
+og:image, canonical/hreflang, 404, glossary, `site:assets` script). **Status: in force.**

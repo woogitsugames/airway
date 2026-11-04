@@ -1,4 +1,4 @@
-// [night-11ad] R7k, D-214: web-sized copies of the real store screenshots (docs/store/shots/, `npm run store:shots`)
+// [night-11ad] R7k, D-218: web-sized copies of the real store screenshots (docs/store/shots/, `npm run store:shots`)
 // for the landing and press pages: the phone scenes of SITE_SHOTS (site/launch.js) per language, 540×960 JPEG (the 1080×1920 PNGs weigh up to
 // 1 MB each). Downscaled in Chromium (Playwright comes from the environment, as for shots:site), so the repository
 // needs no image library. Run after every `npm run store:shots`; `npm run test:site` checks size and freshness.

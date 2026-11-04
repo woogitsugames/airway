@@ -6,7 +6,7 @@
 
 The standalone, framework-free site lives in `site/`. It is deliberately separate
 from the Capacitor game and does not import `src/` or require a backend. All assets
-are local: approved Diorama concept mockups, hand-drawn SVG, a procedural Canvas 2D
+are local: real game screenshots (from `docs/store/shots/`), hand-drawn SVG, a procedural Canvas 2D
 globe and the project's existing SIL OFL font binaries and license notices. There
 are no scripts, trackers, external resources, forms or runtime requests to third
 parties.
@@ -33,8 +33,9 @@ game's `src/i18n` catalog.
 ## Verification
 
 ```sh
-npm run test:site       # local paths, alt texts, translated keys, privacy links
-npm run build:site      # copy the static site into site/dist
+npm run test:site       # local paths, alt texts, translated keys, privacy links, launch pack
+npm run site:assets     # after store:shots: refresh site/assets/shots/ (Playwright)
+npm run build:site      # copy the static site into site/dist (+ og-image.png)
 npm run shots:site      # builds site/dist first; Playwright must be available
 npm run typecheck
 npm run test:fast
@@ -42,7 +43,9 @@ npm run build            # game build; does NOT deploy the site
 ```
 
 `npm run shots:site` renders `site/dist/index.html` at 412x915 and 915x412 at DPR
-1, writing `docs/shots/29/site-p.png` and `site-l.png`. Review both images for
+1, writing `docs/shots/29/site-p.png` and `site-l.png`, plus the 404 page
+(`site-404-p.png` 412x915, `site-404-l.png` 1280x800) and the screenshot/store
+section (`site-preview-p.png`, `site-preview-l.png`). Review every image for
 typography, visible globe, horizontal overflow and forbidden "template UI".
 Also check 673x841, 904x1000, English copy, keyboard navigation, reduced motion
 and Canvas fallback manually. Without Playwright, the screenshot task reports a
@@ -75,17 +78,17 @@ pauses. Device pixel ratio is capped at 2.
 
 ## Assets and content approval
 
-- The three vertical concept captures are copied **from this repository's own**
-  `mockups/diorama/png/{game-p,upgrade-p,menu-p}.png`. They are illustrative
-  concepts, *not* screenshots of a shipped game. Do not use them in an app store
-  without separately checking store rules and whether the shipped UI matches.
+- The four phone previews (night globe, live game, weekly upgrade, menu) are **real game screenshots**: 540×960 JPEG
+  copies in `site/assets/shots/{pl,en}/` of the store PNGs in `docs/store/shots/<lang>/<scene>-phone.png` (D-218).
+  `site.js` swaps in the visitor's language. The stage-0 concept mockups are no longer used anywhere on the site.
 - The website reuses `public/fonts/` copies of **Overpass**, **Overpass Mono**
   and **Atkinson Hyperlegible Next**. All have SIL OFL licenses copied alongside
   them in `site/fonts/`; see `docs/ASSETS.md`.
 - Confirm `contact@airway.games` exists and receives mail; until then it is a
   **proposed placeholder**.
-- The page calls the release "coming soon" without giving dates or pre-order
-  links; no store availability has been asserted.
+- The page calls the release "coming soon" without giving dates. The two store tags
+  (Google Play, App Store) stay disabled, labelled "link after the store page opens",
+  until `site/launch.js` has a URL on the store's own host; see "Launch pack" below.
 - The privacy document is explicitly a **draft**. Before publishing, confirm
   the data controller's legal identity and address, app telemetry / SDKs,
   offline behavior, retention of support messages and host request logs, cross-
@@ -95,9 +98,29 @@ pauses. Device pixel ratio is capped at 2.
 - The source has no analytics/cookies, but hosting logs and email delivery may
   still process personal data. Update the policy before enabling the public site.
 
+## Launch pack (N11ad / R7k, D-218)
+
+- **One config:** `site/launch.js` holds the public origin (`https://airway.games`), the two store links and the
+  screenshot list. Store links are empty today. `storeLink()` accepts only `https://play.google.com/…` and
+  `https://apps.apple.com/…`; anything else keeps the tag disabled. Filling a link also requires the official badge
+  artwork in `site/assets/badges/` (`google-play.svg`, `app-store.svg`, Apple and Google brand rules, entry in
+  `docs/ASSETS.md`); `test:site` fails on a link without its badge.
+- **Real screenshots:** after every `npm run store:shots`, run `npm run site:assets` (Playwright from the
+  environment). It downscales the four phone scenes per language to 540×960 JPEG (each under 250 kB) and records the
+  hash of each source PNG in `site/assets/shots/sources.json`; `test:site` fails when a store PNG changed and the copy
+  did not follow. The "failure" scene waits for a store:shots run with the N11t game-over wording.
+- **Social preview:** `og:image` is the Play feature graphic (`docs/store/feature-graphic.png`, D-117), copied by
+  `build:site` into `site/dist/assets/og-image.png` (not duplicated in git), with size, alt text and
+  `twitter:card=summary_large_image`.
+- **Canonical and hreflang:** `index.html` and `privacy.html` name the language-neutral URL as canonical plus
+  `hreflang` pl / en / x-default (`?lang=`); with an explicit `?lang=` the page points canonical and `og:url` to itself.
+- **404:** `site/404.html` in the site style, `noindex`, root-absolute URLs (hosts serve it at any depth); copied by
+  `build:site`. Cloudflare Pages and GitHub Pages pick it up by name.
+- **Still open:** terms page (R7b) and publisher block (R7c) are not written yet, so the footer has no links to them;
+  no newsletter (Q-70 → A).
+
 ## Scope
 
 This task adds no gameplay logic, Android/iOS changes, cookies, mailing list,
-backend, analytics, CI deployment or store listings. The menu task (14) is not
-present in `dev`, so the landing page uses approved Stage 0 Diorama mockups
-rather than integrating with unmerged production screens.
+backend, analytics, CI deployment or store listings. Since N11ad the previews
+are real game screenshots (see "Launch pack").

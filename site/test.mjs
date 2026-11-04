@@ -52,12 +52,17 @@ for (const page of pages) {
 for (const key of keyMatches) check('All i18n keys exist: ' + key, () => keys.includes(key));
 check('At least 65 localized references', () => keyMatches.size >= 65);
 const home = readFileSync(join(root, 'index.html'), 'utf8');
-// [night-11ad] R7k, D-214: real game screenshots, store links, social preview, hreflang, 404.
+// [night-11ad] D-218: the site follows the game glossary (D-195): an airport is a "hub", never a "terminal".
+check('Glossary: no "terminal" in site copy or pages', () => !/terminal/i.test(JSON.stringify(translations) +
+  pages.map(page => readFileSync(join(root, page), 'utf8')).join('')));
+// [night-11ad] R7k, D-218: real game screenshots, store links, social preview, hreflang, 404.
 const shotTags = [...home.matchAll(/<img\b[^>]*data-shot="([a-z]+)"[^>]*>/g)];
 check('Four screenshot previews, one per site scene', () => (home.match(/class="preview-shot"/g)||[]).length === 4 &&
   shotTags.map(m => m[1]).join() === SITE_SHOTS.scenes.join());
 check('No stage-0 concept mockups on the site', () => !/game-p\.png|upgrade-p\.png|menu-p\.png|makiet|concept/i.test(home + JSON.stringify(translations)));
 const sources = JSON.parse(readFileSync(join(root, 'assets/shots/sources.json'), 'utf8'));
+check('package.json: site:assets runs site/make-assets.mjs', () =>
+  JSON.parse(readFileSync(join(root, '../package.json'), 'utf8')).scripts['site:assets'] === 'node site/make-assets.mjs');
 const jpegSize = (bytes) => { // SOF0/SOF2 frame header: height, width
   for (let i = 2; i < bytes.length - 9;) {
     if (bytes[i] !== 0xff) return null;
