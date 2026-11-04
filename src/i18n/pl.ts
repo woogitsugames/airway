@@ -46,6 +46,11 @@ export const pl = {
   'hud.turbopropCount': 'Turbośmigłowce: {count}. Wybierz lub przeciągnij na trasę',
   'hud.widebodyCount': 'Szerokokadłubowce: {count}. Wybierz lub przeciągnij na trasę',
   'hud.hubCount': 'Dostępne rozbudowy hubów: {count}',
+  // [night-11s] R6c: an empty dock tag counts down to the next weekly crates.
+  'hud.crates.days': '{days} {days|dzień|dni|dni}',
+  'hud.crates.hours': '{hours} godz.',
+  'hud.crates.minutes': '{minutes} min',
+  'hud.crates.next': 'Następne skrzynie {when}',
   'hud.speed': 'Prędkość gry: {speed}×. Zmień prędkość',
   'hud.globeMode': 'Widok globusa: {mode}. Zmień widok',
   // [task-12] Weekly freight labels

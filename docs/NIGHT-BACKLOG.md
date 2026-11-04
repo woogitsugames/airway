@@ -488,6 +488,16 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       Bosforem"), crate = skrzynia. Glossary `src/i18n/README.md`; `test:i18n` fails on a banned synonym in any
       catalog value (12 failures on the old catalogs; it also caught three "węzeł" titles that ext/05 added meanwhile).
       The PL store title (D-18, "siatkę lotów") is outside the catalogs: Q-77.
+- [x] N11s **Empty dock tags count down to the next crates (R6c, D-198; first published as D-196, which N12ab took for its balance report)** — an empty turboprop, widebody or hub tag stacks
+      its icon over the wait for the weekly board from the run's clock ("2 days" / "2 dni", "5 h" / "5 godz.", "40 min")
+      instead of a bare "0"; aria adds "Next crates in 2 days 5 h"; N11n's opaque dashed look kept; Undo, the G8 globe
+      tag and puzzles unchanged. `src/ui/hud/crate-countdown.ts`, `test:dock-countdown` (new, in `test:fast`),
+      `test:e2e:dock-empty-tags` +R6c checks at night and by day + PL 320×568 (0/4 on the old dock), shots
+      `docs/shots/n11s/`.
+- [x] N11v **"Send results to the leaderboard" switch in settings (D-135, D-197)** — Settings → Help gets the D-135
+      objection switch on the N12x net API (`Leaderboards.isSharing()` / `setSharing(on)`): PL/EN, on by default, ≥ 48 px,
+      one hint line, only in builds with leaderboards (like the delete-data row). `e2e/ranking-switch.mjs`
+      (`test:e2e:ranking-switch`, in `test:ci`; 2/4 on the old settings), shots `docs/shots/n11v/`.
 
 ## Continuous development round N12 (agent 2)
 - [x] N12a **Balance bot plays for reach (D-90)** — the handover gap "the DEV bot rarely connects new airports; long
@@ -643,6 +653,19 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       enters the draw only after the first departure hold, hub expansion only while a hub exists (the other aircraft
       takes the place); Endless/Daily curfew from week 3. `RULES_VERSION` 6, v5 golden frozen, older saves replayed
       (D-76). Bot median 17.03 → 17.25 min (50 seeds), 16.52 → 16.64 (200); runs with a curfew hold 10 % → 62 %.
+
+- [x] N12aa **Five e2e suites green again under rules v6; seeds replayed headless in test:fast (D-189)** — board-short,
+      edge-chip-airports, edge-chip-tags, run-timeline and upgrade-picks were red on clean `dev` since rules v6: their
+      fixed seeds ended the bot's run in week 2, before the board they test. Seeds and bot plans now live in
+      `e2e/seeds.mjs`; `scripts/lib/e2e-plans.ts` replays each plan with the same EndlessRun, bot, card click and forced
+      overload as `window.aw`, on 7 idle offsets (the browser clock keeps running between calls). New fast
+      `test:e2e-seeds` fails in `test:fast` when a rule change breaks a suite's seed; `npm run e2e:seeds -- <suite>`
+      prints the next seed that holds. New seeds: 0xA1A2 (board-short, run-timeline), 0xA3AA (edge-chip-airports,
+      upgrade-picks), 0xA1C3 + 41817 (edge-chip-tags). Assertions unchanged; upgrade-picks' "Back took nothing" compares
+      with the count before the pick (its board is now week 3). PL 320×568 week-1 board scrolled 1 px since the N11r stamp
+      caption: 3 px less stamp spacing at that size. Shots `docs/shots/n10r/`, `docs/shots/n10v/` refreshed.
+      Open (G7, not a seed): under SwiftShader since the satellite globe a weekly-card click needs ~15 s (rAF ~10/s at
+      412×915) against the 5 s `clickTestId` timeout, so edge-chip-tags fails on timeouts (6/6 with a 30 s click).
 
 ## Globe look (D-170)
 Owner's choice 2026-11-03: the satellite globe (direction B). Plan, budgets and test lists per step:
@@ -1001,7 +1024,7 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
       the stored step list needs it (completed players must not see it again). `test:e2e:tutorial` and its shots
       updated; do it in the same PR as R5b (both redraw the tutorial). **Area:** UI (`src/game/tutorial/**`,
       `src/ui/tutorial/**`), i18n. Q-63 → B (D-130). Depends on R6a.
-- [ ] R6c **Empty dock tag counts down to the crates** — in week 1 the dock shows "0 / 0 / 0" for 7 minutes. While
+- [x] R6c → N11s **Empty dock tag counts down to the crates** — in week 1 the dock shows "0 / 0 / 0" for 7 minutes. While
       a tag is empty, its count line reads the arrival of the next weekly board ("crates day 3" / "skrzynie: dzień 3",
       or "tomorrow"/"jutro" on the last day) from the existing week/day clock; aria text the same. No sim change.
       Combine with R5d (opaque empty tags). DOM test + shots night/day. **Area:** UI (`src/ui/hud/**`, `hud.css`), i18n.
@@ -1126,7 +1149,8 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
       rules/params version bump, `test:daynight`/`test:balance`/goldens. Metric (r8-audit): runs with a curfew hold
       15 % → ≥ 50 %; median stays in 10–18 min (expect a small drop); week-1/2 untouched. **Area:** `src/sim/params.ts`,
       tests, `docs/balance/README.md`. *Needs Q-72 (D-17 is the owner's).*
-- [ ] R8d **Balance report shows spread and mechanic use** — `balance:report`/`game-summary.md` print p10/p25/p75/p90,
+- [x] R8d → N12ab **Balance report shows spread and mechanic use** — [night-12ab: done, D-196; `game-summary.md` "Spread and
+      mechanic use", counted from new `CurfewHeld` / `Delivered.afterTransfer` events; `test:balance` checks the shape] — `balance:report`/`game-summary.md` print p10/p25/p75/p90,
       a loss-week histogram, hub/spoke/unserved losses, spare aircraft at the loss, cards offered vs picked, runs with
       curfew / slot holds and the transfer share (port the counters of `scripts/research/r8-audit.ts`, without
       prototype wrapping: read `DepartureHeld`/`Delivered` events and `hubCauseLedger` in the adapter). No new gate.
@@ -1266,6 +1290,8 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
 - 2026-11-04 · N11r crate stamp captions + "none yet" (R5e, D-194) + replay restores first-time cards (owner Q-76 → B, D-192) · night/11r-stamp-captions · after merging dev (#169–#171): test:fast 75/75 (test:crate-stamps 5/5, 1/5 on the old cards; test:pause-summary 6/6, 5/6 on the old summary; test:first-time 8/8, 7/8 on the old controller), build ok, test:hud-targets 300/300, e2e:smoke 9/9 (5/9 while another suite loaded the machine), store:shots 60 (test:store-shots ok); ui:matrix 38/48 — the upgrade screen at 904×1000 / 904×1088@2 / 1088×904@2 times out on origin/dev too since the new globe (G2+G3/G4, probe 12/16 on origin/dev); before the merge ui:matrix 48/48, e2e:smoke 9/9. e2e:board-short 0/4 on origin/dev and here (rules v5 game over before week 2, pre-existing); after merging dev again (#172–#179): test:fast 75/75, build ok, store:shots 60 (test:store-shots ok), e2e:smoke 5/9 — the weekly-board click times out on origin/dev alike since the new globe (9/9 on a quiet machine once)
 - 2026-11-04 · N11u Long haul hidden in release builds (owner Q-74 → B, D-193) · night/11u-release-packs · after merging dev (#176–#179): test:fast 76/76 (test:release-packs 4/4: release 30, DEV 40, override 40), build ok, e2e:puzzles 44/44 (levels=40); e2e:smoke/ui:matrix not run (no game screen changes in DEV)
 - 2026-11-04 · N11t one word per concept (R5g, D-195), owner question Q-77 · night/11t-one-word · after merging dev (#176–#180): test:fast 76/76 (test:i18n with the glossary check; 12 failures on the old catalogs, 3 on the ext/05 titles), build ok, e2e:screens-fit-320 12/12, e2e:gameover-unserved 5/5 (shots docs/shots/n11k: "SIEĆ ZAMKNIĘTA"), e2e:pseudo-locale 27/27; e2e:smoke/ui:matrix/store:shots not run here (text only; refreshed with N11s)
+- 2026-11-04 · N11s dock crate countdown (R6c, D-198; first published as D-196, which N12ab took for its balance report) · night/11s-dock-countdown · after merging dev (#176–#184, G8 globe tag): test:fast 78/78 (test:dock-countdown 3/3, new module), build ok, test:e2e:dock-empty-tags 4/4 (0/4 on the old dock: no countdown), e2e:smoke 9/9, store:shots not refreshed (page.screenshot timed out after 52/60 and 4/60 shots under SwiftShader; store PNGs stay from N11r); ui:matrix 38/48 and test:hud-targets 293/300 fail the same way on origin/dev (upgrade screen timeouts on large viewports since the new globe; hud-targets still expects six dock controls, G8 added the globe tag — reported, not touched)
+- 2026-11-04 · N11v leaderboard sharing switch (D-135, D-197); N11s decision renumbered D-196 → D-198 (N12ab used D-196) · night/11v-ranking-switch · LOGV
 - 2026-11-04 · G2+G3 satellite globe ships (D-179) · ext/03-g2g3-satellite · test:fast 74/74 (136.5 s), build ok (main 1,070.0 kB / gzip 317.7 kB), test:bundle 9/9 (dist 3,617.4 kB), test:e2e:smoke 9/9; built app (vite preview) loads data/globe/ day-2048 + night-1024 + elevation on auto→low, no fallback warning; game shots seed 15: routes 6.9/6.8, airports 3.2/6.0 (day/dusk); store:shots/ui:matrix not run (G6)
 - 2026-11-04 · G4 sea surface + haze folded into the terrain shader (D-173) · ext/03-g4-fillrate · transparent full-screen layers on the satellite globe 3→1 (low/saver: halo) and 4→2 (medium/high: halo + clouds); perf:scene SwiftShader 40 s low 397 frames (375 with shells), medium 168 (174), draw calls 41; game shots seed 15 match the layered look (routes 6.8/6.7, airports 3.1/5.5 day/dusk); `world.stats().transparentLayers` not added (G7 measures on devices)
 - 2026-11-04 · G6 store screenshots, feature graphic, ui:matrix and style doc on the satellite globe (D-170, D-178) · ext/03-g6-store · store:shots 60/60 (game: gold 0.13–0.17 ≥ 0.045, routes/airports/planes 9.4–11.6:1; night 9.4–11.4:1), store:feature 1/1, ui:matrix 48/48, contact sheet and feature graphic inspected; docs/styles/realistyczny.md (PL), D-11 globe superseded; shots:site not rerun
@@ -1276,3 +1302,5 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
 - 2026-11-04 · G8 Mapa mode: setting + dock tag + texture swap (D-172) · ext/03-g8-map-mode · test:globe-assets 59/59 (8 files, 2,313,491 B), test:fast 74/74 (133.9 s), build ok (main 1,075.0 kB / gzip 318.6 kB), test:bundle 9/9 (dist 4,162.8 kB ≤ 4,300), e2e smoke 9/9, edge-dock 5/5, screens-fit-320 12/12, ui:matrix 48/48, store:shots 60/60 + feature 1/1 (six-tag dock), live switch on seed 15 (aria label, stored setting, icon) at 412 and 320 px; the warm terminator band shows more on the light Mapa (kept: it is the day line)
 - 2026-11-04 · R6h2 puzzle titles never split a word at 320 px (D-166, Q-77) · ext/05-puzzle-titles-320 · test:e2e:screens-fit-320 12/12 (10/12 on the old titles: 12 PL and 10 EN titles split a word), test:fast 74/74 (143.4 s), build ok, test:puzzles levels=40 cases=239 passed=239, test:long-haul 25/25, test:e2e:puzzles levels=40 steps=44 passed=44 (merged tree with dev at 72ce218)
 - 2026-11-04 · N12z balance bot frees an idle aircraft for an unserved airport (R8e, D-188) · night/12z-bot-moves-aircraft · test:bot-policy 13/13 (3 new cases fail on the old bot: no UnassignPlane, an unserved jam got aircraft elsewhere first), r8-audit 200 seeds unserved losses 52 → 48, median 16.64 → 16.64 min, test:balance median 17.25 → 17.25 (D-79 10–18), test:fast 75/75 (after merging #176), build ok; e2e before the merge: smoke 9/9 and 15 more autoplay suites green; board-short 0/4, edge-chip-airports 0/2, edge-chip-tags 5/6, run-timeline 0/4, upgrade-picks 4/6 fail identically on origin/dev (fixed-seed runs end in week 2 since rules v6 — needs new seeds, not this change)
+- 2026-11-04 · N12aa five e2e suites green again under rules v6, seeds replayed headless (D-189) · night/12aa-e2e-seeds · test:e2e-seeds 7/7 (2/7 on the old seeds), test:fast 77/77, build ok after merging dev (#181, #182); board-short 4/4 (0/4 on origin/dev; 3/4 with new seeds only, PL 320×568 1 px scroll from the N11r caption), edge-chip-airports 2/2 (0/2), run-timeline 4/4 (0/4), upgrade-picks 10/10 steps (4/10, 2 failed + 4 skipped); edge-chip-tags 2/6 at the gate and 5/6 before the merge (5/6 on origin/dev): every failure is the weekly-card click timing out (5 s; ~15 s needed under SwiftShader, rAF ~10/s, G7), 6/6 with a 30 s click — seeds verified headless
+- 2026-11-04 · N12ab balance:report spread and mechanic use (R8d, D-196) · night/12ab-balance-spread · game-summary.md 50 seeds: session p10/p25/median/p75/p90 9.94/13.27/17.25/20.58/24.25 min, loss weeks W2 17 W3 23 W4 9 W5 1, losses hub/spoke/unserved 22/14/14, 49/50 with no spare aircraft, curfew hold 32 of 33 runs reaching week 3, slot hold 5/50, 49 % of delivered changed planes; test:balance spread=ok (spread=bad when picks are dropped), median 17.25 → 17.25; after merging dev (#183): test:fast 77/77, build ok, balance:report unchanged; no browser suite run (no UI change)

@@ -1,5 +1,53 @@
 # Task 22 — autoplay and balance evidence
 
+## N12ab — spread and mechanic use in `balance:report` (R8d, 2026-11-04, D-196, no gate)
+
+`npm run balance:report` now ends `game-summary.md` with a "Spread and mechanic use" section, so a balance PR can
+quote the tail and not only the median. It is counted in `scripts/balance-game-adapter.ts` from the sim's own events
+and read-only views (no prototype wrapping, unlike `r8-audit.ts`): `CurfewHeld` (new: one aircraft-minute refused by
+the curfew gate, on the ground or in the air), `DepartureHeld`, `Delivered` (new field `afterTransfer`: delivered
+passengers who changed planes), `UpgradeOffered`/`UpgradeChosen`, `hubCauseLedger().slotWaitMinutes`, and the losing
+airport's `cityView` (hub, routes) with the reserve at the loss. The events are non-authoritative (never hashed or
+saved), so no golden, replay or balance number moved (median 17.25 min before and after). `test:balance` checks the
+section's shape (ordered quantiles, counts that add up), not its values.
+
+Same 50 seeds from 0xA1A1 as the gate, bot at 1×, 30 min cap (rules v6, N12z bot):
+
+| 50 runs | p10 | p25 | median | p75 | p90 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Session, min at 1x | 9.94 | 13.27 | 17.25 | 20.58 | 24.25 |
+| Game weeks | 1.38 | 1.84 | 2.40 | 2.86 | 3.37 |
+
+| Loss week | W2 | W3 | W4 | W5 | not over at the cap |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Runs | 17 | 23 | 9 | 1 | 0 |
+
+| Losing airport | Hub | Spoke (served) | Unserved (no route) | Spare aircraft at the loss, median | Lost with no spare |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 50 losses | 22 (44 %) | 14 (28 %) | 14 (28 %) | 0.0 | 49 (98 %) |
+
+| Weekly card | Offered | Picked | Picked when offered |
+| --- | ---: | ---: | ---: |
+| turboprop | 91 | 59 | 65 % |
+| widebody | 94 | 34 | 36 % |
+| hub-expansion | 94 | 1 | 1 % |
+| departure-slots | 3 | 0 | 0 % |
+
+| Mechanic | Runs | Share | Detail |
+| --- | ---: | ---: | --- |
+| Curfew reached (week 3+) | 33 | 66 % | of all runs |
+| Curfew hold | 32 | 97 % | of runs that reached it; aircraft-min median ground 502, air 89 |
+| Slot hold | 5 | 10 % | 8 held departures; slot-wait aircraft-min median 0.0, p90 1.7 |
+| Transfer delivery | 50 | 100 % | 7765 of 15898 delivered changed planes (49 %) |
+
+Cross-check with `r8-audit.ts --seeds=50 --cap-min=30` (prototype counters): the quantiles, loss airports (hub 44 %,
+0 routes 14), spare aircraft (0 in 98 %), cards offered/picked, curfew runs 33/32, slot holds 5/50 (p90 1.7) and the
+transfer share (7765/15898) match exactly. Only the curfew aircraft-minutes differ (r8: ground 468, air 586): r8's
+`canLand` wrapper also counted the landing check inside `canScheduleLeg`, so its "air" minutes include ground
+refusals; `CurfewHeld` counts each refused gate call once. Read with care: the loss weeks start at W2 because every
+bot run reaches the first board (D-95), hub expansion is almost never the bot's pick, and "+2 slots" is rarely drawn
+(it enters the draw only after the first hold, D-150) — the bot, not a human, makes these numbers.
+
 ## R8 — gameplay-depth audit script (research, 2026-11-03, no parameter change)
 
 `scripts/research/r8-audit.ts` is a read-only measurement tool, not a test (not in `test:fast`/`test:ci`). It plays
