@@ -158,7 +158,9 @@ function reachUpgrade(seed, wanted) {
 const worldOf = (sim) => { const s = sim.getState(); return JSON.stringify({ world: s.world, rng: s.rng }); };
 for (const targeted of ['hub-expansion', 'departure-slots']) {
   check(`cancel ${targeted} pick, choose another card, replay identical`, () => {
-    const seed = [...SEEDS, 0xD4D4, 0xE5E5, 0xF6F6].find((s) => reachUpgrade(s, targeted));
+    // [night-12v] Rules v6 offer "+2 slots" only after a departure hold (D-150): 0x0001 is the first seed this driver
+    // brings to such a board.
+    const seed = [...SEEDS, 0xD4D4, 0xE5E5, 0xF6F6, 0x0001].find((s) => reachUpgrade(s, targeted));
     assert.ok(seed !== undefined, `no seed offers ${targeted} with a valid target`);
     const live = reachUpgrade(seed, targeted);
     const before = Sim.fromSnapshot(live.snapshot());

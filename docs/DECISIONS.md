@@ -1156,11 +1156,11 @@ different zooms). **Status: proposed; implement with G9.**
 ## D-150 — Weekly board offers only cards that can act (2026-11-03 22:20 CET, owner, Q-71 → B)
 R8a: the "+2 slots" card enters the weekly draw only after the run's first departure hold, the hub expansion card only
 while the network has a hub; an empty place is filled by the other aircraft card. To be measured with `r8-audit`
-and `test:balance` (median 10–18 min, D-79). **Status: decided, to implement (R8a).**
+and `test:balance` (median 10–18 min, D-79). **Status: in force (N12v, rules v6; numbers in D-155).**
 
 ## D-151 — Curfew from week 3 in Endless (2026-11-03 22:20 CET, owner, Q-72 → B)
 R8c: the night curfew (D-17) starts in week 3 instead of week 4 in Endless; Daily the same; puzzles unchanged.
-Check the median 10–18 min (D-79) and question 5 of R8 in the closed test. **Status: decided, to implement (R8c).**
+Check the median 10–18 min (D-79) and question 5 of R8 in the closed test. **Status: in force (N12v, rules v6; numbers in D-155).**
 
 ## D-152 — Run length decided after the closed test (2026-11-03 22:20 CET, owner, Q-73 → C)
 The end-of-run shape (network +6 airports a week vs fleet +1 aircraft; no bot run past 31.6 min) stays as in rules v5
@@ -1196,6 +1196,26 @@ both rendered at DPR 2 like the device (`newGamePage` takes `deviceScaleFactor`)
 shots with the same overlap/scroll checks. All 16 new shots pass and were inspected; in landscape the menu board
 sits small in the lower-left corner with much empty sky (layout is agent #1's; noted, not changed). The cover screen
 is covered by 412×915. **Status: in force (N12u).**
+
+## D-155 — Rules v6: eligible weekly cards and curfew from week 3 (2026-11-04, Claude, night N12v)
+Implements D-150 (R8a) and D-151 (R8c) as `RULES_VERSION` 5 → 6. `drawUpgradeOffers` takes an eligibility
+(`hub`: the network has a hub, `slots`: the run had its first `DepartureHeld`); an ineligible card is removed from
+the pool before the draw, so its place goes to the other aircraft and a board can show only the two aircraft
+(the board UI already lays out any count). The draw stays on the `upgrades` RNG stream. `CURFEW_ENDLESS_START_WEEK`
+4 → 3 (Endless and Daily; puzzles keep their own curfew lists; extra curfew airports still every 2 weeks from the
+start week). Older saves are replayed under v6 (D-76); the v5 golden is frozen as `save-golden-v5.json`.
+Numbers (bot, before → after): `test:balance` 50 seeds median 17.03 → 17.25 min (inside 10–18, D-79), board 1/2
+reach 100 %/66 % unchanged; `r8-audit` 200 seeds median 16.52 → 16.64 min, p90 22.4 → 22.8; "+2 slots" offered
+239 → 4 times and hub expansion 235 → 360 (hubs exist on almost every board, so the hub card now takes the place
+slots used to); boards with a card that could not act 100 % → 0 % by construction; runs reaching curfew weeks
+29 → 134 of 200 and runs with a curfew hold 20 → 123 (10 % → 62 %, target ≥ 50 %). The bot still almost never takes
+the hub card (2 of 360), so the share of boards with a card it values did not change much — a human may.
+Test changes: the golden save's policy never causes a departure hold before its save point, so its "+2 slots"
+coverage moved to `test:slots` (the bonus survives a snapshot); `test:bot-policy`'s week-1 "+2 slots" check now
+answers the first board that offers the card (seed 0xA1AA, board 2) and checks the pick is accepted and the run lasts
+another game day (it takes 2 boards vs 3 with a turboprop — the R8 finding, left for humans); `test:replay` finds
+its slots board on seed 0x0001; `test:e2e:curfew-barrier` uses 0xA1A2 (0xA1A1 ends in week 2 since rules v5, so the
+e2e had no curfew to see). **Status: in force (N12v).**
 
 ## D-180 — Training flight fits its row; one tag outline; night darkens only the globe (2026-11-04, Claude, night N11l)
 Owner feedback from a real Galaxy Fold (unfolded). (1) The world vignette was sized from `100dvh − 308 px`, which

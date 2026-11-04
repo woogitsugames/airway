@@ -8,7 +8,9 @@ import type { GameMode, WorldSnapshot } from './world.ts';
 // [task-32] 3 -> 4: departure slots are enforced (D-41); aircraft and world snapshots gained slot state.
 // [night-12f] 4 -> 5: week-1 spawn reach, 2,500 km start radius, 12 h spawns, demand 130 %, Alexandria in ME
 // (D-95, D-99, D-105, D-106). Older saves are replayed under the new rules (D-76).
-export const RULES_VERSION = 5;
+// [night-12v] 5 -> 6: weekly board draws only cards that can act (R8a, D-150), curfew from week 3 (R8c, D-151).
+// Older saves are replayed under the new rules (D-76).
+export const RULES_VERSION = 6;
 export const SNAPSHOT_VERSION = 2;
 export const INITIAL_COMMAND_DIGEST = 0x811c9dc5;
 

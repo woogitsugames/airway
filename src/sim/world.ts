@@ -44,7 +44,7 @@ export interface DemandWave {
 
 /**
  * Mode rules. Endless/Daily: seeded spawner, random regional demand, weekly upgrades, curfew from
- * week 4 (D-17). A puzzle scenario fixes cities, stock, scripted demand and its own curfew cities.
+ * week 3 (D-17, D-151). A puzzle scenario fixes cities, stock, scripted demand and its own curfew cities.
  */
 export interface Scenario {
   readonly startCityIds: readonly string[] | null;
@@ -53,7 +53,7 @@ export interface Scenario {
   readonly reserve: Readonly<Record<PlaneType, number>>;
   readonly hubUpgrades: number;
   readonly weeklyUpgrades: boolean;
-  /** null = endless weekly selection (from week 4); a list = always-on puzzle curfew cities. */
+  /** null = endless weekly selection (from week 3, D-151); a list = always-on puzzle curfew cities. */
   readonly curfewCityIds: readonly string[] | null;
   /** Puzzle runs end at this world minute (status 'won'; the puzzle goal grades the result). */
   readonly endMinute: number | null;
@@ -610,7 +610,9 @@ export class World implements WorldView {
       return;
     }
     if (this.scenario.weeklyUpgrades && minute % TICKS_PER_WEEK === 0) {
-      const offer = startWeeklyUpgrade(minute, { nextInt: (max) => this.streams.upgrades.int(max) });
+      // [night-12v] R8a, D-150: only cards that can act enter the draw (rules v6).
+      const offer = startWeeklyUpgrade(minute, { nextInt: (max) => this.streams.upgrades.int(max) },
+        { hub: this.hubIds().length > 0, slots: this.slotEverHeld });
       if (offer) {
         this.upgrade = offer;
         this.statusValue = 'upgrade';

@@ -23,7 +23,7 @@ export const SPAWNER_MIN_CITY_DISTANCE_KM = 668 as const;
 export const PASSENGER_SIM_VERSION = 1 as const;
 export const SIM_MINUTES_PER_DAY = 1_440 as const;
 // [task-31] D-40: the ONLY definition of the week length. The clock, weekly upgrade board, HUD day bar,
-// curfew start (week 4, D-17) and daily/puzzle modes all derive from it; test:week-source enforces this.
+// curfew start (week 3, D-17, D-151) and daily/puzzle modes all derive from it; test:week-source enforces this.
 export const SIM_DAYS_PER_WEEK = 3 as const;
 export const SIM_MINUTES_PER_WEEK = SIM_MINUTES_PER_DAY * SIM_DAYS_PER_WEEK;
 // [task-22 balance, integration] 3 -> 1 passenger per million inhabitants per day.
@@ -74,7 +74,8 @@ export const INITIAL_PLANE_RESERVE: Readonly<Record<PlaneType, number>> = {
 };
 export const CURFEW_START_HOUR = 23 as const;
 export const CURFEW_END_HOUR = 6 as const;
-export const CURFEW_ENDLESS_START_WEEK = 4 as const;
+// [night-12v] R8c, D-151: week 4 -> 3 (only 15 % of bot runs saw week 4; rules v6). Daily shares it; puzzles set their own.
+export const CURFEW_ENDLESS_START_WEEK = 3 as const;
 export const CURFEW_START_CITY_COUNT = 2 as const;
 export const CURFEW_ADDITIONAL_CITY_EVERY_WEEKS = 2 as const;
 export const CURFEW_MAX_CITY_COUNT = 8 as const;

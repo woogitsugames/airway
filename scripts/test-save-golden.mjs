@@ -14,7 +14,7 @@ const { encodeSave, decodeSave, saveSourceFromSim, restoreSimFromSave, restoreSi
 const { GAME_SAVE_KEY } = await import('../src/platform/storage.ts');
 
 // [night-12f] 0xA1A1 -> 0xA1A3: under rules v5 (D-95/D-106) this simple policy loses 0xA1A1 in week 1, before the
-// save point; 0xA1A3 is the first seed it carries into week 2 with a "+2 slots" pick.
+// save point; 0xA1A3 is the first seed it carries into week 2 with a "+2 slots" pick (rules v6: a widebody pick).
 const SEED = 0xA1A3;
 const SAVE_AT = TICKS_PER_WEEK + 600; // past the first weekly board, inside week 2
 const CONTINUE = 1440;
@@ -86,10 +86,13 @@ if (process.argv.includes('--write')) {
 const golden = JSON.parse(readFileSync(FIXTURE, 'utf8'));
 const decoded = decodeSave(golden.save);
 check('fixture decodes', () => assert(decoded.status === 'ok', `decode: ${JSON.stringify(decoded)}`));
-check('fixture covers a weekly "+2 slots" upgrade', () => {
+// [night-12v] Rules v6 (D-150) offer "+2 slots" only after a departure hold, which this policy never causes before
+// the save; the slot bonus round trip moved to test:slots ("+2 slots" survives a snapshot). The golden keeps a weekly
+// pick and the serialised slot state.
+check('fixture covers a weekly upgrade and the slot state', () => {
   const world = JSON.parse(golden.save).snapshot.state.world;
-  assert(world.upgradeHistory.some((entry) => entry.upgrade === 'departure-slots'), 'no "+2 slots" upgrade before the save');
-  assert(Object.values(world.slots.bonus).some((count) => count > 0), 'slot bonus not serialised');
+  assert(world.upgradeHistory.length > 0, 'no weekly upgrade before the save');
+  assert(world.slots && typeof world.slots.bonus === 'object' && 'everHeld' in world.slots, 'slot state not serialised');
 });
 check('fixture matches the current RULES_VERSION', () => assert(golden.rulesVersion === RULES_VERSION,
   `fixture is rules v${golden.rulesVersion}, code is v${RULES_VERSION}: regenerate with --write after an intentional bump`));
