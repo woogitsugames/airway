@@ -15,7 +15,8 @@ export interface Board { readonly id: string; readonly entries: readonly BoardEn
 export interface Boards { readonly daily: Board; readonly weekly: Board }
 export interface SubmitResponse { readonly accepted: boolean; readonly reason?: RejectReason; readonly score?: number }
 
-export type LeaderboardStatus = 'disabled' | 'idle' | 'queued' | 'sent' | 'rejected';
+/** [night-12x] `opted-out`: the player objected (D-135, R7l); the run was not sent and nothing was queued. */
+export type LeaderboardStatus = 'disabled' | 'idle' | 'queued' | 'sent' | 'rejected' | 'opted-out';
 /**
  * [night-12k] D-114: outcome of an in-app data deletion. `deleted`: the server removed the entries and the anonymous
  * account (or found nothing left); `none`: this device never had an identity; `offline`: no connection, nothing
@@ -35,9 +36,29 @@ export interface Leaderboards {
   hasData(): boolean;
   /** [night-12k] D-114 (R1a): delete the player's entries and anonymous account; never throws. */
   deleteMyData(): Promise<DeleteResult>;
+  /**
+   * [night-12x] D-135, R7l: "Send my daily results" (default on, remembered on this device). The settings switch
+   * reads and writes it here. Off: `submitDaily` answers `opted-out` without queueing, `flush` and `boards` make no
+   * call, and turning it off drops the runs still waiting in the queue (the GDPR art. 21 objection takes effect at
+   * once). The anonymous identity is kept; deleting it is `deleteMyData`.
+   */
+  isSharing(): boolean;
+  setSharing(on: boolean): void;
 }
 
 const TOKEN_KEY = 'aw-net-session-v1';
+/** [night-12x] D-135: '0' = the player objected to leaderboard processing; missing or anything else = on. */
+export const SHARE_KEY = 'aw-net-share-v1';
+
+function readSharing(storage: QueueStorage | null): boolean {
+  try { return storage?.getItem(SHARE_KEY) !== '0'; } catch { return true; }
+}
+function writeSharing(storage: QueueStorage | null, on: boolean): void {
+  try {
+    if (on && storage?.removeItem) storage.removeItem(SHARE_KEY);
+    else storage?.setItem(SHARE_KEY, on ? '1' : '0');
+  } catch { /* blocked storage: the choice holds for this session */ }
+}
 /** Device-bound leaderboard state a backup restore must not carry to another phone (D-92). */
 export const IDENTITY_KEYS: readonly string[] = [TOKEN_KEY, QUEUE_KEY];
 
@@ -64,6 +85,8 @@ const DISABLED: Leaderboards = {
   boards: async () => null,
   hasData: () => false,
   deleteMyData: async () => 'none',
+  isSharing: () => false,
+  setSharing: () => {},
 };
 
 export function createLeaderboards(options: {
@@ -81,6 +104,7 @@ export function createLeaderboards(options: {
   const client = new FirebaseRestClient(config, fetcher, storageTokens(storage), now);
   const queue = new SubmissionQueue(storage, now);
   let last: LeaderboardStatus = 'idle';
+  let sharing = readSharing(storage);
 
   async function send(submission: DailySubmission): Promise<SendResult> {
     try {
@@ -98,14 +122,16 @@ export function createLeaderboards(options: {
   return {
     enabled: true,
     async submitDaily(submission) {
+      if (!sharing) return 'opted-out';
       if (!selfCheck(submission).ok) return 'rejected';
       queue.add(submission);
       last = 'queued';
       await queue.flush(send);
       return last;
     },
-    async flush() { await queue.flush(send); },
+    async flush() { if (sharing) await queue.flush(send); },
     async boards(dateKey) {
+      if (!sharing) return null;
       try {
         const ids = boardsForDaily(dateKey);
         return await client.call<Boards>('getBoards', { daily: ids.daily, weekly: ids.weekly });
@@ -125,6 +151,12 @@ export function createLeaderboards(options: {
       queue.clear();
       last = 'idle';
       return 'deleted';
+    },
+    isSharing: () => sharing,
+    setSharing(on) {
+      sharing = on;
+      writeSharing(storage, on);
+      if (!on) { queue.clear(); last = 'idle'; }
     },
   };
 }

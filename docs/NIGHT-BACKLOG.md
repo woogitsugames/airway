@@ -652,7 +652,7 @@ before/after `npm run shots -- globe` PNGs and look at them.
       `world.stats()`; `test:quality`.
 - [ ] G5 **Remove diorama decorations and dead code** — trees, rocks, puffy clouds, decor culling (D-75 superseded),
       `relief.ts`, diorama colouring, `refined`/`painted` experiment; new adaptive ladder; PERFORMANCE.md tables.
-- [ ] G6 **Menu, store, site, style docs** — menu contrast, `store:shots` (60 + feature graphic), `ui:matrix`,
+- [x] G6 **Menu, store, site, style docs** — menu contrast, `store:shots` (60 + feature graphic), `ui:matrix`,
       `shots:site`, `docs/styles/realistyczny.md` (PL), D-11 status note; inspect every PNG.
 - [ ] G7 **Performance and device check** — `perf:scene` saver/low/medium/high, `perf:overlay`, hardware checklist
       (GPU memory, first frame, 30 FPS on low); KTX2/ETC1S fallback only if a budget phone fails (D-174 follow-up).
@@ -1052,7 +1052,7 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
       1 Mar 2027; Apple: before EU submission), UK art. 27 decision (Q-67), US state app-store age laws to re-check
       before the US launch (Texas in force, Louisiana 1 Jul 2026, Utah 6 May 2027, Alabama 1 Jan 2027). Link each line
       from `docs/RELEASE.md` when R1l lands. **Area:** `docs/legal/`, `docs/FIREBASE.md`.
-- [ ] R7l **"Send my daily results" setting** — a settings switch (default on) that stops leaderboard submissions
+- [ ] R7l **"Send my daily results" setting** — [night-12x → N12x: net layer + daily report done (`Leaderboards.isSharing/setSharing`, D-186); the settings switch is agent #1's] — a settings switch (default on) that stops leaderboard submissions
       and `getBoards` calls; when off, the daily report says the run is not ranked; queued submissions are dropped
       when it is turned off. Gives the GDPR art. 21 objection a one-tap path. `test:net`, settings e2e.
       **Area:** `src/net/**`, `src/ui/settings/**`, `src/ui/daily/**`, i18n. *Needs Q-68 (A).*
@@ -1061,7 +1061,7 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
       Let callers pass numbers (format inside `t()`), or parse with the active locale's group/decimal symbols from
       `Intl.NumberFormat#formatToParts`. `test:i18n` cases with fake de/pt-BR catalogs for 0, 1, 2, 1 000, 1 500,
       1 000 000. **Area:** `src/i18n/index.ts`, `src/core/format.ts`.
-- [ ] R7f **One language registry** — `src/i18n/languages.ts` lists each language once (code, Intl locale, plural
+- [x] R7f → N12w **One language registry** — `src/i18n/languages.ts` lists each language once (code, Intl locale, plural
       order incl. `many` after `other` for fr/es/pt, native name, store locale) and drives `Language`,
       `normaliseLanguage`, `PLURAL_ORDER`, `formatNumber` locales, the settings select, airport/region names and a
       check that `CFBundleLocalizations` and `locales_config.xml` list the same codes (`test:ios-config`,
@@ -1100,7 +1100,7 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
       stays on the `upgrades` RNG stream; `RULES_VERSION` bump, save/daily golden updates. Metric (r8-audit
       `--policy=bot`): boards showing a card with no effect yet (no hub / no slot hold) 100 % → < 30 %; median stays in 10–18 (`test:balance`); slot holds
       still counted. **Area:** `src/sim/upgrades.ts`, `src/sim/world.ts`, tests. *Needs Q-71.*
-- [ ] R8b **"No spare aircraft" game-over hint** — 56 of 200 losses are at an airport with no route, and in 99 % of
+- [x] R8b → N12y **"No spare aircraft" game-over hint** — 56 of 200 losses are at an airport with no route, and in 99 % of
       all losses the reserve was empty, yet `gameover.unservedHint` says "Connect a new airport before its waiting area
       fills up". When the failed airport had 0 routes and the reserve was 0, show "No spare aircraft: drag a route end
       to it or take a plane off a quieter route" (PL + EN, i18n); keep the old line when a plane was free. Pure choice
@@ -1252,3 +1252,7 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
 - 2026-11-04 · N11r crate stamp captions + "none yet" (R5e, D-194) + replay restores first-time cards (owner Q-76 → B, D-192) · night/11r-stamp-captions · after merging dev (#169–#171): test:fast 75/75 (test:crate-stamps 5/5, 1/5 on the old cards; test:pause-summary 6/6, 5/6 on the old summary; test:first-time 8/8, 7/8 on the old controller), build ok, test:hud-targets 300/300, e2e:smoke 9/9 (5/9 while another suite loaded the machine), store:shots 60 (test:store-shots ok); ui:matrix 38/48 — the upgrade screen at 904×1000 / 904×1088@2 / 1088×904@2 times out on origin/dev too since the new globe (G2+G3/G4, probe 12/16 on origin/dev); before the merge ui:matrix 48/48, e2e:smoke 9/9. e2e:board-short 0/4 on origin/dev and here (rules v5 game over before week 2, pre-existing)
 - 2026-11-04 · G2+G3 satellite globe ships (D-179) · ext/03-g2g3-satellite · test:fast 74/74 (136.5 s), build ok (main 1,070.0 kB / gzip 317.7 kB), test:bundle 9/9 (dist 3,617.4 kB), test:e2e:smoke 9/9; built app (vite preview) loads data/globe/ day-2048 + night-1024 + elevation on auto→low, no fallback warning; game shots seed 15: routes 6.9/6.8, airports 3.2/6.0 (day/dusk); store:shots/ui:matrix not run (G6)
 - 2026-11-04 · G4 sea surface + haze folded into the terrain shader (D-173) · ext/03-g4-fillrate · transparent full-screen layers on the satellite globe 3→1 (low/saver: halo) and 4→2 (medium/high: halo + clouds); perf:scene SwiftShader 40 s low 397 frames (375 with shells), medium 168 (174), draw calls 41; game shots seed 15 match the layered look (routes 6.8/6.7, airports 3.1/5.5 day/dusk); `world.stats().transparentLayers` not added (G7 measures on devices)
+- 2026-11-04 · G6 store screenshots, feature graphic, ui:matrix and style doc on the satellite globe (D-170, D-178) · ext/03-g6-store · store:shots 60/60 (game: gold 0.13–0.17 ≥ 0.045, routes/airports/planes 9.4–11.6:1; night 9.4–11.4:1), store:feature 1/1, ui:matrix 48/48, contact sheet and feature graphic inspected; docs/styles/realistyczny.md (PL), D-11 globe superseded; shots:site not rerun
+- 2026-11-04 · N12w one language table (R7f, D-185) · night/12w-language-registry · test:i18n 1/1 (now per table entry: catalogs, plural form counts, labels, number locales; stub `de` entry gives every derived lookup; fails on the old code: no table, `=== 'pl'` in airportLabel.ts), test:android-config 23/23 (reads the table), test:fast 74/74, build ok, test:e2e:settings-groups 4/4; behaviour unchanged (PL/EN)
+- 2026-11-04 · N12x leaderboard opt-out, net layer + daily report line (R7l, D-135, D-186) · night/12x-leaderboard-optout · test:net 13/13 (new opt-out case fails on the old net layer: no isSharing/setSharing, run queued and sent), test:fast 74/74, build ok, test:e2e:delete-ranking 4/4; settings switch left to agent #1 (API: Leaderboards.isSharing/setSharing)
+- 2026-11-04 · N12y no-spare-aircraft hint on the unserved game-over board (R8b, D-187) · night/12y-no-spare-tip · test:gameover-tip 8/8 (new case fails on the old code: no unservedHint), test:e2e:gameover-unserved 5/5 (+1 bot run on 0xA1A1 ending unserved with an empty reserve, PL 360×640 unclipped; docs/shots/n11k/gameover-nospare-pl-360x640.png), test:fast 74/74, build ok; ui:matrix not run (its game-over is a forced hub overload)

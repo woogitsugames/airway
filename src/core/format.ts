@@ -1,14 +1,16 @@
 // Provide locale-aware number and duration presentation for player-facing views.
 // [task-37] D-61: one number formatter for every player-facing number.
 
-export type NumberLanguage = 'pl' | 'en';
+import { LANGUAGES, type Language } from '../i18n/languages';
 
-const LOCALES: Record<NumberLanguage, string> = { pl: 'pl-PL', en: 'en-GB' };
+/** [night-12w] R7f: the game languages (src/i18n/languages.ts); the Intl locale comes from their table entry. */
+export type NumberLanguage = Language;
+
 const formatters = new Map<string, Intl.NumberFormat>();
 
 /** The Intl locale behind a game language's numbers ("pl-PL", "en-GB"). */
 export function numberLocale(language: NumberLanguage): string {
-  return LOCALES[language];
+  return LANGUAGES.entry(language).locale;
 }
 
 function formatter(locale: string, maximumFractionDigits: number): Intl.NumberFormat {
@@ -40,7 +42,7 @@ export function formatNumberIn(locale: string, value: number, maximumFractionDig
 }
 
 export function formatNumber(value: number, language: NumberLanguage, maximumFractionDigits = 0): string {
-  return formatNumberIn(LOCALES[language], value, maximumFractionDigits);
+  return formatNumberIn(numberLocale(language), value, maximumFractionDigits);
 }
 
 /**

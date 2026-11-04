@@ -186,6 +186,7 @@ export const pl = {
   'gameover.cancelled': 'ODWOŁANY',
   'gameover.unserved': 'Żadna trasa nie obsługiwała {hub}: pasażerowie nie mieli czym polecieć.', // [night-11b]
   'gameover.unservedHint': 'Połącz nowe lotnisko, zanim zapełni się poczekalnia.',
+  'gameover.unservedNoSpare': 'Brak wolnych samolotów: przeciągnij do niego koniec trasy albo usuń mniej obłożoną trasę, żeby zwolnić jej samolot.', // [night-12y] R8b
   'gameover.report': 'ATC · RAPORT ZDARZENIA',
   'gameover.score': 'Dowiezieni pasażerowie: {score}',
   'gameover.weeks': 'Ukończone tygodnie: {weeks}',
@@ -338,6 +339,7 @@ export const pl = {
   'rank.queued': 'Brak sieci: wynik zapisany, wyślemy go później.',
   'rank.rejected': 'Serwer nie przyjął tego wyniku.',
   'rank.practice': 'Gra treningowa: w rankingu liczy się tylko pierwsza gra dnia.',
+  'rank.optedOut': 'Poza rankingiem: wysyłanie wyników jest wyłączone w Ustawieniach.', // [night-12x] D-135
   'puzzle.game.notes': 'Uwaga: {list}',
   'puzzle.mechanic.slots': 'sloty startowe (2 na godzinę, 3 w węźle)',
   'puzzle.mechanic.curfew': 'cisza nocna (bez startów i lądowań)',

@@ -185,6 +185,7 @@ export const en = {
   'gameover.cancelled': 'CANCELLED',
   'gameover.unserved': 'No route served {hub}: its passengers had no flight to board.', // [night-11b]
   'gameover.unservedHint': 'Connect a new airport before its waiting area fills up.',
+  'gameover.unservedNoSpare': 'No spare aircraft: drag a route end to it, or remove a quieter route to free its plane.', // [night-12y] R8b
   'gameover.report': 'ATC · INCIDENT REPORT',
   'gameover.score': 'Passengers delivered: {score}',
   'gameover.weeks': 'Weeks completed: {weeks}',
@@ -337,6 +338,7 @@ export const en = {
   'rank.queued': 'Offline: the result is saved and will be sent later.',
   'rank.rejected': 'The server did not accept this result.',
   'rank.practice': 'Practice run: only the first game of the day is ranked.',
+  'rank.optedOut': 'Not ranked: sending results is off in Settings.', // [night-12x] D-135
   'puzzle.game.notes': 'Watch for: {list}',
   'puzzle.mechanic.slots': 'departure slots (2 per hour, 3 at a hub)',
   'puzzle.mechanic.curfew': 'night curfew (no take-offs or landings)',
