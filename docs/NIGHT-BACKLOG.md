@@ -462,6 +462,14 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       `test:e2e:tutorial` and `test:e2e:tutorial-layout` updated (night step → cleared step, planet check); shots
       `docs/shots/23/`, `docs/shots/n11l/`, `docs/shots/n11p/`.
 
+- [x] N11q **Quiet route-end handles, never over airport tags (R5c, D-191)** — the yellow 20 px diamonds on every
+      route end were the loudest marks on the map and the handle layer (z 18) painted over the luggage tags (z 2).
+      At rest a handle is a 10 px hollow ink diamond with a paper halo in the same 48 dp area; the full yellow
+      diamond only on the route in hand (dragged from its end, or selected with the long-press menu). The layer
+      now paints below the airport overlay. Hit testing in `routeTool` unchanged (`RouteTool.activeRouteId`, the
+      `handles` port gets it). `e2e/route-handles.mjs` (`test:e2e:route-handles`, in `test:ci`; 0/2 on the old
+      handles), shots `docs/shots/n11q/`.
+
 ## Continuous development round N12 (agent 2)
 - [x] N12a **Balance bot plays for reach (D-90)** — the handover gap "the DEV bot rarely connects new airports; long
       plays end in weeks 1–3": measured, 34 of 44 bot game overs (50 seeds) were at an airport no route served, 20 of
@@ -911,7 +919,7 @@ Evidence: `docs/RESEARCH.md` "R5 — …", PNGs in `docs/research/r5/`.
       step 3 (transfer) names the glyph's region once ("bow tie = Middle East"); the settings help gains a one-line
       glyph legend (8 glyph + region rows, shape not colour). `test:e2e:tutorial` and its shots updated.
       **Area:** UI (`src/ui/tutorial/**`, `src/ui/settings/**`), i18n. Q-62 → B (D-129).
-- [ ] R5c **Route-end handles quieter at rest** — the yellow 20 px diamonds on every route end are the loudest marks
+- [x] R5c → N11q **Route-end handles quieter at rest** — the yellow 20 px diamonds on every route end are the loudest marks
       on the map. At rest draw them as a small hollow marker inside the same 48 dp hit area; full diamond only while
       a route is selected, being drawn, or under the finger. Hit testing in `routeTool` unchanged. Shots; `test:hud-targets`
       / `test:route-tool` unchanged. **Area:** UI (`src/ui/atcStrip.ts`, `atcStrip.css`).
@@ -1232,3 +1240,4 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
 - 2026-11-04 · N11o new-airport + transfer-glyphs e2e under rules v5/v6 (D-183) · night/11o-e2e-seeds · test:e2e:new-airport 4/4 (1/4 on origin/dev), test:e2e:transfer-glyphs 2/2 (0/2 on origin/dev), test:fast 73/73, build ok; e2e:smoke/ui:matrix not run (no game code changed)
 - 2026-11-04 · N11p 3-step training flight in the game's marks + first-time cards (R5b, R6a, R6b; D-184, D-190) · night/11p-short-tutorial · test:first-time 7/7 (new; the module does not exist on the old code), test:e2e:first-time-cards 4/4 (new; no cards on the old game), test:e2e:tutorial 28/28 (screenshots 8), test:e2e:tutorial-layout 7/7 (planet check fails on the old 228-unit planet at 412 px), test:fast 74/74, build ok, e2e:smoke 9/9, e2e:settings-groups 4/4, e2e:screens-fit 18/18, e2e:pseudo-locale 27/27; ui:matrix/store:shots not run (cards are off in seeded DEV runs, game screens unchanged)
 - 2026-11-04 · G9 Medalion airports + route ink outline + edge contrast probe (D-177, D-178; owner "Daj medalion i scalaj") · ext/03-g9-medalion · test:render-layers 40/40 (+1 outlined-disc case), test:fast 74/74 (130.8 s), build ok (main 1,058.6 kB / gzip 314.2 kB); probe seed 15 phone day routes 5.1/6.8/3.4, airports 2.6/3.2/3.1 (diorama/Satelita/Mapa); renders in docs/mockups/globe-2026-11/g9/final/; store:shots/ui:matrix not run (G6), follow-up G9b
+- 2026-11-04 · N11q quiet route-end handles below the tags (R5c, D-191) · night/11q-quiet-handles · test:e2e:route-handles 2/2 (0/2 on the old handles), test:fast 74/74, build ok, test:hud-targets 300/300, e2e:smoke 9/9, e2e:airport-plates 4/4, e2e:gameover-map 3/3, ui:matrix 48/48, store:shots 60 (test:store-shots ok); owner question Q-76

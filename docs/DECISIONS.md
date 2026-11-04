@@ -1154,6 +1154,16 @@ Rejected: keeping the median (penalises the standard map-symbol design) and a pi
 different zooms). **Status: in force (G9, `layerContrast(…, width)` returns `edge`, `core`, `median`; `ratio` = max(edge,
 core); `test:render-layers` checks an outlined disc on a dark sea).**
 
+## D-178 — Airport objects: V3 "Medalion" (2026-11-04, owner)
+Owner on the G9 variants (`docs/mockups/globe-2026-11/g9/`): "Daj medalion i scalaj." The airport keeps the D-11
+diorama object (light pad, dark runway, terminal with a type-coloured roof, hub tower) and gets a thick dark outline
+ring (r = 0.037–0.038·s under the pad); route tubes get a dark ink outline (inflated back faces, +1 draw call per
+route batch, 2 in total). `createWorldRenderer` defaults to `airportStyle: 'medal'`; `current`, `ink` and `apron`
+stay for DEV comparison only (`?airportStyle=`). Probe (D-177, seed 15, phone, day): routes 5.1 diorama / 6.8
+Satelita / 3.4 Mapa (were 2.2 / 3.8 / 1.3), airports 2.6 / 3.2 / 3.1 (were 2.3 / 4.9 / 1.4 with the median probe).
+Airports, planes and the Mapa tags still miss 4.5:1: follow-up G9b. Store screenshots are regenerated with G6.
+**Status: in force (owner).**
+
 ## D-150 — Weekly board offers only cards that can act (2026-11-03 22:20 CET, owner, Q-71 → B)
 R8a: the "+2 slots" card enters the weekly draw only after the run's first departure hold, the hub expansion card only
 while the network has a hub; an empty place is filled by the other aircraft card. To be measured with `r8-audit`
@@ -1292,12 +1302,12 @@ board is up, and only one is on screen. Endless and Daily only (puzzles teach th
 run flowing), a card on the weekly board itself (covers crates in landscape).
 **Status: in force (N11p, `test:first-time` 7, `test:e2e:first-time-cards` 4).**
 
-## D-178 — Airport objects: V3 "Medalion" (2026-11-04, owner)
-Owner on the G9 variants (`docs/mockups/globe-2026-11/g9/`): "Daj medalion i scalaj." The airport keeps the D-11
-diorama object (light pad, dark runway, terminal with a type-coloured roof, hub tower) and gets a thick dark outline
-ring (r = 0.037–0.038·s under the pad); route tubes get a dark ink outline (inflated back faces, +1 draw call per
-route batch, 2 in total). `createWorldRenderer` defaults to `airportStyle: 'medal'`; `current`, `ink` and `apron`
-stay for DEV comparison only (`?airportStyle=`). Probe (D-177, seed 15, phone, day): routes 5.1 diorama / 6.8
-Satelita / 3.4 Mapa (were 2.2 / 3.8 / 1.3), airports 2.6 / 3.2 / 3.1 (were 2.3 / 4.9 / 1.4 with the median probe).
-Airports, planes and the Mapa tags still miss 4.5:1: follow-up G9b. Store screenshots are regenerated with G6.
-**Status: in force (owner).**
+## D-191 — Route-end handles: a quiet hollow mark at rest, full only on the route in hand, under the tags (2026-11-04, Claude, night N11q)
+R5c: the 20 px yellow diamonds on every route end out-shouted the airports and their luggage tags, and their layer
+(z-index 18) painted over the tags. At rest a handle is now a 10 px hollow diamond (2 px ink rim, paper halo) centred
+in the unchanged 48 dp area; the full yellow diamond shows only on the route being extended from its end or selected
+with the long-press menu (`RouteTool.activeRouteId`, passed to the `handles` port). The handle layer sits at z-index 1,
+below the airport overlay (2), so a tag or edge chip always covers a handle, never the reverse; touch hit testing
+stays in `routeTool` and does not depend on paint order. Rejected: hiding handles at rest (the extend gesture would
+have no visible start), a hover state (touch first; the finger case is the drag itself).
+**Status: in force (N11q, `test:e2e:route-handles` 2).**

@@ -287,7 +287,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     preview: (model) => world.preview(model),
     warning: (info) => atc.show(info),
     menu: (request) => routeMenu.show(request),
-    handles: (list) => handles.show(list),
+    handles: (list, activeRouteId) => handles.show(list, activeRouteId),
     haptics: routeHaptics,
   });
 
