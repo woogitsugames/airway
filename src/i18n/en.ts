@@ -22,6 +22,8 @@ export const en = {
   'airport.edgeFillAria': '{count} of {capacity} waiting places taken.', // [night-11d]
   'airport.curfewAria': '{code} closed for the night curfew.', // [night-10h]
   'airport.connectingAria': 'Making a connection: {count}.', // [night-10i]
+  'airport.trendFillingAria': 'Filling up over the last game hour.', // [night-11af]
+  'airport.trendEmptyingAria': 'Emptying over the last game hour.', // [night-11af]
   'airport.slotHeld': '{code}: {count} aircraft waiting for a departure slot, next slot in {time}',
   // [task-07] Route drawing, airport-paper ATC hint and route actions.
   'route.aircraft.turboprop': 'turboprop',

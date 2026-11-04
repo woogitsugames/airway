@@ -29,6 +29,7 @@ import { mountFirstTimeCards } from './tutorial/first-time-card';
 import { browserTutorialStorage } from './tutorial/controller';
 import { airportLabel } from '../ui/airportLabel'; // [night-05] D-68
 import { AudioCueMapper, cueRun } from './audioCues'; // [night-03]
+import { FillReadings } from './fillTrend'; // [night-11af] R4c
 import type { World, ScreenPoint } from './world';
 import { NewAirportMarks } from './newAirports'; // [night-10a]
 import { onSettingsChange, readSettings, saveSettings } from '../ui/settings/settings'; // [G8] D-172
@@ -110,6 +111,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
   const knownAirports = new Set<string>();
   const newMarks = new NewAirportMarks(); // [night-10a]
   const audioCues = callbacks.cue ? new AudioCueMapper(callbacks.cue) : null; // [night-03]
+  const fillReadings = new FillReadings(); // [night-11af] R4c: hourly waiting counts → trend chevron
   let lastHubKey = '';
   const waitingKeys = new Map<string, string>();
   const jamKeys = new Map<string, number | null>();
@@ -289,6 +291,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       if (!previous) return;
       run = previous;
       previousPlanes = [];
+      fillReadings.hourly(run); // [night-11af] an undo across the hour boundary starts the trend history over
       syncWorld(true);
       syncUpgrade(true); // [night-07x] if the world is back on an open weekly board, show it (never a frozen clock)
     },
@@ -352,6 +355,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       if (jamKeys.get(city.id) !== seconds) { jamKeys.set(city.id, seconds); overlay.setJamCountdown(city.id, seconds); }
       jamHaptics.setJammed(city.id, city.jamTicksLeft !== null);
       overlay.setSlotHold(city.id, city.slotHeld, city.nextSlotMinutes); // [task-38] deduplicated inside
+      overlay.setFillTrend(city.id, fillReadings.trend(city.id, city.waiting.length, city.capacity)); // [night-11af] deduplicated inside
     }
     // [night-10g] The curfew barrier: rebuilt only when the set of closed airports changes.
     const curfewKey = cities.filter((city) => city.curfewClosed).map((city) => city.id).join(',');
@@ -462,6 +466,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
   function afterTicks(): void {
     emit(run.drainEvents());
     audioCues?.hourly(cueRun(run)); // [night-03]
+    fillReadings.hourly(run); // [night-11af] R4c: same game-hour boundary as the drone readings
     syncWorld();
     syncUpgrade();
     firstTime.flush(slotHint.visible || screen !== 'game'); // [night-11p] one card at a time, only in play

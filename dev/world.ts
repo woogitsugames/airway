@@ -71,6 +71,10 @@ for (const city of cities) {
   overlay.setPassengers(city.id, HUBS[city.id]?.waiting ?? WAITING[city.id] ?? []);
 }
 overlay.setJamCountdown('LON', HUBS.LON.jam ?? null);
+// [night-11af] R4c: fill trend chevrons, as the game layer would set them from two hourly readings (≥ 50 % full).
+for (const [id, hub] of Object.entries(HUBS)) overlay.setCapacity(id, hub.cap);
+overlay.setFillTrend('IST', 'filling'); // 5 of 8 waiting, more arrived than left in the last hour
+overlay.setFillTrend('LON', 'emptying'); // full and jammed, but draining
 
 // Scripted visual planes (not a simulation): one per route leg, ping-ponging.
 const SCALE = 10_000;

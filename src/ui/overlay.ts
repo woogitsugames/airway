@@ -7,6 +7,7 @@ import {
   type EdgeBounds, type EdgeChip, type SlotTagRect, type TagBounds, type TagSlot,
 } from './overlay-layout'; // [task-38] slot tag; [night-11x] R5h edge chips
 import { REGIONS } from '../data/regions';
+import type { FillTrend } from '../game/fillTrend'; // [night-11af] R4c (type only)
 import './overlay.css';
 
 const DEG = Math.PI / 180;
@@ -86,6 +87,10 @@ interface BubbleEntry {
   /** [night-10i] Tail of `waiting` still inside the minimum connection time (drawn as hollow glyphs). */
   connecting: number;
   jamSeconds: number | null;
+  /** [night-11af] R4c: last game hour's fill trend and its chevron nodes (one per direction, kept). */
+  trend: FillTrend;
+  trendUp: HTMLSpanElement;
+  trendDown: HTMLSpanElement;
   /** [night-11x] R5h: edge chip state, placed by `placeEdgeChips` (`chips[i]` belongs to `slots[i]`). */
   chip: EdgeChip;
   bubbleVisible: boolean;
@@ -111,6 +116,11 @@ export interface AirportOverlay {
   setNew(id: string, isNew: boolean): void;
   /** [night-10h] Closed by the night curfew: barrier stub on its tag and a striped bar on its edge chip. */
   setCurfew(id: string, closed: boolean): void;
+  /**
+   * [night-11af] R4c: chevron beside the passenger count, 'filling' (up) or 'emptying' (down); null hides it.
+   * The game layer decides (≥ 50 % full, last game hour's balance beyond ±1); the overlay only draws it.
+   */
+  setFillTrend(id: string, trend: FillTrend): void;
   /** [night-11m] D-128: hubs always carry their code plate. */
   setHub(id: string, hub: boolean): void;
   /** [night-11m] D-128: zoomed in past the gameplay framing, every on-screen airport carries its code plate. */
@@ -120,6 +130,34 @@ export interface AirportOverlay {
   dispose(): void;
 }
 
+
+/**
+ * [night-11af] R4c: fill trend mark, a thin double chevron in the tag's text ink (paper on a jammed tag) behind a
+ * hairline, so it never reads as a passenger: the Northern Europe glyph is a solid single V. Up and down differ by
+ * shape, never by colour alone. 3 px gap + 1.5 px hairline + 3 px pad + 9 px mark: TREND_WIDTH in the tag width sum.
+ */
+const TREND_WIDTH = 17;
+function trendChevron(up: boolean): HTMLSpanElement {
+  const span = document.createElement('span');
+  span.className = 'airport-bubble__trend airport-bubble__trend--' + (up ? 'up' : 'down');
+  span.dataset.trend = up ? 'filling' : 'emptying';
+  span.setAttribute('aria-hidden', 'true');
+  const svg = document.createElementNS(SVG, 'svg');
+  svg.setAttribute('viewBox', '0 0 9 12');
+  svg.setAttribute('width', '9');
+  svg.setAttribute('height', '12');
+  svg.setAttribute('focusable', 'false');
+  const path = document.createElementNS(SVG, 'path');
+  path.setAttribute('d', up ? 'M1 6 4.5 2.5 8 6M1 10.5 4.5 7 8 10.5' : 'M1 1.5 4.5 5 8 1.5M1 6 4.5 9.5 8 6');
+  path.setAttribute('fill', 'none');
+  path.setAttribute('stroke', 'currentColor');
+  path.setAttribute('stroke-width', '1.8');
+  path.setAttribute('stroke-linecap', 'square');
+  path.setAttribute('stroke-linejoin', 'miter');
+  svg.appendChild(path);
+  span.appendChild(svg);
+  return span;
+}
 
 function placeEl(el: HTMLElement, x: number, y: number): void {
   el.style.transform = `translate3d(${x}px,${y}px,0)`;
@@ -278,6 +316,9 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       if (entry.more.textContent !== more) entry.more.textContent = more;
       want.push(entry.more);
     }
+    // [night-11af] R4c: the trend chevron sits right after the count (the "+N" or the last glyph).
+    const trendNode = entry.trend === 'filling' ? entry.trendUp : entry.trend === 'emptying' ? entry.trendDown : null;
+    if (trendNode && entry.waiting.length > 0) want.push(trendNode);
     want.push(entry.timer);
     // [night-10u] Write only where the child list differs from the last rebuild (most changes touch one glyph).
     const last = entry.children;
@@ -302,6 +343,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
     entry.mainWidth = entry.waiting.length > 0 || jammed || entry.isNew || entry.closed || plated
       ? Math.max(30, 23 + limit * 18 + (entry.waiting.length > MAX_GLYPHS ? 27 : 0) + (jammed ? 53 : 0) +
         (freshWidth ? freshWidth + (limit || jammed ? 4 : 0) : 0) + (entry.closed ? BARRIER_WIDTH : 0) +
+        (trendNode && entry.waiting.length > 0 ? TREND_WIDTH : 0) +
         (plated ? entry.plateWidth - (plateOnly ? 8 : 0) : 0)) : 0;
     bubble.classList.toggle('airport-bubble--new', entry.isNew);
     entry.edge.classList.toggle('airport-edge--new', entry.isNew && !jammed);
@@ -321,7 +363,8 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
     const label = jammed ? t('airport.jammed', { code: entry.airport.code, seconds: Math.ceil(entry.jamSeconds ?? 0) }) : t('airport.waiting', { code: entry.airport.code, count: entry.waiting.length });
     const aria = (entry.isNew ? t('airport.newAria', { code: entry.airport.code }) + ' ' : '') +
       (entry.closed ? t('airport.curfewAria', { code: entry.airport.code }) + ' ' : '') + label +
-      (entry.connecting > 0 ? ' ' + t('airport.connectingAria', { count: entry.connecting }) : '');
+      (entry.connecting > 0 ? ' ' + t('airport.connectingAria', { count: entry.connecting }) : '') +
+      (trendNode && entry.waiting.length > 0 ? ' ' + t(entry.trend === 'filling' ? 'airport.trendFillingAria' : 'airport.trendEmptyingAria') : '');
     if (aria !== entry.ariaLabel) { bubble.setAttribute('aria-label', aria); entry.ariaLabel = aria; }
     bubble.classList.toggle('airport-bubble--connecting', entry.connecting > 0);
   }
@@ -440,6 +483,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
         slot, slotLabel, slotTime, slotCount, slotRect: { width: 0, x: 0, y: 0, visible: false }, slotHeld: 0, slotMinutes: 0,
         mainWidth: 0, slotVisible: false, lastSlotX: NaN, lastSlotY: NaN,
         waiting: [], connecting: 0, jamSeconds: null,
+        trend: null, trendUp: trendChevron(true), trendDown: trendChevron(false),
         chip, bubbleVisible: false,
         lastBubbleX: NaN, lastBubbleY: NaN, lastEdgeX: NaN, lastEdgeY: NaN, lastEdgeSide: -1, lastOpacity: NaN,
       };
@@ -457,6 +501,13 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       }
       entry.waiting = waiting.slice();
       entry.connecting = connecting;
+      rebuildBubble(entry);
+    },
+    setFillTrend(id, trend): void {
+      const entry = get(id);
+      if (trend !== null && trend !== 'filling' && trend !== 'emptying') throw new RangeError('Invalid fill trend');
+      if (entry.trend === trend) return;
+      entry.trend = trend;
       rebuildBubble(entry);
     },
     setJamCountdown(id, seconds): void {
