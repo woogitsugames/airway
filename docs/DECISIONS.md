@@ -1526,3 +1526,17 @@ own key (`aw-net-share-v1`), not in the settings record, so the daily report and
 Rejected: the switch in the Game group (it is a privacy choice next to the policy and the deletion).
 **Status: in force (N11v, `test:e2e:ranking-switch` 4).**
 
+
+## D-202 — Edge-chip placement is a pure function in overlay-layout.ts, with the old loop as its test oracle (2026-11-04, Claude, night N11x)
+R5h: `distributeEdges` (+ `edgeLayout`) lived inside `createAirportOverlay`, was patched three times (N10v markers,
+N10z tags, N11 jammed priority) without a unit test and scanned every airport for every candidate place
+(O(n²·k) per frame). It is now `projectEdgeChip(chip, dx, dy, lon, bounds)` and `placeEdgeChips(chips, tags,
+bounds)` in `src/ui/overlay-layout.ts`: no DOM, no three.js, no per-frame allocation (module scratch arrays); the
+overlay keeps one `EdgeChip` per airport parallel to its tag slots and the right dock band moved into `EdgeBounds`.
+Behaviour is meant to be identical, so `test:overlay-layout` carries a verbatim port of the old loop and compares
+the two on 200 random portrait/landscape scenes (200/200 identical), plus rule tests (jammed chip wins, a full edge
+hides chips, never on an on-screen marker, avoids tags while there is room, projection sides and dock band,
+deterministic). Cost on a 150-airport scene (100 off screen, Node, same harness): old 0.43–0.50 ms, new 0.14–0.16
+ms per frame (~3×): on-screen airports are collected once and filtered per chip to its strip along the edge,
+placed chips are kept per side, and the slide stops when both directions leave the edge. Budget in the test: < 1 ms.
+Rejected: a spatial grid (more code for the same result at ≤ 165 airports). **Status: in force (N11x).**

@@ -498,6 +498,13 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       objection switch on the N12x net API (`Leaderboards.isSharing()` / `setSharing(on)`): PL/EN, on by default, ≥ 48 px,
       one hint line, only in builds with leaderboards (like the delete-data row). `e2e/ranking-switch.mjs`
       (`test:e2e:ranking-switch`, in `test:ci`; 2/4 on the old settings), shots `docs/shots/n11v/`.
+- [x] N11x **Edge-chip placement as a pure function (R5h, D-202)** — `distributeEdges` and `edgeLayout` left
+      `createAirportOverlay` for `placeEdgeChips(chips, tags, bounds)` / `projectEdgeChip` in `src/ui/overlay-layout.ts`
+      (no DOM, no three.js, no per-frame allocation); the overlay keeps one `EdgeChip` per airport parallel to its tag
+      slots. Same output (the old loop, ported verbatim into `test:overlay-layout`, is the oracle on 200 random scenes);
+      cheaper: on-screen airports are collected once and filtered per chip to its strip along the edge, placed chips
+      are kept per side, and the slide stops once both directions leave the edge (150 airports ~3× faster). **Area:** `src/ui/overlay.ts`,
+      `src/ui/overlay-layout.ts`, `scripts/test-overlay-layout.mjs`.
 
 ## Continuous development round N12 (agent 2)
 - [x] N12a **Balance bot plays for reach (D-90)** — the handover gap "the DEV bot rarely connects new airports; long
@@ -995,7 +1002,7 @@ Evidence: `docs/RESEARCH.md` "R5 — …", PNGs in `docs/research/r5/`.
       paused" → "Time is stopped / Czas stoi". Add a glossary table to `src/i18n/README.md` (or the top of `en.ts`)
       and a `test:i18n` check that fails on the banned synonyms. Puzzle titles may keep "węzeł" only if the owner
       prefers (say so in the PR). **Area:** i18n (`src/i18n/**`), `scripts/test-i18n.mjs`.
-- [ ] R5h **Edge-chip placement as a pure, tested function** — move `distributeEdges` (+ the edge projection) from
+- [x] R5h → N11x **Edge-chip placement as a pure, tested function** — move `distributeEdges` (+ the edge projection) from
       `createAirportOverlay` into `overlay-layout.ts` as `placeEdgeChips(entries, bounds)` with no DOM; unit tests in
       `test:overlay-layout`: jammed chips win space, a chip never covers an on-screen airport (N10v), avoids tags
       when there is room (N10z), deterministic output; a 150-airport case under a time budget (today O(n²·k) per
