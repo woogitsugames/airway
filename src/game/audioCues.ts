@@ -28,6 +28,14 @@ export function cueRun(run: EndlessRun): CueRun {
   };
 }
 
+/**
+ * [night-12t] D-153: the audio engine places a cue `cue.tick - clock` ticks ahead, and every cue carries `run.tick`,
+ * so the engine clock must be the sim tick too. The world minute stands still while a weekly offer command takes its
+ * tick (hub pick, CancelUpgradePick), and main.ts passed the minute: each such tick pushed every later chime 0.1 s
+ * (at 1x) further into the future.
+ */
+export function audioClockTick(run: Pick<CueRun, 'tick'>): number { return run.tick; }
+
 function isNight(hour: number): boolean { return hour < DAWN_HOUR || hour >= 22; }
 
 export class AudioCueMapper {

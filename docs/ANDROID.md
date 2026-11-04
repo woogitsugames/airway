@@ -158,6 +158,29 @@ environment; passing `test:android-config` is a static guarantee only.
 
 Do **not** add APK, AAB, keystore or Gradle build products to Git.
 
+## Sound check (D-153)
+
+The game makes sound with Web Audio inside the WebView: no `<audio>` files, no Android audio focus request, output
+on the **media** stream (STREAM_MUSIC). The ringer/silent mode does not mute it; the media volume does. "Music" is the
+generative chimes of arrivals, dawn, week and hub load (D-71): the menu is silent apart from the departure-board
+rattle (an effect), and the first chime comes with the first landing.
+
+On the device (debug APK, USB debugging on):
+
+1. Media volume up (volume key, then the media slider); no Bluetooth headset connected unless testing it; Samsung
+   *Settings → Sounds and vibration → Separate app sound* off, or Airway routed to the phone speaker.
+2. Open Airway, tap anything once, start a flight, draw a route and assign a plane; wait for the first landing.
+3. On a computer: `chrome://inspect/#devices` → *inspect* the Airway WebView → Console → `airwayAudioStatus()`.
+   - `state: "running"` and `currentTime` growing between two calls: the engine plays. `scheduled` should grow after
+     landings; `musicVolume` 0.65 and `muted: false` with the default settings. If still silent, the problem is
+     outside the page (media volume, Separate app sound, output device) — note what the phone shows.
+   - `state: "suspended"` with `waitingForGesture: true`: the next tap must resume it (`unlockAttempts` grows).
+     If it stays suspended after taps, report the WebView version (`chrome://version` on the phone) and `unlockAttempts`.
+   - `rebuilds: 1` and `latencyHint: "playback"`: the low-latency output stalled and the engine fell back (D-153).
+   - `state: "none"`: no tap reached the page yet.
+4. Repeat after: home → back to the game; a phone call or another app playing media; folding and unfolding while a
+   flight runs.
+
 ## OpenGL ES 3.0 device filter (D-124)
 
 The globe uses three r170, which renders only through WebGL 2 (WebGL 1 support was removed in r163). Android WebView

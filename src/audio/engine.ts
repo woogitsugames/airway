@@ -44,6 +44,26 @@ type AudioSessionNavigator = Navigator & {
   audioSession?: { type: 'ambient' | 'playback' | 'auto' };
 };
 
+/** [night-12t] D-153: how long a "running" context may keep a frozen clock before it is rebuilt. */
+const STALL_CHECK_MS = 1200;
+const STALL_MIN_ADVANCE_SECONDS = 0.3;
+
+/** [night-12t] Read-only audio health for device checks (Settings has no audio debug screen). */
+export interface AudioStatus {
+  readonly state: AudioContextState | 'none';
+  readonly currentTime: number;
+  readonly sampleRate: number;
+  readonly latencyHint: 'interactive' | 'playback';
+  readonly unlockAttempts: number;
+  readonly rebuilds: number;
+  readonly waitingForGesture: boolean;
+  readonly scheduled: number;
+  readonly dropped: number;
+  readonly muted: boolean;
+  readonly musicVolume: number;
+  readonly effectsVolume: number;
+}
+
 /** Web Audio is instantiated only in unlock(), called by a user gesture. */
 export class AirwayAudio {
   private readonly scheduler = new AudioScheduler();
@@ -61,6 +81,12 @@ export class AirwayAudio {
   private interval: number | null = null;
   private gestureCleanup: (() => void) | null = null;
   private lifecycleCleanup: (() => void) | null = null;
+  private gestureTarget: EventTarget | null = null;
+  private lifecyclePaused = false;
+  private latencyHint: 'interactive' | 'playback' = 'interactive';
+  private unlockAttempts = 0;
+  private rebuilds = 0;
+  private stallTimer: ReturnType<typeof setTimeout> | null = null;
   private tick = 0;
   private speed = 1;
   private week = 1;
@@ -141,14 +167,38 @@ export class AirwayAudio {
     return this.emit(effect === 'new-city' ? { type: effect, tick: this.tick } : { type: effect });
   }
 
-  /** Bind during bootstrap; this does not create an AudioContext. */
+  get status(): AudioStatus {
+    const ctx = this.context;
+    return {
+      state: ctx ? ctx.state as AudioContextState : 'none',
+      currentTime: ctx?.currentTime ?? 0,
+      sampleRate: ctx?.sampleRate ?? 0,
+      latencyHint: this.latencyHint,
+      unlockAttempts: this.unlockAttempts,
+      rebuilds: this.rebuilds,
+      waitingForGesture: this.gestureCleanup !== null,
+      scheduled: this.scheduler.scheduledCount,
+      dropped: this.scheduler.droppedCount,
+      muted: this.settings.muted,
+      musicVolume: this.settings.musicVolume,
+      effectsVolume: this.settings.effectsVolume,
+    };
+  }
+
+  /**
+   * Bind during bootstrap; this does not create an AudioContext.
+   * [night-12t] D-153: every gesture tries again until the context really runs. The old handler removed itself
+   * before resume() settled, so a refused or still-suspended first resume (Android audio focus held by another app,
+   * a resume that WebView keeps suspended) left the game silent for the whole session. The listener comes back
+   * whenever the system takes the running context away (statechange) or a lifecycle resume is refused.
+   */
   unlockOnFirstGesture(target: EventTarget = document): () => void {
     this.gestureCleanup?.();
     if (this.destroyed) return () => {};
+    this.gestureTarget = target;
     const handler = (): void => {
-      cleanup();
       // resume() is invoked synchronously within the trusted event call stack.
-      void this.unlock();
+      void this.unlock().then((running) => { if (running) cleanup(); });
     };
     const cleanup = (): void => {
       target.removeEventListener('pointerup', handler);
@@ -166,15 +216,18 @@ export class AirwayAudio {
   unlock(): Promise<boolean> {
     if (this.destroyed || this.offline || typeof AudioContext === 'undefined') return Promise.resolve(false);
     try {
+      this.unlockAttempts++;
+      this.lifecyclePaused = false;
       if (!this.context) this.setup();
       const ctx = this.context;
       if (!ctx) return Promise.resolve(false);
       this.applyIOSAudioSession();
       const resume = (ctx as AudioContext).resume();
       return resume.then(() => {
-        if (this.destroyed || ctx.state !== 'running') return false;
+        if (this.destroyed || this.context !== ctx || ctx.state !== 'running') return false;
         this.startScheduler();
         this.applySettings();
+        this.watchClock(ctx);
         return true;
       }).catch(() => false);
     } catch {
@@ -213,6 +266,8 @@ export class AirwayAudio {
 
   /** Call from Capacitor App pause and resume hooks when they are available. */
   pause(): void {
+    this.lifecyclePaused = true;
+    this.clearStallTimer();
     this.stopScheduler();
     this.scheduler.clear();
     this.stopVoices();
@@ -222,7 +277,13 @@ export class AirwayAudio {
   resume(): Promise<boolean> {
     // Visibility/pageshow may fire before the first gesture. Do not create an
     // AudioContext from lifecycle notifications; only unlock() may do that.
-    return this.context ? this.unlock() : Promise.resolve(false);
+    if (!this.context) return Promise.resolve(false);
+    return this.unlock().then((running) => {
+      // [night-12t] A resume outside a gesture may be refused (WebView after the app was in the background):
+      // the next tap tries again instead of leaving the game silent.
+      if (!running) this.rearmGesture();
+      return running;
+    });
   }
 
   /** visibilitychange/pagehide also fire in Capacitor WebViews on app pause/resume. */
@@ -254,6 +315,7 @@ export class AirwayAudio {
     this.gestureCleanup?.();
     this.lifecycleCleanup?.();
     this.pause();
+    this.gestureTarget = null;
     this.voices.clear();
     this.stress.clear();
     const ctx = this.context;
@@ -262,8 +324,18 @@ export class AirwayAudio {
   }
 
   private setup(given?: BaseAudioContext): void {
-    const ctx = given ?? new AudioContext({ latencyHint: 'interactive' });
+    const ctx = given ?? new AudioContext({ latencyHint: this.latencyHint });
     this.context = ctx;
+    if (!given && 'onstatechange' in ctx) {
+      // [night-12t] The system can suspend or interrupt a running context (call, another app's audio focus,
+      // Samsung's sound settings); only a gesture may resume it reliably.
+      (ctx as AudioContext).onstatechange = () => {
+        if (this.context === ctx && ctx.state !== 'running' && !this.lifecyclePaused && !this.destroyed) {
+          this.stopScheduler();
+          this.rearmGesture();
+        }
+      };
+    }
     const master = ctx.createGain();
     const hipass = ctx.createBiquadFilter();
     hipass.type = 'highpass';
@@ -329,6 +401,43 @@ export class AirwayAudio {
       const session = (navigator as AudioSessionNavigator).audioSession;
       if (session) session.type = this.settings.playInSilentMode ? 'playback' : 'ambient';
     } catch { /* WKWebView may reject changing the session while suspended. */ }
+  }
+
+  private rearmGesture(): void {
+    if (this.destroyed || this.offline || this.gestureCleanup || !this.gestureTarget) return;
+    this.unlockOnFirstGesture(this.gestureTarget);
+  }
+
+  /**
+   * [night-12t] D-153: a context can report "running" while its clock stands still (an output stream that never
+   * started; reported for low-latency output on some Android audio paths). Then nothing scheduled ever plays.
+   * If the clock has not moved after STALL_CHECK_MS, the context is closed and the next gesture builds a new one
+   * with the "playback" latency hint (the larger, more compatible buffer).
+   */
+  private watchClock(ctx: BaseAudioContext): void {
+    this.clearStallTimer();
+    const startedAt = ctx.currentTime;
+    this.stallTimer = setTimeout(() => {
+      this.stallTimer = null;
+      if (this.context !== ctx || this.destroyed || this.lifecyclePaused || ctx.state !== 'running') return;
+      if (typeof document !== 'undefined' && document.hidden) return;
+      if (ctx.currentTime - startedAt >= STALL_MIN_ADVANCE_SECONDS) return;
+      this.rebuilds++;
+      this.latencyHint = 'playback';
+      this.stopScheduler();
+      this.scheduler.clear();
+      this.voices.clear();
+      this.stress.clear();
+      this.context = null;
+      this.master = this.music = this.effects = this.nightFilter = null;
+      void (ctx as AudioContext).close().catch(() => {});
+      this.rearmGesture();
+    }, STALL_CHECK_MS);
+  }
+
+  private clearStallTimer(): void {
+    if (this.stallTimer !== null) clearTimeout(this.stallTimer);
+    this.stallTimer = null;
   }
 
   private startScheduler(): void {
