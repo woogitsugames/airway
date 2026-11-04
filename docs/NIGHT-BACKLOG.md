@@ -422,6 +422,16 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       night darkens only the globe. `e2e/tutorial-layout.mjs` (`test:e2e:tutorial-layout`, in `test:ci`; 0/7 on the
       old tutorial, the Fold case with status/gesture-bar padding), shots `docs/shots/n11l/`.
 
+- [x] N11m **Airport code plates on the globe (D-128 → D-181, R5a)** — owner's Fold screenshot: in game no airport
+      had a code or name, and a pink "⋈⋈⋈" tag (Middle-East passengers) sat next to a disc nobody could name. The luggage
+      tag now carries a code plate (code or name per D-68, departure-board mono) before its glyphs; with nobody waiting
+      the tag is the plate alone. At the gameplay zoom (the run's opening view) every on-screen airport has one; zoomed
+      out to the whole network only hubs and named airports (jam, NEW, slot hold, curfew). Plate-only tags are placed
+      after passenger tags (`layoutTags`), so they never push a passenger tag off. G9 (#158) only restyles the 3D
+      airport objects (DEV `?airportStyle=`); the plates are DOM and independent of it. `e2e/airport-plates.mjs`
+      (`test:e2e:airport-plates`, in `test:ci`), `test:overlay-layout` +2, DEV `aw.state().airports[].hub`, shots
+      `docs/shots/n11m/`.
+
 ## Continuous development round N12 (agent 2)
 - [x] N12a **Balance bot plays for reach (D-90)** — the handover gap "the DEV bot rarely connects new airports; long
       plays end in weeks 1–3": measured, 34 of 44 bot game overs (50 seeds) were at an airport no route served, 20 of
@@ -854,7 +864,7 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
 
 ### R5 (2026-11-03) — quality audit: first-time player, store reviewer, code health
 Evidence: `docs/RESEARCH.md` "R5 — …", PNGs in `docs/research/r5/`.
-- [ ] R5a **Airport code plates on the globe** — on-screen airports have no code or name (only off-screen edge chips
+- [x] R5a → N11m **Airport code plates on the globe** — on-screen airports have no code or name (only off-screen edge chips
       do), yet the pause summary ("Fullest hub JED 3/36"), crate stamps ("BEG 9/36") and the game-over board speak in
       codes. Draw a small Diorama signboard (code, or name per the D-68 setting) beside the airport disc for the
       airports chosen in Q-61, placed with the existing `layoutTags` collision pass (never over a passenger tag or a
@@ -1183,3 +1193,4 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
 - 2026-11-04 · N12u unfolded foldable in ui:matrix (D-154) · night/12u-fold-matrix · ui:matrix 48/48 (32 before; the 16 new 904×1088@2 / 1088×904@2 shots PL/EN inspected, older 32 not re-committed), test:fast 73/73, build ok
 - 2026-11-04 · N11l training flight on the Fold: hint gap, one-shape tags, night only on the globe (owner feedback, D-180) · night/11l-tutorial-device · test:e2e:tutorial-layout 7/7 (0/7 on the old tutorial; Fold 686×762 with status/gesture-bar padding), after merging dev #160: test:fast 73/73, build ok, tutorial-layout 7/7; before: test:fast 72/72, build ok, e2e:tutorial 21/21 (shots docs/shots/23 refreshed), e2e:screens-fit 18/18, e2e:reduce-motion 3/3; e2e:smoke/ui:matrix not run (game screens unchanged)
 - 2026-11-04 · N12v rules v6: cards that can act + curfew from week 3 (R8a, R8c; D-150, D-151, D-155) · night/12v-board-curfew · test:upgrades 7/7 (new eligibility case fails on the old draw: 6/7), test:daynight 44/44 and test:week-source 6/6 (curfew week 3 = day 7), test:save-golden 21/21 (rules 6, v5 golden frozen + replay check), test:slots 5/5 (+ bonus survives a snapshot), test:bot-policy 10/10 (slots check on 0xA1AA board 2), test:replay 23/23 (slots board on seed 0x0001; summaries unchanged), test:balance median 17.03 → 17.25 min (upgrade1 1.00, upgrade2 0.66), r8-audit 200 seeds median 16.52 → 16.64, curfew hold 20 → 123 runs, "+2 slots" offered 239 → 4, hub 235 → 360, test:e2e:curfew-barrier 2/2 (seed 0xA1A2; 0/2 on 0xA1A1, which ends in week 2 since v5), test:e2e:smoke 9/9, test:fast 73/73, build ok; store:shots/ui:matrix not regenerated (week-1 boards on 0xA1A1 now show turboprop/widebody/hub instead of slots)
+- 2026-11-04 · N11m airport code plates on the luggage tags (D-128 → D-181, R5a) · night/11m-airport-plates · after merging dev (rules v6, #163): test:e2e:airport-plates 4/4, test:fast 73/73 (test:overlay-layout 21/21, 20/21 on the old layout), build ok, e2e:smoke 9/9, e2e:edge-chip-tags 6/6, e2e:curfew-barrier 2/2, ui:matrix 48/48, store:shots 60; before the merge also test:hud-targets 300/300, e2e:edge-chip-airports 2/2, e2e:edge-chip-fill 4/4, e2e:edge-dock 5/5, e2e:gameover-map 3/3. Pre-existing on origin/dev (same failure with the old src): e2e:new-airport 1/4 ("the mark goes after 12 game hours"), e2e:transfer-glyphs 0/2 (bot game over before the transfer)

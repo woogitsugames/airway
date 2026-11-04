@@ -29,6 +29,12 @@ import { AudioCueMapper, cueRun } from './audioCues'; // [night-03]
 import type { World, ScreenPoint } from './world';
 import { NewAirportMarks } from './newAirports'; // [night-10a]
 
+/**
+ * [night-11m] D-128: at the gameplay zoom and closer (the run opens at 3 of [1, 4]) every on-screen airport carries
+ * its code plate; zoomed out to the whole network only hubs and the airports the UI names do.
+ */
+export const PLATES_ALL_ZOOM = 2.75;
+
 export type SessionScreen = 'game' | 'upgrade' | 'gameover';
 export type RunMode = 'endless' | 'daily';
 const MAX_CATCH_UP_TICKS = 40;
@@ -316,8 +322,10 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       if (!knownAirports.has(city.id)) {
         knownAirports.add(city.id);
         // D-68: the 58 px edge chip has no room for a city name, so it always shows the code.
-        overlay.addAirport({ id: city.id, code: airportLabel(city.id, 'code'), lon: city.lon, lat: city.lat, hub: city.hub });
+        overlay.addAirport({ id: city.id, code: airportLabel(city.id, 'code'), lon: city.lon, lat: city.lat, hub: city.hub,
+          label: airportLabel(city.id) }); // [night-11m] D-128 plate follows the D-68 code/name setting
       }
+      overlay.setHub(city.id, city.hub); // [night-11m] D-128 hubs carry their plate; deduplicated inside
       overlay.setCapacity(city.id, city.capacity); // [night-11d] edge-chip gauge; deduplicated inside
       const key = city.waiting.join(',') + '/' + city.connecting; // [night-10i] hollow transfer glyphs
       if (waitingKeys.get(city.id) !== key) {
@@ -473,6 +481,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       accumulator = Math.min(accumulator - ticks, 1);
       if (ticks > 0) advance(ticks);
     }
+    overlay.setZoomedIn(world.orbit.zoomLevel >= PLATES_ALL_ZOOM); // [night-11m] D-128; deduplicated inside
     overlay.update();
     if (tool.drawing || screen === 'game') tool.refreshHandles();
     return { tick: run.clockMinute, alpha: Math.max(0, Math.min(1, accumulator)) };

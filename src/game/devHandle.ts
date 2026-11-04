@@ -23,7 +23,7 @@ export interface AwDevState {
   readonly curfewClosed?: readonly string[];
   readonly curfewDrawn?: number;
   /** [night-11d] Waiting passengers (transfers included) and waiting places per airport. */
-  readonly airports?: readonly { readonly id: string; readonly waiting: number; readonly capacity: number }[];
+  readonly airports?: readonly { readonly id: string; readonly waiting: number; readonly capacity: number; readonly hub?: boolean }[];
 }
 
 export interface AwDevAdapter {
