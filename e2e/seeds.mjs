@@ -11,7 +11,24 @@
 //                                      answering the other boards with `take`
 //   { offers: n }                      the board shows n cards
 //   { overload: true }                 window.aw.forceHubOverload(): the run must end on a jammed airport
-//   { ticks: n }                       window.aw.advanceTicks(n) (the run may end here)
+//   { ticks: n }                       window.aw.advanceTicks(n) (the run may end here; `alive: true` = it must not)
+// [night-12ac] For the suites that play without a fixed board (see scripts/lib/e2e-plans.ts):
+//   { board: N, mayEnd: true }         autoplay(N), and a run that ends before the board is fine
+//   { take, ifBoard: true }            click only when a board is open; take 'first' = upgrade-option-0
+//   { find: [kinds…], from, to, take } stop at the first board offering any of the kinds
+//   { playOut: W, take }               autoplay week 1…W, answering each board, until the run ends (must end)
+//   { drift: n, max, take }            no bot: advanceTicks(n) up to `max` times, answering boards (must end)
+//   { jam: 'served'|'unserved', spare } the jammed airport is (not) on a route; `spare` aircraft left in reserve
+//   { hourly: h, until?, bot? }        botStep() + advanceTicks(60) per hour (bot: false = ticks only); `until`
+//                                      ('curfew' | 'no-curfew') must hold in play within h hours, else the run must last
+//   { minutes: n, until, botEvery }    advanceTicks(1) per minute (+ botStep every botEvery) until 'connecting'
+//                                      (a transfer inside its connection time) or 'cleared' (that airport's are done)
+//   { opens: n, chunk }                no bot: advanceTicks(chunk) until an airport opens, within n ticks
+//   { routes: n }                      the run is going and has at least n routes
+//   { triggers: [cards], ticks, every, take }  botStep() + advanceTicks(every) for `ticks`, answering boards, until
+//                                      each first-time card's trigger fired (hub-full, out-of-range, curfew, weekly-board)
+// Suites driven only by gestures on screen or by the date seed (smoke, leaderboard, daily-share, daily-continue)
+// have no bot plan to replay; their forced overload needs no seed.
 
 /** @type {Record<string, { seeds: number[], plans: { name: string, steps: object[] }[] }>} */
 export const E2E_SEEDS = {
@@ -45,5 +62,109 @@ export const E2E_SEEDS = {
       { name: '"+2 slots" offered by week 6', steps: [{ find: 'departure-slots', from: 1, to: 6, take: 'plain' }] },
       { name: 'hub expansion offered by week 6', steps: [{ find: 'hub-expansion', from: 1, to: 6, take: 'plain' }] },
     ],
+  },
+  // [night-12ac] Suites moved from hard-coded seeds (0xA1A1 = the harness SEED unless noted).
+  'transfer-glyphs': {
+    seeds: [0xA1A1],
+    plans: [{ name: 'week 2, a transfer connecting within 10 h, cleared within 50 min', steps: [
+      { board: 1 }, { take: 'plain', strict: true },
+      { minutes: 600, until: 'connecting', botEvery: 60 }, { minutes: 50, until: 'cleared' },
+    ] }],
+  },
+  'pause-summary': {
+    seeds: [0xA1A1],
+    plans: [{ name: 'week-1 board, then week 2', steps: [{ board: 1 }, { take: 'plain', strict: true }] }],
+  },
+  'curfew-barrier': {
+    seeds: [0xA1A2],
+    plans: [{ name: 'curfew closes after the week-3 board, night ends within 12 h', steps: [
+      { board: 3 }, { hourly: 96, until: 'curfew' }, { hourly: 12, until: 'no-curfew', bot: false },
+    ] }],
+  },
+  'gameover-map': {
+    seeds: [0xA1A1],
+    plans: [{ name: 'bot play-out ends the run by week 30', steps: [{ playOut: 30, take: 'plane' }] }],
+  },
+  'gameover-short': {
+    seeds: [0xA1A1],
+    plans: [{ name: 'week-2 board (or an earlier end), forced overload', steps: [
+      { board: 2, mayEnd: true }, { take: 'plain', ifBoard: true }, { overload: true },
+    ] }],
+  },
+  'gameover-tip': {
+    seeds: [0xA1C2],
+    plans: [{ name: 'forced jam lands on a served airport', steps: [
+      { board: 2, mayEnd: true }, { take: 'plane', ifBoard: true }, { overload: true }, { jam: 'served' },
+    ] }],
+  },
+  'gameover-unserved': {
+    seeds: [0xA1A1],
+    plans: [
+      { name: 'no routes: the run jams unserved', steps: [{ drift: 600, max: 200, take: 'first' }, { jam: 'unserved' }] },
+      { name: 'bot play-out ends unserved with no spare aircraft', steps: [
+        { playOut: 30, take: 'plane' }, { jam: 'unserved', spare: 0 },
+      ] },
+    ],
+  },
+  'gameover-unserved:served': {
+    seeds: [0xA1A3],
+    plans: [{ name: 'bot play-out jams at a served airport', steps: [{ playOut: 30, take: 'plane' }, { jam: 'served' }] }],
+  },
+  'new-airport': {
+    seeds: [4242],
+    plans: [{ name: 'an airport opens within 3000 ticks, run lasts its 12-hour mark', steps: [
+      { opens: 3000, chunk: 20 }, { ticks: 680 + 60, alive: true },
+    ] }],
+  },
+  'first-time-cards': {
+    seeds: [0xA1A2],
+    plans: [{ name: 'all four first-time triggers within 4 weeks', steps: [
+      { triggers: ['hub-full', 'out-of-range', 'curfew', 'weekly-board'], ticks: 4 * 4320, every: 30, take: 'plain' },
+    ] }],
+  },
+  'focus-pause': {
+    seeds: [0xA1A1],
+    plans: [{ name: 'week-1 board', steps: [{ board: 1 }] }],
+  },
+  'logbook': {
+    seeds: [0xA1A1],
+    plans: [{ name: 'week-2 board (or an earlier end), forced overload', steps: [
+      { board: 2, mayEnd: true }, { take: 'plain', ifBoard: true }, { overload: true },
+    ] }],
+  },
+  'pick-sign': {
+    seeds: [0xA1A1],
+    plans: [{ name: 'an airport-pick card by week 6', steps: [
+      { find: ['departure-slots', 'hub-expansion'], from: 1, to: 6, take: 'first' },
+    ] }],
+  },
+  'undo-after-upgrade': {
+    seeds: [0xA1A1],
+    plans: [{ name: 'aircraft card on the week-1 board', steps: [{ board: 1 }, { take: 'plane', strict: true }] }],
+  },
+  'continue-framing': {
+    seeds: [0xA1C2],
+    plans: [{ name: 'week-1 board, aircraft card', steps: [{ board: 1 }, { take: 'plane' }] }],
+  },
+  'edge-dock': {
+    seeds: [0xA1C2],
+    plans: [{ name: 'week-1 board, aircraft card', steps: [{ board: 1 }, { take: 'plane' }] }],
+  },
+  'edge-chip-fill': {
+    seeds: [0xA1C2, 41817],
+    // The suite samples the chips until the run closes (0xA1C2 ends ~4 h after the board), so only the board counts.
+    plans: [{ name: 'week-1 board, aircraft card', steps: [{ board: 1 }, { take: 'plane' }] }],
+  },
+  'pseudo-locale': {
+    seeds: [0xA1A1],
+    plans: [
+      { name: 'a day of hourly bot play builds routes', steps: [{ hourly: 24 }, { routes: 1 }] },
+      { name: 'week-1 board', steps: [{ board: 1 }] },
+      { name: 'forced overload', steps: [{ overload: true }] },
+    ],
+  },
+  'airport-plates': {
+    seeds: [0xA1A1],
+    plans: [{ name: '120 ticks in play', steps: [{ ticks: 120, alive: true }] }],
   },
 };

@@ -8,8 +8,9 @@ import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { withBrowser, newGamePage, waitForScreen, assert, clickTestId, saveDiagnostics, ROOT } from './browser.mjs';
+import { E2E_SEEDS } from './seeds.mjs';
 
-const SEED = 4242; // opens its 5th airport in the first game day, on the visible side of the globe
+const SEED = E2E_SEEDS['new-airport'].seeds[0]; // [night-12ac] e2e/seeds.mjs (4242): opens its 5th airport in the first game day, on the visible side of the globe
 const STEPS = 4; // 2 per language
 const MARK_TICKS = 720;
 const started = performance.now();

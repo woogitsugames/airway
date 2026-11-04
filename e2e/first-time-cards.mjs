@@ -8,8 +8,9 @@ import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { withBrowser, newGamePage, waitForScreen, clickTestId, assert, saveDiagnostics, ROOT } from './browser.mjs';
+import { E2E_SEEDS } from './seeds.mjs';
 
-const SEED = 0xA1A2; // reaches week 4 under rules v6: its network has a hub over 70 %, a far airport and curfew nights
+const SEED = E2E_SEEDS['first-time-cards'].seeds[0]; // [night-12ac] e2e/seeds.mjs (0xA1A2): reaches week 4 under rules v6: its network has a hub over 70 %, a far airport and curfew nights
 const CARDS = ['hub-full', 'out-of-range', 'curfew', 'weekly-board'];
 const STEP_TICKS = 30;
 const MAX_TICKS = 4 * 4320;

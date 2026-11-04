@@ -3,7 +3,11 @@
 // week boundary with no board on screen (soft lock). Real clicks: take a card, resume, Undo on the dock; the
 // choice must stay recorded and the clock must keep running. Portrait phone and phone landscape, PL/EN.
 import { performance } from 'node:perf_hooks';
-import { withBrowser, newGamePage, waitForScreen, state, assert, clickTestId, saveDiagnostics, SEED } from './browser.mjs';
+import { withBrowser, newGamePage, waitForScreen, state, assert, clickTestId, saveDiagnostics } from './browser.mjs';
+import { E2E_SEEDS } from './seeds.mjs';
+
+// [night-12ac] Seed from e2e/seeds.mjs, replayed headless by test:e2e-seeds (in test:fast).
+const SEED = E2E_SEEDS['undo-after-upgrade'].seeds[0];
 
 const started = performance.now();
 const results = [];

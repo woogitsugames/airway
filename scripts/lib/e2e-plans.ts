@@ -6,17 +6,36 @@
 // The browser keeps the clock running between window.aw calls (a card click, waitForScreen, a screenshot), so a
 // few real-time ticks pass without bot decisions and shift its 30-tick cadence. A seed is accepted only when the
 // plan holds for every idle offset in IDLE_OFFSETS (the same idle ticks after the start and after every card).
-import { EndlessRun } from '../../src/game/run.ts';
+// [night-12ac] The vocabulary also covers the suites that play the run without a board in mind: play-outs to a
+// game over (with the jam on a served or unserved airport), hourly bot play, minute stepping until a transfer is
+// connecting or a curfew closes, idle play with no bot, the first airport opening, and the first-time card triggers.
+import { EndlessRun, cityDistanceKm } from '../../src/game/run.ts';
 import { AUTOPLAY_ACTION_INTERVAL, nextAutoplayCommand } from '../../src/game/dev/autoplay.ts';
-import { TICKS_PER_WEEK, type UpgradeKind } from '../../src/sim/index.ts';
+import { beyondRange, fillingHub } from '../../src/game/tutorial/first-time.ts';
+import { PLANE_TYPES, TICKS_PER_WEEK, type UpgradeKind } from '../../src/sim/index.ts';
+
+/** Which card a suite clicks: 'plain' = not hub/slots, 'plane' = an aircraft, 'first' = index 0. */
+export type Take = 'plain' | 'plane' | 'first';
+/** Conditions a suite waits for (`until`) or needs (`expect`). */
+/** 'cleared': the airport where `connecting` was first seen has no connecting transfer left. */
+export type Until = 'curfew' | 'no-curfew' | 'connecting' | 'cleared';
+export type FirstTimeTrigger = 'hub-full' | 'out-of-range' | 'curfew' | 'weekly-board';
 
 export type PlanStep =
-  | { board: number }
-  | { take: 'plain' | 'plane'; strict?: boolean }
-  | { find: UpgradeKind; from: number; to: number; take: 'plain' | 'plane' }
+  | { board: number; mayEnd?: boolean }
+  | { take: Take; strict?: boolean; ifBoard?: boolean }
+  | { find: UpgradeKind | readonly UpgradeKind[]; from: number; to: number; take: Take }
   | { offers: number }
   | { overload: true }
-  | { ticks: number };
+  | { ticks: number; alive?: boolean }
+  | { playOut: number; take: Take }
+  | { drift: number; max: number; take: Take }
+  | { jam: 'served' | 'unserved'; spare?: number }
+  | { hourly: number; until?: Until; bot?: false }
+  | { minutes: number; until: Until; botEvery?: number }
+  | { opens: number; chunk: number }
+  | { routes: number }
+  | { triggers: readonly FirstTimeTrigger[]; ticks: number; every: number; take: Take };
 
 export interface E2ePlan { name: string; steps: readonly PlanStep[] }
 export interface PlanResult { ok: boolean; why?: string; week: number; minute: number; trace: string[] }
@@ -56,11 +75,35 @@ function forceOverload(run: EndlessRun): void {
 const onBoard = (run: EndlessRun) => !run.failed && !!run.weeklyUpgrade && !run.weeklyUpgrade.lastChoice;
 
 /** The card the suite clicks (index into the board's offers, as the DOM lists them), or -1. */
-function cardIndex(run: EndlessRun, take: 'plain' | 'plane'): number {
+function cardIndex(run: EndlessRun, take: Take): number {
   const offers = run.weeklyUpgrade?.offers ?? [];
+  if (take === 'first') return offers.length ? 0 : -1;
   return take === 'plain'
     ? offers.findIndex((o) => o.id !== 'hub-expansion' && o.id !== 'departure-slots')
     : offers.findIndex((o) => o.id === 'turboprop' || o.id === 'widebody');
+}
+
+/** window.aw.botStep(): one bot decision, no ticks. */
+function botStep(run: EndlessRun): void {
+  if (run.failed) return;
+  const command = nextAutoplayCommand(run.sim);
+  if (command) run.queue(command);
+}
+
+/** Whether `until` holds in play (not on a board, not over); 'connecting' remembers the airport in `watch`. */
+function holds(run: EndlessRun, until: Until, watch: { city: string | null }): boolean {
+  if (run.failed || onBoard(run)) return false;
+  const cities = run.cityList();
+  switch (until) {
+    case 'curfew': return cities.some((city) => city.curfewClosed);
+    case 'no-curfew': return !cities.some((city) => city.curfewClosed);
+    case 'connecting': {
+      const city = cities.find((item) => item.connecting > 0);
+      if (city) watch.city = city.id;
+      return !!city;
+    }
+    case 'cleared': return (cities.find((item) => item.id === watch.city)?.connecting ?? 0) === 0;
+  }
 }
 
 /** The weekly board's card click (session onCommand: queue, resolve the boundary), then idle ticks. */
@@ -73,32 +116,118 @@ function click(run: EndlessRun, index: number, idle: number): string {
   return card.id;
 }
 
+const status = (run: EndlessRun) => (run.failed ? `over at minute ${run.sim.world.minute}` : `running at minute ${run.sim.world.minute}`);
+
 const weekOf = (run: EndlessRun) => run.weeklyUpgrade?.week ?? Math.floor(run.sim.world.minute / TICKS_PER_WEEK) + 1;
 
 /** Replay one plan on one seed with `idle` real-time ticks after the start and after every card. */
 export function playPlan(seed: number, plan: E2ePlan, idle = 0): PlanResult {
   const run = EndlessRun.create(seed);
   const trace: string[] = [];
+  const watch: { city: string | null } = { city: null };
   const result = (ok: boolean, why?: string): PlanResult => ({ ok, why, week: weekOf(run), minute: run.sim.world.minute, trace });
   advance(run, idle);
   for (const step of plan.steps) {
     if ('board' in step) {
       autoplay(run, step.board);
-      if (!onBoard(run)) return result(false, `week-${step.board} board not reached (run ${run.failed ? 'over' : 'running'} at minute ${run.sim.world.minute})`);
+      if (!onBoard(run)) {
+        if (step.mayEnd && run.failed) { trace.push(`over before the week-${step.board} board`); continue; }
+        return result(false, `week-${step.board} board not reached (run ${status(run)})`);
+      }
       trace.push(`board ${run.weeklyUpgrade!.week}: ${run.weeklyUpgrade!.offers.map((o) => o.id).join(',')}`);
     } else if ('find' in step) {
+      const kinds: readonly UpgradeKind[] = typeof step.find === 'string' ? [step.find] : step.find;
       let found = false;
       for (let week = step.from; week <= step.to && !found; week++) {
         autoplay(run, week);
-        if (!onBoard(run)) return result(false, `week-${week} board not reached while looking for ${step.find}`);
+        if (!onBoard(run)) return result(false, `week-${week} board not reached while looking for ${kinds.join('/')}`);
         const offers = run.weeklyUpgrade!.offers.map((o) => o.id);
         trace.push(`board ${run.weeklyUpgrade!.week}: ${offers.join(',')}`);
-        if (offers.includes(step.find)) found = true;
+        if (offers.some((id) => kinds.includes(id))) found = true;
         else trace.push(`take ${click(run, Math.max(0, cardIndex(run, step.take)), idle)}`);
       }
-      if (!found) return result(false, `${step.find} not offered by week ${step.to}`);
+      if (!found) return result(false, `${kinds.join('/')} not offered by week ${step.to}`);
+    } else if ('playOut' in step) {
+      // gameover-map / gameover-unserved: autoplay week by week, answering every board, until the run ends.
+      for (let week = 1; week <= step.playOut && !run.failed; week++) {
+        autoplay(run, week);
+        if (onBoard(run)) trace.push(`week ${run.weeklyUpgrade!.week} take ${click(run, Math.max(0, cardIndex(run, step.take)), idle)}`);
+      }
+      if (!run.failed) return result(false, `run still going after the week-${step.playOut} board`);
+      trace.push(`over at ${run.failed.cityId}, minute ${run.sim.world.minute}`);
+    } else if ('drift' in step) {
+      // No bot: advance in chunks and answer each board until the run jams (gameover-unserved).
+      for (let i = 0; i < step.max && !run.failed; i++) {
+        if (onBoard(run)) { trace.push(`week ${run.weeklyUpgrade!.week} take ${click(run, Math.max(0, cardIndex(run, step.take)), idle)}`); continue; }
+        advance(run, step.drift);
+      }
+      if (!run.failed) return result(false, `no game over in ${step.max} × ${step.drift} ticks without the bot`);
+      trace.push(`over at ${run.failed.cityId}, minute ${run.sim.world.minute}`);
+    } else if ('jam' in step) {
+      const failure = run.failed;
+      if (!failure) return result(false, 'run not over: no jam to check');
+      const served = failure.departures.length > 0;
+      if (served !== (step.jam === 'served')) return result(false, `jam at ${failure.cityId} is ${served ? 'served' : 'unserved'}, want ${step.jam}`);
+      const spare = run.inventory.turboprop + run.inventory.widebody;
+      if (step.spare !== undefined && spare !== step.spare) return result(false, `${spare} spare aircraft at the end, want ${step.spare}`);
+    } else if ('hourly' in step) {
+      // curfew-barrier / pseudo-locale: window.aw.botStep() + advanceTicks(60) per game hour.
+      let met = step.until ? holds(run, step.until, watch) : false;
+      for (let hour = 0; hour < step.hourly && !met && !run.failed; hour++) {
+        if (step.bot !== false) botStep(run);
+        advance(run, 60);
+        if (step.until) met = holds(run, step.until, watch);
+      }
+      if (step.until && !met) return result(false, `${step.until} not reached in ${step.hourly} game hours (run ${status(run)})`);
+      if (!step.until && run.failed) return result(false, `run over during ${step.hourly} hours of bot play`);
+      trace.push(`hourly → minute ${run.sim.world.minute}`);
+    } else if ('minutes' in step) {
+      // transfer-glyphs: advanceTicks(1) per minute, one bot decision every `botEvery` minutes.
+      let met = false;
+      for (let minute = 0; minute < step.minutes && !met && !run.failed; minute++) {
+        advance(run, 1);
+        met = holds(run, step.until, watch);
+        if (step.botEvery && minute % step.botEvery === step.botEvery - 1) botStep(run);
+      }
+      if (!met) return result(false, `${step.until} not reached in ${step.minutes} minutes (run ${status(run)})`);
+      trace.push(`${step.until} ${watch.city ?? ''} at minute ${run.sim.world.minute}`);
+    } else if ('opens' in step) {
+      // new-airport: no bot, advance in chunks until an airport opens.
+      const opening = run.cityList().length;
+      let ticks = 0;
+      while (run.cityList().length === opening) {
+        if (ticks >= step.opens || run.failed) return result(false, `no airport opened within ${step.opens} ticks (run ${status(run)})`);
+        advance(run, step.chunk);
+        ticks += step.chunk;
+      }
+      trace.push(`airport ${run.cityList().length} opened by tick ${ticks}`);
+    } else if ('routes' in step) {
+      const count = run.routeList().length;
+      if (run.failed || count < step.routes) return result(false, `${count} routes (run ${status(run)}), want at least ${step.routes}`);
+    } else if ('triggers' in step) {
+      // first-time-cards: bot decision + `every` ticks, answering boards, until every card's trigger has fired.
+      const seen = new Set<FirstTimeTrigger>();
+      for (let ticks = 0; ticks < step.ticks && !run.failed && step.triggers.some((t) => !seen.has(t)); ticks += step.every) {
+        if (onBoard(run)) { click(run, Math.max(0, cardIndex(run, step.take)), idle); seen.add('weekly-board'); continue; }
+        botStep(run);
+        advance(run, step.every);
+        const cities = run.cityList();
+        if (fillingHub(cities.map((c) => ({ id: c.id, hub: c.hub, waiting: c.waiting.length, capacity: c.capacity })))) seen.add('hub-full');
+        if (cities.some((c) => c.curfewClosed)) seen.add('curfew');
+        for (const event of run.drainEvents()) {
+          if (event.type !== 'new-city') continue;
+          const ids = run.cityList().map((c) => c.id);
+          if (beyondRange(event.cityId, ids, PLANE_TYPES.turboprop.rangeKm, cityDistanceKm) !== null) seen.add('out-of-range');
+        }
+      }
+      const missing = step.triggers.filter((t) => !seen.has(t));
+      if (missing.length) return result(false, `first-time triggers never fired: ${missing.join(', ')} (run ${status(run)})`);
+      trace.push(`triggers ${[...seen].join(',')} by minute ${run.sim.world.minute}`);
     } else if ('take' in step) {
-      if (!onBoard(run)) return result(false, 'no board to take a card from');
+      if (!onBoard(run)) {
+        if (step.ifBoard) continue;
+        return result(false, 'no board to take a card from');
+      }
       const index = cardIndex(run, step.take);
       if (step.strict && index < 0) return result(false, `no ${step.take} card on the week-${run.weeklyUpgrade!.week} board`);
       trace.push(`take ${click(run, Math.max(0, index), idle)}`);
@@ -111,6 +240,7 @@ export function playPlan(seed: number, plan: E2ePlan, idle = 0): PlanResult {
       trace.push(`over at ${run.failed.cityId}, minute ${run.sim.world.minute}`);
     } else {
       advance(run, step.ticks);
+      if (step.alive && run.failed) return result(false, `run over within ${step.ticks} ticks (${status(run)})`);
     }
   }
   return result(true);
