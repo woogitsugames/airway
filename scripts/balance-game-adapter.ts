@@ -8,12 +8,36 @@ import type { BotCommand, BotSnapshot } from './bot.ts';
 import { cityDistanceKm } from '../src/data/index.ts';
 import { PLANE_TYPES, SIM_MINUTES_PER_WEEK } from '../src/sim/params.ts';
 
+/**
+ * [night-12ab] R8d: what a run used, counted from the sim's own events (no prototype wrapping) and read-only views.
+ * Fill from `GameSession.outcome().mechanics`; the report prints them (scripts/balance-report.ts spreadReport).
+ */
+export interface RunMechanics {
+  /** Aircraft-minutes held by a curfew on the ground / in the air (`CurfewHeld`). */
+  readonly curfewGroundMin: number;
+  readonly curfewAirMin: number;
+  /** Departures held for a slot (`DepartureHeld`) and aircraft-minutes waited (`hubCauseLedger().slotWaitMinutes`). */
+  readonly slotHolds: number;
+  readonly slotWaitMin: number;
+  /** Delivered passengers (`Delivered`) and how many of them changed planes on the way. */
+  readonly delivered: number;
+  readonly deliveredAfterTransfer: number;
+  /** Weekly cards: every card on every board (`UpgradeOffered`) and the picks (`UpgradeChosen`), in board order. */
+  readonly offered: readonly string[];
+  readonly picked: readonly string[];
+  /** The losing airport (null when the run did not end): hub, routes at the loss, spare aircraft in the reserve. */
+  readonly loss: { readonly week: number; readonly isHub: boolean; readonly routes: number; readonly spareAircraft: number } | null;
+}
+
 class GameSession {
   private readonly sim: Sim;
   private warned = false;
   private leadTicks = 0;
   /** [night-12f] Nearest airport (km) that was already open when each airport opened (start airports: each other). */
   private readonly reachAtOpen = new Map<string, number>();
+  private readonly counts = { curfewGroundMin: 0, curfewAirMin: 0, slotHolds: 0, delivered: 0, deliveredAfterTransfer: 0 };
+  private readonly offered: string[] = [];
+  private readonly picked: string[] = [];
 
   constructor(seed: number, mode: 'endless' | 'daily' = 'endless') {
     this.sim = createGame(seed, mode);
@@ -45,10 +69,16 @@ class GameSession {
       if (event.type === 'HubJamStarted') this.warned = true;
       if (event.type === 'CitySpawned') this.reachAtOpen.set(event.cityId, nearestKm(event.cityId, [...this.reachAtOpen.keys()]));
       if (event.type === 'GameOver' && event.failure) this.leadTicks = CONGESTION_GRACE_TICKS;
+      // [night-12ab] R8d mechanic use.
+      if (event.type === 'CurfewHeld') this.counts[event.where === 'ground' ? 'curfewGroundMin' : 'curfewAirMin']++;
+      if (event.type === 'DepartureHeld') this.counts.slotHolds++;
+      if (event.type === 'Delivered') { this.counts.delivered += event.count; this.counts.deliveredAfterTransfer += event.afterTransfer; }
+      if (event.type === 'UpgradeOffered') this.offered.push(...event.offers);
+      if (event.type === 'UpgradeChosen') this.picked.push(event.upgrade);
     }
   }
 
-  outcome(): { reason: 'hubOverflow' | 'timeLimit'; score: number; warned: boolean; warningLeadTicks: number; week1Unreachable: boolean } {
+  outcome(): { reason: 'hubOverflow' | 'timeLimit'; score: number; warned: boolean; warningLeadTicks: number; week1Unreachable: boolean; mechanics: RunMechanics } {
     const world = this.sim.world;
     // [night-12f] D-95: a week-1 loss at an airport that opened beyond turboprop range of every open airport.
     const failure = world.status === 'over' ? world.failure : null;
@@ -56,7 +86,22 @@ class GameSession {
       (this.reachAtOpen.get(failure.cityId) ?? 0) > PLANE_TYPES.turboprop.rangeKm;
     return {
       reason: world.status === 'over' ? 'hubOverflow' : 'timeLimit', score: world.score,
-      warned: this.warned, warningLeadTicks: this.leadTicks, week1Unreachable,
+      warned: this.warned, warningLeadTicks: this.leadTicks, week1Unreachable, mechanics: this.mechanics(),
+    };
+  }
+
+  private mechanics(): RunMechanics {
+    const world = this.sim.world;
+    const failure = world.status === 'over' ? world.failure : null;
+    const city = failure ? world.cityView(failure.cityId) : null;
+    return {
+      ...this.counts,
+      slotWaitMin: world.cities().reduce((sum, item) => sum + world.hubCauseLedger(item.id).slotWaitMinutes, 0),
+      offered: [...this.offered], picked: [...this.picked],
+      loss: failure && city ? {
+        week: Math.floor(world.minute / SIM_MINUTES_PER_WEEK) + 1, isHub: city.isHub, routes: city.routes,
+        spareAircraft: world.reserve.turboprop + world.reserve.widebody,
+      } : null,
     };
   }
 }

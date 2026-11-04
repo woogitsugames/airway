@@ -11,7 +11,8 @@ import { dirname, resolve } from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import { chooseBotAction } from './bot.ts';
 import type { AircraftType, BotCity, BotCommand, BotRoute, BotSnapshot, LedgerCause, UpgradeOffer } from './bot.ts';
-import { SIM_DAYS_PER_WEEK, SIM_MINUTES_PER_WEEK, SIM_TICKS_PER_SECOND } from '../src/sim/params.ts';
+import { CURFEW_ENDLESS_START_WEEK, SIM_DAYS_PER_WEEK, SIM_MINUTES_PER_WEEK, SIM_TICKS_PER_SECOND } from '../src/sim/params.ts';
+import type { RunMechanics } from './balance-game-adapter.ts';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const BASE_SEED = 0xa1a1;
@@ -35,6 +36,8 @@ interface BalanceOutcome {
   readonly warningLeadTicks: number;
   /** [night-12f] Lost in week 1 at an airport that opened beyond turboprop reach (real adapter only). */
   readonly week1Unreachable?: boolean;
+  /** [night-12ab] R8d: what the run used (real adapter only). */
+  readonly mechanics?: RunMechanics;
 }
 
 /** Real engine adapter contract. Task 08/09/12 integration must implement this. */
@@ -62,6 +65,7 @@ interface RunResult {
   rejected: number;
   upgrades: number;
   week1Unreachable: boolean;
+  mechanics: RunMechanics | null;
 }
 
 // LCG exists only inside the isolated fixture; the real sim must use src/core/rng.ts.
@@ -312,8 +316,145 @@ function play(adapter: BalanceAdapter, seed: number): RunResult {
     weeks: snapshot.tick / TICKS_PER_WEEK,
     score: end.score, reason: snapshot.status === 'finished' ? end.reason : 'censored',
     warned: end.warned, warningLeadTicks: end.warningLeadTicks, commands, rejected, upgrades,
-    week1Unreachable: end.week1Unreachable === true,
+    week1Unreachable: end.week1Unreachable === true, mechanics: end.mechanics ?? null,
   };
+}
+
+// ---- [night-12ab] R8d: spread and mechanic use (no gate; the next balance PR can quote the tail) ----
+
+/** Linear-interpolated quantile, the same as scripts/research/r8-audit.ts (q = .5 equals median()). */
+export function quantile(values: readonly number[], q: number): number {
+  const s = [...values].sort((a, b) => a - b);
+  if (!s.length) return 0;
+  const pos = (s.length - 1) * q; const lo = Math.floor(pos); const hi = Math.ceil(pos);
+  return s[lo] + (s[hi] - s[lo]) * (pos - lo);
+}
+
+const QUANTILES = [['p10', 0.1], ['p25', 0.25], ['median', 0.5], ['p75', 0.75], ['p90', 0.9]] as const;
+type QuantileKey = (typeof QUANTILES)[number][0];
+const CARD_KINDS = ['turboprop', 'widebody', 'hub-expansion', 'departure-slots'] as const;
+
+export interface SpreadData {
+  readonly runs: number;
+  readonly minutes: Readonly<Record<QuantileKey, number>>;
+  readonly weeks: Readonly<Record<QuantileKey, number>>;
+  /** Losses per week (1-based) and runs still flying at the cap. */
+  readonly lossWeeks: Readonly<Record<number, number>>;
+  readonly censored: number;
+  /** Real adapter only (null for the fixture). */
+  readonly mechanics: null | {
+    readonly lost: number; readonly lostAtHub: number; readonly lostAtSpoke: number; readonly lostUnserved: number;
+    readonly spareAtLossMedian: number; readonly lostWithNoSpare: number;
+    readonly cards: Readonly<Record<string, { offered: number; picked: number }>>;
+    readonly curfewWeekRuns: number; readonly curfewHoldRuns: number;
+    readonly curfewGroundMinMedian: number; readonly curfewAirMinMedian: number;
+    readonly slotHoldRuns: number; readonly slotHolds: number; readonly slotWaitMinMedian: number; readonly slotWaitMinP90: number;
+    readonly delivered: number; readonly deliveredAfterTransfer: number; readonly transferRuns: number;
+  };
+}
+
+export function spreadData(results: readonly RunResult[]): SpreadData {
+  const at = (values: number[]) => Object.fromEntries(QUANTILES.map(([key, q]) => [key, quantile(values, q)])) as Record<QuantileKey, number>;
+  const lossWeeks: Record<number, number> = {};
+  for (const r of results) if (r.reason !== 'censored') {
+    const week = r.mechanics?.loss?.week ?? Math.floor(r.ticks / TICKS_PER_WEEK) + 1;
+    lossWeeks[week] = (lossWeeks[week] ?? 0) + 1;
+  }
+  const base = {
+    runs: results.length, minutes: at(results.map((r) => r.minutes)), weeks: at(results.map((r) => r.weeks)),
+    lossWeeks, censored: results.filter((r) => r.reason === 'censored').length,
+  };
+  const measured = results.map((r) => r.mechanics).filter((m): m is RunMechanics => m !== null);
+  if (!results.length || measured.length !== results.length) return { ...base, mechanics: null };
+  const losses = measured.map((m) => m.loss).filter((l): l is NonNullable<RunMechanics['loss']> => l !== null);
+  const cards: Record<string, { offered: number; picked: number }> = {};
+  for (const kind of CARD_KINDS) cards[kind] = { offered: 0, picked: 0 };
+  for (const m of measured) {
+    for (const kind of m.offered) (cards[kind] ??= { offered: 0, picked: 0 }).offered++;
+    for (const kind of m.picked) (cards[kind] ??= { offered: 0, picked: 0 }).picked++;
+  }
+  // A run "reaches the curfew" once it plays into the week the curfew starts (D-151: week 3 in Endless).
+  const curfewRuns = results.filter((r) => r.ticks > (CURFEW_ENDLESS_START_WEEK - 1) * TICKS_PER_WEEK).map((r) => r.mechanics!);
+  const held = curfewRuns.filter((m) => m.curfewGroundMin + m.curfewAirMin > 0);
+  return {
+    ...base,
+    mechanics: {
+      lost: losses.length,
+      lostAtHub: losses.filter((l) => l.isHub).length,
+      lostAtSpoke: losses.filter((l) => !l.isHub && l.routes > 0).length,
+      lostUnserved: losses.filter((l) => !l.isHub && l.routes === 0).length,
+      spareAtLossMedian: quantile(losses.map((l) => l.spareAircraft), 0.5),
+      lostWithNoSpare: losses.filter((l) => l.spareAircraft === 0).length,
+      cards,
+      curfewWeekRuns: curfewRuns.length, curfewHoldRuns: held.length,
+      curfewGroundMinMedian: quantile(held.map((m) => m.curfewGroundMin), 0.5),
+      curfewAirMinMedian: quantile(held.map((m) => m.curfewAirMin), 0.5),
+      slotHoldRuns: measured.filter((m) => m.slotHolds > 0).length,
+      slotHolds: measured.reduce((sum, m) => sum + m.slotHolds, 0),
+      slotWaitMinMedian: quantile(measured.map((m) => m.slotWaitMin), 0.5),
+      slotWaitMinP90: quantile(measured.map((m) => m.slotWaitMin), 0.9),
+      delivered: measured.reduce((sum, m) => sum + m.delivered, 0),
+      deliveredAfterTransfer: measured.reduce((sum, m) => sum + m.deliveredAfterTransfer, 0),
+      transferRuns: measured.filter((m) => m.deliveredAfterTransfer > 0).length,
+    },
+  };
+}
+
+const pct = (n: number, d: number): string => d ? `${Math.round((100 * n) / d)} %` : '—';
+
+/** The "Spread and mechanic use" section of game-summary.md (Markdown tables). */
+export function spreadReport(data: SpreadData): string {
+  const row = (label: string, values: Readonly<Record<string, number>>, digits: number) =>
+    `| ${label} | ${QUANTILES.map(([key]) => values[key].toFixed(digits)).join(' | ')} |`;
+  const weeks = Object.keys(data.lossWeeks).map(Number).sort((a, b) => a - b);
+  let out = `## Spread and mechanic use (R8d)\n\n` +
+    `| ${data.runs} runs | ${QUANTILES.map(([key]) => key).join(' | ')} |\n| --- |${' ---: |'.repeat(QUANTILES.length)}\n` +
+    `${row('Session, min at 1x', data.minutes, 2)}\n${row('Game weeks', data.weeks, 2)}\n\n` +
+    `| Loss week | ${weeks.map((w) => `W${w}`).join(' | ')} | not over at the cap |\n| --- |${' ---: |'.repeat(weeks.length + 1)}\n` +
+    `| Runs | ${weeks.map((w) => data.lossWeeks[w]).join(' | ')} | ${data.censored} |\n\n`;
+  const m = data.mechanics;
+  if (!m) return out + 'Mechanic use: not measured (the fixture has no curfew, slots or transfers).\n\n';
+  out += `| Losing airport | Hub | Spoke (served) | Unserved (no route) | Spare aircraft at the loss, median | Lost with no spare |\n` +
+    `| --- | ---: | ---: | ---: | ---: | ---: |\n` +
+    `| ${m.lost} losses | ${m.lostAtHub} (${pct(m.lostAtHub, m.lost)}) | ${m.lostAtSpoke} (${pct(m.lostAtSpoke, m.lost)}) | ` +
+    `${m.lostUnserved} (${pct(m.lostUnserved, m.lost)}) | ${m.spareAtLossMedian.toFixed(1)} | ${m.lostWithNoSpare} (${pct(m.lostWithNoSpare, m.lost)}) |\n\n` +
+    `| Weekly card | Offered | Picked | Picked when offered |\n| --- | ---: | ---: | ---: |\n` +
+    Object.entries(m.cards).map(([kind, c]) => `| ${kind} | ${c.offered} | ${c.picked} | ${pct(c.picked, c.offered)} |`).join('\n') + '\n\n' +
+    `| Mechanic | Runs | Share | Detail |\n| --- | ---: | ---: | --- |\n` +
+    `| Curfew reached (week ${CURFEW_ENDLESS_START_WEEK}+) | ${m.curfewWeekRuns} | ${pct(m.curfewWeekRuns, data.runs)} | of all runs |\n` +
+    `| Curfew hold | ${m.curfewHoldRuns} | ${pct(m.curfewHoldRuns, m.curfewWeekRuns)} | of runs that reached it; aircraft-min median ground ${m.curfewGroundMinMedian.toFixed(0)}, air ${m.curfewAirMinMedian.toFixed(0)} |\n` +
+    `| Slot hold | ${m.slotHoldRuns} | ${pct(m.slotHoldRuns, data.runs)} | ${m.slotHolds} held departures; slot-wait aircraft-min median ${m.slotWaitMinMedian.toFixed(1)}, p90 ${m.slotWaitMinP90.toFixed(1)} |\n` +
+    `| Transfer delivery | ${m.transferRuns} | ${pct(m.transferRuns, data.runs)} | ${m.deliveredAfterTransfer} of ${m.delivered} delivered changed planes (${pct(m.deliveredAfterTransfer, m.delivered)}) |\n\n`;
+  return out;
+}
+
+/** [night-12ab] Fast check of the section's shape (no balance gate): consistent counts, ordered quantiles. */
+export function checkSpread(data: SpreadData, results: readonly RunResult[], requireMechanics: boolean): string[] {
+  const problems: string[] = [];
+  if (requireMechanics && !data.mechanics) problems.push('the real adapter reported no mechanics (RunMechanics)');
+  for (const key of ['minutes', 'weeks'] as const) {
+    const values = QUANTILES.map(([q]) => data[key][q]);
+    if (values.some((v, i) => !Number.isFinite(v) || (i > 0 && v < values[i - 1]))) problems.push(`${key} quantiles not ordered: ${values.join(',')}`);
+  }
+  if (Math.abs(data.minutes.median - median(results.map((r) => r.minutes))) > 1e-9) problems.push('median differs from the gate median');
+  const losses = Object.values(data.lossWeeks).reduce((a, b) => a + b, 0);
+  if (losses + data.censored !== data.runs) problems.push(`loss weeks ${losses} + censored ${data.censored} != ${data.runs}`);
+  const m = data.mechanics;
+  if (m) {
+    if (m.lost !== losses) problems.push(`losing airports ${m.lost} != losses ${losses}`);
+    if (m.lostAtHub + m.lostAtSpoke + m.lostUnserved !== m.lost) problems.push('hub + spoke + unserved != losses');
+    const picked = Object.values(m.cards).reduce((sum, c) => sum + c.picked, 0);
+    if (picked !== results.reduce((sum, r) => sum + r.upgrades, 0)) problems.push(`picked ${picked} != accepted ChooseUpgrade`);
+    for (const [kind, c] of Object.entries(m.cards)) if (c.picked > c.offered) problems.push(`${kind} picked ${c.picked} > offered ${c.offered}`);
+    if (m.curfewHoldRuns > m.curfewWeekRuns || m.curfewWeekRuns > data.runs) problems.push('curfew runs out of range');
+    if (m.deliveredAfterTransfer > m.delivered) problems.push('transfer deliveries > deliveries');
+    if (m.delivered !== results.reduce((sum, r) => sum + r.score, 0)) problems.push(`delivered ${m.delivered} != score sum`);
+    if ((m.slotHolds > 0) !== (m.slotHoldRuns > 0)) problems.push('slot holds without a run');
+  }
+  const text = spreadReport(data);
+  for (const heading of ['## Spread and mechanic use', '| Session, min at 1x |', '| Loss week |']) if (!text.includes(heading)) problems.push(`missing "${heading}"`);
+  if (m) for (const heading of ['| Losing airport |', '| Weekly card |', '| Curfew hold |', '| Slot hold |', '| Transfer delivery |']) if (!text.includes(heading)) problems.push(`missing "${heading}"`);
+  return problems;
 }
 
 function csv(results: RunResult[]): string {
@@ -348,6 +489,7 @@ function report(results: RunResult[], mode: string): string {
     `- Reached the 1st weekly upgrade: ${share(results, 1)} (target ≥ ${TARGET_FIRST_UPGRADE * 100}%); ` +
     `2nd: ${share(results, 2)} (target ≥ ${TARGET_SECOND_UPGRADE * 100}%); 3rd: ${share(results, 3)}.\n\n` +
     `## Outcomes\n${causes}\n\n` +
+    spreadReport(spreadData(results)) +
     `## Time scale\n` +
     `At ${SIM_TICKS_PER_SECOND} ticks per second and one simulated minute per tick, a ${SIM_DAYS_PER_WEEK}-day week (D-40) ` +
     `lasts ${(TICKS_PER_WEEK / SIM_TICKS_PER_SECOND / 60).toFixed(2)} real minutes at 1x, so the first weekly upgrade ` +
@@ -400,6 +542,9 @@ async function main(): Promise<void> {
     const med = median(results.map((item) => item.minutes));
     const invalid = results.filter((item) => item.ticks <= 0 || !Number.isFinite(item.score) ||
       item.rejected > 0 || (item.reason === 'hubOverflow' && (!item.warned || item.warningLeadTicks <= 0)));
+    // [night-12ab] R8d: the spread section's shape (no gate on its values).
+    const spreadProblems = checkSpread(spreadData(results), results, !fixture);
+    for (const problem of spreadProblems) console.error(`spread: ${problem}`);
     if (test) {
       const replay = play(adapter, BASE_SEED);
       if (JSON.stringify(results[0]) !== JSON.stringify(replay)) invalid.push(replay);
@@ -418,10 +563,11 @@ async function main(): Promise<void> {
     // [night-12f] D-95: no week-1 loss at an airport that the starting turboprops could not reach.
     const week1Unreachable = results.filter((item) => item.week1Unreachable).length;
     const fairOk = week1Unreachable <= TARGET_WEEK1_UNREACHABLE;
-    const passed = invalid.length === 0 && inRange && upgradesOk && fairOk;
+    const passed = invalid.length === 0 && inRange && upgradesOk && fairOk && spreadProblems.length === 0;
     console.log(`SUMMARY ${label} seed=0xA1A1 mode=${mode} seeds=${n} median_min=${med.toFixed(2)} ` +
       `upgrade1=${first.toFixed(2)} upgrade2=${second.toFixed(2)} week1_unreachable=${week1Unreachable} ` +
-      `passed=${passed ? 1 : 0} failed=${invalid.length + (inRange ? 0 : 1) + (upgradesOk ? 0 : 1) + (fairOk ? 0 : 1)}`);
+      `spread=${spreadProblems.length ? 'bad' : 'ok'} ` +
+      `passed=${passed ? 1 : 0} failed=${invalid.length + (inRange ? 0 : 1) + (upgradesOk ? 0 : 1) + (fairOk ? 0 : 1) + (spreadProblems.length ? 1 : 0)}`);
     if (!passed) process.exitCode = 1;
   } catch (error) {
     console.error(error instanceof Error ? error.message : String(error));
