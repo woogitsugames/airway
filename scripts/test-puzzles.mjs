@@ -3,7 +3,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const LEVELS = 30;
+let LEVELS = 0;
 let checked = 0;
 let passed = 0;
 const failures = [];
@@ -21,12 +21,24 @@ try {
   // The production engine: puzzle levels run on the authoritative Sim (src/sim/puzzles.ts).
   const engine = await import('../src/game/modes/puzzle.ts');
   const { createGame } = await import('../src/sim/index.ts');
-  const { cityByCode } = await import('../src/data/index.ts');
+  const { cityByCode, cityDistanceKm } = await import('../src/data/index.ts');
+  const { PUZZLE_PACKS } = await import('../src/data/puzzles/packs.ts');
+  const { PLANE_TYPES } = await import('../src/sim/params.ts');
   const { SIM_MINUTES_PER_WEEK } = await import('../src/sim/params.ts');
 
+  // [ext-01] R6f, D-160: the count comes from the folder; ids must run 01…NN without a gap and PUZZLES (the
+  // generated index the game imports) must list exactly those files in order.
+  const { PUZZLES } = await import('../src/data/puzzles/index.ts');
+  const { puzzleIds } = await import('./puzzle-index.mjs');
   const folder = resolve(ROOT, 'src/data/puzzles');
   const files = readdirSync(folder).filter((name) => /^\d{2}\.json$/.test(name)).sort();
-  check('level count', () => assert(files.length === LEVELS, `expected ${LEVELS}, got ${files.length}`));
+  LEVELS = files.length;
+  check('level ids contiguous from 01', () => assert(puzzleIds(folder).length === LEVELS, 'numbering'));
+  check('game index lists the folder', () => {
+    const listed = PUZZLES.map((level) => level.id).join(',');
+    const want = files.map((name) => name.slice(0, 2)).join(',');
+    assert(listed === want, `PUZZLES ${listed || '(none)'} != folder ${want}: run npm run build:puzzles`);
+  });
   const levels = files.map((file) => JSON.parse(readFileSync(resolve(folder, file), 'utf8')));
   for (const [index, level] of levels.entries()) {
     const id = level.id;
@@ -96,6 +108,19 @@ try {
           });
           assert(needsTransfer, 'transfer: every passenger flies direct');
         }
+      }
+    });
+    // [ext-02] R6h, D-162: the "Long haul" pack starts outside Europe and needs a widebody on an ocean leg.
+    const longHaul = PUZZLE_PACKS.find((pack) => pack.id === 'longHaul');
+    if (longHaul && Number(id) >= Number(longHaul.firstLevel)) check(`${id} long haul`, () => {
+      assert(level.startCities.every((city) => city.continent !== 'EU'), 'long haul: a start city in Europe');
+      const legs = level.referenceCommands.filter((command) => command.type === 'connect' && command.plane === 'jet')
+        .map((command) => cityDistanceKm(command.from, command.to) ?? 0);
+      assert(legs.some((km) => km > PLANE_TYPES.turboprop.rangeKm), 'long haul: no reference widebody leg beyond turboprop range');
+      for (const route of level.availableRoutes) {
+        const km = cityDistanceKm(route.from, route.to) ?? Infinity;
+        const range = PLANE_TYPES[route.plane === 'jet' ? 'widebody' : 'turboprop'].rangeKm;
+        assert(km <= range, `long haul: offered ${route.from}-${route.to} ${km} km is beyond ${route.plane} range`);
       }
     });
     check(`${id} invalid route rejected`, () => {

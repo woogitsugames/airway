@@ -93,3 +93,37 @@ No external images or fonts were used. Sources match task 24 PR #12 as of this c
 <!-- [task-29] Existing local licensed assets reused by the landing page. -->
 ## Site assets (task 29)
 `site/assets/` reuses byte-identical Stage 0 Diorama mockups `game-p.png`, `upgrade-p.png`, `menu-p.png` from `mockups/diorama/png/`, labeled as concept previews. The five `site/fonts/*.ttf` files and three neighboring OFL notices are byte-identical to the existing files in `public/fonts/`. The new SVG favicon, illustrated fallback globe and Canvas 2D globe are project-authored procedural artwork. No external image or font source is loaded by the deployed site.
+
+## Globe look experiment (ext/03, DEV only — not in the build)
+Textures under `dev/globe-look/assets/`, baked by `python3 -I dev/globe-look/bake.py <downloads>` (Pillow + NumPy) from
+public-domain sources. Served only by the Vite dev server for `?globeLook=` (D-170); `npm run build` does not copy
+`dev/`. Downloaded 2026-11-03; the originals are not committed.
+
+| File | Source | Licence |
+|---|---|---|
+| `satellite-day-{4096,2048}.jpg` | NASA Earth Observatory, **Blue Marble Next Generation**, July 2004 (D-176), topography + bathymetry (`world.topo.bathy.200407.3x5400x2700.jpg`, Reto Stöckli, NASA GSFC) — graded (−haze, +8 % contrast), resized | Public domain (NASA imagery, no copyright; credit "NASA Earth Observatory") |
+| `satellite-night-{2048,1024}.jpg` | NASA Earth Observatory, **Black Marble 2016** (`BlackMarble_2016_3km.jpg`, NASA Earth Observatory / Joshua Stevens, Suomi NPP VIIRS) — dark floor removed, greyscale | Public domain (NASA) |
+| `map-{4096,2048}.jpg` | Blue Marble NG July classified into own map palette (vegetation / dry / ice / sea), ETOPO5 hillshade and depth, country borders from **Natural Earth admin-0 50m** (`world-atlas@2.0.2` `countries-50m.json`, via `dev/globe-look/borders.mjs`) | Public domain sources (NASA, NOAA, Natural Earth); processing own work (CC0) |
+| `painted-{4096,2048}.jpg` | Blue Marble NG, July 2004 (`world.topo.bathy.200407…`) simplified (median, 56-colour palette, mode filter), own sea ramp and hillshade from ETOPO5 | Public domain sources; processing own work (CC0) |
+| `painted-night-{2048,1024}.jpg` | Black Marble 2016, blurred | Public domain (NASA) |
+| `elevation-2048.png` | NOAA NGDC **ETOPO5** 5-arc-minute relief (`ETOPO5.DAT`), land only, sqrt-encoded 8 bit | Public domain (US Government work, NOAA) |
+| `clouds-2048.png` | Procedural fractal noise with latitude belts (`bake.py`) | Own work (CC0) |
+
+Source URLs (2026-11-03): `https://assets.science.nasa.gov/content/dam/science/esd/eo/images/bmng/bmng-topography-bathymetry/july/`,
+`https://assets.science.nasa.gov/content/dam/science/esd/eo/images/imagerecords/144000/144898/BlackMarble_2016_3km.jpg`,
+`https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO5/TOPO/ETOPO5/ETOPO5.DAT`. NASA imagery policy: not copyrighted, use
+"NASA Earth Observatory" as credit; it must not imply NASA endorsement and may not use the NASA insignia (we do not).
+
+## Production globe textures (G1, D-170/D-171)
+`public/data/globe/` ships with the app (1.77 MB; checked by `npm run test:globe-assets` against `manifest.json`:
+SHA-256, size, format, 2:1 power-of-two dimensions, per-file caps, total ≤ 2 MB). Same bake and sources as the
+experiment table above (`python3 -I dev/globe-look/bake.py <downloads> satellite elevation clouds`, then copy and
+`node scripts/test-globe-assets.mjs --write`). Credited in Settings → Licences (PL/EN): "NASA Earth Observatory
+(Blue Marble, Black Marble)" and "NOAA ETOPO5", both public domain. Not yet drawn by the game: G2/G3 switch the globe.
+
+| File | Source | Licence |
+|---|---|---|
+| `day-4096.jpg`, `day-2048.jpg` | NASA Blue Marble NG, July 2004 (D-176), topography + bathymetry, graded | Public domain (NASA) |
+| `night-2048.jpg`, `night-1024.jpg` | NASA Black Marble 2016, lights only | Public domain (NASA) |
+| `elevation-2048.png` | NOAA ETOPO5, land elevation, `m = (v/255)² · 8000` | Public domain (NOAA) |
+| `clouds-2048.png` | procedural (bake.py) | Own work (CC0) |

@@ -38,7 +38,16 @@ export interface AirportDefinition {
   hub?: boolean;
 }
 
+/**
+ * [ext-03] D-175 variants for the owner's choice (DEV only, `?airportStyle=`): `current` is the shipped diorama
+ * object; `ink` a dark pad with a light runway; `apron` an asphalt apron with a type-coloured rim; `medal` the
+ * shipped light pad with a thick dark outline.
+ */
+export type AirportStyle = 'current' | 'ink' | 'apron' | 'medal';
+
 export interface AirportOptions {
+  /** [ext-03] D-175 experiment; default `current`. */
+  style?: AirportStyle;
   radius?: number;
   maxAirports?: number;
   maxHubSeats?: number;
@@ -67,15 +76,30 @@ function block(x: number, y: number, z: number, tx: number, ty: number, tz: numb
   return new BoxGeometry(x, y, z).rotateY(angle).translate(tx, ty, tz);
 }
 
-function createParts(group: Group, max: number, hub: boolean): Part[] {
+/** [ext-03] Pad, runway, centreline, terminal, roof colours per D-175 variant (`current` = shipped). */
+const STYLE_COLOURS: Record<AirportStyle, (hub: boolean) => readonly [string, string, string, string, string]> = {
+  current: (hub) => ['#EFE9DA', '#3B4046', '#F5F1E6', '#F2EFE6', hub ? '#2A8F8A' : '#C96F4A'],
+  ink: (hub) => ['#1F2B2D', '#EDE7D8', '#1F2B2D', '#F2EFE6', hub ? '#37B3A8' : '#F0864E'],
+  apron: (hub) => ['#565C61', '#2C3034', '#FFFFFF', '#E9E4D8', hub ? '#2A8F8A' : '#C96F4A'],
+  medal: (hub) => ['#F4F0E6', '#3B4046', '#F5F1E6', '#F2EFE6', hub ? '#2A8F8A' : '#C96F4A'],
+};
+
+function createParts(group: Group, max: number, hub: boolean, style: AirportStyle = 'current'): Part[] {
   const s = hub ? 1.7 : 1.2;
+  const [pad, runway, line, terminal, roof] = STYLE_COLOURS[style](hub);
   const parts: Array<{ geometry: BoxGeometry | CylinderGeometry; color: string }> = [
-    { geometry: new CylinderGeometry(.026 * s, .028 * s, .004, 20).translate(0, .001, 0), color: '#EFE9DA' },
-    { geometry: block(.008 * s, .002, .046 * s, -.008 * s, .004, 0, .5), color: '#3B4046' },
-    { geometry: block(.0012, .0022, .04 * s, -.008 * s, .0054, 0, .5), color: '#F5F1E6' },
-    { geometry: block(.018 * s, .006 * s, .009 * s, .011 * s, .006, .006 * s), color: '#F2EFE6' },
-    { geometry: block(.019 * s, .0018, .010 * s, .011 * s, .0095 * s + .002, .006 * s), color: hub ? '#2A8F8A' : '#C96F4A' },
+    { geometry: new CylinderGeometry(.026 * s, .028 * s, .004, 20).translate(0, .001, 0), color: pad },
+    { geometry: block(.008 * s, .002, .046 * s, -.008 * s, .004, 0, .5), color: runway },
+    { geometry: block(.0012, .0022, .04 * s, -.008 * s, .0054, 0, .5), color: line },
+    { geometry: block(.018 * s, .006 * s, .009 * s, .011 * s, .006, .006 * s), color: terminal },
+    { geometry: block(.019 * s, .0018, .010 * s, .011 * s, .0095 * s + .002, .006 * s), color: roof },
   ];
+  // [ext-03] D-175: a rim under the pad — type-coloured (apron) or a dark outline (medal, ink).
+  if (style === 'apron') {
+    parts.push({ geometry: new CylinderGeometry(.031 * s, .032 * s, .003, 24).translate(0, .0003, 0), color: hub ? '#2FA39A' : '#E3743E' });
+  } else if (style === 'medal' || style === 'ink') {
+    parts.push({ geometry: new CylinderGeometry(.0315 * s, .0325 * s, .003, 24).translate(0, .0003, 0), color: style === 'ink' ? '#F4F0E6' : '#1B2427' });
+  }
   if (hub) {
     parts.push(
       { geometry: new CylinderGeometry(.0018, .0024, .02, 6).translate(.02, .012, -.012), color: '#F2EFE6' },
@@ -120,8 +144,8 @@ export function createAirports(scene: Scene, options: AirportOptions = {}): Airp
   const group = new Group();
   group.name = 'airports';
   scene.add(group);
-  const regular = createParts(group, maxAirports, false);
-  const hubs = createParts(group, maxAirports, true);
+  const regular = createParts(group, maxAirports, false, options.style);
+  const hubs = createParts(group, maxAirports, true, options.style);
   const ringGeo = new BoxGeometry(1, 1, 1);
   const ringMat = new MeshBasicMaterial({ color: '#FFFFFF', side: DoubleSide });
   const rings = new InstancedMesh(ringGeo, ringMat, maxAirports * maxHubSeats);

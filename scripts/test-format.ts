@@ -1,7 +1,7 @@
 // [task-37] D-61 player-facing number format: PL groups thousands from four digits, EN unchanged.
 import assert from 'node:assert/strict';
-import { formatNumber } from '../src/core/format.ts';
-import { localNumber, pluralForm, setLanguage, t } from '../src/i18n/index.ts';
+import { formatNumber, formatNumberIn, parseLocalNumber } from '../src/core/format.ts';
+import { fillPluralTokens, localNumber, pluralForm, setLanguage, t } from '../src/i18n/index.ts';
 import { dailyRowHint } from '../src/game/dailyRow.ts';
 
 const SEED = '0xA1A1';
@@ -99,6 +99,53 @@ test('daily row: hint, streak to keep, score, score with streak', () => {
   assert.equal(dailyRowHint({ officialResult: { ...result, score: 1 }, currentStreak: 1 }), 'dziś 1 pasażer');
   assert.equal(dailyRowHint({ officialResult: result, currentStreak: 2 }), `dziś 1${NBSP}250 · seria 2 dni`);
   setLanguage('en');
+});
+
+// [night-12s] R7e, D-145: the plural form comes from the number, read with the language's own separators. Fake
+// catalogs for languages not shipped yet; the form order puts `many` after `other` (a missing form takes the last).
+const FAKE = {
+  'de-DE': { order: ['one', 'other'], template: '{n} {n|Passagier|Passagiere}', one: 'Passagier', other: 'Passagiere' },
+  'pt-BR': { order: ['one', 'other', 'many'], template: '{n} {n|passageiro|passageiros}', one: 'passageiro', other: 'passageiros' },
+  'es-ES': { order: ['one', 'other', 'many'], template: '{n} {n|pasajero|pasajeros}', one: 'pasajero', other: 'pasajeros' },
+  'fr-FR': { order: ['one', 'other', 'many'], template: '{n} {n|passager|passagers}', one: 'passager', other: 'passagers' },
+} as const;
+// CLDR: fr and pt-BR put 0 in `one` ("0 passager"); millions are `many` in fr/es/pt, which falls back to `other`.
+const EXPECT: Record<keyof typeof FAKE, Record<number, 'one' | 'other'>> = {
+  'de-DE': { 0: 'other', 1: 'one', 2: 'other', 1000: 'other', 1500: 'other', 1000000: 'other' },
+  'pt-BR': { 0: 'one', 1: 'one', 2: 'other', 1000: 'other', 1500: 'other', 1000000: 'other' },
+  'es-ES': { 0: 'other', 1: 'one', 2: 'other', 1000: 'other', 1500: 'other', 1000000: 'other' },
+  'fr-FR': { 0: 'one', 1: 'one', 2: 'other', 1000: 'other', 1500: 'other', 1000000: 'other' },
+};
+test('R7e: formatted de/pt-BR/es/fr counts pick the plural of the number, not of "1.000" read as 1', () => {
+  for (const [locale, fake] of Object.entries(FAKE) as [keyof typeof FAKE, (typeof FAKE)[keyof typeof FAKE]][]) {
+    for (const [n, category] of Object.entries(EXPECT[locale])) {
+      const shown = formatNumberIn(locale, Number(n));
+      assert.equal(parseLocalNumber(shown, locale), Number(n), `${locale} reads back ${JSON.stringify(shown)}`);
+      assert.equal(fillPluralTokens(fake.template, { n: shown }, locale, fake.order), `{n} ${fake[category]}`, `${locale} ${n}`);
+    }
+  }
+  // The exact strings the research found wrong: de "1.000 Passagier", pt-BR "1.500" read as 1.5.
+  assert.equal(fillPluralTokens(FAKE['de-DE'].template, { n: '1.000' }, 'de-DE', FAKE['de-DE'].order), '{n} Passagiere');
+  assert.equal(fillPluralTokens(FAKE['pt-BR'].template, { n: '1.500' }, 'pt-BR', FAKE['pt-BR'].order), '{n} passageiros');
+});
+test('R7e: decimals and odd strings', () => {
+  assert.equal(parseLocalNumber('1,5', 'de-DE'), 1.5);
+  assert.equal(parseLocalNumber('1,5', 'pl-PL'), 1.5);
+  assert.equal(parseLocalNumber('1.5', 'en-GB'), 1.5);
+  assert.equal(parseLocalNumber('1,500', 'en-GB'), 1500);
+  assert.equal(parseLocalNumber(formatNumber(12345, 'pl'), 'pl-PL'), 12345);
+  assert.equal(parseLocalNumber(formatNumberIn('pl-PL', -2500), 'pl-PL'), -2500);
+  for (const odd of ['LON', '', '1.5', 'A1A3']) assert.ok(Number.isNaN(parseLocalNumber(odd, 'pl-PL')), odd);
+  assert.equal(fillPluralTokens('{n|a|b}', { n: 'LON' }, 'de-DE', ['one', 'other']), '{n|a|b}', 'non-numeric keeps the token');
+  assert.equal(fillPluralTokens('{n|a|b}', { n: 1 }, 'de-DE', ['one', 'other']), 'a', 'numbers used as they are');
+});
+test('R7g: fr-FR groups with U+00A0, never the narrow U+202F the body font lacks', () => {
+  assert.ok(new Intl.NumberFormat('fr-FR').format(2500).includes('\u202f'), 'precondition: Intl fr-FR uses U+202F');
+  assert.equal(formatNumberIn('fr-FR', 2500), `2${NBSP}500`);
+  assert.equal(formatNumberIn('fr-FR', 1234567.5, 1), `1${NBSP}234${NBSP}567,5`);
+  for (const locale of ['pl-PL', 'en-GB', 'de-DE', 'fr-FR', 'es-ES', 'pt-BR']) {
+    assert.ok(!formatNumberIn(locale, 1234567.25, 2).includes('\u202f'), locale);
+  }
 });
 
 console.log(`SUMMARY test:format seed=${SEED} passed=${passed} failed=${failed}`);

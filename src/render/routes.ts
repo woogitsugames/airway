@@ -1,6 +1,6 @@
 /** Diorama route geometry: the renderer's one great-circle arc model (routes, planes, preview). */
 import {
-  BufferGeometry, DoubleSide, Float32BufferAttribute, Group, Mesh,
+  BackSide, BufferGeometry, DoubleSide, Float32BufferAttribute, Group, Mesh,
   MeshStandardMaterial, ShaderMaterial, Vector3,
 } from 'three';
 import { setLatLonVec3 } from './globe/geo-math';
@@ -225,9 +225,33 @@ function geometryFor(data: TubeData): BufferGeometry {
   return geometry;
 }
 
+/** [ext-03] D-175 experiment: a dark ink outline around the route tubes (inflated back faces). */
+const OUTLINE_VERTEX = `
+  uniform float inflate;
+  void main() {
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position + normal * inflate, 1.0);
+  }
+`;
+const OUTLINE_FRAGMENT = `
+  uniform vec3 ink;
+  void main() { gl_FragColor = vec4(ink, 1.0); }
+`;
+
 /** Rebuild exclusively when the network changes. Frame updates only move the camera. */
 export class RouteLayer {
   readonly group = new Group();
+  /** [ext-03] D-175 (DEV `?airportStyle=`): ink outline on, turboprop colour override. */
+  private readonly outline: ShaderMaterial | null;
+  constructor(style?: { outline: boolean; turboprop?: string }) {
+    this.outline = style?.outline ? new ShaderMaterial({
+      vertexShader: OUTLINE_VERTEX, fragmentShader: OUTLINE_FRAGMENT, side: BackSide,
+      uniforms: { inflate: { value: 0.0019 }, ink: { value: new Vector3(0.09, 0.13, 0.14) } },
+    }) : null;
+    if (style?.turboprop) {
+      this.dashedMaterial.color.set(style.turboprop);
+      this.dashedMaterial.emissive.set(style.turboprop);
+    }
+  }
   private readonly routes = new Map<string, PreparedRoute>();
   // [task-34] Mostly self-lit: routes keep their colour on the night side (D-47).
   private readonly litMaterial = new MeshStandardMaterial({ color: LIGHT_TUBE, emissive: LIGHT_TUBE, emissiveIntensity: 0.72, roughness: 0.5 });
@@ -292,6 +316,12 @@ export class RouteLayer {
       const visible = new Mesh(geometry, material);
       visible.frustumCulled = false;
       this.group.add(visible);
+      if (this.outline) {
+        const ink = new Mesh(geometry, this.outline);
+        ink.frustumCulled = false;
+        this.group.add(ink);
+        this.drawCalls++;
+      }
       const beyondHorizon = new Mesh(geometry, ghost);
       beyondHorizon.frustumCulled = false;
       beyondHorizon.renderOrder = 100;
@@ -318,6 +348,7 @@ export class RouteLayer {
     }
     this.litMaterial.dispose();
     this.dashedMaterial.dispose();
+    this.outline?.dispose();
     this.ghosts[0].dispose();
     this.ghosts[1].dispose();
     this.routes.clear();

@@ -141,6 +141,8 @@ export const pl = {
   'licenses.atkinson': 'Krój pisma Atkinson Hyperlegible Next',
   'licenses.naturalEarth': 'Dane geograficzne Natural Earth',
   'licenses.worldAtlas': 'Zbiór danych world-atlas',
+  'licenses.nasaEarth': 'Obrazy Ziemi: NASA Earth Observatory (Blue Marble, Black Marble)',
+  'licenses.noaaRelief': 'Rzeźba terenu: NOAA ETOPO5',
   'licenses.three': 'Renderer 3D three.js',
   'licenses.ofl': 'SIL Open Font License 1.1',
   'licenses.publicDomain': 'Domena publiczna',
@@ -314,6 +316,14 @@ export const pl = {
   'puzzle.28.title': 'Objazd przez Alpy',
   'puzzle.29.title': 'Brama Atlantyku',
   'puzzle.30.title': 'Nocna sieć',
+  // [ext-02] R6h, D-131/D-162: paczka „Daleki zasięg”, zadania 31–35.
+  'puzzle.31.title': 'Z wysp do Los Angeles',
+  'puzzle.32.title': 'Nocny Atlantyk',
+  'puzzle.33.title': 'Z Santiago do Sydney',
+  'puzzle.34.title': 'Zmrok nad Afryką',
+  'puzzle.35.title': 'Dookoła świata',
+  'puzzle.pack.longHaul': 'Daleki zasięg',
+  'puzzle.pack.line': 'Paczka: {name} · {count} {count|zadanie|zadania|zadań}',
   // [night-06c] D-66 daily ranking board.
   'rank.title': 'Ranking · {date}',
   'rank.today': 'Dziś',

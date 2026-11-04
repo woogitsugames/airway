@@ -547,6 +547,45 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       open. Owner decisions recorded: D-134 (Q-65 A terms + Apple EULA, lawyer review; Q-66 A trader in both stores),
       D-135 (Q-68 A legitimate interest, no age gate, leaderboard toggle R7l), D-136 (Q-67 A, Q-69 A, Q-70 A). Own
       N12q decisions renumbered D-134/D-135 → D-143/D-144.
+- [x] N12s **Plural form from the number, no U+202F, glyph coverage test (R7e, R7g; D-145, D-146)** — the plural reader
+      took "." as a decimal point, so de/es/pt-BR "1.000" picked the singular and "1.000.000" leaked the token; it now
+      reads pre-formatted counts with the active locale's own separators (`parseLocalNumber`, `fillPluralTokens`,
+      `pluralFormIn`). `formatNumberIn` maps fr-FR's U+202F to U+00A0; Atkinson text borrows "→" (missing from the
+      362-glyph subset, used on the upgrade card) from Overpass via `unicode-range`. New fast `test:glyphs` reads every
+      TTF `cmap` + borrowed ranges against the PL/EN catalogs, city/region names, numbers in six locales and the
+      PL/EN/DE/FR/ES/PT-BR letter set. PL/EN output unchanged.
+
+## Globe look (D-170)
+Owner's choice 2026-11-03: the satellite globe (direction B). Plan, budgets and test lists per step:
+`docs/mockups/globe-2026-11/PLAN.md`; the DEV experiment to start from: `?globeLook=satellite`
+(`src/render/globe/look.ts`, `dev/globe-look/`). One PR per step, in order; G2+ change the shipped look, so attach
+before/after `npm run shots -- globe` PNGs and look at them.
+- [x] G1 **Production globe assets** — reproducible bake into `public/data/globe/` (day 4096/2048, night 2048/1024,
+      elevation 2048, clouds 2048, ~1.9 MB) with a SHA-256 manifest; NASA/NOAA entries in `docs/ASSETS.md`; credit
+      line (PL/EN i18n) on the About page; bundle `total` budget → 4 300 kB (D-171); new fast test `test:globe-assets`.
+- [ ] G2 **Terrain from ETOPO5 elevation** (one PR with G3: G2 alone draws a white globe; gate + smoke/ui:matrix/store:shots) — production `textured` TerrainStyle: real heights (sqrt exaggeration),
+      airport pads flattened, smooth normals, sea floor under the ocean shell; elevation decoded in parallel with the
+      land mask; `test:land`/`test:quality`/`test:framing` green, triangle budgets unchanged.
+- [ ] G3 **Textured surface material and night lights** — Blue Marble by direction (seam-safe), shipped day/night
+      grade, Black Marble emission replaces the city-light points; texture size per preset + adaptive step (D-173);
+      D-63 golden gate and D-47 contrast ≥ 4.5:1 re-checked (`test:daynight`, `test:store-shots`).
+- [ ] G4 **Ocean, atmosphere, clouds within fill-rate budget** — glint/fresnel and limb haze folded into the terrain
+      shader, outer halo as the only shell on low/saver, cloud shell on medium/high only; `transparentLayers` in
+      `world.stats()`; `test:quality`.
+- [ ] G5 **Remove diorama decorations and dead code** — trees, rocks, puffy clouds, decor culling (D-75 superseded),
+      `relief.ts`, diorama colouring, `refined`/`painted` experiment; new adaptive ladder; PERFORMANCE.md tables.
+- [ ] G6 **Menu, store, site, style docs** — menu contrast, `store:shots` (60 + feature graphic), `ui:matrix`,
+      `shots:site`, `docs/styles/realistyczny.md` (PL), D-11 status note; inspect every PNG.
+- [ ] G7 **Performance and device check** — `perf:scene` saver/low/medium/high, `perf:overlay`, hardware checklist
+      (GPU memory, first frame, 30 FPS on low); KTX2/ETC1S fallback only if a budget phone fails (D-174 follow-up).
+- [ ] G8 **"Mapa" mode next to "Satelita" (D-172)** — second texture set from the owner's chosen map look, uniform
+      swap without rebuild, `globeMode` setting (default satellite, PL/EN), dock tag toggle; dock/overlay tests,
+      `ui:matrix` at 320 dp. Mapa look: owner's reference (Google-Maps-like) in our own palette (`map-*.jpg`).
+- [ ] G9 **Airport objects, routes and planes for the new globe (D-175)** — first 2–3 engine-rendered variants for the
+      owner (Satelita + Mapa, seed 15 frame), wait for the owner's pick, then implement with a mode-dependent ink;
+      D-47 ≥ 4.5:1 for routes/airports/planes in both modes (`measureLayerContrast`), `store:shots`. Blocked on owner.
+      Variants ready: `docs/mockups/globe-2026-11/g9/` (V1 Tusz, V2 Płyta, V3 Medalion — Claude recommends V3);
+      the probe must measure edge contrast first (D-177).
 
 ## Research proposals (R-agent)
 Proposals from the research agent (findings and sources: `docs/RESEARCH.md`, sections "R1 — …"). Each item is
@@ -887,7 +926,7 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
       jam/closed → `REJECT` (API 30+, else `LONG_PRESS`); inject it as the Android `NativeHapticDriver`, iOS
       unchanged. `test:android-config` asserts the plugin is registered; `docs/ANDROID.md` note. **Area:** platform
       (native Android, `src/platform/haptics.ts`).
-- [ ] R6f **Puzzle packs without hand-kept lists** — `src/data/puzzles/index.ts` imports 30 JSON files by hand and
+- [x] R6f → ext/01 **Puzzle packs without hand-kept lists** — `src/data/puzzles/index.ts` imports 30 JSON files by hand and
       `scripts/test-puzzles.mjs` hard-codes `LEVELS = 30`. Use `import.meta.glob` (or a generated index) and derive
       the count from the folder (ids stay contiguous 01…NN, ≤ 99); add `npm run puzzle:report` printing per level:
       duration at 1×, goal, mechanics, reference margin and star thresholds, so a 5-level pack PR shows its
@@ -897,7 +936,7 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
       (with R2f; Polish): the T / T+4 / T+8 / T+12 weeks table from RESEARCH R6, one new mechanic per update with its
       teaching puzzles, and draft PL/EN texts for an Apple In-App Event (name ≤ 30, short ≤ 50, long ≤ 120 chars) and
       a Play "Major update" promotion (28 days, submit ≤ 60 days ahead, unique art). **Area:** docs. Q-64 → A (D-131).
-- [ ] R6h **Puzzle pack 31–35 "Long haul"** (then 36–40 in a second PR) — five levels outside Europe that teach
+- [x] R6h → ext/02 (31–35; 36–40 open, Q-74) **Puzzle pack 31–35 "Long haul"** (then 36–40 in a second PR) — five levels outside Europe that teach
       widebody range and ocean legs with today's rules only (no new mechanic tags): start cities in the Pacific /
       South Atlantic, stock with 1–2 widebodies, a `continents` goal in the last one. Each with `referenceCommands`,
       PL/EN titles, `test:puzzles` green, shots. **Area:** content (`src/data/puzzles/**`, i18n). Q-64 → A (D-131): ready before launch; after R6f.
@@ -935,7 +974,7 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
       and `getBoards` calls; when off, the daily report says the run is not ranked; queued submissions are dropped
       when it is turned off. Gives the GDPR art. 21 objection a one-tap path. `test:net`, settings e2e.
       **Area:** `src/net/**`, `src/ui/settings/**`, `src/ui/daily/**`, i18n. *Needs Q-68 (A).*
-- [ ] R7e **Plural form from the raw number** — `pluralValue` reads formatted strings and treats "." as a decimal
+- [x] R7e → N12s **Plural form from the raw number** — `pluralValue` reads formatted strings and treats "." as a decimal
       point, so with DE/ES/PT-BR grouping "1.000" picks `one` ("1.000 Passagier") and PT-BR "1.500" → 1.5 → `one`.
       Let callers pass numbers (format inside `t()`), or parse with the active locale's group/decimal symbols from
       `Intl.NumberFormat#formatToParts`. `test:i18n` cases with fake de/pt-BR catalogs for 0, 1, 2, 1 000, 1 500,
@@ -947,7 +986,7 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
       `test:android-config`). `test:i18n` checks every catalog: same keys, same `{param}` set, plural tokens have
       the category count of their language. Only PL/EN enabled until the translations exist.
       **Area:** `src/i18n/**`, `src/core/format.ts`, `src/ui/settings/**`, `src/ui/airportLabel.ts`, scripts.
-- [ ] R7g **Glyph coverage test + French narrow space** — Atkinson Hyperlegible Next (body font, 362-glyph subset)
+- [x] R7g → N12s **Glyph coverage test + French narrow space** — Atkinson Hyperlegible Next (body font, 362-glyph subset)
       lacks U+202F, which `Intl` fr-FR uses as the thousands separator. Map U+202F → U+00A0 in `formatNumber`, and
       add fast `test:glyphs` (reads the TTF `cmap` with a tiny parser, no new dependency) that fails when any catalog
       string or city name uses a code point missing from the font that renders it. **Area:** `src/core/format.ts`,
@@ -1111,5 +1150,10 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
 - 2026-11-03 · N12o store shots in the exact Apple sizes and 16:9 (R2a, D-123) · night/12o-store-sizes · store:shots 60/60 (30 → 60: + iphone 1320×2868, ipad 2064×2752, landscape 1920×1080; contact sheet 2556×5361; new device PNGs and the sheet inspected), test:store-shots devices=6 shots=60 (new validator on the old 30-shot set: FAIL "Manifest lists 30/60"), test:fast 67/67, build ok; e2e/ui:matrix not run (no game code changed); App Store Connect / Play Console upload not tried; origin/dev (N11h context-loss guard, no visual change while the context lives) was merged during the run, so early shots predate it
 - 2026-11-03 · N12q bundle budget + dead code/unused keys + minSdk 29 (R5k, R5i, Q-54 → B; D-133, D-143, D-144) · night/12q-bundle-guard · test:bundle 9/9 (main 1,034.1 kB / gzip 306.4 kB, CSS 70.2 kB, dist 1,805.1 kB), test:bundle:static 5/5 (4/5 on the old platform code: `@capacitor/core` mixed import; Vite warning gone), test:i18n keys 424 → 409 (15 unused keys on the old catalogs, 2 with the old a11y.ts), test:android-config 23/23 (21/23 on minSdk 24), aapt2 link + `dump badging` minSdkVersion 29 / uses-gl-es 0x30000, test:fast 68/68, build ok; e2e/ui:matrix/store:shots not run (no screen changed); no Gradle build, no device
 - 2026-11-03 · N12r route snap haptic inside a native selection (R6d, D-137) + owner D-134…D-136, own N12q decisions → D-143/D-144 · night/12r-snap-haptic · test:haptics 9/9 (4/9 on the old driver: no selection start/end, a lone snap only `selectionChanged`), test:route-tool 18/18 (16/18 on the old tool), test:fast 68/68, build ok, test:bundle 9/9 (main 1,034.5 kB / gzip 306.5 kB); e2e/ui:matrix/store:shots not run (no visual change); no Android/iPhone vibration check
+- 2026-11-03 · N12s plural form from the number + no U+202F + glyph coverage (R7e, R7g; D-145, D-146) · night/12s-plural-glyphs · test:format 16/16 (+3; on the old reader 6/24 fake de/pt-BR/es/fr cases wrong: 3 singulars, 3 leaked tokens; on old code the file fails to import `formatNumberIn`/`parseLocalNumber`/`fillPluralTokens`), test:glyphs 12/12 (new; 10/12 with dev's fonts.css: "→" missing from Atkinson 400/700 in `route.atc.distance` and `upgrade.value.transfer`, PL and EN), test:fast 69/69, build ok (main 1,035.0 kB / gzip 307.4 kB), test:e2e:pseudo-locale 27/27 (fonts.css changed); ui:matrix/store:shots not run; arrow not compared on a phone WebView
+- 2026-11-03 · R6f puzzle packs without hand-kept lists + `puzzle:report` (D-160, D-161) · ext/01-puzzle-packs · test:puzzle-packs 7/7 (0/7 on the hand-kept index: a 31st `NN.json` left `PUZZLES` at 30, no generator/report), test:puzzles levels=30 cases=169 passed=169, test:fast 70/70 (98.7 s), build ok, test:e2e:puzzles levels=30 steps=34 passed=34 (merged tree with dev at ce9ef74)
+- 2026-11-03 · R6h puzzle pack "Long haul" 31–35 (D-162, D-163; Q-74) · ext/02-puzzles-31-35 · test:long-haul 10/10 (0/10 on dev: no pack, no levels 31–35), test:puzzles levels=35 cases=204 passed=204, test:puzzle-packs 7/7, test:fast 71/71 (108.1 s), build ok, test:e2e:puzzles levels=35 steps=39 passed=39, test:e2e:screens-fit-320 12/12, shots ext-02 4/4 inspected (merged tree with dev at f1e4d53)
+- 2026-11-03 · G1 production globe assets (D-170, D-171, D-176) · ext/03-g1-globe-assets · test:globe-assets 45/45 (new: 6 files, 1,773,908 B, manifest SHA-256), test:fast 72/72 (129.2 s), build ok (main 1,050.3 kB / gzip 310.6 kB), test:bundle 9/9 (dist 3,597.7 kB ≤ 4,300 kB); textures not drawn yet (G2/G3), licences screen lists NASA Earth Observatory + NOAA ETOPO5 (PL/EN); ui:matrix not run
+- 2026-11-03 · G9 airport/route variants for the owner (D-175, D-177) · ext/03-g9-airport-variants · DEV-only `?airportStyle=ink|apron|medal` (default objects unchanged), 15 engine renders (Satelita/Mapa day, Satelita dusk; phone + Fold), comparison sheets in docs/mockups/globe-2026-11/g9/, probe numbers; test:fast 72/72 (102.2 s), build ok (main 1,051.6 kB / gzip 311.0 kB); waits for the owner pick (Claude recommends V3 Medalion)
 - 2026-11-03 · N11j pause-summary e2e under rules v5 + old-rules save notice (D-132, numbered D-130 in PR #147), owner D-128/D-129 · night/11j-pause-summary-v4-save · test:e2e:pause-summary 4/4 (0/4 on origin/dev), test:save-golden 21/21 (20/21 on the old code), test:e2e:save-notice 6/6 (4/6 on the old code), test:fast 67/67, build ok; e2e:smoke/ui:matrix not run (no layout change)
 - 2026-11-03 · N11k clean game-over report (R5f), owner D-130/D-131, N11j decision → D-132 · night/11k-clean-gameover · test:e2e:gameover-unserved 4/4 (0/4 on the old UI; its served case was 3/4-red on origin/dev since rules v5, now seed 0xA1A3), test:fast 67/67, build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:gameover-map 3/3, e2e:gameover-short 4/4, e2e:gameover-tip 4/4, store:shots 60 (test:store-shots ok); R5d stays a proposal

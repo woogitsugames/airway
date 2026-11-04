@@ -10,7 +10,22 @@ import { createDecorativeRng } from '../../core/rng';
 import { latLonToVec3 } from './geo-math';
 import type { LandMask } from './land-mask';
 import { airportFlatten, createSample, sampleAt, smoothstep } from './terrain';
-import type { QualityLevel, SurfaceSample } from './terrain';
+import { DIORAMA_STYLE } from './terrain';
+import type { QualityLevel, SurfaceSample, TerrainStyle } from './terrain';
+
+/**
+ * [ext-03] Experimental globe looks (DEV only): shares of the preset counts and the `tidy` placement
+ * (fewer, larger, denser forests; rocks only on mountain flanks; smoother clouds). Default = the diorama.
+ */
+export interface DecorOptions {
+  readonly trees: number;
+  readonly rocks: number;
+  readonly clouds: number;
+  readonly lights: number;
+  readonly tidy: boolean;
+  readonly style: TerrainStyle;
+}
+export const DIORAMA_DECOR: DecorOptions = { trees: 1, rocks: 1, clouds: 1, lights: 1, tidy: false, style: DIORAMA_STYLE };
 
 export const DECOR: Record<QualityLevel, { trees: number; rocks: number; clouds: number; lights: number }> = {
   low: { trees: 3500, rocks: 260, clouds: 30, lights: 350 },
@@ -49,7 +64,8 @@ export function forestDensity(s: SurfaceSample): number {
   return airportFlatten(s.lon, s.lat) > .3 ? 0 : cover;
 }
 
-function makeTrees(mask: LandMask, count: number, rand: () => number): InstancedMesh[] {
+function makeTrees(mask: LandMask, count: number, rand: () => number, opts: DecorOptions = DIORAMA_DECOR): InstancedMesh[] {
+  const tidy = opts.tidy;
   // Conifer: an open five-sided cone. Broadleaf: a faceted octahedral crown. One draw call each.
   const conifer = new ConeGeometry(.003, .011, 5, 1, true);
   conifer.translate(0, .0054, 0);
@@ -67,33 +83,37 @@ function makeTrees(mask: LandMask, count: number, rand: () => number): Instanced
     const lat = Math.asin(2 * rand() - 1) * DEG;
     const lon = rand() * 360 - 180;
     if (mask.distanceAt(lon, lat) < .12) continue;
-    sampleAt(lon, lat, mask, s);
+    sampleAt(lon, lat, mask, s, opts.style);
     const cover = forestDensity(s);
     if (cover <= 0 || rand() > cover) continue;
+    // [ext-03] tidy: only inside real forests (no lone trees on plains), in tight stands of 3-5.
+    if (tidy && cover < .5) continue;
     // Small groves: each accepted spot plants 1-3 trees within ~0.25°.
-    const grove = 1 + Math.floor(rand() * 3);
+    const grove = tidy ? 3 + Math.floor(rand() * 3) : 1 + Math.floor(rand() * 3);
+    const spread = tidy ? .3 : .5;
     for (let g = 0; g < grove && nCones + nCrowns < count; g++) {
-      const tlon = lon + (g ? (rand() - .5) * .5 / Math.max(.3, Math.cos(lat / DEG)) : 0);
-      const tlat = lat + (g ? (rand() - .5) * .5 : 0);
+      const tlon = lon + (g ? (rand() - .5) * spread / Math.max(.3, Math.cos(lat / DEG)) : 0);
+      const tlat = lat + (g ? (rand() - .5) * spread : 0);
       if (g) {
         if (mask.distanceAt(tlon, tlat) < .12) continue;
-        sampleAt(tlon, tlat, mask, s);
+        sampleAt(tlon, tlat, mask, s, opts.style);
         if (forestDensity(s) <= 0) continue; // groves only thicken existing cover
       }
       const a = Math.abs(tlat);
       const coniferous = a > 50 || (a > 30 && s.noise > .5) || s.mountain > .12;
       onSurface(dummy, tlon, tlat, 1 + s.height - .0006);
       dummy.rotateY(rand() * Math.PI * 2);
-      const scale = .7 + rand() * .75;
+      const scale = tidy ? .85 + rand() * .25 : .7 + rand() * .75;
       dummy.scale.set(scale, scale * (coniferous && a > 45 ? 1.3 : 1), scale);
       dummy.updateMatrix();
       if (coniferous) {
         cones.setMatrixAt(nCones, dummy.matrix);
-        cones.setColorAt(nCones++, color.set(a > 45 ? (rand() > .5 ? '#2f6b45' : '#3a7a4a') : '#4f8a3f'));
+        cones.setColorAt(nCones++, color.set(tidy ? (a > 45 ? (rand() > .5 ? '#3e6b4c' : '#466f50') : '#55804a')
+          : a > 45 ? (rand() > .5 ? '#2f6b45' : '#3a7a4a') : '#4f8a3f'));
       } else {
         crowns.setMatrixAt(nCrowns, dummy.matrix);
-        crowns.setColorAt(nCrowns++, color.set(a < 15 ? (rand() > .5 ? '#2f7a36' : '#3f8a3a')
-          : rand() > .5 ? '#5f9a45' : '#6fa64a'));
+        crowns.setColorAt(nCrowns++, color.set(tidy ? (a < 15 ? '#467d45' : rand() > .5 ? '#64904f' : '#6b9655')
+          : a < 15 ? (rand() > .5 ? '#2f7a36' : '#3f8a3a') : rand() > .5 ? '#5f9a45' : '#6fa64a'));
       }
     }
   }
@@ -107,7 +127,7 @@ function makeTrees(mask: LandMask, count: number, rand: () => number): Instanced
 }
 
 /** Sandstone rocks on deserts, grey boulders on mountain flanks (below the snowline). */
-function makeRocks(mask: LandMask, count: number, rand: () => number): InstancedMesh {
+function makeRocks(mask: LandMask, count: number, rand: () => number, opts: DecorOptions = DIORAMA_DECOR): InstancedMesh {
   const geometry = new IcosahedronGeometry(.0055, 0);
   geometry.scale(1.5, .6, 1);
   const mesh = new InstancedMesh(geometry,
@@ -119,8 +139,9 @@ function makeRocks(mask: LandMask, count: number, rand: () => number): Instanced
     const lat = Math.asin(2 * rand() - 1) * DEG;
     const lon = rand() * 360 - 180;
     if (Math.abs(lat) > 62 || mask.distanceAt(lon, lat) < .2) continue;
-    sampleAt(lon, lat, mask, s);
-    const desert = smoothstep(.55, .9, s.dry), rocky = smoothstep(.1, .22, s.mountain) * (1 - smoothstep(.3, .45, s.mountain));
+    sampleAt(lon, lat, mask, s, opts.style);
+    // [ext-03] tidy: no scattered desert rocks (they read as dirt specks), boulders on mountain flanks only.
+    const desert = opts.tidy ? 0 : smoothstep(.55, .9, s.dry), rocky = smoothstep(.1, .22, s.mountain) * (1 - smoothstep(.3, .45, s.mountain));
     if (rand() > Math.max(desert, rocky * .8) || airportFlatten(lon, lat) > .2) continue;
     onSurface(dummy, lon, lat, 1 + s.height + .0004);
     dummy.rotateY(rand() * Math.PI * 2);
@@ -140,8 +161,10 @@ function makeRocks(mask: LandMask, count: number, rand: () => number): Instanced
 
 const CLOUD_LIFT = .075;
 /** Puffy clouds (one instanced draw call) plus their ground shadows (a second one). */
-function makeClouds(mask: LandMask, count: number, rand: () => number, sunDirection: Vector3): InstancedMesh[] {
-  const geometry = new IcosahedronGeometry(.015, 0);
+function makeClouds(mask: LandMask, count: number, rand: () => number, sunDirection: Vector3,
+  tidy = false): InstancedMesh[] {
+  // [ext-03] tidy: one subdivision more, so a puff reads as a soft cloud, not a crystal.
+  const geometry = new IcosahedronGeometry(.015, tidy ? 1 : 0);
   geometry.scale(1, .55, 1);
   const mesh = new InstancedMesh(geometry,
     new MeshStandardMaterial({ color: '#f6f7f4', flatShading: true, roughness: 1 }), count * 6);
@@ -260,12 +283,21 @@ export function makeCityLights(mask: LandMask, sunDirection: Vector3, count: num
 }
 
 export function createDecorations(mask: LandMask, level: QualityLevel, seed: number,
-  sunDirection: Vector3): Group {
+  sunDirection: Vector3, opts: DecorOptions = DIORAMA_DECOR): Group {
   const rand = createDecorativeRng(seed);
   const config = DECOR[level];
   const group = new Group();
   group.name = 'GlobeDecorations';
-  group.add(...makeTrees(mask, config.trees, rand), makeRocks(mask, config.rocks, rand),
-    ...makeClouds(mask, config.clouds, rand, sunDirection), makeCityLights(mask, sunDirection, config.lights, rand));
+  if (opts === DIORAMA_DECOR) {
+    group.add(...makeTrees(mask, config.trees, rand), makeRocks(mask, config.rocks, rand),
+      ...makeClouds(mask, config.clouds, rand, sunDirection), makeCityLights(mask, sunDirection, config.lights, rand));
+    return group;
+  }
+  // [ext-03] Experimental looks: a layer whose share is 0 is left out entirely (no empty draw call).
+  const n = (full: number, share: number): number => Math.round(full * share);
+  if (opts.trees > 0) group.add(...makeTrees(mask, n(config.trees, opts.trees), rand, opts));
+  if (opts.rocks > 0) group.add(makeRocks(mask, n(config.rocks, opts.rocks), rand, opts));
+  if (opts.clouds > 0) group.add(...makeClouds(mask, n(config.clouds, opts.clouds), rand, sunDirection, opts.tidy));
+  if (opts.lights > 0) group.add(makeCityLights(mask, sunDirection, n(config.lights, opts.lights), rand));
   return group;
 }

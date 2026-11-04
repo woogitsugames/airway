@@ -1,16 +1,16 @@
-// [night-07g] Real-UI Playwright journey through all 30 puzzles (task 17, N1, D-70): every level is opened from
+// [night-07g] Real-UI Playwright journey through every puzzle (count from src/data/puzzles, R6f) (task 17, N1, D-70): every level is opened from
 // the menu, its reference solution is entered with real clicks on the flight strips and hub buttons, the run
 // is fast-forwarded with "To deadline" and must be cleared; progress must reach the board and localStorage.
 // Plus the losing path (no action → cancelled) and Undo. Fails closed; steps after a failure are SKIP.
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { withBrowser, newGamePage, waitForScreen, assert, clickTestId, saveDiagnostics, ROOT, SEED } from './browser.mjs';
 
 const started = performance.now();
 const results = [];
-const index = readFileSync(resolve(ROOT, 'src/data/puzzles/index.ts'), 'utf8');
-const ids = [...index.matchAll(/from '\.\/(\d+)\.json'/g)].map((m) => m[1]);
+// [ext-01] R6f: the levels are the NN.json files in the folder (the game's generated index lists the same).
+const ids = readdirSync(resolve(ROOT, 'src/data/puzzles')).filter((n) => /^\d{2}\.json$/.test(n)).sort().map((n) => n.slice(0, 2));
 const levels = ids.map((id) => JSON.parse(readFileSync(resolve(ROOT, `src/data/puzzles/${id}.json`), 'utf8')));
 
 const click = async (page, action) => {
@@ -29,12 +29,20 @@ function routeIndex(level, command) {
 }
 
 const steps = [
-  ['boot: menu and puzzle board with 30 departures', async (page) => {
+  [`boot: menu and puzzle board with ${levels.length} departures`, async (page) => {
     await waitForScreen(page, 'menu');
     await clickTestId(page, 'menu-puzzles');
     await page.locator('.puzzle-departures .puzzle-flap').first().waitFor({ timeout: 8000 });
     const count = await page.locator('.puzzle-departures .puzzle-flap').count();
-    assert(levels.length === 30 && count === 30, `board shows ${count} puzzles, data has ${levels.length}`);
+    assert(levels.length > 0 && count === levels.length, `board shows ${count} puzzles, data has ${levels.length}`);
+    // [ext-02] D-162: the "Long haul" pack header sits right above flap 31.
+    if (levels.length >= 31) {
+      const pack = await page.evaluate(() => {
+        const row = document.querySelector('.puzzle-departures .puzzle-pack');
+        return row ? { text: row.textContent, next: row.nextElementSibling?.getAttribute('data-action') } : null;
+      });
+      assert(pack && pack.next === 'open:31' && /Long haul · 5 puzzles/.test(pack.text ?? ''), `pack header ${JSON.stringify(pack)}`);
+    }
   }],
   ['no action until the deadline loses puzzle 01', async (page) => {
     await click(page, 'open:01');
@@ -88,7 +96,7 @@ const steps = [
     const best = await page.locator(`button[data-action="open:${level.id}"] .puzzle-flap-best`).textContent().catch(() => '');
     assert(/\+\d+%/.test(best ?? ''), `${level.id}: board shows no best margin ("${best}")`);
   }]),
-  ['progress is stored for all 30 puzzles', async (page) => {
+  [`progress is stored for all ${levels.length} puzzles`, async (page) => {
     const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('airway.puzzles.v1') || '{}'));
     const missing = levels.filter((l) => !(stored[l.id] >= 1 && stored[l.id] <= 3)).map((l) => l.id);
     assert(missing.length === 0, `no stored stars for ${missing.join(', ')}`);
@@ -96,7 +104,7 @@ const steps = [
     const noMargin = levels.filter((l) => !Number.isInteger(margins[l.id])).map((l) => l.id);
     assert(noMargin.length === 0, `no stored best margin for ${noMargin.join(', ')}`); // [night-10l]
     const count = await page.locator('.puzzle-count').textContent();
-    assert(/30\/30/.test(count ?? ''), `board progress "${count}"`);
+    assert(new RegExp(`${levels.length}/${levels.length}`).test(count ?? ''), `board progress "${count}"`);
   }],
 ];
 

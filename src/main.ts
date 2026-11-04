@@ -469,13 +469,15 @@ async function boot(): Promise<void> {
     if (scene === 'upgrade') await autoplayUntil(1);
     else {
       // About one game day of real play grows the network before the light is chosen.
-      play(STORE_SHOT_PLAY_TICKS);
+      // [ext-03] DEV fixture knobs for the globe-look mockups: `storePlay` ticks of play, `storeSunDot` sun elevation.
+      play(Number(query.get('storePlay') ?? STORE_SHOT_PLAY_TICKS));
       if (scene === 'failure') active.forceOverload(); // The player stops building; real demand jams a hub.
       else {
         await frames(20); // Let the layout-measured framing settle before reading the camera centre.
         // [task-40] `game`: golden low sun just before sunset over the network (was a fixed −95° from the
         // camera centre, which left the European network past the terminator in November).
-        const evening = scene === 'night' ? null : ticksToEveningSun(STORE_GAME_SUN_DOT);
+        const evening = scene === 'night' ? null
+          : ticksToEveningSun(Number(query.get('storeSunDot') ?? STORE_GAME_SUN_DOT));
         // Recorded by scripts/store-shots.mjs in the manifest: hour angle@network lon,lat.
         document.documentElement.dataset.storeShotSun = evening ? evening.label : '180@camera';
         // Stay on the game screen: never let the game/night setup run into the weekly board.

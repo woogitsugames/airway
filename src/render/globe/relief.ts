@@ -72,8 +72,12 @@ const DESERTS: readonly (readonly [number, number, number, number, number, numbe
   [45, 6, 6, 5, .6, 2], // Horn of Africa
 ];
 
+/** [ext-03] Largest `widthScale` passed to `mountainAt` (the `refined` look). */
+const WIDEST = 1.7;
 const SEGMENTS: { ax: number; ay: number; bx: number; by: number; peak: number; width: number }[] = [];
 const BOXES: { minLon: number; maxLon: number; minLat: number; maxLat: number; first: number; last: number }[] = [];
+/** [ext-03] Search boxes for the widened `refined` ranges (the diorama keeps BOXES exactly as before). */
+const WIDE_BOXES: typeof BOXES = [];
 for (const range of RANGES) {
   const first = SEGMENTS.length;
   let minLon = 999, maxLon = -999, minLat = 999, maxLat = -999;
@@ -86,20 +90,21 @@ for (const range of RANGES) {
       SEGMENTS.push({ ax: lon, ay: lat, bx: blon, by: blat, peak: range.peak, width: range.width });
     }
   }
-  const pad = range.width;
-  BOXES.push({ minLon: minLon - pad / Math.max(.2, Math.cos((Math.abs(maxLat) + pad) * Math.PI / 180)) - .5,
-    maxLon: maxLon + pad / Math.max(.2, Math.cos((Math.abs(maxLat) + pad) * Math.PI / 180)) + .5,
-    minLat: minLat - pad, maxLat: maxLat + pad, first, last: SEGMENTS.length });
+  for (const [boxes, pad] of [[BOXES, range.width], [WIDE_BOXES, range.width * WIDEST]] as const) {
+    boxes.push({ minLon: minLon - pad / Math.max(.2, Math.cos((Math.abs(maxLat) + pad) * Math.PI / 180)) - .5,
+      maxLon: maxLon + pad / Math.max(.2, Math.cos((Math.abs(maxLat) + pad) * Math.PI / 180)) + .5,
+      minLat: minLat - pad, maxLat: maxLat + pad, first, last: SEGMENTS.length });
+  }
 }
 
 /**
  * Smoothed relative mountain elevation 0..1 at a point: the highest range bump wins, so
  * ranges overlap without stacking. Lon/lat in degrees; lon in [-180, 180].
  */
-export function mountainAt(lon: number, lat: number): number {
+export function mountainAt(lon: number, lat: number, widthScale = 1): number {
   let best = 0;
   const k = Math.cos(lat * Math.PI / 180);
-  for (const box of BOXES) {
+  for (const box of widthScale === 1 ? BOXES : WIDE_BOXES) {
     if (lat < box.minLat || lat > box.maxLat || lon < box.minLon || lon > box.maxLon) continue;
     for (let s = box.first; s < box.last; s++) {
       const g = SEGMENTS[s];
@@ -108,7 +113,8 @@ export function mountainAt(lon: number, lat: number): number {
       const len = dx * dx + dy * dy;
       const t = len > 0 ? Math.max(0, Math.min(1, ((px - ax) * dx + (lat - g.ay) * dy) / len)) : 0;
       const ex = px - (ax + dx * t), ey = lat - (g.ay + dy * t);
-      const q = (ex * ex + ey * ey) / (g.width * g.width);
+      const width = g.width * widthScale;
+      const q = (ex * ex + ey * ey) / (width * width);
       if (q >= 1) continue;
       const bump = (1 - q) * (1 - q) * g.peak;
       if (bump > best) best = bump;
@@ -120,9 +126,9 @@ export function mountainAt(lon: number, lat: number): number {
 const DESERT_FLAT = Float64Array.from(DESERTS.flat());
 
 /** Dryness 0..1 (1 = sand sea). `jitter` (0..1 noise) frays the region edges. */
-export function drynessAt(lon: number, lat: number, jitter: number): number {
+export function drynessAt(lon: number, lat: number, jitter: number, frayScale = 1): number {
   let best = 0;
-  const fray = (jitter - .5) * .4;
+  const fray = (jitter - .5) * .4 * frayScale; // [ext-03] frayScale > 1: `refined` look (DEV experiment)
   for (let i = 0; i < DESERT_FLAT.length; i += 6) {
     const dx = Math.abs(lon - DESERT_FLAT[i]) / DESERT_FLAT[i + 2];
     if (dx > 1.25) continue;

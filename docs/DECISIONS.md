@@ -1013,3 +1013,142 @@ concatenation prefix (`privacy.s${n}`, `'settings.airline.' + id`); on the old c
 Kept: `SIM_TICK_MS` and `DAYNIGHT_PARAMS_VERSION` (versioned simulation parameters, documentation of the rules).
 **Status: in force (N12q).**
 
+
+## D-145 — Plural form from the number, read with the language's own separators (2026-11-03, Claude, night N12s)
+R7e: callers pass counts already formatted by `localNumber`, and the plural reader took "." as a decimal point, so
+with German/Spanish/Brazilian grouping "1.000" picked the singular ("1.000 Passagier"), pt-BR "1.500" read as 1.5,
+and "1.000.000" was NaN, which leaked the raw `{n|…}` token. Of 24 fake de/pt-BR/es/fr cases (0, 1, 2, 1 000,
+1 500, 1 000 000) the old reader got 6 wrong. The reader is now `parseLocalNumber(text, locale)`
+(`src/core/format.ts`): it takes the group and decimal symbols from `Intl.NumberFormat#formatToParts` of the same
+locale that formatted the number, treats every space as a group separator, and returns NaN for anything else (codes,
+seeds), which keeps the token as before. Numeric params are used as they are. `fillPluralTokens` and `pluralFormIn`
+take a locale and form order, so tests cover languages not shipped yet; PL/EN output is unchanged. Rejected: making
+every caller pass raw numbers (touches ~10 UI call sites owned by the screens and still needs the string path for
+`dailyRow`-style pre-formatted text). Limit: a pre-formatted string must come from the active language's formatter;
+"1.5" handed to a German catalog reads as 15. **Status: in force (N12s).**
+
+## D-146 — No U+202F in numbers, borrowed arrow for the body font, glyph coverage test (2026-11-03, Claude, night N12s)
+R7g: Atkinson Hyperlegible Next (body font, 362-glyph subset) has neither U+202F (narrow no-break space, Intl fr-FR's
+thousands separator) nor U+2192 "→", which the upgrade card sets in body text ("{from} → {to} min"); the browser
+then takes the glyph from a system font. `formatNumberIn` replaces U+202F with U+00A0 (same no-break, present in every
+face), and `src/ui/fonts.css` gives the Atkinson family the arrow from the already shipped Overpass 400/800 through
+`unicode-range: U+2192` (the same mechanism as the Overpass middle dot, task-37). New fast `test:glyphs` parses each
+TTF `cmap` (formats 4/12, `scripts/lib/ttf-cmap.mjs`, no dependency) plus the borrowed ranges and fails when any face
+lacks a code point of the PL/EN catalogs, city/region names, numbers formatted for pl/en/de/fr/es/pt-BR, or the
+PL/EN/DE/FR/ES/PT-BR letter set; soft hyphens and zero-width characters are exempt. It checks every face for every
+string (stricter than the real CSS mapping) so a key may move between faces freely. Rejected: subsetting a new
+Atkinson file with U+202F/U+2192 (a rebuilt font file and licence trail for two glyphs). Not covered: French
+typography's narrow space before ": ; ! ?" in future catalogs, which a translator must write as U+00A0 — the test
+will fail on U+202F. **Status: in force (N12s).**
+
+## D-160 — Puzzle list generated from the folder, not `import.meta.glob` (2026-11-03, Claude, ext/01)
+R6f: `src/data/puzzles/index.ts` imported 30 JSON files by hand and `test:puzzles` hard-coded 30 levels. The list is
+now `src/data/puzzles/levels.generated.ts`, written by `npm run build:puzzles` (`scripts/build-puzzles.mjs`, also run
+by `prebuild` and `predev`) from the `NN.json` files: two-digit ids, contiguous from 01, at most 99, any other
+`*.json` name refused. `index.ts` keeps the types and re-exports `PUZZLES`. `test:puzzles` takes the count from the
+folder and fails when the game's index differs from it; `test:puzzle-packs` adds a level to a copy of the folder and
+checks that it reaches `PUZZLES` without touching `index.ts`, and that the committed file is fresh. Rejected:
+`import.meta.glob` — the list is imported by the Sim (`src/sim/puzzles.ts` → `scenarios.ts`), so it also runs under
+Node (the TS test loader, every headless test) and in the esbuild bundle of `functions/` (server replay, D-72), where
+`import.meta.glob` does not exist; a generated file works in all three without a Vite-only transform (same pattern as
+`generated/distances.ts`). Adding a pack: drop `31.json`…`35.json`, run `npm run build:puzzles`, add the
+`puzzle.NN.title` keys. **Status: in force (ext/01).**
+
+## D-161 — `npm run puzzle:report`: one difficulty row per level from its reference run (2026-11-03, Claude, ext/01)
+R6f: a pack PR shows its curve as a Markdown table, one row per level computed from the real reference run: time at
+1× (ticks / 10 per second), goal, cities and offered routes, stock (T/W/H), number of reference actions and
+widebodies among them, `mechanics` tags plus what the run actually met (minutes of slot waits, curfew airports),
+reference result with stars, margin over the target and the ★★ (+15 %) / ★★★ (+30 %) thresholds in passengers.
+`-- --from NN` limits it to one pack, `-- --json` prints the rows. Developer tool only; nothing in the game reads it.
+**Status: in force (ext/01).**
+
+## D-162 — Puzzle packs: `packs.ts` and a pack header on the departures board (2026-11-03, Claude, ext/02)
+R6h / D-131 (owner, Q-64 → A, recorded on `night/11k-clean-gameover`, not yet on `dev`): levels after 30 come in
+packs. `src/data/puzzles/packs.ts` lists each pack's first level and name key (`longHaul` from 31); a pack runs to
+the next pack or the last level. The puzzle board draws one non-interactive row above the pack's first flap — "Pack:
+Long haul · 5 puzzles" / "Paczka: Daleki zasięg · 5 zadań" (`puzzle.pack.line`, plural `{count|…}`), printed in the
+board's yellow mono on black, wrapping inside the list (checked at 320×568 by `test:e2e:screens-fit-320`). No new
+mechanic tag: the long-haul lesson (widebody range, ocean legs) is in the levels themselves; `test:puzzles` checks
+that the pack starts outside Europe, uses a widebody leg beyond turboprop range and offers no out-of-range strip.
+**Status: in force (ext/02); whether the pack ships at launch or waits for T+4 is Q-74.**
+
+## D-163 — "Long haul" 31–35: a steeper curve built with a network search (2026-11-03, Claude, ext/02)
+Five levels outside Europe, each two 3-day weeks (8 640 ticks, 14:24 at 1×), designed with an exhaustive search over
+every network the stock allows (all strip subsets × hub-upgrade choices) on the real Sim:
+31 Islands to Los Angeles (Auckland feeder star, one widebody, Suva wave in week 2; 1 of 59 networks clears it),
+32 South Atlantic by night (São Paulo under curfew must not be the hub; 2 of 65), 33 Santiago to Sydney (Santiago–Sydney
+is beyond widebody range, Auckland transfers, 3 continents; 9 of 327 avoid a jam), 34 Dusk over Africa (four
+turboprop spokes queue for Singapore's slots, Johannesburg under curfew, Perth needs its own widebody; 8 of 1 253),
+35 Around the world (5 continents, Sydney curfew, week-2 waves, Buenos Aires reached westwards via Singapore and
+Johannesburg, and the single hub upgrade must go to Sydney; 1 of 1 525 networks × 1 of 5 upgrade choices). Targets
+give the reference +16 % (31–33) and +15 % (34–35), below 26–30 (+17…18 %). `test:long-haul` pins the curve and one
+tempting decoy per level that must lose. Titles are short enough not to break words on the 320 px board.
+**Status: in force; difficulty is a proposal for the owner to playtest (as D-70).**
+
+## D-170 — Globe look: direction B "Realistyczny" (satellite Earth) (2026-11-03, owner)
+On the owner's Galaxy Fold the low-poly diorama globe read as large angular terrain facets, blocky mountains, orange
+desert blobs, tree noise and a flat sea; the owner asked for "more realistic". Three directions were rendered from
+the game engine itself (DEV flag `?globeLook=`, seed 15 = the owner's screenshot frame: Tehran, Lahore, Tashkent,
+Almaty; day and dusk; Fold 1812×2176 and phone 412×915; `docs/mockups/globe-2026-11/`): A refined diorama, **B
+realistic** (NASA Blue Marble NG colours, Black Marble city lights, NOAA ETOPO5 relief, cloud shell, ocean glint,
+sun-aware atmosphere), C painted in-between. The owner chose **B** ("O ten kierunek jest ok"). The airport objects,
+routes, planes and the paper/airport-artefact UI of D-11 stay; only the globe surface changes. Supersedes the
+globe part of D-11 (world style A "Diorama"); D-05 (not minimal) is met by a real, lit, relief-rich Earth. Plan in
+`docs/mockups/globe-2026-11/PLAN.md`, steps G1–G9 in `docs/NIGHT-BACKLOG.md`. Rejected: A (still reads as a
+diagram where mountains are hand-traced bands), C (muddy at phone size, the simplification removes the realism the
+owner asked for). **Status: accepted by the owner 2026-11-03; implementation pending (G1–G9).**
+
+## D-171 — Bundle `total` budget for the satellite globe (2026-11-03, Claude, ext/03)
+B ships ~1.8 MB of textures (day 4096 + 2048, night 2048 + 1024, elevation, clouds) and the Mapa mode (D-172) ~0.55 MB more. The D-143 `total` budget
+(2 200 kB, measured 1 805 kB) is raised to 4 300 kB in G1; main JS and CSS budgets are unchanged (the look adds
+code, not a chunk). Rejected: streaming the 4096 texture from the network (the app must work offline, Capacitor
+loads from disk) and shipping only 2048 (visibly soft at Fold zoom 2). **Status: in force (G1: `public/data/globe/`,
+`test:globe-assets`, `scripts/test-bundle.mjs` `total` = 4 300 kB).**
+
+## D-172 — Two globe modes, "Satelita" and "Mapa", like a maps app (2026-11-03, owner)
+Owner, after choosing B: "Może zrobić dwa tryby jak w Google Maps. Realistyczny i taki jak mapa." The globe gets two
+surface modes over the same relief mesh: **Satelita** (B, D-170) and **Mapa** (a cartographic surface; its look is
+being chosen from the owner's reference screenshot). Switching swaps only the surface textures (no terrain rebuild),
+so the cost is a second texture set (~0.5–0.8 MB) and one texture upload. Owner's answers: **Satelita is the
+default** on first launch; the mode is switched in **Settings (remembered) and by a luggage tag in the in-game
+dock** for quick changes. The Mapa mode must still respect the forbidden list (no flat pastel background, no
+subway-map look) and D-05: it stays a lit 3D globe with relief. Mapa look: the owner's Google-Maps-like reference,
+rebuilt in our own palette with ETOPO5 hillshade and Natural Earth borders (no copied colours, no labels).
+**Status: accepted by the owner 2026-11-03; plan step G8 (readability via D-175).**
+
+## D-173 — Adaptive quality steps down the globe texture first (2026-11-03, Claude, ext/03)
+With B the largest GPU cost is the 4096×2048 day texture (~43 MB with mips, uncompressed). The D-73 ladder gets a
+first step "day texture 4096 → 2048, cloud shell off" before DPR → 1; `low`/`saver` start on 2048 without clouds.
+If devices still run out of memory, G7b moves to KTX2/ETC1S compression (D-174 follow-up). **Status: proposed; G3/G4.**
+
+## D-174 — The look experiment stays in the tree behind a DEV flag (2026-11-03, Claude, ext/03)
+`src/render/globe/look.ts` (loaded with a DEV-guarded dynamic `import()`, so Vite drops it from the production
+bundle), the `TerrainStyle` parameter in `terrain.ts` (default `diorama` is byte-identical), `?globeLook=` in
+`src/game/world.ts`, `perf:scene --look`, the store-shot fixture knobs `storePlay`/`storeSunDot`, and the textures in
+`dev/globe-look/assets/` (served by the dev server only; `dist/` unchanged). G1–G5 turn the `satellite` path into
+the production globe and delete `refined`/`painted`. **Status: in force until G5.**
+
+## D-175 — Airport pads, routes and planes get redesigned for the new globe (2026-11-03, owner)
+Mockup measurement: on B the D-47 contrast is the best of all directions (day: airports 4.9–5.2:1, tags 9.2–12.9:1;
+today's diorama 2.3:1), but on the first "Mapa" texture the white pads and pale-yellow dashed routes drop to
+1.3–1.7:1. The owner: "Trzeba będzie poprawić te płyty lotnisk itp., bo to brzydko wygląda i nie pasuje." The airport
+objects (pad, runway, terminal, hub ring, curfew barrier), route tubes and plane colours are redesigned so they fit a
+realistic Earth and read ≥ 4.5:1 in both modes (e.g. a dark ink outline / mode-dependent ink in Mapa). It is an owner
+style decision: Claude renders 2–3 variants from the engine first (plan step G9), nothing ships before the owner
+picks one. Shapes keep distinguishing types (D-08, CLAUDE.md). **Status: accepted by the owner; variants pending (G9).**
+
+## D-176 — Satellite texture month: July (2026-11-03, owner)
+The Satelita surface uses Blue Marble NG **July 2004** (green northern hemisphere) instead of November (snow over
+Siberia and Kazakhstan, matching the in-game November sun of D-63). The owner chose July over Claude's recommendation
+(November). Consequence: winter sun on a summer Earth is accepted; the D-63 golden-dusk gate is re-checked in G3.
+**Status: in force (owner).**
+
+## D-177 — The D-47 contrast probe measures edges, not the layer median (2026-11-03, Claude, ext/03 G9)
+The G9 variants (`docs/mockups/globe-2026-11/g9/`) put a dark outline around light airport pads and route tubes.
+`measureLayerContrast` (`src/render/contrast.ts`) compares the median luminance of every pixel a layer changes with
+the globe behind it, so a two-tone object averages to mid-grey: on the Mapa texture the outlined pads clearly stand
+out in the PNGs while the probe moves only 1.4 → 1.6–2.2, and on Satelita the outline lowers the route score
+(3.8 → 2.3). Before G9 ships, the probe reports per layer the contrast of the outer edge against the globe and of
+the core against the edge, and the gate takes the better of the two (WCAG non-text contrast reads either boundary).
+Rejected: keeping the median (penalises the standard map-symbol design) and a pixel-count threshold (fragile at
+different zooms). **Status: proposed; implement with G9.**

@@ -18,7 +18,8 @@ export const BUDGET = Object.freeze({
   mainJsRaw: 1150 * KB, // measured 1,033.8 kB on 2026-11-03 (+11 %)
   mainJsGzip: 340 * KB, // measured 307.0 kB (+11 %)
   css: 90 * KB, // measured 70.2 kB, all CSS files together
-  total: 2200 * KB, // measured 1,804.8 kB, every file under dist/ (fonts, land mask, licences)
+  // [ext-03 G1] D-171: + ~1.8 MB globe textures (public/data/globe/, test:globe-assets) and ~0.55 MB for Mapa (G8).
+  total: 4300 * KB, // measured 1,804.8 kB before G1, every file under dist/ (fonts, land mask, licences, globe)
 });
 
 const failures = [];
