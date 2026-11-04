@@ -2,8 +2,10 @@
 // Presentation only; the composition root gathers the local stores (src/game/logbook.ts, best record, daily
 // scores, puzzle stars). Opened from the departure board's service row; Back returns to the menu.
 import { airportLabel } from '../airportLabel';
-import { favouriteHub, type Logbook, type LogEntry } from '../../game/logbook';
+import { favouriteHub, localDay, type Logbook, type LogEntry } from '../../game/logbook';
+import type { TutorialOutcome } from '../../game/tutorial/controller';
 import { localNumber, t } from '../../i18n';
+import { logbookSummary } from './summary';
 import '../menu/menu.css';
 import './logbook.css';
 
@@ -15,7 +17,12 @@ export interface LogbookData {
   readonly puzzlesSolved: number;
   readonly puzzlesTotal: number;
   readonly stars: number;
+  /** [night-12am] R1o: the training vignette's outcome for "Copy summary". */
+  readonly tutorial: TutorialOutcome;
 }
+
+/** [night-12am] Writes the summary to the clipboard; false when the platform refuses (the page then shows the text). */
+export type ClipboardWriter = (text: string) => Promise<boolean>;
 
 export interface LogbookHandle { readonly element: HTMLElement; readonly firstFocus: HTMLElement; }
 
@@ -112,7 +119,64 @@ function recentTable(recent: readonly LogEntry[]): HTMLElement {
   return table;
 }
 
-export function createLogbook(onBack: () => void, data: LogbookData): LogbookHandle {
+/** Async Clipboard API first, then a selected off-screen textarea and `copy` (older Android WebViews). */
+export const writeClipboard: ClipboardWriter = async (text) => {
+  try {
+    if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch { /* Denied: try the legacy path. */ }
+  try {
+    const area = document.createElement('textarea');
+    area.value = text;
+    area.setAttribute('readonly', '');
+    area.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0';
+    document.body.append(area);
+    area.select();
+    const ok = document.execCommand('copy');
+    area.remove();
+    return ok;
+  } catch {
+    return false;
+  }
+};
+
+/**
+ * [night-12am] R1o: "Copy summary" — the closed-test summary (src/ui/logbook/summary.ts) to the clipboard on a tap,
+ * in release builds too. No network: if copying is refused the text appears selected below for a manual copy.
+ */
+function summarySection(data: LogbookData, copy: ClipboardWriter): HTMLElement {
+  const box = e('div', 'airway-logbook__summary');
+  box.dataset.testid = 'logbook-summary';
+  const button = e('button', 'airway-settings__licenses airway-logbook__copy', t('logbook.copy'));
+  button.type = 'button';
+  button.dataset.testid = 'logbook-copy';
+  const status = e('p', 'airway-setting__hint airway-logbook__copy-status');
+  status.setAttribute('role', 'status');
+  status.setAttribute('aria-live', 'polite');
+  const area = e('textarea', 'airway-logbook__summary-text');
+  area.readOnly = true;
+  area.hidden = true;
+  area.rows = 8;
+  area.setAttribute('aria-label', t('logbook.summary.label'));
+  area.dataset.testid = 'logbook-summary-text';
+  button.addEventListener('click', () => {
+    const text = logbookSummary({ book: data.book, tutorial: data.tutorial, puzzlesSolved: data.puzzlesSolved,
+      puzzlesTotal: data.puzzlesTotal, today: localDay(new Date()) });
+    area.value = text;
+    void copy(text).catch(() => false).then((ok) => {
+      status.textContent = t(ok ? 'logbook.copied' : 'logbook.copyFailed');
+      status.dataset.state = ok ? 'copied' : 'failed';
+      area.hidden = ok;
+      if (!ok) { area.focus(); area.select(); }
+    });
+  });
+  box.append(button, e('p', 'airway-setting__hint', t('logbook.copyHint')), status, area);
+  return box;
+}
+
+export function createLogbook(onBack: () => void, data: LogbookData, copy: ClipboardWriter = writeClipboard): LogbookHandle {
   const root = e('section', 'airway-settings airway-logbook');
   root.dataset.testid = 'logbook';
   const paper = e('div', 'airway-settings__paper airway-logbook__paper');
@@ -133,7 +197,7 @@ export function createLogbook(onBack: () => void, data: LogbookData): LogbookHan
   const recent = section(t('logbook.recent'), 'recent');
   if (data.book.recent.length) recent.append(recentTable(data.book.recent));
   else recent.append(e('p', 'airway-logbook__empty', t('logbook.empty')));
-  paper.append(recent, e('p', 'airway-setting__hint airway-logbook__local', t('logbook.local')));
+  paper.append(recent, summarySection(data, copy), e('p', 'airway-setting__hint airway-logbook__local', t('logbook.local')));
   root.append(paper);
   return { element: root, firstFocus: back };
 }

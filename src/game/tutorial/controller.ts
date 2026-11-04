@@ -162,6 +162,12 @@ export class TutorialController {
   }
 }
 
+/** [night-12am] R1o: the training vignette's stored outcome for the closed-test summary ('none' = never opened). */
+export type TutorialOutcome = SavedTutorial['status'] | 'none';
+export function readTutorialOutcome(storage: TutorialStorage | null): TutorialOutcome {
+  return readSave(storage)?.status ?? 'none';
+}
+
 export function browserTutorialStorage(): TutorialStorage | null {
   try { return typeof localStorage !== 'undefined' ? localStorage : null; }
   catch { return null; }
