@@ -721,6 +721,13 @@ before/after `npm run shots -- globe` PNGs and look at them.
       200 runs ever hold a departure (median 11.6 min). Eligible from week 1: 240 of 358 boards, still never taken,
       forced −1.10 min (−0.42 instead of a turboprop, no positive subset), bot mean 16.74 → 16.45 min. The rule is not too
       strict — the hourly cap rarely binds for the bot. No rule change (D-113) → Q-80. `docs/balance/README.md` "N12af".
+- [x] N12ag **smoke and leaderboard guarded by test:e2e-seeds (D-208)** — new plan step `{ gesture: 'route-plane' }`
+      replays the two pointer drags as their Commands (route tool `AddRoute` with the dock's turboprop, dock-tag drop
+      `AssignPlane`); the on-screen pair depends on the camera, so the plan must hold for every start pair in range
+      (6 on 0xA1A1) × 7 idle offsets. smoke = drags, week-1 board, plain card, overload; leaderboard = drags, 240 ticks
+      alive, overload; both suites read `E2E_SEEDS` (0xA1A1 unchanged). Seeds 0xA1A1…+99: the smoke plan fails on 15
+      (week-1 board not reached), leaderboard on 0. Not covered: daily-share/daily-continue (date seed), the on-screen
+      filter and drag hit-testing (browser only).
 - [x] G1 **Production globe assets** — reproducible bake into `public/data/globe/` (day 4096/2048, night 2048/1024,
       elevation 2048, clouds 2048, ~1.9 MB) with a SHA-256 manifest; NASA/NOAA entries in `docs/ASSETS.md`; credit
       line (PL/EN i18n) on the About page; bundle `total` budget → 4 300 kB (D-171); new fast test `test:globe-assets`.
@@ -1360,3 +1367,4 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
 - 2026-11-04 · N12ae docs numbering guard, Q-77 → B, Q-78 → A (D-203, D-204, D-205) · night/12ae-docs-consistency · test:doc-ids 8/8 (6/8 on origin/dev 728502c: order + Q-77), 166 decisions max D-205, 79 questions max Q-79; reserved D-202 was taken by N11x (#190) meanwhile → own numbers D-203…D-205; after merging dev (#190): test:store-shots 1/1, test:fast 79/79 (258.4 s), build ok; no browser suite (docs and store text only; store PNG manifest still carries the old game text, regenerated with the next store:shots)
 - 2026-11-04 · N11y safe-area tokens across the UI CSS + notch profile (R5j, D-206) · night/11y-safe-area-tokens · after merging dev (#189–#191; D-203 → D-206, N12ae took D-203…D-205): test:safe-area 6/6 (raw=0, 56 on the old CSS), test:e2e:notch 24/24 in 37 s (14/24 on the old CSS), test:fast 80/80, build ok, e2e:screens-fit 18/18; shots docs/shots/n11y/ (14). Not run: ui:matrix (upgrade screen times out at Fold sizes under SwiftShader since the new globe, G7); the CSS is unchanged at zero insets, which is all Chromium can show
 - 2026-11-04 · N12af "+2 slots" card value and offer rule (D-207, Q-80) · night/12af-slots-card-value · card-value --card=slots 200 seeds/60 min: D-150 pool 4/364 boards offered (3 runs), 0 picks, forced −2.82 min (0 longer / 3 shorter / 1 same), holds in 12/200 runs (median 11.6 min); what-if always eligible 240/358 boards (161 runs), 0 picks, forced −1.10 min (16/96/128), turboprop alternative −0.42, bot mean 16.74 → 16.45 min; no rule change; after merging dev (#192): test:doc-ids 8/8 (168 decisions, 80 questions), test:fast 80/80 (213.8 s), build ok
+- 2026-11-04 · N12ag smoke and leaderboard guarded by test:e2e-seeds (D-208) · night/12ag-smoke-plan · test:e2e-seeds suites 24 → 26, cases 30 → 32, 32/32 (smoke 0xA1A1: 6 start pairs × 7 offsets; route ATH–BGW, week-1 board, overload at minute 6958); seeds 0xA1A1…+99: smoke plan fails 15/100, leaderboard 0/100; test:doc-ids 8/8 (169 decisions); test:fast 80/80 (266.2 s), build ok on origin/dev; browser suites not run (only the seed source moved, value 0xA1A1 unchanged; G7 SwiftShader slowness)
