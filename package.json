@@ -152,6 +152,7 @@
     "perf:overlay": "node scripts/perf-overlay.mjs",
     "shots": "node scripts/shots.mjs",
     "shots:site": "npm run build:site && node site/shots.mjs",
+    "site:assets": "node site/make-assets.mjs",
     "store:shots": "node scripts/store-shots.mjs",
     "store:feature": "node scripts/store-shots.mjs --feature",
     "mockups": "node mockups/build-all.mjs",

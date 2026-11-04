@@ -9,8 +9,11 @@ import { createRequire } from 'node:module';
 const root = dirname(fileURLToPath(import.meta.url));
 const output = resolve(root, '../docs/shots/29');
 const require = createRequire(import.meta.url);
-const mime = {'.html':'text/html','.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml','.png':'image/png','.ttf':'font/ttf'};
-const views = [{name:'site-p.png',width:412,height:915},{name:'site-l.png',width:915,height:412}];
+const mime = {'.jpg':'image/jpeg','.html':'text/html','.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml','.png':'image/png','.ttf':'font/ttf'};
+// [night-11ad] + the 404 page and the screenshot/store section (full page, preview to footer) for review.
+const views = [{name:'site-p.png',width:412,height:915},{name:'site-l.png',width:915,height:412},
+  {name:'site-404-p.png',width:412,height:915,path:'missing/page',globe:false},{name:'site-404-l.png',width:1280,height:800,path:'missing/page',globe:false},
+  {name:'site-preview-p.png',width:412,height:915,section:'#preview'},{name:'site-preview-l.png',width:1280,height:800,section:'#preview'}];
 let server, browser, count=0, failed=0;
 try {
   const { chromium } = require('playwright');
@@ -24,11 +27,11 @@ try {
       const body=await readFile(absolute);
       res.writeHead(200,{'Content-Type':mime[extname(absolute)]||'application/octet-stream','Cache-Control':'no-store'});
       res.end(body);
-    } catch {res.writeHead(404);res.end();}
+    } catch {res.writeHead(404,{'Content-Type':'text/html'});res.end(await readFile(join(webRoot,'404.html')));}
   });
   await new Promise(done=>server.listen(0,'127.0.0.1',done));
   const address=server.address();
-  const url=`http://127.0.0.1:${address.port}/?lang=pl`;
+  const base=`http://127.0.0.1:${address.port}/`;
   browser=await chromium.launch({headless:true,args:['--disable-gpu-sandbox','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
   mkdirSync(output,{recursive:true});
   for (const view of views) {
@@ -36,12 +39,19 @@ try {
     const errors=[];
     page.on('pageerror',e=>errors.push(e.message));
     try {
-      await page.goto(url,{waitUntil:'networkidle'});
+      await page.goto(base+(view.path??'')+'?lang=pl',{waitUntil:'networkidle'});
       await page.evaluate(()=>document.fonts.ready);
       if (errors.length) throw new Error(errors.join('; '));
       const ready=await page.evaluate(()=>Boolean(document.querySelector('.hero-visual.globe-ready')));
-      if (!ready) throw new Error('Globe was not mounted');
-      await page.screenshot({path:join(output,view.name),animations:'disabled'});
+      if (!ready && view.globe!==false) throw new Error('Globe was not mounted');
+      if (view.section) {
+        // From the section to the end of the page; lazy images loaded first.
+        await page.evaluate(async()=>{for(const img of document.images){img.loading='eager';await img.decode().catch(()=>{});}});
+        const top=await page.evaluate(s=>document.querySelector(s).getBoundingClientRect().top+scrollY,view.section);
+        const height=await page.evaluate(()=>document.documentElement.scrollHeight);
+        if (await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth)) throw new Error('horizontal overflow');
+        await page.screenshot({path:join(output,view.name),fullPage:true,clip:{x:0,y:top,width:view.width,height:height-top},animations:'disabled'});
+      } else await page.screenshot({path:join(output,view.name),animations:'disabled'});
       console.log(`shot docs/shots/29/${view.name} ${view.width}x${view.height}`);
       count++;
     } finally {await page.close();}
