@@ -1,87 +1,52 @@
 # Przekazanie koordynatora Airway
 
-Ostatnia aktualizacja: 2026-11-04, ok. 18:05 UTC (obaj agenci zatrzymani). Poprzednia sesja kończy pracę, bo wyczerpał się tygodniowy limit.
+Ostatnia aktualizacja: 2026-11-04, ok. 21:15 UTC. Sesja koordynatora pracuje w nocy autonomicznie (D-226); właściciel
+wraca o 9:00 czasu brukselskiego.
 
 ## Stan repo
-- `main` = `dev` = `a902909` po scaleniu #201.
-- Ostatnie scalone PR-y:
-  - #194 plan smoke;
-  - #195 tablica i samouczek przy notchu;
-  - #196 znak wyboru huba;
-  - #197 eksport/import tłumaczeń (N12ah);
-  - #198 limity długości i18n + `?pseudo=harsh` + `test:e2e:pseudo-320` (N11ac, D-213);
-  - #199/#200 prompt startowy i handover;
-  - #201 nazwy miast z Wikidata (N12ai, D-217; plus D-215 Q-80 i D-216 Q-79);
-- Ostatnie numery: decyzja **D-217** (D-214 jest zarezerwowane dla N12aj; następna wolna to D-218), pytanie **Q-80**. D-160…D-179 należą do sesji ext.
-- Budziki :15 i :45 koordynatora są **wyłączone**:
-  - `trig_01FNqUvAkWFVY9Jj8XnYzoXr`;
-  - `trig_013Ke8JAt631r4TpcSEpMBqm`.
+- `main` = `dev` po scaleniu #209 (i PR-a z tym plikiem).
+- Scalone w tej sesji:
+  - #204 pakiet startowy strony (N11ad, D-218);
+  - #205 seedy ze stałą datą (N12aj, D-214);
+  - #206 deklaracje prywatności (R1f, D-220);
+  - #207 strona dla prasy + ZIP (R2e, D-219);
+  - #208 karta dowodów dostępności (R1i);
+  - #209 strzałka trendu zapełnienia (R4c, D-221).
+- Decyzje właściciela z 2026-11-04 wieczorem: D-222 (scala koordynator), D-223 („hub” także w sklepie), D-224 (Q-03:
+  „Device or other IDs”), D-225 („Sufficient Contrast” dopiero po G9b), D-226 (w nocy cały backlog po kolei).
+- Ostatnie numery: **D-226**, **Q-80**. D-160…D-179 należą do sesji ext.
+- Budziki koordynatora :15 i :45 (włączone): `trig_011aYp1uohavDkngVDFRndoA`, `trig_01TQogjhSE2ggjutqxxB6TtS`.
 
-  Nowa sesja ustawia własne.
+## Sposób pracy (D-222)
+Filtr uprawnień nie pozwala subagentom scalać. Agenci pushują i otwierają PR (bez scalania); koordynator czyta raport,
+w razie potrzeby scala `dev` do gałęzi (konflikty w Logu backlogu i liście `test:fast`: zostają oba wpisy,
+`test:arch` zawsze ostatni), puszcza tylko tanie testy dotkniętego obszaru, scala commitem scalającym i synchronizuje
+main (D-64). W commitach bez nazwy modelu: tylko `Co-Authored-By: Claude <noreply@anthropic.com>`.
 
-## Niedokończona praca (dokończ najpierw)
-1. **N11ad / R7k: pakiet startowy strony.** WIP jest na `night/11ad-site-launch-pack` (commit `ad0a123`). Nie ma PR
-   i nie przeszedł bramki.
-   - **Gotowe:**
-     - prawdziwe zrzuty 540×960 PL/EN ze skryptu `site/make-assets.mjs`;
-     - wyłączone placeholdery sklepów w `site/launch.js`;
-     - og:image, canonical, hreflang, karta twitter;
-     - strona `404.html`;
-     - `test:site` 272/272.
-   - **Zostało:**
-     - skrypt `site:assets` w `package.json`;
-     - wpisy w `docs/SITE.md`, `docs/ASSETS.md` i `docs/TESTING.md`;
-     - decyzja D-218;
-     - pozycja w backlogu i linia w Logu;
-     - scalenie z `dev`, potem `test:fast` + build i PR.
-2. **N12ai / R7j — nazwy miast z Wikidata** — scalone w #201.
-3. **N12aj — seedy ze stałą datą dla daily-share i daily-continue.** WIP jest na `night/12aj-daily-date-seed`, bez PR.
-   - **Gotowe:**
-     - `pinDate` w `e2e/browser.mjs`;
-     - data `2026-11-04` w `e2e/seeds.mjs`;
-     - wyniki: `test:e2e-seeds` 35/35, daily-share 4/4, daily-continue 7/7.
-   - **Zostało:** `docs/TESTING.md`, decyzja **D-214** (numer zarezerwowany i użyty już w komentarzach), wpis w
-     backlogu i Logu, merge `dev`, bramka i PR.
-4. **R2e: strona dla prasy (`site/press.html`).** Nie zaczęte.
+## W toku
+- Agent #1: R4d — tablica przyczyn zatoru huba (`night/11ag-hub-cause-board`).
+- Agent #2: R1o — protokół testu zamkniętego i eksport dziennika (`night/12am-playtest-protocol`).
+
+## Kolejka (D-226)
+- **#1:** R4g, R2g, R1g, R7a/R7b/R7c, R7l.
+- **#2:** R1k, R1l, R2c (+ „hub” w sklepie, D-223), R2f, R3d, R3e, R3i, R3j, R3k, R6g, R6i, R7d; R4f po G7.
+- **Nie bierz:** kroków G (G5, G7, G9b) i `src/render/**` — sesja ext/03; zagadek — ext/04+; N9d (czeka na #52).
 
 ## Znane problemy
-- Eksport tłumaczeń nie obejmuje `site/i18n.js` ani tekstów sklepu. Nazwy miast z Wikidata (np. Kiew/Kiev, Bombay, Bangalore) wymagają oceny native speakera. Pole `city-names.json` zostanie podłączone dopiero przy wydaniu języka.
-- **G7:** pod SwiftShader nowy glob chodzi w ~10 fps. Przez to padają lub nie mieszczą się w czasie `ui:matrix`,
-  `e2e:smoke`, `store:shots` i `edge-chip-tags`. Naprawia to **sesja ext od globu**, nie nasi agenci (decyzja
-  właściciela).
-- Zrzuty w `docs/store/shots` są nieaktualne: scena porażki ma stary napis „SIATKA WSTRZYMANA”. Po G7 uruchom
-  ponownie `store:shots`, a potem `site:assets`.
-- W tekście strony (`about.p1` w `site/i18n.js`) zostało słowo „terminal”. Ma być „hub” zgodnie z glosariuszem D-195.
-- Canonical dla wersji językowych strony ustawia dopiero JS. Lepiej wygenerować osobne strony `/pl/` i `/en/`.
-
-## Kolejka (backlog `docs/NIGHT-BACKLOG.md`, pozycje `[ ]`)
-- **Agent #1 (UI):**
-  - R2e;
-  - R4c — strzałka trendu zapełnienia;
-  - R4d — tablica przyczyn zatoru huba;
-  - R4g — klawiatura i mysz;
-  - R2g — wybór regionu w Endless;
-  - R1g — skala tekstu do 150 %;
-  - R7a/R7b/R7c — polityka prywatności, regulamin, dane wydawcy;
-  - R7l — przełącznik „wysyłaj wyniki dnia” w ustawieniach.
-- **Agent #2 (platforma):**
-  - N12aj;
-  - R1f, R1i, R1k, R1l, R1o, R2c, R2f, R3d, R3e, R3i, R3j, R3k, R6g, R6i, R7d;
-  - R4f — matryca dużych ekranów (po G7).
-- **Nie bierz:**
-  - kroków G i `src/render/**` (to robi sesja ext/03);
-  - zagadek (sesja ext/04+);
-  - N9d (czeka na #52).
+- **G7:** pod SwiftShader glob ~10 fps; `ui:matrix`, `e2e:smoke`, `store:shots`, `edge-chip-tags` przekraczają czas.
+  Naprawia sesja ext. Nowe e2e piszemy na stronach-fixture (jak `test:e2e:fill-trend`).
+- R4c: podpięcie w `session.ts` sprawdzone tylko typecheckiem — potwierdzić w e2e:smoke po G7.
+- Commity #206 i #208 mają w stopce nazwę modelu (wymusiła ją atrybucja środowiska); historii nie przepisujemy.
+- `docs/TESTING.md`: wiersz `test:fast` podaje nieaktualne `steps=36` (jest 84).
+- Kolory regionów ASI i OCE nie są w `test:cvd` (kształty się różnią).
+- Canonical wersji językowych strony ustawia JS; lepiej osobne `/pl/` i `/en/`.
 
 ## Sprawy tylko dla właściciela
-- Q-01 — administrator danych.
-- Q-07 — projekt i budżet Firebase.
-- Konsultacja z prawnikiem.
-- Testy na urządzeniach. W zamkniętym teście do sprawdzenia:
-  - Q-73 — tempo;
-  - Q-78;
-  - Q-80 — karta „+2 miejsca”.
+- Q-01 — administrator danych; Q-07 — projekt i budżet Firebase.
+- Prawnik: polityka prywatności; logi Cloud Run zapisują IP i user agenta.
+- Adres `contact@airway.games` (strona prasowa) do potwierdzenia.
+- Testy na urządzeniach (zamknięty test): Q-73 tempo, Q-78, Q-80 karta „+2 miejsca”.
 
 ## Zasada aktualizacji
-Ten plik aktualizuj po każdym scaleniu i przy każdej zmianie stanu agentów: krótki PR do `dev`, self-merge, potem
+Ten plik aktualizuj po każdym scaleniu i przy każdej zmianie stanu agentów: krótki PR do `dev`, scalenie, potem
 synchronizacja main.

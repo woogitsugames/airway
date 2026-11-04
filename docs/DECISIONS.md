@@ -1806,3 +1806,28 @@ jammed tag), so up/down differ by shape only. Aria appends "Filling up / Emptyin
 spring); none under "Reduce motion" (D-88). The tag grows by 17 px only while the mark shows. Rejected: a per-tick
 rolling window (needs per-hub history of run events, which R4d may add), colour-coded counts (colour alone).
 Guards: `test:fill-trend` (rule + readings, `test:fast`), `test:e2e:fill-trend` (overlay DOM, PL/EN). **Status: in force.**
+
+## D-222 — The coordinator merges agent PRs; agents only open them (2026-11-04, owner)
+The auto-mode permission filter blocks subagents from merging their own PRs into `dev`. Owner: "you are the
+coordinator and you do everything, you may merge PRs". Agents push and open a PR; the coordinator reads the report,
+merges `dev` into the branch when it moved (backlog Log conflicts keep both lines), re-runs only the cheap affected
+checks, merges with a merge commit and syncs `main` (D-64). **Status: in force.**
+
+## D-223 — "hub" in the store texts too (2026-11-04, owner)
+The glossary word "hub" (D-195) also replaces "terminal" in the store listings (`docs/store/*.md`), so the game, the
+site, the press kit and the stores use one word. Done together with R2c (keywords). Supersedes D-216 where it kept the
+store wording. **Status: in force.**
+
+## D-224 — Play Data safety: the anonymous leaderboard UID is "Device or other IDs" (2026-11-04, owner, Q-03)
+Answers Q-03: when leaderboards ship, the anonymous Firebase UID goes under "Device or other IDs", not "User IDs"; it is
+tied to no account or e-mail. `docs/store/privacy-declarations.md` (R1f, D-220) already says so. Final check with the
+lawyer stays open. **Status: in force.**
+
+## D-225 — No "Sufficient Contrast" label until G9b (2026-11-04, owner)
+The App Store accessibility labels at launch are "Differentiate Without Color Alone" and "Reduced Motion" only
+(`docs/store/accessibility.md`, R1i). "Sufficient Contrast" waits until the globe step G9b (ext session) lifts airports,
+planes and tags in Map mode to ≥ 4.5:1 and `test:contrast` covers them. Corrects RESEARCH R1. **Status: in force.**
+
+## D-226 — Overnight queue: the whole backlog in order (2026-11-04, owner)
+Agents keep taking `[ ]` items in backlog order (#1: R4g, R2g, R1g, R7a–c, R7l; #2: R1k, R1l, R2c, R2f, R3d/e/i/j/k,
+R6g, R6i, R7d), document items included; never globe steps (G, `src/render/**`), puzzles or N9d. **Status: in force.**
