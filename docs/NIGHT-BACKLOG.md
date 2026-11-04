@@ -560,6 +560,9 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       with `latencyHint: 'playback'`; the engine clock is the sim tick (cues carry `run.tick`, main.ts passed the world
       minute). `airwayAudioStatus()` + `docs/ANDROID.md` "Sound check" for the device. New Q-75 (menu music / low
       chords). Recorded: D-150 (Q-71 B, R8a), D-151 (Q-72 B, R8c), D-152 (Q-73 C).
+- [x] N12u **Unfolded Fold size in the screen matrix (D-154)** — `ui:matrix` 4 → 6 sizes: 904×1088@2 and 1088×904@2
+      (Galaxy Z Fold inner screen ~1812×2176 px), 32 → 48 shots, same overlap/scroll checks; `newGamePage` takes a
+      DPR. Landscape menu board looks small on the big screen (for agent #1).
 
 ## Globe look (D-170)
 Owner's choice 2026-11-03: the satellite globe (direction B). Plan, budgets and test lists per step:
@@ -1164,3 +1167,4 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
 - 2026-11-03 · N11j pause-summary e2e under rules v5 + old-rules save notice (D-132, numbered D-130 in PR #147), owner D-128/D-129 · night/11j-pause-summary-v4-save · test:e2e:pause-summary 4/4 (0/4 on origin/dev), test:save-golden 21/21 (20/21 on the old code), test:e2e:save-notice 6/6 (4/6 on the old code), test:fast 67/67, build ok; e2e:smoke/ui:matrix not run (no layout change)
 - 2026-11-03 · N11k clean game-over report (R5f), owner D-130/D-131, N11j decision → D-132 · night/11k-clean-gameover · after merging dev (#154–#158): test:fast 72/72, build ok, e2e:gameover-unserved 4/4, e2e:gameover-map 3/3, e2e:smoke 9/9, ui:matrix 32/32; before: test:e2e:gameover-unserved 4/4 (0/4 on the old UI; its served case was 3/4-red on origin/dev since rules v5, now seed 0xA1A3), test:fast 67/67, build ok, e2e:smoke 9/9, ui:matrix 32/32, e2e:gameover-map 3/3, e2e:gameover-short 4/4, e2e:gameover-tip 4/4, store:shots 60 (test:store-shots ok); R5d stays a proposal
 - 2026-11-04 · N12t sound survives the phone (D-153) + owner D-150…D-152 · night/12t-music-device · test:audio-unlock 7/7 (new; 6/7 fail on the old engine: tap listener gone after a still-suspended first resume, no re-arm after a system suspension or refused resume, no frozen-clock rebuild, no status; with the old minute clock a chime 40 ticks ahead does not play within 0.3 s), test:fast 73/73, build ok, test:e2e:smoke 9/9 (boot/audio path touched); desktop Chromium probe: context running, chimes scheduled; not verified on the Fold (checklist in docs/ANDROID.md)
+- 2026-11-04 · N12u unfolded foldable in ui:matrix (D-154) · night/12u-fold-matrix · ui:matrix 48/48 (32 before; the 16 new 904×1088@2 / 1088×904@2 shots PL/EN inspected, older 32 not re-committed), test:fast 73/73, build ok

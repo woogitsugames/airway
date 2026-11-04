@@ -1189,3 +1189,11 @@ cues and volumes (read-only, no setter) for `chrome://inspect`; the device check
 Not changed: the sound design (D-71); whether "music" should also play on the menu is Q-75. Not verified: the Fold
 itself. **Status: in force (N12t).**
 
+## D-154 — Unfolded large foldable in the screen matrix (2026-11-04, Claude, night N12u)
+The owner plays on a Galaxy Z Fold class phone; its inner screen (~1812×2176 px) is ~904×1088 CSS px at device pixel
+ratio 2, taller than the matrix's 904×1000. `ui:matrix` gained 904×1088 and 1088×904 (unfolded, held in landscape),
+both rendered at DPR 2 like the device (`newGamePage` takes `deviceScaleFactor`): 6 sizes × 4 screens × PL/EN = 48
+shots with the same overlap/scroll checks. All 16 new shots pass and were inspected; in landscape the menu board
+sits small in the lower-left corner with much empty sky (layout is agent #1's; noted, not changed). The cover screen
+is covered by 412×915. **Status: in force (N12u).**
+

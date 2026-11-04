@@ -1,4 +1,4 @@
-// [task-28] Screen matrix: PL/EN x 4 mobile sizes x menu/game/upgrade/gameover, real game UI only.
+// [task-28] Screen matrix: PL/EN x 6 mobile sizes x menu/game/upgrade/gameover, real game UI only.
 // The --fixture flag writes to docs/shots/matrix-fixture and NEVER counts as game screenshots.
 // Each language/size run is independent; within a run a failed screen skips the later screens.
 import { mkdirSync } from 'node:fs';
@@ -7,7 +7,9 @@ import { performance } from 'node:perf_hooks';
 import { withBrowser, newGamePage, waitForScreen, state, assert, clickTestId, ROOT, SEED } from '../e2e/browser.mjs';
 
 const fixture = process.argv.includes('--fixture');
-const sizes = [[412, 915], [915, 412], [673, 841], [904, 1000]];
+// [night-12u] D-154: + the unfolded large foldable (Galaxy Z Fold class, ~1812x2176 px inner screen = 906x1088 CSS px
+// at DPR 2) in portrait and landscape, rendered at device pixel ratio 2 like the phone. [width, height, dpr]
+const sizes = [[412, 915, 1], [915, 412, 1], [673, 841, 1], [904, 1000, 1], [904, 1088, 2], [1088, 904, 2]];
 const screens = ['menu', 'game', 'upgrade', 'gameover'];
 // [task-31] With 3-day weeks (D-40) the DEV autoplay bot reaches the week-1 board from a clean start on the
 // ordinary test seed 0xA1A1, so no hand-picked "lucky" seed is needed any more.
@@ -46,12 +48,12 @@ try {
   await withBrowser(async ({ browser, url }) => {
     mkdirSync(outdir, { recursive: true });
     for (const language of ['pl', 'en']) {
-      for (const [width, height] of sizes) {
-        const run = `${language}/${width}x${height}`;
+      for (const [width, height, dpr] of sizes) {
+        const run = `${language}/${width}x${height}${dpr > 1 ? '@' + dpr : ''}`;
         let page;
         let errors;
         try {
-          ({ page, errors } = await newGamePage(browser, url, language, { width, height }));
+          ({ page, errors } = await newGamePage(browser, url, language, { width, height }, { deviceScaleFactor: dpr }));
           assert(await page.evaluate(() => window.aw?.ready), 'window.aw.ready=false: no AwDevAdapter registered');
           assert(await page.evaluate(() => document.documentElement.lang) === language,
             `<html lang> should be ${language}`);
@@ -94,7 +96,7 @@ try {
                   screen === 'upgrade' ? '.airway-upgrade-open' : '.airway-go-overlay');
                 assert(bottom <= height + 1, `${screen} scrolls: ${bottom} > ${height}`);
               }
-              const filename = `${screen}-${language}-${width}x${height}.png`;
+              const filename = `${screen}-${language}-${width}x${height}${dpr > 1 ? '@' + dpr : ''}.png`;
               await page.screenshot({ path: resolve(outdir, filename), animations: 'disabled' });
               captured++;
               console.log(`shot ${fixture ? 'matrix-fixture' : 'matrix'}/${filename}`);
