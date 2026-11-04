@@ -2,6 +2,7 @@ import { getLanguage, t } from '../../i18n';
 import { iconSvg } from './icons';
 import { crateCountdown } from './crate-countdown';
 import type { HudActions, HudState, PlaneType } from './types';
+import { ARIA_KEYSHORTCUTS } from '../../input/keyboard';
 
 type TagId = 'undo' | PlaneType | 'hub' | 'globe' | 'speed';
 // [G8] D-172: the globe-view tag sits before speed (the two non-network tags together).
@@ -36,6 +37,7 @@ export function createTagDock(root: HTMLElement, actions: HudActions): { render(
     button.innerHTML = `<span class="airway-dock__eyelet" aria-hidden="true"></span>${iconSvg(tag === 'globe' ? 'satellite' : tag)}<span class="airway-dock__count" aria-hidden="true"></span>`;
     holder.appendChild(button);
     dock.appendChild(holder);
+    if (tag === 'speed') button.setAttribute('aria-keyshortcuts', ARIA_KEYSHORTCUTS.speed); // [night-11ai] R4g
     controls.set(tag, button);
   }
   const ghost = document.createElement('div');

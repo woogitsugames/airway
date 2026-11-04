@@ -369,12 +369,16 @@ export function attachPointerGestures(element: HTMLElement, callbacks: GestureCa
     e.preventDefault();
   };
   const blur = (): void => recognizer.cancelAll();
+  // [night-11ai] R4g: a right click (or a long press that a mouse emulation turns into one) over the globe never
+  // opens the browser menu; the game's own long press already offers the route menu and the airport board.
+  const contextMenu = (e: Event): void => { e.preventDefault(); };
   element.addEventListener('pointerdown', down);
   element.addEventListener('pointermove', move);
   element.addEventListener('pointerup', up);
   element.addEventListener('pointercancel', cancel);
   element.addEventListener('lostpointercapture', lost);
   element.addEventListener('wheel', wheel, { passive: false });
+  element.addEventListener('contextmenu', contextMenu);
   window.addEventListener('blur', blur);
   return {
     recognizer,
@@ -389,6 +393,7 @@ export function attachPointerGestures(element: HTMLElement, callbacks: GestureCa
       element.removeEventListener('pointercancel', cancel);
       element.removeEventListener('lostpointercapture', lost);
       element.removeEventListener('wheel', wheel);
+      element.removeEventListener('contextmenu', contextMenu);
       window.removeEventListener('blur', blur);
       element.style.touchAction = previousTouchAction;
     },

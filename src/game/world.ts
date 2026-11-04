@@ -313,6 +313,7 @@ function installWorldProbe(renderer: WorldRenderer, framing: () => { first: stri
     framing, // [task-39]
     frames, // [night-11a] globe frames drawn so far
     longitude: () => renderer.orbit.longitudeDeg,
+    zoom: () => renderer.orbit.zoomLevel, // [night-11ai] R4g keyboard zoom e2e
     /** [N12n] Store feature graphic (scripts/store-shots.mjs --feature): set the zoom and slide the view (CSS px). */
     featureView(shiftX: number, shiftY: number, zoom: number): void {
       renderer.orbit.setZoom(zoom);

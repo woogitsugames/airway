@@ -225,3 +225,9 @@
 }
 .airport-demo-controls input { height: 48px; width: clamp(90px, 30%, 170px); accent-color: #1E6F6A; }
 .airport-demo-controls small { font-size: 10px; white-space: nowrap; }
+
+/* [night-11ai] R4g: a mouse over an airport (globe hit test in src/game/session.ts) or its off-screen button. The
+   tag is clipped, so the mark is an inset rule in its own ink rather than an outline. */
+@media (hover: hover) and (pointer: fine) {
+  .airport-bubble.is-hover, .airport-edge:hover { box-shadow: inset 0 -3px 0 currentColor; }
+}

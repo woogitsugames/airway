@@ -39,3 +39,10 @@ function frame(dtSeconds: number): void {
 The bridge never scales gesture coordinates by DPR. `getLimbEdgeFactor()` provides a default globe-silhouette 40 dp band; the route tool may replace it with an exact globe-picking callback. Edge rotation never carries inertia. The far side of a 3D globe cannot be visible in the same frame; Fit recentres on the spherical mean and reveals the entire visible globe disk.
 
 No game strings or buttons are created here: task 07 owns routes and task 13 owns Fit UI. When task 03 is merged, attach this controller to its actual camera and replace the placeholder hit test.
+
+## Keyboard (night-11ai, R4g, D-233)
+
+`keyboard.ts` maps keys to actions (`shortcutFor`), decides on which session screen each acts (`shortcutAllowed`) and
+attaches one window listener (`attachKeyboardShortcuts`); `src/game/session.ts` applies the actions (pause, speed,
+`orbit.zoomBy`). Escape/Back stays in `src/platform/back.ts`. `SHORTCUT_HELP` feeds Settings → Help and
+`ARIA_KEYSHORTCUTS` the HUD's `aria-keyshortcuts`. `attachPointerGestures` also cancels the canvas `contextmenu`.

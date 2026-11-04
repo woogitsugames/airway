@@ -2,6 +2,7 @@ import { getLanguage, localNumber, t } from '../../i18n'; // [task-37] D-61 form
 import type { HudState } from './types';
 import { iconSvg } from './icons';
 import { DAYS_PER_WEEK } from '../../sim/clock';
+import { ARIA_KEYSHORTCUTS } from '../../input/keyboard';
 
 // [task-31] D-40: a game week has DAYS_PER_WEEK (3) days; the bar shows one square per day and the
 // day is a number ("2/3"), since weekday names no longer fit a 3-day week.
@@ -44,6 +45,7 @@ export function createBoardingPass(root: HTMLElement, onTogglePause?: () => void
   const pause = section.querySelector<HTMLButtonElement>('.airway-pass__pause');
   if (!pause) throw new Error('Missing pause control');
   pause.addEventListener('click', () => onTogglePause?.());
+  pause.setAttribute('aria-keyshortcuts', ARIA_KEYSHORTCUTS.pause); // [night-11ai] R4g
   let locale = '';
   let paused: boolean | undefined;
   let lastDay: number | undefined;
