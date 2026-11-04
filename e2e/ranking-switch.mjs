@@ -2,6 +2,8 @@
 // Phase 1, a build with a (fake) Firebase config: the switch is shown, on by default, its row ≥ 48 px tall and the
 // switch inside the viewport; off writes the objection (`aw-net-share-v1` = '0') and is still off when settings open again; on again clears it. Phase 2, a build without leaderboards: no switch (like the delete-data row).
 // PL 412×915, EN 320×568; shots docs/shots/n11v/. Fails on the old settings (no switch).
+// [night-11ak] R7l, D-237: phase 1 starts with a daily run waiting in the offline queue (the emulator is unreachable,
+// so the start-up flush puts it back); switching off empties the queue (`aw-net-queue-v1` = []) and it stays empty.
 import { performance } from 'node:perf_hooks';
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -21,12 +23,15 @@ const results = [];
 const cases = [['pl', 412, 915], ['en', 320, 568]];
 const LABEL = { pl: 'Wysyłaj wyniki do rankingu', en: 'Send results to the leaderboard' };
 
-async function openPage(browser, url, language, viewport) {
+const WAITING = [{ submission: { v: 1, mode: 'daily', dateKey: '2026-11-03', seed: 1, rulesVersion: 6, endTick: 10,
+  claimedScore: 5, journal: [] }, attempts: 0, nextAttemptAt: 0 }];
+async function openPage(browser, url, language, viewport, queued = false) {
   const page = await browser.newPage({ viewport, deviceScaleFactor: 1, hasTouch: true, reducedMotion: 'reduce',
     locale: language === 'pl' ? 'pl-PL' : 'en-US' });
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await presetLanguage(page, language, { clear: true });
+  if (queued) await page.addInitScript((items) => { localStorage.setItem('aw-net-queue-v1', JSON.stringify(items)); }, WAITING);
   await page.route(/^http:\/\/127\.0\.0\.1:(5001|9099)\//, (route) => route.abort('internetdisconnected'));
   await page.goto(url, { waitUntil: 'load' });
   await page.locator('#app').waitFor({ timeout: 12000 });
@@ -39,12 +44,13 @@ async function openSettings(page) {
   await page.locator('[data-testid="settings-group-help"]').waitFor({ timeout: 5000 });
 }
 const share = (page) => page.evaluate(() => localStorage.getItem('aw-net-share-v1'));
+const waiting = (page) => page.evaluate(() => JSON.parse(localStorage.getItem('aw-net-queue-v1') || '[]').length);
 
 async function phase(configured) {
   await withBrowser(async ({ browser, url }) => {
     for (const [language, width, height] of cases) {
       const label = `${language} ${width}×${height}: ${configured ? 'switch on → off → reopen → on' : 'no leaderboards, no switch'}`;
-      const { page, errors } = await openPage(browser, url, language, { width, height });
+      const { page, errors } = await openPage(browser, url, language, { width, height }, configured);
       try {
         await openSettings(page);
         const rowLocator = page.locator('[data-testid="settings-share-ranking-row"]');
@@ -61,12 +67,15 @@ async function phase(configured) {
           assert(box && box.height >= 48, `row height ${box?.height}`);
           const sw = await rowLocator.locator('.airway-setting__switch').boundingBox();
           assert(sw && sw.height >= 48 && sw.width >= 48 && sw.x >= 0 && sw.x + sw.width <= width + 0.5, `switch box ${JSON.stringify(sw)}`);
+          assert(await waiting(page) === 1, `queued run before the switch: ${await waiting(page)}`);
           await rowLocator.locator('.airway-setting__switch').click();
           assert(!(await input.isChecked()) && await share(page) === '0', `off not stored (${await share(page)})`);
+          assert(await waiting(page) === 0, `waiting run not dropped: ${await waiting(page)}`);
           await page.keyboard.press('Escape');
           await openSettings(page);
           await rowLocator.scrollIntoViewIfNeeded();
           assert(!(await input.isChecked()), 'off survives reopening settings');
+          assert(await waiting(page) === 0, 'the dropped run does not come back');
           await rowLocator.locator('.airway-setting__switch').click();
           assert(await input.isChecked() && (await share(page)) !== '0', 'on again clears the objection');
           assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 2), 'horizontal scroll');

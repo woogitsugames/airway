@@ -1191,7 +1191,7 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
       1 Mar 2027; Apple: before EU submission), UK art. 27 decision (Q-67), US state app-store age laws to re-check
       before the US launch (Texas in force, Louisiana 1 Jul 2026, Utah 6 May 2027, Alabama 1 Jan 2027). Link each line
       from `docs/RELEASE.md` when R1l lands. **Area:** `docs/legal/`, `docs/FIREBASE.md`.
-- [ ] R7l **"Send my daily results" setting** — [night-12x → N12x: net layer + daily report done (`Leaderboards.isSharing/setSharing`, D-186); the settings switch is agent #1's] — a settings switch (default on) that stops leaderboard submissions
+- [x] R7l **"Send my daily results" setting** — [night-12x → N12x: net layer + daily report done (`Leaderboards.isSharing/setSharing`, D-186); switch N11v (D-197); N11ak: objection also stops a submission under way (D-237); Q-68 = A (D-135)] — a settings switch (default on) that stops leaderboard submissions
       and `getBoards` calls; when off, the daily report says the run is not ranked; queued submissions are dropped
       when it is turned off. Gives the GDPR art. 21 objection a one-tap path. `test:net`, settings e2e.
       **Area:** `src/net/**`, `src/ui/settings/**`, `src/ui/daily/**`, i18n. *Needs Q-68 (A).*

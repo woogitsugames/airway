@@ -131,7 +131,8 @@ export function createLeaderboards(options: {
       queue.add(submission);
       last = 'queued';
       await queue.flush(send);
-      return last;
+      // [night-11ak] Switched off while the run was on its way: whatever the answer, the report says "not ranked".
+      return sharing ? last : 'opted-out';
     },
     async flush() { if (sharing) await queue.flush(send); },
     async boards(dateKey) {
