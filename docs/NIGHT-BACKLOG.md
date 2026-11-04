@@ -503,6 +503,13 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       with the dock between hub and speed (portrait row, landscape/foldable rack, after rotation) and tap →
       `onToggleGlobeMode`. The stricter count exposed the speed tag 1 px inside the bottom safe area at 915×412: the
       landscape rack's tags now shrink to fit (never below 48 px). **Area:** `scripts/test-hud-targets.mjs`, `src/ui/hud.css`.
+- [x] N11x **Edge-chip placement as a pure function (R5h, D-202)** — `distributeEdges` and `edgeLayout` left
+      `createAirportOverlay` for `placeEdgeChips(chips, tags, bounds)` / `projectEdgeChip` in `src/ui/overlay-layout.ts`
+      (no DOM, no three.js, no per-frame allocation); the overlay keeps one `EdgeChip` per airport parallel to its tag
+      slots. Same output (the old loop, ported verbatim into `test:overlay-layout`, is the oracle on 200 random scenes);
+      cheaper: on-screen airports are collected once and filtered per chip to its strip along the edge, placed chips
+      are kept per side, and the slide stops once both directions leave the edge (150 airports ~3× faster). **Area:** `src/ui/overlay.ts`,
+      `src/ui/overlay-layout.ts`, `scripts/test-overlay-layout.mjs`.
 
 ## Continuous development round N12 (agent 2)
 - [x] N12a **Balance bot plays for reach (D-90)** — the handover gap "the DEV bot rarely connects new airports; long
@@ -1007,7 +1014,7 @@ Evidence: `docs/RESEARCH.md` "R5 — …", PNGs in `docs/research/r5/`.
       paused" → "Time is stopped / Czas stoi". Add a glossary table to `src/i18n/README.md` (or the top of `en.ts`)
       and a `test:i18n` check that fails on the banned synonyms. Puzzle titles may keep "węzeł" only if the owner
       prefers (say so in the PR). **Area:** i18n (`src/i18n/**`), `scripts/test-i18n.mjs`.
-- [ ] R5h **Edge-chip placement as a pure, tested function** — move `distributeEdges` (+ the edge projection) from
+- [x] R5h → N11x **Edge-chip placement as a pure, tested function** — move `distributeEdges` (+ the edge projection) from
       `createAirportOverlay` into `overlay-layout.ts` as `placeEdgeChips(entries, bounds)` with no DOM; unit tests in
       `test:overlay-layout`: jammed chips win space, a chip never covers an on-screen airport (N10v), avoids tags
       when there is room (N10z), deterministic output; a 150-airport case under a time budget (today O(n²·k) per
@@ -1330,3 +1337,4 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
 - 2026-11-04 · N12ac every bot-driven e2e suite guarded by test:e2e-seeds (D-200) · night/12ac-e2e-seeds-all · test:e2e-seeds suites 5 → 24, cases 7 → 30, 30/30 passed (~18 s); negative check on 0xA1A1: curfew-barrier, gameover-tip, gameover-unserved:served and first-time-cards plans fail; test:fast 77/77, build ok (origin/dev c45e76a); 18 moved browser suites 86/93 steps — pause-summary 4/4, curfew-barrier 2/2, gameover-map 3/3, gameover-short 4/4, gameover-tip 4/4, gameover-unserved 5/5, new-airport 4/4, focus-pause 3/3, logbook 4/4, pick-sign 10/10, undo-after-upgrade 2/2, edge-chip-fill 4/4, pseudo-locale 27/27, airport-plates 4/4; transfer-glyphs 1/2, first-time-cards 0/4, continue-framing 1/2, edge-dock 4/5: every failure is the weekly-card click timeout (G7, SwiftShader ~10 fps), seeds unchanged
 - 2026-11-04 · N12ad hub-expansion card value, bot policy (D-201, Q-78) · night/12ad-hub-card · card-value 200 seeds/60 min: 358 skipped boards −0.99 min, hub ≥ 70 % + turboprop +0.55 min (18/8); r8 200 seeds mean 16.57 → 16.74, p50 16.64 → 16.75, score 271.5 → 279, unserved losses 48 → 54, hub picks 2 → 39 of 363; forced hub 14.93 (+12 places 14.99, +18 15.02, +turboprop 15.34 vs always-turboprop 15.10); test:balance median 17.25 → 17.41, test:bot-policy 13/13 (unserved 5/20; 12/13 without the unserved limit); after merging dev (#186): test:fast 78/78 (test:e2e-seeds 30/30 with the new bot), build ok
 - 2026-11-04 · N11w HUD target test knows the G8 globe tag (D-199) · night/11w-hud-targets-globe-tag · after merging dev (#186–#188): test:hud-targets 312/312 (293/300 on clean dev; 308/312 with the new checks before the CSS fix: speed tag 1 px in the bottom inset at 915×412 + its rotation case, plus a too-strict neighbour gap on foldables, dropped), test:fast 78/78, build ok; shots docs/shots/13 (5, seven controls)
+- 2026-11-04 · N11x edge-chip placement as a pure function (R5h, D-202) · night/11x-edge-chip-placement · after merging dev (#188, #189): test:overlay-layout 36/36 (crashes on the old module; 200/200 scenes identical to the old loop; 150 airports 0.14–0.16 ms vs 0.43–0.50 ms per frame), test:fast 78/78, build ok, e2e:edge-chip-airports 2/2, e2e:edge-chip-fill 4/4, e2e:edge-dock 5/5, e2e:edge-chip-tags 6/6 chips=53 (same as origin/dev; a first run 4/6 timed out on the upgrade-card click at 673×841 under SwiftShader, G7)

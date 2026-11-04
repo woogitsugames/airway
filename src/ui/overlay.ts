@@ -3,18 +3,14 @@ import { Camera, Object3D, Vector3 } from 'three';
 import { t } from '../i18n';
 import { isDestinationRegion as isValidRegion, regionGlyph, type DestinationRegion } from './glyphs';
 import {
-  attachSlotTag, layoutTags, sizeTagGroup, slotCountdownText, type SlotTagRect, type TagBounds, type TagSlot,
-} from './overlay-layout'; // [task-38] slot tag
+  attachSlotTag, layoutTags, placeEdgeChips, projectEdgeChip, sizeTagGroup, slotCountdownText,
+  type EdgeBounds, type EdgeChip, type SlotTagRect, type TagBounds, type TagSlot,
+} from './overlay-layout'; // [task-38] slot tag; [night-11x] R5h edge chips
 import { REGIONS } from '../data/regions';
 import './overlay.css';
 
 const DEG = Math.PI / 180;
-const EDGE_WIDTH = 58;
-const EDGE_HEIGHT = 48;
 const MAX_GLYPHS = 6;
-const EDGE_PAD = 7;
-/** [night-10v] Clearance between an edge chip and the marker of an on-screen airport (inside the 28 dp tap radius). */
-const EDGE_CLEAR = 16;
 const SVG = 'http://www.w3.org/2000/svg';
 
 export interface OverlayAirport {
@@ -90,12 +86,9 @@ interface BubbleEntry {
   /** [night-10i] Tail of `waiting` still inside the minimum connection time (drawn as hollow glyphs). */
   connecting: number;
   jamSeconds: number | null;
-  edgeSide: 0 | 1 | 2 | 3;
-  edgeX: number;
-  edgeY: number;
-  edgePlaced: boolean;
+  /** [night-11x] R5h: edge chip state, placed by `placeEdgeChips` (`chips[i]` belongs to `slots[i]`). */
+  chip: EdgeChip;
   bubbleVisible: boolean;
-  edgeVisible: boolean;
   lastBubbleX: number;
   lastBubbleY: number;
   lastEdgeX: number;
@@ -211,6 +204,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
   host.appendChild(layer);
   const entries: BubbleEntry[] = [];
   const slots: TagSlot[] = [];
+  const chips: EdgeChip[] = []; // [night-11x] parallel to `slots`
   const byId = new Map<string, BubbleEntry>();
   const marker = new Vector3();
   const transformedNormal = new Vector3();
@@ -218,7 +212,8 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
   const toCamera = new Vector3();
   const projected = { x: 0, y: 0, visible: false };
   const bounds: TagBounds = { width: host.clientWidth, height: host.clientHeight, top: 0, bottom: 0, gap: 4 };
-  let reservedRight = 0; // [night-08b] edge buttons only; tag layout keeps using `bounds`
+  // [night-08b] The right band (landscape dock) applies to edge chips only; tag layout keeps using `bounds`.
+  const edgeBounds: EdgeBounds = { width: host.clientWidth, height: host.clientHeight, top: 0, bottom: 0, right: 0 };
   let zoomedIn = false; // [night-11m] D-128
   const radius = options.radius ?? 1;
   let disposed = false;
@@ -371,78 +366,6 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
     sizeTagGroup(entry.tag, entry.mainWidth, entry.slotRect);
   }
 
-  function edgeLayout(entry: BubbleEntry, dx: number, dy: number): void {
-    const left = EDGE_PAD + EDGE_WIDTH / 2;
-    const right = width - reservedRight - left;
-    const top = bounds.top + EDGE_PAD + EDGE_HEIGHT / 2;
-    const bottom = height - bounds.bottom - EDGE_PAD - EDGE_HEIGHT / 2;
-    // [night-08b] The horizontal centre of the free band (width / 2 without a right reservation).
-    const centreX = (left + right) / 2;
-    let x = centreX;
-    let y = (top + bottom) / 2;
-    if (dx === 0 && dy === 0) dx = entry.airport.lon >= 0 ? 1 : -1;
-    const halfW = Math.max(1, right - centreX);
-    const halfH = Math.max(1, (bottom - top) / 2);
-    const factor = Math.min(dx ? halfW / Math.abs(dx) : Infinity, dy ? halfH / Math.abs(dy) : Infinity);
-    x = Math.max(left, Math.min(right, x + dx * factor));
-    y = Math.max(top, Math.min(bottom, y + dy * factor));
-    const onVertical = Math.abs(dx / halfW) >= Math.abs(dy / halfH);
-    entry.edgeSide = onVertical ? (dx < 0 ? 0 : 1) : (dy < 0 ? 2 : 3);
-    entry.edgeX = Math.round(x - EDGE_WIDTH / 2);
-    entry.edgeY = Math.round(y - EDGE_HEIGHT / 2);
-  }
-
-  function distributeEdges(): void {
-    // Two passes ensure congested hub warnings win edge space over ordinary codes.
-    for (let pass = 1; pass >= 0; pass--) for (let i = 0; i < entries.length; i++) {
-      const entry = entries[i];
-      if (!entry.edgeVisible || Number(entry.jamSeconds !== null) !== pass) continue;
-      const vertical = entry.edgeSide < 2;
-      const start = vertical ? entry.edgeY : entry.edgeX;
-      const min = vertical ? bounds.top + EDGE_PAD : EDGE_PAD;
-      const max = vertical ? height - bounds.bottom - EDGE_HEIGHT - EDGE_PAD : width - reservedRight - EDGE_WIDTH - EDGE_PAD;
-      const step = (vertical ? EDGE_HEIGHT : EDGE_WIDTH) + 3;
-      entry.edgePlaced = false;
-      // [night-10z] First look for a place clear of the luggage tags as well (a tag drawn over a chip hid its
-      // code); only when the edge is too crowded may a chip sit under a tag, never on an airport marker.
-      for (let avoidTags = 1; avoidTags >= 0 && !entry.edgePlaced; avoidTags--)
-      for (let offset = 0; offset <= entries.length; offset++) {
-        const delta = offset === 0 ? 0 : (offset % 2 ? 1 : -1) * Math.ceil(offset / 2) * step;
-        const coord = Math.round(start + delta);
-        if (coord < min || coord > max) continue;
-        const x = vertical ? entry.edgeX : coord;
-        const y = vertical ? coord : entry.edgeY;
-        let collides = false;
-        for (let j = 0; j < entries.length; j++) {
-          const other = entries[j];
-          // [night-10v] A chip must never sit on an airport that is on screen: the button would take the tap
-          // meant for that airport (route start, hub or "+2 slots" pick). It slides along the edge instead.
-          if (!other.edgeVisible) {
-            const ax = other.tag.anchorX;
-            const ay = other.tag.anchorY;
-            if (ax > x - EDGE_CLEAR && ax < x + EDGE_WIDTH + EDGE_CLEAR && ay > y - EDGE_CLEAR && ay < y + EDGE_HEIGHT + EDGE_CLEAR) {
-              collides = true;
-              break;
-            }
-            const tag = other.tag;
-            if (avoidTags && tag.placed && x < tag.x + tag.width + 3 && x + EDGE_WIDTH + 3 > tag.x &&
-                y < tag.y + tag.height + 3 && y + EDGE_HEIGHT + 3 > tag.y) { collides = true; break; }
-            continue;
-          }
-          if (!other.edgePlaced || other.edgeSide !== entry.edgeSide) continue;
-          if (x < other.edgeX + EDGE_WIDTH + 3 && x + EDGE_WIDTH + 3 > other.edgeX &&
-              y < other.edgeY + EDGE_HEIGHT + 3 && y + EDGE_HEIGHT + 3 > other.edgeY) { collides = true; break; }
-        }
-        if (!collides) {
-          entry.edgeX = x;
-          entry.edgeY = y;
-          entry.edgePlaced = true;
-          break;
-        }
-      }
-    }
-  }
-
   return {
     layer,
     addAirport(airport): void {
@@ -507,6 +430,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       slotCount.hidden = true;
       slot.append(stub, slotLabel, slotTime, slotCount);
       layer.append(bubble, slot, edge);
+      const chip: EdgeChip = { offscreen: false, jammed: false, side: 0, x: 0, y: 0, placed: false };
       const tag: TagSlot = { id: airport.id, anchorX: 0, anchorY: 0, width: 30, height: 30, active: false, jammed: false, x: 0, y: 0, placed: false };
       const entry: BubbleEntry = {
         airport, normal, anchor, bubble, edge, gauge, gaugeFill, capacity: 0, lastGauge: '', timer, fresh, isNew: false, barrier, closed: false, tag,
@@ -515,11 +439,12 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
         slot, slotLabel, slotTime, slotCount, slotRect: { width: 0, x: 0, y: 0, visible: false }, slotHeld: 0, slotMinutes: 0,
         mainWidth: 0, slotVisible: false, lastSlotX: NaN, lastSlotY: NaN,
         waiting: [], connecting: 0, jamSeconds: null,
-        edgeSide: 0, edgeX: 0, edgeY: 0, edgePlaced: false, bubbleVisible: false, edgeVisible: false,
+        chip, bubbleVisible: false,
         lastBubbleX: NaN, lastBubbleY: NaN, lastEdgeX: NaN, lastEdgeY: NaN, lastEdgeSide: -1, lastOpacity: NaN,
       };
       entries.push(entry);
       slots.push(tag);
+      chips.push(chip);
       byId.set(airport.id, entry);
       rebuildBubble(entry);
     },
@@ -591,7 +516,11 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       const live = options.reserved?.();
       bounds.top = live ? live.top : options.reservedTop ?? 72;
       bounds.bottom = live ? live.bottom : options.reservedBottom ?? 92;
-      reservedRight = live ? live.right : 0;
+      edgeBounds.width = width;
+      edgeBounds.height = height;
+      edgeBounds.top = bounds.top;
+      edgeBounds.bottom = bounds.bottom;
+      edgeBounds.right = live ? live.right : 0;
       for (const entry of entries) {
         marker.copy(entry.anchor);
         transformedNormal.copy(entry.normal);
@@ -620,16 +549,17 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
         entry.tag.active = inView && (entry.mainWidth > 0 || entry.slotRect.width > 0); // [task-38]
         entry.tag.anchorX = x;
         entry.tag.anchorY = y;
-        entry.edgeVisible = !inView;
-        entry.edgePlaced = false;
-        if (entry.edgeVisible) {
+        const chip = entry.chip;
+        chip.offscreen = !inView;
+        chip.jammed = entry.jamSeconds !== null;
+        if (chip.offscreen) {
           const dx = transformedNormal.x * cam[0] + transformedNormal.y * cam[1] + transformedNormal.z * cam[2];
           const dy = -(transformedNormal.x * cam[4] + transformedNormal.y * cam[5] + transformedNormal.z * cam[6]);
-          edgeLayout(entry, dx, dy);
+          projectEdgeChip(chip, dx, dy, entry.airport.lon, edgeBounds);
         }
       }
       layoutTags(slots, bounds);
-      distributeEdges();
+      placeEdgeChips(chips, slots, edgeBounds);
       for (const entry of entries) {
         const tag = entry.tag;
         const showBubble = tag.placed && entry.mainWidth > 0; // [task-38] the box may hold only a slot tag
@@ -656,17 +586,17 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
             entry.lastOpacity = opacity;
           }
         }
-        const showEdge = entry.edgeVisible && entry.edgePlaced;
+        const showEdge = entry.chip.offscreen && entry.chip.placed;
         if (showEdge !== (entry.edge.hidden === false)) updateVisibility(entry.edge, showEdge);
-        if (showEdge && (entry.edgeX !== entry.lastEdgeX || entry.edgeY !== entry.lastEdgeY)) {
-          placeEl(entry.edge, entry.edgeX, entry.edgeY);
-          entry.lastEdgeX = entry.edgeX;
-          entry.lastEdgeY = entry.edgeY;
+        if (showEdge && (entry.chip.x !== entry.lastEdgeX || entry.chip.y !== entry.lastEdgeY)) {
+          placeEl(entry.edge, entry.chip.x, entry.chip.y);
+          entry.lastEdgeX = entry.chip.x;
+          entry.lastEdgeY = entry.chip.y;
         }
-        if (showEdge && entry.lastEdgeSide !== entry.edgeSide) {
+        if (showEdge && entry.lastEdgeSide !== entry.chip.side) {
           const icon = entry.edge.firstElementChild as SVGElement | null;
-          if (icon) icon.style.transform = `rotate(${entry.edgeSide === 0 ? 180 : entry.edgeSide === 1 ? 0 : entry.edgeSide === 2 ? -90 : 90}deg)`;
-          entry.lastEdgeSide = entry.edgeSide;
+          if (icon) icon.style.transform = `rotate(${entry.chip.side === 0 ? 180 : entry.chip.side === 1 ? 0 : entry.chip.side === 2 ? -90 : 90}deg)`;
+          entry.lastEdgeSide = entry.chip.side;
         }
       }
     },
@@ -681,6 +611,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       layer.remove();
       entries.length = 0;
       slots.length = 0;
+      chips.length = 0;
       byId.clear();
     },
   };
