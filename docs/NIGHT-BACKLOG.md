@@ -644,6 +644,19 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       takes the place); Endless/Daily curfew from week 3. `RULES_VERSION` 6, v5 golden frozen, older saves replayed
       (D-76). Bot median 17.03 → 17.25 min (50 seeds), 16.52 → 16.64 (200); runs with a curfew hold 10 % → 62 %.
 
+- [x] N12aa **Five e2e suites green again under rules v6; seeds replayed headless in test:fast (D-189)** — board-short,
+      edge-chip-airports, edge-chip-tags, run-timeline and upgrade-picks were red on clean `dev` since rules v6: their
+      fixed seeds ended the bot's run in week 2, before the board they test. Seeds and bot plans now live in
+      `e2e/seeds.mjs`; `scripts/lib/e2e-plans.ts` replays each plan with the same EndlessRun, bot, card click and forced
+      overload as `window.aw`, on 7 idle offsets (the browser clock keeps running between calls). New fast
+      `test:e2e-seeds` fails in `test:fast` when a rule change breaks a suite's seed; `npm run e2e:seeds -- <suite>`
+      prints the next seed that holds. New seeds: 0xA1A2 (board-short, run-timeline), 0xA3AA (edge-chip-airports,
+      upgrade-picks), 0xA1C3 + 41817 (edge-chip-tags). Assertions unchanged; upgrade-picks' "Back took nothing" compares
+      with the count before the pick (its board is now week 3). PL 320×568 week-1 board scrolled 1 px since the N11r stamp
+      caption: 3 px less stamp spacing at that size. Shots `docs/shots/n10r/`, `docs/shots/n10v/` refreshed.
+      Open (G7, not a seed): under SwiftShader since the satellite globe a weekly-card click needs ~15 s (rAF ~10/s at
+      412×915) against the 5 s `clickTestId` timeout, so edge-chip-tags fails on timeouts (6/6 with a 30 s click).
+
 ## Globe look (D-170)
 Owner's choice 2026-11-03: the satellite globe (direction B). Plan, budgets and test lists per step:
 `docs/mockups/globe-2026-11/PLAN.md`; the DEV experiment to start from: `?globeLook=satellite`
@@ -1276,3 +1289,4 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
 - 2026-11-04 · G8 Mapa mode: setting + dock tag + texture swap (D-172) · ext/03-g8-map-mode · test:globe-assets 59/59 (8 files, 2,313,491 B), test:fast 74/74 (133.9 s), build ok (main 1,075.0 kB / gzip 318.6 kB), test:bundle 9/9 (dist 4,162.8 kB ≤ 4,300), e2e smoke 9/9, edge-dock 5/5, screens-fit-320 12/12, ui:matrix 48/48, store:shots 60/60 + feature 1/1 (six-tag dock), live switch on seed 15 (aria label, stored setting, icon) at 412 and 320 px; the warm terminator band shows more on the light Mapa (kept: it is the day line)
 - 2026-11-04 · R6h2 puzzle titles never split a word at 320 px (D-166, Q-77) · ext/05-puzzle-titles-320 · test:e2e:screens-fit-320 12/12 (10/12 on the old titles: 12 PL and 10 EN titles split a word), test:fast 74/74 (143.4 s), build ok, test:puzzles levels=40 cases=239 passed=239, test:long-haul 25/25, test:e2e:puzzles levels=40 steps=44 passed=44 (merged tree with dev at 72ce218)
 - 2026-11-04 · N12z balance bot frees an idle aircraft for an unserved airport (R8e, D-188) · night/12z-bot-moves-aircraft · test:bot-policy 13/13 (3 new cases fail on the old bot: no UnassignPlane, an unserved jam got aircraft elsewhere first), r8-audit 200 seeds unserved losses 52 → 48, median 16.64 → 16.64 min, test:balance median 17.25 → 17.25 (D-79 10–18), test:fast 75/75 (after merging #176), build ok; e2e before the merge: smoke 9/9 and 15 more autoplay suites green; board-short 0/4, edge-chip-airports 0/2, edge-chip-tags 5/6, run-timeline 0/4, upgrade-picks 4/6 fail identically on origin/dev (fixed-seed runs end in week 2 since rules v6 — needs new seeds, not this change)
+- 2026-11-04 · N12aa five e2e suites green again under rules v6, seeds replayed headless (D-189) · night/12aa-e2e-seeds · test:e2e-seeds 7/7 (2/7 on the old seeds), test:fast 77/77, build ok after merging dev (#181, #182); board-short 4/4 (0/4 on origin/dev; 3/4 with new seeds only, PL 320×568 1 px scroll from the N11r caption), edge-chip-airports 2/2 (0/2), run-timeline 4/4 (0/4), upgrade-picks 10/10 steps (4/10, 2 failed + 4 skipped); edge-chip-tags 2/6 at the gate and 5/6 before the merge (5/6 on origin/dev): every failure is the weekly-card click timing out (5 s; ~15 s needed under SwiftShader, rAF ~10/s, G7), 6/6 with a 30 s click — seeds verified headless
