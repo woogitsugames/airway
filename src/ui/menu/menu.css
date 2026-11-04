@@ -21,7 +21,7 @@
 .airway-board__service .airway-flight--half { border-top:0; grid-template-columns:minmax(0,1fr) auto; padding-right:8px; }
 .airway-board__service .airway-flight--half + .airway-flight--half { border-left:1px solid #050505; padding-left:8px; }
 .airway-flight__main { min-width:0; display:flex; flex-direction:column; justify-content:center; gap:5px; }
-.airway-flight__sub { color:#b6bbbe; font:400 11px/1.1 'Atkinson Hyperlegible Next',sans-serif; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.airway-flight__sub { color:#b6bbbe; font:400 11px/1.1 'Atkinson Hyperlegible Next',sans-serif; overflow-wrap:anywhere; } /* [night-11ac] R7h: a long hint takes a second line instead of an ellipsis */
 .airway-flight__status { display:flex; align-items:center; overflow:hidden; }
 .split-flap { display:inline-flex; align-items:center; gap:1px; max-width:100%; overflow:hidden; color:#f1f2ee; }
 .split-flap--highlight { color:#ffc72c; }
@@ -42,11 +42,11 @@
 .airway-settings { background:#8cc3d8; overflow:auto; padding:calc(var(--aw-safe-top) + 14px) calc(var(--aw-safe-right) + 12px) calc(var(--aw-safe-bottom) + 16px) calc(var(--aw-safe-left) + 12px); }
 .airway-settings__paper { max-width:570px; margin:0 auto; background:#fbf8f1; color:#2a2420; border-top:9px solid #1e6f6a; padding:14px; }
 .airway-settings__heading { display:flex; align-items:center; gap:12px; border-bottom:2px solid #2a2420; padding-bottom:11px; margin-bottom:10px; }
-.airway-settings h1 { margin:0; font:800 27px/1.1 'Overpass',sans-serif; }
+.airway-settings h1 { margin:0; min-width:0; overflow-wrap:anywhere; font:800 27px/1.1 'Overpass',sans-serif; }
 .airway-settings__back { appearance:none; flex:none; min-height:48px; padding:9px 12px; border:2px solid #2a2420; color:#2a2420; background:#ffc72c; font:700 13px 'Overpass',sans-serif; cursor:pointer; }
 /* [night-07s] The control column never drops below ~155 px, so "Automatyczna" / "Battery saver" fit at 360 dp.
    [night-07v] Down to 320 dp too: the label may take up to 42 % and wraps (was capped by 50 % → 132 px). */
-.airway-setting { display:grid; grid-template-columns:minmax(0,1fr) minmax(min(156px,58%),42%); align-items:center; gap:12px; min-height:60px; padding:10px 2px; border-bottom:1px dashed #c2b5a6; font:700 14px/1.2 'Atkinson Hyperlegible Next',sans-serif; }
+.airway-setting { display:grid; grid-template-columns:minmax(0,1fr) minmax(min(156px,58%),42%); align-items:center; gap:12px; min-height:60px; padding:10px 2px; border-bottom:1px dashed #c2b5a6; overflow-wrap:anywhere; font:700 14px/1.2 'Atkinson Hyperlegible Next',sans-serif; }
 .airway-setting__control { min-height:48px; max-width:100%; width:100%; font:700 14px 'Atkinson Hyperlegible Next',sans-serif; border:2px solid #1e6f6a; background:#fff; color:#13302e; padding:8px; border-radius:0; }
 .airway-setting__control:focus-visible, .airway-settings button:focus-visible { outline:3px solid #c8352a; outline-offset:2px; }
 .airway-setting__switch { display:flex; align-items:center; gap:8px; justify-content:flex-end; min-height:48px; cursor:pointer; }

@@ -146,7 +146,7 @@
   text-transform: uppercase;
   color: #5e4e3a;
 }
-.airway-upgrade-value { font-size: 15px; line-height: 1.25; }
+.airway-upgrade-value { font-size: 15px; line-height: 1.25; min-width: 0; overflow-wrap: anywhere; } /* [night-11ac] R7h */
 .airway-upgrade-stamp {
   align-self: flex-start;
   margin-top: 10px;

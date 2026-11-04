@@ -1,0 +1,26 @@
+{
+  "note": "Reviewed corrections of Wikidata labels (node scripts/city-names.mjs applies them): the name players know and that fits a label, not the formal or disambiguated item title. pt = Brazilian Portuguese (D-212): where Wikidata has no pt-br label the European pt label is used, so pt-PT spellings are corrected here.",
+  "cities": {
+    "NYC": { "de": { "name": "New York", "why": "label is the formal 'New York City'; German says New York" },
+             "pt": { "name": "Nova York", "why": "pt-br label 'Nova Iorque' is the European spelling" } },
+    "DCA": { "de": { "name": "Washington", "why": "drop ', D.C.' like the EN/PL names" },
+             "pt": { "name": "Washington", "why": "no pt-br label; pt 'Washington, D.C.'" } },
+    "FRA": { "de": { "name": "Frankfurt", "why": "short form, as EN 'Frankfurt'" },
+             "fr": { "name": "Francfort", "why": "short form of 'Francfort-sur-le-Main'" },
+             "es": { "name": "Fráncfort", "why": "short form of 'Fráncfort del Meno'" },
+             "pt": { "name": "Frankfurt", "why": "short form of 'Frankfurt am Main'" } },
+    "TLV": { "de": { "name": "Tel Aviv", "why": "label is the municipality 'Tel Aviv-Jaffa'; EN/PL use Tel Aviv" } },
+    "BRU": { "pt": { "name": "Bruxelas", "why": "pt-br label 'Cidade de Bruxelas' names the municipality" } },
+    "ASU": { "fr": { "name": "Asunción", "why": "fr label lost the accent; French usage keeps it" } },
+    "HYD": { "es": { "name": "Hyderabad", "why": "es label 'Haidrābād' is a transliteration with a macron" } },
+    "ALA": { "es": { "name": "Almaty", "why": "'Alma Ata' is the Soviet-era name" } },
+    "KWI": { "pt": { "name": "Cidade do Kuwait", "why": "no pt-br label; pt 'Kuwait' is the country" } },
+    "KHI": { "pt": { "name": "Karachi", "why": "no pt-br label; pt-PT 'Carachi'" } },
+    "LUS": { "pt": { "name": "Lusaka", "why": "no pt-br label; pt-PT 'Lusaca'" } },
+    "GYE": { "pt": { "name": "Guayaquil", "why": "no pt-br label; pt-PT 'Guaiaquil'" } }
+  },
+  "regions": {
+    "ME": { "de": { "name": "Naher Osten", "why": "de label is the English 'Middle East'" } },
+    "EUS": { "pt": { "name": "Europa Meridional", "why": "capitalised like 'Europa Setentrional'" } }
+  }
+}

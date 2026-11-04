@@ -15,8 +15,8 @@
 .airway-logbook__records dt { font:700 13px/1.25 'Atkinson Hyperlegible Next',sans-serif; color:#2a2420; overflow-wrap:anywhere; }
 .airway-logbook__records dd { margin:0; font:700 13px/1.3 'Overpass Mono',monospace; color:#13302e; text-align:right; overflow-wrap:anywhere; }
 .airway-logbook__flights { width:100%; margin-top:8px; border-collapse:collapse; table-layout:fixed; font:700 12px/1.2 'Overpass Mono',monospace; color:#2a2420; }
-.airway-logbook__flights th { text-align:left; font:700 10px/1.2 'Overpass Mono',monospace; letter-spacing:.06em; text-transform:uppercase; color:#55514a; padding:6px 4px; border-top:2px solid #2a2420; border-bottom:2px solid #2a2420; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.airway-logbook__flights td { padding:9px 4px; border-bottom:1px solid #c2b5a6; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.airway-logbook__flights th { text-align:left; font:700 10px/1.2 'Overpass Mono',monospace; letter-spacing:.06em; text-transform:uppercase; color:#55514a; padding:6px 4px; border-top:2px solid #2a2420; border-bottom:2px solid #2a2420; overflow-wrap:anywhere; vertical-align:bottom; }
+.airway-logbook__flights td { padding:9px 4px; border-bottom:1px solid #c2b5a6; overflow-wrap:anywhere; } /* [night-11ac] R7h: longer copy wraps, no ellipsis */
 .airway-logbook__flights th:nth-child(1), .airway-logbook__flights td:nth-child(1) { width:17%; }
 .airway-logbook__flights th:nth-child(3), .airway-logbook__flights td:nth-child(3) { width:15%; }
 .airway-logbook__flights th:nth-child(4), .airway-logbook__flights td:nth-child(4) { width:13%; }

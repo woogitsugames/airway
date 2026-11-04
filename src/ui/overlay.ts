@@ -262,7 +262,8 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       const label = t('airport.new');
       if (entry.fresh.textContent !== label) entry.fresh.textContent = label;
       freshWidth = Math.ceil(NEW_PAD + label.length * NEW_CHAR);
-      entry.fresh.style.width = freshWidth + 'px';
+      // [night-11ac] R7h: a floor, not a cap — a translation with wide letters (W, M, accents) grows the stub instead of clipping.
+      entry.fresh.style.minWidth = freshWidth + 'px';
       want.push(entry.fresh);
     }
     if (entry.closed) want.push(entry.barrier);

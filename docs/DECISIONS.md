@@ -1687,3 +1687,49 @@ to `other` for round millions) and the Wikidata label languages used for city na
 reviewed translation exists (`test:i18n-exchange` fails otherwise). The code is the base `pt` because `normalise`
 reads base codes: a pt-PT device would get Brazilian text, the usual first choice of games that ship one Portuguese
 (the larger market; R7 research). A separate pt-PT would need a region-aware `normalise`. **Status: in force.**
+
+## D-213 — Length budgets per key, split-flap cells 15/10/8, harsh pseudo-locale at 320 px (2026-11-04, Claude, night N11ac)
+R7h. `src/i18n/limits.ts` declares a budget (code points after `{param}`s are filled with a worst-case sample) for 63
+keys that sit in fixed-width UI: departures-board split-flaps, column heads, boarding-pass labels, dock countdowns,
+crate fields and stamp captions, settings select options and switch states, Back tiles, logbook column heads, the
+OK tag, aircraft codes. Measured, the board's columns at 320×568 hold 15 title cells, 8 status cells and 11 half-row
+cells, and 360–412 px phones hold no more; the old `maxCells` of 20/10 let a longer title disappear behind the column
+edge without the "…" cell. `FLAP_CELLS` is now 15/10/8/2 and the menu takes `maxCells` from it, so the budget and the
+board agree (every PL/EN title fits: longest "ENDLESS FLIGHT" 14). `test:i18n` fails when a catalog or the
+pseudo-locale exceeds a budget; `i18n:export` (D-211) already reads `{ max }` from this module. The pseudo-locale fills
+a budgeted key to exactly its budget — the longest translation allowed — instead of stretching it past (which only
+tested the "…"). A second mode, `?pseudo=harsh` / `setPseudoLocale('harsh')`, doubles strings of up to 20 code points
+(IBM/W3C expansion for short UI text) and stretches longer ones ~40 %; the classic `?pseudo` stays the default so
+`test:e2e:pseudo-locale` keeps its meaning. The harsh run is a new globe-less suite at 320×568 (`test:e2e:pseudo-320`,
+screens mounted on `?perf=scene`, ~30 s), because the globe suites crawl under SwiftShader (G7). Fixes it found: menu
+hints and logbook cells wrap instead of an ellipsis; long words wrap in settings labels, the logbook/settings title,
+the puzzle sign, game-over buttons and crate values; the game-over title wraps so the Map tab stays on screen; the
+puzzle Back tile no longer shrinks; the airport NEW stub's estimated width is a floor (min-width), not a cap. Real PL/EN text renders as before (row heights unchanged at 320/360/568).
+**Status: in force.**
+
+## D-215 — "+2 slots" card stays as it is; the closed playtest checks the departure limit (2026-11-04, owner, Q-80 → A)
+Owner's answer to Q-80 (N12af, D-207): no rule change for the "+2 slots" card (D-150 offer rule stays). The closed
+playtest (R3 playtest plan) records whether players hit the hourly departure limit (held departures, slot waits) before
+anyone changes the card or its offer rule. **Status: in force.**
+
+## D-216 — Shortened puzzle titles 1–30 stay; PL store text says "hub", not "terminal" (2026-11-04, owner, Q-79 → A)
+Owner's answer to Q-79: the shortened titles of D-166 stay. Owner's instruction with it: the Polish store description
+follows the D-195 glossary, so the two "terminal" sentences of `docs/store/pl.md` say "hub" ("zanim hub się przepełni";
+the second sentence reads "Gdy któryś się przepełni" to avoid repeating the word). EN store text unchanged. **Status: in force.**
+
+## D-217 — Wave-1 city and region names from Wikidata labels, reviewed, in one data file (2026-11-04, Claude, night N12ai)
+R7j. `scripts/city-names.mjs` maps every city to its Wikidata item through its English Wikipedia article (our EN
+name, or `titles[code]` where it is ambiguous: New York City, Washington D.C., City of Brussels, Córdoba
+(Argentina), Salvador (Bahia), Phoenix (Arizona), La Paz, Santiago) and checks with one SPARQL query that every item
+lies within 40 km of our coordinates (165/165); regions are chosen by hand (continents, UN Northern/Southern Europe,
+Middle East). `--fetch` snapshots the labels (de, fr, es, pt-br, pt, mul) into `scripts/data/wikidata-labels.json`;
+the default step rebuilds `src/data/city-names.json` offline from snapshot + `scripts/data/city-names-overrides.json`
+(the human review, each with a reason: short forms such as Frankfurt/Francfort/Fráncfort, "New York" in German, Brazilian
+spellings "Nova York", "Bruxelas", "Karachi" where Wikidata has only a pt-PT label, "Naher Osten" where the German label
+was English). Labels fall back to `mul` (names shared by many languages: Oslo, Abuja), and pt-br to pt. A trailing
+"(…)" disambiguation is dropped. Wikidata data is CC0 (`docs/ASSETS.md`). PL/EN names stay in `src/data/cities.ts` and
+`regions.ts`, unchanged (D-107; digest in `test:city-data`); the planned names are not read by the game until a language
+ships (D-212), when `localName` gains the planned codes. Kept as Wikidata has them, for a native reviewer: Kyiv as
+"Kiew/Kiev", Bombay/Calcutta/Madras in French and Spanish, Spanish "Bangalore". Guard: `test:city-data` (every city and
+region has every planned name, the file equals the offline rebuild, one item per city, overrides carry a reason).
+**Status: in force.**
