@@ -51,7 +51,8 @@ Cleanest of the checked candidates. Placeholder until the owner chooses (see RES
 Owner: "the map style of A is great, only the menus are too AI slop". The 3D low-poly globe is the game's world. The first UI
 (dark rounded panels, list menu, orange CTA) is replaced by real airport artefacts: boarding pass (top bar), luggage tags on a
 cord (dock, passenger bubbles), ATC flight strip (hints), air-cargo labels (weekly upgrade), split-flap departure board and
-yellow wayfinding sign (menu). Details: `docs/styles/diorama.md`. **Status: accepted by the owner 2026-11-02 ("to ok"). Final.**
+yellow wayfinding sign (menu). Details: `docs/styles/diorama.md`. **Status: accepted by the owner 2026-11-02 ("to ok"). Final. [2026-11-04] The globe part is
+superseded by D-170 (satellite globe, `docs/styles/realistyczny.md`); the airport-artefact UI stays in force.**
 
 ## D-12 — Game title: "Airway", domain airway.games (2026-11-02, owner)
 The game is called **Airway** and lives at airway.games (same as the studio brand). Replaces D-02's "own title" and the
