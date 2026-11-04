@@ -16,6 +16,8 @@ export interface HudState {
   readonly stock: Readonly<{ turboprop: number; widebody: number; hub: number }>;
   /** [G8] D-172: the globe view shown on the dock's view tag (default satellite). */
   readonly globeMode?: 'satellite' | 'map';
+  /** [night-11s] R6c: game minutes until the next weekly board; null/absent without weekly boards (puzzles). */
+  readonly minutesToBoard?: number | null;
 }
 
 export interface HudActions {

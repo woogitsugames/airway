@@ -1,5 +1,6 @@
 import { getLanguage, t } from '../../i18n';
 import { iconSvg } from './icons';
+import { crateCountdown } from './crate-countdown';
 import type { HudActions, HudState, PlaneType } from './types';
 
 type TagId = 'undo' | PlaneType | 'hub' | 'globe' | 'speed';
@@ -117,6 +118,7 @@ export function createTagDock(root: HTMLElement, actions: HudActions): { render(
         locale = language;
         dock.setAttribute('aria-label', t('hud.dock'));
       }
+      const countdown = crateCountdown(state.minutesToBoard); // [night-11s] R6c
       for (const [name, button] of controls) {
         const isPlane = name === 'turboprop' || name === 'widebody';
         const stock = name === 'turboprop' ? state.stock.turboprop
@@ -124,20 +126,25 @@ export function createTagDock(root: HTMLElement, actions: HudActions): { render(
           : name === 'hub' ? state.stock.hub : 0;
         const count = button.querySelector('.airway-dock__count');
         const nextCount = name === 'speed' ? `${state.speed}×` : name === 'undo' || name === 'globe' ? '' : formatCount(stock);
-        if (count && count.textContent !== nextCount) count.textContent = nextCount;
         const disabled = (name === 'undo' && !state.canUndo)
           || ((isPlane || name === 'hub') && (!Number.isFinite(stock) || stock <= 0));
+        // [night-11s] R6c: an empty aircraft/hub tag reads the wait for the next crates instead of a bare "0".
+        const waiting = disabled && (isPlane || name === 'hub') && countdown !== null;
+        const shown = waiting ? countdown.short : nextCount;
+        if (count && count.textContent !== shown) count.textContent = shown;
+        if (button.classList.contains('is-countdown') !== waiting) button.classList.toggle('is-countdown', waiting);
         if (button.disabled !== disabled) button.disabled = disabled;
         if (button.classList.contains('is-empty') !== disabled) button.classList.toggle('is-empty', disabled);
         const chosen = isPlane && !disabled && name === state.selectedPlane;
         if (button.classList.contains('is-selected') !== chosen) button.classList.toggle('is-selected', chosen);
         if (isPlane && button.getAttribute('aria-pressed') !== String(chosen)) button.setAttribute('aria-pressed', String(chosen));
-        const label = name === 'undo' ? t('hud.undo')
+        let label = name === 'undo' ? t('hud.undo')
           : name === 'hub' ? t('hud.hubCount', { count: nextCount })
           : name === 'turboprop' ? t('hud.turbopropCount', { count: nextCount })
           : name === 'widebody' ? t('hud.widebodyCount', { count: nextCount })
           : name === 'globe' ? t('hud.globeMode', { mode: t(state.globeMode === 'map' ? 'settings.globeMode.map' : 'settings.globeMode.satellite') })
           : t('hud.speed', { speed: state.speed });
+        if (waiting) label = `${label}. ${countdown.spoken}`;
         if (button.getAttribute('aria-label') !== label) button.setAttribute('aria-label', label);
       }
       const mode = state.globeMode ?? 'satellite';
