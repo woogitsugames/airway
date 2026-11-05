@@ -1,0 +1,18 @@
+/* OFL fonts from mockups/fonts (licences next to the files, docs/ASSETS.md). */
+@font-face { font-family: 'Libre Franklin'; font-weight: 500; src: url(/mockups/fonts/LibreFranklin-500.ttf); }
+@font-face { font-family: 'Libre Franklin'; font-weight: 700; src: url(/mockups/fonts/LibreFranklin-700.ttf); }
+@font-face { font-family: 'Source Serif 4'; font-weight: 400; src: url(/mockups/fonts/SourceSerif4-400.ttf); }
+@font-face { font-family: 'Source Serif 4'; font-weight: 700; src: url(/mockups/fonts/SourceSerif4-700.ttf); }
+@font-face { font-family: 'Familjen Grotesk'; font-weight: 400; src: url(/mockups/fonts/FamiljenGrotesk-400.ttf); }
+@font-face { font-family: 'Familjen Grotesk'; font-weight: 700; src: url(/mockups/fonts/FamiljenGrotesk-700.ttf); }
+@font-face { font-family: 'Young Serif'; font-weight: 400; src: url(/mockups/fonts/YoungSerif-400.ttf); }
+@font-face { font-family: 'Atkinson Hyperlegible Next'; font-weight: 400; src: url(/mockups/fonts/AtkinsonHyperlegibleNext-400.ttf); }
+@font-face { font-family: 'Atkinson Hyperlegible Next'; font-weight: 700; src: url(/mockups/fonts/AtkinsonHyperlegibleNext-700.ttf); }
+@font-face { font-family: 'Alegreya'; font-weight: 400; src: url(/mockups/fonts/Alegreya-400.ttf); }
+@font-face { font-family: 'Alegreya'; font-weight: 700; src: url(/mockups/fonts/Alegreya-700.ttf); }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { overflow: hidden; background: #000; }
+body { position: relative; }
+.frame { position: absolute; inset: 0; }
+.abs { position: absolute; }
+svg { display: block; overflow: visible; }
