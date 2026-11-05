@@ -2016,6 +2016,20 @@ off, so no airport would ever open), a rules-version bump (Random is unchanged; 
 Guards: `test:home-region` (`test:fast`), `test:e2e:home-region` and `test:balance:regions` (`test:ci`).
 **Status: in force (EUS median to be reviewed with the next balance pass).**
 
+
+## D-237 — The leaderboard objection also stops a submission already under way (2026-11-04, Claude, night N11ak)
+R7l closed (Q-68 answered A = D-135, legitimate interest with a one-tap objection; switch D-197, net layer D-186).
+A gap remained when "Send results to the leaderboard" is switched off while a run is on its way (the start-up
+flush or a game-over submission waiting on a slow network): the offline queue finished its pass, sending the other
+waiting days, and then wrote the retried runs back, so the dropped runs came back and were sent later. Now
+`SubmissionQueue.clear()` (used by the switch and by the D-114 deletion) bumps a generation: a flush that sees it
+change sends nothing more and writes nothing back. The request already on the wire cannot be recalled; whatever it
+answers, `submitDaily` reports `opted-out` and the daily report says "Not ranked" (also when the switch flips while
+the boards load). The write-back now merges with the queue as it is at the end, so a run queued while a request was
+in flight is no longer overwritten. No new UI or strings. Rejected: aborting the in-flight fetch (the server may
+already have counted it; deletion is the D-114 path). Guards: `test:net` (3 new cases), `test:e2e:ranking-switch`
+(a waiting run is dropped by the switch). **Status: in force.**
+
 ## D-238 — Launch plan in `docs/LAUNCH.md`: weeks from an unset T, the D-131 rhythm over R2's T+6, store-event drafts (2026-11-04, Claude, night N12au)
 R2f + R6g. `docs/LAUNCH.md` (Polish, owner-facing) holds the launch timeline from RESEARCH R2 in weeks from **T**,
 which stays unset until the owner picks the launch date (D-96): T−12 closed test + Firebase project + press page and
@@ -2052,6 +2066,22 @@ e-mails 12 months (left to the lawyer). `docs/RELEASE.md` links the register (RL
 `test:privacy-declarations` keeps equal to the code), so a new data flow fails until the art. 30 record names it;
 the leaderboard retention must equal `RETENTION_DAYS`. Rejected: an English-only register (the owner and a Polish
 lawyer read it), filling the controller with guessed details. **Status: in force (Q-01, Q-67 and the lawyer open).**
+
+## D-240 — The seven R8 questions join the closed-test sheet, each with a pre-written threshold on rules v6 (2026-11-04, Claude, night N12aw)
+R8g. `docs/PLAYTEST.md` asks the seven questions of RESEARCH R8 ("Pytania do testu zamkniętego"): survey B gets B9
+(moved an aircraft?), B10 (last card and why; a pointless card?), B11 (SLOT stamp seen; most aircraft at one airport),
+survey C gets C8 (knew what could save the airport; spare aircraft then?), C9 (curfew reached and understood), C10
+(anything to decide in the last minutes?), and the observation sheet gets O9 (aircraft moves counted from the recording)
+and O10 (SLOT stamp noticed). A "Pytania R8" table maps each question to its survey/observation item, CSV column and the
+RESEARCH R8 threshold, and the decision table gains rows R8-1…R8-7 in the D-232 format. Thresholds follow RESEARCH R8
+where it gives one (R8-1 "no" > 30 %, R8-3 ≥ 1/3 of testers, R8-5 < 30 %, R8-6 > 30 min); where R8 gives a direction
+only, the threshold is set here before the test: R8-2 ≥ 6 of 12 never moved a plane (or 0 moves for ≥ 2 observed),
+R8-4 ≥ 4 of 12 saw SLOT or ≥ 3 of 12 had 5+ aircraft at one airport (feeds the Q-80 row, which decides), R8-7 ≥ 4 of
+12 "just watched". The audit ran on rules v5; since rules v6 the curfew starts in week 3 (D-151) and the board shows
+only cards that can act (D-150), so "reached the curfew" is an Endless run with `weeks` ≥ 2 and the bot reference is
+`docs/balance/game-summary.md` (v6); Q-72 B is already in force, so R8-5 below 30 % reopens Q-72 C for the owner. The
+logbook does not gain aircraft-move or spare-aircraft fields (D-16: it keeps only what Q-73/Q-78/Q-80 need); those two
+come from the survey and the recordings. Guard: `test:playtest`. **Status: in force.**
 
 ## D-241 — One publisher block (`publisher.*`) for site, game and store consoles; release builds refuse its placeholders (2026-11-05, Claude, night N11al)
 R7c (D-134, Q-66 → A). The publisher / service-provider details required by art. 5 of the Polish e-services act and

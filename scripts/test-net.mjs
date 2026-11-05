@@ -290,5 +290,53 @@ await check('opt-out: nothing is sent, queued or fetched; queued runs are droppe
   assert.equal(await disabled.submitDaily(honest), 'disabled');
 });
 
+// [night-11ak] R7l, D-237: the switch turned off while a run is on its way. The queue used to finish its pass (sending
+// the other waiting days) and write the retried runs back, so the objection was undone; a run queued during a
+// flush was overwritten.
+await check('queue: clear() during a flush stops it; nothing more is sent and nothing is written back', async () => {
+  const store = new Map();
+  const storage = { getItem: (k) => store.get(k) ?? null, setItem: (k, v) => store.set(k, v) };
+  const queue = new SubmissionQueue(storage, () => 1_000);
+  for (const day of ['2026-11-01', '2026-11-02', '2026-11-03']) queue.add({ ...honest, dateKey: day });
+  const sent = [];
+  const result = await queue.flush(async (submission) => { sent.push(submission.dateKey); queue.clear(); return 'retry'; });
+  assert.deepEqual(sent, ['2026-11-01'], 'the other waiting days are not sent');
+  assert.equal(queue.list().length, 0, 'the retried run is not written back');
+  assert.equal(result.left, 0);
+});
+await check('queue: a run added while a request is in flight is kept', async () => {
+  const store = new Map();
+  const storage = { getItem: (k) => store.get(k) ?? null, setItem: (k, v) => store.set(k, v) };
+  const queue = new SubmissionQueue(storage, () => 1_000);
+  queue.add({ ...honest, dateKey: '2026-11-03' });
+  await queue.flush(async () => { queue.add({ ...honest, dateKey: '2026-11-04' }); return 'accepted'; });
+  assert.deepEqual(queue.list().map((item) => item.submission.dateKey), ['2026-11-04']);
+  await queue.flush(async () => { queue.add({ ...honest, dateKey: '2026-11-05' }); return 'retry'; });
+  assert.deepEqual(queue.list().map((item) => [item.submission.dateKey, item.attempts]), [['2026-11-04', 1], ['2026-11-05', 0]]);
+});
+await check('opt-out while a request is in flight: the waiting run stays dropped and the run reads "not ranked"', async () => {
+  const server = fakeServer();
+  let release;
+  const held = new Promise((resolve) => { release = resolve; });
+  const base = createLeaderboards({ config: readNetConfig({ VITE_FIREBASE_API_KEY: 'k', VITE_FIREBASE_PROJECT_ID: 'p' }),
+    storage: { getItem: (k) => server.store.get(k) ?? null, setItem: (k, v) => server.store.set(k, v), removeItem: (k) => server.store.delete(k) },
+    fetch: async (url) => {
+      if (url.includes('accounts:signUp')) return { ok: true, status: 200, json: async () => ({ localId: 'u9', idToken: 't', refreshToken: 'r', expiresIn: '3600' }) };
+      server.calls.push(url.split('/').pop());
+      await held;
+      throw new TypeError('Failed to fetch');
+    } });
+  const submitting = base.submitDaily(honest);
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  base.setSharing(false);
+  release();
+  assert.equal(await submitting, 'opted-out', 'the report says not ranked');
+  assert.equal(JSON.parse(server.store.get('aw-net-queue-v1')).length, 0, 'the objection is not undone by the flush');
+  assert.deepEqual(server.calls, ['submitDaily'], 'only the request already in flight');
+  await base.flush();
+  assert.equal(await base.boards(DAY), null);
+  assert.deepEqual(server.calls, ['submitDaily'], 'no call after the switch');
+});
+
 console.log(`SUMMARY test:net seed=0xA1A1 day=${DAY} score=${honest.claimedScore} ticks=${honest.endTick} passed=${passed} failed=${failed}`);
 if (failed) process.exitCode = 1;
