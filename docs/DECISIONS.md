@@ -2400,6 +2400,26 @@ its size/speed/frequency, whether it ever reaches Daily.
 Guards: `test:weather-front` (`test:fast`), `test:balance:weather` (`test:ci`).
 **Status: implemented behind a flag, OFF in shipped Endless (post-launch candidate; strength to decide).**
 
+## D-254 — The real session runs in browser tests on a DEV-only stub world without WebGL (2026-11-05, Claude, night N12be)
+G7 workaround for tests only (no gameplay or render change). Since the satellite globe, SwiftShader draws ~10 frames
+per second, so every browser suite that plays the real game times out and tonight's session wiring (R4c fill trend
+D-221, R4d hub board D-228, R1n milestones D-242, R2k contract waybill + crate D-247, R2i surge pennant D-249, R2h
+licence classes D-251, R2g home region D-236) was only typechecked. A Vite **dev** build now honours `?render=stub`:
+`src/main.ts` loads `src/game/dev/stubWorld.ts` (behind the `import.meta.env.DEV` ternary, like the DEV bot) instead of
+`createWorld()`. The stub implements the same `World` interface with the real `GlobeOrbitCamera` on a three.js
+`PerspectiveCamera` and the same `project`/`pickGlobe` maths as `src/render/world.ts` (hit tests, `window.aw` gesture
+points and tag anchors are where the game puts them), the same requestAnimationFrame clock feeding the session's frame
+hook, and a 2D canvas with dots and lines instead of the globe. `&clock=frozen` gives the frame hook dt = 0, so game time
+passes only through `window.aw` and a journey replays exactly at any frame rate; `window.__awStub.airportPoint(id)` gives
+an airport's page point for real pointer taps and presses. Chosen over a Node + jsdom harness (no new dependency, the
+real CSS/layout and the real pointer → gesture recognizer path are exercised) and over `?quality=saver` (still ~10 fps).
+The stub never ships: `test:bundle` fails if its marker or `__awStub` is in `dist/`, `test:session-stub` fails on a
+static import. Not covered by it: anything `src/render` draws (rings, barriers, planes, the globe). Guards:
+`test:e2e:session-stub` (`test:ci`, ~25 s: the full journey from the menu through two weekly boards, surge, jam, hub
+board, game over, logbook, class II; a DEV `&weather=front` run to the first front stub (R2j, D-253); the leaderboard
+switch off (R7l, D-237) and a Daily whose results are unchanged and which never reaches the leaderboard) and its headless seed twin `test:session-stub` (`test:fast`).
+**Status: in force (until G7 makes the real globe fast enough under SwiftShader; keep it for quick session journeys).**
+
 ## D-255 — The in-app privacy policy and terms texts load on demand from a bundled chunk (2026-11-05, Claude, night N11at)
 D-252 left the main chunk 2.6 % under its raw budget and named this lever. The long legal texts of Settings → Help —
 the draft banner, sections and date of the privacy policy (D-243) and the terms of use (D-244), PL and EN, 52 keys

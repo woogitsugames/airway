@@ -202,3 +202,13 @@ export const E2E_SEEDS = {
     plans: [{ name: '120 ticks in play', steps: [{ ticks: 120, alive: true }] }],
   },
 };
+
+/**
+ * [night-12be] e2e/session-stub.mjs (the real session on the DEV stub world): Endless seed with home region EUN whose
+ * week-1 contract the bot meets (week-2 board: four crates, "+2 slots" marked CONTRACT), whose demand surge is then
+ * announced at `surge`, and which, left alone afterwards, fills a tag with a "filling" chevron and jams `jam` before
+ * the run ends or the next board opens; with the DEV weather front (R2j) the bot sees the first forecast at `front` in
+ * week 3. `date`: the pinned day of its Daily. Replayed headless in test:fast by
+ * scripts/test-session-stub.ts (for every airport the "+2 slots" pick can take); `--find` there finds the next seed.
+ */
+export const SESSION_STUB = Object.freeze({ seed: 0xA1C1, homeRegion: 'EUN', surge: 'HEL', jam: 'WAW', front: 'SFO', date: '2026-11-04' });
