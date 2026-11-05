@@ -98,7 +98,7 @@ przed wydaniem. Kod: klient `src/net/`, funkcje `functions/`, reguły `firestore
    z tym znakiem (albo usuń cały dokument `top` — następny zapis odbuduje go z wpisów).
    Znak wywoławczy ma 4 znaki szesnastkowe, więc rzadko może pasować do dwóch graczy — przy kilku trafieniach
    w tym samym dniu poproś o wynik i datę gry. Odpowiedz w ciągu 30 dni.
-10. Opcjonalnie później: **App Check** (Play Integrity / App Attest), żeby ograniczyć wywołania spoza aplikacji.
+10. Opcjonalnie później (Q-53): **App Check** (Play Integrity / App Attest), żeby ograniczyć wywołania spoza aplikacji — sekcja „App Check” niżej.
 11. Przed wydaniem uzupełnij politykę prywatności (`docs/legal/leaderboards-privacy.md` → `site/privacy.html`)
    oraz Data Safety / App Privacy w sklepach.
 
@@ -136,6 +136,63 @@ i niczego nie wyłącza w aplikacji: gracze grają dalej, wynik gry dnia czeka w
 5. **Ostateczność**, gdy koszt rośnie mimo hamulca (np. ruch spoza funkcji): Billing → **Account management** →
    przy projekcie **Disable billing**. Zatrzymuje wszystkie płatne usługi projektu (także `deleteMyData`); przed
    tym zapisz, co się dzieje, i włącz rozliczenia z powrotem najszybciej, jak to możliwe.
+
+## App Check (D-246, R3e)
+*Kroki właściciela (Q-07, Q-53). Do czasu ich wykonania nic się nie zmienia: serwer ma App Check wyłączony, a gra
+nie wysyła tokenu.* Ścieżki w konsolach mogą się nieco różnić od opisanych — sprawdź przy pierwszej konfiguracji.
+
+Co jest gotowe w repo:
+- **Serwer:** parametr `APP_CHECK_ENFORCED` (`defineBoolean`, domyślnie `false`) w `functions/src/index.ts`. Gdy jest
+  `true`, `submitDaily` i `getBoards` bez ważnego tokenu App Check odpowiadają `unauthenticated` (HTTP 401) jeszcze
+  przed hamulcem, limitem i powtórką gry. Gra zostawia wtedy wynik w kolejce. `deleteMyData` nie jest chroniona
+  (usunięcie danych nie może zależeć od atestacji). Wbudowane `enforceAppCheck` SDK zostaje wyłączone, bo w opcjach
+  funkcji nie da się go przełączać parametrem. SDK i tak sprawdza token, jeśli przyjdzie, i wpisuje `request.app`.
+- **Klient:** `src/net/appCheck.ts` pobiera token z wtyczki natywnej i `src/net/client.ts` dokleja go jako nagłówek
+  `X-Firebase-AppCheck` do wywołań funkcji (nigdy do Auth). Token jest trzymany w pamięci do 5 min przed wygaśnięciem.
+  Wtyczka nie odpowiada w 5 s albo zwraca błąd: wywołanie idzie bez nagłówka. Bez odświeżania w tle — token jest
+  pobierany tylko wtedy, gdy gra wysyła wynik albo czyta ranking.
+- **Wtyczka:** gra szuka wtyczki Capacitor `FirebaseAppCheck` po nazwie (`src/platform/appCheck.ts`). Jej pakiet
+  **nie jest jeszcze zainstalowany**: `@capacitor-firebase/app-check` (Capawesome, licencja Apache-2.0, wersja 8.x
+  dla Capacitor 8) uruchamia przy starcie natywne SDK Firebase, więc bez plików konfiguracyjnych projektu aplikacja
+  by się wysypała. Instalacja to krok 3 poniżej.
+- **Dostawca debug:** w DEV i w buildach z `VITE_FIREBASE_APPCHECK_DEBUG=1` (debug APK, emulator) gra prosi o
+  dostawcę debug. `npm run android:release` / `android:aab` odmawia buildu z tą flagą.
+
+Kroki:
+1. Firebase console → **App Check** → **Apps**: zarejestruj aplikację Android `pl.samsufi.airway` z dostawcą
+   **Play Integrity** (wymaga odcisku SHA-256 klucza podpisu z Play Console → *App integrity*) i aplikację iOS z
+   **App Attest** (Team ID z Apple Developer). W Play Console połącz Play Integrity API z projektem Google Cloud
+   tego samego projektu Firebase.
+2. Pobierz `google-services.json` (Android → `android/app/`) i `GoogleService-Info.plist` (iOS → `ios/App/App/`,
+   dodaj do targetu w Xcode). Oba pliki trzymaj poza Gitem albo dopisz je do `.gitignore`. Zawierają tylko
+   publiczne identyfikatory, ale to konfiguracja konkretnego projektu.
+3. Zainstaluj wtyczkę (agent może to zrobić na prośbę, gdy pliki z kroku 2 istnieją):
+   ```bash
+   npm install @capacitor-firebase/app-check@^8 firebase@^12
+   npx cap sync
+   ```
+   Wpisz licencje do `docs/ASSETS.md`, sprawdź build debug na telefonie. Gradle ma już warunkowe
+   `com.google.gms.google-services` z szablonu Capacitora, iOS potrzebuje `FirebaseAppCheck` przez CocoaPods/SPM
+   (README wtyczki).
+4. **Token debug:** zbuduj debug APK z `VITE_FIREBASE_APPCHECK_DEBUG=1`. Przy pierwszym wywołaniu logcat wypisuje
+   sekret debug (Xcode: konsola). Wpisz go w App Check → aplikacja → **Manage debug tokens**. Tylko na własne
+   urządzenia testowe, nigdy w buildzie sklepowym.
+5. **Najpierw obserwacja:** wydaj build z wtyczką i zostaw `APP_CHECK_ENFORCED=false`. W App Check → **APIs** →
+   Cloud Functions zobaczysz odsetek ważnych żądań.
+6. **Włączenie:** gdy praktycznie wszystkie żądania z aktualnej wersji gry są ważne, w `functions/.env.<ID projektu>`
+   ustaw
+   ```dotenv
+   APP_CHECK_ENFORCED=true
+   ```
+   i `./functions/node_modules/.bin/firebase deploy --only functions`. Starsze wersje gry bez wtyczki trzymają
+   wtedy wyniki w kolejce, aż gracz zaktualizuje grę. Wyłączenie: `APP_CHECK_ENFORCED=false` i ponowny deploy.
+
+Limity: **Play Integrity API ma domyślnie 10 000 wywołań na dobę** na aplikację (standardowo, bez opłat). Każde
+pobranie nowego tokenu to jedno wywołanie. Token żyje domyślnie 1 h (TTL ustawiasz w App Check → aplikacja), a gra
+pobiera go tylko przy wysyłce wyniku i odczycie rankingu, czyli zwykle 1–2 razy na gracza dziennie. To wystarcza na
+kilka tysięcy aktywnych graczy dziennie. Przed promocją złóż w Play Console wniosek o wyższy limit Play Integrity.
+App Attest (iOS) nie ma takiego dziennego limitu, ale Apple ogranicza nagłe skoki nowych atestacji. Wersja gry
+w przeglądarce nie ma dostawcy (reCAPTCHA nie jest podłączone), więc po włączeniu nie wyśle wyniku.
 
 ## Emulator (deweloperzy)
 `npm install --prefix functions --package-lock=false` i Java 11+, potem `npm run test:firebase` — buduje funkcje,

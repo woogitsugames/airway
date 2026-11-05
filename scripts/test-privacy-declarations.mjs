@@ -90,7 +90,9 @@ function memoryStorage() {
 const config = readNetConfig({ VITE_FIREBASE_API_KEY: 'public-key', VITE_FIREBASE_PROJECT_ID: 'airway-test' });
 const B = recorder();
 let clock = Date.UTC(2026, 10, 4, 12);
-const leaderboards = createLeaderboards({ config, fetch: B.fetch, storage: memoryStorage(), now: () => clock });
+// [night-12az] D-246: record with an App Check provider, as on a phone with the plugin installed.
+const leaderboards = createLeaderboards({ config, fetch: B.fetch, storage: memoryStorage(), now: () => clock,
+  appCheck: async () => 'app-check-token' });
 assert.equal(await leaderboards.submitDaily(submission), 'sent');
 await leaderboards.boards(DAY);
 clock += 2 * 3600_000; // the ID token expired: refresh
@@ -120,7 +122,8 @@ await check('every body field sent is declared, and nothing declared is no longe
     assert.deepEqual(sorted(ticks(row[3])), sorted([...(recordedFields.get(endpoint) ?? [])]), `fields of ${endpoint}`);
   }
 });
-await check('requests are HTTPS POST to the declared hosts, headers Content-Type and Authorization only', () => {
+await check('requests are HTTPS POST to the declared hosts; headers Content-Type, Authorization, declared App Check on callables', () => {
+  const appCheckDeclared = /`X-Firebase-AppCheck: <App Check token>`/.test(read('docs/store/privacy-declarations.md'));
   const hosts = new Map(tableRows('endpoints').map((row) => [ticks(row[0])[0], ticks(row[1])[0]]));
   for (const request of B.requests) {
     const url = new URL(request.url);
@@ -129,7 +132,9 @@ await check('requests are HTTPS POST to the declared hosts, headers Content-Type
     const host = hosts.get(request.endpoint).replace('<region>-<project>', `europe-west1-airway-test`);
     assert.equal(url.host, host, request.url);
     assert.deepEqual([...url.searchParams.keys()].filter((k) => k !== 'key'), [], request.url);
-    assert.ok(request.headers.every((h) => h === 'Content-Type' || h === 'Authorization'), request.headers.join());
+    const callable = request.endpoint === 'submitDaily' || request.endpoint === 'getBoards' || request.endpoint === 'deleteMyData';
+    const allowed = ['Content-Type', 'Authorization', ...(callable && appCheckDeclared ? ['X-Firebase-AppCheck'] : [])];
+    assert.ok(request.headers.every((h) => allowed.includes(h)), request.endpoint + ': ' + request.headers.join());
   }
 });
 await check('the "Send my daily results" switch off makes no request', () => assert.equal(afterOptOut, 0));

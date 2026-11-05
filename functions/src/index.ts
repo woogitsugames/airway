@@ -14,7 +14,7 @@ import {
 import { defineBoolean } from 'firebase-functions/params';
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
 import {
-  FUNCTION_OPTIONS, PAUSED_SUBMIT, PAUSE_PARAM, RATE_LIMITS, RateLimiter, TOP_ENTRIES, callSign, dropFromTop, expiresAt,
+  APP_CHECK_PARAM, FUNCTION_OPTIONS, PAUSED_SUBMIT, appCheckRefusal, PAUSE_PARAM, RATE_LIMITS, RateLimiter, TOP_ENTRIES, callSign, dropFromTop, expiresAt,
   mergeTop, pausedBoards, rankInTop, readTopRows, retainedBoardIds, reviewSubmission, validBoardId, type TopEntry,
 } from './logic.ts';
 
@@ -26,6 +26,16 @@ const leaderboardsPaused = defineBoolean(PAUSE_PARAM, {
   default: false,
   description: 'Budget brake: submitDaily and getBoards answer without Firestore (runs stay queued on devices).',
 });
+// [night-12az] D-246 (R3e): App Check on submitDaily and getBoards, off until the owner registers the apps
+// (docs/FIREBASE.md, "App Check"): `APP_CHECK_ENFORCED=true` in functions/.env.<project>, then redeploy.
+const appCheckEnforced = defineBoolean(APP_CHECK_PARAM, {
+  default: false,
+  description: 'Refuse submitDaily and getBoards calls without a valid App Check token (Play Integrity / App Attest).',
+});
+function requireAppCheck(request: { app?: unknown }): void {
+  const refusal = appCheckRefusal(appCheckEnforced.value(), request.app);
+  if (refusal) throw new HttpsError(refusal.code, refusal.message);
+}
 // [night-12j] D-109: split caps per function and a per-player limit per instance, checked before any Firestore
 // access or replay; over the limit the client keeps the run queued and retries later.
 const limits = {
@@ -57,6 +67,7 @@ async function topInTx(tx: Transaction, board: string, doc: DocumentSnapshot): P
 
 export const submitDaily = onCall(FUNCTION_OPTIONS.submitDaily, async (request) => {
   const uid = uidOf(request);
+  requireAppCheck(request); // D-246: before the brake, the limiter and the body
   // D-234: before the limiter, the request body and the replay; nothing is read or written.
   if (leaderboardsPaused.value()) return PAUSED_SUBMIT;
   throttle('submitDaily', uid);
@@ -117,6 +128,7 @@ async function board(id: string, uid: string, topDoc: DocumentSnapshot, mine: Do
 
 export const getBoards = onCall(FUNCTION_OPTIONS.getBoards, async (request) => {
   const uid = uidOf(request);
+  requireAppCheck(request); // D-246
   throttle('getBoards', uid);
   const data = request.data as { daily?: unknown; weekly?: unknown } | null;
   if (!validBoardId(data?.daily) || !validBoardId(data?.weekly)) throw new HttpsError('invalid-argument', 'Unknown board');

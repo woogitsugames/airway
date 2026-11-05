@@ -34,7 +34,7 @@ import { createWorld, type World } from './game/world';
 import { getLanguage, setPseudoLocale, t } from './i18n';
 import { FrameRecorder, gameLoopLogLine, gameLoopReport, gameLoopScenario, type GameLoopRunFacts } from './game/gameLoop'; // [night-12ay] R3i
 import { nativeGameLoopPort, readGameLoop, type GameLoopBridge } from './platform/gameLoop'; // [night-12ay] R3i
-import { configureHaptics, createDefaultStorage, createNativeInstallMarker, forgetIdentityOnNewInstall, GameLifecycle, shareDailyResult, type KeyValueStorage } from './platform';
+import { configureHaptics, nativeAppCheckPort, createDefaultStorage, createNativeInstallMarker, forgetIdentityOnNewInstall, GameLifecycle, shareDailyResult, type KeyValueStorage } from './platform';
 import { initializeAccessibility } from './ui/a11y';
 import { initializeMotion } from './ui/motion';
 import { mountUnsupported } from './ui/unsupported'; // [night-11h]
@@ -126,7 +126,7 @@ async function boot(): Promise<void> {
     try { return globalThis.localStorage ?? null; } catch { return null; }
   })(), IDENTITY_KEYS);
   // [night-06c] D-66: off without VITE_FIREBASE_* config; otherwise retry queued daily runs at start.
-  const leaderboards = createBrowserLeaderboards(import.meta.env);
+  const leaderboards = createBrowserLeaderboards(import.meta.env, nativeAppCheckPort()); // [night-12az] D-246 App Check
   void leaderboards.flush();
   let saved: SavedSummary | null = null;
   let session: GameSession | null = null;
