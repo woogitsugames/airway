@@ -426,6 +426,8 @@ export function rozaNameLayout(labels: readonly RoseLabel[]): RoseLabelMode[] {
  * other side, the place under the rose and the one over it (clear of its name) are the fallbacks, then the compact
  * form (TagSlot.compactWidth). A note never drifts more than its own height away (a jam's: 160 px); it hides instead:
  * the rose's ticks still show the fill, and zooming in makes room. `tag.width`/`height` are the full note's.
+ * [night-16b] D-263: two more places left and right of the rose's own name (the forced busiest-hub note reads
+ * "Amman · AMM 3 z 36"), and a home: a note stays within one rose radius (at least 16 px) of the ring (a jam's: no limit).
  */
 export function rozaNotePlaces(tag: TagSlot, label: RoseLabel, mode: RoseLabelMode | undefined, viewWidth: number): void {
   const { x, y, r, jam } = label;
@@ -441,15 +443,41 @@ export function rozaNotePlaces(tag: TagSlot, label: RoseLabel, mode: RoseLabelMo
   tag.belowX = x;
   tag.belowY = box.b + 4;
   tag.aboveY = box.t - 4;
+  const text = roseLabelText(label, mode);
+  if (text) {
+    const name = roseNameBox(label, text, roseLabelBelow(mode));
+    tag.besideLeft = name.l - 4;
+    tag.besideRight = name.r + 4;
+    tag.besideY = (name.t + name.b) / 2;
+  } else {
+    tag.besideLeft = tag.besideRight = tag.besideY = undefined;
+  }
+  tag.homeX = x;
+  tag.homeY = y;
+  tag.homeReach = jam ? undefined : roseHomeReach(r);
 }
+/** [night-16b] D-263: how far (px from the rose's centre) a note's box may lie: the ring plus one radius, at least 16. */
+export const roseHomeReach = (r: number): number => Math.max(8, r) + Math.max(16, r);
 
-/** [night-16a] D-262: the rose as a fixed obstacle for the notes: its box with what it shows this frame (roseBox). */
-export function rozaRoseObstacle(slot: TagSlot, label: RoseLabel, mode: RoseLabelMode | undefined): void {
-  const box = roseBox(label, mode);
-  slot.x = box.l;
-  slot.y = box.t;
-  slot.width = box.r - box.l;
-  slot.height = box.b - box.t;
+/**
+ * [night-16a] D-262: the rose as fixed obstacles for the notes. [night-16b] D-263: two of them: its ring of ticks
+ * (`ring`, which no note ever covers, not even a forced one) and its name this frame (inactive without one; a forced
+ * busiest-hub note may cover a lower-ranked rose's name, which then steps back).
+ */
+export function rozaRoseObstacles(ring: TagSlot, name: TagSlot, label: RoseLabel, mode: RoseLabelMode | undefined): void {
+  const half = roseRingHalf(label);
+  ring.ring = true;
+  ring.x = label.x - half;
+  ring.y = label.y - half;
+  ring.width = ring.height = half * 2;
+  const text = roseLabelText(label, mode);
+  name.active = ring.active && text !== '';
+  if (!name.active) return;
+  const box = roseNameBox(label, text, roseLabelBelow(mode));
+  name.x = box.l;
+  name.y = box.t;
+  name.width = box.r - box.l;
+  name.height = box.b - box.t;
 }
 
 /** One airport's rose in the overlay layer: seat ticks, the name along the ring, the jam countdown arc. */

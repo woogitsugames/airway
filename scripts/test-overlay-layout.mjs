@@ -301,7 +301,7 @@ assert('out-of-range label suppressed', layoutTags([{ ...crowd[0], width: 500 }]
     const note = mk('note', { anchorX: 214 + 60, anchorY: 300 - 10 + 30 + 11, altAnchorX: 136 - 60, maxShift: 36, width: 120, compactWidth: 80 });
     layoutTags([rose, wall, wall2, note], b);
     assert('compact: placed in the compact form when the full note fits nowhere', note.placed && note.compact === true && note.width === 80);
-    assert('compact: its near edge stays next to the rose', note.x === 214 && note.lastPick === 4);
+    assert('compact: its near edge stays next to the rose', note.x === 214 && note.lastPick === 6);
     assert('compact: covers neither the rose nor the walls', !overlaps(note, rose) && !overlaps(note, wall) && !overlaps(note, wall2));
     note.width = 120;
     wall.x = 344;
@@ -334,7 +334,43 @@ assert('out-of-range label suppressed', layoutTags([{ ...crowd[0], width: 500 }]
     note.width = 160;
     const high = box('high', 10, 200, 340, 200, 4.5);
     layoutTags([own, high, note], b);
-    assert('must: as the last resort it shows anyway (compact)', note.placed && note.compact === true);
+    assert('must: as the last resort it shows over any obstacle but a ring (compact)', note.placed && note.compact === true);
+    // [night-16b] D-263: never over a ring, not even forced: boxed in by rings it hides.
+    note.width = 160;
+    const ring = box('ring', 10, 200, 340, 340, 0.2);
+    ring.ring = true;
+    ring.y = 0; ring.height = ring.width = 600; ring.x = -120;
+    layoutTags([own, ring, note], b);
+    assert('must (D-263): a forced note never covers a ring', !note.placed);
+  }
+  // [night-16b] D-263: a ring is a disc: a note may take the free corner of its box; a note never floats from its rose.
+  {
+    const ring = { id: 'ring', anchorX: 0, anchorY: 0, width: 90, height: 90, active: true, jammed: false, fixed: true, ring: true, x: 100, y: 100, placed: false };
+    const corner = mk('corner', { anchorX: 106, anchorY: 123, width: 12, height: 12 });
+    layoutTags([ring, corner], { width: 400, height: 400, top: 0, bottom: 0, gap: 0 });
+    assert('ring: the corner of a ring\'s box is free', corner.placed && corner.x === 100 && corner.y === 100);
+    const near = mk('near', { anchorX: 300, anchorY: 331, altAnchorX: 60, maxShift: 36, width: 100, homeX: 180, homeY: 300, homeReach: 75 });
+    const wall = { id: 'wall', anchorX: 0, anchorY: 0, width: 140, height: 200, active: true, jammed: false, fixed: true, x: 220, y: 200, placed: false };
+    layoutTags([wall, near], b);
+    assert('home: a note goes to the side that keeps it near its rose', near.placed && near.lastPick === 1);
+    wall.x = 0; wall.width = 360;
+    near.width = 100;
+    layoutTags([wall, near], b);
+    assert('home: a note whose only room is far from its rose hides', !near.placed);
+  }
+  // [night-16b] D-263: beside the rose's own name, sliding outward until it is free.
+  {
+    const ringR = { id: 'r', anchorX: 0, anchorY: 0, width: 90, height: 90, active: true, jammed: false, fixed: true, ring: true, x: 147, y: 293, placed: false };
+    const fixed = (id, x, y, width, height) => ({ id, anchorX: 0, anchorY: 0, width, height, active: true, jammed: false, fixed: true, x, y, placed: false });
+    const blockL = fixed('l', 0, 200, 40, 260), blockR = fixed('rr', 260, 200, 100, 260), blockT = fixed('t', 40, 200, 220, 90);
+    const nameBox = { id: 'n', anchorX: 0, anchorY: 0, width: 44, height: 18, active: true, jammed: false, fixed: true, x: 170, y: 383, placed: false };
+    const dock = { id: 'd', anchorX: 0, anchorY: 0, width: 48, height: 48, active: true, jammed: false, fixed: true, x: 158, y: 395, placed: false };
+    const dock2 = { id: 'd2', anchorX: 0, anchorY: 0, width: 48, height: 48, active: true, jammed: false, fixed: true, x: 209, y: 364, placed: false };
+    const amm = mk('AMM', { anchorX: 300, anchorY: 300, altAnchorX: 80, maxShift: 36, width: 196, compactWidth: 96, belowX: 192, belowY: 405,
+      aboveY: 200, besideLeft: 166, besideRight: 218, besideY: 392, homeX: 192, homeY: 338, homeReach: 72, rank: 2.6 });
+    layoutTags([ringR, blockL, blockR, blockT, nameBox, dock, dock2, amm], b);
+    assert('beside: the compact note stands left of its name, slid clear of the dock symbol', amm.placed && amm.compact === true &&
+      amm.lastPick === 10 && amm.x + amm.width <= 158 && amm.y + amm.height / 2 > 383 && amm.y + amm.height / 2 < 401);
   }
   // Hysteresis: a note that stood beside its rose keeps that place at 1-3 px less clearance; a new one would not get it.
   {
@@ -365,6 +401,7 @@ assert('out-of-range label suppressed', layoutTags([{ ...crowd[0], width: 500 }]
     const rose = (id, l, t, r, bt, rank) => ({ id: id + '~rose', anchorX: 0, anchorY: 0, width: r - l, height: bt - t, active: true, jammed: false, fixed: true, x: l, y: t, placed: false, rank });
     const note = (id, x, y, r, width, compactWidth, rank, extra = {}) => ({ id, anchorX: x + r + 14 + width / 2, anchorY: y - 10 + 30 + 11,
       altAnchorX: x - r - 14 - width / 2, maxShift: 36, width, height: 30, compactWidth, rank, belowX: x, belowY: y + r + 13, aboveY: y - r - 35,
+      homeX: x, homeY: y, homeReach: r + Math.max(16, r), r,
       active: true, jammed: false, x: 0, y: 0, placed: false, ...extra });
     const scene = () => [
       rose('RIX', 100, 125, 164, 195, 0), note('RIX', 132, 163, 23, 72, 72, 0, { minor: true }),
@@ -378,12 +415,15 @@ assert('out-of-range label suppressed', layoutTags([{ ...crowd[0], width: 500 }]
     layoutTags(slots, b);
     const byId = Object.fromEntries(slots.map((t) => [t.id, t]));
     assert('levant: Amman (busiest hub) shows its note', byId.AMM.placed);
-    assert('levant: notes go to the fuller airports first (Bagdad before Ankara, Ateny before Ryga)',
-      (byId.BGW.placed || !byId.ANK.placed) && (byId.ATH.placed || !byId.RIX.placed));
     let clash = false;
     for (const a of slots) for (const c of slots) if (a !== c && a.placed && c.placed && !(a.fixed && c.fixed) && overlaps(a, c)) clash = true;
     assert('levant: no note covers another note or a rose', !clash);
-    assert('levant: at least four notes', slots.filter((t) => !t.fixed && t.placed).length >= 4);
+    assert('levant: at least three notes', slots.filter((t) => !t.fixed && t.placed).length >= 3);
+    // [night-16b] D-263: every shown note within one radius of its own ring, none on a ring of ticks.
+    const rings = slots.filter((t) => !t.fixed).map((t) => ({ x: t.homeX, y: t.homeY, r: t.r }));
+    const dist = (t, c) => Math.hypot(Math.max(t.x - c.x, 0, c.x - t.x - t.width), Math.max(t.y - c.y, 0, c.y - t.y - t.height));
+    assert('levant (D-263): every note stays within one radius of its rose', slots.every((t) => t.fixed || !t.placed || dist(t, { x: t.homeX, y: t.homeY }) <= t.homeReach));
+    assert('levant (D-263): no note on a ring of ticks', slots.every((t) => t.fixed || !t.placed || rings.every((c) => dist(t, c) >= c.r + 9)));
     const snap = slots.map((t) => [t.placed, t.compact, t.x, t.y].join()).join('|');
     for (const t of slots) if (!t.fixed) t.width = scene().find((u) => u.id === t.id).width;
     layoutTags(slots, b);

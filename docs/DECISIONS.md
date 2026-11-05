@@ -2630,3 +2630,17 @@ and after, half size) the phone shot now shows Amman's name along the bottom of 
 Baghdad; Amman's compact note "AMM 3 z 36" stands partly over Baghdad's ring (the must pass: on 360 px every free place
 is taken), Athens and Ankara still show no note. The menu looks 24° south at 360×640 and Dakar clears "Ustawienia". Store
 shots are recaptured by the coordinator after the merge. **Status: in force.**
+
+## D-263 — Róża notes never cover a ring and stay at their rose (2026-11-05, Claude, night N16b)
+After D-262 the phone shot (360×640) showed the forced compact note "AMM 3 z 36" on Baghdad's ring and "BGW 2 z 24"
+floating above Baghdad's name next to Ankara; both read as belonging to the wrong airport. Rules now: (1) a rose is two
+obstacles for the notes, its ring of ticks (`TagSlot.ring`, a disc: the corners of its box stay free) and its name; **no
+note ever covers a ring, not even the forced busiest-hub one** — the forced passes may cover a lower-ranked rose's name
+(which then steps back that frame) and any other obstacle but a ring, and boxed in by rings the note hides. (2) **A note
+stays at its rose**: a place whose box lies farther than one rose radius (at least 16 px) beyond the ring is not taken,
+the note hides instead (`homeReach`; a jam's note keeps its 160 px reach). (3) Two more places, **left and right of the
+rose's own name** at its middle, sliding outward up to 36 px in 6 px steps: in the shot the busiest hub's compact note
+reads "AMM 3 z 36 · Amman" under its ring, clear of the dock symbols. Checked by `test:roza-names` and
+`test:overlay-layout` on the 360×640 Levant cluster fixture with the shot's dock symbols: no note rect meets any rose ring,
+every shown note within one radius of its own ring, Amman's note level with its name. Venice, Athens and Baghdad show no
+note on the phone (no free place near them); on the landscape shot nothing changes. **Status: in force.**

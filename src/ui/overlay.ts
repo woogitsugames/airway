@@ -13,7 +13,7 @@ import type { FrontMark } from '../game/weather'; // [night-12bd] R2j (type only
 import './skin/current.css'; // [night-11aq] skin tokens read by overlay.css
 import {
   skin, rozaEdgeClash, rozaEdgeNote, rozaExtraWidth, rozaJamShare, rozaJamWidth, rozaCaptionsYield, rozaNameLayout, rozaNoteChildren, rozaRose, MEDAL_RADIUS,
-  rozaCompactWidth, rozaDockObstacles, rozaNotePlaces, rozaRoseObstacle, roseLabelBelow, roseLabelText, roseRank,
+  rozaCompactWidth, rozaDockObstacles, rozaNotePlaces, rozaRoseObstacles, roseLabelBelow, roseLabelText, roseRank,
   ROZA_JAM_LINE, type Rose, type RoseLabel, type RoseLabelMode,
 } from './skin/roza'; // [night-11az] D-257: Róża skin helpers
 import './overlay.css';
@@ -125,6 +125,8 @@ interface BubbleEntry {
   rose: Rose | null;
   /** The rose's box as a fixed obstacle for the note layout (inactive without a rose). */
   roseSlot: TagSlot;
+  /** [night-16b] D-263: the rose's name as a fixed obstacle (the ring is `roseSlot`; inactive without a name). */
+  nameSlot: TagSlot;
   /** [night-14b] D-259: what the rose shows along its ring this frame (name, code or nothing; rozaNameLayout). */
   roseLabel: RoseLabelMode;
   /** Screen position of the airport itself (the tag anchor is moved beside the rose for the note's layout). */
@@ -622,12 +624,13 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
         lastBubbleX: NaN, lastBubbleY: NaN, lastEdgeX: NaN, lastEdgeY: NaN, lastEdgeSide: -1, lastOpacity: NaN,
         rose: skin.roza ? rozaRose(layer) : null, screenX: 0, screenY: 0,
         roseSlot: { id: airport.id + '~rose', anchorX: 0, anchorY: 0, width: 0, height: 0, active: false, jammed: false, fixed: true, x: 0, y: 0, placed: false },
+        nameSlot: { id: airport.id + '~name', anchorX: 0, anchorY: 0, width: 0, height: 0, active: false, jammed: false, fixed: true, x: 0, y: 0, placed: false },
         roseLabel: 'name', compact: false,
       };
       entries.push(entry);
       slots.push(tag);
       layoutSlots.push(tag);
-      if (entry.rose) layoutSlots.push(entry.roseSlot);
+      if (entry.rose) layoutSlots.push(entry.roseSlot, entry.nameSlot);
       chips.push(chip);
       byId.set(airport.id, entry);
       rebuildBubble(entry);
@@ -812,11 +815,12 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
           // form, and its priority: a jam, a hub, the fuller airport; the rose's box shares it (a must note's pass).
           sizeGroup(entry);
           entry.tag.compactWidth = Math.max(rozaCompactWidth(entry.bubble, entry.plate.textContent ?? entry.airport.code), entry.slotRect.width);
-          entry.tag.rank = entry.roseSlot.rank = roseRank(label);
+          entry.tag.rank = entry.roseSlot.rank = entry.nameSlot.rank = roseRank(label);
           entry.tag.must = false;
           // The rose's box (ticks and the name arc) is a fixed obstacle for the notes; it and the note's places beside
           // and under the rose are set from the rose's name after the name layout below.
           entry.roseSlot.active = inView;
+          entry.nameSlot.active = false;
         }
         const chip = entry.chip;
         chip.offscreen = !inView;
@@ -842,7 +846,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
             jam: rozaJamShare(entry.jamSeconds), name: roseLabelText(label, mode), below: roseLabelBelow(mode) }, label.r);
           // [night-16a] D-262: the rose's box is what it shows (a rose without a name is only its ring), and the note's
           // place under the rose starts below that box.
-          rozaRoseObstacle(entry.roseSlot, label, mode);
+          rozaRoseObstacles(entry.roseSlot, entry.nameSlot, label, mode);
           rozaNotePlaces(entry.tag, label, mode, width);
           if (entry.hub && entry.tag.active && (!busiest || (entry.tag.rank ?? 0) > (busiest.tag.rank ?? 0))) busiest = entry;
         });
@@ -850,6 +854,19 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
         if (busiest) (busiest as BubbleEntry).tag.must = true;
         rozaDockObstacles(host, dockSlots);
         layoutTags(layoutSlots, bounds);
+        // [night-16b] D-263: a forced busiest-hub note over a lower-ranked rose's name: that name steps back this frame.
+        const forced = busiest ? (busiest as BubbleEntry).tag : null;
+        if (forced?.placed) roseEntries.forEach((entry, i) => {
+          const name = entry.nameSlot;
+          if (entry.tag === forced || !name.active || forced.x >= name.x + name.width || name.x >= forced.x + forced.width ||
+            forced.y >= name.y + name.height || name.y >= forced.y + forced.height) return;
+          name.active = false;
+          modes[i] = 'none';
+          entry.roseLabel = 'none';
+          const label = roseLabels[i];
+          entry.rose?.draw({ cap: entry.capacity, taken: Math.min(entry.waiting.length, entry.capacity), hub: entry.hub,
+            jam: rozaJamShare(entry.jamSeconds), name: '' }, label.r);
+        });
         rozaCaptionsYield(host, roseLabels, modes, slots);
         roseEntries.length = 0;
         roseLabels.length = 0;
