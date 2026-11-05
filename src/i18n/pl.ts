@@ -133,7 +133,7 @@ export const pl = {
   'upgrade.value.slotsFor': 'wybranego lotniska',
   // [task-14] Main menu, preferences and licence notice.
   'action.back': 'WRÓĆ',
-  'menu.terminal': 'AIRWAY.GAMES · TERMINAL 1',
+  'menu.sign': 'AIRWAY.GAMES · HUB 1',
   'menu.departures': 'ODLOTY',
   'menu.gate': 'BRAMKA',
   'menu.status': 'STATUS',

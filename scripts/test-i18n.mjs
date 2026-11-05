@@ -65,8 +65,10 @@ export function unusedKeys(keys, sources) {
 }
 
 // [night-11t] R5g, D-195: banned synonyms per language. `allow` lists keys where the word names something else (the
-// "TERMINAL 1" sign on the menu, the puzzle board's "route planning terminal"), not the concept it would duplicate.
-const TERMINAL_SIGNS = ['menu.terminal', 'puzzle.board.subtitle'];
+// puzzle board's "route planning terminal", a desk, not an airport), not the concept it would duplicate.
+// [night-12bi] D-223: the menu sign now reads "HUB 1"; it left the allowlist, so "terminal" is banned on every
+// airport-facing string and the puzzle board is the only exception.
+const TERMINAL_SIGNS = ['puzzle.board.subtitle'];
 export const BANNED = {
   en: [
     { re: /\bgrid\b/i, word: 'network' },
@@ -183,9 +185,18 @@ try {
       }
     }
   }
-  // Self-check: the matcher catches the old game-over title and spares the diegetic terminal sign.
-  if (!BANNED.pl.some(({ re }) => re.test('Pokaż siatkę wokół')) || !BANNED.pl.some(({ re }) => re.test('Siatka wstrzymana')) || BANNED.pl.some(({ re, allow = [] }) =>
-    re.test('AIRWAY.GAMES · TERMINAL 1') && !allow.includes('menu.terminal'))) failures.push('banned-synonym matcher self-check');
+  // Self-check: the matcher catches the old game-over title and the old menu sign (both languages), and spares the
+  // puzzle board's planning terminal.
+  const banned = (code, key, value) => BANNED[code].some(({ re, allow = [] }) => re.test(value) && !allow.includes(key));
+  if (!banned('pl', 'x', 'Pokaż siatkę wokół') || !banned('pl', 'x', 'Siatka wstrzymana')
+    || !banned('en', 'menu.sign', 'AIRWAY.GAMES · TERMINAL 1') || !banned('pl', 'menu.sign', 'AIRWAY.GAMES · TERMINAL 1')
+    || !banned('pl', 'x', 'Terminale są pełne') || banned('en', 'menu.sign', 'AIRWAY.GAMES · HUB 1')
+    || banned('en', 'puzzle.board.subtitle', 'Route planning terminal')) failures.push('banned-synonym matcher self-check');
+  // [night-12bi] D-223: the allowlist only names keys that exist and still need it (a stale entry would hide a regression).
+  for (const key of TERMINAL_SIGNS) {
+    if (!english.has(key)) failures.push('terminal allowlist names an unknown key ' + key);
+    else if (!BANNED.en.some(({ re }) => re.test(english.get(key))) && !BANNED.pl.some(({ re }) => re.test(pl.get(key)))) failures.push('terminal allowlist entry no longer needed: ' + key);
+  }
   // [night-11ac] R7h, D-211: length budgets (src/i18n/limits.ts). Each budgeted key, with its sample parameters
   // filled in, fits its budget in every catalog and in the pseudo-locale (both modes); the pseudo text fills the
   // budget, so the layout is tested at the longest allowed translation.
