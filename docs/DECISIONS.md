@@ -2336,3 +2336,30 @@ get their own records/leaderboards later. Rejected: a separate menu row (D-236: 
 class (backlog: scenario knobs only), a rules-version bump (class I is unchanged).
 Guards: `test:licence-classes` (`test:fast`), `test:e2e:licence-classes`, `test:balance:licences` (`test:ci`).
 **Status: in force (knobs and unlock week to confirm after the closed test).**
+
+## D-252 — Bundle budget back to green: skin tokens resolved at build, packed distance table, JS budgets 1,180 / 360 kB (2026-11-05, Claude, night N11ar)
+`test:bundle` was red on dev (7759457) with all four budgets over: main JS 1,181.6 kB raw (budget 1,150) / 353.1 kB
+gzip (340), CSS 105.0 kB (90; 90.0 kB before D-250, +14.6 kB from the token indirection) and all of `dist/` 4,311.5 kB
+(4,300). Waste removed, no behaviour or visual change: (1) release builds write every `var(--skin-x)` value in place
+(`scripts/vite-skin-inline.mjs`, a Vite `transform` before `vite:css`; the source and `npm run dev` keep the tokens).
+The skin is one static file per build, so each token has one value; palette references (`var(--airway-ink)`) are
+written out too when the property is a constant (declared once, in a plain `:root`, never named by a script), which
+gives the pre-D-250 CSS text. The plugin refuses fallbacks, unknown tokens, cycles and any skin token or read property
+set outside `:root`; the tokens TypeScript reads (inline SVG inks) stay on `:root` with resolved values. (2) Dead CSS:
+the DEV overlay fixture controls (`.airport-demo-controls`, and their two skin tokens) and the old a11y demo panel
+(`.airway-a11y-controls`, `.airway-sr-only`) were used nowhere (−1.7 kB). (3) `src/data/generated/distances.ts`
+stores the same 13,530 integers as three base64url digits each instead of a decimal list (72.0 → 40.6 kB raw,
+32.0 → 27.7 kB gzip), decoded once at module load; every `distanceKm(a, b)` is unchanged (checked on all 27,225 pairs).
+After: main JS 1,150.4 kB raw / 347.8 kB gzip, CSS 88.8 kB, `dist/` 4,264.1 kB. CSS and `total` budgets stay. The JS
+budgets are raised, 1,150 → 1,180 kB raw and 340 → 360 kB gzip: the 31 kB cut leaves the chunk 0.4 kB over, and what
+is left is content merged since D-143 (puzzles 31–40, the legal pages D-244, the globe G-series, weekly contract,
+demand surge, licence classes D-251), not waste; the gzip cap keeps today's gzip/raw ratio (0.302). The raise is small
+on purpose (+2.6 % headroom), so the next feature-sized growth is again a decision. Next levers, not done: the in-app
+privacy policy and terms load on demand (≈ 28 kB raw / 10 kB gzip, needs an async i18n part), puzzle levels reference
+`cities.ts` instead of repeating airport records (~64 kB raw of JSON; puzzle data, other owner), three.js is ~508 kB of
+the chunk (`src/render/**`, other owner), WOFF2 fonts (−40 % of 624 kB, `dist/` only). Rejected: lightningcss/csso
+as CSS minifier (−1 kB for a new dependency), short-name mangling of the tokens (resolving them is smaller and
+simpler), raising the CSS budget. Guards: `test:skin-tokens` (plugin unit cases + the real skin inlines with nothing
+left), `test:bundle` (no other `var(--skin-` in dist CSS), `test:cities` (packed table up to date). Evidence: built CSS
+equals the pre-D-250 build apart from palette names written out and the kept `:root` block; `npm run skin:pixels` with
+`AW_SKIN_INLINE=1` against origin/dev (see the PR). **Status: in force.**

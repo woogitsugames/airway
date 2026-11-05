@@ -66,44 +66,12 @@
   min-width: 0;
   overflow-wrap: anywhere;
 }
-[data-airway-action], .airway-a11y-controls :is(select, input) {
+[data-airway-action] {
   min-width: 48px;
   min-height: 48px;
   touch-action: manipulation;
 }
-[data-airway-action]:focus-visible, .airway-a11y-controls :focus-visible {
+[data-airway-action]:focus-visible {
   outline: 3px solid #13302e;
   outline-offset: 3px;
 }
-.airway-sr-only {
-  position: absolute !important;
-  width: 1px !important;
-  height: 1px !important;
-  padding: 0 !important;
-  margin: -1px !important;
-  overflow: hidden !important;
-  clip: rect(0, 0, 0, 0) !important;
-  white-space: nowrap !important;
-  border: 0 !important;
-}
-.airway-a11y-controls {
-  display: grid;
-  gap: 12px;
-  min-width: 0;
-  max-width: 100%;
-  border: 2px solid var(--airway-panel);
-  color: var(--airway-ink);
-  background: var(--airway-ticket);
-  padding: 12px;
-  padding-bottom: calc(12px + var(--aw-safe-bottom));
-  font: var(--airway-font-body) / 1.4 'Atkinson Hyperlegible Next', sans-serif;
-}
-.airway-a11y-controls label {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-.airway-a11y-controls select { font: inherit; padding: 8px; }
-.airway-a11y-controls legend { font: 800 var(--airway-font-title) / 1.2 Overpass, sans-serif; }

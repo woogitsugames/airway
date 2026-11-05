@@ -206,25 +206,6 @@
 :root[data-airway-motion="reduce"] .airport-edge--jam { animation: none; }
 :root[data-airway-motion="reduce"] .airport-bubble__new { animation: none; }
 :root[data-airway-motion="reduce"] .airport-bubble__trend { animation: none; }
-/* The fixture controls are not part of player HUD. */
-.airport-demo-controls {
-  position: absolute;
-  z-index: 4;
-  top: calc(var(--aw-safe-top) + 10px);
-  left: calc(var(--aw-safe-left) + 10px);
-  right: calc(var(--aw-safe-right) + 10px);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  min-height: 54px;
-  padding: 8px;
-  background: var(--skin-demo-bg);
-  border-left: 6px solid var(--skin-demo-accent);
-  font: var(--skin-weight-bold) 12px/1.2 var(--skin-face-text);
-}
-.airport-demo-controls input { height: 48px; width: clamp(90px, 30%, 170px); accent-color: var(--skin-demo-accent); }
-.airport-demo-controls small { font-size: 10px; white-space: nowrap; }
 
 /* [night-11ai] R4g: a mouse over an airport (globe hit test in src/game/session.ts) or its off-screen button. The
    tag is clipped, so the mark is an inset rule in its own ink rather than an outline. */

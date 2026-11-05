@@ -10,14 +10,17 @@ import { tmpdir } from 'node:os';
 import { dirname, extname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { gzipSync } from 'node:zlib';
+import { skinBuild } from './vite-skin-inline.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const STATIC_ONLY = process.argv.includes('--static');
 const KB = 1000;
 export const BUDGET = Object.freeze({
-  mainJsRaw: 1150 * KB, // measured 1,033.8 kB on 2026-11-03 (+11 %)
-  mainJsGzip: 340 * KB, // measured 307.0 kB (+11 %)
-  css: 90 * KB, // measured 70.2 kB, all CSS files together
+  // [night-11ar] D-252: 1,150 -> 1,180 kB raw and 340 -> 360 kB gzip after removing 31 kB of waste: what is left is
+  // content merged since D-143 (puzzles 31-40, legal pages, globe G-series, contract, surge, licence classes).
+  mainJsRaw: 1180 * KB, // measured 1,033.8 kB on 2026-11-03, 1,150.4 kB on 2026-11-05 (1,181.6 kB before D-252)
+  mainJsGzip: 360 * KB, // measured 307.0 kB on 2026-11-03, 347.8 kB on 2026-11-05 (the same gzip/raw ratio, 0.302)
+  css: 90 * KB, // measured 70.2 kB, all CSS files together; 88.8 kB on 2026-11-05 with the skin inlined (D-252)
   // [ext-03 G1] D-171: + ~1.8 MB globe textures (public/data/globe/, test:globe-assets) and ~0.55 MB for Mapa (G8).
   total: 4300 * KB, // measured 1,804.8 kB before G1, every file under dist/ (fonts, land mask, licences, globe)
 });
@@ -111,6 +114,12 @@ if (!STATIC_ONLY) {
     check(false, 'dist/assets missing: run `npm run build` first');
   } else {
     const { report, breaches } = measure(dist);
+    // [night-11ar] D-252: the release CSS carries the skin values, not the tokens (scripts/vite-skin-inline.mjs);
+    // only the tokens TypeScript reads at run time stay defined.
+    const { keep } = skinBuild(ROOT);
+    const css = files(dist, (p) => extname(p) === '.css').map((p) => readFileSync(p, 'utf8')).join('\n');
+    const tokenUses = [...css.matchAll(/var\(--skin-([a-z0-9-]+)/g)].map((m) => m[1]).filter((name) => !keep.has(name));
+    check(tokenUses.length === 0, 'skin tokens left in dist CSS (vite-skin-inline off?): ' + [...new Set(tokenUses)].join(' '));
     for (const key of ['mainJsRaw', 'mainJsGzip', 'css', 'total']) {
       const breach = breaches.find((b) => b.startsWith(key + ' '));
       check(!breach, 'budget: ' + breach);
