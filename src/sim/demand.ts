@@ -89,6 +89,27 @@ export class RegionalDemand {
     }
   }
 
+  /**
+   * [night-12ba] R2k: expected passengers from the active airports of `fromRegion` to `toRegion` over `days` game
+   * days, from the same weights the draw uses (integer, floored). Read-only: no RNG, no state.
+   */
+  expectedPassengers(fromRegion: string, toRegion: string, days: number): number {
+    let scaled = 0;
+    for (const city of this.cities) {
+      if (city.regionId !== fromRegion || !this.active.has(city.cityId)) continue;
+      const options = this.choices.get(city.cityId) ?? [];
+      let total = 0;
+      let weight = 0;
+      for (const choice of options) {
+        total += choice.weight;
+        if (choice.regionId === toRegion) weight = choice.weight;
+      }
+      if (total <= 0 || weight <= 0) continue;
+      scaled += Math.floor(city.population * DEMAND_PASSENGERS_PER_MILLION_PER_DAY * DEMAND_RATE_PERCENT * days * weight / total);
+    }
+    return Math.floor(scaled / 100_000_000);
+  }
+
   /** One simulation tick = one game minute; no new allocations without generated passengers. */
   tick(tick: number, emit: (passenger: GeneratedPassenger) => void): void {
     for (const city of this.cities) {

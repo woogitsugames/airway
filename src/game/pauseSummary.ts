@@ -1,6 +1,6 @@
 // [night-10j] The pause sheet's matter-of-fact network summary: what the player has built and where the pressure
 // is, read once when the game pauses (nothing changes while paused). Pure: rows of translated label/value pairs.
-import { t } from '../i18n';
+import { t, type TranslationKey } from '../i18n';
 
 export interface PauseSummaryInput {
   readonly routes: number;
@@ -12,8 +12,10 @@ export interface PauseSummaryInput {
   readonly hubs: readonly { readonly label: string; readonly waiting: number; readonly capacity: number }[];
   /** Game minutes until the next weekly board opens; null in a mode without weekly boards. */
   readonly minutesToBoard: number | null;
+  /** [night-12ba] R2k, D-247: the running weekly contract (region ids), absent/null without one. */
+  readonly contract?: { readonly regions: readonly [string, string]; readonly delivered: number; readonly target: number } | null;
 }
-export interface PauseSummaryRow { readonly key: 'network' | 'hub' | 'board'; readonly label: string; readonly value: string }
+export interface PauseSummaryRow { readonly key: 'network' | 'hub' | 'board' | 'contract'; readonly label: string; readonly value: string }
 
 /** Fullest hub by share of capacity, ties by waiting count, then by label (stable). */
 function busiestHub(hubs: PauseSummaryInput['hubs']): PauseSummaryInput['hubs'][number] | null {
@@ -49,6 +51,15 @@ export function pauseSummary(input: PauseSummaryInput): PauseSummaryRow[] {
     rows.push({
       key: 'board', label: t('pause.summary.board'),
       value: days > 0 ? t('pause.summary.inDays', { days, hours }) : t('pause.summary.inHours', { hours, minutes: minutes % 60 }),
+    });
+  }
+  if (input.contract) {
+    // [night-12ba] R2k: progress of this week's contract, short region names (the sheet is one line per row).
+    const { regions: [from, to], delivered, target } = input.contract;
+    rows.push({
+      key: 'contract', label: t('pause.summary.contract'),
+      value: t(delivered >= target ? 'pause.summary.contractMet' : 'pause.summary.contractValue', {
+        from: t(`region.short.${from}` as TranslationKey), to: t(`region.short.${to}` as TranslationKey), delivered, target }),
     });
   }
   return rows;

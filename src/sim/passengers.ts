@@ -52,6 +52,13 @@ export class PassengerSimulation implements PassengerTransport {
   private nextPassengerId = 1;
   private currentTick = 0;
   private currentFailure: HubFailure | null = null;
+  /**
+   * [night-12ba] R2k: when true, every new passenger carries `originRegion` (Endless runs with the weekly contract
+   * only; otherwise the field is never written, so other snapshots and hashes are unchanged).
+   */
+  trackOrigins = false;
+  /** [night-12ba] R2k: called for every delivered passenger (origin region when tracked, destination region). */
+  onDelivered: ((originRegion: string | undefined, destinationRegion: string) => void) | null = null;
 
   constructor(cities: readonly DemandCity[], distanceKm: DistanceLookup, demandRng: DemandRandom,
       initiallyActive?: readonly string[], baseCapacity?: Readonly<Record<string, number>>) {
@@ -128,8 +135,14 @@ export class PassengerSimulation implements PassengerTransport {
       id, destinationRegion, createdTick: this.currentTick, readyAtTick: this.currentTick,
       longWaitNoted: false, noRouteNoted: false,
     };
+    if (this.trackOrigins) passenger.originRegion = this.citiesById.get(cityId)!.regionId;
     this.hubs.enqueue(cityId, passenger, this.ledger);
     return id;
+  }
+
+  /** [night-12ba] R2k: expected passengers from one region to another over `days` days (read-only). */
+  expectedPassengers(fromRegion: string, toRegion: string, days: number): number {
+    return this.demand.expectedPassengers(fromRegion, toRegion, days);
   }
 
   /** Phase 1 of a world minute: set the clock and generate demand. Returns passengers created. */
@@ -203,6 +216,7 @@ export class PassengerSimulation implements PassengerTransport {
       if (this.citiesById.get(cityId)!.regionId === passenger.destinationRegion) {
         this.inFlight.delete(id);
         this.ledger.record('delivered', cityId, passenger.destinationRegion);
+        this.onDelivered?.(passenger.originRegion, passenger.destinationRegion);
         delivered.push(id);
         if (passenger.arrivedOnRoute !== undefined) deliveredAfterTransfer++;
         continue;

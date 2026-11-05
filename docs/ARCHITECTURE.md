@@ -156,6 +156,7 @@ else (UI, render, audio, input, modes, bot) reads views and submits commands; no
 import { createGame, Sim, type Command } from './sim';
 const sim = createGame(seed, 'endless');            // 'endless' | 'daily' | 'puzzle' (+ puzzleId)
 createGame(seed, 'endless', undefined, 'EUN');      // [night-11aj] R2g: Endless home region (HOME_REGIONS), D-236
+createGame(seed, 'endless', undefined, null, true); // [night-12ba] R2k: weekly contract (EndlessRun.create sets it), D-247
 sim.check(cmd);          // { ok } | { ok: false, reason: RejectReason } — instant UI feedback, no side effect
 sim.apply(cmd);          // queue for the next tick; false only for malformed input
 sim.tick();              // ONE game minute: commands -> spawner -> curfew -> demand -> planes -> hubs/jam -> game over -> week end

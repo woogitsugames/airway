@@ -478,7 +478,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     const state = run.weeklyUpgrade;
     if (state && (force || state.week !== upgradeWeek || state.pendingHub)) {
       upgradeWeek = state.week;
-      upgrade.render(state, run.hubPressure(), run.slotPressure()); // [task-32] airports for "+2 slots"
+      upgrade.render(state, run.hubPressure(), run.slotPressure(), run.contractBoard()); // [task-32] airports for "+2 slots"; [night-12ba] R2k contract
       setScreen('upgrade');
     } else if (!state && screen === 'upgrade') {
       upgrade.render(null, []);
@@ -581,6 +581,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       routes: run.routeList().length, assigned: run.assignments, spare,
       hubs: run.hubPressure(),
       minutesToBoard: run.mode === 'puzzle' ? null : run.nextWeekTick - run.tick,
+      contract: run.contract, // [night-12ba] R2k
     });
     pauseSummaryList.replaceChildren(...rows.flatMap((row) => {
       const term = document.createElement('dt');

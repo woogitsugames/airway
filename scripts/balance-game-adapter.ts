@@ -30,6 +30,18 @@ export interface RunMechanics {
   readonly loss: { readonly week: number; readonly isHub: boolean; readonly routes: number; readonly spareAircraft: number } | null;
 }
 
+/** [night-12ba] R2k, D-247: weekly contracts of one run (only with `weeklyContract`). */
+export interface RunContracts {
+  /** Contracts whose week ended before the run did, and how many of them were met. */
+  readonly closed: number;
+  readonly met: number;
+  /** Boards that showed a contract crate, and how often the bot took that crate. */
+  readonly extraBoards: number;
+  readonly extraPicked: number;
+  /** Targets of every issued contract (closed or running at the end). */
+  readonly targets: readonly number[];
+}
+
 class GameSession {
   private readonly sim: Sim;
   private warned = false;
@@ -39,9 +51,13 @@ class GameSession {
   private readonly counts = { curfewGroundMin: 0, curfewAirMin: 0, slotHolds: 0, delivered: 0, deliveredAfterTransfer: 0 };
   private readonly offered: string[] = [];
   private readonly picked: string[] = [];
+  private extraBoards = 0;
+  private extraPicked = 0;
+  private extraOnBoard: string | undefined;
 
-  constructor(seed: number, mode: 'endless' | 'daily' = 'endless', homeRegion: RegionId | null = null) {
-    this.sim = createGame(seed, mode, undefined, homeRegion); // [night-11aj] R2g: per-region balance check
+  constructor(seed: number, mode: 'endless' | 'daily' = 'endless', homeRegion: RegionId | null = null, weeklyContract = false) {
+    // [night-11aj] R2g: per-region balance check. [night-12ba] R2k: with or without the weekly contract.
+    this.sim = createGame(seed, mode, undefined, homeRegion, weeklyContract);
     const start = [...this.sim.world.cities()].map((city) => city.id);
     for (const id of start) this.reachAtOpen.set(id, nearestKm(id, start));
   }
@@ -74,8 +90,16 @@ class GameSession {
       if (event.type === 'CurfewHeld') this.counts[event.where === 'ground' ? 'curfewGroundMin' : 'curfewAirMin']++;
       if (event.type === 'DepartureHeld') this.counts.slotHolds++;
       if (event.type === 'Delivered') { this.counts.delivered += event.count; this.counts.deliveredAfterTransfer += event.afterTransfer; }
-      if (event.type === 'UpgradeOffered') this.offered.push(...event.offers);
-      if (event.type === 'UpgradeChosen') this.picked.push(event.upgrade);
+      if (event.type === 'UpgradeOffered') {
+        this.offered.push(...event.offers);
+        this.extraOnBoard = this.sim.world.offer?.extraCrate;
+        if (this.extraOnBoard) this.extraBoards++;
+      }
+      if (event.type === 'UpgradeChosen') {
+        this.picked.push(event.upgrade);
+        if (this.extraOnBoard && event.upgrade === this.extraOnBoard) this.extraPicked++;
+        this.extraOnBoard = undefined;
+      }
     }
   }
 
@@ -88,6 +112,17 @@ class GameSession {
     return {
       reason: world.status === 'over' ? 'hubOverflow' : 'timeLimit', score: world.score,
       warned: this.warned, warningLeadTicks: this.leadTicks, week1Unreachable, mechanics: this.mechanics(),
+    };
+  }
+
+  /** [night-12ba] R2k: the run's weekly contracts (all zero without the contract rule). */
+  contracts(): RunContracts {
+    const world = this.sim.world;
+    const history = world.contractHistory;
+    return {
+      closed: history.length, met: history.filter((item) => item.met).length,
+      extraBoards: this.extraBoards, extraPicked: this.extraPicked,
+      targets: [...history, ...(world.contract ? [world.contract] : [])].map((item) => item.target),
     };
   }
 
@@ -114,6 +149,6 @@ function nearestKm(id: string, others: readonly string[]): number {
 }
 
 export function createBalanceSession(seed: number, mode: 'endless' | 'daily' = 'endless',
-    homeRegion: RegionId | null = null): GameSession {
-  return new GameSession(seed >>> 0, mode, homeRegion);
+    homeRegion: RegionId | null = null, weeklyContract = false): GameSession {
+  return new GameSession(seed >>> 0, mode, homeRegion, weeklyContract);
 }

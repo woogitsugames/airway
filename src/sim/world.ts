@@ -29,6 +29,10 @@ import type { RngStream } from './state.ts';
 import {
   cancelUpgradePick, chooseUpgrade, startWeeklyUpgrade, type UpgradeCommand, type UpgradeKind, type WeeklyUpgradeState,
 } from './upgrades.ts';
+import {
+  closeContract, countsFor, drawContract, EMPTY_CONTRACTS, isMet, validContractSnapshot, type ContractRecord,
+  type ContractSnapshot, type WeeklyContract,
+} from './contracts.ts';
 
 export const WORLD_VERSION = 1 as const;
 export type GameMode = 'endless' | 'daily' | 'puzzle';
@@ -62,6 +66,8 @@ export interface Scenario {
   readonly capacityByCity: Readonly<Record<string, number>>;
   /** [night-11aj] R2g: Endless start cluster anchored in this region; absent/null = any region (seeded). */
   readonly homeRegionId?: RegionId | null;
+  /** [night-12ba] R2k, D-247: weekly contract on the board (Endless with `GameConfig.weeklyContract` only). */
+  readonly weeklyContract?: boolean;
 }
 
 export const ENDLESS_SCENARIO: Scenario = Object.freeze({
@@ -86,6 +92,8 @@ export interface WorldSnapshot {
   readonly hubUpgradeStock: number;
   /** [task-32] D-41 departure slots (D-28 per-airport hourly limit), enforced. */
   readonly slots: DepartureSlotsSnapshot;
+  /** [night-12ba] R2k: present exactly when the scenario has the weekly contract (absent keeps old hashes). */
+  readonly contracts?: ContractSnapshot;
 }
 
 /** [task-32] Departure-slot bookkeeping; every record is keyed by city id and sorted on save. */
@@ -122,6 +130,8 @@ export type SimEvent =
   | { readonly type: 'DepartureHeld'; readonly minute: number; readonly cityId: string; readonly planeId: string; readonly first: boolean }
   /** [night-12ab] One aircraft-minute held by a curfew: on the ground (departure refused) or in the air (landing refused). */
   | { readonly type: 'CurfewHeld'; readonly minute: number; readonly cityId: string; readonly where: 'ground' | 'air' }
+  /** [night-12ba] R2k: the running weekly contract reached its target (once per contract). */
+  | { readonly type: 'ContractMet'; readonly minute: number; readonly week: number; readonly regions: readonly [string, string]; readonly target: number }
   | { readonly type: 'GameOver'; readonly minute: number; readonly failure: HubFailure | null; readonly status: 'won' | 'over' };
 
 /** Read-only per-city view for HUD, overlay, render and audio. */
@@ -176,6 +186,9 @@ export interface WorldView {
   readonly offer: Readonly<WeeklyUpgradeState> | null;
   readonly upgrades: readonly UpgradeRecord[];
   readonly hubUpgradesInStock: number;
+  /** [night-12ba] R2k: the running weekly contract (null without one); `contractHistory` lists closed ones. */
+  readonly contract: Readonly<WeeklyContract> | null;
+  readonly contractHistory: readonly ContractRecord[];
   /** Total extra hourly departures granted by "+2 slots" upgrades (all airports). */
   readonly departureSlots: number;
   /** [task-32] Hourly departure allowance of one airport. */
@@ -245,6 +258,8 @@ export class World implements WorldView {
   private slotEverHeld = false;
   private readonly jammed = new Set<string>();
   private events: SimEvent[] = [];
+  private contracts: ContractSnapshot | null;
+  private readonly seed: number;
 
   constructor(seed: number, readonly scenario: Scenario, streams: Readonly<Record<RngStream, Rng>>) {
     this.streams = streams;
@@ -267,6 +282,43 @@ export class World implements WorldView {
     this.curfew.advance(0);
     this.fleet = createPlaneFleet(scenario.reserve);
     this.hubUpgradeStock = scenario.hubUpgrades;
+    this.seed = seed >>> 0;
+    // [night-12ba] R2k: only a contract run tracks where passengers set off from (other snapshots stay as they were).
+    this.contracts = scenario.weeklyContract ? EMPTY_CONTRACTS : null;
+    if (this.contracts) {
+      this.passengers.trackOrigins = true;
+      this.passengers.onDelivered = (origin, destination) => this.countContract(origin, destination);
+    }
+  }
+
+  get contract(): Readonly<WeeklyContract> | null { return this.contracts?.current ?? null; }
+  get contractHistory(): readonly ContractRecord[] { return this.contracts?.history ?? []; }
+
+  private countContract(origin: string | undefined, destination: string): void {
+    const state = this.contracts;
+    const current = state?.current;
+    if (!state || !current || !countsFor(current, origin, destination)) return;
+    const next = { ...current, delivered: current.delivered + 1 };
+    this.contracts = { ...state, current: next };
+    if (isMet(next) && !isMet(current)) {
+      this.events.push({ type: 'ContractMet', minute: this.minuteValue, week: next.week, regions: next.regions, target: next.target });
+    }
+  }
+
+  /** [night-12ba] R2k: at a board, close last week's contract and say whether a fourth crate is due. */
+  private closeWeekContract(): boolean {
+    if (!this.contracts) return false;
+    this.contracts = closeContract(this.contracts);
+    return this.contracts.bonusCrates > 0;
+  }
+
+  /** [night-12ba] R2k: after the board was drawn, spend the crate it showed and name next week's contract. */
+  private openWeekContract(week: number, extraShown: boolean): void {
+    const state = this.contracts;
+    if (!state) return;
+    const regions = [...new Set(this.activeCityIds().map((id) => this.passengers.regionOf(id)!))];
+    const current = drawContract(this.seed, week, regions, (a, b, days) => this.passengers.expectedPassengers(a, b, days));
+    this.contracts = { current, bonusCrates: state.bonusCrates - (extraShown ? 1 : 0), history: state.history };
   }
 
   get minute(): number { return this.minuteValue; }
@@ -625,9 +677,11 @@ export class World implements WorldView {
     }
     if (this.scenario.weeklyUpgrades && minute % TICKS_PER_WEEK === 0) {
       // [night-12v] R8a, D-150: only cards that can act enter the draw (rules v6).
+      const extraCrate = this.closeWeekContract();
       const offer = startWeeklyUpgrade(minute, { nextInt: (max) => this.streams.upgrades.int(max) },
-        { hub: this.hubIds().length > 0, slots: this.slotEverHeld });
+        { hub: this.hubIds().length > 0, slots: this.slotEverHeld }, extraCrate);
       if (offer) {
+        this.openWeekContract(offer.week, offer.extraCrate !== undefined);
         this.upgrade = offer;
         this.statusValue = 'upgrade';
         this.events.push({ type: 'UpgradeOffered', minute, week: offer.week, offers: offer.offers.map((o) => o.id) });
@@ -731,6 +785,7 @@ export class World implements WorldView {
       hubUpgradeStock: this.hubUpgradeStock,
       slots: { hour: this.slotHour, used: sortedRecord(this.slotsUsed), bonus: sortedRecord(this.slotBonus),
         waitMinutes: sortedRecord(this.slotWait), everHeld: this.slotEverHeld },
+      ...(this.contracts ? { contracts: JSON.parse(JSON.stringify(this.contracts)) as ContractSnapshot } : {}),
     };
   }
 
@@ -740,7 +795,10 @@ export class World implements WorldView {
         !['running', 'upgrade', 'won', 'over'].includes(saved.status) || !count(saved.hubUpgradeStock) ||
         !validSlots(saved.slots) || !saved.fleet || !Array.isArray(saved.fleet.planes) ||
         !saved.manifests || typeof saved.manifests !== 'object' || !Array.isArray(saved.upgradeHistory) ||
-        (saved.spawner === null) !== (this.scenario.startCityIds !== null)) {
+        (saved.spawner === null) !== (this.scenario.startCityIds !== null) ||
+        // [night-12ba] R2k: a contract run carries its contract record, every other run none.
+        (saved.contracts !== undefined) !== !!this.scenario.weeklyContract ||
+        (saved.contracts !== undefined && !validContractSnapshot(saved.contracts))) {
       throw new TypeError('invalid or incompatible world snapshot');
     }
     this.passengers.restore(saved.passengers);
@@ -782,6 +840,7 @@ export class World implements WorldView {
     loadRecord(this.slotWait, saved.slots.waitMinutes);
     this.slotHour = saved.slots.hour;
     this.slotEverHeld = saved.slots.everHeld;
+    this.contracts = saved.contracts ? JSON.parse(JSON.stringify(saved.contracts)) as ContractSnapshot : null;
     this.jammed.clear();
     for (const queue of this.passengers.hubs.all()) if (queue.fullTicks > 0) this.jammed.add(queue.cityId);
     this.events = [];
