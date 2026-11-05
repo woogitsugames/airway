@@ -1,17 +1,64 @@
 // [night-12s] R7g: read the Unicode code points a TrueType/OpenType font maps (cmap formats 4 and 12), no dependency.
+// [night-11ax] D-257: also WOFF2 (the shipped fonts): the table data is one Brotli stream (node:zlib) and `cmap` is
+// never transformed, so it is cut out of the decompressed stream and read like a TTF table.
 import { readFileSync } from 'node:fs';
+import { brotliDecompressSync } from 'node:zlib';
+
+/** Reads a WOFF2 UIntBase128 at `at`; returns [value, next offset]. */
+function base128(bytes, at) {
+  let value = 0;
+  for (let i = 0; i < 5; i++) {
+    const byte = bytes[at + i];
+    value = value * 128 + (byte & 0x7f);
+    if (!(byte & 0x80)) return [value, at + i + 1];
+  }
+  throw new Error('bad UIntBase128');
+}
+
+/** The raw `cmap` table of a WOFF2 file (W3C WOFF2 §5: table directory, then one Brotli-compressed stream). */
+export function woff2Cmap(buf) {
+  const view = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
+  const numTables = view.getUint16(12);
+  const compressedLength = view.getUint32(20);
+  if (view.getUint32(4) === 0x74746366) throw new Error('WOFF2 font collections are not supported');
+  let at = 48;
+  let offset = 0;
+  let cmap = null;
+  for (let i = 0; i < numTables; i++) {
+    const flags = buf[at++];
+    const known = flags & 0x3f; // 0 = cmap, 10 = glyf, 11 = loca (WOFF2 known-tag table)
+    let tag = '';
+    if (known === 0x3f) { tag = buf.toString('latin1', at, at + 4); at += 4; }
+    let length;
+    [length, at] = base128(buf, at);
+    const version = (flags >> 6) & 3;
+    const glyfOrLoca = known === 10 || known === 11 || tag === 'glyf' || tag === 'loca';
+    if (glyfOrLoca ? version === 0 : version !== 0) [length, at] = base128(buf, at); // transformLength
+    if (known === 0 || tag === 'cmap') cmap = { offset, length };
+    offset += length;
+  }
+  if (!cmap) throw new Error('no cmap table');
+  const data = brotliDecompressSync(buf.subarray(at, at + compressedLength));
+  return data.subarray(cmap.offset, cmap.offset + cmap.length);
+}
 
 /** Returns the set of code points with a non-zero glyph id in the font's best Unicode cmap subtable. */
 export function fontCodePoints(path) {
-  const buf = readFileSync(path);
-  const view = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
-  const numTables = view.getUint16(4);
+  let buf = readFileSync(path);
   let cmap = -1;
-  for (let i = 0; i < numTables; i++) {
-    const rec = 12 + i * 16;
-    if (buf.toString('latin1', rec, rec + 4) === 'cmap') cmap = view.getUint32(rec + 8);
+  if (buf.toString('latin1', 0, 4) === 'wOF2') {
+    buf = Buffer.from(woff2Cmap(buf));
+    cmap = 0;
+  } else {
+    const head = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
+    const numTables = head.getUint16(4);
+    for (let i = 0; i < numTables; i++) {
+      const rec = 12 + i * 16;
+      if (buf.toString('latin1', rec, rec + 4) === 'cmap') cmap = head.getUint32(rec + 8);
+    }
   }
   if (cmap < 0) throw new Error(path + ': no cmap table');
+  const view = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
   const subtables = [];
   const count = view.getUint16(cmap + 2);
   for (let i = 0; i < count; i++) {

@@ -67,6 +67,10 @@ The game ships `public/fonts/Overpass-400.ttf`, `Overpass-800.ttf`,
 are `public/fonts/OFL-Overpass.txt`, `OFL-OverpassMono.txt`,
 and `OFL-AtkinsonHyperlegibleNext.txt`; each is colocated with the
 fonts it covers. No downloaded graphics are included.
+[N11ax] D-257 (pending owner decision): the game loads these five as `public/fonts/*.woff2` (`src/ui/fonts.css`),
+a lossless WOFF2 conversion of the TTFs with fontTools (`TTFont(ttf).flavor = 'woff2'`; same glyphs and cmap, no
+subsetting, names unchanged — none of the three licences declares a Reserved Font Name). The TTFs stay in `public/fonts/`
+for `dev/globe.html` and `scripts/store-shots.mjs`; `scripts/vite-font-files.mjs` leaves them out of `dist/`.
 
 <!-- [task-03] -->
 ## Production land raster (task 03)

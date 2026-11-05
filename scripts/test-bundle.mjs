@@ -120,6 +120,14 @@ if (!STATIC_ONLY) {
     const css = files(dist, (p) => extname(p) === '.css').map((p) => readFileSync(p, 'utf8')).join('\n');
     const tokenUses = [...css.matchAll(/var\(--skin-([a-z0-9-]+)/g)].map((m) => m[1]).filter((name) => !keep.has(name));
     check(tokenUses.length === 0, 'skin tokens left in dist CSS (vite-skin-inline off?): ' + [...new Set(tokenUses)].join(' '));
+    // [night-11ax] D-257: fonts ship as WOFF2 only (scripts/vite-font-files.mjs drops the TTF twins from dist/), and
+    // every font file the release CSS names is in dist/.
+    const fontFilesInDist = existsSync(join(dist, 'fonts')) ? files(join(dist, 'fonts'), () => true).map((p) => relative(dist, p)) : [];
+    const ttfs = fontFilesInDist.filter((p) => p.endsWith('.ttf'));
+    check(ttfs.length === 0, 'TTF fonts in dist/ (WOFF2 only): ' + ttfs.join(' '));
+    const named = [...new Set([...css.matchAll(/url\(['"]?(?:\.\.)?\/?(fonts\/[^'")]+)['"]?\)/g)].map((m) => m[1]))];
+    const absent = named.filter((p) => !existsSync(join(dist, p)));
+    check(named.length >= 9 && absent.length === 0, `font files named by the CSS missing from dist/ (${named.length} named): ` + absent.join(' '));
     // [night-11at] D-255: the privacy policy and terms bodies are a chunk of their own inside dist/ (loaded on demand,
     // no network), not part of the main chunk; markers are the first section titles of both documents, EN and PL.
     await import('./ts-test-loader.mjs');

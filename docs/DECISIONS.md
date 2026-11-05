@@ -2487,26 +2487,39 @@ leader lines, seat scale, week ruler, jam arc, dock names, menu scale) run in ev
 guards in `overlay.ts`, `boarding-pass.ts`, `tag-dock.ts`, `menu.ts` are gone; the module stays type-only, `main.ts`
 hands in `t`/`localNumber`/grace). Comparison: the old "Diorama" tokens are `src/ui/skin/diorama.css`; a DEV build with
 `?skin=current` drops `data-skin`, skips the helpers and loads them last (`AW_SKIN=current npm run skin:pixels -- capture`
-for the same shots); release builds never import it. Fonts ship properly: WOFF2 subsets (Latin, Latin-1, Latin
-Extended-A, punctuation, arrows) in `public/fonts/` — Barlow Condensed 500/700 and IBM Plex Mono 400/600, the latter
-renamed **Airway Chart Mono** because "Plex" is an OFL Reserved Font Name; licences next to them, `docs/ASSETS.md`.
-Layout fix found by `test:e2e:text-scale-150`: the boarding-pass time field 84 → 88 px (landscape/foldable 68 → 72 px),
-"10:42" in 25 px mono is 73 px; and by `ui:matrix:stub`: with the weekly board open in landscape (915×412) the
-full-width chart margin ran under the board's sign, so there it stops at 436 px (`:has(.airway-upgrade-open)`).
-Evidence: `skin:pixels` default capture of this branch against `AW_SKIN=karta` on origin/dev 983b152: 95/120 shots
-pixel-identical; the 25 others are exactly the screens with the boarding pass (hud, pause, upgrade, tutorial: the time
-field); computed styles differ only in the mono family name (Airway Chart Mono).
-Open: `ui:matrix:stub` 915×412 game over (PL/EN) — the report's sign still touches the chart margin (sign top 83 px,
-margin bottom 88 px) despite the landscape padding; and the 904×1088@2 / 1088×904@2 game-over screenshots time out in
-some runs (flaky under load; one clean run had none).
-**Bundle (needs the owner's OK, budgets NOT changed here):** `npm run test:bundle` on this tree: main JS 1,138.2 kB raw /
-341.3 kB gzip (budgets 1,180 / 360 — green), CSS **112.9 kB > 90 kB (+22.9 kB)**, `dist/` **4,388.3 kB > 4,300 kB
-(+88.3 kB)**: +78.3 kB fonts, +8.8 kB licences, the rest the KARTA structure CSS (it overrides Diorama component rules
-that a release still carries). Smallest sensible change: CSS budget 90 → 116 kB and total 4,300 → 4,400 kB (+2.6 %
-headroom as in D-252). Alternatives without a budget raise, not done tonight: fold `karta.css` into the component CSS
-and delete the overridden Diorama rules (CSS back to ≈ 90 kB, a few hours, and the `?skin=current` comparison goes),
-and convert the five shipped TTFs (624 kB) to WOFF2 (≈ −250 kB of `dist/`, needs `test:glyphs` to read WOFF2).
-Rejected: dropping the scope selector in release (−3.5 kB only, changes specificity), shipping the full TTFs (+391 kB).
+for the same shots); release builds never import it.
+**Fonts.** KARTA's faces ship as WOFF2 subsets (Latin, Latin-1, Latin Extended-A, punctuation, arrows) in
+`public/fonts/`: Barlow Condensed 500/700 and IBM Plex Mono 400/600, the latter renamed **Airway Chart Mono** because
+"Plex" is an OFL Reserved Font Name; licences next to them. The five fonts shipped since task 01 (Overpass 400/800,
+Overpass Mono 700, Atkinson Hyperlegible Next 400/700) are now served as WOFF2 too — a lossless conversion, same glyphs
+and cmap (595 → 218 kB); their TTFs stay in `public/fonts/` for `dev/globe.html` and the store-shot tool, and
+`scripts/vite-font-files.mjs` leaves them out of `dist/`. `test:glyphs` reads WOFF2 (`scripts/lib/ttf-cmap.mjs`: the
+Brotli stream via `node:zlib`, `cmap` is never transformed) and checks the KARTA faces too, each with the fallbacks of
+its `--skin-face-*` stack: U+2009/U+202F (both subsets) and U+2192 (Barlow) come from Atkinson / Overpass / Overpass Mono.
+**Release CSS without the Diorama rules KARTA overrides.** The Diorama structure is the component CSS itself (KARTA only
+restyles it), so it cannot be left out as one file. `scripts/vite-skin-prune.mjs` (run by the inliner, release and
+`AW_SKIN_INLINE=1` dev only) drops every component declaration that a `:root[data-skin="karta"] X` rule always overrides
+— same selector, same property or a covering shorthand, same `@media`/`@container` or a top-level KARTA rule, never
+`!important` (182 declarations, −5.3 kB). A release always carries `data-skin="karta"`, so the scope is written
+`:root:root` there (same specificity, −2.0 kB). Proof: `skin:pixels` with and without `AW_SKIN_INLINE=1` on this
+branch (see the PR).
+**Layout fixes** found by the browser suites: the boarding-pass time field 84 → 88 px (landscape/foldable 68 → 72 px;
+`test:e2e:text-scale-150`, "10:42" in 25 px mono is 73 px); with the weekly board open in landscape the full-width
+chart margin stops at 436 px (`:has(.airway-upgrade-open)`; `ui:matrix:stub`, the board's sign sits at x ≥ 444 px);
+game-over in short landscape (`ui:matrix:stub` 915×412, sign at 83 px under the 88 px margin): root cause — Diorama
+fits the report exactly (78 px padding + 328.6 px report + 5 px = 411.6 of 412 px); under the taller KARTA margin the
+overlay overflowed by 14 px and focus scrolled it 9 px, sliding the sign up under the margin (padding alone could not
+help). The report now starts at 92 px with 3 px row gaps, a sign without padding and 5 px board padding (314.6 px), so
+nothing scrolls; the 48 px buttons stay.
+**Bundle.** `npm run test:bundle` (final tree, see the PR): main JS 1,138.2 kB raw / 341.3 kB gzip (budgets 1,180 / 360),
+`dist/` 4,004.7 kB (4,300) — green; CSS **106.2 kB > 90 kB (+16.2 kB)**: the KARTA structure that remains after the
+pruning (it is ~24 kB minified). **Proposed, not applied:** CSS budget 90 → 109 kB (106.2 + 2.6 % headroom, as D-252).
+The only way to 90 kB is to fold `karta.css` into the component CSS and delete the Diorama structure from the source
+(a few hours; the `?skin=current` comparison would go) — the natural follow-up once the owner has chosen.
+Evidence vs the D-256 preview: `skin:pixels` default capture of this branch against `AW_SKIN=karta` on origin/dev
+983b152: 95/120 shots pixel-identical; the 25 others are exactly the screens with the boarding pass (time field);
+computed styles differ only in the mono family name (Airway Chart Mono).
 Guards: `test:skin-tokens` (KARTA tokens are the skin, Diorama covers every token and is DEV-only, structure scoped,
-palette only `--karta-*`, fonts and licences present, helpers not DEV-guarded), `test:milestones` (stamp ≤ 200 ms).
-`src/render/**` (flat sky constant, ext session) untouched. **Status: pending owner decision.**
+palette only `--karta-*`, fonts and licences present, helpers not DEV-guarded, pruning unit cases), `test:glyphs`
+(WOFF2, KARTA faces and fallbacks), `test:bundle` (no TTF in `dist/`, every CSS font URL present), `test:milestones`
+(stamp ≤ 200 ms). `src/render/**` (flat sky constant, ext session) untouched. **Status: pending owner decision.**

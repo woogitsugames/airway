@@ -11,6 +11,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { resolve, dirname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { constantProperties, inlineSkin, keptSkin, resolveTokens, skinBuild, skinTokens, withConstants } from './vite-skin-inline.mjs';
+import { kartaOverrides, pruneOverridden } from './vite-skin-prune.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const SKIN = 'src/ui/skin/current.css';
@@ -208,6 +209,21 @@ check('diorama: imported only by the DEV comparison branch of src/main.ts', dior
 const guarded = ['src/ui/overlay.ts', 'src/ui/hud/boarding-pass.ts', 'src/ui/hud/tag-dock.ts', 'src/ui/menu/menu.ts']
   .filter((file) => /import\.meta\.env\.DEV\s*&&\s*skinPreview/.test(read(file)));
 check('karta: the chart helpers are not DEV-only any more', guarded.length === 0, guarded.join(' '));
+
+// [night-11ax] D-257: release CSS drops the component declarations KARTA always overrides (scripts/vite-skin-prune.mjs).
+{
+  const over = kartaOverrides(':root[data-skin="karta"] .a, :root[data-skin="karta"] .b::after { color: x; font: 1px y; }\n' +
+    '@media (w) { :root[data-skin="karta"] .c { padding: 0; } }\n:root[data-skin="karta"]:has(.d) .e { top: 0; }');
+  const pruned = pruneOverridden('.a { color: red; margin: 0; }\n.b::after { font-size: 2px; line-height: 1; }\n.a, .z { color: blue; }\n' +
+    '.c { padding-left: 1px; }\n@media (w) { .c { padding-top: 1px; } }\n.a { color: green !important; }\n.e { top: 1px; }', over);
+  check('prune: overridden declarations go (same selector, shorthand cover, same @media), the rest stays',
+    pruned.removed === 4 && /\.a \{ margin: 0; \}/.test(pruned.css) && !/\.b::after/.test(pruned.css) && /\.a, \.z \{ color: blue; \}/.test(pruned.css) &&
+    /\.c \{ padding-left: 1px; \}/.test(pruned.css) && !/@media/.test(pruned.css) && /green !important/.test(pruned.css) && /\.e \{ top: 1px; \}/.test(pruned.css),
+    pruned.css.replace(/\n/g, ' '));
+  const realOver = kartaOverrides(read(KARTA));
+  const removed = COVERED.reduce((sum, file) => sum + pruneOverridden(inlineSkin(read(file), real.resolved, file), realOver).removed, 0);
+  check('prune: the real KARTA structure makes some component declarations dead', removed > 50, `${removed} removed`);
+}
 
 // [night-11av] D-256: the helpers (src/ui/skin/preview.ts) are imported statically by the overlay, HUD and menu; they get
 // i18n and the sim constants from src/main.ts (KartaDeps), so the module stays type-only and the bundle order unchanged.

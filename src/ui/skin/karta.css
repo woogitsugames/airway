@@ -348,10 +348,13 @@
 /* [night-11ax] D-257: while the weekly board is open in landscape, its sign sits beside the boarding pass (Diorama
    geometry, x ≥ 444 px at 915 px wide); the full-width chart margin would run under it, so the margin stops short. */
 :root[data-skin="karta"]:has(.airway-upgrade-open) .airway-hud[data-layout='landscape'] .airway-pass { right: auto; width: 436px; }
-/* [night-11ax] D-257: the game-over report in short landscape starts under the chart margin (its bottom edge is at
-   88 px at 915×412), not under the 70 px Diorama pass, so the final figures stay readable above the sign. */
+/* [night-11ax] D-257: the game-over report in short landscape. Diorama fits it exactly at 915×412 (78 px top padding
+   under its 70 px pass + 328.6 px report + 5 px = 411.6 px). The chart margin ends at 88 px, so the report starts at
+   92 px and has to be 14 px shorter, or the overlay scrolls (focus brings the action row into view) and the sign slides
+   up under the margin: tighter rows, sign and boards; the 48 px buttons and touch targets stay. */
 @media (max-height: 550px) and (min-width: 620px) {
-  :root[data-skin="karta"] .airway-go-overlay { padding-top: calc(var(--aw-safe-top) + 92px); }
-  /* a report taller than the space was centred and overflowed upwards under the margin: start it at the top */
-  :root[data-skin="karta"] .airway-go-overlay { place-items: start center; }
+  :root[data-skin="karta"] .airway-go-overlay { padding-top: calc(var(--aw-safe-top) + 92px); padding-bottom: calc(var(--aw-safe-bottom) + 3px); }
+  :root[data-skin="karta"] .airway-go-content { row-gap: 3px; }
+  :root[data-skin="karta"] .airway-go-sign { padding-block: 0; }
+  :root[data-skin="karta"] .airway-go-board, :root[data-skin="karta"] .airway-go-strip { padding-block: 5px; }
 }
