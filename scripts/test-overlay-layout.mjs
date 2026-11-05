@@ -246,5 +246,20 @@ assert('out-of-range label suppressed', layoutTags([{ ...crowd[0], width: 500 }]
     assert(`edge chips: 150 airports under 1 ms per frame (${now.toFixed(3)} ms)`, now < 1);
   }
 }
+// [night-11az] D-257 Róża: a fixed obstacle (a rose) is never moved and keeps tags off it; a tag with maxShift tries
+// the other side before drifting; a minor one stays unplaced rather than drift away.
+{
+  const b = { width: 412, height: 915, top: 0, bottom: 0, gap: 3 };
+  const rose = { id: 'rose', anchorX: 0, anchorY: 0, width: 60, height: 60, active: true, jammed: false, fixed: true, x: 200, y: 300, placed: false };
+  const blocker = { id: 'b', anchorX: 290, anchorY: 351, width: 80, height: 30, active: true, jammed: true, x: 0, y: 0, placed: false };
+  const note = { id: 'n', anchorX: 290, anchorY: 351, altAnchorX: 120, maxShift: 36, width: 80, height: 30, active: true, jammed: false, x: 0, y: 0, placed: false };
+  const minor = { id: 'm', anchorX: 290, anchorY: 351, altAnchorX: 290, maxShift: 0, minor: true, width: 80, height: 30, active: true, jammed: false, x: 0, y: 0, placed: false };
+  layoutTags([rose, blocker, note, minor], b);
+  assert('roza: a fixed obstacle stays put and counts as placed', rose.placed && rose.x === 200 && rose.y === 300);
+  assert('roza: a note blocked on its side goes to the other side, near its anchor', note.placed && note.x === 80 && note.y === 310);
+  assert('roza: a minor note with no room nearby stays unplaced', !minor.placed);
+  const overlaps = (a, c) => a.x < c.x + c.width && a.x + a.width > c.x && a.y < c.y + c.height && a.y + a.height > c.y;
+  assert('roza: no tag covers the obstacle', !overlaps(blocker, rose) && !overlaps(note, rose));
+}
 console.log(`SUMMARY test:overlay-layout seed=0xA1A1 cases=${passed + failed} passed=${passed} failed=${failed}`);
 if (failed) process.exitCode = 1;

@@ -14,6 +14,13 @@ export interface TagSlot {
    * never moved, every other tag keeps off it. Placed while active.
    */
   fixed?: boolean;
+  /**
+   * [night-11az] D-257: a tag that should stay next to its anchor: it is tried at `anchorX`, then at `altAnchorX` (the
+   * other side of the airport), each moved at most `maxShift` px up or down; if neither fits, a `minor` tag stays
+   * unplaced and any other drifts freely on the anchor side as before.
+   */
+  maxShift?: number;
+  altAnchorX?: number;
   x: number;
   y: number;
   placed: boolean;
@@ -50,30 +57,39 @@ export function layoutTags(slots: readonly TagSlot[], bounds: TagBounds): number
     for (let i = 0; i < slots.length; i++) {
       const slot = slots[i];
       if (!slot.active || slot.fixed || (slot.jammed ? 2 : slot.minor ? 0 : 1) !== priority || slot.width > bounds.width - left * 2 || slot.height > bottom - top) continue;
-      slot.x = Math.round(clamp(slot.anchorX - slot.width / 2, left, bounds.width - left - slot.width));
-      const idealY = Math.round(clamp(slot.anchorY - slot.height - 11, top, bottom - slot.height));
-      slot.y = idealY;
-      // Collision checks are bounded by the number of tags; no allocations per frame.
-      for (let tries = 0; tries <= slots.length; tries++) {
-        let blocker: TagSlot | null = null;
-        for (let j = 0; j < slots.length; j++) {
-          if (i !== j && slots[j].placed && collides(slot, slots[j], bounds.gap)) {
-            blocker = slots[j];
+      // With maxShift: the anchor side, then the other side, each kept near the anchor; a tag that carries more than
+      // a name (not `minor`) then falls back to the free drift on the anchor side rather than vanish.
+      const limited = slot.maxShift !== undefined && slot.altAnchorX !== undefined;
+      const sides = limited ? (slot.minor ? 2 : 3) : 1;
+      for (let side = 0; side < sides && !slot.placed; side++) {
+        const anchorX = side === 1 ? slot.altAnchorX! : slot.anchorX;
+        const maxShift = limited && side < 2 ? slot.maxShift! : Infinity;
+        slot.x = Math.round(clamp(anchorX - slot.width / 2, left, bounds.width - left - slot.width));
+        const idealY = Math.round(clamp(slot.anchorY - slot.height - 11, top, bottom - slot.height));
+        slot.y = idealY;
+        // Collision checks are bounded by the number of tags; no allocations per frame.
+        for (let tries = 0; tries <= slots.length; tries++) {
+          let blocker: TagSlot | null = null;
+          for (let j = 0; j < slots.length; j++) {
+            if (i !== j && slots[j].placed && collides(slot, slots[j], bounds.gap)) {
+              blocker = slots[j];
+              break;
+            }
+          }
+          if (!blocker) {
+            slot.placed = true;
+            placed++;
             break;
           }
-        }
-        if (!blocker) {
-          slot.placed = true;
-          placed++;
-          break;
-        }
-        const above = blocker.y - slot.height - bounds.gap;
-        if (above >= top) {
-          slot.y = above;
-        } else {
-          // Choose a stable downward placement only when upward placement is exhausted.
-          slot.y = Math.max(idealY, blocker.y + blocker.height + bounds.gap);
-          if (slot.y + slot.height > bottom) break;
+          const above = blocker.y - slot.height - bounds.gap;
+          if (above >= top) {
+            slot.y = above;
+          } else {
+            // Choose a stable downward placement only when upward placement is exhausted.
+            slot.y = Math.max(idealY, blocker.y + blocker.height + bounds.gap);
+            if (slot.y + slot.height > bottom) break;
+          }
+          if (Math.abs(slot.y - idealY) > maxShift) break;
         }
       }
     }
