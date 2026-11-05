@@ -394,3 +394,71 @@
   .airway-go-map { padding: 0 8px; }
   .airway-go-content { gap: 4px; }
 }
+/* [night-12ax] R1n, D-242: Endless milestones — one ruled row on the paper strip. Local tokens so the pending UI
+   redesign can swap the inks in one place; marks differ by shape (filled / hollow square), not only by colour. */
+.airway-go-milestones {
+  --aw-ms-ink: #2a2420;
+  --aw-ms-done: #1e6f6a;
+  --aw-ms-open: #6b6257;
+  --aw-ms-rule: #beb4a4;
+  --aw-ms-stamp: #a32b25;
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px dashed var(--aw-ms-rule);
+}
+.airway-go-milestones-title {
+  margin: 0 0 3px;
+  font: 700 11px/1.3 'Overpass Mono', monospace;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--aw-ms-ink);
+}
+.airway-go-milestones-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.airway-go-milestone {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font: 400 12px/1.35 'Atkinson Hyperlegible Next', sans-serif;
+  color: var(--aw-ms-open);
+}
+.airway-go-milestone[data-reached="true"] { color: var(--aw-ms-ink); }
+.airway-go-milestone-mark {
+  flex: 0 0 8px;
+  width: 8px;
+  height: 8px;
+  box-sizing: border-box;
+  border: 1.5px solid currentColor;
+}
+.airway-go-milestone[data-reached="true"] .airway-go-milestone-mark {
+  border-color: var(--aw-ms-done);
+  background: var(--aw-ms-done);
+}
+.airway-go-milestone-first {
+  font: 700 9px/1 'Overpass Mono', monospace;
+  text-transform: uppercase;
+  color: var(--aw-ms-stamp);
+  border: 1px solid currentColor;
+  padding: 2px 3px;
+  animation: airway-go-stamp 160ms ease-out both;
+}
+@keyframes airway-go-stamp { from { opacity: 0; } to { opacity: 1; } }
+:root[data-airway-motion="reduce"] .airway-go-milestone-first { animation: none; }
+/* [night-12ax] Short phones and short landscape: the report must not scroll, so the row keeps its title and the
+   seven marks on one line; the names are in each mark's spoken label (and in full on taller screens). */
+@media (max-height: 700px) and (max-width: 619px), (max-height: 550px) and (min-width: 620px) {
+  .airway-go-milestones { display: flex; align-items: center; gap: 8px; margin-top: 5px; padding-top: 4px; }
+  .airway-go-milestones-title { margin: 0; }
+  .airway-go-milestones-list { gap: 5px; flex-wrap: nowrap; }
+  .airway-go-milestone-text, .airway-go-milestone-first { display: none; }
+}
+@media (max-height: 600px) and (max-width: 619px) {
+  .airway-go-milestones { margin-top: 3px; padding-top: 2px; }
+  .airway-go-milestones-title { line-height: 1.1; }
+}

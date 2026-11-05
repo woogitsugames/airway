@@ -2099,6 +2099,68 @@ private details; the full block in every footer (one link keeps footers short an
 separate settings page and router screen for six rows. Not legal advice — the wording goes to the same lawyer
 consultation as R7a/R7b. **Status: in force (Q-01 open).**
 
+## D-242 — Endless run milestones: seven goals read from the run, shown on the game-over report and in the logbook (2026-11-05, Claude, night N12ax)
+R1n. A first Endless run gets intermediate goals without a rule change: **first hub**, **every region served**,
+**week 2 / 3 / 5 reached**, **500 / 1 000 passengers**. The check is pure (`src/game/milestones.ts`) and reads the run's
+read model (`EndlessRun.cityList()`/`routeList()`, tick, score); `EndlessRun` keeps what was reached (a hub that later
+closes still counts), so nothing is written into the Sim, its state or its hash (D-13; `test:milestones` compares
+the hash with a raw Sim driven by the same bot). "Every region served" means: when a weekly board opens, every region
+that has an open airport has an airport on a route, with at least two regions open (all eight regions is never
+reached by the bot, and "served at any moment" is true at the first route). A resumed run counts what it reaches
+after resuming and at its end (like the R1o board counts). The game-over report shows one ruled row "Etapy n/7"
+under the score — reached milestones with a filled square, open ones hollow (shape, not only colour), a small
+"pierwszy raz" stamp on one reached for the first time, which fades in over 160 ms and not at all under "Reduce
+motion" (D-88); short screens keep the title and marks only, so the report does not scroll. The logbook stores, per
+milestone, the flight number (Endless + daily, as the logbook counts flights) of its first reach, Endless only, and
+lists them as "pierwszy raz w locie N" / "jeszcze nie". No reward, no unlock, no new rule, nothing in "Copy summary".
+Inks are local custom properties (`--aw-ms-*`) so the pending UI redesign can swap them in one place.
+Bot check (test:balance policy, 0xA1A1…, 60 min cap): 50 runs, median 17.51 min — first hub 50, every region 35,
+week 2 50, week 3 33, week 5 1, 500 passengers 10, 1 000 passengers 0; 200 runs, median 16.80 min — 200 / 146 /
+194 / 135 / 1 / 24 / 0. The median run reaches the first four; week 5 and 1 000 passengers are stretch goals no bot
+run reaches (owner may prefer week 4 / 750 passengers). Guard: `test:milestones`, `test:e2e:gameover-milestones`.
+**Status: in force (thresholds to confirm by the owner).**
+
+## D-243 — Privacy policy v1: fourteen sections from RESEARCH R7, bound to the art. 30 record and the store declarations (2026-11-05, Claude, night N11am)
+R7a. `privacy.*` in `site/i18n.js` (PL/EN; the game copy follows through `test:privacy-text`, D-86) becomes a full
+draft in the order of RESEARCH R7: (1) controller and contact as "[Q-01 …]" placeholders, no DPO, UK representative
+"[Q-67 …]"; (2) in short; (3) what stays on the device (save, settings, logbook; share and "Copy summary" only on
+tap); (4) the daily leaderboard, merged from `docs/legal/leaderboards-privacy.md` (Q-56 per its recommendation A —
+one text for every build; the owner may still choose B): what is sent, what is stored, the anonymous account, the
+call sign, IP addresses in Google's request handling; (5) one purpose line per activity of the art. 30 record with
+its GDPR art. 6 point (legitimate interest per D-135, deletion as a legal obligation); (6) recipients (Google as
+processor under the Firebase DPST, `europe-west1`; host and mail provider placeholders); (7) transfers (EU-US DPF,
+SCC); (8) retention (entries 90 days, D-77; record of moves not stored; anonymous account until deletion + up to 180
+days in backups; Auth IP logs a few weeks; Cloud Run logs, e-mails and hosting logs as bracketed open items); (9)
+rights incl. objection through "Send results to the leaderboard" (D-197), in-app deletion (D-114), e-mail deletion
+within 30 days and a complaint to the President of UODO; (10) 13+; (11) no profiling, the server replay is the only
+automated check; (12) the website; (13) security; (14) changes with a version history. The red banner now says
+"draft v1 — to verify with a lawyer, not legal advice" and stays until the owner approves; the date line names the
+effective date as set at publication. Bodies are paragraphs and "• " lists (site: `data-i18n-paragraphs`; game:
+`policyBlocks`). Guards: `test:privacy-policy` maps every art. 30 activity, declared endpoint, submission field and
+stored field to plain words in the policy (a new data flow fails until the text names it) and checks the retention
+numbers against `RETENTION_DAYS` and the register; `AIRWAY_RELEASE=1 test:site` refuses bracketed placeholders.
+Rejected: a separate leaderboard-only section shown only in build B (Q-56 B: two texts to keep in sync); field names
+such as `expireAt` in player text. **Status: in force as a draft (Q-01, Q-56 confirmation, Q-67 and the lawyer open).**
+
+## D-244 — Terms of use v1 on `site/terms.html` and in Settings → Help; Apple's standard EULA in the App Store (2026-11-05, Claude, night N11an)
+R7b (D-134, Q-65 → A). A PL/EN terms page built like `privacy.html` (same header, footer, fonts, `site.js`,
+canonical/hreflang, copied by `build:site`), linked from every site footer, with ten sections: provider and contact
+("[Q-01 …]" placeholders), scope (game, daily leaderboard and website as electronic services, free, requirements),
+licence to play (personal, non-transferable; store rules; Apple's standard Licensed Application EULA in the App Store),
+leaderboard rules (only the first game of the day is ranked, the server replay rejects an unconfirmed score, entries
+expire 90 days after the last write, the opt-out switch and in-app deletion, no cheating, no prizes), availability
+(the leaderboard may be paused, changed or ended, the game works offline; consumer rights by law untouched), start
+and end of the agreement, complaints (reply time a bracketed proposal of 14 days), privacy, changes (14 days' notice),
+governing law (a bracketed proposal for the lawyer: Polish law without removing consumer protection of the country of
+residence). Draft banner "draft v1 — to verify with a lawyer, not legal advice". The publisher block (D-241) sits on the terms page too, above the date, and its footer links it; the game renders terms and policy bodies with one `policyBlocks` (D-243). The game shows the same text offline
+under Settings → Help → "Terms of use" / "Regulamin" (router screen `terms`, like D-86), after the privacy policy.
+`docs/store/README.md` says to keep Apple's standard EULA and gives the terms URL for both consoles and the Play
+trader card. Guards: `test:terms` (game copy word for word, sections, leaderboard rules vs `rank.practice`,
+`RETENTION_DAYS` and the real switch labels, EULA and URL in the store notes), `test:site` (page, footers, banner;
+`AIRWAY_RELEASE=1` refuses bracketed placeholders), `test:e2e:terms-page`. Rejected: Apple's EULA alone (Q-65 B; the
+leaderboard and site need terms under the Polish e-services act); a custom App Store EULA. Not legal advice; goes to
+the same lawyer consultation as R7a. **Status: in force as a draft (Q-01 and the lawyer open).**
+
 ## D-245 — Firebase Test Lab game loop plays the real release build with the bot (2026-11-05, Claude, night N12ay)
 R3i. Real-device frame times on budget phones come from Firebase Test Lab's game-loop test type instead of borrowed
 phones. `MainActivity` takes `com.google.intent.action.TEST_LOOP` (second intent filter; `com.google.test.loops` = 1,

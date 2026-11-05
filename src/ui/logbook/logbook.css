@@ -35,3 +35,9 @@
 .airway-logbook__summary-text { display:block; box-sizing:border-box; width:100%; margin-top:6px; padding:8px; border:1px solid #2a2420; background:#fbf6ec; color:#13302e; font:400 12px/1.4 'Overpass Mono',monospace; resize:vertical; }
 .airway-logbook__summary-text[hidden] { display:none; }
 @media (max-width:370px) { .airway-logbook__totals dd { font-size:20px; } .airway-logbook__records .airway-logbook__cell { grid-template-columns:1fr; gap:3px; } .airway-logbook__records dd { text-align:left; } .airway-logbook__flights { font-size:11px; } .airway-logbook__flights td, .airway-logbook__flights th { padding-left:2px; padding-right:2px; } }
+/* [night-12ax] R1n, D-242: Endless milestones as record rows; a reached one has a filled square before its name, an
+   open one a hollow square (shape, not only colour), as on the game-over row. */
+.airway-logbook__milestones { --aw-ms-done:#1e6f6a; --aw-ms-open:#6b6257; }
+.airway-logbook__milestones dt::before { content:''; display:inline-block; width:8px; height:8px; margin-right:6px; box-sizing:border-box; border:1.5px solid var(--aw-ms-open); vertical-align:1px; }
+.airway-logbook__milestones [data-reached="true"] dt::before { border-color:var(--aw-ms-done); background:var(--aw-ms-done); }
+.airway-logbook__milestones [data-reached="false"] dd { color:var(--aw-ms-open); font-weight:400; }

@@ -1,5 +1,5 @@
 // [night-11e] R1b: the privacy policy is reachable in the app. Settings → Help has a "Privacy policy" row (≥ 48 px);
-// it opens an in-app page with the site's policy (title, draft warning, five sections, date) in the player's
+// it opens an in-app page with the site's policy (title, draft warning, its sections — 14 since R7a — date) in the player's
 // language, with no network request, no horizontal scroll and the globe not drawing behind it; the Back button and
 // hardware back/Escape return to settings. PL/EN at 412×915, 915×412 and 320×568; shots docs/shots/n11e/.
 import { mkdirSync } from 'node:fs';
@@ -41,7 +41,9 @@ try {
             title: paper?.querySelector('h1')?.textContent ?? '',
             warning: paper?.querySelector('.airway-privacy__warning')?.textContent ?? '',
             headings: [...(paper?.querySelectorAll('.airway-privacy__section h2') ?? [])].map((h) => h.textContent),
-            bodies: [...(paper?.querySelectorAll('.airway-privacy__section p') ?? [])].map((p) => p.textContent),
+            // [night-11am] R7a: a body is paragraphs and lists; compare its blocks' text line by line.
+            bodies: [...(paper?.querySelectorAll('.airway-privacy__section') ?? [])].map((section) =>
+              [...section.querySelectorAll('p, li')].map((node) => node.textContent).join('\n')),
             date: paper?.querySelector('.airway-privacy__date')?.textContent ?? '',
             focus: document.activeElement?.classList.contains('airway-settings__back') ?? false,
             back: back ? [back.width, back.height] : null,
@@ -53,9 +55,10 @@ try {
         assert(m.screen === 'privacy', `router screen ${m.screen}`);
         assert(m.title === site['privacy.title'], `title "${m.title}"`);
         assert(m.warning === site['privacy.warning'], 'draft warning missing or different');
-        const n = [1, 2, 3, 4, 5];
+        const n = Object.keys(site).filter((key) => /^privacy\.s\d+\.title$/.test(key)).map((_, i) => i + 1);
+        const plain = (text) => text.split(/\n\s*\n/).flatMap((block) => block.split('\n')).map((line) => line.replace(/^• /, '')).join('\n');
         assert(JSON.stringify(m.headings) === JSON.stringify(n.map((i) => site[`privacy.s${i}.title`])), `headings ${m.headings}`);
-        assert(JSON.stringify(m.bodies) === JSON.stringify(n.map((i) => site[`privacy.s${i}.body`])), 'section text differs from the site');
+        assert(JSON.stringify(m.bodies) === JSON.stringify(n.map((i) => plain(site[`privacy.s${i}.body`]))), 'section text differs from the site');
         assert(m.date === site['privacy.date'], `date "${m.date}"`);
         assert(m.focus, 'focus not on Back');
         assert(m.back && m.back[0] >= 48 && m.back[1] >= 48, `back ${m.back}`);
