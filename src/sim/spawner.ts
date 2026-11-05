@@ -2,6 +2,7 @@
 // Randomness comes from the kernel's 'cities' stream; the kernel persists that stream's state.
 import type { Rng } from '../core/rng.ts';
 import { CITIES } from '../data/cities.ts';
+import { REGION_IDS, type RegionId } from '../data/regions.ts';
 import { distanceKm } from '../data/generated/distances.ts';
 import {
   SPAWNER_INTERVAL_TICKS,
@@ -70,10 +71,26 @@ function buildStartClusters(): readonly StartCluster[] {
 
 const START_CLUSTERS = buildStartClusters();
 
-/** Seeded start: one 3-4 city cluster. `rng` is the kernel's 'cities' stream. */
-export function createCitySpawner(rng: Rng): CitySpawnerState {
-  if (START_CLUSTERS.length === 0) throw new Error('City dataset has no viable starting region');
-  const cluster = START_CLUSTERS[rng.int(START_CLUSTERS.length)].members;
+/**
+ * [night-11aj] R2g: start clusters whose anchor (the first airport) lies in `region`; the same list order as
+ * START_CLUSTERS, so a home-region draw is as deterministic as a random one.
+ */
+export function startClustersIn(region: RegionId): readonly (readonly number[])[] {
+  return START_CLUSTERS.filter((cluster) => CITIES[cluster.members[0]].region === region).map((cluster) => cluster.members);
+}
+
+/** [night-11aj] R2g: regions a run can start in (Oceania has no start cluster: no other region within 2,500 km). */
+export const HOME_REGIONS: readonly RegionId[] = Object.freeze(REGION_IDS.filter((region) => startClustersIn(region).length > 0));
+
+/**
+ * Seeded start: one 3-4 city cluster. `rng` is the kernel's 'cities' stream. [night-11aj] R2g: `homeRegion` limits
+ * the draw to clusters anchored in that region (Endless "home region"); only the start cluster changes, later spawns
+ * follow the ordinary rules. Without it (Random, Daily) the draw is exactly the pre-R2g one.
+ */
+export function createCitySpawner(rng: Rng, homeRegion: RegionId | null = null): CitySpawnerState {
+  const pool = homeRegion === null ? START_CLUSTERS.map((cluster) => cluster.members) : startClustersIn(homeRegion);
+  if (pool.length === 0) throw new Error(`City dataset has no viable starting cluster${homeRegion ? ` in ${homeRegion}` : ''}`);
+  const cluster = pool[rng.int(pool.length)];
   const count = SPAWNER_START_CITY_MIN + rng.int(SPAWNER_START_CITY_MAX - SPAWNER_START_CITY_MIN + 1);
   const options = cluster.slice(2);
   // Fisher–Yates for variable starting groups without breaking pairwise spacing.

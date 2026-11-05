@@ -3,6 +3,7 @@
  * It only reads public views (sim.world.*) and submits commands via Sim.check/Sim.apply.
  */
 import { createGame, CONGESTION_GRACE_TICKS, type Sim } from '../src/sim/index.ts';
+import type { RegionId } from '../src/data/regions.ts';
 import { botCommandToSim, botSnapshot } from '../src/game/dev/autoplay.ts';
 import type { BotCommand, BotSnapshot } from './bot.ts';
 import { cityDistanceKm } from '../src/data/index.ts';
@@ -39,8 +40,8 @@ class GameSession {
   private readonly offered: string[] = [];
   private readonly picked: string[] = [];
 
-  constructor(seed: number, mode: 'endless' | 'daily' = 'endless') {
-    this.sim = createGame(seed, mode);
+  constructor(seed: number, mode: 'endless' | 'daily' = 'endless', homeRegion: RegionId | null = null) {
+    this.sim = createGame(seed, mode, undefined, homeRegion); // [night-11aj] R2g: per-region balance check
     const start = [...this.sim.world.cities()].map((city) => city.id);
     for (const id of start) this.reachAtOpen.set(id, nearestKm(id, start));
   }
@@ -112,6 +113,7 @@ function nearestKm(id: string, others: readonly string[]): number {
   return best;
 }
 
-export function createBalanceSession(seed: number, mode: 'endless' | 'daily' = 'endless'): GameSession {
-  return new GameSession(seed >>> 0, mode);
+export function createBalanceSession(seed: number, mode: 'endless' | 'daily' = 'endless',
+    homeRegion: RegionId | null = null): GameSession {
+  return new GameSession(seed >>> 0, mode, homeRegion);
 }

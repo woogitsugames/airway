@@ -5,7 +5,8 @@ import { airportLabel } from '../airportLabel';
 import { APP_VERSION } from '../../core/version'; // [night-12ap] R3j
 import { favouriteHub, localDay, type Logbook, type LogEntry } from '../../game/logbook';
 import type { TutorialOutcome } from '../../game/tutorial/controller';
-import { localNumber, t } from '../../i18n';
+import { localNumber, t, type TranslationKey } from '../../i18n';
+import type { RegionId } from '../../data/regions';
 import { logbookSummary } from './summary';
 import '../menu/menu.css';
 import './logbook.css';
@@ -95,6 +96,20 @@ function list(rows: [string, string, string][], klass: string): HTMLElement {
   }
   return dl;
 }
+const REGION_SHORT: Record<RegionId, TranslationKey> = {
+  NAM: 'region.short.NAM', SAM: 'region.short.SAM', EUN: 'region.short.EUN', EUS: 'region.short.EUS',
+  AFR: 'region.short.AFR', ME: 'region.short.ME', ASI: 'region.short.ASI', OCE: 'region.short.OCE',
+};
+/** [night-11aj] R2g: an Endless flight with a chosen home region names it under the mode. */
+function modeCell(flight: LogEntry): HTMLElement {
+  const cell = e('td', 'airway-logbook__mode', t(flight.mode === 'daily' ? 'logbook.mode.daily' : 'logbook.mode.endless'));
+  if (flight.region) {
+    const region = e('span', 'airway-logbook__region', t(REGION_SHORT[flight.region]));
+    region.dataset.region = flight.region;
+    cell.append(region);
+  }
+  return cell;
+}
 function recentTable(recent: readonly LogEntry[]): HTMLElement {
   const table = e('table', 'airway-logbook__flights');
   const head = e('thead', '');
@@ -109,7 +124,7 @@ function recentTable(recent: readonly LogEntry[]): HTMLElement {
     row.dataset.mode = flight.mode;
     row.append(
       e('td', '', shortDate(flight.day)),
-      e('td', 'airway-logbook__mode', t(flight.mode === 'daily' ? 'logbook.mode.daily' : 'logbook.mode.endless')),
+      modeCell(flight),
       e('td', '', flight.hub ?? t('logbook.none')),
       e('td', 'is-num', localNumber(flight.weeks)),
       e('td', 'is-num', localNumber(flight.passengers)),

@@ -556,6 +556,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
         ledger: failure.ledger, departures: flights, ...(extra ? { extra } : {}), ...(share ? { share } : {}),
         ...(run.mode === 'puzzle' ? {} : { timeline: runTimelineLoader(run) }), ...(tip ? { tip } : {}),
         spareAircraft: run.inventory.turboprop + run.inventory.widebody, // [night-12y] R8b
+        ...(run.homeRegion ? { homeRegion: run.homeRegion } : {}), // [night-11aj] R2g
       });
     }
   }

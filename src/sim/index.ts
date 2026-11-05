@@ -18,7 +18,14 @@ export { PLANE_TYPES, PLANE_PROGRESS_SCALE, CONGESTION_GRACE_TICKS } from './par
 export { clockAt, calendarWeekAt, calendarDayAt, ticksPerSecond, TICKS_PER_DAY, DAYS_PER_WEEK, TICKS_PER_WEEK, TICKS_PER_SECOND_1X } from './clock.ts';
 export type { ClockTime, SimSpeed } from './clock.ts';
 
-/** Start a new run. `seed` is an unsigned 32-bit integer (Daily: src/core/daily.ts dailySeed()). */
-export function createGame(seed: number, mode: GameConfig['mode'] = 'endless', puzzleId?: string): Sim {
-  return new Sim(seed >>> 0, mode === 'puzzle' ? { mode, puzzleId: puzzleId ?? '' } : { mode });
+export { HOME_REGIONS } from './spawner.ts';
+
+/**
+ * Start a new run. `seed` is an unsigned 32-bit integer (Daily: src/core/daily.ts dailySeed()).
+ * [night-11aj] R2g: `homeRegion` (Endless only; null = Random) anchors the start cluster in that region.
+ */
+export function createGame(seed: number, mode: GameConfig['mode'] = 'endless', puzzleId?: string,
+    homeRegion: GameConfig['homeRegion'] | null = null): Sim {
+  if (mode === 'puzzle') return new Sim(seed >>> 0, { mode, puzzleId: puzzleId ?? '' });
+  return new Sim(seed >>> 0, mode === 'endless' && homeRegion ? { mode, homeRegion } : { mode });
 }

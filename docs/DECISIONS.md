@@ -1992,6 +1992,30 @@ Guard: `test:release-checklist` (every reference exists, every line has an owner
 names agree). The owner still files every console answer. **Status: in force (recommendations of RESEARCH R1; the
 owner may override in the consoles).**
 
+## D-236 — Endless home region: a menu choice that moves only the start cluster (2026-11-04, Claude, night N11aj)
+R2g (Q-50 recommendation B). The Endless row of the menu board gets a native select in its status cell (the board
+keeps its height): **Random** (default, the pre-R2g draw) or one of the 7 regions that have a start cluster.
+**Oceania is not offered**: no other region lies within the 2,500 km start radius, so no cluster is anchored there
+(adding it would need new start rules, not a menu option). The choice is stored as `homeRegion` in the settings
+record (`airway.settings`, device only) and copied into the run's `GameConfig.homeRegion` (Endless only; Daily and
+puzzles refuse it, so the daily world and the leaderboards are unchanged). `scenarioFor` gives such a run
+`ENDLESS_SCENARIO` + `homeRegionId`; `createCitySpawner` then draws from the start clusters anchored in that region
+with the same RNG calls, so the run is deterministic and later airports open by the ordinary rules anywhere. A Random
+config carries no field, so its state hash is bit-for-bit the old one (pinned in `test:home-region`) and
+`RULES_VERSION` stays 6. The save envelope goes **v1 → v2**: v1 saves (always Random) load unchanged (checksum
+verified as v1, re-tagged), a pre-R2g build refuses a v2 save as "newer version" instead of continuing a home-region
+run in a random world. The D-76 replay keeps the region (`replaySave` passes the saved config), and so does the run
+timeline. "Same world" on the game-over report keeps the run's region; "New world" takes the menu's current choice.
+The report shows "Home region: Northern Europe" / „Region startowy: Europa Północna” next to the score, and the
+logbook's recent table shows the short name under "Endless". Bot check (`balance:regions`, 50 seeds per region,
+report only, not retuned): median 11.71 (NAM), 11.89 (SAM), 17.95 (EUN), **18.49 (EUS, flagged: above 18)**, 17.10
+(AFR), 15.91 (ME), 10.11 (ASI) min against D-79's 10–18; ASI and EUN sit at the edges
+(`docs/balance/regions-summary.md`). Kept minimal and token-based for the pending UI redesign. Rejected: a separate
+region row (the board would grow and overlap the sign in landscape), `Scenario.startCityIds` (it switches the spawner
+off, so no airport would ever open), a rules-version bump (Random is unchanged; it would replay every save).
+Guards: `test:home-region` (`test:fast`), `test:e2e:home-region` and `test:balance:regions` (`test:ci`).
+**Status: in force (EUS median to be reviewed with the next balance pass).**
+
 ## D-238 — Launch plan in `docs/LAUNCH.md`: weeks from an unset T, the D-131 rhythm over R2's T+6, store-event drafts (2026-11-04, Claude, night N12au)
 R2f + R6g. `docs/LAUNCH.md` (Polish, owner-facing) holds the launch timeline from RESEARCH R2 in weeks from **T**,
 which stays unset until the owner picks the launch date (D-96): T−12 closed test + Firebase project + press page and

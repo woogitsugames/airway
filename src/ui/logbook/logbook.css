@@ -24,6 +24,8 @@
 .airway-logbook__flights th:nth-child(n+4), .airway-logbook__flights .is-num { text-align:right; }
 /* Daily flights carry the teal stub of the daily challenge; Endless rows stay plain ink. Shape, not only colour. */
 .airway-logbook__flights tr[data-mode="daily"] .airway-logbook__mode::before { content:''; display:inline-block; width:8px; height:10px; margin-right:5px; background:#1e6f6a; clip-path:polygon(0 0,100% 0,100% 100%,50% 70%,0 100%); vertical-align:-1px; }
+/* [night-11aj] R2g: the home region of an Endless flight, a second line under the mode. */
+.airway-logbook__region { display:block; font-size:11px; color:var(--airway-kraft-empty-ink); }
 .airway-logbook__empty { margin:10px 0 0; font:400 14px/1.4 'Atkinson Hyperlegible Next',sans-serif; color:#2a2420; }
 .airway-logbook__local { margin-top:4px; }
 /* [night-12am] R1o: "Copy summary" — the settings' dark action strip; the fallback text is ruled logbook paper. */

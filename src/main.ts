@@ -16,6 +16,9 @@ import { createDailyMode, servedTicketRegions } from './game/modes/daily';
 import { dailyRankingBoard } from './game/dailyRanking'; // [night-06c] D-66
 import { IDENTITY_KEYS, createBrowserLeaderboards } from './net'; // [night-06c] D-66
 import { EndlessRun } from './game/run';
+import { readHomeRegion, writeHomeRegion } from './game/homeRegion'; // [night-11aj] R2g
+import { HOME_REGIONS } from './sim';
+import type { RegionId } from './data/regions';
 import { dailyRowHint } from './game/dailyRow'; // [night-10d]
 import { localDay, readLogbook, recordFlight, runHub, type RunRecord } from './game/logbook'; // [night-10n]
 import { APP_VERSION } from './core/version'; // [night-12ap] R3j
@@ -156,6 +159,7 @@ async function boot(): Promise<void> {
         dailyHint: dailyRowHint(scores.getProgress(dailyKey())), // [night-10d]
         saved: saved ? { week: saved.week, passengers: saved.passengers } : null,
         notice: saveNotice ? t(SAVE_NOTICE_KEY[saveNotice]) : null,
+        homeRegions: HOME_REGIONS, homeRegion: preferredHomeRegion(), // [night-11aj] R2g
       };
     },
     // [night-10n] Logbook: its own store plus the best record, daily scores and puzzle stars already kept.
@@ -177,6 +181,7 @@ async function boot(): Promise<void> {
         tutorial: readTutorialOutcome(browserTutorialStorage()), // [night-12am] R1o
       };
     },
+    onHomeRegion: (region) => { try { writeHomeRegion(globalThis.localStorage, region); } catch { /* Storage blocked. */ } },
     onMode: (mode) => {
       if (mode === 'continue') void continueSaved();
       else if (mode === 'endless') { saveNotice = null; startEndless(pendingSeed ?? freshSeed()); }
@@ -196,6 +201,10 @@ async function boot(): Promise<void> {
     ranking: leaderboards, // [night-12k] D-114 (R1a): settings row "Delete my ranking data"
   });
 
+  /** [night-11aj] R2g: the menu's home-region choice (null = Random). */
+  function preferredHomeRegion(): RegionId | null {
+    try { return readHomeRegion(globalThis.localStorage); } catch { return null; }
+  }
   function freshSeed(): number {
     const random = new Uint32Array(1);
     globalThis.crypto.getRandomValues(random);
@@ -250,7 +259,8 @@ async function boot(): Promise<void> {
       // [night-10e] Daily: "same world" is a practice of the same day's world (menu once the day changed),
       // "new world" is Endless; both used to drop silently to the menu.
       onRestart: (seed) => {
-        if (mode !== 'daily') startEndless(seed);
+        // [night-11aj] R2g: "same world" keeps the run's home region; a new world takes the menu's current choice.
+        if (mode !== 'daily') startEndless(seed, seed === run.seed ? run.homeRegion : preferredHomeRegion());
         else if (seed === dailySeedForKey(dailyKey())) startDaily();
         else if (seed === failedDailySeed) screens.show('menu');
         else startEndless(seed);
@@ -271,6 +281,7 @@ async function boot(): Promise<void> {
           recordFlight(globalThis.localStorage, {
             day: localDay(new Date()), mode, passengers: failed.passengers,
             weeks: Math.floor(failed.tick / TICKS_PER_WEEK), hub: runHub(failed.cityList(), failed.routeList()),
+            ...(failed.homeRegion ? { region: failed.homeRegion } : {}), // [night-11aj] R2g
           }, { ...failed.playtestStats(), ...deviceRecord() }); // [night-12am] R1o; [night-12ap] R3j playtest record
         } catch { /* Storage blocked: the flight is not logged. */ }
         saved = null;
@@ -310,17 +321,17 @@ async function boot(): Promise<void> {
     screenName = 'menu';
   }
 
-  function startEndless(seed: number): void {
+  function startEndless(seed: number, homeRegion: RegionId | null = preferredHomeRegion()): void {
     pendingSeed = null;
     const firstRun = (() => {
       try { return !globalThis.localStorage?.getItem(TUTORIAL_KEY); } catch { return false; }
     })();
     if (skipTutorialOnce || !firstRun) {
       skipTutorialOnce = false;
-      openGame(EndlessRun.create(seed), 'endless');
+      openGame(EndlessRun.create(seed, 'endless', homeRegion), 'endless');
       return;
     }
-    openTutorial(() => openGame(EndlessRun.create(seed), 'endless'));
+    openTutorial(() => openGame(EndlessRun.create(seed, 'endless', homeRegion), 'endless'));
   }
 
   function startDaily(): void {
@@ -363,6 +374,7 @@ async function boot(): Promise<void> {
       screen: session ? screenName : (screens.current() === 'settings' || screens.current() === 'licenses' || screens.current() === 'privacy' ? 'settings'
         : screens.current() === 'logbook' ? 'logbook' : 'menu'),
       seed: run?.seed ?? pendingSeed ?? 0,
+      homeRegion: run?.homeRegion ?? null, // [night-11aj] R2g
       tick: run?.tick ?? 0,
       nextWeekTick: run?.nextWeekTick ?? 0,
       routeCount: run?.routeList().length ?? 0,

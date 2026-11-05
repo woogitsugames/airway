@@ -86,12 +86,16 @@ export class EndlessRun {
     this.homeOffsetMinutes = Math.round((home ? cityByCode(home)?.utcOffsetH ?? 0 : 0) * 60);
   }
 
-  static create(seed: number, mode: GameMode = 'endless'): EndlessRun {
-    return new EndlessRun(createGame(seed, mode === 'daily' ? 'daily' : 'endless'));
+  /** [night-11aj] R2g: `homeRegion` (Endless only; null = Random) anchors the start cluster in that region. */
+  static create(seed: number, mode: GameMode = 'endless', homeRegion: RegionId | null = null): EndlessRun {
+    return mode === 'daily' ? new EndlessRun(createGame(seed, 'daily'))
+      : new EndlessRun(createGame(seed, 'endless', undefined, homeRegion));
   }
 
   get seed(): number { return this.sim.seed; }
   get mode(): GameMode { return this.sim.config.mode; }
+  /** [night-11aj] R2g: the chosen home region, or null for a Random start (and every Daily). */
+  get homeRegion(): RegionId | null { return this.sim.config.homeRegion ?? null; }
   get tick(): number { return this.sim.tickCount; }
   /** UTC world minute: drives the sun and terminator. */
   get clockMinute(): number { return this.sim.world.minute; }

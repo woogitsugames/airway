@@ -4,6 +4,7 @@
 import { Rng } from '../core/rng.ts';
 import { CITIES } from '../data/cities.ts';
 import { CITY_RECORDS, cityDistanceKm, cityIndex } from '../data/index.ts';
+import type { RegionId } from '../data/regions.ts';
 import { TICKS_PER_WEEK } from './clock.ts';
 import type { Command, CommandCheck, RejectReason } from './commands.ts';
 import { CurfewPlanner, isLocalCurfewHour, localHourAt, type CurfewSnapshot } from './daynight.ts';
@@ -59,6 +60,8 @@ export interface Scenario {
   readonly endMinute: number | null;
   /** Per-city base waiting capacity overrides (puzzles). */
   readonly capacityByCity: Readonly<Record<string, number>>;
+  /** [night-11aj] R2g: Endless start cluster anchored in this region; absent/null = any region (seeded). */
+  readonly homeRegionId?: RegionId | null;
 }
 
 export const ENDLESS_SCENARIO: Scenario = Object.freeze({
@@ -250,7 +253,7 @@ export class World implements WorldView {
       this.spawner = null;
       startIds = [...scenario.startCityIds];
     } else {
-      this.spawner = createCitySpawner(streams.cities);
+      this.spawner = createCitySpawner(streams.cities, scenario.homeRegionId ?? null);
       startIds = this.spawner.activeCityIndices.map((index) => CITIES[index].code);
     }
     this.passengers = new PassengerSimulation(DEMAND_CITIES, (a, b) => {
