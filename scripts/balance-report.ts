@@ -12,7 +12,7 @@ import { pathToFileURL, fileURLToPath } from 'node:url';
 import { chooseBotAction } from './bot.ts';
 import type { AircraftType, BotCity, BotCommand, BotRoute, BotSnapshot, LedgerCause, UpgradeOffer } from './bot.ts';
 import { CURFEW_ENDLESS_START_WEEK, SIM_DAYS_PER_WEEK, SIM_MINUTES_PER_WEEK, SIM_TICKS_PER_SECOND } from '../src/sim/params.ts';
-import type { RunMechanics } from './balance-game-adapter.ts';
+import type { RunContracts, RunMechanics } from './balance-game-adapter.ts';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const BASE_SEED = 0xa1a1;
@@ -46,11 +46,13 @@ export interface BalanceSession {
   dispatch(command: BotCommand): boolean;
   advance(ticks: number): void;
   outcome(): BalanceOutcome;
+  /** [night-12ba] R2k: the run's weekly contracts (real adapter only). */
+  contracts?(): RunContracts;
 }
 
 export interface BalanceAdapter {
   /** [night-11aj] R2g: `homeRegion` (real adapter only) starts the run in that Endless home region. */
-  createBalanceSession(seed: number, mode?: 'endless', homeRegion?: string | null): BalanceSession;
+  createBalanceSession(seed: number, mode?: 'endless', homeRegion?: string | null, weeklyContract?: boolean): BalanceSession;
 }
 
 interface RunResult {
@@ -67,6 +69,8 @@ interface RunResult {
   upgrades: number;
   week1Unreachable: boolean;
   mechanics: RunMechanics | null;
+  /** [night-12ba] R2k: only in the contract comparison (balance:contracts). */
+  contracts?: RunContracts;
 }
 
 // LCG exists only inside the isolated fixture; the real sim must use src/core/rng.ts.
@@ -292,8 +296,9 @@ async function loadAdapter(path: string, fixture: boolean): Promise<BalanceAdapt
   return { createBalanceSession: module.createBalanceSession as BalanceAdapter['createBalanceSession'] };
 }
 
-function play(adapter: BalanceAdapter, seed: number, homeRegion: string | null = null): RunResult {
-  const session = homeRegion ? adapter.createBalanceSession(seed, 'endless', homeRegion) : adapter.createBalanceSession(seed);
+function play(adapter: BalanceAdapter, seed: number, homeRegion: string | null = null, weeklyContract = false): RunResult {
+  const session = weeklyContract ? adapter.createBalanceSession(seed, 'endless', homeRegion, true)
+    : homeRegion ? adapter.createBalanceSession(seed, 'endless', homeRegion) : adapter.createBalanceSession(seed);
   let commands = 0;
   let rejected = 0;
   let upgrades = 0;
@@ -318,6 +323,7 @@ function play(adapter: BalanceAdapter, seed: number, homeRegion: string | null =
     score: end.score, reason: snapshot.status === 'finished' ? end.reason : 'censored',
     warned: end.warned, warningLeadTicks: end.warningLeadTicks, commands, rejected, upgrades,
     week1Unreachable: end.week1Unreachable === true, mechanics: end.mechanics ?? null,
+    ...(weeklyContract && session.contracts ? { contracts: session.contracts() } : {}),
   };
 }
 
@@ -578,9 +584,76 @@ async function regionsMain(test: boolean): Promise<void> {
   }
 }
 
+/**
+ * [night-12ba] R2k / D-247: the same bot sample without and with the weekly contract (the bot does not aim at the
+ * contract; it plays as before and takes a contract crate only when its usual card preference picks it). Report:
+ * medians against D-79 (10–18 min), contract completion rate, contract crates shown and taken. Fails only on
+ * invalid runs (rejected commands, a loss without warning, a non-deterministic replay) or when a run whose
+ * contracts were never met differs from the same run without contracts (the contract must not touch the run).
+ */
+async function contractsMain(test: boolean): Promise<void> {
+  const label = test ? 'test:balance:contracts' : 'balance:contracts';
+  const n = Number(process.argv.find((arg) => arg.startsWith('--seeds='))?.slice(8) ?? 50);
+  try {
+    const adapter = await loadAdapter('scripts/balance-game-adapter.ts', false);
+    const off = Array.from({ length: n }, (_, i) => play(adapter, BASE_SEED + i));
+    const on = Array.from({ length: n }, (_, i) => play(adapter, BASE_SEED + i, null, true));
+    let invalid = [...off, ...on].filter((item) => item.ticks <= 0 || !Number.isFinite(item.score) || item.rejected > 0 ||
+      (item.reason === 'hubOverflow' && (!item.warned || item.warningLeadTicks <= 0))).length;
+    if (JSON.stringify(play(adapter, BASE_SEED, null, true)) !== JSON.stringify(on[0])) invalid++;
+    let untouched = 0;
+    for (let i = 0; i < n; i++) {
+      if (on[i]!.contracts!.extraBoards > 0) continue;
+      untouched++;
+      if (on[i]!.ticks !== off[i]!.ticks || on[i]!.score !== off[i]!.score) {
+        console.error(`seed ${BASE_SEED + i}: no contract crate shown, yet the run differs`);
+        invalid++;
+      }
+    }
+    const sum = (key: 'closed' | 'met' | 'extraBoards' | 'extraPicked'): number => on.reduce((total, item) => total + item.contracts![key], 0);
+    const targets = on.flatMap((item) => item.contracts!.targets);
+    const closed = sum('closed');
+    const met = sum('met');
+    const runsMet = on.filter((item) => item.contracts!.met > 0).length;
+    const medOff = median(off.map((item) => item.minutes));
+    const medOn = median(on.map((item) => item.minutes));
+    const longer = on.filter((item, i) => item.minutes > off[i]!.minutes).length;
+    const shorter = on.filter((item, i) => item.minutes < off[i]!.minutes).length;
+    const rate = closed ? (100 * met) / closed : 0;
+    const lines = [
+      `| | Without contract | With contract |`, `| --- | ---: | ---: |`,
+      `| Median session (min, D-79 10–18) | ${medOff.toFixed(2)} | ${medOn.toFixed(2)} |`,
+      `| Median delivered passengers | ${median(off.map((item) => item.score)).toFixed(0)} | ${median(on.map((item) => item.score)).toFixed(0)} |`,
+      `| Reached the 2nd board | ${share(off, 2)} | ${share(on, 2)} |`,
+    ].join('\n');
+    const facts = [
+      `- Contracts closed (their week ended inside the run): ${closed}; met: ${met} (${rate.toFixed(1)} %); runs with ≥ 1 met: ${runsMet}/${n}.`,
+      `- Contract targets: median ${targets.length ? median(targets).toFixed(0) : '—'}, range ${targets.length ? Math.min(...targets) : '—'}–${targets.length ? Math.max(...targets) : '—'} passengers.`,
+      `- Boards with a contract crate: ${sum('extraBoards')}; the bot took that crate ${sum('extraPicked')} times.`,
+      `- Same seed with vs without: ${longer} longer, ${shorter} shorter, ${n - longer - shorter} equal; ${untouched} runs never saw a contract crate (identical to the run without contracts).`,
+    ].join('\n');
+    console.log(`${lines}\n\n${facts}`);
+    if (!test) {
+      writeFileSync(resolve(ROOT, 'docs/balance/contracts-summary.md'), `# Bot sessions with and without the weekly contract (R2k, D-247)\n\n` +
+        `Generated by \`npm run balance:contracts -- --seeds=${n}\`: the \`test:balance\` bot on seeds 0xA1A1…+${n - 1}, ` +
+        `each seed once without and once with \`GameConfig.weeklyContract\`. The bot does not aim at the contract; ` +
+        `it takes the contract crate only when its usual card preference picks it. Report only, nothing is retuned.\n\n` +
+        `${lines}\n\n${facts}\n`, 'utf8');
+    }
+    console.log(`SUMMARY ${label} seed=0xA1A1 seeds=${n} median_off=${medOff.toFixed(2)} median_on=${medOn.toFixed(2)} ` +
+      `contracts=${closed} met=${met} rate=${rate.toFixed(1)} extra_boards=${sum('extraBoards')} passed=${invalid ? 0 : 1} failed=${invalid}`);
+    if (invalid) process.exitCode = 1;
+  } catch (error) {
+    console.error(error instanceof Error ? error.stack ?? error.message : String(error));
+    console.log(`SUMMARY ${label} seed=0xA1A1 seeds=0 passed=0 failed=1`);
+    process.exitCode = 1;
+  }
+}
+
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
   if (args.includes('--regions')) { await regionsMain(args.includes('--test')); return; }
+  if (args.includes('--contracts')) { await contractsMain(args.includes('--test')); return; }
   const fixture = args.includes('--fixture');
   const test = args.includes('--test');
   // [task-31] The 50-seed sample runs in seconds, so the gate checks the same sample as the report.

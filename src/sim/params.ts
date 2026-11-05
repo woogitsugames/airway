@@ -86,3 +86,11 @@ export const DEPARTURE_SLOTS_PER_HOUR_CITY = 2 as const;
 export const DEPARTURE_SLOTS_PER_HOUR_HUB = 3 as const;
 /** Weekly "+2 slots" upgrade: extra hourly departures for one chosen airport. */
 export const DEPARTURE_SLOT_UPGRADE = 2 as const;
+// [night-12ba] R2k, D-247: weekly contract (Endless runs with `GameConfig.weeklyContract` only; Daily never).
+// Target = this share of the pair's expected demand both ways over the coming week, capped (the two busiest pairs
+// ask for 300–450). Bot (does not aim at contracts), 50 seeds: 100 % capped at 60 meets 51 % of contracts (200: 48 %); uncapped
+// 38 %, 50 % share 96 %, 80 % share 64 %. Pairs below the minimum are not drawn.
+export const CONTRACT_PARAMS_VERSION = 1 as const;
+export const CONTRACT_SHARE_PERCENT = 100 as const;
+export const CONTRACT_MIN_PASSENGERS = 8 as const;
+export const CONTRACT_MAX_PASSENGERS = 60 as const;
