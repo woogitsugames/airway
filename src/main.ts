@@ -4,8 +4,8 @@
 import './ui/fonts.css';
 import './ui/base.css';
 import './ui/theme/theme.css';
-import './ui/skin/current.css'; // [night-11aq] UI skin tokens (D-249)
-import { startKartaPreview } from './ui/skin/preview'; // [night-11au] D-256 DEV-only skin preview
+import './ui/skin/current.css'; // [night-11aq] UI skin tokens (D-249); [night-11ax] D-257: KARTA values
+import { startKartaPreview } from './ui/skin/preview'; // [night-11au] D-256, [night-11ax] D-257: KARTA skin helpers
 import './ui/game.css';
 import { bootAudio, audioSettingsFromToggles } from './audio';
 import { createFlapRattle } from './game/flapSound'; // [night-07e]
@@ -50,6 +50,8 @@ import { onSettingsChange, readSettings } from './ui/settings/settings';
 import { applyAirlineColour, onAirlineColour, readAirlineColour } from './ui/airlineColour';
 import { TICKS_PER_WEEK } from './sim/clock'; // [task-31] single week length (D-40)
 import { NOVEMBER_SUBSOLAR_LATITUDE_DEG } from './render/sun'; // [task-40] store `game` scene light
+// [night-11ax] D-257: KARTA structure after every component stylesheet (its rules are scoped to <html data-skin="karta">).
+import './ui/skin/karta.css';
 
 const mount = document.getElementById('app');
 if (!mount) throw new Error('Missing #app mount point');
@@ -65,10 +67,13 @@ const query = new URLSearchParams(location.search);
  * for new Endless runs in a DEV build only (production folds this to false).
  */
 const devWeatherFront = import.meta.env.DEV && query.get('weather') === 'front';
-// [night-11au] D-256: KARTA UI skin preview, DEV only (`?skin=karta`); production folds this away and ships current.css.
-if (import.meta.env.DEV && query.get('skin') === 'karta') {
+// [night-11ax] D-257: KARTA is the shipped UI skin (D-256 preview made default). A DEV build with `?skin=current` shows the
+// previous "Diorama" skin for comparison: no <html data-skin="karta">, no chart helpers, its tokens loaded last.
+if (import.meta.env.DEV && query.get('skin') === 'current') {
+  delete document.documentElement.dataset.skin; // index.html sets it so the first paint is already KARTA
+  void import('./ui/skin/diorama.css');
+} else {
   startKartaPreview({ t, localNumber, jamGraceSeconds: CONGESTION_GRACE_TICKS / SIM_TICKS_PER_SECOND });
-  void import('./ui/skin/karta.css');
 }
 /** [task-36] Ticks of autoplay before a store scene is lit (game, night, failure). */
 const STORE_SHOT_PLAY_TICKS = 1500;

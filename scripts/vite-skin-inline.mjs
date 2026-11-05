@@ -13,6 +13,8 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
 export const SKIN_FILE = 'src/ui/skin/current.css';
+/** [night-11ax] D-257: the previous skin ("Diorama"), DEV comparison only (`?skin=current`). */
+export const COMPARISON_SKIN_FILE = 'src/ui/skin/diorama.css';
 const stripComments = (css) => css.replace(/\/\*[\s\S]*?\*\//g, '');
 const USE = /var\(\s*--skin-([a-z0-9-]+)\s*([,)])/g;
 
@@ -169,8 +171,9 @@ export function skinInline() {
     transform(code, id) {
       const file = normal(id);
       if (!enabled || !file.endsWith('.css') || !file.startsWith(normal(resolve(root, 'src')) + '/')) return null;
-      // [night-11au] D-256: a DEV-only preview skin (src/ui/skin/karta.css, never in a release build) keeps its tokens.
-      if (file.startsWith(normal(resolve(root, 'src/ui/skin')) + '/') && file !== normal(resolve(root, SKIN_FILE))) return null;
+      // [night-11ax] D-257: the DEV-only comparison skin (src/ui/skin/diorama.css, `?skin=current`, never in a release
+      // build) keeps its tokens; the KARTA structure (karta.css) is inlined like any component CSS.
+      if (file === normal(resolve(root, COMPARISON_SKIN_FILE))) return null;
       const { resolved, keep } = build ? (cache ??= skinBuild(root)) : skinBuild(root);
       if (file === normal(resolve(root, SKIN_FILE))) return { code: keptSkin(resolved, keep), map: null };
       return { code: inlineSkin(code, resolved, file.slice(root.length + 1)), map: null };

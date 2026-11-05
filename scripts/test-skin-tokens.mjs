@@ -101,6 +101,8 @@ for (const file of COVERED_TS) {
 const skin = stripComments(read(SKIN));
 const defined = new Map([...skin.matchAll(/--skin-([a-z0-9-]+)\s*:\s*([^;]+);/g)].map((m) => [m[1], m[2].trim()]));
 for (const m of skin.matchAll(/var\(--skin-([a-z0-9-]+)\)/g)) used.add(m[1]);
+// [night-11ax] D-257: a token only the DEV comparison skin (diorama.css) reads inside its own values is still part of the contract.
+for (const m of stripComments(read('src/ui/skin/diorama.css')).matchAll(/var\(--skin-([a-z0-9-]+)\)/g)) used.add(m[1]);
 const missing = [...used].filter((name) => !defined.has(name));
 const dead = [...defined.keys()].filter((name) => !used.has(name));
 check('every --skin-* token used is defined in the skin', missing.length === 0, missing.join(' '));
@@ -154,17 +156,20 @@ check('inline: every covered file of the real skin inlines with no token left', 
 check('inline: the real skin keeps exactly the tokens of the covered TypeScript', [...real.keep].sort().join() ===
   [...new Set(COVERED_TS.flatMap((file) => [...read(file).matchAll(/var\(--skin-([a-z0-9-]+)\)/g)].map((m) => m[1])))].sort().join());
 
-// 6. [night-11au] D-256: the DEV-only KARTA preview skin (src/ui/skin/karta.css) redefines every token of the shipped
-// skin, adds no skin token of its own, keeps all of it under :root[data-skin="karta"] (so it can never restyle the
-// shipped skin), never redefines the palette, and is imported only by the DEV branch of src/main.ts.
+// 6. [night-11au] D-256, [night-11ax] D-257: KARTA is the shipped skin. current.css holds its tokens; the structure and
+// the chart palette are src/ui/skin/karta.css, loaded statically by src/main.ts after every component stylesheet, every
+// rule scoped to :root[data-skin="karta"] (so the DEV `?skin=current` comparison drops it), palette only in a plain
+// :root, inlined with no token left. The previous skin (src/ui/skin/diorama.css) redefines every token, adds none, and
+// is imported only by the DEV `?skin=current` branch of src/main.ts.
 const KARTA = 'src/ui/skin/karta.css';
+const DIORAMA = 'src/ui/skin/diorama.css';
 const karta = stripComments(read(KARTA));
-const kartaBlock = /:root\[data-skin="karta"\]\s*\{([^{}]*)\}/.exec(karta);
-const kartaTokens = new Set([...(kartaBlock?.[1] ?? '').matchAll(/--skin-([a-z0-9-]+)\s*:/g)].map((m) => m[1]));
-const kartaMissing = [...defined.keys()].filter((name) => !kartaTokens.has(name));
-const kartaExtra = [...kartaTokens].filter((name) => !defined.has(name));
-check('karta: the preview skin redefines every token of the shipped skin', !!kartaBlock && kartaMissing.length === 0, kartaMissing.join(' '));
-check('karta: the preview skin adds no skin token of its own', kartaExtra.length === 0, kartaExtra.join(' '));
+const dioramaTokens = new Set([...stripComments(read(DIORAMA)).matchAll(/--skin-([a-z0-9-]+)\s*:/g)].map((m) => m[1]));
+const dioramaMissing = [...defined.keys()].filter((name) => !dioramaTokens.has(name));
+const dioramaExtra = [...dioramaTokens].filter((name) => !defined.has(name));
+check('diorama: the comparison skin redefines every token of the shipped skin', dioramaMissing.length === 0, dioramaMissing.join(' '));
+check('diorama: the comparison skin adds no skin token of its own', dioramaExtra.length === 0, dioramaExtra.join(' '));
+check('karta: the structure sets no skin token', !/--skin-[a-z0-9-]+\s*:/.test(karta));
 const kartaRules = [];
 {
   let depth = 0;
@@ -176,18 +181,36 @@ const kartaRules = [];
     else if (ch === ';' ) start = i + 1;
   }
 }
-const unscoped = kartaRules.filter((sel) => !/^@(media|font-face)\b/.test(sel) &&
+const unscoped = kartaRules.filter((sel) => !/^@(media|font-face)\b/.test(sel) && sel !== ':root' &&
   !sel.split(',').every((part) => part.trim().startsWith(':root[data-skin="karta"]')));
-check('karta: every rule of the preview skin is scoped to :root[data-skin="karta"]', unscoped.length === 0, unscoped.slice(0, 3).join(' | '));
-check('karta: the preview skin never redefines the palette or text-scale tokens', !/--airway-[a-z-]+\s*:/.test(karta));
-const kartaImports = tsFiles.filter((file) => /import\s*\(?\s*'[^']*karta\.css'/.test(read(file)));
+check('karta: every structural rule is scoped to :root[data-skin="karta"]', unscoped.length === 0, unscoped.slice(0, 3).join(' | '));
+const kartaRoot = [...karta.matchAll(/(?:^|\})\s*:root\s*\{([^{}]*)\}/g)].map((m) => m[1]).join(';');
+check('karta: the plain :root sets only the chart palette (--karta-*)',
+  [...kartaRoot.matchAll(/(--[a-z0-9-]+)\s*:/g)].every((m) => m[1].startsWith('--karta-')));
+check('karta: never redefines the palette or text-scale tokens', !/--airway-[a-z-]+\s*:/.test(karta));
+check('karta: the structure inlines with no token left', !/var\(--skin-/.test(inlineSkin(read(KARTA), real.resolved, KARTA)));
+const fontFiles = [...karta.matchAll(/url\('\/fonts\/([^']+)'\)/g)].map((m) => m[1]);
+const missingFonts = fontFiles.filter((file) => { try { statSync(resolve(ROOT, 'public/fonts', file)); return false; } catch { return true; } });
+check('karta: its faces ship from public/fonts/ with their OFL licences', fontFiles.length === 4 && missingFonts.length === 0 &&
+  ['OFL-BarlowCondensed.txt', 'OFL-AirwayChartMono.txt'].every((file) => { try { return statSync(resolve(ROOT, 'public/fonts', file)).size > 0; } catch { return false; } }),
+  missingFonts.join(' '));
 const main = read('src/main.ts');
-check('karta: only the DEV branch of src/main.ts imports the preview skin',
-  kartaImports.join() === 'src/main.ts' && /if \(import\.meta\.env\.DEV && query\.get\('skin'\) === 'karta'\) \{\s*startKartaPreview\([^;]*\);\s*void import\('\.\/ui\/skin\/karta\.css'\);/.test(main) &&
-  !/^import\s+'[^']*karta\.css'/m.test(main), kartaImports.join(' '));
+const kartaImports = tsFiles.filter((file) => /import\s*\(?\s*'[^']*karta\.css'/.test(read(file)));
+const lastImport = [...main.matchAll(/^import\s[^;]*;/gm)].pop()?.[0] ?? '';
+check('karta: src/main.ts (only) imports the structure, after every other import', kartaImports.join() === 'src/main.ts' &&
+  lastImport === "import './ui/skin/karta.css';", kartaImports.join(' '));
+check('karta: on by default in src/main.ts (startKartaPreview outside the DEV comparison branch)',
+  /if \(import\.meta\.env\.DEV && query\.get\('skin'\) === 'current'\) \{[^}]*void import\('\.\/ui\/skin\/diorama\.css'\);\s*\} else \{\s*startKartaPreview\(/.test(main) &&
+  /<html[^>]*data-skin="karta"/.test(read('index.html')));
+const dioramaImports = tsFiles.filter((file) => /diorama\.css'/.test(read(file)));
+check('diorama: imported only by the DEV comparison branch of src/main.ts', dioramaImports.join() === 'src/main.ts' &&
+  !/^import\s+'[^']*diorama\.css'/m.test(main), dioramaImports.join(' '));
+const guarded = ['src/ui/overlay.ts', 'src/ui/hud/boarding-pass.ts', 'src/ui/hud/tag-dock.ts', 'src/ui/menu/menu.ts']
+  .filter((file) => /import\.meta\.env\.DEV\s*&&\s*skinPreview/.test(read(file)));
+check('karta: the chart helpers are not DEV-only any more', guarded.length === 0, guarded.join(' '));
 
-// [night-11av] D-256: the preview helpers (src/ui/skin/preview.ts) are imported statically by the overlay, HUD and menu;
-// a runtime import there would reorder modules in the release bundle even though its code is dropped, so types only.
+// [night-11av] D-256: the helpers (src/ui/skin/preview.ts) are imported statically by the overlay, HUD and menu; they get
+// i18n and the sim constants from src/main.ts (KartaDeps), so the module stays type-only and the bundle order unchanged.
 const previewImports = [...read('src/ui/skin/preview.ts').matchAll(/^import\s+(?!type\b)[^;]*;/gm)].map((m) => m[0]);
 check('karta: the preview helpers have no runtime import (release bundle order unchanged)', previewImports.length === 0, previewImports.join(' '));
 

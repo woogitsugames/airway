@@ -11,7 +11,7 @@ import type { FillTrend } from '../game/fillTrend'; // [night-11af] R4c (type on
 import type { SurgeMark } from '../game/surge'; // [night-12bb] R2i (type only)
 import type { FrontMark } from '../game/weather'; // [night-12bd] R2j (type only)
 import './skin/current.css'; // [night-11aq] skin tokens read by overlay.css
-import { skinPreview, kartaEdgeClash, kartaEdgeNote, kartaTopMargin, kartaExtraWidth, kartaJamShare, kartaLabelChildren } from './skin/preview'; // [night-11au] D-256 DEV-only KARTA preview
+import { skinPreview, kartaEdgeClash, kartaEdgeNote, kartaTopMargin, kartaExtraWidth, kartaJamShare, kartaLabelChildren } from './skin/preview'; // [night-11au] D-256, [night-11ax] D-257: KARTA skin helpers
 import './overlay.css';
 
 const DEG = Math.PI / 180;
@@ -371,7 +371,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
     // [night-11m] D-128: the plate names the airport wherever the UI speaks of it (hub, jam countdown, NEW stub, slot
     // hold, curfew) and on every airport once the player zooms in; otherwise the disc stays unlabelled.
     // [night-11au] D-256: in the DEV-only KARTA preview a chart names every airport (folds away in a release build).
-    const plated = (import.meta.env.DEV && skinPreview.karta) || zoomedIn || entry.hub || jammedNow || entry.isNew ||
+    const plated = (skinPreview.karta) || zoomedIn || entry.hub || jammedNow || entry.isNew ||
       entry.slotHeld > 0 || entry.closed || entry.surge !== null || entry.front !== null;
     if (plated) want.push(entry.plate);
     let freshWidth = 0;
@@ -402,7 +402,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
     if (trendNode && entry.waiting.length > 0) want.push(trendNode);
     want.push(entry.timer);
     // [night-11av] D-256, DEV-only KARTA preview: occupancy figure after the code and one glyph per region with a count.
-    if (import.meta.env.DEV && skinPreview.karta) {
+    if (skinPreview.karta) {
       usedKinds.clear();
       kartaLabelChildren(bubble, want, plated ? entry.plate : null, entry.waiting, entry.connecting, entry.capacity,
         limit * 18 + (entry.waiting.length > MAX_GLYPHS ? 27 : 0), Math.max(60, bounds.width - 210), (region, hollowGlyph) => pooledGlyph(entry, region, hollowGlyph, usedKinds));
@@ -435,7 +435,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
         (surged ? entry.surgeWidth : 0) + (fronted ? entry.frontWidth : 0) +
         (trendNode && entry.waiting.length > 0 ? TREND_WIDTH : 0) +
         (plated ? entry.plateWidth - (plateOnly ? 8 : 0) : 0)) : 0;
-    if (import.meta.env.DEV && skinPreview.karta && entry.mainWidth > 0) entry.mainWidth += kartaExtraWidth(bubble); // [night-11av]
+    if (skinPreview.karta && entry.mainWidth > 0) entry.mainWidth += kartaExtraWidth(bubble); // [night-11av]
     bubble.classList.toggle('airport-bubble--new', entry.isNew);
     entry.edge.classList.toggle('airport-edge--new', entry.isNew && !jammed);
     entry.edge.classList.toggle('airport-edge--curfew', entry.closed && !jammed); // [night-10h]
@@ -452,7 +452,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       (taken > 0 && entry.capacity > 0 ? ' ' + t('airport.edgeFillAria', { count: taken, capacity: entry.capacity }) : '');
     if (entry.edge.getAttribute('aria-label') !== edgeAria) entry.edge.setAttribute('aria-label', edgeAria);
     rebuildGauge(entry, taken);
-    if (import.meta.env.DEV && skinPreview.karta) { // [night-11au] D-256: seat scale under the code (karta.css), one segment per waiting place
+    if (skinPreview.karta) { // [night-11au] D-256: seat scale under the code (karta.css), one segment per waiting place
       bubble.style.setProperty('--karta-cap', String(entry.capacity));
       bubble.style.setProperty('--karta-taken', String(taken));
       bubble.style.setProperty('--karta-jam', kartaJamShare(entry.jamSeconds)); // [night-11av] time arc on the jam ring
@@ -740,7 +740,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       bounds.top = live ? live.top : options.reservedTop ?? 72;
       bounds.bottom = live ? live.bottom : options.reservedBottom ?? 92;
       // [night-11av] D-256, DEV-only KARTA preview: its top margin (week ruler + day names) is taller than the reserve.
-      if (import.meta.env.DEV && skinPreview.karta) bounds.top = Math.max(bounds.top, kartaTopMargin(host));
+      if (skinPreview.karta) bounds.top = Math.max(bounds.top, kartaTopMargin(host));
       edgeBounds.width = width;
       edgeBounds.height = height;
       edgeBounds.top = bounds.top;
@@ -782,7 +782,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
           const dy = -(transformedNormal.x * cam[4] + transformedNormal.y * cam[5] + transformedNormal.z * cam[6]);
           projectEdgeChip(chip, dx, dy, entry.airport.lon, edgeBounds);
           // [night-11av] D-256, DEV-only KARTA preview: the distance note "1 790 km" from the view centre.
-          if (import.meta.env.DEV && skinPreview.karta) kartaEdgeNote(entry.edge, transformedNormal, cameraPosition, chip.side);
+          if (skinPreview.karta) kartaEdgeNote(entry.edge, transformedNormal, cameraPosition, chip.side);
         }
       }
       layoutTags(slots, bounds);
@@ -805,7 +805,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
             entry.lastBubbleX = tag.x;
             entry.lastBubbleY = tag.y;
           }
-          if (import.meta.env.DEV && skinPreview.karta && showBubble) kartaLeader(entry.bubble, tag);
+          if (skinPreview.karta && showBubble) kartaLeader(entry.bubble, tag);
           const fade = Math.max(.2, Math.min(1, (tag.anchorX - 10) / 28, (width - 10 - tag.anchorX) / 28, (tag.anchorY - 10) / 28, (height - 10 - tag.anchorY) / 28));
           const opacity = Math.round(fade * 10) / 10;
           if (opacity !== entry.lastOpacity) {
@@ -821,7 +821,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
           entry.lastEdgeX = entry.chip.x;
           entry.lastEdgeY = entry.chip.y;
         }
-        if (import.meta.env.DEV && skinPreview.karta && showEdge) kartaEdgeClash(entry.edge, entry.chip, slots); // [night-11av]
+        if (skinPreview.karta && showEdge) kartaEdgeClash(entry.edge, entry.chip, slots); // [night-11av]
         if (showEdge && entry.lastEdgeSide !== entry.chip.side) {
           const icon = entry.edge.firstElementChild as SVGElement | null;
           if (icon) icon.style.transform = `rotate(${entry.chip.side === 0 ? 180 : entry.chip.side === 1 ? 0 : entry.chip.side === 2 ? -90 : 90}deg)`;

@@ -3,7 +3,7 @@ import { iconSvg } from './icons';
 import { crateCountdown } from './crate-countdown';
 import type { HudActions, HudState, PlaneType } from './types';
 import { ARIA_KEYSHORTCUTS } from '../../input/keyboard';
-import { skinPreview, kartaDockLabel } from '../skin/preview'; // [night-11av] D-256 DEV-only KARTA preview
+import { skinPreview, kartaDockLabel } from '../skin/preview'; // [night-11av] D-256, [night-11ax] D-257: KARTA skin helpers
 
 type TagId = 'undo' | PlaneType | 'hub' | 'globe' | 'speed';
 // [G8] D-172: the globe-view tag sits before speed (the two non-network tags together).
@@ -150,7 +150,7 @@ export function createTagDock(root: HTMLElement, actions: HudActions): { render(
         if (waiting) label = `${label}. ${countdown.spoken}`;
         if (button.getAttribute('aria-label') !== label) button.setAttribute('aria-label', label);
         // [night-11av] D-256, DEV-only KARTA preview: the cell's name under it (the mockup's legend strip).
-        if (import.meta.env.DEV && skinPreview.karta) kartaDockLabel(button, name, state.globeMode);
+        if (skinPreview.karta) kartaDockLabel(button, name, state.globeMode);
       }
       const mode = state.globeMode ?? 'satellite';
       if (lastMode !== mode) {

@@ -15,9 +15,9 @@ from Google Fonts (static TTF per weight) on 2026-11-02 by `mockups/fetch-fonts.
 | Alegreya | 400, 700 | Atlas text | yes |
 | Big Shoulders Display | 500, 800 | Mapa pilota (rejected) | yes |
 | IBM Plex Sans Condensed | 400, 600 | Mapa pilota (rejected) | yes |
-| IBM Plex Mono | 400, 600 | Mapa pilota (rejected); UI direction mockups 2026-11 "Karta"; [N11au] KARTA preview skin (DEV only, D-256) | yes |
+| IBM Plex Mono | 400, 600 | Mapa pilota (rejected); UI direction mockups 2026-11 "Karta"; [N11au] KARTA preview skin (D-256); [N11ax] shipped KARTA skin, WOFF2 subset in `public/fonts/` (D-257, pending) | yes |
 | Martian Mono, Overpass Mono | 400, 700 | downloaded for evaluation, currently unused | yes |
-| Barlow Condensed | 500, 700 | UI direction mockups 2026-11 "Karta" (`mockups/ui-2026-11/`); [N11au] KARTA preview skin (DEV only, D-256) | yes |
+| Barlow Condensed | 500, 700 | UI direction mockups 2026-11 "Karta" (`mockups/ui-2026-11/`); [N11au] KARTA preview skin (D-256); [N11ax] shipped KARTA skin, WOFF2 subset in `public/fonts/` (D-257, pending) | yes |
 | Archivo Narrow | 500, 700 | UI direction mockups 2026-11 "Kokpit" | yes |
 | Atkinson Hyperlegible Mono | 400, 700 | UI direction mockups 2026-11 "Kokpit" | yes |
 
@@ -25,6 +25,17 @@ from Google Fonts (static TTF per weight) on 2026-11-02 by `mockups/fetch-fonts.
 Plex Mono straight from `mockups/fonts/` through the Vite dev server (licences `mockups/fonts/OFL-BarlowCondensed.txt`,
 `OFL-IBMPlexMono.txt`); they are not in `public/fonts/` and never reach `dist/` or the apps. If the owner picks KARTA,
 the shipped files move to `public/fonts/` with their licences (WOFF2 subset, see D-252 "Next levers").
+
+[N11ax] D-257 (pending owner decision): KARTA as the shipped skin. `public/fonts/BarlowCondensed-500.woff2` (22.2 kB),
+`BarlowCondensed-700.woff2` (23.3 kB), `AirwayChartMono-400.woff2` (15.9 kB) and `AirwayChartMono-600.woff2` (16.9 kB)
+are subsets of the `mockups/fonts/` TTFs above (SIL OFL 1.1), made with fontTools `pyftsubset --flavor=woff2
+--unicodes="U+0020-007E,U+00A0-017F,U+2000-206F,U+20AC,U+2190-2199,U+2212,U+2116,U+2122,U+00B7"
+--layout-features='kern,liga,tnum,lnum,case,ccmp,locl,mark,mkmk'` (Latin, Latin-1, Latin Extended-A incl. Polish,
+general punctuation, arrows). A subset is a Modified Version under the OFL: Barlow Condensed declares no Reserved Font
+Name and keeps its name; IBM Plex Mono reserves "Plex", so its subsets are renamed **Airway Chart Mono** (name table
+IDs 1/3/4/6/16, CSS family `'Airway Chart Mono'`). Licences next to them: `public/fonts/OFL-BarlowCondensed.txt`,
+`OFL-AirwayChartMono.txt` (the unchanged IBM Plex Mono OFL text). Glyphs a subset lacks (U+2009, U+202F; U+2192 in
+Barlow) fall back to the shipped Atkinson Hyperlegible Next / Overpass named after them in each `--skin-face-*` stack.
 
 Rejected: **B612 / B612 Mono** (OFL, Airbus cockpit face) — no Polish diacritics (ą ć ę ł ń ś ź ż missing), checked with fontTools.
 

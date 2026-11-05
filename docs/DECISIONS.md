@@ -2474,3 +2474,32 @@ skinPreview.karta`; the module has no runtime import (a static one reordered the
 dropped — `src/main.ts` hands in `t`, `localNumber` and the grace), guarded by `test:skin-tokens`. Text reuses existing
 catalog keys, so no string is added. Release `dist/`: all 30 files sha256-identical to origin/dev 163bf50. Route
 distance labels need the route geometry (render or `session.ts`), outside this preview.
+
+## D-257 — KARTA becomes the default skin (2026-11-05, Claude, night N11ax) — **pending owner decision**
+Prepared so that, if the owner picks direction **1 KARTA** of `docs/styles/ui-2026-11/KIERUNKI.md`, it can land at once;
+if another direction is picked, the PR is closed and D-256 (DEV preview) stays as it is. **Not a style decision until the
+owner says so.** What changes: `src/ui/skin/current.css` now holds the KARTA tokens (the 288 `--skin-*` of D-250, plain
+`:root`, so `scripts/vite-skin-inline.mjs` writes them in place in release builds, D-252); the chart palette (`--karta-*`,
+a plain `:root`) and the structural tweaks stay in `src/ui/skin/karta.css`, imported statically as the last import of
+`src/main.ts` and inlined like any component CSS; every structural rule stays under `:root[data-skin="karta"]`, which
+`index.html` sets for the first paint. The D-256 chart helpers (`src/ui/skin/preview.ts`: labels on every airport,
+leader lines, seat scale, week ruler, jam arc, dock names, menu scale) run in every build (the `import.meta.env.DEV`
+guards in `overlay.ts`, `boarding-pass.ts`, `tag-dock.ts`, `menu.ts` are gone; the module stays type-only, `main.ts`
+hands in `t`/`localNumber`/grace). Comparison: the old "Diorama" tokens are `src/ui/skin/diorama.css`; a DEV build with
+`?skin=current` drops `data-skin`, skips the helpers and loads them last (`AW_SKIN=current npm run skin:pixels -- capture`
+for the same shots); release builds never import it. Fonts ship properly: WOFF2 subsets (Latin, Latin-1, Latin
+Extended-A, punctuation, arrows) in `public/fonts/` — Barlow Condensed 500/700 and IBM Plex Mono 400/600, the latter
+renamed **Airway Chart Mono** because "Plex" is an OFL Reserved Font Name; licences next to them, `docs/ASSETS.md`.
+Layout fix found by `test:e2e:text-scale-150`: the boarding-pass time field 84 → 88 px (landscape/foldable 68 → 72 px),
+"10:42" in 25 px mono is 73 px.
+**Bundle (needs the owner's OK, budgets NOT changed here):** `npm run test:bundle` on this tree: main JS 1,138.2 kB raw /
+341.3 kB gzip (budgets 1,180 / 360 — green), CSS **112.9 kB > 90 kB (+22.9 kB)**, `dist/` **4,388.3 kB > 4,300 kB
+(+88.3 kB)**: +78.3 kB fonts, +8.8 kB licences, the rest the KARTA structure CSS (it overrides Diorama component rules
+that a release still carries). Smallest sensible change: CSS budget 90 → 116 kB and total 4,300 → 4,400 kB (+2.6 %
+headroom as in D-252). Alternatives without a budget raise, not done tonight: fold `karta.css` into the component CSS
+and delete the overridden Diorama rules (CSS back to ≈ 90 kB, a few hours, and the `?skin=current` comparison goes),
+and convert the five shipped TTFs (624 kB) to WOFF2 (≈ −250 kB of `dist/`, needs `test:glyphs` to read WOFF2).
+Rejected: dropping the scope selector in release (−3.5 kB only, changes specificity), shipping the full TTFs (+391 kB).
+Guards: `test:skin-tokens` (KARTA tokens are the skin, Diorama covers every token and is DEV-only, structure scoped,
+palette only `--karta-*`, fonts and licences present, helpers not DEV-guarded), `test:milestones` (stamp ≤ 200 ms).
+`src/render/**` (flat sky constant, ext session) untouched. **Status: pending owner decision.**

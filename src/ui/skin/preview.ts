@@ -1,23 +1,23 @@
 /**
- * [night-11au] D-256: the KARTA skin preview (docs/styles/ui-2026-11/KIERUNKI.md), DEV only, pending the owner's choice.
- * src/main.ts turns it on in a DEV build with `?skin=karta` (production never sets it: the shipped UI stays the
- * "Diorama" skin of current.css). While on, the airport overlay names every on-screen airport (chart lettering) and
- * hands src/ui/skin/karta.css the geometry it draws from: leader line to the airport, seat scale, week ruler.
+ * [night-11au] D-256: the KARTA skin helpers (docs/styles/ui-2026-11/KIERUNKI.md). [night-11ax] D-257 (pending owner
+ * decision): KARTA is the shipped skin, so src/main.ts turns this on in every build; only a DEV build with
+ * `?skin=current` leaves it off to show the previous "Diorama" skin for comparison. While on, the airport overlay names
+ * every on-screen airport (chart lettering) and hands src/ui/skin/karta.css the geometry it draws from: leader line to
+ * the airport, seat scale, week ruler.
  *
  * [night-11av] The rest of the mockup's chart furniture: occupancy figures next to the code, glyphs grouped by region
  * with a count, the time arc on the jam ring, the distance note on an off-screen airport, day names under the week
  * ruler, names under the dock cells and the graphic scale on the menu's title block. Every helper below is called only
- * from a branch guarded by `import.meta.env.DEV && skinPreview.karta`, so a release build drops this code entirely.
- * Text comes from existing catalog keys only (no new player strings, so the release `dist/` stays unchanged).
- * This module has no runtime imports (only types): a static import here would move the i18n/sim modules earlier in
- * the release bundle even though the code is dropped, so src/main.ts hands in what it needs (KartaDeps).
+ * from a branch guarded by `skinPreview.karta`. Text comes from existing catalog keys only (no new player strings).
+ * This module has no runtime imports (only types): src/main.ts hands in what it needs (KartaDeps), which keeps the
+ * module graph (and the release bundle order) as it was.
  */
 import type { TranslationKey, TranslationParams } from '../../i18n';
 import type { DestinationRegion } from '../glyphs';
 
 export const skinPreview = { karta: false };
 
-/** What the helpers need from the rest of the app, handed in by the DEV branch of src/main.ts. */
+/** What the helpers need from the rest of the app, handed in by src/main.ts. */
 export interface KartaDeps {
   t(key: TranslationKey, params?: TranslationParams): string;
   localNumber(value: number): string;
@@ -36,7 +36,7 @@ export function startKartaPreview(next: KartaDeps): void {
 
 function setText(el: Element, text: string): void { if (el.textContent !== text) el.textContent = text; }
 
-/** Mono figures in the label (karta.css: IBM Plex Mono 600, a 0.6 em advance): counts 12 px, occupancy 13 px; each
+/** Mono figures in the label (karta.css: Airway Chart Mono = IBM Plex Mono 600 subset, a 0.6 em advance): counts 12 px, occupancy 13 px; each
  *  extra child also takes the label's 3 px flex gap and its own margin (karta.css). */
 const KARTA_DIGIT = 7.2;
 const KARTA_FILL_DIGIT = 7.8;
