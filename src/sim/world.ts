@@ -7,13 +7,15 @@ import { CITY_RECORDS, cityDistanceKm, cityIndex } from '../data/index.ts';
 import type { RegionId } from '../data/regions.ts';
 import { TICKS_PER_WEEK } from './clock.ts';
 import type { Command, CommandCheck, RejectReason } from './commands.ts';
-import { CurfewPlanner, isLocalCurfewHour, localHourAt, type CurfewSnapshot, type EndlessCurfewRules } from './daynight.ts';
+import {
+  CurfewPlanner, isLocalCurfewHour, localHourAt, localMinuteOfDay, type CurfewSnapshot, type EndlessCurfewRules,
+} from './daynight.ts';
 import type { DemandCity } from './demand.ts';
 import type { HubFailure } from './hubs.ts';
 import type { CauseCounters } from './ledger.ts';
 import {
   CONGESTION_GRACE_TICKS, DEPARTURE_SLOTS_PER_HOUR_CITY, DEPARTURE_SLOTS_PER_HOUR_HUB, GAME_TICKS_PER_HOUR,
-  INITIAL_PLANE_RESERVE, PLANE_TYPES, type PlaneType,
+  INITIAL_PLANE_RESERVE, PLANE_TYPES, WEATHER_SLOT_PENALTY, type PlaneType,
 } from './params.ts';
 import { PassengerSimulation, type PassengerSimulationSnapshot } from './passengers.ts';
 import {
@@ -36,6 +38,10 @@ import {
 import {
   closeSurge, drawSurge, EMPTY_SURGES, surgePassengerDue, surgePhase, validSurgeSnapshot, type DemandSurge, type SurgeRecord, type SurgeSnapshot,
 } from './surge.ts';
+import {
+  airportFrontPhase, drawFront, frontBand, frontOver, weatherWeekAt, type AirportFront, type AirportFrontPhase,
+  type WeatherBand, type WeatherFront,
+} from './weather.ts';
 
 export const WORLD_VERSION = 1 as const;
 export type GameMode = 'endless' | 'daily' | 'puzzle';
@@ -78,6 +84,8 @@ export interface Scenario {
    * class I, the shared constants; `reserve` above carries the class's starting turboprops.
    */
   readonly licence?: { readonly curfew: EndlessCurfewRules; readonly hubCapacity: number };
+  /** [night-12bd] R2j: weekly weather front (Endless with `GameConfig.weatherFront` only; off in shipped Endless). */
+  readonly weatherFront?: boolean;
 }
 
 export const ENDLESS_SCENARIO: Scenario = Object.freeze({
@@ -202,6 +210,22 @@ export interface SurgeView extends DemandSurge {
   readonly extra: number;
 }
 
+/**
+ * [night-12bd] R2j: the week's weather front for render and UI: its path (pure, from the seed) and the band right now
+ * (null before it forms and after it is gone). Render draws `band`; it never computes the path itself.
+ */
+export interface WeatherView {
+  readonly front: WeatherFront;
+  readonly band: WeatherBand | null;
+}
+/** [night-12bd] R2j: one airport's front: 'ahead' (forecast) or 'under' (one departure slot fewer until `toTick`). */
+export interface AirportWeatherView extends AirportFront {
+  readonly phase: AirportFrontPhase;
+  /** Local minute of day (airport clock) at which the deck arrives / leaves. */
+  readonly fromLocalMinute: number;
+  readonly toLocalMinute: number;
+}
+
 /** Read-only face of the world handed to UI, render, audio, modes and tools (Sim.world). */
 export interface WorldView {
   readonly minute: number;
@@ -221,6 +245,10 @@ export interface WorldView {
   readonly surge: Readonly<SurgeView> | null;
   readonly surgeHistory: readonly SurgeRecord[];
   surgeRecords(): SurgeRecord[];
+  /** [night-12bd] R2j: this week's weather front (null without the rule, in week 1, and between fronts). */
+  readonly weather: WeatherView | null;
+  /** [night-12bd] R2j: an airport's front, forecast or current (null when none is near or without the rule). */
+  airportWeather(cityId: string): AirportWeatherView | null;
   /** Total extra hourly departures granted by "+2 slots" upgrades (all airports). */
   readonly departureSlots: number;
   /** [task-32] Hourly departure allowance of one airport. */
@@ -262,6 +290,8 @@ const DEMAND_CITIES: readonly DemandCity[] = CITY_RECORDS.map((city) => ({
 }));
 const CURFEW_CITIES = CITY_RECORDS.map((city) => ({ cityId: city.code, utcOffsetH: city.utcOffsetH }));
 const UTC_OFFSET = new Map(CITY_RECORDS.map((city) => [city.code, city.utcOffsetH]));
+/** [night-12bd] R2j: airport positions in integer tenths of a degree (city data is rounded to 0.1°). */
+const POSITION10 = new Map(CITY_RECORDS.map((city) => [city.code, { lon10: Math.round(city.lon * 10), lat10: Math.round(city.lat * 10) }]));
 const MAX_RANGE_KM = PLANE_TYPES.widebody.rangeKm;
 
 type Mutation = () => void;
@@ -294,6 +324,8 @@ export class World implements WorldView {
   /** [night-12bb] R2i: null in runs without the demand surge. */
   private surges: SurgeSnapshot | null;
   private readonly seed: number;
+  /** [night-12bd] R2j: derived cache of the week's front (pure function of seed and week; never saved or hashed). */
+  private frontCache: { readonly week: number; readonly front: WeatherFront | null } | null = null;
 
   constructor(seed: number, readonly scenario: Scenario, streams: Readonly<Record<RngStream, Rng>>) {
     this.streams = streams;
@@ -384,6 +416,42 @@ export class World implements WorldView {
     if (drawn && drawn.surge.announceTick <= minute) this.surgeMinute(minute);
   }
 
+  /** [night-12bd] R2j: the front of the week `minute` belongs to (null without the rule or before its first week). */
+  private frontAt(minute: number): WeatherFront | null {
+    if (!this.scenario.weatherFront) return null;
+    const week = weatherWeekAt(minute);
+    if (this.frontCache?.week !== week) this.frontCache = { week, front: drawFront(this.seed, week) };
+    return this.frontCache.front;
+  }
+
+  get weather(): WeatherView | null {
+    const front = this.frontAt(this.minuteValue);
+    if (!front) return null;
+    const band = frontBand(front, this.minuteValue);
+    // Visible from the week's board (forecasts) until the band is gone.
+    return this.minuteValue < front.endTick ? { front, band } : null;
+  }
+
+  airportWeather(cityId: string): AirportWeatherView | null {
+    const front = this.frontAt(this.minuteValue);
+    const position = POSITION10.get(cityId);
+    if (!front || !position) return null;
+    const over = frontOver(front, position.lon10, position.lat10);
+    const phase = airportFrontPhase(front, over, this.minuteValue);
+    if (!over || !phase) return null;
+    const offset = UTC_OFFSET.get(cityId) ?? 0;
+    return { ...over, phase, fromLocalMinute: localMinuteOfDay(over.fromTick, offset), toLocalMinute: localMinuteOfDay(over.toTick, offset) };
+  }
+
+  /** [night-12bd] R2j: one hourly departure slot fewer while the airport is under the front. */
+  private underFront(cityId: string): boolean {
+    const front = this.frontAt(this.minuteValue);
+    const position = front ? POSITION10.get(cityId) : undefined;
+    if (!front || !position) return false;
+    const over = frontOver(front, position.lon10, position.lat10);
+    return over !== null && this.minuteValue >= over.fromTick && this.minuteValue < over.toTick;
+  }
+
   get contract(): Readonly<WeeklyContract> | null { return this.contracts?.current ?? null; }
   get contractHistory(): readonly ContractRecord[] { return this.contracts?.history ?? []; }
 
@@ -429,7 +497,7 @@ export class World implements WorldView {
 
   departureSlotLimit(cityId: string): number {
     return (this.isHub(cityId) ? DEPARTURE_SLOTS_PER_HOUR_HUB : DEPARTURE_SLOTS_PER_HOUR_CITY) +
-      (this.slotBonus.get(cityId) ?? 0);
+      (this.slotBonus.get(cityId) ?? 0) - (this.underFront(cityId) ? WEATHER_SLOT_PENALTY : 0);
   }
   /** Live, read-only aircraft states for the renderer (no copy per frame). */
   get planes(): readonly Readonly<PlaneState>[] { return this.fleet.planes; }

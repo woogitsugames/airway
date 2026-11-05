@@ -248,3 +248,28 @@
 }
 .airport-edge__surge[hidden] { display: none; }
 .airport-edge__surge svg { width: 10px; height: 13px; }
+/* [night-12bd] R2j: weather front (off in shipped Endless). The weather-map cold-front line (a rule with three teeth,
+   a shape of its own) at the front of the tag: hollow teeth while the front is forecast, filled while the airport is
+   under it (one departure slot fewer), followed by "−1" and the airport's local time (arrival, then "to" clearing).
+   Same paper stub as the surge, ink and paper from the skin. */
+.airport-bubble__front {
+  --aw-front-ink: var(--skin-tag-front-ink);
+  --aw-front-paper: var(--skin-tag-front-paper);
+  box-sizing: border-box;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  height: 20px;
+  margin-right: 2px;
+  padding: 0 4px;
+  border: 1px solid var(--aw-front-ink);
+  background: var(--aw-front-paper);
+  color: var(--aw-front-ink);
+  font: var(--skin-weight-bold) 12px/18px var(--skin-face-mono);
+  white-space: nowrap;
+  overflow: hidden;
+}
+.airport-bubble__front[data-phase="under"] { background: var(--aw-front-ink); color: var(--aw-front-paper); }
+.airport-bubble__front-line { display: inline-flex; line-height: 0; flex: none; }
+.airport-bubble__front-line svg { width: 16px; height: 12px; }

@@ -67,7 +67,9 @@ function readConfig(value: unknown): GameConfig {
       // [night-12bb] R2i: the demand surge is an Endless rule only, like the contract.
       (value.demandSurge !== undefined && (value.mode !== 'endless' || value.demandSurge !== true)) ||
       // [night-12bc] R2h: a licence class above I is an Endless choice only (Daily keeps one rule set for everyone).
-      (value.licenceClass !== undefined && (value.mode !== 'endless' || (value.licenceClass !== 2 && value.licenceClass !== 3)))) {
+      (value.licenceClass !== undefined && (value.mode !== 'endless' || (value.licenceClass !== 2 && value.licenceClass !== 3))) ||
+      // [night-12bd] R2j: the weather front is an Endless rule only (Daily and its leaderboards stay as they were).
+      (value.weatherFront !== undefined && (value.mode !== 'endless' || value.weatherFront !== true))) {
     throw new TypeError('invalid game configuration');
   }
   return copyConfig(value as unknown as GameConfig);

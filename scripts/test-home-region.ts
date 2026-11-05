@@ -9,7 +9,7 @@ import { RULES_VERSION } from '../src/sim/state.ts';
 import { startClustersIn } from '../src/sim/spawner.ts';
 import { CITIES } from '../src/data/cities.ts';
 import { REGION_IDS, type RegionId } from '../src/data/regions.ts';
-import { decodeSave, encodeSave, restoreSimDetailed, saveSourceFromSim, SAVE_VERSION } from '../src/game/save.ts';
+import { decodeSave, encodeSave, restoreSimDetailed, saveSourceFromSim, SAVE_VERSION, WEATHER_SAVE_VERSION } from '../src/game/save.ts';
 import { EndlessRun } from '../src/game/run.ts';
 import { readLogbook, recordFlight } from '../src/game/logbook.ts';
 import { HOME_REGION_CHOICES, readHomeRegion, writeHomeRegion } from '../src/game/homeRegion.ts';
@@ -161,7 +161,8 @@ await test('a v1 envelope (pre-R2g, Random) still loads to its hash; tampering i
   assert.equal(restored.sim.config.homeRegion, undefined);
   assert.equal(decodeSave(JSON.stringify({ ...v1, tick: v1.tick + 1 })).status, 'error');
   assert.equal(decodeSave(JSON.stringify({ ...v1, checksum: current.checksum })).status, 'error', 'v1 is checked as v1');
-  const future = decodeSave(JSON.stringify({ ...current, v: SAVE_VERSION + 1 }));
+  // [night-12bd] R2j: v6 is the weather-front envelope, so the first unknown version is WEATHER_SAVE_VERSION + 1.
+  const future = decodeSave(JSON.stringify({ ...current, v: WEATHER_SAVE_VERSION + 1 }));
   assert.ok(future.status === 'error' && future.issue === 'unsupported');
 });
 

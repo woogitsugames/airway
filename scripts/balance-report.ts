@@ -12,7 +12,7 @@ import { pathToFileURL, fileURLToPath } from 'node:url';
 import { chooseBotAction } from './bot.ts';
 import type { AircraftType, BotCity, BotCommand, BotRoute, BotSnapshot, LedgerCause, UpgradeOffer } from './bot.ts';
 import { CURFEW_ENDLESS_START_WEEK, SIM_DAYS_PER_WEEK, SIM_MINUTES_PER_WEEK, SIM_TICKS_PER_SECOND } from '../src/sim/params.ts';
-import type { RunContracts, RunMechanics, RunSurges } from './balance-game-adapter.ts';
+import type { RunContracts, RunMechanics, RunSurges, RunWeather } from './balance-game-adapter.ts';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const BASE_SEED = 0xa1a1;
@@ -50,12 +50,14 @@ export interface BalanceSession {
   contracts?(): RunContracts;
   /** [night-12bb] R2i: the run's demand surges (real adapter only). */
   surges?(): RunSurges;
+  /** [night-12bd] R2j: the run's weather fronts (real adapter only). */
+  weather?(): RunWeather;
 }
 
 export interface BalanceAdapter {
   /** [night-11aj] R2g: `homeRegion` (real adapter only) starts the run in that Endless home region. */
   createBalanceSession(seed: number, mode?: 'endless', homeRegion?: string | null, weeklyContract?: boolean, demandSurge?: boolean,
-    licenceClass?: 1 | 2 | 3): BalanceSession;
+    licenceClass?: 1 | 2 | 3, weatherFront?: boolean): BalanceSession;
 }
 
 interface RunResult {
@@ -76,6 +78,8 @@ interface RunResult {
   contracts?: RunContracts;
   /** [night-12bb] R2i: only in the surge comparison (balance:surges). */
   surges?: RunSurges;
+  /** [night-12bd] R2j: only in the weather comparison (balance:weather). */
+  weather?: RunWeather;
 }
 
 // LCG exists only inside the isolated fixture; the real sim must use src/core/rng.ts.
@@ -302,9 +306,10 @@ async function loadAdapter(path: string, fixture: boolean): Promise<BalanceAdapt
 }
 
 function play(adapter: BalanceAdapter, seed: number, homeRegion: string | null = null, weeklyContract = false,
-    demandSurge = false, licenceClass: 1 | 2 | 3 = 1): RunResult {
-  // [night-12bc] R2h: a licence class above I (balance:licences) passes every argument.
-  const session = licenceClass !== 1 ? adapter.createBalanceSession(seed, 'endless', homeRegion, weeklyContract, demandSurge, licenceClass)
+    demandSurge = false, licenceClass: 1 | 2 | 3 = 1, weatherFront = false): RunResult {
+  // [night-12bc] R2h: a licence class above I (balance:licences) passes every argument. [night-12bd] R2j: so does the front.
+  const session = weatherFront ? adapter.createBalanceSession(seed, 'endless', homeRegion, weeklyContract, demandSurge, licenceClass, true)
+    : licenceClass !== 1 ? adapter.createBalanceSession(seed, 'endless', homeRegion, weeklyContract, demandSurge, licenceClass)
     : demandSurge ? adapter.createBalanceSession(seed, 'endless', homeRegion, weeklyContract, true)
     : weeklyContract ? adapter.createBalanceSession(seed, 'endless', homeRegion, true)
     : homeRegion ? adapter.createBalanceSession(seed, 'endless', homeRegion) : adapter.createBalanceSession(seed);
@@ -334,6 +339,7 @@ function play(adapter: BalanceAdapter, seed: number, homeRegion: string | null =
     week1Unreachable: end.week1Unreachable === true, mechanics: end.mechanics ?? null,
     ...(weeklyContract && session.contracts ? { contracts: session.contracts() } : {}),
     ...(demandSurge && session.surges ? { surges: session.surges() } : {}),
+    ...(weatherFront && session.weather ? { weather: session.weather() } : {}),
   };
 }
 
@@ -783,8 +789,75 @@ async function surgesMain(test: boolean): Promise<void> {
   }
 }
 
+/**
+ * [night-12bd] R2j: the same bot sample as a new Endless run plays it today (weekly contract and demand surge on)
+ * without and with the weather front. The bot does not react to the front. Report: medians against D-79 (10–18 min),
+ * airport-hours under a front, slot holds there, losses under a front. Fails only on invalid runs, a non-repeatable
+ * run, or when a run in which no served airport was ever under a front differs from the same run without the front.
+ * Nothing is retuned: the front ships off (ENDLESS_WEATHER_FRONT).
+ */
+async function weatherMain(test: boolean): Promise<void> {
+  const label = test ? 'test:balance:weather' : 'balance:weather';
+  const n = Number(process.argv.find((arg) => arg.startsWith('--seeds='))?.slice(8) ?? 50);
+  try {
+    const adapter = await loadAdapter('scripts/balance-game-adapter.ts', false);
+    const off = Array.from({ length: n }, (_, i) => play(adapter, BASE_SEED + i, null, true, true));
+    const on = Array.from({ length: n }, (_, i) => play(adapter, BASE_SEED + i, null, true, true, 1, true));
+    let invalid = [...off, ...on].filter((item) => item.ticks <= 0 || !Number.isFinite(item.score) || item.rejected > 0 ||
+      (item.reason === 'hubOverflow' && (!item.warned || item.warningLeadTicks <= 0))).length;
+    if (JSON.stringify(play(adapter, BASE_SEED, null, true, true, 1, true)) !== JSON.stringify(on[0])) invalid++;
+    let untouched = 0;
+    for (let i = 0; i < n; i++) {
+      if (on[i]!.weather!.servedUnderMin > 0) continue;
+      untouched++;
+      if (on[i]!.ticks !== off[i]!.ticks || on[i]!.score !== off[i]!.score) {
+        console.error(`seed ${BASE_SEED + i}: no served airport under a front, yet the run differs`);
+        invalid++;
+      }
+    }
+    const sum = (key: 'fronts' | 'servedUnderMin' | 'slotHoldsUnder'): number => on.reduce((total, item) => total + item.weather![key], 0);
+    const hours = on.filter((item) => item.weather!.servedUnderMin > 0).map((item) => item.weather!.servedUnderMin / 60);
+    const lostUnder = on.filter((item) => item.weather!.lostUnderFront).length;
+    const medOff = median(off.map((item) => item.minutes));
+    const medOn = median(on.map((item) => item.minutes));
+    const longer = on.filter((item, i) => item.minutes > off[i]!.minutes).length;
+    const shorter = on.filter((item, i) => item.minutes < off[i]!.minutes).length;
+    const lines = [
+      `| | Without front | With front |`, `| --- | ---: | ---: |`,
+      `| Median session (min, D-79 10–18) | ${medOff.toFixed(2)} | ${medOn.toFixed(2)} |`,
+      `| Median delivered passengers | ${median(off.map((item) => item.score)).toFixed(0)} | ${median(on.map((item) => item.score)).toFixed(0)} |`,
+      `| Reached the 2nd board | ${share(off, 2)} | ${share(on, 2)} |`,
+      `| Reached the 3rd board | ${share(off, 3)} | ${share(on, 3)} |`,
+    ].join('\n');
+    const facts = [
+      `- Fronts formed before the run ended: ${sum('fronts')} (runs with ≥ 1: ${on.filter((item) => item.weather!.fronts > 0).length}/${n}).`,
+      `- Served airport-hours under a front per run that had any: median ${hours.length ? median(hours).toFixed(1) : '—'}, range ${hours.length ? Math.min(...hours).toFixed(1) : '—'}–${hours.length ? Math.max(...hours).toFixed(1) : '—'} (runs: ${hours.length}/${n}).`,
+      `- Departures held for a slot at an airport under a front: ${sum('slotHoldsUnder')} (all slot holds: ${off.reduce((t, item) => t + (item.mechanics?.slotHolds ?? 0), 0)} without / ${on.reduce((t, item) => t + (item.mechanics?.slotHolds ?? 0), 0)} with the front).`,
+      `- Runs lost at an airport under a front or up to 6 game hours after: ${lostUnder}/${n}.`,
+      `- Same seed with vs without: ${longer} longer, ${shorter} shorter, ${n - longer - shorter} equal; ${untouched} runs never had a served airport under a front (identical to the run without it).`,
+    ].join('\n');
+    console.log(`${lines}\n\n${facts}`);
+    if (!test) {
+      writeFileSync(resolve(ROOT, 'docs/balance/weather-summary.md'), `# Bot sessions with and without the weather front (R2j)\n\n` +
+        `Generated by \`npm run balance:weather -- --seeds=${n}\`: the \`test:balance\` bot on seeds 0xA1A1…+${n - 1}, ` +
+        `each seed played as a new Endless run (weekly contract and demand surge on), once without and once with ` +
+        `\`GameConfig.weatherFront\`. The bot does not react to the front. Report only, nothing is retuned; the front ships ` +
+        `off (\`ENDLESS_WEATHER_FRONT = false\`).\n\n${lines}\n\n${facts}\n`, 'utf8');
+    }
+    console.log(`SUMMARY ${label} seed=0xA1A1 seeds=${n} median_off=${medOff.toFixed(2)} median_on=${medOn.toFixed(2)} ` +
+      `fronts=${sum('fronts')} under_min=${sum('servedUnderMin')} holds_under=${sum('slotHoldsUnder')} lost_under=${lostUnder} ` +
+      `passed=${invalid ? 0 : 1} failed=${invalid}`);
+    if (invalid) process.exitCode = 1;
+  } catch (error) {
+    console.error(error instanceof Error ? error.stack ?? error.message : String(error));
+    console.log(`SUMMARY ${label} seed=0xA1A1 seeds=0 passed=0 failed=1`);
+    process.exitCode = 1;
+  }
+}
+
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
+  if (args.includes('--weather')) { await weatherMain(args.includes('--test')); return; }
   if (args.includes('--licences')) { await licencesMain(args.includes('--test')); return; }
   if (args.includes('--regions')) { await regionsMain(args.includes('--test')); return; }
   if (args.includes('--contracts')) { await contractsMain(args.includes('--test')); return; }
