@@ -32,7 +32,8 @@ const MODULES = {
   'firebase-functions/params': `
     export function defineBoolean(name, options) {
       globalThis.__awBrakeStub.params.push({ name, options });
-      return { name, value: () => globalThis.__awBrakeStub.paused };
+      // [night-12az] D-246: other params (APP_CHECK_ENFORCED) keep their default here.
+      return { name, value: () => name === 'LEADERBOARDS_PAUSED' ? globalThis.__awBrakeStub.paused : options?.default };
     }`,
   'firebase-functions/v2/https': `
     export class HttpsError extends Error { constructor(code, message) { super(message); this.code = code; } }
@@ -69,7 +70,8 @@ const BOARDS = { daily: 'd-2026-11-04', weekly: 'w-2026-W45' };
 
 await check('one deploy-time boolean param LEADERBOARDS_PAUSED, default off', () => {
   assert.equal(logic.PAUSE_PARAM, 'LEADERBOARDS_PAUSED');
-  assert.deepEqual(stub.params.map((p) => [p.name, p.options?.default]), [['LEADERBOARDS_PAUSED', false]]);
+  assert.deepEqual(stub.params.filter((p) => p.name === 'LEADERBOARDS_PAUSED').map((p) => [p.name, p.options?.default]),
+    [['LEADERBOARDS_PAUSED', false]]);
 });
 await check('paused submitDaily answers { accepted: false, reason: "paused" } without Firestore or reading the run', async () => {
   reset(true);

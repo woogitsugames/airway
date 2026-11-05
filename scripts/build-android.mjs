@@ -159,6 +159,17 @@ function validateSigning() {
   }
 }
 
+// [night-12az] D-246 (R3e): the App Check debug provider is for debug builds and the emulator only. A release build
+// with it would send debug tokens (and log the debug secret), so it refuses the flag from the shell or a Vite .env file.
+function validateAppCheck() {
+  const files = ['.env', '.env.local', '.env.production', '.env.production.local'].map((name) => join(ROOT, name));
+  const fromFiles = files.some((file) => existsSync(file) &&
+    /^\s*VITE_FIREBASE_APPCHECK_DEBUG\s*=\s*['"]?1['"]?\s*$/m.test(readFileSync(file, 'utf8')));
+  if (process.env.VITE_FIREBASE_APPCHECK_DEBUG === '1' || fromFiles) {
+    throw new Error('Release builds must not use the App Check debug provider (VITE_FIREBASE_APPCHECK_DEBUG=1)');
+  }
+}
+
 try {
   const mode = ARGS[0] ?? '--debug';
   const count = generateAssets();
@@ -167,7 +178,7 @@ try {
   if (!process.env.ANDROID_HOME || !existsSync(process.env.ANDROID_HOME)) {
     throw new Error('ANDROID_HOME must point to the installed Android SDK');
   }
-  if (mode.startsWith('--release-')) validateSigning();
+  if (mode.startsWith('--release-')) { validateSigning(); validateAppCheck(); }
   run('npm', ['run', 'build']);
   // Pin CLI independently because task 01 intentionally omitted @capacitor/cli from the lockfile.
   run('npm', ['exec', '--yes', '--package=@capacitor/cli@8.5.3', '--', 'cap', 'sync', 'android']);
