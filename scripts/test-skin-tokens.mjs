@@ -154,6 +154,38 @@ check('inline: every covered file of the real skin inlines with no token left', 
 check('inline: the real skin keeps exactly the tokens of the covered TypeScript', [...real.keep].sort().join() ===
   [...new Set(COVERED_TS.flatMap((file) => [...read(file).matchAll(/var\(--skin-([a-z0-9-]+)\)/g)].map((m) => m[1])))].sort().join());
 
+// 6. [night-11au] D-256: the DEV-only KARTA preview skin (src/ui/skin/karta.css) redefines every token of the shipped
+// skin, adds no skin token of its own, keeps all of it under :root[data-skin="karta"] (so it can never restyle the
+// shipped skin), never redefines the palette, and is imported only by the DEV branch of src/main.ts.
+const KARTA = 'src/ui/skin/karta.css';
+const karta = stripComments(read(KARTA));
+const kartaBlock = /:root\[data-skin="karta"\]\s*\{([^{}]*)\}/.exec(karta);
+const kartaTokens = new Set([...(kartaBlock?.[1] ?? '').matchAll(/--skin-([a-z0-9-]+)\s*:/g)].map((m) => m[1]));
+const kartaMissing = [...defined.keys()].filter((name) => !kartaTokens.has(name));
+const kartaExtra = [...kartaTokens].filter((name) => !defined.has(name));
+check('karta: the preview skin redefines every token of the shipped skin', !!kartaBlock && kartaMissing.length === 0, kartaMissing.join(' '));
+check('karta: the preview skin adds no skin token of its own', kartaExtra.length === 0, kartaExtra.join(' '));
+const kartaRules = [];
+{
+  let depth = 0;
+  let start = 0;
+  for (let i = 0; i < karta.length; i++) {
+    const ch = karta[i];
+    if (ch === '{') { const sel = karta.slice(start, i).trim(); if (depth === 0 || !sel.startsWith('@')) kartaRules.push(sel); depth++; start = i + 1; }
+    else if (ch === '}') { depth--; start = i + 1; }
+    else if (ch === ';' ) start = i + 1;
+  }
+}
+const unscoped = kartaRules.filter((sel) => !/^@(media|font-face)\b/.test(sel) &&
+  !sel.split(',').every((part) => part.trim().startsWith(':root[data-skin="karta"]')));
+check('karta: every rule of the preview skin is scoped to :root[data-skin="karta"]', unscoped.length === 0, unscoped.slice(0, 3).join(' | '));
+check('karta: the preview skin never redefines the palette or text-scale tokens', !/--airway-[a-z-]+\s*:/.test(karta));
+const kartaImports = tsFiles.filter((file) => /import\s*\(?\s*'[^']*karta\.css'/.test(read(file)));
+const main = read('src/main.ts');
+check('karta: only the DEV branch of src/main.ts imports the preview skin',
+  kartaImports.join() === 'src/main.ts' && /if \(import\.meta\.env\.DEV && query\.get\('skin'\) === 'karta'\) \{\s*startKartaPreview\(\);\s*void import\('\.\/ui\/skin\/karta\.css'\);/.test(main) &&
+  !/^import\s+'[^']*karta\.css'/m.test(main), kartaImports.join(' '));
+
 for (const { name, ok, why } of results) console[ok ? 'log' : 'error'](`${ok ? 'PASS' : 'FAIL'} ${name}${why && !ok ? ': ' + why : ''}`);
 const failed = results.filter((r) => !r.ok).length;
 console.log(`SUMMARY test:skin-tokens seed=0xA1A1 files=${COVERED.length + COVERED_TS.length} tokens=${defined.size} uses=${uses} ` +
