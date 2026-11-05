@@ -403,7 +403,7 @@ try {
     try { await weather(browser, url); } catch (error) { failure ??= error; }
     failedStep = null;
     try { await daily(browser, url); } catch (error) { failure ??= error; }
-  });
+  }, { softwareCompositing: true }); // [night-12bj] every page here is the stub world (no WebGL)
 } catch (error) {
   failure ??= error;
   console.log(`FAIL harness: ${error instanceof Error ? error.message : String(error)}`);

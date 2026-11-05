@@ -23,12 +23,14 @@ async function startFixtureServer() {
   return { url: `http://127.0.0.1:${address.port}/`, stop: () => new Promise((done) => server.close(done)) };
 }
 
-export async function withBrowser(callback, { fixture = false } = {}) {
+/** `softwareCompositing` (default: `--render=stub` runs): Chromium composites in software (harness.mjs
+ *  SOFTWARE_COMPOSITING_ARGS, night-12bj); only for pages that draw no WebGL globe. */
+export async function withBrowser(callback, { fixture = false, softwareCompositing = RENDER === 'stub' && !fixture } = {}) {
   let host;
   let browser;
   try {
     host = fixture ? await startFixtureServer() : await startVite();
-    browser = await launchChromium();
+    browser = await launchChromium({ softwareCompositing });
     return await callback({ browser, url: host.url });
   } finally {
     if (browser) await browser.close();
@@ -104,15 +106,72 @@ export async function waitForScreen(page, screen, timeout = 8000) {
   }
 }
 
-/** Clicks a data-testid, failing with a list of the test IDs that ARE present. */
-export async function clickTestId(page, id, timeout = 5000) {
+/**
+ * [night-12bj] Load-tolerant default for `clickTestId`. Under SwiftShader a busy host gives the page only a few frames
+ * per second, and Playwright's actionability checks (visible, stable over two frames, enabled, receives the pointer)
+ * each need frames: 5 s was not always enough while other suites ran. A real hang still fails, only later.
+ */
+export const CLICK_TIMEOUT_MS = 20000;
+
+/** Playwright's first error line plus the last lines of its call log (what the actionability checks saw). */
+function playwrightError(error) {
+  const text = error instanceof Error ? error.message : String(error);
+  // eslint-disable-next-line no-control-regex -- the call log is dimmed with ANSI escapes
+  const [head, ...rest] = text.replace(/\u001b\[[0-9;]*m/g, '').split('\n');
+  const log = [...new Set(rest.map((line) => line.trim()).filter((line) => /^(-|\d+ ×)/.test(line)))].slice(-6);
+  return [head.trim(), ...log].join(' | ');
+}
+
+/**
+ * Clicks a data-testid. Within one `timeout` budget it waits for the element to be attached, visible, stable (no
+ * entry motion) and enabled, then clicks with Playwright's own checks. On failure the error keeps Playwright's
+ * original message and call log, names the check it was waiting for, the element's state, what is on top of its
+ * centre (an intercepting overlay, if any) and every test ID present (`(hidden)` when not rendered).
+ */
+export async function clickTestId(page, id, timeout = CLICK_TIMEOUT_MS) {
   const target = page.getByTestId(id);
+  const deadline = Date.now() + timeout;
+  const left = () => Math.max(1, deadline - Date.now());
+  let phase = 'attached';
   try {
-    await target.click({ timeout });
-  } catch {
-    const present = await page.evaluate(() => [...document.querySelectorAll('[data-testid]')]
-      .map((node) => node.getAttribute('data-testid')));
-    throw new Error(`data-testid="${id}" not clickable; present: [${present.join(', ') || 'none'}]`);
+    const handle = await target.elementHandle({ timeout: left() });
+    try {
+      for (const check of ['visible', 'stable', 'enabled']) {
+        phase = check;
+        await handle.waitForElementState(check, { timeout: left() });
+      }
+    } finally {
+      await handle.dispose();
+    }
+    phase = 'click';
+    await target.click({ timeout: left() });
+  } catch (error) {
+    const seen = await page.evaluate((testId) => {
+      const node = document.querySelector(`[data-testid="${testId}"]`);
+      const describe = (el) => {
+        const owner = el.closest('[data-testid]');
+        const cls = typeof el.className === 'string' && el.className.trim()
+          ? '.' + el.className.trim().split(/\s+/).join('.') : '';
+        return `<${el.tagName.toLowerCase()}${cls}>` + (owner ? ` in [data-testid="${owner.getAttribute('data-testid')}"]` : '');
+      };
+      let element = 'missing';
+      let onTop = 'n/a';
+      if (node) {
+        const box = node.getBoundingClientRect();
+        const style = getComputedStyle(node);
+        element = `box=${Math.round(box.left)},${Math.round(box.top)} ${Math.round(box.width)}x${Math.round(box.height)}` +
+          ` disabled=${Boolean(node.disabled)} visibility=${style.visibility} opacity=${style.opacity}` +
+          ` pointer-events=${style.pointerEvents} running-animations=${node.getAnimations({ subtree: true }).length}`;
+        const top = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+        onTop = !top ? 'nothing (centre off screen)' : node.contains(top) ? 'the element itself' : describe(top);
+      }
+      const present = [...document.querySelectorAll('[data-testid]')].map((el) =>
+        el.getAttribute('data-testid') + (el.getClientRects().length === 0 ? '(hidden)' : ''));
+      return { element, onTop, present };
+    }, id).catch((evalError) => ({ element: 'page.evaluate failed: ' + playwrightError(evalError), onTop: 'n/a', present: [] }));
+    throw new Error(`data-testid="${id}" not clickable (waiting for ${phase}, budget ${timeout} ms): ` +
+      `${playwrightError(error)} || element: ${seen.element} || on top at its centre: ${seen.onTop}` +
+      ` || present: [${seen.present.join(', ') || 'none'}]`);
   }
 }
 
