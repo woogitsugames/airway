@@ -452,6 +452,7 @@ export function rozaNotePlaces(tag: TagSlot, label: RoseLabel, mode: RoseLabelMo
   } else {
     tag.besideLeft = tag.besideRight = tag.besideY = undefined;
   }
+  tag.rose = label.code; // [night-18a] D-264
   tag.homeX = x;
   tag.homeY = y;
   tag.homeReach = jam ? undefined : roseHomeReach(r);
@@ -467,6 +468,7 @@ export const roseHomeReach = (r: number): number => Math.max(8, r) + Math.max(16
 export function rozaRoseObstacles(ring: TagSlot, name: TagSlot, label: RoseLabel, mode: RoseLabelMode | undefined): void {
   const half = roseRingHalf(label);
   ring.ring = true;
+  ring.rose = name.rose = label.code; // [night-18a] D-264: the note's ownership check (overlay-layout ownsPlace)
   ring.x = label.x - half;
   ring.y = label.y - half;
   ring.width = ring.height = half * 2;
