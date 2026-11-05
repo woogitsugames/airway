@@ -84,7 +84,8 @@ direct manipulation, not decoration. `test:motion` (no other module reads the me
 
 ### Not declared, and why
 - **Larger Text:** Apple needs at least 200% (or the system maximum). The game offers its own text size,
-  `100/115/130` %, and does not read Dynamic Type yet; R1g moves towards 150%, still short.
+  `100/115/130/150` %, starting on first launch from the system text size (Android font scale, iOS Dynamic Type;
+  R1g, N11ap); 150% is still short of 200%. The in-world HUD, luggage tags and split-flap boards keep fixed sizes.
 - **VoiceOver / Voice Control:** settings and menus have labels, but drawing a route is a drag on the 3D globe with
   no alternative input; tasks 2, 3 and 6 cannot be completed with a screen reader or voice commands.
 - **Dark Interface:** the world has night, but the UI (paper, kraft labels, boarding pass) has no dark appearance
@@ -95,9 +96,9 @@ direct manipulation, not decoration. `test:motion` (no other module reads the me
 ## Store paragraph (both stores, appended to the full description)
 
 <!-- a11y:store-en -->
-Accessibility: every destination is a shape, not just a colour, and a colour-vision mode makes the symbols larger with thicker outlines. Interface text meets WCAG AA contrast. "Reduce motion" follows your system and stills the menu globe, camera pans and board animations. Text size goes up to 130%, and haptics can be switched off.
+Accessibility: every destination is a shape, not just a colour, and a colour-vision mode makes the symbols larger with thicker outlines. Interface text meets WCAG AA contrast. "Reduce motion" follows your system and stills the menu globe, camera pans and board animations. Text size follows your system and goes up to 150%, and haptics can be switched off.
 <!-- /a11y:store-en -->
 
 <!-- a11y:store-pl -->
-Dostępność: każdy kierunek to kształt, nie tylko kolor, a tryb dla daltonistów powiększa symbole i pogrubia ich obrys. Tekst interfejsu spełnia kontrast WCAG AA. „Ogranicz ruch” podąża za ustawieniem systemu i zatrzymuje obrót globu w menu, przejazdy kamery i animacje tablic. Rozmiar tekstu do 130%, wibracje można wyłączyć.
+Dostępność: każdy kierunek to kształt, nie tylko kolor, a tryb dla daltonistów powiększa symbole i pogrubia ich obrys. Tekst interfejsu spełnia kontrast WCAG AA. „Ogranicz ruch” podąża za ustawieniem systemu i zatrzymuje obrót globu w menu, przejazdy kamery i animacje tablic. Rozmiar tekstu podąża za ustawieniem systemu i sięga 150%, wibracje można wyłączyć.
 <!-- /a11y:store-pl -->

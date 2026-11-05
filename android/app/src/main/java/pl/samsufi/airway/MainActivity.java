@@ -16,6 +16,8 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         // [night-12ay] R3i (D-245): Firebase Test Lab game loop (TEST_LOOP intent) bridge; registered before the bridge starts.
         registerPlugin(GameLoopPlugin.class);
+        // [night-11ap] R1g: system font scale for the first-launch text size preset.
+        registerPlugin(TextScalePlugin.class);
         super.onCreate(savedInstanceState);
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override

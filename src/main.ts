@@ -35,7 +35,8 @@ import { getLanguage, setPseudoLocale, t } from './i18n';
 import { FrameRecorder, gameLoopLogLine, gameLoopReport, gameLoopScenario, type GameLoopRunFacts } from './game/gameLoop'; // [night-12ay] R3i
 import { nativeGameLoopPort, readGameLoop, type GameLoopBridge } from './platform/gameLoop'; // [night-12ay] R3i
 import { configureHaptics, nativeAppCheckPort, createDefaultStorage, createNativeInstallMarker, forgetIdentityOnNewInstall, GameLifecycle, shareDailyResult, type KeyValueStorage } from './platform';
-import { initializeAccessibility } from './ui/a11y';
+import { initializeAccessibility, presetTextScaleFromSystem } from './ui/a11y';
+import { systemTextScale } from './platform/textScale'; // [night-11ap] R1g
 import { initializeMotion } from './ui/motion';
 import { mountUnsupported } from './ui/unsupported'; // [night-11h]
 import { gpuRendererString, webgl2Available } from './render/contextGuard'; // [night-11h]
@@ -51,6 +52,7 @@ if (!mount) throw new Error('Missing #app mount point');
 const app: HTMLElement = mount;
 document.documentElement.lang = getLanguage();
 initializeAccessibility();
+void presetTextScaleFromSystem(systemTextScale); // [night-11ap] R1g: first launch follows the system text size
 initializeMotion(); // [night-11g] D-88
 document.title = t('app.title');
 const query = new URLSearchParams(location.search);

@@ -172,6 +172,25 @@ test('game-over row and logbook section in EN and PL; every text in both catalog
   assert.equal(keys.length, 15);
   for (const key of keys) assert.ok(key in pl, `pl has ${key}`);
 });
+// [night-11ao] Regression: the logbook screen threw "reading 'first-hub'" for a Logbook object without `milestones`
+// (pre-R1n shape, as the pseudo-320 fixture and any hand-built caller passes). Every reader must tolerate it.
+test('logbook objects without milestones (pre-R1n shape) render every milestone as open and never throw', () => {
+  setLanguage('en');
+  const { milestones: _drop, ...rest } = { ...EMPTY_LOGBOOK, flights: 12 };
+  for (const book of [rest, { ...rest, milestones: null }, { ...rest, milestones: [] }, { ...rest, milestones: 'x' }]) {
+    const legacy = book as unknown as typeof EMPTY_LOGBOOK;
+    const rows = logbookMilestones(legacy);
+    assert.equal(rows.length, MILESTONES.length);
+    assert.ok(rows.every(([, , state]) => state === 'not yet'), JSON.stringify(rows));
+    assert.deepEqual(firstMilestones(legacy, ['first-hub']), []);
+  }
+  const storage = memory();
+  const next = recordFlight(storage, flight(), undefined, ['first-hub']);
+  assert.deepEqual(next.milestones, { 'first-hub': 1 });
+  const logbookUi = read('src/ui/logbook/logbook.ts');
+  assert.doesNotMatch(logbookUi, /data\.book\.milestones\[/, 'the logbook screen reads milestones through milestoneFlights()');
+  assert.doesNotMatch(read('src/ui/milestones.ts'), /book\.milestones\[/);
+});
 test('wiring: Endless game over logs and shows milestones; the row is shape-coded and still under "Reduce motion"', () => {
   const session = read('src/game/session.ts');
   assert.match(session, /run\.mode === 'endless' \? \{ milestones: \{ reached: run\.milestones\(\), first: callbacks\.failureMilestones\?\.\(\) \?\? \[\] \} \}/);

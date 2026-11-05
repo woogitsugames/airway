@@ -44,16 +44,16 @@
 @keyframes flap-top { to { transform:rotateX(-90deg); } }
 @keyframes flap-bottom { to { transform:rotateX(0deg); } }
 :root[data-airway-motion="reduce"] .flap-fold-out--active, :root[data-airway-motion="reduce"] .flap-fold-in--active { animation:none!important; } /* [night-11g] D-88 */
-.airway-notice { position:absolute; top:calc(var(--aw-safe-top) + 108px); left:calc(var(--aw-safe-left) + 16px); right:calc(var(--aw-safe-right) + 16px); background:#fbf8f1; border-left:7px solid #c8352a; color:#2a2420; padding:12px; max-width:500px; font:700 14px/1.3 'Atkinson Hyperlegible Next',sans-serif; }
+.airway-notice { position:absolute; top:calc(var(--aw-safe-top) + 108px); left:calc(var(--aw-safe-left) + 16px); right:calc(var(--aw-safe-right) + 16px); background:#fbf8f1; border-left:7px solid #c8352a; color:#2a2420; padding:12px; max-width:500px; font:700 calc(14px * var(--airway-text-scale))/1.3 'Atkinson Hyperlegible Next',sans-serif; }
 .airway-settings { background:#8cc3d8; overflow:auto; padding:calc(var(--aw-safe-top) + 14px) calc(var(--aw-safe-right) + 12px) calc(var(--aw-safe-bottom) + 16px) calc(var(--aw-safe-left) + 12px); }
 .airway-settings__paper { max-width:570px; margin:0 auto; background:#fbf8f1; color:#2a2420; border-top:9px solid #1e6f6a; padding:14px; }
 .airway-settings__heading { display:flex; align-items:center; gap:12px; border-bottom:2px solid #2a2420; padding-bottom:11px; margin-bottom:10px; }
-.airway-settings h1 { margin:0; min-width:0; overflow-wrap:anywhere; font:800 27px/1.1 'Overpass',sans-serif; }
-.airway-settings__back { appearance:none; flex:none; min-height:48px; padding:9px 12px; border:2px solid #2a2420; color:#2a2420; background:#ffc72c; font:700 13px 'Overpass',sans-serif; cursor:pointer; }
+.airway-settings h1 { margin:0; min-width:0; overflow-wrap:anywhere; font:800 min(calc(27px * var(--airway-text-scale-title)), 8.5vw)/1.1 'Overpass',sans-serif; }
+.airway-settings__back { appearance:none; flex:none; min-height:48px; padding:9px 12px; border:2px solid #2a2420; color:#2a2420; background:#ffc72c; font:700 calc(13px * var(--airway-text-scale)) 'Overpass',sans-serif; cursor:pointer; }
 /* [night-07s] The control column never drops below ~155 px, so "Automatyczna" / "Battery saver" fit at 360 dp.
    [night-07v] Down to 320 dp too: the label may take up to 42 % and wraps (was capped by 50 % → 132 px). */
-.airway-setting { display:grid; grid-template-columns:minmax(0,1fr) minmax(min(156px,58%),42%); align-items:center; gap:12px; min-height:60px; padding:10px 2px; border-bottom:1px dashed #c2b5a6; overflow-wrap:anywhere; font:700 14px/1.2 'Atkinson Hyperlegible Next',sans-serif; }
-.airway-setting__control { min-height:48px; max-width:100%; width:100%; font:700 14px 'Atkinson Hyperlegible Next',sans-serif; border:2px solid #1e6f6a; background:#fff; color:#13302e; padding:8px; border-radius:0; }
+.airway-setting { display:grid; grid-template-columns:minmax(0,1fr) minmax(min(156px,58%),42%); align-items:center; gap:12px; min-height:60px; padding:10px 2px; border-bottom:1px dashed #c2b5a6; overflow-wrap:anywhere; font:700 calc(14px * var(--airway-text-scale))/1.2 'Atkinson Hyperlegible Next',sans-serif; }
+.airway-setting__control { min-height:48px; max-width:100%; width:100%; font:700 calc(14px * var(--airway-text-scale)) 'Atkinson Hyperlegible Next',sans-serif; border:2px solid #1e6f6a; background:#fff; color:#13302e; padding:8px; border-radius:0; }
 .airway-setting__control:focus-visible, .airway-settings button:focus-visible { outline:3px solid #c8352a; outline-offset:2px; }
 .airway-setting__switch { display:flex; align-items:center; gap:8px; justify-content:flex-end; min-height:48px; cursor:pointer; }
 .airway-setting__switch input { width:24px; height:24px; accent-color:#1e6f6a; }
@@ -63,48 +63,51 @@
 .airway-settings__group { min-width:0; }
 .airway-settings__group .airway-settings__licenses { margin-top:10px; }
 .airway-settings__delete [hidden] { display:none; } /* [night-12k] D-114: the class sets display:block */
-.airway-settings__group-title { margin:6px 0 0; padding:6px 10px 5px; background:#1e6f6a; color:#fbf8f1; font:800 13px/1.2 'Overpass Mono',monospace; letter-spacing:.08em; text-transform:uppercase; clip-path:polygon(0 0,calc(100% - 10px) 0,100% 50%,calc(100% - 10px) 100%,0 100%); width:max-content; max-width:100%; padding-right:20px; }
+.airway-settings__group-title { margin:6px 0 0; padding:6px 10px 5px; background:#1e6f6a; color:#fbf8f1; font:800 calc(13px * var(--airway-text-scale))/1.2 'Overpass Mono',monospace; letter-spacing:.08em; text-transform:uppercase; clip-path:polygon(0 0,calc(100% - 10px) 0,100% 50%,calc(100% - 10px) 100%,0 100%); width:max-content; max-width:100%; padding-right:20px; }
 @media (orientation:landscape) and (min-width:700px) { .airway-settings__groups { grid-template-columns:1fr 1fr; column-gap:22px; } }
-.airway-setting__hint { margin:4px 0 11px; font:400 12px/1.4 'Atkinson Hyperlegible Next',sans-serif; color:#55514a; }
-.airway-settings__licenses { display:block; width:100%; min-height:50px; background:#1c1e20; color:#ffc72c; border:0; padding:12px; font:700 13px 'Overpass Mono',monospace; text-align:left; margin-top:18px; cursor:pointer; }
-.airway-licenses { font:400 13px/1.5 'Atkinson Hyperlegible Next',sans-serif; }
+.airway-setting__hint { margin:4px 0 11px; font:400 calc(12px * var(--airway-text-scale))/1.4 'Atkinson Hyperlegible Next',sans-serif; color:#55514a; }
+.airway-settings__licenses { display:block; width:100%; min-height:50px; background:#1c1e20; color:#ffc72c; border:0; padding:12px; font:700 calc(13px * var(--airway-text-scale)) 'Overpass Mono',monospace; text-align:left; margin-top:18px; cursor:pointer; }
+.airway-licenses { font:400 calc(13px * var(--airway-text-scale))/1.5 'Atkinson Hyperlegible Next',sans-serif; }
 .airway-licenses li { padding:9px 0; border-bottom:1px dashed #c2b5a6; }
 .airway-licenses strong { display:block; }
 /* [night-11e] In-app privacy policy: a filed document on the settings paper (R1b). */
-.airway-privacy { font:400 14px/1.55 'Atkinson Hyperlegible Next',sans-serif; }
+.airway-privacy { font:400 calc(14px * var(--airway-text-scale))/1.55 'Atkinson Hyperlegible Next',sans-serif; }
 .airway-privacy > :not(.airway-settings__heading) { max-width:64ch; }
 .airway-privacy h1 { overflow-wrap:anywhere; }
-.airway-privacy__overline { margin:4px 0 6px; font:700 12px/1.3 'Overpass Mono',monospace; letter-spacing:.08em; color:#1e6f6a; }
+.airway-privacy__overline { margin:4px 0 6px; font:700 calc(12px * var(--airway-text-scale))/1.3 'Overpass Mono',monospace; letter-spacing:.08em; color:#1e6f6a; }
 .airway-privacy__warning { margin:0 0 12px; padding:8px 10px; border:2px dashed #c8352a; color:#8a2219; font-weight:700; }
 .airway-privacy__section { padding:8px 0 4px; border-bottom:1px dashed #c2b5a6; }
-.airway-privacy__section h2 { margin:0 0 4px; font:800 16px/1.25 'Overpass',sans-serif; }
+.airway-privacy__section h2 { margin:0 0 4px; font:800 calc(16px * var(--airway-text-scale))/1.25 'Overpass',sans-serif; }
 .airway-privacy__section p { margin:0 0 6px; overflow-wrap:anywhere; }
 .airway-privacy__section ul { margin:0 0 6px; padding-left:20px; } .airway-privacy__section li { margin:0 0 4px; overflow-wrap:anywhere; } /* [night-11am] R7a, [night-11an] R7b: policy and terms lists */
 /* [night-11h] D-118: no-WebGL-2 page (src/ui/unsupported.ts). */
 .airway-unsupported { position:fixed; inset:0; }
 .airway-unsupported__title { margin:0 0 10px !important; overflow-wrap:anywhere; }
-.airway-unsupported__gpu { margin:12px 0 6px; padding:8px 10px; border-left:6px solid #1e6f6a; background:#efe8da; font:700 13px/1.4 'Overpass Mono',monospace; overflow-wrap:anywhere; }
-.airway-privacy__date { margin:12px 0 2px; font:400 12px/1.4 'Overpass Mono',monospace; color:#55514a; }
+.airway-unsupported__gpu { margin:12px 0 6px; padding:8px 10px; border-left:6px solid #1e6f6a; background:#efe8da; font:700 calc(13px * var(--airway-text-scale))/1.4 'Overpass Mono',monospace; overflow-wrap:anywhere; }
+.airway-privacy__date { margin:12px 0 2px; font:400 calc(12px * var(--airway-text-scale))/1.4 'Overpass Mono',monospace; color:#55514a; }
 @media (orientation:landscape) { .airway-sign { top:calc(var(--aw-safe-top) + 12px); left:calc(var(--aw-safe-left) + 16px); } .airway-sign__pictogram {width:42px;height:42px;} .airway-sign__title {font-size:39px;} .airway-board { left:calc(var(--aw-safe-left) + 16px); bottom:calc(var(--aw-safe-bottom) + 7px); right:auto; width:min(410px, calc(100% - var(--aw-safe-left) - var(--aw-safe-right) - 30px)); padding:8px 9px; } .airway-flight {min-height:59px;padding:5px 0;} .airway-notice {top:calc(var(--aw-safe-top) + 76px);left:auto;right:calc(var(--aw-safe-right) + 20px);} .airway-settings__paper {max-width:730px;} }
-@media (max-width:370px) { .airway-board {left:4px;right:4px;padding:6px;} .flap-tile{--flap-w:9px;--flap-font:11px;} .airway-board__header, .airway-flight { grid-template-columns:minmax(0,1fr) 46px 80px;gap:6px;} .airway-flight-line { grid-template-columns:minmax(0,1fr) 80px; } .airway-flight-line > .airway-flight--with-region { grid-template-columns:minmax(0,1fr) 46px; } .airway-flight__region { font-size:10px; } /* [task-37] BRAMKA (≈42px) needs ≥8px before STATUS */ }
+@media (max-width:370px) { .airway-board {left:4px;right:4px;padding:6px;} .flap-tile{--flap-w:9px;--flap-font:11px;} .airway-board__header, .airway-flight { grid-template-columns:minmax(0,1fr) 46px 80px;gap:6px;} .airway-flight-line { grid-template-columns:minmax(0,1fr) 80px; } .airway-flight-line > .airway-flight--with-region { grid-template-columns:minmax(0,1fr) 46px; } .airway-flight__region { font-size: calc(10px * var(--airway-text-scale)); } /* [task-37] BRAMKA (≈42px) needs ≥8px before STATUS */ }
 @media (max-height:470px) and (orientation:landscape) { .airway-flight{min-height:58px;} .airway-board__header{min-height:19px;} .airway-sign__subtitle{font-size:9px;} }
 /* [night-11p] D-129 glyph legend in settings → help: glyph and region name per row, two columns where they fit. */
 .airway-glyph-legend { margin-top:14px; }
-.airway-glyph-legend__title { margin:0; font:800 13px/1.3 'Overpass',sans-serif; color:#2a2420; }
+.airway-glyph-legend__title { margin:0; font:800 calc(13px * var(--airway-text-scale))/1.3 'Overpass',sans-serif; color:#2a2420; }
 .airway-glyph-legend__rows { list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:0 12px; }
-.airway-glyph-legend__row { display:flex; align-items:center; gap:10px; min-height:32px; border-bottom:1px dashed #c2b5a6; font:400 14px/1.3 'Atkinson Hyperlegible Next',sans-serif; color:#2a2420; }
+.airway-glyph-legend__row { display:flex; align-items:center; gap:10px; min-height:32px; border-bottom:1px dashed #c2b5a6; font:400 calc(14px * var(--airway-text-scale))/1.3 'Atkinson Hyperlegible Next',sans-serif; color:#2a2420; }
 .airway-glyph-legend__row svg { flex:none; }
 /* [night-11ai] R4g: keyboard and mouse list. Plain rows like the glyph legend, key caps as outlined mono text.
    Hidden where no input can hover (a touch-only phone). */
 .airway-keys { margin-top:14px; }
 .airway-keys__rows { list-style:none; margin:0; padding:0; }
-.airway-keys__row { display:flex; align-items:center; flex-wrap:wrap; gap:4px 10px; min-height:32px; border-bottom:1px dashed #c2b5a6; font:400 14px/1.3 'Atkinson Hyperlegible Next',sans-serif; color:var(--airway-ink); }
+.airway-keys__row { display:flex; align-items:center; flex-wrap:wrap; gap:4px 10px; min-height:32px; border-bottom:1px dashed #c2b5a6; font:400 calc(14px * var(--airway-text-scale))/1.3 'Atkinson Hyperlegible Next',sans-serif; color:var(--airway-ink); }
 .airway-keys__caps { display:inline-flex; gap:4px; flex:none; }
-.airway-keys__cap { min-width:22px; padding:1px 5px; border:1px solid currentColor; font:700 12px/1.3 'Overpass Mono',monospace; text-align:center; }
+.airway-keys__cap { min-width:22px; padding:1px 5px; border:1px solid currentColor; font:700 calc(12px * var(--airway-text-scale))/1.3 'Overpass Mono',monospace; text-align:center; }
 @media (any-hover: none) { .airway-keys { display:none; } }
 /* [night-11al] R7c, D-241: publisher block in settings → help, plain label/value rows like the glyph legend. */
 .airway-publisher { margin-top:14px; }
 .airway-publisher__rows { margin:0; }
 .airway-publisher__row { display:flex; flex-direction:column; gap:2px; padding:6px 0; border-bottom:1px dashed #c2b5a6; }
-.airway-publisher__row dt { font:700 11px/1.3 'Overpass Mono',monospace; letter-spacing:.04em; color:#55514a; overflow-wrap:anywhere; }
-.airway-publisher__row dd { margin:0; font:400 14px/1.35 'Atkinson Hyperlegible Next',sans-serif; color:#2a2420; overflow-wrap:anywhere; }
+.airway-publisher__row dt { font:700 calc(11px * var(--airway-text-scale))/1.3 'Overpass Mono',monospace; letter-spacing:.04em; color:#55514a; overflow-wrap:anywhere; }
+.airway-publisher__row dd { margin:0; font:400 calc(14px * var(--airway-text-scale))/1.35 'Atkinson Hyperlegible Next',sans-serif; color:#2a2420; overflow-wrap:anywhere; }
+/* [night-11ap] R1g: at the 130 and 150 % text steps a setting's control sits under its label at full width, so neither the
+   label nor the chosen option has to break or cut. */
+:root[data-airway-text-scale="130"] .airway-setting, :root[data-airway-text-scale="150"] .airway-setting { grid-template-columns:minmax(0,1fr); gap:6px; }
