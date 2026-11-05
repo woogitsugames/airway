@@ -3,7 +3,8 @@
 // scores, puzzle stars). Opened from the departure board's service row; Back returns to the menu.
 import { airportLabel } from '../airportLabel';
 import { APP_VERSION } from '../../core/version'; // [night-12ap] R3j
-import { favouriteHub, localDay, milestoneFlights, type Logbook, type LogEntry } from '../../game/logbook'; // [night-11ao] milestoneFlights
+import { favouriteHub, licenceWeeks, localDay, milestoneFlights, type Logbook, type LogEntry } from '../../game/logbook'; // [night-11ao] milestoneFlights
+import { LICENCE_SHORT_KEY, openLicences } from '../../game/licence'; // [night-12bc] R2h
 import type { TutorialOutcome } from '../../game/tutorial/controller';
 import { localNumber, t, type TranslationKey } from '../../i18n';
 import type { RegionId } from '../../data/regions';
@@ -68,8 +69,18 @@ export function logbookRows(data: LogbookData): { totals: [string, string, strin
       ['puzzles', t('logbook.puzzles'), t('logbook.puzzlesValue', {
         solved: data.puzzlesSolved, total: data.puzzlesTotal, stars: data.stars, starsTotal: data.puzzlesTotal * 3,
       })],
+      ...licenceRow(book),
     ],
   };
+}
+
+/** [night-12bc] R2h, D-251: best weeks per open licence class; no row until class II is open. */
+function licenceRow(book: Logbook): [string, string, string][] {
+  const open = openLicences(book);
+  if (open.length < 2) return [];
+  const best = licenceWeeks(book);
+  return [['licences', t('logbook.licences'), open.map((licence) =>
+    t('logbook.licenceValue', { class: t(LICENCE_SHORT_KEY[licence]), count: best[licence] ?? 0 })).join(' · ')]];
 }
 
 function section(title: string, testId: string): HTMLElement {
@@ -108,6 +119,11 @@ function modeCell(flight: LogEntry): HTMLElement {
     const region = e('span', 'airway-logbook__region', t(REGION_SHORT[flight.region]));
     region.dataset.region = flight.region;
     cell.append(region);
+  }
+  if (flight.licence) { // [night-12bc] R2h: a class II/III flight shows its stamp numeral
+    const licence = e('span', 'airway-logbook__region airway-logbook__licence', t(LICENCE_SHORT_KEY[flight.licence]));
+    licence.dataset.licence = String(flight.licence);
+    cell.append(licence);
   }
   return cell;
 }

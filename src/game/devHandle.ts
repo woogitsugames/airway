@@ -14,6 +14,8 @@ export interface AwDevState {
   readonly seed: number;
   /** [night-11aj] R2g: the running Endless run's home region (null = Random, Daily, no run). */
   readonly homeRegion?: string | null;
+  /** [night-12bc] R2h: the running run's licence class (1 for class I, Daily and no run). */
+  readonly licenceClass?: number;
   readonly tick: number;
   readonly nextWeekTick: number;
   readonly routeCount: number;

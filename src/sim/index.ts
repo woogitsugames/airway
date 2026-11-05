@@ -20,15 +20,20 @@ export { clockAt, calendarWeekAt, calendarDayAt, ticksPerSecond, TICKS_PER_DAY, 
 export type { ClockTime, SimSpeed } from './clock.ts';
 
 export { HOME_REGIONS } from './spawner.ts';
+export { LICENCE_CLASSES, LICENCE_PARAMS, LICENCE_PARAMS_VERSION, LICENCE_UNLOCK_WEEK, isLicenceClass } from './licence.ts';
+export type { LicenceClass, LicenceParams } from './licence.ts';
+import type { LicenceClass } from './licence.ts';
 
 /**
  * Start a new run. `seed` is an unsigned 32-bit integer (Daily: src/core/daily.ts dailySeed()).
  * [night-11aj] R2g: `homeRegion` (Endless only; null = Random) anchors the start cluster in that region.
+ * [night-12bc] R2h: `licenceClass` (Endless only; 1 = today's rules, no config field) picks the class's knobs.
  */
 export function createGame(seed: number, mode: GameConfig['mode'] = 'endless', puzzleId?: string,
-    homeRegion: GameConfig['homeRegion'] | null = null, weeklyContract = false): Sim {
+    homeRegion: GameConfig['homeRegion'] | null = null, weeklyContract = false, licenceClass: LicenceClass = 1): Sim {
   if (mode === 'puzzle') return new Sim(seed >>> 0, { mode, puzzleId: puzzleId ?? '' });
   if (mode !== 'endless') return new Sim(seed >>> 0, { mode });
   // [night-12ba] R2k: the weekly contract (D-247) is Endless only; the game layer turns it on for new runs.
-  return new Sim(seed >>> 0, { mode, ...(homeRegion ? { homeRegion } : {}), ...(weeklyContract ? { weeklyContract: true } : {}) });
+  return new Sim(seed >>> 0, { mode, ...(homeRegion ? { homeRegion } : {}), ...(weeklyContract ? { weeklyContract: true } : {}),
+    ...(licenceClass === 1 ? {} : { licenceClass }) });
 }

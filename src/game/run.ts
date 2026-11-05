@@ -4,7 +4,7 @@ import { cityByCode, cityDistanceKm as dataDistanceKm } from '../data';
 import { REGION_IDS, type RegionId } from '../data/regions';
 import {
   createGame, PLANE_TYPES, TICKS_PER_SECOND_1X, TICKS_PER_WEEK,
-  type Command, type CommandEntry, type GameMode, type SimEvent, type UpgradeKind, type WeeklyUpgradeState,
+  type Command, type CommandEntry, type GameMode, type LicenceClass, type SimEvent, type UpgradeKind, type WeeklyUpgradeState,
 } from '../sim';
 import type { Sim } from '../sim';
 import type { HubPressure } from '../sim/upgrades';
@@ -96,16 +96,20 @@ export class EndlessRun {
   /**
    * [night-11aj] R2g: `homeRegion` (Endless only; null = Random) anchors the start cluster in that region.
    * [night-12ba] R2k, D-247: every new Endless run has the weekly contract (ENDLESS_WEEKLY_CONTRACT); Daily never.
+   * [night-12bc] R2h, D-251: `licenceClass` (Endless only; 1 = today's rules) picks the class's scenario knobs.
    */
-  static create(seed: number, mode: GameMode = 'endless', homeRegion: RegionId | null = null): EndlessRun {
+  static create(seed: number, mode: GameMode = 'endless', homeRegion: RegionId | null = null,
+      licenceClass: LicenceClass = 1): EndlessRun {
     return mode === 'daily' ? new EndlessRun(createGame(seed, 'daily'))
-      : new EndlessRun(createGame(seed, 'endless', undefined, homeRegion, ENDLESS_WEEKLY_CONTRACT));
+      : new EndlessRun(createGame(seed, 'endless', undefined, homeRegion, ENDLESS_WEEKLY_CONTRACT, licenceClass));
   }
 
   get seed(): number { return this.sim.seed; }
   get mode(): GameMode { return this.sim.config.mode; }
   /** [night-11aj] R2g: the chosen home region, or null for a Random start (and every Daily). */
   get homeRegion(): RegionId | null { return this.sim.config.homeRegion ?? null; }
+  /** [night-12bc] R2h: the run's licence class (1 for class I runs, every Daily and older saves). */
+  get licenceClass(): LicenceClass { return this.sim.config.licenceClass ?? 1; }
   get tick(): number { return this.sim.tickCount; }
   /** UTC world minute: drives the sun and terminator. */
   get clockMinute(): number { return this.sim.world.minute; }

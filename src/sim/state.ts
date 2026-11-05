@@ -37,6 +37,11 @@ export interface GameConfig {
    * Absent = the pre-R2k rules (older saves and every Daily replay unchanged); new Endless runs set it.
    */
   readonly weeklyContract?: true;
+  /**
+   * [night-12bc] R2h, D-251: Endless only. Licence class II or III (src/sim/licence.ts); absent = class I, today's
+   * Endless, so older saves, every Daily and the leaderboard replay are unchanged.
+   */
+  readonly licenceClass?: 2 | 3;
 }
 
 /** [night-11aj] Canonical copy of a config: optional fields only when set (they are part of the state hash). */
@@ -46,6 +51,7 @@ export function copyConfig(config: GameConfig): GameConfig {
     ...(config.puzzleId === undefined ? {} : { puzzleId: config.puzzleId }),
     ...(config.homeRegion === undefined ? {} : { homeRegion: config.homeRegion }),
     ...(config.weeklyContract === true ? { weeklyContract: true } : {}),
+    ...(config.licenceClass === undefined ? {} : { licenceClass: config.licenceClass }),
   };
 }
 

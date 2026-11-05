@@ -131,6 +131,15 @@ export const pl = {
   'menu.noRecord': 'brak rekordu',
   'menu.homeRegion': 'Region startowy', // [night-11aj] R2g: Endless start region select on the menu board
   'menu.homeRegion.random': 'Losowy',
+  // [night-12bc] R2h, D-251: klasy licencji w trybie bez końca (pieczątka w kolumnie bramki po otwarciu klasy II).
+  'menu.licence': 'Klasa licencji',
+  'menu.licenceIssued': 'Wydano licencję klasy {class}. Wybierz ją w wierszu lotu bez końca.',
+  'licence.short.1': 'I',
+  'licence.short.2': 'II',
+  'licence.short.3': 'III',
+  'licence.name.1': 'Klasa I: zasady podstawowe',
+  'licence.name.2': 'Klasa II: cisza nocna od 2. tygodnia, 3 turbośmigłowce',
+  'licence.name.3': 'Klasa III: jak II, huby o 6 miejsc mniejsze, cisza nocna na 2 lotniskach więcej',
   'menu.progress': '{solved} z {total} rozwiązanych',
   'menu.puzzlesHint': 'zadania już wkrótce',
   'menu.dailyHint': 'ten sam świat dla wszystkich',
@@ -319,6 +328,7 @@ export const pl = {
   'gameover.region.ASI': 'Azji',
   'gameover.region.OCE': 'Oceanii',
   'gameover.homeRegion': 'Region startowy: {region}', // [night-11aj] R2g
+  'gameover.licence': 'Licencja klasy {class}', // [night-12bc] R2h
   // [night-11aj] R2g: region names in the nominative (menu, game-over report) and short (logbook table).
   'region.name.NAM': 'Ameryka Północna',
   'region.name.SAM': 'Ameryka Południowa',
@@ -569,6 +579,8 @@ export const pl = {
   'logbook.passengers': 'Przewiezieni pasażerowie',
   'logbook.weeks': 'Tygodnie w powietrzu',
   'logbook.longest': 'Najdłuższy lot',
+  'logbook.licences': 'Najlepszy lot wg klasy licencji', // [night-12bc] R2h
+  'logbook.licenceValue': '{class}: {count} {count|tydzień|tygodnie|tygodni}',
   'logbook.weeksValue': '{count} {count|tydzień|tygodnie|tygodni}',
   'logbook.best': 'Najlepszy lot',
   'logbook.bestValue': '{count} {count|pasażer|pasażerów|pasażerów} · {weeks} {weeks|tydzień|tygodnie|tygodni}',

@@ -73,15 +73,25 @@ function sortedUniqueIds(ids: readonly string[], known?: ReadonlySet<string>): s
   return [...ids].sort();
 }
 
+/** [night-12bc] R2h, D-251: the Endless curfew knobs a licence class may change (class I = the shared constants). */
+export interface EndlessCurfewRules {
+  readonly startWeek: number;
+  readonly startCities: number;
+}
+export const ENDLESS_CURFEW_RULES: EndlessCurfewRules = Object.freeze({
+  startWeek: CURFEW_ENDLESS_START_WEEK, startCities: CURFEW_START_CITY_COUNT,
+});
+
 /** Week-specific seeded shuffle: independent of other events and call order. */
 export function selectEndlessCurfewCities(
   week: number, activeCityIds: readonly string[], rngRoot: CurfewRngRoot,
+  rules: EndlessCurfewRules = ENDLESS_CURFEW_RULES,
 ): readonly string[] {
   validWeek(week);
-  if (week < CURFEW_ENDLESS_START_WEEK) return [];
+  if (week < rules.startWeek) return [];
   const pool = sortedUniqueIds(activeCityIds);
   const count = Math.min(pool.length, CURFEW_MAX_CITY_COUNT,
-    CURFEW_START_CITY_COUNT + Math.floor((week - CURFEW_ENDLESS_START_WEEK) /
+    rules.startCities + Math.floor((week - rules.startWeek) /
       CURFEW_ADDITIONAL_CITY_EVERY_WEEKS));
   const rng = rngRoot.fork(`daynight/curfew/week/${week}`);
   for (let i = 0; i < count; i++) {
@@ -112,6 +122,7 @@ export class CurfewPlanner {
     cities: readonly DayNightCity[],
     private readonly root: CurfewRngRoot,
     puzzleCurfewCityIds: readonly string[] = [],
+    private readonly endlessRules: EndlessCurfewRules = ENDLESS_CURFEW_RULES,
   ) {
     if (mode !== 'endless' && mode !== 'puzzle') throw new RangeError('Unknown day/night mode');
     for (const city of cities) {
@@ -136,7 +147,7 @@ export class CurfewPlanner {
       this.selectionCityIds = this.activeIds;
       this.selectedIds = this.mode === 'puzzle'
         ? this.puzzleIds
-        : selectEndlessCurfewCities(week, this.selectionCityIds, this.root);
+        : selectEndlessCurfewCities(week, this.selectionCityIds, this.root, this.endlessRules);
       this.selectedSet = new Set(this.selectedIds);
     }
     if (this.selectedIds.length === 0 || this.lastAnnouncedWeek === week) return null;
@@ -207,7 +218,7 @@ export class CurfewPlanner {
       throw new RangeError('Curfew city must have been active at the weekly boundary');
     }
     const expected = saved.week === 0 ? [] : this.mode === 'puzzle'
-      ? this.puzzleIds : selectEndlessCurfewCities(saved.week, selectedFrom, this.root);
+      ? this.puzzleIds : selectEndlessCurfewCities(saved.week, selectedFrom, this.root, this.endlessRules);
     if (selected.length !== expected.length || selected.some((id, i) => id !== expected[i])) {
       throw new RangeError('Curfew snapshot does not match its seed and mode');
     }

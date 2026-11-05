@@ -2247,3 +2247,38 @@ upgrade specs and (≤ 370 px) logbook totals stack. Apple's "Larger Text" label
 Rejected: `@capacitor/text-zoom` (a dependency and a second scale applied by the WebView on top of ours), scaling
 the HUD now (overlaps the dock/tag layout tests), a 200 % step (titles and boards would need the redesign).
 Guards: `test:text-scale`, `test:e2e:text-scale-150`, `test:a11y-evidence`. **Status: in force.**
+
+## D-251 — Endless licence classes: three difficulty tiers from scenario knobs only, unlocked on the device (2026-11-05, Claude, night N12bc)
+R2h (Q-50 recommendation A/B). A new Endless run flies in **licence class I, II or III**. Class I is today's Endless;
+the other classes change only scenario knobs, kept as data in one table (`LICENCE_PARAMS` in `src/sim/licence.ts`,
+`LICENCE_PARAMS_VERSION` 1): **II** = curfew from week 2 (D-151: week 3) and a starting reserve of 3 turboprops (4);
+**III** = II plus hubs 6 waiting seats smaller (36 → 30; upgrades still add 6) and 2 more curfew airports (the first
+curfew week closes 4 instead of 2, then one more every two weeks as before, cap 8). No new rule: the curfew planner,
+fleet and terminal queues take the class's values instead of the shared constants. The class sits in
+`GameConfig.licenceClass: 2 | 3` (Endless only; Daily, puzzles, `1` and other values are refused); a class I run
+carries no field, so its state, hashes, ticks and the Daily/leaderboard replay are bit-for-bit today's (pinned in
+`test:licence-classes` against origin/dev 635e1bf bot runs, Daily, flagless and contract Endless) and `RULES_VERSION`
+stays 6. The save envelope goes **v3 → v4** (v3 loads unchanged; a pre-R2h build refuses a v4 save as "newer version"
+instead of continuing a class II/III run under class I rules); the D-76 replay and "Same world" keep the class.
+**Unlock** (device only, no new key, nothing leaves the device): the logbook (`airway.logbook.v1`) keeps the most
+weeks flown per class (`licenceWeeks`); a class opens once a run of the class below reached **week 5** (4 weeks
+flown). Class I counts Endless class I and daily challenges (same rules); a logbook from before R2h starts class I at
+its `longestWeeks` (all its flights were class I rules). The menu choice is one field of the settings record
+(`airway.settings.licenceClass`, beside the home region); a closed class falls back to I. **UI** (minimal, for the
+pending redesign): nothing changes until class II opens; then the Endless row's decorative gate cell becomes the
+**licence stamp** — a native select with a double-ruled border showing the numeral (I/II/III), ≥ 48 px, the board
+keeps its height and columns; while the picker is open the options name what each class changes ("Class II: curfew
+from week 2, 3 turboprops"). A newly opened class is announced once on the menu's paper notice ("Class II licence
+issued…"); the game-over report shows "Licence class II" beside the score; the logbook gets a "Best by licence class"
+row (I/II/III weeks) and the class numeral under "Endless" in the recent flights. PL + EN.
+**Bot check** (`balance:licences`, the test:balance policy with the weekly contract on, the bot does not adapt; nothing
+tuned): 50 seeds from 0xA1A1: median **17.41 / 16.68 / 14.69** min (I / II / III); 200 seeds: **16.75 / 15.45 /
+14.10** min, p10 9.93 / 7.95 / 7.51, 2nd board reached 68 / 58 / 48 %, week 5 reached 1 / 0 / 0 of 200
+(`docs/balance/licences-summary.md`). Class I stays in D-79's 10–18 (gated); II and III are reported only. II is a
+mild step for the bot (−1.3 min), III a clear one (−2.7 min, −32 % passengers). The week-5 bar is high for the bot
+(0.5 % of class I runs); human players were not measured. Owner choices left open: the unlock week (5), whether
+Daily counts toward class II, the class II/III knob sizes, the stamp under the "Gate" column head, whether classes
+get their own records/leaderboards later. Rejected: a separate menu row (D-236: the board would grow), new rules per
+class (backlog: scenario knobs only), a rules-version bump (class I is unchanged).
+Guards: `test:licence-classes` (`test:fast`), `test:e2e:licence-classes`, `test:balance:licences` (`test:ci`).
+**Status: in force (knobs and unlock week to confirm after the closed test).**

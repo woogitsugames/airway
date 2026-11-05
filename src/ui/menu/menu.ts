@@ -2,6 +2,7 @@ import { localNumber, t, type TranslationKey } from '../../i18n';
 import { SplitFlap } from '../flap';
 import { FLAP_CELLS } from '../../i18n/limits'; // [night-11ac] R7h: the same cell counts as the length budgets
 import type { RegionId } from '../../data/regions';
+import type { LicenceClass } from '../../sim';
 import './menu.css';
 
 export type MenuMode = 'continue' | 'endless' | 'puzzles' | 'daily';
@@ -23,6 +24,12 @@ export interface MenuData {
    */
   readonly homeRegions?: readonly RegionId[];
   readonly homeRegion?: RegionId | null;
+  /**
+   * [night-12bc] R2h, D-251: the open licence classes (class I first). With more than one, the Endless row's gate
+   * cell becomes the licence stamp select; `licence` is the chosen class.
+   */
+  readonly licences?: readonly LicenceClass[];
+  readonly licence?: LicenceClass;
 }
 export interface MenuHandle {
   readonly element: HTMLElement;
@@ -101,6 +108,44 @@ function regionSelect(regions:readonly RegionId[],selected:RegionId|null,onChang
   return select;
 }
 
+const LICENCE_SHORT:Record<LicenceClass,TranslationKey>={1:'licence.short.1',2:'licence.short.2',3:'licence.short.3'};
+const LICENCE_NAME:Record<LicenceClass,TranslationKey>={1:'licence.name.1',2:'licence.name.2',3:'licence.name.3'};
+
+/**
+ * [night-12bc] R2h: the licence stamp takes the Endless row's gate cell once class II is open (the board keeps its
+ * height and columns). A native select like the home region: the closed cell shows the class numeral, the picker
+ * lists each class with what it changes.
+ */
+function licenceSelect(open:readonly LicenceClass[],selected:LicenceClass,onChange:(licence:LicenceClass)=>void):HTMLSelectElement {
+  const select=el('select','airway-flight__region airway-flight__licence');
+  select.dataset.testid='menu-licence';
+  const fill=(classes:readonly LicenceClass[],current:LicenceClass):void => {
+    select.replaceChildren();
+    for(const licence of classes){
+      const option=el('option','',t(LICENCE_SHORT[licence]));
+      option.value=String(licence);option.title=t(LICENCE_NAME[licence]);
+      option.setAttribute('aria-label',t(LICENCE_NAME[licence]));
+      select.append(option);
+    }
+    select.value=String(classes.includes(current)?current:1);
+    select.setAttribute('aria-label',t('menu.licence'));
+    select.title=t('menu.licence');
+  };
+  fill(open,selected);
+  // The closed stamp shows the numeral; while the picker is open each option names what its class changes.
+  const names=(full:boolean):void => {
+    for(const option of select.options){
+      const licence=Number(option.value) as LicenceClass;
+      option.textContent=t(full?LICENCE_NAME[licence]:LICENCE_SHORT[licence]);
+    }
+  };
+  select.addEventListener('pointerdown',()=>names(true));
+  select.addEventListener('blur',()=>names(false));
+  select.addEventListener('change',()=>{ names(false); onChange(Number(select.value) as LicenceClass); });
+  (select as HTMLSelectElement&{refill?:typeof fill}).refill=fill;
+  return select;
+}
+
 function ariaLabel(flight:Flight):string {
   return flight.status ? `${flight.title}, ${t('menu.gate')} ${flight.gate}, ${flight.status}` : `${flight.title}, ${t('menu.gate')} ${flight.gate}`;
 }
@@ -118,7 +163,7 @@ function makeSign():HTMLElement {
 
 /** Presentation-only departure board; the router in src/game/screens.ts handles each row. */
 export function createMenu(onFlight:(mode:MenuMode|MenuService)=>void,initial:MenuData={},
-    onHomeRegion?:(region:RegionId|null)=>void):MenuHandle {
+    onHomeRegion?:(region:RegionId|null)=>void,onLicence?:(licence:LicenceClass)=>void):MenuHandle {
   const root=el('section','airway-menu');
   root.setAttribute('aria-label',t('menu.departures'));
   // The shared world canvas (src/game/world.ts) is the backdrop; the menu owns no WebGL context.
@@ -135,6 +180,7 @@ export function createMenu(onFlight:(mode:MenuMode|MenuService)=>void,initial:Me
   const items=new Map<Flight['id'],{title:SplitFlap;gate:SplitFlap;status:SplitFlap;sub:HTMLElement}>();
   const service=el('div','airway-board__service');
   let region:(HTMLSelectElement&{refill?:(current:RegionId|null)=>void})|null=null;
+  let licence:(HTMLSelectElement&{refill?:(open:readonly LicenceClass[],current:LicenceClass)=>void})|null=null;
   for(const flight of flightRows(initial)) {
     const half=flight.id==='settings'||flight.id==='logbook';
     const button=el('button',half?'airway-flight airway-flight--half':'airway-flight');
@@ -152,7 +198,10 @@ export function createMenu(onFlight:(mode:MenuMode|MenuService)=>void,initial:Me
     const gateWrap=el('span','airway-flight__gate');gateWrap.append(gate.element);
     const statusWrap=el('span','airway-flight__status');statusWrap.append(status.element);
     const withRegion=flight.id==='endless' && !!initial.homeRegions?.length && !!onHomeRegion;
-    if(half || withRegion) button.append(main,gateWrap); else button.append(main,gateWrap,statusWrap);
+    // [night-12bc] R2h: with a second licence class open, the licence select replaces the decorative gate.
+    const withLicence=withRegion && (initial.licences?.length ?? 0)>1 && !!onLicence;
+    if(withLicence) button.append(main);
+    else if(half || withRegion) button.append(main,gateWrap); else button.append(main,gateWrap,statusWrap);
     button.setAttribute('aria-label',ariaLabel(flight));
     button.addEventListener('click',()=>onFlight(flight.id));
     if(withRegion){
@@ -162,7 +211,14 @@ export function createMenu(onFlight:(mode:MenuMode|MenuService)=>void,initial:Me
       region=regionSelect(initial.homeRegions!,initial.homeRegion ?? null,(choice)=>onHomeRegion!(choice));
       const cell=el('span','airway-flight__status airway-flight__region-cell');
       cell.append(region);
-      line.append(button,cell);
+      if(withLicence){
+        line.classList.add('airway-flight-line--licence');
+        button.classList.add('airway-flight--with-licence');
+        licence=licenceSelect(initial.licences!,initial.licence ?? 1,(choice)=>onLicence!(choice));
+        const stamp=el('span','airway-flight__gate airway-flight__licence-cell');
+        stamp.append(licence);
+        line.append(button,stamp,cell);
+      } else line.append(button,cell);
       board.append(line);
     }
     else if(half) service.append(button); else board.append(button);
@@ -198,6 +254,7 @@ export function createMenu(onFlight:(mode:MenuMode|MenuService)=>void,initial:Me
         button?.setAttribute('aria-label',ariaLabel(flight));
       }
       if(region && data.homeRegions) region.refill?.(data.homeRegion ?? null);
+      if(licence && data.licences) licence.refill?.(data.licences,data.licence ?? 1);
     },
     announce(message:string):void { notice.textContent=message; notice.hidden=false; },
     dispose():void { flaps.forEach(f=>f.dispose());root.remove(); },

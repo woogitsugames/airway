@@ -2,6 +2,7 @@
 // composition root registers. Back/Escape is handled once here via src/platform/back.
 import { installBackHandler, type BackOptions } from '../platform';
 import type { RegionId } from '../data/regions';
+import type { LicenceClass } from '../sim';
 import { createMenu, type MenuData, type MenuHandle, type MenuMode } from '../ui/menu/menu';
 import { createSettings, createLicenses, createPrivacy, createTerms, type RankingData } from '../ui/settings/settings';
 import { createLogbook, type LogbookData } from '../ui/logbook/logbook';
@@ -25,6 +26,8 @@ export interface ScreensOptions {
   readonly onMode?: (mode: MenuMode) => void;
   /** [night-11aj] R2g: the player picked an Endless home region on the menu (null = Random). */
   readonly onHomeRegion?: (region: RegionId | null) => void;
+  /** [night-12bc] R2h: the player picked an Endless licence class on the menu. */
+  readonly onLicence?: (licence: LicenceClass) => void;
   readonly onScreen?: (screen: ScreenName) => void;
   readonly onLanguageChanged?: () => void;
   readonly onReplayTutorial?: () => void;
@@ -55,7 +58,7 @@ export function mountScreens(host: HTMLElement, options: ScreensOptions = {}): S
     menu = createMenu((mode) => {
       if (mode === 'settings' || mode === 'logbook') show(mode);
       else options.onMode?.(mode);
-    }, options.getMenuData?.(), options.onHomeRegion);
+    }, options.getMenuData?.(), options.onHomeRegion, options.onLicence);
     const handle = menu;
     return { element: handle.element, dispose: () => handle.dispose() };
   }

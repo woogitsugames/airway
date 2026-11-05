@@ -17,7 +17,8 @@ import { dailyRankingBoard } from './game/dailyRanking'; // [night-06c] D-66
 import { IDENTITY_KEYS, createBrowserLeaderboards } from './net'; // [night-06c] D-66
 import { EndlessRun } from './game/run';
 import { readHomeRegion, writeHomeRegion } from './game/homeRegion'; // [night-11aj] R2g
-import { HOME_REGIONS } from './sim';
+import { LICENCE_SHORT_KEY, licenceForRun, licenceIssued, openLicences, readLicenceChoice, writeLicenceChoice } from './game/licence'; // [night-12bc] R2h
+import { HOME_REGIONS, type LicenceClass } from './sim';
 import type { RegionId } from './data/regions';
 import { dailyRowHint } from './game/dailyRow'; // [night-10d]
 import { firstMilestones, localDay, readLogbook, recordFlight, runHub, type RunRecord } from './game/logbook'; // [night-10n]
@@ -146,6 +147,7 @@ async function boot(): Promise<void> {
   if (loaded.restored) saved = summary(new EndlessRun(loaded.restored.sim));
   // [night-10c] A save that exists but cannot be continued is said so on the menu, until the next flight starts.
   let saveNotice: SaveNotice | null = loaded.issue;
+  let licenceNotice: string | null = null; // [night-12bc] R2h: "Class II licence issued" until the next flight starts
 
   function summary(run: EndlessRun): SavedSummary {
     return { mode: run.mode === 'daily' ? 'daily' : 'endless', week: Math.floor(run.clockMinute / TICKS_PER_WEEK) + 1, /* [task-31] */ passengers: run.passengers };
@@ -164,8 +166,9 @@ async function boot(): Promise<void> {
         dailyNew: !scores.getProgress(dailyKey()).officialUsed,
         dailyHint: dailyRowHint(scores.getProgress(dailyKey())), // [night-10d]
         saved: saved ? { week: saved.week, passengers: saved.passengers } : null,
-        notice: saveNotice ? t(SAVE_NOTICE_KEY[saveNotice]) : null,
+        notice: saveNotice ? t(SAVE_NOTICE_KEY[saveNotice]) : licenceNotice,
         homeRegions: HOME_REGIONS, homeRegion: preferredHomeRegion(), // [night-11aj] R2g
+        licences: openLicenceClasses(), licence: preferredLicence(), // [night-12bc] R2h
       };
     },
     // [night-10n] Logbook: its own store plus the best record, daily scores and puzzle stars already kept.
@@ -188,10 +191,11 @@ async function boot(): Promise<void> {
       };
     },
     onHomeRegion: (region) => { try { writeHomeRegion(globalThis.localStorage, region); } catch { /* Storage blocked. */ } },
+    onLicence: (licence) => { try { writeLicenceChoice(globalThis.localStorage, licence); } catch { /* Storage blocked. */ } },
     onMode: (mode) => {
       if (mode === 'continue') void continueSaved();
-      else if (mode === 'endless') { saveNotice = null; startEndless(pendingSeed ?? freshSeed()); }
-      else if (mode === 'daily') { saveNotice = null; startDaily(); }
+      else if (mode === 'endless') { saveNotice = null; licenceNotice = null; startEndless(pendingSeed ?? freshSeed()); }
+      else if (mode === 'daily') { saveNotice = null; licenceNotice = null; startDaily(); }
       else openPuzzles();
     },
     onScreen: (name: ScreenName) => {
@@ -210,6 +214,16 @@ async function boot(): Promise<void> {
   /** [night-11aj] R2g: the menu's home-region choice (null = Random). */
   function preferredHomeRegion(): RegionId | null {
     try { return readHomeRegion(globalThis.localStorage); } catch { return null; }
+  }
+  /** [night-12bc] R2h, D-251: the licence classes this device has opened (logbook), class I always. */
+  function openLicenceClasses(): LicenceClass[] {
+    try { return openLicences(readLogbook(globalThis.localStorage)); } catch { return [1]; }
+  }
+  /** [night-12bc] R2h: the menu's licence choice when it is open, else class I. */
+  function preferredLicence(): LicenceClass {
+    let choice: LicenceClass = 1;
+    try { choice = readLicenceChoice(globalThis.localStorage); } catch { /* Storage blocked. */ }
+    return licenceForRun(choice, openLicenceClasses());
   }
   function freshSeed(): number {
     const random = new Uint32Array(1);
@@ -266,7 +280,9 @@ async function boot(): Promise<void> {
       // "new world" is Endless; both used to drop silently to the menu.
       onRestart: (seed) => {
         // [night-11aj] R2g: "same world" keeps the run's home region; a new world takes the menu's current choice.
-        if (mode !== 'daily') startEndless(seed, seed === run.seed ? run.homeRegion : preferredHomeRegion());
+        // [night-12bc] R2h: likewise "same world" keeps the run's licence class.
+        if (mode !== 'daily') startEndless(seed, seed === run.seed ? run.homeRegion : preferredHomeRegion(),
+          seed === run.seed ? run.licenceClass : preferredLicence());
         else if (seed === dailySeedForKey(dailyKey())) startDaily();
         else if (seed === failedDailySeed) screens.show('menu');
         else startEndless(seed);
@@ -286,13 +302,18 @@ async function boot(): Promise<void> {
         const reached = mode === 'endless' ? failed.milestones() : []; // [night-12ax] R1n
         firstReached = [];
         try { // [night-10n] one logbook line per finished flight
+          const before = readLogbook(globalThis.localStorage); // [night-12bc] R2h
           const book = recordFlight(globalThis.localStorage, {
             day: localDay(new Date()), mode, passengers: failed.passengers,
             weeks: Math.floor(failed.tick / TICKS_PER_WEEK), hub: runHub(failed.cityList(), failed.routeList()),
             ...(failed.homeRegion ? { region: failed.homeRegion } : {}), // [night-11aj] R2g
+            ...(mode === 'endless' && failed.licenceClass !== 1 ? { licence: failed.licenceClass } : {}), // [night-12bc] R2h
           }, { ...failed.playtestStats(), ...deviceRecord() }, // [night-12am] R1o; [night-12ap] R3j playtest record
           reached); // [night-12ax] R1n: milestones first reached in this flight
           firstReached = firstMilestones(book, reached);
+          // [night-12bc] R2h: a newly opened licence class is announced on the menu's paper notice.
+          const issued = licenceIssued(before, book);
+          if (issued) licenceNotice = t('menu.licenceIssued', { class: t(LICENCE_SHORT_KEY[issued]) });
         } catch { /* Storage blocked: the flight is not logged. */ }
         saved = null;
         void storage.remove('aw-save-v1').catch(() => undefined);
@@ -332,17 +353,18 @@ async function boot(): Promise<void> {
     screenName = 'menu';
   }
 
-  function startEndless(seed: number, homeRegion: RegionId | null = preferredHomeRegion()): void {
+  function startEndless(seed: number, homeRegion: RegionId | null = preferredHomeRegion(),
+      licence: LicenceClass = preferredLicence()): void {
     pendingSeed = null;
     const firstRun = (() => {
       try { return !globalThis.localStorage?.getItem(TUTORIAL_KEY); } catch { return false; }
     })();
     if (skipTutorialOnce || !firstRun) {
       skipTutorialOnce = false;
-      openGame(EndlessRun.create(seed, 'endless', homeRegion), 'endless');
+      openGame(EndlessRun.create(seed, 'endless', homeRegion, licence), 'endless');
       return;
     }
-    openTutorial(() => openGame(EndlessRun.create(seed, 'endless', homeRegion), 'endless'));
+    openTutorial(() => openGame(EndlessRun.create(seed, 'endless', homeRegion, licence), 'endless'));
   }
 
   function startDaily(): void {
@@ -386,6 +408,7 @@ async function boot(): Promise<void> {
         : screens.current() === 'logbook' ? 'logbook' : 'menu'),
       seed: run?.seed ?? pendingSeed ?? 0,
       homeRegion: run?.homeRegion ?? null, // [night-11aj] R2g
+      licenceClass: run?.licenceClass ?? 1, // [night-12bc] R2h
       tick: run?.tick ?? 0,
       nextWeekTick: run?.nextWeekTick ?? 0,
       routeCount: run?.routeList().length ?? 0,

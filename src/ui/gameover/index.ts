@@ -39,6 +39,8 @@ export interface GameOverSnapshot extends WorldIdentity {
   readonly spareAircraft?: number;
   /** [night-11aj] R2g: the Endless home region the run started in (absent: Random or Daily). */
   readonly homeRegion?: RegionCode;
+  /** [night-12bc] R2h, D-251: the Endless run's licence class above I (absent: class I or Daily). */
+  readonly licenceClass?: 2 | 3;
   /** [night-12ax] R1n, D-242: Endless only — milestones reached in this run, and those reached for the first time. */
   readonly milestones?: { readonly reached: readonly MilestoneId[]; readonly first: readonly MilestoneId[] };
 }
@@ -390,6 +392,11 @@ function buildDialog(
     home.dataset.testid = 'gameover-home-region';
     home.dataset.region = snapshot.homeRegion;
     scoreRow.append(home);
+  }
+  if (snapshot.licenceClass) {
+    const licence = element('p', 'airway-go-home', t('gameover.licence', { class: t(snapshot.licenceClass === 2 ? 'licence.short.2' : 'licence.short.3') }));
+    licence.dataset.testid = 'gameover-licence';
+    scoreRow.append(licence);
   }
   strip.append(stripHeader, scoreRow);
   if (snapshot.milestones) strip.append(milestoneRow(snapshot.milestones.reached, snapshot.milestones.first));
