@@ -48,11 +48,24 @@ find stable gesture coordinates, fast-forward through simulated time and force
 a deterministic failure. The smoke checks the seed, route/aircraft counts,
 weekly upgrade, persistence hash and failure/menu transitions.
 
+## Stub world (`?render=stub`, night-12be, D-254)
+
+Since the satellite globe, SwiftShader draws ~10 frames per second (G7) and journeys through the real globe time out.
+In a DEV build, `?render=stub` makes `src/main.ts` load `src/game/dev/stubWorld.ts` instead of `createWorld()`: the
+same `World` interface, the real `GlobeOrbitCamera` and projection maths, a plain 2D canvas, no WebGL. Everything
+else — menu, `startSession`, overlay tags, weekly board, hub board, game over, logbook, `window.aw` — is the shipped
+code. Add `&clock=frozen` to make the session's frame hook see dt = 0: game time then passes only through
+`advanceTicks`, `autoplay` and `botStep`, so a journey replays exactly. `window.__awStub.airportPoint(id)` gives an
+airport's page coordinates for real `page.mouse` taps and presses on the canvas. Release builds drop the module
+(`test:bundle` checks `dist/`). `npm run test:e2e:session-stub` is the reference journey (seed in `e2e/seeds.mjs`
+`SESSION_STUB`, replayed headless by `test:session-stub` in `test:fast`).
+
 ## Commands
 
 ```sh
 npm run test:e2e:smoke
 npm run ui:matrix
+npm run test:e2e:session-stub   # real session on the WebGL-free stub world (~25 s)
 # Harness-only validation; does NOT test the shipped game:
 npm run test:e2e:fixture   # = node e2e/smoke.mjs --fixture && node scripts/ui-matrix.mjs --fixture
 ```
