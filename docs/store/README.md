@@ -76,7 +76,8 @@ as `SCENES` in `scripts/store-shots.mjs`, the contact-sheet columns, the manifes
    (called `game-dusk` before task 40).
 3. **upgrade**: three weekly freight-label upgrades.
 4. **failure**: overloaded hub, cancelled flights and cause report.
-5. **menu**: split-flap departures board and airport sign.
+5. **menu**: the Róża main menu (D-257): "Airway" title on the sky, entries on the western arc of a compass rose
+   over the turning globe.
 
 Each is captured at six viewport sizes ([N12o] D-123 added the last three):
 
@@ -128,12 +129,12 @@ board); nothing writes game state directly:
 - **game** ([task-40], D-63): the same day of autoplay, then the bot plays on until the sun elevation over the network
   centroid (spherical mean of the open airports) is 0.05 (`STORE_GAME_SUN_DOT`, daynight.ts units) in the evening:
   just on the sunny side of the terminator, inside the warm band. On seed 0xA1A1 that is hour angle −70.7° at
-  31.2°E 38.2°N (≈17:05 on the boarding pass). The old fixed −95° from the camera centre left the network past the
+  31.2°E 38.2°N (≈17:05 on the day dial). The old fixed −95° from the camera centre left the network past the
   terminator (the oblique camera centre lies far south of the network). The chosen angle is written to
   `data-store-shot-sun` and recorded in the manifest.
 - **upgrade**: autoplay until the first weekly board.
 - **failure**: one game day of autoplay, then the player stops building and real demand jams a hub.
-- **menu**: the real departures board over the turning globe.
+- **menu**: the real main menu (Róża rose menu since D-257) over the turning globe.
 
 When the scene is reached the root element gets `data-store-shot-ready` and `data-store-shot-seed`; a scene that is
 not reached (e.g. an early jam) never sets them and the capture fails.
@@ -158,4 +159,4 @@ A full fresh run can be checked outside the repo: `node scripts/store-shots.mjs 
 
 ## Publication visual checklist
 
-Review every generated PNG at native size: no flat schematic map, purple-blue glass cards, generic stock art or emoji icons; rich Diorama globe; passenger identity not colour-only; airport-object UI (boarding pass, luggage tags, freight labels, departure board); PL accents and EN translations correct; nonclipped interactive objects and safe areas; visible night-side lights; cause report on failure; no debugging overlay. Only mark images accepted in the PR after they have been genuinely captured and inspected.
+Review every generated PNG at native size: no flat schematic map, purple-blue glass cards, generic stock art or emoji icons; rich Diorama globe; passenger identity not colour-only; the Róża UI (D-257: airport roses with city names along the ring, day dial and dock arc, rose menu; freight-label crates and ink sheets); PL accents and EN translations correct; nonclipped interactive objects and safe areas; visible night-side lights; cause report on failure; no debugging overlay. Only mark images accepted in the PR after they have been genuinely captured and inspected.

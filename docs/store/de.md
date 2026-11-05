@@ -42,8 +42,8 @@ Airway-Schild neben einem 3D-Globus in der Dämmerung, Flugrouten verbinden Flug
 
 ## Play alt text
 Eine Zeile pro Szene für jede Gerätegröße (≤ 140 Zeichen); Bilder aus `shots/en/` (das Spiel ist englischsprachig).
-1. night — Nachtseite eines 3D-Globus: beleuchtete Städte in Europa und Nahost, Flugrouten und Flughafen-Schilder mit wartenden Passagieren.
-2. game — 3D-Globus in tiefer Abendsonne: Routen zwischen Flughäfen in Europa und Nahost, Flugzeuge in der Luft, Flugzeugdock unten.
+1. night — Nachtseite eines 3D-Globus: beleuchtete Städte in Europa und Nahost, Flugrouten und Flughafen-Rosen mit Städtenamen und Passagieren.
+2. game — 3D-Globus in tiefer Abendsonne: Routen zwischen Flughäfen in Europa und Nahost, Flugzeuge in der Luft, 24-Stunden-Zifferblatt.
 3. upgrade — Ende einer Spielwoche: drei Frachtkisten bieten Turboprop, Großraumflugzeug und Hub-Ausbau an; eine wird gewählt.
 4. failure — Bildschirm „Network closed“: Ein verstopfter Hub hat die Runde beendet, der Bericht nennt Ursachen und zeitlichen Verlauf.
-5. menu — Hauptmenü als Abflugtafel unter dem Airway-Schild: Endlosflug, Puzzles, Welt des Tages und Einstellungen neben dem Globus.
+5. menu — Hauptmenü unter dem Titel Airway: Endlosflug, Puzzles, Welt des Tages, Logbuch und Einstellungen am Bogen einer Kompassrose.

@@ -42,8 +42,8 @@ Enseigne Airway à côté d'un globe 3D au crépuscule, des routes aériennes re
 
 ## Play alt text
 Une ligne par scène pour chaque taille d'appareil (≤ 140 caractères) ; images de `shots/en/` (le jeu est en anglais).
-1. night — Face nocturne d'un globe 3D : villes éclairées d'Europe et du Moyen-Orient, routes aériennes et étiquettes d'aéroports avec passagers.
-2. game — Globe 3D sous un soleil couchant : routes entre aéroports d'Europe et du Moyen-Orient, avions en vol, dock des avions en bas.
+1. night — Face nocturne d'un globe 3D : villes éclairées d'Europe et du Moyen-Orient, routes aériennes et roses d'aéroports avec passagers.
+2. game — Globe 3D sous un soleil couchant : routes entre aéroports d'Europe et du Moyen-Orient, avions en vol, cadran des 24 heures.
 3. upgrade — Fin d'une semaine de jeu : trois caisses de fret proposent un turbopropulseur, un gros-porteur ou l'agrandissement d'un hub.
 4. failure — Écran « Network closed » : un hub saturé a mis fin à la partie, le rapport d'incident liste les causes et leur chronologie.
-5. menu — Menu principal en tableau des départs sous l'enseigne Airway : vol sans fin, puzzles, monde du jour et réglages à côté du globe.
+5. menu — Menu principal sous le titre Airway : vol sans fin, puzzles, monde du jour, journal et réglages sur l'arc d'une rose des vents.

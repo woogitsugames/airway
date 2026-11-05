@@ -39,8 +39,8 @@ Airway sign beside a 3D globe at dusk, airline routes linking airports across Eu
 Google Play: one alt text per screenshot (≤ 140 characters, never drawn into the images), the same line for every
 device size of a scene; files in `shots/en/`. App Store Connect has no caption or alt-text field for screenshots.
 Order per D-63 (the night globe is the first frame).
-1. night — Night side of a 3D globe: lit cities across Europe and the Middle East, airline routes and airport tags with waiting passengers.
-2. game — A 3D globe in low evening sun: routes drawn between airports over Europe and the Middle East, planes in flight, aircraft dock below.
+1. night — Night side of a 3D globe: lit cities across Europe and the Middle East, airline routes and airport roses with city names and passengers.
+2. game — A 3D globe in low evening sun: routes between airports over Europe and the Middle East, planes in flight, a 24-hour day dial and actions.
 3. upgrade — End of an in-game week: three freight-label crates offer a turboprop, a widebody and a hub expansion; the player picks one.
 4. failure — "Network closed" screen: a jammed hub ended the run and the incident report lists the causes with a timeline.
-5. menu — Departures-board main menu under the Airway sign: endless flight, puzzles, the daily world and settings beside the globe.
+5. menu — Main menu under the Airway title: endless flight, puzzles, the daily world, logbook and settings on the arc of a compass rose by the globe.
