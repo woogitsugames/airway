@@ -227,6 +227,7 @@ export function rozaNoteChildren(bubble: HTMLElement, want: Node[], plate: Node 
     setText(state.jam, text);
     added.push(state.jam);
     state.jamWidth = Math.ceil(text.length * 7.8 + 10);
+    width -= 53; // the inline timer the old tag reserved is hidden (the sentence says it)
   }
   kept.splice(at, 0, ...added);
   want.length = 0;

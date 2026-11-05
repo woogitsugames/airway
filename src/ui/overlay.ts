@@ -398,7 +398,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
     if (skin.roza) {
       usedKinds.clear();
       rozaNoteChildren(bubble, want, plated ? entry.plate : null, entry.waiting, entry.connecting, entry.capacity,
-        limit * 18 + (entry.waiting.length > MAX_GLYPHS ? 27 : 0), Math.max(60, bounds.width - 210), entry.jamSeconds,
+        limit * 18 + (entry.waiting.length > MAX_GLYPHS ? 27 : 0), Math.max(60, bounds.width - (entry.jamSeconds !== null ? 230 : 210)), entry.jamSeconds,
         (region, hollowGlyph) => pooledGlyph(entry, region, hollowGlyph, usedKinds));
     }
     // [night-10u] Write only where the child list differs from the last rebuild (most changes touch one glyph).
@@ -738,6 +738,9 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       const live = options.reserved?.();
       bounds.top = live ? live.top : options.reservedTop ?? 72;
       bounds.bottom = live ? live.bottom : options.reservedBottom ?? 92;
+      // [night-11az] D-257 Róża: in landscape the dock arc's captions reach about twice the dock band into the screen;
+      // notes stay left of them.
+      if (skin.roza && live && live.right > 0) bounds.width = Math.max(120, width - live.right * 2);
       edgeBounds.width = width;
       edgeBounds.height = height;
       edgeBounds.top = bounds.top;

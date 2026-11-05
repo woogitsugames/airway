@@ -299,8 +299,8 @@ digits per value). [night-11at] D-255: the privacy policy and terms bodies are a
 reference `cities.ts` (≤ ~12 kB, needs per-record overrides, D-255), WOFF2 fonts (`dist/` only).
 Vite's chunk warning limit follows the raw budget (1,180 kB).
 [night-11az] D-258: the Róża skin (D-257) is a structure over the component CSS, scoped to `<html data-skin="roza">`;
-release CSS measured **106.8 kB** after the pruning of `scripts/vite-skin-prune.mjs` (declarations Róża overrides and
-rules of elements it hides), so the CSS budget is 109 kB (the owner's ceiling, +2.1 % headroom). Folding `roza.css`
+release CSS measured **107.2 kB** after the pruning of `scripts/vite-skin-prune.mjs` (declarations Róża overrides and
+rules of elements it hides), so the CSS budget is 109 kB (the owner's ceiling, +1.7 % headroom). Folding `roza.css`
 into the component CSS (and dropping the DEV `?skin=current` comparison) is the lever back towards 90 kB.
 
 The app is one chunk on purpose (three.js is about 494 kB of it; splitting puzzles, logbook, leaderboard and

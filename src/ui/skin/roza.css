@@ -366,3 +366,8 @@
 /* Logbook heads in sentence case without tracking (KARTA v2: no spaced capitals). */
 :root[data-skin="roza"] .airway-logbook__flights th,
 :root[data-skin="roza"] .airway-logbook__totals dt { letter-spacing: 0; text-transform: none; }
+@media (max-width: 369px) {
+  :root[data-skin="roza"] .roza-title { font-size: 18px; }
+  :root[data-skin="roza"] .airway-flight__sub { font-size: 12.5px; }
+  :root[data-skin="roza"] .roza-menu-rose { width: 120px; }
+}

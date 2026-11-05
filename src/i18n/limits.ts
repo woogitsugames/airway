@@ -60,7 +60,7 @@ export const LENGTH_BUDGETS: Partial<Record<TranslationKey, LengthBudget>> = {
   'roza.passengers': { max: 18, where: 'Róża HUD: passenger line under the week', sample: { count: '123 456' } },
   'roza.dayOf': { max: 14, where: 'Róża day dial: line under the time (inside a 112 px dial)', sample: { day: 3, days: 3 } },
   'roza.fill': { max: 10, where: 'airport note: taken of capacity', sample: { taken: 120, capacity: 120 } },
-  'roza.jam': { max: 40, where: 'airport note: jam line under the note', sample: { seconds: 45 } },
+  'roza.jam': { max: 34, where: 'airport note: jam line under the note (fits a 320 px screen)', sample: { seconds: 45 } },
   'roza.dock.undo': { max: 10, where: 'Róża dock arc: caption beside a symbol' },
   'roza.dock.turboprop': { max: 10, where: 'Róża dock arc: caption beside a symbol' },
   'roza.dock.widebody': { max: 10, where: 'Róża dock arc: caption beside a symbol' },

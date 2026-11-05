@@ -21,7 +21,7 @@ export const BUDGET = Object.freeze({
   mainJsRaw: 1180 * KB, // measured 1,033.8 kB on 2026-11-03, 1,150.4 kB on 2026-11-05 (1,181.6 kB before D-252)
   mainJsGzip: 360 * KB, // measured 307.0 kB on 2026-11-03, 347.8 kB on 2026-11-05 (the same gzip/raw ratio, 0.302)
   // [night-11az] D-258: 90 -> 109 kB (owner-approved ceiling) for the Róża structure over the component CSS.
-  css: 109 * KB, // measured 70.2 kB, all CSS files together; 88.8 kB on 2026-11-05 with the skin inlined (D-252); 106.8 kB with Róża
+  css: 109 * KB, // measured 70.2 kB, all CSS files together; 88.8 kB on 2026-11-05 with the skin inlined (D-252); 107.2 kB with Róża
   // [ext-03 G1] D-171: + ~1.8 MB globe textures (public/data/globe/, test:globe-assets) and ~0.55 MB for Mapa (G8).
   total: 4300 * KB, // measured 1,804.8 kB before G1, every file under dist/ (fonts, land mask, licences, globe)
 });

@@ -2528,10 +2528,10 @@ pruning cases incl. hidden elements), `test:glyphs` (Alegreya + fallbacks), `tes
 missing), `test:hud-targets` (arc order), `test:e2e:fill-trend` (chevron after "14 z 24"). **Status: in force.**
 
 ## D-258 — CSS budget 90 → 109 kB for the Róża structure (owner-approved ceiling, 2026-11-05; Claude, night N11az)
-Release CSS with Róża (D-257) measures **106.8 kB** (`npm run test:bundle`; origin/dev 89.5 kB): the rose structure
+Release CSS with Róża (D-257) measures **107.2 kB** (`npm run test:bundle`; origin/dev 89.5 kB): the rose structure
 (`roza.css`) restyles the component CSS instead of replacing it, so the DEV `?skin=current` comparison still works.
 Already applied: tokens inlined (D-252), declarations Róża overrides pruned, and new in N11az the rules of elements it
 hides; the dock's flat-row positions from one `--i` rule. The owner approved a ceiling of 109 kB earlier; it is used
-as the budget (+2.1 % headroom), so the next growth is again a decision. The way back towards 90 kB is to fold
-`roza.css` into the component CSS and delete the Diorama structure (drops `?skin=current`). Main JS 1,146.2 kB raw /
-344.4 kB gzip and `dist/` 3,954.5 kB stay within their budgets. **Status: in force.**
+as the budget (+1.7 % headroom), so the next growth is again a decision. The way back towards 90 kB is to fold
+`roza.css` into the component CSS and delete the Diorama structure (drops `?skin=current`). Main JS 1,146.8 kB raw /
+344.6 kB gzip and `dist/` 3,955.5 kB stay within their budgets. **Status: in force.**
