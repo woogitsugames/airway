@@ -1992,3 +1992,19 @@ Guard: `test:release-checklist` (every reference exists, every line has an owner
 names agree). The owner still files every console answer. **Status: in force (recommendations of RESEARCH R1; the
 owner may override in the consoles).**
 
+
+## D-240 — The seven R8 questions join the closed-test sheet, each with a pre-written threshold on rules v6 (2026-11-04, Claude, night N12aw)
+R8g. `docs/PLAYTEST.md` asks the seven questions of RESEARCH R8 ("Pytania do testu zamkniętego"): survey B gets B9
+(moved an aircraft?), B10 (last card and why; a pointless card?), B11 (SLOT stamp seen; most aircraft at one airport),
+survey C gets C8 (knew what could save the airport; spare aircraft then?), C9 (curfew reached and understood), C10
+(anything to decide in the last minutes?), and the observation sheet gets O9 (aircraft moves counted from the recording)
+and O10 (SLOT stamp noticed). A "Pytania R8" table maps each question to its survey/observation item, CSV column and the
+RESEARCH R8 threshold, and the decision table gains rows R8-1…R8-7 in the D-232 format. Thresholds follow RESEARCH R8
+where it gives one (R8-1 "no" > 30 %, R8-3 ≥ 1/3 of testers, R8-5 < 30 %, R8-6 > 30 min); where R8 gives a direction
+only, the threshold is set here before the test: R8-2 ≥ 6 of 12 never moved a plane (or 0 moves for ≥ 2 observed),
+R8-4 ≥ 4 of 12 saw SLOT or ≥ 3 of 12 had 5+ aircraft at one airport (feeds the Q-80 row, which decides), R8-7 ≥ 4 of
+12 "just watched". The audit ran on rules v5; since rules v6 the curfew starts in week 3 (D-151) and the board shows
+only cards that can act (D-150), so "reached the curfew" is an Endless run with `weeks` ≥ 2 and the bot reference is
+`docs/balance/game-summary.md` (v6); Q-72 B is already in force, so R8-5 below 30 % reopens Q-72 C for the owner. The
+logbook does not gain aircraft-move or spare-aircraft fields (D-16: it keeps only what Q-73/Q-78/Q-80 need); those two
+come from the survey and the recordings. Guard: `test:playtest`. **Status: in force.**
