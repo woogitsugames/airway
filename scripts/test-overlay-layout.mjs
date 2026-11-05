@@ -261,5 +261,16 @@ assert('out-of-range label suppressed', layoutTags([{ ...crowd[0], width: 500 }]
   const overlaps = (a, c) => a.x < c.x + c.width && a.x + a.width > c.x && a.y < c.y + c.height && a.y + a.height > c.y;
   assert('roza: no tag covers the obstacle', !overlaps(blocker, rose) && !overlaps(note, rose));
 }
+// [night-14b] D-259: a passenger note blocked beside its rose on both sides hides instead of drifting next to another
+// rose (store shot night-tablet: "BGW 3 z 24" stood beside Ankara).
+{
+  const b = { width: 600, height: 900, top: 0, bottom: 0, gap: 3 };
+  const mk = (id, x, y, extra = {}) => ({ id, anchorX: x, anchorY: y, width: 90, height: 26, active: true, jammed: false, x: 0, y: 0, placed: false, ...extra });
+  const right = mk('r', 400, 500, { jammed: true });
+  const left = mk('l', 200, 500, { jammed: true });
+  const note = mk('n', 400, 500, { altAnchorX: 200, maxShift: 20 });
+  layoutTags([right, left, note], b);
+  assert('roza: a note with no room on either side near its rose stays unplaced', right.placed && left.placed && !note.placed);
+}
 console.log(`SUMMARY test:overlay-layout seed=0xA1A1 cases=${passed + failed} passed=${passed} failed=${failed}`);
 if (failed) process.exitCode = 1;

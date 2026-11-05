@@ -246,6 +246,12 @@
   :root[data-skin="roza"] .airway-pause__summary { display: none; }
 }
 
+/* [night-14b] D-259: while the weekly crates are on screen (not during the airport pick, which has no crates), the map's
+   roses, notes and edge flags would show through the gaps between the sheets; they step back until the board closes. */
+:root[data-skin="roza"]:has(.airway-upgrade-tag) .airport-overlay { visibility: hidden; }
+/* A dock caption that would lie over an airport rose steps back (rozaCaptionsYield; the button keeps its name). */
+:root[data-skin="roza"] .roza-caption[data-roza-yield] { visibility: hidden; }
+
 /* -- Main menu: "Airway" on the sky, and the entries on the western arc of a big compass rose in the thumb corner
       (rozaMenuArc measures their places; a leader line runs from each entry's dot to the rose). -- */
 :root[data-skin="roza"] .airway-sign {

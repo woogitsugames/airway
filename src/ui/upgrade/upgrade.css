@@ -342,6 +342,11 @@
   .airway-upgrade:has(.airway-upgrade-waybill) .airway-upgrade-tag { padding-bottom: 16px; }
   .airway-upgrade-waybill { padding: 3px 12px 3px; font-size: 12px; line-height: 1.25; }
 }
+/* [night-14b] D-259: a wide screen 521–630 px tall (960×540 landscape store shot) keeps the sign above the board, so with
+   a waybill the window also gives up the sign's row (the third line of stats ran below the screen). */
+@media (min-width: 720px) and (min-height: 521px) {
+  .airway-upgrade:has(.airway-upgrade-waybill) { --upgrade-win: clamp(40px, calc(100vh - 400px - var(--aw-safe-top) - var(--aw-safe-bottom)), 230px); }
+}
 /* Under 400 px tall (812×375 and smaller landscape phones) the waybill leaves no height for the model windows. */
 @media (min-width: 720px) and (max-height: 400px) {
   .airway-upgrade:has(.airway-upgrade-waybill) .airway-upgrade-model { display: none; }

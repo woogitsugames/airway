@@ -2565,4 +2565,16 @@ top position); in a landscape phone it stands left of the arc and its captions (
 screens (portrait < 680 px, landscape < 400 px tall) drop the network summary from the sheet (the HUD and the notes
 still show it) so the actions never cover the arc. Resume now sits at 47–58 % of the height on 800–1088 px tall
 screens (was 26–35 %). Guard: `test:e2e:pause-reach:stub` (11 sizes PL/EN, in `test:ci`; fails 11/11 on the old
-placement). Release CSS 107.2 → 106.0 kB (D-258 budget 109 kB). **Status: in force.**
+placement).
+**Store-shot follow-ups** (the real-renderer store shots of PR #265). *Dock captions* ("Satelita", "Tempo 1×") that
+would lie over a rose's ticks or name step back for that frame (`rozaCaptionsYield`; the caption repeats its button's
+accessible name, the rose carries the game; boxes re-measured every 15th frame, no layout read per frame). *Rose names*
+already tested against every other rose's ring (Amman under Ankara now drops to its code or nothing). *Notes* no
+longer get the third layout try that drifted 3 × their height (`layoutTags`): a note blocked on both sides of its rose
+hides instead of standing beside another rose ("BGW 3 z 24" next to Ankara). *Menu* (`src/game/world.ts`, not the
+renderer): in portrait the view looks 16° further south than `MENU_TARGET`, so the demo network (London–Dakar) rides
+above the entries on the rose; in landscape the globe is a big horizon left of the entries under the title instead of
+a small disc between them. *Crates*: while the weekly crates are on screen the overlay (roses, notes, edge flags)
+steps back, and a 521–630 px tall wide screen with a waybill gives the model windows up 28 px more so the stats end on
+screen (960 × 540). Not ours: the rose ring offset against the medallion on tablet/iPad (render session).
+Release CSS 107.2 → 106.3 kB (D-258 budget 109 kB). **Status: in force.**

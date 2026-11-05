@@ -74,6 +74,10 @@ export interface World {
 
 /** [task-34] Menu camera target: North Atlantic between New York and Europe (mockup menu-p). */
 const MENU_TARGET = { lon: -16, lat: 40 };
+/** [night-14b] D-259: degrees the Róża menu looks south of MENU_TARGET in portrait, and the Róża menu entries. */
+const MENU_ROZA_TILT = 16;
+const MENU_ROZA_ENTRIES = '.airway-board .airway-flight, .airway-board .airway-flight__region, .roza-menu-rose';
+const rozaMenu = (): boolean => typeof document !== 'undefined' && document.documentElement.dataset.skin === 'roza';
 
 /** [task-39] First menu show only: longest wait for the sign/board before the globe renders anyway. */
 const MENU_HOLD_MS = 1500;
@@ -120,6 +124,18 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
     if (!observed.has(element)) { observed.add(element); panelObserver?.observe(element); }
     return { left: r.left - origin.left, top: r.top - origin.top, right: r.right - origin.left, bottom: r.bottom - origin.top };
   };
+  /** Union of the visible boxes of `elements` (layer coordinates). */
+  const unionBox = (elements: NodeListOf<Element>, origin: DOMRect): LayoutRect | null => {
+    let box: LayoutRect | null = null;
+    for (const element of elements) {
+      const r = element.getBoundingClientRect();
+      if (r.width < 1 || r.height < 1) continue;
+      const next = { left: r.left - origin.left, top: r.top - origin.top, right: r.right - origin.left, bottom: r.bottom - origin.top };
+      box = box ? { left: Math.min(box.left, next.left), top: Math.min(box.top, next.top),
+        right: Math.max(box.right, next.right), bottom: Math.max(box.bottom, next.bottom) } : next;
+    }
+    return box;
+  };
   const measure = (): void => {
     measureRaf = 0;
     if (disposed) return;
@@ -131,8 +147,22 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
       const board = boxOf(host.querySelector(MENU_BOARD), origin);
       menuShown = sign !== null; // [task-39]
       if (sign && board) menuFramed = true;
-      const framing = menuFraming(w, h, sign, board, insets);
-      const key = `menu ${w} ${h} ${JSON.stringify(framing)}`;
+      let framing = menuFraming(w, h, sign, board, insets);
+      // [night-14b] D-259 Róża: the entries stand on a rose in the thumb corner, not on a board across the screen.
+      const entries = rozaMenu() ? unionBox(host.querySelectorAll(MENU_ROZA_ENTRIES), origin) : null;
+      if (entries && w > h) {
+        // Landscape: a big globe left of the entries, its horizon under the title like the portrait menu (the board
+        // column used to be the left inset, which left a small disc between the title and the entries).
+        const left = insets.left ?? 0;
+        const right = Math.max(insets.right ?? 0, Math.round(w - entries.left + 16));
+        const top = Math.round(sign?.bottom ?? h * 0.12);
+        framing = {
+          mode: 'horizon', horizonY: top + 20, radius: Math.max(1, (w - left - right) / 2),
+          insets: { left, right, top, bottom: insets.bottom ?? 0 },
+        };
+      }
+      // The entries' box is part of the key: the tilt below needs them laid out (a first measure may come before).
+      const key = `menu ${w} ${h} ${entries ? `${Math.round(entries.left)},${Math.round(entries.top)}` : '-'} ${JSON.stringify(framing)}`;
       if (key === lastFrame) return;
       lastFrame = key;
       appliedInsets = framing.insets; // [task-39]
@@ -145,6 +175,10 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
       // Slide the view so the limb top lands on the wanted horizon line under the sign.
       const disc = orbit.getScreenDisc();
       if (disc) orbit.setViewShift(0, framing.horizonY - (disc.y - disc.radius));
+      // [night-14b] D-259 Róża: the entries stand in the lower half, so the view looks further south and the demo network
+      // (London–Dakar) rides above them (it ran under "Lot bez końca" / "Ustawienia" on tall phones and foldables). The
+      // globe's outline does not move; the slow menu spin keeps this latitude.
+      if (entries) orbit.setTarget(orbit.getState().longitude, MENU_TARGET.lat - MENU_ROZA_TILT);
       return;
     }
     const boxes: LayoutRect[] = [];

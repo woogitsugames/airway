@@ -12,7 +12,7 @@ import type { SurgeMark } from '../game/surge'; // [night-12bb] R2i (type only)
 import type { FrontMark } from '../game/weather'; // [night-12bd] R2j (type only)
 import './skin/current.css'; // [night-11aq] skin tokens read by overlay.css
 import {
-  skin, rozaEdgeClash, rozaEdgeNote, rozaExtraWidth, rozaJamShare, rozaJamWidth, rozaNameLayout, rozaNoteChildren, rozaRose, MEDAL_RADIUS,
+  skin, rozaEdgeClash, rozaEdgeNote, rozaExtraWidth, rozaJamShare, rozaJamWidth, rozaCaptionsYield, rozaNameLayout, rozaNoteChildren, rozaRose, MEDAL_RADIUS,
   ROZA_JAM_LINE, type Rose, type RoseLabel, type RoseLabelMode,
 } from './skin/roza'; // [night-11az] D-257: Róża skin helpers
 import './overlay.css';
@@ -830,15 +830,17 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
           if (skin.roza) rozaEdgeNote(entry.edge, transformedNormal, cameraPosition, chip.side);
         }
       }
-      if (roseEntries.length) {
-        // [night-14b] D-259: in a dense cluster at close zoom a lower-priority rose shortens its name to the code or drops it.
-        const modes = rozaNameLayout(roseLabels);
+      if (skin.roza) {
+        // [night-14b] D-259: in a dense cluster at close zoom a lower-priority rose shortens its name to the code or drops it,
+        // and a dock caption that would lie over a rose steps back.
+        const modes = roseEntries.length ? rozaNameLayout(roseLabels) : [];
         roseEntries.forEach((entry, i) => {
           const label = roseLabels[i];
           entry.roseLabel = modes[i];
           entry.rose?.draw({ cap: entry.capacity, taken: Math.min(entry.waiting.length, entry.capacity), hub: entry.hub,
             jam: rozaJamShare(entry.jamSeconds), name: modes[i] === 'name' ? label.name : modes[i] === 'code' ? label.code : '' }, label.r);
         });
+        rozaCaptionsYield(host, roseLabels, modes);
         roseEntries.length = 0;
         roseLabels.length = 0;
       }

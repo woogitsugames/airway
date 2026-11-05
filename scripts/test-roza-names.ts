@@ -2,7 +2,7 @@
 // cluster at close zoom a lower-priority rose shortens its name to the IATA code or drops it; a jam, a hub and the
 // fuller airport keep theirs first; a lone rose always keeps its name; a label it already shows needs less clearance.
 import assert from 'node:assert/strict';
-import { roseNameBox, rozaNameLayout, type RoseLabel } from '../src/ui/skin/roza.ts';
+import { roseNameBox, rozaCaptionClashes, rozaNameLayout, type RoseLabel } from '../src/ui/skin/roza.ts';
 
 let passed = 0;
 let failed = 0;
@@ -86,5 +86,17 @@ test('the layout is deterministic and keeps the input order', () => {
   assert.equal(rozaNameLayout(labels)[2], 'name');
 });
 
+test('a dock caption over a rose or its name steps back; one beside it stays (store shot game-phone: "Satelita" on Amman)', () => {
+  const labels = [rose(290, 500, 'Amman', 'AMM', { r: 52, hub: true }), rose(390, 480, 'Bagdad', 'BGW', { r: 36 })];
+  const modes = rozaNameLayout(labels);
+  const captions = [
+    { l: 320, t: 530, r: 385, b: 548 }, // "Satelita" on Amman's ring
+    { l: 400, t: 520, r: 470, b: 538 }, // "Tempo 1×" on Bagdad's ticks
+    { l: 60, t: 700, r: 140, b: 718 }, // "Cofnij" far away
+    { l: 270, t: 426, r: 310, b: 436 }, // on Amman's name, clear of its ticks
+  ];
+  assert.deepEqual(rozaCaptionClashes(captions, labels, modes), [true, true, false, modes[0] !== 'none']);
+  assert.deepEqual(rozaCaptionClashes(captions, [], []), [false, false, false, false]);
+});
 console.log(`SUMMARY test:roza-names passed=${passed} failed=${failed}`);
 if (failed) process.exitCode = 1;

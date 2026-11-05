@@ -431,6 +431,41 @@ export function rozaRose(layer: HTMLElement): Rose {
   };
 }
 
+/** A screen rectangle (layer coordinates). */
+export interface CaptionRect { l: number; t: number; r: number; b: number }
+/**
+ * Which dock captions clash with a rose in view (D-259): a caption that would overlap a rose's ring of ticks or its
+ * name steps back (hidden) — the caption repeats its button's accessible name, the rose carries the game. Pure.
+ */
+export function rozaCaptionClashes(captions: readonly CaptionRect[], labels: readonly RoseLabel[], modes: readonly RoseLabelMode[]): boolean[] {
+  return captions.map((c) => labels.some((label, i) => {
+    if (hitsDisc(c, label.x, label.y, Math.max(8, label.r) + (label.jam ? 20 : 9), 2)) return true;
+    const mode = modes[i];
+    return mode !== undefined && mode !== 'none' && hits(c, roseNameBox(label, mode === 'name' ? label.name : label.code), 2);
+  }));
+}
+const captionCache = { els: [] as HTMLElement[], rects: [] as CaptionRect[], frame: 0 };
+/**
+ * Hides the dock captions that clash with a rose this frame. The caption boxes are re-measured every 15th frame (they
+ * move only with a layout change or a new text), so a frame reads no layout.
+ */
+export function rozaCaptionsYield(host: HTMLElement, labels: readonly RoseLabel[], modes: readonly RoseLabelMode[]): void {
+  if (captionCache.frame++ % 15 === 0) {
+    const root = host.getRootNode() as Document | ShadowRoot;
+    const origin = host.getBoundingClientRect();
+    captionCache.els = [...(root.querySelectorAll?.('.airway-hud .roza-caption') ?? [])] as HTMLElement[];
+    captionCache.rects = captionCache.els.map((el) => {
+      const r = el.getBoundingClientRect();
+      return { l: r.left - origin.left, t: r.top - origin.top, r: r.right - origin.left, b: r.bottom - origin.top };
+    });
+  }
+  const clash = rozaCaptionClashes(captionCache.rects, labels, modes);
+  captionCache.els.forEach((el, i) => {
+    const want = clash[i] ? '1' : undefined;
+    if (el.dataset.rozaYield !== want) { if (want) el.dataset.rozaYield = want; else delete el.dataset.rozaYield; }
+  });
+}
+
 // ---- Main menu: the big compass rose ---------------------------------------------------------------------------------
 
 /** The menu's compass rose (decorative; the entries are the board's own buttons, laid out on its western arc by roza.css). */
