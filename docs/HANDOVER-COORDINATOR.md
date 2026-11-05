@@ -37,16 +37,13 @@ commitach.
 ## Decyzje do właściciela rano
 1. **Kierunek nowego UI** (KARTA / KOKPIT / ZNAKI). KARTA da się obejrzeć w grze: build DEV + `?skin=karta`
    (zrzuty `docs/shots/ui-karta/`). Po wyborze: wdrożenie jako domyślnej skórki na tokenach D-250.
-2. Etapy biegu: zamienić „tydzień 5” i „1000 pasażerów” na „tydzień 4” i „750” (bot prawie ich nie osiąga).
-3. Kontrakt tygodnia: trudność (100 % popytu, limit 60), obie strony czy A→B, kara/„przyjmij”, nagroda, raport.
-4. Szczyt popytu: +12 przez 6 h, zapowiedź o dobę, karta „pierwszy raz”/dźwięk, kiedyś w Daily?
-4b. Front pogodowy (D-253): „−1 slot” nic nie zmienia dla bota — mocniej? rozmiar/częstość?
-5. Klasy licencji: próg 5. tygodnia (bot 0,5 %), Daily liczy się do odblokowania?, klasa II zbyt łagodna?
-6. Region startowy: mediana EUS 18,49 min (poza 10–18).
-7. Zlokalizowane tytuły sklepu („Airway: Flugrouten am Globus”), PEGI 3 / Apple 4+, grupa 13+ (D-235).
-8. Q-52 rekrutacja testerów, Q-01 dane wydawcy/administratora, Q-07 Firebase, Q-49, Q-50, Q-56, Q-67,
-   „bezpłatne” w regulaminie, data premiery; jedna konsultacja z prawnikiem (polityka, regulamin, rejestr).
-9. Właściciel: rejestracja aplikacji w App Check, przebieg Test Lab, akceptacja warunków przetwarzania Firebase.
+2. Rozgrywka (arkusz `docs/OWNER-QUESTIONS.md`, sekcja B): Q-81 progi etapów, Q-82 kontrakt tygodnia, Q-83 szczyt
+   popytu, Q-84 klasy licencji, Q-85 siła frontu pogodowego, Q-86 mediana regionu EUS.
+3. Wydanie (sekcja F): Q-87 zlokalizowane tytuły sklepu, Q-88 PEGI 3 / Apple 4+ / grupa 13+, Q-89 „bezpłatne”
+   w regulaminie.
+4. Starsze otwarte: Q-52 rekrutacja testerów, Q-01 dane wydawcy/administratora, Q-07 Firebase, Q-49, Q-50, Q-56,
+   Q-67, data premiery; jedna konsultacja z prawnikiem (polityka, regulamin, rejestr).
+5. Właściciel: rejestracja aplikacji w App Check, przebieg Test Lab, akceptacja warunków przetwarzania Firebase.
 
 ## Znane problemy
 - **G7** (sesja ext): SwiftShader ~10 fps. Obejście: `?render=stub` (D-254) — `test:e2e:session-stub` sprawdza
