@@ -2496,6 +2496,9 @@ full-width chart margin ran under the board's sign, so there it stops at 436 px 
 Evidence: `skin:pixels` default capture of this branch against `AW_SKIN=karta` on origin/dev 983b152: 95/120 shots
 pixel-identical; the 25 others are exactly the screens with the boarding pass (hud, pause, upgrade, tutorial: the time
 field); computed styles differ only in the mono family name (Airway Chart Mono).
+Open: `ui:matrix:stub` 915×412 game over (PL/EN) — the report's sign still touches the chart margin (sign top 83 px,
+margin bottom 88 px) despite the landscape padding; and the 904×1088@2 / 1088×904@2 game-over screenshots time out in
+some runs (flaky under load; one clean run had none).
 **Bundle (needs the owner's OK, budgets NOT changed here):** `npm run test:bundle` on this tree: main JS 1,138.2 kB raw /
 341.3 kB gzip (budgets 1,180 / 360 — green), CSS **112.9 kB > 90 kB (+22.9 kB)**, `dist/` **4,388.3 kB > 4,300 kB
 (+88.3 kB)**: +78.3 kB fonts, +8.8 kB licences, the rest the KARTA structure CSS (it overrides Diorama component rules

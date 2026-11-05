@@ -352,4 +352,6 @@
    88 px at 915×412), not under the 70 px Diorama pass, so the final figures stay readable above the sign. */
 @media (max-height: 550px) and (min-width: 620px) {
   :root[data-skin="karta"] .airway-go-overlay { padding-top: calc(var(--aw-safe-top) + 92px); }
+  /* a report taller than the space was centred and overflowed upwards under the margin: start it at the top */
+  :root[data-skin="karta"] .airway-go-overlay { place-items: start center; }
 }
