@@ -22,6 +22,8 @@ export function mountGameOverPreview(host: HTMLElement): void {
   void controller.show({
     seed, initialHash: 'preview-seed-' + seed, hubId: 'LIS', hubCode: 'LIS',
     delivered: 1184, completedWeeks: 6, tip: true, // [night-11f] worst case: three causes and a tip
+    // [night-12ax] R1n: Endless milestones, two of them reached for the first time (stamps shown).
+    milestones: { reached: ['first-hub', 'all-regions', 'week-2', 'week-3', 'week-5', 'passengers-500', 'passengers-1000'], first: ['week-5', 'passengers-1000'] },
     ledger: {
       waiting: 100, capacity: 100, waitingByRegion: { NAM: 62, EUN: 18, AFR: 20 },
       seatsUnavailable: 28, congestedSeconds: 45,

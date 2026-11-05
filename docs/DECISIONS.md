@@ -2066,3 +2066,24 @@ e-mails 12 months (left to the lawyer). `docs/RELEASE.md` links the register (RL
 `test:privacy-declarations` keeps equal to the code), so a new data flow fails until the art. 30 record names it;
 the leaderboard retention must equal `RETENTION_DAYS`. Rejected: an English-only register (the owner and a Polish
 lawyer read it), filling the controller with guessed details. **Status: in force (Q-01, Q-67 and the lawyer open).**
+
+## D-242 — Endless run milestones: seven goals read from the run, shown on the game-over report and in the logbook (2026-11-05, Claude, night N12ax)
+R1n. A first Endless run gets intermediate goals without a rule change: **first hub**, **every region served**,
+**week 2 / 3 / 5 reached**, **500 / 1 000 passengers**. The check is pure (`src/game/milestones.ts`) and reads the run's
+read model (`EndlessRun.cityList()`/`routeList()`, tick, score); `EndlessRun` keeps what was reached (a hub that later
+closes still counts), so nothing is written into the Sim, its state or its hash (D-13; `test:milestones` compares
+the hash with a raw Sim driven by the same bot). "Every region served" means: when a weekly board opens, every region
+that has an open airport has an airport on a route, with at least two regions open (all eight regions is never
+reached by the bot, and "served at any moment" is true at the first route). A resumed run counts what it reaches
+after resuming and at its end (like the R1o board counts). The game-over report shows one ruled row "Etapy n/7"
+under the score — reached milestones with a filled square, open ones hollow (shape, not only colour), a small
+"pierwszy raz" stamp on one reached for the first time, which fades in over 160 ms and not at all under "Reduce
+motion" (D-88); short screens keep the title and marks only, so the report does not scroll. The logbook stores, per
+milestone, the flight number (Endless + daily, as the logbook counts flights) of its first reach, Endless only, and
+lists them as "pierwszy raz w locie N" / "jeszcze nie". No reward, no unlock, no new rule, nothing in "Copy summary".
+Inks are local custom properties (`--aw-ms-*`) so the pending UI redesign can swap them in one place.
+Bot check (test:balance policy, 0xA1A1…, 60 min cap): 50 runs, median 17.51 min — first hub 50, every region 35,
+week 2 50, week 3 33, week 5 1, 500 passengers 10, 1 000 passengers 0; 200 runs, median 16.80 min — 200 / 146 /
+194 / 135 / 1 / 24 / 0. The median run reaches the first four; week 5 and 1 000 passengers are stretch goals no bot
+run reaches (owner may prefer week 4 / 750 passengers). Guard: `test:milestones`, `test:e2e:gameover-milestones`.
+**Status: in force (thresholds to confirm by the owner).**

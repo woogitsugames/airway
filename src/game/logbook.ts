@@ -12,6 +12,7 @@ const MAX_COUNT = 1_000_000_000;
 export const RUN_NOTES = 30;
 
 import { REGION_IDS, type RegionId } from '../data/regions';
+import { MILESTONES, isMilestone, type MilestoneId } from './milestones'; // [night-12ax] R1n
 
 type StorageLike = Pick<Storage, 'getItem' | 'setItem'>;
 export type LogMode = 'endless' | 'daily';
@@ -99,11 +100,27 @@ export interface Logbook {
   readonly recent: readonly LogEntry[];
   /** [night-12am] The last RUN_NOTES runs with closed-test stats, newest first. */
   readonly runs: readonly RunNote[];
+  /**
+   * [night-12ax] R1n, D-242: the flight (1 = the first one logged) in which each Endless milestone was first
+   * reached; a milestone never reached has no entry. Older records load with none.
+   */
+  readonly milestones: Readonly<Partial<Record<MilestoneId, number>>>;
 }
 
 export const EMPTY_LOGBOOK: Logbook = {
-  flights: 0, dailies: 0, passengers: 0, weeks: 0, longestWeeks: 0, hubs: {}, recent: [], runs: [],
+  flights: 0, dailies: 0, passengers: 0, weeks: 0, longestWeeks: 0, hubs: {}, recent: [], runs: [], milestones: {},
 };
+
+/** [night-12ax] Valid milestone entries only: a known id and a flight number within the flights logged. */
+function milestoneRecord(value: unknown, flights: number): Partial<Record<MilestoneId, number>> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+  const out: Partial<Record<MilestoneId, number>> = {};
+  for (const id of MILESTONES) {
+    const n = count((value as Record<string, unknown>)[id]);
+    if (n !== null && n >= 1 && n <= flights) out[id] = n;
+  }
+  return out;
+}
 
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
 const CODE = /^[A-Z]{3}$/;
@@ -191,7 +208,8 @@ export function readLogbook(storage: StorageLike | undefined): Logbook {
       ? record.recent.map(entry).filter((item): item is LogEntry => item !== null).slice(0, RECENT_FLIGHTS) : [];
     const runs = Array.isArray(record.runs)
       ? record.runs.map(note).filter((item): item is RunNote => item !== null).slice(0, RUN_NOTES) : [];
-    return { flights, dailies: Math.min(dailies, flights), passengers, weeks, longestWeeks, hubs, recent, runs };
+    return { flights, dailies: Math.min(dailies, flights), passengers, weeks, longestWeeks, hubs, recent, runs,
+      milestones: milestoneRecord(record.milestones, flights) };
   } catch {
     return EMPTY_LOGBOOK;
   }
@@ -201,8 +219,10 @@ export function readLogbook(storage: StorageLike | undefined): Logbook {
  * Add one finished flight and write it back. A failed write still returns the updated book for this session.
  * [night-12am] `run` (closed-test stats) adds a line to `runs`; without it the flight counts but leaves no note.
  * [night-12ap] R3j: `run` may also carry the playtest record (RunRecord); invalid fields are dropped.
+ * [night-12ax] R1n: `milestones` reached by an Endless run; each one not logged before gets this flight's number.
  */
-export function recordFlight(storage: StorageLike | undefined, flight: LogEntry, run?: RunStats & RunRecord): Logbook {
+export function recordFlight(storage: StorageLike | undefined, flight: LogEntry, run?: RunStats & RunRecord,
+  milestones: readonly MilestoneId[] = []): Logbook {
   const prior = readLogbook(storage);
   const clean = entry(flight);
   if (!clean) return prior;
@@ -216,8 +236,11 @@ export function recordFlight(storage: StorageLike | undefined, flight: LogEntry,
     if (drop) delete hubs[drop];
   }
   const runNote = run ? note({ ...clean, ...run }) : null;
+  const flights = Math.min(MAX_COUNT, prior.flights + 1);
+  const firsts: Partial<Record<MilestoneId, number>> = { ...prior.milestones };
+  if (clean.mode === 'endless') for (const id of milestones) if (isMilestone(id) && firsts[id] === undefined) firsts[id] = flights;
   const next: Logbook = {
-    flights: Math.min(MAX_COUNT, prior.flights + 1),
+    flights,
     dailies: Math.min(MAX_COUNT, prior.dailies + (clean.mode === 'daily' ? 1 : 0)),
     passengers: Math.min(MAX_COUNT, prior.passengers + clean.passengers),
     weeks: Math.min(MAX_COUNT, prior.weeks + clean.weeks),
@@ -225,9 +248,15 @@ export function recordFlight(storage: StorageLike | undefined, flight: LogEntry,
     hubs,
     recent: [clean, ...prior.recent].slice(0, RECENT_FLIGHTS),
     runs: runNote ? [runNote, ...prior.runs].slice(0, RUN_NOTES) : prior.runs,
+    milestones: milestoneRecord(firsts, flights),
   };
   try { storage?.setItem(LOGBOOK_KEY, JSON.stringify(next)); } catch { /* Storage denied: session value only. */ }
   return next;
+}
+
+/** [night-12ax] R1n: milestones this flight reached for the first time (its number is the book's last flight). */
+export function firstMilestones(book: Logbook, reached: readonly MilestoneId[]): MilestoneId[] {
+  return reached.filter((id) => book.milestones[id] === book.flights);
 }
 
 /** The most-flown hub; a tie goes to the one flown most recently, then alphabetical. */

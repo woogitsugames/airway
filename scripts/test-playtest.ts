@@ -87,11 +87,12 @@ test('R3j record fields are kept per run; a bad field is dropped alone; R1o note
   assert.equal(book.runs.length, 2);
 });
 
-/** The slice of Sim that EndlessRun.playtestStats and drainEvents read. */
+/** The slice of Sim that EndlessRun.playtestStats and drainEvents read (and the R1n milestone view). */
 function fakeSim(over: { events: unknown[]; upgrades: { week: number; upgrade: UpgradeKind }[]; wait: Record<string, number>; tick: number }): Sim {
   const world = {
     activeCityIds: () => ['LON'],
     cities: () => Object.keys(over.wait).map((id) => ({ id })),
+    routes: () => [], // [night-12ax] R1n: a weekly board also reads the milestone view
     hubCauseLedger: (id: string) => ({ slotWaitMinutes: over.wait[id] ?? 0 }),
     cityView: () => ({ departureSlots: 2, nextSlotMinutes: 10 }),
     upgrades: over.upgrades,
