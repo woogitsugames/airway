@@ -1,6 +1,7 @@
 // [night-06] Dependency-free Firebase client over REST: anonymous Auth (Identity Toolkit) and callable
 // Cloud Functions ({data} → {result}). No Firebase SDK in the bundle; works against the local emulators.
 import { authUrl, functionUrl, type NetConfig } from './config.ts';
+import { APP_CHECK_HEADER, type AppCheckTokenSource } from './appCheck.ts';
 
 export type Fetch = (url: string, init: { method: string; headers: Record<string, string>; body: string }) =>
   Promise<{ ok: boolean; status: number; json(): Promise<unknown> }>;
@@ -24,7 +25,9 @@ export class FirebaseRestClient {
   private session: Session | null;
 
   constructor(private readonly config: NetConfig, private readonly fetcher: Fetch, private readonly tokens: TokenStore,
-    private readonly now: () => number = () => Date.now()) {
+    private readonly now: () => number = () => Date.now(),
+    /** [night-12az] D-246: App Check token for callables (null: no provider, no header). */
+    private readonly appCheck: AppCheckTokenSource | null = null) {
     this.session = tokens.load();
   }
 
@@ -80,7 +83,11 @@ export class FirebaseRestClient {
   /** Callable function: request {data}, response {result}; errors carry the HttpsError status. */
   async call<T>(name: string, data: unknown): Promise<T> {
     const session = await this.signIn();
-    const json = await this.post(functionUrl(this.config, name), { data }, { Authorization: `Bearer ${session.idToken}` });
+    const headers: Record<string, string> = { Authorization: `Bearer ${session.idToken}` };
+    // [night-12az] D-246 (R3e): callables only; Auth endpoints never get the App Check header.
+    const appCheckToken = this.appCheck ? await this.appCheck().catch(() => null) : null;
+    if (appCheckToken) headers[APP_CHECK_HEADER] = appCheckToken;
+    const json = await this.post(functionUrl(this.config, name), { data }, headers);
     if (!json || typeof json !== 'object' || !('result' in json)) throw new NetError('server', 'unexpected callable response');
     return (json as { result: T }).result;
   }

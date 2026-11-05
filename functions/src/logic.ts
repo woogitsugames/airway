@@ -188,3 +188,17 @@ export const PAUSED_SUBMIT = { accepted: false, reason: 'paused' } as const;
 export function pausedBoards(daily: string, weekly: string) {
   return { daily: { id: daily, entries: [], me: null }, weekly: { id: weekly, entries: [], me: null } };
 }
+
+// [night-12az] R3e (D-246): App Check for the two leaderboard callables. The SDK's `enforceAppCheck` is a fixed
+// boolean in the function options, so it stays off and the SDK only verifies a token when one is sent
+// (`request.app` is set for a valid token, absent for a missing or invalid one). The deploy-time param below turns
+// enforcement on once the owner has registered the Android and iOS apps with Play Integrity / App Attest.
+export const APP_CHECK_PARAM = 'APP_CHECK_ENFORCED';
+/** The callables App Check guards; `deleteMyData` stays open (a GDPR erasure must not depend on attestation). */
+export const APP_CHECK_GUARDED = ['submitDaily', 'getBoards'] as const;
+/** null = let the call through; otherwise the HttpsError to throw (a 401: the client keeps the run queued). */
+export function appCheckRefusal(enforced: boolean, app: unknown): { code: 'unauthenticated'; message: string } | null {
+  if (!enforced) return null;
+  const appId = (app as { appId?: unknown } | null | undefined)?.appId;
+  return typeof appId === 'string' && appId ? null : { code: 'unauthenticated', message: 'App Check token missing or invalid' };
+}

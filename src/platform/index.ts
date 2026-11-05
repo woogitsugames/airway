@@ -11,6 +11,7 @@ export {
 export type { KeyValueStorage } from './storage';
 export { INSTALL_MARKER_PATH, createNativeInstallMarker, forgetIdentityOnNewInstall } from './install';
 export type { InstallCheck, InstallMarker } from './install';
+export { APP_CHECK_PLUGIN, nativeAppCheckPort } from './appCheck'; // [night-12az] D-246
 export { formatDailyShare, shareDailyResult } from './share';
 export type { ShareOutcome } from './share';
 export { freeEntitlements } from './store';
