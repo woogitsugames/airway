@@ -9,6 +9,7 @@ import {
 import { REGIONS } from '../data/regions';
 import type { FillTrend } from '../game/fillTrend'; // [night-11af] R4c (type only)
 import type { SurgeMark } from '../game/surge'; // [night-12bb] R2i (type only)
+import './skin/current.css'; // [night-11aq] skin tokens read by overlay.css
 import './overlay.css';
 
 const DEG = Math.PI / 180;
@@ -223,11 +224,12 @@ const SLOT_DIGIT = 7.4;
 const NEW_CHAR = 7.6;
 /** [night-10h] Barrier stub: 26 px mark + 2 px margin + 4 px gap, as laid out by .airport-bubble__curfew. */
 const BARRIER_WIDTH = 32;
-/** The boom barrier the globe draws on a closed airport, same drawing as the puzzle strips (N7d). */
+/** The boom barrier the globe draws on a closed airport, same drawing as the puzzle strips (N7d). [night-11aq] Inks are
+ * skin tokens (src/ui/skin/current.css); the SVG is inline in the tag, so the custom properties resolve. */
 const BARRIER_SVG = '<svg viewBox="0 0 22 12" width="26" height="14" aria-hidden="true" focusable="false">' +
-  '<rect x="1" y="2" width="3" height="9" fill="#13302e"/>' +
-  '<rect x="4" y="3" width="17" height="4" fill="#fbf8f1" stroke="#13302e" stroke-width="1"/>' +
-  '<path d="M7 3h3l-2 4H5zM13 3h3l-2 4h-3zM19 3h2v1.6L20 7h-3z" fill="#b8322a"/></svg>';
+  '<rect x="1" y="2" width="3" height="9" style="fill:var(--skin-tag-barrier-post)"/>' +
+  '<rect x="4" y="3" width="17" height="4" style="fill:var(--skin-tag-barrier-boom);stroke:var(--skin-tag-barrier-post)" stroke-width="1"/>' +
+  '<path d="M7 3h3l-2 4H5zM13 3h3l-2 4h-3zM19 3h2v1.6L20 7h-3z" style="fill:var(--skin-tag-barrier-stripe)"/></svg>';
 const NEW_PAD = 10;
 /**
  * [night-12bb] R2i: surge stub: 12 px pennant + 3 px gap + mono 12 px text (fixed advance) + padding + 2 px margin,
@@ -254,7 +256,7 @@ function connectingGlyph(region: DestinationRegion): SVGSVGElement {
   svg.classList.add('airport-region-glyph--connecting');
   const path = svg.firstElementChild;
   if (path) {
-    path.setAttribute('fill', '#FBF8F1');
+    (path as SVGElement).style.fill = 'var(--skin-tag-glyph-hollow)'; // [night-11aq] skin token (src/ui/skin/current.css)
     path.setAttribute('stroke', REGIONS[region].color);
     path.setAttribute('stroke-width', '2');
     path.setAttribute('stroke-linejoin', 'round');

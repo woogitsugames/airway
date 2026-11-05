@@ -8,7 +8,7 @@
   justify-content: center;
   align-items: safe center;
   overflow: auto;
-  background: rgba(28, 30, 32, .62);
+  background: var(--skin-crate-scrim);
   /* [night-07n] Top padding clears the boarding pass (top 10 px + 60 px tall) so the board never covers the
      HUD numbers (week, day, time, passengers) on any size. */
   padding: calc(80px + var(--aw-safe-top)) calc(12px + var(--aw-safe-right))
@@ -21,9 +21,9 @@
   display: grid;
   gap: clamp(12px, 3vh, 28px);
   align-content: start;
-  font-family: 'Atkinson Hyperlegible Next', sans-serif;
-  color: #2a2420;
-  animation: airway-slip .18s ease-out both;
+  font-family: var(--skin-face-text);
+  color: var(--skin-crate-ink);
+  animation: airway-slip var(--skin-motion-sheet-in) ease-out both;
 }
 
 /* Yellow wayfinding sign: week + one line on what this screen is. */
@@ -31,20 +31,20 @@
   display: flex;
   align-items: center;
   gap: 8px 20px;
-  background: #ffc72c;
-  color: #1c1e20;
+  background: var(--skin-crate-sign-bg);
+  color: var(--skin-crate-sign-ink);
   padding: 12px 20px 12px 18px;
 }
 .airway-upgrade-week {
   margin: 0;
   flex: none;
-  font: 800 clamp(26px, 7.4vw, 34px)/1 Overpass, sans-serif;
+  font: var(--skin-weight-heavy) clamp(26px, 7.4vw, 34px)/1 var(--skin-face-display);
   white-space: nowrap;
 }
 .airway-upgrade-sub {
   margin: 0;
   min-width: 0;
-  font: 700 calc(15px * var(--airway-text-scale))/1.3 'Atkinson Hyperlegible Next', sans-serif;
+  font: var(--skin-weight-bold) calc(15px * var(--airway-text-scale))/1.3 var(--skin-face-text);
   text-wrap: balance; /* [night-11z] no lone last word ("jedną.") on its own line */
 }
 
@@ -65,8 +65,8 @@
   align-items: flex-start;
   gap: 12px;
   padding: 10px 14px 20px 10px;
-  background: #d6b88a;
-  color: #2a2420;
+  background: var(--skin-crate-label-bg);
+  color: var(--skin-crate-ink);
   font: inherit;
   text-align: left;
   cursor: pointer;
@@ -74,11 +74,11 @@
     80% 100%, 76% calc(100% - 8px), 72% 100%, 68% calc(100% - 8px), 64% 100%, 60% calc(100% - 8px), 56% 100%,
     52% calc(100% - 8px), 48% 100%, 44% calc(100% - 8px), 40% 100%, 36% calc(100% - 8px), 32% 100%, 28% calc(100% - 8px),
     24% 100%, 20% calc(100% - 8px), 16% 100%, 12% calc(100% - 8px), 8% 100%, 4% calc(100% - 8px), 0 100%);
-  transition: background-color .12s linear;
+  transition: background-color var(--skin-motion-press) linear;
 }
-.airway-upgrade-tag:active { background: #c9a874; }
-.airway-upgrade-tag:focus-visible { outline: 4px solid #ffc72c; outline-offset: -4px; }
-.airway-upgrade-tag:disabled { cursor: default; background: #c7b394; }
+.airway-upgrade-tag:active { background: var(--skin-crate-label-pressed-bg); }
+.airway-upgrade-tag:focus-visible { outline: 4px solid var(--skin-crate-focus); outline-offset: -4px; }
+.airway-upgrade-tag:disabled { cursor: default; background: var(--skin-crate-label-disabled-bg); }
 .airway-upgrade-tag:disabled .airway-upgrade-model,
 .airway-upgrade-tag:disabled .airway-upgrade-title,
 .airway-upgrade-tag:disabled .airway-upgrade-grid { opacity: .5; }
@@ -90,8 +90,8 @@
   position: relative;
   width: var(--upgrade-win);
   height: var(--upgrade-win);
-  background: #eadcc2;
-  border: 2px solid #2a2420;
+  background: var(--skin-crate-model-bg);
+  border: 2px solid var(--skin-crate-model-border);
 }
 .airway-upgrade-model canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .airway-upgrade-model::before {
@@ -102,13 +102,13 @@
   width: 46%;
   height: 10%;
   transform: translate(-50%, -50%);
-  background: #1e6f6a;
+  background: var(--skin-crate-model-silhouette);
   clip-path: polygon(0 30%, 35% 30%, 48% 0, 52% 0, 65% 30%, 100% 30%, 100% 70%, 65% 70%, 52% 100%, 48% 100%, 35% 70%, 0 70%);
 }
 .airway-upgrade-model.has-model::before { display: none; }
-.model-widebody::before { width: 62%; background: #c8352a; }
+.model-widebody::before { width: 62%; background: var(--skin-crate-model-silhouette-wide); }
 .model-hub-expansion::before { width: 42%; height: 24%; clip-path: none; }
-.model-departure-slots::before { width: 56%; height: 22%; clip-path: none; background: linear-gradient(90deg, #1e6f6a 0 38%, transparent 38% 62%, #1e6f6a 62%); }
+.model-departure-slots::before { width: 56%; height: 22%; clip-path: none; background: linear-gradient(90deg, var(--skin-crate-model-silhouette) 0 38%, transparent 38% 62%, var(--skin-crate-model-silhouette) 62%); }
 
 .airway-upgrade-body { flex: 1; min-width: 0; container-type: inline-size; display: flex; flex-direction: column; align-items: stretch; padding-top: 2px; }
 .airway-upgrade-heading {
@@ -116,8 +116,8 @@
   justify-content: space-between;
   gap: 10px;
   padding-bottom: 5px;
-  border-bottom: 2px solid #2a2420;
-  font: 700 calc(12px * var(--airway-text-scale))/1.2 'Overpass Mono', monospace;
+  border-bottom: 2px solid var(--skin-crate-rule);
+  font: var(--skin-weight-bold) calc(12px * var(--airway-text-scale))/1.2 var(--skin-face-mono);
   letter-spacing: .14em;
   white-space: nowrap;
 }
@@ -128,7 +128,7 @@
 @container (max-width: 220px) { .airway-upgrade-heading { letter-spacing: .04em; gap: 6px; } }
 .airway-upgrade-title {
   margin-top: 8px;
-  font: 800 var(--title-size)/1.08 Overpass, sans-serif;
+  font: var(--skin-weight-heavy) var(--title-size)/1.08 var(--skin-face-display);
   /* [task-37] Words never break without a hyphen (D-51): no overflow-wrap:anywhere; long words carry
      soft hyphens in i18n and the font shrinks to fit the longest word (see @supports below). */
   hyphens: manual;
@@ -141,19 +141,19 @@
   align-items: baseline;
 }
 .airway-upgrade-key {
-  font: 700 calc(10px * var(--airway-text-scale))/1.2 'Atkinson Hyperlegible Next', sans-serif;
+  font: var(--skin-weight-bold) calc(10px * var(--airway-text-scale))/1.2 var(--skin-face-text);
   letter-spacing: .12em;
   text-transform: uppercase;
-  color: #5e4e3a;
+  color: var(--skin-crate-key-ink);
 }
 .airway-upgrade-value { font-size: calc(15px * var(--airway-text-scale)); line-height: 1.25; min-width: 0; overflow-wrap: anywhere; } /* [night-11ac] R7h */
 .airway-upgrade-stamp {
   align-self: flex-start;
   margin-top: 10px;
   padding: 2px 7px;
-  border: 2px solid #c8352a;
-  color: #c8352a;
-  font: 700 calc(12px * var(--airway-text-scale))/1.3 'Overpass Mono', monospace;
+  border: 2px solid var(--skin-crate-stamp-ink);
+  color: var(--skin-crate-stamp-ink);
+  font: var(--skin-weight-bold) calc(12px * var(--airway-text-scale))/1.3 var(--skin-face-mono);
   letter-spacing: .1em;
   transform: rotate(-3deg);
   /* [night-05] D-68 city names ("Santa Cruz de la Sierra") wrap at spaces instead of leaving the card. */
@@ -163,7 +163,7 @@
 /* [night-11r] R5e: the caption is part of the stamp (same red ink, same box), smaller and set above the value. */
 .airway-upgrade-stamp-caption, .airway-upgrade-stamp-value { display: block; }
 .airway-upgrade-stamp-caption {
-  font: 700 calc(10px * var(--airway-text-scale))/1.2 'Atkinson Hyperlegible Next', sans-serif;
+  font: var(--skin-weight-bold) calc(10px * var(--airway-text-scale))/1.2 var(--skin-face-text);
   letter-spacing: .1em;
   text-transform: uppercase;
 }
@@ -190,9 +190,9 @@
   margin: -6px 2px -6px -10px;
   padding: 0 14px 0 10px;
   border: 0;
-  background: #1c1e20;
-  color: #ffc72c;
-  font: 800 calc(16px * var(--airway-text-scale))/1 Overpass, sans-serif;
+  background: var(--skin-crate-back-bg);
+  color: var(--skin-crate-back-ink);
+  font: var(--skin-weight-heavy) calc(16px * var(--airway-text-scale))/1 var(--skin-face-display);
   letter-spacing: .06em;
   text-transform: uppercase;
   cursor: pointer;
@@ -206,9 +206,9 @@
 .airway-upgrade-open.is-picking-hub .airway-upgrade-back { grid-row: 1 / span 2; }
 .airway-upgrade-open.is-picking-hub .airway-upgrade-week { grid-column: 2; align-self: end; font-size: calc(20px * var(--airway-text-scale)); }
 .airway-upgrade-open.is-picking-hub .airway-upgrade-sub { grid-column: 2; align-self: start; }
-.airway-upgrade-back-arrow { width: 24px; height: 24px; flex: none; fill: currentColor; }
-.airway-upgrade-back:active { background: #3a3c3e; }
-.airway-upgrade-back:focus-visible { outline: 3px solid #1c1e20; outline-offset: 3px; }
+.airway-upgrade-back-arrow { width: var(--skin-crate-back-icon-size); height: var(--skin-crate-back-icon-size); flex: none; fill: currentColor; }
+.airway-upgrade-back:active { background: var(--skin-crate-back-pressed-bg); }
+.airway-upgrade-back:focus-visible { outline: 3px solid var(--skin-crate-back-focus); outline-offset: 3px; }
 
 /* Wide screens: labels side by side, model window across the top. */
 @media (min-width: 720px) {
@@ -316,10 +316,10 @@
    then the two regions and the target in one flowing paragraph. Inks are local tokens so the pending UI redesign can
    swap them in one place. A board with four crates trims the model windows so the extra crate fits. */
 .airway-upgrade-waybill {
-  --aw-contract-paper: #f3ecdc;
-  --aw-contract-ink: #2a2420;
-  --aw-contract-muted: #5e4e3a;
-  --aw-contract-rule: #2a2420;
+  --aw-contract-paper: var(--skin-crate-waybill-bg);
+  --aw-contract-ink: var(--skin-crate-waybill-ink);
+  --aw-contract-muted: var(--skin-crate-waybill-muted);
+  --aw-contract-rule: var(--skin-crate-waybill-rule);
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
@@ -328,12 +328,12 @@
   background: var(--aw-contract-paper);
   color: var(--aw-contract-ink);
   border-top: 2px dashed var(--aw-contract-rule);
-  font: 400 13px/1.3 'Atkinson Hyperlegible Next', sans-serif;
+  font: var(--skin-weight-regular) 13px/1.3 var(--skin-face-text);
 }
-.airway-upgrade-waybill-title { font: 700 11px/1.4 'Overpass Mono', monospace; letter-spacing: .14em; color: var(--aw-contract-muted); }
+.airway-upgrade-waybill-title { font: var(--skin-weight-bold) 11px/1.4 var(--skin-face-mono); letter-spacing: .14em; color: var(--aw-contract-muted); }
 .airway-upgrade-waybill-last { margin-left: auto; font-size: 12px; color: var(--aw-contract-muted); }
 .airway-upgrade-waybill-text { flex-basis: 100%; margin: 0; min-width: 0; }
-.airway-upgrade-waybill-route { font-weight: 800; }
+.airway-upgrade-waybill-route { font-weight: var(--skin-weight-heavy); }
 /* Four crates. Portrait: two by two without the model windows (the title names the cargo; four stacked crates ran
    100–180 px below a 852–915 px screen). Wide screens: the windows take what is left; phone landscape drops them. */
 @media (max-width: 719px) {

@@ -10,6 +10,7 @@ import { AIRLINE_COLOURS, airlineColourHex, applyAirlineColour, isAirlineColour,
 import { regionGlyph } from '../glyphs';
 import { REGION_IDS } from '../../data/regions';
 import { SHORTCUT_HELP } from '../../input/keyboard';
+import '../skin/current.css'; // [night-11aq] skin tokens read by menu.css
 import '../menu/menu.css';
 
 export interface UserSettings {

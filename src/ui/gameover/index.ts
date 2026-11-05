@@ -5,6 +5,7 @@ import { nextWorldSeed, sameWorldIdentity, type WorldIdentity } from './seed';
 import { persistBestRecord, type BestStorage } from './storage';
 import type { TimelineWeek } from '../../game/runTimeline';
 import { gameOverTip, unservedHint, type GameOverTip, type TipKind } from '../../game/gameoverTip';
+import '../skin/current.css'; // [night-11aq] skin tokens read by gameover.css
 import './gameover.css';
 import { reducedMotion } from '../motion'; // [night-11g] D-88
 import { gameOverMilestones } from '../milestones'; // [night-12ax] R1n

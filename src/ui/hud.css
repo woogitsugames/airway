@@ -1,12 +1,12 @@
 /* Diorama UI v2: paper boarding pass and die-cut luggage tags, never floating app cards. */
 .airway-hud {
-  --hud-ink: var(--airway-ink);
-  --hud-pass: var(--airway-ticket);
-  --hud-perf: #d8cfbf;
-  --hud-teal: var(--airway-teal);
-  --hud-kraft: var(--airway-kraft);
-  --hud-eyelet: #b8955f;
-  --hud-red: var(--airway-jam);
+  --hud-ink: var(--skin-hud-ink);
+  --hud-pass: var(--skin-hud-paper);
+  --hud-perf: var(--skin-hud-perforation);
+  --hud-teal: var(--skin-hud-airline-default);
+  --hud-kraft: var(--skin-hud-tag-bg);
+  --hud-eyelet: var(--skin-hud-eyelet-ring);
+  --hud-red: var(--skin-hud-alert);
   --hud-safe-top: var(--aw-safe-top);
   --hud-safe-right: var(--aw-safe-right);
   --hud-safe-bottom: var(--aw-safe-bottom);
@@ -16,16 +16,16 @@
   z-index: 25;
   pointer-events: none;
   color: var(--hud-ink);
-  font-family: 'Atkinson Hyperlegible Next', sans-serif;
+  font-family: var(--skin-face-text);
   font-size: 14px;
   line-height: 1.15;
   -webkit-tap-highlight-color: transparent;
 }
 .airway-hud *, .airway-hud *::before, .airway-hud *::after { box-sizing: border-box; }
-.airway-hud button { cursor: pointer; border: 0; border-radius: 0; color: inherit; font: inherit; pointer-events: auto; touch-action: none; }
+.airway-hud button { cursor: pointer; border: 0; border-radius: var(--skin-control-radius); color: inherit; font: inherit; pointer-events: auto; touch-action: none; }
 .airway-hud button:focus-visible { outline: 3px solid var(--hud-red); outline-offset: 3px; }
 .airway-hud button:disabled { cursor: not-allowed; }
-.airway-hud__icon { display: block; flex: 0 0 auto; width: 27px; height: 27px; }
+.airway-hud__icon { display: block; flex: 0 0 auto; width: var(--skin-hud-icon-size); height: var(--skin-hud-icon-size); }
 
 /* The ticket's two half masks cut genuine semicircular notches at the perforation. */
 .airway-pass {
@@ -52,10 +52,10 @@
 }
 .airway-pass__band { width: 7px; flex: 0 0 7px; background: var(--airway-airline, var(--hud-teal)); } /* [night-09c] D-80 */
 .airway-pass__field { min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 3px; padding: 0 6px; }
-.airway-pass__label { font-size: 9px; font-weight: 700; letter-spacing: .075em; text-transform: uppercase; color: #665f55; }
+.airway-pass__label { font-size: 9px; font-weight: var(--skin-weight-bold); letter-spacing: .075em; text-transform: uppercase; color: var(--skin-pass-label-ink); }
 /* [night-10q] a label longer than its field wraps to a second line inside the ticket; the mask would cut it. */
 .airway-pass__label { white-space: normal; overflow-wrap: anywhere; line-height: 1.05; }
-.airway-pass__field strong { overflow: hidden; text-overflow: clip; font: 800 17px/1 'Overpass', sans-serif; }
+.airway-pass__field strong { overflow: hidden; text-overflow: clip; font: var(--skin-weight-heavy) 17px/1 var(--skin-face-display); }
 .airway-pass__week { min-width: 48px; flex: 0 0 auto; } /* [task-40] grows to fit the PL label "TYDZIEŃ" */
 .airway-pass__day { flex: 1 1 76px; min-width: 54px; }
 .airway-pass__time { flex: 0 0 60px; }
@@ -66,7 +66,7 @@
 .airway-pass__perf { border-left: 2px dashed var(--hud-perf); margin: 9px 0 9px auto; flex: 0 0 2px; }
 .airway-pass__passengers { flex: 0 0 94px; padding: 0 8px; }
 .airway-pass__pause { flex: 0 0 56px; width: 56px; height: 60px; display: flex; align-items: center; justify-content: center; background: var(--hud-pass); border-top: 6px solid var(--hud-teal) !important; }
-.airway-pass__pause .airway-hud__icon { width: 22px; height: 22px; }
+.airway-pass__pause .airway-hud__icon { width: var(--skin-pass-pause-icon-size); height: var(--skin-pass-pause-icon-size); }
 
 /* Five luggage tags hang from one cable in portrait; a side peg rack replaces it in landscape. */
 .airway-dock {
@@ -105,8 +105,8 @@
   background: var(--hud-kraft);
   clip-path: polygon(14px 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%, 0 14px);
   padding: 14px 4px 2px;
-  font-family: 'Overpass', sans-serif !important;
-  font-weight: 800 !important;
+  font-family: var(--skin-face-display) !important;
+  font-weight: var(--skin-weight-heavy) !important;
   font-size: 19px !important;
 }
 .airway-dock__eyelet {
@@ -116,11 +116,11 @@
   width: 9px;
   height: 9px;
   border: 2px solid var(--hud-eyelet);
-  background: #8cc3d8;
+  background: var(--skin-dock-eyelet-hole);
   border-radius: 50%;
 }
 .airway-dock__tag.is-selected { background: var(--hud-pass); }
-.airway-dock__tag.is-empty { background: var(--airway-kraft-empty); color: var(--airway-kraft-empty-ink); }
+.airway-dock__tag.is-empty { background: var(--skin-dock-tag-empty-bg); color: var(--skin-dock-tag-empty-ink); }
 /* [night-11n] R5d: an empty tag was 42 % transparent, so a night globe or a cloud showed through and hid its icon.
    It is now opaque: a paler, greyer kraft with muted ink (5.1:1, test:contrast) and a dashed rack outline under the
    eyelet, a shape cue for "nothing here" that does not depend on colour. */
@@ -136,13 +136,13 @@
 /* [night-11s] R6c: an empty tag counting down to the next crates stacks its icon over a small wait line ("2 days",
    "5 godz.") inside the dashed rack; same muted ink as the empty tag (N11n), never a "0". */
 .airway-dock__tag.is-countdown { flex-direction: column; gap: 1px; padding-top: 16px; }
-.airway-dock__tag.is-countdown .airway-hud__icon { width: 22px; height: 22px; }
+.airway-dock__tag.is-countdown .airway-hud__icon { width: var(--skin-dock-countdown-icon-size); height: var(--skin-dock-countdown-icon-size); }
 .airway-dock__tag.is-countdown .airway-dock__count {
   font-size: 11px; line-height: 1.1; letter-spacing: -.01em; white-space: nowrap; max-width: 100%;
 }
 .airway-dock__tag[data-hud-action='undo'] .airway-dock__count { display: none; }
 .airway-dock__tag[data-hud-action='speed'] .airway-dock__count { font-size: 14px; }
-.airway-dock__tag[data-hud-action='hub'] .airway-hud__icon { width: 25px; }
+.airway-dock__tag[data-hud-action='hub'] .airway-hud__icon { width: var(--skin-dock-hub-icon-width); }
 .airway-dock__ghost {
   position: fixed;
   top: 0;
@@ -199,7 +199,7 @@
   top: calc(var(--hud-safe-top) + 102px);
   bottom: calc(var(--hud-safe-bottom) + 22px);
   width: 88px;
-  border-left: 2px solid #2a24205c;
+  border-left: 2px solid var(--skin-dock-rack-rule);
   padding: 8px 3px 8px 9px;
 }
 .airway-hud[data-layout='foldable'] .airway-pass {
@@ -217,7 +217,7 @@
   .airway-dock { left: calc(var(--hud-safe-left) + 6px); right: calc(var(--hud-safe-right) + 6px); gap: 3px; } /* [G8] six tags ≥ 48 px at 320 */
   .airway-dock__tag { gap: 0; }
   .airway-dock__count { font-size: 14px; }
-  .airway-hud__icon { width: 24px; }
+  .airway-hud__icon { width: var(--skin-hud-icon-size-narrow); }
 }
 /* [night-11g] D-88: the game's "Reduce motion" switch (default: the system) sets the root attribute. */
 :root[data-airway-motion="reduce"] .airway-hud *, :root[data-airway-motion="reduce"] .airway-hud *::before, :root[data-airway-motion="reduce"] .airway-hud *::after { transition: none !important; animation: none !important; }
@@ -225,5 +225,5 @@
 /* [night-11ai] R4g: hover only where a pointer can hover (mouse, trackpad, stylus with hover); touch screens never
    keep a stuck hover. One inset rule drawn in the control's own ink, so it follows any restyle of the tags. */
 @media (hover: hover) and (pointer: fine) {
-  .airway-hud button:not(:disabled):hover { box-shadow: inset 0 -3px 0 currentColor; }
+  .airway-hud button:not(:disabled):hover { box-shadow: var(--skin-hover-rule); }
 }

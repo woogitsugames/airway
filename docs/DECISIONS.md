@@ -2281,3 +2281,23 @@ and the pause row explain it), a sound on the announcement. Owner choices left o
 served airports only vs any open airport, the notice (one day), and whether the surge should also reach Daily.
 Guards: `test:demand-surge` (`test:fast`), `test:e2e:surge-tag`, `test:balance:surges` (`test:ci`).
 **Status: in force (size to confirm after the closed test).**
+
+
+## D-250 — UI skin tokens before the redesign (2026-11-05, Claude, night N11aq)
+Groundwork for the UI redesign (`docs/styles/ui-2026-11/KIERUNKI.md`: KARTA / KOKPIT / ZNAKI, the owner's pick is
+still open), with no visual change. Every colour, typeface, weight, motion duration/delay, corner, shadow/hover rule
+and icon size of the in-game HUD (boarding pass, tag dock), airport tags and chips (incl. the inline SVG inks of
+`overlay.ts`), pause sheet, weekly board and contract waybill, hub cause board, game-over report and main menu /
+settings is a semantic custom property `--skin-<component>-<role>` of one file, `src/ui/skin/current.css` (202 tokens,
+461 literals moved; per-component names so a skin can split today's shared colours; values equal to a `theme.css`
+palette entry point at it, so `test:contrast`/`test:cvd` still cover them). A new skin = a new token file imported
+instead of it plus structural tweaks in the component CSS. The D-248 text-scale tokens stay in `theme.css`; sizes,
+paddings, rules and die-cut shapes stay structural in the component CSS (`INVENTORY.md` lists both).
+Evidence: with the skin substituted back every covered CSS file equals the old text; `npm run skin:pixels` (88
+globe-less fixture shots — the eight `e2e/screen-fixtures.mjs` screens + pause, overlay, hub board — PL/EN × 412×915,
+915×412, 320×568 at 100 % and 412×915 at 150 %) pixel-identical with equal computed styles against origin/dev.
+Rejected: a TS token map (the values are CSS-only; inline styles would beat media queries), palette-named tokens
+(`--skin-paper` used by every paper object would couple the components a direction separates), tokenising sizes and
+paddings now (a new typeface changes them per component anyway; tag widths are tied to `overlay.ts` constants).
+Not covered yet: ATC strip, logbook, puzzle board, leaderboard, tutorial, `glyphs.ts` outline, the globe.
+Guards: `test:skin-tokens` (`test:fast`). **Status: in force.**

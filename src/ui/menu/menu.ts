@@ -2,6 +2,7 @@ import { localNumber, t, type TranslationKey } from '../../i18n';
 import { SplitFlap } from '../flap';
 import { FLAP_CELLS } from '../../i18n/limits'; // [night-11ac] R7h: the same cell counts as the length budgets
 import type { RegionId } from '../../data/regions';
+import '../skin/current.css'; // [night-11aq] skin tokens read by menu.css
 import './menu.css';
 
 export type MenuMode = 'continue' | 'endless' | 'puzzles' | 'daily';
