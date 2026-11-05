@@ -86,6 +86,7 @@ npm run test:e2e:session-stub   # real session on the WebGL-free stub world (~25
 npm run test:e2e:smoke:stub          # = node e2e/smoke.mjs --render=stub (or AW_RENDER=stub)
 npm run ui:matrix:stub               # PNGs to the git-ignored .e2e/matrix-stub/, never docs/shots/matrix/
 npm run test:e2e:edge-chip-tags:stub
+npm run test:e2e:resize:stub         # [night-15b] R4f resize mid-run with a sheet open (stub only: needs the frozen clock)
 # Harness-only validation; does NOT test the shipped game:
 npm run test:e2e:fixture   # = node e2e/smoke.mjs --fixture && node scripts/ui-matrix.mjs --fixture
 ```
@@ -100,5 +101,6 @@ By default a temporary Vite dev server is started on localhost. Set
 `AIRWAY_E2E_URL=http://127.0.0.1:5173/` to reuse a running **development**
 server. Playwright comes from the execution environment. Set `CHROMIUM_PATH`
 if Chromium is not discoverable by Playwright. Each real matrix run captures
-32 PNGs: 4 screens × 2 languages × 4 viewport sizes at DPR 1.
+96 PNGs: 4 screens × 2 languages × 12 viewport sizes (phones, foldables at DPR 2, [night-15b] R4f tablets 1024×640,
+1280×800, 800×1280, the book foldable 841×701, desktop 1600×900 and a 500×700 window); `--size=WxH` runs only those.
 

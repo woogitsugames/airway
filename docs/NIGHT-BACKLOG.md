@@ -1096,11 +1096,13 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
       hub left with no free seat gets short cross ticks near that hub for a few seconds; cleared when a departure has
       spare seats. Render-only from plane load events; low preset uses the same line batch. **Area:** render
       (`src/render/` routes) + `src/game/` event mapping.
-- [ ] R4f **Large-screen matrix and resize mid-run** — add Google's reference sizes to `ui:matrix` (1024×640,
+- [x] R4f → N15b **Large-screen matrix and resize mid-run** — add Google's reference sizes to `ui:matrix` (1024×640,
       1280×800, 800×1280, 841×701, 1600×900) and a narrow window (500×700); new e2e `test:e2e:resize`: start a run,
       resize portrait→landscape→narrow→wide and fold-like 673×841→841×701, assert the state hash, open sheets and the
       camera target survive and nothing overflows (Tier 3 Config_Changes/Config_Combinations). **Area:** platform/scripts
-      (`scripts/ui-matrix.mjs`, `e2e/`).
+      (`scripts/ui-matrix.mjs`, `e2e/`). Done in N15b (D-260): 12 matrix sizes (96 shots, `--size=WxH`),
+      `test:e2e:resize:stub` (stub only: the hash check needs the frozen clock) in `test:ci`; fixed the landscape hub
+      board covering the dock captions/dial and the 1024×640 crates scrolling 39 px.
 - [x] R4g → N11ai **Keyboard and mouse basics** — Space pause/resume, 1/2/3 game speed, +/- zoom, existing Escape/Back;
       `@media (hover: hover)` hover state on HUD buttons and airports; no browser context menu on right-click over the
       globe; shortcuts listed in settings → help (PL/EN). E2E with Playwright keyboard. **Area:** input/UI

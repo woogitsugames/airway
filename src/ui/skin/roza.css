@@ -370,13 +370,14 @@
 }
 /* While a hub cause board is open (it fills the screen above the bottom band), the dock arc lies flat: the six symbols
    in one row along the bottom band, captions and dial put away, so the board never covers a target (portrait,
-   foldable). In landscape the board stops left of the dock column. */
+   foldable). In landscape the board stops left of the dock column; the captions and the dial left of that column are put
+   away too (night-15b, R4f: the board covered them at 640x360 and 915x412). */
 :root[data-skin="roza"]:has(.airway-hub-board:not([hidden])) .airway-hud:not([data-layout='landscape']) .airway-dock {
   left: calc(var(--hud-safe-left) + 12px); right: calc(var(--hud-safe-right) + 12px); width: auto; height: 64px;
 }
 :root[data-skin="roza"]:has(.airway-hub-board:not([hidden])) .airway-hud:not([data-layout='landscape']) .airway-dock::before,
-:root[data-skin="roza"]:has(.airway-hub-board:not([hidden])) .airway-hud:not([data-layout='landscape']) .roza-caption,
-:root[data-skin="roza"]:has(.airway-hub-board:not([hidden])) .airway-hud:not([data-layout='landscape']) .roza-dial { visibility: hidden; }
+:root[data-skin="roza"]:has(.airway-hub-board:not([hidden])) .roza-caption,
+:root[data-skin="roza"]:has(.airway-hub-board:not([hidden])) .roza-dial { visibility: hidden; }
 :root[data-skin="roza"]:has(.airway-hub-board:not([hidden])) .airway-hud:not([data-layout='landscape']) .airway-dock__holder {
   bottom: 8px; right: calc((100% - 48px) * (5 - var(--i)) / 5);
 }

@@ -2578,3 +2578,18 @@ a small disc between them. *Crates*: while the weekly crates are on screen the o
 steps back, and a 521–630 px tall wide screen with a waybill gives the model windows up 28 px more so the stats end on
 screen (960 × 540). Not ours: the rose ring offset against the medallion on tablet/iPad (render session).
 Release CSS 107.2 → 106.3 kB (D-258 budget 109 kB). **Status: in force.**
+
+## D-260 — Large-screen matrix sizes and a stub-only resize journey (2026-11-05, Claude, night N15b)
+R4f. `ui:matrix` (and `ui:matrix:stub`, `test:e2e:fixture`) gains Google's large-screen reference sizes 1024×640,
+1280×800, 800×1280, 841×701 and 1600×900 plus a 500×700 free-form window: 12 sizes, 96 shots (`--size=WxH` runs a
+subset). The mid-run resize journey `test:e2e:resize` exists **only as `test:e2e:resize:stub`** (in `test:ci`): its core
+check — the snapshot hash and tick do not move while the window changes — needs the frozen stub clock (D-254); on the
+real globe an open hub board leaves the run playing and SwiftShader is too slow for the sequence anyway (G7). The
+camera target is read from a new view-only `window.aw.state().camera` (longitude, latitude, zoom; DEV adapter, not in
+the hash), so the check is not tied to the stub. Two Róża layout bugs the new sizes exposed, fixed in CSS:
+**landscape hub board** (640×360, 915×412, also without a resize) covered the dock captions and the dial left of the
+dock column — while the board is open they are now put away in every layout, as portrait/foldable already did (the
+symbols stay, each with its accessible name); **weekly crates at 1024×640** with the contract waybill ran the cards
+39 px below the screen — on wide screens 600–679 px tall the model window gives up 50 px more (unchanged from 680 px up
+and on the 960×540 store shot). `docs/shots/matrix/` gets the six new sizes on the next real-renderer `ui:matrix`.
+**Status: in force.**

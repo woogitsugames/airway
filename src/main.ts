@@ -441,6 +441,7 @@ async function boot(): Promise<void> {
       curfewClosed: (run?.cityList() ?? []).filter((city) => city.curfewClosed).map((city) => city.id), // [night-10g]
       curfewDrawn: world?.curfewDrawn() ?? 0,
       airports: (run?.cityList() ?? []).map((city) => ({ id: city.id, waiting: city.waiting.length, capacity: city.capacity, hub: city.hub })),
+      camera: world ? (({ longitude, latitude, zoom }) => ({ longitude, latitude, zoom }))(world.orbit.getState()) : undefined, // [night-15b] R4f
     };
   }
 

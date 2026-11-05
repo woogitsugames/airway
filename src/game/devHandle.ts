@@ -28,6 +28,8 @@ export interface AwDevState {
   readonly curfewDrawn?: number;
   /** [night-11d] Waiting passengers (transfers included) and waiting places per airport. */
   readonly airports?: readonly { readonly id: string; readonly waiting: number; readonly capacity: number; readonly hub?: boolean }[];
+  /** [night-15b] R4f: the orbit camera's target (where it looks, how close); view-only, not in the hash. */
+  readonly camera?: { readonly longitude: number; readonly latitude: number; readonly zoom: number };
 }
 
 export interface AwDevAdapter {
