@@ -1,11 +1,11 @@
-// [night-11au] D-256: evidence for the DEV-only KARTA skin preview (`?skin=karta`), for the owner's pick of a UI
-// direction (docs/styles/ui-2026-11/KIERUNKI.md). Two steps:
-//   node e2e/skin-karta-shots.mjs frames <outDir>                 one still frame of the real game (DEV `storeShot=game`
+// [night-11au] D-256: evidence for a UI skin against the old "Diorama" one. [night-11az] D-257: the shipped skin is
+// Róża (KARTA v2 C); `?skin=current` is the DEV comparison. Two steps:
+//   node e2e/skin-roza-shots.mjs frames <outDir>                 one still frame of the real game (DEV `storeShot=game`
 //                                                                 fixture, seed 0xA1A1) per skin, portrait and landscape
-//   node e2e/skin-karta-shots.mjs sheet <currentDir> <kartaDir> <framesDir> <out.png>
-//                                                                 side-by-side contact sheet, current | KARTA
-// The fixture shots come from `node e2e/skin-pixels.mjs capture <dir>` (current) and `AW_SKIN=karta node
-// e2e/skin-pixels.mjs capture <dir>` (KARTA). Not a test suite: the globe under SwiftShader is slow (G7), one frame each.
+//   node e2e/skin-roza-shots.mjs sheet <currentDir> <rozaDir> <framesDir> <out.png>
+//                                                                 side-by-side contact sheet, Diorama | Róża
+// The fixture shots come from `AW_SKIN=current node e2e/skin-pixels.mjs capture <dir>` (Diorama) and `node
+// e2e/skin-pixels.mjs capture <dir>` (Róża). AW_FRAMES=roza takes only the Róża frames. Not a test suite: the globe under SwiftShader is slow (G7), one frame each.
 import { mkdirSync, readFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { withBrowser } from './browser.mjs';
@@ -17,7 +17,7 @@ const FRAMES = [['p', 412, 915], ['l', 915, 412]];
 async function frames(outDir) {
   mkdirSync(outDir, { recursive: true });
   await withBrowser(async ({ browser, url }) => {
-    for (const skin of ['current', 'karta']) for (const [tag, width, height] of FRAMES) {
+    for (const skin of (process.env.AW_FRAMES ?? 'current,roza').split(',')) for (const [tag, width, height] of FRAMES) {
       const page = await browser.newPage({ viewport: { width, height }, deviceScaleFactor: 1, hasTouch: true, reducedMotion: 'reduce', locale: 'pl-PL' });
       try {
         await page.addInitScript(() => { try { localStorage.setItem('airway.settings', JSON.stringify({ language: 'pl' })); } catch { /* private mode */ } });
@@ -25,7 +25,7 @@ async function frames(outDir) {
         target.searchParams.set('storeShot', 'game');
         target.searchParams.set('seed', String(SEED));
         target.searchParams.set('lang', 'pl');
-        if (skin === 'karta') target.searchParams.set('skin', 'karta');
+        if (skin === 'current') target.searchParams.set('skin', 'current');
         await page.goto(target.href, { waitUntil: 'networkidle', timeout: 60000 });
         await page.waitForFunction(() => document.documentElement.dataset.storeShotReady === 'game', null, { timeout: 240000 });
         await page.evaluate(() => document.fonts.ready);
@@ -40,7 +40,7 @@ async function frames(outDir) {
   });
 }
 
-/** Rows of [label, file name] pairs; each pair is shown current | KARTA. */
+/** Rows of [label, file name] pairs; each pair is shown Diorama | Róża. */
 const PAIRS = [
   ['Gra (prawdziwa klatka)', 'game', 'p'],
   ['HUD', 'hud-pl-412x915-100', 'x'],
@@ -52,13 +52,13 @@ const PAIRS = [
   ['Ustawienia', 'settings-pl-412x915-100', 'x'],
 ];
 
-async function sheet(currentDir, kartaDir, framesDir, out) {
+async function sheet(currentDir, rozaDir, framesDir, out) {
   const data = (file) => existsSync(file) ? 'data:image/png;base64,' + readFileSync(file).toString('base64') : '';
   const cells = PAIRS.map(([label, name, kind]) => {
     const a = kind === 'p' ? resolve(framesDir, 'game-current-p.png') : resolve(currentDir, name + '.png');
-    const b = kind === 'p' ? resolve(framesDir, 'game-karta-p.png') : resolve(kartaDir, name + '.png');
-    return `<figure><figcaption>${label}</figcaption><div class="pair"><div><img src="${data(a)}"><span>dziś</span></div>` +
-      `<div><img src="${data(b)}"><span>KARTA</span></div></div></figure>`;
+    const b = kind === 'p' ? resolve(framesDir, 'game-roza-p.png') : resolve(rozaDir, name + '.png');
+    return `<figure><figcaption>${label}</figcaption><div class="pair"><div><img src="${data(a)}"><span>Diorama</span></div>` +
+      `<div><img src="${data(b)}"><span>Róża</span></div></div></figure>`;
   }).join('');
   const html = `<!doctype html><meta charset="utf-8"><style>
     body { margin: 0; padding: 24px; background: #e9e6df; font: 600 15px/1.2 sans-serif; color: #1b1b1b; width: 1792px; }
@@ -68,7 +68,7 @@ async function sheet(currentDir, kartaDir, framesDir, out) {
     .pair { display: flex; gap: 6px; } .pair div { display: flex; flex-direction: column; gap: 3px; }
     img { width: 206px; height: 458px; display: block; border: 1px solid #999; object-fit: cover; object-position: top; }
     span { font-size: 12px; color: #555; }
-  </style><h1>Airway: dzisiejsza skórka (lewa) i podgląd KARTA (prawa), PL 412×915</h1><main>${cells}</main>`;
+  </style><h1>Airway: dawna skórka Diorama (lewa) i Róża (prawa), PL 412×915</h1><main>${cells}</main>`;
   await withBrowser(async ({ browser }) => {
     const page = await browser.newPage({ viewport: { width: 1840, height: 600 }, deviceScaleFactor: 1 });
     await page.setContent(html, { waitUntil: 'load' });
@@ -80,4 +80,4 @@ async function sheet(currentDir, kartaDir, framesDir, out) {
 
 if (mode === 'frames' && args[0]) await frames(resolve(args[0]));
 else if (mode === 'sheet' && args.length === 4) await sheet(...args.slice(0, 3).map((p) => resolve(p)), resolve(args[3]));
-else { console.error('usage: node e2e/skin-karta-shots.mjs frames <outDir> | sheet <currentDir> <kartaDir> <framesDir> <out.png>'); process.exitCode = 1; }
+else { console.error('usage: node e2e/skin-roza-shots.mjs frames <outDir> | sheet <currentDir> <rozaDir> <framesDir> <out.png>'); process.exitCode = 1; }

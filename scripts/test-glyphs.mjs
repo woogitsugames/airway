@@ -4,10 +4,10 @@
 // unicode-range faces that borrow single glyphs between families, then checks every family and weight against:
 // all catalog strings (PL/EN) and city/region names, numbers formatted for every planned locale, and the letter set
 // of PL/EN/DE/FR/ES/PT-BR (localisation wave 1, RESEARCH R7).
-// [night-11ax] D-257: the fonts ship as WOFF2 (the reader handles both) and the KARTA skin adds its own faces
-// (src/ui/skin/karta.css: Barlow Condensed 500/700, Airway Chart Mono 400/600, Latin subsets). Each KARTA face is
-// checked with what the browser falls back to for a glyph its subset lacks (U+2009, U+202F; U+2192 in Barlow): the next
-// families of its `--skin-face-*` stack in src/ui/skin/current.css, which must be shipped faces.
+// [night-11ax] D-257: the fonts ship as WOFF2 (the reader handles both) and the shipped skin adds its own face
+// ([night-11az] Róża, src/ui/skin/roza.css: Alegreya 700, Latin subset; KARTA's Barlow Condensed and Airway Chart Mono
+// are gone). Each skin face is checked with what the browser falls back to for a glyph its subset lacks (U+202F): the
+// next families of its `--skin-face-*` stack in src/ui/skin/current.css, which must be shipped faces.
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -72,15 +72,15 @@ const LETTERS = {
 const LOCALES = ['pl-PL', 'en-GB', 'de-DE', 'fr-FR', 'es-ES', 'pt-BR'];
 
 const shipped = faces();
-/** [night-11ax] D-257: KARTA faces with their stack fallbacks: "family weight" -> own ∪ every weight of the families
+/** [night-11ax] D-257: skin faces with their stack fallbacks: "family weight" -> own ∪ every weight of the families
  *  after it in the --skin-face-* stack that names it (a missing glyph is drawn by the first family that has it). */
-const kartaOwn = faces('src/ui/skin/karta.css');
+const skinOwn = faces('src/ui/skin/roza.css');
 const skinCss = readFileSync(resolve(ROOT, 'src/ui/skin/current.css'), 'utf8');
 const stacks = [...skinCss.matchAll(/--skin-face-[a-z]+\s*:\s*([^;]+);/g)]
   .map((m) => m[1].split(',').map((f) => f.trim().replace(/['"]/g, '')));
-const kartaFaces = new Map();
+const skinFaces = new Map();
 const fallbackFamilies = new Map();
-for (const [face, own] of kartaOwn) {
+for (const [face, own] of skinOwn) {
   const family = face.replace(/ \d+$/, '');
   const set = new Set(own);
   const after = new Set();
@@ -91,9 +91,9 @@ for (const [face, own] of kartaOwn) {
     }
   }
   fallbackFamilies.set(face, after);
-  kartaFaces.set(face, set);
+  skinFaces.set(face, set);
 }
-const fonts = new Map([...shipped, ...kartaFaces]);
+const fonts = new Map([...shipped, ...skinFaces]);
 const { en } = await import('../src/i18n/en.ts');
 const { pl } = await import('../src/i18n/pl.ts');
 const { CITIES } = await import('../src/data/index.ts');
@@ -121,29 +121,29 @@ test('fonts.css declares the five shipped faces', () => {
   for (const [face, set] of shipped) if (set.size < 300) throw new Error(face + ' maps only ' + set.size + ' code points');
 });
 test('[night-11ax] every font file is WOFF2', () => {
-  const css = ['src/ui/fonts.css', 'src/ui/skin/karta.css'].map((f) => readFileSync(resolve(ROOT, f), 'utf8')).join('');
+  const css = ['src/ui/fonts.css', 'src/ui/skin/roza.css'].map((f) => readFileSync(resolve(ROOT, f), 'utf8')).join('');
   const urls = [...css.matchAll(/url\(['"]?([^'")]+)['"]?\)/g)].map((m) => m[1]);
   const other = urls.filter((u) => !u.endsWith('.woff2'));
-  if (urls.length < 13 || other.length) throw new Error(urls.length + ' urls; not WOFF2: ' + other.join(', '));
+  if (urls.length < 10 || other.length) throw new Error(urls.length + ' urls; not WOFF2: ' + other.join(', '));
 });
-test('[night-11ax] karta.css declares the four KARTA faces, each a stack head with shipped fallbacks', () => {
-  const keys = [...kartaOwn.keys()].sort();
-  const want = ['Airway Chart Mono 400', 'Airway Chart Mono 600', 'Barlow Condensed 500', 'Barlow Condensed 700'];
+test('[night-11az] roza.css declares the Róża face (Alegreya 700), a stack head with shipped fallbacks', () => {
+  const keys = [...skinOwn.keys()].sort();
+  const want = ['Alegreya 700'];
   if (JSON.stringify(keys) !== JSON.stringify(want)) throw new Error('faces ' + keys.join(', '));
-  for (const [face, own] of kartaOwn) {
+  for (const [face, own] of skinOwn) {
     if (own.size < 300) throw new Error(face + ' maps only ' + own.size + ' code points');
     const after = [...fallbackFamilies.get(face)].filter((f) => !/^(sans-serif|serif|monospace)$/.test(f));
     const unknown = after.filter((f) => ![...shipped.keys()].some((k) => k.replace(/ \d+$/, '') === f));
     if (!after.length || unknown.length) throw new Error(face + ' falls back to ' + (after.join(', ') || 'nothing') + (unknown.length ? '; not shipped: ' + unknown.join(', ') : ''));
   }
 });
-test('[night-11ax] the glyphs the KARTA subsets lack (U+2009, U+202F, U+2192) come from a shipped fallback', () => {
+test('[night-11az] the glyphs the Alegreya subset lacks (U+202F) come from a shipped fallback', () => {
   const gaps = [];
-  for (const [face, own] of kartaOwn) for (const cp of [0x2009, 0x202f, 0x2192]) {
-    if (!own.has(cp) && !kartaFaces.get(face).has(cp)) gaps.push(face + ' ' + show(cp));
+  for (const [face, own] of skinOwn) for (const cp of [0x2009, 0x202f, 0x2192]) {
+    if (!own.has(cp) && !skinFaces.get(face).has(cp)) gaps.push(face + ' ' + show(cp));
   }
   if (gaps.length) throw new Error(gaps.join(', '));
-  if (kartaOwn.get('Barlow Condensed 500').has(0x2192)) throw new Error('subset changed: Barlow now maps U+2192, update this test');
+  if (skinOwn.get('Alegreya 700').has(0x202f)) throw new Error('subset changed: Alegreya now maps U+202F, update this test');
 });
 for (const [name, catalog] of [['en', en], ['pl', pl]]) {
   test(`every ${name} catalog string is in every face`, () => {

@@ -9,8 +9,8 @@
 // `npm run skin:pixels` proves the result pixel-identical). postcss is Vite's own CSS parser (a dependency of vite).
 import postcss from 'postcss';
 
-export const KARTA_FILE = 'src/ui/skin/karta.css';
-export const KARTA_SCOPE = ':root[data-skin="karta"]';
+export const SKIN_STRUCTURE_FILE = 'src/ui/skin/roza.css';
+export const SKIN_SCOPE = ':root[data-skin="roza"]';
 const norm = (s) => s.replace(/\s+/g, ' ').replace(/'/g, '"').trim();
 const SHORTHANDS = {
   font: ['font-size', 'font-weight', 'font-family', 'line-height', 'font-style', 'font-variant', 'font-stretch'],
@@ -35,15 +35,15 @@ function context(node) {
 }
 
 /** "context|selector without the scope" -> properties the KARTA structure sets there. */
-export function kartaOverrides(kartaCss) {
+export function skinOverrides(structureCss) {
   const over = new Map();
-  postcss.parse(kartaCss).walkRules((rule) => {
+  postcss.parse(structureCss).walkRules((rule) => {
     const where = context(rule);
     const props = rule.nodes.filter((n) => n.type === 'decl').map((d) => d.prop.toLowerCase());
     for (const selector of rule.selectors) {
       const s = norm(selector);
-      if (!s.startsWith(KARTA_SCOPE + ' ')) continue;
-      const key = `${where}|${s.slice(KARTA_SCOPE.length + 1)}`;
+      if (!s.startsWith(SKIN_SCOPE + ' ')) continue;
+      const key = `${where}|${s.slice(SKIN_SCOPE.length + 1)}`;
       over.set(key, new Set([...(over.get(key) ?? []), ...props]));
     }
   });

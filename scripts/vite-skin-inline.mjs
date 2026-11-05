@@ -11,7 +11,7 @@
 // `var(--skin-` in dist CSS).
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { KARTA_FILE, KARTA_SCOPE, kartaOverrides, pruneOverridden } from './vite-skin-prune.mjs';
+import { SKIN_STRUCTURE_FILE, SKIN_SCOPE, skinOverrides, pruneOverridden } from './vite-skin-prune.mjs';
 
 export const SKIN_FILE = 'src/ui/skin/current.css';
 /** [night-11ax] D-257: the previous skin ("Diorama"), DEV comparison only (`?skin=current`). */
@@ -181,10 +181,10 @@ export function skinInline() {
       const inlined = inlineSkin(code, resolved, file.slice(root.length + 1));
       // [night-11ax] D-257: a release always has <html data-skin="karta">, so its scope is written `:root:root` (same
       // specificity, 0-2-0; ~12 bytes less per selector). Dev (AW_SKIN_INLINE=1) keeps it for `?skin=current`.
-      if (file === normal(resolve(root, KARTA_FILE))) return { code: build ? inlined.split(KARTA_SCOPE).join(':root:root') : inlined, map: null };
+      if (file === normal(resolve(root, SKIN_STRUCTURE_FILE))) return { code: build ? inlined.split(SKIN_SCOPE).join(':root:root') : inlined, map: null };
       // [night-11ax] D-257: drop the declarations the KARTA structure always overrides (scripts/vite-skin-prune.mjs).
-      const over = build ? (overrides ??= kartaOverrides(readFileSync(resolve(root, KARTA_FILE), 'utf8')))
-        : kartaOverrides(readFileSync(resolve(root, KARTA_FILE), 'utf8'));
+      const over = build ? (overrides ??= skinOverrides(readFileSync(resolve(root, SKIN_STRUCTURE_FILE), 'utf8')))
+        : skinOverrides(readFileSync(resolve(root, SKIN_STRUCTURE_FILE), 'utf8'));
       return { code: pruneOverridden(inlined, over).css, map: null };
     },
   };
