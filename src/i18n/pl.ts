@@ -74,6 +74,17 @@ export const pl = {
   // [task-35] Crate label fields; the numbers come from the simulation.
   'upgrade.subtitle': 'Hangar: przyszły trzy skrzynie. Otwierasz jedną.',
   'upgrade.counter': '{index}/{total}',
+  // [night-12ba] R2k, D-247: weekly contract waybill on the board, the contract crate and the pause-sheet row.
+  'upgrade.subtitleFour': 'Hangar: przyszły cztery skrzynie. Otwierasz jedną.',
+  'upgrade.contract.title': 'LIST PRZEWOZOWY',
+  'upgrade.contract.route': '{from} – {to}',
+  'upgrade.contract.task': '{target} {target|pasażer|pasażerów|pasażerów} między nimi w tym tygodniu. Nagroda: czwarta skrzynia za tydzień.',
+  'upgrade.contract.lastMet': 'Zeszły tydzień: {delivered}/{target}, wykonany.',
+  'upgrade.contract.lastMissed': 'Zeszły tydzień: {delivered}/{target}, niewykonany.',
+  'upgrade.contract.crate': 'KONTRAKT',
+  'pause.summary.contract': 'Kontrakt',
+  'pause.summary.contractValue': '{from} – {to} {delivered}/{target}',
+  'pause.summary.contractMet': '{from} – {to} {delivered}/{target}, wykonany',
   'upgrade.code.turboprop': 'TP-{seats}',
   'upgrade.code.widebody': 'WB-{seats}',
   'upgrade.code.hub': 'HUB+{seats}',

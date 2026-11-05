@@ -2119,3 +2119,36 @@ week 2 50, week 3 33, week 5 1, 500 passengers 10, 1 000 passengers 0; 200 runs,
 194 / 135 / 1 / 24 / 0. The median run reaches the first four; week 5 and 1 000 passengers are stretch goals no bot
 run reaches (owner may prefer week 4 / 750 passengers). Guard: `test:milestones`, `test:e2e:gameover-milestones`.
 **Status: in force (thresholds to confirm by the owner).**
+
+## D-247 — Weekly contract: one optional contract per weekly board; meeting it adds a fourth crate next week (2026-11-05, Claude, night N12ba)
+R2k. Every weekly board of a new Endless run names one **optional** contract for the coming week: carry N passengers
+between two named regions, **either direction**. Meeting it adds one more crate to the next board; missing it costs
+nothing (no accept step, no penalty). The rule sits behind `GameConfig.weeklyContract: true` (Endless only;
+`EndlessRun.create` sets it for every new Endless run through one switch, `ENDLESS_WEEKLY_CONTRACT`). Daily, puzzles
+and older saves carry no flag, so their state, hashes and the leaderboard replay are bit-for-bit unchanged (pinned in
+`test:weekly-contract` against origin/dev 61f50fd bot runs) and `RULES_VERSION` stays 6; the save envelope goes
+**v2 → v3** (v2 loads unchanged; a pre-R2k build refuses a v3 save as "newer version" instead of dropping the
+contract), and the D-76 replay keeps the flag. **Draw** (`src/sim/contracts.ts`): unordered pairs of regions with an
+open airport; target = 100 % of the pair's expected demand both ways over the coming 3-day week, read from the demand
+weights of the current network (`RegionalDemand.expectedPassengers`), capped at 60; pairs under 8 are not drawn;
+one pair uniformly from `new Rng(seed).fork('contract/<week>')` — no kernel RNG stream moves, so a run that never
+meets a contract plays exactly as without contracts. **Counting**: only in contract runs a passenger carries
+`originRegion`, and each delivery between the two regions counts; a `ContractMet` event fires once. **Fourth crate**:
+the next board draws its cards as before, then one more from the cards not on it that can act at all (the hub card
+needs a hub; "+2 slots" can always target an airport, so here it ignores D-150's first-hold rule); it is named in
+`WeeklyUpgradeState.extraCrate`, kept by Back (D-49). A board with nothing left to add keeps the crate for the next
+board. **UI** (minimal, local `--aw-contract-*` tokens for the pending redesign): a paper waybill under the yellow sign
+(both region names, target, reward; last week's result with a filled/hollow square), the sign says "four crates",
+the contract crate carries "· CONTRACT" in its stencil line; four crates go two by two without model windows on
+portrait phones; the pause sheet gets a "Contract" row ("N. Europe – Mid. East 12/30", ", met"). All sizes of
+`test:e2e:weekly-contract` fit without scrolling except 320×568 (scrolls by about the slip's height; crates reachable).
+**Bot check** (`balance:contracts`, test:balance policy, which does not aim at contracts; nothing else retuned):
+50 seeds from 0xA1A1: median 17.41 / 17.41 min without / with, 23 of 45 contracts met (51.1 %); 200 seeds: 16.75 /
+16.75 min, 82 of 170 met (48.2 %), targets 8–60 (median 31), 82 boards with a contract crate, which the bot never took
+(its card ranking always preferred one of the usual three), so every run is as long as without contracts
+(`docs/balance/contracts-summary.md`). The share was set on this rate: 50 % share 96 %, 80 % 64 %, 100 % uncapped
+38 % (the two busiest pairs ask for 300–450), 100 % capped at 60 → ~50 %. The reward is therefore modest: the
+fourth card is often "+2 slots" or the second aircraft. Owner choices left open: share/cap (difficulty), either
+direction vs one-way, no penalty, whether a contract also shows on the game-over report.
+Guards: `test:weekly-contract` (`test:fast`), `test:e2e:weekly-contract`, `test:balance:contracts` (`test:ci`).
+**Status: in force (difficulty to confirm after the closed test).**

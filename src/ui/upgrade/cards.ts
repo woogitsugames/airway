@@ -133,3 +133,13 @@ export function cardModel(kind: UpgradeKind, index: number, total: number, hubs:
     ],
   };
 }
+
+/**
+ * [night-12ba] R2k, D-247: the weekly contract as the board shows it: next week's contract (null when no pair of
+ * regions qualifies), the one that just ended (null on the first board) and the card the met contract added.
+ */
+export interface ContractBoard {
+  readonly next: { readonly regions: readonly [string, string]; readonly target: number } | null;
+  readonly last: { readonly delivered: number; readonly target: number; readonly met: boolean } | null;
+  readonly extraCrate: string | null;
+}

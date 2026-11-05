@@ -11,16 +11,19 @@ export function scenarioFor(config: GameConfig): Scenario {
     return puzzleScenario(config.puzzleId);
   }
   // [night-11aj] R2g: a chosen home region moves only the start cluster (D-236); Daily never carries one.
-  if (config.homeRegion !== undefined) return homeScenario(config.homeRegion);
-  return ENDLESS_SCENARIO;
+  // [night-12ba] R2k: the weekly contract (D-247) is an Endless flag too; without either it is the shared scenario.
+  if (config.homeRegion === undefined && config.weeklyContract !== true) return ENDLESS_SCENARIO;
+  return endlessScenario(config.homeRegion ?? null, config.weeklyContract === true);
 }
 
-const HOME_SCENARIOS = new Map<RegionId, Scenario>();
-function homeScenario(region: RegionId): Scenario {
-  let scenario = HOME_SCENARIOS.get(region);
+const ENDLESS_VARIANTS = new Map<string, Scenario>();
+function endlessScenario(region: RegionId | null, contract: boolean): Scenario {
+  const key = `${region ?? '-'}/${contract ? 'c' : '-'}`;
+  let scenario = ENDLESS_VARIANTS.get(key);
   if (!scenario) {
-    scenario = Object.freeze({ ...ENDLESS_SCENARIO, homeRegionId: region });
-    HOME_SCENARIOS.set(region, scenario);
+    scenario = Object.freeze({ ...ENDLESS_SCENARIO, ...(region ? { homeRegionId: region } : {}),
+      ...(contract ? { weeklyContract: true } : {}) });
+    ENDLESS_VARIANTS.set(key, scenario);
   }
   return scenario;
 }

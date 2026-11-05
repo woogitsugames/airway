@@ -8,9 +8,14 @@ import { RULES_VERSION, type GameConfig } from '../sim/state.ts';
  * A v1 envelope (always Random) still loads unchanged; a build before R2g refuses a v2 save as 'unsupported'
  * instead of continuing a home-region run in a random world.
  */
-export const SAVE_VERSION = 2 as const;
+export const SAVE_VERSION = 3 as const;
 /** Envelope versions this build reads: v0 (pre-checksum, migrated), v1 (pre-R2g) and the current one. */
 const LEGACY_V1 = 1;
+/**
+ * [night-12ba] R2k, D-247: 2 -> 3, the config may carry the weekly contract. A v2 envelope (never a contract)
+ * loads unchanged; a build before R2k refuses a v3 save as 'unsupported' instead of dropping the contract.
+ */
+const LEGACY_V2 = 2;
 export const TICKS_PER_DAY = 1440;
 export const MAX_SAVE_BYTES = 8 * 1024 * 1024;
 const MAX_LOG_ENTRIES = 100_000;
@@ -109,7 +114,7 @@ function normaliseAndValidate(raw: unknown): LoadResult {
     return { status: 'error', issue: 'corrupt' };
   }
   if (raw.v > SAVE_VERSION) return { status: 'error', issue: 'unsupported' };
-  if (raw.v !== 0 && raw.v !== LEGACY_V1 && raw.v !== SAVE_VERSION) return { status: 'error', issue: 'corrupt' };
+  if (raw.v !== 0 && raw.v !== LEGACY_V1 && raw.v !== LEGACY_V2 && raw.v !== SAVE_VERSION) return { status: 'error', issue: 'corrupt' };
   const migrated = raw.v === 0;
   const snapshot = migrated ? raw.snapshot ?? raw.state : raw.snapshot;
   if (!isRecord(snapshot) || !safeJsonTree(snapshot)) return { status: 'error', issue: 'corrupt' };
@@ -131,7 +136,8 @@ function normaliseAndValidate(raw: unknown): LoadResult {
   };
   const digest = checksum(body);
   // A v1 envelope was checksummed with its own version number; it is verified as written, then re-tagged.
-  const written = raw.v === LEGACY_V1 ? checksum({ ...body, v: LEGACY_V1 } as unknown as Omit<GameSaveV1, 'checksum'>) : digest;
+  const written = raw.v === LEGACY_V1 || raw.v === LEGACY_V2
+    ? checksum({ ...body, v: raw.v } as unknown as Omit<GameSaveV1, 'checksum'>) : digest;
   if (!migrated && (typeof raw.checksum !== 'string' || written !== raw.checksum)) {
     return { status: 'error', issue: 'corrupt' };
   }
@@ -279,8 +285,10 @@ export function replaySave(save: GameSaveV1): Sim | null {
     if ((mode !== 'endless' && mode !== 'daily') || save.tick > MAX_REPLAY_TICKS) return null;
     // [night-11aj] R2g: the replay keeps the run's home region (Sim validates it; a pre-R2g save has none = Random).
     const homeRegion = config?.homeRegion;
+    // [night-12ba] R2k: and its weekly contract flag (absent in every save before R2k).
+    const contract = config?.weeklyContract === true ? { weeklyContract: true } : {};
     const sim = Sim.replay(save.seed, save.commands as never, save.tick,
-      homeRegion === undefined ? { mode } : { mode, homeRegion } as GameConfig);
+      (homeRegion === undefined ? { mode, ...contract } : { mode, homeRegion, ...contract }) as GameConfig);
     if (sim.world.status !== 'running' && sim.world.status !== 'upgrade') return null;
     // Commands issued in the saved tick but not yet simulated still belong to the run.
     const pending = save.snapshot.pending;

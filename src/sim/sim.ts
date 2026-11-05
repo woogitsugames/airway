@@ -61,7 +61,9 @@ function readConfig(value: unknown): GameConfig {
       (value.puzzleId !== undefined && typeof value.puzzleId !== 'string') ||
       ((value.mode === 'puzzle') !== (value.puzzleId !== undefined)) ||
       // [night-11aj] R2g: a home region is an Endless choice only (Daily stays one world for everyone).
-      (value.homeRegion !== undefined && (value.mode !== 'endless' || !isHomeRegion(value.homeRegion)))) {
+      (value.homeRegion !== undefined && (value.mode !== 'endless' || !isHomeRegion(value.homeRegion))) ||
+      // [night-12ba] R2k: the weekly contract is an Endless rule only (Daily and its leaderboards stay as they were).
+      (value.weeklyContract !== undefined && (value.mode !== 'endless' || value.weeklyContract !== true))) {
     throw new TypeError('invalid game configuration');
   }
   return copyConfig(value as unknown as GameConfig);

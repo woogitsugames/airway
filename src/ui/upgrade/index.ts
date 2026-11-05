@@ -1,9 +1,9 @@
 import type { HubPressure, UpgradeCommand, UpgradeKind, WeeklyUpgradeState } from '../../sim/upgrades';
 import './upgrade.css';
-import { t } from '../../i18n';
-import { cardModel, upgradeFacts, type CardModel, type SlotPressure } from './cards';
+import { t, type TranslationKey } from '../../i18n';
+import { cardModel, upgradeFacts, type CardModel, type ContractBoard, type SlotPressure } from './cards';
 
-export { cardModel, upgradeFacts, mostSlotStarved, type CardModel, type UpgradeFacts, type SlotPressure } from './cards';
+export { cardModel, upgradeFacts, mostSlotStarved, type CardModel, type ContractBoard, type UpgradeFacts, type SlotPressure } from './cards';
 
 export interface UpgradeUIOptions {
   onCommand: (command: UpgradeCommand) => void;
@@ -55,6 +55,38 @@ function cargoLabel(model: CardModel, index: number): { card: HTMLButtonElement;
   return { card, window };
 }
 
+/**
+ * [night-12ba] R2k, D-247: the weekly contract as a freight waybill pinned under the sign: the two regions, the
+ * target and the reward; under it last week's result with a filled (met) or hollow (missed) square, so the outcome
+ * reads by shape, not only by words. Inks are local custom properties (`--aw-contract-*`) for the pending redesign.
+ */
+function waybill(contract: ContractBoard): HTMLElement | null {
+  if (!contract.next && !contract.last) return null;
+  const sheet = document.createElement('section');
+  sheet.className = 'airway-upgrade-waybill';
+  sheet.dataset.testid = 'upgrade-contract';
+  const title = span('airway-upgrade-waybill-title', t('upgrade.contract.title'));
+  sheet.append(title);
+  if (contract.next) {
+    const [from, to] = contract.next.regions;
+    const route = span('airway-upgrade-waybill-route', t('upgrade.contract.route', {
+      from: t(`region.name.${from}` as TranslationKey), to: t(`region.name.${to}` as TranslationKey) }));
+    route.dataset.regions = `${from} ${to}`;
+    const task = span('airway-upgrade-waybill-task', t('upgrade.contract.task', { target: contract.next.target }));
+    const text = document.createElement('p');
+    text.className = 'airway-upgrade-waybill-text';
+    text.append(route, ' ', task);
+    sheet.append(text);
+  }
+  if (contract.last) {
+    const last = span('airway-upgrade-waybill-last', t(contract.last.met ? 'upgrade.contract.lastMet' : 'upgrade.contract.lastMissed',
+      { delivered: contract.last.delivered, target: contract.last.target }));
+    last.dataset.met = String(contract.last.met);
+    title.after(last);
+  }
+  return sheet;
+}
+
 /** [task-39] Black wayfinding tile with a yellow arrow, set into the yellow sign: back to the crates. */
 function backTile(onBack: () => void): HTMLButtonElement {
   const button = document.createElement('button');
@@ -84,7 +116,9 @@ export class WeeklyUpgradeView {
   private airports: readonly SlotPressure[] = [];
   constructor(root: HTMLElement, options: UpgradeUIOptions) { this.root = root; this.options = options; }
   /** `airports` (task 32): every active airport, for the "+2 slots" stamp and airport pick. */
-  render(state: WeeklyUpgradeState | null, hubs: readonly HubPressure[], airports: readonly SlotPressure[] = []): void {
+  /** [night-12ba] R2k: `contract` = the weekly contract waybill (Endless runs with the contract only). */
+  render(state: WeeklyUpgradeState | null, hubs: readonly HubPressure[], airports: readonly SlotPressure[] = [],
+    contract: ContractBoard | null = null): void {
     this.state = state;
     this.hubs = hubs;
     this.airports = airports;
@@ -99,6 +133,7 @@ export class WeeklyUpgradeView {
     wrap.setAttribute('role', 'dialog');
     wrap.setAttribute('aria-modal', 'true');
     wrap.setAttribute('aria-label', week);
+    wrap.dataset.crates = String(state.offers.length); // [night-12ba] R2k: four crates trim the model windows
     // Yellow wayfinding sign: week number + what this screen is.
     const sign = document.createElement('header');
     sign.className = 'airway-upgrade-sign';
@@ -107,7 +142,8 @@ export class WeeklyUpgradeView {
     heading.textContent = week;
     const subtitle = document.createElement('p');
     subtitle.className = 'airway-upgrade-sub';
-    subtitle.textContent = pickingSlots ? t('upgrade.selectAirport') : state.pendingHub ? t('upgrade.selectHub') : t('upgrade.subtitle');
+    subtitle.textContent = pickingSlots ? t('upgrade.selectAirport') : state.pendingHub ? t('upgrade.selectHub')
+      : state.offers.length === 4 ? t('upgrade.subtitleFour') : t('upgrade.subtitle');
     sign.append(heading, subtitle);
     wrap.append(sign);
     if (state.pendingHub) {
@@ -118,6 +154,8 @@ export class WeeklyUpgradeView {
       return;
     }
     this.options.onHubSelectionMode?.(false, []);
+    const sheet = contract ? waybill(contract) : null;
+    if (sheet) wrap.append(sheet);
     const cards = document.createElement('div');
     cards.className = 'airway-upgrade-labels';
     cards.dataset.count = String(state.offers.length);
@@ -125,6 +163,12 @@ export class WeeklyUpgradeView {
       const model = cardModel(offer.id, i, state.offers.length, hubs, upgradeFacts(), airports);
       const { card, window } = cargoLabel(model, i);
       card.disabled = model.unavailable;
+      // [night-12ba] R2k: the crate a met contract added carries a "CONTRACT" piece in its stencil line.
+      if (contract?.extraCrate === offer.id && state.extraCrate === offer.id) {
+        card.dataset.extra = 'contract';
+        card.querySelector('.airway-upgrade-code')?.append(' ', span('airway-upgrade-extra', `· ${t('upgrade.contract.crate')}`));
+        card.setAttribute('aria-label', `${card.getAttribute('aria-label')}. ${t('upgrade.contract.crate')}`);
+      }
       card.addEventListener('click', () => this.options.onCommand({ type: 'ChooseUpgrade', week: state.week, upgrade: offer.id }));
       cards.append(card);
       this.options.onPreviewModel?.(window, offer.id);
