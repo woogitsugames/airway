@@ -2645,6 +2645,28 @@ reads "AMM 3 z 36 · Amman" under its ring, clear of the dock symbols. Checked b
 every shown note within one radius of its own ring, Amman's note level with its name. Venice, Athens and Baghdad show no
 note on the phone (no free place near them); on the landscape shot nothing changes. **Status: in force.**
 
+## D-264 — Róża: a note is shown only where it is clearly its own rose's (2026-11-05, Claude, night N18a)
+The store shots game-iphone and night-iphone (440×956, after PR #271) still let two notes read as Ankara's: "ATH 2 z 36"
+had slid up from beside Athens' name to hang right above "Ankara", and "BGW 2 z 24" stood over Baghdad's name but level
+with Ankara's ring, right of it, where Ankara's own note would be. D-263 kept a note off every ring and near its rose, but
+not nearer its rose than a neighbour's. Rule now (`ownsPlace` in `src/ui/overlay-layout.ts`, `TagSlot.rose` set by
+`rozaNotePlaces` / `rozaRoseObstacles`): **a place is taken only when the note's gap to its own ring is at least
+`OWN_MARGIN` = 12 px smaller than its gap to every other rose's ring, and the note keeps 12 px from every other rose's
+curved name** (gaps from the note's nearest edge; a ring is its disc). A neighbour's name further off does not count: a
+first try that weighed names like rings pushed "ANK 0 z 24" off its natural place right of Ankara on the foldable shot
+because Baghdad's name stood 20 px below. Standing level beside its own name (D-263 places 4/5, e.g. the forced
+busiest-hub "Amman · AMM 3 z 36") the name counts as its rose, so that case stays. A name the forced must pass covers
+steps back and does not count. A note that fails tries its other places, then the compact form, then hides (the rose's ticks still show the fill). The
+place held last frame gets 3 px less margin (hysteresis), and that lenient try now runs only after every slide of the
+place failed at full clearance, so an unchanged frame lays out exactly as before. Checked by `test:roza-names` (the
+iPhone cluster with inputs read from the real overlay in both scenes, fresh and with the shot's frame history: every
+note clearly its own, ATH not over Ankara, BGW not level with Ankara, Amman and Ankara keep notes; plus the 360×640
+Levant fixture) and `test:overlay-layout`. On the real renderer the iPhone shot now reads "Ankara · ANK 1 z 24", ATH
+under Athens, AMM under "Amman"; Baghdad has no free owned place on that screen and hides its note (`docs/shots/n18a/`,
+before and after). The 24 game/night store PNGs, their manifest records and the contact sheet were republished with the
+new `store-shots.mjs --only=game,night --merge`. On the tablet shot (768×1024) "BGW 2 z 24" now stands over Baghdad's
+name, 17 px from its ring and 34 px from Ankara's, under Ankara's note: within the rule, a little crowded.
+
 ## D-265 — Store preview video: fixed-step frames from real play, 24 s, poster at 5 s (2026-11-05, Claude, night N18b)
 R2b. `npm run store:video` (`scripts/store-video.mjs`) films one seed 0xA1A1 run played by the DEV autoplay bot through
 `window.aw` on the real renderer. **Frames, not a screen recording:** Playwright's fake clock is paused once the menu is

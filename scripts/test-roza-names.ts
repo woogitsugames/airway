@@ -4,9 +4,9 @@
 // [night-16a] D-262: a name whose top is taken runs along the bottom of the ring before it shortens; the store shot's
 // Levant cluster (game-phone 360×640) keeps the busiest hub's name and its note (code and fill at least).
 import assert from 'node:assert/strict';
-import { roseLabelBelow, roseLabelText, roseNameBox, roseRank, rozaCaptionClashes, rozaNameLayout, rozaNotePlaces, rozaRoseObstacles, roseHomeReach,
+import { roseLabelBelow, roseLabelText, roseNameBox, roseRank, rozaCaptionClashes, rozaNameLayout, rozaNotePlaces, rozaRoseObstacles, roseHomeReach, roseRingHalf,
   type RoseLabel, type RoseLabelMode } from '../src/ui/skin/roza.ts';
-import { layoutTags, type TagSlot } from '../src/ui/overlay-layout.ts';
+import { layoutTags, OWN_MARGIN, type TagSlot } from '../src/ui/overlay-layout.ts';
 
 let passed = 0;
 let failed = 0;
@@ -115,7 +115,9 @@ test('a dock caption over a rose or its name steps back; one beside it stays (st
 // [night-16a] D-262: the store shot game-phone (360×640, docs/store/shots/pl/game-phone.png before D-262): Ateny, Ankara,
 // Amman, Bagdad, Wenecja and Ryga in one cluster. Amman, the busiest hub, lost both its name and its note there, and
 // only RIX and ANK kept a note, because whoever was placed first won. Positions and medallion radii read off that PNG.
-const LEVANT: { label: RoseLabel; width: number; compact: number }[] = [
+type Scene = { label: RoseLabel; width: number; compact: number; minor?: boolean }[];
+type View = { width: number; height: number; top: number; bottom: number; gap: number };
+const LEVANT: Scene = [
   { label: rose(132, 163, 'Ryga', 'RIX', { r: 23, fill: 0 }), width: 72, compact: 72 },
   { label: rose(44, 229, 'Wenecja', 'VCE', { r: 22, fill: 2 / 24 }), width: 104, compact: 84 },
   { label: rose(101, 285, 'Ateny', 'ATH', { r: 34, hub: true, fill: 5 / 24 }), width: 132, compact: 84 },
@@ -127,7 +129,7 @@ const PHONE = { width: 360, height: 640, top: 72, bottom: 120, gap: 4 };
 /** [night-16b] D-263: the Róża dock symbols on their arc in that shot (globe mode, hub, widebody; 48 × 48 centres). */
 const DOCK = [[233, 388], [182, 419], [146, 469]];
 /** One overlay frame as src/ui/overlay.ts runs it: names, then the notes beside the roses (fixed rose boxes). */
-function levantFrame(scene: typeof LEVANT, last?: { modes: RoseLabelMode[]; tags: TagSlot[] }) {
+function levantFrame(scene: Scene, last?: { modes: RoseLabelMode[]; tags: TagSlot[] }, view: View = PHONE, dock: number[][] = DOCK) {
   const labels = scene.map((s, i) => ({ ...s.label, last: last?.modes[i] }));
   const modes = rozaNameLayout(labels);
   const busiest = labels.reduce((best, l, i) => (l.hub && (best < 0 || roseRank(l) > roseRank(labels[best])) ? i : best), -1);
@@ -137,10 +139,10 @@ function levantFrame(scene: typeof LEVANT, last?: { modes: RoseLabelMode[]; tags
       x: 0, y: 0, placed: false };
     tag.width = scene[i].width;
     tag.compactWidth = scene[i].compact;
-    tag.minor = label.fill === 0;
+    tag.minor = scene[i].minor ?? label.fill === 0;
     tag.rank = roseRank(label);
     tag.must = i === busiest;
-    rozaNotePlaces(tag, label, modes[i], PHONE.width);
+    rozaNotePlaces(tag, label, modes[i], view.width);
     const box: TagSlot = { id: label.code + '~rose', anchorX: 0, anchorY: 0, width: 0, height: 0, active: true, jammed: false, fixed: true,
       x: 0, y: 0, placed: false, rank: tag.rank };
     const name: TagSlot = { ...box, id: label.code + '~name' };
@@ -148,9 +150,9 @@ function levantFrame(scene: typeof LEVANT, last?: { modes: RoseLabelMode[]; tags
     slots.push(tag, box, name);
     return tag;
   });
-  for (const [x, y] of DOCK) slots.push({ id: 'dock', anchorX: 0, anchorY: 0, width: 48, height: 48, active: true, jammed: false,
+  for (const [x, y] of dock) slots.push({ id: 'dock', anchorX: 0, anchorY: 0, width: 48, height: 48, active: true, jammed: false,
     fixed: true, x: x - 24, y: y - 24, placed: false, rank: Infinity });
-  layoutTags(slots, PHONE);
+  layoutTags(slots, view);
   return { labels, modes, tags, slots };
 }
 test('store shot game-phone: the busiest hub (Amman) keeps its name and its note; names never overlap', () => {
@@ -223,6 +225,93 @@ test('store shot game-phone: an unchanged frame lays out the same, and 1 px of c
     assert.deepEqual(next.modes, first.modes);
     assert.deepEqual(next.tags.map((t) => [t.placed, t.compact, t.lastPick]), first.tags.map((t) => [t.placed, t.compact, t.lastPick]));
   }
+});
+
+// [night-18a] D-264: the store shots game-iphone and night-iphone (440×956, docs/store/shots/pl/ after PR #271): the
+// layout inputs read from the real overlay in those scenes (rose centres, medallion radii, fills, note widths, the dock
+// symbols, the HUD bands). There "ATH 2 z 36" hung right above Ankara's name and "BGW 2 z 24" stood level beside
+// Ankara's ring: both read as Ankara's notes.
+const IPHONE: View = { width: 440, height: 956, top: 84, bottom: 96, gap: 4 };
+const IPHONE_DOCK = [[223, 908], [212, 847], [226, 786], [262, 736], [315, 705], [377, 696]];
+const iphoneScene = (fills: number[], widths: number[], minor: boolean[]): Scene => [
+  rose(124.6, 436.8, 'Ateny', 'ATH', { r: 40, hub: true }),
+  rose(206.8, 419.6, 'Ankara', 'ANK', { r: 29.7 }),
+  rose(234.6, 501.3, 'Amman', 'AMM', { r: 40, hub: true }),
+  rose(315.7, 484.9, 'Bagdad', 'BGW', { r: 29.1 }),
+  rose(54.3, 366.2, 'Wenecja', 'VCE', { r: 26.1 }),
+  rose(160.6, 283.1, 'Ryga', 'RIX', { r: 27.3 }),
+].map((label, i) => ({ label: { ...label, fill: fills[i] }, width: widths[i], compact: 89, minor: minor[i] }));
+const GAME_IPHONE = iphoneScene([2 / 36, 1 / 24, 3 / 36, 2 / 24, 1 / 24, 0], [144, 144, 178, 178, 144, 103],
+  [false, false, false, false, false, true]);
+const NIGHT_IPHONE = iphoneScene([3 / 36, 0, 5 / 36, 3 / 24, 0, 0], [144, 103, 144, 178, 103, 103],
+  [false, true, false, false, true, true]);
+const iphoneFrame = (scene: Scene, last?: { modes: RoseLabelMode[]; tags: TagSlot[] }) => levantFrame(scene, last, IPHONE, IPHONE_DOCK);
+/** The frame as the shot met it: what each rose and note showed the frame before (labels, then the places they held). */
+function iphoneShotFrame(scene: Scene) {
+  const before = iphoneFrame(scene);
+  [5, -1, 1, 9, -1, 0].forEach((pick, i) => { before.tags[i].lastPick = pick; });
+  return iphoneFrame(scene, { modes: ['name', 'name', 'name-below', 'name', 'name', 'name'], tags: before.tags });
+}
+/**
+ * [night-18a] D-264: every shown note is clearly its own rose's: its gap to its own ring (or to its own name when it
+ * stands level beside it) is at least OWN_MARGIN px smaller than its gap to any other rose's ring, and it keeps
+ * OWN_MARGIN px from every other rose's name.
+ */
+function assertNotesOwned(labels: RoseLabel[], modes: RoseLabelMode[], tags: TagSlot[]): void {
+  const ringGap = (t: TagSlot, l: RoseLabel) => {
+    const dx = Math.max(t.x - l.x, 0, l.x - t.x - t.width), dy = Math.max(t.y - l.y, 0, l.y - t.y - t.height);
+    return Math.max(0, Math.hypot(dx, dy) - roseRingHalf(l));
+  };
+  const nameBox = (i: number) => (modes[i] === 'none' ? null : roseNameBox(labels[i], roseLabelText(labels[i], modes[i]), roseLabelBelow(modes[i])));
+  const boxGap = (t: TagSlot, b: { l: number; t: number; r: number; b: number }) =>
+    Math.hypot(Math.max(b.l - t.x - t.width, 0, t.x - b.r), Math.max(b.t - t.y - t.height, 0, t.y - b.b));
+  tags.forEach((t, i) => {
+    if (!t.placed) return;
+    let own = ringGap(t, labels[i]);
+    const name = nameBox(i), mid = t.y + t.height / 2;
+    if (name && mid >= name.t && mid <= name.b) own = Math.min(own, boxGap(t, name));
+    labels.forEach((l, j) => {
+      if (j === i) return;
+      const other = ringGap(t, l);
+      assert(own + OWN_MARGIN <= other + 1e-6,
+        `${t.id}'s note is ${Math.round(own)} px from its rose but ${Math.round(other)} px from ${l.code}'s ring (reads as ${l.code}'s)`);
+      const name = nameBox(j);
+      assert(!name || boxGap(t, name) >= OWN_MARGIN - 1e-6, `${t.id}'s note stands right next to ${l.code}'s name`);
+    });
+  });
+}
+for (const [id, scene] of [['game', GAME_IPHONE], ['night', NIGHT_IPHONE]] as const) {
+  test(`store shot ${id}-iphone (D-264): every note is clearly its own rose's, none hangs at Ankara`, () => {
+    for (const { labels, modes, tags } of [iphoneFrame(scene), iphoneShotFrame(scene)]) {
+    assertNotesOwned(labels, modes, tags);
+    assertNotesAtHome(labels, tags);
+    const [ath, ank, amm, bgw] = tags;
+    const ankara = roseNameBox(labels[1], roseLabelText(labels[1], modes[1]), roseLabelBelow(modes[1]));
+    // Before D-264: "ATH 2 z 36" right above Ankara's name, "BGW 2 z 24" level with Ankara's ring right of it.
+    assert(!ath.placed || ath.y >= ankara.b || ath.x + ath.width <= ankara.l - OWN_MARGIN, 'ATH no longer hangs over Ankara');
+    assert(!bgw.placed || bgw.y > labels[1].y + roseRingHalf(labels[1]) || bgw.y + bgw.height < labels[1].y - roseRingHalf(labels[1]),
+      'BGW no longer stands level with Ankara');
+    // The busiest hub keeps its note, and the cluster still shows most notes (alternative places, then compact).
+    assert(amm.placed, 'Amman (busiest hub) has a note');
+    assert(ank.placed && ath.placed, 'Ankara and Ateny keep a note at their own roses');
+    }
+  });
+  test(`store shot ${id}-iphone: no note covers another note, a name, a ring or a dock symbol; stable frame to frame`, () => {
+    const first = iphoneFrame(scene);
+    const shown = first.slots.filter((s) => s.placed);
+    shown.forEach((a, i) => shown.forEach((b, j) => {
+      if (j <= i || (a.fixed && b.fixed) || a.ring || b.ring) return;
+      assert(!(a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height), `${a.id} overlaps ${b.id}`);
+    }));
+    shown.forEach((s) => assert(s.fixed || (s.x >= 6 && s.x + s.width <= IPHONE.width - 6), `${s.id} leaves the screen`));
+    const snap = (f: ReturnType<typeof levantFrame>) => JSON.stringify([f.modes, f.tags.map((t) => [t.placed, t.compact, t.x, t.y])]);
+    assert.equal(snap(iphoneFrame(scene, first)), snap(first));
+  });
+}
+test('store shot game-phone (D-264): the 360×640 Levant cluster: every note clearly its own rose\'s', () => {
+  const { labels, modes, tags } = levantFrame(LEVANT);
+  assertNotesOwned(labels, modes, tags);
+  assert(tags[4].placed && tags[4].compact === true, 'Amman\'s forced compact note still stands beside its own name');
 });
 console.log(`SUMMARY test:roza-names passed=${passed} failed=${failed}`);
 if (failed) process.exitCode = 1;
