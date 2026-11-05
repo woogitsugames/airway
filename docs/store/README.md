@@ -118,6 +118,39 @@ downscales to 1024×500 and the script writes opaque RGB. Checks (also in `test:
 the night scene is not used), wordmark inside the left third, globe limb visible. Re-render after a visual change
 of the globe or the `game` scene and inspect the PNG before committing.
 
+## Store preview video (R2b, D-265)
+
+`npm run store:video` films the same seed 0xA1A1 run the store shots use, played by the DEV autoplay bot through
+`window.aw` on the real renderer. Nothing is screen-recorded: Playwright's clock is paused, every video frame is one
+fixed 1/30 s step (`page.clock.runFor`; CSS animations paused and stepped by the same amount) followed by a PNG
+screenshot piped into ffmpeg, so SwiftShader's speed never shows in the video. No text, music or overlay is added; the
+only words are the game's own HUD in the video's language. The audio track is silent stereo AAC (some upload paths
+reject a video without audio).
+
+Storyboard, 24 s at 30 fps (cuts between shots, every shot is real play of one run at 4× speed):
+
+| Time | Shot | What happens |
+| --- | --- | --- |
+| 0–4 s | route | First frame is the game: a finger draws the first route (the pair `aw.gesture('route')` picks for the viewport), the turboprop boards and departs |
+| 4–12 s | dusk | Day 2 from 15:30: the bot's grown network, the evening terminator crosses it; **poster frame at 5 s** |
+| 12–17 s | crates | The weekly board opens with its three freight crates; a crate is tapped, play resumes in week 2 |
+| 17–24 s | jam | Building stops until an airport is 83 % full; its edge chip is tapped, the camera turns to it and its ring fills (phone: Rio de Janeiro turns red with the jam countdown; iPhone/iPad: Karachi near full). The run is still alive at the end |
+
+| File | Size | Console slot |
+| --- | --- | --- |
+| `video/{pl,en}/preview-iphone.mp4` | 886×1920 | App Store Connect → iPhone 6.9" (and 6.5") app preview; poster frame 00:05 |
+| `video/{pl,en}/preview-ipad.mp4` | 1200×1600 | App Store Connect → iPad 13" (12.9") app preview; poster frame 00:05 |
+| `video/{pl,en}/preview-play.mp4` | 1080×1920 | Google Play takes only a YouTube link: the owner uploads this file to the "Airway" channel (Q-49), ads off, then pastes the URL into Main store listing → Video |
+| `video/{pl,en}/poster-*.jpg` | as the video | The 5 s frame (press kit, YouTube custom thumbnail source) |
+
+Encoding: H.264 High 4.0, yuv420p, 30 fps, CRF 18 capped at 12 Mbit/s, `+faststart`, AAC 128 kbit/s 48 kHz stereo —
+inside Apple's app-preview specification (H.264, ≤ 30 fps, 15–30 s, ≤ 500 MB). Re-check the specification in App Store
+Connect help before upload. `video/manifest.json` records per file the size, SHA-256, ffprobe facts and the ticks of
+every shot; files over 10 MB are git-ignored (`video/.gitignore`, generated) and must be regenerated locally before
+upload (`npm run store:video`, ~40 min on 4 vCPU; needs ffmpeg/ffprobe on PATH — without ffmpeg the script writes PNG
+frames and an `encode.sh`). `npm run test:store-video` re-checks the manifest, posters and `.gitignore`, and every
+preview present on disk (size, hash, ffprobe). A re-run is not byte-identical (SwiftShader), and the first-route tick varies by a few ticks (148–152) with the boot timing; the dusk shot ticks are identical in every file, the shot ticks are recorded per file.
+
 ## Development-only integration contract (task 36, D-48)
 
 `src/main.ts` serves `/?storeShot=<scene>&seed=41377&lang=<pl|en>` on DEV builds only. Every scene starts a real

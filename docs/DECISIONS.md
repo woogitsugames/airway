@@ -2666,4 +2666,24 @@ under Athens, AMM under "Amman"; Baghdad has no free owned place on that screen 
 before and after). The 24 game/night store PNGs, their manifest records and the contact sheet were republished with the
 new `store-shots.mjs --only=game,night --merge`. On the tablet shot (768×1024) "BGW 2 z 24" now stands over Baghdad's
 name, 17 px from its ring and 34 px from Ankara's, under Ankara's note: within the rule, a little crowded.
+
+## D-265 — Store preview video: fixed-step frames from real play, 24 s, poster at 5 s (2026-11-05, Claude, night N18b)
+R2b. `npm run store:video` (`scripts/store-video.mjs`) films one seed 0xA1A1 run played by the DEV autoplay bot through
+`window.aw` on the real renderer. **Frames, not a screen recording:** Playwright's fake clock is paused once the menu is
+up and every frame is exactly one 1/30 s `clock.runFor` step (rAF, timers and `performance.now` of the page), CSS
+animations are paused and advanced by the same 1/30 s, then a PNG screenshot is piped into ffmpeg; SwiftShader (G7) only
+makes the run slower, never changes a frame. **Storyboard (24 s, 4× game speed, cuts between shots):** route drawn by a
+pointer drag in the first second and its plane departing; day 2 from 15:30 with the evening terminator crossing the grown
+network (poster frame at 5 s, the warm light of the `game` store shot); the weekly board with its crates and a tap on one;
+building stops and the filling airport's edge chip is tapped, the camera turns to it and its ring goes red with the jam
+countdown — the run stays alive (a near jam, not the game-over report). On seed 0xA1A1 the airport that fills first is
+off the opening framing (Rio de Janeiro on the phone, Karachi on iPhone/iPad, whose first route differs), hence the real
+edge-chip tap instead of a still shot of the network. The first-route tick varies by a few ticks with boot timing (148–152).
+**Sizes:** App Store app previews iPhone 886×1920 (443×960 @2) and iPad 1200×1600 (768×1024 @1.5625, the tablet layout),
+Play 1080×1920 (360×640 @3, the phone store shot) for the owner's YouTube upload (Q-49); PL and EN each, since the HUD
+is localised. H.264 High 4.0 yuv420p, CRF 18 ≤ 12 Mbit/s, silent stereo AAC (no music, no added text or overlay).
+Files over 10 MB are git-ignored by a generated `docs/store/video/.gitignore` and recorded with size, SHA-256 and ffprobe
+facts in `manifest.json`; the 5 s posters are committed as JPEG. ffmpeg is a system tool (not an npm dependency, no
+licence entry: nothing of it ships). `test:store-video` (fast) checks the manifest, posters and `.gitignore`, and any
+preview present on disk. The press kit's video slot (`PRESS_KIT.video`, D-219) stays empty: the files are not in git.
 **Status: in force.**
