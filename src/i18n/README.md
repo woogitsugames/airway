@@ -4,6 +4,13 @@ Every player-facing string lives here (PL + EN, same keys, same placeholders; pl
 language's plural order). `npm run test:i18n` checks parity, placeholders, plural forms, unused keys and the glossary
 below.
 
+## Legal texts on demand (D-255)
+
+The privacy policy and terms bodies (draft banner, sections, date) are in `legal/en.ts` and `legal/pl.ts`, loaded by
+`loadLegalText()` when a page opens (own chunk inside the app, no network) and read with `legalText(key)`. They are
+copied word for word from `site/i18n.js` (`test:privacy-text`, `test:terms`), are not part of `i18n:export`, and a
+new language needs its own `legal/<code>.ts` (a lawyer-checked translation).
+
 ## Translator hand-off (R7i, D-211)
 
 `npm run i18n:export -- de` writes `docs/i18n/de.json` (`--csv` for a spreadsheet): one row per key with the English
