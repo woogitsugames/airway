@@ -4,6 +4,7 @@
 import './ui/fonts.css';
 import './ui/base.css';
 import './ui/theme/theme.css';
+import './ui/skin/current.css'; // [night-11aq] UI skin tokens (D-249)
 import './ui/game.css';
 import { bootAudio, audioSettingsFromToggles } from './audio';
 import { createFlapRattle } from './game/flapSound'; // [night-07e]

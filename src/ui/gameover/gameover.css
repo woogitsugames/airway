@@ -6,15 +6,15 @@
   display: grid;
   place-items: center;
   overflow: auto;
-  background: rgba(17, 35, 33, .63);
+  background: var(--skin-go-scrim);
   /* [night-07p] Top padding clears the boarding pass (top 10 px + 60 px tall): the final week, day, time and
      passenger count stay readable under the report instead of being cut by the sign. */
   padding: calc(var(--aw-safe-top) + 80px)
            calc(var(--aw-safe-right) + 12px)
            calc(var(--aw-safe-bottom) + 12px)
            calc(var(--aw-safe-left) + 12px);
-  color: #2a2420;
-  font-family: 'Atkinson Hyperlegible Next', sans-serif;
+  color: var(--skin-go-ink);
+  font-family: var(--skin-face-text);
 }
 .airway-go-content {
   display: grid;
@@ -28,8 +28,8 @@
   display: flex;
   align-items: center;
   min-height: 52px;
-  background: #ffc72c;
-  color: #1c1e20;
+  background: var(--skin-go-sign-bg);
+  color: var(--skin-go-sign-ink);
   padding: 7px 13px 7px 7px;
   gap: 12px;
 }
@@ -37,7 +37,7 @@
   flex: 0 0 39px;
   width: 39px;
   height: 37px;
-  background: #1c1e20;
+  background: var(--skin-go-sign-mark-bg);
   position: relative;
 }
 .airway-go-sign-mark::before {
@@ -47,26 +47,26 @@
   top: 15px;
   width: 20px;
   height: 7px;
-  background: #ffc72c;
+  background: var(--skin-go-sign-bg);
   clip-path: polygon(0 18%, 64% 18%, 64% 0, 100% 50%, 64% 100%, 64% 82%, 0 82%);
 }
 .airway-go-heading {
   margin: 0;
   min-width: 0; overflow-wrap: anywhere; /* [night-11ac] R7h: a long title wraps, the Map tab stays on the sign */
-  font: 800 clamp(19px, 4.4vw, 28px)/1.1 'Overpass', sans-serif;
+  font: var(--skin-weight-heavy) clamp(19px, 4.4vw, 28px)/1.1 var(--skin-face-display);
   letter-spacing: .045em;
   text-transform: uppercase;
 }
 .airway-go-board {
   min-width: 0;
   padding: 12px;
-  background: #1c1e20;
-  color: #f2efe6;
+  background: var(--skin-go-board-bg);
+  color: var(--skin-go-board-ink);
 }
 .airway-go-board-title {
   margin: 0 0 10px;
-  color: #ffc72c;
-  font: 700 12px/1.3 'Overpass Mono', monospace;
+  color: var(--skin-go-board-title-ink);
+  font: var(--skin-weight-bold) 12px/1.3 var(--skin-face-mono);
   text-transform: uppercase;
   letter-spacing: .075em;
 }
@@ -78,10 +78,10 @@
   align-items: center;
 }
 .airway-go-board-head {
-  border-bottom: 1px solid #53565a;
+  border-bottom: 1px solid var(--skin-go-board-head-rule);
   padding: 0 5px 7px;
-  font: 700 10px/1.2 'Overpass Mono', monospace;
-  color: #a6a8aa;
+  font: var(--skin-weight-bold) 10px/1.2 var(--skin-face-mono);
+  color: var(--skin-go-board-dim-ink);
 }
 .airway-go-flight-list {
   max-height: 186px;
@@ -91,40 +91,40 @@
 .airway-go-flight {
   min-height: 39px;
   padding: 4px 5px;
-  border-bottom: 1px solid #36393b;
-  font: 700 clamp(11px, 2.4vw, 14px)/1.3 'Overpass Mono', monospace;
+  border-bottom: 1px solid var(--skin-go-board-row-rule);
+  font: var(--skin-weight-bold) clamp(11px, 2.4vw, 14px)/1.3 var(--skin-face-mono);
   font-variant-numeric: tabular-nums;
 }
 .airway-go-flight-number { overflow-wrap: anywhere; }
-.airway-go-flight-gate { color: #d6b88a; }
+.airway-go-flight-gate { color: var(--skin-go-board-gate-ink); }
 .airway-go-flap {
   display: grid;
   min-height: 29px;
   place-items: center;
   padding: 3px;
-  color: #fff0e9;
-  background: #862a27;
-  border-top: 1px solid #bd5147;
-  border-bottom: 2px solid #491818;
+  color: var(--skin-go-flap-ink);
+  background: var(--skin-go-flap-bg);
+  border-top: 1px solid var(--skin-go-flap-edge-light);
+  border-bottom: 2px solid var(--skin-go-flap-edge-dark);
   text-align: center;
-  font: 700 clamp(10px, 2.2vw, 13px)/1.2 'Overpass Mono', monospace;
+  font: var(--skin-weight-bold) clamp(10px, 2.2vw, 13px)/1.2 var(--skin-face-mono);
   text-transform: uppercase;
-  animation: airway-go-flip 90ms ease-out both;
+  animation: airway-go-flip var(--skin-motion-flip) ease-out both;
   transform-origin: center center;
 }
-.airway-go-flight:nth-child(2) .airway-go-flap { animation-delay: 65ms; }
-.airway-go-flight:nth-child(3) .airway-go-flap { animation-delay: 120ms; }
-.airway-go-flight:nth-child(n+4) .airway-go-flap { animation-delay: 180ms; }
+.airway-go-flight:nth-child(2) .airway-go-flap { animation-delay: var(--skin-motion-flip-stagger-1); }
+.airway-go-flight:nth-child(3) .airway-go-flap { animation-delay: var(--skin-motion-flip-stagger-2); }
+.airway-go-flight:nth-child(n+4) .airway-go-flap { animation-delay: var(--skin-motion-flip-stagger-3); }
 .airway-go-none { margin: 10px 4px; display: grid; gap: 4px; }
 .airway-go-none p { margin: 0; }
 /* [night-11b] An unserved airport: the reason in board white, the lesson in the dim caption grey. */
-.airway-go-none-line { font-size: calc(14px * var(--airway-text-scale)); font-weight: 700; line-height: 1.3; color: #fbf8f1; }
-.airway-go-none-hint { font-size: calc(13px * var(--airway-text-scale)); line-height: 1.3; color: #a6a8aa; }
+.airway-go-none-line { font-size: calc(14px * var(--airway-text-scale)); font-weight: var(--skin-weight-bold); line-height: 1.3; color: var(--skin-go-board-strong-ink); }
+.airway-go-none-hint { font-size: calc(13px * var(--airway-text-scale)); line-height: 1.3; color: var(--skin-go-board-dim-ink); }
 .airway-go-strip {
   min-width: 0;
   padding: 14px 16px 13px 20px;
-  background: #fbf8f1;
-  border-left: 6px solid #c8352a;
+  background: var(--skin-go-strip-bg);
+  border-left: 6px solid var(--skin-go-strip-margin);
   position: relative;
 }
 .airway-go-strip::before {
@@ -133,26 +133,26 @@
   left: 4px;
   top: 8px;
   bottom: 8px;
-  border-left: 1px dashed #cc6e62;
+  border-left: 1px dashed var(--skin-go-strip-margin-dash);
 }
 .airway-go-strip-title {
   margin: 0 0 8px;
-  font: 800 calc(15px * var(--airway-text-scale))/1.2 'Overpass', sans-serif;
+  font: var(--skin-weight-heavy) calc(15px * var(--airway-text-scale))/1.2 var(--skin-face-display);
   letter-spacing: .04em;
   text-transform: uppercase;
-  color: #13302e;
+  color: var(--skin-go-strip-heading-ink);
 }
 .airway-go-score-row { display: flex; flex-wrap: wrap; gap: 5px 16px; }
 .airway-go-score, .airway-go-weeks, .airway-go-home {
   margin: 0;
-  font: 700 calc(13px * var(--airway-text-scale))/1.35 'Atkinson Hyperlegible Next', sans-serif;
-  color: #1e6f6a;
+  font: var(--skin-weight-bold) calc(13px * var(--airway-text-scale))/1.35 var(--skin-face-text);
+  color: var(--skin-go-strip-value-ink);
 }
 .airway-go-causes-title {
   margin: 14px 0 5px;
   padding-top: 8px;
-  border-top: 1px dashed #beb4a4;
-  font: 800 calc(12px * var(--airway-text-scale))/1.3 'Overpass', sans-serif;
+  border-top: 1px dashed var(--skin-go-strip-rule);
+  font: var(--skin-weight-heavy) calc(12px * var(--airway-text-scale))/1.3 var(--skin-face-display);
   text-transform: uppercase;
   letter-spacing: .06em;
 }
@@ -163,25 +163,25 @@
   line-height: 1.3;
 }
 .airway-go-causes li::marker {
-  font: 700 calc(12px * var(--airway-text-scale)) 'Overpass Mono', monospace;
-  color: #c8352a;
+  font: var(--skin-weight-bold) calc(12px * var(--airway-text-scale)) var(--skin-face-mono);
+  color: var(--skin-go-strip-alert-ink);
 }
 /* [night-11f] One tip under the causes in the player's first flights: an ink rule and an ink tag, like a note
    clipped to the incident report. */
 .airway-go-tip {
   margin: 6px 0 0;
   padding: 2px 0 2px 9px;
-  border-left: 3px solid #13302e;
+  border-left: 3px solid var(--skin-go-strip-heading-ink);
   font-size: clamp(12px, 2.5vw, 14px);
   line-height: 1.3;
-  color: #13302e;
+  color: var(--skin-go-strip-heading-ink);
 }
 .airway-go-tip-label {
   display: inline-block;
   padding: 1px 5px 0;
-  background: #13302e;
-  color: #fbf8f1;
-  font: 700 calc(11px * var(--airway-text-scale))/1.35 'Overpass Mono', monospace;
+  background: var(--skin-go-strip-heading-ink);
+  color: var(--skin-go-strip-bg);
+  font: var(--skin-weight-bold) calc(11px * var(--airway-text-scale))/1.35 var(--skin-face-mono);
   letter-spacing: .06em;
   vertical-align: 1px;
 }
@@ -191,45 +191,45 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   margin: 8px 0 3px;
-  border-top: 1px dashed #beb4a4;
+  border-top: 1px dashed var(--skin-go-strip-rule);
 }
 .airway-go-tab {
   min-width: 0;
   min-height: 48px;
   padding: 4px 6px 2px 0;
   border: 0;
-  border-bottom: 1px dashed #beb4a4;
+  border-bottom: 1px dashed var(--skin-go-strip-rule);
   background: transparent;
-  color: #6b6156;
+  color: var(--skin-go-strip-dim-ink);
   text-align: left;
-  font: 800 calc(12px * var(--airway-text-scale))/1.2 'Overpass', sans-serif;
+  font: var(--skin-weight-heavy) calc(12px * var(--airway-text-scale))/1.2 var(--skin-face-display);
   text-transform: uppercase;
   letter-spacing: .06em;
   overflow-wrap: anywhere;
   cursor: pointer;
 }
-.airway-go-tab + .airway-go-tab { padding-left: 10px; border-left: 1px dashed #beb4a4; }
-.airway-go-tab[aria-selected="true"] { color: #13302e; border-bottom: 3px solid #13302e; }
-.airway-go-tab:focus-visible { outline: 2px solid #13302e; outline-offset: -2px; }
+.airway-go-tab + .airway-go-tab { padding-left: 10px; border-left: 1px dashed var(--skin-go-strip-rule); }
+.airway-go-tab[aria-selected="true"] { color: var(--skin-go-strip-heading-ink); border-bottom: 3px solid var(--skin-go-strip-heading-ink); }
+.airway-go-tab:focus-visible { outline: 2px solid var(--skin-go-strip-heading-ink); outline-offset: -2px; }
 .airway-go-timeline { list-style: none; margin: 0; padding: 0; overflow: auto; overscroll-behavior: contain; }
 .airway-go-timeline-week {
   display: grid;
   grid-template-columns: 34px minmax(0, 1fr);
   gap: 6px;
   padding: 3px 0;
-  border-bottom: 1px solid #e6ddcf;
+  border-bottom: 1px solid var(--skin-go-strip-rule-light);
   font-size: clamp(12px, 2.5vw, 14px);
   line-height: 1.3;
 }
-.airway-go-timeline-mark { font: 700 calc(12px * var(--airway-text-scale))/1.45 'Overpass Mono', monospace; color: #13302e; }
+.airway-go-timeline-mark { font: var(--skin-weight-bold) calc(12px * var(--airway-text-scale))/1.45 var(--skin-face-mono); color: var(--skin-go-strip-heading-ink); }
 .airway-go-timeline-end { border-bottom: 0; }
-.airway-go-timeline-end .airway-go-timeline-mark { color: #c8352a; }
-.airway-go-timeline-end .airway-go-timeline-text { font-weight: 700; }
-.airway-go-timeline-note { padding: 6px 0; font-size: calc(13px * var(--airway-text-scale)); color: #6b6156; }
+.airway-go-timeline-end .airway-go-timeline-mark { color: var(--skin-go-strip-alert-ink); }
+.airway-go-timeline-end .airway-go-timeline-text { font-weight: var(--skin-weight-bold); }
+.airway-go-timeline-note { padding: 6px 0; font-size: calc(13px * var(--airway-text-scale)); color: var(--skin-go-strip-dim-ink); }
 .airway-go-record {
   margin: 8px 0 0;
-  font: 700 calc(11px * var(--airway-text-scale)) 'Overpass Mono', monospace;
-  color: #a32b25;
+  font: var(--skin-weight-bold) calc(11px * var(--airway-text-scale)) var(--skin-face-mono);
+  color: var(--skin-go-strip-record-ink);
   text-transform: uppercase;
 }
 .airway-go-actions {
@@ -240,20 +240,20 @@
 .airway-go-button {
   min-width: 48px;
   min-height: 52px;
-  border: 2px solid #1c1e20;
-  border-radius: 0;
+  border: 2px solid var(--skin-go-action-border);
+  border-radius: var(--skin-control-radius);
   padding: 9px;
-  font: 800 calc(13px * var(--airway-text-scale))/1.2 'Overpass', sans-serif;
+  font: var(--skin-weight-heavy) calc(13px * var(--airway-text-scale))/1.2 var(--skin-face-display);
   cursor: pointer;
   touch-action: manipulation;
   text-transform: uppercase;
   overflow-wrap: anywhere; /* [night-11ac] R7h */
 }
-.airway-go-button:focus-visible { outline: 3px solid #ffc72c; outline-offset: 2px; }
+.airway-go-button:focus-visible { outline: 3px solid var(--skin-go-action-focus); outline-offset: 2px; }
 .airway-go-button:active { translate: 0 1px; }
-.airway-go-same { grid-column: 1 / -1; background: #ffc72c; color: #1c1e20; }
-.airway-go-new { background: #fbf8f1; color: #1c1e20; }
-.airway-go-menu { background: #1c1e20; color: #fbf8f1; }
+.airway-go-same { grid-column: 1 / -1; background: var(--skin-go-action-primary-bg); color: var(--skin-go-action-ink); }
+.airway-go-new { background: var(--skin-go-action-bg); color: var(--skin-go-action-ink); }
+.airway-go-menu { background: var(--skin-go-action-dark-bg); color: var(--skin-go-action-dark-ink); }
 @keyframes airway-go-flip {
   from { transform: rotateX(-72deg); opacity: .4; }
   to { transform: rotateX(0); opacity: 1; }
@@ -339,15 +339,15 @@
 .airway-go-share-button {
   min-height: 48px;
   padding: 7px 14px;
-  background: #fbf8f1;
-  color: #1c1e20;
+  background: var(--skin-go-action-bg);
+  color: var(--skin-go-action-ink);
   border-style: dashed;
 }
 .airway-go-share-status {
   flex: 1 1 140px;
   margin: 0;
-  font: 700 calc(12px * var(--airway-text-scale))/1.3 'Overpass Mono', monospace;
-  color: #1e6f6a;
+  font: var(--skin-weight-bold) calc(12px * var(--airway-text-scale))/1.3 var(--skin-face-mono);
+  color: var(--skin-go-strip-value-ink);
 }
 .airway-go-share-status:empty { display: none; }
 .airway-go-share-text {
@@ -355,12 +355,12 @@
   min-height: 48px;
   box-sizing: border-box;
   resize: none;
-  border: 1px solid #beb4a4;
-  border-radius: 0;
-  background: #fbf8f1;
-  color: #2a2420;
+  border: 1px solid var(--skin-go-strip-rule);
+  border-radius: var(--skin-control-radius);
+  background: var(--skin-go-strip-bg);
+  color: var(--skin-go-ink);
   padding: 6px 8px;
-  font: calc(12px * var(--airway-text-scale))/1.35 'Overpass Mono', monospace;
+  font: calc(12px * var(--airway-text-scale))/1.35 var(--skin-face-mono);
 }
 @media (max-height: 550px) and (min-width: 620px) {
   .airway-go-share { margin-top: 5px; }
@@ -368,11 +368,11 @@
 /* [night-11c] "Map" on the closed-network sign: an ink tab at the sign's end, 48 px square at least. */
 .airway-go-map {
   margin-left: auto; flex: none; min-width: 48px; min-height: 48px; padding: 0 12px;
-  border: 2px solid #1c1e20; border-radius: 0; background: #fbf8f1; color: #1c1e20;
-  font: 800 calc(13px * var(--airway-text-scale))/1 'Overpass', sans-serif; letter-spacing: .06em; text-transform: uppercase;
+  border: 2px solid var(--skin-go-sign-ink); border-radius: var(--skin-control-radius); background: var(--skin-go-map-tab-bg); color: var(--skin-go-sign-ink);
+  font: var(--skin-weight-heavy) calc(13px * var(--airway-text-scale))/1 var(--skin-face-display); letter-spacing: .06em; text-transform: uppercase;
   cursor: pointer; touch-action: manipulation;
 }
-.airway-go-map:focus-visible, .airway-go-mapback:focus-visible { outline: 3px solid #1c1e20; outline-offset: 2px; }
+.airway-go-map:focus-visible, .airway-go-mapback:focus-visible { outline: 3px solid var(--skin-go-sign-ink); outline-offset: 2px; }
 .airway-go-content[hidden], .airway-go-mapbar[hidden] { display: none; }
 /* [night-11k] R5f: while the report is open, off-screen edge chips and the tag dock are noise over it (they looked
    tappable through the dim); the "Map" view drops the attribute and brings them back. */
@@ -383,10 +383,10 @@
 .airway-go-mapbar {
   pointer-events: auto; display: flex; align-items: center; gap: 12px;
   width: min(100%, 460px); padding: 8px 8px 8px 16px;
-  background: #fbf8f1; border-left: 8px solid #c8352a; color: #1c1e20;
+  background: var(--skin-go-mapbar-bg); border-left: 8px solid var(--skin-go-mapbar-margin); color: var(--skin-go-mapbar-ink);
 }
-.airway-go-mapbar-hub { flex: 1; min-width: 0; font: 800 calc(14px * var(--airway-text-scale))/1.2 'Overpass Mono', monospace; letter-spacing: .04em; text-transform: uppercase; }
-.airway-go-mapback { flex: none; background: #ffc72c; color: #1c1e20; }
+.airway-go-mapbar-hub { flex: 1; min-width: 0; font: var(--skin-weight-heavy) calc(14px * var(--airway-text-scale))/1.2 var(--skin-face-mono); letter-spacing: .04em; text-transform: uppercase; }
+.airway-go-mapback { flex: none; background: var(--skin-go-mapback-bg); color: var(--skin-go-mapbar-ink); }
 /* [night-11c] 320 dp short phones: with the Map tab the sign title takes two lines; keep the sign as tall as before. */
 @media (max-height: 600px) and (max-width: 359px) {
   .airway-go-heading { font-size: calc(17px * var(--airway-text-scale-title)); line-height: 1.02; }
@@ -397,18 +397,18 @@
 /* [night-12ax] R1n, D-242: Endless milestones — one ruled row on the paper strip. Local tokens so the pending UI
    redesign can swap the inks in one place; marks differ by shape (filled / hollow square), not only by colour. */
 .airway-go-milestones {
-  --aw-ms-ink: #2a2420;
-  --aw-ms-done: #1e6f6a;
-  --aw-ms-open: #6b6257;
-  --aw-ms-rule: #beb4a4;
-  --aw-ms-stamp: #a32b25;
+  --aw-ms-ink: var(--skin-go-milestone-ink);
+  --aw-ms-done: var(--skin-go-milestone-done);
+  --aw-ms-open: var(--skin-go-milestone-open);
+  --aw-ms-rule: var(--skin-go-strip-rule);
+  --aw-ms-stamp: var(--skin-go-strip-record-ink);
   margin-top: 8px;
   padding-top: 6px;
   border-top: 1px dashed var(--aw-ms-rule);
 }
 .airway-go-milestones-title {
   margin: 0 0 3px;
-  font: 700 calc(11px * var(--airway-text-scale))/1.3 'Overpass Mono', monospace;
+  font: var(--skin-weight-bold) calc(11px * var(--airway-text-scale))/1.3 var(--skin-face-mono);
   letter-spacing: .04em;
   text-transform: uppercase;
   color: var(--aw-ms-ink);
@@ -425,7 +425,7 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font: 400 calc(12px * var(--airway-text-scale))/1.35 'Atkinson Hyperlegible Next', sans-serif;
+  font: var(--skin-weight-regular) calc(12px * var(--airway-text-scale))/1.35 var(--skin-face-text);
   color: var(--aw-ms-open);
 }
 .airway-go-milestone[data-reached="true"] { color: var(--aw-ms-ink); }
@@ -441,12 +441,12 @@
   background: var(--aw-ms-done);
 }
 .airway-go-milestone-first {
-  font: 700 calc(9px * var(--airway-text-scale))/1 'Overpass Mono', monospace;
+  font: var(--skin-weight-bold) calc(9px * var(--airway-text-scale))/1 var(--skin-face-mono);
   text-transform: uppercase;
   color: var(--aw-ms-stamp);
   border: 1px solid currentColor;
   padding: 2px 3px;
-  animation: airway-go-stamp 160ms ease-out both;
+  animation: airway-go-stamp var(--skin-motion-stamp) ease-out both;
 }
 @keyframes airway-go-stamp { from { opacity: 0; } to { opacity: 1; } }
 :root[data-airway-motion="reduce"] .airway-go-milestone-first { animation: none; }

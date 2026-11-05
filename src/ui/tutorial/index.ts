@@ -10,6 +10,7 @@ import {
 } from '../../game/tutorial/controller';
 import { regionGlyph } from '../glyphs';
 import { airportLabel } from '../airportLabel';
+import '../skin/current.css'; // [night-11aq] skin tokens read by overlay.css
 import '../overlay.css'; // [night-11p] D-129: the vignette uses the game's own luggage tag
 import './tutorial.css';
 

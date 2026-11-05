@@ -38,6 +38,11 @@ export interface GameConfig {
    */
   readonly weeklyContract?: true;
   /**
+   * [night-12bb] R2i, D-249: Endless only. From week 3 one open airport per week announces a demand surge a game day
+   * ahead. Absent = no surges (older saves and every Daily replay unchanged); new Endless runs set it.
+   */
+  readonly demandSurge?: true;
+  /**
    * [night-12bc] R2h, D-251: Endless only. Licence class II or III (src/sim/licence.ts); absent = class I, today's
    * Endless, so older saves, every Daily and the leaderboard replay are unchanged.
    */
@@ -51,6 +56,7 @@ export function copyConfig(config: GameConfig): GameConfig {
     ...(config.puzzleId === undefined ? {} : { puzzleId: config.puzzleId }),
     ...(config.homeRegion === undefined ? {} : { homeRegion: config.homeRegion }),
     ...(config.weeklyContract === true ? { weeklyContract: true } : {}),
+    ...(config.demandSurge === true ? { demandSurge: true } : {}),
     ...(config.licenceClass === undefined ? {} : { licenceClass: config.licenceClass }),
   };
 }

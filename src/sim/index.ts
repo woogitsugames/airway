@@ -8,12 +8,13 @@ export type { Command, CommandEntry, CommandCheck, RejectReason, RouteEnd } from
 export type { GameConfig, SimState } from './state.ts';
 export type {
   CityView, RouteView, HubCauseLedgerView, SimEvent, GameMode, WorldStatus, UpgradeRecord, Scenario,
-  WorldView, DemandWave,
+  WorldView, DemandWave, SurgeView,
 } from './world.ts';
 export type { PlaneState } from './planes.ts';
 export type { PlaneType } from './params.ts';
 export type { UpgradeKind, UpgradeOffer, WeeklyUpgradeState } from './upgrades.ts';
 export type { WeeklyContract, ContractRecord } from './contracts.ts';
+export type { DemandSurge, SurgeRecord, SurgePhase } from './surge.ts';
 export type { HubFailure } from './hubs.ts';
 export { PLANE_TYPES, PLANE_PROGRESS_SCALE, CONGESTION_GRACE_TICKS } from './params.ts';
 export { clockAt, calendarWeekAt, calendarDayAt, ticksPerSecond, TICKS_PER_DAY, DAYS_PER_WEEK, TICKS_PER_WEEK, TICKS_PER_SECOND_1X } from './clock.ts';
@@ -30,10 +31,12 @@ import type { LicenceClass } from './licence.ts';
  * [night-12bc] R2h: `licenceClass` (Endless only; 1 = today's rules, no config field) picks the class's knobs.
  */
 export function createGame(seed: number, mode: GameConfig['mode'] = 'endless', puzzleId?: string,
-    homeRegion: GameConfig['homeRegion'] | null = null, weeklyContract = false, licenceClass: LicenceClass = 1): Sim {
+    homeRegion: GameConfig['homeRegion'] | null = null, weeklyContract = false, demandSurge = false,
+    licenceClass: LicenceClass = 1): Sim {
   if (mode === 'puzzle') return new Sim(seed >>> 0, { mode, puzzleId: puzzleId ?? '' });
   if (mode !== 'endless') return new Sim(seed >>> 0, { mode });
   // [night-12ba] R2k: the weekly contract (D-247) is Endless only; the game layer turns it on for new runs.
+  // [night-12bb] R2i: so is the demand surge (D-249). [night-12bc] R2h: and a licence class above I (D-251).
   return new Sim(seed >>> 0, { mode, ...(homeRegion ? { homeRegion } : {}), ...(weeklyContract ? { weeklyContract: true } : {}),
-    ...(licenceClass === 1 ? {} : { licenceClass }) });
+    ...(demandSurge ? { demandSurge: true } : {}), ...(licenceClass === 1 ? {} : { licenceClass }) });
 }

@@ -33,6 +33,9 @@ import {
   closeContract, countsFor, drawContract, EMPTY_CONTRACTS, isMet, validContractSnapshot, type ContractRecord,
   type ContractSnapshot, type WeeklyContract,
 } from './contracts.ts';
+import {
+  closeSurge, drawSurge, EMPTY_SURGES, surgePassengerDue, surgePhase, validSurgeSnapshot, type DemandSurge, type SurgeRecord, type SurgeSnapshot,
+} from './surge.ts';
 
 export const WORLD_VERSION = 1 as const;
 export type GameMode = 'endless' | 'daily' | 'puzzle';
@@ -68,6 +71,8 @@ export interface Scenario {
   readonly homeRegionId?: RegionId | null;
   /** [night-12ba] R2k, D-247: weekly contract on the board (Endless with `GameConfig.weeklyContract` only). */
   readonly weeklyContract?: boolean;
+  /** [night-12bb] R2i, D-249: announced demand surge from week 3 (Endless with `GameConfig.demandSurge` only). */
+  readonly demandSurge?: boolean;
   /**
    * [night-12bc] R2h, D-251: Endless licence class knobs (`GameConfig.licenceClass`; src/sim/licence.ts). Absent =
    * class I, the shared constants; `reserve` above carries the class's starting turboprops.
@@ -99,6 +104,8 @@ export interface WorldSnapshot {
   readonly slots: DepartureSlotsSnapshot;
   /** [night-12ba] R2k: present exactly when the scenario has the weekly contract (absent keeps old hashes). */
   readonly contracts?: ContractSnapshot;
+  /** [night-12bb] R2i: present exactly when the scenario has the demand surge (absent keeps old hashes). */
+  readonly surges?: SurgeSnapshot;
 }
 
 /** [task-32] Departure-slot bookkeeping; every record is keyed by city id and sorted on save. */
@@ -137,6 +144,10 @@ export type SimEvent =
   | { readonly type: 'CurfewHeld'; readonly minute: number; readonly cityId: string; readonly where: 'ground' | 'air' }
   /** [night-12ba] R2k: the running weekly contract reached its target (once per contract). */
   | { readonly type: 'ContractMet'; readonly minute: number; readonly week: number; readonly regions: readonly [string, string]; readonly target: number }
+  /** [night-12bb] R2i: an airport announces its demand surge, a game day before the window opens. */
+  | { readonly type: 'SurgeAnnounced'; readonly minute: number; readonly cityId: string; readonly startTick: number; readonly endTick: number; readonly passengers: number }
+  /** [night-12bb] R2i: the surge window opened (`'start'`) or closed (`'end'`). */
+  | { readonly type: 'Surge'; readonly minute: number; readonly cityId: string; readonly phase: 'start' | 'end' }
   | { readonly type: 'GameOver'; readonly minute: number; readonly failure: HubFailure | null; readonly status: 'won' | 'over' };
 
 /** Read-only per-city view for HUD, overlay, render and audio. */
@@ -182,6 +193,15 @@ export interface HubCauseLedgerView {
   readonly slotWaitMinutes: number;
 }
 
+/** [night-12bb] R2i: what the UI shows of a surge: the airport, its window and whether it is running. */
+export interface SurgeView extends DemandSurge {
+  readonly active: boolean;
+  /** Local hour (airport clock) at which the window closes. */
+  readonly endLocalHour: number;
+  /** Extra passengers so far. */
+  readonly extra: number;
+}
+
 /** Read-only face of the world handed to UI, render, audio, modes and tools (Sim.world). */
 export interface WorldView {
   readonly minute: number;
@@ -194,6 +214,13 @@ export interface WorldView {
   /** [night-12ba] R2k: the running weekly contract (null without one); `contractHistory` lists closed ones. */
   readonly contract: Readonly<WeeklyContract> | null;
   readonly contractHistory: readonly ContractRecord[];
+  /**
+   * [night-12bb] R2i, D-249: the announced or running demand surge (null before its announcement, after its window
+   * and in runs without the rule); `surgeHistory` lists the surges of past weeks with their extra passengers.
+   */
+  readonly surge: Readonly<SurgeView> | null;
+  readonly surgeHistory: readonly SurgeRecord[];
+  surgeRecords(): SurgeRecord[];
   /** Total extra hourly departures granted by "+2 slots" upgrades (all airports). */
   readonly departureSlots: number;
   /** [task-32] Hourly departure allowance of one airport. */
@@ -264,6 +291,8 @@ export class World implements WorldView {
   private readonly jammed = new Set<string>();
   private events: SimEvent[] = [];
   private contracts: ContractSnapshot | null;
+  /** [night-12bb] R2i: null in runs without the demand surge. */
+  private surges: SurgeSnapshot | null;
   private readonly seed: number;
 
   constructor(seed: number, readonly scenario: Scenario, streams: Readonly<Record<RngStream, Rng>>) {
@@ -297,6 +326,62 @@ export class World implements WorldView {
       this.passengers.trackOrigins = true;
       this.passengers.onDelivered = (origin, destination) => this.countContract(origin, destination);
     }
+    this.surges = scenario.demandSurge ? EMPTY_SURGES : null;
+  }
+
+  get surge(): Readonly<SurgeView> | null {
+    const state = this.surges;
+    const current = state?.current;
+    if (!state || !current || !state.announced) return null;
+    const phase = surgePhase(current, this.minuteValue);
+    if (phase !== 'announced' && phase !== 'active') return null;
+    return {
+      ...current, active: phase === 'active', extra: state.extra,
+      endLocalHour: localHourAt(current.endTick, UTC_OFFSET.get(current.cityId) ?? 0),
+    };
+  }
+  get surgeHistory(): readonly SurgeRecord[] { return this.surges?.history ?? []; }
+  /** Every surge drawn so far, the current one (announced or not) last, with its extra passengers. */
+  surgeRecords(): SurgeRecord[] {
+    const state = this.surges;
+    if (!state) return [];
+    return state.current ? [...state.history, { ...state.current, extra: state.extra }] : [...state.history];
+  }
+
+  /**
+   * [night-12bb] R2i: per minute, after the usual demand: announce the surge a day ahead, and inside the window add
+   * the extra passengers, destinations from the surge's own RNG fork (the kernel streams never move).
+   */
+  private surgeMinute(minute: number): void {
+    const state = this.surges;
+    const current = state?.current;
+    if (!state || !current) return;
+    let next = state;
+    if (!state.announced && minute >= current.announceTick && minute < current.endTick) {
+      next = { ...next, announced: true };
+      this.events.push({ type: 'SurgeAnnounced', minute, cityId: current.cityId, startTick: current.startTick, endTick: current.endTick, passengers: current.passengers });
+    }
+    if (minute === current.startTick) this.events.push({ type: 'Surge', minute, cityId: current.cityId, phase: 'start' });
+    if (minute === current.endTick) this.events.push({ type: 'Surge', minute, cityId: current.cityId, phase: 'end' });
+    if (this.scenario.randomDemand && surgePassengerDue(current, minute)) {
+      const rng = new Rng(1);
+      rng.setState(state.rngState);
+      const created = this.passengers.surgePassenger(current.cityId, rng);
+      next = { ...next, rngState: rng.state, extra: state.extra + (created ? 1 : 0) };
+    }
+    this.surges = next;
+  }
+
+  /** [night-12bb] R2i: at a board, record last week's surge and draw next week's (from the week-2 board on). */
+  private openWeekSurge(week: number, minute: number): void {
+    if (!this.surges) return;
+    const closed = closeSurge(this.surges);
+    const candidates = this.activeCityIds().filter((id) => this.passengers.network.routesAt(id) > 0)
+      .map((cityId) => ({ cityId, utcOffsetH: UTC_OFFSET.get(cityId) ?? 0 }));
+    const drawn = drawSurge(this.seed, week, minute, candidates);
+    this.surges = drawn ? { ...closed, current: drawn.surge, rngState: drawn.rngState } : closed;
+    // The window is at least a notice period away, so the announcement is due at the earliest now.
+    if (drawn && drawn.surge.announceTick <= minute) this.surgeMinute(minute);
   }
 
   get contract(): Readonly<WeeklyContract> | null { return this.contracts?.current ?? null; }
@@ -662,6 +747,7 @@ export class World implements WorldView {
     if (notice) this.events.push({ type: 'CurfewAnnounced', minute, week: notice.week, cityIds: notice.cityIds });
 
     this.passengers.beginMinute(minute, this.scenario.randomDemand);
+    this.surgeMinute(minute); // [night-12bb] R2i: only in runs with the demand surge
     for (const wave of this.scenario.demandWaves) {
       const elapsed = minute - wave.firstMinute;
       if (elapsed >= 0 && elapsed % wave.everyMinutes === 0) {
@@ -690,6 +776,7 @@ export class World implements WorldView {
         { hub: this.hubIds().length > 0, slots: this.slotEverHeld }, extraCrate);
       if (offer) {
         this.openWeekContract(offer.week, offer.extraCrate !== undefined);
+        this.openWeekSurge(offer.week, minute);
         this.upgrade = offer;
         this.statusValue = 'upgrade';
         this.events.push({ type: 'UpgradeOffered', minute, week: offer.week, offers: offer.offers.map((o) => o.id) });
@@ -794,6 +881,7 @@ export class World implements WorldView {
       slots: { hour: this.slotHour, used: sortedRecord(this.slotsUsed), bonus: sortedRecord(this.slotBonus),
         waitMinutes: sortedRecord(this.slotWait), everHeld: this.slotEverHeld },
       ...(this.contracts ? { contracts: JSON.parse(JSON.stringify(this.contracts)) as ContractSnapshot } : {}),
+      ...(this.surges ? { surges: JSON.parse(JSON.stringify(this.surges)) as SurgeSnapshot } : {}),
     };
   }
 
@@ -806,7 +894,10 @@ export class World implements WorldView {
         (saved.spawner === null) !== (this.scenario.startCityIds !== null) ||
         // [night-12ba] R2k: a contract run carries its contract record, every other run none.
         (saved.contracts !== undefined) !== !!this.scenario.weeklyContract ||
-        (saved.contracts !== undefined && !validContractSnapshot(saved.contracts))) {
+        (saved.contracts !== undefined && !validContractSnapshot(saved.contracts)) ||
+        // [night-12bb] R2i: likewise a surge run carries its surge record, every other run none.
+        (saved.surges !== undefined) !== !!this.scenario.demandSurge ||
+        (saved.surges !== undefined && !validSurgeSnapshot(saved.surges, (id) => UTC_OFFSET.has(id)))) {
       throw new TypeError('invalid or incompatible world snapshot');
     }
     this.passengers.restore(saved.passengers);
@@ -849,6 +940,7 @@ export class World implements WorldView {
     this.slotHour = saved.slots.hour;
     this.slotEverHeld = saved.slots.everHeld;
     this.contracts = saved.contracts ? JSON.parse(JSON.stringify(saved.contracts)) as ContractSnapshot : null;
+    this.surges = saved.surges ? JSON.parse(JSON.stringify(saved.surges)) as SurgeSnapshot : null;
     this.jammed.clear();
     for (const queue of this.passengers.hubs.all()) if (queue.fullTicks > 0) this.jammed.add(queue.cityId);
     this.events = [];

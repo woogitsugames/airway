@@ -1,7 +1,7 @@
 // [night-12bc] R2h / D-251: Endless licence classes. Class I is today's Endless: Daily (and its leaderboard replay),
-// Endless without and with the weekly contract are bit-for-bit the pre-R2h bot runs (pinned from origin/dev 635e1bf)
+// Endless without and with the weekly contract and demand surge are bit-for-bit the pre-R2h bot runs (pinned from origin/dev 40bf2ae)
 // and a new class I run carries no config field. Classes II/III change only scenario knobs (curfew start week and
-// airports, starting turboprops, hub seats) read from one table; the class survives save/restore, the v3 -> v4
+// airports, starting turboprops, hub seats) read from one table; the class survives save/restore, the v4 -> v5
 // envelope bump and the D-76 replay; Daily, puzzles and bad values refuse a class. The logbook keeps the best weeks
 // per class (older records start class I at their longest flight), classes open at week 5 of the class below, and
 // the menu choice lives in the device settings record. Fails on the old code: no licence module, no licenceClass.
@@ -32,8 +32,9 @@ async function test(name: string, fn: () => void | Promise<void>): Promise<void>
 }
 
 /** The balance bot to the end of the run (or `maxTicks`), as test:balance plays it. */
-function botRun(seed: number, mode: 'endless' | 'daily', contract: boolean, licence: 1 | 2 | 3 = 1, maxTicks = 18_000) {
-  const session = createBalanceSession(seed, mode, null, contract, licence);
+function botRun(seed: number, mode: 'endless' | 'daily', contract: boolean, licence: 1 | 2 | 3 = 1, maxTicks = 18_000,
+    surge = contract) {
+  const session = createBalanceSession(seed, mode, null, contract, surge, licence);
   for (let i = 0; i < 2000; i++) {
     const snapshot = session.snapshot();
     if (snapshot.status === 'finished' || snapshot.tick >= maxTicks) break;
@@ -59,25 +60,28 @@ function memoryStorage(): Storage & { data: Map<string, string> } {
 const flight = (weeks: number, extra: Partial<LogEntry> = {}): LogEntry =>
   ({ day: '2026-11-05', mode: 'endless', passengers: 100, weeks, hub: null, ...extra });
 
-// Bot runs on origin/dev 635e1bf (before R2h): final hash, tick, score. Daily = the leaderboard world;
-// endless+contract = a new Endless run today (= class I).
+// Bot runs on origin/dev 40bf2ae (before R2h): final hash, tick, score. Daily = the leaderboard world;
+// endless+contract+surge = a new Endless run today (= class I).
 const GOLDEN: Record<string, { hash: string; tick: number; score: number }> = {
   'daily:41377': { hash: '61693056', tick: 6958, score: 163 },
   'endless:41377': { hash: '6a2d0971', tick: 6958, score: 163 },
   'endless+contract:41377': { hash: '3f0440fb', tick: 6958, score: 163 },
+  'endless+contract+surge:41377': { hash: '52ab6123', tick: 6958, score: 163 },
   'daily:45746': { hash: '060b04c6', tick: 12178, score: 565 },
   'endless:45746': { hash: '72ed8fcb', tick: 12178, score: 565 },
   'endless+contract:45746': { hash: 'a14b64c4', tick: 12178, score: 565 },
+  'endless+contract+surge:45746': { hash: '59572cd7', tick: 12178, score: 571 },
   'daily:50115': { hash: '1225dcd9', tick: 9659, score: 116 },
   'endless:50115': { hash: '608b0fd2', tick: 9659, score: 116 },
   'endless+contract:50115': { hash: '27706f70', tick: 9659, score: 116 },
+  'endless+contract+surge:50115': { hash: 'e911950c', tick: 9659, score: 116 },
 };
 
 await test('class I = today: Daily, Endless and Endless with contract are bit-for-bit the pre-R2h bot runs', () => {
   for (const [key, want] of Object.entries(GOLDEN)) {
     const [kind, seed] = key.split(':') as [string, string];
     const mode = kind === 'daily' ? 'daily' : 'endless';
-    const sim = botRun(Number(seed), mode, kind.endsWith('+contract'));
+    const sim = botRun(Number(seed), mode, kind.includes('+contract'), 1, 18_000, kind.endsWith('+surge'));
     assert.deepEqual({ hash: sim.hash(), tick: sim.tickCount, score: sim.world.score }, want, key);
     assert.equal(sim.config.licenceClass, undefined, `${key}: no class field`);
     if (mode === 'daily') {
@@ -87,7 +91,7 @@ await test('class I = today: Daily, Endless and Endless with contract are bit-fo
   }
   // A new class I run from the game layer is the same config as before R2h.
   const run = EndlessRun.create(41377, 'endless', null, 1);
-  assert.deepEqual(run.sim.config, { mode: 'endless', weeklyContract: true });
+  assert.deepEqual(run.sim.config, { mode: 'endless', weeklyContract: true, demandSurge: true });
   assert.equal(run.licenceClass, 1);
   assert.equal(EndlessRun.create(41377).hash(), run.hash());
 });
@@ -104,10 +108,10 @@ await test('class params: one table, class I = the shared constants, II and III 
 });
 
 await test('config: class II/III only in Endless; Daily, puzzles, class 1 and unknown values refuse a field', () => {
-  assert.deepEqual(createGame(7, 'endless', undefined, null, true, 2).config, { mode: 'endless', weeklyContract: true, licenceClass: 2 });
-  assert.deepEqual(createGame(7, 'endless', undefined, 'EUN', false, 3).config, { mode: 'endless', homeRegion: 'EUN', licenceClass: 3 });
-  assert.deepEqual(createGame(7, 'endless', undefined, null, false, 1).config, { mode: 'endless' });
-  assert.deepEqual(createGame(7, 'daily', undefined, null, false, 3).config, { mode: 'daily' });
+  assert.deepEqual(createGame(7, 'endless', undefined, null, true, true, 2).config, { mode: 'endless', weeklyContract: true, demandSurge: true, licenceClass: 2 });
+  assert.deepEqual(createGame(7, 'endless', undefined, 'EUN', false, false, 3).config, { mode: 'endless', homeRegion: 'EUN', licenceClass: 3 });
+  assert.deepEqual(createGame(7, 'endless', undefined, null, false, false, 1).config, { mode: 'endless' });
+  assert.deepEqual(createGame(7, 'daily', undefined, null, false, false, 3).config, { mode: 'daily' });
   assert.deepEqual(EndlessRun.create(7, 'daily', null, 3).sim.config, { mode: 'daily' });
   for (const config of [{ mode: 'daily', licenceClass: 2 }, { mode: 'endless', licenceClass: 1 },
     { mode: 'endless', licenceClass: 4 }, { mode: 'endless', licenceClass: '2' }]) {
@@ -117,8 +121,8 @@ await test('config: class II/III only in Endless; Daily, puzzles, class 1 and un
 
 await test('class II: 3 turboprops at the start and curfew announced in week 2; class I has none in week 2', () => {
   for (const seed of [0xA1A1, 0xA1A2, 0xA1A3]) {
-    const one = createGame(seed, 'endless', undefined, null, true, 1);
-    const two = createGame(seed, 'endless', undefined, null, true, 2);
+    const one = createGame(seed, 'endless', undefined, null, true, true, 1);
+    const two = createGame(seed, 'endless', undefined, null, true, true, 2);
     assert.equal(one.world.reserve.turboprop, 4);
     assert.deepEqual(two.world.reserve, { turboprop: 3, widebody: 0 });
     // Same seed: the start world is the same airports (only knobs differ).
@@ -139,7 +143,7 @@ await test('class III: 4 curfew airports from week 2 and hubs 6 seats smaller (3
   }
   // A hub (two routes) has 30 seats in class III, 36 in class I.
   const capacityOfHub = (licence: 1 | 3): number => {
-    const run = createGame(0xA1A1, 'endless', undefined, null, true, licence);
+    const run = createGame(0xA1A1, 'endless', undefined, null, true, true, licence);
     const ids = [...run.world.cities()].map((c) => c.id);
     assert.ok(ids.length >= 3);
     assert.equal(run.apply({ type: 'AddRoute', cityIds: [ids[0]!, ids[1]!] }), true);
@@ -163,12 +167,12 @@ await test('classes are harder for the bot, never easier on these seeds (report:
   assert.ok(three < one, `class III ${three} < class I ${one} ticks`);
 });
 
-await test('save → load keeps the class and the hash (envelope v4); v3 envelopes load; D-76 replay keeps it', () => {
+await test('save → load keeps the class and the hash (envelope v5); v3 and v4 (surge) envelopes load; D-76 replay keeps it', () => {
   const sim = botRun(0xA1A1, 'endless', true, 3, TICKS_PER_WEEK + 600);
   assert.equal(sim.config.licenceClass, 3);
   const save = encodeSave(saveSourceFromSim(sim), 1000);
   assert.equal(save.v, SAVE_VERSION);
-  assert.equal(SAVE_VERSION, 4);
+  assert.equal(SAVE_VERSION, 5);
   const decoded = decodeSave(JSON.stringify(save));
   assert.equal(decoded.status, 'ok');
   if (decoded.status !== 'ok') return;
@@ -184,24 +188,33 @@ await test('save → load keeps the class and the hash (envelope v4); v3 envelop
   assert.ok(old && old.replayed);
   assert.equal(old.sim.config.licenceClass, 3);
   assert.equal(old.sim.hash(), sim.hash(), 'unchanged rules replay to the same hash');
-  // A v3 envelope (pre-R2h, always class I) still loads to its hash; tampering is caught as v3.
+  // v3 (pre-R2i) and v4 (pre-R2h, here with a surge running) envelopes still load to their hash; tampering is caught.
   const plain = createGame(0xB2B2, 'endless', undefined, null, true);
   plain.advance(1200);
+  const surging = botRun(0xA1A2, 'endless', true, 1, 10_400); // DXB surge window 10320–10680 (bot, deterministic)
+  assert.equal(surging.world.surge?.active, true, 'a v4 save with a surge in progress');
+  for (const [old, sim0] of [[3, plain], [4, surging]] as const) {
+    const current = encodeSave(saveSourceFromSim(sim0), 1000);
+    const { checksum: _drop, ...body } = { ...current, v: old };
+    const legacy = { ...body, checksum: checksum(body) };
+    const loaded = decodeSave(JSON.stringify(legacy));
+    assert.equal(loaded.status, 'ok', `v${old}`);
+    if (loaded.status !== 'ok') return;
+    assert.equal(loaded.save.v, SAVE_VERSION);
+    const back = restoreSimDetailed(loaded.save);
+    assert.ok(back && !back.replayed);
+    assert.equal(back.sim.hash(), sim0.hash(), `v${old} hash`);
+    back.sim.advance(300); sim0.advance(300);
+    assert.equal(back.sim.hash(), sim0.hash(), `v${old} continues identically`);
+    assert.equal(decodeSave(JSON.stringify({ ...legacy, checksum: current.checksum })).status, 'error', `v${old} is checked as v${old}`);
+  }
   const current = encodeSave(saveSourceFromSim(plain), 1000);
-  const { checksum: _drop, ...body } = { ...current, v: 3 };
-  const v3 = { ...body, checksum: checksum(body) };
-  const loaded = decodeSave(JSON.stringify(v3));
-  assert.equal(loaded.status, 'ok');
-  if (loaded.status !== 'ok') return;
-  assert.equal(loaded.save.v, SAVE_VERSION);
-  assert.equal(restoreSimDetailed(loaded.save)?.sim.hash(), plain.hash());
-  assert.equal(decodeSave(JSON.stringify({ ...v3, checksum: current.checksum })).status, 'error', 'v3 is checked as v3');
   // A newer envelope is refused as unsupported; a class snapshot cannot load as class I.
-  const { checksum: _c, ...newer } = { ...current, v: 5 };
+  const { checksum: _c, ...newer } = { ...current, v: 6 };
   const decodedNewer = decodeSave(JSON.stringify({ ...newer, checksum: checksum(newer) }));
   assert.deepEqual(decodedNewer, { status: 'error', issue: 'unsupported' });
   const snap = JSON.parse(sim.snapshot());
-  snap.state.config = { mode: 'endless', weeklyContract: true };
+  snap.state.config = { mode: 'endless', weeklyContract: true, demandSurge: true };
   assert.throws(() => Sim.fromSnapshot(JSON.stringify(snap)));
 });
 

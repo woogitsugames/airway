@@ -2247,6 +2247,60 @@ upgrade specs and (≤ 370 px) logbook totals stack. Apple's "Larger Text" label
 Rejected: `@capacitor/text-zoom` (a dependency and a second scale applied by the WebView on top of ours), scaling
 the HUD now (overlaps the dock/tag layout tests), a 200 % step (titles and boards would need the redesign).
 Guards: `test:text-scale`, `test:e2e:text-scale-150`, `test:a11y-evidence`. **Status: in force.**
+## D-249 — Announced demand surge: from week 3 one served airport per week announces +12 passengers a game day ahead (2026-11-05, Claude, night N12bb)
+R2i. From the week-2 board on (so the first surge falls in week 3), every weekly board of a new Endless run draws one
+**open airport that has a route** and a local start hour (08, 11, 14 or 16 — the 6-hour window never touches the
+23–06 curfew). Exactly one game day before the window the airport **announces** the surge; during the window
+(6 game hours on its local clock) it sends **12 more passengers** than usual, one every 30 minutes, to regions
+drawn with its usual destination weights. The rule sits behind `GameConfig.demandSurge: true` (Endless only;
+`EndlessRun.create` sets it for every new Endless run through one switch, `ENDLESS_DEMAND_SURGE`), exactly like the
+weekly contract (D-247). Daily, puzzles, flagless and contract-only saves carry no flag, so their state, hashes,
+ticks and the leaderboard replay are bit-for-bit unchanged (pinned in `test:demand-surge` against
+origin/night/12ba-weekly-contract 4617dcb bot runs) and `RULES_VERSION` stays 6; the save envelope goes **v3 → v4**
+(v3 loads unchanged; a pre-R2i build refuses a v4 save as "newer version" instead of dropping the surge), and the
+D-76 replay keeps the flag. **Determinism** (`src/sim/surge.ts`): the airport, the hour and the extra passengers'
+destinations come from `new Rng(seed).fork('surge/<week>')`, whose state is kept in the world snapshot; no kernel
+stream moves — a surge run equals the run without surges until its first window opens, and the kernel demand stream
+stays equal even through the window. Versioned params `SURGE_*` (`SURGE_PARAMS_VERSION` 1).
+**Changed from the backlog's "e.g. ×2 for 6 hours"**: doubling this game's demand (1.3 passengers per million
+inhabitants per day) gave a median of **1** extra passenger per window (bot, 50 seeds, range 0–5) — nothing to act
+on, and a day-long notice for it would teach players to ignore the sign. A fixed count reads as a promise ("+12")
+and does not depend on the city's size. **Drawn in the world** (no `src/render/**` change; the existing tag/edge-chip
+DOM): a pennant stub on the airport's luggage tag right after its code plate — **hollow pennant + "+12 14:00"** (local
+start) while announced, **filled pennant + "+12 do 20:00" / "+12 to 20:00"** while running; shape and words carry
+the state, not colour; the off-screen edge chip carries the same pennant in its top-right corner; tag and chip aria
+name the surge; the pause sheet gets a "Szczyt ruchu / Passenger surge" row ("WAW +12, 14:00–20:00 czasu lok.").
+Local `--aw-surge-*` tokens until the UI redesign. Events `SurgeAnnounced` and `Surge` (start/end) for audio/HUD later.
+**Bot check** (`balance:surges`, test:balance policy, contract on in both, the bot ignores the sign; nothing else
+retuned): 50 seeds from 0xA1A1: median 17.41 / 17.41 min without / with, 26 windows opened in 23 runs, 6 runs
+shorter, 1 lost at the surge airport; 200 seeds: **16.75 / 16.75 min** (D-79 10–18), 140 surges announced, 85
+windows opened (79 runs), extra passengers per such run median 12 (3–24), 13 runs shorter, 0 longer, 4 lost at the
+surge airport during or within 6 h after its window, 3rd board reached 34 → 30 of 200 (`docs/balance/surges-summary.md`).
+Not done: a first-time card for the first announcement (would change the `first-time-cards` journey; the tag aria
+and the pause row explain it), a sound on the announcement. Owner choices left open: size (+12) and length (6 h),
+served airports only vs any open airport, the notice (one day), and whether the surge should also reach Daily.
+Guards: `test:demand-surge` (`test:fast`), `test:e2e:surge-tag`, `test:balance:surges` (`test:ci`).
+**Status: in force (size to confirm after the closed test).**
+
+
+## D-250 — UI skin tokens before the redesign (2026-11-05, Claude, night N11aq)
+Groundwork for the UI redesign (`docs/styles/ui-2026-11/KIERUNKI.md`: KARTA / KOKPIT / ZNAKI, the owner's pick is
+still open), with no visual change. Every colour, typeface, weight, motion duration/delay, corner, shadow/hover rule
+and icon size of the in-game HUD (boarding pass, tag dock), airport tags and chips (incl. the inline SVG inks of
+`overlay.ts`), pause sheet, weekly board and contract waybill, hub cause board, game-over report and main menu /
+settings is a semantic custom property `--skin-<component>-<role>` of one file, `src/ui/skin/current.css` (202 tokens,
+461 literals moved; per-component names so a skin can split today's shared colours; values equal to a `theme.css`
+palette entry point at it, so `test:contrast`/`test:cvd` still cover them). A new skin = a new token file imported
+instead of it plus structural tweaks in the component CSS. The D-248 text-scale tokens stay in `theme.css`; sizes,
+paddings, rules and die-cut shapes stay structural in the component CSS (`INVENTORY.md` lists both).
+Evidence: with the skin substituted back every covered CSS file equals the old text; `npm run skin:pixels` (88
+globe-less fixture shots — the eight `e2e/screen-fixtures.mjs` screens + pause, overlay, hub board — PL/EN × 412×915,
+915×412, 320×568 at 100 % and 412×915 at 150 %) pixel-identical with equal computed styles against origin/dev.
+Rejected: a TS token map (the values are CSS-only; inline styles would beat media queries), palette-named tokens
+(`--skin-paper` used by every paper object would couple the components a direction separates), tokenising sizes and
+paddings now (a new typeface changes them per component anyway; tag widths are tied to `overlay.ts` constants).
+Not covered yet: ATC strip, logbook, puzzle board, leaderboard, tutorial, `glyphs.ts` outline, the globe.
+Guards: `test:skin-tokens` (`test:fast`). **Status: in force.**
 
 ## D-251 — Endless licence classes: three difficulty tiers from scenario knobs only, unlocked on the device (2026-11-05, Claude, night N12bc)
 R2h (Q-50 recommendation A/B). A new Endless run flies in **licence class I, II or III**. Class I is today's Endless;
@@ -2257,8 +2311,8 @@ curfew week closes 4 instead of 2, then one more every two weeks as before, cap 
 fleet and terminal queues take the class's values instead of the shared constants. The class sits in
 `GameConfig.licenceClass: 2 | 3` (Endless only; Daily, puzzles, `1` and other values are refused); a class I run
 carries no field, so its state, hashes, ticks and the Daily/leaderboard replay are bit-for-bit today's (pinned in
-`test:licence-classes` against origin/dev 635e1bf bot runs, Daily, flagless and contract Endless) and `RULES_VERSION`
-stays 6. The save envelope goes **v3 → v4** (v3 loads unchanged; a pre-R2h build refuses a v4 save as "newer version"
+`test:licence-classes` against origin/dev 40bf2ae bot runs, Daily, flagless, contract and contract + surge Endless) and `RULES_VERSION`
+stays 6. The save envelope goes **v4 → v5** (v3 and v4 — incl. a run with a surge — load unchanged; a pre-R2h build refuses a v5 save as "newer version"
 instead of continuing a class II/III run under class I rules); the D-76 replay and "Same world" keep the class.
 **Unlock** (device only, no new key, nothing leaves the device): the logbook (`airway.logbook.v1`) keeps the most
 weeks flown per class (`licenceWeeks`); a class opens once a run of the class below reached **week 5** (4 weeks
@@ -2271,12 +2325,12 @@ keeps its height and columns; while the picker is open the options name what eac
 from week 2, 3 turboprops"). A newly opened class is announced once on the menu's paper notice ("Class II licence
 issued…"); the game-over report shows "Licence class II" beside the score; the logbook gets a "Best by licence class"
 row (I/II/III weeks) and the class numeral under "Endless" in the recent flights. PL + EN.
-**Bot check** (`balance:licences`, the test:balance policy with the weekly contract on, the bot does not adapt; nothing
+**Bot check** (`balance:licences`, the test:balance policy with the weekly contract and demand surge on, the bot does not adapt; nothing
 tuned): 50 seeds from 0xA1A1: median **17.41 / 16.68 / 14.69** min (I / II / III); 200 seeds: **16.75 / 15.45 /
-14.10** min, p10 9.93 / 7.95 / 7.51, 2nd board reached 68 / 58 / 48 %, week 5 reached 1 / 0 / 0 of 200
+14.10** min, p10 9.93 / 7.95 / 7.51, 2nd board reached 68 / 58 / 48 %, week 5 reached 0 / 0 / 0 of 200
 (`docs/balance/licences-summary.md`). Class I stays in D-79's 10–18 (gated); II and III are reported only. II is a
 mild step for the bot (−1.3 min), III a clear one (−2.7 min, −32 % passengers). The week-5 bar is high for the bot
-(0.5 % of class I runs); human players were not measured. Owner choices left open: the unlock week (5), whether
+(no class I run of 200 got there); human players were not measured. Owner choices left open: the unlock week (5), whether
 Daily counts toward class II, the class II/III knob sizes, the stamp under the "Gate" column head, whether classes
 get their own records/leaderboards later. Rejected: a separate menu row (D-236: the board would grow), new rules per
 class (backlog: scenario knobs only), a rules-version bump (class I is unchanged).

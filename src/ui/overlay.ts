@@ -8,6 +8,8 @@ import {
 } from './overlay-layout'; // [task-38] slot tag; [night-11x] R5h edge chips
 import { REGIONS } from '../data/regions';
 import type { FillTrend } from '../game/fillTrend'; // [night-11af] R4c (type only)
+import type { SurgeMark } from '../game/surge'; // [night-12bb] R2i (type only)
+import './skin/current.css'; // [night-11aq] skin tokens read by overlay.css
 import './overlay.css';
 
 const DEG = Math.PI / 180;
@@ -70,6 +72,12 @@ interface BubbleEntry {
   /** [night-10h] Red-white boom-barrier stub while the night curfew closes the airport. */
   barrier: HTMLSpanElement;
   closed: boolean;
+  /** [night-12bb] R2i: pennant stub with "+N HH:00" while a demand surge is announced or running; null hides it. */
+  surgeStub: HTMLSpanElement;
+  surgeText: HTMLSpanElement;
+  surgeEdge: HTMLSpanElement;
+  surge: SurgeMark | null;
+  surgeWidth: number;
   tag: TagSlot;
   /** [task-38] Departure-slot tag hung under the passenger tag (D-50). */
   slot: HTMLDivElement;
@@ -116,6 +124,11 @@ export interface AirportOverlay {
   setNew(id: string, isNew: boolean): void;
   /** [night-10h] Closed by the night curfew: barrier stub on its tag and a striped bar on its edge chip. */
   setCurfew(id: string, closed: boolean): void;
+  /**
+   * [night-12bb] R2i, D-249: announced (hollow pennant, "+N" and the local start time) or running (filled pennant,
+   * "+N to" the local end time) demand surge on the tag, and a pennant on the edge chip; null removes both.
+   */
+  setSurge(id: string, surge: SurgeMark | null): void;
   /**
    * [night-11af] R4c: chevron beside the passenger count, 'filling' (up) or 'emptying' (down); null hides it.
    * The game layer decides (≥ 50 % full, last game hour's balance beyond ±1); the overlay only draws it.
@@ -211,12 +224,28 @@ const SLOT_DIGIT = 7.4;
 const NEW_CHAR = 7.6;
 /** [night-10h] Barrier stub: 26 px mark + 2 px margin + 4 px gap, as laid out by .airport-bubble__curfew. */
 const BARRIER_WIDTH = 32;
-/** The boom barrier the globe draws on a closed airport, same drawing as the puzzle strips (N7d). */
+/** The boom barrier the globe draws on a closed airport, same drawing as the puzzle strips (N7d). [night-11aq] Inks are
+ * skin tokens (src/ui/skin/current.css); the SVG is inline in the tag, so the custom properties resolve. */
 const BARRIER_SVG = '<svg viewBox="0 0 22 12" width="26" height="14" aria-hidden="true" focusable="false">' +
-  '<rect x="1" y="2" width="3" height="9" fill="#13302e"/>' +
-  '<rect x="4" y="3" width="17" height="4" fill="#fbf8f1" stroke="#13302e" stroke-width="1"/>' +
-  '<path d="M7 3h3l-2 4H5zM13 3h3l-2 4h-3zM19 3h2v1.6L20 7h-3z" fill="#b8322a"/></svg>';
+  '<rect x="1" y="2" width="3" height="9" style="fill:var(--skin-tag-barrier-post)"/>' +
+  '<rect x="4" y="3" width="17" height="4" style="fill:var(--skin-tag-barrier-boom);stroke:var(--skin-tag-barrier-post)" stroke-width="1"/>' +
+  '<path d="M7 3h3l-2 4H5zM13 3h3l-2 4h-3zM19 3h2v1.6L20 7h-3z" style="fill:var(--skin-tag-barrier-stripe)"/></svg>';
 const NEW_PAD = 10;
+/**
+ * [night-12bb] R2i: surge stub: 12 px pennant + 3 px gap + mono 12 px text (fixed advance) + padding + 2 px margin,
+ * as laid out by .airport-bubble__surge. A floor (min-width), so a wider translation grows the stub.
+ */
+const SURGE_CHAR = 7.2;
+const SURGE_FIXED = 12 + 3 + 10 + 2;
+/**
+ * A pennant on a pole: the shape says "announcement" without colour. Hollow while announced, filled while running.
+ * `phase` picks the fill; the outline and the pole are the same, so the two read as one sign in two states.
+ */
+function pennant(filled: boolean): string {
+  return '<svg viewBox="0 0 12 16" width="12" height="16" aria-hidden="true" focusable="false">' +
+    '<rect x="1" y="1" width="1.6" height="14" fill="currentColor"/>' +
+    `<path d="M2.6 1.8 L11 5.3 L2.6 8.8 Z" fill="${filled ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>`;
+}
 /** [night-11m] Code plate: Overpass Mono 12 px (fixed advance) plus padding and the divider, as in overlay.css. */
 const PLATE_CHAR = 7.2;
 const PLATE_PAD = 9;
@@ -227,7 +256,7 @@ function connectingGlyph(region: DestinationRegion): SVGSVGElement {
   svg.classList.add('airport-region-glyph--connecting');
   const path = svg.firstElementChild;
   if (path) {
-    path.setAttribute('fill', '#FBF8F1');
+    (path as SVGElement).style.fill = 'var(--skin-tag-glyph-hollow)'; // [night-11aq] skin token (src/ui/skin/current.css)
     path.setAttribute('stroke', REGIONS[region].color);
     path.setAttribute('stroke-width', '2');
     path.setAttribute('stroke-linejoin', 'round');
@@ -293,7 +322,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
     const jammedNow = entry.jamSeconds !== null;
     // [night-11m] D-128: the plate names the airport wherever the UI speaks of it (hub, jam countdown, NEW stub, slot
     // hold, curfew) and on every airport once the player zooms in; otherwise the disc stays unlabelled.
-    const plated = zoomedIn || entry.hub || jammedNow || entry.isNew || entry.slotHeld > 0 || entry.closed;
+    const plated = zoomedIn || entry.hub || jammedNow || entry.isNew || entry.slotHeld > 0 || entry.closed || entry.surge !== null;
     if (plated) want.push(entry.plate);
     let freshWidth = 0;
     if (entry.isNew) {
@@ -305,6 +334,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       want.push(entry.fresh);
     }
     if (entry.closed) want.push(entry.barrier);
+    if (entry.surge) want.push(entry.surgeStub); // [night-12bb] R2i
     // [night-10i] Transfers still inside the connection time are drawn hollow: the same shape, not yet "boardable".
     // When the tag overflows, at most half of the shown glyphs are hollow so ready passengers stay visible.
     const total = entry.waiting.length;
@@ -337,20 +367,27 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
     entry.edge.classList.toggle('airport-edge--jam', jammed);
     entry.tag.jammed = jammed;
     // [task-38] mainWidth 0 = no passenger tag; the group box also holds the slot tag.
-    const plateOnly = plated && !(entry.waiting.length > 0 || jammed || entry.isNew || entry.closed);
+    const surged = entry.surge !== null; // [night-12bb] R2i
+    const plateOnly = plated && !(entry.waiting.length > 0 || jammed || entry.isNew || entry.closed || surged);
     bubble.classList.toggle('airport-bubble--plate-only', plateOnly);
     entry.tag.minor = plateOnly; // a plate never takes the place of a passenger tag
-    entry.mainWidth = entry.waiting.length > 0 || jammed || entry.isNew || entry.closed || plated
+    entry.mainWidth = entry.waiting.length > 0 || jammed || entry.isNew || entry.closed || surged || plated
       ? Math.max(30, 23 + limit * 18 + (entry.waiting.length > MAX_GLYPHS ? 27 : 0) + (jammed ? 53 : 0) +
         (freshWidth ? freshWidth + (limit || jammed ? 4 : 0) : 0) + (entry.closed ? BARRIER_WIDTH : 0) +
+        (surged ? entry.surgeWidth : 0) +
         (trendNode && entry.waiting.length > 0 ? TREND_WIDTH : 0) +
         (plated ? entry.plateWidth - (plateOnly ? 8 : 0) : 0)) : 0;
     bubble.classList.toggle('airport-bubble--new', entry.isNew);
     entry.edge.classList.toggle('airport-edge--new', entry.isNew && !jammed);
     entry.edge.classList.toggle('airport-edge--curfew', entry.closed && !jammed); // [night-10h]
+    entry.edge.classList.toggle('airport-edge--surge', surged); // [night-12bb] R2i
+    entry.surgeEdge.hidden = !surged;
+    const surgeAria = entry.surge ? t(entry.surge.phase === 'active' ? 'airport.surgeActiveAria' : 'airport.surgeSoonAria',
+      { code: entry.airport.code, count: entry.surge.passengers, time: entry.surge.time }) : '';
     const taken = Math.min(entry.waiting.length, entry.capacity);
     const edgeAria = t('airport.focus', { code: entry.airport.code }) +
       (entry.closed ? ' ' + t('airport.curfewAria', { code: entry.airport.code }) : '') +
+      (surgeAria ? ' ' + surgeAria : '') +
       (taken > 0 && entry.capacity > 0 ? ' ' + t('airport.edgeFillAria', { count: taken, capacity: entry.capacity }) : '');
     if (entry.edge.getAttribute('aria-label') !== edgeAria) entry.edge.setAttribute('aria-label', edgeAria);
     rebuildGauge(entry, taken);
@@ -362,7 +399,8 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
     }
     const label = jammed ? t('airport.jammed', { code: entry.airport.code, seconds: Math.ceil(entry.jamSeconds ?? 0) }) : t('airport.waiting', { code: entry.airport.code, count: entry.waiting.length });
     const aria = (entry.isNew ? t('airport.newAria', { code: entry.airport.code }) + ' ' : '') +
-      (entry.closed ? t('airport.curfewAria', { code: entry.airport.code }) + ' ' : '') + label +
+      (entry.closed ? t('airport.curfewAria', { code: entry.airport.code }) + ' ' : '') +
+      (surgeAria ? surgeAria + ' ' : '') + label +
       (entry.connecting > 0 ? ' ' + t('airport.connectingAria', { count: entry.connecting }) : '') +
       (trendNode && entry.waiting.length > 0 ? ' ' + t(entry.trend === 'filling' ? 'airport.trendFillingAria' : 'airport.trendEmptyingAria') : '');
     if (aria !== entry.ariaLabel) { bubble.setAttribute('aria-label', aria); entry.ariaLabel = aria; }
@@ -441,6 +479,19 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       const barrier = document.createElement('span');
       barrier.className = 'airport-bubble__curfew';
       barrier.innerHTML = BARRIER_SVG;
+      // [night-12bb] R2i: surge stub (pennant + text) and the edge chip's pennant, hidden until a surge is set.
+      const surgeStub = document.createElement('span');
+      surgeStub.className = 'airport-bubble__surge';
+      surgeStub.setAttribute('aria-hidden', 'true');
+      const surgeFlag = document.createElement('span');
+      surgeFlag.className = 'airport-bubble__pennant';
+      const surgeText = document.createElement('span');
+      surgeText.className = 'airport-bubble__surge-text';
+      surgeStub.append(surgeFlag, surgeText);
+      const surgeEdge = document.createElement('span');
+      surgeEdge.className = 'airport-edge__surge';
+      surgeEdge.hidden = true;
+      surgeEdge.setAttribute('aria-hidden', 'true');
       const more = document.createElement('span');
       more.className = 'airport-bubble__count';
       const edge = document.createElement('button');
@@ -455,7 +506,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       const gaugeFill = document.createElement('span');
       gaugeFill.className = 'airport-edge__fill';
       gauge.appendChild(gaugeFill);
-      edge.append(arrow(), document.createTextNode(airport.code), gauge);
+      edge.append(arrow(), document.createTextNode(airport.code), gauge, surgeEdge);
       edge.addEventListener('click', () => options.onNavigate?.(airport.id));
       // [task-38] Slot tag: stub with the clock mark, "SLOT" label, h:mm countdown, optional ×N.
       const slot = document.createElement('div');
@@ -478,6 +529,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       const tag: TagSlot = { id: airport.id, anchorX: 0, anchorY: 0, width: 30, height: 30, active: false, jammed: false, x: 0, y: 0, placed: false };
       const entry: BubbleEntry = {
         airport, normal, anchor, bubble, edge, gauge, gaugeFill, capacity: 0, lastGauge: '', timer, fresh, isNew: false, barrier, closed: false, tag,
+        surgeStub, surgeText, surgeEdge, surge: null, surgeWidth: 0,
         plate, plateWidth, hub: airport.hub === true,
         glyphPool: new Map(), more, children: [], ariaLabel: '',
         slot, slotLabel, slotTime, slotCount, slotRect: { width: 0, x: 0, y: 0, visible: false }, slotHeld: 0, slotMinutes: 0,
@@ -537,6 +589,28 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       const entry = get(id);
       if (entry.closed === closed) return;
       entry.closed = closed;
+      rebuildBubble(entry);
+    },
+    setSurge(id, surge): void {
+      const entry = get(id);
+      if (surge !== null && ((surge.phase !== 'announced' && surge.phase !== 'active') ||
+          !Number.isSafeInteger(surge.passengers) || surge.passengers < 1 || !/^\d\d:\d\d$/.test(surge.time))) {
+        throw new RangeError('Invalid surge mark');
+      }
+      const prev = entry.surge;
+      if (prev === surge || (prev && surge && prev.phase === surge.phase && prev.passengers === surge.passengers && prev.time === surge.time)) return;
+      entry.surge = surge ? { ...surge } : null;
+      if (surge) {
+        const text = t(surge.phase === 'active' ? 'airport.surgeActive' : 'airport.surgeSoon', { count: surge.passengers, time: surge.time });
+        entry.surgeText.textContent = text;
+        entry.surgeWidth = Math.ceil(SURGE_FIXED + text.length * SURGE_CHAR);
+        entry.surgeStub.style.minWidth = (entry.surgeWidth - 2) + 'px';
+        entry.surgeStub.dataset.phase = surge.phase;
+        (entry.surgeStub.firstElementChild as HTMLElement).innerHTML = pennant(surge.phase === 'active');
+        entry.surgeEdge.innerHTML = pennant(surge.phase === 'active');
+      } else {
+        entry.surgeWidth = 0;
+      }
       rebuildBubble(entry);
     },
     setHub(id, hub): void {

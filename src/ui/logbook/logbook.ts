@@ -10,6 +10,7 @@ import { localNumber, t, type TranslationKey } from '../../i18n';
 import type { RegionId } from '../../data/regions';
 import { logbookSummary } from './summary';
 import { logbookMilestones } from '../milestones'; // [night-12ax] R1n
+import '../skin/current.css'; // [night-11aq] skin tokens read by menu.css
 import '../menu/menu.css';
 import './logbook.css';
 

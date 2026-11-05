@@ -85,8 +85,9 @@ await test('Daily and Endless without the flag: bit-for-bit the pre-R2k bot runs
 
 await test('config: new Endless runs carry the contract; Daily, puzzles and bad values refuse it', () => {
   assert.equal(ENDLESS_WEEKLY_CONTRACT, true);
-  assert.deepEqual(EndlessRun.create(1).sim.config, { mode: 'endless', weeklyContract: true });
-  assert.deepEqual(EndlessRun.create(1, 'endless', 'EUN').sim.config, { mode: 'endless', homeRegion: 'EUN', weeklyContract: true });
+  // [night-12bb] R2i: new Endless runs also carry the demand surge (D-249, test:demand-surge).
+  assert.deepEqual(EndlessRun.create(1).sim.config, { mode: 'endless', weeklyContract: true, demandSurge: true });
+  assert.deepEqual(EndlessRun.create(1, 'endless', 'EUN').sim.config, { mode: 'endless', homeRegion: 'EUN', weeklyContract: true, demandSurge: true });
   assert.deepEqual(EndlessRun.create(1, 'daily').sim.config, { mode: 'daily' });
   assert.deepEqual(createGame(1).config, { mode: 'endless' }, 'the facade keeps the old default');
   assert.deepEqual(createGame(1, 'daily', undefined, null, true).config, { mode: 'daily' }, 'the facade drops it for Daily');
@@ -235,7 +236,7 @@ await test('save → load keeps the contract and the exact hash (envelope v3); v
   assert.ok(sim.world.contract);
   const save = encodeSave(saveSourceFromSim(sim), 1000);
   assert.equal(save.v, SAVE_VERSION);
-  assert.ok(SAVE_VERSION >= 3); // [night-12bc] R2h: 3 -> 4 (licence class)
+  assert.ok(SAVE_VERSION >= 4); // [night-12bb] R2i: 3 -> 4 (demand surge); [night-12bc] R2h: 4 -> 5 (licence class)
   const decoded = decodeSave(JSON.stringify(save));
   assert.equal(decoded.status, 'ok');
   if (decoded.status !== 'ok') return;

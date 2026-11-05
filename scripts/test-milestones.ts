@@ -104,7 +104,8 @@ test('bot: the median run reaches the first four milestones, each reached by at 
 test('D-13: reading milestones never changes the Sim (same hash as a raw Sim driven by the same bot)', () => {
   const seed = 0xA1A1 + 7;
   const run = EndlessRun.create(seed);
-  const sim = createGame(seed, 'endless', undefined, null, run.sim.config.weeklyContract === true); // [night-12ba] same rules as the run (R2k)
+  const sim = createGame(seed, 'endless', undefined, null, run.sim.config.weeklyContract === true, // [night-12ba] same rules as the run (R2k)
+    run.sim.config.demandSurge === true); // [night-12bb] and the demand surge (R2i)
   for (let tick = 0; tick < 12_000 && !run.failed; tick++) {
     if (tick % AUTOPLAY_ACTION_INTERVAL === 0) {
       const a = nextAutoplayCommand(run.sim);
@@ -205,7 +206,9 @@ test('wiring: Endless game over logs and shows milestones; the row is shape-code
     'reached: a filled square');
   assert.match(css, /\.airway-go-milestone-mark \{[^}]*border: 1\.5px solid currentColor;/, 'open: a hollow square');
   assert.match(css, /:root\[data-airway-motion="reduce"\] \.airway-go-milestone-first \{ animation: none; \}/);
-  assert.match(css, /airway-go-stamp 160ms ease-out/, 'short, no bounce');
+  // [night-11aq] D-250: the duration is a skin token; the current skin keeps 160 ms.
+  assert.match(css, /airway-go-stamp var\(--skin-motion-stamp\) ease-out/, 'short, no bounce');
+  assert.match(read('src/ui/skin/current.css'), /--skin-motion-stamp: 160ms;/, 'short, no bounce (skin)');
 });
 
 console.log(`SUMMARY test:milestones seed=0xA1A1 runs=${SEEDS} median_min=${median.minutes.toFixed(2)} ` +

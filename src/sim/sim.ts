@@ -64,6 +64,8 @@ function readConfig(value: unknown): GameConfig {
       (value.homeRegion !== undefined && (value.mode !== 'endless' || !isHomeRegion(value.homeRegion))) ||
       // [night-12ba] R2k: the weekly contract is an Endless rule only (Daily and its leaderboards stay as they were).
       (value.weeklyContract !== undefined && (value.mode !== 'endless' || value.weeklyContract !== true)) ||
+      // [night-12bb] R2i: the demand surge is an Endless rule only, like the contract.
+      (value.demandSurge !== undefined && (value.mode !== 'endless' || value.demandSurge !== true)) ||
       // [night-12bc] R2h: a licence class above I is an Endless choice only (Daily keeps one rule set for everyone).
       (value.licenceClass !== undefined && (value.mode !== 'endless' || (value.licenceClass !== 2 && value.licenceClass !== 3)))) {
     throw new TypeError('invalid game configuration');

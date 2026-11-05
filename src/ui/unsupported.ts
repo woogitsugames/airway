@@ -2,6 +2,7 @@
 // settings paper (same tokens as the settings and privacy pages), the device's renderer string for a support mail,
 // no buttons: there is nothing to play on this device, and back/home leave the app as usual.
 import { t } from '../i18n';
+import './skin/current.css'; // [night-11aq] skin tokens read by menu.css
 import './menu/menu.css';
 
 export function mountUnsupported(host: HTMLElement, renderer: string): HTMLElement {
