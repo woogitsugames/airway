@@ -355,7 +355,19 @@
 @media (min-width: 720px) and (max-height: 400px) {
   .airway-upgrade:has(.airway-upgrade-waybill) .airway-upgrade-model { display: none; }
 }
-@media (max-width: 719px) and (max-height: 760px) {
+/* [night-12bf] Portrait screens narrower than 720 px taller than 820 px (the folded-out 673×841 of ui:matrix): the 21vh
+   model windows plus the slip ran the third crate 55 px below the screen (384×854 PL: 5 px, 39 px with a missed contract). With a waybill each
+   window gives up 34 px (384–412 px phones are capped by 34vw already and keep theirs); up to 880 px tall the board
+   gaps are 12 px and the slip's text is set compact (a missed contract's slip takes four lines at 384 px). */
+@media (max-width: 719px) and (min-height: 821px) {
+  .airway-upgrade:has(.airway-upgrade-waybill) { --upgrade-win: min(34vw, calc(21vh - 34px), 200px); }
+}
+@media (max-width: 719px) and (min-height: 821px) and (max-height: 880px) {
+  .airway-upgrade:has(.airway-upgrade-waybill) { gap: 12px; }
+  .airway-upgrade-waybill { padding: 4px 10px 5px; font-size: 12px; line-height: 1.25; gap: 0 10px; }
+}
+/* [night-12bf] Up to 820 px tall (was 760: 360×800 PL ran 58 px, 600×800 90 px below the screen) the slip is compact. */
+@media (max-width: 719px) and (max-height: 820px) {
   .airway-upgrade-waybill { padding: 4px 10px 5px; font-size: 12px; line-height: 1.25; gap: 0 10px; }
   /* The slip's height comes out of the gaps, the tear and the model windows, so a 3-crate board still fits 360×640. */
   .airway-upgrade:has(.airway-upgrade-waybill) { gap: 5px; --upgrade-win: min(20vw, 11vh, 88px); }

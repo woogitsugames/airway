@@ -58,6 +58,35 @@ export async function newGamePage(browser, url, language, viewport = { width: 41
   return { page, errors };
 }
 
+/**
+ * [night-12bf] `--render=stub` (or `AW_RENDER=stub`): a suite that supports it (smoke, ui:matrix, edge-chip-tags; `npm run <suite>:stub`)
+ * loads the game on the DEV stub world `?render=stub&clock=frozen` (D-254) instead of the WebGL globe, so its UI/flow
+ * checks finish under SwiftShader (G7). Game time then passes only through `window.aw`. Anything `src/render` draws
+ * (globe, rings, planes, barriers) is not on that page: those checks stay on the default real renderer.
+ */
+const renderArg = process.argv.find((arg) => arg.startsWith('--render='))?.slice('--render='.length);
+const renderChoice = renderArg ?? process.env.AW_RENDER ?? 'real';
+if (!['stub', 'real'].includes(renderChoice)) {
+  throw new Error(`--render / AW_RENDER must be "stub" or "real", got "${renderChoice}"`);
+}
+export const RENDER = renderChoice;
+
+/** The game URL for the current `RENDER` mode (unchanged on the real renderer). */
+export function gameUrl(url) {
+  if (RENDER !== 'stub') return url;
+  const target = new URL(url);
+  target.searchParams.set('render', 'stub');
+  target.searchParams.set('clock', 'frozen');
+  return target.href;
+}
+
+/** Fails fast when a page that should run on the stub world did not load it (e.g. a production build). */
+export async function assertRender(page) {
+  if (RENDER !== 'stub') return;
+  const stub = await page.evaluate(() => typeof window.__awStub === 'object' && window.__awStub !== null);
+  assert(stub, '--render=stub but window.__awStub is missing: ?render=stub needs a Vite dev build (D-254)');
+}
+
 export async function state(page) {
   return await page.evaluate(() => window.aw.state());
 }

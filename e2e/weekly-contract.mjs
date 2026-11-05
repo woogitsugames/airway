@@ -4,7 +4,8 @@
 // region names, the target and the reward in the player's language; last week's result has a filled (met) or hollow
 // (missed) square; a board with a met contract shows four crates, the "four crates" sign line and one crate marked
 // "CONTRACT" (also in its aria-label); every crate stays a 48 px target; the 3-crate board with a waybill and the
-// 4-crate board fit without scrolling and every crate ends above the bottom edge (412×915, 393×852, 360×640, 915×412,
+// 4-crate board fit without scrolling and every crate ends above the bottom edge (412×915, 393×852, [night-12bf] 384×854,
+// 360×800, 673×841, 360×640, 915×412,
 // 812×375; 320×568 is measured and reported, it scrolls by about the slip's height). Shots .e2e/weekly-contract/ (inspected, not committed).
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -14,7 +15,8 @@ import { presetLanguage } from '../scripts/lib/harness.mjs';
 
 const started = performance.now();
 const SHOTS = resolve(ARTIFACTS, 'weekly-contract');
-const SIZES = [[412, 915], [393, 852], [360, 640], [320, 568], [915, 412], [812, 375]];
+// [night-12bf] + 673×841 (ui:matrix foldable, ran 55 px), 360×800 (PL 58 px) and 384×854 (PL 5 px): found by ui:matrix:stub.
+const SIZES = [[412, 915], [393, 852], [384, 854], [360, 800], [673, 841], [360, 640], [320, 568], [915, 412], [812, 375]];
 const WORDS = {
   en: { route: 'Northern Europe – Middle East', task: /^24 passengers between them this week\. Reward: a fourth crate next week\.$/,
     met: 'Last week: 31/30, met.', missed: 'Last week: 12/30, not met.', four: 'Hangar: four crates arrived. You open one.', crate: 'CONTRACT' },
