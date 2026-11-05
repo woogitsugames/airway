@@ -2399,3 +2399,27 @@ Owner choices left open: whether a front should bite harder (e.g. slots halved, 
 its size/speed/frequency, whether it ever reaches Daily.
 Guards: `test:weather-front` (`test:fast`), `test:balance:weather` (`test:ci`).
 **Status: implemented behind a flag, OFF in shipped Endless (post-launch candidate; strength to decide).**
+
+## D-255 — The in-app privacy policy and terms texts load on demand from a bundled chunk (2026-11-05, Claude, night N11at)
+D-252 left the main chunk 2.6 % under its raw budget and named this lever. The long legal texts of Settings → Help —
+the draft banner, sections and date of the privacy policy (D-243) and the terms of use (D-244), PL and EN, 52 keys
+per language — move from `src/i18n/{en,pl}.ts` to `src/i18n/legal/{en,pl}.ts`. `loadLegalText()` (`src/i18n`)
+imports them with `import()` the first time the player opens either page, so Vite emits one chunk
+`dist/assets/legal-*.js` (25.1 kB raw); it ships inside the app (Capacitor loads it from disk, no network, offline
+as before). `legalText(key)` reads the active language like `t()` (pseudo-locale included). The router
+(`src/game/screens.ts`) opens the page once the chunk is loaded and drops the open if the screen changes meanwhile;
+the page itself is built synchronously as before (focus on Back, same DOM, same text). Short strings stay in the main
+catalogs: row labels, page titles, overlines, offline notes and the publisher block (≈ 1 kB per language, shown on
+the settings screen itself). After (on dev 6f7d48d): main JS **1,157.5 → 1,132.8 kB** raw, **350.0 → 338.9 kB** gzip;
+CSS 89.5 kB unchanged; `dist/` 4,271.9 → 4,272.3 kB (+0.4 kB chunk overhead). Budgets unchanged (D-252): headroom
+JS raw 1.9 % → 4.2 %, gzip 2.9 % → 6.2 %. Translator export (`i18n:export`) still reads only the main catalogs: a new
+language adds `src/i18n/legal/<code>.ts` with a lawyer-checked translation (test:i18n fails without it once the
+language ships). Not done: puzzle levels referencing `cities.ts` (other owner, ext/04+) — of 220 start-city records
+45 have coordinates rounded differently from `cities.ts` (levels 01–09 style, e.g. LON 51.5/−0.5 vs 51.5/−0.1) and
+`continent`/`hubCapacity` are per level, so a reference needs per-record overrides to keep the levels byte-identical;
+all start-city records together are ~19 kB of compact JSON (the whole puzzle data ~70 kB), so the gain is ≤ ~12 kB raw.
+Rejected: one chunk per language (a language switch would need a second load; both together are 25 kB), preloading
+the chunk when Settings opens (the page opens within milliseconds anyway). Guards: `test:i18n` (legal catalogs: one
+file per language, same keys, literal strings, used, no banned synonyms, no key in both), `test:privacy-text` (bodies
+only in `src/i18n/legal/`, loaded only by `import()`, router waits), `test:terms`, `test:bundle` (exactly one non-main
+chunk holds both documents in every language). **Status: in force.**

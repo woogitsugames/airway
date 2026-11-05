@@ -120,6 +120,17 @@ if (!STATIC_ONLY) {
     const css = files(dist, (p) => extname(p) === '.css').map((p) => readFileSync(p, 'utf8')).join('\n');
     const tokenUses = [...css.matchAll(/var\(--skin-([a-z0-9-]+)/g)].map((m) => m[1]).filter((name) => !keep.has(name));
     check(tokenUses.length === 0, 'skin tokens left in dist CSS (vite-skin-inline off?): ' + [...new Set(tokenUses)].join(' '));
+    // [night-11at] D-255: the privacy policy and terms bodies are a chunk of their own inside dist/ (loaded on demand,
+    // no network), not part of the main chunk; markers are the first section titles of both documents, EN and PL.
+    await import('./ts-test-loader.mjs');
+    const { en: legalEn } = await import('../src/i18n/legal/en.ts');
+    const { pl: legalPl } = await import('../src/i18n/legal/pl.ts');
+    const markers = [legalEn, legalPl].flatMap((c) => [c['privacy.s1.title'], c['terms.s1.title']]);
+    const chunks = files(join(dist, 'assets'), (p) => extname(p) === '.js').map((p) => [relative(dist, p), readFileSync(p, 'utf8')]);
+    const legalChunks = chunks.filter(([, text]) => markers.some((marker) => text.includes(marker)));
+    check(legalChunks.length === 1 && legalChunks[0][0] !== report.mainJs && markers.every((m) => legalChunks[0][1].includes(m)),
+      'legal texts: one separate chunk with both documents in every language, got ' + legalChunks.map(([path]) => path).join(', '));
+    if (legalChunks.length === 1) console.log(`legal ${legalChunks[0][0]} ${kb(Buffer.byteLength(legalChunks[0][1]))} kB`);
     for (const key of ['mainJsRaw', 'mainJsGzip', 'css', 'total']) {
       const breach = breaches.find((b) => b.startsWith(key + ' '));
       check(!breach, 'budget: ' + breach);

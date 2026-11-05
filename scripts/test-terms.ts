@@ -6,6 +6,9 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { en } from '../src/i18n/en.ts';
 import { pl } from '../src/i18n/pl.ts';
+// [night-11at] D-255: the bodies are in the lazily loaded legal catalogs; the game shows main + legal.
+import { en as legalEn } from '../src/i18n/legal/en.ts';
+import { pl as legalPl } from '../src/i18n/legal/pl.ts';
 import { translations } from '../site/i18n.js';
 
 let passed = 0;
@@ -19,7 +22,7 @@ const read = (path: string): string => readFileSync(new URL(`../${path}`, import
 type Lang = 'pl' | 'en';
 const LANGS: Lang[] = ['pl', 'en'];
 const site = translations as Record<Lang, Record<string, string>>;
-const games: Record<Lang, Record<string, string>> = { pl, en };
+const games: Record<Lang, Record<string, string>> = { pl: { ...pl, ...legalPl }, en: { ...en, ...legalEn } };
 const html = read('site/terms.html');
 const pageKeys = [...html.matchAll(/data-i18n(?:-paragraphs)?="(terms\.[^"]+)"/g)].map((m) => m[1]!)
   .filter((key, index, all) => all.indexOf(key) === index);

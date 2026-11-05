@@ -5,10 +5,12 @@ import { LANGUAGES, type Language } from './languages';
 import { pl } from './pl';
 import { lengthBudget } from './limits';
 import { pseudoText, type PseudoMode } from './pseudo';
+import type { LegalKey } from './legal/legal';
 
 export type { Language } from './languages';
 export { LANGUAGE_CODES, LANGUAGES, localName } from './languages';
 export type TranslationKey = keyof typeof en;
+export type { LegalKey } from './legal/legal';
 export type TranslationParams = Readonly<Record<string, number | string>>;
 
 const SETTINGS_KEY = 'airway.settings';
@@ -111,6 +113,21 @@ export function t(key: TranslationKey, params?: TranslationParams): string {
     params?.[name] === undefined ? token : typeof params[name] === 'number' ? localNumber(params[name]) : String(params[name]),
   );
   return pseudo ? pseudoText(text, { mode: pseudo, budget: lengthBudget(key) }) : text;
+}
+
+/** [night-11at] D-255: the long legal texts (privacy policy and terms bodies, src/i18n/legal/) are a separate chunk
+ *  shipped inside the app. The router awaits this before it opens either page; a failed load can be retried. */
+let legalCatalogs: Record<Language, Record<LegalKey, string>> | null = null;
+let legalLoading: Promise<void> | null = null;
+export function loadLegalText(): Promise<void> {
+  return legalLoading ??= import('./legal/legal').then((module) => { legalCatalogs = module.LEGAL_CATALOGS; },
+    (error: unknown) => { legalLoading = null; throw error; });
+}
+/** A legal text in the active language, as t() shows it (no parameters). Only after loadLegalText() resolved. */
+export function legalText(key: LegalKey): string {
+  if (!legalCatalogs) throw new Error('legal text not loaded: ' + key);
+  const text = legalCatalogs[getLanguage()][key] ?? legalCatalogs.en[key];
+  return pseudo ? pseudoText(text, { mode: pseudo }) : text;
 }
 
 /** [task-37] D-61: the player-facing number format of the active language ("2 500" PL, "2,500" EN).
