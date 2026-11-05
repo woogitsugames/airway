@@ -8,6 +8,7 @@ import type { TutorialOutcome } from '../../game/tutorial/controller';
 import { localNumber, t, type TranslationKey } from '../../i18n';
 import type { RegionId } from '../../data/regions';
 import { logbookSummary } from './summary';
+import { logbookMilestones } from '../milestones'; // [night-12ax] R1n
 import '../menu/menu.css';
 import './logbook.css';
 
@@ -210,6 +211,15 @@ export function createLogbook(onBack: () => void, data: LogbookData, copy: Clipb
   records.append(list(rows.records, 'airway-logbook__records'));
   columns.append(totals, records);
   paper.append(columns);
+  // [night-12ax] R1n, D-242: the flight in which each Endless milestone was first reached ("not yet" otherwise).
+  const milestones = section(t('logbook.milestones'), 'milestones');
+  const reachedRows = logbookMilestones(data.book);
+  milestones.append(list(reachedRows, 'airway-logbook__records airway-logbook__milestones'));
+  for (const [id] of reachedRows) {
+    const cell = milestones.querySelector(`[data-row="${id}"]`);
+    if (cell instanceof HTMLElement) cell.dataset.reached = String(data.book.milestones[id] !== undefined);
+  }
+  paper.append(milestones);
   const recent = section(t('logbook.recent'), 'recent');
   if (data.book.recent.length) recent.append(recentTable(data.book.recent));
   else recent.append(e('p', 'airway-logbook__empty', t('logbook.empty')));

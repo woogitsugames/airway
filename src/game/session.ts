@@ -1,6 +1,7 @@
 // In-game composition (task 30 integration): one run, one world, every in-game layer.
 // Authority flows input → RunCommand → EndlessRun.step() at fixed 100 ms ticks → read-only
 // snapshots → render / UI / audio. Nothing here writes run state except through queue().
+import type { MilestoneId } from './milestones'; // [night-12ax] R1n
 import { pauseSummary } from './pauseSummary';
 import { t } from '../i18n';
 import { framingPoints } from './framing';
@@ -59,6 +60,8 @@ export interface SessionCallbacks {
   failureShare?(): GameOverSnapshot['share'] | void;
   /** [night-11f] True while the player is in their first flights: the report shows one tip. */
   failureTip?(): boolean;
+  /** [night-12ax] R1n: called after onFailure (which logged the flight): milestones reached for the first time ever. */
+  failureMilestones?(): readonly MilestoneId[];
   onTick?(run: EndlessRun, speed: number): void;
   /** [night-11p] R6a: one-time cards in this run (default true; DEV seeded e2e runs turn them off). */
   readonly firstTimeCards?: boolean;
@@ -557,6 +560,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
         ...(run.mode === 'puzzle' ? {} : { timeline: runTimelineLoader(run) }), ...(tip ? { tip } : {}),
         spareAircraft: run.inventory.turboprop + run.inventory.widebody, // [night-12y] R8b
         ...(run.homeRegion ? { homeRegion: run.homeRegion } : {}), // [night-11aj] R2g
+        ...(run.mode === 'endless' ? { milestones: { reached: run.milestones(), first: callbacks.failureMilestones?.() ?? [] } } : {}), // [night-12ax] R1n
       });
     }
   }
