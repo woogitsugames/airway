@@ -1,52 +1,56 @@
 # Przekazanie koordynatora Airway
 
-Ostatnia aktualizacja: 2026-11-04, ok. 21:15 UTC. Sesja koordynatora pracuje w nocy autonomicznie (D-226); właściciel
-wraca o 9:00 czasu brukselskiego.
+Ostatnia aktualizacja: 2026-11-05, ok. 03:10 UTC. Noc pracy autonomicznej (D-226); właściciel wraca o 9:00 czasu
+brukselskiego.
 
 ## Stan repo
-- `main` = `dev` po scaleniu #209 (i PR-a z tym plikiem).
-- Scalone w tej sesji:
-  - #204 pakiet startowy strony (N11ad, D-218);
-  - #205 seedy ze stałą datą (N12aj, D-214);
-  - #206 deklaracje prywatności (R1f, D-220);
-  - #207 strona dla prasy + ZIP (R2e, D-219);
-  - #208 karta dowodów dostępności (R1i);
-  - #209 strzałka trendu zapełnienia (R4c, D-221).
-- Decyzje właściciela z 2026-11-04 wieczorem: D-222 (scala koordynator), D-223 („hub” także w sklepie), D-224 (Q-03:
-  „Device or other IDs”), D-225 („Sufficient Contrast” dopiero po G9b), D-226 (w nocy cały backlog po kolei).
-- Ostatnie numery: **D-226**, **Q-80**. D-160…D-179 należą do sesji ext.
+- `main` = `dev`. W nocy scalone #211–#237 (poprzednio #204–#210).
+- Ostatnie numery: **D-250** na `dev` (D-251 na gałęzi R2h, PR #238), **Q-80**. D-160…D-179 należą do sesji ext.
 - Budziki koordynatora :15 i :45 (włączone): `trig_011aYp1uohavDkngVDFRndoA`, `trig_01TQogjhSE2ggjutqxxB6TtS`.
 
+## Co weszło w nocy (skrót)
+- Gra: wybór regionu startowego (D-236), etapy biegu (D-242), kontrakt tygodnia (D-247), zapowiadany szczyt popytu
+  (D-249), klawiatura i mysz (D-233), skala tekstu do 150 % (D-248), tablica przyczyn zatoru (D-228), strzałka trendu
+  (D-221). Wszystkie nowe reguły tylko w Endless; Daily i rankingi przypięte testami.
+- Platforma: hamulec rankingów (D-234), App Check (D-246, wyłączony do rejestracji aplikacji), Test Lab (D-245),
+  poprawka sprzeciwu w kolejce wyników (D-237).
+- Dokumenty: plan testu zamkniętego i progi Q-73/Q-78/Q-80 (D-231, D-232, D-240), deklaracje prywatności (D-220),
+  dostępność (R1i), lista wydania (D-235), plan premiery (D-238), rejestr prawny (D-239), polityka prywatności v1
+  (D-243), regulamin (D-244), dane wydawcy (D-241), opisy sklepu DE/FR/ES/PT-BR (D-230), słowa kluczowe + „hub” (D-229).
+- UI: 3 kierunki redesignu w `docs/styles/ui-2026-11/KIERUNKI.md` (#215; rekomendacja KARTA) i przeniesienie stylów
+  HUD/metek/doku/menu do tokenów skórki `src/ui/skin/current.css` (D-250, zero zmian wizualnych).
+
 ## Sposób pracy (D-222)
-Filtr uprawnień nie pozwala subagentom scalać. Agenci pushują i otwierają PR (bez scalania); koordynator czyta raport,
-w razie potrzeby scala `dev` do gałęzi (konflikty w Logu backlogu i liście `test:fast`: zostają oba wpisy,
-`test:arch` zawsze ostatni), puszcza tylko tanie testy dotkniętego obszaru, scala commitem scalającym i synchronizuje
-main (D-64). W commitach bez nazwy modelu: tylko `Co-Authored-By: Claude <noreply@anthropic.com>`.
+Agenci pushują i otwierają PR; koordynator scala `dev` do gałęzi (konflikty: oba wpisy, `test:arch` ostatni, D rosnąco,
+wersja koperty zapisu — każda nowa reguła bierze kolejny numer), puszcza `test:fast` + build, scala commitem scalającym,
+synchronizuje main. Skrypt do typowych konfliktów: scratchpad `resolve.py` (odtwarzalny z opisu). Bez nazwy modelu w
+commitach.
 
 ## W toku
-- Agent #1: R4d — tablica przyczyn zatoru huba (`night/11ag-hub-cause-board`).
-- Agent #2: R1o — protokół testu zamkniętego i eksport dziennika (`night/12am-playtest-protocol`).
+- Agent #1: `test:bundle` czerwony na `dev` (CSS i cały dist ponad budżet) + tokeny dla pozostałych ekranów
+  (`night/11ar-bundle-budget`).
+- Agent #2: #238 R2h klasy licencji — dostosowanie do `dev` (koperta zapisu v5, D-251).
 
-## Kolejka (D-226)
-- **#1:** R4g, R2g, R1g, R7a/R7b/R7c, R7l.
-- **#2:** R1k, R1l, R2c (+ „hub” w sklepie, D-223), R2f, R3d, R3e, R3i, R3j, R3k, R6g, R6i, R7d; R4f po G7.
-- **Nie bierz:** kroków G (G5, G7, G9b) i `src/render/**` — sesja ext/03; zagadek — ext/04+; N9d (czeka na #52).
+## Decyzje do właściciela rano
+1. **Kierunek nowego UI** (KARTA / KOKPIT / ZNAKI) — potem wdrożenie na tokenach D-250.
+2. Etapy biegu: zamienić „tydzień 5” i „1000 pasażerów” na „tydzień 4” i „750” (bot prawie ich nie osiąga).
+3. Kontrakt tygodnia: trudność (100 % popytu, limit 60), obie strony czy A→B, kara/„przyjmij”, nagroda, raport.
+4. Szczyt popytu: +12 przez 6 h, zapowiedź o dobę, karta „pierwszy raz”/dźwięk, kiedyś w Daily?
+5. Klasy licencji: próg 5. tygodnia (bot 0,5 %), Daily liczy się do odblokowania?, klasa II zbyt łagodna?
+6. Region startowy: mediana EUS 18,49 min (poza 10–18).
+7. Zlokalizowane tytuły sklepu („Airway: Flugrouten am Globus”), PEGI 3 / Apple 4+, grupa 13+ (D-235).
+8. Q-52 rekrutacja testerów, Q-01 dane wydawcy/administratora, Q-07 Firebase, Q-49, Q-50, Q-56, Q-67,
+   „bezpłatne” w regulaminie, data premiery; jedna konsultacja z prawnikiem (polityka, regulamin, rejestr).
+9. Właściciel: rejestracja aplikacji w App Check, przebieg Test Lab, akceptacja warunków przetwarzania Firebase.
 
 ## Znane problemy
-- **G7:** pod SwiftShader glob ~10 fps; `ui:matrix`, `e2e:smoke`, `store:shots`, `edge-chip-tags` przekraczają czas.
-  Naprawia sesja ext. Nowe e2e piszemy na stronach-fixture (jak `test:e2e:fill-trend`).
-- R4c: podpięcie w `session.ts` sprawdzone tylko typecheckiem — potwierdzić w e2e:smoke po G7.
-- Commity #206 i #208 mają w stopce nazwę modelu (wymusiła ją atrybucja środowiska); historii nie przepisujemy.
-- `docs/TESTING.md`: wiersz `test:fast` podaje nieaktualne `steps=36` (jest 84).
-- Kolory regionów ASI i OCE nie są w `test:cvd` (kształty się różnią).
-- Canonical wersji językowych strony ustawia JS; lepiej osobne `/pl/` i `/en/`.
+- **G7** (sesja ext): SwiftShader ~10 fps; `ui:matrix`, `e2e:smoke`, `store:shots` przekraczają czas. Nowe e2e
+  piszemy na stronach-fixture. Podpięcia w `session.ts` (R4c, R4d, R1n, R2k, R2i) sprawdzone tylko typecheckiem.
+- `test:bundle` czerwony (w naprawie).
+- Commity #206/#208 mają nazwę modelu w stopce (atrybucja środowiska); bez przepisywania historii.
+- Odczyt skali tekstu z systemu (Android/iOS) i Test Lab niesprawdzone na urządzeniu.
 
-## Sprawy tylko dla właściciela
-- Q-01 — administrator danych; Q-07 — projekt i budżet Firebase.
-- Prawnik: polityka prywatności; logi Cloud Run zapisują IP i user agenta.
-- Adres `contact@airway.games` (strona prasowa) do potwierdzenia.
-- Testy na urządzeniach (zamknięty test): Q-73 tempo, Q-78, Q-80 karta „+2 miejsca”.
-
-## Zasada aktualizacji
-Ten plik aktualizuj po każdym scaleniu i przy każdej zmianie stanu agentów: krótki PR do `dev`, scalenie, potem
-synchronizacja main.
+## Kolejka po nocy
+- Po wyborze kierunku UI: wdrożenie skórki (Agent #1), potem przegląd HUD/metek pod 150 % tekstu.
+- Agent #2: R2j (fala pogody, po premierze), R4f/R6e/R8f czekają (G7 / test zamknięty / urządzenie), N9d (#52).
+- Nie bierz: kroków G i `src/render/**` (ext/03), zagadek (ext/04+).
