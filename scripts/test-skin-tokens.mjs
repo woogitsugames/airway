@@ -223,6 +223,15 @@ check('roza: the rose helpers are not DEV-only', guarded.length === 0, guarded.j
     pruned.removed === 4 && /\.a \{ margin: 0; \}/.test(pruned.css) && !/\.b::after/.test(pruned.css) && /\.a, \.z \{ color: blue; \}/.test(pruned.css) &&
     /\.c \{ padding-left: 1px; \}/.test(pruned.css) && !/@media/.test(pruned.css) && /green !important/.test(pruned.css) && /\.e \{ top: 1px; \}/.test(pruned.css),
     pruned.css.replace(/\n/g, ' '));
+  // [night-11az] D-257: a class (or its ::before/::after) the structure hides outright takes its subtree's rules along,
+  // unless another structural rule gives it a display again.
+  const hid = skinOverrides(':root[data-skin="roza"] .h { display: none; }\n:root[data-skin="roza"] .k { display: none; }\n' +
+    ':root[data-skin="roza"] .w .k { display: flex; }\n:root[data-skin="roza"] .p::before { display: none; }');
+  const gone = pruneOverridden('.h { color: red; }\n.x .h strong { margin: 0; }\n.hx { color: blue; }\n.k { top: 0; }\n' +
+    '.y .p::before { left: 0; }\n.p { left: 1px; }\n.h { color: green !important; }', hid);
+  check('prune: rules of hidden elements go (subtree, pseudo-element), a re-shown or longer class stays',
+    gone.removed === 3 && !/margin/.test(gone.css) && /\.hx \{ color: blue; \}/.test(gone.css) && /\.k \{ top: 0; \}/.test(gone.css) &&
+    !/::before/.test(gone.css) && /\.p \{ left: 1px; \}/.test(gone.css) && /green !important/.test(gone.css), gone.css.replace(/\n/g, ' '));
   const realOver = skinOverrides(read(ROZA));
   const removed = COVERED.reduce((sum, file) => sum + pruneOverridden(inlineSkin(read(file), real.resolved, file), realOver).removed, 0);
   check('prune: the real Róża structure makes some component declarations dead', removed > 50, `${removed} removed`);

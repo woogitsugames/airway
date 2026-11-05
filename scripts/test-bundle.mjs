@@ -20,7 +20,8 @@ export const BUDGET = Object.freeze({
   // content merged since D-143 (puzzles 31-40, legal pages, globe G-series, contract, surge, licence classes).
   mainJsRaw: 1180 * KB, // measured 1,033.8 kB on 2026-11-03, 1,150.4 kB on 2026-11-05 (1,181.6 kB before D-252)
   mainJsGzip: 360 * KB, // measured 307.0 kB on 2026-11-03, 347.8 kB on 2026-11-05 (the same gzip/raw ratio, 0.302)
-  css: 90 * KB, // measured 70.2 kB, all CSS files together; 88.8 kB on 2026-11-05 with the skin inlined (D-252)
+  // [night-11az] D-258: 90 -> 109 kB (owner-approved ceiling) for the Róża structure over the component CSS.
+  css: 109 * KB, // measured 70.2 kB, all CSS files together; 88.8 kB on 2026-11-05 with the skin inlined (D-252); 106.8 kB with Róża
   // [ext-03 G1] D-171: + ~1.8 MB globe textures (public/data/globe/, test:globe-assets) and ~0.55 MB for Mapa (G8).
   total: 4300 * KB, // measured 1,804.8 kB before G1, every file under dist/ (fonts, land mask, licences, globe)
 });
@@ -127,7 +128,7 @@ if (!STATIC_ONLY) {
     check(ttfs.length === 0, 'TTF fonts in dist/ (WOFF2 only): ' + ttfs.join(' '));
     const named = [...new Set([...css.matchAll(/url\(['"]?(?:\.\.)?\/?(fonts\/[^'")]+)['"]?\)/g)].map((m) => m[1]))];
     const absent = named.filter((p) => !existsSync(join(dist, p)));
-    check(named.length >= 9 && absent.length === 0, `font files named by the CSS missing from dist/ (${named.length} named): ` + absent.join(' '));
+    check(named.length >= 6 && absent.length === 0, `font files named by the CSS missing from dist/ (${named.length} named): ` + absent.join(' '));
     // [night-11at] D-255: the privacy policy and terms bodies are a chunk of their own inside dist/ (loaded on demand,
     // no network), not part of the main chunk; markers are the first section titles of both documents, EN and PL.
     await import('./ts-test-loader.mjs');

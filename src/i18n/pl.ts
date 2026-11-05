@@ -219,6 +219,7 @@ export const pl = {
   'licenses.overpass': 'Krój pisma Overpass',
   'licenses.overpassMono': 'Krój pisma Overpass Mono',
   'licenses.atkinson': 'Krój pisma Atkinson Hyperlegible Next',
+  'licenses.alegreya': 'Krój pisma Alegreya', // [night-11az] D-257 Róża
   'licenses.naturalEarth': 'Dane geograficzne Natural Earth',
   'licenses.worldAtlas': 'Zbiór danych world-atlas',
   'licenses.nasaEarth': 'Obrazy Ziemi: NASA Earth Observatory (Blue Marble, Black Marble)',

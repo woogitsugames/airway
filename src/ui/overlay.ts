@@ -800,7 +800,10 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
           box.height = top + half;
           // The note stands right of the rose, level with its centre (KARTA-V2 C: "RIX 0 z 12" beside the ring);
           // layoutTags centres a tag on anchorX and puts its top at anchorY − height − 11, then moves it off others.
-          entry.tag.anchorX = x + r + (entry.jamSeconds !== null ? 26 : 14) + entry.tag.width / 2;
+          const side = r + (entry.jamSeconds !== null ? 26 : 14);
+          // Right of the rose when it fits on screen, else left of it (the mockup's VCE / ATH notes).
+          entry.tag.anchorX = x + side + entry.tag.width <= width - 6 || x - side - entry.tag.width < 6
+            ? x + side + entry.tag.width / 2 : x - side - entry.tag.width / 2;
           entry.tag.anchorY = y - 10 + entry.tag.height + 11;
         }
         const chip = entry.chip;

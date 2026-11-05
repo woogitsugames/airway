@@ -1,4 +1,4 @@
-// [night-11ax] D-257: the game loads its fonts as WOFF2 (src/ui/fonts.css, src/ui/skin/karta.css). public/fonts/ still
+// [night-11ax] D-257: the game loads its fonts as WOFF2 (src/ui/fonts.css, src/ui/skin/roza.css). public/fonts/ still
 // holds the TTF each WOFF2 was converted from, because dev pages (dev/globe.html) and the store-shot tool read the TTFs
 // from disk; Vite copies public/ whole, so a release build drops every dist/fonts/*.ttf that has a .woff2 twin (−377 kB
 // of dist/). `npm run test:bundle` fails on any .ttf left in dist/.

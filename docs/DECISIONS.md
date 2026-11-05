@@ -2477,52 +2477,61 @@ dropped — `src/main.ts` hands in `t`, `localNumber` and the grace), guarded by
 catalog keys, so no string is added. Release `dist/`: all 30 files sha256-identical to origin/dev 163bf50. Route
 distance labels need the route geometry (render or `session.ts`), outside this preview.
 
-## D-257 — KARTA becomes the default skin (2026-11-05, Claude, night N11ax) — **pending owner decision**
-Prepared so that, if the owner picks direction **1 KARTA** of `docs/styles/ui-2026-11/KIERUNKI.md`, it can land at once;
-if another direction is picked, the PR is closed and D-256 (DEV preview) stays as it is. **Not a style decision until the
-owner says so.** What changes: `src/ui/skin/current.css` now holds the KARTA tokens (the 288 `--skin-*` of D-250, plain
-`:root`, so `scripts/vite-skin-inline.mjs` writes them in place in release builds, D-252); the chart palette (`--karta-*`,
-a plain `:root`) and the structural tweaks stay in `src/ui/skin/karta.css`, imported statically as the last import of
-`src/main.ts` and inlined like any component CSS; every structural rule stays under `:root[data-skin="karta"]`, which
-`index.html` sets for the first paint. The D-256 chart helpers (`src/ui/skin/preview.ts`: labels on every airport,
-leader lines, seat scale, week ruler, jam arc, dock names, menu scale) run in every build (the `import.meta.env.DEV`
-guards in `overlay.ts`, `boarding-pass.ts`, `tag-dock.ts`, `menu.ts` are gone; the module stays type-only, `main.ts`
-hands in `t`/`localNumber`/grace). Comparison: the old "Diorama" tokens are `src/ui/skin/diorama.css`; a DEV build with
-`?skin=current` drops `data-skin`, skips the helpers and loads them last (`AW_SKIN=current npm run skin:pixels -- capture`
-for the same shots); release builds never import it.
-**Fonts.** KARTA's faces ship as WOFF2 subsets (Latin, Latin-1, Latin Extended-A, punctuation, arrows) in
-`public/fonts/`: Barlow Condensed 500/700 and IBM Plex Mono 400/600, the latter renamed **Airway Chart Mono** because
-"Plex" is an OFL Reserved Font Name; licences next to them. The five fonts shipped since task 01 (Overpass 400/800,
-Overpass Mono 700, Atkinson Hyperlegible Next 400/700) are now served as WOFF2 too — a lossless conversion, same glyphs
-and cmap (595 → 218 kB); their TTFs stay in `public/fonts/` for `dev/globe.html` and the store-shot tool, and
-`scripts/vite-font-files.mjs` leaves them out of `dist/`. `test:glyphs` reads WOFF2 (`scripts/lib/ttf-cmap.mjs`: the
-Brotli stream via `node:zlib`, `cmap` is never transformed) and checks the KARTA faces too, each with the fallbacks of
-its `--skin-face-*` stack: U+2009/U+202F (both subsets) and U+2192 (Barlow) come from Atkinson / Overpass / Overpass Mono.
-**Release CSS without the Diorama rules KARTA overrides.** The Diorama structure is the component CSS itself (KARTA only
-restyles it), so it cannot be left out as one file. `scripts/vite-skin-prune.mjs` (run by the inliner, release and
-`AW_SKIN_INLINE=1` dev only) drops every component declaration that a `:root[data-skin="karta"] X` rule always overrides
-— same selector, same property or a covering shorthand, same `@media`/`@container` or a top-level KARTA rule, never
-`!important` (182 declarations, −5.3 kB). A release always carries `data-skin="karta"`, so the scope is written
-`:root:root` there (same specificity, −2.0 kB). Proof: `skin:pixels` on this branch, dev tokens vs `AW_SKIN_INLINE=1` (inlined + pruned): computed styles equal
-on all 16,127 compared elements, 113/120 shots pixel-identical; the 7 others (tutorial, weekly board, one HUD) differ by
-36–1,267 channel values, the same screens and magnitudes that differ between two plain captures of the same tree.
-**Layout fixes** found by the browser suites: the boarding-pass time field 84 → 88 px (landscape/foldable 68 → 72 px;
-`test:e2e:text-scale-150`, "10:42" in 25 px mono is 73 px); with the weekly board open in landscape the full-width
-chart margin stops at 436 px (`:has(.airway-upgrade-open)`; `ui:matrix:stub`, the board's sign sits at x ≥ 444 px);
-game-over in short landscape (`ui:matrix:stub` 915×412, sign at 83 px under the 88 px margin): root cause — Diorama
-fits the report exactly (78 px padding + 328.6 px report + 5 px = 411.6 of 412 px); under the taller KARTA margin the
-overlay overflowed by 14 px and focus scrolled it 9 px, sliding the sign up under the margin (padding alone could not
-help). The report now starts at 92 px with 3 px row gaps, a sign without padding and 5 px board padding (314.6 px), so
-nothing scrolls; the 48 px buttons stay.
-**Bundle.** `npm run test:bundle` (final tree, see the PR): main JS 1,138.2 kB raw / 341.3 kB gzip (budgets 1,180 / 360),
-`dist/` 4,004.8 kB (4,300) — green; CSS **106.3 kB > 90 kB (+16.3 kB)**: the KARTA structure that remains after the
-pruning (it is ~24 kB minified). **Proposed, not applied:** CSS budget 90 → 109 kB (106.3 kB + 2.5 % headroom, as D-252).
-The only way to 90 kB is to fold `karta.css` into the component CSS and delete the Diorama structure from the source
-(a few hours; the `?skin=current` comparison would go) — the natural follow-up once the owner has chosen.
-Evidence vs the D-256 preview: `skin:pixels` default capture of this branch against `AW_SKIN=karta` on origin/dev
-983b152: 95/120 shots pixel-identical; the 25 others are exactly the screens with the boarding pass (time field);
-computed styles differ only in the mono family name (Airway Chart Mono).
-Guards: `test:skin-tokens` (KARTA tokens are the skin, Diorama covers every token and is DEV-only, structure scoped,
-palette only `--karta-*`, fonts and licences present, helpers not DEV-guarded, pruning unit cases), `test:glyphs`
-(WOFF2, KARTA faces and fallbacks), `test:bundle` (no TTF in `dist/`, every CSS font URL present), `test:milestones`
-(stamp ≤ 200 ms). `src/render/**` (flat sky constant, ext session) untouched. **Status: pending owner decision.**
+## D-257 — Róża (KARTA v2 C) becomes the default UI (owner, 2026-11-05; Claude, night N11az)
+The owner picked variant **C „Róża”** of `docs/styles/ui-2026-11/KARTA-V2.md` (2026-11-05, verbatim „zrób C róża”), so
+it ships as the default UI; the earlier draft of this entry (KARTA as default, N11ax, PR #252) is superseded and its
+infrastructure reused: WOFF2 fonts (`scripts/vite-font-files.mjs`), release CSS without overridden rules
+(`scripts/vite-skin-prune.mjs`), `test:glyphs` on WOFF2, the DEV `?skin=current` comparison with the old "Diorama"
+tokens (`src/ui/skin/diorama.css`, never in a release).
+**What the player sees.** One shape carries the game, the compass rose of an aeronautical chart. *HUD*: the top bar is
+gone; the week ("Tydzień 7") in Alegreya and the passengers on the sky top-left, the pause a ringed 48 × 48 target, and
+**one 24-hour day dial in the thumb corner** (night 20–06 hatched, a tick per hour, heading bug = now, time and "dzień 2
+z 3" inside; landscape: a compact dial with the time, the day joins the week line). *Dock*: the six actions on an **arc
+around the dial** (radius 154 px, 158°–274°; positions solved so every 48 × 48 target stays apart and inside the safe
+areas at 320 × 568 and up), caption outside the arc, chosen aircraft ringed, an empty aircraft or hub reads "za 1 dzień";
+symbols redrawn for Airway (`src/ui/hud/icons.ts`, the KARTA v2 SYM set: course-line undo, straight-wing turboprop,
+swept four-engine widebody, three-runway hub, sheet-corner globe/map, a speed arrow whose wind barbs count the tempo).
+Landscape: the arc runs down the right edge in sky ink; a short screen keeps 48 px targets. While a hub cause board is
+open the arc lies flat along the bottom band. *Airports*: around the renderer's medallion the overlay draws a **rose**
+(`src/ui/skin/roza.ts`, one SVG per airport at its screen position): one tick per waiting place, long = taken (2–3
+places per tick above 24), the hub's ring doubled, the **city name set along the ring** in Alegreya; its inner radius is
+the medallion's footprint (`MEDAL_RADIUS`, read-only knowledge of `src/render/airports.ts`) projected each frame. The
+note beside it reads code, "14 z 24", the fill-trend chevron and the passengers grouped by region with a count; notes
+keep off every rose (fixed obstacles in `layoutTags`). *Jam*: rose, name and note in vermilion `#F2603F`, a heavy
+**countdown arc** round the rose (share of the grace left) and the sentence "Zator, sieć zamknie się za 42 s". *Menu*:
+"Airway" and a tagline on the sky, the entries on the **western arc of a big rose** in the thumb corner with leader
+lines (`rozaMenuArc` measures them), the run-starting entry marked by a vermilion diamond. Sheets (pause, settings,
+weekly board, game over, logbook) keep the ink panel with a chalk neatline in Alegreya / Atkinson. All new text is in
+the catalogs (`roza.*`, PL/EN, length budgets in `src/i18n/limits.ts`); captions that repeat an accessible name are
+aria-hidden.
+**Fonts.** Only the mockup's faces: **Alegreya 700** (new in the release: a WOFF2 Latin subset, 23.9 kB, OFL, no
+Reserved Font Name, `docs/ASSETS.md`, listed in Settings → Licences) and the shipped **Atkinson Hyperlegible Next**
+400/700 for figures and captions; KARTA's Barlow Condensed and Airway Chart Mono are dropped from `public/fonts/`; no
+mono face and no spaced capitals in the HUD, notes and menu.
+**Contrast** follows `docs/notes/roza-contrast.md` (PR #259): vermilion `#F2603F` (5.8:1 on the halo) with an 8 px halo
+under the countdown arc and a haloed start tick; dim chalk at 62 % (`#9C9E9A`); dim on the sky `#4A5559`; a 1.6 px halo
+for 12–12.5 px text; the sky lettering (week, passengers, pause, title, landscape dock and dial) gets a light halo
+`#EEF3F2`; region glyphs keep a chalk outline under a dark one (AFR, NAM). Re-measured on real stills, see the PR.
+**Structure.** Tokens: `src/ui/skin/current.css` (Róża values); structure and the rose palette: `src/ui/skin/roza.css`,
+every rule under `:root[data-skin="roza"]` (`index.html` sets it for the first paint; `startRoza` in `src/main.ts`).
+The pruner also drops every component rule of an element Róża hides outright (`display: none`, e.g. the old pass
+fields). Proof: `skin:pixels` on this tree, dev tokens vs `AW_SKIN_INLINE=1` (inlined + pruned): 119/120 shots
+pixel-identical (the tutorial differs by 1,267 channel values, the known run-to-run noise); computed styles differ only
+on the elements Róża hides (`.airway-pass__band`, `.airway-sign__pictogram`, display:none).
+**For the ext session (`src/render/**`, untouched here):** the medallion should become the rose's centre — the chart
+airport symbol (runway pattern; hub = three runways), no own seat ring, no dark disc beyond the rose's inner radius
+(today `0.038 × 1.2 / 1.7` globe radii), and `MEDAL_RADIUS` in `roza.ts` must follow any change; the handoff spec is
+`docs/notes/roza-render-spec.md` (separate session).
+Guards: `test:skin-tokens` (Róża tokens are the skin, Diorama covers every token and is DEV-only, structure scoped,
+palette only `--roza-*`, Alegreya and its licence present, KARTA faces gone, helpers type-only and not DEV-guarded,
+pruning cases incl. hidden elements), `test:glyphs` (Alegreya + fallbacks), `test:bundle` (6 WOFF2 named, none
+missing), `test:hud-targets` (arc order), `test:e2e:fill-trend` (chevron after "14 z 24"). **Status: in force.**
+
+## D-258 — CSS budget 90 → 109 kB for the Róża structure (owner-approved ceiling, 2026-11-05; Claude, night N11az)
+Release CSS with Róża (D-257) measures **106.8 kB** (`npm run test:bundle`; origin/dev 89.5 kB): the rose structure
+(`roza.css`) restyles the component CSS instead of replacing it, so the DEV `?skin=current` comparison still works.
+Already applied: tokens inlined (D-252), declarations Róża overrides pruned, and new in N11az the rules of elements it
+hides; the dock's flat-row positions from one `--i` rule. The owner approved a ceiling of 109 kB earlier; it is used
+as the budget (+2.1 % headroom), so the next growth is again a decision. The way back towards 90 kB is to fold
+`roza.css` into the component CSS and delete the Diorama structure (drops `?skin=current`). Main JS 1,146.2 kB raw /
+344.4 kB gzip and `dist/` 3,954.5 kB stay within their budgets. **Status: in force.**

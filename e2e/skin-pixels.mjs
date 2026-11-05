@@ -8,8 +8,8 @@
 //                                               320×568 at 100 % text, 412×915 also at 150 % (D-248). PNG + a JSON of
 //                                               computed visual properties of every element.
 //   AW_SKIN=current node e2e/skin-pixels.mjs capture <dir> the same screens in the previous "Diorama" skin, DEV
-//                                               comparison only ([night-11ax] D-257: KARTA is the default; before it,
-//                                               AW_SKIN=karta captured the D-256 preview);
+//                                               comparison only ([night-11az] D-257: Róża is the default; before it,
+//                                               KARTA, and AW_SKIN=karta captured the D-256 preview);
 //                                               AW_SCREENS=hud,overlay,… captures only those screens.
 //   node e2e/skin-pixels.mjs compare <a[,a2…]> <b[,b2…]>  every shot identical (pixels and computed style) in some base/new pair (a few
 //                                               anti-aliased edges and native controls are not bit-stable run to run

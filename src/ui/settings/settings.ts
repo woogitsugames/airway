@@ -344,6 +344,7 @@ const ASSETS: ReadonlyArray<{name:TranslationKey;license:TranslationKey}>=[
   {name:'licenses.overpass',license:'licenses.ofl'},
   {name:'licenses.overpassMono',license:'licenses.ofl'},
   {name:'licenses.atkinson',license:'licenses.ofl'},
+  {name:'licenses.alegreya',license:'licenses.ofl'}, // [night-11az] D-257
   {name:'licenses.naturalEarth',license:'licenses.publicDomain'},
   {name:'licenses.nasaEarth',license:'licenses.publicDomain'}, // [ext-03 G1] D-170
   {name:'licenses.noaaRelief',license:'licenses.publicDomain'},

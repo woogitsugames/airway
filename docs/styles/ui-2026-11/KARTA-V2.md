@@ -1,5 +1,8 @@
 # KARTA v2 — 3 warianty do wyboru
 
+> **Wybrano C „Róża”** (właściciel, 2026-11-05: „zrób C róża”) — wdrożona jako domyślne UI, decyzja **D-257**
+> (budżet CSS: D-258). Kadry z gry: `docs/shots/ui-roza/` (zestawienie `zestawienie.png`).
+
 ![Zestawienie: dziś KARTA, A, B, C — gra w pionie](../../mockups/ui-2026-11/v2/zestawienie.png)
 
 Twoja ocena: „styl karta jest najbliższa tego czego oczekuję, ale dalej zbyt AI Slop”. Pięć rzeczy do poprawy:

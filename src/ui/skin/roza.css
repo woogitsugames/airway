@@ -291,9 +291,9 @@
 /* The Endless line: the entry, then its licence stamp and home-region select in a row under it. */
 :root[data-skin="roza"] .airway-flight-line,
 :root[data-skin="roza"] .airway-flight-line--licence {
-  position: relative; display: grid; grid-template-columns: auto auto; justify-content: end; justify-items: end; gap: 2px 6px; border-top: 0;
+  position: relative; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 2px 6px; border-top: 0;
 }
-:root[data-skin="roza"] .airway-flight-line > .airway-flight { grid-column: 1 / -1; max-width: 100%; }
+:root[data-skin="roza"] .airway-flight-line > .airway-flight { flex: 0 0 100%; max-width: 100%; }
 :root[data-skin="roza"] .airway-flight-line > .airway-flight::before, :root[data-skin="roza"] .airway-flight-line > .airway-flight::after { display: none; }
 :root[data-skin="roza"] .airway-flight-line > .airway-flight__status,
 :root[data-skin="roza"] .airway-flight-line > .airway-flight__gate { display: flex; overflow: visible; }
@@ -358,13 +358,9 @@
 :root[data-skin="roza"]:has(.airway-hub-board:not([hidden])) .airway-hud:not([data-layout='landscape']) .airway-dock::before,
 :root[data-skin="roza"]:has(.airway-hub-board:not([hidden])) .airway-hud:not([data-layout='landscape']) .roza-caption,
 :root[data-skin="roza"]:has(.airway-hub-board:not([hidden])) .airway-hud:not([data-layout='landscape']) .roza-dial { visibility: hidden; }
-:root[data-skin="roza"]:has(.airway-hub-board:not([hidden])) .airway-hud:not([data-layout='landscape']) .airway-dock__holder { bottom: 8px; }
-:root[data-skin="roza"]:has(.airway-hub-board:not([hidden])) .airway-hud:not([data-layout='landscape']) .airway-dock__holder:nth-child(1) { right: calc(100% - 48px); }
-:root[data-skin="roza"]:has(.airway-hub-board:not([hidden])) .airway-hud:not([data-layout='landscape']) .airway-dock__holder:nth-child(2) { right: calc((100% - 48px) * .8); }
-:root[data-skin="roza"]:has(.airway-hub-board:not([hidden])) .airway-hud:not([data-layout='landscape']) .airway-dock__holder:nth-child(3) { right: calc((100% - 48px) * .6); }
-:root[data-skin="roza"]:has(.airway-hub-board:not([hidden])) .airway-hud:not([data-layout='landscape']) .airway-dock__holder:nth-child(4) { right: calc((100% - 48px) * .4); }
-:root[data-skin="roza"]:has(.airway-hub-board:not([hidden])) .airway-hud:not([data-layout='landscape']) .airway-dock__holder:nth-child(5) { right: calc((100% - 48px) * .2); }
-:root[data-skin="roza"]:has(.airway-hub-board:not([hidden])) .airway-hud:not([data-layout='landscape']) .airway-dock__holder:nth-child(6) { right: 0; }
+:root[data-skin="roza"]:has(.airway-hub-board:not([hidden])) .airway-hud:not([data-layout='landscape']) .airway-dock__holder {
+  bottom: 8px; right: calc((100% - 48px) * (5 - var(--i)) / 5);
+}
 :root[data-skin="roza"] .airway-hub-board[data-layout='landscape'] { right: calc(var(--aw-safe-right) + 124px); }
 :root[data-skin="roza"] .airway-hub-board[data-layout='foldable'] { max-height: calc(100% - var(--aw-safe-top) - var(--aw-safe-bottom) - 80px - 80px); }
 /* Logbook heads in sentence case without tracking (KARTA v2: no spaced capitals). */

@@ -219,6 +219,7 @@ export const en = {
   'licenses.overpass': 'Overpass typeface',
   'licenses.overpassMono': 'Overpass Mono typeface',
   'licenses.atkinson': 'Atkinson Hyperlegible Next typeface',
+  'licenses.alegreya': 'Alegreya typeface', // [night-11az] D-257 Róża
   'licenses.naturalEarth': 'Natural Earth geography',
   'licenses.worldAtlas': 'world-atlas map dataset',
   'licenses.nasaEarth': 'Earth imagery: NASA Earth Observatory (Blue Marble, Black Marble)',

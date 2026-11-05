@@ -31,6 +31,7 @@ export function createTagDock(root: HTMLElement, actions: HudActions): { render(
   for (const tag of TAGS) {
     const holder = document.createElement('div');
     holder.className = 'airway-dock__holder';
+    holder.style.setProperty('--i', String(TAGS.indexOf(tag))); // [night-11az] D-257: place on the Róża arc / flat row
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'airway-dock__tag';
