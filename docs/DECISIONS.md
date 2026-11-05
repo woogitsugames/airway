@@ -2644,3 +2644,23 @@ reads "AMM 3 z 36 · Amman" under its ring, clear of the dock symbols. Checked b
 `test:overlay-layout` on the 360×640 Levant cluster fixture with the shot's dock symbols: no note rect meets any rose ring,
 every shown note within one radius of its own ring, Amman's note level with its name. Venice, Athens and Baghdad show no
 note on the phone (no free place near them); on the landscape shot nothing changes. **Status: in force.**
+
+## D-264 — Store preview video: fixed-step frames from real play, 24 s, poster at 5 s (2026-11-05, Claude, night N18b)
+R2b. `npm run store:video` (`scripts/store-video.mjs`) films one seed 0xA1A1 run played by the DEV autoplay bot through
+`window.aw` on the real renderer. **Frames, not a screen recording:** Playwright's fake clock is paused once the menu is
+up and every frame is exactly one 1/30 s `clock.runFor` step (rAF, timers and `performance.now` of the page), CSS
+animations are paused and advanced by the same 1/30 s, then a PNG screenshot is piped into ffmpeg; SwiftShader (G7) only
+makes the run slower, never changes a frame. **Storyboard (24 s, 4× game speed, cuts between shots):** route drawn by a
+pointer drag in the first second and its plane departing; day 2 from 15:30 with the evening terminator crossing the grown
+network (poster frame at 5 s, the warm light of the `game` store shot); the weekly board with its crates and a tap on one;
+building stops and the filling airport's edge chip is tapped, the camera turns to it and its ring goes red with the jam
+countdown — the run stays alive (a near jam, not the game-over report). On seed 0xA1A1 the first airport to jam is
+Rio de Janeiro, never on the opening framing, hence the real edge-chip tap instead of a still shot of the network.
+**Sizes:** App Store app previews iPhone 886×1920 (443×960 @2) and iPad 1200×1600 (768×1024 @1.5625, the tablet layout),
+Play 1080×1920 (360×640 @3, the phone store shot) for the owner's YouTube upload (Q-49); PL and EN each, since the HUD
+is localised. H.264 High 4.0 yuv420p, CRF 18 ≤ 12 Mbit/s, silent stereo AAC (no music, no added text or overlay).
+Files over 10 MB are git-ignored by a generated `docs/store/video/.gitignore` and recorded with size, SHA-256 and ffprobe
+facts in `manifest.json`; the 5 s posters are committed as JPEG. ffmpeg is a system tool (not an npm dependency, no
+licence entry: nothing of it ships). `test:store-video` (fast) checks the manifest, posters and `.gitignore`, and any
+preview present on disk. The press kit's video slot (`PRESS_KIT.video`, D-219) stays empty: the files are not in git.
+**Status: in force.**
