@@ -1,6 +1,7 @@
-import { localNumber, t } from '../../i18n';
+import { localNumber, t, type TranslationKey } from '../../i18n';
 import { SplitFlap } from '../flap';
 import { FLAP_CELLS } from '../../i18n/limits'; // [night-11ac] R7h: the same cell counts as the length budgets
+import type { RegionId } from '../../data/regions';
 import './menu.css';
 
 export type MenuMode = 'continue' | 'endless' | 'puzzles' | 'daily';
@@ -16,6 +17,12 @@ export interface MenuData {
   readonly saved?: { readonly week: number; readonly passengers: number } | null;
   /** [night-10c] One-line paper notice under the sign (e.g. a saved flight that cannot be continued). */
   readonly notice?: string | null;
+  /**
+   * [night-11aj] R2g: the Endless home-region choice. `regions` are the offered regions (Random is always first);
+   * without them the Endless row has no select. `homeRegion` null = Random.
+   */
+  readonly homeRegions?: readonly RegionId[];
+  readonly homeRegion?: RegionId | null;
 }
 export interface MenuHandle {
   readonly element: HTMLElement;
@@ -57,6 +64,43 @@ function flightRows(data: MenuData): Flight[] {
   ];
 }
 
+const REGION_SHORT:Record<RegionId,TranslationKey>={
+  NAM:'region.short.NAM',SAM:'region.short.SAM',EUN:'region.short.EUN',EUS:'region.short.EUS',
+  AFR:'region.short.AFR',ME:'region.short.ME',ASI:'region.short.ASI',OCE:'region.short.OCE',
+};
+const REGION_NAME:Record<RegionId,TranslationKey>={
+  NAM:'region.name.NAM',SAM:'region.name.SAM',EUN:'region.name.EUN',EUS:'region.name.EUS',
+  AFR:'region.name.AFR',ME:'region.name.ME',ASI:'region.name.ASI',OCE:'region.name.OCE',
+};
+
+/**
+ * [night-11aj] R2g: the home-region select takes the Endless row's status cell (the board keeps its height). A
+ * native select: the system picker on phones, keyboard and screen readers for free; the closed cell shows the
+ * short name, the picker lists the full ones through each option's label.
+ */
+function regionSelect(regions:readonly RegionId[],selected:RegionId|null,onChange:(region:RegionId|null)=>void):HTMLSelectElement {
+  const select=el('select','airway-flight__region');
+  select.dataset.testid='menu-home-region';
+  const fill=(current:RegionId|null):void => {
+    select.replaceChildren();
+    const random=el('option','',t('menu.homeRegion.random'));random.value='random';
+    select.append(random);
+    for(const region of regions){
+      const option=el('option','',t(REGION_SHORT[region]));
+      option.value=region;option.label=t(REGION_SHORT[region]);option.title=t(REGION_NAME[region]);
+      option.setAttribute('aria-label',t(REGION_NAME[region]));
+      select.append(option);
+    }
+    select.value=current && regions.includes(current)?current:'random';
+    select.setAttribute('aria-label',t('menu.homeRegion'));
+    select.title=t('menu.homeRegion');
+  };
+  fill(selected);
+  select.addEventListener('change',()=>{ onChange(select.value==='random'?null:select.value as RegionId); });
+  (select as HTMLSelectElement&{refill?:typeof fill}).refill=fill;
+  return select;
+}
+
 function ariaLabel(flight:Flight):string {
   return flight.status ? `${flight.title}, ${t('menu.gate')} ${flight.gate}, ${flight.status}` : `${flight.title}, ${t('menu.gate')} ${flight.gate}`;
 }
@@ -73,7 +117,8 @@ function makeSign():HTMLElement {
 }
 
 /** Presentation-only departure board; the router in src/game/screens.ts handles each row. */
-export function createMenu(onFlight:(mode:MenuMode|MenuService)=>void,initial:MenuData={}):MenuHandle {
+export function createMenu(onFlight:(mode:MenuMode|MenuService)=>void,initial:MenuData={},
+    onHomeRegion?:(region:RegionId|null)=>void):MenuHandle {
   const root=el('section','airway-menu');
   root.setAttribute('aria-label',t('menu.departures'));
   // The shared world canvas (src/game/world.ts) is the backdrop; the menu owns no WebGL context.
@@ -89,6 +134,7 @@ export function createMenu(onFlight:(mode:MenuMode|MenuService)=>void,initial:Me
   const flaps:SplitFlap[]=[];
   const items=new Map<Flight['id'],{title:SplitFlap;gate:SplitFlap;status:SplitFlap;sub:HTMLElement}>();
   const service=el('div','airway-board__service');
+  let region:(HTMLSelectElement&{refill?:(current:RegionId|null)=>void})|null=null;
   for(const flight of flightRows(initial)) {
     const half=flight.id==='settings'||flight.id==='logbook';
     const button=el('button',half?'airway-flight airway-flight--half':'airway-flight');
@@ -105,10 +151,21 @@ export function createMenu(onFlight:(mode:MenuMode|MenuService)=>void,initial:Me
     main.append(title.element,sub);
     const gateWrap=el('span','airway-flight__gate');gateWrap.append(gate.element);
     const statusWrap=el('span','airway-flight__status');statusWrap.append(status.element);
-    if(half) button.append(main,gateWrap); else button.append(main,gateWrap,statusWrap);
+    const withRegion=flight.id==='endless' && !!initial.homeRegions?.length && !!onHomeRegion;
+    if(half || withRegion) button.append(main,gateWrap); else button.append(main,gateWrap,statusWrap);
     button.setAttribute('aria-label',ariaLabel(flight));
     button.addEventListener('click',()=>onFlight(flight.id));
-    if(half) service.append(button); else board.append(button);
+    if(withRegion){
+      // [night-11aj] R2g: one board row = the Endless button (title + gate) and the home-region select.
+      const line=el('div','airway-flight-line');
+      button.classList.add('airway-flight--with-region');
+      region=regionSelect(initial.homeRegions!,initial.homeRegion ?? null,(choice)=>onHomeRegion!(choice));
+      const cell=el('span','airway-flight__status airway-flight__region-cell');
+      cell.append(region);
+      line.append(button,cell);
+      board.append(line);
+    }
+    else if(half) service.append(button); else board.append(button);
     items.set(flight.id,{title,gate,status,sub});
   }
   board.append(service);
@@ -140,6 +197,7 @@ export function createMenu(onFlight:(mode:MenuMode|MenuService)=>void,initial:Me
         const button=item.title.element.closest('button');
         button?.setAttribute('aria-label',ariaLabel(flight));
       }
+      if(region && data.homeRegions) region.refill?.(data.homeRegion ?? null);
     },
     announce(message:string):void { notice.textContent=message; notice.hidden=false; },
     dispose():void { flaps.forEach(f=>f.dispose());root.remove(); },

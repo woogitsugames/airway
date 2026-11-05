@@ -143,7 +143,7 @@
   color: #13302e;
 }
 .airway-go-score-row { display: flex; flex-wrap: wrap; gap: 5px 16px; }
-.airway-go-score, .airway-go-weeks {
+.airway-go-score, .airway-go-weeks, .airway-go-home {
   margin: 0;
   font: 700 13px/1.35 'Atkinson Hyperlegible Next', sans-serif;
   color: #1e6f6a;

@@ -6,8 +6,10 @@ import {
   isCommandType, normalizeCommand, type Command, type CommandCheck, type CommandEntry,
 } from './commands.ts';
 import { scenarioFor } from './scenarios.ts';
+import type { RegionId } from '../data/regions.ts';
+import { HOME_REGIONS } from './spawner.ts';
 import {
-  canonicalJson, copyKernel, copyState, foldCommandDigest, hashState, initialKernelState,
+  canonicalJson, copyConfig, copyKernel, copyState, foldCommandDigest, hashState, initialKernelState,
   INITIAL_COMMAND_DIGEST, RULES_VERSION, SNAPSHOT_VERSION,
   type GameConfig, type KernelState, type RngStream, type SimState,
 } from './state.ts';
@@ -50,14 +52,19 @@ function copyEntry(entry: CommandEntry): CommandEntry {
   return [entry[0], copyCommand(entry[1])];
 }
 
+function isHomeRegion(value: unknown): value is RegionId {
+  return (HOME_REGIONS as readonly unknown[]).includes(value);
+}
+
 function readConfig(value: unknown): GameConfig {
   if (!object(value) || !MODES.includes(value.mode as GameMode) ||
       (value.puzzleId !== undefined && typeof value.puzzleId !== 'string') ||
-      ((value.mode === 'puzzle') !== (value.puzzleId !== undefined))) {
+      ((value.mode === 'puzzle') !== (value.puzzleId !== undefined)) ||
+      // [night-11aj] R2g: a home region is an Endless choice only (Daily stays one world for everyone).
+      (value.homeRegion !== undefined && (value.mode !== 'endless' || !isHomeRegion(value.homeRegion)))) {
     throw new TypeError('invalid game configuration');
   }
-  return value.puzzleId === undefined ? { mode: value.mode as GameMode }
-    : { mode: value.mode as GameMode, puzzleId: value.puzzleId as string };
+  return copyConfig(value as unknown as GameConfig);
 }
 
 function readState(value: unknown): SimState {

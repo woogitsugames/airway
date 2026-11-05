@@ -11,6 +11,8 @@ const MAX_COUNT = 1_000_000_000;
 /** [night-12am] R1o: closed-test notes kept for the last runs ("Copy summary"; Q-73, Q-78, Q-80). */
 export const RUN_NOTES = 30;
 
+import { REGION_IDS, type RegionId } from '../data/regions';
+
 type StorageLike = Pick<Storage, 'getItem' | 'setItem'>;
 export type LogMode = 'endless' | 'daily';
 
@@ -22,6 +24,8 @@ export interface LogEntry {
   readonly weeks: number;
   /** City code of the run's busiest hub (or busiest airport without a hub); null for an empty network. */
   readonly hub: string | null;
+  /** [night-11aj] R2g: the Endless home region the run started in; absent for Random, Daily and older entries. */
+  readonly region?: RegionId;
 }
 
 /**
@@ -116,7 +120,8 @@ function entry(value: unknown): LogEntry | null {
   if (item.mode !== 'endless' && item.mode !== 'daily') return null;
   if (passengers === null || weeks === null) return null;
   const hub = typeof item.hub === 'string' && CODE.test(item.hub) ? item.hub : null;
-  return { day: item.day, mode: item.mode, passengers, weeks, hub };
+  const region = item.mode === 'endless' && (REGION_IDS as readonly unknown[]).includes(item.region) ? item.region as RegionId : null;
+  return region ? { day: item.day, mode: item.mode, passengers, weeks, hub, region } : { day: item.day, mode: item.mode, passengers, weeks, hub };
 }
 
 const STAT_KEYS = ['tenths', 'held', 'hubOffered', 'hubPicked', 'slotsOffered', 'slotsPicked'] as const;

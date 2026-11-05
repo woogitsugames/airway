@@ -1,6 +1,7 @@
 import { Rng, seedFromString } from '../core/rng.ts';
 import type { SimSpeed } from './clock.ts';
 import type { CommandEntry } from './commands.ts';
+import type { RegionId } from '../data/regions.ts';
 import type { GameMode, WorldSnapshot } from './world.ts';
 
 /** v2: the kernel state carries the whole game world (tasks 05/08/09/11/12). */
@@ -26,6 +27,20 @@ export interface RngStates {
 export interface GameConfig {
   readonly mode: GameMode;
   readonly puzzleId?: string;
+  /**
+   * [night-11aj] R2g: Endless only. The start cluster is anchored in this region; absent = Random (the pre-R2g
+   * draw, so older saves and hashes are unchanged). Daily and puzzles never carry it.
+   */
+  readonly homeRegion?: RegionId;
+}
+
+/** [night-11aj] Canonical copy of a config: optional fields only when set (they are part of the state hash). */
+export function copyConfig(config: GameConfig): GameConfig {
+  return {
+    mode: config.mode,
+    ...(config.puzzleId === undefined ? {} : { puzzleId: config.puzzleId }),
+    ...(config.homeRegion === undefined ? {} : { homeRegion: config.homeRegion }),
+  };
 }
 
 /** Kernel bookkeeping. `tick` counts kernel steps (journal index); the world keeps game minutes. */
@@ -50,7 +65,7 @@ export function initialKernelState(seed: number, config: GameConfig): KernelStat
   return {
     rulesVersion: RULES_VERSION,
     seed,
-    config: config.puzzleId === undefined ? { mode: config.mode } : { mode: config.mode, puzzleId: config.puzzleId },
+    config: copyConfig(config),
     tick: 0,
     speed: 1,
     commandCount: 0,
@@ -65,7 +80,7 @@ export function initialKernelState(seed: number, config: GameConfig): KernelStat
 }
 
 export function copyKernel(state: KernelState): KernelState {
-  return { rulesVersion: state.rulesVersion, seed: state.seed, config: { ...state.config }, tick: state.tick,
+  return { rulesVersion: state.rulesVersion, seed: state.seed, config: copyConfig(state.config), tick: state.tick,
     speed: state.speed, commandCount: state.commandCount, commandDigest: state.commandDigest, rng: { ...state.rng } };
 }
 
