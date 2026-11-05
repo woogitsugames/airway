@@ -2501,8 +2501,9 @@ restyles it), so it cannot be left out as one file. `scripts/vite-skin-prune.mjs
 `AW_SKIN_INLINE=1` dev only) drops every component declaration that a `:root[data-skin="karta"] X` rule always overrides
 — same selector, same property or a covering shorthand, same `@media`/`@container` or a top-level KARTA rule, never
 `!important` (182 declarations, −5.3 kB). A release always carries `data-skin="karta"`, so the scope is written
-`:root:root` there (same specificity, −2.0 kB). Proof: `skin:pixels` with and without `AW_SKIN_INLINE=1` on this
-branch (see the PR).
+`:root:root` there (same specificity, −2.0 kB). Proof: `skin:pixels` on this branch, dev tokens vs `AW_SKIN_INLINE=1` (inlined + pruned): computed styles equal
+on all 16,127 compared elements, 113/120 shots pixel-identical; the 7 others (tutorial, weekly board, one HUD) differ by
+36–1,267 channel values, the same screens and magnitudes that differ between two plain captures of the same tree.
 **Layout fixes** found by the browser suites: the boarding-pass time field 84 → 88 px (landscape/foldable 68 → 72 px;
 `test:e2e:text-scale-150`, "10:42" in 25 px mono is 73 px); with the weekly board open in landscape the full-width
 chart margin stops at 436 px (`:has(.airway-upgrade-open)`; `ui:matrix:stub`, the board's sign sits at x ≥ 444 px);
@@ -2512,8 +2513,8 @@ overlay overflowed by 14 px and focus scrolled it 9 px, sliding the sign up unde
 help). The report now starts at 92 px with 3 px row gaps, a sign without padding and 5 px board padding (314.6 px), so
 nothing scrolls; the 48 px buttons stay.
 **Bundle.** `npm run test:bundle` (final tree, see the PR): main JS 1,138.2 kB raw / 341.3 kB gzip (budgets 1,180 / 360),
-`dist/` 4,004.7 kB (4,300) — green; CSS **106.2 kB > 90 kB (+16.2 kB)**: the KARTA structure that remains after the
-pruning (it is ~24 kB minified). **Proposed, not applied:** CSS budget 90 → 109 kB (106.2 + 2.6 % headroom, as D-252).
+`dist/` 4,004.8 kB (4,300) — green; CSS **106.3 kB > 90 kB (+16.3 kB)**: the KARTA structure that remains after the
+pruning (it is ~24 kB minified). **Proposed, not applied:** CSS budget 90 → 109 kB (106.3 kB + 2.5 % headroom, as D-252).
 The only way to 90 kB is to fold `karta.css` into the component CSS and delete the Diorama structure from the source
 (a few hours; the `?skin=current` comparison would go) — the natural follow-up once the owner has chosen.
 Evidence vs the D-256 preview: `skin:pixels` default capture of this branch against `AW_SKIN=karta` on origin/dev
