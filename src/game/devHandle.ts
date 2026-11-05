@@ -12,6 +12,8 @@ export interface AwPoint {
 export interface AwDevState {
   readonly screen: AwScreen;
   readonly seed: number;
+  /** [night-11aj] R2g: the running Endless run's home region (null = Random, Daily, no run). */
+  readonly homeRegion?: string | null;
   readonly tick: number;
   readonly nextWeekTick: number;
   readonly routeCount: number;

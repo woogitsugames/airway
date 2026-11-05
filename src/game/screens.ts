@@ -1,6 +1,7 @@
 // The single screen router (task 14): menu, settings, licences and every mode screen that the
 // composition root registers. Back/Escape is handled once here via src/platform/back.
 import { installBackHandler, type BackOptions } from '../platform';
+import type { RegionId } from '../data/regions';
 import { createMenu, type MenuData, type MenuHandle, type MenuMode } from '../ui/menu/menu';
 import { createSettings, createLicenses, createPrivacy, type RankingData } from '../ui/settings/settings';
 import { createLogbook, type LogbookData } from '../ui/logbook/logbook';
@@ -22,6 +23,8 @@ export interface ScreensOptions {
   /** [night-10n] Local stores for the logbook screen, read each time it opens. */
   readonly getLogbookData?: () => LogbookData;
   readonly onMode?: (mode: MenuMode) => void;
+  /** [night-11aj] R2g: the player picked an Endless home region on the menu (null = Random). */
+  readonly onHomeRegion?: (region: RegionId | null) => void;
   readonly onScreen?: (screen: ScreenName) => void;
   readonly onLanguageChanged?: () => void;
   readonly onReplayTutorial?: () => void;
@@ -52,7 +55,7 @@ export function mountScreens(host: HTMLElement, options: ScreensOptions = {}): S
     menu = createMenu((mode) => {
       if (mode === 'settings' || mode === 'logbook') show(mode);
       else options.onMode?.(mode);
-    }, options.getMenuData?.());
+    }, options.getMenuData?.(), options.onHomeRegion);
     const handle = menu;
     return { element: handle.element, dispose: () => handle.dispose() };
   }

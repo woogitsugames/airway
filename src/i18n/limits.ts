@@ -26,6 +26,8 @@ const dockTag = { max: 8, where: 'plane-tag dock: countdown on an empty tag' };
 const passLabel = { max: 10, where: 'boarding pass: field label above a number' };
 const crateField = { max: 10, where: 'weekly crate label: field name column' };
 const selectOption = { max: 14, where: 'settings: option of a select (320 px wide screen keeps 8 px beside the arrow)' };
+// [night-11aj] R2g: the home-region select in the Endless row's status cell (80 px at 320 px, 10 px mono, no arrow).
+const regionCell = { max: 10, where: 'departures board: home-region select in the Endless status cell' };
 const logbookShort = { max: 4, where: 'logbook: narrow number column head' };
 const logbookWide = { max: 6, where: 'logbook: column head' };
 
@@ -40,6 +42,9 @@ export const LENGTH_BUDGETS: Partial<Record<TranslationKey, LengthBudget>> = {
   'menu.onTime': flapStatus,
   'menu.new': flapStatus,
   'menu.gate': { max: 6, where: 'departures board: gate column head (46 px at 320 px)' },
+  'menu.homeRegion.random': regionCell,
+  ...Object.fromEntries((['NAM', 'SAM', 'EUN', 'EUS', 'AFR', 'ME', 'ASI', 'OCE'] as const)
+    .map((region) => [`region.short.${region}`, regionCell])),
   'menu.status': { max: 10, where: 'departures board: status column head (wraps)' },
   'action.back': { max: 6, where: 'settings, logbook, puzzle board: Back button beside the title' },
   'hud.week': passLabel,

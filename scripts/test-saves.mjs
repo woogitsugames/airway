@@ -1,7 +1,7 @@
 // Requires Node 22+ with --experimental-strip-types (no third-party runner).
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { decodeSave, encodeSave, readGame, restoreGame, startOrRestore, writeGame, TICKS_PER_DAY } from '../src/game/save.ts';
+import { decodeSave, encodeSave, readGame, restoreGame, startOrRestore, writeGame, TICKS_PER_DAY, SAVE_VERSION } from '../src/game/save.ts';
 import { createNativeStorage, createBrowserStorage, GAME_SAVE_KEY, SETTINGS_KEY, readSettings, writeSettings } from '../src/platform/storage.ts';
 import { GameLifecycle } from '../src/platform/lifecycle.ts';
 
@@ -81,14 +81,14 @@ test('save -> load -> identical hash and 4000 further ticks', async () => {
   assert.equal(original.hash(), restored.hash());
 });
 
-test('v0 -> v1 migration, preserving snapshot and journal', () => {
+test('v0 -> current envelope migration, preserving snapshot and journal', () => {
   const sim = new SimFixture(); sim.addCommand(4, 123);
   for (let i = 0; i < 20; i++) sim.tickOnce();
   const legacy = { v: 0, state: sim.snapshot(), log: sim.commandLog, seed: sim.seed, tick: sim.tick };
   const decoded = decodeSave(JSON.stringify(legacy));
   assert.equal(decoded.status, 'ok');
   assert.equal(decoded.migrated, true);
-  assert.equal(decoded.save.v, 1);
+  assert.equal(decoded.save.v, SAVE_VERSION);
   assert.equal(decoded.save.stateHash, null);
   const restored = restoreGame(decoded.save, seed => new SimFixture(seed));
   assert.ok(restored);
@@ -108,7 +108,7 @@ test('corrupt JSON, malformed version, checksum tamper and dangerous keys', asyn
   const record = encodeSave(sim, 1000);
   record.snapshot.state = 9999;
   assert.equal(decodeSave(JSON.stringify(record)).status, 'error');
-  assert.equal(decodeSave(JSON.stringify({ v: 2, future: 'unknown' })).issue, 'unsupported');
+  assert.equal(decodeSave(JSON.stringify({ v: SAVE_VERSION + 1, future: 'unknown' })).issue, 'unsupported');
   await store.set(GAME_SAVE_KEY, '{bad');
   const started = await startOrRestore(store, () => new SimFixture(17), seed => new SimFixture(seed));
   assert.equal(started.issue, 'corrupt');
