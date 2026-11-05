@@ -2052,3 +2052,19 @@ e-mails 12 months (left to the lawyer). `docs/RELEASE.md` links the register (RL
 `test:privacy-declarations` keeps equal to the code), so a new data flow fails until the art. 30 record names it;
 the leaderboard retention must equal `RETENTION_DAYS`. Rejected: an English-only register (the owner and a Polish
 lawyer read it), filling the controller with guessed details. **Status: in force (Q-01, Q-67 and the lawyer open).**
+
+## D-241 — One publisher block (`publisher.*`) for site, game and store consoles; release builds refuse its placeholders (2026-11-05, Claude, night N11al)
+R7c (D-134, Q-66 → A). The publisher / service-provider details required by art. 5 of the Polish e-services act and
+shown on the Apple/Google trader cards are one string set `publisher.*` in `site/i18n.js` (PL/EN): legal name,
+address, register and tax ID (KRS or CEIDG, NIP), e-mail, phone, trader status, plus a title and one note naming the
+law. `site/publisher.js` lists the rows (`PUBLISHER_FIELDS`) and the guard. Where it shows: a `#publisher` section on
+`site/privacy.html` (the press fact-sheet rows on policy paper; the terms page R7b reuses it), a "Publisher" /
+"Wydawca" link in every site footer, Settings → Help in the game (label/value rows after the privacy policy, offline,
+text only) and a paste-ready table in `docs/store/README.md`. The game catalogs and the store table copy the site
+strings word for word (`test:publisher`). Until the owner answers Q-01, identity fields hold visible
+"[Q-01: … — to be filled in]" placeholders; the trader row is filled (D-134). Any value with "[Q-…" is a gap:
+`AIRWAY_RELEASE=1 npm run test:site`, `build:site` with `AIRWAY_RELEASE=1` and `npm run android:release` /
+`android:aab` refuse to run with gaps (the iOS archive has the manual check in `docs/IOS.md`). Rejected: guessed or
+private details; the full block in every footer (one link keeps footers short and the block in one place); a
+separate settings page and router screen for six rows. Not legal advice — the wording goes to the same lawyer
+consultation as R7a/R7b. **Status: in force (Q-01 open).**
