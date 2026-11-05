@@ -22,7 +22,11 @@ try {
       const label = `${language} ${width}×${height}: settings → terms of use → back`;
       const { page, errors } = await newGamePage(browser, url, language, { width, height });
       const external = [];
-      page.on('request', (request) => { if (!request.url().startsWith(url.replace(/\/[^/]*$/, ''))) external.push(request.url()); });
+      // [night-11at] blob: URLs are in-memory globe textures (src/render/globe/look.ts), not network; they made this flaky.
+      page.on('request', (request) => {
+        const target = request.url();
+        if (!target.startsWith('blob:') && !target.startsWith(url.replace(/\/[^/]*$/, ''))) external.push(target);
+      });
       try {
         await waitForScreen(page, 'menu');
         await clickTestId(page, 'menu-settings');
