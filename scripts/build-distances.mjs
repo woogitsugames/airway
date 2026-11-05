@@ -32,9 +32,14 @@ for (let high = 1; high < CITIES.length; high++) {
     values.push(distance);
   }
 }
+// [night-11ar] D-252: three URL-safe base64 digits per value (18 bits >= uint16) instead of a decimal list: the
+// same integers in 40.6 kB of the main chunk instead of 72.0 kB (gzip 27.7 kB instead of 32.0 kB), decoded once at
+// module load (13,530 values, well under a millisecond).
+const DIGITS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+const packed = values.map((n) => DIGITS[n >> 12] + DIGITS[(n >> 6) & 63] + DIGITS[n & 63]).join('');
 const lines = [];
-for (let index = 0; index < values.length; index += 20) {
-  lines.push('  ' + values.slice(index, index + 20).join(', ') + ',');
+for (let index = 0; index < packed.length; index += 105) {
+  lines.push(`  '${packed.slice(index, index + 105)}'` + (index + 105 < packed.length ? ' +' : ';'));
 }
 const codes = CITIES.map((city) => `'${city.code}'`).join(', ');
 const content = [
@@ -44,9 +49,15 @@ const content = [
   `export const DISTANCE_CITY_SHA256 = '${hash}' as const;`,
   `export const DISTANCE_CITY_CODES: readonly string[] = [${codes}];`,
   '// Triangular indexing: row hi starts at hi * (hi - 1) / 2; uint16 suffices for Earth.',
-  'const DISTANCES = new Uint16Array([',
+  '// Packed by scripts/build-distances.mjs: three base64url digits per kilometre value, most significant first.',
+  `const DIGITS = '${DIGITS}';`,
+  'const PACKED =',
   ...lines,
-  ']);',
+  `const DISTANCES = new Uint16Array(${values.length});`,
+  'for (let i = 0; i < DISTANCES.length; i++) {',
+  '  const at = i * 3;',
+  '  DISTANCES[i] = DIGITS.indexOf(PACKED[at]) << 12 | DIGITS.indexOf(PACKED[at + 1]) << 6 | DIGITS.indexOf(PACKED[at + 2]);',
+  '}',
   '',
   'export function distanceKm(a: number, b: number): number {',
   '  if (!Number.isInteger(a) || !Number.isInteger(b) ||',

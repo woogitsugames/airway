@@ -9,6 +9,7 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { resolve, dirname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { constantProperties, inlineSkin, keptSkin, resolveTokens, skinBuild, skinTokens, withConstants } from './vite-skin-inline.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const SKIN = 'src/ui/skin/current.css';
@@ -123,6 +124,31 @@ for (const file of tsFiles) {
 }
 check('every module importing a covered CSS file imports the skin first', late.length === 0, late.join(' | '));
 check('src/main.ts loads the skin', /import '\.\/ui\/skin\/current\.css';/.test(read('src/main.ts')));
+
+// 5. [night-11ar] D-252: release builds write the token values in place (scripts/vite-skin-inline.mjs).
+const throws = (fn) => { try { fn(); return false; } catch { return true; } };
+const unit = resolveTokens(skinTokens(':root {\n  /* c */ --skin-a: #fff;\n  --skin-b: var(--skin-a);\n  --skin-c: 1px solid var(--p);\n}'));
+check('inline: nested tokens resolve', unit.get('b') === '#fff' && unit.get('c') === '1px solid var(--p)');
+check('inline: a use becomes its value', inlineSkin('.x { color: var(--skin-b); border: var(--skin-c); }', unit) ===
+  '.x { color: #fff; border: 1px solid var(--p); }');
+check('inline: refuses fallbacks, unknown tokens, cycles, a second rule and a token or read property set outside :root', [
+  () => inlineSkin('.x { color: var(--skin-a, red); }', unit),
+  () => inlineSkin('.x { color: var(--skin-z); }', unit),
+  () => resolveTokens(skinTokens(':root { --skin-a: var(--skin-b); --skin-b: var(--skin-a); }')),
+  () => skinTokens(':root { --skin-a: 1px; }\n.x { color: red; }'),
+  () => inlineSkin('.x { --skin-a: 2px; }', unit),
+  () => inlineSkin('.x { --p: red; }', unit),
+].every(throws));
+const constants = constantProperties([':root { --p: #123; --q: #456; --r: var(--p); }\n:root[data-x] { --q: #000; }\n@media (x) { :root { --s: 1px; } }\n:root { --s: 2px; --t: 3px; }'],
+  ["el.style.setProperty('--t', '4px')"]);
+check('inline: only properties set once, in a plain :root, without var() and untouched by scripts, are constants',
+  [...constants.keys()].join() === 'p' && withConstants(unit, constants).get('c') === '1px solid #123');
+check('inline: the skin file keeps only the tokens scripts read', keptSkin(unit, ['b', 'zz']) === ':root {\n  --skin-b: #fff;\n}\n');
+const real = skinBuild(ROOT);
+const leftover = COVERED.filter((file) => /var\(--skin-/.test(inlineSkin(read(file), real.resolved, file)));
+check('inline: every covered file of the real skin inlines with no token left', leftover.length === 0, leftover.join(' '));
+check('inline: the real skin keeps exactly the inline SVG inks of overlay.ts', [...real.keep].sort().join() ===
+  [...new Set([...read('src/ui/overlay.ts').matchAll(/var\(--skin-([a-z0-9-]+)\)/g)].map((m) => m[1]))].sort().join());
 
 for (const { name, ok, why } of results) console[ok ? 'log' : 'error'](`${ok ? 'PASS' : 'FAIL'} ${name}${why && !ok ? ': ' + why : ''}`);
 const failed = results.filter((r) => !r.ok).length;
