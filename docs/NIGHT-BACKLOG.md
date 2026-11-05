@@ -849,6 +849,7 @@ before/after `npm run shots -- globe` PNGs and look at them.
       `shots:site`, `docs/styles/realistyczny.md` (PL), D-11 status note; inspect every PNG.
 - [ ] G7 **Performance and device check** — `perf:scene` saver/low/medium/high, `perf:overlay`, hardware checklist
       (GPU memory, first frame, 30 FPS on low); KTX2/ETC1S fallback only if a budget phone fails (D-174 follow-up).
+      `--disable-gpu-compositing` on the real renderer measured (night-12bk): no gain, keep it stub-only — `docs/notes/G7-compositing.md`.
 - [x] G8 **"Mapa" mode next to "Satelita" (D-172)** — second texture set from the owner's chosen map look, uniform
       swap without rebuild, `globeMode` setting (default satellite, PL/EN), dock tag toggle; dock/overlay tests,
       `ui:matrix` at 320 dp. Mapa look: owner's reference (Google-Maps-like) in our own palette (`map-*.jpg`).
