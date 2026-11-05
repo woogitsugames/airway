@@ -9,6 +9,7 @@ import { LAUNCH, PRESS_KIT, STORE_BADGES, STORE_HOSTS, SITE_SHOTS, storeLink } f
 import { tmpdir } from 'node:os';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { buildPressKit, pressShots, unzip } from './press-kit.mjs';
+import { PUBLISHER_FIELDS, PUBLISHER_KEYS, publisherGaps } from './publisher.js';
 
 const root = dirname(fileURLToPath(import.meta.url));
 const pages = ['index.html', 'privacy.html', 'press.html', '404.html'];
@@ -218,6 +219,29 @@ try {
   check('press ZIP: reproducible', () => { buildPressKit(root, kitFile + '.2'); return readFileSync(kitFile).equals(readFileSync(kitFile + '.2')); });
 } finally {
   rmSync(kitDir, { recursive: true, force: true });
+}
+// [night-11al] R7c, D-241: one publisher block (publisher.*), on the policy page and linked from every footer.
+const publisherTarget = { 'index.html': 'privacy.html#publisher', 'press.html': 'privacy.html#publisher', 'privacy.html': '#publisher', '404.html': '/privacy.html#publisher' };
+for (const page of pages) {
+  const html = readFileSync(join(root, page), 'utf8');
+  const footer = html.slice(html.indexOf('<footer'));
+  check(`${page}: footer links the publisher block`, () => footer.includes(`href="${publisherTarget[page]}" data-nav-lang data-i18n="footer.publisher"`));
+}
+const privacyHtml = readFileSync(join(root, 'privacy.html'), 'utf8');
+const block = privacyHtml.match(/<section id="publisher"[\s\S]*?<\/section>/)?.[0] ?? '';
+check('publisher block on privacy.html with every row, in order', () => {
+  const order = [...block.matchAll(/data-i18n="publisher\.([a-z]+)"/g)].map(m => m[1]).filter(f => f !== "title" && f !== "note");
+  return order.join() === PUBLISHER_FIELDS.join() && PUBLISHER_FIELDS.every(f => block.includes(`data-i18n="publisher.${f}.label"`)) &&
+    block.includes('data-i18n="publisher.title"') && block.includes('data-i18n="publisher.note"');
+});
+check('publisher keys in both languages', () => PUBLISHER_KEYS.every(k => keys.includes(k)) && keys.includes('footer.publisher'));
+const gaps = publisherGaps(translations);
+if (process.env.AIRWAY_RELEASE === '1') {
+  check('release: publisher block has no "[Q-01 …]" placeholders (owner fills site/i18n.js publisher.*)', () => gaps.length === 0);
+} else {
+  check('publisher placeholders are marked "[Q-…]" and named by the release guard', () =>
+    PUBLISHER_KEYS.every(k => ['pl', 'en'].every(l => !translations[l][k].includes('[') || gaps.includes(`${l}:${k}`))));
+  if (gaps.length) console.log(`note: ${gaps.length} publisher placeholders (Q-01); AIRWAY_RELEASE=1 test:site fails until they are filled`);
 }
 console.log(`SUMMARY test:site seed=0xA1A1 assertions=${count+failures} passed=${count} failed=${failures}`);
 if (failures) process.exitCode = 1;
