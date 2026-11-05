@@ -32,6 +32,16 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- [night-12ay] R3i (D-245): Firebase Test Lab game loop. GameLoopPlugin reads the "scenario" extra,
+                 the game plays it (src/game/gameLoop.ts) and the report goes to the intent's data URI. -->
+            <intent-filter>
+                <action android:name="com.google.intent.action.TEST_LOOP" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="application/javascript" />
+            </intent-filter>
         </activity>
+        <!-- [night-12ay] Scenario count and labels = GAME_LOOP_SCENARIOS (test:game-loop). -->
+        <meta-data android:name="com.google.test.loops" android:value="1" />
+        <meta-data android:name="com.google.test.loops.perf" android:value="1" />
     </application>
 </manifest>
