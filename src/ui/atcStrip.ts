@@ -1,6 +1,7 @@
 /** Airport-paper route hints and route actions (D-11), independent of game state. */
 import { localNumber, t } from '../i18n'; // [task-37] D-61 formatter
 import type { RangeWarning, RouteHandle, RouteMenuRequest } from '../input/routeTool';
+import './skin/current.css'; // [night-11as] skin tokens read by atcStrip.css
 import './atcStrip.css';
 
 export interface AtcStrip { show(warning: RangeWarning | null): void; dispose(): void }

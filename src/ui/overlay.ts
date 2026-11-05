@@ -283,7 +283,7 @@ function connectingGlyph(region: DestinationRegion): SVGSVGElement {
   const path = svg.firstElementChild;
   if (path) {
     (path as SVGElement).style.fill = 'var(--skin-tag-glyph-hollow)'; // [night-11aq] skin token (src/ui/skin/current.css)
-    path.setAttribute('stroke', REGIONS[region].color);
+    (path as SVGElement).style.stroke = REGIONS[region].color; // [night-11as] beats regionGlyph's inline outline
     path.setAttribute('stroke-width', '2');
     path.setAttribute('stroke-linejoin', 'round');
     path.removeAttribute('paint-order');

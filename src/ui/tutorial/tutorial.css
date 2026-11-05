@@ -1,32 +1,32 @@
 /* [task-23] An ATC flight strip, boarding pass and luggage tags: no generic modal. */
-.aw-tutorial { position: absolute; inset: 0; z-index: 30; font-family: 'Atkinson Hyperlegible Next', sans-serif; color: #13302e; pointer-events: none; }
+.aw-tutorial { position: absolute; inset: 0; z-index: 30; font-family: var(--skin-face-text); color: var(--skin-tutorial-ink); pointer-events: none; }
 .aw-tutorial *, .aw-tutorial *::before, .aw-tutorial *::after { box-sizing: border-box; }
 .aw-tutorial [hidden] { display: none !important; }
 .aw-tutorial button { cursor: pointer; font: inherit; -webkit-tap-highlight-color: transparent; }
-.aw-tutorial button:focus-visible { outline: 3px solid #ff7a3d; outline-offset: 3px; }
+.aw-tutorial button:focus-visible { outline: 3px solid var(--skin-tutorial-focus); outline-offset: 3px; }
 .aw-tutorial button:disabled { opacity: .55; cursor: wait; }
-.aw-tutorial-stage { display: none; position: absolute; inset: 0; pointer-events: auto; background: #8cc3d8; padding: calc(var(--aw-safe-top) + 9px) calc(var(--aw-safe-right) + 10px) calc(var(--aw-safe-bottom) + 9px) calc(var(--aw-safe-left) + 10px); grid-template-rows: 70px minmax(0,1fr) auto; gap: 5px; }
+.aw-tutorial-stage { display: none; position: absolute; inset: 0; pointer-events: auto; background: var(--skin-tutorial-sky); padding: calc(var(--aw-safe-top) + 9px) calc(var(--aw-safe-right) + 10px) calc(var(--aw-safe-bottom) + 9px) calc(var(--aw-safe-left) + 10px); grid-template-rows: 70px minmax(0,1fr) auto; gap: 5px; }
 .aw-tutorial.is-active .aw-tutorial-stage { display: grid; }
-.aw-tutorial-ticket { display: flex; min-width: 0; align-items: stretch; background: #fbf8f1; color: #2a2420; border: 2px solid #1e6f6a; height: 68px; }
+.aw-tutorial-ticket { display: flex; min-width: 0; align-items: stretch; background: var(--skin-tutorial-paper); color: var(--skin-tutorial-card-ink); border: 2px solid var(--skin-tutorial-teal); height: 68px; }
 .aw-tutorial-ticket-id { min-width: 0; padding: 10px 13px 6px; display: flex; flex: 1; flex-direction: column; justify-content: space-between; }
-.aw-tutorial-kicker { font-family: Overpass,sans-serif; font-weight: 800; font-size: calc(14px * var(--airway-text-scale)); letter-spacing: .08em; }
-.aw-tutorial-ticket-id strong { font-family: 'Overpass Mono', monospace; font-size: calc(14px * var(--airway-text-scale)); font-weight: 700; }
-.aw-ticket-perf { width: 1px; border-left: 2px dashed #789b94; margin: 6px 0; }
-.aw-ticket-skip { border: 0; min-width: 80px; padding: 7px 12px; background: #fbf8f1; font-weight: 700; font-size: calc(14px * var(--airway-text-scale)); color: #1e6f6a; }
+.aw-tutorial-kicker { font-family: var(--skin-face-display); font-weight: var(--skin-weight-heavy); font-size: calc(14px * var(--airway-text-scale)); letter-spacing: .08em; }
+.aw-tutorial-ticket-id strong { font-family: var(--skin-face-mono); font-size: calc(14px * var(--airway-text-scale)); font-weight: var(--skin-weight-bold); }
+.aw-ticket-perf { width: 1px; border-left: 2px dashed var(--skin-tutorial-perforation); margin: 6px 0; }
+.aw-ticket-skip { border: 0; min-width: 80px; padding: 7px 12px; background: var(--skin-tutorial-paper); font-weight: var(--skin-weight-bold); font-size: calc(14px * var(--airway-text-scale)); color: var(--skin-tutorial-teal); }
 .aw-tutorial-center { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 0; min-width: 0; gap: 8px; }
-.aw-tutorial-world { position: relative; flex: none; width: min(100%, 430px, calc((100dvh - 308px) * 0.792)); min-width: 150px; /* [night-11l] index.ts fits it to the row */ aspect-ratio: 412 / 520; overflow: visible; background: #8cc3d8; transition: background-color 200ms linear; touch-action: none; }
+.aw-tutorial-world { position: relative; flex: none; width: min(100%, 430px, calc((100dvh - 308px) * 0.792)); min-width: 150px; /* [night-11l] index.ts fits it to the row */ aspect-ratio: 412 / 520; overflow: visible; background: var(--skin-tutorial-sky); transition: background-color var(--skin-tutorial-motion-world) linear; touch-action: none; }
 .aw-world-art { position: absolute; width: 100%; height: 100%; inset: 0; display: block; overflow: visible; pointer-events: none; }
-.aw-route { fill: none; stroke: #f4f0db; stroke-width: 6; stroke-linecap: round; opacity: 0; stroke-dasharray: 2 1; }
-.aw-route-feeder { opacity: .95; stroke: #e6b666; stroke-width: 5; stroke-dasharray: 11 8; }
-.aw-route-primary { stroke: #fbf8f1; stroke-width: 7; stroke-dasharray: 1 0; }
+.aw-route { fill: none; stroke: var(--skin-tutorial-route); stroke-width: 6; stroke-linecap: round; opacity: 0; stroke-dasharray: 2 1; }
+.aw-route-feeder { opacity: .95; stroke: var(--skin-tutorial-route-feeder); stroke-width: 5; stroke-dasharray: 11 8; }
+.aw-route-primary { stroke: var(--skin-tutorial-route-primary); stroke-width: 7; stroke-dasharray: 1 0; }
 .aw-tutorial.has-primary .aw-route-primary { opacity: 1; }
-.aw-guide { opacity: 0; fill: none; stroke: #ff7a3d; stroke-width: 6; stroke-dasharray: 10 12; stroke-linecap: round; }
-.aw-tutorial[data-step="route"] .aw-guide-primary { opacity: 1; animation: aw-route-guide 1000ms linear infinite; }
+.aw-guide { opacity: 0; fill: none; stroke: var(--skin-tutorial-guide); stroke-width: 6; stroke-dasharray: 10 12; stroke-linecap: round; }
+.aw-tutorial[data-step="route"] .aw-guide-primary { opacity: 1; animation: aw-route-guide var(--skin-tutorial-motion-guide) linear infinite; }
 .aw-tutorial.is-dragging .aw-guide { opacity: .3; }
-.aw-live-path { stroke: #ff7a3d; stroke-width: 7; stroke-linecap: round; fill: none; }
+.aw-live-path { stroke: var(--skin-tutorial-guide); stroke-width: 7; stroke-linecap: round; fill: none; }
 .aw-aircraft-symbol { opacity: 0; }
 .aw-tutorial.has-plane .aw-aircraft-symbol { opacity: 1; }
-.aw-city { position: absolute; min-width: 77px; min-height: 76px; padding: 0; display: flex; flex-direction: column; gap: 2px; align-items: center; justify-content: flex-start; transform: translate(-50%, -54px); background: transparent; border: none; color: #2a2420; user-select: none; touch-action: none; }
+.aw-city { position: absolute; min-width: 77px; min-height: 76px; padding: 0; display: flex; flex-direction: column; gap: 2px; align-items: center; justify-content: flex-start; transform: translate(-50%, -54px); background: transparent; border: none; color: var(--skin-tutorial-card-ink); user-select: none; touch-action: none; }
 /* [night-11p] D-129: the game's own marks: a luggage tag (code plate, region glyphs) above the airport object; the
    disc centre (54 px down the button) sits on the city. */
 .aw-tutorial .aw-city-tag { position: relative; left: auto; top: auto; transform: none; will-change: auto; transition: none; flex: none; }
@@ -37,37 +37,37 @@
 .aw-city-lon { left: 32.28%; top: 33.46%; }
 .aw-city-par { left: 62.38%; top: 44.04%; }
 .aw-city-rom { left: 56.31%; top: 69.04%; }
-.aw-tutorial[data-step="route"] .aw-city-lon .aw-airport, .aw-tutorial[data-step="route"] .aw-city-par .aw-airport, .aw-tutorial[data-step="transfer"] .aw-city-par .aw-airport { outline: 4px solid #ffc72c; outline-offset: -2px; border-radius: 50%; }
-.aw-route-drop { display: none; position: absolute; left: 49.75%; top: 37.5%; transform: translate(-50%,-50%); width: 60px; height: 60px; border: 0; background: transparent; color: #ffc72c; padding: 9px; touch-action: none; }
+.aw-tutorial[data-step="route"] .aw-city-lon .aw-airport, .aw-tutorial[data-step="route"] .aw-city-par .aw-airport, .aw-tutorial[data-step="transfer"] .aw-city-par .aw-airport { outline: 4px solid var(--skin-tutorial-target); outline-offset: -2px; border-radius: 50%; }
+.aw-route-drop { display: none; position: absolute; left: 49.75%; top: 37.5%; transform: translate(-50%,-50%); width: 60px; height: 60px; border: 0; background: transparent; color: var(--skin-tutorial-target); padding: 9px; touch-action: none; }
 .aw-route-drop svg { width: 100%; height: 100%; }
 .aw-tutorial[data-step="aircraft"] .aw-route-drop { display: block; }
-.aw-tutorial-strip { width: min(100%, 540px); min-height: 64px; display: flex; flex-direction: column; justify-content: center; gap: 5px; padding: 8px 13px; background: #f7f3ea; border-left: 7px solid #c8352a; color: #2a2420; }
-.aw-strip-index { font: 800 calc(12px * var(--airway-text-scale)) Overpass,sans-serif; color: #1e6f6a; letter-spacing: .05em; }
-.aw-strip-copy { font: 700 calc(16px * var(--airway-text-scale)) 'Atkinson Hyperlegible Next',sans-serif; line-height: 1.2; }
+.aw-tutorial-strip { width: min(100%, 540px); min-height: 64px; display: flex; flex-direction: column; justify-content: center; gap: 5px; padding: 8px 13px; background: var(--skin-tutorial-strip-bg); border-left: 7px solid var(--skin-tutorial-strip-edge); color: var(--skin-tutorial-card-ink); }
+.aw-strip-index { font: var(--skin-weight-heavy) calc(12px * var(--airway-text-scale)) var(--skin-face-display); color: var(--skin-tutorial-teal); letter-spacing: .05em; }
+.aw-strip-copy { font: var(--skin-weight-bold) calc(16px * var(--airway-text-scale)) var(--skin-face-text); line-height: 1.2; }
 .aw-tutorial-controls { width: 100%; max-width: 540px; justify-self: center; align-self: end; min-height: 44px; display: flex; flex-direction: column; gap: 7px; padding-top: 6px; /* [night-11l] the hint's own gap under the ATC card */ }
-.aw-tutorial-hint { min-height: 30px; margin: 0; display: flex; align-items: center; justify-content: center; text-align: center; color: #13302e; font-weight: 700; font-size: calc(13px * var(--airway-text-scale)); line-height: 1.25; }
-.aw-tutorial-dock { min-height: 80px; border-top: 5px solid #1e6f6a; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 7px 2px; background: #13302e; }
-.aw-plane-tag, .aw-action-tag { min-height: 58px; padding: 8px 18px; color: #2a2420; background: #f7f3ea; font-weight: 700; border: 0;
+.aw-tutorial-hint { min-height: 30px; margin: 0; display: flex; align-items: center; justify-content: center; text-align: center; color: var(--skin-tutorial-ink); font-weight: var(--skin-weight-bold); font-size: calc(13px * var(--airway-text-scale)); line-height: 1.25; }
+.aw-tutorial-dock { min-height: 80px; border-top: 5px solid var(--skin-tutorial-teal); display: flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 7px 2px; background: var(--skin-tutorial-dock-bg); }
+.aw-plane-tag, .aw-action-tag { min-height: 58px; padding: 8px 18px; color: var(--skin-tutorial-card-ink); background: var(--skin-tutorial-strip-bg); font-weight: var(--skin-weight-bold); border: 0;
   /* [night-11l] The dock's luggage-tag outline (hud.css): the old notched corner read as a second button behind. */
   clip-path: polygon(14px 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%, 0 14px); }
 .aw-plane-tag { display: none; width: 120px; flex-direction: column; align-items: center; gap: 1px; touch-action: none; }
-.aw-plane-tag svg { width: 38px; height: 29px; color: #1e6f6a; }
+.aw-plane-tag svg { width: 38px; height: 29px; color: var(--skin-tutorial-teal); }
 .aw-plane-tag span { font-size: calc(12px * var(--airway-text-scale)); }
-.aw-complete-action { display: none; background: #ffc72c; }
+.aw-complete-action { display: none; background: var(--skin-tutorial-sign-bg); }
 .aw-tutorial[data-step="aircraft"] .aw-plane-tag { display: flex; }
 .aw-tutorial[data-step="complete"] .aw-complete-action { display: block; }
-.aw-settings-sign { display: none; position: absolute; right: calc(var(--aw-safe-right) + 12px); bottom: calc(var(--aw-safe-bottom) + 16px); background: #ffc72c; color: #1c1e20; border: 3px solid #1c1e20; font: 800 calc(15px * var(--airway-text-scale)) Overpass,sans-serif !important; min-width: 124px; min-height: 50px; pointer-events: auto; }
+.aw-settings-sign { display: none; position: absolute; right: calc(var(--aw-safe-right) + 12px); bottom: calc(var(--aw-safe-bottom) + 16px); background: var(--skin-tutorial-sign-bg); color: var(--skin-tutorial-sign-ink); border: 3px solid var(--skin-tutorial-sign-ink); font: var(--skin-weight-heavy) calc(15px * var(--airway-text-scale)) var(--skin-face-display) !important; min-width: 124px; min-height: 50px; pointer-events: auto; }
 .aw-tutorial:not(.is-active) .aw-settings-sign { display: block; }
-.aw-settings-dialog { position: absolute; z-index: 5; pointer-events: auto; bottom: calc(var(--aw-safe-bottom) + 80px); right: calc(var(--aw-safe-right) + 12px); width: min(290px,calc(100% - 24px - var(--aw-safe-left) - var(--aw-safe-right))); padding: 14px; background: #1c1e20; color: #fbf8f1; border: 3px solid #ffc72c; }
-.aw-settings-dialog h2 { font: 800 calc(20px * var(--airway-text-scale)) Overpass,sans-serif; margin: 0 0 12px; }
-.aw-settings-dialog button { min-height: 50px; display: block; width: 100%; background: #2c2f32; border: 1px solid #9ba19e; color: #fbf8f1; margin-top: 7px; font-weight: 700; }
+.aw-settings-dialog { position: absolute; z-index: 5; pointer-events: auto; bottom: calc(var(--aw-safe-bottom) + 80px); right: calc(var(--aw-safe-right) + 12px); width: min(290px,calc(100% - 24px - var(--aw-safe-left) - var(--aw-safe-right))); padding: 14px; background: var(--skin-tutorial-dialog-bg); color: var(--skin-tutorial-dialog-ink); border: 3px solid var(--skin-tutorial-sign-bg); }
+.aw-settings-dialog h2 { font: var(--skin-weight-heavy) calc(20px * var(--airway-text-scale)) var(--skin-face-display); margin: 0 0 12px; }
+.aw-settings-dialog button { min-height: 50px; display: block; width: 100%; background: var(--skin-tutorial-dialog-button-bg); border: 1px solid var(--skin-tutorial-dialog-button-rule); color: var(--skin-tutorial-dialog-ink); margin-top: 7px; font-weight: var(--skin-weight-bold); }
 @keyframes aw-route-guide { to { stroke-dashoffset: -44; } }
 :root[data-airway-motion="reduce"] .aw-guide { animation: none !important; } :root[data-airway-motion="reduce"] .aw-tutorial-world { transition: none !important; } /* [night-11g] D-88 */
 @media (max-height: 590px) and (min-width: 660px) {
  .aw-tutorial-stage { grid-template-columns: minmax(180px, 220px) minmax(220px, 1fr) minmax(160px, 215px); grid-template-rows: minmax(0,1fr); gap: 7px; padding: calc(var(--aw-safe-top) + 5px) calc(var(--aw-safe-right) + 7px) calc(var(--aw-safe-bottom) + 5px) calc(var(--aw-safe-left) + 7px); }
  .aw-tutorial-ticket { grid-column: 1; flex-direction: column; height: auto; max-height: 168px; align-self: start; }
  .aw-tutorial-ticket-id { min-height: 72px; padding: 10px; gap: 12px; }
- .aw-ticket-perf { height: 1px; width: auto; border-left: 0; border-top: 2px dashed #789b94; margin: 0 6px; }
+ .aw-ticket-perf { height: 1px; width: auto; border-left: 0; border-top: 2px dashed var(--skin-tutorial-perforation); margin: 0 6px; }
  .aw-ticket-skip { min-height: 54px; }
  .aw-tutorial-center { grid-column: 2; grid-row: 1; gap: 3px; }
  .aw-tutorial-world { width: min(100%, calc((100dvh - 95px)*0.792)); min-width: 195px; }
@@ -76,7 +76,7 @@
  .aw-strip-copy { font-size: calc(13px * var(--airway-text-scale)); }
  .aw-tutorial-controls { grid-column: 3; grid-row: 1; align-self: stretch; justify-self: stretch; min-height: 0; justify-content: flex-end; }
  .aw-tutorial-hint { font-size: calc(12px * var(--airway-text-scale)); }
- .aw-tutorial-dock { min-height: 85px; border-top: 0; border-left: 5px solid #1e6f6a; padding: 9px 5px; }
+ .aw-tutorial-dock { min-height: 85px; border-top: 0; border-left: 5px solid var(--skin-tutorial-teal); padding: 9px 5px; }
  .aw-plane-tag { width: 120px; }
 }
 
