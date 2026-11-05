@@ -2066,3 +2066,25 @@ e-mails 12 months (left to the lawyer). `docs/RELEASE.md` links the register (RL
 `test:privacy-declarations` keeps equal to the code), so a new data flow fails until the art. 30 record names it;
 the leaderboard retention must equal `RETENTION_DAYS`. Rejected: an English-only register (the owner and a Polish
 lawyer read it), filling the controller with guessed details. **Status: in force (Q-01, Q-67 and the lawyer open).**
+
+## D-243 — Privacy policy v1: fourteen sections from RESEARCH R7, bound to the art. 30 record and the store declarations (2026-11-05, Claude, night N11am)
+R7a. `privacy.*` in `site/i18n.js` (PL/EN; the game copy follows through `test:privacy-text`, D-86) becomes a full
+draft in the order of RESEARCH R7: (1) controller and contact as "[Q-01 …]" placeholders, no DPO, UK representative
+"[Q-67 …]"; (2) in short; (3) what stays on the device (save, settings, logbook; share and "Copy summary" only on
+tap); (4) the daily leaderboard, merged from `docs/legal/leaderboards-privacy.md` (Q-56 per its recommendation A —
+one text for every build; the owner may still choose B): what is sent, what is stored, the anonymous account, the
+call sign, IP addresses in Google's request handling; (5) one purpose line per activity of the art. 30 record with
+its GDPR art. 6 point (legitimate interest per D-135, deletion as a legal obligation); (6) recipients (Google as
+processor under the Firebase DPST, `europe-west1`; host and mail provider placeholders); (7) transfers (EU-US DPF,
+SCC); (8) retention (entries 90 days, D-77; record of moves not stored; anonymous account until deletion + up to 180
+days in backups; Auth IP logs a few weeks; Cloud Run logs, e-mails and hosting logs as bracketed open items); (9)
+rights incl. objection through "Send results to the leaderboard" (D-197), in-app deletion (D-114), e-mail deletion
+within 30 days and a complaint to the President of UODO; (10) 13+; (11) no profiling, the server replay is the only
+automated check; (12) the website; (13) security; (14) changes with a version history. The red banner now says
+"draft v1 — to verify with a lawyer, not legal advice" and stays until the owner approves; the date line names the
+effective date as set at publication. Bodies are paragraphs and "• " lists (site: `data-i18n-paragraphs`; game:
+`policyBlocks`). Guards: `test:privacy-policy` maps every art. 30 activity, declared endpoint, submission field and
+stored field to plain words in the policy (a new data flow fails until the text names it) and checks the retention
+numbers against `RETENTION_DAYS` and the register; `AIRWAY_RELEASE=1 test:site` refuses bracketed placeholders.
+Rejected: a separate leaderboard-only section shown only in build B (Q-56 B: two texts to keep in sync); field names
+such as `expireAt` in player text. **Status: in force as a draft (Q-01, Q-56 confirmation, Q-67 and the lawyer open).**

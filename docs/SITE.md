@@ -90,6 +90,12 @@ pauses. Device pixel ratio is capped at 2.
 - The page calls the release "coming soon" without giving dates. The two store tags
   (Google Play, App Store) stay disabled, labelled "link after the store page opens",
   until `site/launch.js` has a URL on the store's own host; see "Launch pack" below.
+- [N11am] R7a, D-243: the privacy policy is **draft v1** — 14 sections in the RESEARCH R7 order (controller,
+  summary, device, leaderboard, purposes and legal bases, recipients, transfers, retention, rights, age, profiling,
+  website, security, changes). Bodies are paragraphs and "• " lists (`data-i18n-paragraphs`). `test:privacy-policy`
+  ties the text to `docs/legal/README.md` and `docs/store/privacy-declarations.md`; `AIRWAY_RELEASE=1 npm run
+  test:site` fails while bracketed placeholders ("[Q-01 …]", "[to be filled in …]") remain. The red banner stays
+  until the owner approves the text after the lawyer.
 - The privacy document is explicitly a **draft**. Before publishing, confirm
   the data controller's legal identity and address, app telemetry / SDKs,
   offline behavior, retention of support messages and host request logs, cross-

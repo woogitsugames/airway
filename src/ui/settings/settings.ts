@@ -338,7 +338,17 @@ export function createLicenses(onBack:()=>void):SettingsHandle {
 }
 
 /** [night-11e] Sections of the in-app privacy policy, in the order of site/privacy.html (test:privacy-text). */
-export const PRIVACY_SECTIONS=[1,2,3,4,5] as const;
+export const PRIVACY_SECTIONS=[1,2,3,4,5,6,7,8,9,10,11,12,13,14] as const;
+/** [night-11am] R7a: a policy body is paragraphs split by a blank line; a block of "• " lines is a list (as site.js). */
+export function policyBlocks(text:string):HTMLElement[] {
+  return text.split(/\n\s*\n/).map((block)=>{
+    const lines=block.split('\n');
+    if(!lines.every((line)=>line.startsWith('• '))) return e('p','',block);
+    const list=e('ul','');
+    for(const line of lines) list.append(e('li','',line.slice(2)));
+    return list;
+  });
+}
 export function createPrivacy(onBack:()=>void):SettingsHandle {
   const root=e('section','airway-settings');
   const paper=e('div','airway-settings__paper airway-privacy');
@@ -347,7 +357,7 @@ export function createPrivacy(onBack:()=>void):SettingsHandle {
   paper.append(top,e('p','airway-privacy__overline',t('privacy.overline')),e('p','airway-privacy__warning',t('privacy.warning')));
   for(const n of PRIVACY_SECTIONS){
     const section=e('section','airway-privacy__section');
-    section.append(e('h2','',t(`privacy.s${n}.title` as TranslationKey)),e('p','',t(`privacy.s${n}.body` as TranslationKey)));
+    section.append(e('h2','',t(`privacy.s${n}.title` as TranslationKey)),...policyBlocks(t(`privacy.s${n}.body` as TranslationKey)));
     paper.append(section);
   }
   paper.append(e('p','airway-privacy__date',t('privacy.date')),e('p','airway-setting__hint',t('privacy.offline')));
