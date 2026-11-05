@@ -287,7 +287,7 @@ parts; the plain scripts still run on the real renderer, so nothing stops exerci
 | `test:e2e:smoke` | 9/9, 21 s | 9/9, 6 s |
 | `ui:matrix` | before: 37/48 shots, 6 failed, 320 s (G7: 3× "upgrade" not seen within 8 s, 1× the run ended before the card click; 2× the 673×841 board scrolled, a real bug); after the board fix 48/48 in 342 s (the G7 timeouts are intermittent) | 48/48, 93 s (after the board fix; 44/48 before it) |
 | `test:e2e:edge-chip-tags` | 5/6, 110 s (PL 673×841: weekly-card click > 5 s, G7) | 6/6, 27 s, chips=53 |
-| `store:shots` | `--only=upgrade --out=<dir>`: 12/12 in 391 s (~33 s per shot, ~33 min for all 60) | none (see below) |
+| `store:shots` | `--only=upgrade --out=<dir>`: 12/12 in 391 s (~33 s per shot, ~33 min for all 60); [N12bh] full run 60/60 in 29.5 min | none (see below) |
 
 Needs the real renderer (G7), no stub variant: `store:shots` (every check is on globe pixels — sun angle, warmth,
 contrast of routes/airports/planes/tags against the globe, contact sheet), the look of the `ui:matrix` PNGs in

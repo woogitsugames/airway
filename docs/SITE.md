@@ -116,7 +116,8 @@ pauses. Device pixel ratio is capped at 2.
 - **Real screenshots:** after every `npm run store:shots`, run `npm run site:assets` (Playwright from the
   environment). It downscales the four phone scenes per language to 540×960 JPEG (each under 250 kB) and records the
   hash of each source PNG in `site/assets/shots/sources.json`; `test:site` fails when a store PNG changed and the copy
-  did not follow. The "failure" scene waits for a store:shots run with the N11t game-over wording.
+  did not follow. [N12bh] The store shots now carry the N11t game-over wording ("SIEĆ ZAMKNIĘTA" / "NETWORK
+  CLOSED"); adding "failure" to `SITE_SHOTS.scenes` (a fifth preview card, its copy and alt text) is still open.
 - **Social preview:** `og:image` is the Play feature graphic (`docs/store/feature-graphic.png`, D-117), copied by
   `build:site` into `site/dist/assets/og-image.png` (not duplicated in git), with size, alt text and
   `twitter:card=summary_large_image`.
@@ -144,7 +145,8 @@ pauses. Device pixel ratio is capped at 2.
   descriptions, usage, contents), `screenshots/{pl,en}/airway-<scene>-{phone,landscape}.png` (the full-size store PNGs,
   8 per language), `logo/airway-wordmark.{svg,png}`, `logo/airway-icon.{svg,png}`. About 11.7 MB; never committed.
 - **One config:** `PRESS_KIT` in `site/launch.js` (ZIP name, contact, formats, logos, video). The scenes are
-  `SITE_SHOTS.scenes`, so the "failure" scene joins page and ZIP together once store:shots has the N11t wording.
+  `SITE_SHOTS.scenes`, so the "failure" scene joins page and ZIP together once it is added there (the store shots
+  have the N11t wording since N12bh).
 - **Thumbnails and logo PNGs:** `npm run site:assets` also writes `site/assets/shots/<lang>/<scene>-landscape.jpg`
   (960×540) and renders `brand/wayfinding.svg` / `resources/icon.svg` to `site/assets/press/airway-wordmark.png`
   (1920×520, with the site's Overpass 800, since the SVG wordmark is live text) and `airway-icon.png` (1024×1024).
