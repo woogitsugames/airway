@@ -1,0 +1,579 @@
+/* [night-11au] D-256: UI skin "KARTA" (docs/styles/ui-2026-11/KIERUNKI.md, direction 1) — PREVIEW ONLY, pending the
+   owner's choice. The UI is the overprint of an aeronautical chart laid over the satellite photo: ink margins with a
+   double neatline, lettering with a cartographic halo instead of cards, leader lines from the airport to its label, a
+   seat scale (one segment per waiting place) under the code, a week ruler with hatched nights on top, and chart magenta
+   reserved for a jam ("restricted area") and nothing else.
+   Loaded only by a DEV build with `?skin=karta` (src/main.ts sets <html data-skin="karta"> and imports this file);
+   release builds never import it, so their CSS is the "Diorama" skin of current.css, written in place by
+   scripts/vite-skin-inline.mjs (D-252), byte for byte. Part 1 redefines every token of current.css (test:skin-tokens
+   checks the coverage); part 2 holds the structural tweaks, all under :root[data-skin="karta"]. Literals are allowed
+   here: this file is a skin. Fonts: Barlow Condensed 500/700 and IBM Plex Mono 400/600 (SIL OFL, mockups/fonts/ with
+   their licence files, docs/ASSETS.md), served by the dev server only, so nothing is added to dist/. */
+@font-face { font-family: 'Barlow Condensed'; font-weight: 500; font-display: swap; src: url('/mockups/fonts/BarlowCondensed-500.ttf') format('truetype'); }
+@font-face { font-family: 'Barlow Condensed'; font-weight: 700; font-display: swap; src: url('/mockups/fonts/BarlowCondensed-700.ttf') format('truetype'); }
+@font-face { font-family: 'IBM Plex Mono'; font-weight: 400; font-display: swap; src: url('/mockups/fonts/IBMPlexMono-400.ttf') format('truetype'); }
+@font-face { font-family: 'IBM Plex Mono'; font-weight: 600; font-display: swap; src: url('/mockups/fonts/IBMPlexMono-600.ttf') format('truetype'); }
+
+/* ---- Part 1: tokens. Ink #0E1B22 (margins), printing paper #F2EEE3 (letters, lines), chart magenta #D3167A (jam only). */
+:root[data-skin="karta"] {
+  --karta-ink: #0E1B22;
+  --karta-ink-raised: #182A35;
+  --karta-ink-pressed: #26404F;
+  --karta-paper: #F2EEE3;
+  --karta-dim: #A7B1B1; /* paper at ~62 % on ink, opaque so contrast is measurable (8.4:1 on ink) */
+  --karta-rule: #50626C;
+  --karta-magenta: #D3167A;
+  --karta-magenta-ink: #F26BB0; /* magenta as text on ink (5.9:1); the fill stays #D3167A */
+  --karta-halo: 0 0 1px var(--karta-ink), 1.2px 0 0 var(--karta-ink), -1.2px 0 0 var(--karta-ink), 0 1.2px 0 var(--karta-ink),
+    0 -1.2px 0 var(--karta-ink), 1px 1px 0 var(--karta-ink), -1px -1px 0 var(--karta-ink), 1px -1px 0 var(--karta-ink),
+    -1px 1px 0 var(--karta-ink), 0 0 3px rgba(14, 27, 34, .8);
+
+  /* Typefaces and weights */
+  --skin-face-text: 'Barlow Condensed', 'Atkinson Hyperlegible Next', sans-serif;
+  --skin-face-display: 'Barlow Condensed', 'Overpass', sans-serif;
+  --skin-face-mono: 'IBM Plex Mono', 'Overpass Mono', monospace;
+  --skin-weight-regular: 500;
+  --skin-weight-bold: 700;
+  --skin-weight-heavy: 700;
+
+  /* Motion: the same short, linear values; the chart never bounces */
+  --skin-motion-follow: 90ms;
+  --skin-motion-press: .1s;
+  --skin-motion-trend-in: 120ms;
+  --skin-motion-panel-in: 140ms;
+  --skin-motion-stamp: 120ms;
+  --skin-motion-sheet-in: .16s;
+  --skin-motion-flap: 38ms;
+  --skin-motion-flip: 90ms;
+  --skin-motion-flip-stagger-1: 65ms;
+  --skin-motion-flip-stagger-2: 120ms;
+  --skin-motion-flip-stagger-3: 180ms;
+  --skin-motion-jam-pulse: 1.1s;
+
+  /* Shape: sharp corners, hairlines, no shadows */
+  --skin-control-radius: 0;
+  --skin-edge-radius: 0;
+  --skin-hover-rule: inset 0 -2px 0 currentColor;
+  --skin-edge-new-bar: inset 0 3px 0 var(--skin-edge-highlight);
+  --skin-hubboard-shadow: none;
+  --skin-menu-board-shadow: none;
+
+  /* Icon sizes */
+  --skin-hud-icon-size: 24px;
+  --skin-hud-icon-size-narrow: 22px;
+  --skin-pass-pause-icon-size: 20px;
+  --skin-dock-countdown-icon-size: 20px;
+  --skin-dock-hub-icon-width: 24px;
+  --skin-edge-icon-size: 14px;
+  --skin-slot-icon-size: 14px;
+  --skin-crate-back-icon-size: 24px;
+  --skin-menu-sign-icon-size: 34px;
+
+  /* In-game HUD shell */
+  --skin-hud-ink: var(--karta-paper);
+  --skin-hud-paper: var(--karta-ink);
+  --skin-hud-perforation: var(--karta-rule);
+  --skin-hud-airline-default: var(--karta-paper);
+  --skin-hud-tag-bg: transparent;
+  --skin-hud-eyelet-ring: transparent;
+  --skin-hud-alert: var(--karta-paper);
+  --skin-pass-label-ink: var(--karta-dim);
+  --skin-dock-eyelet-hole: transparent;
+  --skin-dock-tag-empty-bg: transparent;
+  --skin-dock-tag-empty-ink: var(--karta-dim);
+  --skin-dock-rack-rule: var(--karta-rule);
+  /* Airport label (was the luggage tag) */
+  --skin-tag-ink: var(--karta-paper);
+  --skin-tag-bg: transparent;
+  --skin-tag-jam-bg: var(--karta-magenta);
+  --skin-tag-jam-ink: var(--karta-paper);
+  --skin-tag-plate-rule: transparent;
+  --skin-tag-plate-ink: var(--karta-paper);
+  --skin-tag-new-bg: var(--karta-paper);
+  --skin-tag-new-ink: var(--karta-ink);
+  --skin-tag-barrier-post: var(--karta-ink);
+  --skin-tag-barrier-boom: var(--karta-paper);
+  --skin-tag-barrier-stripe: var(--karta-ink);
+  --skin-tag-glyph-hollow: var(--karta-ink);
+  --skin-tag-surge-ink: var(--karta-ink);
+  --skin-tag-surge-paper: var(--karta-paper);
+  --skin-tag-front-ink: var(--karta-ink);
+  --skin-tag-front-paper: var(--karta-paper);
+  /* Off-screen airport: a margin note */
+  --skin-edge-border: var(--karta-paper);
+  --skin-edge-bg: var(--karta-ink);
+  --skin-edge-ink: var(--karta-paper);
+  --skin-edge-highlight: var(--karta-paper);
+  --skin-edge-jam-bg: var(--karta-magenta);
+  --skin-edge-jam-border: var(--karta-paper);
+  --skin-edge-jam-ink: var(--karta-paper);
+  --skin-edge-new-bg: var(--karta-paper);
+  --skin-edge-new-ink: var(--karta-ink);
+  --skin-edge-curfew-stripe: var(--karta-paper);
+  /* Departure-slot note */
+  --skin-slot-border: var(--karta-paper);
+  --skin-slot-bg: var(--karta-ink);
+  --skin-slot-ink: var(--karta-paper);
+  --skin-slot-stub-bg: var(--karta-paper);
+  --skin-slot-stub-ink: var(--karta-ink);
+  /* Full-screen layers: the flat sky stays the globe's (src/render/**, ext session) */
+  --skin-screen-sky: var(--airway-sky);
+  /* Pause sheet: an ink panel with a neatline */
+  --skin-pause-bg: var(--karta-ink);
+  --skin-pause-ink: var(--karta-paper);
+  --skin-pause-edge: var(--karta-paper);
+  --skin-pause-rule: var(--karta-paper);
+  --skin-pause-rule-dim: var(--karta-rule);
+  --skin-pause-button-bg: var(--karta-ink);
+  --skin-pause-primary-bg: var(--karta-paper);
+  --skin-pause-primary-border: var(--karta-paper);
+  --skin-pause-primary-ink: var(--karta-ink);
+  --skin-pause-focus: var(--karta-paper);
+  --skin-pause-status-ink: var(--karta-dim);
+  /* Weekly board */
+  --skin-crate-scrim: rgba(14, 27, 34, .72);
+  --skin-crate-ink: var(--karta-paper);
+  --skin-crate-sign-bg: var(--karta-ink);
+  --skin-crate-sign-ink: var(--karta-paper);
+  --skin-crate-label-bg: var(--karta-ink);
+  --skin-crate-label-pressed-bg: var(--karta-ink-pressed);
+  --skin-crate-focus: var(--karta-paper);
+  --skin-crate-label-disabled-bg: var(--karta-ink-raised);
+  --skin-crate-model-bg: var(--karta-ink-raised);
+  --skin-crate-model-border: var(--karta-paper);
+  --skin-crate-model-silhouette: var(--karta-paper);
+  --skin-crate-model-silhouette-wide: var(--karta-paper);
+  --skin-crate-rule: var(--karta-paper);
+  --skin-crate-key-ink: var(--karta-dim);
+  --skin-crate-stamp-ink: var(--karta-paper);
+  --skin-crate-back-bg: var(--karta-paper);
+  --skin-crate-back-ink: var(--karta-ink);
+  --skin-crate-back-pressed-bg: #D9D3C4;
+  --skin-crate-back-focus: var(--karta-paper);
+  --skin-crate-waybill-bg: var(--karta-ink-raised);
+  --skin-crate-waybill-ink: var(--karta-paper);
+  --skin-crate-waybill-muted: var(--karta-dim);
+  --skin-crate-waybill-rule: var(--karta-paper);
+  /* Hub cause board */
+  --skin-hubboard-bg: var(--karta-ink);
+  --skin-hubboard-ink: var(--karta-paper);
+  --skin-hubboard-accent: var(--karta-paper);
+  --skin-hubboard-offset: var(--karta-paper);
+  --skin-hubboard-jam: var(--karta-magenta);
+  --skin-hubboard-rule: var(--karta-rule);
+  --skin-hubboard-title-ink: var(--karta-paper);
+  --skin-hubboard-dim-ink: var(--karta-dim);
+  --skin-hubboard-mark-none-ink: var(--karta-dim);
+  /* Game-over report */
+  --skin-go-scrim: rgba(14, 27, 34, .72);
+  --skin-go-ink: var(--karta-paper);
+  --skin-go-sign-bg: var(--karta-ink);
+  --skin-go-sign-ink: var(--karta-paper);
+  --skin-go-sign-mark-bg: var(--karta-magenta);
+  --skin-go-board-bg: var(--karta-ink);
+  --skin-go-board-ink: var(--karta-paper);
+  --skin-go-board-title-ink: var(--karta-paper);
+  --skin-go-board-head-rule: var(--karta-paper);
+  --skin-go-board-dim-ink: var(--karta-dim);
+  --skin-go-board-row-rule: var(--karta-rule);
+  --skin-go-board-gate-ink: var(--karta-paper);
+  --skin-go-flap-ink: var(--karta-paper);
+  --skin-go-flap-bg: var(--karta-magenta);
+  --skin-go-flap-edge-light: var(--karta-magenta);
+  --skin-go-flap-edge-dark: var(--karta-magenta);
+  --skin-go-board-strong-ink: var(--karta-paper);
+  --skin-go-strip-bg: var(--karta-ink-raised);
+  --skin-go-strip-margin: var(--karta-paper);
+  --skin-go-strip-margin-dash: var(--karta-rule);
+  --skin-go-strip-heading-ink: var(--karta-paper);
+  --skin-go-strip-value-ink: var(--karta-paper);
+  --skin-go-strip-rule: var(--karta-rule);
+  --skin-go-strip-alert-ink: var(--karta-magenta-ink);
+  --skin-go-strip-dim-ink: var(--karta-dim);
+  --skin-go-strip-rule-light: var(--karta-rule);
+  --skin-go-strip-record-ink: var(--karta-paper);
+  --skin-go-action-border: var(--karta-paper);
+  --skin-go-action-focus: var(--karta-paper);
+  --skin-go-action-primary-bg: var(--karta-paper);
+  --skin-go-action-ink: var(--karta-ink);
+  --skin-go-action-bg: var(--karta-paper);
+  --skin-go-action-dark-bg: var(--karta-ink);
+  --skin-go-action-dark-ink: var(--karta-paper);
+  --skin-go-map-tab-bg: var(--karta-ink);
+  --skin-go-mapbar-bg: var(--karta-ink);
+  --skin-go-mapbar-margin: var(--karta-paper);
+  --skin-go-mapbar-ink: var(--karta-paper);
+  --skin-go-mapback-bg: var(--karta-ink-raised);
+  --skin-go-milestone-ink: var(--karta-paper);
+  --skin-go-milestone-done: var(--karta-paper);
+  --skin-go-milestone-open: var(--karta-dim);
+  /* Main menu: the map sheet's title block (no split-flap shading) */
+  --skin-menu-ink: var(--karta-paper);
+  --skin-menu-sign-bg: var(--karta-ink);
+  --skin-menu-sign-ink: var(--karta-paper);
+  --skin-menu-board-bg: var(--karta-ink);
+  --skin-menu-board-frame: var(--karta-ink);
+  --skin-menu-board-ledge: var(--karta-ink);
+  --skin-menu-board-head-ink: var(--karta-dim);
+  --skin-menu-board-rule: var(--karta-rule);
+  --skin-menu-board-ink: var(--karta-paper);
+  --skin-menu-board-focus: var(--karta-paper);
+  --skin-menu-board-hover-bg: var(--karta-ink-raised);
+  --skin-menu-board-pressed-bg: var(--karta-ink-pressed);
+  --skin-menu-board-sub-ink: var(--karta-dim);
+  --skin-menu-flap-bg: transparent;
+  --skin-menu-select-ink: var(--karta-paper);
+  --skin-menu-option-ink: var(--karta-ink);
+  --skin-menu-option-bg: var(--karta-paper);
+  --skin-menu-flap-ink: var(--karta-paper);
+  --skin-menu-flap-highlight-ink: var(--karta-paper);
+  --skin-menu-flap-top-edge: transparent;
+  --skin-menu-flap-bottom-bg: transparent;
+  --skin-menu-flap-bottom-edge: transparent;
+  --skin-menu-notice-bg: var(--karta-ink);
+  --skin-menu-notice-margin: var(--karta-magenta);
+  --skin-menu-notice-ink: var(--karta-paper);
+  /* Settings, privacy, licences and help pages: a chart legend sheet */
+  --skin-settings-backdrop: var(--karta-ink);
+  --skin-settings-paper: var(--karta-ink);
+  --skin-settings-ink: var(--karta-paper);
+  --skin-settings-accent: var(--karta-paper);
+  --skin-settings-back-bg: var(--karta-ink);
+  --skin-settings-rule: var(--karta-rule);
+  --skin-settings-control-bg: var(--karta-ink-raised);
+  --skin-settings-control-ink: var(--karta-paper);
+  --skin-settings-alert: var(--karta-magenta-ink);
+  --skin-settings-swatch-edge: rgba(242, 238, 227, .5);
+  --skin-settings-dim-ink: var(--karta-dim);
+  --skin-settings-licenses-bg: var(--karta-ink-raised);
+  --skin-settings-licenses-ink: var(--karta-paper);
+  --skin-settings-warning-ink: var(--karta-magenta-ink);
+  --skin-settings-note-bg: var(--karta-ink-raised);
+  /* Region glyph outline: the paper casing of a chart symbol (legible on the photo and on ink panels) */
+  --skin-glyph-outline: var(--karta-paper);
+  /* ATC strip, route menu, handles, first-time card */
+  --skin-atc-strip-edge: var(--karta-paper);
+  --skin-atc-paper: var(--karta-ink);
+  --skin-atc-ink: var(--karta-paper);
+  --skin-atc-strip-ledge: var(--karta-rule);
+  --skin-atc-field-rule: var(--karta-rule);
+  --skin-atc-error-ink: var(--karta-magenta-ink);
+  --skin-atc-menu-focus: var(--karta-paper);
+  --skin-atc-menu-border: var(--karta-paper);
+  --skin-atc-menu-shadow: var(--karta-ink);
+  --skin-atc-menu-rule: var(--karta-rule);
+  --skin-atc-handle-rim: var(--karta-ink);
+  --skin-atc-handle-halo: var(--karta-paper);
+  --skin-atc-handle-active-bg: var(--karta-paper);
+  --skin-atc-ok-rule: var(--karta-rule);
+  --skin-atc-ok-bg: var(--karta-paper);
+  --skin-atc-ok-ink: var(--karta-ink);
+  --skin-atc-ok-focus: var(--karta-paper);
+  /* Leaderboard */
+  --skin-rank-bg: var(--karta-ink);
+  --skin-rank-ink: var(--karta-paper);
+  --skin-rank-accent: var(--karta-paper);
+  --skin-rank-head-rule: var(--karta-paper);
+  --skin-rank-dim-ink: var(--karta-dim);
+  --skin-rank-row-rule: var(--karta-rule);
+  /* Logbook */
+  --skin-logbook-edge: var(--karta-paper);
+  --skin-logbook-rule: var(--karta-paper);
+  --skin-logbook-row-rule: var(--karta-rule);
+  --skin-logbook-label-ink: var(--karta-dim);
+  --skin-logbook-value-ink: var(--karta-paper);
+  --skin-logbook-ink: var(--karta-paper);
+  --skin-logbook-daily-mark: var(--karta-paper);
+  --skin-logbook-summary-bg: var(--karta-ink-raised);
+  --skin-logbook-milestone-done: var(--karta-paper);
+  --skin-logbook-milestone-open: var(--karta-dim);
+  /* Puzzle board and puzzle game */
+  --skin-puzzle-focus: var(--karta-paper);
+  --skin-puzzle-board-bg: var(--karta-ink);
+  --skin-puzzle-board-ink: var(--karta-paper);
+  --skin-puzzle-board-edge: var(--karta-paper);
+  --skin-puzzle-sign-bg: var(--karta-ink);
+  --skin-puzzle-sign-ink: var(--karta-paper);
+  --skin-puzzle-board-accent: var(--karta-paper);
+  --skin-puzzle-scroll-track: var(--karta-ink-raised);
+  --skin-puzzle-pack-bg: var(--karta-ink);
+  --skin-puzzle-flap-bg: var(--karta-ink-raised);
+  --skin-puzzle-flap-split: var(--karta-ink);
+  --skin-puzzle-flap-hover-bg: var(--karta-ink-pressed);
+  --skin-puzzle-flap-dim-ink: var(--karta-dim);
+  --skin-puzzle-best-ink: var(--karta-paper);
+  --skin-puzzle-dim: var(--karta-dim);
+  --skin-puzzle-game-bg: var(--karta-ink);
+  --skin-puzzle-teal: var(--karta-paper);
+  --skin-puzzle-back-border: var(--karta-paper);
+  --skin-puzzle-paper: var(--karta-ink);
+  --skin-puzzle-ink: var(--karta-paper);
+  --skin-puzzle-stats-rule: var(--karta-rule);
+  --skin-puzzle-result-bg: var(--karta-ink-raised);
+  --skin-puzzle-lost-bg: var(--karta-ink-raised);
+  --skin-puzzle-lost-edge: var(--karta-magenta);
+  --skin-puzzle-error-ink: var(--karta-magenta-ink);
+  --skin-puzzle-supply-ink: var(--karta-dim);
+  --skin-puzzle-card-rule: var(--karta-rule);
+  --skin-puzzle-controls-bg: var(--karta-ink);
+  --skin-puzzle-motion-press: 80ms;
+  /* Tutorial vignette: the painted mini-world stays art; its cards follow the chart */
+  --skin-tutorial-ink: var(--karta-paper);
+  --skin-tutorial-focus: var(--karta-paper);
+  --skin-tutorial-sky: var(--airway-sky);
+  --skin-tutorial-paper: var(--karta-ink);
+  --skin-tutorial-card-ink: var(--karta-paper);
+  --skin-tutorial-teal: var(--karta-paper);
+  --skin-tutorial-perforation: var(--karta-rule);
+  --skin-tutorial-motion-world: 200ms;
+  --skin-tutorial-route: #f4f0db;
+  --skin-tutorial-route-feeder: #e6b666;
+  --skin-tutorial-route-primary: var(--karta-paper);
+  --skin-tutorial-guide: var(--karta-paper);
+  --skin-tutorial-motion-guide: 1000ms;
+  --skin-tutorial-target: var(--karta-paper);
+  --skin-tutorial-strip-bg: var(--karta-ink);
+  --skin-tutorial-strip-edge: var(--karta-paper);
+  --skin-tutorial-dock-bg: var(--karta-ink);
+  --skin-tutorial-sign-bg: var(--karta-ink);
+  --skin-tutorial-sign-ink: var(--karta-paper);
+  --skin-tutorial-dialog-bg: var(--karta-ink);
+  --skin-tutorial-dialog-ink: var(--karta-paper);
+  --skin-tutorial-dialog-button-bg: var(--karta-paper);
+  --skin-tutorial-dialog-button-rule: var(--karta-rule);
+}
+
+/* ---- Part 2: structure (only under :root[data-skin="karta"]) ---------------------------------------------------- */
+/* Lettering: every label sits on the photo with a cartographic halo (ink ring), never on a card. */
+:root[data-skin="karta"] .airport-overlay,
+:root[data-skin="karta"] .airway-hud { text-shadow: none; }
+
+/* -- Top margin: an ink band with a double neatline, fields in chart caps, numbers in mono, the week ruler below. -- */
+:root[data-skin="karta"] .airway-pass {
+  top: 0; left: 0; right: 0; width: auto; height: calc(var(--hud-safe-top) + 80px);
+  padding: calc(var(--hud-safe-top) + 6px) calc(var(--hud-safe-right) + 12px) 0 calc(var(--hud-safe-left) + 10px);
+  gap: 6px; background: var(--karta-ink);
+  box-shadow: 0 1px 0 0 var(--karta-paper), 0 4px 0 0 var(--karta-ink), 0 5px 0 0 var(--karta-paper);
+}
+:root[data-skin="karta"] .airway-pass__ticket { position: static; height: 50px; background: transparent; -webkit-mask: none; mask: none; }
+:root[data-skin="karta"] .airway-pass__band,
+:root[data-skin="karta"] .airway-pass__perf { display: none; }
+:root[data-skin="karta"] .airway-pass__field { position: static; justify-content: flex-start; gap: 1px; padding: 2px 8px 0 6px; }
+:root[data-skin="karta"] .airway-pass__label { font: 700 10px/1.1 var(--skin-face-text); letter-spacing: .14em; color: var(--karta-dim); white-space: nowrap; overflow: hidden; }
+:root[data-skin="karta"] .airway-pass__field strong { font: 600 25px/1.05 var(--skin-face-mono); letter-spacing: -.02em; color: var(--karta-paper); }
+:root[data-skin="karta"] .airway-pass__day strong { font-size: 17px; line-height: 1.6; color: var(--karta-dim); }
+:root[data-skin="karta"] .airway-pass__day { flex: 0 1 62px; min-width: 44px; }
+:root[data-skin="karta"] .airway-pass__time { flex: 0 0 84px; }
+:root[data-skin="karta"] .airway-pass__passengers { flex: 1 1 auto; padding-left: 10px; }
+/* The week ruler: three days of 24 h, nights (22:00–06:00) hatched, a tick per hour, a longer one every 6 h and a day
+   boundary; the filled bar and the marker are "now" (--karta-week from boarding-pass.ts); the crate at the end is the
+   weekly board. Shape and length carry it, not colour. */
+:root[data-skin="karta"] .airway-pass__days {
+  position: absolute; display: flex; gap: 0; height: 15px;
+  left: calc(var(--hud-safe-left) + 14px); right: calc(var(--hud-safe-right) + 34px); bottom: 7px;
+}
+:root[data-skin="karta"] .airway-pass__days i {
+  flex: 1 1 0; width: auto; height: 11px; margin-top: 0; background:
+    repeating-linear-gradient(135deg, rgba(242, 238, 227, .6) 0 1px, transparent 1px 4px);
+  -webkit-mask: linear-gradient(90deg, #000 0 25%, transparent 25% 91.667%, #000 91.667%);
+  mask: linear-gradient(90deg, #000 0 25%, transparent 25% 91.667%, #000 91.667%);
+}
+:root[data-skin="karta"] .airway-pass__days::before {
+  content: ''; position: absolute; inset: 0 0 4px; pointer-events: none; background:
+    linear-gradient(var(--karta-paper), var(--karta-paper)) left bottom / 100% 1px no-repeat,
+    repeating-linear-gradient(90deg, var(--karta-paper) 0 1.5px, transparent 1.5px calc(100% / 3)) left bottom / 100% 11px no-repeat,
+    linear-gradient(var(--karta-paper), var(--karta-paper)) right bottom / 1.5px 11px no-repeat,
+    repeating-linear-gradient(90deg, var(--karta-paper) 0 1px, transparent 1px calc(100% / 12)) left bottom / 100% 6px no-repeat,
+    repeating-linear-gradient(90deg, rgba(242, 238, 227, .6) 0 1px, transparent 1px calc(100% / 72)) left bottom / 100% 3px no-repeat;
+}
+:root[data-skin="karta"] .airway-pass__days::after {
+  content: ''; position: absolute; right: -20px; bottom: 5px; width: 11px; height: 11px; border: 1.2px solid var(--karta-paper);
+  background: linear-gradient(45deg, transparent calc(50% - .6px), var(--karta-paper) calc(50% - .6px) calc(50% + .6px), transparent 0),
+    linear-gradient(-45deg, transparent calc(50% - .6px), var(--karta-paper) calc(50% - .6px) calc(50% + .6px), transparent 0);
+}
+:root[data-skin="karta"] .airway-pass__ticket::after {
+  content: ''; position: absolute; left: calc(var(--hud-safe-left) + 14px); bottom: 5px; height: 2px;
+  width: calc((100% - var(--hud-safe-left) - var(--hud-safe-right) - 48px) * var(--karta-week, 0)); background: var(--karta-paper);
+}
+:root[data-skin="karta"] .airway-pass__ticket::before {
+  content: ''; position: absolute; bottom: 12px; width: 10px; height: 8px; margin-left: -5px; background: var(--karta-paper);
+  left: calc(var(--hud-safe-left) + 14px + (100% - var(--hud-safe-left) - var(--hud-safe-right) - 48px) * var(--karta-week, 0));
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+/* Pause: a ruled 48 × 48 target, no fill. */
+:root[data-skin="karta"] .airway-pass__pause {
+  flex: 0 0 48px; width: 48px; height: 48px; align-self: flex-start; background: transparent;
+  border: 1px solid var(--karta-paper) !important; color: var(--karta-paper);
+}
+:root[data-skin="karta"] .airway-hud button:focus-visible { outline: 2px solid var(--karta-paper); outline-offset: 2px; }
+
+/* -- Bottom margin: the quiet dock, a legend strip of six cells divided by hairlines; the chosen aircraft is the only
+      paper-filled cell, an empty cell is a dashed ring. -- */
+:root[data-skin="karta"] .airway-dock {
+  left: 0; right: 0; bottom: 0; gap: 0;
+  padding: 8px calc(var(--hud-safe-right) + 8px) calc(var(--hud-safe-bottom) + 6px) calc(var(--hud-safe-left) + 8px);
+  grid-template-columns: repeat(6, minmax(48px, 1fr)); background: var(--karta-ink); pointer-events: none;
+}
+:root[data-skin="karta"] .airway-dock::before {
+  top: -5px; left: 0; right: 0; height: 5px; opacity: 1;
+  background: linear-gradient(var(--karta-paper) 0 1px, var(--karta-ink) 1px 4px, var(--karta-paper) 4px 5px);
+}
+:root[data-skin="karta"] .airway-dock__holder { padding-top: 0; }
+:root[data-skin="karta"] .airway-dock__holder::before { left: 0; top: 10px; height: calc(100% - 20px); width: 1px; background: var(--karta-rule); opacity: 1; }
+:root[data-skin="karta"] .airway-dock__holder:first-child::before { display: none; }
+:root[data-skin="karta"] .airway-dock__eyelet { display: none; }
+:root[data-skin="karta"] .airway-dock__tag {
+  height: 60px; margin: 0 4px; width: calc(100% - 8px); clip-path: none; padding: 4px 2px; gap: 4px; color: var(--karta-paper);
+  font-family: var(--skin-face-mono) !important; font-weight: 600 !important; font-size: 18px !important;
+}
+:root[data-skin="karta"] .airway-dock__tag.is-selected { background: var(--karta-paper); color: var(--karta-ink); }
+:root[data-skin="karta"] .airway-dock__tag.is-empty::after { inset: 8px auto auto 50%; width: 36px; height: 36px; margin-left: -18px; border: 1px dashed currentColor; border-radius: 50%; opacity: 1; }
+:root[data-skin="karta"] .airway-dock__tag.is-countdown { padding-top: 2px; justify-content: flex-start; gap: 5px; }
+:root[data-skin="karta"] .airway-dock__tag.is-countdown::after { top: 3px; width: 30px; height: 30px; margin-left: -15px; }
+:root[data-skin="karta"] .airway-dock__tag.is-countdown .airway-hud__icon { margin-top: 5px; }
+:root[data-skin="karta"] .airway-dock__tag.is-countdown .airway-dock__count { font: 700 11px/1.1 var(--skin-face-text); letter-spacing: .08em; text-transform: uppercase; }
+:root[data-skin="karta"] .airway-dock__ghost { background: var(--karta-paper); color: var(--karta-ink); clip-path: none; }
+:root[data-skin="karta"] .airway-hud[data-layout='landscape'] .airway-pass,
+:root[data-skin="karta"] .airway-hud[data-layout='foldable'] .airway-pass {
+  top: 0; width: auto; right: calc(var(--hud-safe-right) + 102px); height: calc(var(--hud-safe-top) + 76px);
+}
+/* A narrow viewport with the side dock (e.g. the pause sheet on a 412 px wide fold): smaller figures so the passenger
+   count is never cut. */
+@media (max-width: 600px) {
+  :root[data-skin="karta"] .airway-hud[data-layout='landscape'] .airway-pass__field,
+  :root[data-skin="karta"] .airway-hud[data-layout='foldable'] .airway-pass__field { padding: 2px 4px 0; }
+  :root[data-skin="karta"] .airway-hud[data-layout='landscape'] .airway-pass__field strong,
+  :root[data-skin="karta"] .airway-hud[data-layout='foldable'] .airway-pass__field strong { font-size: 19px; }
+  :root[data-skin="karta"] .airway-hud[data-layout='landscape'] .airway-pass__day strong,
+  :root[data-skin="karta"] .airway-hud[data-layout='foldable'] .airway-pass__day strong { font-size: 15px; line-height: 1.3; }
+  :root[data-skin="karta"] .airway-hud[data-layout='landscape'] .airway-pass__time,
+  :root[data-skin="karta"] .airway-hud[data-layout='foldable'] .airway-pass__time { flex: 0 0 68px; }
+  :root[data-skin="karta"] .airway-hud[data-layout='landscape'] .airway-pass__day,
+  :root[data-skin="karta"] .airway-hud[data-layout='foldable'] .airway-pass__day { flex: 0 0 40px; min-width: 40px; }
+}
+:root[data-skin="karta"] .airway-hud[data-layout='landscape'] .airway-pass__days,
+:root[data-skin="karta"] .airway-hud[data-layout='foldable'] .airway-pass__days { right: 34px; }
+:root[data-skin="karta"] .airway-hud[data-layout='landscape'] .airway-pass__ticket::after,
+:root[data-skin="karta"] .airway-hud[data-layout='foldable'] .airway-pass__ticket::after {
+  width: calc((100% - var(--hud-safe-left) - 48px) * var(--karta-week, 0));
+}
+:root[data-skin="karta"] .airway-hud[data-layout='landscape'] .airway-pass__ticket::before,
+:root[data-skin="karta"] .airway-hud[data-layout='foldable'] .airway-pass__ticket::before {
+  left: calc(var(--hud-safe-left) + 14px + (100% - var(--hud-safe-left) - 48px) * var(--karta-week, 0));
+}
+:root[data-skin="karta"] .airway-hud[data-layout='landscape'] .airway-dock,
+:root[data-skin="karta"] .airway-hud[data-layout='foldable'] .airway-dock {
+  top: 0; bottom: 0; right: 0; left: auto; width: calc(var(--hud-safe-right) + 96px); border-left: 0;
+  padding: calc(var(--hud-safe-top) + 6px) calc(var(--hud-safe-right) + 6px) calc(var(--hud-safe-bottom) + 6px) 10px;
+}
+:root[data-skin="karta"] .airway-hud[data-layout='landscape'] .airway-dock::before,
+:root[data-skin="karta"] .airway-hud[data-layout='foldable'] .airway-dock::before {
+  top: 0; bottom: 0; left: 0; right: auto; width: 5px; height: auto;
+  background: linear-gradient(90deg, var(--karta-paper) 0 1px, var(--karta-ink) 1px 4px, var(--karta-paper) 4px 5px);
+}
+:root[data-skin="karta"] .airway-hud[data-layout='landscape'] .airway-dock__holder::before,
+:root[data-skin="karta"] .airway-hud[data-layout='foldable'] .airway-dock__holder::before { top: 0; left: 8px; right: 8px; width: auto; height: 1px; }
+:root[data-skin="karta"] .airway-hud[data-layout='landscape'] .airway-dock__tag,
+:root[data-skin="karta"] .airway-hud[data-layout='foldable'] .airway-dock__tag { margin: 3px 0; width: 100%; height: calc(100% - 6px); }
+@media (max-width: 369px) {
+  :root[data-skin="karta"] .airway-pass { gap: 2px; padding-left: calc(var(--hud-safe-left) + 4px); padding-right: calc(var(--hud-safe-right) + 6px); }
+  :root[data-skin="karta"] .airway-pass__field { padding: 2px 4px 0; }
+  :root[data-skin="karta"] .airway-pass__field strong { font-size: 20px; }
+  :root[data-skin="karta"] .airway-pass__day strong { font-size: 14px; }
+  :root[data-skin="karta"] .airway-pass__time { flex-basis: 66px; }
+  :root[data-skin="karta"] .airway-pass__label { font-size: 9px; letter-spacing: .08em; }
+  :root[data-skin="karta"] .airway-dock { padding-left: calc(var(--hud-safe-left) + 2px); padding-right: calc(var(--hud-safe-right) + 2px); grid-template-columns: repeat(6, minmax(48px, 1fr)); }
+  :root[data-skin="karta"] .airway-dock__tag { margin: 0; width: 100%; }
+}
+
+/* -- Airport labels: code in chart caps with a halo, a leader line to the airport, the seat scale under the code
+      (one segment per waiting place, filled = taken), glyphs keep their D-08 shapes and colours with an ink outline. -- */
+:root[data-skin="karta"] .airport-bubble {
+  align-items: flex-start; gap: 3px; padding: 1px 4px 0 2px; background: transparent; clip-path: none; overflow: visible;
+  color: var(--karta-paper); text-shadow: var(--karta-halo);
+}
+:root[data-skin="karta"] .airport-bubble svg { filter: drop-shadow(0 0 1px var(--karta-ink)); }
+:root[data-skin="karta"] .airport-bubble__plate {
+  height: 20px; margin-right: 4px; padding-right: 0; border-right: 0; width: auto !important; overflow: visible;
+  font: 700 19px/20px var(--skin-face-display); letter-spacing: .04em; color: var(--karta-paper);
+}
+:root[data-skin="karta"] .airport-bubble__count { font: 600 12px/18px var(--skin-face-mono); }
+:root[data-skin="karta"] .airport-bubble__trend { border-left: 0; padding-left: 0; height: 18px; }
+:root[data-skin="karta"] .airport-bubble__trend svg { filter: drop-shadow(0 0 1px var(--karta-ink)) drop-shadow(0 0 1px var(--karta-ink)); }
+/* Leader line (::before): paper hairline in an ink casing, from the label to the airport point. */
+:root[data-skin="karta"] .airport-bubble::before {
+  left: var(--karta-lx, 50%); top: 30px; width: var(--karta-ll, 0); height: 1.2px; margin: 0; border-radius: 0; opacity: 1;
+  background: var(--karta-paper); box-shadow: 0 0 0 1px var(--karta-ink);
+  transform-origin: 0 50%; transform: rotate(var(--karta-la, 90deg));
+}
+/* Seat scale (::after): ink casing, a paper segment per taken place, a dark segment per free one. */
+:root[data-skin="karta"] .airport-bubble::after {
+  content: ''; position: absolute; left: 2px; top: 23px; height: 7px; pointer-events: none;
+  width: calc(min(var(--karta-cap, 0), 24) * 4.5px + 3px);
+  border: 1.5px solid var(--karta-ink); background:
+    repeating-linear-gradient(90deg, transparent 0 3.5px, var(--karta-ink) 3.5px 4.5px),
+    linear-gradient(90deg, var(--karta-paper) 0 calc(var(--karta-taken, 0) * 4.5px), #3A4B55 0);
+}
+:root[data-skin="karta"] .airport-bubble--plate-only::after { display: none; }
+/* Jam = restricted area: the only filled shape on the chart is the magenta block; a dashed magenta ring with an ink
+   casing marks the airport itself. */
+:root[data-skin="karta"] .airport-bubble--jam {
+  background: var(--karta-magenta); color: var(--karta-paper); text-shadow: none; padding: 1px 6px 0 6px;
+  outline: 1px solid var(--karta-paper); outline-offset: -3px;
+}
+:root[data-skin="karta"] .airport-bubble--jam::after {
+  left: var(--karta-ax, 50%); top: var(--karta-ay, 60px); width: 88px; height: 88px; margin: -44px 0 0 -44px; border-radius: 50%;
+  border: 1.5px dashed var(--karta-magenta); background: none;
+  box-shadow: 0 0 0 2px rgba(14, 27, 34, .55), inset 0 0 0 2px rgba(14, 27, 34, .55);
+}
+:root[data-skin="karta"] .airport-bubble--jam::before { background: var(--karta-magenta); }
+:root[data-skin="karta"] .airport-bubble--jam svg { filter: none; }
+:root[data-skin="karta"] .airport-bubble__timer { font: 600 13px/20px var(--skin-face-mono); }
+:root[data-skin="karta"] .airport-bubble__surge, :root[data-skin="karta"] .airport-bubble__front { text-shadow: none; }
+:root[data-skin="karta"] .airport-bubble__new { font: 700 11px/20px var(--skin-face-display); letter-spacing: .12em; text-shadow: none; }
+/* Off-screen airport: a margin note in ink with a paper hairline, 48 px tall. */
+:root[data-skin="karta"] .airport-edge {
+  border-width: 1px; font: 700 15px/1 var(--skin-face-display); letter-spacing: .06em;
+  box-shadow: inset 0 0 0 2px var(--karta-ink), inset 0 0 0 3px rgba(242, 238, 227, .35);
+}
+:root[data-skin="karta"] .airport-edge--jam { animation: none; }
+:root[data-skin="karta"] .airport-edge__gauge { border-width: 1px; height: 5px; }
+:root[data-skin="karta"] .airport-slot { border-width: 1px; }
+
+/* -- Pause: an ink legend panel with a paper neatline instead of a paper strip. -- */
+:root[data-skin="karta"] .airway-pause { border-left: 0; outline: 1px solid var(--karta-paper); outline-offset: -4px; padding: 16px 16px 14px; }
+:root[data-skin="karta"] .airway-pause h2 { font: 700 var(--airway-font-title) / 1.1 var(--skin-face-display); letter-spacing: .16em; text-transform: uppercase; }
+:root[data-skin="karta"] .airway-pause__summary { border-top-width: 1px; }
+:root[data-skin="karta"] .airway-pause__summary dt { color: var(--karta-dim); letter-spacing: .12em; }
+:root[data-skin="karta"] .airway-pause__summary dd { font-family: var(--skin-face-mono); }
+:root[data-skin="karta"] .airway-pause__summary dt, :root[data-skin="karta"] .airway-pause__summary dd { border-bottom-style: solid; }
+:root[data-skin="karta"] .airway-pause__button { border-width: 1px; letter-spacing: .12em; text-transform: uppercase; }
+
+/* -- Main menu: the map sheet's title block; the departures board loses its split-flap shading and frame. -- */
+:root[data-skin="karta"] .airway-sign { left: 0; right: 0; top: 0; max-width: none; padding: calc(var(--aw-safe-top) + 12px) 16px 12px; box-shadow: 0 1px 0 0 var(--karta-paper), 0 4px 0 0 var(--karta-ink), 0 5px 0 0 var(--karta-paper); }
+:root[data-skin="karta"] .airway-sign__pictogram { width: 48px; height: 48px; background: transparent; color: var(--karta-paper); border: 1px solid var(--karta-paper); }
+:root[data-skin="karta"] .airway-sign__title { font-weight: 700; letter-spacing: .14em; }
+:root[data-skin="karta"] .airway-sign__subtitle { font-weight: 400; letter-spacing: .1em; color: var(--karta-dim); }
+:root[data-skin="karta"] .airway-board {
+  left: 0; right: 0; bottom: 0; border: 0; padding: 12px calc(var(--aw-safe-right) + 12px) calc(var(--aw-safe-bottom) + 12px) calc(var(--aw-safe-left) + 12px);
+  box-shadow: 0 -1px 0 0 var(--karta-paper), 0 -4px 0 0 var(--karta-ink), 0 -5px 0 0 var(--karta-paper);
+}
+:root[data-skin="karta"] .airway-board__header { letter-spacing: .14em; font-family: var(--skin-face-text); }
+:root[data-skin="karta"] .flap-tile { perspective: none; }
+:root[data-skin="karta"] .flap-half--top, :root[data-skin="karta"] .flap-fold-out { border-bottom: 0; }
+:root[data-skin="karta"] .flap-half--bottom, :root[data-skin="karta"] .flap-fold-in { border-top: 0; }
+
+/* -- Settings and the other paper sheets read as a chart legend: ink sheet, paper neatline, caps headings. -- */
+:root[data-skin="karta"] .airway-settings__paper { border-top: 0; outline: 1px solid var(--karta-paper); outline-offset: -5px; padding: 18px; }
+:root[data-skin="karta"] .airway-settings__group-title { clip-path: none; background: transparent; color: var(--karta-paper); border-bottom: 1px solid var(--karta-paper); padding-left: 0; letter-spacing: .16em; }
+:root[data-skin="karta"] .airway-setting { border-bottom-style: solid; }
+:root[data-skin="karta"] .airway-setting__control { border-width: 1px; }
+
+/* Puzzle board: no split-flap seam across the titles (it read as a strike-through on ink). */
+:root[data-skin="karta"] .puzzle-flap::after { display: none; }
+
+/* Tutorial: the hint under the painted globe is lettering on the sky, so it gets the halo too. */
+:root[data-skin="karta"] .aw-tutorial-hint { text-shadow: var(--karta-halo); letter-spacing: .02em; }
+
+/* Reduce motion (D-88) also stills the chart. */
+:root[data-skin="karta"][data-airway-motion="reduce"] .airport-bubble::before { transition: none; }

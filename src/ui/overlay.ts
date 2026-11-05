@@ -11,6 +11,7 @@ import type { FillTrend } from '../game/fillTrend'; // [night-11af] R4c (type on
 import type { SurgeMark } from '../game/surge'; // [night-12bb] R2i (type only)
 import type { FrontMark } from '../game/weather'; // [night-12bd] R2j (type only)
 import './skin/current.css'; // [night-11aq] skin tokens read by overlay.css
+import { skinPreview } from './skin/preview'; // [night-11au] D-256 DEV-only KARTA preview
 import './overlay.css';
 
 const DEG = Math.PI / 180;
@@ -187,6 +188,27 @@ function placeEl(el: HTMLElement, x: number, y: number): void {
   el.style.transform = `translate3d(${x}px,${y}px,0)`;
 }
 
+/**
+ * [night-11au] D-256, DEV-only KARTA preview: the leader line from the label's lower edge to the airport and the
+ * airport point itself, in the label's own coordinates, for src/ui/skin/karta.css (pseudo-elements draw them).
+ */
+const kartaLeaderKeys = new WeakMap<HTMLElement, string>();
+function kartaLeader(el: HTMLElement, tag: TagSlot): void {
+  const ax = tag.anchorX - tag.x;
+  const ay = tag.anchorY - tag.y;
+  const sx = Math.min(Math.max(ax, 10), Math.max(10, tag.width - 10));
+  const sy = 30;
+  const length = Math.max(0, Math.hypot(ax - sx, ay - sy) - 4);
+  const key = `${ax.toFixed(1)} ${ay.toFixed(1)} ${sx.toFixed(1)}`;
+  if (kartaLeaderKeys.get(el) === key) return;
+  kartaLeaderKeys.set(el, key);
+  el.style.setProperty('--karta-ax', ax.toFixed(1) + 'px');
+  el.style.setProperty('--karta-ay', ay.toFixed(1) + 'px');
+  el.style.setProperty('--karta-lx', sx.toFixed(1) + 'px');
+  el.style.setProperty('--karta-ll', length.toFixed(1) + 'px');
+  el.style.setProperty('--karta-la', (Math.atan2(ay - sy, ax - sx) * 180 / Math.PI).toFixed(1) + 'deg');
+}
+
 function updateVisibility(el: HTMLElement, visible: boolean): void { if (el.hidden === visible) el.hidden = !visible; }
 
 /** Single SVG, shared design with the airport wayfinding direction. */
@@ -348,8 +370,9 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
     const jammedNow = entry.jamSeconds !== null;
     // [night-11m] D-128: the plate names the airport wherever the UI speaks of it (hub, jam countdown, NEW stub, slot
     // hold, curfew) and on every airport once the player zooms in; otherwise the disc stays unlabelled.
-    const plated = zoomedIn || entry.hub || jammedNow || entry.isNew || entry.slotHeld > 0 || entry.closed || entry.surge !== null ||
-      entry.front !== null;
+    // [night-11au] D-256: in the DEV-only KARTA preview a chart names every airport (folds away in a release build).
+    const plated = (import.meta.env.DEV && skinPreview.karta) || zoomedIn || entry.hub || jammedNow || entry.isNew ||
+      entry.slotHeld > 0 || entry.closed || entry.surge !== null || entry.front !== null;
     if (plated) want.push(entry.plate);
     let freshWidth = 0;
     if (entry.isNew) {
@@ -422,6 +445,10 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       (taken > 0 && entry.capacity > 0 ? ' ' + t('airport.edgeFillAria', { count: taken, capacity: entry.capacity }) : '');
     if (entry.edge.getAttribute('aria-label') !== edgeAria) entry.edge.setAttribute('aria-label', edgeAria);
     rebuildGauge(entry, taken);
+    if (import.meta.env.DEV && skinPreview.karta) { // [night-11au] D-256: seat scale under the code (karta.css), one segment per waiting place
+      bubble.style.setProperty('--karta-cap', String(entry.capacity));
+      bubble.style.setProperty('--karta-taken', String(taken));
+    }
     sizeTagGroup(entry.tag, entry.mainWidth, entry.slotRect);
     entry.timer.hidden = !jammed;
     if (jammed) {
@@ -766,6 +793,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
             entry.lastBubbleX = tag.x;
             entry.lastBubbleY = tag.y;
           }
+          if (import.meta.env.DEV && skinPreview.karta && showBubble) kartaLeader(entry.bubble, tag);
           const fade = Math.max(.2, Math.min(1, (tag.anchorX - 10) / 28, (width - 10 - tag.anchorX) / 28, (tag.anchorY - 10) / 28, (height - 10 - tag.anchorY) / 28));
           const opacity = Math.round(fade * 10) / 10;
           if (opacity !== entry.lastOpacity) {
