@@ -273,6 +273,9 @@ export function createSettings(onBack:()=>void,onLicenses:()=>void,onLanguageCha
     rows.append(row);
   }
   legend.append(rows);host.append(legend);
+  // [night-11aw] R4b, D-27: airport clocks follow longitude (solar time), not real time zones or summer time.
+  const solar=e('p','airway-setting__hint',t('settings.solarTime'));solar.dataset.testid='settings-solar-time';
+  host.append(solar);
   host.append(shortcutList()); // [night-11ai] R4g
   const licences=e('button','airway-settings__licenses',t('settings.licenses'));
   licences.type='button';licences.dataset.testid='settings-licenses';licences.addEventListener('click',onLicenses);
