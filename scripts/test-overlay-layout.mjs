@@ -372,6 +372,31 @@ assert('out-of-range label suppressed', layoutTags([{ ...crowd[0], width: 500 }]
     assert('beside: the compact note stands left of its name, slid clear of the dock symbol', amm.placed && amm.compact === true &&
       amm.lastPick === 10 && amm.x + amm.width <= 158 && amm.y + amm.height / 2 > 383 && amm.y + amm.height / 2 < 401);
   }
+  // [night-18a] D-264: a note is shown only where it is clearly its own rose's: its first place stands nearer a
+  // neighbour's ring, so it takes the other side; with both sides nearer neighbours it hides; level beside its own name
+  // the name counts as its rose.
+  {
+    const fixed = (id, x, y, width, height, extra = {}) => ({ id, anchorX: 0, anchorY: 0, width, height, active: true, jammed: false,
+      fixed: true, x, y, placed: false, ...extra });
+    const ownRing = fixed('own~ring', 155, 255, 90, 90, { ring: true, rose: 'OWN' });
+    const right = fixed('nb~ring', 360, 255, 70, 70, { ring: true, rose: 'NB' }); // neighbour right of the first place
+    const note = mk('OWN', { anchorX: 300, anchorY: 331, altAnchorX: 100, maxShift: 0, width: 100, rose: 'OWN' });
+    layoutTags([ownRing, right, note], b);
+    assert('ownership: a place nearer a neighbour\'s ring is skipped for the other side', note.placed && note.lastPick === 1);
+    const free = { ...note, rose: undefined, lastPick: -1, width: 100 };
+    layoutTags([ownRing, right, free], b);
+    assert('ownership: without a rose the first place is taken as before', free.placed && free.lastPick === 0);
+    const left = fixed('nb2~name', 0, 286, 52, 20, { rose: 'NB2' }); // a neighbour's name left of the other side
+    note.width = 100;
+    layoutTags([ownRing, right, left, note], b);
+    assert('ownership: next to a neighbour\'s ring or name on both sides, the note hides', !note.placed);
+    const name = fixed('own~name', 170, 230, 60, 18, { rose: 'OWN' });
+    const beside = mk('OWN', { anchorX: 300, anchorY: 331, altAnchorX: 100, maxShift: 0, width: 80, rose: 'OWN',
+      besideLeft: 166, besideRight: 234, besideY: 239 });
+    const above = fixed('nb3~ring', 236, 135, 70, 70, { ring: true, rose: 'NB3' });
+    layoutTags([ownRing, right, left, name, above, beside], b);
+    assert('ownership: level beside its own name the note is its rose\'s', beside.placed && beside.lastPick >= 4);
+  }
   // Hysteresis: a note that stood beside its rose keeps that place at 1-3 px less clearance; a new one would not get it.
   {
     const blocker = { id: 'blk', anchorX: 0, anchorY: 0, width: 50, height: 50, active: true, jammed: false, fixed: true, x: 0, y: 260, placed: false };
