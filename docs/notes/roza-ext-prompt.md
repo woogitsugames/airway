@@ -29,7 +29,7 @@ ZADANIA (szczegóły w specyfikacji, sekcje R1–R8)
    wnętrze róży przygasza trasę; routePreview.ts bez czerwieni zatoru.
 4. R4 Samoloty: tuszowy obrys (instancjonowany, +1 wywołanie na typ), kreda, pasek obciążenia bez cynobru.
 5. R5 Niebo: NIE zmieniaj koloru (#8CC3D8 zostaje, UI ma na nim ciemny tusz); dodaj eksport SKY_COLOUR + skyIsLight
-   z src/render/index.ts. Ciemne niebo = osobne pytanie do właścicielki (możesz przygotować zrzuty, nie decyduj).
+   z src/render/index.ts. Ciemne niebo = osobne pytanie do właściciela (możesz przygotować zrzuty, nie decyduj).
 6. R7 API dla nakładki: najpierw (w pierwszym PR) eksport ROSE_SIZE_PX i ROSE_PALETTE z src/render/index.ts, potem
    WorldRenderer.projectAirport(id, out) → { x, y, radius, outer, squash, angle, visible } bez alokacji;
    pick() łapie w max(28, outer + 4) px (cel ≥ 48 dp).
@@ -45,7 +45,7 @@ GRANICE
 GAŁĘZIE I PR
 - Od świeżego origin/dev. Gałęzie ext/03-*: ext/03-g10a-roza-airports (R1, R2, R7, okablowanie), potem
   ext/03-g10b-roza-routes-planes (R3, R4, R5) i ewentualnie ext/03-g10c-roza-shots (store:shots, ui:matrix).
-- Draft PR do dev po polsku po implementacji i testach; nie scalaj (scala tylko właścicielka); nigdy nie pchaj na dev
+- Draft PR do dev po polsku po implementacji i testach; nie scalaj (scala tylko właściciel); nigdy nie pchaj na dev
   ani main.
 - Dopisz krok G10 (a/b/c) w docs/mockups/globe-2026-11/PLAN.md i wpis w docs/NIGHT-BACKLOG.md (G10, G9b zamknięte
   przez różę, jeśli sonda przejdzie).
