@@ -11,6 +11,8 @@
 // [night-12ar] R6i: PLAYTEST.md has the first-session observation sheet (O1–O8 incl. seconds to the first route, dock,
 // "nothing to do", glyph, weekly board), the two device checks (Android music focus, budget-phone vibration) and a
 // threshold for each; no names in the sheet.
+// [night-12aw] R8g, D-240: the seven R8 questions of RESEARCH R8 are asked (survey B9-B11, C8-C10, observation O9-O10),
+// mapped in a "Pytania R8" table and decided by rows R8-1..R8-7 whose bot references equal docs/balance/game-summary.md.
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { EMPTY_LOGBOOK, LOGBOOK_KEY, RUN_NOTES, readLogbook, recordFlight, type LogEntry, type Logbook, type RunNote,
@@ -350,7 +352,7 @@ test('R3k recruitment and production-access answer sheet', () => {
 test('R6i first-session observation sheet: observations, device checks, thresholds, pseudonyms only', () => {
   const rows = docTable('Arkusz obserwacji pierwszej sesji').filter((cells) => !['#', 'Sygnał'].includes(cells[0]!) && !cells[0]!.startsWith('|-'));
   const ids = rows.map((cells) => cells[0]);
-  assert.deepEqual(ids, ['O1', 'O2', 'O3', 'O4', 'O5', 'O6', 'O7', 'O8', 'U1', 'U2', ...ids.slice(10)]);
+  assert.deepEqual(ids, ['O1', 'O2', 'O3', 'O4', 'O5', 'O6', 'O7', 'O8', 'O9', 'O10', 'U1', 'U2', ...ids.slice(12)]);
   const text = (id: string): string => rows.find((cells) => cells[0] === id)!.join(' | ');
   assert.match(text('O2'), /Sekundy do pierwszej własnej trasy/);
   assert.match(text('O3'), /Czy znalazł dok/);
@@ -359,8 +361,8 @@ test('R6i first-session observation sheet: observations, device checks, threshol
   assert.match(text('O6'), /Tablica tygodnia.*bez pomocy/);
   assert.match(text('U1'), /Android: muzyka z innej aplikacji/);
   assert.match(text('U2'), /Wibracje na tanim telefonie.*R6d, R6e/);
-  const thresholds = rows.slice(10);
-  for (const id of ['O2', 'O3', 'O4', 'O5', 'O6', 'U1', 'U2']) {
+  const thresholds = rows.slice(12);
+  for (const id of ['O2', 'O3', 'O4', 'O5', 'O6', 'O9', 'O10', 'U1', 'U2']) {
     const row = thresholds.find((cells) => cells[0]!.startsWith(id));
     assert.ok(row, `threshold for ${id}`);
     assert.match(row[1]!, /\d/, `${id}: numeric threshold`);
@@ -368,6 +370,78 @@ test('R6i first-session observation sheet: observations, device checks, threshol
   }
   assert.match(doc, /pseudonimem \(`T01`/);
   assert.match(doc, /\*\*nie podpowiada\*\*/);
+});
+test('R8g: the seven R8 questions are asked, mapped to RESEARCH R8 and decided by rows R8-1..R8-7', () => {
+  // The seven questions as RESEARCH R8 lists them, each with the words the sheet has to keep.
+  const research = read('docs/RESEARCH.md');
+  const r8 = research.slice(research.indexOf('### Pytania do testu zamkniętego (R3k / R6i)'));
+  const asked = r8.split('\n').filter((line) => /^\d\. /.test(line));
+  assert.equal(asked.length, 7, 'RESEARCH R8 lists seven questions');
+  const map = docTable('Pytania R8 (R8g, D-240)');
+  assert.deepEqual(map.map((cells) => cells[0]), ['1', '2', '3', '4', '5', '6', '7']);
+  for (const cells of map) {
+    assert.equal(cells.length, 6, `R8 ${cells[0]}`);
+    assert.equal(cells[5], `R8-${cells[0]}`, `R8 ${cells[0]} names its decision row`);
+  }
+  // Where each question is asked: survey items exist with PL and EN text and point back to their R8 row.
+  const where: Record<string, string[]> = { 1: ['C8'], 2: ['B9', 'O9'], 3: ['B10'], 4: ['B11', 'O10'], 5: ['C9'], 6: [], 7: ['C10'] };
+  const surveyRow = (id: string) => doc.split('\n').find((line) => line.startsWith(`| ${id} |`))?.split(' | ') ?? [];
+  for (const [n, ids] of Object.entries(where)) {
+    const cells = map.find((row) => row[0] === n)!;
+    for (const id of ids) {
+      assert.ok(cells[2]!.includes(id), `R8 ${n} asked in ${id}`);
+      const row = surveyRow(id);
+      assert.ok(row.length >= 3, `${id} row exists`);
+      if (id.startsWith('O')) continue;
+      assert.ok(row[1]!.endsWith(`— R8-${n}`) && row[2]!.replace(/ \|$/, '').endsWith(`— R8-${n}`), `${id}: PL and EN tagged R8-${n}`);
+    }
+  }
+  assert.match(surveyRow('C8').join(' | '), /uratować lotnisko\? \(tak \/ nie \/ zgadywałem\).*wolny samolot.*saved the airport\? \(yes \/ no \/ I guessed\).*spare aircraft/);
+  assert.match(surveyRow('B9').join(' | '), /przeniosłeś.*samolot.*nie wiedziałem, że można.*move an aircraft/);
+  assert.match(surveyRow('B10').join(' | '), /dlaczego.*„bez sensu”.*why.*pointless/);
+  assert.match(surveyRow('B11').join(' | '), /„SLOT”.*najwięcej na jednym lotnisku.*"SLOT" stamp.*at one airport/);
+  assert.match(surveyRow('C9').join(' | '), /ciszy nocnej.*od tygodnia 3.*co wtedy dzieje się z lotniskiem.*night curfew.*from week 3/);
+  assert.match(surveyRow('C10').join(' | '), /ostatnich minutach.*tylko patrzyłeś.*last minutes.*just watch/);
+  // Thresholds of RESEARCH R8 carried into the map.
+  const mapText = (n: number): string => map[n - 1]!.join(' | ');
+  assert.ok(r8.includes('„nie” > 30 %') && mapText(1).includes('„nie” > 30 %'));
+  assert.ok(r8.includes('≥ 1/3 testerów → R8a') && mapText(3).includes('≥ 1/3 testerów → R8a'));
+  assert.ok(r8.includes('Odsetek < 30 % → Q-72 B') && mapText(5).includes('< 30 %'));
+  assert.ok(r8.includes('przekraczają 30 min') && mapText(6).includes('> 30 min'));
+  assert.ok(mapText(6).includes('p10/p50/p90') && mapText(7).includes('R8f'));
+  // Decision rows in the D-232 format, with thresholds and bot references from the rules-v6 balance summary.
+  const rows = docTable('Tabela decyzji');
+  const row = (n: number): string => rows.find((cells) => cells[0]!.startsWith(`**R8-${n}**`))?.join(' | ') ?? '';
+  for (let n = 1; n <= 7; n++) assert.ok(row(n), `decision row R8-${n}`);
+  const summary = read('docs/balance/game-summary.md');
+  const losses = summary.match(/\| (\d+) losses \| \d+ \(\d+ %\) \| \d+ \(\d+ %\) \| (\d+) \((\d+) %\) \| [\d.]+ \| (\d+) \((\d+) %\) \|/);
+  assert.ok(losses, 'game-summary losing-airport row');
+  assert.ok(row(1).includes(`porażka bez wolnego samolotu ${losses[4]} z ${losses[1]} (${losses[5]} %), lotnisko bez trasy ${losses[2]} (${losses[3]} %)`), 'R8-1 bot reference');
+  assert.match(row(1), /„nie” > 30 % odpowiedzi C8/);
+  assert.ok(read('src/i18n/en.ts').includes("'gameover.unservedNoSpare'") && row(1).includes('`gameover.unservedNoSpare`'), 'R8-1 names the R8b hint');
+  assert.match(row(2), /≥ 6 z 12 \(50 %\) nie przeniosło nigdy \*\*albo\*\* O9 = 0 u ≥ 2/);
+  const card = (kind: string) => summary.match(new RegExp(`\\| ${kind} \\| (\\d+) \\| (\\d+) \\| (\\d+) % \\|`));
+  const slots = card('departure-slots');
+  const hub = card('hub-expansion');
+  assert.ok(slots && hub && row(3).includes(`„+2 sloty” w ofercie ${slots[1]}, wybrana ${slots[2]}`)
+    && row(3).includes(`w ofercie ${hub[1]}, wybrana ${hub[2]} (${hub[3]} %)`), 'R8-3 bot reference');
+  assert.match(row(3), /≥ 4 z 12 \(1\/3\)/);
+  const slot = summary.match(/\| Slot hold \| (\d+) \| (\d+) % \| (\d+) held departures/);
+  assert.ok(slot && row(4).includes(`wstrzymanie w ${slot[1]} (${slot[2]} %), ${slot[3]} wstrzymanych odlotów`), 'R8-4 bot reference');
+  assert.match(row(4), /Q-80 A.*Q-80 B.*wiersz Q-80/);
+  const curfew = summary.match(/\| Curfew reached \(week 3\+\) \| (\d+) \| (\d+) % \|/);
+  const hold = summary.match(/\| Curfew hold \| (\d+) \| (\d+) % \|/);
+  assert.ok(curfew && hold && row(5).includes(`cisza w ${curfew[1]} (${curfew[2]} %), wstrzymanie ciszą w ${hold[1]} z ${curfew[1]} (${hold[2]} %)`), 'R8-5 bot reference');
+  assert.match(row(5), /`weeks` ≥ 2.*< 30 % testerów doszło do ciszy → wraca Q-72 C/);
+  assert.match(read('src/sim/params.ts'), /curfew start \(week 3, D-17, D-151\)/, 'curfew still from week 3');
+  const session = summary.match(/\| Session, min at 1x \| ([\d.]+) \| [\d.]+ \| ([\d.]+) \| [\d.]+ \| ([\d.]+) \|/)!;
+  const max = summary.match(/Session range: [\d.]+–([\d.]+) min/)?.[1];
+  assert.ok(max && row(6).includes(`p10 ${pl1(Number(session[1]))} · mediana ${pl1(Number(session[2]))} · p90 ${pl1(Number(session[3]))} · max ${pl1(Number(max))} min`), 'R8-6 bot spread');
+  assert.match(row(6), /≥ 3 z 12 testerów ma bieg > 30 min/);
+  const week = summary.match(/\| Runs \| \d+ \| \d+ \| (\d+) \| (\d+) \| \d+ \|/);
+  assert.ok(week && row(7).includes(`porażka w tyg. 4 w ${week[1]}, w tyg. 5 w ${week[2]}`), 'R8-7 bot reference');
+  assert.match(row(7), /≥ 4 z 12 „tylko patrzyłem” → .*R8f/);
+  assert.match(read('docs/DECISIONS.md'), /^## D-240 — .*seven R8 questions/m);
 });
 test('local only: the export has no network path and the privacy sheet and decision record it', () => {
   for (const path of ['src/ui/logbook/summary.ts', 'src/ui/logbook/logbook.ts', 'src/game/logbook.ts',

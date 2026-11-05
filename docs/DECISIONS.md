@@ -2067,6 +2067,38 @@ e-mails 12 months (left to the lawyer). `docs/RELEASE.md` links the register (RL
 the leaderboard retention must equal `RETENTION_DAYS`. Rejected: an English-only register (the owner and a Polish
 lawyer read it), filling the controller with guessed details. **Status: in force (Q-01, Q-67 and the lawyer open).**
 
+## D-240 — The seven R8 questions join the closed-test sheet, each with a pre-written threshold on rules v6 (2026-11-04, Claude, night N12aw)
+R8g. `docs/PLAYTEST.md` asks the seven questions of RESEARCH R8 ("Pytania do testu zamkniętego"): survey B gets B9
+(moved an aircraft?), B10 (last card and why; a pointless card?), B11 (SLOT stamp seen; most aircraft at one airport),
+survey C gets C8 (knew what could save the airport; spare aircraft then?), C9 (curfew reached and understood), C10
+(anything to decide in the last minutes?), and the observation sheet gets O9 (aircraft moves counted from the recording)
+and O10 (SLOT stamp noticed). A "Pytania R8" table maps each question to its survey/observation item, CSV column and the
+RESEARCH R8 threshold, and the decision table gains rows R8-1…R8-7 in the D-232 format. Thresholds follow RESEARCH R8
+where it gives one (R8-1 "no" > 30 %, R8-3 ≥ 1/3 of testers, R8-5 < 30 %, R8-6 > 30 min); where R8 gives a direction
+only, the threshold is set here before the test: R8-2 ≥ 6 of 12 never moved a plane (or 0 moves for ≥ 2 observed),
+R8-4 ≥ 4 of 12 saw SLOT or ≥ 3 of 12 had 5+ aircraft at one airport (feeds the Q-80 row, which decides), R8-7 ≥ 4 of
+12 "just watched". The audit ran on rules v5; since rules v6 the curfew starts in week 3 (D-151) and the board shows
+only cards that can act (D-150), so "reached the curfew" is an Endless run with `weeks` ≥ 2 and the bot reference is
+`docs/balance/game-summary.md` (v6); Q-72 B is already in force, so R8-5 below 30 % reopens Q-72 C for the owner. The
+logbook does not gain aircraft-move or spare-aircraft fields (D-16: it keeps only what Q-73/Q-78/Q-80 need); those two
+come from the survey and the recordings. Guard: `test:playtest`. **Status: in force.**
+
+## D-241 — One publisher block (`publisher.*`) for site, game and store consoles; release builds refuse its placeholders (2026-11-05, Claude, night N11al)
+R7c (D-134, Q-66 → A). The publisher / service-provider details required by art. 5 of the Polish e-services act and
+shown on the Apple/Google trader cards are one string set `publisher.*` in `site/i18n.js` (PL/EN): legal name,
+address, register and tax ID (KRS or CEIDG, NIP), e-mail, phone, trader status, plus a title and one note naming the
+law. `site/publisher.js` lists the rows (`PUBLISHER_FIELDS`) and the guard. Where it shows: a `#publisher` section on
+`site/privacy.html` (the press fact-sheet rows on policy paper; the terms page R7b reuses it), a "Publisher" /
+"Wydawca" link in every site footer, Settings → Help in the game (label/value rows after the privacy policy, offline,
+text only) and a paste-ready table in `docs/store/README.md`. The game catalogs and the store table copy the site
+strings word for word (`test:publisher`). Until the owner answers Q-01, identity fields hold visible
+"[Q-01: … — to be filled in]" placeholders; the trader row is filled (D-134). Any value with "[Q-…" is a gap:
+`AIRWAY_RELEASE=1 npm run test:site`, `build:site` with `AIRWAY_RELEASE=1` and `npm run android:release` /
+`android:aab` refuse to run with gaps (the iOS archive has the manual check in `docs/IOS.md`). Rejected: guessed or
+private details; the full block in every footer (one link keeps footers short and the block in one place); a
+separate settings page and router screen for six rows. Not legal advice — the wording goes to the same lawyer
+consultation as R7a/R7b. **Status: in force (Q-01 open).**
+
 ## D-245 — Firebase Test Lab game loop plays the real release build with the bot (2026-11-05, Claude, night N12ay)
 R3i. Real-device frame times on budget phones come from Firebase Test Lab's game-loop test type instead of borrowed
 phones. `MainActivity` takes `com.google.intent.action.TEST_LOOP` (second intent filter; `com.google.test.loops` = 1,

@@ -281,6 +281,7 @@ export function createSettings(onBack:()=>void,onLicenses:()=>void,onLanguageCha
     privacy.addEventListener('click',onPrivacy);
     host.append(privacy);
   }
+  host.append(publisherBlock()); // [night-11al] R7c, D-241
   // [night-11v] D-197 (D-135, R7l): "Send results to the leaderboard", only when this build has leaderboards.
   if(ranking?.enabled && ranking.isSharing && ranking.setSharing) host.append(sharingRow(ranking));
   // [night-12k] D-114: shown only once this device has a leaderboard identity (or a queued run).
@@ -308,6 +309,22 @@ function shortcutList():HTMLElement {
     rows.append(row);
   }
   box.append(rows);
+  return box;
+}
+
+/** [night-11al] R7c, D-241: rows of the publisher block, as PUBLISHER_FIELDS in site/publisher.js (test:publisher). */
+export const PUBLISHER_ROWS=['name','address','register','email','phone','trader'] as const;
+/** Publisher / service-provider details (e-services act art. 5, the store trader card), offline, text only. */
+function publisherBlock():HTMLElement {
+  const box=e('div','airway-publisher');box.dataset.testid='settings-publisher';
+  box.append(e('p','airway-glyph-legend__title',t('publisher.title')));
+  const list=e('dl','airway-publisher__rows');
+  for(const field of PUBLISHER_ROWS){
+    const row=e('div','airway-publisher__row');row.dataset.field=field;
+    row.append(e('dt','',t(`publisher.${field}.label` as TranslationKey)),e('dd','',t(`publisher.${field}` as TranslationKey)));
+    list.append(row);
+  }
+  box.append(list,e('p','airway-setting__hint',t('publisher.note')));
   return box;
 }
 
