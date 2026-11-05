@@ -159,6 +159,8 @@ createGame(seed, 'endless', undefined, 'EUN');      // [night-11aj] R2g: Endless
 createGame(seed, 'endless', undefined, null, true); // [night-12ba] R2k: weekly contract (EndlessRun.create sets it), D-247
 createGame(seed, 'endless', undefined, null, true, true); // [night-12bb] R2i: + announced demand surge (src/sim/surge.ts), D-249
 createGame(seed, 'endless', undefined, null, true, true, 2); // [night-12bc] R2h: + licence class II/III (knobs in src/sim/licence.ts), D-251
+createGame(seed, 'endless', undefined, null, true, true, 1, true); // [night-12bd] R2j: + weather front (src/sim/weather.ts; off in shipped Endless), D-253
+                         //   world.weather = { front, band } (render draws `band`), world.airportWeather(id) = 'ahead' | 'under' (−1 departure slot)
 sim.check(cmd);          // { ok } | { ok: false, reason: RejectReason } — instant UI feedback, no side effect
 sim.apply(cmd);          // queue for the next tick; false only for malformed input
 sim.tick();              // ONE game minute: commands -> spawner -> curfew -> demand -> planes -> hubs/jam -> game over -> week end

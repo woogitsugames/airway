@@ -9,6 +9,7 @@ import {
 import { REGIONS } from '../data/regions';
 import type { FillTrend } from '../game/fillTrend'; // [night-11af] R4c (type only)
 import type { SurgeMark } from '../game/surge'; // [night-12bb] R2i (type only)
+import type { FrontMark } from '../game/weather'; // [night-12bd] R2j (type only)
 import './skin/current.css'; // [night-11aq] skin tokens read by overlay.css
 import './overlay.css';
 
@@ -78,6 +79,11 @@ interface BubbleEntry {
   surgeEdge: HTMLSpanElement;
   surge: SurgeMark | null;
   surgeWidth: number;
+  /** [night-12bd] R2j: front-line stub with "−1 HH:MM" ahead of / under a weather front; null hides it. */
+  frontStub: HTMLSpanElement;
+  frontText: HTMLSpanElement;
+  front: FrontMark | null;
+  frontWidth: number;
   tag: TagSlot;
   /** [task-38] Departure-slot tag hung under the passenger tag (D-50). */
   slot: HTMLDivElement;
@@ -129,6 +135,11 @@ export interface AirportOverlay {
    * "+N to" the local end time) demand surge on the tag, and a pennant on the edge chip; null removes both.
    */
   setSurge(id: string, surge: SurgeMark | null): void;
+  /**
+   * [night-12bd] R2j: weather front ahead (hollow front line, "−1" and the local arrival time) or overhead (filled
+   * front line, "−1 to" the local clearing time) on the tag; null removes it.
+   */
+  setFront(id: string, front: FrontMark | null): void;
   /**
    * [night-11af] R4c: chevron beside the passenger count, 'filling' (up) or 'emptying' (down); null hides it.
    * The game layer decides (≥ 50 % full, last game hour's balance beyond ±1); the overlay only draws it.
@@ -246,6 +257,21 @@ function pennant(filled: boolean): string {
     '<rect x="1" y="1" width="1.6" height="14" fill="currentColor"/>' +
     `<path d="M2.6 1.8 L11 5.3 L2.6 8.8 Z" fill="${filled ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>`;
 }
+/**
+ * [night-12bd] R2j: front stub: 16 px front line + 3 px gap + mono 12 px text + padding + 2 px margin, as laid out by
+ * .airport-bubble__front (a floor, like the surge stub).
+ */
+const FRONT_FIXED = 16 + 3 + 10 + 2;
+/**
+ * The weather-map cold-front line: a rule with three teeth on its leading side. The shape (not the colour) says
+ * "front"; hollow teeth while it is forecast, filled while the airport is under it.
+ */
+function frontLine(filled: boolean): string {
+  return '<svg viewBox="0 0 16 12" width="16" height="12" aria-hidden="true" focusable="false">' +
+    '<rect x="0" y="9" width="16" height="1.6" fill="currentColor"/>' +
+    `<path d="M1.5 9 L4 4 L6.5 9 Z M6.75 9 L9.25 4 L11.75 9 Z M12 9 L14.5 4 L16 7 L16 9 Z" fill="${filled ? 'currentColor' : 'none'}" ` +
+    'stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>';
+}
 /** [night-11m] Code plate: Overpass Mono 12 px (fixed advance) plus padding and the divider, as in overlay.css. */
 const PLATE_CHAR = 7.2;
 const PLATE_PAD = 9;
@@ -322,7 +348,8 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
     const jammedNow = entry.jamSeconds !== null;
     // [night-11m] D-128: the plate names the airport wherever the UI speaks of it (hub, jam countdown, NEW stub, slot
     // hold, curfew) and on every airport once the player zooms in; otherwise the disc stays unlabelled.
-    const plated = zoomedIn || entry.hub || jammedNow || entry.isNew || entry.slotHeld > 0 || entry.closed || entry.surge !== null;
+    const plated = zoomedIn || entry.hub || jammedNow || entry.isNew || entry.slotHeld > 0 || entry.closed || entry.surge !== null ||
+      entry.front !== null;
     if (plated) want.push(entry.plate);
     let freshWidth = 0;
     if (entry.isNew) {
@@ -335,6 +362,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
     }
     if (entry.closed) want.push(entry.barrier);
     if (entry.surge) want.push(entry.surgeStub); // [night-12bb] R2i
+    if (entry.front) want.push(entry.frontStub); // [night-12bd] R2j
     // [night-10i] Transfers still inside the connection time are drawn hollow: the same shape, not yet "boardable".
     // When the tag overflows, at most half of the shown glyphs are hollow so ready passengers stay visible.
     const total = entry.waiting.length;
@@ -368,13 +396,14 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
     entry.tag.jammed = jammed;
     // [task-38] mainWidth 0 = no passenger tag; the group box also holds the slot tag.
     const surged = entry.surge !== null; // [night-12bb] R2i
-    const plateOnly = plated && !(entry.waiting.length > 0 || jammed || entry.isNew || entry.closed || surged);
+    const fronted = entry.front !== null; // [night-12bd] R2j
+    const plateOnly = plated && !(entry.waiting.length > 0 || jammed || entry.isNew || entry.closed || surged || fronted);
     bubble.classList.toggle('airport-bubble--plate-only', plateOnly);
     entry.tag.minor = plateOnly; // a plate never takes the place of a passenger tag
-    entry.mainWidth = entry.waiting.length > 0 || jammed || entry.isNew || entry.closed || surged || plated
+    entry.mainWidth = entry.waiting.length > 0 || jammed || entry.isNew || entry.closed || surged || fronted || plated
       ? Math.max(30, 23 + limit * 18 + (entry.waiting.length > MAX_GLYPHS ? 27 : 0) + (jammed ? 53 : 0) +
         (freshWidth ? freshWidth + (limit || jammed ? 4 : 0) : 0) + (entry.closed ? BARRIER_WIDTH : 0) +
-        (surged ? entry.surgeWidth : 0) +
+        (surged ? entry.surgeWidth : 0) + (fronted ? entry.frontWidth : 0) +
         (trendNode && entry.waiting.length > 0 ? TREND_WIDTH : 0) +
         (plated ? entry.plateWidth - (plateOnly ? 8 : 0) : 0)) : 0;
     bubble.classList.toggle('airport-bubble--new', entry.isNew);
@@ -384,10 +413,12 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
     entry.surgeEdge.hidden = !surged;
     const surgeAria = entry.surge ? t(entry.surge.phase === 'active' ? 'airport.surgeActiveAria' : 'airport.surgeSoonAria',
       { code: entry.airport.code, count: entry.surge.passengers, time: entry.surge.time }) : '';
+    const frontAria = entry.front ? t(entry.front.phase === 'under' ? 'airport.frontUnderAria' : 'airport.frontSoonAria',
+      { code: entry.airport.code, slots: entry.front.slots, time: entry.front.time }) : ''; // [night-12bd] R2j
     const taken = Math.min(entry.waiting.length, entry.capacity);
     const edgeAria = t('airport.focus', { code: entry.airport.code }) +
       (entry.closed ? ' ' + t('airport.curfewAria', { code: entry.airport.code }) : '') +
-      (surgeAria ? ' ' + surgeAria : '') +
+      (surgeAria ? ' ' + surgeAria : '') + (frontAria ? ' ' + frontAria : '') +
       (taken > 0 && entry.capacity > 0 ? ' ' + t('airport.edgeFillAria', { count: taken, capacity: entry.capacity }) : '');
     if (entry.edge.getAttribute('aria-label') !== edgeAria) entry.edge.setAttribute('aria-label', edgeAria);
     rebuildGauge(entry, taken);
@@ -400,7 +431,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
     const label = jammed ? t('airport.jammed', { code: entry.airport.code, seconds: Math.ceil(entry.jamSeconds ?? 0) }) : t('airport.waiting', { code: entry.airport.code, count: entry.waiting.length });
     const aria = (entry.isNew ? t('airport.newAria', { code: entry.airport.code }) + ' ' : '') +
       (entry.closed ? t('airport.curfewAria', { code: entry.airport.code }) + ' ' : '') +
-      (surgeAria ? surgeAria + ' ' : '') + label +
+      (surgeAria ? surgeAria + ' ' : '') + (frontAria ? frontAria + ' ' : '') + label +
       (entry.connecting > 0 ? ' ' + t('airport.connectingAria', { count: entry.connecting }) : '') +
       (trendNode && entry.waiting.length > 0 ? ' ' + t(entry.trend === 'filling' ? 'airport.trendFillingAria' : 'airport.trendEmptyingAria') : '');
     if (aria !== entry.ariaLabel) { bubble.setAttribute('aria-label', aria); entry.ariaLabel = aria; }
@@ -492,6 +523,15 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       surgeEdge.className = 'airport-edge__surge';
       surgeEdge.hidden = true;
       surgeEdge.setAttribute('aria-hidden', 'true');
+      // [night-12bd] R2j: weather-front stub (front line + text), hidden until a front is set.
+      const frontStub = document.createElement('span');
+      frontStub.className = 'airport-bubble__front';
+      frontStub.setAttribute('aria-hidden', 'true');
+      const frontIcon = document.createElement('span');
+      frontIcon.className = 'airport-bubble__front-line';
+      const frontText = document.createElement('span');
+      frontText.className = 'airport-bubble__front-text';
+      frontStub.append(frontIcon, frontText);
       const more = document.createElement('span');
       more.className = 'airport-bubble__count';
       const edge = document.createElement('button');
@@ -530,6 +570,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       const entry: BubbleEntry = {
         airport, normal, anchor, bubble, edge, gauge, gaugeFill, capacity: 0, lastGauge: '', timer, fresh, isNew: false, barrier, closed: false, tag,
         surgeStub, surgeText, surgeEdge, surge: null, surgeWidth: 0,
+        frontStub, frontText, front: null, frontWidth: 0,
         plate, plateWidth, hub: airport.hub === true,
         glyphPool: new Map(), more, children: [], ariaLabel: '',
         slot, slotLabel, slotTime, slotCount, slotRect: { width: 0, x: 0, y: 0, visible: false }, slotHeld: 0, slotMinutes: 0,
@@ -610,6 +651,27 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
         entry.surgeEdge.innerHTML = pennant(surge.phase === 'active');
       } else {
         entry.surgeWidth = 0;
+      }
+      rebuildBubble(entry);
+    },
+    setFront(id, front): void {
+      const entry = get(id);
+      if (front !== null && ((front.phase !== 'ahead' && front.phase !== 'under') ||
+          !Number.isSafeInteger(front.slots) || front.slots < 1 || !/^\d\d:\d\d$/.test(front.time))) {
+        throw new RangeError('Invalid front mark');
+      }
+      const prev = entry.front;
+      if (prev === front || (prev && front && prev.phase === front.phase && prev.slots === front.slots && prev.time === front.time)) return;
+      entry.front = front ? { ...front } : null;
+      if (front) {
+        const text = t(front.phase === 'under' ? 'airport.frontUnder' : 'airport.frontSoon', { slots: front.slots, time: front.time });
+        entry.frontText.textContent = text;
+        entry.frontWidth = Math.ceil(FRONT_FIXED + text.length * SURGE_CHAR);
+        entry.frontStub.style.minWidth = (entry.frontWidth - 2) + 'px';
+        entry.frontStub.dataset.phase = front.phase;
+        (entry.frontStub.firstElementChild as HTMLElement).innerHTML = frontLine(front.phase === 'under');
+      } else {
+        entry.frontWidth = 0;
       }
       rebuildBubble(entry);
     },

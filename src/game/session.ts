@@ -32,6 +32,7 @@ import { airportLabel } from '../ui/airportLabel'; // [night-05] D-68
 import { AudioCueMapper, cueRun } from './audioCues'; // [night-03]
 import { FillReadings } from './fillTrend'; // [night-11af] R4c
 import { surgeKey, surgeMark } from './surge'; // [night-12bb] R2i
+import { frontKey, frontMarks, frontSummary } from './weather'; // [night-12bd] R2j
 import { HubDepartureLog, boardOpensOnTap } from './hubBoard'; // [night-11ag] R4d
 import { mountHubBoard } from '../ui/hubBoard';
 import type { World, ScreenPoint } from './world';
@@ -387,6 +388,8 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
   // [night-12bb] R2i: the airport whose tag carries the surge pennant, and the mark last drawn.
   let lastSurgeKey = '';
   let surgeTag: string | null = null;
+  // [night-12bd] R2j: the front mark last drawn per airport (only in runs with the weather front).
+  const frontKeys = new Map<string, string>();
   const closedTags = new Set<string>();
   function syncWorld(force = false): void {
     const cities = run.cityList();
@@ -451,6 +454,17 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       if (surgeTag && surgeTag !== surge?.cityId && knownAirports.has(surgeTag)) overlay.setSurge(surgeTag, null);
       surgeTag = surge?.cityId ?? null;
       if (surge) overlay.setSurge(surge.cityId, surge.mark);
+    }
+    // [night-12bd] R2j: weather front forecast / overhead on every affected airport's tag (runs with the rule only).
+    if (run.weatherFront || frontKeys.size > 0) {
+      const marks = run.weatherFront ? frontMarks(cities.map((city) => city.id), (id) => run.airportWeather(id)) : new Map();
+      for (const [id, previous] of frontKeys) {
+        if (!marks.has(id) && previous !== '') { frontKeys.delete(id); if (knownAirports.has(id)) overlay.setFront(id, null); }
+      }
+      for (const [id, mark] of marks) {
+        const key = frontKey(mark);
+        if (frontKeys.get(id) !== key && knownAirports.has(id)) { frontKeys.set(id, key); overlay.setFront(id, mark); }
+      }
     }
     if (force || run !== lastRun || run.revision !== lastRunRevision) {
       lastRun = run;
@@ -598,6 +612,8 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       contract: run.contract, // [night-12ba] R2k
       surge: run.surge ? { airport: airportLabel(run.surge.cityId), passengers: run.surge.passengers, // [night-12bb] R2i
         startLocalHour: run.surge.startLocalHour, endLocalHour: run.surge.endLocalHour, active: run.surge.active } : null,
+      front: run.weather ? frontSummary(run.cityList().map((city) => city.id), (id) => run.airportWeather(id), // [night-12bd] R2j
+        (id) => airportLabel(id)) : null,
     });
     pauseSummaryList.replaceChildren(...rows.flatMap((row) => {
       const term = document.createElement('dt');

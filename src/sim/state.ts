@@ -47,6 +47,12 @@ export interface GameConfig {
    * Endless, so older saves, every Daily and the leaderboard replay are unchanged.
    */
   readonly licenceClass?: 2 | 3;
+  /**
+   * [night-12bd] R2j: Endless only. A weather front crosses the globe each week from week 2 (src/sim/weather.ts).
+   * Absent = no weather: shipped Endless, every Daily and the leaderboard replay; only a DEV/query switch, tests and the
+   * bot set it.
+   */
+  readonly weatherFront?: true;
 }
 
 /** [night-11aj] Canonical copy of a config: optional fields only when set (they are part of the state hash). */
@@ -58,6 +64,7 @@ export function copyConfig(config: GameConfig): GameConfig {
     ...(config.weeklyContract === true ? { weeklyContract: true } : {}),
     ...(config.demandSurge === true ? { demandSurge: true } : {}),
     ...(config.licenceClass === undefined ? {} : { licenceClass: config.licenceClass }),
+    ...(config.weatherFront === true ? { weatherFront: true } : {}),
   };
 }
 

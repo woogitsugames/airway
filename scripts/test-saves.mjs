@@ -1,7 +1,7 @@
 // Requires Node 22+ with --experimental-strip-types (no third-party runner).
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { decodeSave, encodeSave, readGame, restoreGame, startOrRestore, writeGame, TICKS_PER_DAY, SAVE_VERSION } from '../src/game/save.ts';
+import { decodeSave, encodeSave, readGame, restoreGame, startOrRestore, writeGame, TICKS_PER_DAY, SAVE_VERSION, WEATHER_SAVE_VERSION } from '../src/game/save.ts';
 import { createNativeStorage, createBrowserStorage, GAME_SAVE_KEY, SETTINGS_KEY, readSettings, writeSettings } from '../src/platform/storage.ts';
 import { GameLifecycle } from '../src/platform/lifecycle.ts';
 
@@ -108,7 +108,8 @@ test('corrupt JSON, malformed version, checksum tamper and dangerous keys', asyn
   const record = encodeSave(sim, 1000);
   record.snapshot.state = 9999;
   assert.equal(decodeSave(JSON.stringify(record)).status, 'error');
-  assert.equal(decodeSave(JSON.stringify({ v: SAVE_VERSION + 1, future: 'unknown' })).issue, 'unsupported');
+  // [night-12bd] R2j: v6 is the weather-front envelope, so the first unknown version is WEATHER_SAVE_VERSION + 1.
+  assert.equal(decodeSave(JSON.stringify({ v: WEATHER_SAVE_VERSION + 1, future: 'unknown' })).issue, 'unsupported');
   await store.set(GAME_SAVE_KEY, '{bad');
   const started = await startOrRestore(store, () => new SimFixture(17), seed => new SimFixture(seed));
   assert.equal(started.issue, 'corrupt');
