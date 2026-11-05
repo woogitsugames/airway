@@ -35,6 +35,22 @@ export interface TagSlot {
   belowY?: number;
   aboveY?: number;
   /**
+   * [night-16b] D-263: two places beside the rose's own name, level with its middle (`besideY`): right edge at
+   * `besideLeft` (left of the name) and left edge at `besideRight` (right of it), moved at most `maxShift` px.
+   */
+  besideLeft?: number;
+  besideRight?: number;
+  besideY?: number;
+  /**
+   * [night-16b] D-263: the note's own rose: a place whose box ends up farther than `homeReach` px from (`homeX`,
+   * `homeY`) is not taken (a note never floats away from its rose; it hides instead).
+   */
+  homeX?: number;
+  homeY?: number;
+  homeReach?: number;
+  /** [night-16b] D-263: a fixed obstacle no tag ever covers, not even a `must` one (a rose's ring of ticks). */
+  ring?: boolean;
+  /**
    * [night-16a] D-262: a narrower form (the overlay's code + fill) tried at every place before the tag hides; on
    * output `compact` says which form was placed. Its near edge stays where the full tag's would be.
    */
@@ -42,7 +58,8 @@ export interface TagSlot {
   compact?: boolean;
   /**
    * [night-16a] D-262: a tag that must show (the busiest hub's code and fill): when no place is free, it is placed in
-   * its compact form over lower-ranked fixed obstacles, and as the very last resort over anything.
+   * its compact form over lower-ranked fixed obstacles (another rose's name), and then over any obstacle but a ring
+   * ([night-16b] D-263: never over a `ring`, never away from its rose; boxed in by rings it hides).
    */
   must?: boolean;
   /** [night-16a] D-262: the place used last frame (written by layoutTags; -1 none); it keeps it with 3 px less gap. */
@@ -63,36 +80,45 @@ export interface TagBounds {
 const clamp = (value: number, low: number, high: number): number => Math.max(low, Math.min(value, high));
 
 function collides(a: TagSlot, b: TagSlot, gap: number): boolean {
+  if (b.ring) {
+    // [night-16b] D-263: a ring is the disc inscribed in its box (the corners stay free for a note).
+    const radius = b.width / 2 + gap, cx = b.x + b.width / 2, cy = b.y + b.height / 2;
+    const dx = Math.max(a.x - cx, 0, cx - a.x - a.width), dy = Math.max(a.y - cy, 0, cy - a.y - a.height);
+    return dx * dx + dy * dy < radius * radius;
+  }
   return a.x < b.x + b.width + gap && a.x + a.width + gap > b.x &&
     a.y < b.y + b.height + gap && a.y + a.height + gap > b.y;
 }
+/** [night-16b] D-263: a place beside the rose's name slides outward in these steps (px), at most BESIDE_SLIDE. */
+const BESIDE_STEP = 6;
+const BESIDE_SLIDE = 36;
 
 // Reused between frames: the placement order of `layoutTags` (no allocation per frame).
 const orderScratch: number[] = [];
 /** [night-16a] D-262: hysteresis, px: a tag tried at the place it held last frame needs this much less clearance. */
 export const TAG_HYSTERESIS = 3;
-/** [night-16a] D-262: places a note may take: its side, the other side, under the rose, over it. */
-const PLACES = 4;
+/** [night-16a] D-262: places a note may take: its side, the other side, under the rose, over it; [night-16b] D-263:
+ *  left and right of the rose's own name. */
+const PLACES = 6;
 
 const tierOf = (slot: TagSlot): number => (slot.jammed ? 2 : slot.minor ? 0 : 1);
 
 /**
  * Tries one place: x fixed, y from `idealY`, moved off blockers (up first, or down first with `down`) at most
- * `maxShift` px. `skipBelowRank`: fixed obstacles ranked lower than this are ignored (the must pass); `ignoreAll`
- * places it as it is.
+ * `maxShift` px. `skipBelowRank`: fixed obstacles ranked lower than this are ignored (the must passes; a `ring` never
+ * is).
  */
 function tryPlace(slots: readonly TagSlot[], i: number, idealY: number, maxShift: number, top: number, bottom: number,
-  gap: number, down: boolean, skipBelowRank: number, ignoreAll: boolean): boolean {
+  gap: number, down: boolean, skipBelowRank: number): boolean {
   const slot = slots[i];
   slot.y = idealY;
-  if (ignoreAll) return true;
   // Collision checks are bounded by the number of tags; no allocations per frame.
   for (let tries = 0; tries <= slots.length; tries++) {
     let blocker: TagSlot | null = null;
     for (let j = 0; j < slots.length; j++) {
       const other = slots[j];
       if (i === j || !other.placed) continue;
-      if (other.fixed && (other.rank ?? 0) < skipBelowRank) continue;
+      if (other.fixed && !other.ring && (other.rank ?? 0) < skipBelowRank) continue;
       if (collides(slot, other, gap)) { blocker = other; break; }
     }
     if (!blocker) return true;
@@ -108,6 +134,14 @@ function tryPlace(slots: readonly TagSlot[], i: number, idealY: number, maxShift
     if (Math.abs(slot.y - idealY) > maxShift) return false;
   }
   return false;
+}
+
+/** [night-16b] D-263: the tag's box lies within `homeReach` px of its rose's centre (always true without a home). */
+function nearHome(slot: TagSlot): boolean {
+  if (slot.homeX === undefined || slot.homeY === undefined || slot.homeReach === undefined) return true;
+  const dx = Math.max(slot.x - slot.homeX, 0, slot.homeX - slot.x - slot.width);
+  const dy = Math.max(slot.y - slot.homeY, 0, slot.homeY - slot.y - slot.height);
+  return dx * dx + dy * dy <= slot.homeReach * slot.homeReach;
 }
 
 /**
@@ -158,19 +192,22 @@ export function layoutTags(slots: readonly TagSlot[], bounds: TagBounds): number
     const narrow = limited && slot.compactWidth !== undefined && slot.compactWidth > 0 && slot.compactWidth < fullWidth;
     const picks = narrow ? PLACES * 2 : PLACES;
     const maxShift = limited ? slot.maxShift! : Infinity;
-    // pass 0: normal; pass 1: a must tag over lower-ranked rose boxes; pass 2: a must tag as it is.
+    // pass 0: normal; pass 1: a must tag over lower-ranked roses' names; pass 2: over any obstacle but a ring.
     const passes = slot.must ? 3 : 1;
     for (let pass = 0; pass < passes && !slot.placed; pass++) {
       for (let pick = 0; pick < picks && !slot.placed; pick++) {
         const compact = pick >= PLACES;
         const place = pick % PLACES;
         if (pass > 0 && narrow && !compact) continue; // a forced tag takes the compact form
-        if (place > 0 && (!limited || (place >= 2 && (slot.belowX === undefined ||
-          (place === 2 ? slot.belowY : slot.aboveY) === undefined)))) continue;
+        if (place > 0 && !limited) continue;
+        if ((place === 2 || place === 3) && (slot.belowX === undefined || (place === 2 ? slot.belowY : slot.aboveY) === undefined)) continue;
+        if (place >= 4 && ((place === 4 ? slot.besideLeft : slot.besideRight) === undefined || slot.besideY === undefined)) continue;
         const width = compact ? slot.compactWidth! : fullWidth;
         if (width > bounds.width - left * 2) continue;
         let x: number;
-        if (place >= 2) x = slot.belowX! - width / 2;
+        if (place === 2 || place === 3) x = slot.belowX! - width / 2;
+        else if (place === 4) x = slot.besideLeft! - width;
+        else if (place === 5) x = slot.besideRight!;
         else {
           const anchorX = place === 1 ? slot.altAnchorX! : slot.anchorX;
           const other = place === 1 ? slot.anchorX : (slot.altAnchorX ?? slot.anchorX);
@@ -178,18 +215,23 @@ export function layoutTags(slots: readonly TagSlot[], bounds: TagBounds): number
           x = anchorX >= other ? anchorX - fullWidth / 2 : anchorX + fullWidth / 2 - width;
         }
         slot.width = width;
-        slot.x = Math.round(clamp(x, left, bounds.width - left - width));
-        const wantY = place === 2 ? slot.belowY! : place === 3 ? slot.aboveY! - slot.height : slot.anchorY - slot.height - 11;
+        const wantY = place === 2 ? slot.belowY! : place === 3 ? slot.aboveY! - slot.height
+          : place >= 4 ? slot.besideY! - slot.height / 2 : slot.anchorY - slot.height - 11;
         const idealY = Math.round(clamp(wantY, top, bottom - slot.height));
-        const skip = pass === 1 ? (slot.rank ?? 0) : -Infinity;
-        // Hysteresis: the place a note held last frame needs a little less clearance (tried only when the full one
-        // fails, so an unchanged scene lays out exactly as the frame before).
-        if (tryPlace(slots, i, idealY, maxShift, top, bottom, bounds.gap, place === 2, skip, pass === 2) ||
-          (limited && pick === last && tryPlace(slots, i, idealY, maxShift, top, bottom, Math.max(0, bounds.gap - TAG_HYSTERESIS), place === 2, skip, false))) {
-          slot.placed = true;
-          slot.compact = compact;
-          slot.lastPick = pick;
-          placed++;
+        const skip = pass === 1 ? (slot.rank ?? 0) : pass === 2 ? Infinity : -Infinity;
+        // Beside the name the note may also slide outward, away from the rose (D-263).
+        const slides = place >= 4 ? BESIDE_SLIDE / BESIDE_STEP : 0;
+        for (let k = 0; k <= slides && !slot.placed; k++) {
+          slot.x = Math.round(clamp(x + (place === 4 ? -k : k) * BESIDE_STEP, left, bounds.width - left - width));
+          // Hysteresis: the place a note held last frame needs a little less clearance (tried only when the full one
+          // fails, so an unchanged scene lays out exactly as the frame before). A place away from the rose is not taken.
+          if ((tryPlace(slots, i, idealY, maxShift, top, bottom, bounds.gap, place === 2, skip) && nearHome(slot)) ||
+            (limited && pick === last && tryPlace(slots, i, idealY, maxShift, top, bottom, Math.max(0, bounds.gap - TAG_HYSTERESIS), place === 2, skip) && nearHome(slot))) {
+            slot.placed = true;
+            slot.compact = compact;
+            slot.lastPick = pick;
+            placed++;
+          }
         }
       }
     }

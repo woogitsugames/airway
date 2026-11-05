@@ -4,7 +4,7 @@
 // [night-16a] D-262: a name whose top is taken runs along the bottom of the ring before it shortens; the store shot's
 // Levant cluster (game-phone 360×640) keeps the busiest hub's name and its note (code and fill at least).
 import assert from 'node:assert/strict';
-import { roseLabelBelow, roseLabelText, roseNameBox, roseRank, rozaCaptionClashes, rozaNameLayout, rozaNotePlaces, rozaRoseObstacle,
+import { roseLabelBelow, roseLabelText, roseNameBox, roseRank, rozaCaptionClashes, rozaNameLayout, rozaNotePlaces, rozaRoseObstacles, roseHomeReach,
   type RoseLabel, type RoseLabelMode } from '../src/ui/skin/roza.ts';
 import { layoutTags, type TagSlot } from '../src/ui/overlay-layout.ts';
 
@@ -124,6 +124,8 @@ const LEVANT: { label: RoseLabel; width: number; compact: number }[] = [
   { label: rose(260, 323, 'Bagdad', 'BGW', { r: 25, fill: 3 / 24 }), width: 104, compact: 84 },
 ];
 const PHONE = { width: 360, height: 640, top: 72, bottom: 120, gap: 4 };
+/** [night-16b] D-263: the Róża dock symbols on their arc in that shot (globe mode, hub, widebody; 48 × 48 centres). */
+const DOCK = [[233, 388], [182, 419], [146, 469]];
 /** One overlay frame as src/ui/overlay.ts runs it: names, then the notes beside the roses (fixed rose boxes). */
 function levantFrame(scene: typeof LEVANT, last?: { modes: RoseLabelMode[]; tags: TagSlot[] }) {
   const labels = scene.map((s, i) => ({ ...s.label, last: last?.modes[i] }));
@@ -141,10 +143,13 @@ function levantFrame(scene: typeof LEVANT, last?: { modes: RoseLabelMode[]; tags
     rozaNotePlaces(tag, label, modes[i], PHONE.width);
     const box: TagSlot = { id: label.code + '~rose', anchorX: 0, anchorY: 0, width: 0, height: 0, active: true, jammed: false, fixed: true,
       x: 0, y: 0, placed: false, rank: tag.rank };
-    rozaRoseObstacle(box, label, modes[i]);
-    slots.push(tag, box);
+    const name: TagSlot = { ...box, id: label.code + '~name' };
+    rozaRoseObstacles(box, name, label, modes[i]);
+    slots.push(tag, box, name);
     return tag;
   });
+  for (const [x, y] of DOCK) slots.push({ id: 'dock', anchorX: 0, anchorY: 0, width: 48, height: 48, active: true, jammed: false,
+    fixed: true, x: x - 24, y: y - 24, placed: false, rank: Infinity });
   layoutTags(slots, PHONE);
   return { labels, modes, tags, slots };
 }
@@ -155,28 +160,56 @@ test('store shot game-phone: the busiest hub (Amman) keeps its name and its note
   assert(tags[4].placed, 'Amman has a note');
   // Priority jam > hub > fuller: both hubs keep a name, and every airport with passengers waiting beats Ryga (empty).
   assert.notEqual(modes[2], 'none', 'Ateny has a name');
-  assert(tags.filter((t) => t.placed).length >= 4, `only ${tags.filter((t) => t.placed).map((t) => t.id)} have a note`);
+  assert(tags.filter((t) => t.placed).length >= 3, `only ${tags.filter((t) => t.placed).map((t) => t.id)} have a note`);
 });
-test('store shot game-phone: no note covers another note or a rose and its name', () => {
+test('store shot game-phone (D-263): Amman\'s compact note stands beside its own name, level with it', () => {
+  const { labels, modes, tags } = levantFrame(LEVANT);
+  const amm = tags[4];
+  assert(amm.placed && amm.compact === true, 'Amman shows the compact note');
+  const name = roseNameBox(labels[4], roseLabelText(labels[4], modes[4]), roseLabelBelow(modes[4]));
+  const mid = amm.y + amm.height / 2;
+  assert(mid > name.t && mid < name.b, `the note (middle ${mid}) is level with the name (${Math.round(name.t)}–${Math.round(name.b)})`);
+  assert(amm.x + amm.width <= name.l || amm.x >= name.r, 'beside the name, not on it');
+  assert(Math.min(Math.abs(amm.x + amm.width - name.l), Math.abs(amm.x - name.r)) <= 4 + 36, 'next to the name');
+});
+test('store shot game-phone: no note covers another note, a rose\'s name or a dock symbol', () => {
   const { slots } = levantFrame(LEVANT);
   const shown = slots.filter((s) => s.placed);
   shown.forEach((a, i) => shown.forEach((b, j) => {
-    if (j <= i || (a.fixed && b.fixed)) return;
+    // Rings are discs (assertNotesAtHome checks them; a note may use the free corner of a ring's box).
+    if (j <= i || (a.fixed && b.fixed) || a.ring || b.ring) return;
     assert(!(a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height), `${a.id} overlaps ${b.id}`);
   }));
   shown.forEach((s) => assert(s.fixed || (s.x >= 6 && s.x + s.width <= PHONE.width - 6), `${s.id} leaves the screen`));
 });
-test('store shot game-phone: the busiest hub shows at least code and fill even when boxed in on every side', () => {
-  // Amman's neighbours pressed in: its full note fits nowhere, the compact one does (or is forced over a lower rose).
+/** [night-16b] D-263: no shown note covers any rose's ring of ticks, and each stays within one radius of its own ring. */
+function assertNotesAtHome(labels: RoseLabel[], tags: TagSlot[]): void {
+  tags.forEach((t, i) => {
+    if (!t.placed) return;
+    labels.forEach((l) => {
+      const dx = Math.max(t.x - l.x, 0, l.x - t.x - t.width), dy = Math.max(t.y - l.y, 0, l.y - t.y - t.height);
+      assert(dx * dx + dy * dy >= (l.r + 9) ** 2, `${t.id}'s note covers ${l.code}'s ring`);
+    });
+    const own = labels[i];
+    const dx = Math.max(t.x - own.x, 0, own.x - t.x - t.width), dy = Math.max(t.y - own.y, 0, own.y - t.y - t.height);
+    assert(Math.hypot(dx, dy) <= roseHomeReach(own.r), `${t.id}'s note floats ${Math.round(Math.hypot(dx, dy) - own.r)} px off its ring`);
+  });
+}
+test('store shot game-phone: no note covers a rose ring, every note stays within one radius of its own rose', () => {
+  const { labels, tags } = levantFrame(LEVANT);
+  assertNotesAtHome(labels, tags);
+  assert(tags[4].placed, 'Amman has a note');
+});
+test('store shot game-phone: boxed in by rings on every side, the busiest hub hides its note rather than cover one', () => {
+  // Amman's neighbours pressed in so that every place near it touches a ring (D-263: a ring is never covered).
   const tight = LEVANT.map((s) => ({ ...s, label: { ...s.label } }));
   tight[3].label.x = 205; tight[3].label.y = 290; // Ankara right above Amman
   tight[5].label.x = 245; // Bagdad nearer
   tight.push({ label: rose(185, 400, 'Akaba', 'AQJ', { r: 25, fill: .3 }), width: 104, compact: 84 });
   tight.push({ label: rose(130, 360, 'Hajfa', 'HFA', { r: 25, fill: .3 }), width: 104, compact: 84 });
-  const { tags } = levantFrame(tight);
-  assert(tags[4].placed, 'Amman has a note');
-  assert.equal(tags[4].compact, true, 'Amman shows the compact note');
-  assert.equal(tags[4].width, 96);
+  const { labels, tags } = levantFrame(tight);
+  assert(!tags[4].placed, 'Amman hides its note');
+  assertNotesAtHome(labels, tags);
 });
 test('store shot game-phone: an unchanged frame lays out the same, and 1 px of camera motion flips nothing', () => {
   const first = levantFrame(LEVANT);
