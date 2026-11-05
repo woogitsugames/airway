@@ -62,7 +62,7 @@ check('Glossary: no "terminal" in site copy or pages', () => !/terminal/i.test(J
   pages.map(page => readFileSync(join(root, page), 'utf8')).join('')));
 // [night-11ad] R7k, D-218: real game screenshots, store links, social preview, hreflang, 404.
 const shotTags = [...home.matchAll(/<img\b[^>]*data-shot="([a-z]+)"[^>]*>/g)];
-check('Four screenshot previews, one per site scene', () => (home.match(/class="preview-shot"/g)||[]).length === 4 &&
+check('One screenshot preview per site scene (five)', () => (home.match(/class="preview-shot"/g)||[]).length === SITE_SHOTS.scenes.length && SITE_SHOTS.scenes.length === 5 &&
   shotTags.map(m => m[1]).join() === SITE_SHOTS.scenes.join());
 check('No stage-0 concept mockups on the site', () => !/game-p\.png|upgrade-p\.png|menu-p\.png|makiet|concept/i.test(home + JSON.stringify(translations)));
 const sources = JSON.parse(readFileSync(join(root, 'assets/shots/sources.json'), 'utf8'));

@@ -19,11 +19,11 @@ export const STORE_BADGES = { googlePlay: 'assets/badges/google-play.svg', appSt
 
 /** Real game screenshots (site/make-assets.mjs, from docs/store/shots/). "failure" waits for a store:shots run with
  *  the N11t game-over wording ("Sieć zamknięta"); the committed store PNGs still say "Siatka wstrzymana". */
-export const SITE_SHOTS = { scenes: ['night', 'game', 'upgrade', 'menu'], languages: ['pl', 'en'], width: 540, height: 960 };
+export const SITE_SHOTS = { scenes: ['night', 'game', 'upgrade', 'menu', 'failure'], languages: ['pl', 'en'], width: 540, height: 960 };
 
 /** [night-11ae] R2e, D-219: the press kit. The press page (press.html) shows it and build:site zips it into
  *  site/dist/<zip> (built, never committed). Paths are relative to site/. Screenshots: every SITE_SHOTS scene in each
- *  store format below, per language, full size from docs/store/shots/<lang>/<scene>-<format>.png (8 per language);
+ *  store format below, per language, full size from docs/store/shots/<lang>/<scene>-<format>.png (10 per language);
  *  the page shows the site:assets thumbnails (phone: assets/shots/<lang>/<scene>.jpg, landscape: <scene>-landscape.jpg). */
 export const PRESS_KIT = {
   zip: 'airway-press-kit.zip',
