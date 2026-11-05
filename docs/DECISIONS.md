@@ -2016,6 +2016,20 @@ off, so no airport would ever open), a rules-version bump (Random is unchanged; 
 Guards: `test:home-region` (`test:fast`), `test:e2e:home-region` and `test:balance:regions` (`test:ci`).
 **Status: in force (EUS median to be reviewed with the next balance pass).**
 
+
+## D-237 — The leaderboard objection also stops a submission already under way (2026-11-04, Claude, night N11ak)
+R7l closed (Q-68 answered A = D-135, legitimate interest with a one-tap objection; switch D-197, net layer D-186).
+A gap remained when "Send results to the leaderboard" is switched off while a run is on its way (the start-up
+flush or a game-over submission waiting on a slow network): the offline queue finished its pass, sending the other
+waiting days, and then wrote the retried runs back, so the dropped runs came back and were sent later. Now
+`SubmissionQueue.clear()` (used by the switch and by the D-114 deletion) bumps a generation: a flush that sees it
+change sends nothing more and writes nothing back. The request already on the wire cannot be recalled; whatever it
+answers, `submitDaily` reports `opted-out` and the daily report says "Not ranked" (also when the switch flips while
+the boards load). The write-back now merges with the queue as it is at the end, so a run queued while a request was
+in flight is no longer overwritten. No new UI or strings. Rejected: aborting the in-flight fetch (the server may
+already have counted it; deletion is the D-114 path). Guards: `test:net` (3 new cases), `test:e2e:ranking-switch`
+(a waiting run is dropped by the switch). **Status: in force.**
+
 ## D-238 — Launch plan in `docs/LAUNCH.md`: weeks from an unset T, the D-131 rhythm over R2's T+6, store-event drafts (2026-11-04, Claude, night N12au)
 R2f + R6g. `docs/LAUNCH.md` (Polish, owner-facing) holds the launch timeline from RESEARCH R2 in weeks from **T**,
 which stays unset until the owner picks the launch date (D-96): T−12 closed test + Firebase project + press page and
