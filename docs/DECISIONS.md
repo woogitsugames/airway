@@ -2066,3 +2066,19 @@ e-mails 12 months (left to the lawyer). `docs/RELEASE.md` links the register (RL
 `test:privacy-declarations` keeps equal to the code), so a new data flow fails until the art. 30 record names it;
 the leaderboard retention must equal `RETENTION_DAYS`. Rejected: an English-only register (the owner and a Polish
 lawyer read it), filling the controller with guessed details. **Status: in force (Q-01, Q-67 and the lawyer open).**
+
+## D-245 — Firebase Test Lab game loop plays the real release build with the bot (2026-11-05, Claude, night N12ay)
+R3i. Real-device frame times on budget phones come from Firebase Test Lab's game-loop test type instead of borrowed
+phones. `MainActivity` takes `com.google.intent.action.TEST_LOOP` (second intent filter; `com.google.test.loops` = 1,
+label `perf`); a small Capacitor plugin (`GameLoopPlugin`, `AirwayGameLoop`) passes the scenario number to the web
+game and writes the report to the result file URI, then finishes the activity (watchdog after 300 s). Scenario 1 is
+the real game, not the perf fixture: Endless `0xA1A1`, no tutorial or first-time cards, 4×, the task-22 bot through
+real Commands every 30 ticks (or every second on the weekly board), 120 s of real time; the report keeps the
+`.perf/scene.json` frame fields (rAF interval p50/p95/max, mean fps) plus renderer string, graphics choice, running
+preset and adaptation steps. The bot leaves the DEV-only path: `src/game/dev/autoplay.ts` becomes an 8 kB lazy chunk
+of the release build, loaded only on a game-loop launch (or in DEV); the main chunk does not grow by it. `npm run
+perf:testlab` only prints the `gcloud … --type=game-loop` command (the owner runs it in their project, Q-07; Spark: 5
+physical runs/day); device rows go to `docs/PERFORMANCE.md`. Rejected: the perf fixture as the scenario (scripted
+network, DEV-only module, not what players run), a separate test APK flavour (a second build to sign and keep in step),
+fast-forwarding the sim (the point is the frame cost of real time). Not verified here: Gradle build of the plugin and a
+real Test Lab run (no Android SDK offline). Guard: `test:game-loop`. **Status: in force (owner run waits for Q-07).**
