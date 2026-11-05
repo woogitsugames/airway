@@ -9,15 +9,20 @@ colour, font family/weight or duration literal comes back into a covered file or
 
 Covered files: `src/ui/hud.css`, `src/ui/overlay.css` (+ the inline SVG inks of `src/ui/overlay.ts`), `src/ui/game.css`,
 `src/ui/upgrade/upgrade.css`, `src/ui/hubBoard.css`, `src/ui/gameover/gameover.css`, `src/ui/menu/menu.css`.
-Not covered yet (same pattern later): `atcStrip.css` (first-time cards, slot hint), `logbook.css`,
-`puzzles/board.css`, `leaderboard.css`, `tutorial/tutorial.css`, `src/ui/glyphs.ts`
-(glyph outline `#FBF8F1`, also drawn outside the DOM) and the globe (`src/render/**`, out of scope).
+[night-11as] Follow-up, same pattern: `src/ui/atcStrip.css` (ATC strip, route menu and handles, first-time cards, slot
+hint), `src/ui/logbook/logbook.css`, `src/ui/puzzles/board.css` (+ the curfew barrier SVG of `src/ui/puzzles/index.ts`,
+now the airport tag's barrier tokens), `src/ui/leaderboard/leaderboard.css`, `src/ui/tutorial/tutorial.css` and the
+glyph outline of `src/ui/glyphs.ts` (an inline `style.stroke`, so the hollow connecting glyph of `overlay.ts` now sets
+its stroke the same way to keep winning). Not covered: the tutorial's painted mini-world SVG in
+`src/ui/tutorial/index.ts` (land, sea, airports: world art like the globe) and the globe (`src/render/**`, out of scope).
 
 **Counts.** 461 hard-coded values moved to 202 tokens: 246 colours (241 in the CSS, 5 inks of the inline SVGs in
 `overlay.ts`; 169 tokens, values equal to the palette of `theme.css` point at it, e.g. `var(--airway-ticket)`), 83
 font families (3 tokens), 84 weights (3), 19 motion durations/delays (12), 13 corners/shadows/hover rules (6) and 16
 icon sizes (9). [night-11ar] D-252: the unused DEV overlay fixture controls (`.airport-demo-controls`) were deleted
-with their 5 values and 2 tokens (`--skin-demo-bg`, `--skin-demo-accent`): 456 values, 200 tokens today. Release builds
+with their 5 values and 2 tokens (`--skin-demo-bg`, `--skin-demo-accent`): 456 values, 200 tokens. [night-11as] The
+follow-up moved 244 more values to 86 new tokens (158 colours, 38 font families and 44 weights on the existing tokens, 3
+motion durations): 701 token uses, 286 tokens. Release builds
 write every token value in place (`scripts/vite-skin-inline.mjs`); the source keeps the tokens.
 **Zero visual change** (`npm run skin:pixels`, `e2e/skin-pixels.mjs`): see the PR; in short, after substituting the
 skin back, every covered CSS file is the same text as before (colour case and palette names aside), and 88 fixture
@@ -236,6 +241,108 @@ Ordered: typefaces and weights, motion, corners and shadows, icon sizes, then co
 | Main menu + settings | `.airway-settings__licenses` → color | #ffc72c (`--airway-sign`) | `--skin-settings-licenses-ink` |
 | Main menu + settings | `.airway-privacy__warning` → color | #8a2219 | `--skin-settings-warning-ink` |
 | Main menu + settings | `.airway-unsupported__gpu` → background | #efe8da | `--skin-settings-note-bg` |
+
+## Tokens added by the follow-up (night N11as)
+
+Same order: typefaces and weights (existing tokens, new uses), motion, then colours by component.
+
+| Component | Selector → property | Current value | Token |
+|---|---|---|---|
+| ATC strip, route menu + handles, first-time card, Puzzle board + game, Tutorial | `.airway-atc-error` → font; `.airway-first-time__ok` → font; `.airway-route-menu button` → font; `.aw-settings-dialog h2` → font; `.aw-settings-sign` → font; `.aw-strip-index` → font; `.aw-tutorial-kicker` → font-family; `.puzzle-board-title` → font-family; … (12 uses) | 'Overpass', sans-serif | `--skin-face-display` |
+| ATC strip, route menu + handles, first-time card, Leaderboard, Logbook, Puzzle board + game, Tutorial | `.airway-atc-flight` → font-family; `.airway-logbook__flights th` → font; `.airway-logbook__flights` → font; `.airway-logbook__records dd` → font; `.airway-logbook__summary-text` → font; `.airway-logbook__totals dd` → font; `.airway-logbook__totals dt` → font; `.airway-rank-column-title` → font; … (19 uses) | 'Overpass Mono', monospace | `--skin-face-mono` |
+| ATC strip, route menu + handles, first-time card, Leaderboard, Logbook, Puzzle board + game, Tutorial | `.airway-atc-strip` → font; `.airway-logbook__empty` → font; `.airway-logbook__records dt` → font; `.airway-rank-empty, .airway-rank-status` → font; `.aw-strip-copy` → font; `.aw-tutorial` → font-family; `.puzzle-shell` → font-family | 'Atkinson Hyperlegible Next', sans-serif | `--skin-face-text` |
+| ATC strip, route menu + handles, first-time card, Leaderboard, Logbook, Puzzle board + game, Tutorial | `.airway-atc-strip` → font; `.airway-logbook__flights th` → font; `.airway-logbook__flights` → font; `.airway-logbook__records dd` → font; `.airway-logbook__records dt` → font; `.airway-logbook__totals dt` → font; `.airway-rank-column-title` → font; `.airway-rank-title` → font; … (24 uses) | 700 | `--skin-weight-bold` |
+| ATC strip, route menu + handles, first-time card, Logbook, Puzzle board + game, Tutorial | `.airway-atc-error` → font; `.airway-first-time__ok` → font; `.airway-logbook__totals dd` → font; `.airway-route-menu button` → font; `.aw-settings-dialog h2` → font; `.aw-settings-sign` → font; `.aw-strip-index` → font; `.aw-tutorial-kicker` → font-weight; … (15 uses) | 800 | `--skin-weight-heavy` |
+| Leaderboard, Logbook, Puzzle board + game | `.airway-logbook__empty` → font; `.airway-logbook__milestones [data-reached="false"] dd` → font-weight; `.airway-logbook__summary-text` → font; `.airway-rank-empty, .airway-rank-status` → font; `.puzzle-curfew-hours` → font-weight | 400 | `--skin-weight-regular` |
+| Puzzle board + game | `:root:not([data-airway-motion="reduce"]) .puzzle-flap:active` → transition | 80ms | `--skin-puzzle-motion-press` |
+| Tutorial | `.aw-tutorial[data-step="route"] .aw-guide-primary` → animation | 1000ms | `--skin-tutorial-motion-guide` |
+| Tutorial | `.aw-tutorial-world` → transition | 200ms | `--skin-tutorial-motion-world` |
+| ATC strip, route menu + handles, first-time card | `.airway-atc-error` → color; `.airway-route-menu .airway-route-menu-danger` → color | #ae2d23 | `--skin-atc-error-ink` |
+| ATC strip, route menu + handles, first-time card | `.airway-atc-field` → border-right | #cdbf8f | `--skin-atc-field-rule` |
+| ATC strip, route menu + handles, first-time card | `.airway-route-handle--active::before` → background | #ffc72c (`--airway-sign`) | `--skin-atc-handle-active-bg` |
+| ATC strip, route menu + handles, first-time card | `.airway-route-handle::before` → outline | #fbf8f1 (`--airway-ticket`) | `--skin-atc-handle-halo` |
+| ATC strip, route menu + handles, first-time card | `.airway-route-handle::before` → border | #13302e (`--airway-panel`) | `--skin-atc-handle-rim` |
+| ATC strip, route menu + handles, first-time card | `.airway-atc-strip` → color; `.airway-route-menu` → color | #2a2420 (`--airway-ink`) | `--skin-atc-ink` |
+| ATC strip, route menu + handles, first-time card | `.airway-route-menu` → border | #13302e (`--airway-panel`) | `--skin-atc-menu-border` |
+| ATC strip, route menu + handles, first-time card | `.airway-route-menu button:focus-visible` → outline | #ffc72c (`--airway-sign`) | `--skin-atc-menu-focus` |
+| ATC strip, route menu + handles, first-time card | `.airway-route-menu button` → border-bottom | #baa985 | `--skin-atc-menu-rule` |
+| ATC strip, route menu + handles, first-time card | `.airway-route-menu` → box-shadow | #2a2420 (`--airway-ink`) | `--skin-atc-menu-shadow` |
+| ATC strip, route menu + handles, first-time card | `.airway-first-time__ok` → background | #ffc72c (`--airway-sign`) | `--skin-atc-ok-bg` |
+| ATC strip, route menu + handles, first-time card | `.airway-first-time__ok:focus-visible` → outline | #13302e (`--airway-panel`) | `--skin-atc-ok-focus` |
+| ATC strip, route menu + handles, first-time card | `.airway-first-time__ok` → color | #1c1e20 (`--airway-board`) | `--skin-atc-ok-ink` |
+| ATC strip, route menu + handles, first-time card | `.airway-first-time__ok` → border-left | #9e916c | `--skin-atc-ok-rule` |
+| ATC strip, route menu + handles, first-time card | `.airway-atc-strip` → background; `.airway-route-menu` → background | #fbf8f1 (`--airway-ticket`) | `--skin-atc-paper` |
+| ATC strip, route menu + handles, first-time card | `.airway-atc-strip` → border-left | #c8352a (`--airway-jam`) | `--skin-atc-strip-edge` |
+| ATC strip, route menu + handles, first-time card | `.airway-atc-strip` → box-shadow | #9e916c | `--skin-atc-strip-ledge` |
+| Region glyphs (glyphs.ts) | `regionGlyph()` path → style.stroke | #fbf8f1 (`--airway-ticket`) | `--skin-glyph-outline` |
+| Logbook | `.airway-logbook__flights tr[data-mode="daily"] .airway-logbook__mode::before` → background | #1e6f6a (`--airway-teal`) | `--skin-logbook-daily-mark` |
+| Logbook | `.airway-logbook__paper` → border-left | #c8352a (`--airway-jam`) | `--skin-logbook-edge` |
+| Logbook | `.airway-logbook__empty` → color; `.airway-logbook__flights` → color; `.airway-logbook__records dt` → color | #2a2420 (`--airway-ink`) | `--skin-logbook-ink` |
+| Logbook | `.airway-logbook__flights th` → color; `.airway-logbook__totals dt` → color | #55514a | `--skin-logbook-label-ink` |
+| Logbook | `.airway-logbook__milestones` → --aw-ms-done | #1e6f6a (`--airway-teal`) | `--skin-logbook-milestone-done` |
+| Logbook | `.airway-logbook__milestones` → --aw-ms-open | #6b6257 | `--skin-logbook-milestone-open` |
+| Logbook | `.airway-logbook__flights td` → border-bottom; `.airway-logbook__records .airway-logbook__cell` → border-bottom; `.airway-logbook__totals .airway-logbook__cell:nth-child(odd)` → border-right; `.airway-logbook__totals .airway-logbook__cell` → border-bottom | #c2b5a6 | `--skin-logbook-row-rule` |
+| Logbook | `.airway-logbook__flights th` → border-bottom; `.airway-logbook__flights th` → border-top; `.airway-logbook__records` → border-top; `.airway-logbook__summary-text` → border; `.airway-logbook__totals` → border-top | #2a2420 (`--airway-ink`) | `--skin-logbook-rule` |
+| Logbook | `.airway-logbook__summary-text` → background | #fbf6ec | `--skin-logbook-summary-bg` |
+| Logbook | `.airway-logbook__records dd` → color; `.airway-logbook__summary-text` → color; `.airway-logbook__totals dd` → color | #13302e (`--airway-panel`) | `--skin-logbook-value-ink` |
+| Puzzle board + game | `.puzzle-back` → border | #1c1e20 (`--airway-board`) | `--skin-puzzle-back-border` |
+| Puzzle board + game | `.puzzle-best` → color | #1e6f6a (`--airway-teal`) | `--skin-puzzle-best-ink` |
+| Puzzle board + game | `.puzzle-count` → color; `.puzzle-departures` → scrollbar-color; `.puzzle-flap-number` → color; `.puzzle-flap-stars.is-done` → color; `.puzzle-pack` → color | #ffc72c (`--airway-sign`) | `--skin-puzzle-board-accent` |
+| Puzzle board + game | `.puzzle-board` → background | #1c1e20 (`--airway-board`) | `--skin-puzzle-board-bg` |
+| Puzzle board + game | `.puzzle-board` → border-left; `.puzzle-board` → border-right | #ffc72c (`--airway-sign`) | `--skin-puzzle-board-edge` |
+| Puzzle board + game | `.puzzle-board` → color; `.puzzle-flap` → color | #fbf8f1 (`--airway-ticket`) | `--skin-puzzle-board-ink` |
+| Puzzle board + game | `.puzzle-hub` → border; `.puzzle-route` → border | #b9c5b8 | `--skin-puzzle-card-rule` |
+| Puzzle board + game | `.puzzle-controls` → background | #13302e (`--airway-panel`) | `--skin-puzzle-controls-bg` |
+| Puzzle board + game | `.puzzle-board-footer` → color; `.puzzle-control` → border | #a9bdb8 (`--airway-dim`) | `--skin-puzzle-dim` |
+| Puzzle board + game | `.puzzle-error` → color | #90251b | `--skin-puzzle-error-ink` |
+| Puzzle board + game | `.puzzle-flap` → background | #2c2f32 (`--airway-flap`) | `--skin-puzzle-flap-bg` |
+| Puzzle board + game | `.puzzle-flap-best` → color; `.puzzle-flap-gate` → color; `.puzzle-flap-stars` → color | #b5c3c1 | `--skin-puzzle-flap-dim-ink` |
+| Puzzle board + game | `.puzzle-flap:hover, .puzzle-flap:focus-visible` → background | #393d40 | `--skin-puzzle-flap-hover-bg` |
+| Puzzle board + game | `.puzzle-flap::after` → border-top | #17191a | `--skin-puzzle-flap-split` |
+| Puzzle board + game | `.puzzle-shell button:focus-visible` → outline | #ffc72c (`--airway-sign`) | `--skin-puzzle-focus` |
+| Puzzle board + game | `.puzzle-game` → background | #e5e7df | `--skin-puzzle-game-bg` |
+| Puzzle board + game | `.puzzle-control` → color; `.puzzle-hub` → color; `.puzzle-ticket` → color | #13302e (`--airway-panel`) | `--skin-puzzle-ink` |
+| Puzzle board + game | `.puzzle-error` → background; `.puzzle-result.lost` → background | #f1ded9 | `--skin-puzzle-lost-bg` |
+| Puzzle board + game | `.puzzle-result.lost` → border-color | #c8352a (`--airway-jam`) | `--skin-puzzle-lost-edge` |
+| Puzzle board + game | `.puzzle-flap` → border-bottom; `.puzzle-pack` → background; `.puzzle-pack` → border-bottom | #151718 | `--skin-puzzle-pack-bg` |
+| Puzzle board + game | `.puzzle-control` → background; `.puzzle-hub` → background; `.puzzle-route` → background; `.puzzle-stat` → background; `.puzzle-ticket` → background | #fbf8f1 (`--airway-ticket`) | `--skin-puzzle-paper` |
+| Puzzle board + game | `.puzzle-result` → background | #e3e9e1 | `--skin-puzzle-result-bg` |
+| Puzzle board + game | `.puzzle-departures` → scrollbar-color | #222528 | `--skin-puzzle-scroll-track` |
+| Puzzle board + game | `.puzzle-control.primary` → background; `.puzzle-control.primary` → border-color; `.puzzle-exit` → background; `.puzzle-game-sign` → background; `.puzzle-route.is-active` → border-left-color; `.puzzle-sign` → background | #ffc72c (`--airway-sign`) | `--skin-puzzle-sign-bg` |
+| Puzzle board + game | `.puzzle-control.primary` → color; `.puzzle-exit` → color; `.puzzle-game-sign` → color; `.puzzle-sign-plane::after` → background; `.puzzle-sign-plane::before` → background; `.puzzle-sign` → color | #1c1e20 (`--airway-board`) | `--skin-puzzle-sign-ink` |
+| Puzzle board + game | `.puzzle-stats` → background; `.puzzle-stats` → border | #b8c9bd | `--skin-puzzle-stats-rule` |
+| Puzzle board + game | `.puzzle-supply` → color | #38524d | `--skin-puzzle-supply-ink` |
+| Puzzle board + game | `.puzzle-game` → border-left; `.puzzle-game` → border-right; `.puzzle-kicker` → color; `.puzzle-result` → border-left; `.puzzle-route` → border-left; `.puzzle-ticket` → border-bottom; `.puzzle-ticket` → border-right | #1e6f6a (`--airway-teal`) | `--skin-puzzle-teal` |
+| Leaderboard | `.airway-rank-row.is-me` → color; `.airway-rank-title` → color | #ffc72c (`--airway-sign`) | `--skin-rank-accent` |
+| Leaderboard | `.airway-rank` → background | #1c1e20 (`--airway-board`) | `--skin-rank-bg` |
+| Leaderboard | `.airway-rank-column-title` → color; `.airway-rank-empty, .airway-rank-status` → color | #a9b3b1 | `--skin-rank-dim-ink` |
+| Leaderboard | `.airway-rank-column-title` → border-bottom | #3b3e41 | `--skin-rank-head-rule` |
+| Leaderboard | `.airway-rank` → color | #e9e3d4 | `--skin-rank-ink` |
+| Leaderboard | `.airway-rank-row` → border-bottom | #2c2f31 | `--skin-rank-row-rule` |
+| Puzzle board + game | `.puzzle-curfew-mark` inline SVG → fill/stroke (shared with the airport tag) | #fbf8f1 (`--airway-ticket`) | `--skin-tag-barrier-boom` |
+| Puzzle board + game | `.puzzle-curfew-mark` inline SVG → fill/stroke (shared with the airport tag) | #13302e (`--airway-panel`) | `--skin-tag-barrier-post` |
+| Puzzle board + game | `.puzzle-curfew-mark` inline SVG → fill/stroke (shared with the airport tag) | #b8322a | `--skin-tag-barrier-stripe` |
+| Tutorial | `.aw-city` → color; `.aw-plane-tag, .aw-action-tag` → color; `.aw-tutorial-strip` → color; `.aw-tutorial-ticket` → color | #2a2420 (`--airway-ink`) | `--skin-tutorial-card-ink` |
+| Tutorial | `.aw-settings-dialog` → background | #1c1e20 (`--airway-board`) | `--skin-tutorial-dialog-bg` |
+| Tutorial | `.aw-settings-dialog button` → background | #2c2f32 (`--airway-flap`) | `--skin-tutorial-dialog-button-bg` |
+| Tutorial | `.aw-settings-dialog button` → border | #9ba19e | `--skin-tutorial-dialog-button-rule` |
+| Tutorial | `.aw-settings-dialog button` → color; `.aw-settings-dialog` → color | #fbf8f1 (`--airway-ticket`) | `--skin-tutorial-dialog-ink` |
+| Tutorial | `.aw-tutorial-dock` → background | #13302e (`--airway-panel`) | `--skin-tutorial-dock-bg` |
+| Tutorial | `.aw-tutorial button:focus-visible` → outline | #ff7a3d (`--airway-accent`) | `--skin-tutorial-focus` |
+| Tutorial | `.aw-guide` → stroke; `.aw-live-path` → stroke | #ff7a3d (`--airway-accent`) | `--skin-tutorial-guide` |
+| Tutorial | `.aw-tutorial-hint` → color; `.aw-tutorial` → color | #13302e (`--airway-panel`) | `--skin-tutorial-ink` |
+| Tutorial | `.aw-ticket-skip` → background; `.aw-tutorial-ticket` → background | #fbf8f1 (`--airway-ticket`) | `--skin-tutorial-paper` |
+| Tutorial | `.aw-ticket-perf` → border-left; `.aw-ticket-perf` → border-top | #789b94 | `--skin-tutorial-perforation` |
+| Tutorial | `.aw-route` → stroke | #f4f0db | `--skin-tutorial-route` |
+| Tutorial | `.aw-route-feeder` → stroke | #e6b666 | `--skin-tutorial-route-feeder` |
+| Tutorial | `.aw-route-primary` → stroke | #fbf8f1 (`--airway-ticket`) | `--skin-tutorial-route-primary` |
+| Tutorial | `.aw-complete-action` → background; `.aw-settings-dialog` → border; `.aw-settings-sign` → background | #ffc72c (`--airway-sign`) | `--skin-tutorial-sign-bg` |
+| Tutorial | `.aw-settings-sign` → border; `.aw-settings-sign` → color | #1c1e20 (`--airway-board`) | `--skin-tutorial-sign-ink` |
+| Tutorial | `.aw-tutorial-stage` → background; `.aw-tutorial-world` → background | #8cc3d8 (`--airway-sky`) | `--skin-tutorial-sky` |
+| Tutorial | `.aw-plane-tag, .aw-action-tag` → background; `.aw-tutorial-strip` → background | #f7f3ea (`--airway-paper`) | `--skin-tutorial-strip-bg` |
+| Tutorial | `.aw-tutorial-strip` → border-left | #c8352a (`--airway-jam`) | `--skin-tutorial-strip-edge` |
+| Tutorial | `.aw-route-drop` → color; `.aw-tutorial[data-step="route"] .aw-city-lon .aw-airport, .aw-tutorial[data-step="route"] .aw-city-par .aw-airport, .aw-tutorial[data-step="transfer"] .aw-city-par .aw-airport` → outline | #ffc72c (`--airway-sign`) | `--skin-tutorial-target` |
+| Tutorial | `.aw-plane-tag svg` → color; `.aw-strip-index` → color; `.aw-ticket-skip` → color; `.aw-tutorial-dock` → border-left; `.aw-tutorial-dock` → border-top; `.aw-tutorial-ticket` → border | #1e6f6a (`--airway-teal`) | `--skin-tutorial-teal` |
 
 ## Structural values (stay in the component CSS)
 

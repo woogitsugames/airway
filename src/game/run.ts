@@ -11,7 +11,7 @@ import type { HubPressure } from '../sim/upgrades';
 import type { SlotPressure } from '../ui/upgrade/cards'; // [task-32]
 import type { ContractBoard } from '../ui/upgrade/cards'; // [night-12ba] R2k
 import type { WeeklyContract } from '../sim/contracts';
-import type { SurgeView } from '../sim';
+import type { AirportWeatherView, SurgeView, WeatherView } from '../sim';
 import { airportLabel, readAirportLabelMode } from '../ui/airportLabel'; // [night-05] D-68
 import { buildCauseReport, type HubCauseLedger } from './causes';
 import { PICK_LETTERS, type RunRecord, type RunStats } from './logbook';
@@ -24,6 +24,11 @@ const MAX_PLAY_FRAME_S = 0.5;
 export const ENDLESS_WEEKLY_CONTRACT = true;
 /** [night-12bb] R2i, D-249: new Endless runs carry the announced demand surge (one switch, like the contract). */
 export const ENDLESS_DEMAND_SURGE = true;
+/**
+ * [night-12bd] R2j: the weather front is a post-launch candidate, so shipped Endless runs leave it OFF; only the DEV
+ * query switch (`?weather=front`, src/main.ts), tests and the balance bot turn it on per run.
+ */
+export const ENDLESS_WEATHER_FRONT = false;
 export type RunCommand = Command;
 export type JournalEntry = CommandEntry;
 
@@ -101,12 +106,13 @@ export class EndlessRun {
    * [night-12ba] R2k, D-247: every new Endless run has the weekly contract (ENDLESS_WEEKLY_CONTRACT); Daily never.
    * [night-12bb] R2i, D-249: and the announced demand surge (ENDLESS_DEMAND_SURGE); Daily never.
    * [night-12bc] R2h, D-251: `licenceClass` (Endless only; 1 = today's rules) picks the class's scenario knobs.
+   * [night-12bd] R2j: `weatherFront` (Endless only) adds the weekly weather front; off unless a switch asks for it.
    */
   static create(seed: number, mode: GameMode = 'endless', homeRegion: RegionId | null = null,
-      licenceClass: LicenceClass = 1): EndlessRun {
+      licenceClass: LicenceClass = 1, weatherFront = ENDLESS_WEATHER_FRONT): EndlessRun {
     return mode === 'daily' ? new EndlessRun(createGame(seed, 'daily'))
       : new EndlessRun(createGame(seed, 'endless', undefined, homeRegion, ENDLESS_WEEKLY_CONTRACT, ENDLESS_DEMAND_SURGE,
-        licenceClass));
+        licenceClass, weatherFront));
   }
 
   get seed(): number { return this.sim.seed; }
@@ -115,6 +121,8 @@ export class EndlessRun {
   get homeRegion(): RegionId | null { return this.sim.config.homeRegion ?? null; }
   /** [night-12bc] R2h: the run's licence class (1 for class I runs, every Daily and older saves). */
   get licenceClass(): LicenceClass { return this.sim.config.licenceClass ?? 1; }
+  /** [night-12bd] R2j: does this run carry the weather front (never in shipped Endless or Daily)? */
+  get weatherFront(): boolean { return this.sim.config.weatherFront === true; }
   get tick(): number { return this.sim.tickCount; }
   /** UTC world minute: drives the sun and terminator. */
   get clockMinute(): number { return this.sim.world.minute; }
@@ -261,6 +269,10 @@ export class EndlessRun {
 
   /** [night-12bb] R2i, D-249: the announced or running demand surge (null otherwise, and in Daily). */
   get surge(): SurgeView | null { return this.sim.world.surge; }
+
+  /** [night-12bd] R2j: the week's weather front (null without the rule) and one airport's forecast or deck. */
+  get weather(): WeatherView | null { return this.sim.world.weather; }
+  airportWeather(cityId: string): AirportWeatherView | null { return this.sim.world.airportWeather(cityId); }
 
   /** [night-12ba] R2k: what the open weekly board shows: next week's contract and the one that just ended. */
   contractBoard(): ContractBoard | null {

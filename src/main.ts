@@ -58,6 +58,11 @@ void presetTextScaleFromSystem(systemTextScale); // [night-11ap] R1g: first laun
 initializeMotion(); // [night-11g] D-88
 document.title = t('app.title');
 const query = new URLSearchParams(location.search);
+/**
+ * [night-12bd] R2j: the weather front is a post-launch candidate, off in shipped Endless; `?weather=front` turns it on
+ * for new Endless runs in a DEV build only (production folds this to false).
+ */
+const devWeatherFront = import.meta.env.DEV && query.get('weather') === 'front';
 /** [task-36] Ticks of autoplay before a store scene is lit (game, night, failure). */
 const STORE_SHOT_PLAY_TICKS = 1500;
 /**
@@ -282,8 +287,9 @@ async function boot(): Promise<void> {
       onRestart: (seed) => {
         // [night-11aj] R2g: "same world" keeps the run's home region; a new world takes the menu's current choice.
         // [night-12bc] R2h: likewise "same world" keeps the run's licence class.
+        // [night-12bd] R2j: and its weather front.
         if (mode !== 'daily') startEndless(seed, seed === run.seed ? run.homeRegion : preferredHomeRegion(),
-          seed === run.seed ? run.licenceClass : preferredLicence());
+          seed === run.seed ? run.licenceClass : preferredLicence(), seed === run.seed ? run.weatherFront : devWeatherFront);
         else if (seed === dailySeedForKey(dailyKey())) startDaily();
         else if (seed === failedDailySeed) screens.show('menu');
         else startEndless(seed);
@@ -355,17 +361,17 @@ async function boot(): Promise<void> {
   }
 
   function startEndless(seed: number, homeRegion: RegionId | null = preferredHomeRegion(),
-      licence: LicenceClass = preferredLicence()): void {
+      licence: LicenceClass = preferredLicence(), weather = devWeatherFront): void {
     pendingSeed = null;
     const firstRun = (() => {
       try { return !globalThis.localStorage?.getItem(TUTORIAL_KEY); } catch { return false; }
     })();
     if (skipTutorialOnce || !firstRun) {
       skipTutorialOnce = false;
-      openGame(EndlessRun.create(seed, 'endless', homeRegion, licence), 'endless');
+      openGame(EndlessRun.create(seed, 'endless', homeRegion, licence, weather), 'endless');
       return;
     }
-    openTutorial(() => openGame(EndlessRun.create(seed, 'endless', homeRegion, licence), 'endless'));
+    openTutorial(() => openGame(EndlessRun.create(seed, 'endless', homeRegion, licence, weather), 'endless'));
   }
 
   function startDaily(): void {

@@ -8,6 +8,7 @@ import { botCommandToSim, botSnapshot } from '../src/game/dev/autoplay.ts';
 import type { BotCommand, BotSnapshot } from './bot.ts';
 import { cityDistanceKm } from '../src/data/index.ts';
 import { PLANE_TYPES, SIM_MINUTES_PER_WEEK } from '../src/sim/params.ts';
+import { drawFront } from '../src/sim/weather.ts';
 
 /**
  * [night-12ab] R8d: what a run used, counted from the sim's own events (no prototype wrapping) and read-only views.
@@ -41,6 +42,18 @@ export interface RunSurges {
   readonly lostAtSurge: boolean;
 }
 
+/** [night-12bd] R2j: the weather front in one run (only with `weatherFront`). */
+export interface RunWeather {
+  /** Fronts that formed before the run ended. */
+  readonly fronts: number;
+  /** Airport-minutes a served airport (≥ 1 route) spent under a front (one departure slot fewer). */
+  readonly servedUnderMin: number;
+  /** Departures held for a slot (`DepartureHeld`) at an airport under a front. */
+  readonly slotHoldsUnder: number;
+  /** The run was lost at an airport while it was under a front or within 6 game hours after. */
+  readonly lostUnderFront: boolean;
+}
+
 /** [night-12ba] R2k, D-247: weekly contracts of one run (only with `weeklyContract`). */
 export interface RunContracts {
   /** Contracts whose week ended before the run did, and how many of them were met. */
@@ -65,12 +78,16 @@ class GameSession {
   private extraBoards = 0;
   private extraPicked = 0;
   private extraOnBoard: string | undefined;
+  /** [night-12bd] R2j: weather-front counters (stay zero without the rule). */
+  private readonly weatherCounts = { servedUnderMin: 0, slotHoldsUnder: 0 };
+  private readonly lastUnder = new Map<string, number>();
 
   constructor(seed: number, mode: 'endless' | 'daily' = 'endless', homeRegion: RegionId | null = null, weeklyContract = false,
-      demandSurge = false, licenceClass: LicenceClass = 1) {
+      demandSurge = false, licenceClass: LicenceClass = 1, weatherFront = false) {
     // [night-11aj] R2g: per-region balance check. [night-12ba] R2k: with or without the weekly contract.
     // [night-12bb] R2i: with or without the demand surge. [night-12bc] R2h: per licence class (balance:licences).
-    this.sim = createGame(seed, mode, undefined, homeRegion, weeklyContract, demandSurge, licenceClass);
+    // [night-12bd] R2j: with or without the weather front (balance:weather).
+    this.sim = createGame(seed, mode, undefined, homeRegion, weeklyContract, demandSurge, licenceClass, weatherFront);
     const start = [...this.sim.world.cities()].map((city) => city.id);
     for (const id of start) this.reachAtOpen.set(id, nearestKm(id, start));
   }
@@ -95,7 +112,18 @@ class GameSession {
 
   private tick(): void {
     this.sim.tick();
+    const weather = this.sim.config.weatherFront === true && this.sim.world.weather !== null;
+    if (weather) {
+      for (const city of this.sim.world.cities()) {
+        if (this.sim.world.airportWeather(city.id)?.phase !== 'under') continue;
+        this.lastUnder.set(city.id, this.sim.world.minute);
+        if (city.routes > 0) this.weatherCounts.servedUnderMin++;
+      }
+    }
     for (const event of this.sim.drainEvents()) {
+      if (weather && event.type === 'DepartureHeld' && this.sim.world.airportWeather(event.cityId)?.phase === 'under') {
+        this.weatherCounts.slotHoldsUnder++;
+      }
       if (event.type === 'HubJamStarted') this.warned = true;
       if (event.type === 'CitySpawned') this.reachAtOpen.set(event.cityId, nearestKm(event.cityId, [...this.reachAtOpen.keys()]));
       if (event.type === 'GameOver' && event.failure) this.leadTicks = CONGESTION_GRACE_TICKS;
@@ -142,6 +170,19 @@ class GameSession {
     };
   }
 
+  /** [night-12bd] R2j: the run's weather fronts (all zero without the rule). */
+  weather(): RunWeather {
+    const world = this.sim.world;
+    const failure = world.failure;
+    let fronts = 0;
+    for (let week = 2; (week - 1) * SIM_MINUTES_PER_WEEK <= world.minute; week++) {
+      const front = drawFront(this.sim.seed, week);
+      if (this.sim.config.weatherFront === true && front && front.formTick <= world.minute) fronts++;
+    }
+    const last = failure ? this.lastUnder.get(failure.cityId) : undefined;
+    return { fronts, ...this.weatherCounts, lostUnderFront: last !== undefined && world.minute - last <= 360 };
+  }
+
   /** [night-12ba] R2k: the run's weekly contracts (all zero without the contract rule). */
   contracts(): RunContracts {
     const world = this.sim.world;
@@ -176,6 +217,7 @@ function nearestKm(id: string, others: readonly string[]): number {
 }
 
 export function createBalanceSession(seed: number, mode: 'endless' | 'daily' = 'endless',
-    homeRegion: RegionId | null = null, weeklyContract = false, demandSurge = false, licenceClass: LicenceClass = 1): GameSession {
-  return new GameSession(seed >>> 0, mode, homeRegion, weeklyContract, demandSurge, licenceClass);
+    homeRegion: RegionId | null = null, weeklyContract = false, demandSurge = false, licenceClass: LicenceClass = 1,
+    weatherFront = false): GameSession {
+  return new GameSession(seed >>> 0, mode, homeRegion, weeklyContract, demandSurge, licenceClass, weatherFront);
 }

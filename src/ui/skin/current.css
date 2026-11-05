@@ -1,6 +1,7 @@
 /* [night-11aq] UI skin "Diorama" (current): every visual value of the in-game HUD (boarding pass, tag dock), airport
    tags and chips, pause sheet, weekly board, hub cause board, game-over report and main menu / settings, as semantic
-   custom properties. The component CSS reads only these names (test:skin-tokens fails on a colour or font literal
+   custom properties; [night-11as] also the ATC strip / route menu / first-time card, logbook, puzzle board, leaderboard,
+   tutorial and the region glyph outline. Release builds write the values in place (scripts/vite-skin-inline.mjs). The component CSS reads only these names (test:skin-tokens fails on a colour or font literal
    there). A new UI skin (docs/styles/ui-2026-11/KIERUNKI.md) = a new file like this one, imported instead of it in
    src/main.ts, plus structural tweaks in the component CSS. Colours point at the palette of src/ui/theme/theme.css
    where it has the same value (test:contrast / test:cvd keep that palette); the rest are raw values of this skin.
@@ -79,6 +80,8 @@
   --skin-tag-glyph-hollow: var(--airway-ticket); /* overlay.ts transfer glyph inside the connection time */
   --skin-tag-surge-ink: var(--airway-panel); /* [night-12bb] D-249 demand-surge stub and edge pennant */
   --skin-tag-surge-paper: var(--airway-ticket);
+  --skin-tag-front-ink: var(--airway-panel); /* [night-12bd] R2j weather-front stub */
+  --skin-tag-front-paper: var(--airway-ticket);
   /* Off-screen airport chip (overlay.css .airport-edge) */
   --skin-edge-border: var(--airway-panel);
   --skin-edge-bg: var(--airway-ticket);
@@ -229,4 +232,97 @@
   --skin-settings-licenses-ink: var(--airway-sign);
   --skin-settings-warning-ink: #8a2219;
   --skin-settings-note-bg: #efe8da;
+  /* [night-11as] D-250 follow-up: the components D-250 left out */
+  /* Region glyph outline (glyphs.ts, inline style on every destination glyph) */
+  --skin-glyph-outline: var(--airway-ticket);
+  /* ATC strip, route menu, route handles and first-time card (atcStrip.css) */
+  --skin-atc-strip-edge: var(--airway-jam);
+  --skin-atc-paper: var(--airway-ticket);
+  --skin-atc-ink: var(--airway-ink);
+  --skin-atc-strip-ledge: #9e916c;
+  --skin-atc-field-rule: #cdbf8f;
+  --skin-atc-error-ink: #ae2d23;
+  --skin-atc-menu-focus: var(--airway-sign);
+  --skin-atc-menu-border: var(--airway-panel);
+  --skin-atc-menu-shadow: var(--airway-ink);
+  --skin-atc-menu-rule: #baa985;
+  --skin-atc-handle-rim: var(--airway-panel);
+  --skin-atc-handle-halo: var(--airway-ticket);
+  --skin-atc-handle-active-bg: var(--airway-sign);
+  --skin-atc-ok-rule: #9e916c;
+  --skin-atc-ok-bg: var(--airway-sign);
+  --skin-atc-ok-ink: var(--airway-board);
+  --skin-atc-ok-focus: var(--airway-panel);
+  /* Leaderboard board (leaderboard/leaderboard.css) */
+  --skin-rank-bg: var(--airway-board);
+  --skin-rank-ink: #e9e3d4;
+  --skin-rank-accent: var(--airway-sign);
+  --skin-rank-head-rule: #3b3e41;
+  --skin-rank-dim-ink: #a9b3b1;
+  --skin-rank-row-rule: #2c2f31;
+  /* Logbook page (logbook/logbook.css; the paper and header come from menu.css) */
+  --skin-logbook-edge: var(--airway-jam);
+  --skin-logbook-rule: var(--airway-ink);
+  --skin-logbook-row-rule: #c2b5a6;
+  --skin-logbook-label-ink: #55514a;
+  --skin-logbook-value-ink: var(--airway-panel);
+  --skin-logbook-ink: var(--airway-ink);
+  --skin-logbook-daily-mark: var(--airway-teal);
+  --skin-logbook-summary-bg: #fbf6ec;
+  --skin-logbook-milestone-done: var(--airway-teal);
+  --skin-logbook-milestone-open: #6b6257;
+  /* Puzzle board and puzzle game screen (puzzles/board.css) */
+  --skin-puzzle-focus: var(--airway-sign);
+  --skin-puzzle-board-bg: var(--airway-board);
+  --skin-puzzle-board-ink: var(--airway-ticket);
+  --skin-puzzle-board-edge: var(--airway-sign);
+  --skin-puzzle-sign-bg: var(--airway-sign);
+  --skin-puzzle-sign-ink: var(--airway-board);
+  --skin-puzzle-board-accent: var(--airway-sign);
+  --skin-puzzle-scroll-track: #222528;
+  --skin-puzzle-pack-bg: #151718;
+  --skin-puzzle-flap-bg: var(--airway-flap);
+  --skin-puzzle-flap-split: #17191a;
+  --skin-puzzle-flap-hover-bg: #393d40;
+  --skin-puzzle-flap-dim-ink: #b5c3c1;
+  --skin-puzzle-best-ink: var(--airway-teal);
+  --skin-puzzle-dim: var(--airway-dim);
+  --skin-puzzle-game-bg: #e5e7df;
+  --skin-puzzle-teal: var(--airway-teal);
+  --skin-puzzle-back-border: var(--airway-board);
+  --skin-puzzle-paper: var(--airway-ticket);
+  --skin-puzzle-ink: var(--airway-panel);
+  --skin-puzzle-stats-rule: #b8c9bd;
+  --skin-puzzle-result-bg: #e3e9e1;
+  --skin-puzzle-lost-bg: #f1ded9;
+  --skin-puzzle-lost-edge: var(--airway-jam);
+  --skin-puzzle-error-ink: #90251b;
+  --skin-puzzle-supply-ink: #38524d;
+  --skin-puzzle-card-rule: #b9c5b8;
+  --skin-puzzle-controls-bg: var(--airway-panel);
+  --skin-puzzle-motion-press: 80ms;
+  /* Tutorial vignette (tutorial/tutorial.css; the luggage tag comes from overlay.css) */
+  --skin-tutorial-ink: var(--airway-panel);
+  --skin-tutorial-focus: var(--airway-accent);
+  --skin-tutorial-sky: var(--airway-sky);
+  --skin-tutorial-paper: var(--airway-ticket);
+  --skin-tutorial-card-ink: var(--airway-ink);
+  --skin-tutorial-teal: var(--airway-teal);
+  --skin-tutorial-perforation: #789b94;
+  --skin-tutorial-motion-world: 200ms;
+  --skin-tutorial-route: #f4f0db;
+  --skin-tutorial-route-feeder: #e6b666;
+  --skin-tutorial-route-primary: var(--airway-ticket);
+  --skin-tutorial-guide: var(--airway-accent);
+  --skin-tutorial-motion-guide: 1000ms;
+  --skin-tutorial-target: var(--airway-sign);
+  --skin-tutorial-strip-bg: var(--airway-paper);
+  --skin-tutorial-strip-edge: var(--airway-jam);
+  --skin-tutorial-dock-bg: var(--airway-panel);
+  --skin-tutorial-sign-bg: var(--airway-sign);
+  --skin-tutorial-sign-ink: var(--airway-board);
+  --skin-tutorial-dialog-bg: var(--airway-board);
+  --skin-tutorial-dialog-ink: var(--airway-ticket);
+  --skin-tutorial-dialog-button-bg: var(--airway-flap);
+  --skin-tutorial-dialog-button-rule: #9ba19e;
 }

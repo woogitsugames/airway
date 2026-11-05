@@ -3,6 +3,7 @@
 // install (marked when shown). Only one card is on screen; others wait their turn in arrival order.
 import { t } from '../../i18n';
 import type { FirstTimeCard, FirstTimeRegistry } from './first-time';
+import '../../ui/skin/current.css'; // [night-11as] skin tokens read by atcStrip.css
 import '../../ui/atcStrip.css';
 
 const VISIBLE_MS = 12000;

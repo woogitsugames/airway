@@ -1,5 +1,6 @@
 // [night-11aq] D-249: UI skin guard. The component CSS of the in-game HUD (boarding pass, tag dock), airport tags and
-// chips, pause sheet, weekly board, hub cause board, game-over report and main menu / settings reads every colour,
+// chips, pause sheet, weekly board, hub cause board, game-over report, main menu / settings and [night-11as] the ATC
+// strip, logbook, puzzle board, leaderboard, tutorial and glyph outline (glyphs.ts, puzzles/index.ts) reads every colour,
 // typeface, weight, motion duration, corner, shadow and icon size from src/ui/skin/current.css, so a UI skin
 // (docs/styles/ui-2026-11/KIERUNKI.md) is one token file plus structural tweaks. Fails when a colour literal (#hex,
 // rgb/hsl, a named colour), a font family name or generic family, a numeric font weight or a ms/s duration appears in a
@@ -14,9 +15,12 @@ import { constantProperties, inlineSkin, keptSkin, resolveTokens, skinBuild, ski
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const SKIN = 'src/ui/skin/current.css';
 const COVERED = ['src/ui/hud.css', 'src/ui/overlay.css', 'src/ui/game.css', 'src/ui/upgrade/upgrade.css', 'src/ui/hubBoard.css',
-  'src/ui/gameover/gameover.css', 'src/ui/menu/menu.css'];
+  'src/ui/gameover/gameover.css', 'src/ui/menu/menu.css',
+  // [night-11as] D-250 follow-up: the components D-250 left out.
+  'src/ui/atcStrip.css', 'src/ui/logbook/logbook.css', 'src/ui/puzzles/board.css', 'src/ui/leaderboard/leaderboard.css',
+  'src/ui/tutorial/tutorial.css'];
 /** TS modules whose inline SVG inks are skin tokens. */
-const COVERED_TS = ['src/ui/overlay.ts'];
+const COVERED_TS = ['src/ui/overlay.ts', 'src/ui/glyphs.ts', 'src/ui/puzzles/index.ts'];
 const NAMED = /\b(white|black|red|green|blue|yellow|orange|gray|grey|silver|maroon|navy|teal|purple|pink|gold|beige|ivory|tan|brown|cyan|magenta)\b/i;
 const read = (file) => readFileSync(resolve(ROOT, file), 'utf8');
 const stripComments = (css) => css.replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, ' '));
@@ -147,8 +151,8 @@ check('inline: the skin file keeps only the tokens scripts read', keptSkin(unit,
 const real = skinBuild(ROOT);
 const leftover = COVERED.filter((file) => /var\(--skin-/.test(inlineSkin(read(file), real.resolved, file)));
 check('inline: every covered file of the real skin inlines with no token left', leftover.length === 0, leftover.join(' '));
-check('inline: the real skin keeps exactly the inline SVG inks of overlay.ts', [...real.keep].sort().join() ===
-  [...new Set([...read('src/ui/overlay.ts').matchAll(/var\(--skin-([a-z0-9-]+)\)/g)].map((m) => m[1]))].sort().join());
+check('inline: the real skin keeps exactly the tokens of the covered TypeScript', [...real.keep].sort().join() ===
+  [...new Set(COVERED_TS.flatMap((file) => [...read(file).matchAll(/var\(--skin-([a-z0-9-]+)\)/g)].map((m) => m[1])))].sort().join());
 
 for (const { name, ok, why } of results) console[ok ? 'log' : 'error'](`${ok ? 'PASS' : 'FAIL'} ${name}${why && !ok ? ': ' + why : ''}`);
 const failed = results.filter((r) => !r.ok).length;

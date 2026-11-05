@@ -7,28 +7,28 @@
   max-width: min(740px, calc(100% - 24px - var(--aw-safe-left) - var(--aw-safe-right))); /* [night-11z] D-209 */
   display: flex;
   flex-wrap: wrap;
-  border-left: 10px solid #c8352a;
-  background: #fbf8f1;
-  color: #2a2420;
-  font: 700 13px/1.35 'Atkinson Hyperlegible Next', sans-serif;
-  box-shadow: 0 2px 0 #9e916c;
+  border-left: 10px solid var(--skin-atc-strip-edge);
+  background: var(--skin-atc-paper);
+  color: var(--skin-atc-ink);
+  font: var(--skin-weight-bold) 13px/1.35 var(--skin-face-text);
+  box-shadow: 0 2px 0 var(--skin-atc-strip-ledge);
   pointer-events: none;
 }
 .airway-atc-strip[hidden], .airway-route-menu[hidden] { display: none; }
-.airway-atc-field { padding: 8px 10px; border-right: 1px solid #cdbf8f; }
+.airway-atc-field { padding: 8px 10px; border-right: 1px solid var(--skin-atc-field-rule); }
 .airway-atc-field:last-child { border-right: 0; }
-.airway-atc-flight { font-family: 'Overpass Mono', monospace; font-size: 12px; }
-.airway-atc-error { color: #ae2d23; font: 800 14px/1.3 'Overpass', sans-serif; }
-.airway-route-menu button:focus-visible { outline: 3px solid #ffc72c; outline-offset: 2px; }
+.airway-atc-flight { font-family: var(--skin-face-mono); font-size: 12px; }
+.airway-atc-error { color: var(--skin-atc-error-ink); font: var(--skin-weight-heavy) 14px/1.3 var(--skin-face-display); }
+.airway-route-menu button:focus-visible { outline: 3px solid var(--skin-atc-menu-focus); outline-offset: 2px; }
 .airway-route-menu {
   position: absolute;
   z-index: 50;
   width: 216px;
   padding: 4px;
-  background: #fbf8f1;
-  color: #2a2420;
-  border: 2px solid #13302e;
-  box-shadow: 3px 3px 0 #2a2420;
+  background: var(--skin-atc-paper);
+  color: var(--skin-atc-ink);
+  border: 2px solid var(--skin-atc-menu-border);
+  box-shadow: 3px 3px 0 var(--skin-atc-menu-shadow);
   display: grid;
 }
 .airway-route-menu button {
@@ -37,17 +37,17 @@
   min-height: 48px;
   padding: 8px 12px;
   color: inherit;
-  font: 800 14px/1.2 'Overpass', sans-serif;
+  font: var(--skin-weight-heavy) 14px/1.2 var(--skin-face-display);
   text-align: left;
   background: transparent;
   border: 0;
-  border-bottom: 1px dashed #baa985;
+  border-bottom: 1px dashed var(--skin-atc-menu-rule);
   cursor: pointer;
   touch-action: manipulation;
 }
 .airway-route-menu button:last-child { border-bottom: 0; }
 .airway-route-menu button:disabled { opacity: .45; cursor: not-allowed; }
-.airway-route-menu .airway-route-menu-danger { color: #ae2d23; }
+.airway-route-menu .airway-route-menu-danger { color: var(--skin-atc-error-ink); }
 @media (orientation: landscape) and (max-height: 540px) {
   .airway-atc-strip {
     bottom: max(14px, var(--aw-safe-bottom));
@@ -78,8 +78,8 @@
   width: 10px;
   height: 10px;
   box-sizing: border-box;
-  border: 2px solid #13302e;
-  outline: 1.5px solid #fbf8f1;
+  border: 2px solid var(--skin-atc-handle-rim);
+  outline: 1.5px solid var(--skin-atc-handle-halo);
   background: transparent;
   transform: rotate(45deg);
 }
@@ -91,7 +91,7 @@
   box-sizing: content-box;
   border-width: 3px;
   outline-width: 2px;
-  background: #ffc72c;
+  background: var(--skin-atc-handle-active-bg);
 }
 
 /* [night-11p] R6a first-time card: the slot hint's strip with a yellow luggage-tag "OK" (48 dp, thumb side). */
@@ -104,14 +104,14 @@
   margin-left: auto;
   padding: 0 14px;
   border: 0;
-  border-left: 1px dashed #9e916c;
-  background: #ffc72c;
-  color: #1c1e20;
-  font: 800 14px/1 'Overpass', sans-serif;
+  border-left: 1px dashed var(--skin-atc-ok-rule);
+  background: var(--skin-atc-ok-bg);
+  color: var(--skin-atc-ok-ink);
+  font: var(--skin-weight-heavy) 14px/1 var(--skin-face-display);
   letter-spacing: .04em;
   pointer-events: auto;
   touch-action: manipulation;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
-.airway-first-time__ok:focus-visible { outline: 3px solid #13302e; outline-offset: -4px; }
+.airway-first-time__ok:focus-visible { outline: 3px solid var(--skin-atc-ok-focus); outline-offset: -4px; }
