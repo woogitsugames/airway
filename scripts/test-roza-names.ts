@@ -6,7 +6,7 @@
 import assert from 'node:assert/strict';
 import { roseLabelBelow, roseLabelText, roseNameBox, roseRank, rozaCaptionClashes, rozaNameLayout, rozaNotePlaces, rozaRoseObstacles, roseHomeReach, roseRingHalf,
   type RoseLabel, type RoseLabelMode } from '../src/ui/skin/roza.ts';
-import { layoutTags, OWN_MARGIN, type TagSlot } from '../src/ui/overlay-layout.ts';
+import { layoutTags, NOTE_GAP_X, NOTE_GAP_Y, OWN_MARGIN, type TagSlot } from '../src/ui/overlay-layout.ts';
 
 let passed = 0;
 let failed = 0;
@@ -129,7 +129,8 @@ const PHONE = { width: 360, height: 640, top: 72, bottom: 120, gap: 4 };
 /** [night-16b] D-263: the Róża dock symbols on their arc in that shot (globe mode, hub, widebody; 48 × 48 centres). */
 const DOCK = [[233, 388], [182, 419], [146, 469]];
 /** One overlay frame as src/ui/overlay.ts runs it: names, then the notes beside the roses (fixed rose boxes). */
-function levantFrame(scene: Scene, last?: { modes: RoseLabelMode[]; tags: TagSlot[] }, view: View = PHONE, dock: number[][] = DOCK) {
+function levantFrame(scene: Scene, last?: { modes: RoseLabelMode[]; tags: TagSlot[] }, view: View = PHONE, dock: number[][] = DOCK,
+  screenWidth = view.width) {
   const labels = scene.map((s, i) => ({ ...s.label, last: last?.modes[i] }));
   const modes = rozaNameLayout(labels);
   const busiest = labels.reduce((best, l, i) => (l.hub && (best < 0 || roseRank(l) > roseRank(labels[best])) ? i : best), -1);
@@ -142,7 +143,7 @@ function levantFrame(scene: Scene, last?: { modes: RoseLabelMode[]; tags: TagSlo
     tag.minor = scene[i].minor ?? label.fill === 0;
     tag.rank = roseRank(label);
     tag.must = i === busiest;
-    rozaNotePlaces(tag, label, modes[i], view.width);
+    rozaNotePlaces(tag, label, modes[i], screenWidth);
     const box: TagSlot = { id: label.code + '~rose', anchorX: 0, anchorY: 0, width: 0, height: 0, active: true, jammed: false, fixed: true,
       x: 0, y: 0, placed: false, rank: tag.rank };
     const name: TagSlot = { ...box, id: label.code + '~name' };
@@ -280,11 +281,33 @@ function assertNotesOwned(labels: RoseLabel[], modes: RoseLabelMode[], tags: Tag
     });
   });
 }
+
+/**
+ * [night-19a] D-266: no shown note stacks against another rose's note (NOTE_GAP_Y px above or below it, NOTE_GAP_X px
+ * beside it) or crosses the line from another rose's centre to that rose's note.
+ */
+function assertNotesApart(labels: RoseLabel[], tags: TagSlot[]): void {
+  const shown = tags.map((t, i) => ({ t, l: labels[i] })).filter((n) => n.t.placed);
+  for (const a of shown) for (const b of shown) {
+    if (a === b) continue;
+    const { t } = a, { t: o } = b;
+    const gapX = Math.max(o.x - t.x - t.width, t.x - o.x - o.width), gapY = Math.max(o.y - t.y - t.height, t.y - o.y - o.height);
+    assert(gapX >= NOTE_GAP_X - 1e-6 || gapY >= NOTE_GAP_Y - 1e-6,
+      `${t.id}'s note stacks against ${o.id}'s (${Math.round(gapX)} px beside, ${Math.round(gapY)} px above or below)`);
+    // The line from b's rose to the nearest point of b's note, sampled: never inside a's note.
+    const nx = Math.max(o.x, Math.min(b.l.x, o.x + o.width)), ny = Math.max(o.y, Math.min(b.l.y, o.y + o.height));
+    for (let k = 0; k <= 20; k++) {
+      const px = b.l.x + (nx - b.l.x) * k / 20, py = b.l.y + (ny - b.l.y) * k / 20;
+      assert(!(px > t.x && px < t.x + t.width && py > t.y && py < t.y + t.height), `${t.id}'s note stands between ${b.l.code} and its note`);
+    }
+  }
+}
 for (const [id, scene] of [['game', GAME_IPHONE], ['night', NIGHT_IPHONE]] as const) {
   test(`store shot ${id}-iphone (D-264): every note is clearly its own rose's, none hangs at Ankara`, () => {
     for (const { labels, modes, tags } of [iphoneFrame(scene), iphoneShotFrame(scene)]) {
     assertNotesOwned(labels, modes, tags);
     assertNotesAtHome(labels, tags);
+    assertNotesApart(labels, tags);
     const [ath, ank, amm, bgw] = tags;
     const ankara = roseNameBox(labels[1], roseLabelText(labels[1], modes[1]), roseLabelBelow(modes[1]));
     // Before D-264: "ATH 2 z 36" right above Ankara's name, "BGW 2 z 24" level with Ankara's ring right of it.
@@ -311,7 +334,58 @@ for (const [id, scene] of [['game', GAME_IPHONE], ['night', NIGHT_IPHONE]] as co
 test('store shot game-phone (D-264): the 360×640 Levant cluster: every note clearly its own rose\'s', () => {
   const { labels, modes, tags } = levantFrame(LEVANT);
   assertNotesOwned(labels, modes, tags);
+  assertNotesApart(labels, tags);
   assert(tags[4].placed && tags[4].compact === true, 'Amman\'s forced compact note still stands beside its own name');
 });
+// [night-19a] D-266: the store shots game-tablet and night-tablet (768×1024, docs/store/shots/pl/ after PR #272): the
+// layout inputs read from the real overlay in those scenes (the notes' band is 576 px wide there). "BGW 2 z 24" stood
+// over Bagdad's name 4 px under "ANK 1 z 24": within D-264, but the two notes read as one block.
+const TABLET: View = { width: 576, height: 1024, top: 84, bottom: 96, gap: 4 };
+const TABLET_DOCK = [[551.2, 975.7], [540, 914.8], [553.8, 854.4], [590.2, 804.3], [643.4, 772.6], [704.7, 764.4]];
+const tabletScene = (fills: number[], widths: number[], minor: boolean[]): Scene => [
+  rose(182.7, 452.3, 'Ateny', 'ATH', { r: 40, hub: true }),
+  rose(308.8, 426.1, 'Ankara', 'ANK', { r: 40 }),
+  rose(351.7, 548.3, 'Amman', 'AMM', { r: 40, hub: true }),
+  rose(476.8, 524.1, 'Bagdad', 'BGW', { r: 40 }),
+  rose(79.8, 352.3, 'Wenecja', 'VCE', { r: 38.7 }),
+  rose(241.1, 236.1, 'Ryga', 'RIX', { r: 40 }),
+].map((label, i) => ({ label: { ...label, fill: fills[i] }, width: widths[i], compact: 89, minor: minor[i] }));
+const GAME_TABLET = tabletScene([2 / 36, 1 / 24, 3 / 36, 2 / 24, 1 / 24, 0], [144, 144, 178, 178, 144, 103],
+  [false, false, false, false, false, true]);
+const NIGHT_TABLET = tabletScene([3 / 36, 0, 5 / 36, 3 / 24, 0, 0], [144, 103, 144, 178, 103, 103],
+  [false, true, false, false, true, true]);
+const tabletFrame = (scene: Scene, last?: { modes: RoseLabelMode[]; tags: TagSlot[] }) =>
+  levantFrame(scene, last, TABLET, TABLET_DOCK, 768);
+/** The frame as the shot met it: every rose showed its name and each note held its place (the overlay's lastPick). */
+function tabletShotFrame(scene: Scene) {
+  const before = tabletFrame(scene);
+  [2, 0, 1, 3, 3, 0].forEach((pick, i) => { before.tags[i].lastPick = pick; });
+  return tabletFrame(scene, { modes: ['name', 'name', 'name', 'name', 'name', 'name'], tags: before.tags });
+}
+for (const [id, scene] of [['game', GAME_TABLET], ['night', NIGHT_TABLET]] as const) {
+  test(`store shot ${id}-tablet (D-266): no note stacks against another rose's note; BGW not under ANK's note`, () => {
+    for (const { labels, modes, tags } of [tabletFrame(scene), tabletShotFrame(scene)]) {
+      assertNotesApart(labels, tags);
+      assertNotesOwned(labels, modes, tags);
+      assertNotesAtHome(labels, tags);
+      const [, ank, amm, bgw] = tags;
+      // Before D-266: BGW's note (388..566 × 428..458) hung 4 px under ANK's (363..507 × 394..424).
+      assert(!bgw.placed || !ank.placed || bgw.y >= ank.y + ank.height + NOTE_GAP_Y || bgw.x >= ank.x + ank.width + NOTE_GAP_X ||
+        bgw.y + bgw.height + NOTE_GAP_Y <= ank.y, 'BGW\'s note no longer hangs right under ANK\'s');
+      assert(amm.placed, 'Amman (busiest hub) has a note');
+      assert(tags.filter((t) => t.placed).length >= 4, `only ${tags.filter((t) => t.placed).map((t) => t.id)} have a note`);
+    }
+  });
+  test(`store shot ${id}-tablet: no note covers another note, a name, a ring or a dock symbol; stable frame to frame`, () => {
+    const first = tabletFrame(scene);
+    const shown = first.slots.filter((s) => s.placed);
+    shown.forEach((a, i) => shown.forEach((b, j) => {
+      if (j <= i || (a.fixed && b.fixed) || a.ring || b.ring) return;
+      assert(!(a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height), `${a.id} overlaps ${b.id}`);
+    }));
+    const snap = (f: ReturnType<typeof levantFrame>) => JSON.stringify([f.modes, f.tags.map((t) => [t.placed, t.compact, t.x, t.y])]);
+    assert.equal(snap(tabletFrame(scene, first)), snap(first));
+  });
+}
 console.log(`SUMMARY test:roza-names passed=${passed} failed=${failed}`);
 if (failed) process.exitCode = 1;

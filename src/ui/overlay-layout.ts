@@ -140,6 +140,54 @@ function ownsPlace(slots: readonly TagSlot[], i: number, beside: boolean, margin
   return other === Infinity || own + margin <= other;
 }
 
+/**
+ * [night-19a] D-266: a shown note keeps at least this many px from another rose's note above or below it (their
+ * columns overlap) and NOTE_GAP_X px from one beside it (their rows overlap), so two notes never stack into one block
+ * that reads as either rose's (store shot game-tablet: "BGW 2 z 24" right under "ANK 1 z 24").
+ */
+export const NOTE_GAP_Y = 8;
+export const NOTE_GAP_X = 12;
+
+/**
+ * [night-19a] D-266: the box `a`, grown by `pad` px, crosses the band between a note's rose and that note: the line
+ * from the rose's centre (`homeX`, `homeY`) to the nearest point of the note's box. False without a home.
+ */
+function inBand(a: TagSlot, note: TagSlot, pad: number): boolean {
+  if (note.homeX === undefined || note.homeY === undefined) return false;
+  const x0 = note.homeX, y0 = note.homeY;
+  const dx = clamp(x0, note.x, note.x + note.width) - x0, dy = clamp(y0, note.y, note.y + note.height) - y0;
+  // Clip the segment (x0, y0) + t (dx, dy), t in [0, 1], against the grown box (slab test).
+  let t0 = 0, t1 = 1;
+  const lo = [a.x - pad - x0, a.y - pad - y0], hi = [a.x + a.width + pad - x0, a.y + a.height + pad - y0];
+  const d = [dx, dy];
+  for (let k = 0; k < 2; k++) {
+    if (d[k] === 0) { if (lo[k] >= 0 || hi[k] <= 0) return false; continue; }
+    let near = lo[k] / d[k], far = hi[k] / d[k];
+    if (near > far) { const swap = near; near = far; far = swap; }
+    t0 = Math.max(t0, near); t1 = Math.min(t1, far);
+    if (t0 >= t1) return false;
+  }
+  return true;
+}
+
+/**
+ * [night-19a] D-266: the note at `i` stands clear of every other rose's shown note: `gapX` / `gapY` px from it (see
+ * NOTE_GAP_Y), off the band between that rose and its note (by `gapY`), and not holding that note in its own band. Only notes
+ * with a `rose` are checked (true otherwise).
+ */
+function clearOfNotes(slots: readonly TagSlot[], i: number, gapX: number, gapY: number): boolean {
+  const slot = slots[i];
+  if (slot.rose === undefined) return true;
+  for (let j = 0; j < slots.length; j++) {
+    const s = slots[j];
+    if (j === i || !s.placed || s.fixed || s.rose === undefined || s.rose === slot.rose) continue;
+    if (slot.x < s.x + s.width + gapX && slot.x + slot.width + gapX > s.x &&
+      slot.y < s.y + s.height + gapY && slot.y + slot.height + gapY > s.y) return false;
+    if (inBand(slot, s, gapY) || inBand(s, slot, gapY)) return false;
+  }
+  return true;
+}
+
 // Reused between frames: the placement order of `layoutTags` (no allocation per frame).
 const orderScratch: number[] = [];
 /** [night-16a] D-262: hysteresis, px: a tag tried at the place it held last frame needs this much less clearance. */
@@ -270,15 +318,17 @@ export function layoutTags(slots: readonly TagSlot[], bounds: TagBounds): number
         const slides = place >= 4 ? BESIDE_SLIDE / BESIDE_STEP : 0;
         // Hysteresis: the place a note held last frame needs a little less clearance, tried only after every slide of
         // that place failed at the full clearance (so an unchanged scene lays out exactly as the frame before). A place
-        // away from the rose ([night-16b] D-263) or where the note reads as another rose's ([night-18a] D-264) is not taken.
+        // away from the rose ([night-16b] D-263), where the note reads as another rose's ([night-18a] D-264) or stacks
+        // against another rose's note or stands between that rose and its note ([night-19a] D-266) is not taken.
         const tries = limited && pick === last ? 2 : 1;
         for (let lenient = 0; lenient < tries && !slot.placed; lenient++) {
           const gap = lenient ? Math.max(0, bounds.gap - TAG_HYSTERESIS) : bounds.gap;
           const margin = lenient ? OWN_MARGIN - TAG_HYSTERESIS : OWN_MARGIN;
+          const ease = lenient ? TAG_HYSTERESIS : 0;
           for (let k = 0; k <= slides && !slot.placed; k++) {
             slot.x = Math.round(clamp(x + (place === 4 ? -k : k) * BESIDE_STEP, left, bounds.width - left - width));
             if (tryPlace(slots, i, idealY, maxShift, top, bottom, gap, place === 2, skip) && nearHome(slot) &&
-              ownsPlace(slots, i, place >= 4, margin, skip)) {
+              ownsPlace(slots, i, place >= 4, margin, skip) && clearOfNotes(slots, i, NOTE_GAP_X - ease, NOTE_GAP_Y - ease)) {
               slot.placed = true;
               slot.compact = compact;
               slot.lastPick = pick;
