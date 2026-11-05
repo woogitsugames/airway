@@ -1,11 +1,10 @@
 # Przekazanie koordynatora Airway
 
-Ostatnia aktualizacja: 2026-11-05, ok. 06:55 UTC. Noc pracy autonomicznej (D-226); właściciel wraca o 9:00 czasu
-brukselskiego.
+Ostatnia aktualizacja: 2026-11-05, ok. 13:00 UTC. Właściciel wybrał UI „Róża” (D-257) — scalone jako domyślne (#263).
 
 ## Stan repo
-- `main` = `dev`. W nocy scalone #211–#248 (poprzednio #204–#210).
-- Ostatnie numery: **D-256**, **Q-80**. D-160…D-179 należą do sesji ext.
+- `main` = `dev`. W nocy scalone #211–#248, rano #249–#263.
+- Ostatnie numery: **D-258**, **Q-89**. D-160…D-179 należą do sesji ext.
 - Budziki koordynatora :15 i :45 (włączone): `trig_011aYp1uohavDkngVDFRndoA`, `trig_01TQogjhSE2ggjutqxxB6TtS`.
 
 ## Co weszło w nocy (skrót)
@@ -30,13 +29,20 @@ wersja koperty zapisu — każda nowa reguła bierze kolejny numer), puszcza `te
 synchronizuje main. Skrypt do typowych konfliktów: scratchpad `resolve.py` (odtwarzalny z opisu). Bez nazwy modelu w
 commitach.
 
+## Rano (po powrocie właściciela)
+- UI: KARTA odrzucona jako „nadal slop” → referencje map lotniczych (#256) → KARTA v2 A/B/C (#257) → właściciel wybrał
+  **C „Róża”**. Wdrożona jako domyślna (#263, D-257), budżet CSS 109 kB (D-258). `?skin=current` = stara Diorama w DEV.
+  #252 (KARTA domyślna) zamknięty. Kontrast: `docs/notes/roza-contrast.md` (#259).
+- Sesja ext (glob): właściciel ma uruchomić prompt z `docs/notes/roza-ext-prompt.md` (medalion jako środek róży,
+  paleta tras/samolotów; po zmianie rozmiaru medalionu poprawić `MEDAL_RADIUS` w `src/ui/skin/roza.ts`).
+- Strażnik `docs/TESTING.md` w `test:doc-ids` (#262); `test:fast` trwa ~6 min (107 kroków).
+
 ## W toku
-- Agent #1: R4b linia „czas słoneczny” w pomocy (`night/11aw-solar-time-help`).
-- Agent #2: odświeżenie `store:shots` i `site:assets` na prawdziwym globie (`night/12bh-store-shots-refresh`).
+- Agent #1: dopracowanie Róży — kapitaliki w arkuszach, kolizje nazw po łuku, pauza w pionie (`night/14b-roza-polish`).
+- Agent #2: zrzuty sklepu i strony w UI Róża (`night/14a-store-shots-roza`).
 
 ## Decyzje do właściciela rano
-1. **Kierunek nowego UI** (KARTA / KOKPIT / ZNAKI). KARTA da się obejrzeć w grze: build DEV + `?skin=karta`
-   (zrzuty `docs/shots/ui-karta/`). Po wyborze: wdrożenie jako domyślnej skórki na tokenach D-250.
+1. Ocena Róży w grze (zestawienie `docs/shots/ui-roza/zestawienie.png`) i uruchomienie sesji ext z promptem Róży.
 2. Rozgrywka (arkusz `docs/OWNER-QUESTIONS.md`, sekcja B): Q-81 progi etapów, Q-82 kontrakt tygodnia, Q-83 szczyt
    popytu, Q-84 klasy licencji, Q-85 siła frontu pogodowego, Q-86 mediana regionu EUS.
 3. Wydanie (sekcja F): Q-87 zlokalizowane tytuły sklepu, Q-88 PEGI 3 / Apple 4+ / grupa 13+, Q-89 „bezpłatne”
@@ -49,11 +55,11 @@ commitach.
 - **G7** (sesja ext): SwiftShader ~10 fps. Obejście: `?render=stub` (D-254) — `test:e2e:session-stub` sprawdza
   podpięcia nocnych funkcji w `session.ts`; `ui:matrix:stub` 48/48, `test:e2e:smoke:stub` 9/9. Piksele globu
   (`store:shots`, `perf:scene`, pierścienie) nadal tylko na prawdziwym rendererze.
-- Zapas budżetu paczki mały (D-252): JS +4,2 %, CSS ~+0,3 %, dist ~+0,6 %.
+- Zapas budżetu paczki mały: JS 1146,8/1180 kB, CSS 107,2/109 kB (~1,7 %), dist 3955/4300 kB.
 - Commity #206/#208 mają nazwę modelu w stopce (atrybucja środowiska); bez przepisywania historii.
 - Odczyt skali tekstu z systemu (Android/iOS) i Test Lab niesprawdzone na urządzeniu.
 
 ## Kolejka po nocy
-- Po wyborze kierunku UI: wdrożenie skórki (Agent #1), potem przegląd HUD/metek pod 150 % tekstu.
+- Po dopracowaniu Róży: przegląd HUD/notek pod 150 % tekstu na prawdziwym globie, R2b wideo sklepu w nowym UI.
 - Agent #2: R4f/R6e/R8f czekają (G7 / test zamknięty / urządzenie), N9d (#52).
 - Nie bierz: kroków G i `src/render/**` (ext/03), zagadek (ext/04+).
