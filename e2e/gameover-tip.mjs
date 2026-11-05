@@ -1,5 +1,5 @@
 // [night-11f] R1j: one tip on the game-over report in the player's first flights. A real Endless run (bot into
-// week 2, one crate taken, a hub overloaded) on a fresh profile ends with one "TIP / WSKAZÓWKA" line in the causes
+// week 2, one crate taken, a hub overloaded) on a fresh profile ends with one "Tip / Wskazówka" line in the causes
 // panel, chosen by the leading cause (data-tip = the tip for the first cause with one), in the player's language;
 // the Timeline tab hides it with the causes; all actions stay on screen. The same run with ten flights already in
 // the logbook (this one is the 11th) shows no tip. PL/EN at 412×915, 915×412 and 360×640; shots docs/shots/n11f/.
@@ -18,7 +18,7 @@ const cases = [['pl', 412, 915, 0, true], ['en', 915, 412, 0, true], ['en', 360,
 const TIP_FOR = { capacity: 'hub-overflow', 'congestion-duration': 'hub-overflow', 'long-wait': 'hub-overflow',
   'regional-demand': 'region', 'no-route': 'no-route', 'seat-shortage': 'seats', 'missed-transfer': 'transfer',
   'transfer-not-ready': 'transfer', 'slot-wait': 'slot-wait' };
-const LABEL = { en: 'TIP', pl: 'WSKAZÓWKA' };
+const LABEL = { en: 'Tip', pl: 'Wskazówka' };
 const results = [];
 
 async function playToGameOver(page) {

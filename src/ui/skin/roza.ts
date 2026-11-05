@@ -291,6 +291,73 @@ export interface Rose {
 }
 let roseId = 0;
 
+/** The radius of the name's path round a rose of inner radius `r` and the name's font size (shared by draw and layout). */
+function roseNameMetrics(r: number, hub: boolean, jam: boolean, name: string): { R: number; size: number } {
+  const R = r + (jam ? 22 : hub ? 13 : 11);
+  return { R, size: Math.min(jam ? 15 : 13.5, (Math.PI * 1.5 * R) / Math.max(1, name.length * .62)) };
+}
+
+/** What a rose shows along its ring: the city name, the IATA code (a short name for a crowded spot) or nothing. */
+export type RoseLabelMode = 'name' | 'code' | 'none';
+export interface RoseLabel {
+  x: number; y: number;
+  /** The rose's inner radius on screen (px), as handed to Rose.draw. */
+  r: number;
+  hub: boolean; jam: boolean;
+  /** Waiting share 0–1: a fuller airport keeps its name first. */
+  fill: number;
+  name: string; code: string;
+  /** What it showed last frame: it keeps that with a little less clearance, so names do not flicker while panning. */
+  last?: RoseLabelMode;
+}
+interface Box { l: number; t: number; r: number; b: number }
+
+/** The screen box of a name set along the top of a rose (centred on twelve o'clock, as Rose.draw sets it). */
+export function roseNameBox(label: Pick<RoseLabel, 'x' | 'y' | 'r' | 'hub' | 'jam'>, text: string): Box {
+  const r = Math.max(8, Math.round(label.r * 2) / 2);
+  const { R, size } = roseNameMetrics(r, label.hub, label.jam, text);
+  // Half the angle the text spans on its path (the draw budget is .62 em a letter), at most the path's 135°.
+  const half = Math.min(135 * DEG, (text.length * .62 * size) / (2 * R));
+  const outer = R + size * .8; // the letters stand outward of the path
+  const w = half >= 90 * DEG ? outer : Math.sin(half) * outer;
+  return { l: label.x - w, r: label.x + w, t: label.y - outer, b: label.y - Math.cos(half) * (R - size * .3) };
+}
+
+const hits = (a: Box, b: Box, pad: number): boolean =>
+  a.l < b.r + pad && b.l < a.r + pad && a.t < b.b + pad && b.t < a.b + pad;
+const hitsDisc = (a: Box, x: number, y: number, radius: number, pad: number): boolean => {
+  const dx = Math.max(a.l - x, 0, x - a.r), dy = Math.max(a.t - y, 0, y - a.b);
+  return dx * dx + dy * dy < (radius + pad) * (radius + pad);
+};
+
+/**
+ * Name collisions in a dense cluster at close zoom (D-259): each rose keeps its name only where it clears every
+ * name already placed and every other rose's ring of ticks; otherwise it falls back to the IATA code, then to no name
+ * (the note beside the rose still reads the code). Priority: a jam, a hub, the fuller airport, then the one that
+ * already showed a label (which also gets 3 px less clearance, so labels do not flicker), then list order.
+ */
+export function rozaNameLayout(labels: readonly RoseLabel[]): RoseLabelMode[] {
+  const rank = (a: RoseLabel): number => (a.jam ? 8 : 0) + (a.hub ? 4 : 0) + a.fill * 2 + (a.last && a.last !== 'none' ? .5 : 0);
+  const order = labels.map((_, i) => i).sort((a, b) => rank(labels[b]) - rank(labels[a]) || a - b);
+  const placed: Box[] = [];
+  const out: RoseLabelMode[] = labels.map(() => 'none');
+  for (const i of order) {
+    const label = labels[i];
+    const fits = (mode: RoseLabelMode): Box | null => {
+      const box = roseNameBox(label, mode === 'name' ? label.name : label.code);
+      const pad = label.last === mode ? 0 : 3;
+      if (placed.some((other) => hits(box, other, pad))) return null;
+      // Every other rose's ticks (inner radius + the 7 px hub tick + its halo).
+      return labels.some((other, j) => j !== i && hitsDisc(box, other.x, other.y, Math.max(8, other.r) + 9, pad)) ? null : box;
+    };
+    for (const mode of (label.name && label.name !== label.code ? ['name', 'code'] : ['code']) as RoseLabelMode[]) {
+      const box = label[mode === 'name' ? 'name' : 'code'] ? fits(mode) : null;
+      if (box) { placed.push(box); out[i] = mode; break; }
+    }
+  }
+  return out;
+}
+
 /** One airport's rose in the overlay layer: seat ticks, the name along the ring, the jam countdown arc. */
 export function rozaRose(layer: HTMLElement): Rose {
   const element = document.createElementNS(SVG, 'svg');
@@ -340,8 +407,7 @@ export function rozaRose(layer: HTMLElement): Rose {
       }
       if (state.name) {
         // The name along the top of the ring, centred on twelve o'clock; the path runs 270° so a long name still fits.
-        const R = r + (state.jam !== null ? 22 : state.hub ? 13 : 11);
-        const size = Math.min(state.jam !== null ? 15 : 13.5, (Math.PI * 1.5 * R) / Math.max(1, state.name.length * .62));
+        const { R, size } = roseNameMetrics(r, state.hub, state.jam !== null, state.name);
         const a0 = 135 * DEG, a1 = 45 * DEG;
         s += `<path id="${id}" d="M${f1(Math.cos(a0) * R)} ${f1(Math.sin(a0) * R)}A${R} ${R} 0 1 1 ${f1(Math.cos(a1) * R)} ${f1(Math.sin(a1) * R)}" fill="none"/>`;
         s += `<text class="roza-rose__name" font-size="${f1(size)}" fill="${col}"><textPath href="#${id}" startOffset="50%" text-anchor="middle"></textPath></text>`;

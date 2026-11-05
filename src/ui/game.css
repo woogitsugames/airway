@@ -23,15 +23,15 @@
   font: var(--skin-weight-bold) var(--airway-font-body) / 1.25 var(--skin-face-text);
 }
 .airway-pause[hidden] { display: none; }
-.airway-pause h2 { margin: 0 0 4px; font: var(--skin-weight-heavy) var(--airway-font-title) / 1.1 var(--skin-face-mono); letter-spacing: .08em; }
-/* [night-10j] Network summary as flight-strip fields: small caps label, mono value, dashed rule between rows. */
+.airway-pause h2 { margin: 0 0 4px; font: var(--skin-weight-heavy) var(--airway-font-title) / 1.1 var(--skin-face-mono); }
+/* [night-10j] Network summary as flight-strip fields: small label, mono value, dashed rule between rows. */
 .airway-pause__summary {
   display: grid; grid-template-columns: max-content 1fr; margin: 0 0 2px; column-gap: 10px;
   border-top: 2px solid var(--skin-pause-rule);
 }
 .airway-pause__summary dt, .airway-pause__summary dd { padding: 4px 0; border-bottom: 1px dashed var(--skin-pause-rule-dim); }
 .airway-pause__summary dt {
-  font: var(--skin-weight-regular) calc(11px * var(--airway-text-scale)) / 1.6 var(--skin-face-text); letter-spacing: .05em; text-transform: uppercase;
+  font: var(--skin-weight-regular) calc(11px * var(--airway-text-scale)) / 1.6 var(--skin-face-text);
   color: var(--skin-pause-ink); align-self: baseline;
 }
 .airway-pause__summary dd { margin: 0; font: var(--skin-weight-bold) var(--airway-font-body) / 1.3 var(--skin-face-display); font-variant-numeric: tabular-nums; }

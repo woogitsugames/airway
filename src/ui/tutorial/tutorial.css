@@ -9,7 +9,7 @@
 .aw-tutorial.is-active .aw-tutorial-stage { display: grid; }
 .aw-tutorial-ticket { display: flex; min-width: 0; align-items: stretch; background: var(--skin-tutorial-paper); color: var(--skin-tutorial-card-ink); border: 2px solid var(--skin-tutorial-teal); height: 68px; }
 .aw-tutorial-ticket-id { min-width: 0; padding: 10px 13px 6px; display: flex; flex: 1; flex-direction: column; justify-content: space-between; }
-.aw-tutorial-kicker { font-family: var(--skin-face-display); font-weight: var(--skin-weight-heavy); font-size: calc(14px * var(--airway-text-scale)); letter-spacing: .08em; }
+.aw-tutorial-kicker { font-family: var(--skin-face-display); font-weight: var(--skin-weight-heavy); font-size: calc(14px * var(--airway-text-scale)); }
 .aw-tutorial-ticket-id strong { font-family: var(--skin-face-mono); font-size: calc(14px * var(--airway-text-scale)); font-weight: var(--skin-weight-bold); }
 .aw-ticket-perf { width: 1px; border-left: 2px dashed var(--skin-tutorial-perforation); margin: 6px 0; }
 .aw-ticket-skip { border: 0; min-width: 80px; padding: 7px 12px; background: var(--skin-tutorial-paper); font-weight: var(--skin-weight-bold); font-size: calc(14px * var(--airway-text-scale)); color: var(--skin-tutorial-teal); }
@@ -42,7 +42,7 @@
 .aw-route-drop svg { width: 100%; height: 100%; }
 .aw-tutorial[data-step="aircraft"] .aw-route-drop { display: block; }
 .aw-tutorial-strip { width: min(100%, 540px); min-height: 64px; display: flex; flex-direction: column; justify-content: center; gap: 5px; padding: 8px 13px; background: var(--skin-tutorial-strip-bg); border-left: 7px solid var(--skin-tutorial-strip-edge); color: var(--skin-tutorial-card-ink); }
-.aw-strip-index { font: var(--skin-weight-heavy) calc(12px * var(--airway-text-scale)) var(--skin-face-display); color: var(--skin-tutorial-teal); letter-spacing: .05em; }
+.aw-strip-index { font: var(--skin-weight-heavy) calc(12px * var(--airway-text-scale)) var(--skin-face-display); color: var(--skin-tutorial-teal); }
 .aw-strip-copy { font: var(--skin-weight-bold) calc(16px * var(--airway-text-scale)) var(--skin-face-text); line-height: 1.2; }
 .aw-tutorial-controls { width: 100%; max-width: 540px; justify-self: center; align-self: end; min-height: 44px; display: flex; flex-direction: column; gap: 7px; padding-top: 6px; /* [night-11l] the hint's own gap under the ATC card */ }
 .aw-tutorial-hint { min-height: 30px; margin: 0; display: flex; align-items: center; justify-content: center; text-align: center; color: var(--skin-tutorial-ink); font-weight: var(--skin-weight-bold); font-size: calc(13px * var(--airway-text-scale)); line-height: 1.25; }

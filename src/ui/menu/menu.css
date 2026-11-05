@@ -8,9 +8,9 @@
 .airway-sign__pictogram { width:52px; height:52px; background:var(--skin-menu-sign-ink); color:var(--skin-menu-sign-bg); display:grid; place-items:center; flex:none; }
 .airway-sign__pictogram svg { width:var(--skin-menu-sign-icon-size); height:var(--skin-menu-sign-icon-size); }
 .airway-sign__title { font:var(--skin-weight-heavy) clamp(31px, 8.5vw, 50px)/.92 var(--skin-face-display); letter-spacing:-.04em; }
-.airway-sign__subtitle { font:var(--skin-weight-bold) clamp(8px,2.3vw,11px)/1.4 var(--skin-face-mono); white-space:nowrap; letter-spacing:.025em; margin-top:6px; }
+.airway-sign__subtitle { font:var(--skin-weight-bold) clamp(8px,2.3vw,11px)/1.4 var(--skin-face-mono); white-space:nowrap; margin-top:6px; }
 .airway-board { position:absolute; inset:auto calc(var(--aw-safe-right) + 12px) calc(var(--aw-safe-bottom) + 15px) calc(var(--aw-safe-left) + 12px); background:var(--skin-menu-board-bg); padding:11px 10px 12px; border:3px solid var(--skin-menu-board-frame); box-shadow:var(--skin-menu-board-shadow); font-family:var(--skin-face-mono); }
-.airway-board__header { display:grid; grid-template-columns:minmax(0,1fr) 48px 95px; gap:6px; align-items:center; min-height:25px; color:var(--skin-menu-board-head-ink); font:var(--skin-weight-bold) 10px/1.1 var(--skin-face-mono); letter-spacing:.08em; }
+.airway-board__header { display:grid; grid-template-columns:minmax(0,1fr) 48px 95px; gap:6px; align-items:center; min-height:25px; color:var(--skin-menu-board-head-ink); font:var(--skin-weight-bold) 10px/1.1 var(--skin-face-mono); }
 /* [night-10q] a column head longer than its column (German/Finnish, pseudo-locale) wraps instead of running into the next one */
 .airway-board__header > span { min-width:0; white-space:normal; overflow-wrap:anywhere; }
 .airway-flight { display:grid; grid-template-columns:minmax(0,1fr) 48px 95px; column-gap:6px; align-items:center; min-height:62px; width:100%; border:0; border-top:1px solid var(--skin-menu-board-rule); background:transparent; color:var(--skin-menu-board-ink); text-align:left; padding:7px 0; cursor:pointer; font:inherit; }
@@ -67,7 +67,7 @@
 .airway-settings__group { min-width:0; }
 .airway-settings__group .airway-settings__licenses { margin-top:10px; }
 .airway-settings__delete [hidden] { display:none; } /* [night-12k] D-114: the class sets display:block */
-.airway-settings__group-title { margin:6px 0 0; padding:6px 10px 5px; background:var(--skin-settings-accent); color:var(--skin-settings-paper); font:var(--skin-weight-heavy) calc(13px * var(--airway-text-scale))/1.2 var(--skin-face-mono); letter-spacing:.08em; text-transform:uppercase; clip-path:polygon(0 0,calc(100% - 10px) 0,100% 50%,calc(100% - 10px) 100%,0 100%); width:max-content; max-width:100%; padding-right:20px; }
+.airway-settings__group-title { margin:6px 0 0; padding:6px 10px 5px; background:var(--skin-settings-accent); color:var(--skin-settings-paper); font:var(--skin-weight-heavy) calc(13px * var(--airway-text-scale))/1.2 var(--skin-face-mono); clip-path:polygon(0 0,calc(100% - 10px) 0,100% 50%,calc(100% - 10px) 100%,0 100%); width:max-content; max-width:100%; padding-right:20px; }
 @media (orientation:landscape) and (min-width:700px) { .airway-settings__groups { grid-template-columns:1fr 1fr; column-gap:22px; } }
 .airway-setting__hint { margin:4px 0 11px; font:var(--skin-weight-regular) calc(12px * var(--airway-text-scale))/1.4 var(--skin-face-text); color:var(--skin-settings-dim-ink); }
 .airway-settings__licenses { display:block; width:100%; min-height:50px; background:var(--skin-settings-licenses-bg); color:var(--skin-settings-licenses-ink); border:0; padding:12px; font:var(--skin-weight-bold) calc(13px * var(--airway-text-scale)) var(--skin-face-mono); text-align:left; margin-top:18px; cursor:pointer; }
@@ -78,7 +78,7 @@
 .airway-privacy { font:var(--skin-weight-regular) calc(14px * var(--airway-text-scale))/1.55 var(--skin-face-text); }
 .airway-privacy > :not(.airway-settings__heading) { max-width:64ch; }
 .airway-privacy h1 { overflow-wrap:anywhere; }
-.airway-privacy__overline { margin:4px 0 6px; font:var(--skin-weight-bold) calc(12px * var(--airway-text-scale))/1.3 var(--skin-face-mono); letter-spacing:.08em; color:var(--skin-settings-accent); }
+.airway-privacy__overline { margin:4px 0 6px; font:var(--skin-weight-bold) calc(12px * var(--airway-text-scale))/1.3 var(--skin-face-mono); color:var(--skin-settings-accent); }
 .airway-privacy__warning { margin:0 0 12px; padding:8px 10px; border:2px dashed var(--skin-settings-alert); color:var(--skin-settings-warning-ink); font-weight:var(--skin-weight-bold); }
 .airway-privacy__section { padding:8px 0 4px; border-bottom:1px dashed var(--skin-settings-rule); }
 .airway-privacy__section h2 { margin:0 0 4px; font:var(--skin-weight-heavy) calc(16px * var(--airway-text-scale))/1.25 var(--skin-face-display); }
@@ -110,7 +110,7 @@
 .airway-publisher { margin-top:14px; }
 .airway-publisher__rows { margin:0; }
 .airway-publisher__row { display:flex; flex-direction:column; gap:2px; padding:6px 0; border-bottom:1px dashed var(--skin-settings-rule); }
-.airway-publisher__row dt { font:var(--skin-weight-bold) calc(11px * var(--airway-text-scale))/1.3 var(--skin-face-mono); letter-spacing:.04em; color:var(--skin-settings-dim-ink); overflow-wrap:anywhere; }
+.airway-publisher__row dt { font:var(--skin-weight-bold) calc(11px * var(--airway-text-scale))/1.3 var(--skin-face-mono); color:var(--skin-settings-dim-ink); overflow-wrap:anywhere; }
 .airway-publisher__row dd { margin:0; font:var(--skin-weight-regular) calc(14px * var(--airway-text-scale))/1.35 var(--skin-face-text); color:var(--skin-settings-ink); overflow-wrap:anywhere; }
 /* [night-11ap] R1g: at the 130 and 150 % text steps a setting's control sits under its label at full width, so neither the
    label nor the chosen option has to break or cut. */

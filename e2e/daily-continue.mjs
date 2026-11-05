@@ -122,7 +122,7 @@ const steps = [
     memo.official = official;
     // The split-flap cells duplicate glyphs in textContent; the button's aria-label carries the status.
     const status = await page.getByTestId('menu-daily').getAttribute('aria-label');
-    assert(/PLANOWO$/.test(status ?? ''), `menu daily status "${status}" does not end with "PLANOWO"`);
+    assert(/Planowo$/.test(status ?? ''), `menu daily status "${status}" does not end with "Planowo"`);
   }],
   ['second daily of the day is practice and stays practice after continue', async (page) => {
     await page.evaluate((seed) => window.aw.prepareSeed(seed), SEED);

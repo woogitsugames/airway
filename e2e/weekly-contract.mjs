@@ -3,7 +3,7 @@
 // test:e2e:notch), so the globe frame rate (G7) does not matter. Checks per size and language: the waybill shows both
 // region names, the target and the reward in the player's language; last week's result has a filled (met) or hollow
 // (missed) square; a board with a met contract shows four crates, the "four crates" sign line and one crate marked
-// "CONTRACT" (also in its aria-label); every crate stays a 48 px target; the 3-crate board with a waybill and the
+// "Contract" (also in its aria-label); every crate stays a 48 px target; the 3-crate board with a waybill and the
 // 4-crate board fit without scrolling and every crate ends above the bottom edge (412×915, 393×852, [night-12bf] 384×854,
 // 360×800, 673×841, 360×640, 915×412,
 // 812×375; 320×568 is measured and reported, it scrolls by about the slip's height). Shots .e2e/weekly-contract/ (inspected, not committed).
@@ -19,9 +19,9 @@ const SHOTS = resolve(ARTIFACTS, 'weekly-contract');
 const SIZES = [[412, 915], [393, 852], [384, 854], [360, 800], [673, 841], [360, 640], [320, 568], [915, 412], [812, 375]];
 const WORDS = {
   en: { route: 'Northern Europe – Middle East', task: /^24 passengers between them this week\. Reward: a fourth crate next week\.$/,
-    met: 'Last week: 31/30, met.', missed: 'Last week: 12/30, not met.', four: 'Hangar: four crates arrived. You open one.', crate: 'CONTRACT' },
+    met: 'Last week: 31/30, met.', missed: 'Last week: 12/30, not met.', four: 'Hangar: four crates arrived. You open one.', crate: 'Contract' },
   pl: { route: 'Europa Północna – Bliski Wschód', task: /^24 pasażerów między nimi w tym tygodniu\. Nagroda: czwarta skrzynia za tydzień\.$/,
-    met: 'Zeszły tydzień: 31/30, wykonany.', missed: 'Zeszły tydzień: 12/30, niewykonany.', four: 'Hangar: przyszły cztery skrzynie. Otwierasz jedną.', crate: 'KONTRAKT' },
+    met: 'Zeszły tydzień: 31/30, wykonany.', missed: 'Zeszły tydzień: 12/30, niewykonany.', four: 'Hangar: przyszły cztery skrzynie. Otwierasz jedną.', crate: 'Kontrakt' },
 };
 const BOARDS = ['met', 'missed'];
 const results = [];

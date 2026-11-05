@@ -108,7 +108,6 @@
   background: var(--skin-atc-ok-bg);
   color: var(--skin-atc-ok-ink);
   font: var(--skin-weight-heavy) 14px/1 var(--skin-face-display);
-  letter-spacing: .04em;
   pointer-events: auto;
   touch-action: manipulation;
   cursor: pointer;
