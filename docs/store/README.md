@@ -118,7 +118,7 @@ downscales to 1024×500 and the script writes opaque RGB. Checks (also in `test:
 the night scene is not used), wordmark inside the left third, globe limb visible. Re-render after a visual change
 of the globe or the `game` scene and inspect the PNG before committing.
 
-## Store preview video (R2b, D-264)
+## Store preview video (R2b, D-265)
 
 `npm run store:video` films the same seed 0xA1A1 run the store shots use, played by the DEV autoplay bot through
 `window.aw` on the real renderer. Nothing is screen-recorded: Playwright's clock is paused, every video frame is one
@@ -131,10 +131,10 @@ Storyboard, 24 s at 30 fps (cuts between shots, every shot is real play of one r
 
 | Time | Shot | What happens |
 | --- | --- | --- |
-| 0–4 s | route | First frame is the game: a finger draws Athens–Ankara, the turboprop boards and departs |
+| 0–4 s | route | First frame is the game: a finger draws the first route (the pair `aw.gesture('route')` picks for the viewport), the turboprop boards and departs |
 | 4–12 s | dusk | Day 2 from 15:30: the bot's grown network, the evening terminator crosses it; **poster frame at 5 s** |
 | 12–17 s | crates | The weekly board opens with its three freight crates; a crate is tapped, play resumes in week 2 |
-| 17–24 s | jam | Building stops; the filling airport's edge chip is tapped, the camera turns to it and its ring turns red with the jam countdown (the run is still alive at the end) |
+| 17–24 s | jam | Building stops until an airport is 83 % full; its edge chip is tapped, the camera turns to it and its ring fills (phone: Rio de Janeiro turns red with the jam countdown; iPhone/iPad: Karachi near full). The run is still alive at the end |
 
 | File | Size | Console slot |
 | --- | --- | --- |
@@ -149,7 +149,7 @@ Connect help before upload. `video/manifest.json` records per file the size, SHA
 every shot; files over 10 MB are git-ignored (`video/.gitignore`, generated) and must be regenerated locally before
 upload (`npm run store:video`, ~40 min on 4 vCPU; needs ffmpeg/ffprobe on PATH — without ffmpeg the script writes PNG
 frames and an `encode.sh`). `npm run test:store-video` re-checks the manifest, posters and `.gitignore`, and every
-preview present on disk (size, hash, ffprobe). A re-run is not byte-identical (SwiftShader), the storyboard ticks are.
+preview present on disk (size, hash, ffprobe). A re-run is not byte-identical (SwiftShader), and the first-route tick varies by a few ticks (148–152) with the boot timing; the dusk shot ticks are identical in every file, the shot ticks are recorded per file.
 
 ## Development-only integration contract (task 36, D-48)
 

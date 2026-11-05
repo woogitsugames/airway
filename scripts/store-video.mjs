@@ -1,4 +1,4 @@
-// [night-18b] R2b, D-264: store preview video from real play. The DEV autoplay bot plays seed 0xA1A1 through real
+// [night-18b] R2b, D-265: store preview video from real play. The DEV autoplay bot plays seed 0xA1A1 through real
 // Commands (window.aw) on the real WebGL renderer; Playwright's fake clock is paused and every video frame is one
 // fixed 1/30 s step (`page.clock.runFor`), so SwiftShader speed never changes what a frame shows. CSS animations are
 // paused and stepped by the same 1/30 s. Frames are piped as PNG screenshots into ffmpeg (no screen recording, no

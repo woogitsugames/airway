@@ -1,0 +1,342 @@
+{
+  "generator": "scripts/store-video.mjs",
+  "seed": "0xA1A1",
+  "fps": 30,
+  "frames": 720,
+  "durationS": 24,
+  "posterS": 5,
+  "storyboard": [
+    {
+      "id": "route",
+      "frames": 120
+    },
+    {
+      "id": "dusk",
+      "frames": 240
+    },
+    {
+      "id": "crates",
+      "frames": 150
+    },
+    {
+      "id": "jam",
+      "frames": 210
+    }
+  ],
+  "audio": "silent stereo AAC (no music, no game audio)",
+  "note": "Files over 10 MB are git-ignored (.gitignore here); regenerate with npm run store:video.",
+  "videos": [
+    {
+      "lang": "pl",
+      "device": "play",
+      "store": "Google Play (YouTube link)",
+      "file": "pl/preview-play.mp4",
+      "poster": "pl/poster-play.jpg",
+      "bytes": 10240474,
+      "sha256": "ee4223345150430c9bc7b9d3ef8725575b0b398eb095af29eec4c2e30fa21928",
+      "probe": {
+        "codec": "h264",
+        "profile": "High",
+        "width": 1080,
+        "height": 1920,
+        "pixFmt": "yuv420p",
+        "fps": 30,
+        "durationS": 24,
+        "audio": {
+          "codec": "aac",
+          "channels": 2,
+          "sampleRate": 48000
+        }
+      },
+      "shots": [
+        {
+          "shot": "route",
+          "tick": 152,
+          "routes": 1
+        },
+        {
+          "shot": "dusk",
+          "fromTick": 2250,
+          "tick": 2567,
+          "routes": 4
+        },
+        {
+          "shot": "crates",
+          "boardTick": 4320,
+          "picked": "turboprop",
+          "tick": 4419
+        },
+        {
+          "shot": "jam",
+          "airport": "RIO",
+          "focused": true,
+          "fromTick": 6329,
+          "fromFill": 0.83,
+          "tick": 6606,
+          "fill": 1.04,
+          "screen": "game"
+        }
+      ]
+    },
+    {
+      "lang": "pl",
+      "device": "iphone",
+      "store": "App Store Connect → iPhone 6.9\" app preview",
+      "file": "pl/preview-iphone.mp4",
+      "poster": "pl/poster-iphone.jpg",
+      "bytes": 8128650,
+      "sha256": "d63048392e8911439e65ab145ca33965a82fc337c14d9f5a76d8fd1cfe0bca67",
+      "probe": {
+        "codec": "h264",
+        "profile": "High",
+        "width": 886,
+        "height": 1920,
+        "pixFmt": "yuv420p",
+        "fps": 30,
+        "durationS": 24,
+        "audio": {
+          "codec": "aac",
+          "channels": 2,
+          "sampleRate": 48000
+        }
+      },
+      "shots": [
+        {
+          "shot": "route",
+          "tick": 149,
+          "routes": 1
+        },
+        {
+          "shot": "dusk",
+          "fromTick": 2250,
+          "tick": 2567,
+          "routes": 4
+        },
+        {
+          "shot": "crates",
+          "boardTick": 4320,
+          "picked": "turboprop",
+          "tick": 4420
+        },
+        {
+          "shot": "jam",
+          "airport": "KHI",
+          "focused": true,
+          "fromTick": 6170,
+          "fromFill": 0.83,
+          "tick": 6447,
+          "fill": 0.92,
+          "screen": "game"
+        }
+      ]
+    },
+    {
+      "lang": "pl",
+      "device": "ipad",
+      "store": "App Store Connect → iPad 13\" app preview",
+      "file": "pl/preview-ipad.mp4",
+      "poster": "pl/poster-ipad.jpg",
+      "bytes": 8627920,
+      "sha256": "04e6e70700d1ea0831db94957dac382a714b43792215bc7b13adf11835187ce9",
+      "probe": {
+        "codec": "h264",
+        "profile": "High",
+        "width": 1200,
+        "height": 1600,
+        "pixFmt": "yuv420p",
+        "fps": 30,
+        "durationS": 24,
+        "audio": {
+          "codec": "aac",
+          "channels": 2,
+          "sampleRate": 48000
+        }
+      },
+      "shots": [
+        {
+          "shot": "route",
+          "tick": 148,
+          "routes": 1
+        },
+        {
+          "shot": "dusk",
+          "fromTick": 2250,
+          "tick": 2567,
+          "routes": 4
+        },
+        {
+          "shot": "crates",
+          "boardTick": 4320,
+          "picked": "turboprop",
+          "tick": 4420
+        },
+        {
+          "shot": "jam",
+          "airport": "KHI",
+          "focused": true,
+          "fromTick": 5320,
+          "fromFill": 0.83,
+          "tick": 5597,
+          "fill": 0.88,
+          "screen": "game"
+        }
+      ]
+    },
+    {
+      "lang": "en",
+      "device": "play",
+      "store": "Google Play (YouTube link)",
+      "file": "en/preview-play.mp4",
+      "poster": "en/poster-play.jpg",
+      "bytes": 10117146,
+      "sha256": "301d6aeed2c48f09fb413515c9719cb3b2d90e09e0cb833f422a102218c05788",
+      "probe": {
+        "codec": "h264",
+        "profile": "High",
+        "width": 1080,
+        "height": 1920,
+        "pixFmt": "yuv420p",
+        "fps": 30,
+        "durationS": 24,
+        "audio": {
+          "codec": "aac",
+          "channels": 2,
+          "sampleRate": 48000
+        }
+      },
+      "shots": [
+        {
+          "shot": "route",
+          "tick": 151,
+          "routes": 1
+        },
+        {
+          "shot": "dusk",
+          "fromTick": 2250,
+          "tick": 2567,
+          "routes": 4
+        },
+        {
+          "shot": "crates",
+          "boardTick": 4320,
+          "picked": "turboprop",
+          "tick": 4420
+        },
+        {
+          "shot": "jam",
+          "airport": "RIO",
+          "focused": true,
+          "fromTick": 6330,
+          "fromFill": 0.83,
+          "tick": 6608,
+          "fill": 1.04,
+          "screen": "game"
+        }
+      ]
+    },
+    {
+      "lang": "en",
+      "device": "iphone",
+      "store": "App Store Connect → iPhone 6.9\" app preview",
+      "file": "en/preview-iphone.mp4",
+      "poster": "en/poster-iphone.jpg",
+      "bytes": 7964284,
+      "sha256": "31bbd2444e87fa7cbdfa8309a1a58eb6cd652d0088719c521808fdcb9eeb2fdb",
+      "probe": {
+        "codec": "h264",
+        "profile": "High",
+        "width": 886,
+        "height": 1920,
+        "pixFmt": "yuv420p",
+        "fps": 30,
+        "durationS": 24,
+        "audio": {
+          "codec": "aac",
+          "channels": 2,
+          "sampleRate": 48000
+        }
+      },
+      "shots": [
+        {
+          "shot": "route",
+          "tick": 150,
+          "routes": 1
+        },
+        {
+          "shot": "dusk",
+          "fromTick": 2250,
+          "tick": 2567,
+          "routes": 4
+        },
+        {
+          "shot": "crates",
+          "boardTick": 4320,
+          "picked": "turboprop",
+          "tick": 4419
+        },
+        {
+          "shot": "jam",
+          "airport": "KHI",
+          "focused": true,
+          "fromTick": 5719,
+          "fromFill": 0.83,
+          "tick": 5997,
+          "fill": 0.71,
+          "screen": "game"
+        }
+      ]
+    },
+    {
+      "lang": "en",
+      "device": "ipad",
+      "store": "App Store Connect → iPad 13\" app preview",
+      "file": "en/preview-ipad.mp4",
+      "poster": "en/poster-ipad.jpg",
+      "bytes": 8575877,
+      "sha256": "f378c22acfe65503b066a7127f507ede63590ac35e520e5aabb5a415cc80ace7",
+      "probe": {
+        "codec": "h264",
+        "profile": "High",
+        "width": 1200,
+        "height": 1600,
+        "pixFmt": "yuv420p",
+        "fps": 30,
+        "durationS": 24,
+        "audio": {
+          "codec": "aac",
+          "channels": 2,
+          "sampleRate": 48000
+        }
+      },
+      "shots": [
+        {
+          "shot": "route",
+          "tick": 148,
+          "routes": 1
+        },
+        {
+          "shot": "dusk",
+          "fromTick": 2250,
+          "tick": 2567,
+          "routes": 4
+        },
+        {
+          "shot": "crates",
+          "boardTick": 4320,
+          "picked": "turboprop",
+          "tick": 4420
+        },
+        {
+          "shot": "jam",
+          "airport": "KHI",
+          "focused": true,
+          "fromTick": 5320,
+          "fromFill": 0.83,
+          "tick": 5597,
+          "fill": 0.88,
+          "screen": "game"
+        }
+      ]
+    }
+  ]
+}

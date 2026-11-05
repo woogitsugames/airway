@@ -2645,7 +2645,7 @@ reads "AMM 3 z 36 · Amman" under its ring, clear of the dock symbols. Checked b
 every shown note within one radius of its own ring, Amman's note level with its name. Venice, Athens and Baghdad show no
 note on the phone (no free place near them); on the landscape shot nothing changes. **Status: in force.**
 
-## D-264 — Store preview video: fixed-step frames from real play, 24 s, poster at 5 s (2026-11-05, Claude, night N18b)
+## D-265 — Store preview video: fixed-step frames from real play, 24 s, poster at 5 s (2026-11-05, Claude, night N18b)
 R2b. `npm run store:video` (`scripts/store-video.mjs`) films one seed 0xA1A1 run played by the DEV autoplay bot through
 `window.aw` on the real renderer. **Frames, not a screen recording:** Playwright's fake clock is paused once the menu is
 up and every frame is exactly one 1/30 s `clock.runFor` step (rAF, timers and `performance.now` of the page), CSS
@@ -2654,8 +2654,9 @@ makes the run slower, never changes a frame. **Storyboard (24 s, 4× game speed,
 pointer drag in the first second and its plane departing; day 2 from 15:30 with the evening terminator crossing the grown
 network (poster frame at 5 s, the warm light of the `game` store shot); the weekly board with its crates and a tap on one;
 building stops and the filling airport's edge chip is tapped, the camera turns to it and its ring goes red with the jam
-countdown — the run stays alive (a near jam, not the game-over report). On seed 0xA1A1 the first airport to jam is
-Rio de Janeiro, never on the opening framing, hence the real edge-chip tap instead of a still shot of the network.
+countdown — the run stays alive (a near jam, not the game-over report). On seed 0xA1A1 the airport that fills first is
+off the opening framing (Rio de Janeiro on the phone, Karachi on iPhone/iPad, whose first route differs), hence the real
+edge-chip tap instead of a still shot of the network. The first-route tick varies by a few ticks with boot timing (148–152).
 **Sizes:** App Store app previews iPhone 886×1920 (443×960 @2) and iPad 1200×1600 (768×1024 @1.5625, the tablet layout),
 Play 1080×1920 (360×640 @3, the phone store shot) for the owner's YouTube upload (Q-49); PL and EN each, since the HUD
 is localised. H.264 High 4.0 yuv420p, CRF 18 ≤ 12 Mbit/s, silent stereo AAC (no music, no added text or overlay).
