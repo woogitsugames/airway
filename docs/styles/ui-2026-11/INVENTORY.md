@@ -10,13 +10,15 @@ colour, font family/weight or duration literal comes back into a covered file or
 Covered files: `src/ui/hud.css`, `src/ui/overlay.css` (+ the inline SVG inks of `src/ui/overlay.ts`), `src/ui/game.css`,
 `src/ui/upgrade/upgrade.css`, `src/ui/hubBoard.css`, `src/ui/gameover/gameover.css`, `src/ui/menu/menu.css`.
 Not covered yet (same pattern later): `atcStrip.css` (first-time cards, slot hint), `logbook.css`,
-`puzzles/board.css`, `leaderboard.css`, `tutorial/tutorial.css`, `theme.css` (a11y controls), `src/ui/glyphs.ts`
+`puzzles/board.css`, `leaderboard.css`, `tutorial/tutorial.css`, `src/ui/glyphs.ts`
 (glyph outline `#FBF8F1`, also drawn outside the DOM) and the globe (`src/render/**`, out of scope).
 
 **Counts.** 461 hard-coded values moved to 202 tokens: 246 colours (241 in the CSS, 5 inks of the inline SVGs in
 `overlay.ts`; 169 tokens, values equal to the palette of `theme.css` point at it, e.g. `var(--airway-ticket)`), 83
 font families (3 tokens), 84 weights (3), 19 motion durations/delays (12), 13 corners/shadows/hover rules (6) and 16
-icon sizes (9).
+icon sizes (9). [night-11ar] D-252: the unused DEV overlay fixture controls (`.airport-demo-controls`) were deleted
+with their 5 values and 2 tokens (`--skin-demo-bg`, `--skin-demo-accent`): 456 values, 200 tokens today. Release builds
+write every token value in place (`scripts/vite-skin-inline.mjs`); the source keeps the tokens.
 **Zero visual change** (`npm run skin:pixels`, `e2e/skin-pixels.mjs`): see the PR; in short, after substituting the
 skin back, every covered CSS file is the same text as before (colour case and palette names aside), and 88 fixture
 shots × computed styles match.
@@ -34,11 +36,11 @@ Ordered: typefaces and weights, motion, corners and shadows, icon sizes, then co
 
 | Component | Selector → property | Current value | Token |
 |---|---|---|---|
-| Airport tags and chips, Game-over report, HUD: boarding pass + tag dock, Hub cause board, Main menu + settings, Pause sheet, Weekly board | `.airport-demo-controls` → font; `.airport-overlay` → font-family; `.airway-flight__sub` → font; `.airway-glyph-legend__row` → font; `.airway-go-milestone` → font; `.airway-go-overlay` → font-family; `.airway-go-score` → font; `.airway-hub-board` → font; … (24 uses) | 'Atkinson Hyperlegible Next', sans-serif | `--skin-face-text` |
+| Airport tags and chips, Game-over report, HUD: boarding pass + tag dock, Hub cause board, Main menu + settings, Pause sheet, Weekly board | `.airport-overlay` → font-family; `.airway-flight__sub` → font; `.airway-glyph-legend__row` → font; `.airway-go-milestone` → font; `.airway-go-overlay` → font-family; `.airway-go-score` → font; `.airway-hub-board` → font; … (23 uses) | 'Atkinson Hyperlegible Next', sans-serif | `--skin-face-text` |
 | Airport tags and chips, Game-over report, HUD: boarding pass + tag dock, Main menu + settings, Pause sheet, Weekly board | `.airport-bubble__count` → font; `.airport-bubble__new` → font; `.airport-edge` → font; `.airport-slot__count` → font; `.airport-slot__label` → font; `.airway-dock__tag` → font-family; `.airway-glyph-legend__title` → font; `.airway-go-button` → font; … (23 uses) | 'Overpass', sans-serif | `--skin-face-display` |
 | Airport tags and chips, Game-over report, Hub cause board, Main menu + settings, Pause sheet, Weekly board | `.airport-bubble__plate` → font; `.airport-bubble__surge` → font; `.airport-bubble__timer` → font; `.airport-slot__time` → font; `.airway-board__header` → font; `.airway-board` → font-family; `.airway-flight__region` → font; `.airway-go-board-head` → font; … (36 uses) | 'Overpass Mono', monospace | `--skin-face-mono` |
 | Game-over report, Hub cause board, Main menu + settings, Pause sheet, Weekly board | `.airway-flight__sub` → font; `.airway-glyph-legend__row` → font; `.airway-go-milestone` → font; `.airway-hub-board__row[data-cause='none'] .airway-hub-board__text` → font-weight; `.airway-keys__row` → font; `.airway-licenses` → font; … (13 uses) | 400 | `--skin-weight-regular` |
-| Airport tags and chips, Game-over report, HUD: boarding pass + tag dock, Hub cause board, Main menu + settings, Pause sheet, Weekly board | `.airport-bubble__surge` → font; `.airport-bubble__timer` → font; `.airport-demo-controls` → font; `.airport-slot__time` → font; `.airway-board__header` → font; `.airway-flight__region` → font; `.airway-go-board-head` → font; `.airway-go-board-title` → font; … (46 uses) | 700 | `--skin-weight-bold` |
+| Airport tags and chips, Game-over report, HUD: boarding pass + tag dock, Hub cause board, Main menu + settings, Pause sheet, Weekly board | `.airport-bubble__surge` → font; `.airport-bubble__timer` → font; `.airport-slot__time` → font; `.airway-board__header` → font; `.airway-flight__region` → font; `.airway-go-board-head` → font; `.airway-go-board-title` → font; … (45 uses) | 700 | `--skin-weight-bold` |
 | Airport tags and chips, Game-over report, HUD: boarding pass + tag dock, Main menu + settings, Pause sheet, Weekly board | `.airport-bubble__count` → font; `.airport-bubble__new` → font; `.airport-bubble__plate` → font; `.airport-edge` → font; `.airport-slot__count` → font; `.airport-slot__label` → font; `.airway-dock__tag` → font-weight; `.airway-glyph-legend__title` → font; … (25 uses) | 800 | `--skin-weight-heavy` |
 | Airport tags and chips | `.airport-bubble` → transition; `.airport-edge` → transition; `.airport-slot` → transition | 90ms | `--skin-motion-follow` |
 | Weekly board | `.airway-upgrade-tag` → transition | .12s | `--skin-motion-press` |
@@ -108,8 +110,6 @@ Ordered: typefaces and weights, motion, corners and shadows, icon sizes, then co
 | Airport tags and chips | `.airport-slot` → color | #13302e (`--airway-panel`) | `--skin-slot-ink` |
 | Airport tags and chips | `.airport-slot__stub` → background | #13302e (`--airway-panel`) | `--skin-slot-stub-bg` |
 | Airport tags and chips | `.airport-slot__stub` → color | #ffc72c (`--airway-sign`) | `--skin-slot-stub-ink` |
-| Airport tags and chips | `.airport-demo-controls` → background | #fbf8f1 (`--airway-ticket`) | `--skin-demo-bg` |
-| Airport tags and chips | `.airport-demo-controls input` → accent-color; `.airport-demo-controls` → border-left | #1e6f6a (`--airway-teal`) | `--skin-demo-accent` |
 | Pause sheet | `.airway-screen-root > .airway-tutorial-screen` → background | #8cc3d8 (`--airway-sky`) | `--skin-screen-sky` |
 | Pause sheet | `.airway-pause` → background | #f4ebc9 (`--airway-strip`) | `--skin-pause-bg` |
 | Pause sheet | `.airway-pause__button` → color; `.airway-pause__summary dt` → color; `.airway-pause` → color | #2a2420 (`--airway-ink`) | `--skin-pause-ink` |

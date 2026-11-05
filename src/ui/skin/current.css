@@ -98,9 +98,6 @@
   --skin-slot-ink: var(--airway-panel);
   --skin-slot-stub-bg: var(--airway-panel);
   --skin-slot-stub-ink: var(--airway-sign);
-  /* Overlay fixture controls, DEV only (overlay.css) */
-  --skin-demo-bg: var(--airway-ticket);
-  --skin-demo-accent: var(--airway-teal);
   /* Full-screen layers (game.css) */
   --skin-screen-sky: var(--airway-sky);
   /* Pause sheet (game.css .airway-pause) */

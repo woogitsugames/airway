@@ -285,17 +285,23 @@ page, ≥ 3 per 1.2 s on the menu and in a game.
 
 `npm run test:bundle` (in `test:ci` right after `build`) measures the built `dist/` and fails above these budgets:
 
-| Measure | Budget | Measured 2026-11-03 | Headroom |
-| --- | --- | --- | --- |
-| Main JS chunk (largest `dist/assets/*.js`), raw | 1,150 kB | 1,033.8 kB | +11 % |
-| Main JS chunk, gzip (level 9) | 340 kB | 306.2 kB | +11 % |
-| All CSS | 90 kB | 70.2 kB | +28 % |
-| Everything under `dist/` (fonts, land mask, licences, globe textures) | 4,300 kB (D-171) | 3,597.7 kB with G1 globe textures (1,804.8 kB before) | +20 % |
+| Measure | Budget | Measured 2026-11-03 | Measured 2026-11-05 (D-252) | Headroom |
+| --- | --- | --- | --- | --- |
+| Main JS chunk (largest `dist/assets/*.js`), raw | 1,180 kB (D-252; 1,150 before) | 1,033.8 kB | 1,150.4 kB (1,181.6 before D-252) | +2.6 % |
+| Main JS chunk, gzip (level 9) | 360 kB (D-252; 340 before) | 306.2 kB | 347.8 kB (353.1 before) | +3.5 % |
+| All CSS | 90 kB | 70.2 kB | 88.8 kB (105.0 before) | +1.4 % |
+| Everything under `dist/` (fonts, land mask, licences, globe textures) | 4,300 kB (D-171) | 3,597.7 kB with G1 globe textures (1,804.8 kB before) | 4,264.1 kB (4,311.5 before) | +0.8 % |
+
+[night-11ar] D-252: release CSS carries the UI skin values, not the tokens (`scripts/vite-skin-inline.mjs`; `npm run
+dev` keeps the tokens, `AW_SKIN_INLINE=1` resolves them there too), and the distance table is packed (three base64url
+digits per value). The headroom is now small: the next levers are loading the privacy policy and terms on demand
+(≈ 28 kB raw / 10 kB gzip) and puzzle levels that reference `cities.ts` instead of repeating airport records.
+Vite's chunk warning limit follows the raw budget (1,180 kB).
 
 The app is one chunk on purpose (three.js is about 494 kB of it; splitting puzzles, logbook, leaderboard and
 tutorial would save < 40 kB, R5). Files come from disk in the Capacitor app, so size is not a download cost; the
 risk is parse time on budget Android phones growing unnoticed. Raising a budget is a decision: record why in
-`docs/DECISIONS.md` and update this table. Vite's own 500 kB chunk warning is raised to 1,150 kB
+`docs/DECISIONS.md` and update this table. Vite's own 500 kB chunk warning is raised to the raw budget (1,180 kB, D-252)
 (`vite.config.ts`) so the build log does not cry wolf; this test is the authority. `test:bundle:static` (in
 `test:fast`) also fails when a module is imported both statically and with `import()`: Vite cannot split such a
 module and only warns (the old dynamic `import('@capacitor/core')` in `platform/install.ts` and `storage.ts`).

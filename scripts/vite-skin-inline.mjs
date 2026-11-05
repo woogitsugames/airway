@@ -1,0 +1,177 @@
+// [night-11ar] D-252: release builds resolve the UI skin tokens (src/ui/skin/current.css, D-250) into the component
+// CSS. The skin is one static file chosen at build time (a new skin is a new file imported instead of it), so every
+// `var(--skin-x)` has exactly one value; writing that value in place gives the CSS the browser read before D-250
+// (D-250: "with the skin substituted back every covered CSS file equals the old text") and saves ~15 kB of the CSS
+// budget (docs/PERFORMANCE.md "Bundle budget"). Source files keep the tokens; `npm run dev` keeps them too (DevTools
+// show the names) unless AW_SKIN_INLINE=1, which `npm run skin:pixels` uses to prove the inlined CSS pixel-identical.
+// Values that point at the palette (`var(--airway-ink)`) stay references: the palette is defined once on :root, so
+// resolving there or on the element gives the same colour (the plugin refuses a palette or skin token defined anywhere
+// else). Tokens read from TypeScript (inline SVG inks of overlay.ts) stay defined on :root, with resolved values.
+// Guarded by `npm run test:skin-tokens` (unit cases and the real skin) and `npm run test:bundle` (no other
+// `var(--skin-` in dist CSS).
+import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { join, resolve } from 'node:path';
+
+export const SKIN_FILE = 'src/ui/skin/current.css';
+const stripComments = (css) => css.replace(/\/\*[\s\S]*?\*\//g, '');
+const USE = /var\(\s*--skin-([a-z0-9-]+)\s*([,)])/g;
+
+/** name -> raw value of every `--skin-*` declaration in the skin file (one `:root` block, nothing else). */
+export function skinTokens(skinCss) {
+  const text = stripComments(skinCss).trim();
+  const block = /^:root\s*\{([^{}]*)\}$/.exec(text);
+  if (!block) throw new Error(`${SKIN_FILE}: expected exactly one :root { … } block and nothing else`);
+  const tokens = new Map();
+  for (const part of block[1].split(';')) {
+    if (!part.trim()) continue;
+    const m = /^\s*--skin-([a-z0-9-]+)\s*:\s*([\s\S]+?)\s*$/.exec(part);
+    if (!m) throw new Error(`${SKIN_FILE}: not a --skin-* declaration: ${part.trim()}`);
+    if (tokens.has(m[1])) throw new Error(`${SKIN_FILE}: --skin-${m[1]} defined twice`);
+    tokens.set(m[1], m[2]);
+  }
+  return tokens;
+}
+
+/** Every token value with nested `var(--skin-y)` written out (cycles and unknown names throw). */
+export function resolveTokens(tokens) {
+  const done = new Map();
+  const visit = (name, path) => {
+    if (done.has(name)) return done.get(name);
+    if (!tokens.has(name)) throw new Error(`unknown skin token --skin-${name}`);
+    if (path.includes(name)) throw new Error(`skin token cycle: ${[...path, name].join(' -> ')}`);
+    const value = substitute(tokens.get(name), (n) => visit(n, [...path, name]));
+    done.set(name, value);
+    return value;
+  };
+  for (const name of tokens.keys()) visit(name, []);
+  return done;
+}
+
+function substitute(css, valueOf) {
+  return css.replace(USE, (whole, name, end) => {
+    if (end === ',') throw new Error(`var(--skin-${name}, fallback) is not supported; use the plain token`);
+    return valueOf(name);
+  });
+}
+
+/** Custom properties (other than skin tokens) that resolved skin values read, e.g. `airway-ink`. */
+export function referencedProperties(resolved) {
+  const names = new Set();
+  for (const value of resolved.values()) for (const m of value.matchAll(/var\(\s*--([a-z0-9-]+)/g)) names.add(m[1]);
+  return names;
+}
+
+/** Custom properties that are constants: declared exactly once in all `cssSources`, in a top-level `:root` rule
+ *  (not under @media, not `:root[...]`), with a value free of var(), and never named in `scriptSources` (a script could
+ *  set it at run time, like --airway-airline). name -> value. */
+export function constantProperties(cssSources, scriptSources) {
+  const seen = new Map();
+  for (const css of cssSources) {
+    const text = stripComments(css);
+    let depth = 0;
+    let start = 0;
+    let selector = '';
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i];
+      if (ch === '{') { if (depth === 0) selector = text.slice(start, i).trim(); depth++; start = i + 1; }
+      else if (ch === '}' || ch === ';') {
+        const m = /^\s*--([a-z0-9-]+)\s*:\s*([\s\S]*?)\s*$/.exec(text.slice(start, i));
+        if (m) seen.set(m[1], [...(seen.get(m[1]) ?? []), { top: depth === 1 && selector === ':root', value: m[2] }]);
+        if (ch === '}') depth--;
+        start = i + 1;
+      }
+    }
+  }
+  const scripts = scriptSources.join('\n');
+  const out = new Map();
+  for (const [name, defs] of seen) {
+    if (defs.length === 1 && defs[0].top && !defs[0].value.includes('var(') && !scripts.includes(`--${name}`)) {
+      out.set(name, defs[0].value);
+    }
+  }
+  return out;
+}
+
+/** Resolved skin values with `var(--p)` of constant properties written out too. */
+export function withConstants(resolved, constants) {
+  const out = new Map();
+  for (const [name, value] of resolved) {
+    out.set(name, value.replace(/var\(\s*--([a-z0-9-]+)\s*\)/g, (whole, p) => constants.get(p) ?? whole));
+  }
+  return out;
+}
+
+/** One CSS source with every `var(--skin-x)` replaced by its resolved value. */
+export function inlineSkin(css, resolved, file = 'css') {
+  const outsideRoot = stripComments(css).replace(/:root\s*\{[^{}]*\}/g, '');
+  for (const m of outsideRoot.matchAll(/(?:^|[{;\s])--([a-z0-9-]+)\s*:/g)) {
+    if (m[1].startsWith('skin-') || referencedProperties(resolved).has(m[1])) {
+      throw new Error(`${file}: --${m[1]} is set outside :root; the skin tokens that read it cannot be inlined safely`);
+    }
+  }
+  return substitute(css, (name) => {
+    if (!resolved.has(name)) throw new Error(`${file}: unknown skin token --skin-${name}`);
+    return resolved.get(name);
+  });
+}
+
+/** The skin file reduced to the tokens TypeScript still reads at run time, values resolved. */
+export function keptSkin(resolved, keep) {
+  const names = [...keep].filter((name) => resolved.has(name)).sort();
+  if (!names.length) return '';
+  return `:root {\n${names.map((name) => `  --skin-${name}: ${resolved.get(name)};`).join('\n')}\n}\n`;
+}
+
+/** Token names written as `var(--skin-x)` in a TypeScript source. */
+export function tokensInScript(ts) {
+  return [...ts.matchAll(/var\(--skin-([a-z0-9-]+)\)/g)].map((m) => m[1]);
+}
+
+function sources(root, pattern) {
+  const out = [];
+  const walk = (dir) => {
+    for (const name of readdirSync(dir)) {
+      const path = join(dir, name);
+      if (statSync(path).isDirectory()) walk(path);
+      else if (pattern.test(name)) out.push(readFileSync(path, 'utf8'));
+    }
+  };
+  walk(join(root, 'src'));
+  return out;
+}
+
+/** Everything the transform needs, read from the tree: resolved token values and the tokens scripts read. */
+export function skinBuild(root) {
+  const scripts = sources(root, /\.(ts|tsx|js|mjs)$/);
+  const resolved = resolveTokens(skinTokens(readFileSync(resolve(root, SKIN_FILE), 'utf8')));
+  return {
+    resolved: withConstants(resolved, constantProperties(sources(root, /\.css$/), scripts)),
+    keep: new Set(scripts.flatMap(tokensInScript)),
+  };
+}
+
+/** Vite plugin: on in `vite build`, and in `vite` (dev) only with AW_SKIN_INLINE=1. */
+export function skinInline() {
+  let root = process.cwd();
+  let enabled = false;
+  let build = false;
+  let cache = null;
+  const normal = (id) => id.split('?')[0].replace(/\\/g, '/');
+  return {
+    name: 'airway-skin-inline',
+    enforce: 'pre',
+    configResolved(config) {
+      root = config.root;
+      build = config.command === 'build';
+      enabled = build || process.env.AW_SKIN_INLINE === '1';
+    },
+    buildStart() { cache = null; },
+    transform(code, id) {
+      const file = normal(id);
+      if (!enabled || !file.endsWith('.css') || !file.startsWith(normal(resolve(root, 'src')) + '/')) return null;
+      const { resolved, keep } = build ? (cache ??= skinBuild(root)) : skinBuild(root);
+      if (file === normal(resolve(root, SKIN_FILE))) return { code: keptSkin(resolved, keep), map: null };
+      return { code: inlineSkin(code, resolved, file.slice(root.length + 1)), map: null };
+    },
+  };
+}
