@@ -2491,7 +2491,11 @@ for the same shots); release builds never import it. Fonts ship properly: WOFF2 
 Extended-A, punctuation, arrows) in `public/fonts/` — Barlow Condensed 500/700 and IBM Plex Mono 400/600, the latter
 renamed **Airway Chart Mono** because "Plex" is an OFL Reserved Font Name; licences next to them, `docs/ASSETS.md`.
 Layout fix found by `test:e2e:text-scale-150`: the boarding-pass time field 84 → 88 px (landscape/foldable 68 → 72 px),
-"10:42" in 25 px mono is 73 px.
+"10:42" in 25 px mono is 73 px; and by `ui:matrix:stub`: with the weekly board open in landscape (915×412) the
+full-width chart margin ran under the board's sign, so there it stops at 436 px (`:has(.airway-upgrade-open)`).
+Evidence: `skin:pixels` default capture of this branch against `AW_SKIN=karta` on origin/dev 983b152: 95/120 shots
+pixel-identical; the 25 others are exactly the screens with the boarding pass (hud, pause, upgrade, tutorial: the time
+field); computed styles differ only in the mono family name (Airway Chart Mono).
 **Bundle (needs the owner's OK, budgets NOT changed here):** `npm run test:bundle` on this tree: main JS 1,138.2 kB raw /
 341.3 kB gzip (budgets 1,180 / 360 — green), CSS **112.9 kB > 90 kB (+22.9 kB)**, `dist/` **4,388.3 kB > 4,300 kB
 (+88.3 kB)**: +78.3 kB fonts, +8.8 kB licences, the rest the KARTA structure CSS (it overrides Diorama component rules

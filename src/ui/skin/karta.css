@@ -344,3 +344,12 @@
 }
 /* An empty cell that is named (not counting down) keeps its dashed ring around the symbol, above the name. */
 :root[data-skin="karta"] .airway-dock__tag.is-empty:not(.is-countdown)::after { top: calc(50% - 23px); width: 30px; height: 30px; margin-left: -15px; }
+
+/* [night-11ax] D-257: while the weekly board is open in landscape, its sign sits beside the boarding pass (Diorama
+   geometry, x ≥ 444 px at 915 px wide); the full-width chart margin would run under it, so the margin stops short. */
+:root[data-skin="karta"]:has(.airway-upgrade-open) .airway-hud[data-layout='landscape'] .airway-pass { right: auto; width: 436px; }
+/* [night-11ax] D-257: the game-over report in short landscape starts under the chart margin (its bottom edge is at
+   88 px at 915×412), not under the 70 px Diorama pass, so the final figures stay readable above the sign. */
+@media (max-height: 550px) and (min-width: 620px) {
+  :root[data-skin="karta"] .airway-go-overlay { padding-top: calc(var(--aw-safe-top) + 92px); }
+}
