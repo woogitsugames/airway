@@ -11,7 +11,10 @@ import type { FillTrend } from '../game/fillTrend'; // [night-11af] R4c (type on
 import type { SurgeMark } from '../game/surge'; // [night-12bb] R2i (type only)
 import type { FrontMark } from '../game/weather'; // [night-12bd] R2j (type only)
 import './skin/current.css'; // [night-11aq] skin tokens read by overlay.css
-import { skinPreview, kartaEdgeClash, kartaEdgeNote, kartaTopMargin, kartaExtraWidth, kartaJamShare, kartaLabelChildren } from './skin/preview'; // [night-11au] D-256 DEV-only KARTA preview
+import {
+  skin, rozaEdgeClash, rozaEdgeNote, rozaExtraWidth, rozaJamShare, rozaJamWidth, rozaNoteChildren, rozaRose, MEDAL_RADIUS, ROZA_JAM_LINE,
+  type Rose,
+} from './skin/roza'; // [night-11az] D-257: Róża skin helpers
 import './overlay.css';
 
 const DEG = Math.PI / 180;
@@ -26,6 +29,8 @@ export interface OverlayAirport {
   hub?: boolean;
   /** [night-11m] D-128: text of the airport's code plate (code or city name per the D-68 setting); default `code`. */
   label?: string;
+  /** [night-11az] D-257 Róża: the localized city name set along the airport's rose; default `code`. */
+  name?: string;
 }
 
 export interface AirportOverlayOptions {
@@ -115,6 +120,13 @@ interface BubbleEntry {
   lastEdgeY: number;
   lastEdgeSide: number;
   lastOpacity: number;
+  /** [night-11az] D-257 Róża: the rose around the renderer's medallion (null in the Diorama comparison skin). */
+  rose: Rose | null;
+  /** The rose's box as a fixed obstacle for the note layout (inactive without a rose). */
+  roseSlot: TagSlot;
+  /** Screen position of the airport itself (the tag anchor is moved beside the rose for the note's layout). */
+  screenX: number;
+  screenY: number;
 }
 
 export interface AirportOverlay {
@@ -186,27 +198,6 @@ function trendChevron(up: boolean): HTMLSpanElement {
 
 function placeEl(el: HTMLElement, x: number, y: number): void {
   el.style.transform = `translate3d(${x}px,${y}px,0)`;
-}
-
-/**
- * [night-11au] D-256, DEV-only KARTA preview: the leader line from the label's lower edge to the airport and the
- * airport point itself, in the label's own coordinates, for src/ui/skin/karta.css (pseudo-elements draw them).
- */
-const kartaLeaderKeys = new WeakMap<HTMLElement, string>();
-function kartaLeader(el: HTMLElement, tag: TagSlot): void {
-  const ax = tag.anchorX - tag.x;
-  const ay = tag.anchorY - tag.y;
-  const sx = Math.min(Math.max(ax, 10), Math.max(10, tag.width - 10));
-  const sy = 30;
-  const length = Math.max(0, Math.hypot(ax - sx, ay - sy) - 4);
-  const key = `${ax.toFixed(1)} ${ay.toFixed(1)} ${sx.toFixed(1)}`;
-  if (kartaLeaderKeys.get(el) === key) return;
-  kartaLeaderKeys.set(el, key);
-  el.style.setProperty('--karta-ax', ax.toFixed(1) + 'px');
-  el.style.setProperty('--karta-ay', ay.toFixed(1) + 'px');
-  el.style.setProperty('--karta-lx', sx.toFixed(1) + 'px');
-  el.style.setProperty('--karta-ll', length.toFixed(1) + 'px');
-  el.style.setProperty('--karta-la', (Math.atan2(ay - sy, ax - sx) * 180 / Math.PI).toFixed(1) + 'deg');
 }
 
 function updateVisibility(el: HTMLElement, visible: boolean): void { if (el.hidden === visible) el.hidden = !visible; }
@@ -319,6 +310,8 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
   host.appendChild(layer);
   const entries: BubbleEntry[] = [];
   const slots: TagSlot[] = [];
+  // [night-11az] D-257 Róża: the tags plus one fixed obstacle per airport rose, so a note never covers a rose.
+  const layoutSlots: TagSlot[] = [];
   const chips: EdgeChip[] = []; // [night-11x] parallel to `slots`
   const byId = new Map<string, BubbleEntry>();
   const marker = new Vector3();
@@ -370,8 +363,8 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
     const jammedNow = entry.jamSeconds !== null;
     // [night-11m] D-128: the plate names the airport wherever the UI speaks of it (hub, jam countdown, NEW stub, slot
     // hold, curfew) and on every airport once the player zooms in; otherwise the disc stays unlabelled.
-    // [night-11au] D-256: in the DEV-only KARTA preview a chart names every airport (folds away in a release build).
-    const plated = (import.meta.env.DEV && skinPreview.karta) || zoomedIn || entry.hub || jammedNow || entry.isNew ||
+    // [night-11az] D-257: Róża names every airport (the note beside its rose).
+    const plated = skin.roza || zoomedIn || entry.hub || jammedNow || entry.isNew ||
       entry.slotHeld > 0 || entry.closed || entry.surge !== null || entry.front !== null;
     if (plated) want.push(entry.plate);
     let freshWidth = 0;
@@ -401,11 +394,12 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
     const trendNode = entry.trend === 'filling' ? entry.trendUp : entry.trend === 'emptying' ? entry.trendDown : null;
     if (trendNode && entry.waiting.length > 0) want.push(trendNode);
     want.push(entry.timer);
-    // [night-11av] D-256, DEV-only KARTA preview: occupancy figure after the code and one glyph per region with a count.
-    if (import.meta.env.DEV && skinPreview.karta) {
+    // [night-11az] D-257 Róża: "14 z 24" after the code, one glyph per region with a count, the jam sentence.
+    if (skin.roza) {
       usedKinds.clear();
-      kartaLabelChildren(bubble, want, plated ? entry.plate : null, entry.waiting, entry.connecting, entry.capacity,
-        limit * 18 + (entry.waiting.length > MAX_GLYPHS ? 27 : 0), Math.max(60, bounds.width - 210), (region, hollowGlyph) => pooledGlyph(entry, region, hollowGlyph, usedKinds));
+      rozaNoteChildren(bubble, want, plated ? entry.plate : null, entry.waiting, entry.connecting, entry.capacity,
+        limit * 18 + (entry.waiting.length > MAX_GLYPHS ? 27 : 0), Math.max(60, bounds.width - (entry.jamSeconds !== null ? 230 : 210)), entry.jamSeconds,
+        (region, hollowGlyph) => pooledGlyph(entry, region, hollowGlyph, usedKinds));
     }
     // [night-10u] Write only where the child list differs from the last rebuild (most changes touch one glyph).
     const last = entry.children;
@@ -435,7 +429,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
         (surged ? entry.surgeWidth : 0) + (fronted ? entry.frontWidth : 0) +
         (trendNode && entry.waiting.length > 0 ? TREND_WIDTH : 0) +
         (plated ? entry.plateWidth - (plateOnly ? 8 : 0) : 0)) : 0;
-    if (import.meta.env.DEV && skinPreview.karta && entry.mainWidth > 0) entry.mainWidth += kartaExtraWidth(bubble); // [night-11av]
+    if (skin.roza && entry.mainWidth > 0) entry.mainWidth = Math.max(entry.mainWidth + rozaExtraWidth(bubble), rozaJamWidth(bubble)); // [night-11az]
     bubble.classList.toggle('airport-bubble--new', entry.isNew);
     entry.edge.classList.toggle('airport-edge--new', entry.isNew && !jammed);
     entry.edge.classList.toggle('airport-edge--curfew', entry.closed && !jammed); // [night-10h]
@@ -452,12 +446,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       (taken > 0 && entry.capacity > 0 ? ' ' + t('airport.edgeFillAria', { count: taken, capacity: entry.capacity }) : '');
     if (entry.edge.getAttribute('aria-label') !== edgeAria) entry.edge.setAttribute('aria-label', edgeAria);
     rebuildGauge(entry, taken);
-    if (import.meta.env.DEV && skinPreview.karta) { // [night-11au] D-256: seat scale under the code (karta.css), one segment per waiting place
-      bubble.style.setProperty('--karta-cap', String(entry.capacity));
-      bubble.style.setProperty('--karta-taken', String(taken));
-      bubble.style.setProperty('--karta-jam', kartaJamShare(entry.jamSeconds)); // [night-11av] time arc on the jam ring
-    }
-    sizeTagGroup(entry.tag, entry.mainWidth, entry.slotRect);
+    sizeGroup(entry);
     entry.timer.hidden = !jammed;
     if (jammed) {
       const seconds = Math.max(0, Math.ceil(entry.jamSeconds ?? 0));
@@ -492,6 +481,12 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
     entry.edge.dataset.fill = show ? `${taken}/${entry.capacity}` : '';
   }
 
+  /** The note's layout box; [night-11az] D-257 Róża: a jam adds its sentence as a second line under the note. */
+  function sizeGroup(entry: BubbleEntry): void {
+    sizeTagGroup(entry.tag, entry.mainWidth, entry.slotRect);
+    if (skin.roza && entry.mainWidth > 0 && entry.jamSeconds !== null) entry.tag.height += ROZA_JAM_LINE;
+  }
+
   /** [task-38] Rebuild the slot tag text only when the held count or the countdown changes. */
   function rebuildSlot(entry: BubbleEntry): void {
     const held = entry.slotHeld > 0;
@@ -511,7 +506,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       entry.slotRect.width = 0;
     }
     if (held !== entry.plate.isConnected) rebuildBubble(entry); // [night-11m] a slot hold names the airport
-    sizeTagGroup(entry.tag, entry.mainWidth, entry.slotRect);
+    sizeGroup(entry);
   }
 
   return {
@@ -614,9 +609,13 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
         trend: null, trendUp: trendChevron(true), trendDown: trendChevron(false),
         chip, bubbleVisible: false,
         lastBubbleX: NaN, lastBubbleY: NaN, lastEdgeX: NaN, lastEdgeY: NaN, lastEdgeSide: -1, lastOpacity: NaN,
+        rose: skin.roza ? rozaRose(layer) : null, screenX: 0, screenY: 0,
+        roseSlot: { id: airport.id + '~rose', anchorX: 0, anchorY: 0, width: 0, height: 0, active: false, jammed: false, fixed: true, x: 0, y: 0, placed: false },
       };
       entries.push(entry);
       slots.push(tag);
+      layoutSlots.push(tag);
+      if (entry.rose) layoutSlots.push(entry.roseSlot);
       chips.push(chip);
       byId.set(airport.id, entry);
       rebuildBubble(entry);
@@ -739,8 +738,9 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       const live = options.reserved?.();
       bounds.top = live ? live.top : options.reservedTop ?? 72;
       bounds.bottom = live ? live.bottom : options.reservedBottom ?? 92;
-      // [night-11av] D-256, DEV-only KARTA preview: its top margin (week ruler + day names) is taller than the reserve.
-      if (import.meta.env.DEV && skinPreview.karta) bounds.top = Math.max(bounds.top, kartaTopMargin(host));
+      // [night-11az] D-257 Róża: in landscape the dock arc's captions reach about twice the dock band into the screen;
+      // notes stay left of them.
+      if (skin.roza && live && live.right > 0) bounds.width = Math.max(120, width - live.right * 2);
       edgeBounds.width = width;
       edgeBounds.height = height;
       edgeBounds.top = bounds.top;
@@ -774,6 +774,46 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
         entry.tag.active = inView && (entry.mainWidth > 0 || entry.slotRect.width > 0); // [task-38]
         entry.tag.anchorX = x;
         entry.tag.anchorY = y;
+        entry.screenX = x;
+        entry.screenY = y;
+        if (entry.rose) {
+          // [night-11az] D-257 Róża: the rose rings the renderer's medallion; its inner radius is the medallion's
+          // footprint projected here (the larger of a north and an east offset, so a limb airport keeps its size).
+          let r = entry.hub ? 18 : 12;
+          if (inView && options.project && !transform) {
+            const angle = entry.hub ? MEDAL_RADIUS.hub : MEDAL_RADIUS.airport;
+            const lat = entry.airport.lat, alt = entry.airport.hub ? 1.075 : 1.045;
+            options.project(entry.airport.lon, lat + (lat > 80 ? -1 : 1) * angle / DEG, alt, projected);
+            const north = Math.hypot(projected.x - x, projected.y - y);
+            options.project(entry.airport.lon + angle / DEG / Math.max(.2, Math.cos(lat * DEG)), lat, alt, projected);
+            r = Math.min(40, Math.max(north, Math.hypot(projected.x - x, projected.y - y)));
+          }
+          if (inView) {
+            entry.rose.draw({ cap: entry.capacity, taken: Math.min(entry.waiting.length, entry.capacity), hub: entry.hub,
+              jam: rozaJamShare(entry.jamSeconds), name: entry.airport.name ?? entry.airport.code }, r);
+          }
+          entry.rose.place(x, y, inView);
+          // The rose's box (ticks and the name arc above) as a fixed obstacle for the notes.
+          const box = entry.roseSlot, jam = entry.jamSeconds !== null, half = r + (jam ? 20 : 8);
+          const top = r + (jam ? 22 : entry.hub ? 13 : 11) + 13;
+          box.active = inView;
+          box.x = x - half;
+          box.y = y - top;
+          box.width = half * 2;
+          box.height = top + half;
+          // The note stands right of the rose, level with its centre (KARTA-V2 C: "RIX 0 z 12" beside the ring);
+          // layoutTags centres a tag on anchorX and puts its top at anchorY − height − 11, then moves it off others.
+          const side = r + (entry.jamSeconds !== null ? 26 : 14);
+          // Right of the rose when it fits on screen, else left of it (the mockup's VCE / ATH notes); the other side is
+          // the fallback, and a note never drifts more than its own height away (it hides instead: the rose's ticks
+          // still show the fill, and zooming in makes room).
+          const right = x + side + entry.tag.width / 2, left = x - side - entry.tag.width / 2;
+          const rightFirst = x + side + entry.tag.width <= width - 6 || x - side - entry.tag.width < 6;
+          entry.tag.anchorX = rightFirst ? right : left;
+          entry.tag.altAnchorX = rightFirst ? left : right;
+          entry.tag.maxShift = entry.jamSeconds !== null ? 160 : entry.tag.height + 6;
+          entry.tag.anchorY = y - 10 + entry.tag.height + 11;
+        }
         const chip = entry.chip;
         chip.offscreen = !inView;
         chip.jammed = entry.jamSeconds !== null;
@@ -781,11 +821,11 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
           const dx = transformedNormal.x * cam[0] + transformedNormal.y * cam[1] + transformedNormal.z * cam[2];
           const dy = -(transformedNormal.x * cam[4] + transformedNormal.y * cam[5] + transformedNormal.z * cam[6]);
           projectEdgeChip(chip, dx, dy, entry.airport.lon, edgeBounds);
-          // [night-11av] D-256, DEV-only KARTA preview: the distance note "1 790 km" from the view centre.
-          if (import.meta.env.DEV && skinPreview.karta) kartaEdgeNote(entry.edge, transformedNormal, cameraPosition, chip.side);
+          // [night-11az] D-257 Róża: the distance note "1 790 km" from the view centre.
+          if (skin.roza) rozaEdgeNote(entry.edge, transformedNormal, cameraPosition, chip.side);
         }
       }
-      layoutTags(slots, bounds);
+      layoutTags(layoutSlots, bounds);
       placeEdgeChips(chips, slots, edgeBounds);
       for (const entry of entries) {
         const tag = entry.tag;
@@ -805,8 +845,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
             entry.lastBubbleX = tag.x;
             entry.lastBubbleY = tag.y;
           }
-          if (import.meta.env.DEV && skinPreview.karta && showBubble) kartaLeader(entry.bubble, tag);
-          const fade = Math.max(.2, Math.min(1, (tag.anchorX - 10) / 28, (width - 10 - tag.anchorX) / 28, (tag.anchorY - 10) / 28, (height - 10 - tag.anchorY) / 28));
+          const fade = Math.max(.2, Math.min(1, (entry.screenX - 10) / 28, (width - 10 - entry.screenX) / 28, (entry.screenY - 10) / 28, (height - 10 - entry.screenY) / 28));
           const opacity = Math.round(fade * 10) / 10;
           if (opacity !== entry.lastOpacity) {
             entry.bubble.style.opacity = String(opacity);
@@ -821,7 +860,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
           entry.lastEdgeX = entry.chip.x;
           entry.lastEdgeY = entry.chip.y;
         }
-        if (import.meta.env.DEV && skinPreview.karta && showEdge) kartaEdgeClash(entry.edge, entry.chip, slots); // [night-11av]
+        if (skin.roza && showEdge) rozaEdgeClash(entry.edge, entry.chip, slots); // [night-11az]
         if (showEdge && entry.lastEdgeSide !== entry.chip.side) {
           const icon = entry.edge.firstElementChild as SVGElement | null;
           if (icon) icon.style.transform = `rotate(${entry.chip.side === 0 ? 180 : entry.chip.side === 1 ? 0 : entry.chip.side === 2 ? -90 : 90}deg)`;
@@ -840,6 +879,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       layer.remove();
       entries.length = 0;
       slots.length = 0;
+      layoutSlots.length = 0;
       chips.length = 0;
       byId.clear();
     },

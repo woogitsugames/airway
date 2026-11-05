@@ -11,8 +11,11 @@
 // `var(--skin-` in dist CSS).
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import { SKIN_STRUCTURE_FILE, SKIN_SCOPE, skinOverrides, pruneOverridden } from './vite-skin-prune.mjs';
 
 export const SKIN_FILE = 'src/ui/skin/current.css';
+/** [night-11ax] D-257: the previous skin ("Diorama"), DEV comparison only (`?skin=current`). */
+export const COMPARISON_SKIN_FILE = 'src/ui/skin/diorama.css';
 const stripComments = (css) => css.replace(/\/\*[\s\S]*?\*\//g, '');
 const USE = /var\(\s*--skin-([a-z0-9-]+)\s*([,)])/g;
 
@@ -156,6 +159,7 @@ export function skinInline() {
   let enabled = false;
   let build = false;
   let cache = null;
+  let overrides = null;
   const normal = (id) => id.split('?')[0].replace(/\\/g, '/');
   return {
     name: 'airway-skin-inline',
@@ -165,15 +169,23 @@ export function skinInline() {
       build = config.command === 'build';
       enabled = build || process.env.AW_SKIN_INLINE === '1';
     },
-    buildStart() { cache = null; },
+    buildStart() { cache = null; overrides = null; },
     transform(code, id) {
       const file = normal(id);
       if (!enabled || !file.endsWith('.css') || !file.startsWith(normal(resolve(root, 'src')) + '/')) return null;
-      // [night-11au] D-256: a DEV-only preview skin (src/ui/skin/karta.css, never in a release build) keeps its tokens.
-      if (file.startsWith(normal(resolve(root, 'src/ui/skin')) + '/') && file !== normal(resolve(root, SKIN_FILE))) return null;
+      // [night-11ax] D-257: the DEV-only comparison skin (src/ui/skin/diorama.css, `?skin=current`, never in a release
+      // build) keeps its tokens; the skin structure (roza.css) is inlined like any component CSS.
+      if (file === normal(resolve(root, COMPARISON_SKIN_FILE))) return null;
       const { resolved, keep } = build ? (cache ??= skinBuild(root)) : skinBuild(root);
       if (file === normal(resolve(root, SKIN_FILE))) return { code: keptSkin(resolved, keep), map: null };
-      return { code: inlineSkin(code, resolved, file.slice(root.length + 1)), map: null };
+      const inlined = inlineSkin(code, resolved, file.slice(root.length + 1));
+      // [night-11ax] D-257: a release always has <html data-skin="roza">, so its scope is written `:root:root` (same
+      // specificity, 0-2-0; ~12 bytes less per selector). Dev (AW_SKIN_INLINE=1) keeps it for `?skin=current`.
+      if (file === normal(resolve(root, SKIN_STRUCTURE_FILE))) return { code: build ? inlined.split(SKIN_SCOPE).join(':root:root') : inlined, map: null };
+      // [night-11ax] D-257: drop the declarations the skin structure always overrides (scripts/vite-skin-prune.mjs).
+      const over = build ? (overrides ??= skinOverrides(readFileSync(resolve(root, SKIN_STRUCTURE_FILE), 'utf8')))
+        : skinOverrides(readFileSync(resolve(root, SKIN_STRUCTURE_FILE), 'utf8'));
+      return { code: pruneOverridden(inlined, over).css, map: null };
     },
   };
 }

@@ -14,12 +14,12 @@ from Google Fonts (static TTF per weight) on 2026-11-02 by `mockups/fetch-fonts.
 | Source Serif 4 | 400, 700 | KARTA v2 B "Nadruk" clock (fetched 2026-11-05) | yes |
 | Familjen Grotesk | 400, 700 | Poczta lotnicza text, overview sheets | yes |
 | Alegreya SC | 500, 800 | Atlas headlines/labels | yes |
-| Alegreya | 400, 700 | Atlas text | yes |
+| Alegreya | 400, 700 | Atlas text; KARTA v2 C "Róża" mockups; [N11az] shipped Róża skin, 700 as a WOFF2 subset in `public/fonts/` (D-257) | yes |
 | Big Shoulders Display | 500, 800 | Mapa pilota (rejected) | yes |
 | IBM Plex Sans Condensed | 400, 600 | Mapa pilota (rejected) | yes |
-| IBM Plex Mono | 400, 600 | Mapa pilota (rejected); UI direction mockups 2026-11 "Karta"; [N11au] KARTA preview skin (DEV only, D-256) | yes |
+| IBM Plex Mono | 400, 600 | Mapa pilota (rejected); UI direction mockups 2026-11 "Karta"; [N11au] KARTA preview skin (D-256); [N11ax] KARTA skin WOFF2 subset (draft D-257, not shipped: [N11az] Róża was chosen) | yes |
 | Martian Mono, Overpass Mono | 400, 700 | downloaded for evaluation, currently unused | yes |
-| Barlow Condensed | 500, 700 | UI direction mockups 2026-11 "Karta" (`mockups/ui-2026-11/`); [N11au] KARTA preview skin (DEV only, D-256) | yes |
+| Barlow Condensed | 500, 700 | UI direction mockups 2026-11 "Karta" (`mockups/ui-2026-11/`); [N11au] KARTA preview skin (D-256); [N11ax] KARTA skin WOFF2 subset (draft D-257, not shipped: [N11az] Róża was chosen) | yes |
 | Archivo Narrow | 500, 700 | UI direction mockups 2026-11 "Kokpit" | yes |
 | Atkinson Hyperlegible Mono | 400, 700 | UI direction mockups 2026-11 "Kokpit" | yes |
 
@@ -27,6 +27,15 @@ from Google Fonts (static TTF per weight) on 2026-11-02 by `mockups/fetch-fonts.
 Plex Mono straight from `mockups/fonts/` through the Vite dev server (licences `mockups/fonts/OFL-BarlowCondensed.txt`,
 `OFL-IBMPlexMono.txt`); they are not in `public/fonts/` and never reach `dist/` or the apps. If the owner picks KARTA,
 the shipped files move to `public/fonts/` with their licences (WOFF2 subset, see D-252 "Next levers").
+
+[N11az] D-257 (owner, 2026-11-05): Róża (KARTA v2 C) is the shipped skin, so KARTA's Barlow Condensed and Airway
+Chart Mono subsets are not shipped (removed from `public/fonts/` with their licence files). Róża sets names and titles in
+**Alegreya 700**: `public/fonts/Alegreya-700.woff2` (23.9 kB) is a subset of `mockups/fonts/Alegreya-700.ttf` (SIL OFL
+1.1, The Alegreya Project Authors), made with fontTools `pyftsubset --flavor=woff2
+--unicodes="U+0020-007E,U+00A0-017F,U+2000-206F,U+20AC,U+2190-2199,U+2212,U+2116,U+2122,U+00B7"
+--layout-features='kern,liga,tnum,lnum,case,ccmp,locl,mark,mkmk'`. The Alegreya OFL declares no Reserved Font Name, so
+the subset keeps its name. Licence next to it: `public/fonts/OFL-Alegreya.txt`. The one glyph the subset lacks (U+202F)
+falls back to the shipped Atkinson Hyperlegible Next / Overpass named after it in `--skin-face-display`.
 
 Rejected: **B612 / B612 Mono** (OFL, Airbus cockpit face) — no Polish diacritics (ą ć ę ł ń ś ź ż missing), checked with fontTools.
 
@@ -58,6 +67,10 @@ The game ships `public/fonts/Overpass-400.ttf`, `Overpass-800.ttf`,
 are `public/fonts/OFL-Overpass.txt`, `OFL-OverpassMono.txt`,
 and `OFL-AtkinsonHyperlegibleNext.txt`; each is colocated with the
 fonts it covers. No downloaded graphics are included.
+[N11ax] D-257: the game loads these five as `public/fonts/*.woff2` (`src/ui/fonts.css`),
+a lossless WOFF2 conversion of the TTFs with fontTools (`TTFont(ttf).flavor = 'woff2'`; same glyphs and cmap, no
+subsetting, names unchanged — none of the three licences declares a Reserved Font Name). The TTFs stay in `public/fonts/`
+for `dev/globe.html` and `scripts/store-shots.mjs`; `scripts/vite-font-files.mjs` leaves them out of `dist/`.
 
 <!-- [task-03] -->
 ## Production land raster (task 03)

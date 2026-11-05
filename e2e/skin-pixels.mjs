@@ -7,7 +7,9 @@
 //                                               strip + route menu + handles, leaderboard, puzzle game, tutorial; PL/EN × 412×915, 915×412,
 //                                               320×568 at 100 % text, 412×915 also at 150 % (D-248). PNG + a JSON of
 //                                               computed visual properties of every element.
-//   AW_SKIN=karta node e2e/skin-pixels.mjs capture <dir>   the same screens in the DEV-only KARTA preview skin (D-256);
+//   AW_SKIN=current node e2e/skin-pixels.mjs capture <dir> the same screens in the previous "Diorama" skin, DEV
+//                                               comparison only ([night-11az] D-257: Róża is the default; before it,
+//                                               KARTA, and AW_SKIN=karta captured the D-256 preview);
 //                                               AW_SCREENS=hud,overlay,… captures only those screens.
 //   node e2e/skin-pixels.mjs compare <a[,a2…]> <b[,b2…]>  every shot identical (pixels and computed style) in some base/new pair (a few
 //                                               anti-aliased edges and native controls are not bit-stable run to run
@@ -25,7 +27,7 @@ import { SCREENS, mountScreen } from './screen-fixtures.mjs';
 const started = performance.now();
 const [mode, dirA, dirB] = process.argv.slice(2);
 const SIZES = [[412, 915], [915, 412], [320, 568]];
-// [night-11au] D-256: AW_SKIN=karta captures the same fixtures with a DEV preview skin (`?skin=karta`).
+// [night-11au] D-256 / [night-11ax] D-257: AW_SKIN=<name> adds `?skin=<name>`; `current` shows the old Diorama skin.
 const SKIN = process.env.AW_SKIN ?? '';
 // [night-11as] + the components the D-250 follow-up covers: ATC strip / route menu / handles, leaderboard, puzzle game
 // screen (with a curfew barrier), tutorial vignette.

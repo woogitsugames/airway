@@ -1,5 +1,6 @@
 // Types of scripts/vite-skin-inline.mjs for vite.config.ts (tsc has no Node types here).
 export declare const SKIN_FILE: string;
+export declare const COMPARISON_SKIN_FILE: string;
 export declare function skinTokens(skinCss: string): Map<string, string>;
 export declare function resolveTokens(tokens: Map<string, string>): Map<string, string>;
 export declare function referencedProperties(resolved: Map<string, string>): Set<string>;

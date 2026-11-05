@@ -2476,3 +2476,62 @@ skinPreview.karta`; the module has no runtime import (a static one reordered the
 dropped — `src/main.ts` hands in `t`, `localNumber` and the grace), guarded by `test:skin-tokens`. Text reuses existing
 catalog keys, so no string is added. Release `dist/`: all 30 files sha256-identical to origin/dev 163bf50. Route
 distance labels need the route geometry (render or `session.ts`), outside this preview.
+
+## D-257 — Róża (KARTA v2 C) becomes the default UI (owner, 2026-11-05; Claude, night N11az)
+The owner picked variant **C „Róża”** of `docs/styles/ui-2026-11/KARTA-V2.md` (2026-11-05, verbatim „zrób C róża”), so
+it ships as the default UI; the earlier draft of this entry (KARTA as default, N11ax, PR #252) is superseded and its
+infrastructure reused: WOFF2 fonts (`scripts/vite-font-files.mjs`), release CSS without overridden rules
+(`scripts/vite-skin-prune.mjs`), `test:glyphs` on WOFF2, the DEV `?skin=current` comparison with the old "Diorama"
+tokens (`src/ui/skin/diorama.css`, never in a release).
+**What the player sees.** One shape carries the game, the compass rose of an aeronautical chart. *HUD*: the top bar is
+gone; the week ("Tydzień 7") in Alegreya and the passengers on the sky top-left, the pause a ringed 48 × 48 target, and
+**one 24-hour day dial in the thumb corner** (night 20–06 hatched, a tick per hour, heading bug = now, time and "dzień 2
+z 3" inside; landscape: a compact dial with the time, the day joins the week line). *Dock*: the six actions on an **arc
+around the dial** (radius 154 px, 158°–274°; positions solved so every 48 × 48 target stays apart and inside the safe
+areas at 320 × 568 and up), caption outside the arc, chosen aircraft ringed, an empty aircraft or hub reads "za 1 dzień";
+symbols redrawn for Airway (`src/ui/hud/icons.ts`, the KARTA v2 SYM set: course-line undo, straight-wing turboprop,
+swept four-engine widebody, three-runway hub, sheet-corner globe/map, a speed arrow whose wind barbs count the tempo).
+Landscape: the arc runs down the right edge in sky ink; a short screen keeps 48 px targets. While a hub cause board is
+open the arc lies flat along the bottom band. *Airports*: around the renderer's medallion the overlay draws a **rose**
+(`src/ui/skin/roza.ts`, one SVG per airport at its screen position): one tick per waiting place, long = taken (2–3
+places per tick above 24), the hub's ring doubled, the **city name set along the ring** in Alegreya; its inner radius is
+the medallion's footprint (`MEDAL_RADIUS`, read-only knowledge of `src/render/airports.ts`) projected each frame. The
+note beside it reads code, "14 z 24", the fill-trend chevron and the passengers grouped by region with a count; notes
+keep off every rose (fixed obstacles in `layoutTags`). *Jam*: rose, name and note in vermilion `#F2603F`, a heavy
+**countdown arc** round the rose (share of the grace left) and the sentence "Zator, sieć zamknie się za 42 s". *Menu*:
+"Airway" and a tagline on the sky, the entries on the **western arc of a big rose** in the thumb corner with leader
+lines (`rozaMenuArc` measures them), the run-starting entry marked by a vermilion diamond. Sheets (pause, settings,
+weekly board, game over, logbook) keep the ink panel with a chalk neatline in Alegreya / Atkinson. All new text is in
+the catalogs (`roza.*`, PL/EN, length budgets in `src/i18n/limits.ts`); captions that repeat an accessible name are
+aria-hidden.
+**Fonts.** Only the mockup's faces: **Alegreya 700** (new in the release: a WOFF2 Latin subset, 23.9 kB, OFL, no
+Reserved Font Name, `docs/ASSETS.md`, listed in Settings → Licences) and the shipped **Atkinson Hyperlegible Next**
+400/700 for figures and captions; KARTA's Barlow Condensed and Airway Chart Mono are dropped from `public/fonts/`; no
+mono face and no spaced capitals in the HUD, notes and menu.
+**Contrast** follows `docs/notes/roza-contrast.md` (PR #259): vermilion `#F2603F` (5.8:1 on the halo) with an 8 px halo
+under the countdown arc and a haloed start tick; dim chalk at 62 % (`#9C9E9A`); dim on the sky `#4A5559`; a 1.6 px halo
+for 12–12.5 px text; the sky lettering (week, passengers, pause, title, landscape dock and dial) gets a light halo
+`#EEF3F2`; region glyphs keep a chalk outline under a dark one (AFR, NAM). Re-measured on real stills, see the PR.
+**Structure.** Tokens: `src/ui/skin/current.css` (Róża values); structure and the rose palette: `src/ui/skin/roza.css`,
+every rule under `:root[data-skin="roza"]` (`index.html` sets it for the first paint; `startRoza` in `src/main.ts`).
+The pruner also drops every component rule of an element Róża hides outright (`display: none`, e.g. the old pass
+fields). Proof: `skin:pixels` on this tree, dev tokens vs `AW_SKIN_INLINE=1` (inlined + pruned): 119/120 shots
+pixel-identical (the tutorial differs by 1,267 channel values, the known run-to-run noise); computed styles differ only
+on the elements Róża hides (`.airway-pass__band`, `.airway-sign__pictogram`, display:none).
+**For the ext session (`src/render/**`, untouched here):** the medallion should become the rose's centre — the chart
+airport symbol (runway pattern; hub = three runways), no own seat ring, no dark disc beyond the rose's inner radius
+(today `0.038 × 1.2 / 1.7` globe radii), and `MEDAL_RADIUS` in `roza.ts` must follow any change; the handoff spec is
+`docs/notes/roza-render-spec.md` (separate session).
+Guards: `test:skin-tokens` (Róża tokens are the skin, Diorama covers every token and is DEV-only, structure scoped,
+palette only `--roza-*`, Alegreya and its licence present, KARTA faces gone, helpers type-only and not DEV-guarded,
+pruning cases incl. hidden elements), `test:glyphs` (Alegreya + fallbacks), `test:bundle` (6 WOFF2 named, none
+missing), `test:hud-targets` (arc order), `test:e2e:fill-trend` (chevron after "14 z 24"). **Status: in force.**
+
+## D-258 — CSS budget 90 → 109 kB for the Róża structure (owner-approved ceiling, 2026-11-05; Claude, night N11az)
+Release CSS with Róża (D-257) measures **107.2 kB** (`npm run test:bundle`; origin/dev 89.5 kB): the rose structure
+(`roza.css`) restyles the component CSS instead of replacing it, so the DEV `?skin=current` comparison still works.
+Already applied: tokens inlined (D-252), declarations Róża overrides pruned, and new in N11az the rules of elements it
+hides; the dock's flat-row positions from one `--i` rule. The owner approved a ceiling of 109 kB earlier; it is used
+as the budget (+1.7 % headroom), so the next growth is again a decision. The way back towards 90 kB is to fold
+`roza.css` into the component CSS and delete the Diorama structure (drops `?skin=current`). Main JS 1,146.8 kB raw /
+344.6 kB gzip and `dist/` 3,955.5 kB stay within their budgets. **Status: in force.**

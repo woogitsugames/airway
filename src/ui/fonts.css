@@ -1,35 +1,37 @@
-/* Airport-signage typefaces; all five files are SIL OFL (see public/fonts/OFL-*.txt). */
+/* Airport-signage typefaces; all five files are SIL OFL (see public/fonts/OFL-*.txt). [night-11ax] D-257: served as WOFF2
+   (lossless conversion of the TTFs next to them, same glyphs and cmap; the TTFs stay in public/ for dev pages and
+   store-shot tooling but are left out of dist/ by scripts/vite-font-files.mjs). */
 @font-face {
   font-family: 'Overpass';
-  src: url('/fonts/Overpass-400.ttf') format('truetype');
+  src: url('/fonts/Overpass-400.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: 'Overpass';
-  src: url('/fonts/Overpass-800.ttf') format('truetype');
+  src: url('/fonts/Overpass-800.woff2') format('woff2');
   font-weight: 800;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: 'Overpass Mono';
-  src: url('/fonts/OverpassMono-700.ttf') format('truetype');
+  src: url('/fonts/OverpassMono-700.woff2') format('woff2');
   font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: 'Atkinson Hyperlegible Next';
-  src: url('/fonts/AtkinsonHyperlegibleNext-400.ttf') format('truetype');
+  src: url('/fonts/AtkinsonHyperlegibleNext-400.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: 'Atkinson Hyperlegible Next';
-  src: url('/fonts/AtkinsonHyperlegibleNext-700.ttf') format('truetype');
+  src: url('/fonts/AtkinsonHyperlegibleNext-700.woff2') format('woff2');
   font-weight: 700;
   font-style: normal;
   font-display: swap;
@@ -39,7 +41,7 @@
    centred ink, real advance) through unicode-range; faces declared later win for their range. */
 @font-face {
   font-family: 'Overpass';
-  src: url('/fonts/AtkinsonHyperlegibleNext-400.ttf') format('truetype');
+  src: url('/fonts/AtkinsonHyperlegibleNext-400.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -47,7 +49,7 @@
 }
 @font-face {
   font-family: 'Overpass';
-  src: url('/fonts/AtkinsonHyperlegibleNext-700.ttf') format('truetype');
+  src: url('/fonts/AtkinsonHyperlegibleNext-700.woff2') format('woff2');
   font-weight: 800;
   font-style: normal;
   font-display: swap;
@@ -58,7 +60,7 @@
    matching stroke) through unicode-range instead of falling back to a system font. `test:glyphs` checks coverage. */
 @font-face {
   font-family: 'Atkinson Hyperlegible Next';
-  src: url('/fonts/Overpass-400.ttf') format('truetype');
+  src: url('/fonts/Overpass-400.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -66,7 +68,7 @@
 }
 @font-face {
   font-family: 'Atkinson Hyperlegible Next';
-  src: url('/fonts/Overpass-800.ttf') format('truetype');
+  src: url('/fonts/Overpass-800.woff2') format('woff2');
   font-weight: 700;
   font-style: normal;
   font-display: swap;

@@ -11,6 +11,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { resolve, dirname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { constantProperties, inlineSkin, keptSkin, resolveTokens, skinBuild, skinTokens, withConstants } from './vite-skin-inline.mjs';
+import { skinOverrides, pruneOverridden } from './vite-skin-prune.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const SKIN = 'src/ui/skin/current.css';
@@ -101,6 +102,8 @@ for (const file of COVERED_TS) {
 const skin = stripComments(read(SKIN));
 const defined = new Map([...skin.matchAll(/--skin-([a-z0-9-]+)\s*:\s*([^;]+);/g)].map((m) => [m[1], m[2].trim()]));
 for (const m of skin.matchAll(/var\(--skin-([a-z0-9-]+)\)/g)) used.add(m[1]);
+// [night-11ax] D-257: a token only the DEV comparison skin (diorama.css) reads inside its own values is still part of the contract.
+for (const m of stripComments(read('src/ui/skin/diorama.css')).matchAll(/var\(--skin-([a-z0-9-]+)\)/g)) used.add(m[1]);
 const missing = [...used].filter((name) => !defined.has(name));
 const dead = [...defined.keys()].filter((name) => !used.has(name));
 check('every --skin-* token used is defined in the skin', missing.length === 0, missing.join(' '));
@@ -154,42 +157,91 @@ check('inline: every covered file of the real skin inlines with no token left', 
 check('inline: the real skin keeps exactly the tokens of the covered TypeScript', [...real.keep].sort().join() ===
   [...new Set(COVERED_TS.flatMap((file) => [...read(file).matchAll(/var\(--skin-([a-z0-9-]+)\)/g)].map((m) => m[1])))].sort().join());
 
-// 6. [night-11au] D-256: the DEV-only KARTA preview skin (src/ui/skin/karta.css) redefines every token of the shipped
-// skin, adds no skin token of its own, keeps all of it under :root[data-skin="karta"] (so it can never restyle the
-// shipped skin), never redefines the palette, and is imported only by the DEV branch of src/main.ts.
-const KARTA = 'src/ui/skin/karta.css';
-const karta = stripComments(read(KARTA));
-const kartaBlock = /:root\[data-skin="karta"\]\s*\{([^{}]*)\}/.exec(karta);
-const kartaTokens = new Set([...(kartaBlock?.[1] ?? '').matchAll(/--skin-([a-z0-9-]+)\s*:/g)].map((m) => m[1]));
-const kartaMissing = [...defined.keys()].filter((name) => !kartaTokens.has(name));
-const kartaExtra = [...kartaTokens].filter((name) => !defined.has(name));
-check('karta: the preview skin redefines every token of the shipped skin', !!kartaBlock && kartaMissing.length === 0, kartaMissing.join(' '));
-check('karta: the preview skin adds no skin token of its own', kartaExtra.length === 0, kartaExtra.join(' '));
-const kartaRules = [];
+// 6. [night-11az] D-257: Róża (KARTA v2 C) is the shipped skin. current.css holds its tokens; the structure and the
+// rose palette are src/ui/skin/roza.css, loaded statically by src/main.ts after every component stylesheet, every rule
+// scoped to :root[data-skin="roza"] (so the DEV `?skin=current` comparison drops it), palette only in a plain :root,
+// inlined with no token left. The previous skin (src/ui/skin/diorama.css) redefines every token, adds none, and is
+// imported only by the DEV `?skin=current` branch of src/main.ts. (D-256/D-257 KARTA had the same contract.)
+const ROZA = 'src/ui/skin/roza.css';
+const DIORAMA = 'src/ui/skin/diorama.css';
+const roza = stripComments(read(ROZA));
+const dioramaTokens = new Set([...stripComments(read(DIORAMA)).matchAll(/--skin-([a-z0-9-]+)\s*:/g)].map((m) => m[1]));
+const dioramaMissing = [...defined.keys()].filter((name) => !dioramaTokens.has(name));
+const dioramaExtra = [...dioramaTokens].filter((name) => !defined.has(name));
+check('diorama: the comparison skin redefines every token of the shipped skin', dioramaMissing.length === 0, dioramaMissing.join(' '));
+check('diorama: the comparison skin adds no skin token of its own', dioramaExtra.length === 0, dioramaExtra.join(' '));
+check('roza: the structure sets no skin token', !/--skin-[a-z0-9-]+\s*:/.test(roza));
+const rozaRules = [];
 {
   let depth = 0;
   let start = 0;
-  for (let i = 0; i < karta.length; i++) {
-    const ch = karta[i];
-    if (ch === '{') { const sel = karta.slice(start, i).trim(); if (depth === 0 || !sel.startsWith('@')) kartaRules.push(sel); depth++; start = i + 1; }
+  for (let i = 0; i < roza.length; i++) {
+    const ch = roza[i];
+    if (ch === '{') { const sel = roza.slice(start, i).trim(); if (depth === 0 || !sel.startsWith('@')) rozaRules.push(sel); depth++; start = i + 1; }
     else if (ch === '}') { depth--; start = i + 1; }
     else if (ch === ';' ) start = i + 1;
   }
 }
-const unscoped = kartaRules.filter((sel) => !/^@(media|font-face)\b/.test(sel) &&
-  !sel.split(',').every((part) => part.trim().startsWith(':root[data-skin="karta"]')));
-check('karta: every rule of the preview skin is scoped to :root[data-skin="karta"]', unscoped.length === 0, unscoped.slice(0, 3).join(' | '));
-check('karta: the preview skin never redefines the palette or text-scale tokens', !/--airway-[a-z-]+\s*:/.test(karta));
-const kartaImports = tsFiles.filter((file) => /import\s*\(?\s*'[^']*karta\.css'/.test(read(file)));
+const unscoped = rozaRules.filter((sel) => !/^@(media|font-face)\b/.test(sel) && sel !== ':root' &&
+  !sel.split(',').every((part) => part.trim().startsWith(':root[data-skin="roza"]')));
+check('roza: every structural rule is scoped to :root[data-skin="roza"]', unscoped.length === 0, unscoped.slice(0, 3).join(' | '));
+const rozaRoot = [...roza.matchAll(/(?:^|\})\s*:root\s*\{([^{}]*)\}/g)].map((m) => m[1]).join(';');
+check('roza: the plain :root sets only the rose palette (--roza-*)',
+  [...rozaRoot.matchAll(/(--[a-z0-9-]+)\s*:/g)].every((m) => m[1].startsWith('--roza-')));
+check('roza: never redefines the palette or text-scale tokens', !/--airway-[a-z-]+\s*:/.test(roza));
+check('roza: the structure inlines with no token left', !/var\(--skin-/.test(inlineSkin(read(ROZA), real.resolved, ROZA)));
+const fontFiles = [...roza.matchAll(/url\('\/fonts\/([^']+)'\)/g)].map((m) => m[1]);
+const missingFonts = fontFiles.filter((file) => { try { statSync(resolve(ROOT, 'public/fonts', file)); return false; } catch { return true; } });
+check('roza: its face (Alegreya 700) ships from public/fonts/ with its OFL licence', fontFiles.join() === 'Alegreya-700.woff2' && missingFonts.length === 0 &&
+  statSync(resolve(ROOT, 'public/fonts/OFL-Alegreya.txt')).size > 0, missingFonts.join(' '));
+const dropped = ['BarlowCondensed-500.woff2', 'BarlowCondensed-700.woff2', 'AirwayChartMono-400.woff2', 'AirwayChartMono-600.woff2']
+  .filter((file) => { try { statSync(resolve(ROOT, 'public/fonts', file)); return true; } catch { return false; } });
+check('roza: the KARTA faces (Barlow Condensed, Airway Chart Mono) are gone from the release', dropped.length === 0, dropped.join(' '));
 const main = read('src/main.ts');
-check('karta: only the DEV branch of src/main.ts imports the preview skin',
-  kartaImports.join() === 'src/main.ts' && /if \(import\.meta\.env\.DEV && query\.get\('skin'\) === 'karta'\) \{\s*startKartaPreview\([^;]*\);\s*void import\('\.\/ui\/skin\/karta\.css'\);/.test(main) &&
-  !/^import\s+'[^']*karta\.css'/m.test(main), kartaImports.join(' '));
+const rozaImports = tsFiles.filter((file) => /import\s*\(?\s*'[^']*roza\.css'/.test(read(file)));
+const lastImport = [...main.matchAll(/^import\s[^;]*;/gm)].pop()?.[0] ?? '';
+check('roza: src/main.ts (only) imports the structure, after every other import', rozaImports.join() === 'src/main.ts' &&
+  lastImport === "import './ui/skin/roza.css';", rozaImports.join(' '));
+check('roza: on by default in src/main.ts (startRoza outside the DEV comparison branch)',
+  /if \(import\.meta\.env\.DEV && query\.get\('skin'\) === 'current'\) \{[^}]*void import\('\.\/ui\/skin\/diorama\.css'\);\s*\} else \{\s*startRoza\(/.test(main) &&
+  /<html[^>]*data-skin="roza"/.test(read('index.html')));
+const dioramaImports = tsFiles.filter((file) => /diorama\.css'/.test(read(file)));
+check('diorama: imported only by the DEV comparison branch of src/main.ts', dioramaImports.join() === 'src/main.ts' &&
+  !/^import\s+'[^']*diorama\.css'/m.test(main), dioramaImports.join(' '));
+const guarded = ['src/ui/overlay.ts', 'src/ui/hud/boarding-pass.ts', 'src/ui/hud/tag-dock.ts', 'src/ui/menu/menu.ts']
+  .filter((file) => /import\.meta\.env\.DEV\s*&&\s*skin\.roza/.test(read(file)));
+check('roza: the rose helpers are not DEV-only', guarded.length === 0, guarded.join(' '));
 
-// [night-11av] D-256: the preview helpers (src/ui/skin/preview.ts) are imported statically by the overlay, HUD and menu;
-// a runtime import there would reorder modules in the release bundle even though its code is dropped, so types only.
-const previewImports = [...read('src/ui/skin/preview.ts').matchAll(/^import\s+(?!type\b)[^;]*;/gm)].map((m) => m[0]);
-check('karta: the preview helpers have no runtime import (release bundle order unchanged)', previewImports.length === 0, previewImports.join(' '));
+// [night-11ax] D-257: release CSS drops the component declarations the shipped structure always overrides
+// (scripts/vite-skin-prune.mjs).
+{
+  const over = skinOverrides(':root[data-skin="roza"] .a, :root[data-skin="roza"] .b::after { color: x; font: 1px y; }\n' +
+    '@media (w) { :root[data-skin="roza"] .c { padding: 0; } }\n:root[data-skin="roza"]:has(.d) .e { top: 0; }');
+  const pruned = pruneOverridden('.a { color: red; margin: 0; }\n.b::after { font-size: 2px; line-height: 1; }\n.a, .z { color: blue; }\n' +
+    '.c { padding-left: 1px; }\n@media (w) { .c { padding-top: 1px; } }\n.a { color: green !important; }\n.e { top: 1px; }', over);
+  check('prune: overridden declarations go (same selector, shorthand cover, same @media), the rest stays',
+    pruned.removed === 4 && /\.a \{ margin: 0; \}/.test(pruned.css) && !/\.b::after/.test(pruned.css) && /\.a, \.z \{ color: blue; \}/.test(pruned.css) &&
+    /\.c \{ padding-left: 1px; \}/.test(pruned.css) && !/@media/.test(pruned.css) && /green !important/.test(pruned.css) && /\.e \{ top: 1px; \}/.test(pruned.css),
+    pruned.css.replace(/\n/g, ' '));
+  // [night-11az] D-257: a class (or its ::before/::after) the structure hides outright takes its subtree's rules along,
+  // unless another structural rule gives it a display again.
+  const hid = skinOverrides(':root[data-skin="roza"] .h { display: none; }\n:root[data-skin="roza"] .k { display: none; }\n' +
+    ':root[data-skin="roza"] .w .k { display: flex; }\n:root[data-skin="roza"] .p::before { display: none; }');
+  const gone = pruneOverridden('.h { color: red; }\n.x .h strong { margin: 0; }\n.hx { color: blue; }\n.k { top: 0; }\n' +
+    '.y .p::before { left: 0; }\n.p { left: 1px; }\n.h { color: green !important; }', hid);
+  check('prune: rules of hidden elements go (subtree, pseudo-element), a re-shown or longer class stays',
+    gone.removed === 3 && !/margin/.test(gone.css) && /\.hx \{ color: blue; \}/.test(gone.css) && /\.k \{ top: 0; \}/.test(gone.css) &&
+    !/::before/.test(gone.css) && /\.p \{ left: 1px; \}/.test(gone.css) && /green !important/.test(gone.css), gone.css.replace(/\n/g, ' '));
+  const realOver = skinOverrides(read(ROZA));
+  const removed = COVERED.reduce((sum, file) => sum + pruneOverridden(inlineSkin(read(file), real.resolved, file), realOver).removed, 0);
+  check('prune: the real Róża structure makes some component declarations dead', removed > 50, `${removed} removed`);
+}
+
+// [night-11av] D-256 / [night-11az] D-257: the helpers (src/ui/skin/roza.ts) are imported statically by the overlay, HUD
+// and menu; they get i18n and the sim constants from src/main.ts (RozaDeps), so the module stays type-only and the
+// bundle order unchanged.
+const helperImports = [...read('src/ui/skin/roza.ts').matchAll(/^import\s+(?!type\b)[^;]*;/gm)].map((m) => m[0]);
+check('roza: the helpers have no runtime import (release bundle order unchanged)', helperImports.length === 0, helperImports.join(' '));
 
 for (const { name, ok, why } of results) console[ok ? 'log' : 'error'](`${ok ? 'PASS' : 'FAIL'} ${name}${why && !ok ? ': ' + why : ''}`);
 const failed = results.filter((r) => !r.ok).length;

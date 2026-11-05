@@ -1,28 +1,30 @@
-/* [night-11aq] UI skin "Diorama" (current): every visual value of the in-game HUD (boarding pass, tag dock), airport
-   tags and chips, pause sheet, weekly board, hub cause board, game-over report and main menu / settings, as semantic
-   custom properties; [night-11as] also the ATC strip / route menu / first-time card, logbook, puzzle board, leaderboard,
-   tutorial and the region glyph outline. Release builds write the values in place (scripts/vite-skin-inline.mjs). The component CSS reads only these names (test:skin-tokens fails on a colour or font literal
-   there). A new UI skin (docs/styles/ui-2026-11/KIERUNKI.md) = a new file like this one, imported instead of it in
-   src/main.ts, plus structural tweaks in the component CSS. Colours point at the palette of src/ui/theme/theme.css
-   where it has the same value (test:contrast / test:cvd keep that palette); the rest are raw values of this skin.
-   Inventory: docs/styles/ui-2026-11/INVENTORY.md. Text sizes stay the D-248 tokens of theme.css (--airway-font-*,
-   --airway-text-scale*); a skin never rescales them. */
+/* [night-11az] D-257: the shipped UI skin is "Róża" (KARTA v2, variant C, docs/styles/ui-2026-11/KARTA-V2.md; the
+   owner's pick of 2026-11-05). Every visual value of the in-game HUD (day dial, dock arc), airport labels and chips,
+   pause sheet, weekly board, hub cause board, game-over report, main menu / settings, ATC strip / route menu /
+   first-time card, logbook, puzzle board, leaderboard, tutorial and the region glyph outline, as semantic custom
+   properties. Release builds write the values in place (scripts/vite-skin-inline.mjs, D-252); the component CSS reads
+   only these names (test:skin-tokens fails on a colour or font literal there). The rose palette (--roza-*) and the
+   structural tweaks live in src/ui/skin/roza.css; the previous "Diorama" skin is src/ui/skin/diorama.css, loaded only
+   by a DEV build with `?skin=current` for comparison. Text sizes stay the D-248 tokens of theme.css.
+   Faces: Alegreya 700 (names, titles; the mockup's serif) and Atkinson Hyperlegible Next 400/700 (figures, captions,
+   reading text); no condensed caps and no mono face (KARTA v2: "bez rozstrzelenia i bez fontu mono"). */
 :root {
-  /* Typefaces (SIL OFL, src/ui/fonts.css) and weights */
-  --skin-face-text: 'Atkinson Hyperlegible Next', sans-serif;
-  --skin-face-display: 'Overpass', sans-serif;
-  --skin-face-mono: 'Overpass Mono', monospace;
+
+  /* Typefaces and weights */
+  --skin-face-text: 'Atkinson Hyperlegible Next', 'Overpass', sans-serif;
+  --skin-face-display: 'Alegreya', 'Atkinson Hyperlegible Next', 'Overpass', serif;
+  --skin-face-mono: 'Atkinson Hyperlegible Next', 'Overpass Mono', sans-serif;
   --skin-weight-regular: 400;
   --skin-weight-bold: 700;
-  --skin-weight-heavy: 800;
+  --skin-weight-heavy: 700;
 
-  /* Motion: short and matter-of-fact (CLAUDE.md), all switched off by "Reduce motion" (D-88) */
+  /* Motion: the same short, linear values; the chart never bounces */
   --skin-motion-follow: 90ms;
-  --skin-motion-press: .12s;
+  --skin-motion-press: .1s;
   --skin-motion-trend-in: 120ms;
   --skin-motion-panel-in: 140ms;
-  --skin-motion-stamp: 160ms;
-  --skin-motion-sheet-in: .18s;
+  --skin-motion-stamp: 120ms;
+  --skin-motion-sheet-in: .16s;
   --skin-motion-flap: 38ms;
   --skin-motion-flip: 90ms;
   --skin-motion-flip-stagger-1: 65ms;
@@ -30,299 +32,295 @@
   --skin-motion-flip-stagger-3: 180ms;
   --skin-motion-jam-pulse: 1.1s;
 
-  /* Shape: corners, shadows, hover rule */
+  /* Shape: sharp corners, hairlines, no shadows */
   --skin-control-radius: 0;
-  --skin-edge-radius: 2px;
-  --skin-hover-rule: inset 0 -3px 0 currentColor;
-  --skin-edge-new-bar: inset 0 4px 0 var(--skin-edge-highlight);
-  --skin-hubboard-shadow: 3px 3px 0 var(--skin-hubboard-offset);
-  --skin-menu-board-shadow: 0 2px 0 var(--skin-menu-board-ledge);
+  --skin-edge-radius: 0;
+  --skin-hover-rule: inset 0 -2px 0 currentColor;
+  --skin-edge-new-bar: inset 0 3px 0 var(--skin-edge-highlight);
+  --skin-hubboard-shadow: none;
+  --skin-menu-board-shadow: none;
 
-  /* Icon sizes. Airport chip and slot ticket widths are fixed constants in src/ui/overlay.ts and overlay.css: a
-     bigger mark must still fit them. */
-  --skin-hud-icon-size: 27px;
-  --skin-hud-icon-size-narrow: 24px;
-  --skin-pass-pause-icon-size: 22px;
-  --skin-dock-countdown-icon-size: 22px;
-  --skin-dock-hub-icon-width: 25px;
+  /* Icon sizes */
+  --skin-hud-icon-size: 24px;
+  --skin-hud-icon-size-narrow: 22px;
+  --skin-pass-pause-icon-size: 20px;
+  --skin-dock-countdown-icon-size: 20px;
+  --skin-dock-hub-icon-width: 24px;
   --skin-edge-icon-size: 14px;
   --skin-slot-icon-size: 14px;
   --skin-crate-back-icon-size: 24px;
-  --skin-menu-sign-icon-size: 38px;
+  --skin-menu-sign-icon-size: 34px;
 
-  /* In-game HUD shell (src/ui/hud.css: .airway-hud local --hud-* properties) */
-  --skin-hud-ink: var(--airway-ink);
-  --skin-hud-paper: var(--airway-ticket);
-  --skin-hud-perforation: #d8cfbf;
-  --skin-hud-airline-default: var(--airway-teal);
-  --skin-hud-tag-bg: var(--airway-kraft);
-  --skin-hud-eyelet-ring: #b8955f;
-  --skin-hud-alert: var(--airway-jam);
-  /* Boarding pass, top bar (hud.css) */
-  --skin-pass-label-ink: #665f55;
-  /* Bottom / side tag dock (hud.css) */
-  --skin-dock-eyelet-hole: var(--airway-sky);
-  --skin-dock-tag-empty-bg: var(--airway-kraft-empty);
-  --skin-dock-tag-empty-ink: var(--airway-kraft-empty-ink);
-  --skin-dock-rack-rule: #2a24205c;
-  /* Airport passenger tag (overlay.css .airport-bubble) */
-  --skin-tag-ink: var(--airway-ink);
-  --skin-tag-bg: var(--airway-ticket);
-  --skin-tag-jam-bg: var(--airway-jam);
-  --skin-tag-jam-ink: var(--airway-ticket);
-  --skin-tag-plate-rule: var(--airway-ink);
-  --skin-tag-plate-ink: var(--airway-panel);
-  --skin-tag-new-bg: var(--airway-panel);
-  --skin-tag-new-ink: var(--airway-sign);
-  --skin-tag-barrier-post: var(--airway-panel); /* overlay.ts curfew barrier SVG */
-  --skin-tag-barrier-boom: var(--airway-ticket);
-  --skin-tag-barrier-stripe: #b8322a;
-  --skin-tag-glyph-hollow: var(--airway-ticket); /* overlay.ts transfer glyph inside the connection time */
-  --skin-tag-surge-ink: var(--airway-panel); /* [night-12bb] D-249 demand-surge stub and edge pennant */
-  --skin-tag-surge-paper: var(--airway-ticket);
-  --skin-tag-front-ink: var(--airway-panel); /* [night-12bd] R2j weather-front stub */
-  --skin-tag-front-paper: var(--airway-ticket);
-  /* Off-screen airport chip (overlay.css .airport-edge) */
-  --skin-edge-border: var(--airway-panel);
-  --skin-edge-bg: var(--airway-ticket);
-  --skin-edge-ink: var(--airway-panel);
-  --skin-edge-highlight: var(--airway-sign);
-  --skin-edge-jam-bg: var(--airway-jam);
-  --skin-edge-jam-border: var(--airway-jam);
-  --skin-edge-jam-ink: var(--airway-ticket);
-  --skin-edge-new-bg: var(--airway-panel);
-  --skin-edge-new-ink: var(--airway-sign);
-  --skin-edge-curfew-stripe: #B8322A;
-  /* Departure-slot ticket (overlay.css .airport-slot) */
-  --skin-slot-border: var(--airway-panel);
-  --skin-slot-bg: var(--airway-ticket);
-  --skin-slot-ink: var(--airway-panel);
-  --skin-slot-stub-bg: var(--airway-panel);
-  --skin-slot-stub-ink: var(--airway-sign);
-  /* Full-screen layers (game.css) */
+  /* In-game HUD shell */
+  --skin-hud-ink: var(--roza-chalk);
+  --skin-hud-paper: var(--roza-ink);
+  --skin-hud-perforation: var(--roza-rule);
+  --skin-hud-airline-default: var(--roza-chalk);
+  --skin-hud-tag-bg: transparent;
+  --skin-hud-eyelet-ring: transparent;
+  --skin-hud-alert: var(--roza-chalk);
+  --skin-pass-label-ink: var(--roza-dim);
+  --skin-dock-eyelet-hole: transparent;
+  --skin-dock-tag-empty-bg: transparent;
+  --skin-dock-tag-empty-ink: var(--roza-dim);
+  --skin-dock-rack-rule: var(--roza-rule);
+  /* Airport label (was the luggage tag) */
+  --skin-tag-ink: var(--roza-chalk);
+  --skin-tag-bg: transparent;
+  --skin-tag-jam-bg: var(--roza-vermilion);
+  --skin-tag-jam-ink: var(--roza-chalk);
+  --skin-tag-plate-rule: transparent;
+  --skin-tag-plate-ink: var(--roza-chalk);
+  --skin-tag-new-bg: var(--roza-chalk);
+  --skin-tag-new-ink: var(--roza-ink);
+  --skin-tag-barrier-post: var(--roza-ink);
+  --skin-tag-barrier-boom: var(--roza-chalk);
+  --skin-tag-barrier-stripe: var(--roza-ink);
+  --skin-tag-glyph-hollow: var(--roza-ink);
+  --skin-tag-surge-ink: var(--roza-ink);
+  --skin-tag-surge-paper: var(--roza-chalk);
+  --skin-tag-front-ink: var(--roza-ink);
+  --skin-tag-front-paper: var(--roza-chalk);
+  /* Off-screen airport: a margin note */
+  --skin-edge-border: var(--roza-chalk);
+  --skin-edge-bg: var(--roza-ink);
+  --skin-edge-ink: var(--roza-chalk);
+  --skin-edge-highlight: var(--roza-chalk);
+  --skin-edge-jam-bg: var(--roza-vermilion);
+  --skin-edge-jam-border: var(--roza-chalk);
+  --skin-edge-jam-ink: var(--roza-chalk);
+  --skin-edge-new-bg: var(--roza-chalk);
+  --skin-edge-new-ink: var(--roza-ink);
+  --skin-edge-curfew-stripe: var(--roza-chalk);
+  /* Departure-slot note */
+  --skin-slot-border: var(--roza-chalk);
+  --skin-slot-bg: var(--roza-ink);
+  --skin-slot-ink: var(--roza-chalk);
+  --skin-slot-stub-bg: var(--roza-chalk);
+  --skin-slot-stub-ink: var(--roza-ink);
+  /* Full-screen layers: the flat sky stays the globe's (src/render/**, ext session) */
   --skin-screen-sky: var(--airway-sky);
-  /* Pause sheet (game.css .airway-pause) */
-  --skin-pause-bg: var(--airway-strip);
-  --skin-pause-ink: var(--airway-ink);
-  --skin-pause-edge: var(--airway-panel);
-  --skin-pause-rule: var(--airway-ink);
-  --skin-pause-rule-dim: var(--airway-label-ink);
-  --skin-pause-button-bg: var(--airway-ticket);
-  --skin-pause-primary-bg: var(--airway-sign);
-  --skin-pause-primary-border: var(--airway-board);
-  --skin-pause-primary-ink: var(--airway-board);
-  --skin-pause-focus: var(--airway-jam);
-  --skin-pause-status-ink: var(--airway-label-ink);
-  /* Weekly board: sign, crate labels, model window, stamp, back tile (upgrade/upgrade.css) */
-  --skin-crate-scrim: rgba(28, 30, 32, .62);
-  --skin-crate-ink: var(--airway-ink);
-  --skin-crate-sign-bg: var(--airway-sign);
-  --skin-crate-sign-ink: var(--airway-board);
-  --skin-crate-label-bg: var(--airway-kraft);
-  --skin-crate-label-pressed-bg: #c9a874;
-  --skin-crate-focus: var(--airway-sign);
-  --skin-crate-label-disabled-bg: #c7b394;
-  --skin-crate-model-bg: #eadcc2;
-  --skin-crate-model-border: var(--airway-ink);
-  --skin-crate-model-silhouette: var(--airway-teal);
-  --skin-crate-model-silhouette-wide: var(--airway-jam);
-  --skin-crate-rule: var(--airway-ink);
-  --skin-crate-key-ink: #5e4e3a;
-  --skin-crate-stamp-ink: var(--airway-jam);
-  --skin-crate-back-bg: var(--airway-board);
-  --skin-crate-back-ink: var(--airway-sign);
-  --skin-crate-back-pressed-bg: #3a3c3e;
-  --skin-crate-back-focus: var(--airway-board);
-  --skin-crate-waybill-bg: #f3ecdc; /* [night-12ba] D-247 weekly contract slip */
-  --skin-crate-waybill-ink: var(--airway-ink);
-  --skin-crate-waybill-muted: #5e4e3a;
-  --skin-crate-waybill-rule: var(--airway-ink);
-  /* Hub cause board (hubBoard.css) */
-  --skin-hubboard-bg: var(--airway-board);
-  --skin-hubboard-ink: var(--airway-flap-text);
-  --skin-hubboard-accent: var(--airway-sign);
-  --skin-hubboard-offset: var(--airway-ticket);
-  --skin-hubboard-jam: var(--airway-jam);
-  --skin-hubboard-rule: #4b4a44;
-  --skin-hubboard-title-ink: var(--airway-sign);
-  --skin-hubboard-dim-ink: #d5cfbf;
-  --skin-hubboard-mark-none-ink: #8f8a7c;
-  /* Game-over report: scrim, sign, departures board, paper strip, actions, map bar, milestones (gameover/gameover.css) */
-  --skin-go-scrim: rgba(17, 35, 33, .63);
-  --skin-go-ink: var(--airway-ink);
-  --skin-go-sign-bg: var(--airway-sign);
-  --skin-go-sign-ink: var(--airway-board);
-  --skin-go-sign-mark-bg: var(--airway-board);
-  --skin-go-board-bg: var(--airway-board);
-  --skin-go-board-ink: var(--airway-flap-text);
-  --skin-go-board-title-ink: var(--airway-sign);
-  --skin-go-board-head-rule: #53565a;
-  --skin-go-board-dim-ink: #a6a8aa;
-  --skin-go-board-row-rule: #36393b;
-  --skin-go-board-gate-ink: var(--airway-kraft);
-  --skin-go-flap-ink: #fff0e9;
-  --skin-go-flap-bg: #862a27;
-  --skin-go-flap-edge-light: #bd5147;
-  --skin-go-flap-edge-dark: #491818;
-  --skin-go-board-strong-ink: var(--airway-ticket);
-  --skin-go-strip-bg: var(--airway-ticket);
-  --skin-go-strip-margin: var(--airway-jam);
-  --skin-go-strip-margin-dash: #cc6e62;
-  --skin-go-strip-heading-ink: var(--airway-panel);
-  --skin-go-strip-value-ink: var(--airway-teal);
-  --skin-go-strip-rule: #beb4a4;
-  --skin-go-strip-alert-ink: var(--airway-jam);
-  --skin-go-strip-dim-ink: #6b6156;
-  --skin-go-strip-rule-light: #e6ddcf;
-  --skin-go-strip-record-ink: #a32b25;
-  --skin-go-action-border: var(--airway-board);
-  --skin-go-action-focus: var(--airway-sign);
-  --skin-go-action-primary-bg: var(--airway-sign);
-  --skin-go-action-ink: var(--airway-board);
-  --skin-go-action-bg: var(--airway-ticket);
-  --skin-go-action-dark-bg: var(--airway-board);
-  --skin-go-action-dark-ink: var(--airway-ticket);
-  --skin-go-map-tab-bg: var(--airway-ticket);
-  --skin-go-mapbar-bg: var(--airway-ticket);
-  --skin-go-mapbar-margin: var(--airway-jam);
-  --skin-go-mapbar-ink: var(--airway-board);
-  --skin-go-mapback-bg: var(--airway-sign);
-  --skin-go-milestone-ink: var(--airway-ink);
-  --skin-go-milestone-done: var(--airway-teal);
-  --skin-go-milestone-open: #6b6257;
-  /* Main menu: wayfinding sign, departures board, split-flap cells, notice (menu/menu.css) */
-  --skin-menu-ink: var(--airway-ticket);
-  --skin-menu-sign-bg: var(--airway-sign);
-  --skin-menu-sign-ink: var(--airway-board);
-  --skin-menu-board-bg: var(--airway-board);
-  --skin-menu-board-frame: #141516;
-  --skin-menu-board-ledge: #454849;
-  --skin-menu-board-head-ink: #bfc2c3;
-  --skin-menu-board-rule: #050505;
-  --skin-menu-board-ink: var(--airway-paper);
-  --skin-menu-board-focus: var(--airway-sign);
-  --skin-menu-board-hover-bg: #323436;
-  --skin-menu-board-pressed-bg: #414448;
-  --skin-menu-board-sub-ink: #b6bbbe;
-  --skin-menu-flap-bg: var(--airway-flap);
-  --skin-menu-select-ink: var(--airway-flap-text);
-  --skin-menu-option-ink: var(--airway-board);
-  --skin-menu-option-bg: var(--airway-paper);
-  --skin-menu-flap-ink: #f1f2ee;
-  --skin-menu-flap-highlight-ink: var(--airway-sign);
-  --skin-menu-flap-top-edge: #090a0a;
-  --skin-menu-flap-bottom-bg: #26282b;
-  --skin-menu-flap-bottom-edge: #121416;
-  --skin-menu-notice-bg: var(--airway-ticket);
-  --skin-menu-notice-margin: var(--airway-jam);
-  --skin-menu-notice-ink: var(--airway-ink);
-  /* Settings, privacy, licences and help pages (menu/menu.css) */
-  --skin-settings-backdrop: var(--airway-sky);
-  --skin-settings-paper: var(--airway-ticket);
-  --skin-settings-ink: var(--airway-ink);
-  --skin-settings-accent: var(--airway-teal);
-  --skin-settings-back-bg: var(--airway-sign);
-  --skin-settings-rule: #c2b5a6;
-  --skin-settings-control-bg: #fff;
-  --skin-settings-control-ink: var(--airway-panel);
-  --skin-settings-alert: var(--airway-jam);
-  --skin-settings-swatch-edge: #2a242033;
-  --skin-settings-dim-ink: #55514a;
-  --skin-settings-licenses-bg: var(--airway-board);
-  --skin-settings-licenses-ink: var(--airway-sign);
-  --skin-settings-warning-ink: #8a2219;
-  --skin-settings-note-bg: #efe8da;
-  /* [night-11as] D-250 follow-up: the components D-250 left out */
-  /* Region glyph outline (glyphs.ts, inline style on every destination glyph) */
-  --skin-glyph-outline: var(--airway-ticket);
-  /* ATC strip, route menu, route handles and first-time card (atcStrip.css) */
-  --skin-atc-strip-edge: var(--airway-jam);
-  --skin-atc-paper: var(--airway-ticket);
-  --skin-atc-ink: var(--airway-ink);
-  --skin-atc-strip-ledge: #9e916c;
-  --skin-atc-field-rule: #cdbf8f;
-  --skin-atc-error-ink: #ae2d23;
-  --skin-atc-menu-focus: var(--airway-sign);
-  --skin-atc-menu-border: var(--airway-panel);
-  --skin-atc-menu-shadow: var(--airway-ink);
-  --skin-atc-menu-rule: #baa985;
-  --skin-atc-handle-rim: var(--airway-panel);
-  --skin-atc-handle-halo: var(--airway-ticket);
-  --skin-atc-handle-active-bg: var(--airway-sign);
-  --skin-atc-ok-rule: #9e916c;
-  --skin-atc-ok-bg: var(--airway-sign);
-  --skin-atc-ok-ink: var(--airway-board);
-  --skin-atc-ok-focus: var(--airway-panel);
-  /* Leaderboard board (leaderboard/leaderboard.css) */
-  --skin-rank-bg: var(--airway-board);
-  --skin-rank-ink: #e9e3d4;
-  --skin-rank-accent: var(--airway-sign);
-  --skin-rank-head-rule: #3b3e41;
-  --skin-rank-dim-ink: #a9b3b1;
-  --skin-rank-row-rule: #2c2f31;
-  /* Logbook page (logbook/logbook.css; the paper and header come from menu.css) */
-  --skin-logbook-edge: var(--airway-jam);
-  --skin-logbook-rule: var(--airway-ink);
-  --skin-logbook-row-rule: #c2b5a6;
-  --skin-logbook-label-ink: #55514a;
-  --skin-logbook-value-ink: var(--airway-panel);
-  --skin-logbook-ink: var(--airway-ink);
-  --skin-logbook-daily-mark: var(--airway-teal);
-  --skin-logbook-summary-bg: #fbf6ec;
-  --skin-logbook-milestone-done: var(--airway-teal);
-  --skin-logbook-milestone-open: #6b6257;
-  /* Puzzle board and puzzle game screen (puzzles/board.css) */
-  --skin-puzzle-focus: var(--airway-sign);
-  --skin-puzzle-board-bg: var(--airway-board);
-  --skin-puzzle-board-ink: var(--airway-ticket);
-  --skin-puzzle-board-edge: var(--airway-sign);
-  --skin-puzzle-sign-bg: var(--airway-sign);
-  --skin-puzzle-sign-ink: var(--airway-board);
-  --skin-puzzle-board-accent: var(--airway-sign);
-  --skin-puzzle-scroll-track: #222528;
-  --skin-puzzle-pack-bg: #151718;
-  --skin-puzzle-flap-bg: var(--airway-flap);
-  --skin-puzzle-flap-split: #17191a;
-  --skin-puzzle-flap-hover-bg: #393d40;
-  --skin-puzzle-flap-dim-ink: #b5c3c1;
-  --skin-puzzle-best-ink: var(--airway-teal);
-  --skin-puzzle-dim: var(--airway-dim);
-  --skin-puzzle-game-bg: #e5e7df;
-  --skin-puzzle-teal: var(--airway-teal);
-  --skin-puzzle-back-border: var(--airway-board);
-  --skin-puzzle-paper: var(--airway-ticket);
-  --skin-puzzle-ink: var(--airway-panel);
-  --skin-puzzle-stats-rule: #b8c9bd;
-  --skin-puzzle-result-bg: #e3e9e1;
-  --skin-puzzle-lost-bg: #f1ded9;
-  --skin-puzzle-lost-edge: var(--airway-jam);
-  --skin-puzzle-error-ink: #90251b;
-  --skin-puzzle-supply-ink: #38524d;
-  --skin-puzzle-card-rule: #b9c5b8;
-  --skin-puzzle-controls-bg: var(--airway-panel);
+  /* Pause sheet: an ink panel with a neatline */
+  --skin-pause-bg: var(--roza-ink);
+  --skin-pause-ink: var(--roza-chalk);
+  --skin-pause-edge: var(--roza-chalk);
+  --skin-pause-rule: var(--roza-chalk);
+  --skin-pause-rule-dim: var(--roza-rule);
+  --skin-pause-button-bg: var(--roza-ink);
+  --skin-pause-primary-bg: var(--roza-chalk);
+  --skin-pause-primary-border: var(--roza-chalk);
+  --skin-pause-primary-ink: var(--roza-ink);
+  --skin-pause-focus: var(--roza-chalk);
+  --skin-pause-status-ink: var(--roza-dim);
+  /* Weekly board */
+  --skin-crate-scrim: rgba(12, 20, 24, .72);
+  --skin-crate-ink: var(--roza-chalk);
+  --skin-crate-sign-bg: var(--roza-ink);
+  --skin-crate-sign-ink: var(--roza-chalk);
+  --skin-crate-label-bg: var(--roza-ink);
+  --skin-crate-label-pressed-bg: var(--roza-ink-pressed);
+  --skin-crate-focus: var(--roza-chalk);
+  --skin-crate-label-disabled-bg: var(--roza-ink-raised);
+  --skin-crate-model-bg: var(--roza-ink-raised);
+  --skin-crate-model-border: var(--roza-chalk);
+  --skin-crate-model-silhouette: var(--roza-chalk);
+  --skin-crate-model-silhouette-wide: var(--roza-chalk);
+  --skin-crate-rule: var(--roza-chalk);
+  --skin-crate-key-ink: var(--roza-dim);
+  --skin-crate-stamp-ink: var(--roza-chalk);
+  --skin-crate-back-bg: var(--roza-chalk);
+  --skin-crate-back-ink: var(--roza-ink);
+  --skin-crate-back-pressed-bg: #D9D3C4;
+  --skin-crate-back-focus: var(--roza-chalk);
+  --skin-crate-waybill-bg: var(--roza-ink-raised);
+  --skin-crate-waybill-ink: var(--roza-chalk);
+  --skin-crate-waybill-muted: var(--roza-dim);
+  --skin-crate-waybill-rule: var(--roza-chalk);
+  /* Hub cause board */
+  --skin-hubboard-bg: var(--roza-ink);
+  --skin-hubboard-ink: var(--roza-chalk);
+  --skin-hubboard-accent: var(--roza-chalk);
+  --skin-hubboard-offset: var(--roza-chalk);
+  --skin-hubboard-jam: var(--roza-vermilion);
+  --skin-hubboard-rule: var(--roza-rule);
+  --skin-hubboard-title-ink: var(--roza-chalk);
+  --skin-hubboard-dim-ink: var(--roza-dim);
+  --skin-hubboard-mark-none-ink: var(--roza-dim);
+  /* Game-over report */
+  --skin-go-scrim: rgba(12, 20, 24, .72);
+  --skin-go-ink: var(--roza-chalk);
+  --skin-go-sign-bg: var(--roza-ink);
+  --skin-go-sign-ink: var(--roza-chalk);
+  --skin-go-sign-mark-bg: var(--roza-vermilion);
+  --skin-go-board-bg: var(--roza-ink);
+  --skin-go-board-ink: var(--roza-chalk);
+  --skin-go-board-title-ink: var(--roza-chalk);
+  --skin-go-board-head-rule: var(--roza-chalk);
+  --skin-go-board-dim-ink: var(--roza-dim);
+  --skin-go-board-row-rule: var(--roza-rule);
+  --skin-go-board-gate-ink: var(--roza-chalk);
+  --skin-go-flap-ink: var(--roza-chalk);
+  --skin-go-flap-bg: var(--roza-vermilion);
+  --skin-go-flap-edge-light: var(--roza-vermilion);
+  --skin-go-flap-edge-dark: var(--roza-vermilion);
+  --skin-go-board-strong-ink: var(--roza-chalk);
+  --skin-go-strip-bg: var(--roza-ink-raised);
+  --skin-go-strip-margin: var(--roza-chalk);
+  --skin-go-strip-margin-dash: var(--roza-rule);
+  --skin-go-strip-heading-ink: var(--roza-chalk);
+  --skin-go-strip-value-ink: var(--roza-chalk);
+  --skin-go-strip-rule: var(--roza-rule);
+  --skin-go-strip-alert-ink: var(--roza-vermilion-ink);
+  --skin-go-strip-dim-ink: var(--roza-dim);
+  --skin-go-strip-rule-light: var(--roza-rule);
+  --skin-go-strip-record-ink: var(--roza-chalk);
+  --skin-go-action-border: var(--roza-chalk);
+  --skin-go-action-focus: var(--roza-chalk);
+  --skin-go-action-primary-bg: var(--roza-chalk);
+  --skin-go-action-ink: var(--roza-ink);
+  --skin-go-action-bg: var(--roza-chalk);
+  --skin-go-action-dark-bg: var(--roza-ink);
+  --skin-go-action-dark-ink: var(--roza-chalk);
+  --skin-go-map-tab-bg: var(--roza-ink);
+  --skin-go-mapbar-bg: var(--roza-ink);
+  --skin-go-mapbar-margin: var(--roza-chalk);
+  --skin-go-mapbar-ink: var(--roza-chalk);
+  --skin-go-mapback-bg: var(--roza-ink-raised);
+  --skin-go-milestone-ink: var(--roza-chalk);
+  --skin-go-milestone-done: var(--roza-chalk);
+  --skin-go-milestone-open: var(--roza-dim);
+  /* Main menu: the map sheet's title block (no split-flap shading) */
+  --skin-menu-ink: var(--roza-chalk);
+  --skin-menu-sign-bg: var(--roza-ink);
+  --skin-menu-sign-ink: var(--roza-chalk);
+  --skin-menu-board-bg: var(--roza-ink);
+  --skin-menu-board-frame: var(--roza-ink);
+  --skin-menu-board-ledge: var(--roza-ink);
+  --skin-menu-board-head-ink: var(--roza-dim);
+  --skin-menu-board-rule: var(--roza-rule);
+  --skin-menu-board-ink: var(--roza-chalk);
+  --skin-menu-board-focus: var(--roza-chalk);
+  --skin-menu-board-hover-bg: var(--roza-ink-raised);
+  --skin-menu-board-pressed-bg: var(--roza-ink-pressed);
+  --skin-menu-board-sub-ink: var(--roza-dim);
+  --skin-menu-flap-bg: transparent;
+  --skin-menu-select-ink: var(--roza-chalk);
+  --skin-menu-option-ink: var(--roza-ink);
+  --skin-menu-option-bg: var(--roza-chalk);
+  --skin-menu-flap-ink: var(--roza-chalk);
+  --skin-menu-flap-highlight-ink: var(--roza-chalk);
+  --skin-menu-flap-top-edge: transparent;
+  --skin-menu-flap-bottom-bg: transparent;
+  --skin-menu-flap-bottom-edge: transparent;
+  --skin-menu-notice-bg: var(--roza-ink);
+  --skin-menu-notice-margin: var(--roza-vermilion);
+  --skin-menu-notice-ink: var(--roza-chalk);
+  /* Settings, privacy, licences and help pages: a chart legend sheet */
+  --skin-settings-backdrop: var(--roza-ink);
+  --skin-settings-paper: var(--roza-ink);
+  --skin-settings-ink: var(--roza-chalk);
+  --skin-settings-accent: var(--roza-chalk);
+  --skin-settings-back-bg: var(--roza-ink);
+  --skin-settings-rule: var(--roza-rule);
+  --skin-settings-control-bg: var(--roza-ink-raised);
+  --skin-settings-control-ink: var(--roza-chalk);
+  --skin-settings-alert: var(--roza-vermilion-ink);
+  --skin-settings-swatch-edge: rgba(245, 242, 234, .5);
+  --skin-settings-dim-ink: var(--roza-dim);
+  --skin-settings-licenses-bg: var(--roza-ink-raised);
+  --skin-settings-licenses-ink: var(--roza-chalk);
+  --skin-settings-warning-ink: var(--roza-vermilion-ink);
+  --skin-settings-note-bg: var(--roza-ink-raised);
+  /* Region glyph outline: the paper casing of a chart symbol (legible on the photo and on ink panels) */
+  --skin-glyph-outline: var(--roza-chalk);
+  /* ATC strip, route menu, handles, first-time card */
+  --skin-atc-strip-edge: var(--roza-chalk);
+  --skin-atc-paper: var(--roza-ink);
+  --skin-atc-ink: var(--roza-chalk);
+  --skin-atc-strip-ledge: var(--roza-rule);
+  --skin-atc-field-rule: var(--roza-rule);
+  --skin-atc-error-ink: var(--roza-vermilion-ink);
+  --skin-atc-menu-focus: var(--roza-chalk);
+  --skin-atc-menu-border: var(--roza-chalk);
+  --skin-atc-menu-shadow: var(--roza-ink);
+  --skin-atc-menu-rule: var(--roza-rule);
+  --skin-atc-handle-rim: var(--roza-ink);
+  --skin-atc-handle-halo: var(--roza-chalk);
+  --skin-atc-handle-active-bg: var(--roza-chalk);
+  --skin-atc-ok-rule: var(--roza-rule);
+  --skin-atc-ok-bg: var(--roza-chalk);
+  --skin-atc-ok-ink: var(--roza-ink);
+  --skin-atc-ok-focus: var(--roza-chalk);
+  /* Leaderboard */
+  --skin-rank-bg: var(--roza-ink);
+  --skin-rank-ink: var(--roza-chalk);
+  --skin-rank-accent: var(--roza-chalk);
+  --skin-rank-head-rule: var(--roza-chalk);
+  --skin-rank-dim-ink: var(--roza-dim);
+  --skin-rank-row-rule: var(--roza-rule);
+  /* Logbook */
+  --skin-logbook-edge: var(--roza-chalk);
+  --skin-logbook-rule: var(--roza-chalk);
+  --skin-logbook-row-rule: var(--roza-rule);
+  --skin-logbook-label-ink: var(--roza-dim);
+  --skin-logbook-value-ink: var(--roza-chalk);
+  --skin-logbook-ink: var(--roza-chalk);
+  --skin-logbook-daily-mark: var(--roza-chalk);
+  --skin-logbook-summary-bg: var(--roza-ink-raised);
+  --skin-logbook-milestone-done: var(--roza-chalk);
+  --skin-logbook-milestone-open: var(--roza-dim);
+  /* Puzzle board and puzzle game */
+  --skin-puzzle-focus: var(--roza-chalk);
+  --skin-puzzle-board-bg: var(--roza-ink);
+  --skin-puzzle-board-ink: var(--roza-chalk);
+  --skin-puzzle-board-edge: var(--roza-chalk);
+  --skin-puzzle-sign-bg: var(--roza-ink);
+  --skin-puzzle-sign-ink: var(--roza-chalk);
+  --skin-puzzle-board-accent: var(--roza-chalk);
+  --skin-puzzle-scroll-track: var(--roza-ink-raised);
+  --skin-puzzle-pack-bg: var(--roza-ink);
+  --skin-puzzle-flap-bg: var(--roza-ink-raised);
+  --skin-puzzle-flap-split: var(--roza-ink);
+  --skin-puzzle-flap-hover-bg: var(--roza-ink-pressed);
+  --skin-puzzle-flap-dim-ink: var(--roza-dim);
+  --skin-puzzle-best-ink: var(--roza-chalk);
+  --skin-puzzle-dim: var(--roza-dim);
+  --skin-puzzle-game-bg: var(--roza-ink);
+  --skin-puzzle-teal: var(--roza-chalk);
+  --skin-puzzle-back-border: var(--roza-chalk);
+  --skin-puzzle-paper: var(--roza-ink);
+  --skin-puzzle-ink: var(--roza-chalk);
+  --skin-puzzle-stats-rule: var(--roza-rule);
+  --skin-puzzle-result-bg: var(--roza-ink-raised);
+  --skin-puzzle-lost-bg: var(--roza-ink-raised);
+  --skin-puzzle-lost-edge: var(--roza-vermilion);
+  --skin-puzzle-error-ink: var(--roza-vermilion-ink);
+  --skin-puzzle-supply-ink: var(--roza-dim);
+  --skin-puzzle-card-rule: var(--roza-rule);
+  --skin-puzzle-controls-bg: var(--roza-ink);
   --skin-puzzle-motion-press: 80ms;
-  /* Tutorial vignette (tutorial/tutorial.css; the luggage tag comes from overlay.css) */
-  --skin-tutorial-ink: var(--airway-panel);
-  --skin-tutorial-focus: var(--airway-accent);
+  /* Tutorial vignette: the painted mini-world stays art; its cards follow the chart */
+  --skin-tutorial-ink: var(--roza-chalk);
+  --skin-tutorial-focus: var(--roza-chalk);
   --skin-tutorial-sky: var(--airway-sky);
-  --skin-tutorial-paper: var(--airway-ticket);
-  --skin-tutorial-card-ink: var(--airway-ink);
-  --skin-tutorial-teal: var(--airway-teal);
-  --skin-tutorial-perforation: #789b94;
+  --skin-tutorial-paper: var(--roza-ink);
+  --skin-tutorial-card-ink: var(--roza-chalk);
+  --skin-tutorial-teal: var(--roza-chalk);
+  --skin-tutorial-perforation: var(--roza-rule);
   --skin-tutorial-motion-world: 200ms;
   --skin-tutorial-route: #f4f0db;
   --skin-tutorial-route-feeder: #e6b666;
-  --skin-tutorial-route-primary: var(--airway-ticket);
-  --skin-tutorial-guide: var(--airway-accent);
+  --skin-tutorial-route-primary: var(--roza-chalk);
+  --skin-tutorial-guide: var(--roza-chalk);
   --skin-tutorial-motion-guide: 1000ms;
-  --skin-tutorial-target: var(--airway-sign);
-  --skin-tutorial-strip-bg: var(--airway-paper);
-  --skin-tutorial-strip-edge: var(--airway-jam);
-  --skin-tutorial-dock-bg: var(--airway-panel);
-  --skin-tutorial-sign-bg: var(--airway-sign);
-  --skin-tutorial-sign-ink: var(--airway-board);
-  --skin-tutorial-dialog-bg: var(--airway-board);
-  --skin-tutorial-dialog-ink: var(--airway-ticket);
-  --skin-tutorial-dialog-button-bg: var(--airway-flap);
-  --skin-tutorial-dialog-button-rule: #9ba19e;
+  --skin-tutorial-target: var(--roza-chalk);
+  --skin-tutorial-strip-bg: var(--roza-ink);
+  --skin-tutorial-strip-edge: var(--roza-chalk);
+  --skin-tutorial-dock-bg: var(--roza-ink);
+  --skin-tutorial-sign-bg: var(--roza-ink);
+  --skin-tutorial-sign-ink: var(--roza-chalk);
+  --skin-tutorial-dialog-bg: var(--roza-ink);
+  --skin-tutorial-dialog-ink: var(--roza-chalk);
+  --skin-tutorial-dialog-button-bg: var(--roza-chalk);
+  --skin-tutorial-dialog-button-rule: var(--roza-rule);
 }

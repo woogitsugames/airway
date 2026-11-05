@@ -405,7 +405,8 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
         knownAirports.add(city.id);
         // D-68: the 58 px edge chip has no room for a city name, so it always shows the code.
         overlay.addAirport({ id: city.id, code: airportLabel(city.id, 'code'), lon: city.lon, lat: city.lat, hub: city.hub,
-          label: airportLabel(city.id) }); // [night-11m] D-128 plate follows the D-68 code/name setting
+          label: airportLabel(city.id), // [night-11m] D-128 plate follows the D-68 code/name setting
+          name: airportLabel(city.id, 'name') }); // [night-11az] D-257 Róża: the city name along the rose
       }
       overlay.setHub(city.id, city.hub); // [night-11m] D-128 hubs carry their plate; deduplicated inside
       overlay.setCapacity(city.id, city.capacity); // [night-11d] edge-chip gauge; deduplicated inside

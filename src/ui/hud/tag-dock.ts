@@ -3,7 +3,7 @@ import { iconSvg } from './icons';
 import { crateCountdown } from './crate-countdown';
 import type { HudActions, HudState, PlaneType } from './types';
 import { ARIA_KEYSHORTCUTS } from '../../input/keyboard';
-import { skinPreview, kartaDockLabel } from '../skin/preview'; // [night-11av] D-256 DEV-only KARTA preview
+import { skin, rozaDockLabel } from '../skin/roza'; // [night-11az] D-257: Róża skin helpers
 
 type TagId = 'undo' | PlaneType | 'hub' | 'globe' | 'speed';
 // [G8] D-172: the globe-view tag sits before speed (the two non-network tags together).
@@ -31,6 +31,7 @@ export function createTagDock(root: HTMLElement, actions: HudActions): { render(
   for (const tag of TAGS) {
     const holder = document.createElement('div');
     holder.className = 'airway-dock__holder';
+    holder.style.setProperty('--i', String(TAGS.indexOf(tag))); // [night-11az] D-257: place on the Róża arc / flat row
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'airway-dock__tag';
@@ -149,8 +150,8 @@ export function createTagDock(root: HTMLElement, actions: HudActions): { render(
           : t('hud.speed', { speed: state.speed });
         if (waiting) label = `${label}. ${countdown.spoken}`;
         if (button.getAttribute('aria-label') !== label) button.setAttribute('aria-label', label);
-        // [night-11av] D-256, DEV-only KARTA preview: the cell's name under it (the mockup's legend strip).
-        if (import.meta.env.DEV && skinPreview.karta) kartaDockLabel(button, name, state.globeMode);
+        // [night-11az] D-257 Róża: the caption beside the symbol on the arc, or the wait for the next crates.
+        if (skin.roza) rozaDockLabel(button, name, state.globeMode, state.speed, waiting ? countdown.short : null);
       }
       const mode = state.globeMode ?? 'satellite';
       if (lastMode !== mode) {
@@ -161,7 +162,10 @@ export function createTagDock(root: HTMLElement, actions: HudActions): { render(
       }
       if (lastSpeed !== state.speed) {
         lastSpeed = state.speed;
-        controls.get('speed')?.setAttribute('data-speed', String(state.speed));
+        const tag = controls.get('speed');
+        tag?.setAttribute('data-speed', String(state.speed));
+        // [night-11az] D-257: the speed symbol's wind barbs count the tempo (one per 1×).
+        tag?.querySelector('svg')?.replaceWith(document.createRange().createContextualFragment(iconSvg('speed', state.speed)));
       }
       // Invalidate a pending drag when its item is depleted by another command.
       if (active && controls.get(active.type)?.disabled) {
