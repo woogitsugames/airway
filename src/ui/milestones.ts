@@ -1,7 +1,7 @@
 // [night-12ax] R1n, D-242: milestone text for the game-over row and the logbook section. Pure apart from i18n (no DOM,
 // no stylesheet), so the headless test reads exactly what the screens print.
 import { MILESTONES, milestoneItems, type MilestoneId } from '../game/milestones';
-import type { Logbook } from '../game/logbook';
+import { milestoneFlights, type Logbook } from '../game/logbook';
 import { t, type TranslationKey } from '../i18n';
 
 const PARAMS: Record<MilestoneId, Record<string, number>> = {
@@ -37,8 +37,9 @@ export function gameOverMilestones(reached: readonly MilestoneId[], first: reado
 
 /** The logbook section: [id, milestone, "first on flight N" or "not yet"] per milestone. */
 export function logbookMilestones(book: Logbook): [MilestoneId, string, string][] {
+  const firsts = milestoneFlights(book); // [night-11ao] older/hand-built logbooks have no `milestones`
   return MILESTONES.map((id) => {
-    const run = book.milestones[id];
+    const run = firsts[id];
     return [id, milestoneLabel(id), run ? t('logbook.milestones.first', { run }) : t('logbook.milestones.open')];
   });
 }
