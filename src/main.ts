@@ -20,7 +20,8 @@ import { IDENTITY_KEYS, createBrowserLeaderboards } from './net'; // [night-06c]
 import { EndlessRun } from './game/run';
 import { readHomeRegion, writeHomeRegion } from './game/homeRegion'; // [night-11aj] R2g
 import { LICENCE_SHORT_KEY, licenceForRun, licenceIssued, openLicences, readLicenceChoice, writeLicenceChoice } from './game/licence'; // [night-12bc] R2h
-import { HOME_REGIONS, type LicenceClass } from './sim';
+import { CONGESTION_GRACE_TICKS, HOME_REGIONS, type LicenceClass } from './sim';
+import { SIM_TICKS_PER_SECOND } from './sim/params'; // [night-11av] D-256 DEV-only KARTA preview (jam arc)
 import type { RegionId } from './data/regions';
 import { dailyRowHint } from './game/dailyRow'; // [night-10d]
 import { firstMilestones, localDay, readLogbook, recordFlight, runHub, type RunRecord } from './game/logbook'; // [night-10n]
@@ -34,7 +35,7 @@ import { startSession, type GameSession, type RunMode, type SessionScreen } from
 import { mountTutorial } from './game/tutorial';
 import { browserTutorialStorage, readTutorialOutcome, TUTORIAL_KEY } from './game/tutorial/controller';
 import { createWorld, type World } from './game/world';
-import { getLanguage, setPseudoLocale, t } from './i18n';
+import { getLanguage, localNumber, setPseudoLocale, t } from './i18n';
 import { FrameRecorder, gameLoopLogLine, gameLoopReport, gameLoopScenario, type GameLoopRunFacts } from './game/gameLoop'; // [night-12ay] R3i
 import { nativeGameLoopPort, readGameLoop, type GameLoopBridge } from './platform/gameLoop'; // [night-12ay] R3i
 import { configureHaptics, nativeAppCheckPort, createDefaultStorage, createNativeInstallMarker, forgetIdentityOnNewInstall, GameLifecycle, shareDailyResult, type KeyValueStorage } from './platform';
@@ -66,7 +67,7 @@ const query = new URLSearchParams(location.search);
 const devWeatherFront = import.meta.env.DEV && query.get('weather') === 'front';
 // [night-11au] D-256: KARTA UI skin preview, DEV only (`?skin=karta`); production folds this away and ships current.css.
 if (import.meta.env.DEV && query.get('skin') === 'karta') {
-  startKartaPreview();
+  startKartaPreview({ t, localNumber, jamGraceSeconds: CONGESTION_GRACE_TICKS / SIM_TICKS_PER_SECOND });
   void import('./ui/skin/karta.css');
 }
 /** [task-36] Ticks of autoplay before a store scene is lit (game, night, failure). */

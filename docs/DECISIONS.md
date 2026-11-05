@@ -2466,3 +2466,11 @@ Label contrast over the brightest desert of the real frame (seed 0xA1A1, Sahara)
 `docs/shots/ui-karta/` (fixtures + two real-game frames, contact sheet `zestawienie.png`). If the owner picks KARTA, the
 next step is to make it `current.css` and move the fonts to `public/fonts/` (WOFF2 subset). `src/render/**` (flat sky
 constant) belongs to the ext session and is untouched. **Status: preview only, pending owner choice.**
+*Update (night N11av):* the preview closes the mockup gaps except route distance labels: occupancy figure after the
+code, glyphs grouped by region with a count, time arc on the jam ring (`--karta-jam`, share of the 45 s grace),
+off-screen note distance from the view centre, day names under the week ruler, names under the dock cells, graphic
+scale on the menu title block. Helpers live in `src/ui/skin/preview.ts`, called only under `import.meta.env.DEV &&
+skinPreview.karta`; the module has no runtime import (a static one reordered the release bundle although its code was
+dropped — `src/main.ts` hands in `t`, `localNumber` and the grace), guarded by `test:skin-tokens`. Text reuses existing
+catalog keys, so no string is added. Release `dist/`: all 30 files sha256-identical to origin/dev 163bf50. Route
+distance labels need the route geometry (render or `session.ts`), outside this preview.
