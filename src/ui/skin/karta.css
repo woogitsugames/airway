@@ -577,3 +577,82 @@
 
 /* Reduce motion (D-88) also stills the chart. */
 :root[data-skin="karta"][data-airway-motion="reduce"] .airport-bubble::before { transition: none; }
+
+/* ---- [night-11av] The rest of the mockup's chart furniture (DOM from src/ui/skin/preview.ts, DEV only) ----------- */
+/* Occupancy figure after the code ("14/24") and a count after each grouped region symbol: mono figures with the halo. */
+:root[data-skin="karta"] .karta-fill { flex: none; margin-right: 4px; font: 600 13px/20px var(--skin-face-mono); color: var(--karta-paper); }
+:root[data-skin="karta"] .karta-count { flex: none; margin: 0 4px 0 1px; font: 600 12px/18px var(--skin-face-mono); color: var(--karta-paper); }
+:root[data-skin="karta"] .airport-bubble--jam .karta-count, :root[data-skin="karta"] .airport-bubble--jam .karta-fill { text-shadow: none; }
+/* Jam ring: the time still left before the network closes is a solid magenta arc inside the dashed ring, clockwise
+   from twelve o'clock, shrinking as the countdown runs (--karta-jam from overlay.ts, 1 → 0). Length, not colour,
+   carries it; it steps once a second, so it needs no motion of its own. */
+:root[data-skin="karta"] .airport-bubble--jam::after {
+  background: conic-gradient(var(--karta-magenta) 0 calc(var(--karta-jam, 0) * 360deg), rgba(14, 27, 34, .55) 0);
+  -webkit-mask: radial-gradient(closest-side, transparent calc(100% - 7px), #000 calc(100% - 6.5px));
+  mask: radial-gradient(closest-side, transparent calc(100% - 7px), #000 calc(100% - 6.5px));
+}
+/* Off-screen airport: the margin note's distance from the view centre ("1 790 km") under the note, above it on the
+   bottom edge, flush with the screen side on the left and right edges. */
+:root[data-skin="karta"] .airport-edge[data-karta-km]::after {
+  content: attr(data-karta-km); position: absolute; top: calc(100% + 3px); left: 50%; transform: translateX(-50%);
+  white-space: nowrap; pointer-events: none; font: 600 11px/13px var(--skin-face-mono); letter-spacing: 0;
+  color: var(--karta-paper); text-shadow: var(--karta-halo); text-transform: none;
+}
+:root[data-skin="karta"] .airport-edge[data-karta-side="0"]::after { left: 0; transform: none; }
+:root[data-skin="karta"] .airport-edge[data-karta-side="1"]::after { left: auto; right: 0; transform: none; }
+:root[data-skin="karta"] .airport-edge[data-karta-side="3"]::after { top: auto; bottom: calc(100% + 3px); }
+:root[data-skin="karta"] .airport-edge[data-karta-clash="1"]::after { display: none; }
+/* Week ruler: the top margin grows by one line for the day names under the ruler; today's name in paper. */
+:root[data-skin="karta"] .airway-pass { height: calc(var(--hud-safe-top) + 92px); }
+:root[data-skin="karta"] .airway-pass__days { bottom: 19px; }
+:root[data-skin="karta"] .airway-pass__ticket::after { bottom: 17px; }
+:root[data-skin="karta"] .airway-pass__ticket::before { bottom: 24px; }
+:root[data-skin="karta"] .airway-hud[data-layout='landscape'] .airway-pass,
+:root[data-skin="karta"] .airway-hud[data-layout='foldable'] .airway-pass { height: calc(var(--hud-safe-top) + 88px); }
+:root[data-skin="karta"] .karta-days {
+  position: absolute; display: flex; bottom: 3px; height: 12px; pointer-events: none;
+  left: calc(var(--hud-safe-left) + 14px); right: calc(var(--hud-safe-right) + 34px);
+}
+:root[data-skin="karta"] .airway-hud[data-layout='landscape'] .karta-days,
+:root[data-skin="karta"] .airway-hud[data-layout='foldable'] .karta-days { right: 34px; }
+:root[data-skin="karta"] .karta-days span {
+  flex: 1 1 0; min-width: 0; padding-left: 4px; overflow: hidden; white-space: nowrap;
+  font: 700 10px/12px var(--skin-face-text); letter-spacing: .14em; text-transform: uppercase; color: var(--karta-dim);
+}
+:root[data-skin="karta"] .karta-days span.is-today { color: var(--karta-paper); }
+/* The weekly and hub boards open right under the ruler (their own fixed top inset): the day names step aside. */
+:root[data-skin="karta"]:has(.airway-upgrade-open) .karta-days,
+:root[data-skin="karta"]:has(.airway-hub-board) .karta-days { visibility: hidden; }
+/* Dock: the legend strip names each cell under its symbol (one or two lines, breaking only at the catalog's soft
+   hyphen); a cell counting down to the next crates shows the wait there instead. */
+:root[data-skin="karta"] .airway-dock__tag { height: 64px; }
+:root[data-skin="karta"] .airway-dock__tag:not(.is-countdown) { flex-wrap: wrap; align-content: center; row-gap: 3px; }
+:root[data-skin="karta"] .karta-dock-label {
+  flex: 1 0 100%; max-width: 100%; text-align: center; hyphens: manual; overflow-wrap: normal;
+  font: 700 10px/1.05 var(--skin-face-text); letter-spacing: .1em; text-transform: uppercase; color: inherit;
+}
+:root[data-skin="karta"] .airway-dock__tag.is-countdown .karta-dock-label { display: none; }
+:root[data-skin="karta"] .airway-dock__tag.is-empty:not(.is-countdown) .karta-dock-label { opacity: .7; }
+:root[data-skin="karta"] .airway-hud[data-layout='landscape'] .airway-dock__tag:not(.is-countdown),
+:root[data-skin="karta"] .airway-hud[data-layout='foldable'] .airway-dock__tag:not(.is-countdown) { row-gap: 1px; }
+:root[data-skin="karta"] .airway-hud[data-layout='landscape'] .karta-dock-label,
+:root[data-skin="karta"] .airway-hud[data-layout='foldable'] .karta-dock-label { font-size: 9px; letter-spacing: .06em; }
+@media (max-width: 369px) {
+  :root[data-skin="karta"] .karta-dock-label { font-size: 9px; letter-spacing: .04em; }
+  :root[data-skin="karta"] .karta-days span { font-size: 9px; letter-spacing: .08em; }
+}
+/* Menu title block: the sheet's graphic scale (0 · 1000 · 2000 km), alternating paper and ink segments. */
+:root[data-skin="karta"] .karta-scale { flex: none; margin-left: auto; width: 116px; align-self: flex-end; padding-bottom: 2px; }
+:root[data-skin="karta"] .karta-scale i {
+  display: block; height: 6px; border: 1px solid var(--karta-paper);
+  background: linear-gradient(90deg, var(--karta-paper) 0 25%, transparent 25% 50%, var(--karta-paper) 50% 75%, transparent 75%);
+}
+:root[data-skin="karta"] .karta-scale span { display: flex; justify-content: space-between; margin-top: 3px; }
+:root[data-skin="karta"] .karta-scale b { font: 400 10px/1 var(--skin-face-mono); color: var(--karta-dim); white-space: nowrap; }
+:root[data-skin="karta"] .karta-scale b:last-child { margin-right: -2px; }
+@media (max-width: 369px) {
+  :root[data-skin="karta"] .karta-scale { width: 76px; }
+  :root[data-skin="karta"] .karta-scale b:nth-child(2) { visibility: hidden; }
+}
+/* An empty cell that is named (not counting down) keeps its dashed ring around the symbol, above the name. */
+:root[data-skin="karta"] .airway-dock__tag.is-empty:not(.is-countdown)::after { top: calc(50% - 23px); width: 30px; height: 30px; margin-left: -15px; }

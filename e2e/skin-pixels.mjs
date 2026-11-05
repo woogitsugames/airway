@@ -7,7 +7,8 @@
 //                                               strip + route menu + handles, leaderboard, puzzle game, tutorial; PL/EN × 412×915, 915×412,
 //                                               320×568 at 100 % text, 412×915 also at 150 % (D-248). PNG + a JSON of
 //                                               computed visual properties of every element.
-//   AW_SKIN=karta node e2e/skin-pixels.mjs capture <dir>   the same screens in the DEV-only KARTA preview skin (D-256).
+//   AW_SKIN=karta node e2e/skin-pixels.mjs capture <dir>   the same screens in the DEV-only KARTA preview skin (D-256);
+//                                               AW_SCREENS=hud,overlay,… captures only those screens.
 //   node e2e/skin-pixels.mjs compare <a[,a2…]> <b[,b2…]>  every shot identical (pixels and computed style) in some base/new pair (a few
 //                                               anti-aliased edges and native controls are not bit-stable run to run
 //                                               in headless Chromium, even on one tree) and every computed value equal.
@@ -170,7 +171,9 @@ async function capture(dir) {
     const jobs = [];
     for (const language of ['pl', 'en']) for (const [w, h] of SIZES) for (const screen of [...SCREENS, ...EXTRA]) jobs.push({ language, w, h, screen, scale: 100 });
     for (const language of ['pl', 'en']) for (const screen of [...SCREENS, ...EXTRA]) jobs.push({ language, w: 412, h: 915, screen, scale: 150 });
-    for (const { language, w, h, screen, scale } of jobs) {
+    // [night-11av] AW_SCREENS=hud,overlay limits a capture to those screens (quick look while editing a skin).
+    const only = process.env.AW_SCREENS ? new Set(process.env.AW_SCREENS.split(',')) : null;
+    for (const { language, w, h, screen, scale } of jobs.filter((job) => !only || only.has(job.screen))) {
       const page = await browser.newPage({ viewport: { width: w, height: h }, deviceScaleFactor: 1, hasTouch: true, reducedMotion: 'reduce',
         locale: language === 'pl' ? 'pl-PL' : 'en-US' });
       try {

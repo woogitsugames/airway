@@ -3,7 +3,7 @@ import type { HudState } from './types';
 import { iconSvg } from './icons';
 import { DAYS_PER_WEEK } from '../../sim/clock';
 import { ARIA_KEYSHORTCUTS } from '../../input/keyboard';
-import { skinPreview } from '../skin/preview'; // [night-11au] D-256 DEV-only KARTA preview
+import { skinPreview, kartaDays } from '../skin/preview'; // [night-11au] D-256 DEV-only KARTA preview
 
 // [task-31] D-40: a game week has DAYS_PER_WEEK (3) days; the bar shows one square per day and the
 // day is a number ("2/3"), since weekday names no longer fit a 3-day week.
@@ -71,7 +71,10 @@ export function createBoardingPass(root: HTMLElement, onTogglePause?: () => void
       const minute = integer(state.timeMinutes, 0, 1439);
       updateText(time, `${String(Math.floor(minute / 60)).padStart(2, '0')}:${String(minute % 60).padStart(2, '0')}`);
       // [night-11au] D-256: the KARTA week ruler (karta.css) marks "now" at this share of the week.
-      if (import.meta.env.DEV && skinPreview.karta) section.style.setProperty('--karta-week', (((dayNumber - 1) * 1440 + minute) / (DAYS_PER_WEEK * 1440)).toFixed(4));
+      if (import.meta.env.DEV && skinPreview.karta) {
+        section.style.setProperty('--karta-week', (((dayNumber - 1) * 1440 + minute) / (DAYS_PER_WEEK * 1440)).toFixed(4));
+        kartaDays(section, DAYS_PER_WEEK, dayNumber); // [night-11av] day names under the ruler
+      }
       const passengerCount = integer(state.passengers, 0, Number.MAX_SAFE_INTEGER);
       if (lastPassengers !== passengerCount || lastDay === undefined) {
         updateText(passengers, localNumber(passengerCount));

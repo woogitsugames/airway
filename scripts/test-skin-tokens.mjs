@@ -183,8 +183,13 @@ check('karta: the preview skin never redefines the palette or text-scale tokens'
 const kartaImports = tsFiles.filter((file) => /import\s*\(?\s*'[^']*karta\.css'/.test(read(file)));
 const main = read('src/main.ts');
 check('karta: only the DEV branch of src/main.ts imports the preview skin',
-  kartaImports.join() === 'src/main.ts' && /if \(import\.meta\.env\.DEV && query\.get\('skin'\) === 'karta'\) \{\s*startKartaPreview\(\);\s*void import\('\.\/ui\/skin\/karta\.css'\);/.test(main) &&
+  kartaImports.join() === 'src/main.ts' && /if \(import\.meta\.env\.DEV && query\.get\('skin'\) === 'karta'\) \{\s*startKartaPreview\([^;]*\);\s*void import\('\.\/ui\/skin\/karta\.css'\);/.test(main) &&
   !/^import\s+'[^']*karta\.css'/m.test(main), kartaImports.join(' '));
+
+// [night-11av] D-256: the preview helpers (src/ui/skin/preview.ts) are imported statically by the overlay, HUD and menu;
+// a runtime import there would reorder modules in the release bundle even though its code is dropped, so types only.
+const previewImports = [...read('src/ui/skin/preview.ts').matchAll(/^import\s+(?!type\b)[^;]*;/gm)].map((m) => m[0]);
+check('karta: the preview helpers have no runtime import (release bundle order unchanged)', previewImports.length === 0, previewImports.join(' '));
 
 for (const { name, ok, why } of results) console[ok ? 'log' : 'error'](`${ok ? 'PASS' : 'FAIL'} ${name}${why && !ok ? ': ' + why : ''}`);
 const failed = results.filter((r) => !r.ok).length;

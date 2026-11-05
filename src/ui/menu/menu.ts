@@ -5,6 +5,7 @@ import type { RegionId } from '../../data/regions';
 import type { LicenceClass } from '../../sim';
 import '../skin/current.css'; // [night-11aq] skin tokens read by menu.css
 import './menu.css';
+import { skinPreview, kartaScale } from '../skin/preview'; // [night-11av] D-256 DEV-only KARTA preview
 
 export type MenuMode = 'continue' | 'endless' | 'puzzles' | 'daily';
 export interface MenuData {
@@ -159,6 +160,8 @@ function makeSign():HTMLElement {
   const titleBox=el('div','airway-sign__copy');
   titleBox.append(el('div','airway-sign__title',t('app.title')),el('div','airway-sign__subtitle',t('menu.terminal')));
   sign.append(symbol,titleBox);
+  // [night-11av] D-256, DEV-only KARTA preview: the title block carries the chart's graphic scale.
+  if (import.meta.env.DEV&&skinPreview.karta) sign.append(kartaScale());
   return sign;
 }
 

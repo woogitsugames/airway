@@ -11,7 +11,7 @@ import type { FillTrend } from '../game/fillTrend'; // [night-11af] R4c (type on
 import type { SurgeMark } from '../game/surge'; // [night-12bb] R2i (type only)
 import type { FrontMark } from '../game/weather'; // [night-12bd] R2j (type only)
 import './skin/current.css'; // [night-11aq] skin tokens read by overlay.css
-import { skinPreview } from './skin/preview'; // [night-11au] D-256 DEV-only KARTA preview
+import { skinPreview, kartaEdgeClash, kartaEdgeNote, kartaTopMargin, kartaExtraWidth, kartaJamShare, kartaLabelChildren } from './skin/preview'; // [night-11au] D-256 DEV-only KARTA preview
 import './overlay.css';
 
 const DEG = Math.PI / 180;
@@ -401,6 +401,12 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
     const trendNode = entry.trend === 'filling' ? entry.trendUp : entry.trend === 'emptying' ? entry.trendDown : null;
     if (trendNode && entry.waiting.length > 0) want.push(trendNode);
     want.push(entry.timer);
+    // [night-11av] D-256, DEV-only KARTA preview: occupancy figure after the code and one glyph per region with a count.
+    if (import.meta.env.DEV && skinPreview.karta) {
+      usedKinds.clear();
+      kartaLabelChildren(bubble, want, plated ? entry.plate : null, entry.waiting, entry.connecting, entry.capacity,
+        limit * 18 + (entry.waiting.length > MAX_GLYPHS ? 27 : 0), Math.max(60, bounds.width - 210), (region, hollowGlyph) => pooledGlyph(entry, region, hollowGlyph, usedKinds));
+    }
     // [night-10u] Write only where the child list differs from the last rebuild (most changes touch one glyph).
     const last = entry.children;
     let same = last.length === want.length;
@@ -429,6 +435,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
         (surged ? entry.surgeWidth : 0) + (fronted ? entry.frontWidth : 0) +
         (trendNode && entry.waiting.length > 0 ? TREND_WIDTH : 0) +
         (plated ? entry.plateWidth - (plateOnly ? 8 : 0) : 0)) : 0;
+    if (import.meta.env.DEV && skinPreview.karta && entry.mainWidth > 0) entry.mainWidth += kartaExtraWidth(bubble); // [night-11av]
     bubble.classList.toggle('airport-bubble--new', entry.isNew);
     entry.edge.classList.toggle('airport-edge--new', entry.isNew && !jammed);
     entry.edge.classList.toggle('airport-edge--curfew', entry.closed && !jammed); // [night-10h]
@@ -448,6 +455,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
     if (import.meta.env.DEV && skinPreview.karta) { // [night-11au] D-256: seat scale under the code (karta.css), one segment per waiting place
       bubble.style.setProperty('--karta-cap', String(entry.capacity));
       bubble.style.setProperty('--karta-taken', String(taken));
+      bubble.style.setProperty('--karta-jam', kartaJamShare(entry.jamSeconds)); // [night-11av] time arc on the jam ring
     }
     sizeTagGroup(entry.tag, entry.mainWidth, entry.slotRect);
     entry.timer.hidden = !jammed;
@@ -731,6 +739,8 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       const live = options.reserved?.();
       bounds.top = live ? live.top : options.reservedTop ?? 72;
       bounds.bottom = live ? live.bottom : options.reservedBottom ?? 92;
+      // [night-11av] D-256, DEV-only KARTA preview: its top margin (week ruler + day names) is taller than the reserve.
+      if (import.meta.env.DEV && skinPreview.karta) bounds.top = Math.max(bounds.top, kartaTopMargin(host));
       edgeBounds.width = width;
       edgeBounds.height = height;
       edgeBounds.top = bounds.top;
@@ -771,6 +781,8 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
           const dx = transformedNormal.x * cam[0] + transformedNormal.y * cam[1] + transformedNormal.z * cam[2];
           const dy = -(transformedNormal.x * cam[4] + transformedNormal.y * cam[5] + transformedNormal.z * cam[6]);
           projectEdgeChip(chip, dx, dy, entry.airport.lon, edgeBounds);
+          // [night-11av] D-256, DEV-only KARTA preview: the distance note "1 790 km" from the view centre.
+          if (import.meta.env.DEV && skinPreview.karta) kartaEdgeNote(entry.edge, transformedNormal, cameraPosition, chip.side);
         }
       }
       layoutTags(slots, bounds);
@@ -809,6 +821,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
           entry.lastEdgeX = entry.chip.x;
           entry.lastEdgeY = entry.chip.y;
         }
+        if (import.meta.env.DEV && skinPreview.karta && showEdge) kartaEdgeClash(entry.edge, entry.chip, slots); // [night-11av]
         if (showEdge && entry.lastEdgeSide !== entry.chip.side) {
           const icon = entry.edge.firstElementChild as SVGElement | null;
           if (icon) icon.style.transform = `rotate(${entry.chip.side === 0 ? 180 : entry.chip.side === 1 ? 0 : entry.chip.side === 2 ? -90 : 90}deg)`;

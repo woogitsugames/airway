@@ -178,9 +178,18 @@ dzisiejszą skórkę (CSS w `dist/` identyczny bajt w bajt). Zrzuty i zestawieni
 [`docs/shots/ui-karta/zestawienie.png`](../../shots/ui-karta/zestawienie.png). Co jest: pasek u góry jako margines
 mapy z linijką tygodnia (noce zakreskowane, znacznik „teraz”, skrzynia na końcu), kody lotnisk z obwódką, linie
 odniesienia do lotniska, podziałka miejsc pod kodem, zator jako magentowy blok i okrąg strefy zastrzeżonej, cichy
-dok-legenda, pauza, menu, ustawienia i tablice w atramencie z ramką. Czego jeszcze nie ma (jest na makiecie): glify
-pogrupowane z liczbą (⌄10 ☾7), podpisy pod przyciskami doku, łuk czasu do zamknięcia na okręgu zatoru, etykiety
-odległości tras, notka „KHI ▸ 1 790 km” na krawędzi, tabliczka tytułowa menu ze skalą.
+dok-legenda, pauza, menu, ustawienia i tablice w atramencie z ramką.
+
+Dołożone w N11av (dalej tylko w podglądzie): zajętość obok kodu („14/24”), glify pogrupowane według regionu z liczbą
+(pojedynczy pasażer to sam znak, jak na makiecie), łuk czasu do zamknięcia sieci na okręgu zatoru (pełny łuk = cały
+czas, maleje co sekundę), notka odległości na krawędzi („→ KHI” i pod nią „1 790 km” od środka widoku), nazwy dni pod
+linijką tygodnia (dzisiejszy jasny), podpisy pod przyciskami doku (Cofnij, Turbośmigłowiec, Szerokokadłubowiec, Hub,
+Satelita/Mapa, Prędkość gry; komórka czekająca na skrzynię pokazuje zamiast podpisu czas oczekiwania), podziałka
+„0 · 1 000 · 2 000 km” w tabliczce tytułowej menu. Wszystkie napisy biorą istniejące klucze tłumaczeń (PL + EN), więc
+wydana gra się nie zmienia.
+
+Czego jeszcze nie ma: etykiety odległości na trasach („1 120 km” na łuku) — trasy rysuje globus (`src/render/**`), a
+nakładka nie zna ich geometrii; to wymaga zmiany poza podglądem (render albo `src/game/session.ts`).
 
 Kontrast podpisów nad najjaśniejszą pustynią (prawdziwa klatka, Sahara): sama jasna litera na piasku ≈ 1,1:1 — dlatego
 każdy podpis ma atramentową obwódkę; obwódka na piasku ≈ 14:1, litera na obwódce 15,1:1 (WCAG AA wymaga 4,5:1).
