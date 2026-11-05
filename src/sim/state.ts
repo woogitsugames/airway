@@ -32,6 +32,11 @@ export interface GameConfig {
    * draw, so older saves and hashes are unchanged). Daily and puzzles never carry it.
    */
   readonly homeRegion?: RegionId;
+  /**
+   * [night-12ba] R2k, D-247: Endless only. The weekly board names a contract; meeting it adds a fourth crate next week.
+   * Absent = the pre-R2k rules (older saves and every Daily replay unchanged); new Endless runs set it.
+   */
+  readonly weeklyContract?: true;
 }
 
 /** [night-11aj] Canonical copy of a config: optional fields only when set (they are part of the state hash). */
@@ -40,6 +45,7 @@ export function copyConfig(config: GameConfig): GameConfig {
     mode: config.mode,
     ...(config.puzzleId === undefined ? {} : { puzzleId: config.puzzleId }),
     ...(config.homeRegion === undefined ? {} : { homeRegion: config.homeRegion }),
+    ...(config.weeklyContract === true ? { weeklyContract: true } : {}),
   };
 }
 

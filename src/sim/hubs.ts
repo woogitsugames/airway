@@ -15,6 +15,8 @@ export interface WaitingPassenger {
   arrivedOnRoute?: string;
   longWaitNoted: boolean;
   noRouteNoted: boolean;
+  /** [night-12ba] R2k: region the passenger set off from; only in runs with the weekly contract. */
+  originRegion?: string;
 }
 export interface CityQueue {
   cityId: string;

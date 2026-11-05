@@ -18,7 +18,9 @@ export interface HubPressure { readonly hubId: string; readonly waiting: number;
 export interface UpgradeCommand { readonly type: 'ChooseUpgrade'; readonly week: number; readonly upgrade: UpgradeKind; readonly hubId?: string }
 export interface UpgradeEffects { grantPlane?: (type: 'turboprop' | 'widebody', count: number) => void; expandHub?: (hubId: string, extraCapacity: number, minimumConnectionMinutes: number) => void; addDepartureSlots?: (count: number, cityId: string) => void }
 /** `pendingHub` = an airport pick is pending; `selected` tells which upgrade it is for. */
-export interface WeeklyUpgradeState { readonly week: number; readonly paused: boolean; readonly offers: readonly UpgradeOffer[]; readonly pendingHub: boolean; readonly selected?: UpgradeKind; readonly lastChoice?: UpgradeCommand }
+export interface WeeklyUpgradeState { readonly week: number; readonly paused: boolean; readonly offers: readonly UpgradeOffer[]; readonly pendingHub: boolean; readonly selected?: UpgradeKind; readonly lastChoice?: UpgradeCommand;
+  /** [night-12ba] R2k: the card a met weekly contract added to this board (absent on every other board). */
+  readonly extraCrate?: UpgradeKind }
 const POOL: readonly UpgradeKind[] = ['turboprop', 'widebody', 'hub-expansion', 'departure-slots'];
 /**
  * [night-12v] R8a, D-150: which targeted cards can act this week. "+2 slots" only after the run's first departure
@@ -26,17 +28,39 @@ const POOL: readonly UpgradeKind[] = ['turboprop', 'widebody', 'hub-expansion', 
  * to the other aircraft card (a board may then show only the two aircraft). Omitted = both eligible (old pool).
  */
 export interface UpgradeEligibility { readonly hub: boolean; readonly slots: boolean }
-export function drawUpgradeOffers(week: number, rng: UpgradeRng, eligible: UpgradeEligibility = { hub: true, slots: true }): UpgradeOffer[] {
+/**
+ * [night-12ba] R2k, D-247: `extraCrate` (a met weekly contract) adds one more card, drawn after the usual ones from
+ * the cards not on the board that can act at all: the hub card needs a hub; "+2 slots" can always target an airport,
+ * so here it ignores the first-hold rule. Without `extraCrate` the RNG calls are exactly the old ones.
+ * Returns fewer cards than asked only when no card is left (the caller then keeps the crate for a later board).
+ */
+export function drawUpgradeOffers(week: number, rng: UpgradeRng, eligible: UpgradeEligibility = { hub: true, slots: true },
+  extraCrate = false): UpgradeOffer[] {
+  return drawUpgradeBoard(week, rng, eligible, extraCrate).offers;
+}
+/** As drawUpgradeOffers, also naming the extra (contract) card when one was drawn. */
+export function drawUpgradeBoard(week: number, rng: UpgradeRng, eligible: UpgradeEligibility = { hub: true, slots: true },
+  extraCrate = false): { offers: UpgradeOffer[]; extraCrate?: UpgradeKind } {
   if (!Number.isSafeInteger(week) || week < 1) throw new RangeError('Invalid week');
   const airplane = rng.nextInt(2);
   if (!Number.isInteger(airplane) || airplane < 0 || airplane > 1) throw new RangeError('Invalid RNG draw');
   const remaining = POOL.filter((id, index) => index !== airplane &&
     (id !== 'hub-expansion' || eligible.hub) && (id !== 'departure-slots' || eligible.slots));
   const result: UpgradeKind[] = [POOL[airplane]];
+  let extra: UpgradeKind | undefined;
   for (let i = 0; i < 2 && remaining.length > 0; i++) {
     const index = rng.nextInt(remaining.length);
     if (!Number.isInteger(index) || index < 0 || index >= remaining.length) throw new RangeError('Invalid RNG draw');
     result.push(remaining.splice(index, 1)[0]!);
+  }
+  if (extraCrate) {
+    const spare = POOL.filter((id) => !result.includes(id) && (id !== 'hub-expansion' || eligible.hub));
+    if (spare.length > 0) {
+      const index = rng.nextInt(spare.length);
+      if (!Number.isInteger(index) || index < 0 || index >= spare.length) throw new RangeError('Invalid RNG draw');
+      extra = spare[index]!;
+      result.push(extra);
+    }
   }
   // Shuffle to avoid always presenting the guaranteed aircraft first.
   for (let i = result.length - 1; i > 0; i--) {
@@ -44,12 +68,15 @@ export function drawUpgradeOffers(week: number, rng: UpgradeRng, eligible: Upgra
     if (!Number.isInteger(j) || j < 0 || j > i) throw new RangeError('Invalid RNG draw');
     [result[i], result[j]] = [result[j]!, result[i]!];
   }
-  return result.map(id => ({ id, week }));
+  const offers = result.map(id => ({ id, week }));
+  return extra === undefined ? { offers } : { offers, extraCrate: extra };
 }
-export function startWeeklyUpgrade(tick: number, rng: UpgradeRng, eligible?: UpgradeEligibility): WeeklyUpgradeState | null {
+export function startWeeklyUpgrade(tick: number, rng: UpgradeRng, eligible?: UpgradeEligibility, extraCrate = false): WeeklyUpgradeState | null {
   if (!Number.isSafeInteger(tick) || tick <= 0 || tick % TICKS_PER_WEEK !== 0) return null;
   const week = tick / TICKS_PER_WEEK;
-  return { week, paused: true, offers: drawUpgradeOffers(week, rng, eligible), pendingHub: false };
+  const board = drawUpgradeBoard(week, rng, eligible, extraCrate);
+  return board.extraCrate === undefined ? { week, paused: true, offers: board.offers, pendingHub: false }
+    : { week, paused: true, offers: board.offers, pendingHub: false, extraCrate: board.extraCrate };
 }
 /** Stable tie-breaking: larger fill ratio, then more waiting, then lexical ID. */
 export function mostLoadedHub(hubs: readonly HubPressure[]): HubPressure | undefined {
@@ -85,5 +112,6 @@ export function chooseUpgrade(state: WeeklyUpgradeState, command: UpgradeCommand
  */
 export function cancelUpgradePick(state: WeeklyUpgradeState, week: number): WeeklyUpgradeState {
   if (!state.paused || state.lastChoice || !state.pendingHub || week !== state.week) throw new Error('No airport pick to cancel');
-  return { week: state.week, paused: true, offers: state.offers.map((offer) => ({ ...offer })), pendingHub: false };
+  const back: WeeklyUpgradeState = { week: state.week, paused: true, offers: state.offers.map((offer) => ({ ...offer })), pendingHub: false };
+  return state.extraCrate === undefined ? back : { ...back, extraCrate: state.extraCrate };
 }

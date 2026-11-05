@@ -13,6 +13,7 @@ export type {
 export type { PlaneState } from './planes.ts';
 export type { PlaneType } from './params.ts';
 export type { UpgradeKind, UpgradeOffer, WeeklyUpgradeState } from './upgrades.ts';
+export type { WeeklyContract, ContractRecord } from './contracts.ts';
 export type { HubFailure } from './hubs.ts';
 export { PLANE_TYPES, PLANE_PROGRESS_SCALE, CONGESTION_GRACE_TICKS } from './params.ts';
 export { clockAt, calendarWeekAt, calendarDayAt, ticksPerSecond, TICKS_PER_DAY, DAYS_PER_WEEK, TICKS_PER_WEEK, TICKS_PER_SECOND_1X } from './clock.ts';
@@ -25,7 +26,9 @@ export { HOME_REGIONS } from './spawner.ts';
  * [night-11aj] R2g: `homeRegion` (Endless only; null = Random) anchors the start cluster in that region.
  */
 export function createGame(seed: number, mode: GameConfig['mode'] = 'endless', puzzleId?: string,
-    homeRegion: GameConfig['homeRegion'] | null = null): Sim {
+    homeRegion: GameConfig['homeRegion'] | null = null, weeklyContract = false): Sim {
   if (mode === 'puzzle') return new Sim(seed >>> 0, { mode, puzzleId: puzzleId ?? '' });
-  return new Sim(seed >>> 0, mode === 'endless' && homeRegion ? { mode, homeRegion } : { mode });
+  if (mode !== 'endless') return new Sim(seed >>> 0, { mode });
+  // [night-12ba] R2k: the weekly contract (D-247) is Endless only; the game layer turns it on for new runs.
+  return new Sim(seed >>> 0, { mode, ...(homeRegion ? { homeRegion } : {}), ...(weeklyContract ? { weeklyContract: true } : {}) });
 }

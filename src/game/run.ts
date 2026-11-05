@@ -9,6 +9,8 @@ import {
 import type { Sim } from '../sim';
 import type { HubPressure } from '../sim/upgrades';
 import type { SlotPressure } from '../ui/upgrade/cards'; // [task-32]
+import type { ContractBoard } from '../ui/upgrade/cards'; // [night-12ba] R2k
+import type { WeeklyContract } from '../sim/contracts';
 import { airportLabel, readAirportLabelMode } from '../ui/airportLabel'; // [night-05] D-68
 import { buildCauseReport, type HubCauseLedger } from './causes';
 import { PICK_LETTERS, type RunRecord, type RunStats } from './logbook';
@@ -17,6 +19,8 @@ import { MilestoneTracker, milestoneView, type MilestoneId, type MilestoneView }
 export type AircraftType = 'turboprop' | 'widebody';
 /** [night-12ap] Longest single frame counted as real play time (seconds). */
 const MAX_PLAY_FRAME_S = 0.5;
+/** [night-12ba] R2k, D-247: new Endless runs carry the weekly contract (one switch, should the owner hold it back). */
+export const ENDLESS_WEEKLY_CONTRACT = true;
 export type RunCommand = Command;
 export type JournalEntry = CommandEntry;
 
@@ -89,10 +93,13 @@ export class EndlessRun {
     this.homeOffsetMinutes = Math.round((home ? cityByCode(home)?.utcOffsetH ?? 0 : 0) * 60);
   }
 
-  /** [night-11aj] R2g: `homeRegion` (Endless only; null = Random) anchors the start cluster in that region. */
+  /**
+   * [night-11aj] R2g: `homeRegion` (Endless only; null = Random) anchors the start cluster in that region.
+   * [night-12ba] R2k, D-247: every new Endless run has the weekly contract (ENDLESS_WEEKLY_CONTRACT); Daily never.
+   */
   static create(seed: number, mode: GameMode = 'endless', homeRegion: RegionId | null = null): EndlessRun {
     return mode === 'daily' ? new EndlessRun(createGame(seed, 'daily'))
-      : new EndlessRun(createGame(seed, 'endless', undefined, homeRegion));
+      : new EndlessRun(createGame(seed, 'endless', undefined, homeRegion, ENDLESS_WEEKLY_CONTRACT));
   }
 
   get seed(): number { return this.sim.seed; }
@@ -238,6 +245,22 @@ export class EndlessRun {
       capacity: PLANE_TYPES[plane.type].seats,
       phase: plane.phase, cityIndex: plane.cityIndex, slotWaitTicks: plane.slotWaitTicks, // [night-11ag] R4d
     }));
+  }
+
+  /** [night-12ba] R2k, D-247: the running weekly contract (null without one, and in Daily). */
+  get contract(): WeeklyContract | null { return this.sim.world.contract; }
+
+  /** [night-12ba] R2k: what the open weekly board shows: next week's contract and the one that just ended. */
+  contractBoard(): ContractBoard | null {
+    const world = this.sim.world;
+    const offer = world.offer;
+    if (!offer || !world.scenario.weeklyContract) return null;
+    const last = world.contractHistory.at(-1);
+    return {
+      next: world.contract,
+      last: last && last.week === offer.week - 1 ? last : null,
+      extraCrate: offer.extraCrate ?? null,
+    };
   }
 
   hubPressure(): HubPressure[] {
