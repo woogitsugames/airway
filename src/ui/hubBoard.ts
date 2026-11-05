@@ -6,6 +6,7 @@ import { regionGlyph } from './glyphs';
 import { watchHudLayout } from './layout';
 import { HUB_BOARD_CAUSE_KEYS, type HubBoardCause, type HubBoardModel } from '../game/hubBoard';
 import { CURFEW_END_HOUR } from '../sim/params';
+import './skin/current.css'; // [night-11aq] skin tokens read by hubBoard.css
 import './hubBoard.css';
 
 const SVG = 'http://www.w3.org/2000/svg';

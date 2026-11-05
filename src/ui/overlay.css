@@ -6,8 +6,8 @@
   overflow: hidden;
   isolation: isolate;
   z-index: 2;
-  color: #2A2420;
-  font-family: 'Atkinson Hyperlegible Next', sans-serif;
+  color: var(--skin-tag-ink);
+  font-family: var(--skin-face-text);
 }
 .airport-overlay [hidden] { display: none !important; }
 .airport-bubble {
@@ -19,13 +19,13 @@
   gap: 2px;
   height: 30px;
   padding: 4px 7px 4px 16px;
-  background: #FBF8F1;
-  color: #2A2420;
+  background: var(--skin-tag-bg);
+  color: var(--skin-tag-ink);
   clip-path: polygon(9px 0,100% 0,100% 100%,9px 100%,0 50%);
   white-space: nowrap;
   user-select: none;
   contain: layout style;
-  transition: transform 90ms linear, opacity 90ms linear;
+  transition: transform var(--skin-motion-follow) linear, opacity var(--skin-motion-follow) linear;
   will-change: transform;
 }
 .airport-bubble::before {
@@ -40,9 +40,9 @@
   background: currentColor;
   opacity: .5;
 }
-.airport-bubble--jam { background: #C8352A; color: #FBF8F1; }
+.airport-bubble--jam { background: var(--skin-tag-jam-bg); color: var(--skin-tag-jam-ink); }
 .airport-bubble__count {
-  font: 800 13px/1 'Overpass', sans-serif;
+  font: var(--skin-weight-heavy) 13px/1 var(--skin-face-display);
   margin-left: 3px;
 }
 /* [night-11af] R4c: fill trend mark beside the count, behind a hairline (up = filling, down = emptying; shape, not
@@ -58,14 +58,14 @@
   padding-left: 3px;
   border-left: 1.5px solid currentColor;
   line-height: 0;
-  animation: airport-trend-in 120ms ease-out;
+  animation: airport-trend-in var(--skin-motion-trend-in) ease-out;
 }
 .airport-bubble__trend svg { display: block; width: 9px; height: 12px; }
 @keyframes airport-trend-in { from { opacity: 0; transform: translateY(var(--trend-from, 2px)); } to { opacity: 1; transform: none; } }
 .airport-bubble__trend--down { --trend-from: -2px; }
 .airport-bubble__trend--up { --trend-from: 2px; }
 .airport-bubble__timer {
-  font: 700 12px/1 'Overpass Mono', monospace;
+  font: var(--skin-weight-bold) 12px/1 var(--skin-face-mono);
   margin-left: 4px;
   font-variant-numeric: tabular-nums;
 }
@@ -81,20 +81,20 @@
   width: 58px;
   height: 48px;
   padding: 2px;
-  border: 2px solid #13302E;
-  border-radius: 2px;
-  background: #FBF8F1;
-  color: #13302E;
-  font: 800 12px/1 'Overpass', sans-serif;
+  border: 2px solid var(--skin-edge-border);
+  border-radius: var(--skin-edge-radius);
+  background: var(--skin-edge-bg);
+  color: var(--skin-edge-ink);
+  font: var(--skin-weight-heavy) 12px/1 var(--skin-face-display);
   letter-spacing: .03em;
   pointer-events: auto;
   touch-action: manipulation;
   cursor: pointer;
-  transition: opacity 90ms linear;
+  transition: opacity var(--skin-motion-follow) linear;
   -webkit-tap-highlight-color: transparent;
 }
-.airport-edge:focus-visible { outline: 3px solid #FFC72C; outline-offset: 2px; }
-.airport-edge svg { width: 14px; height: 14px; flex: none; }
+.airport-edge:focus-visible { outline: 3px solid var(--skin-edge-highlight); outline-offset: 2px; }
+.airport-edge svg { width: var(--skin-edge-icon-size); height: var(--skin-edge-icon-size); flex: none; }
 /* [night-11d] Waiting-area gauge under the code of an off-screen airport: an outlined track whose ink fill is the
    share of waiting places taken (a length, readable without colour); signal red from three quarters full. Static. */
 .airport-edge--gauge { padding-bottom: 12px; }
@@ -110,9 +110,9 @@
 }
 .airport-edge__gauge[hidden] { display: none; }
 .airport-edge__fill { display: block; height: 100%; max-width: 100%; background: currentColor; }
-.airport-edge__gauge--high .airport-edge__fill { background: #C8352A; }
+.airport-edge__gauge--high .airport-edge__fill { background: var(--skin-edge-jam-bg); }
 .airport-edge--jam .airport-edge__gauge--high .airport-edge__fill { background: currentColor; }
-.airport-edge--jam { border-color: #C8352A; background: #C8352A; color: #FBF8F1; animation: airport-edge-alert 1.1s ease-in-out infinite alternate; }
+.airport-edge--jam { border-color: var(--skin-edge-jam-border); background: var(--skin-edge-jam-bg); color: var(--skin-edge-jam-ink); animation: airport-edge-alert var(--skin-motion-jam-pulse) ease-in-out infinite alternate; }
 @keyframes airport-edge-alert { from { opacity: 1; } to { opacity: .42; } }
 /* [night-10a] Newly opened airport: an ink stub with gold lettering at the front of the luggage tag (a shape
    of its own, readable without colour) and an ink edge chip with a gold top bar (no clip-path: it would cut the focus outline). One short stamp-in, no spring. */
@@ -124,9 +124,9 @@
   height: 20px;
   margin-right: 3px;
   padding-right: 6px;
-  border-right: 1.5px solid #2A2420;
-  color: #13302E;
-  font: 800 12px/20px 'Overpass Mono', monospace;
+  border-right: 1.5px solid var(--skin-tag-plate-rule);
+  color: var(--skin-tag-plate-ink);
+  font: var(--skin-weight-heavy) 12px/20px var(--skin-face-mono);
   letter-spacing: 0;
   text-transform: uppercase;
   overflow: hidden;
@@ -138,26 +138,26 @@
   height: 20px;
   margin-right: 2px;
   padding: 0 5px;
-  background: #13302E;
-  color: #FFC72C;
-  font: 800 11px/20px 'Overpass', sans-serif;
+  background: var(--skin-tag-new-bg);
+  color: var(--skin-tag-new-ink);
+  font: var(--skin-weight-heavy) 11px/20px var(--skin-face-display);
   letter-spacing: .06em;
   text-align: center;
   overflow: hidden;
-  animation: airport-new-stamp 160ms ease-out;
+  animation: airport-new-stamp var(--skin-motion-stamp) ease-out;
 }
 @keyframes airport-new-stamp { from { opacity: 0; transform: scale(1.18); } to { opacity: 1; transform: none; } }
 .airport-edge--new {
-  border-color: #13302E;
-  background: #13302E;
-  color: #FFC72C;
-  box-shadow: inset 0 4px 0 #FFC72C;
+  border-color: var(--skin-edge-border);
+  background: var(--skin-edge-new-bg);
+  color: var(--skin-edge-new-ink);
+  box-shadow: var(--skin-edge-new-bar);
 }
 /* [night-10h] Night curfew: the boom-barrier stub at the front of the tag (same mark as the puzzle strips) and a
    red-white striped bar along the bottom of the edge chip. Static: a closed airport is a state, not an alert. */
 .airport-bubble__curfew { flex: none; display: inline-flex; line-height: 0; margin-right: 2px; }
 .airport-edge--curfew:not(.airport-edge--jam) {
-  background-image: repeating-linear-gradient(135deg, #B8322A 0 5px, #FBF8F1 5px 10px);
+  background-image: repeating-linear-gradient(135deg, var(--skin-edge-curfew-stripe) 0 5px, var(--skin-edge-bg) 5px 10px);
   background-size: 100% 6px;
   background-position: bottom;
   background-repeat: no-repeat;
@@ -174,15 +174,15 @@
   align-items: center;
   height: 24px;
   padding: 0 9px 0 0;
-  border: 2px solid #13302E;
+  border: 2px solid var(--skin-slot-border);
   border-left: 0;
-  background: #FBF8F1;
-  color: #13302E;
+  background: var(--skin-slot-bg);
+  color: var(--skin-slot-ink);
   clip-path: polygon(0 0,calc(100% - 6px) 0,100% 6px,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%);
   white-space: nowrap;
   user-select: none;
   contain: layout style;
-  transition: transform 90ms linear, opacity 90ms linear;
+  transition: transform var(--skin-motion-follow) linear, opacity var(--skin-motion-follow) linear;
   will-change: transform;
 }
 .airport-slot__stub {
@@ -193,13 +193,13 @@
   align-self: stretch;
   width: 22px;
   margin: -2px 6px -2px 0;
-  background: #13302E;
-  color: #FFC72C;
+  background: var(--skin-slot-stub-bg);
+  color: var(--skin-slot-stub-ink);
 }
-.airport-slot__mark { width: 14px; height: 14px; }
-.airport-slot__label { font: 800 11px/1 'Overpass', sans-serif; letter-spacing: .06em; margin-right: 5px; }
-.airport-slot__time { font: 700 12px/1 'Overpass Mono', monospace; font-variant-numeric: tabular-nums; }
-.airport-slot__count { font: 800 12px/1 'Overpass', sans-serif; margin-left: 4px; }
+.airport-slot__mark { width: var(--skin-slot-icon-size); height: var(--skin-slot-icon-size); }
+.airport-slot__label { font: var(--skin-weight-heavy) 11px/1 var(--skin-face-display); letter-spacing: .06em; margin-right: 5px; }
+.airport-slot__time { font: var(--skin-weight-bold) 12px/1 var(--skin-face-mono); font-variant-numeric: tabular-nums; }
+.airport-slot__count { font: var(--skin-weight-heavy) 12px/1 var(--skin-face-display); margin-left: 4px; }
 /* [night-11g] D-88: the game's "Reduce motion" switch (default: the system). */
 :root[data-airway-motion="reduce"] .airport-slot { transition: none; }
 :root[data-airway-motion="reduce"] .airport-bubble, :root[data-airway-motion="reduce"] .airport-edge { transition: none; }
@@ -219,26 +219,26 @@
   flex-wrap: wrap;
   min-height: 54px;
   padding: 8px;
-  background: #FBF8F1;
-  border-left: 6px solid #1E6F6A;
-  font: 700 12px/1.2 'Atkinson Hyperlegible Next', sans-serif;
+  background: var(--skin-demo-bg);
+  border-left: 6px solid var(--skin-demo-accent);
+  font: var(--skin-weight-bold) 12px/1.2 var(--skin-face-text);
 }
-.airport-demo-controls input { height: 48px; width: clamp(90px, 30%, 170px); accent-color: #1E6F6A; }
+.airport-demo-controls input { height: 48px; width: clamp(90px, 30%, 170px); accent-color: var(--skin-demo-accent); }
 .airport-demo-controls small { font-size: 10px; white-space: nowrap; }
 
 /* [night-11ai] R4g: a mouse over an airport (globe hit test in src/game/session.ts) or its off-screen button. The
    tag is clipped, so the mark is an inset rule in its own ink rather than an outline. */
 @media (hover: hover) and (pointer: fine) {
-  .airport-bubble.is-hover, .airport-edge:hover { box-shadow: inset 0 -3px 0 currentColor; }
+  .airport-bubble.is-hover, .airport-edge:hover { box-shadow: var(--skin-hover-rule); }
 }
 /* [night-12bb] R2i, D-249: announced demand surge. A pennant on a pole at the front of the tag (a shape of its own,
    readable without colour): hollow while the surge is announced, filled while it runs, followed by "+N" and the
    airport's local time (start, then "to" the end). The edge chip carries the same pennant in its top-right corner.
-   Paper stub with an ink frame, mono figures; static (an announcement is a state, not an alert). Local tokens until
-   the UI redesign brings shared ones. */
+   Paper stub with an ink frame, mono figures; static (an announcement is a state, not an alert). Local tokens read the
+   skin (src/ui/skin/current.css). */
 .airport-bubble__surge {
-  --aw-surge-ink: #13302E;
-  --aw-surge-paper: #FBF8F1;
+  --aw-surge-ink: var(--skin-tag-surge-ink);
+  --aw-surge-paper: var(--skin-tag-surge-paper);
   box-sizing: border-box;
   flex: none;
   display: inline-flex;
@@ -250,7 +250,7 @@
   border: 1px solid var(--aw-surge-ink);
   background: var(--aw-surge-paper);
   color: var(--aw-surge-ink);
-  font: 700 12px/18px 'Overpass Mono', monospace;
+  font: var(--skin-weight-bold) 12px/18px var(--skin-face-mono);
   white-space: nowrap;
   overflow: hidden;
 }

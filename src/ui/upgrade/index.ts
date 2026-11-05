@@ -1,4 +1,5 @@
 import type { HubPressure, UpgradeCommand, UpgradeKind, WeeklyUpgradeState } from '../../sim/upgrades';
+import '../skin/current.css'; // [night-11aq] skin tokens read by upgrade.css
 import './upgrade.css';
 import { t, type TranslationKey } from '../../i18n';
 import { cardModel, upgradeFacts, type CardModel, type ContractBoard, type SlotPressure } from './cards';

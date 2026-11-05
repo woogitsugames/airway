@@ -136,3 +136,34 @@ bez jednego dodatkowego słowa. Warunek: przed wdrożeniem pomiar kontrastu lite
 próba na 320 px. Jeśli wolisz tańszą i odważniejszą drogę, druga w kolejności jest **3 Znaki**.
 
 Wybór kierunku zapiszę jako nową decyzję w `docs/DECISIONS.md`; to Twoja decyzja stylu, więc w tym PR nie ma numeru D.
+
+---
+
+## Przygotowanie kodu: „skórka” UI (N11aq, D-250)
+
+Zanim wybierzesz kierunek, kod jest już przygotowany tak, żeby zmiana wyglądu była szybka, a dzisiejszy wygląd się
+nie zmienił (porównanie 88 zrzutów piksel w piksel). Wszystkie kolory, kroje i grubości pisma, czasy animacji,
+narożniki, cienie i rozmiary ikon z paska u góry, doku, przywieszek lotnisk, pauzy, tablicy skrzyń, tablicy huba,
+raportu końca gry i menu są teraz w jednym pliku: `src/ui/skin/current.css` (dzisiejsza „Diorama”, 202 nazwy).
+Spis wszystkich wartości: [INVENTORY.md](INVENTORY.md). Test `test:skin-tokens` pilnuje, żeby nikt nie wpisał koloru
+ani fontu z powrotem bezpośrednio w komponent.
+
+Nowy kierunek = **nowy plik skórki** (np. `src/ui/skin/karta.css`, te same nazwy, nowe wartości) podpięty zamiast
+`current.css` w `src/main.ts` i w importach komponentów + **zmiany kształtu** w plikach poniżej. Rozmiary tekstu z
+D-248 (100–150 %) zostają w `theme.css` i działają w każdym kierunku.
+
+| Plik | 1 KARTA | 2 KOKPIT | 3 ZNAKI |
+|---|---|---|---|
+| `src/ui/skin/<kierunek>.css` (kolory, kroje, ruch) | tak: atrament, farba, magenta; Barlow Condensed + IBM Plex Mono | tak: blacha, tarcza, lampki; Archivo Narrow + Atkinson Mono | tak: żółć, czerń, czerwień; Overpass 800 + Overpass Mono (bez nowych fontów) |
+| `src/ui/fonts.css`, `docs/ASSETS.md`, `public/fonts/` | 2 nowe kroje + licencje OFL | 2 nowe kroje + licencje OFL | bez zmian |
+| `src/ui/hud.css` + `hud/boarding-pass.ts` (pasek u góry) | linijka tygodnia zamiast karty pokładowej (nowy DOM) | górny panel z lampką zatoru (nowy DOM) | tylko CSS: czarny znak lokalizacji |
+| `src/ui/hud.css` + `hud/tag-dock.ts`, `hud/icons.ts` (dok) | listwa legendy, bez przywieszek (CSS + ikony) | przyciski z lampkami, pokrętło tempa (nowy DOM) | tylko CSS i ikony: żółte/czarne znaki, linia „hold short” |
+| `src/ui/overlay.css` + `overlay.ts` + `overlay-layout.ts` (przywieszki lotnisk) | podpisy z obwódką, podziałka miejsc, strefa zastrzeżona (SVG), linie odniesienia (nowy układ) | tarcza z wskazówką (SVG) przy lotnisku | CSS + grupowanie glifów z liczbą; ten sam układ kolizji (stałe szerokości liter do poprawy) |
+| `src/ui/game.css` (pauza) | CSS | CSS (ekran przyrządu) | CSS |
+| `src/ui/upgrade/upgrade.css`, `hubBoard.css` (skrzynie, tablica huba) | CSS (+ drobne zmiany DOM) | przerobienie na ekrany przyrządów | CSS |
+| `src/ui/gameover/gameover.css` (raport) | CSS | CSS + DOM | CSS |
+| `src/ui/menu/menu.css` + `menu/menu.ts` (menu) | tabliczka tytułowa (DOM) | menu jako CDU (nowy DOM) | tablica bez klapek split‑flap (CSS + mała zmiana `menu.ts`) |
+
+Poza skórką (jeszcze nie przeniesione, ten sam wzór później): karta ATC (`atcStrip.css`, karty pierwszego razu),
+dziennik, tablica zadań, ranking, samouczek, obrys glifów w `glyphs.ts`. Globus (`src/render/**`, np. jasne niebo)
+to osobne zadanie.
