@@ -186,7 +186,7 @@ wprost obejmuje konta gościa i nie akceptuje samego e-maila). D-77 (usuwanie e-
 | Differentiate Without Color Alone | kształty regionów, glify, szlaban ciszy nocnej jako kształt, paleta CVD (D-31, D-80) | **tak** (nasza mocna strona) |
 | Sufficient Contrast | tokeny WCAG ≥ 4,5:1, noc ≥ 9:1 (D-47) | tak, po przeglądzie zrzutów |
 | Reduced Motion | tylko część UI czyta `prefers-reduced-motion` (flap, raport końca gry); brak przełącznika w grze | po R1h |
-| Larger Text | 100/115/130%, bez odczytu ustawienia systemowego | **nie** (do 200% daleko); R1g przybliża |
+| Larger Text | 100/115/130/150%, start od rozmiaru systemowego (N11ap, D-248) | **nie** (do 200% daleko) |
 | VoiceOver / Voice Control | etykiety ekranowe są, ale rysowanie tras gestem na globusie nie ma alternatywy | nie |
 | Dark Interface | świat ma noc, ale UI nie ma trybu ciemnego | nie |
 

@@ -1,6 +1,10 @@
 /* The one Diorama token sheet (task 20): colours mirror tokens.json (checked by test:contrast/cvd). */
 :root {
   --airway-text-scale: 1;
+  /* [night-11ap] R1g: screen titles are already large, so they grow at 40 % of the step (150 % -> 120 %); dense
+     fixed-column tables stop at 130 %. Reading text takes the full step. */
+  --airway-text-scale-title: calc(1 + (var(--airway-text-scale) - 1) * .4);
+  --airway-text-scale-dense: min(var(--airway-text-scale), 1.3);
   --airway-font-label: calc(12px * var(--airway-text-scale));
   --airway-font-body: calc(16px * var(--airway-text-scale));
   --airway-font-value: calc(21px * var(--airway-text-scale));

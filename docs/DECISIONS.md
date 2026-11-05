@@ -2228,3 +2228,22 @@ fourth card is often "+2 slots" or the second aircraft. Owner choices left open:
 direction vs one-way, no penalty, whether a contract also shows on the game-over report.
 Guards: `test:weekly-contract` (`test:fast`), `test:e2e:weekly-contract`, `test:balance:contracts` (`test:ci`).
 **Status: in force (difficulty to confirm after the closed test).**
+
+
+## D-248 — Text size starts at the system's and goes to 150 % (2026-11-05, Claude, night N11ap)
+R1g. Settings → Display "Text size" offers 100/115/130/150 %. On the first launch with no stored text size the game
+reads the system size once and stores the nearest step: Android `Configuration.fontScale` through an app-local
+Capacitor plugin (`TextScalePlugin`, `AirwayTextScale`, registered before the bridge like D-245's game loop), iOS the
+Dynamic Type body size of the WKWebView (`-apple-system-body` / 17 px), browsers the `medium` font size / 16 px. A
+stored size, even 100 %, or a choice made during the read always wins; a failed read stores nothing and the next
+launch asks again. The WebView's own text zoom stays at 100, so only the game's step applies.
+The step now scales the reading text of the menu sheets, settings, privacy/licences, logbook, leaderboard, puzzle
+board, weekly upgrade labels, game-over strip and tutorial cards (`calc(Npx * var(--airway-text-scale))`). Screen
+titles and the big logbook figures grow at 40 % of the step (`--airway-text-scale-title`), the dense recent-flights
+table stops at 130 % (`--airway-text-scale-dense`). Fixed: split-flap cells and the departure/game-over boards (their
+cells are the art), the in-world HUD, luggage tags, ATC strip and hub board (geometry drawn into the world; a later
+pass after the UI redesign). At 130/150 % settings rows put the control under the label; at 150 % logbook records,
+upgrade specs and (≤ 370 px) logbook totals stack. Apple's "Larger Text" label stays undeclared (needs 200 %).
+Rejected: `@capacitor/text-zoom` (a dependency and a second scale applied by the WebView on top of ours), scaling
+the HUD now (overlaps the dock/tag layout tests), a 200 % step (titles and boards would need the redesign).
+Guards: `test:text-scale`, `test:e2e:text-scale-150`, `test:a11y-evidence`. **Status: in force.**
