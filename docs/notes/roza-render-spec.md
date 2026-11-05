@@ -1,6 +1,6 @@
 # Róża w renderze: specyfikacja dla sesji ext (globus)
 
-Night 12bm, dla sesji ext (właściciel `src/render/**`, gałęzie `ext/03-*`). Właścicielka wybrała wariant UI
+Night 12bm, dla sesji ext (właściciel `src/render/**`, gałęzie `ext/03-*`). Właściciel wybrał wariant UI
 **C „Róża”** (`docs/styles/ui-2026-11/KARTA-V2.md`). Agent #1 robi UI w `src/ui/**` (tarcza 24 h, dok na łuku,
 nazwy po łuku, notki „ATH 14 z 24 ▲” z glifami). Ten dokument mówi, **co musi się zmienić w renderze**, żeby gra
 wyglądała jak makiety C, z mapowaniem na pliki i funkcje, szacunkiem, kryteriami odbioru i testami. Na końcu gotowy
@@ -274,11 +274,11 @@ Ten sam tekst leży w `docs/notes/roza-ext-prompt.md`.
 
 ```text
 Jesteś sesją ext gry Airway (repo woogitsugames/airway). Odpowiadasz za globus 3D: `src/render/**` (znaczniki lotnisk,
-trasy, samoloty, niebo). Z właścicielką rozmawiasz po polsku; kod, komentarze i commity po angielsku; PR i raport po
+trasy, samoloty, niebo). Z właścicielem rozmawiasz po polsku; kod, komentarze i commity po angielsku; PR i raport po
 polsku. Przeczytaj najpierw CLAUDE.md, docs/ARCHITECTURE.md, docs/TESTING.md.
 
 KONTEKST
-Właścicielka wybrała wariant UI C „Róża” (docs/styles/ui-2026-11/KARTA-V2.md; makiety
+Właściciel wybrał wariant UI C „Róża” (docs/styles/ui-2026-11/KARTA-V2.md; makiety
 docs/mockups/ui-2026-11/v2/c/game-p.png, game-l.png, jam.png, menu-p.png; kod makiet mockups/ui-2026-11/v2/c/c.js
 i common.js; wzorniki docs/references/charts/, zwłaszcza 01, 02, 07, 08, 16). Lotnisko przestaje być Medalionem
 (D-178): staje się małą różą kompasową — kreski na obwodzie = miejsca w poczekalni (długa = zajęte), w środku układ
