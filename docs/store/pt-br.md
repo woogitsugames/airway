@@ -42,8 +42,8 @@ Placa da Airway ao lado de um globo 3D ao entardecer, rotas aéreas ligando aero
 
 ## Play alt text
 Uma linha por cena para cada tamanho de aparelho (≤ 140 caracteres); imagens de `shots/en/` (o jogo está em inglês).
-1. night — Lado noturno de um globo 3D: cidades iluminadas da Europa e do Oriente Médio, rotas aéreas e etiquetas de aeroportos com passageiros.
-2. game — Globo 3D sob sol baixo de fim de tarde: rotas entre aeroportos da Europa e do Oriente Médio, aviões voando e a doca de aviões embaixo.
+1. night — Lado noturno de um globo 3D: cidades iluminadas da Europa e do Oriente Médio, rotas aéreas e rosas dos aeroportos com passageiros.
+2. game — Globo 3D sob sol baixo de fim de tarde: rotas entre aeroportos da Europa e do Oriente Médio, aviões voando e o mostrador de 24 horas.
 3. upgrade — Fim de uma semana do jogo: três caixas de carga oferecem um turboélice, um widebody ou a ampliação de um hub; escolhe-se uma.
 4. failure — Tela "Network closed": um hub congestionado encerrou a partida e o relatório lista as causas e sua linha do tempo.
-5. menu — Menu principal em painel de partidas sob a placa da Airway: voo sem fim, quebra-cabeças, mundo do dia e ajustes ao lado do globo.
+5. menu — Menu principal sob o título Airway: voo sem fim, quebra-cabeças, mundo do dia, diário e ajustes no arco de uma rosa dos ventos.

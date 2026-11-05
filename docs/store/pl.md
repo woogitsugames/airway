@@ -39,8 +39,8 @@ Szyld Airway obok globusa 3D o zmierzchu, trasy lotnicze łączą lotniska Europ
 Google Play: jeden tekst alternatywny na zrzut (≤ 140 znaków, nigdy nie jest rysowany na obrazach), ten sam dla każdego
 rozmiaru urządzenia danej sceny; pliki w `shots/pl/`. App Store Connect nie ma pola podpisu ani tekstu alternatywnego
 dla zrzutów. Kolejność wg D-63 (nocny globus jako pierwszy kadr).
-1. night — Nocna strona globusa 3D: światła miast Europy i Bliskiego Wschodu, trasy lotnicze i plakietki lotnisk z czekającymi pasażerami.
-2. game — Globus 3D w niskim wieczornym słońcu: trasy między lotniskami Europy i Bliskiego Wschodu, samoloty w locie, dok samolotów na dole.
+1. night — Nocna strona globusa 3D: światła miast Europy i Bliskiego Wschodu, trasy lotnicze i róże lotnisk z nazwami miast i czekającymi pasażerami.
+2. game — Globus 3D w niskim wieczornym słońcu: trasy między lotniskami Europy i Bliskiego Wschodu, samoloty w locie, tarcza doby i łuk akcji.
 3. upgrade — Koniec tygodnia gry: trzy skrzynie z etykietami frachtowymi — turbośmigłowiec, szerokokadłubowiec, rozbudowa huba; gracz wybiera jedną.
 4. failure — Ekran „Sieć zamknięta”: zapchany hub zakończył grę, a raport zdarzenia podaje przyczyny i ich przebieg w czasie.
-5. menu — Menu w formie tablicy odlotów pod szyldem Airway: gra bez końca, zadania, świat dnia i ustawienia obok globusa.
+5. menu — Menu główne pod napisem Airway: lot bez końca, zadania, świat dnia, dziennik i ustawienia na łuku róży wiatrów obok globusa.

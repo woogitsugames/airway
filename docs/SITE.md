@@ -119,6 +119,8 @@ pauses. Device pixel ratio is capped at 2.
   did not follow. [N12bh] The store shots now carry the N11t game-over wording ("SIEĆ ZAMKNIĘTA" / "NETWORK
   CLOSED"). [N12bi] "failure" is the fifth scene of `SITE_SHOTS.scenes`: preview card 05 "RAPORT / REPORT" with
   `preview.failure.*` copy and alt text, on the home page and the press page (phone 05, landscape 10).
+  [night-14a] D-257: shots and thumbnails show the Róża UI; `preview.night/game/menu.*` describe airport roses,
+  the day dial and the rose menu (no boarding pass, luggage tags or split-flap board any more).
 - **Social preview:** `og:image` is the Play feature graphic (`docs/store/feature-graphic.png`, D-117), copied by
   `build:site` into `site/dist/assets/og-image.png` (not duplicated in git), with size, alt text and
   `twitter:card=summary_large_image`.
