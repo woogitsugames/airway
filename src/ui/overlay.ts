@@ -122,7 +122,10 @@ interface BubbleEntry {
   lastOpacity: number;
   /** [night-11az] D-257 Róża: the rose around the renderer's medallion (null in the Diorama comparison skin). */
   rose: Rose | null;
-  /** Screen position of the airport itself (tag.anchorY is moved under the rose for the note's layout). */
+  /** The rose's box as a fixed obstacle for the note layout (inactive without a rose). */
+  roseSlot: TagSlot;
+  /** Screen position of the airport itself (the tag anchor is moved beside the rose for the note's layout). */
+  screenX: number;
   screenY: number;
 }
 
@@ -307,6 +310,8 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
   host.appendChild(layer);
   const entries: BubbleEntry[] = [];
   const slots: TagSlot[] = [];
+  // [night-11az] D-257 Róża: the tags plus one fixed obstacle per airport rose, so a note never covers a rose.
+  const layoutSlots: TagSlot[] = [];
   const chips: EdgeChip[] = []; // [night-11x] parallel to `slots`
   const byId = new Map<string, BubbleEntry>();
   const marker = new Vector3();
@@ -604,10 +609,13 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
         trend: null, trendUp: trendChevron(true), trendDown: trendChevron(false),
         chip, bubbleVisible: false,
         lastBubbleX: NaN, lastBubbleY: NaN, lastEdgeX: NaN, lastEdgeY: NaN, lastEdgeSide: -1, lastOpacity: NaN,
-        rose: skin.roza ? rozaRose(layer) : null, screenY: 0,
+        rose: skin.roza ? rozaRose(layer) : null, screenX: 0, screenY: 0,
+        roseSlot: { id: airport.id + '~rose', anchorX: 0, anchorY: 0, width: 0, height: 0, active: false, jammed: false, fixed: true, x: 0, y: 0, placed: false },
       };
       entries.push(entry);
       slots.push(tag);
+      layoutSlots.push(tag);
+      if (entry.rose) layoutSlots.push(entry.roseSlot);
       chips.push(chip);
       byId.set(airport.id, entry);
       rebuildBubble(entry);
@@ -763,6 +771,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
         entry.tag.active = inView && (entry.mainWidth > 0 || entry.slotRect.width > 0); // [task-38]
         entry.tag.anchorX = x;
         entry.tag.anchorY = y;
+        entry.screenX = x;
         entry.screenY = y;
         if (entry.rose) {
           // [night-11az] D-257 Róża: the rose rings the renderer's medallion; its inner radius is the medallion's
@@ -781,8 +790,18 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
               jam: rozaJamShare(entry.jamSeconds), name: entry.airport.name ?? entry.airport.code }, r);
           }
           entry.rose.place(x, y, inView);
-          // The note hangs under the rose (KARTA-V2 C): layoutTags puts a tag's top at anchorY − height − 11.
-          entry.tag.anchorY = y + r + 8 + entry.tag.height + 11;
+          // The rose's box (ticks and the name arc above) as a fixed obstacle for the notes.
+          const box = entry.roseSlot, jam = entry.jamSeconds !== null, half = r + (jam ? 20 : 8);
+          const top = r + (jam ? 22 : entry.hub ? 13 : 11) + 13;
+          box.active = inView;
+          box.x = x - half;
+          box.y = y - top;
+          box.width = half * 2;
+          box.height = top + half;
+          // The note stands right of the rose, level with its centre (KARTA-V2 C: "RIX 0 z 12" beside the ring);
+          // layoutTags centres a tag on anchorX and puts its top at anchorY − height − 11, then moves it off others.
+          entry.tag.anchorX = x + r + (entry.jamSeconds !== null ? 26 : 14) + entry.tag.width / 2;
+          entry.tag.anchorY = y - 10 + entry.tag.height + 11;
         }
         const chip = entry.chip;
         chip.offscreen = !inView;
@@ -795,7 +814,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
           if (skin.roza) rozaEdgeNote(entry.edge, transformedNormal, cameraPosition, chip.side);
         }
       }
-      layoutTags(slots, bounds);
+      layoutTags(layoutSlots, bounds);
       placeEdgeChips(chips, slots, edgeBounds);
       for (const entry of entries) {
         const tag = entry.tag;
@@ -815,7 +834,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
             entry.lastBubbleX = tag.x;
             entry.lastBubbleY = tag.y;
           }
-          const fade = Math.max(.2, Math.min(1, (tag.anchorX - 10) / 28, (width - 10 - tag.anchorX) / 28, (entry.screenY - 10) / 28, (height - 10 - entry.screenY) / 28));
+          const fade = Math.max(.2, Math.min(1, (entry.screenX - 10) / 28, (width - 10 - entry.screenX) / 28, (entry.screenY - 10) / 28, (height - 10 - entry.screenY) / 28));
           const opacity = Math.round(fade * 10) / 10;
           if (opacity !== entry.lastOpacity) {
             entry.bubble.style.opacity = String(opacity);
@@ -849,6 +868,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       layer.remove();
       entries.length = 0;
       slots.length = 0;
+      layoutSlots.length = 0;
       chips.length = 0;
       byId.clear();
     },

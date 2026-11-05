@@ -147,11 +147,12 @@
 :root[data-skin="roza"] .airway-dock__holder:nth-child(6) .roza-caption { left: auto; right: 0; transform: none; }
 :root[data-skin="roza"] .airway-dock__ghost { background: transparent; color: var(--roza-chalk); clip-path: none; width: 54px; height: 54px; border-radius: 50%; border: 2.2px solid var(--roza-chalk); box-shadow: 0 0 0 1.4px var(--roza-ink); }
 
-/* Landscape: the dock arc is a slice of a larger rose along the right (thumb) edge, undo lowest; the compact dial
-   (time only) sits under it. The holders share the height left above the dial (≥ 48 px each), bowing out in the
-   middle like the mockup's arc. */
+/* Landscape: the dock arc is a slice of a larger rose along the right (thumb) edge, undo lowest, bowing out in the
+   middle like the mockup's arc; the holders share the full height (≥ 48 px each, also on a 360 px tall phone with
+   safe areas). The compact dial (time only) stands on the sky left of the arc's top, where the mockup's dial under the
+   arc would push the symbols below 48 px. */
 :root[data-skin="roza"] .airway-hud[data-layout='landscape'] .airway-dock {
-  inset: auto; top: calc(var(--hud-safe-top) + 8px); bottom: calc(var(--hud-safe-bottom) + 98px); right: var(--hud-safe-right); left: auto;
+  inset: auto; top: calc(var(--hud-safe-top) + 8px); bottom: calc(var(--hud-safe-bottom) + 8px); right: var(--hud-safe-right); left: auto;
   width: 120px; height: auto; display: flex; flex-direction: column-reverse; justify-content: space-between; align-items: flex-end;
 }
 :root[data-skin="roza"] .airway-hud[data-layout='landscape'] .airway-dock::before {
@@ -171,15 +172,6 @@
 :root[data-skin="roza"] .airway-hud[data-layout='landscape'] .airway-dock__holder .roza-caption {
   top: 50%; bottom: auto; left: auto; right: calc(100% + 2px); transform: translateY(-50%);
 }
-/* A short landscape screen (< 400 px tall): the dock takes the whole right edge, the compact dial moves under the
-   week line (the two would not both fit above each other with 48 px targets). */
-@media (max-height: 399px) {
-  :root[data-skin="roza"] .airway-hud[data-layout='landscape'] .airway-dock { bottom: calc(var(--hud-safe-bottom) + 6px); }
-  :root[data-skin="roza"] .airway-hud[data-layout='landscape'] .roza-dial {
-    right: auto; bottom: auto; left: calc(var(--hud-safe-left) + 10px); top: calc(var(--hud-safe-top) + 70px); width: 80px; height: 80px;
-  }
-}
-
 /* -- Airport notes: the rose (roza.ts) names the airport along its ring; the note under it reads code, "14 z 24", the
       fill trend and the waiting passengers grouped by region, chalk with the halo, never on a card. -- */
 :root[data-skin="roza"] .roza-rose { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; will-change: transform; }
@@ -195,7 +187,7 @@
   font: 700 14.5px/20px var(--skin-face-text); color: var(--roza-chalk);
 }
 :root[data-skin="roza"] .airport-bubble__count { font: 700 13.5px/18px var(--skin-face-text); }
-:root[data-skin="roza"] .airport-bubble__trend { border-left: 0; padding-left: 0; height: 18px; }
+:root[data-skin="roza"] .airport-bubble__trend { border-left-color: transparent; height: 18px; }
 :root[data-skin="roza"] .airport-bubble--plate-only .airport-bubble__plate { font-size: 13px; }
 :root[data-skin="roza"] .roza-fill { flex: none; margin-right: 3px; font: 700 14.5px/20px var(--skin-face-text); font-variant-numeric: tabular-nums; white-space: nowrap; }
 :root[data-skin="roza"] .roza-count { flex: none; margin: 0 6px 0 1px; font: 700 13.5px/18px var(--skin-face-text); font-variant-numeric: tabular-nums; }
@@ -327,3 +319,54 @@
 /* The catalog's menu titles are written for the split-flap board (capitals); Róża sets them in sentence case. */
 :root[data-skin="roza"] .roza-title { display: block; text-transform: lowercase; }
 :root[data-skin="roza"] .roza-title::first-letter { text-transform: uppercase; }
+/* Landscape: the dock arc and the compact dial stand on the sky right of the globe (src/game/world.ts frames the globe
+   clear of the dock column), so they are inked like the mockup's landscape: near-black with a light halo, the dim ink
+   at 72 % black (docs/notes/roza-contrast.md, fix 5). */
+:root[data-skin="roza"] .airway-hud[data-layout='landscape'] .airway-dock__tag { color: var(--roza-sky-ink); }
+:root[data-skin="roza"] .airway-hud[data-layout='landscape'] .airway-dock__tag.is-empty { color: #4A5559; }
+:root[data-skin="roza"] .airway-hud[data-layout='landscape'] .airway-dock__tag .airway-hud__icon {
+  filter: drop-shadow(1px 0 0 var(--roza-sky-halo)) drop-shadow(-1px 0 0 var(--roza-sky-halo))
+    drop-shadow(0 1px 0 var(--roza-sky-halo)) drop-shadow(0 -1px 0 var(--roza-sky-halo));
+}
+:root[data-skin="roza"] .airway-hud[data-layout='landscape'] .roza-caption,
+:root[data-skin="roza"] .airway-hud[data-layout='landscape'] .airway-dock__count { text-shadow: var(--roza-sky-glow); color: inherit; }
+:root[data-skin="roza"] .airway-hud[data-layout='landscape'] .airway-dock__tag.is-selected::before {
+  border-color: var(--roza-sky-ink); box-shadow: 0 0 0 1.4px var(--roza-sky-halo), inset 0 0 0 1.4px var(--roza-sky-halo);
+}
+:root[data-skin="roza"] .airway-hud[data-layout='landscape'] .airway-dock::before {
+  background: radial-gradient(circle at calc(100% + 192px) 50%, transparent 275.2px, #4A5559 276px 277.2px, transparent 278px);
+}
+:root[data-skin="roza"] .airway-hud[data-layout='landscape'] .roza-dial__halo { stroke: var(--roza-sky-halo); }
+:root[data-skin="roza"] .airway-hud[data-layout='landscape'] .roza-dial__ink { stroke: var(--roza-sky-ink); }
+:root[data-skin="roza"] .airway-hud[data-layout='landscape'] .roza-dial__dim { stroke: #4A5559; }
+:root[data-skin="roza"] .airway-hud[data-layout='landscape'] .roza-dial text { fill: var(--roza-sky-ink); stroke: var(--roza-sky-halo); }
+:root[data-skin="roza"] .airway-hud[data-layout='landscape'] .roza-dial__bug path { fill: var(--roza-sky-ink); stroke: var(--roza-sky-halo); }
+/* Reduce motion (D-88): the rose and the notes move with the globe only, no follow transition. */
+:root[data-skin="roza"][data-airway-motion="reduce"] .airport-bubble { transition: none; }
+/* The game-over report in short landscape: Diorama fits it exactly (78 px top padding under its 70 px pass + 328.6 px
+   report + 5 px = 411.6 of 412 px); Atkinson's taller line boxes make the report 3 px taller, so the rows close up
+   by 2 px each (the 48 px buttons stay) and nothing scrolls. */
+@media (max-height: 550px) and (min-width: 620px) {
+  :root[data-skin="roza"] .airway-go-content { row-gap: 3px; }
+}
+/* While a hub cause board is open (it fills the screen above the bottom band), the dock arc lies flat: the six symbols
+   in one row along the bottom band, captions and dial put away, so the board never covers a target (portrait,
+   foldable). In landscape the board stops left of the dock column. */
+:root[data-skin="roza"]:has(.airway-hub-board:not([hidden])) .airway-hud:not([data-layout='landscape']) .airway-dock {
+  left: calc(var(--hud-safe-left) + 12px); right: calc(var(--hud-safe-right) + 12px); width: auto; height: 64px;
+}
+:root[data-skin="roza"]:has(.airway-hub-board:not([hidden])) .airway-hud:not([data-layout='landscape']) .airway-dock::before,
+:root[data-skin="roza"]:has(.airway-hub-board:not([hidden])) .airway-hud:not([data-layout='landscape']) .roza-caption,
+:root[data-skin="roza"]:has(.airway-hub-board:not([hidden])) .airway-hud:not([data-layout='landscape']) .roza-dial { visibility: hidden; }
+:root[data-skin="roza"]:has(.airway-hub-board:not([hidden])) .airway-hud:not([data-layout='landscape']) .airway-dock__holder { bottom: 8px; }
+:root[data-skin="roza"]:has(.airway-hub-board:not([hidden])) .airway-hud:not([data-layout='landscape']) .airway-dock__holder:nth-child(1) { right: calc(100% - 48px); }
+:root[data-skin="roza"]:has(.airway-hub-board:not([hidden])) .airway-hud:not([data-layout='landscape']) .airway-dock__holder:nth-child(2) { right: calc((100% - 48px) * .8); }
+:root[data-skin="roza"]:has(.airway-hub-board:not([hidden])) .airway-hud:not([data-layout='landscape']) .airway-dock__holder:nth-child(3) { right: calc((100% - 48px) * .6); }
+:root[data-skin="roza"]:has(.airway-hub-board:not([hidden])) .airway-hud:not([data-layout='landscape']) .airway-dock__holder:nth-child(4) { right: calc((100% - 48px) * .4); }
+:root[data-skin="roza"]:has(.airway-hub-board:not([hidden])) .airway-hud:not([data-layout='landscape']) .airway-dock__holder:nth-child(5) { right: calc((100% - 48px) * .2); }
+:root[data-skin="roza"]:has(.airway-hub-board:not([hidden])) .airway-hud:not([data-layout='landscape']) .airway-dock__holder:nth-child(6) { right: 0; }
+:root[data-skin="roza"] .airway-hub-board[data-layout='landscape'] { right: calc(var(--aw-safe-right) + 124px); }
+:root[data-skin="roza"] .airway-hub-board[data-layout='foldable'] { max-height: calc(100% - var(--aw-safe-top) - var(--aw-safe-bottom) - 80px - 80px); }
+/* Logbook heads in sentence case without tracking (KARTA v2: no spaced capitals). */
+:root[data-skin="roza"] .airway-logbook__flights th,
+:root[data-skin="roza"] .airway-logbook__totals dt { letter-spacing: 0; text-transform: none; }

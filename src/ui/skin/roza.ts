@@ -179,6 +179,9 @@ export function rozaNoteChildren(bubble: HTMLElement, want: Node[], plate: Node 
   glyph: (region: DestinationRegion, hollow: boolean) => SVGSVGElement): void {
   const state = noteState(bubble);
   const kept = want.filter((node) => !(node instanceof SVGSVGElement) && !(node as Element).classList.contains('airport-bubble__count'));
+  // The fill trend follows the occupancy figure ("ATH 14 z 24 ▲"), as on the mockup.
+  const trendAt = kept.findIndex((node) => (node as Element).classList.contains('airport-bubble__trend'));
+  const trend = trendAt >= 0 && plate && capacity > 0 ? kept.splice(trendAt, 1)[0] : null;
   const at = plate ? kept.indexOf(plate) + 1 : 0;
   const added: Node[] = [];
   let width = -removed;
@@ -188,6 +191,7 @@ export function rozaNoteChildren(bubble: HTMLElement, want: Node[], plate: Node 
     setText(state.fill, text);
     added.push(state.fill);
     width += 2 + 5 + text.length * FILL_CHAR;
+    if (trend) added.push(trend);
   }
   const ready = waiting.length - Math.min(connecting, waiting.length);
   const groups = new Map<string, number>();
@@ -396,12 +400,16 @@ export function rozaMenuArc(board: HTMLElement, rose: HTMLElement): { layout(): 
     const right = board.getBoundingClientRect().right;
     for (const entry of entries()) {
       entry.style.marginRight = '0px';
+      entry.style.maxWidth = '';
       const r = entry.getBoundingClientRect();
       const y = r.top + r.height / 2;
       const dy = y - cy;
       const dx = Math.abs(dy) < reach ? Math.sqrt(reach * reach - dy * dy) : 0;
       const dot = cx - Math.max(dx, ring * .45);
-      entry.style.marginRight = `${Math.max(0, right - (dot - 14)).toFixed(1)}px`;
+      const margin = Math.max(0, right - (dot - 14));
+      entry.style.marginRight = `${margin.toFixed(1)}px`;
+      // A long subtitle wraps instead of running off the left edge.
+      entry.style.maxWidth = `calc(100% - ${margin.toFixed(1)}px)`;
       const lx = cx - dot, ly = cy - y, length = Math.hypot(lx, ly);
       entry.style.setProperty('--roza-ll', `${Math.max(0, length - ring - 2).toFixed(1)}px`);
       entry.style.setProperty('--roza-la', `${(Math.atan2(ly, lx) * 180 / Math.PI).toFixed(1)}deg`);

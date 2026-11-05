@@ -9,6 +9,11 @@ export interface TagSlot {
   jammed: boolean;
   /** [night-11m] A tag that only names the airport (code plate, no passengers): placed after every other tag. */
   minor?: boolean;
+  /**
+   * [night-11az] D-257: an obstacle that already stands where it is (x, y set by the caller, e.g. an airport's rose):
+   * never moved, every other tag keeps off it. Placed while active.
+   */
+  fixed?: boolean;
   x: number;
   y: number;
   placed: boolean;
@@ -40,11 +45,11 @@ export function layoutTags(slots: readonly TagSlot[], bounds: TagBounds): number
   const top = Math.max(0, bounds.top);
   const bottom = Math.min(bounds.height, bounds.height - bounds.bottom);
   let placed = 0;
-  for (let i = 0; i < slots.length; i++) slots[i].placed = false;
+  for (let i = 0; i < slots.length; i++) slots[i].placed = slots[i].fixed === true && slots[i].active;
   for (let priority = 2; priority >= 0; priority--) {
     for (let i = 0; i < slots.length; i++) {
       const slot = slots[i];
-      if (!slot.active || (slot.jammed ? 2 : slot.minor ? 0 : 1) !== priority || slot.width > bounds.width - left * 2 || slot.height > bottom - top) continue;
+      if (!slot.active || slot.fixed || (slot.jammed ? 2 : slot.minor ? 0 : 1) !== priority || slot.width > bounds.width - left * 2 || slot.height > bottom - top) continue;
       slot.x = Math.round(clamp(slot.anchorX - slot.width / 2, left, bounds.width - left - slot.width));
       const idealY = Math.round(clamp(slot.anchorY - slot.height - 11, top, bottom - slot.height));
       slot.y = idealY;

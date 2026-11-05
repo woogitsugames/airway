@@ -227,7 +227,7 @@ async function geometry(page) {
     // [task-40] Boarding-pass labels ("TYDZIEŃ", "DZIEŃ", …) stay inside their own field, so they never run together.
     for (const label of document.querySelectorAll('.airway-pass__label')) {
       const field = label.closest('.airway-pass__field');
-      if (!field) continue;
+      if (!field || !field.getBoundingClientRect().width) continue; // [night-11az] Róża hides the ticket fields
       const range = document.createRange();
       range.selectNodeContents(label);
       const t = range.getBoundingClientRect(), f = field.getBoundingClientRect();
@@ -247,8 +247,15 @@ async function geometry(page) {
       const horizontal = Math.max(...xs) - Math.min(...xs) >= Math.max(...ys) - Math.min(...ys);
       const along = horizontal ? xs : ys, across = horizontal ? ys : xs;
       const sorted = along.every((v, i) => i === 0 || v > along[i - 1]) || along.every((v, i) => i === 0 || v < along[i - 1]);
-      const inLine = Math.max(...across) - Math.min(...across) <= 24;
-      globePlacement = sorted && inLine ? 'ok'
+      // [night-11az] D-257: Róża bows the landscape column like an arc (up to 32 px across).
+      const inLine = Math.max(...across) - Math.min(...across) <= (document.querySelector('.roza-dial') ? 40 : 24);
+      // [night-11az] D-257 Róża: in portrait the dock is an arc around the day dial; along it the symbols are in DOM
+      // order by their angle about the dial's centre.
+      const dial = document.querySelector('.roza-dial')?.getBoundingClientRect();
+      const angles = dial ? dock.map((c) => Math.atan2((c.y + c.bottom) / 2 - (dial.top + dial.height / 2), (c.x + c.right) / 2 - (dial.left + dial.width / 2)))
+        .map((a) => (a < 0 ? a + 2 * Math.PI : a)) : [];
+      const onArc = angles.length > 0 && angles.every((v, i) => i === 0 || v > angles[i - 1]);
+      globePlacement = (sorted && inLine) || onArc ? 'ok'
         : `order=${sorted} line=${inLine} (${dock.map((c) => `${c.id}@${Math.round(c.x)},${Math.round(c.y)}`).join(' ')})`;
     }
     return { violations, count: controls.length, layout: document.querySelector('.airway-hud')?.dataset.layout,
@@ -416,7 +423,9 @@ try {
         check(menuBreaks.length === 0, `${tag} menu: no mid-word breaks (${menuBreaks.join('; ')})`);
         const gaps = await headerGaps(page, '.airway-board__header');
         const tight = gaps.filter((g) => g.gap < 8);
-        check(gaps.length === 2 && tight.length === 0, `${tag} menu: board headers ≥ 8px apart (${gaps.map((g) => `${g.left}|${g.right} ${g.gap}`).join(', ')})`);
+        // [night-11az] D-257: Róża has no column heads (the entries stand on the rose's arc); the check applies when shown.
+        const headless = await page.evaluate(() => getComputedStyle(document.querySelector('.airway-board__header')).display === 'none');
+        check(headless || (gaps.length === 2 && tight.length === 0), `${tag} menu: board headers ≥ 8px apart (${gaps.map((g) => `${g.left}|${g.right} ${g.gap}`).join(', ')})`);
         const menuDots = await middleDots(page, '.airway-menu');
         check(menuDots.length === 0, `${tag} menu: symmetric middle dots (${menuDots.join('; ')})`);
         if (view.w === 360) { await page.screenshot({ path: resolve(TEXT_OUT, `menu-${language}-${view.label}.png`) }); shots++; }
