@@ -503,6 +503,8 @@ export const en = {
   'settings.keys.back': 'Back; in a run, pause',
   'settings.keys.wheel': 'Mouse wheel: zoom the globe',
   'settings.keys.drag': 'Drag: turn the globe; from an airport: draw a route',
+  // [night-11aw] R4b, D-27: clocks are solar time (Settings → Help).
+  'settings.solarTime': 'Airport clocks keep solar time (one hour per 15° of longitude), not official time zones or summer time, so they match the day and night line on the globe.',
   'firstTime.ok': 'OK',
   'firstTime.okAria': 'Got it, hide the tip',
   'firstTime.step.hubFull': 'ATC / HUB',
