@@ -20,7 +20,8 @@ import { readHomeRegion, writeHomeRegion } from './game/homeRegion'; // [night-1
 import { HOME_REGIONS } from './sim';
 import type { RegionId } from './data/regions';
 import { dailyRowHint } from './game/dailyRow'; // [night-10d]
-import { localDay, readLogbook, recordFlight, runHub, type RunRecord } from './game/logbook'; // [night-10n]
+import { firstMilestones, localDay, readLogbook, recordFlight, runHub, type RunRecord } from './game/logbook'; // [night-10n]
+import type { MilestoneId } from './game/milestones'; // [night-12ax] R1n
 import { APP_VERSION } from './core/version'; // [night-12ap] R3j
 import { tipsForFlight } from './game/gameoverTip'; // [night-11f]
 import { loadSavedSimChecked, saveSourceFromSim, writeGame, type SaveNotice } from './game/save';
@@ -133,6 +134,7 @@ async function boot(): Promise<void> {
   let devFirstTimeCards = true;
   let dailySession: ReturnType<typeof daily.start> | null = null;
   let lastDaily: DailyResult | null = null; // [night-10e] the finished daily run, for the share action
+  let firstReached: readonly MilestoneId[] = []; // [night-12ax] R1n: milestones the last flight reached first
   let failedDailySeed: number | null = null;
 
   // [night-07k] D-76: a save from older sim rules is replayed and written back here, once.
@@ -277,12 +279,16 @@ async function boot(): Promise<void> {
           ranking = dailyRankingBoard(leaderboards, failed, dailySession.session); // [night-06c]
           dailySession = null;
         }
+        const reached = mode === 'endless' ? failed.milestones() : []; // [night-12ax] R1n
+        firstReached = [];
         try { // [night-10n] one logbook line per finished flight
-          recordFlight(globalThis.localStorage, {
+          const book = recordFlight(globalThis.localStorage, {
             day: localDay(new Date()), mode, passengers: failed.passengers,
             weeks: Math.floor(failed.tick / TICKS_PER_WEEK), hub: runHub(failed.cityList(), failed.routeList()),
             ...(failed.homeRegion ? { region: failed.homeRegion } : {}), // [night-11aj] R2g
-          }, { ...failed.playtestStats(), ...deviceRecord() }); // [night-12am] R1o; [night-12ap] R3j playtest record
+          }, { ...failed.playtestStats(), ...deviceRecord() }, // [night-12am] R1o; [night-12ap] R3j playtest record
+          reached); // [night-12ax] R1n: milestones first reached in this flight
+          firstReached = firstMilestones(book, reached);
         } catch { /* Storage blocked: the flight is not logged. */ }
         saved = null;
         void storage.remove('aw-save-v1').catch(() => undefined);
@@ -290,6 +296,7 @@ async function boot(): Promise<void> {
       },
       // [night-11f] onFailure has logged this flight already: tips for the first TIP_RUNS flights.
       failureTip: () => { try { return tipsForFlight(readLogbook(globalThis.localStorage).flights); } catch { return true; } },
+      failureMilestones: () => firstReached, // [night-12ax] R1n
       failureShare: () => {
         const result = lastDaily;
         if (!result) return undefined;

@@ -82,7 +82,7 @@ No API secrets, `.p8`, `.p12`, provisioning profiles, IPA or Fastlane logs belon
 
 ## Required manual checks before release
 
-1. Run `npm run test:ios-config` (store keys included) and the full `npm ci`, `npm run typecheck`, `npm run test:fast`, `npm run build` gate.
+1. Run `AIRWAY_RELEASE=1 npm run test:site`: it fails while Settings → Help → Publisher still shows "[Q-01 …]" placeholders (D-241; the Android release script checks this itself). Run `npm run test:ios-config` (store keys included) and the full `npm ci`, `npm run typecheck`, `npm run test:fast`, `npm run build` gate.
 2. On a Mac, execute pinned `cap sync ios`, `pod install`, and `xcodebuild -list -workspace ios/App/App.xcworkspace`.
 3. Build with Xcode on an iPhone and iPad simulator, check that a Polish-language device starts the game in Polish (first launch, no saved language), landscape, portrait, safe areas, Split View and resizing.
 4. Test on an actual iPhone: silent switch, interruption/resume, and audio playback after task 19 is merged.

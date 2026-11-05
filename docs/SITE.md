@@ -33,7 +33,8 @@ game's `src/i18n` catalog.
 ## Verification
 
 ```sh
-npm run test:site       # local paths, alt texts, translated keys, privacy links, launch pack, press page + ZIP, terms page
+npm run test:site       # local paths, alt texts, translated keys, privacy links, launch pack, press page + ZIP, publisher block, terms page
+AIRWAY_RELEASE=1 npm run test:site   # release gate: also fails on "[Q-01 …]" publisher placeholders (D-241)
 npm run site:assets     # after store:shots: refresh site/assets/shots/ (Playwright)
 npm run build:site      # copy the static site into site/dist (+ og-image.png, airway-press-kit.zip)
 npm run shots:site      # builds site/dist first; Playwright must be available
@@ -90,6 +91,12 @@ pauses. Device pixel ratio is capped at 2.
 - The page calls the release "coming soon" without giving dates. The two store tags
   (Google Play, App Store) stay disabled, labelled "link after the store page opens",
   until `site/launch.js` has a URL on the store's own host; see "Launch pack" below.
+- [N11am] R7a, D-243: the privacy policy is **draft v1** — 14 sections in the RESEARCH R7 order (controller,
+  summary, device, leaderboard, purposes and legal bases, recipients, transfers, retention, rights, age, profiling,
+  website, security, changes). Bodies are paragraphs and "• " lists (`data-i18n-paragraphs`). `test:privacy-policy`
+  ties the text to `docs/legal/README.md` and `docs/store/privacy-declarations.md`; `AIRWAY_RELEASE=1 npm run
+  test:site` fails while bracketed placeholders ("[Q-01 …]", "[to be filled in …]") remain. The red banner stays
+  until the owner approves the text after the lawyer.
 - The privacy document is explicitly a **draft**. Before publishing, confirm
   the data controller's legal identity and address, app telemetry / SDKs,
   offline behavior, retention of support messages and host request logs, cross-
@@ -117,8 +124,7 @@ pauses. Device pixel ratio is capped at 2.
   `hreflang` pl / en / x-default (`?lang=`); with an explicit `?lang=` the page points canonical and `og:url` to itself.
 - **404:** `site/404.html` in the site style, `noindex`, root-absolute URLs (hosts serve it at any depth); copied by
   `build:site`. Cloudflare Pages and GitHub Pages pick it up by name.
-- **Still open:** publisher block (R7c) is not written yet, so the footer has no link to it; no newsletter (Q-70 → A).
-  The terms page (R7b) is below.
+- **Still open:** no newsletter (Q-70 → A). The publisher block (R7c) and the terms page (R7b) are below.
 
 ## Press page (N11ae / R2e, D-219)
 
@@ -148,17 +154,18 @@ pauses. Device pixel ratio is capped at 2.
   then requires the file and its place in the ZIP. A video over 10 MB is git-ignored by R2b, so `build:site` must
   run where the file exists, or the build fails on the missing source.
 
-## Terms of use (N11an / R7b, D-244)
+## Publisher block (N11al / R7c, D-241)
 
-- **Page:** `site/terms.html` (`?lang=pl|en`), built and served like `privacy.html` (same header, footer, `site.js`,
-  canonical + hreflang, copied by `build:site`), linked from every footer; its own footer links the privacy policy.
-  Copy: `terms.*` in `site/i18n.js`, ten sections, bodies as paragraphs and "• " lists (`data-i18n-paragraphs`).
-- **Game:** Settings → Help → "Terms of use" / "Regulamin" opens the same text offline (router screen `terms`);
-  `test:terms` keeps it word for word and checks the leaderboard rules against the game and `RETENTION_DAYS`.
-- **Draft:** the red banner says "draft v1 — to verify with a lawyer". Bracketed items (publisher Q-01, complaint
-  reply time, governing law, effective date) make `AIRWAY_RELEASE=1 npm run test:site` fail.
-- **Stores:** App Store keeps Apple's standard EULA; the terms URL for both consoles and the Play trader card is in
-  `docs/store/README.md`.
+- **One source:** `publisher.*` in `site/i18n.js` (PL/EN): title, legal name, address, register and tax ID, e-mail,
+  phone, trader status, a note naming art. 5 of the Polish e-services act. `site/publisher.js` holds the row order
+  (`PUBLISHER_FIELDS`) and the guard (`publisherGaps`, `assertPublisherReady`).
+- **Where:** the `#publisher` section of `privacy.html` and `terms.html` (fact-sheet rows, since N11an); every footer links to it ("Wydawca" /
+  "Publisher"); the game shows the same strings in Settings → Help; `docs/store/README.md` has the same values as a
+  table for the App Store / Play Console trader fields. `test:publisher` keeps game and store table word for word.
+- **Placeholders:** until Q-01 the identity rows read "[Q-01: … — to be filled in]". Any "[Q-…" value is a gap.
+  `AIRWAY_RELEASE=1 npm run test:site` and `AIRWAY_RELEASE=1 npm run build:site` fail with gaps, and so do
+  `npm run android:release` / `android:aab`. To fill: edit the six values in `site/i18n.js`, copy them to
+  `src/i18n/{pl,en}.ts` and the table in `docs/store/README.md` (`test:publisher` says what differs).
 
 ## Scope
 

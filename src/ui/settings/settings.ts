@@ -287,6 +287,7 @@ export function createSettings(onBack:()=>void,onLicenses:()=>void,onLanguageCha
     terms.addEventListener('click',onTerms);
     host.append(terms);
   }
+  host.append(publisherBlock()); // [night-11al] R7c, D-241
   // [night-11v] D-197 (D-135, R7l): "Send results to the leaderboard", only when this build has leaderboards.
   if(ranking?.enabled && ranking.isSharing && ranking.setSharing) host.append(sharingRow(ranking));
   // [night-12k] D-114: shown only once this device has a leaderboard identity (or a queued run).
@@ -317,6 +318,22 @@ function shortcutList():HTMLElement {
   return box;
 }
 
+/** [night-11al] R7c, D-241: rows of the publisher block, as PUBLISHER_FIELDS in site/publisher.js (test:publisher). */
+export const PUBLISHER_ROWS=['name','address','register','email','phone','trader'] as const;
+/** Publisher / service-provider details (e-services act art. 5, the store trader card), offline, text only. */
+function publisherBlock():HTMLElement {
+  const box=e('div','airway-publisher');box.dataset.testid='settings-publisher';
+  box.append(e('p','airway-glyph-legend__title',t('publisher.title')));
+  const list=e('dl','airway-publisher__rows');
+  for(const field of PUBLISHER_ROWS){
+    const row=e('div','airway-publisher__row');row.dataset.field=field;
+    row.append(e('dt','',t(`publisher.${field}.label` as TranslationKey)),e('dd','',t(`publisher.${field}` as TranslationKey)));
+    list.append(row);
+  }
+  box.append(list,e('p','airway-setting__hint',t('publisher.note')));
+  return box;
+}
+
 /** Data transcribed from docs/ASSETS.md; all names are displayed through i18n. */
 const ASSETS: ReadonlyArray<{name:TranslationKey;license:TranslationKey}>=[
   {name:'licenses.overpass',license:'licenses.ofl'},
@@ -344,7 +361,17 @@ export function createLicenses(onBack:()=>void):SettingsHandle {
 }
 
 /** [night-11e] Sections of the in-app privacy policy, in the order of site/privacy.html (test:privacy-text). */
-export const PRIVACY_SECTIONS=[1,2,3,4,5] as const;
+export const PRIVACY_SECTIONS=[1,2,3,4,5,6,7,8,9,10,11,12,13,14] as const;
+/** [night-11am] R7a: a policy or terms (R7b) body is paragraphs split by a blank line; a block of "• " lines is a list (as site.js). */
+export function policyBlocks(text:string):HTMLElement[] {
+  return text.split(/\n\s*\n/).map((block)=>{
+    const lines=block.split('\n');
+    if(!lines.every((line)=>line.startsWith('• '))) return e('p','',block);
+    const list=e('ul','');
+    for(const line of lines) list.append(e('li','',line.slice(2)));
+    return list;
+  });
+}
 export function createPrivacy(onBack:()=>void):SettingsHandle {
   const root=e('section','airway-settings');
   const paper=e('div','airway-settings__paper airway-privacy');
@@ -353,7 +380,7 @@ export function createPrivacy(onBack:()=>void):SettingsHandle {
   paper.append(top,e('p','airway-privacy__overline',t('privacy.overline')),e('p','airway-privacy__warning',t('privacy.warning')));
   for(const n of PRIVACY_SECTIONS){
     const section=e('section','airway-privacy__section');
-    section.append(e('h2','',t(`privacy.s${n}.title` as TranslationKey)),e('p','',t(`privacy.s${n}.body` as TranslationKey)));
+    section.append(e('h2','',t(`privacy.s${n}.title` as TranslationKey)),...policyBlocks(t(`privacy.s${n}.body` as TranslationKey)));
     paper.append(section);
   }
   paper.append(e('p','airway-privacy__date',t('privacy.date')),e('p','airway-setting__hint',t('privacy.offline')));
@@ -363,16 +390,6 @@ export function createPrivacy(onBack:()=>void):SettingsHandle {
 
 /** [night-11an] R7b, D-244: sections of the in-app terms of use, in the order of site/terms.html (test:terms). */
 export const TERMS_SECTIONS=[1,2,3,4,5,6,7,8,9,10] as const;
-/** A document body: paragraphs split by a blank line; a block of "• " lines is a list (as site.js). */
-function documentBlocks(text:string):HTMLElement[] {
-  return text.split(/\n\s*\n/).map((block)=>{
-    const lines=block.split('\n');
-    if(!lines.every((line)=>line.startsWith('• '))) return e('p','',block);
-    const list=e('ul','');
-    for(const line of lines) list.append(e('li','',line.slice(2)));
-    return list;
-  });
-}
 export function createTerms(onBack:()=>void):SettingsHandle {
   const root=e('section','airway-settings');
   const paper=e('div','airway-settings__paper airway-privacy');
@@ -381,7 +398,7 @@ export function createTerms(onBack:()=>void):SettingsHandle {
   paper.append(top,e('p','airway-privacy__overline',t('terms.overline')),e('p','airway-privacy__warning',t('terms.warning')));
   for(const n of TERMS_SECTIONS){
     const section=e('section','airway-privacy__section');
-    section.append(e('h2','',t(`terms.s${n}.title` as TranslationKey)),...documentBlocks(t(`terms.s${n}.body` as TranslationKey)));
+    section.append(e('h2','',t(`terms.s${n}.title` as TranslationKey)),...policyBlocks(t(`terms.s${n}.body` as TranslationKey)));
     paper.append(section);
   }
   paper.append(e('p','airway-privacy__date',t('terms.date')),e('p','airway-setting__hint',t('terms.offline')));

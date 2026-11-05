@@ -9,6 +9,26 @@ and Polish until the game itself is translated. Same limits and keyword rules (`
 Data safety (Google Play) and App Privacy (App Store) answers for builds with and without leaderboards: [privacy-declarations.md](privacy-declarations.md) (R1f, D-220; kept in sync with the code by `npm run test:privacy-declarations`).
 App Store accessibility labels, the evidence for each and the PL/EN accessibility paragraph for both listings: [accessibility.md](accessibility.md) (R1i; kept in sync with the code by `npm run test:a11y-evidence`).
 
+## Publisher and trader details (R7c, D-241)
+
+The same strings as the site footer block (`site/privacy.html#publisher`) and Settings → Help in the game; the source
+is `publisher.*` in `site/i18n.js` (`site/publisher.js` lists the rows). Paste these values into the App Store
+Connect trader declaration and the Google Play Console trader / developer contact fields (D-134, `docs/legal/README.md`
+§3). The "[Q-01 …]" values are placeholders for the owner: `AIRWAY_RELEASE=1 npm run test:site`, `build:site` with
+`AIRWAY_RELEASE=1` and `npm run android:release` / `android:aab` refuse them. `test:publisher` fails when this table
+differs from the site strings.
+
+<!-- publisher:table -->
+| Field | PL | EN |
+|---|---|---|
+| name | [Q-01: pełna nazwa firmy — do uzupełnienia przez właściciela] | [Q-01: full company name — to be filled in by the owner] |
+| address | [Q-01: adres siedziby firmy — do uzupełnienia] | [Q-01: registered office address — to be filled in] |
+| register | [Q-01: numer KRS lub wpis w CEIDG oraz NIP — do uzupełnienia] | [Q-01: KRS or CEIDG entry and NIP tax number — to be filled in] |
+| email | [Q-01: adres do potwierdzenia — propozycja contact@airway.games] | [Q-01: address to be confirmed — proposed contact@airway.games] |
+| phone | [Q-01: firmowy numer telefonu — do uzupełnienia] | [Q-01: business phone number — to be filled in] |
+| trader | Przedsiębiorca (w App Store i Google Play: status „trader”) | Trader (declared as a trader in the App Store and Google Play) |
+<!-- /publisher:table -->
+
 ## Terms of use and licence (R7b, D-244)
 
 - **App Store:** keep Apple's **standard EULA** (App Store Connect → App Information → License Agreement: leave the

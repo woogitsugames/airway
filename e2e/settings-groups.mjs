@@ -20,7 +20,7 @@ const GROUPS = [
   ['settings-group-display', { en: 'Display', pl: 'Obraz' }, ['select', 'select', 'select', '[data-testid="settings-colorblind"]', '[data-testid="settings-reduce-motion"]']],
   ['settings-group-sound', { en: 'Sound and touch', pl: 'Dźwięk i dotyk' },
     ['[data-testid="settings-sound"]', '[data-testid="settings-music"]', '[data-testid="settings-haptics"]']],
-  ['settings-group-help', { en: 'Help', pl: 'Pomoc' }, ['[data-testid="settings-tutorial-replay"]', '[data-testid="settings-licenses"]', '[data-testid="settings-privacy"]', '[data-testid="settings-terms"]']],
+  ['settings-group-help', { en: 'Help', pl: 'Pomoc' }, ['[data-testid="settings-tutorial-replay"]', '[data-testid="settings-licenses"]', '[data-testid="settings-privacy"]', '[data-testid="settings-terms"]', '[data-testid="settings-publisher"]']],
 ];
 
 let fatal = null;
@@ -42,7 +42,8 @@ try {
             counts: groups.map(([id, , selectors]) => {
               const section = document.querySelector(`[data-testid="${id}"]`);
               if (!section) return -1;
-              const rows = section.querySelectorAll('.airway-setting').length + section.querySelectorAll(':scope > button').length;
+              const rows = section.querySelectorAll('.airway-setting').length + section.querySelectorAll(':scope > button').length +
+                section.querySelectorAll(':scope > [data-testid="settings-publisher"]').length; // [night-11al] R7c
               const found = selectors.every((selector) => section.querySelector(selector));
               return found ? rows : -2;
             }),

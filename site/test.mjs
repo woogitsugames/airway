@@ -9,6 +9,7 @@ import { LAUNCH, PRESS_KIT, STORE_BADGES, STORE_HOSTS, SITE_SHOTS, storeLink } f
 import { tmpdir } from 'node:os';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { buildPressKit, pressShots, unzip } from './press-kit.mjs';
+import { PUBLISHER_FIELDS, PUBLISHER_KEYS, publisherGaps } from './publisher.js';
 
 const root = dirname(fileURLToPath(import.meta.url));
 const pages = ['index.html', 'privacy.html', 'terms.html', 'press.html', '404.html'];
@@ -219,6 +220,42 @@ try {
 } finally {
   rmSync(kitDir, { recursive: true, force: true });
 }
+// [night-11am] R7a, D-243: privacy policy v1 — every section body as paragraphs/lists, draft banner kept; a release
+// build of the site refuses the bracketed owner placeholders ("[Q-01 …]", "[to be filled in …]").
+const privacyPage = readFileSync(join(root, 'privacy.html'), 'utf8');
+const policySections = [...privacyPage.matchAll(/data-i18n="privacy\.s(\d+)\.title"/g)].map(m => Number(m[1]));
+check('privacy: 14 sections s1…s14 in order', () => policySections.join() === Array.from({ length: 14 }, (_, i) => i + 1).join());
+check('privacy: every section body is data-i18n-paragraphs', () => policySections.every(n => privacyPage.includes(`data-i18n-paragraphs="privacy.s${n}.body"`)));
+check('privacy: draft banner on the page', () => privacyPage.includes('data-i18n="privacy.warning"') &&
+  /do weryfikacji z prawnikiem/i.test(translations.pl['privacy.warning']) && /verified with a lawyer/i.test(translations.en['privacy.warning']));
+const privacyGaps = ['pl', 'en'].flatMap(l => Object.entries(translations[l]).filter(([k, v]) => k.startsWith('privacy.') && /\[[^\]]+\]/.test(v)).map(([k]) => `${l}:${k}`));
+if (process.env.AIRWAY_RELEASE === '1') check('release: privacy policy has no bracketed placeholders', () => privacyGaps.length === 0);
+else if (privacyGaps.length) console.log(`note: ${privacyGaps.length} privacy texts with [placeholders]; AIRWAY_RELEASE=1 test:site fails until they are filled`);
+// [night-11al] R7c, D-241: one publisher block (publisher.*), on the policy page and linked from every footer.
+const publisherTarget = { 'index.html': 'privacy.html#publisher', 'press.html': 'privacy.html#publisher', 'privacy.html': '#publisher', 'terms.html': '#publisher', '404.html': '/privacy.html#publisher' };
+for (const page of pages) {
+  const html = readFileSync(join(root, page), 'utf8');
+  const footer = html.slice(html.indexOf('<footer'));
+  check(`${page}: footer links the publisher block`, () => footer.includes(`href="${publisherTarget[page]}" data-nav-lang data-i18n="footer.publisher"`));
+}
+// [night-11an] R7c asks for the block on the privacy and the terms page: the same markup on both.
+for (const policyPage of ['privacy.html', 'terms.html']) {
+const block = readFileSync(join(root, policyPage), 'utf8').match(/<section id="publisher"[\s\S]*?<\/section>/)?.[0] ?? '';
+check(`publisher block on ${policyPage} with every row, in order`, () => {
+  const order = [...block.matchAll(/data-i18n="publisher\.([a-z]+)"/g)].map(m => m[1]).filter(f => f !== "title" && f !== "note");
+  return order.join() === PUBLISHER_FIELDS.join() && PUBLISHER_FIELDS.every(f => block.includes(`data-i18n="publisher.${f}.label"`)) &&
+    block.includes('data-i18n="publisher.title"') && block.includes('data-i18n="publisher.note"');
+});
+}
+check('publisher keys in both languages', () => PUBLISHER_KEYS.every(k => keys.includes(k)) && keys.includes('footer.publisher'));
+const gaps = publisherGaps(translations);
+if (process.env.AIRWAY_RELEASE === '1') {
+  check('release: publisher block has no "[Q-01 …]" placeholders (owner fills site/i18n.js publisher.*)', () => gaps.length === 0);
+} else {
+  check('publisher placeholders are marked "[Q-…]" and named by the release guard', () =>
+    PUBLISHER_KEYS.every(k => ['pl', 'en'].every(l => !translations[l][k].includes('[') || gaps.includes(`${l}:${k}`))));
+  if (gaps.length) console.log(`note: ${gaps.length} publisher placeholders (Q-01); AIRWAY_RELEASE=1 test:site fails until they are filled`);
+}
 // [night-11an] R7b, D-244: terms of use page — built like privacy.html, linked from every other footer, the R7b
 // leaderboard rules present, the draft banner kept; a release build refuses bracketed placeholders.
 const termsPage = readFileSync(join(root, 'terms.html'), 'utf8');
@@ -239,8 +276,8 @@ check('terms: draft banner, "to verify with a lawyer", not legal advice', () => 
   /do weryfikacji z prawnikiem/.test(translations.pl['terms.warning']) && /porada prawna/.test(translations.pl['terms.warning']) &&
   /verified with a lawyer/.test(translations.en['terms.warning']) && /legal advice/.test(translations.en['terms.warning']));
 check('terms: no forms, inputs or iframes', () => !/<(form|input|textarea|select|iframe)\b/i.test(termsPage));
-const legalGaps = ['pl', 'en'].flatMap(l => Object.entries(translations[l]).filter(([k, v]) => /^(terms|privacy)\./.test(k) && /\[[^\]]+\]/.test(v)).map(([k]) => `${l}:${k}`));
-if (process.env.AIRWAY_RELEASE === '1') check('release: terms and privacy texts have no bracketed placeholders', () => legalGaps.length === 0);
-else if (legalGaps.length) console.log(`note: ${legalGaps.length} terms/privacy texts with [placeholders]; AIRWAY_RELEASE=1 test:site fails until they are filled`);
+const legalGaps = ['pl', 'en'].flatMap(l => Object.entries(translations[l]).filter(([k, v]) => /^terms\./.test(k) && /\[[^\]]+\]/.test(v)).map(([k]) => `${l}:${k}`));
+if (process.env.AIRWAY_RELEASE === '1') check('release: terms texts have no bracketed placeholders', () => legalGaps.length === 0);
+else if (legalGaps.length) console.log(`note: ${legalGaps.length} terms texts with [placeholders]; AIRWAY_RELEASE=1 test:site fails until they are filled`);
 console.log(`SUMMARY test:site seed=0xA1A1 assertions=${count+failures} passed=${count} failed=${failures}`);
 if (failures) process.exitCode = 1;

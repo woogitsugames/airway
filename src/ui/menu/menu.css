@@ -79,7 +79,7 @@
 .airway-privacy__section { padding:8px 0 4px; border-bottom:1px dashed #c2b5a6; }
 .airway-privacy__section h2 { margin:0 0 4px; font:800 16px/1.25 'Overpass',sans-serif; }
 .airway-privacy__section p { margin:0 0 6px; overflow-wrap:anywhere; }
-.airway-privacy__section ul { margin:0 0 6px; padding-left:20px; } .airway-privacy__section li { margin:0 0 4px; overflow-wrap:anywhere; } /* [night-11an] R7b: terms lists */
+.airway-privacy__section ul { margin:0 0 6px; padding-left:20px; } .airway-privacy__section li { margin:0 0 4px; overflow-wrap:anywhere; } /* [night-11am] R7a, [night-11an] R7b: policy and terms lists */
 /* [night-11h] D-118: no-WebGL-2 page (src/ui/unsupported.ts). */
 .airway-unsupported { position:fixed; inset:0; }
 .airway-unsupported__title { margin:0 0 10px !important; overflow-wrap:anywhere; }
@@ -102,3 +102,9 @@
 .airway-keys__caps { display:inline-flex; gap:4px; flex:none; }
 .airway-keys__cap { min-width:22px; padding:1px 5px; border:1px solid currentColor; font:700 12px/1.3 'Overpass Mono',monospace; text-align:center; }
 @media (any-hover: none) { .airway-keys { display:none; } }
+/* [night-11al] R7c, D-241: publisher block in settings → help, plain label/value rows like the glyph legend. */
+.airway-publisher { margin-top:14px; }
+.airway-publisher__rows { margin:0; }
+.airway-publisher__row { display:flex; flex-direction:column; gap:2px; padding:6px 0; border-bottom:1px dashed #c2b5a6; }
+.airway-publisher__row dt { font:700 11px/1.3 'Overpass Mono',monospace; letter-spacing:.04em; color:#55514a; overflow-wrap:anywhere; }
+.airway-publisher__row dd { margin:0; font:400 14px/1.35 'Atkinson Hyperlegible Next',sans-serif; color:#2a2420; overflow-wrap:anywhere; }
