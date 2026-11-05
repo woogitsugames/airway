@@ -2687,3 +2687,24 @@ facts in `manifest.json`; the 5 s posters are committed as JPEG. ffmpeg is a sys
 licence entry: nothing of it ships). `test:store-video` (fast) checks the manifest, posters and `.gitignore`, and any
 preview present on disk. The press kit's video slot (`PRESS_KIT.video`, D-219) stays empty: the files are not in git.
 **Status: in force.**
+
+## D-266 — Róża: a note never stacks against another rose's note (2026-11-05, Claude, night N19a)
+On the store shots game-tablet and night-tablet (768×1024, after D-264) "BGW 2 z 24" stood over Baghdad's name, 4 px
+under "ANK 1 z 24": within D-264 (nearer its own ring), but the two notes read as one block, either rose's; "ATH 2 z 36"
+under Athens hung 3 px over "AMM 3 z 36" the same way. Rule now (`clearOfNotes` in `src/ui/overlay-layout.ts`, on
+notes with `TagSlot.rose`): **a place is taken only when the note keeps `NOTE_GAP_Y` = 8 px from another rose's note
+above or below it (their columns overlap) and `NOTE_GAP_X` = 12 px from one beside it (their rows overlap), and when it
+does not cross the band from another rose to that rose's note** (the line from the rose's centre to the nearest point
+of its note, grown by 8 px), nor hold another rose's note in its own band. A first try that took the whole box from the
+rose's centre to its note as the band hid "ATH" on the iPhone shot: a wide note under Amman made that box reach far left,
+beside Amman's ring, where nothing reads as Amman's. Notes are placed in priority order (D-262), so the higher-ranked
+note keeps its place and the other one tries its other places, then the compact form, then hides. The place held last
+frame gets 3 px less gap (hysteresis, as D-262/D-264). Checked by `test:roza-names`: a new tablet fixture with the
+inputs read from the real overlay in both scenes (fresh and with the shot's frame history; BGW no longer right under
+ANK; Amman keeps its note), and the same "notes apart" check on the iPhone and 360×640 Levant fixtures, which stay as
+they were. On the real renderer the tablet shots now read "ANK 1 z 24" over Ankara's name, "BGW 2 z 24" alone over
+Baghdad's, and Athens' note in its compact form left of its rose, clear of Amman's (`docs/shots/n19a/`, before and
+after). Of the 24 game/night store PNGs recaptured with `store-shots.mjs --only=game,night --merge` only the four tablet
+ones changed their notes; the other 20 differed only by the clock and plane positions and were kept as committed (their
+manifest records too); the contact sheet was rendered again from that set. `npm run site:assets` changed nothing (the
+landing page uses the phone and landscape shots). **Status: in force.**
