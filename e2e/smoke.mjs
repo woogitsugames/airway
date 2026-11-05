@@ -69,8 +69,12 @@ const steps = [
   }],
   ['select one weekly upgrade', async (page) => {
     // A hub-expansion card waits for a hub tap; take the first card that completes on its own.
+    // [night-12bj] Like a player, never a greyed-out card (a hub-expansion with no hub is disabled), and say which one.
     const option = await page.evaluate(() => document.querySelector(
-      '[data-testid^="upgrade-option-"]:not([data-upgrade="hub-expansion"]):not([data-upgrade="departure-slots"])') /* [task-32] targeted picks wait for a globe tap */?.getAttribute('data-testid') ?? 'upgrade-option-0');
+      '[data-testid^="upgrade-option-"]:not([data-upgrade="hub-expansion"]):not([data-upgrade="departure-slots"]):not(:disabled)') /* [task-32] targeted picks wait for a globe tap */?.getAttribute('data-testid') ?? null);
+    const board = await page.evaluate(() => [...document.querySelectorAll('[data-testid^="upgrade-option-"]')]
+      .map((card) => `${card.dataset.upgrade}${card.disabled ? '(disabled)' : ''}`).join(', '));
+    assert(option, `No weekly card completes without a globe tap: [${board}]`);
     await clickTestId(page, option);
     await waitForScreen(page, 'game');
   }],

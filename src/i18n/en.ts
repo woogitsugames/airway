@@ -133,7 +133,7 @@ export const en = {
   'upgrade.value.slotsFor': 'an airport you pick',
   // [task-14] Main menu, preferences and licence notice.
   'action.back': 'BACK',
-  'menu.terminal': 'AIRWAY.GAMES · TERMINAL 1',
+  'menu.sign': 'AIRWAY.GAMES · HUB 1',
   'menu.departures': 'DEPARTURES',
   'menu.gate': 'GATE',
   'menu.status': 'STATUS',

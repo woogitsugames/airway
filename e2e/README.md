@@ -62,6 +62,20 @@ airport's page coordinates for real `page.mouse` taps and presses on the canvas.
 (`test:bundle` checks `dist/`). `npm run test:e2e:session-stub` is the reference journey (seed in `e2e/seeds.mjs`
 `SESSION_STUB`, replayed headless by `test:session-stub` in `test:fast`).
 
+[night-12bj] Two load flakes:
+
+- `clickTestId` (`e2e/browser.mjs`) waits within one budget (`CLICK_TIMEOUT_MS`, 20 s; it was 5 s) for the element to
+  be attached, visible, stable and enabled, then clicks with Playwright's own checks. A failure keeps Playwright's error
+  and call log and adds the check it waited for, the element's box/disabled/opacity/pointer-events/running animations,
+  what `elementFromPoint` finds at its centre (an intercepting overlay) and the present test IDs, `(hidden)` marked.
+  The first-time card and the slot hint cannot cover the weekly board (`pointer-events: none` strips at z-index 40,
+  hidden when the week ends; the board is at z-index 70), so the smoke does not need to dismiss them; it picks the first
+  enabled card that needs no globe tap and fails with the board's card list if there is none.
+- Stub-world runs (`--render=stub`, and `test:e2e:session-stub`) launch Chromium with `--disable-gpu-compositing`
+  (`scripts/lib/harness.mjs` `SOFTWARE_COMPOSITING_ARGS`). With SwiftShader GPU compositing every DOM frame was
+  rastered on emulated GL: at 904×1088@2 the weekly board ran at 3.5 rAF/s and one `page.screenshot` took 18–28 s, which
+  is what hit the 30 s limit under load. The real renderer keeps the old arguments.
+
 ## Commands
 
 ```sh

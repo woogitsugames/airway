@@ -114,9 +114,11 @@ pauses. Device pixel ratio is capped at 2.
   artwork in `site/assets/badges/` (`google-play.svg`, `app-store.svg`, Apple and Google brand rules, entry in
   `docs/ASSETS.md`); `test:site` fails on a link without its badge.
 - **Real screenshots:** after every `npm run store:shots`, run `npm run site:assets` (Playwright from the
-  environment). It downscales the four phone scenes per language to 540×960 JPEG (each under 250 kB) and records the
+  environment). It downscales the five phone scenes per language to 540×960 JPEG (each under 250 kB) and records the
   hash of each source PNG in `site/assets/shots/sources.json`; `test:site` fails when a store PNG changed and the copy
-  did not follow. The "failure" scene waits for a store:shots run with the N11t game-over wording.
+  did not follow. [N12bh] The store shots now carry the N11t game-over wording ("SIEĆ ZAMKNIĘTA" / "NETWORK
+  CLOSED"). [N12bi] "failure" is the fifth scene of `SITE_SHOTS.scenes`: preview card 05 "RAPORT / REPORT" with
+  `preview.failure.*` copy and alt text, on the home page and the press page (phone 05, landscape 10).
 - **Social preview:** `og:image` is the Play feature graphic (`docs/store/feature-graphic.png`, D-117), copied by
   `build:site` into `site/dist/assets/og-image.png` (not duplicated in git), with size, alt text and
   `twitter:card=summary_large_image`.
@@ -130,7 +132,7 @@ pauses. Device pixel ratio is capped at 2.
 
 - **Page:** `site/press.html` (`?lang=pl|en`, same header, footer, fonts and `site.js` as the rest), linked from the
   home navigation and from every footer. Fact sheet (developer, genre, platforms, release, price, languages, contact,
-  website), short and full description, eight screenshots (four scenes × phone and landscape, in the visitor's
+  website), short and full description, ten screenshots (five scenes × phone and landscape, in the visitor's
   language), logo and icon, video slot, usage note, one ZIP download. No forms, scripts beyond `site.js`, trackers or
   external requests (D-67 still keeps the site unpublished).
 - **Copy:** every visible string is in `site/i18n.js` (`press.*`). `press.short` / `press.long` are the Google Play
@@ -142,9 +144,9 @@ pauses. Device pixel ratio is capped at 2.
 - **ZIP:** `npm run build:site` writes `site/dist/airway-press-kit.zip` (`site/press-kit.mjs`, dependency-free ZIP
   writer, fixed timestamps, so the same sources give the same bytes): `airway-press-kit/README-{pl,en}.txt` (fact sheet,
   descriptions, usage, contents), `screenshots/{pl,en}/airway-<scene>-{phone,landscape}.png` (the full-size store PNGs,
-  8 per language), `logo/airway-wordmark.{svg,png}`, `logo/airway-icon.{svg,png}`. About 11.7 MB; never committed.
+  10 per language), `logo/airway-wordmark.{svg,png}`, `logo/airway-icon.{svg,png}`. About 12.8 MB; never committed.
 - **One config:** `PRESS_KIT` in `site/launch.js` (ZIP name, contact, formats, logos, video). The scenes are
-  `SITE_SHOTS.scenes`, so the "failure" scene joins page and ZIP together once store:shots has the N11t wording.
+  `SITE_SHOTS.scenes`, so page and ZIP list the same five scenes (N12bi added "failure").
 - **Thumbnails and logo PNGs:** `npm run site:assets` also writes `site/assets/shots/<lang>/<scene>-landscape.jpg`
   (960×540) and renders `brand/wayfinding.svg` / `resources/icon.svg` to `site/assets/press/airway-wordmark.png`
   (1920×520, with the site's Overpass 800, since the SVG wordmark is live text) and `airway-icon.png` (1024×1024).
