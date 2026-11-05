@@ -272,5 +272,123 @@ assert('out-of-range label suppressed', layoutTags([{ ...crowd[0], width: 500 }]
   layoutTags([right, left, note], b);
   assert('roza: a note with no room on either side near its rose stays unplaced', right.placed && left.placed && !note.placed);
 }
+// [night-16a] D-262: priority inside a tier (rank: a hub, then the fuller airport) instead of array order; a note's
+// compact form and the places under and over its rose before it hides; the busiest hub's note always shows; 3 px
+// hysteresis. The Levant cluster of the store shot game-phone (360×640): rose boxes as src/ui/skin/roza.ts sets them.
+{
+  const b = { width: 360, height: 640, top: 72, bottom: 120, gap: 4 };
+  const overlaps = (a, c) => a.x < c.x + c.width && a.x + a.width > c.x && a.y < c.y + c.height && a.y + a.height > c.y;
+  const mk = (id, extra = {}) => ({ id, anchorX: 180, anchorY: 300, width: 100, height: 30, active: true, jammed: false, x: 0, y: 0, placed: false, ...extra });
+  // Rank wins over array order: two notes wanting the same spot, the second ranked higher.
+  {
+    const tight = { width: 140, height: 170, top: 20, bottom: 20, gap: 3 };
+    const order = [mk('low', { rank: 0.1 }), mk('a'), mk('b'), mk('high', { rank: 2.5 }), mk('c')].map((t) => ({ ...t, anchorX: 70, anchorY: 90 }));
+    layoutTags(order, tight);
+    assert('rank: the higher-ranked tag takes the ideal place whatever the array order', order[3].placed && order[3].y === 49);
+    assert('rank: then the next rank, under it', order[0].placed && order[0].y === 82);
+    const ties = [mk('t1'), mk('t2')].map((t) => ({ ...t, anchorX: 70, anchorY: 90, rank: 1 }));
+    layoutTags(ties, tight);
+    assert('rank: ties keep array order', ties[0].y === 49 && ties[1].y === 82);
+    const jam = mk('jam', { jammed: true, rank: 0 }), hub = mk('hub', { rank: 3 });
+    layoutTags([hub, jam].map((t) => Object.assign(t, { anchorX: 70, anchorY: 60 })), { width: 140, height: 80, top: 0, bottom: 0, gap: 3 });
+    assert('rank: a jam still beats a higher-ranked passenger tag', jam.placed && !hub.placed);
+  }
+  // Compact form: the full note fits nowhere near its rose, the compact one does, its near edge next to the rose.
+  {
+    const rose = { id: 'rose', anchorX: 0, anchorY: 0, width: 60, height: 60, active: true, jammed: false, fixed: true, x: 150, y: 270, placed: false };
+    const wall = { id: 'wall', anchorX: 0, anchorY: 0, width: 40, height: 300, active: true, jammed: false, fixed: true, x: 304, y: 150, placed: false };
+    const wall2 = { id: 'wall2', anchorX: 0, anchorY: 0, width: 60, height: 300, active: true, jammed: false, fixed: true, x: 40, y: 150, placed: false };
+    const note = mk('note', { anchorX: 214 + 60, anchorY: 300 - 10 + 30 + 11, altAnchorX: 136 - 60, maxShift: 36, width: 120, compactWidth: 80 });
+    layoutTags([rose, wall, wall2, note], b);
+    assert('compact: placed in the compact form when the full note fits nowhere', note.placed && note.compact === true && note.width === 80);
+    assert('compact: its near edge stays next to the rose', note.x === 214 && note.lastPick === 4);
+    assert('compact: covers neither the rose nor the walls', !overlaps(note, rose) && !overlaps(note, wall) && !overlaps(note, wall2));
+    note.width = 120;
+    wall.x = 344;
+    layoutTags([rose, wall, wall2, note], b);
+    assert('compact: back to the full note once there is room', note.placed && note.compact === false && note.width === 120 && note.lastPick === 0);
+  }
+  // Under and over the rose: both sides blocked, the note goes under the rose (moved down first), then over it.
+  {
+    const rose = { id: 'rose', anchorX: 0, anchorY: 0, width: 60, height: 60, active: true, jammed: false, fixed: true, x: 150, y: 270, placed: false };
+    const sides = { id: 'sides', anchorX: 0, anchorY: 0, width: 340, height: 60, active: true, jammed: false, fixed: true, x: 10, y: 268, placed: false };
+    const note = mk('note', { anchorX: 274, anchorY: 331, altAnchorX: 76, maxShift: 36, width: 100, belowX: 180, belowY: 334, aboveY: 266 });
+    layoutTags([rose, sides, note], b);
+    assert('below: a note blocked on both sides goes under its rose', note.placed && note.x === 130 && note.y === 334 && note.lastPick === 2);
+    const under = { id: 'under', anchorX: 0, anchorY: 0, width: 300, height: 60, active: true, jammed: false, fixed: true, x: 30, y: 333, placed: false };
+    layoutTags([rose, sides, under, note], b);
+    assert('above: and over it when under is taken too', note.placed && note.y + note.height <= 266 && note.lastPick === 3);
+  }
+  // Must: the busiest hub's note shows even when boxed in, compact, over a lower-ranked rose; never over a higher one.
+  {
+    const box = (id, x, y, w, h, rank) => ({ id, anchorX: 0, anchorY: 0, width: w, height: h, active: true, jammed: false, fixed: true, x, y, placed: false, rank });
+    const own = box('own', 150, 270, 60, 60, 2.6);
+    const low = box('low', 10, 200, 340, 200, 0.2);
+    const note = mk('hub', { anchorX: 274, anchorY: 331, altAnchorX: 76, maxShift: 36, width: 160, compactWidth: 90, belowX: 180, belowY: 334, aboveY: 266, rank: 2.6 });
+    layoutTags([own, low, note], b);
+    assert('must: without the flag a boxed-in note hides', !note.placed);
+    note.width = 160;
+    note.must = true;
+    layoutTags([own, low, note], b);
+    assert('must: the busiest hub shows its compact note over a lower-ranked rose', note.placed && note.compact === true && note.width === 90 && !overlaps(note, own));
+    note.width = 160;
+    const high = box('high', 10, 200, 340, 200, 4.5);
+    layoutTags([own, high, note], b);
+    assert('must: as the last resort it shows anyway (compact)', note.placed && note.compact === true);
+  }
+  // Hysteresis: a note that stood beside its rose keeps that place at 1-3 px less clearance; a new one would not get it.
+  {
+    const blocker = { id: 'blk', anchorX: 0, anchorY: 0, width: 50, height: 50, active: true, jammed: false, fixed: true, x: 0, y: 260, placed: false };
+    const note = mk('note', { anchorX: 260, anchorY: 331, altAnchorX: 100, maxShift: 0, width: 100 });
+    const at = (gapPx, last) => {
+      blocker.x = 210 + 100 + gapPx; // right of the note's place
+      note.width = 100;
+      note.lastPick = last;
+      layoutTags([blocker, note], b);
+      return note.lastPick;
+    };
+    assert('hysteresis: at the full gap the note stays on its side', at(4, -1) === 0);
+    assert('hysteresis: 2 px closer a new note moves to the other side', at(2, -1) === 1);
+    assert('hysteresis: 2 px closer a note already there stays', at(2, 0) === 0);
+    assert('hysteresis: touching, it moves anyway', at(0, 0) === 1);
+    const snap = () => [note.placed, note.x, note.y, note.lastPick].join();
+    at(2, 0);
+    const first = snap();
+    layoutTags([blocker, note], b);
+    note.width = 100;
+    layoutTags([blocker, note], b);
+    assert('hysteresis: an unchanged frame lays out the same', snap() === first);
+  }
+  // The Levant cluster (store shot game-phone): Ryga, Wenecja, Ateny (hub), Ankara, Amman (busiest hub), Bagdad with
+  // their rose boxes (ring and name); Amman's note lost to whoever came first before D-262.
+  {
+    const rose = (id, l, t, r, bt, rank) => ({ id: id + '~rose', anchorX: 0, anchorY: 0, width: r - l, height: bt - t, active: true, jammed: false, fixed: true, x: l, y: t, placed: false, rank });
+    const note = (id, x, y, r, width, compactWidth, rank, extra = {}) => ({ id, anchorX: x + r + 14 + width / 2, anchorY: y - 10 + 30 + 11,
+      altAnchorX: x - r - 14 - width / 2, maxShift: 36, width, height: 30, compactWidth, rank, belowX: x, belowY: y + r + 13, aboveY: y - r - 35,
+      active: true, jammed: false, x: 0, y: 0, placed: false, ...extra });
+    const scene = () => [
+      rose('RIX', 100, 125, 164, 195, 0), note('RIX', 132, 163, 23, 72, 72, 0, { minor: true }),
+      rose('VCE', 13, 189, 75, 260, 0.08), note('VCE', 44, 229, 22, 104, 84, 0.08),
+      rose('ATH', 58, 242, 144, 365, 2.21), note('ATH', 101, 285, 34, 132, 84, 2.21, { belowY: 369 }),
+      rose('ANK', 135, 230, 203, 305, 0.04), note('ANK', 169, 271, 25, 110, 84, 0.04),
+      rose('AMM', 147, 293, 237, 405, 2.58), note('AMM', 192, 338, 36, 196, 96, 2.58, { must: true, belowY: 409 }),
+      rose('BGW', 226, 284, 294, 357, 0.13), note('BGW', 260, 323, 25, 104, 84, 0.13),
+    ];
+    const slots = scene();
+    layoutTags(slots, b);
+    const byId = Object.fromEntries(slots.map((t) => [t.id, t]));
+    assert('levant: Amman (busiest hub) shows its note', byId.AMM.placed);
+    assert('levant: notes go to the fuller airports first (Bagdad before Ankara, Ateny before Ryga)',
+      (byId.BGW.placed || !byId.ANK.placed) && (byId.ATH.placed || !byId.RIX.placed));
+    let clash = false;
+    for (const a of slots) for (const c of slots) if (a !== c && a.placed && c.placed && !(a.fixed && c.fixed) && overlaps(a, c)) clash = true;
+    assert('levant: no note covers another note or a rose', !clash);
+    assert('levant: at least four notes', slots.filter((t) => !t.fixed && t.placed).length >= 4);
+    const snap = slots.map((t) => [t.placed, t.compact, t.x, t.y].join()).join('|');
+    for (const t of slots) if (!t.fixed) t.width = scene().find((u) => u.id === t.id).width;
+    layoutTags(slots, b);
+    assert('levant: stable on the next frame', slots.map((t) => [t.placed, t.compact, t.x, t.y].join()).join('|') === snap);
+  }
+}
 console.log(`SUMMARY test:overlay-layout seed=0xA1A1 cases=${passed + failed} passed=${passed} failed=${failed}`);
 if (failed) process.exitCode = 1;

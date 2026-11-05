@@ -22,6 +22,31 @@ export interface TagSlot {
    */
   maxShift?: number;
   altAnchorX?: number;
+  /**
+   * [night-16a] D-262: priority inside a tier (jam, passenger tag, plate): the higher rank is placed first and so takes
+   * the room from a lower one (the overlay ranks a hub, then the fuller airport). Ties keep array order.
+   */
+  rank?: number;
+  /**
+   * [night-16a] D-262: two more places for a tag with `maxShift`, both centred on `belowX`: its top at `belowY` (under
+   * the rose, moved down first) and its bottom at `aboveY` (over the rose, moved up first), at most `maxShift` px.
+   */
+  belowX?: number;
+  belowY?: number;
+  aboveY?: number;
+  /**
+   * [night-16a] D-262: a narrower form (the overlay's code + fill) tried at every place before the tag hides; on
+   * output `compact` says which form was placed. Its near edge stays where the full tag's would be.
+   */
+  compactWidth?: number;
+  compact?: boolean;
+  /**
+   * [night-16a] D-262: a tag that must show (the busiest hub's code and fill): when no place is free, it is placed in
+   * its compact form over lower-ranked fixed obstacles, and as the very last resort over anything.
+   */
+  must?: boolean;
+  /** [night-16a] D-262: the place used last frame (written by layoutTags; -1 none); it keeps it with 3 px less gap. */
+  lastPick?: number;
   x: number;
   y: number;
   placed: boolean;
@@ -42,57 +67,133 @@ function collides(a: TagSlot, b: TagSlot, gap: number): boolean {
     a.y < b.y + b.height + gap && a.y + a.height + gap > b.y;
 }
 
+// Reused between frames: the placement order of `layoutTags` (no allocation per frame).
+const orderScratch: number[] = [];
+/** [night-16a] D-262: hysteresis, px: a tag tried at the place it held last frame needs this much less clearance. */
+export const TAG_HYSTERESIS = 3;
+/** [night-16a] D-262: places a note may take: its side, the other side, under the rose, over it. */
+const PLACES = 4;
+
+const tierOf = (slot: TagSlot): number => (slot.jammed ? 2 : slot.minor ? 0 : 1);
+
 /**
- * Fixed insertion order prevents labels from swapping on sub-pixel camera motion.
- * Jammed labels have first claim, then passenger tags, then plate-only tags (night-11m); a tag moves upward, then
- * below as fallback.
- * If no room remains they hide instead of overlapping a readable label.
+ * Tries one place: x fixed, y from `idealY`, moved off blockers (up first, or down first with `down`) at most
+ * `maxShift` px. `skipBelowRank`: fixed obstacles ranked lower than this are ignored (the must pass); `ignoreAll`
+ * places it as it is.
+ */
+function tryPlace(slots: readonly TagSlot[], i: number, idealY: number, maxShift: number, top: number, bottom: number,
+  gap: number, down: boolean, skipBelowRank: number, ignoreAll: boolean): boolean {
+  const slot = slots[i];
+  slot.y = idealY;
+  if (ignoreAll) return true;
+  // Collision checks are bounded by the number of tags; no allocations per frame.
+  for (let tries = 0; tries <= slots.length; tries++) {
+    let blocker: TagSlot | null = null;
+    for (let j = 0; j < slots.length; j++) {
+      const other = slots[j];
+      if (i === j || !other.placed) continue;
+      if (other.fixed && (other.rank ?? 0) < skipBelowRank) continue;
+      if (collides(slot, other, gap)) { blocker = other; break; }
+    }
+    if (!blocker) return true;
+    const above = blocker.y - slot.height - gap;
+    const below = Math.max(idealY, blocker.y + blocker.height + gap);
+    if (down && below + slot.height <= bottom) slot.y = below;
+    else if (above >= top && (!down || above <= idealY)) slot.y = above;
+    else {
+      // Choose a stable downward placement only when upward placement is exhausted.
+      slot.y = below;
+      if (slot.y + slot.height > bottom) return false;
+    }
+    if (Math.abs(slot.y - idealY) > maxShift) return false;
+  }
+  return false;
+}
+
+/**
+ * Places the tags in priority order: jammed tags first, then passenger tags, then plate-only tags (night-11m); inside
+ * a tier the higher `rank` (D-262: a hub, then the fuller airport) goes first, so it takes the room from a lower one;
+ * ties keep the fixed array order, which keeps labels from swapping on sub-pixel camera motion.
+ * A plain tag moves upward, then below as fallback. A tag with `maxShift` tries its anchor side, the other side, the
+ * place under its rose and the one over it, each kept near the anchor, first in full and then in its compact form;
+ * the place it held last frame needs `TAG_HYSTERESIS` px less clearance, so it does not flicker.
+ * `width` is the full width on input; after the layout it is the placed width (the compact one when `compact`), so the
+ * caller sets it again before the next layout.
+ * If no room remains they hide instead of overlapping a readable label (except a `must` tag, see TagSlot.must).
  */
 export function layoutTags(slots: readonly TagSlot[], bounds: TagBounds): number {
   const left = 6;
   const top = Math.max(0, bounds.top);
   const bottom = Math.min(bounds.height, bounds.height - bounds.bottom);
   let placed = 0;
-  for (let i = 0; i < slots.length; i++) slots[i].placed = slots[i].fixed === true && slots[i].active;
-  for (let priority = 2; priority >= 0; priority--) {
-    for (let i = 0; i < slots.length; i++) {
-      const slot = slots[i];
-      if (!slot.active || slot.fixed || (slot.jammed ? 2 : slot.minor ? 0 : 1) !== priority || slot.width > bounds.width - left * 2 || slot.height > bottom - top) continue;
-      // With maxShift: the anchor side, then the other side, each kept near the anchor, else the tag hides.
-      const limited = slot.maxShift !== undefined && slot.altAnchorX !== undefined;
-      const sides = limited ? 2 : 1;
-      for (let side = 0; side < sides && !slot.placed; side++) {
-        const anchorX = side === 1 ? slot.altAnchorX! : slot.anchorX;
-        const maxShift = limited ? slot.maxShift! : Infinity;
-        slot.x = Math.round(clamp(anchorX - slot.width / 2, left, bounds.width - left - slot.width));
-        const idealY = Math.round(clamp(slot.anchorY - slot.height - 11, top, bottom - slot.height));
-        slot.y = idealY;
-        // Collision checks are bounded by the number of tags; no allocations per frame.
-        for (let tries = 0; tries <= slots.length; tries++) {
-          let blocker: TagSlot | null = null;
-          for (let j = 0; j < slots.length; j++) {
-            if (i !== j && slots[j].placed && collides(slot, slots[j], bounds.gap)) {
-              blocker = slots[j];
-              break;
-            }
-          }
-          if (!blocker) {
-            slot.placed = true;
-            placed++;
-            break;
-          }
-          const above = blocker.y - slot.height - bounds.gap;
-          if (above >= top) {
-            slot.y = above;
-          } else {
-            // Choose a stable downward placement only when upward placement is exhausted.
-            slot.y = Math.max(idealY, blocker.y + blocker.height + bounds.gap);
-            if (slot.y + slot.height > bottom) break;
-          }
-          if (Math.abs(slot.y - idealY) > maxShift) break;
+  orderScratch.length = 0;
+  for (let i = 0; i < slots.length; i++) {
+    const slot = slots[i];
+    slot.placed = slot.fixed === true && slot.active;
+    if (!slot.active || slot.fixed) continue;
+    // Stable insertion sort: tier, then rank, both descending.
+    const tier = tierOf(slot), rank = slot.rank ?? 0;
+    let at = orderScratch.length;
+    orderScratch.push(i);
+    while (at > 0) {
+      const other = slots[orderScratch[at - 1]];
+      const ot = tierOf(other), or = other.rank ?? 0;
+      if (ot > tier || (ot === tier && or >= rank)) break;
+      orderScratch[at] = orderScratch[at - 1];
+      at--;
+    }
+    orderScratch[at] = i;
+  }
+  for (let k = 0; k < orderScratch.length; k++) {
+    const i = orderScratch[k];
+    const slot = slots[i];
+    const fullWidth = slot.width;
+    const last = slot.lastPick ?? -1;
+    slot.compact = false;
+    slot.lastPick = -1;
+    if (slot.height > bottom - top) continue;
+    // With maxShift: the anchor side, the other side, under the rose, over it, each kept near the anchor, else the tag
+    // hides. Pick = place + PLACES × compact.
+    const limited = slot.maxShift !== undefined && slot.altAnchorX !== undefined;
+    const narrow = limited && slot.compactWidth !== undefined && slot.compactWidth > 0 && slot.compactWidth < fullWidth;
+    const picks = narrow ? PLACES * 2 : PLACES;
+    const maxShift = limited ? slot.maxShift! : Infinity;
+    // pass 0: normal; pass 1: a must tag over lower-ranked rose boxes; pass 2: a must tag as it is.
+    const passes = slot.must ? 3 : 1;
+    for (let pass = 0; pass < passes && !slot.placed; pass++) {
+      for (let pick = 0; pick < picks && !slot.placed; pick++) {
+        const compact = pick >= PLACES;
+        const place = pick % PLACES;
+        if (pass > 0 && narrow && !compact) continue; // a forced tag takes the compact form
+        if (place > 0 && (!limited || (place >= 2 && (slot.belowX === undefined ||
+          (place === 2 ? slot.belowY : slot.aboveY) === undefined)))) continue;
+        const width = compact ? slot.compactWidth! : fullWidth;
+        if (width > bounds.width - left * 2) continue;
+        let x: number;
+        if (place >= 2) x = slot.belowX! - width / 2;
+        else {
+          const anchorX = place === 1 ? slot.altAnchorX! : slot.anchorX;
+          const other = place === 1 ? slot.anchorX : (slot.altAnchorX ?? slot.anchorX);
+          // A compact tag keeps the full tag's edge next to the rose (left edge on the right side and vice versa).
+          x = anchorX >= other ? anchorX - fullWidth / 2 : anchorX + fullWidth / 2 - width;
+        }
+        slot.width = width;
+        slot.x = Math.round(clamp(x, left, bounds.width - left - width));
+        const wantY = place === 2 ? slot.belowY! : place === 3 ? slot.aboveY! - slot.height : slot.anchorY - slot.height - 11;
+        const idealY = Math.round(clamp(wantY, top, bottom - slot.height));
+        const skip = pass === 1 ? (slot.rank ?? 0) : -Infinity;
+        // Hysteresis: the place a note held last frame needs a little less clearance (tried only when the full one
+        // fails, so an unchanged scene lays out exactly as the frame before).
+        if (tryPlace(slots, i, idealY, maxShift, top, bottom, bounds.gap, place === 2, skip, pass === 2) ||
+          (limited && pick === last && tryPlace(slots, i, idealY, maxShift, top, bottom, Math.max(0, bounds.gap - TAG_HYSTERESIS), place === 2, skip, false))) {
+          slot.placed = true;
+          slot.compact = compact;
+          slot.lastPick = pick;
+          placed++;
         }
       }
     }
+    if (!slot.placed) slot.width = fullWidth;
   }
   return placed;
 }
