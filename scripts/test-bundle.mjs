@@ -135,6 +135,10 @@ if (!STATIC_ONLY) {
       const breach = breaches.find((b) => b.startsWith(key + ' '));
       check(!breach, 'budget: ' + breach);
     }
+    // [night-12be] D-254: the DEV stub world (`?render=stub`, src/game/dev/stubWorld.ts) never ships.
+    const leaked = files(join(dist, 'assets'), (path) => extname(path) === '.js')
+      .filter((path) => /airway-stub-world|__awStub/.test(readFileSync(path, 'utf8')));
+    check(leaked.length === 0, 'DEV stub world in the release bundle: ' + leaked.map((path) => relative(dist, path)).join(', '));
     console.log(`main ${report.mainJs} ${kb(report.mainJsRaw)} kB (gzip ${kb(report.mainJsGzip)} kB), css ` +
       `${kb(report.css)} kB, dist ${kb(report.total)} kB`);
     for (const [path, bytes] of report.top) console.log(`  ${kb(bytes).padStart(8)} kB  ${path}`);
