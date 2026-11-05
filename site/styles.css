@@ -74,3 +74,6 @@ a.store-tag{padding:6px 14px 6px 34px;background:var(--board)}a.store-tag img{he
 
 /* [night-11am] R7a: policy v1 bodies are paragraphs and plain bullet lists. */
 .policy-body ul{max-width:800px;margin:0 0 16px;padding-left:22px;color:#4c453b}.policy-body li{line-height:1.65;margin-bottom:6px}
+/* [night-11al] R7c, D-241: publisher block on the policy pages, the press fact-sheet rows on policy paper. */
+.publisher-sheet{max-width:none;margin-top:6px}
+.publisher-note{font-size:13px;color:var(--muted);margin:12px 0 0}

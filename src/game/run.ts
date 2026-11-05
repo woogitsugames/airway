@@ -12,6 +12,7 @@ import type { SlotPressure } from '../ui/upgrade/cards'; // [task-32]
 import { airportLabel, readAirportLabelMode } from '../ui/airportLabel'; // [night-05] D-68
 import { buildCauseReport, type HubCauseLedger } from './causes';
 import { PICK_LETTERS, type RunRecord, type RunStats } from './logbook';
+import { MilestoneTracker, milestoneView, type MilestoneId, type MilestoneView } from './milestones'; // [night-12ax] R1n
 
 export type AircraftType = 'turboprop' | 'widebody';
 /** [night-12ap] Longest single frame counted as real play time (seconds). */
@@ -80,6 +81,8 @@ export class EndlessRun {
   /** [night-12ap] R3j: real seconds on the game screen or weekly board this session (not paused, app in front). */
   private playSeconds = 0;
   private readonly homeOffsetMinutes: number;
+  /** [night-12ax] R1n, D-242: milestones reached (a resumed run counts what it reaches after resuming, and its end). */
+  private readonly milestoneTracker = new MilestoneTracker();
 
   constructor(readonly sim: Sim) {
     const home = sim.world.activeCityIds()[0];
@@ -169,12 +172,17 @@ export class EndlessRun {
     for (const event of this.sim.drainEvents() as SimEvent[]) {
       switch (event.type) {
         case 'CitySpawned': out.push({ type: 'new-city', cityId: event.cityId }); break;
-        case 'RouteAdded': case 'RouteChanged': case 'RouteRemoved': case 'PlaneAssigned': case 'PlaneUnassigned':
+        case 'RouteAdded': case 'RouteChanged':
+          this.revisionValue++;
+          this.milestoneTracker.observe(this.milestoneView()); // [night-12ax] a hub that later closes still counts
+          break;
+        case 'RouteRemoved': case 'PlaneAssigned': case 'PlaneUnassigned':
           this.revisionValue++; break;
         case 'Delivered': out.push({ type: 'arrival', cityId: event.cityId }); break;
         case 'UpgradeOffered':
           if (event.offers.includes('hub-expansion')) this.offered.hub++;
           if (event.offers.includes('departure-slots')) this.offered.slots++;
+          this.milestoneTracker.observe(this.milestoneView(), true); // [night-12ax] the week closes: every region served?
           out.push({ type: 'week', week: event.week }); break;
         case 'HubJamStarted': out.push({ type: 'jam', cityId: event.cityId, jammed: true }); break;
         case 'HubJamCleared': out.push({ type: 'jam', cityId: event.cityId, jammed: false }); break;
@@ -275,6 +283,19 @@ export class EndlessRun {
       ...(this.failed ? { cause: buildCauseReport(this.failed.ledger)[0]!.kind } : {}),
       picks: [...world.upgrades].sort((a, b) => a.week - b.week).map((item) => PICK_LETTERS[item.upgrade]).join('').slice(0, 60),
     };
+  }
+
+  /** [night-12ax] R1n: the read-model counts the milestones look at (hubs, regions open/served, week, score). */
+  milestoneView(): MilestoneView {
+    const world = this.sim.world;
+    const cities = world.cities().map((city) => ({ id: city.id, region: city.regionId, hub: city.isHub }));
+    return milestoneView(cities, world.routes(), this.sim.tickCount, TICKS_PER_WEEK, world.score);
+  }
+
+  /** [night-12ax] R1n, D-242: milestones this run has reached, in report order (reads the sim, never writes it). */
+  milestones(): MilestoneId[] {
+    this.milestoneTracker.observe(this.milestoneView());
+    return this.milestoneTracker.list();
   }
 
   hash(): string { return this.sim.hash(); }

@@ -4,7 +4,11 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildPressKit } from './press-kit.mjs';
 import { PRESS_KIT } from './launch.js';
+import { translations } from './i18n.js';
+import { assertPublisherReady } from './publisher.js';
 
+// [night-11al] R7c, D-241: a release build of the site refuses "[Q-01 …]" placeholders in the publisher block.
+if (process.env.AIRWAY_RELEASE === '1') assertPublisherReady(translations, 'build:site (AIRWAY_RELEASE=1)');
 const root = dirname(fileURLToPath(import.meta.url));
 const output = join(root, 'dist');
 const files = ['index.html', 'privacy.html', 'press.html', '404.html', 'styles.css', 'site.js', 'i18n.js', 'globe.js', 'launch.js'];

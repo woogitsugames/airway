@@ -6,6 +6,8 @@ import { fileURLToPath } from 'node:url';
 import { deflateSync } from 'node:zlib';
 import { spawnSync } from 'node:child_process';
 import { checkNativeAlignment, describe } from './native-align.mjs';
+import { translations as siteTranslations } from '../site/i18n.js';
+import { assertPublisherReady } from '../site/publisher.js';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const ANDROID = join(ROOT, 'android');
@@ -168,6 +170,8 @@ try {
     throw new Error('ANDROID_HOME must point to the installed Android SDK');
   }
   if (mode.startsWith('--release-')) validateSigning();
+  // [night-11al] R7c, D-241: no store build with "[Q-01 …]" in Settings → Help → Publisher (the game copies site/i18n.js).
+  if (mode.startsWith('--release-')) assertPublisherReady(siteTranslations, 'android release');
   run('npm', ['run', 'build']);
   // Pin CLI independently because task 01 intentionally omitted @capacitor/cli from the lockfile.
   run('npm', ['exec', '--yes', '--package=@capacitor/cli@8.5.3', '--', 'cap', 'sync', 'android']);

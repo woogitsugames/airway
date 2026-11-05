@@ -33,7 +33,8 @@ game's `src/i18n` catalog.
 ## Verification
 
 ```sh
-npm run test:site       # local paths, alt texts, translated keys, privacy links, launch pack, press page + ZIP
+npm run test:site       # local paths, alt texts, translated keys, privacy links, launch pack, press page + ZIP, publisher block
+AIRWAY_RELEASE=1 npm run test:site   # release gate: also fails on "[Q-01 …]" publisher placeholders (D-241)
 npm run site:assets     # after store:shots: refresh site/assets/shots/ (Playwright)
 npm run build:site      # copy the static site into site/dist (+ og-image.png, airway-press-kit.zip)
 npm run shots:site      # builds site/dist first; Playwright must be available
@@ -123,8 +124,8 @@ pauses. Device pixel ratio is capped at 2.
   `hreflang` pl / en / x-default (`?lang=`); with an explicit `?lang=` the page points canonical and `og:url` to itself.
 - **404:** `site/404.html` in the site style, `noindex`, root-absolute URLs (hosts serve it at any depth); copied by
   `build:site`. Cloudflare Pages and GitHub Pages pick it up by name.
-- **Still open:** terms page (R7b) and publisher block (R7c) are not written yet, so the footer has no links to them;
-  no newsletter (Q-70 → A).
+- **Still open:** terms page (R7b) is not written yet, so the footer has no link to it; no newsletter (Q-70 → A).
+  The publisher block (R7c) is below.
 
 ## Press page (N11ae / R2e, D-219)
 
@@ -153,6 +154,19 @@ pauses. Device pixel ratio is capped at 2.
   `press.video.pending`. Once set (path relative to `site/`), switch the paragraph to `press.video.ready`: `test:site`
   then requires the file and its place in the ZIP. A video over 10 MB is git-ignored by R2b, so `build:site` must
   run where the file exists, or the build fails on the missing source.
+
+## Publisher block (N11al / R7c, D-241)
+
+- **One source:** `publisher.*` in `site/i18n.js` (PL/EN): title, legal name, address, register and tax ID, e-mail,
+  phone, trader status, a note naming art. 5 of the Polish e-services act. `site/publisher.js` holds the row order
+  (`PUBLISHER_FIELDS`) and the guard (`publisherGaps`, `assertPublisherReady`).
+- **Where:** the `#publisher` section of `privacy.html` (fact-sheet rows); every footer links to it ("Wydawca" /
+  "Publisher"); the game shows the same strings in Settings → Help; `docs/store/README.md` has the same values as a
+  table for the App Store / Play Console trader fields. `test:publisher` keeps game and store table word for word.
+- **Placeholders:** until Q-01 the identity rows read "[Q-01: … — to be filled in]". Any "[Q-…" value is a gap.
+  `AIRWAY_RELEASE=1 npm run test:site` and `AIRWAY_RELEASE=1 npm run build:site` fail with gaps, and so do
+  `npm run android:release` / `android:aab`. To fill: edit the six values in `site/i18n.js`, copy them to
+  `src/i18n/{pl,en}.ts` and the table in `docs/store/README.md` (`test:publisher` says what differs).
 
 ## Scope
 
