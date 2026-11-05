@@ -109,7 +109,11 @@ async function boot(): Promise<void> {
 
   let world: World | null = null;
   try {
-    world = createWorld(app, t('canvas.label'), readSettings().graphics, readSettings().globeMode);
+    // [night-12be] DEV/QA `?render=stub`: the real session over a WebGL-free world (G7: SwiftShader is too slow for
+    // journeys through the satellite globe). The ternary lets Vite drop the stub from release bundles entirely.
+    const stub = import.meta.env.DEV && query.get('render') === 'stub' ? await import('./game/dev/stubWorld') : null;
+    world = stub ? stub.createStubWorld(app, t('canvas.label'), { frozenClock: query.get('clock') === 'frozen' })
+      : createWorld(app, t('canvas.label'), readSettings().graphics, readSettings().globeMode);
     world.showMenuBackdrop();
   } catch (error) {
     // [night-11h] D-118: no WebGL 2 (three.js r170 needs it). A plain page says so instead of a blank sky whose
