@@ -3,7 +3,7 @@
 // (world.setQuality, audio.setSettings) through onSettingsChange.
 import { getLanguage, LANGUAGES, setLanguage, t, type Language, type TranslationKey } from '../../i18n';
 import { QUALITY_PREFERENCES, type GlobeMode, type QualityPreference } from '../../render';
-import { readAccessibilitySettings, updateAccessibilitySettings, type TextScale } from '../a11y';
+import { TEXT_SCALES, readAccessibilitySettings, updateAccessibilitySettings, type TextScale } from '../a11y';
 import { reducedMotion, setReducedMotion } from '../motion';
 import { readAirportLabelMode, type AirportLabelMode } from '../airportLabel';
 import { AIRLINE_COLOURS, airlineColourHex, applyAirlineColour, isAirlineColour, readAirlineColour, type AirlineColourId } from '../airlineColour';
@@ -243,8 +243,9 @@ export function createSettings(onBack:()=>void,onLicenses:()=>void,onLanguageCha
   selectField(t('settings.graphics'),values.graphics,[['auto',t('settings.auto')],['saver',t('settings.saver')],['low',t('settings.low')],['medium',t('settings.medium')],['high',t('settings.high')]],(v)=>{
     saveSettings({graphics:QUALITY.includes(v as QualityPreference)?v as QualityPreference:'auto'});
   });
-  selectField(t('a11y.textScale'),String(values.textScale),[['100','100%'],['115','115%'],['130','130%']],(v)=>{
-    saveSettings({textScale:v==='115'?115:v==='130'?130:100});
+  // [night-11ap] R1g: 150 % step; the first launch starts from the system text size (src/platform/textScale.ts).
+  selectField(t('a11y.textScale'),String(values.textScale),TEXT_SCALES.map((step)=>[String(step),`${step}%`] as [string,string]),(v)=>{
+    saveSettings({textScale:TEXT_SCALES.find((step)=>String(step)===v)??100});
   });
   switchField(t('settings.colorblind'),values.colorblind,'colorblind','settings-colorblind');
   host.append(e('p','airway-setting__hint',t('a11y.enhancedGlyphs')));
