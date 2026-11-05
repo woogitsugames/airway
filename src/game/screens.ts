@@ -1,6 +1,7 @@
 // The single screen router (task 14): menu, settings, licences and every mode screen that the
 // composition root registers. Back/Escape is handled once here via src/platform/back.
 import { installBackHandler, type BackOptions } from '../platform';
+import { loadLegalText } from '../i18n';
 import type { RegionId } from '../data/regions';
 import type { LicenceClass } from '../sim';
 import { createMenu, type MenuData, type MenuHandle, type MenuMode } from '../ui/menu/menu';
@@ -53,6 +54,7 @@ export function mountScreens(host: HTMLElement, options: ScreensOptions = {}): S
   let active: ScreenView = buildMenu();
   layer.append(active.element);
   let menuFocus: HTMLElement | null = null;
+  let legalTicket = 0;
 
   function buildMenu(): ScreenView {
     menu = createMenu((mode) => {
@@ -63,6 +65,7 @@ export function mountScreens(host: HTMLElement, options: ScreensOptions = {}): S
     return { element: handle.element, dispose: () => handle.dispose() };
   }
   function replace(next: ScreenName, view: ScreenView): void {
+    legalTicket++; // a pending policy/terms open is dropped once the screen changes
     if (name === 'menu') menuFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     active.element.remove();
     active.dispose?.();
@@ -91,9 +94,18 @@ export function mountScreens(host: HTMLElement, options: ScreensOptions = {}): S
       const data = options.getLogbookData?.();
       if (!data) return;
       replace('logbook', createLogbook(() => show('menu'), data));
-    } else if (screen === 'privacy') replace('privacy', createPrivacy(() => show('settings'))); // [night-11e]
-    else if (screen === 'terms') replace('terms', createTerms(() => show('settings'))); // [night-11an] R7b
+    } else if (screen === 'privacy' || screen === 'terms') openLegal(screen);
     else replace('licenses', createLicenses(() => show('settings')));
+  }
+  /** [night-11at] D-255: the policy (night-11e) and terms (night-11an, R7b) texts are a chunk bundled with the app;
+   *  the page opens once it is loaded (a few ms, no network), unless the player left settings meanwhile. */
+  function openLegal(screen: 'privacy' | 'terms'): void {
+    const ticket = ++legalTicket;
+    void loadLegalText().then(() => {
+      if (ticket !== legalTicket) return;
+      if (screen === 'terms') replace('terms', createTerms(() => show('settings')));
+      else replace('privacy', createPrivacy(() => show('settings')));
+    }, (error: unknown) => console.error('Airway: legal text chunk failed to load', error));
   }
   const back = (): boolean => {
     if (active.back?.()) return true;

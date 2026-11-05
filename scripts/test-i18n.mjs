@@ -8,8 +8,8 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const failures = [];
 const SEED = '0xA1A1';
 
-function dictionary(language) {
-  const file = resolve(ROOT, 'src/i18n', language + '.ts');
+function dictionary(language, dir = 'src/i18n') {
+  const file = resolve(ROOT, dir, language + '.ts');
   const source = ts.createSourceFile(file, readFileSync(file, 'utf8'), ts.ScriptTarget.Latest, true);
   if (source.parseDiagnostics.length) throw new Error(language + ' has invalid TypeScript syntax');
   let expression;
@@ -107,7 +107,22 @@ try {
   const english = dictionary('en');
   keyCount = english.size;
   const catalogs = new Map(LANGUAGE_ENTRIES.map((entry) => [entry.code, dictionary(entry.code)]));
-  fileCount = catalogs.size;
+  // [night-11at] D-255: the lazily loaded legal texts (src/i18n/legal/<code>.ts) follow the same rules: one file per
+  // language, the English keys, literal non-empty strings, referenced from src/, no banned synonyms, and no key
+  // in both the main and the legal catalog.
+  const legalEnglish = dictionary('en', 'src/i18n/legal');
+  const legalCatalogs = new Map(LANGUAGE_ENTRIES.map((entry) => [entry.code, dictionary(entry.code, 'src/i18n/legal')]));
+  for (const entry of LANGUAGE_ENTRIES) {
+    const catalog = legalCatalogs.get(entry.code);
+    for (const key of legalEnglish.keys()) if (!catalog.has(key)) failures.push('legal ' + entry.code + ': missing key ' + key);
+    for (const key of catalog.keys()) {
+      if (!legalEnglish.has(key)) failures.push('legal en: missing key ' + key + ' (in ' + entry.code + ')');
+      if (/\{[A-Za-z]/.test(catalog.get(key))) failures.push('legal ' + entry.code + ': ' + key + ' has a {param} (legalText() fills none)');
+    }
+  }
+  for (const key of legalEnglish.keys()) if (english.has(key)) failures.push('key in both the main and the legal catalog: ' + key);
+  keyCount += legalEnglish.size;
+  fileCount = catalogs.size + legalCatalogs.size;
   for (const entry of LANGUAGE_ENTRIES) {
     const catalog = catalogs.get(entry.code);
     for (const key of english.keys()) {
@@ -151,16 +166,17 @@ try {
   for (const file of hardCoded) failures.push('hard-coded language in ' + file.slice(ROOT.length + 1) + ' (use src/i18n/languages.ts)');
   const catalogDir = resolve(ROOT, 'src/i18n');
   const sources = sourceFiles(resolve(ROOT, 'src'))
-    .filter((file) => ![...LANGUAGE_ENTRIES.map((entry) => entry.code + '.ts'), 'pseudo.ts'].some((name) => file === join(catalogDir, name)))
+    .filter((file) => ![...LANGUAGE_ENTRIES.flatMap((entry) => [entry.code + '.ts', join('legal', entry.code + '.ts')]), 'pseudo.ts']
+      .some((name) => file === join(catalogDir, name)))
     .map((file) => readFileSync(file, 'utf8'));
   // Self-check of the matcher: a literal, a template prefix and a concatenated prefix count; a bare key does not.
   const probe = unusedKeys(['a.used', 'b.s1', 'c.x.y', 'd.unused'], ["t('a.used')", "t(`b.s${n}`)", "t('c.x.' + v)"]);
   if (probe.join() !== 'd.unused') failures.push('unused-key matcher self-check: got ' + probe.join());
-  for (const key of unusedKeys(english.keys(), sources)) failures.push('unused key (not referenced in src/): ' + key);
+  for (const key of unusedKeys([...english.keys(), ...legalEnglish.keys()], sources)) failures.push('unused key (not referenced in src/): ' + key);
   // [night-11t] R5g, D-195: one word per concept (glossary in src/i18n/README.md). A banned synonym in any player
   // string fails, so "siatka", "węzeł", "terminal" (for a hub), "cargo label" or "simulation" cannot creep back.
   const pl = catalogs.get('pl');
-  for (const [code, catalog] of [['en', english], ['pl', pl]]) {
+  for (const [code, catalog] of [['en', english], ['pl', pl], ['en', legalEnglish], ['pl', legalCatalogs.get('pl')]]) {
     for (const [key, value] of catalog) {
       for (const { re, word, allow = [] } of BANNED[code]) {
         if (re.test(value) && !allow.includes(key)) failures.push(`${code}: banned synonym "${value.match(re)[0]}" in ${key} (use "${word}")`);

@@ -1,7 +1,7 @@
 // Settings screen (task 14). One store per concern: language → i18n, text scale / glyphs / haptics →
 // ui/a11y (task 20). Graphics and audio toggles live here; the composition root applies them
 // (world.setQuality, audio.setSettings) through onSettingsChange.
-import { getLanguage, LANGUAGES, setLanguage, t, type Language, type TranslationKey } from '../../i18n';
+import { getLanguage, LANGUAGES, legalText, setLanguage, t, type Language, type LegalKey, type TranslationKey } from '../../i18n';
 import { QUALITY_PREFERENCES, type GlobeMode, type QualityPreference } from '../../render';
 import { TEXT_SCALES, readAccessibilitySettings, updateAccessibilitySettings, type TextScale } from '../a11y';
 import { reducedMotion, setReducedMotion } from '../motion';
@@ -374,18 +374,19 @@ export function policyBlocks(text:string):HTMLElement[] {
     return list;
   });
 }
+/** [night-11at] D-255: the bodies come from the legal chunk; the router opens this after loadLegalText() resolved. */
 export function createPrivacy(onBack:()=>void):SettingsHandle {
   const root=e('section','airway-settings');
   const paper=e('div','airway-settings__paper airway-privacy');
   paper.dataset.testid='privacy-page';
   const top=header(t('privacy.title'),onBack);
-  paper.append(top,e('p','airway-privacy__overline',t('privacy.overline')),e('p','airway-privacy__warning',t('privacy.warning')));
+  paper.append(top,e('p','airway-privacy__overline',t('privacy.overline')),e('p','airway-privacy__warning',legalText('privacy.warning')));
   for(const n of PRIVACY_SECTIONS){
     const section=e('section','airway-privacy__section');
-    section.append(e('h2','',t(`privacy.s${n}.title` as TranslationKey)),...policyBlocks(t(`privacy.s${n}.body` as TranslationKey)));
+    section.append(e('h2','',legalText(`privacy.s${n}.title` as LegalKey)),...policyBlocks(legalText(`privacy.s${n}.body` as LegalKey)));
     paper.append(section);
   }
-  paper.append(e('p','airway-privacy__date',t('privacy.date')),e('p','airway-setting__hint',t('privacy.offline')));
+  paper.append(e('p','airway-privacy__date',legalText('privacy.date')),e('p','airway-setting__hint',t('privacy.offline')));
   root.append(paper);
   return {element:root,firstFocus:top.querySelector('button') as HTMLElement};
 }
@@ -397,13 +398,13 @@ export function createTerms(onBack:()=>void):SettingsHandle {
   const paper=e('div','airway-settings__paper airway-privacy');
   paper.dataset.testid='terms-page';
   const top=header(t('terms.title'),onBack);
-  paper.append(top,e('p','airway-privacy__overline',t('terms.overline')),e('p','airway-privacy__warning',t('terms.warning')));
+  paper.append(top,e('p','airway-privacy__overline',t('terms.overline')),e('p','airway-privacy__warning',legalText('terms.warning')));
   for(const n of TERMS_SECTIONS){
     const section=e('section','airway-privacy__section');
-    section.append(e('h2','',t(`terms.s${n}.title` as TranslationKey)),...policyBlocks(t(`terms.s${n}.body` as TranslationKey)));
+    section.append(e('h2','',legalText(`terms.s${n}.title` as LegalKey)),...policyBlocks(legalText(`terms.s${n}.body` as LegalKey)));
     paper.append(section);
   }
-  paper.append(e('p','airway-privacy__date',t('terms.date')),e('p','airway-setting__hint',t('terms.offline')));
+  paper.append(e('p','airway-privacy__date',legalText('terms.date')),e('p','airway-setting__hint',t('terms.offline')));
   root.append(paper);
   return {element:root,firstFocus:top.querySelector('button') as HTMLElement};
 }

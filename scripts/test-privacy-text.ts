@@ -5,6 +5,9 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { en } from '../src/i18n/en.ts';
 import { pl } from '../src/i18n/pl.ts';
+// [night-11at] D-255: the bodies are in the lazily loaded legal catalogs; the game shows main + legal.
+import { en as legalEn } from '../src/i18n/legal/en.ts';
+import { pl as legalPl } from '../src/i18n/legal/pl.ts';
 import { translations } from '../site/i18n.js';
 
 let passed = 0;
@@ -21,7 +24,7 @@ const SITE_ONLY = new Set(['privacy.back']);
 // [night-11am] R7a: bodies are data-i18n-paragraphs (paragraphs and lists), titles plain data-i18n.
 const pageKeys = [...html.matchAll(/data-i18n(?:-paragraphs)?="(privacy\.[^"]+)"/g)].map((match) => match[1] as string)
   .filter((key, index, all) => !SITE_ONLY.has(key) && all.indexOf(key) === index);
-const games: Record<'en' | 'pl', Record<string, string>> = { en, pl };
+const games: Record<'en' | 'pl', Record<string, string>> = { en: { ...en, ...legalEn }, pl: { ...pl, ...legalPl } };
 const site = translations as Record<'en' | 'pl', Record<string, string>>;
 
 test('privacy.html uses the expected keys', () => {
@@ -45,6 +48,20 @@ test('sections: the page has s1…sN in order, as PRIVACY_SECTIONS in settings.t
   const source = readFileSync(new URL('../src/ui/settings/settings.ts', import.meta.url), 'utf8');
   const declared = source.match(/PRIVACY_SECTIONS=\[([\d,]+)\]/)?.[1]?.split(',').map(Number);
   assert.deepEqual(declared, sections);
+});
+
+// [night-11at] D-255: the long texts ship in their own chunk (dist/, no network): they are not in the main catalogs,
+// src/i18n/legal/ is imported only by loadLegalText() (dynamically), and the router opens both pages after it.
+test('lazy legal chunk: bodies only in src/i18n/legal/, loaded by loadLegalText() before the router opens a page', () => {
+  const moved = Object.keys(legalEn);
+  assert.ok(moved.includes('privacy.s1.body') && moved.includes('terms.s1.body') && moved.includes('privacy.warning'));
+  assert.deepEqual(moved.filter((key) => key in en || key in pl), [], 'a legal key is also in the main catalogs');
+  assert.deepEqual(Object.keys(legalPl).sort(), [...moved].sort(), 'legal catalogs have the same keys');
+  const i18n = readFileSync(new URL('../src/i18n/index.ts', import.meta.url), 'utf8');
+  assert.match(i18n, /import\('\.\/legal\/legal'\)/);
+  assert.doesNotMatch(i18n, /^import (?!type)[^;]*'\.\/legal/m, 'static import of the legal catalogs');
+  const screens = readFileSync(new URL('../src/game/screens.ts', import.meta.url), 'utf8');
+  assert.match(screens, /loadLegalText\(\)\.then\(\(\) => \{\s*if \(ticket !== legalTicket\) return;/);
 });
 
 console.log(`SUMMARY test:privacy-text seed=0 cases=${passed + failed} passed=${passed} failed=${failed}`);
