@@ -1,17 +1,25 @@
-// [task-28] Screen matrix: PL/EN x 6 mobile sizes x menu/game/upgrade/gameover, real game UI only.
+// [task-28] Screen matrix: PL/EN x 12 sizes (phones, foldables, tablets, desktop) x menu/game/upgrade/gameover, real game UI only.
 // The --fixture flag writes to docs/shots/matrix-fixture and NEVER counts as game screenshots.
 // Each language/size run is independent; within a run a failed screen skips the later screens.
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import {
-  withBrowser, newGamePage, waitForScreen, state, assert, clickTestId, ROOT, SEED, RENDER, gameUrl, assertRender,
+  withBrowser, newGamePage, waitForScreen, state, assert, clickTestId, ROOT, ARTIFACTS, SEED, RENDER, gameUrl, assertRender,
 } from '../e2e/browser.mjs';
 
 const fixture = process.argv.includes('--fixture');
 // [night-12u] D-154: + the unfolded large foldable (Galaxy Z Fold class, ~1812x2176 px inner screen = 906x1088 CSS px
 // at DPR 2) in portrait and landscape, rendered at device pixel ratio 2 like the phone. [width, height, dpr]
-const sizes = [[412, 915, 1], [915, 412, 1], [673, 841, 1], [904, 1000, 1], [904, 1088, 2], [1088, 904, 2]];
+// [night-15b] R4f: + Google's large-screen reference sizes (tablet landscape 1024x640 and 1280x800, tablet portrait
+// 800x1280, the unfolded book foldable 841x701, desktop 1600x900) and a narrow free-form window (500x700, a split-screen
+// or desktop window), all at DPR 1. Mid-run resizes between them: `npm run test:e2e:resize:stub`.
+const allSizes = [[412, 915, 1], [915, 412, 1], [673, 841, 1], [904, 1000, 1], [904, 1088, 2], [1088, 904, 2],
+  [1024, 640, 1], [1280, 800, 1], [800, 1280, 1], [841, 701, 1], [1600, 900, 1], [500, 700, 1]];
+// `--size=1024x640` (repeatable): only those sizes, for a quick look at one layout.
+const only = process.argv.filter((arg) => arg.startsWith('--size=')).map((arg) => arg.slice('--size='.length));
+const sizes = only.length ? allSizes.filter(([w, h]) => only.includes(`${w}x${h}`)) : allSizes;
+if (only.length && sizes.length !== only.length) throw new Error(`--size must be one of ${allSizes.map(([w, h]) => `${w}x${h}`).join(', ')}`);
 const screens = ['menu', 'game', 'upgrade', 'gameover'];
 // [task-31] With 3-day weeks (D-40) the DEV autoplay bot reaches the week-1 board from a clean start on the
 // ordinary test seed 0xA1A1, so no hand-picked "lucky" seed is needed any more.
@@ -112,6 +120,7 @@ try {
               console.log(`shot ${shotLabel}/${filename}`);
             } catch (error) {
               failures.push(`${run} ${screen}: ${message(error)}`);
+              await page.screenshot({ path: resolve(ARTIFACTS, `matrix-fail-${screen}-${language}-${width}x${height}.png`) }).catch(() => {});
               break;
             }
           }

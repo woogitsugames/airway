@@ -60,7 +60,7 @@
   const upgrades = [];
   const state = () => ({ screen, seed, homeRegion: null, licenceClass: 1, tick, nextWeekTick, routeCount,
     aircraftAssignments, snapshotHash: [seed,tick,routeCount,aircraftAssignments,+upgraded].join('-'),
-    upgrades: upgrades.slice(), curfewClosed: [], curfewDrawn: 0, airports: [] });
+    upgrades: upgrades.slice(), curfewClosed: [], curfewDrawn: 0, airports: [], camera: { longitude: 0, latitude: 0, zoom: 1 } });
   function part(className, text) {
     const el = document.createElement('p');
     el.className = className;
