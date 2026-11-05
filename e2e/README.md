@@ -9,6 +9,8 @@ handle and registers a production adapter (see below). `--fixture` can independe
 harness contract**: `node e2e/smoke.mjs --fixture` and
 `node scripts/ui-matrix.mjs --fixture`. Fixture images go to
 `docs/shots/matrix-fixture/`, never `docs/shots/matrix/`.
+When the real handle (`src/game/devHandle.ts`) gains or loses a method, change
+`e2e/fixtures/airway.html` in the same commit: `npm run test:fixture-adapter` (in `test:fast`) fails otherwise.
 
 ## Development-only integration
 
@@ -66,6 +68,10 @@ airport's page coordinates for real `page.mouse` taps and presses on the canvas.
 npm run test:e2e:smoke
 npm run ui:matrix
 npm run test:e2e:session-stub   # real session on the WebGL-free stub world (~25 s)
+# [night-12bf] the same suites on the stub world (UI/flow only; the plain scripts stay on the real renderer):
+npm run test:e2e:smoke:stub          # = node e2e/smoke.mjs --render=stub (or AW_RENDER=stub)
+npm run ui:matrix:stub               # PNGs to the git-ignored .e2e/matrix-stub/, never docs/shots/matrix/
+npm run test:e2e:edge-chip-tags:stub
 # Harness-only validation; does NOT test the shipped game:
 npm run test:e2e:fixture   # = node e2e/smoke.mjs --fixture && node scripts/ui-matrix.mjs --fixture
 ```

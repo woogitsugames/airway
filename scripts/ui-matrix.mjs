@@ -4,7 +4,9 @@
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
-import { withBrowser, newGamePage, waitForScreen, state, assert, clickTestId, ROOT, SEED } from '../e2e/browser.mjs';
+import {
+  withBrowser, newGamePage, waitForScreen, state, assert, clickTestId, ROOT, SEED, RENDER, gameUrl, assertRender,
+} from '../e2e/browser.mjs';
 
 const fixture = process.argv.includes('--fixture');
 // [night-12u] D-154: + the unfolded large foldable (Galaxy Z Fold class, ~1812x2176 px inner screen = 906x1088 CSS px
@@ -14,7 +16,13 @@ const screens = ['menu', 'game', 'upgrade', 'gameover'];
 // [task-31] With 3-day weeks (D-40) the DEV autoplay bot reaches the week-1 board from a clean start on the
 // ordinary test seed 0xA1A1, so no hand-picked "lucky" seed is needed any more.
 const WEEK_SEED = SEED;
-const outdir = resolve(ROOT, fixture ? 'docs/shots/matrix-fixture' : 'docs/shots/matrix');
+// [night-12bf] `npm run ui:matrix:stub` (--render=stub): the same screens, layout checks (no horizontal overflow, board
+// and report clear of the boarding pass, no scroll) and screenshots on the DEV stub world (D-254), so the matrix finishes
+// under SwiftShader (G7). Its PNGs show dots instead of the globe: they go to the git-ignored `.e2e/matrix-stub/` and
+// never replace `docs/shots/matrix/`. The look of the screens over the globe needs the real renderer (default run).
+const stub = !fixture && RENDER === 'stub';
+const outdir = resolve(ROOT, fixture ? 'docs/shots/matrix-fixture' : stub ? '.e2e/matrix-stub' : 'docs/shots/matrix');
+const shotLabel = fixture ? 'matrix-fixture' : stub ? '.e2e/matrix-stub' : 'matrix';
 const expected = sizes.length * screens.length * 2;
 const failures = [];
 let captured = 0;
@@ -53,7 +61,9 @@ try {
         let page;
         let errors;
         try {
-          ({ page, errors } = await newGamePage(browser, url, language, { width, height }, { deviceScaleFactor: dpr }));
+          ({ page, errors } = await newGamePage(browser, fixture ? url : gameUrl(url), language, { width, height },
+            { deviceScaleFactor: dpr }));
+          if (!fixture) await assertRender(page);
           assert(await page.evaluate(() => window.aw?.ready), 'window.aw.ready=false: no AwDevAdapter registered');
           assert(await page.evaluate(() => document.documentElement.lang) === language,
             `<html lang> should be ${language}`);
@@ -63,7 +73,7 @@ try {
           failures.push(`${run} boot: ${message(error)}`);
           if (page) await page.close();
           // A missing dev adapter is structural: every other run would wait out the same timeouts.
-          if (/window\.aw/.test(message(error))) { failures.push('remaining runs skipped (no dev adapter)'); return; }
+          if (/window\.(aw|__awStub)/.test(message(error))) { failures.push('remaining runs skipped (no dev adapter / stub world)'); return; }
           continue;
         }
         try {
@@ -99,7 +109,7 @@ try {
               const filename = `${screen}-${language}-${width}x${height}${dpr > 1 ? '@' + dpr : ''}.png`;
               await page.screenshot({ path: resolve(outdir, filename), animations: 'disabled' });
               captured++;
-              console.log(`shot ${fixture ? 'matrix-fixture' : 'matrix'}/${filename}`);
+              console.log(`shot ${shotLabel}/${filename}`);
             } catch (error) {
               failures.push(`${run} ${screen}: ${message(error)}`);
               break;
@@ -116,6 +126,6 @@ try {
 } finally {
   for (const line of failures) console.error('FAIL ' + line);
   const failed = failures.length || (captured === expected ? 0 : 1);
-  console.log(`SUMMARY ui:matrix seed=0x${SEED.toString(16).toUpperCase()} weekSeed=${WEEK_SEED} mode=${fixture ? 'fixture' : 'game'} captured=${captured} expected=${expected} failed=${failed} durationMs=${Math.round(performance.now() - started)}`);
+  console.log(`SUMMARY ui:matrix seed=0x${SEED.toString(16).toUpperCase()} weekSeed=${WEEK_SEED} mode=${fixture ? 'fixture' : 'game'}${stub ? ' render=stub' : ''} captured=${captured} expected=${expected} failed=${failed} durationMs=${Math.round(performance.now() - started)}`);
   if (failed) process.exitCode = 1;
 }
