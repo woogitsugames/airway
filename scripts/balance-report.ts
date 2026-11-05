@@ -54,7 +54,8 @@ export interface BalanceSession {
 
 export interface BalanceAdapter {
   /** [night-11aj] R2g: `homeRegion` (real adapter only) starts the run in that Endless home region. */
-  createBalanceSession(seed: number, mode?: 'endless', homeRegion?: string | null, weeklyContract?: boolean, demandSurge?: boolean): BalanceSession;
+  createBalanceSession(seed: number, mode?: 'endless', homeRegion?: string | null, weeklyContract?: boolean, demandSurge?: boolean,
+    licenceClass?: 1 | 2 | 3): BalanceSession;
 }
 
 interface RunResult {
@@ -301,8 +302,10 @@ async function loadAdapter(path: string, fixture: boolean): Promise<BalanceAdapt
 }
 
 function play(adapter: BalanceAdapter, seed: number, homeRegion: string | null = null, weeklyContract = false,
-    demandSurge = false): RunResult {
-  const session = demandSurge ? adapter.createBalanceSession(seed, 'endless', homeRegion, weeklyContract, true)
+    demandSurge = false, licenceClass: 1 | 2 | 3 = 1): RunResult {
+  // [night-12bc] R2h: a licence class above I (balance:licences) passes every argument.
+  const session = licenceClass !== 1 ? adapter.createBalanceSession(seed, 'endless', homeRegion, weeklyContract, demandSurge, licenceClass)
+    : demandSurge ? adapter.createBalanceSession(seed, 'endless', homeRegion, weeklyContract, true)
     : weeklyContract ? adapter.createBalanceSession(seed, 'endless', homeRegion, true)
     : homeRegion ? adapter.createBalanceSession(seed, 'endless', homeRegion) : adapter.createBalanceSession(seed);
   let commands = 0;
@@ -658,6 +661,67 @@ async function contractsMain(test: boolean): Promise<void> {
 }
 
 /**
+ * [night-12bc] R2h / D-251: the same bot sample once per Endless licence class, as a new Endless run plays it (weekly
+ * contract and demand surge on). Class I is gated on D-79 (10–18 min) like test:balance; classes II and III are reported, not gated.
+ * Fails on invalid runs (rejected commands, a loss without warning, a non-deterministic replay) or class I runs that
+ * differ from the plain contract + surge run (class I must be today's Endless).
+ */
+async function licencesMain(test: boolean): Promise<void> {
+  const label = test ? 'test:balance:licences' : 'balance:licences';
+  const n = Number(process.argv.find((arg) => arg.startsWith('--seeds='))?.slice(8) ?? 50);
+  try {
+    const { LICENCE_CLASSES, LICENCE_PARAMS, LICENCE_PARAMS_VERSION, LICENCE_UNLOCK_WEEK } = await import('../src/sim/index.ts');
+    const adapter = await loadAdapter('scripts/balance-game-adapter.ts', false);
+    const unlockTicks = (LICENCE_UNLOCK_WEEK - 1) * TICKS_PER_WEEK;
+    const rows: { licence: number; median: number; p10: number; p90: number; second: string; unlock: number; pax: number }[] = [];
+    let invalid = 0;
+    const byClass = new Map<number, RunResult[]>();
+    for (const licence of LICENCE_CLASSES) {
+      const results = Array.from({ length: n }, (_, i) => play(adapter, BASE_SEED + i, null, true, true, licence));
+      byClass.set(licence, results);
+      invalid += results.filter((item) => item.ticks <= 0 || !Number.isFinite(item.score) || item.rejected > 0 ||
+        (item.reason === 'hubOverflow' && (!item.warned || item.warningLeadTicks <= 0))).length;
+      if (JSON.stringify(play(adapter, BASE_SEED, null, true, true, licence)) !== JSON.stringify(results[0])) invalid++;
+      const minutes = results.map((item) => item.minutes).sort((a, b) => a - b);
+      rows.push({ licence, median: median(minutes), p10: minutes[Math.floor(n * 0.1)]!, p90: minutes[Math.floor(n * 0.9)]!,
+        second: share(results, 2), unlock: results.filter((item) => item.ticks >= unlockTicks).length,
+        pax: median(results.map((item) => item.score)) });
+    }
+    // Class I is the contract run itself (no config field): every seed must match it exactly.
+    const plain = Array.from({ length: Math.min(n, 10) }, (_, i) => play(adapter, BASE_SEED + i, null, true, true));
+    plain.forEach((item, i) => {
+      if (JSON.stringify(item) !== JSON.stringify(byClass.get(1)![i])) { console.error(`seed ${BASE_SEED + i}: class I differs`); invalid++; }
+    });
+    const roman = ['', 'I', 'II', 'III'];
+    const knobs = (licence: 1 | 2 | 3): string => {
+      const p = LICENCE_PARAMS[licence];
+      return `curfew from week ${p.curfewStartWeek} (${p.curfewStartCities} airports), ${p.turbopropReserve} turboprops, hub ${p.hubCapacity} seats`;
+    };
+    const table = `| Class | Knobs | Median min | p10 | p90 | Median passengers | Reached the 2nd board | Reached week ${LICENCE_UNLOCK_WEEK} (unlocks the next class) |\n` +
+      `| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |\n` + rows.map((row) =>
+        `| ${roman[row.licence]} | ${knobs(row.licence as 1 | 2 | 3)} | ${row.median.toFixed(2)} | ${row.p10.toFixed(2)} | ${row.p90.toFixed(2)} | ` +
+        `${row.pax.toFixed(0)} | ${row.second} | ${row.unlock}/${n} |`).join('\n');
+    console.log(table);
+    const classOne = rows[0]!.median;
+    const gateOk = classOne >= 10 && classOne <= 18;
+    if (!gateOk) console.error(`class I median ${classOne.toFixed(2)} outside D-79 10–18`);
+    if (!test) {
+      writeFileSync(resolve(ROOT, 'docs/balance/licences-summary.md'), `# Bot sessions per Endless licence class (R2h, D-251)\n\n` +
+        `Generated by \`npm run balance:licences -- --seeds=${n}\`: the \`test:balance\` bot on seeds 0xA1A1…+${n - 1} per class, ` +
+        `weekly contract and demand surge on (a new Endless run). Licence params v${LICENCE_PARAMS_VERSION}. Class I is gated on D-79 ` +
+        `(10–18 min); II and III are reported only. The bot does not adapt to a class.\n\n${table}\n`, 'utf8');
+    }
+    console.log(`SUMMARY ${label} seed=0xA1A1 seeds=${n} ` + rows.map((row) => `${roman[row.licence]}=${row.median.toFixed(2)}`).join(' ') +
+      ` passed=${invalid || !gateOk ? 0 : 1} failed=${invalid + (gateOk ? 0 : 1)}`);
+    if (invalid || !gateOk) process.exitCode = 1;
+  } catch (error) {
+    console.error(error instanceof Error ? error.stack ?? error.message : String(error));
+    console.log(`SUMMARY ${label} seed=0xA1A1 seeds=0 passed=0 failed=1`);
+    process.exitCode = 1;
+  }
+}
+
+/**
  * [night-12bb] R2i / D-249: the same bot sample as a new Endless run plays it today (weekly contract on) without and
  * with the announced demand surge. The bot does not react to the announcement. Report: medians against D-79
  * (10–18 min), surges announced/opened, extra passengers, losses at a surge airport. Fails only on invalid runs or
@@ -721,6 +785,7 @@ async function surgesMain(test: boolean): Promise<void> {
 
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
+  if (args.includes('--licences')) { await licencesMain(args.includes('--test')); return; }
   if (args.includes('--regions')) { await regionsMain(args.includes('--test')); return; }
   if (args.includes('--contracts')) { await contractsMain(args.includes('--test')); return; }
   if (args.includes('--surges')) { await surgesMain(args.includes('--test')); return; }

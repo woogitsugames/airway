@@ -139,6 +139,15 @@ export const en = {
   'menu.noRecord': 'no record yet',
   'menu.homeRegion': 'Home region', // [night-11aj] R2g: Endless start region select on the menu board
   'menu.homeRegion.random': 'Random',
+  // [night-12bc] R2h, D-251: Endless licence classes (stamp in the Endless gate cell once class II is open).
+  'menu.licence': 'Licence class',
+  'menu.licenceIssued': 'Class {class} licence issued. Pick it on the Endless row.',
+  'licence.short.1': 'I',
+  'licence.short.2': 'II',
+  'licence.short.3': 'III',
+  'licence.name.1': 'Class I: standard rules',
+  'licence.name.2': 'Class II: curfew from week 2, 3 turboprops',
+  'licence.name.3': 'Class III: as II, hubs 6 seats smaller, 2 more curfew airports',
   'menu.progress': '{solved} of {total} solved',
   'menu.puzzlesHint': 'puzzles coming soon',
   'menu.dailyHint': 'same world for everyone',
@@ -327,6 +336,7 @@ export const en = {
   'gameover.region.ASI': 'Asia',
   'gameover.region.OCE': 'Oceania',
   'gameover.homeRegion': 'Home region: {region}', // [night-11aj] R2g
+  'gameover.licence': 'Licence class {class}', // [night-12bc] R2h
   // [night-11aj] R2g: region names in the nominative (menu, game-over report) and short (logbook table).
   'region.name.NAM': 'North America',
   'region.name.SAM': 'South America',
@@ -577,6 +587,8 @@ export const en = {
   'logbook.passengers': 'Passengers carried',
   'logbook.weeks': 'Weeks in the air',
   'logbook.longest': 'Longest flight',
+  'logbook.licences': 'Best by licence class', // [night-12bc] R2h
+  'logbook.licenceValue': '{class}: {count} {count|week|weeks}',
   'logbook.weeksValue': '{count} {count|week|weeks}',
   'logbook.best': 'Best flight',
   'logbook.bestValue': '{count} {count|passenger|passengers} · {weeks} {weeks|week|weeks}',

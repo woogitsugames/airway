@@ -236,7 +236,7 @@ await test('save → load keeps the contract and the exact hash (envelope v3); v
   assert.ok(sim.world.contract);
   const save = encodeSave(saveSourceFromSim(sim), 1000);
   assert.equal(save.v, SAVE_VERSION);
-  assert.equal(SAVE_VERSION, 4); // [night-12bb] R2i: 3 -> 4 (demand surge)
+  assert.ok(SAVE_VERSION >= 4); // [night-12bb] R2i: 3 -> 4 (demand surge); [night-12bc] R2h: 4 -> 5 (licence class)
   const decoded = decodeSave(JSON.stringify(save));
   assert.equal(decoded.status, 'ok');
   if (decoded.status !== 'ok') return;

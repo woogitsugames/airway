@@ -28,6 +28,8 @@ const crateField = { max: 10, where: 'weekly crate label: field name column' };
 const selectOption = { max: 14, where: 'settings: option of a select (320 px wide screen keeps 8 px beside the arrow)' };
 // [night-11aj] R2g: the home-region select in the Endless row's status cell (80 px at 320 px, 10 px mono, no arrow).
 const regionCell = { max: 10, where: 'departures board: home-region select in the Endless status cell' };
+// [night-12bc] R2h: the licence stamp select in the Endless row's gate cell (46 px at 320 px).
+const licenceStamp = { max: 3, where: 'departures board: licence class stamp in the Endless gate cell' };
 const logbookShort = { max: 4, where: 'logbook: narrow number column head' };
 const logbookWide = { max: 6, where: 'logbook: column head' };
 
@@ -43,6 +45,9 @@ export const LENGTH_BUDGETS: Partial<Record<TranslationKey, LengthBudget>> = {
   'menu.new': flapStatus,
   'menu.gate': { max: 6, where: 'departures board: gate column head (46 px at 320 px)' },
   'menu.homeRegion.random': regionCell,
+  'licence.short.1': licenceStamp,
+  'licence.short.2': licenceStamp,
+  'licence.short.3': licenceStamp,
   ...Object.fromEntries((['NAM', 'SAM', 'EUN', 'EUS', 'AFR', 'ME', 'ASI', 'OCE'] as const)
     .map((region) => [`region.short.${region}`, regionCell])),
   'menu.status': { max: 10, where: 'departures board: status column head (wraps)' },

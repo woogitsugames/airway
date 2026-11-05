@@ -27,6 +27,8 @@ export interface LogEntry {
   readonly hub: string | null;
   /** [night-11aj] R2g: the Endless home region the run started in; absent for Random, Daily and older entries. */
   readonly region?: RegionId;
+  /** [night-12bc] R2h, D-251: an Endless run's licence class above I; absent for class I, Daily and older entries. */
+  readonly licence?: 2 | 3;
 }
 
 /**
@@ -105,11 +107,39 @@ export interface Logbook {
    * reached; a milestone never reached has no entry. Older records load with none.
    */
   readonly milestones: Readonly<Partial<Record<MilestoneId, number>>>;
+  /**
+   * [night-12bc] R2h, D-251: the most weeks flown in one run per licence class (class I counts Endless class I and
+   * daily challenges: the same rules). Read through `licenceWeeks`. A record from before R2h starts class I at its
+   * `longestWeeks` (every earlier flight was flown under class I rules).
+   */
+  readonly licenceWeeks?: Readonly<Partial<Record<1 | 2 | 3, number>>>;
 }
 
 export const EMPTY_LOGBOOK: Logbook = {
   flights: 0, dailies: 0, passengers: 0, weeks: 0, longestWeeks: 0, hubs: {}, recent: [], runs: [], milestones: {},
+  licenceWeeks: {},
 };
+
+/** [night-12bc] R2h: valid per-class bests only (class 1–3, a count within the longest flight). */
+function licenceRecord(value: unknown, longest: number): Partial<Record<1 | 2 | 3, number>> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+  const out: Partial<Record<1 | 2 | 3, number>> = {};
+  for (const key of [1, 2, 3] as const) {
+    const n = count((value as Record<string, unknown>)[key]);
+    if (n !== null && n <= longest) out[key] = n;
+  }
+  return out;
+}
+
+/**
+ * [night-12bc] R2h: the best weeks per licence class, tolerating hand-built Logbook objects (screens, dev fixtures)
+ * that lack the field: their class I best is `longestWeeks`, like a stored record from before R2h.
+ */
+export function licenceWeeks(book: Logbook): Readonly<Partial<Record<1 | 2 | 3, number>>> {
+  const value: unknown = (book as { readonly licenceWeeks?: unknown }).licenceWeeks;
+  if (value && typeof value === 'object' && !Array.isArray(value)) return value as Partial<Record<1 | 2 | 3, number>>;
+  return book.flights > 0 ? { 1: book.longestWeeks } : {};
+}
 
 /** [night-12ax] Valid milestone entries only: a known id and a flight number within the flights logged. */
 function milestoneRecord(value: unknown, flights: number): Partial<Record<MilestoneId, number>> {
@@ -148,7 +178,8 @@ function entry(value: unknown): LogEntry | null {
   if (passengers === null || weeks === null) return null;
   const hub = typeof item.hub === 'string' && CODE.test(item.hub) ? item.hub : null;
   const region = item.mode === 'endless' && (REGION_IDS as readonly unknown[]).includes(item.region) ? item.region as RegionId : null;
-  return region ? { day: item.day, mode: item.mode, passengers, weeks, hub, region } : { day: item.day, mode: item.mode, passengers, weeks, hub };
+  const licence = item.mode === 'endless' && (item.licence === 2 || item.licence === 3) ? item.licence : null;
+  return { day: item.day, mode: item.mode, passengers, weeks, hub, ...(region ? { region } : {}), ...(licence ? { licence } : {}) };
 }
 
 const STAT_KEYS = ['tenths', 'held', 'hubOffered', 'hubPicked', 'slotsOffered', 'slotsPicked'] as const;
@@ -219,7 +250,10 @@ export function readLogbook(storage: StorageLike | undefined): Logbook {
     const runs = Array.isArray(record.runs)
       ? record.runs.map(note).filter((item): item is RunNote => item !== null).slice(0, RUN_NOTES) : [];
     return { flights, dailies: Math.min(dailies, flights), passengers, weeks, longestWeeks, hubs, recent, runs,
-      milestones: milestoneRecord(record.milestones, flights) };
+      milestones: milestoneRecord(record.milestones, flights),
+      // [night-12bc] R2h: a record from before R2h has no field; its flights were all class I.
+      licenceWeeks: record.licenceWeeks === undefined ? (flights > 0 ? { 1: longestWeeks } : {})
+        : licenceRecord(record.licenceWeeks, longestWeeks) };
   } catch {
     return EMPTY_LOGBOOK;
   }
@@ -259,9 +293,16 @@ export function recordFlight(storage: StorageLike | undefined, flight: LogEntry,
     recent: [clean, ...prior.recent].slice(0, RECENT_FLIGHTS),
     runs: runNote ? [runNote, ...prior.runs].slice(0, RUN_NOTES) : prior.runs,
     milestones: milestoneRecord(firsts, flights),
+    licenceWeeks: bestPerClass(licenceWeeks(prior), clean),
   };
   try { storage?.setItem(LOGBOOK_KEY, JSON.stringify(next)); } catch { /* Storage denied: session value only. */ }
   return next;
+}
+
+/** [night-12bc] R2h: the per-class bests after one more flight (Daily flies class I rules). */
+function bestPerClass(prior: Readonly<Partial<Record<1 | 2 | 3, number>>>, flight: LogEntry): Partial<Record<1 | 2 | 3, number>> {
+  const licence = flight.mode === 'endless' ? flight.licence ?? 1 : 1;
+  return { ...prior, [licence]: Math.max(prior[licence] ?? 0, flight.weeks) };
 }
 
 /** [night-12ax] R1n: milestones this flight reached for the first time (its number is the book's last flight). */

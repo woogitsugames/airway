@@ -46,6 +46,8 @@ export class TerminalQueues {
   private readonly queues = new Map<string, CityQueue>();
   /** Scenario-specific base waiting capacity (puzzles); replaces the ordinary/hub default. */
   private readonly baseCapacity = new Map<string, number>();
+  /** [night-12bc] R2h, D-251: waiting seats of an interchange hub (a licence class may lower it); set before play. */
+  hubCapacity: number = HUB_WAITING_CAPACITY;
 
   constructor(cityIds: readonly string[], baseCapacity: Readonly<Record<string, number>> = {}) {
     for (const [cityId, capacity] of Object.entries(baseCapacity)) {
@@ -73,7 +75,7 @@ export class TerminalQueues {
     for (const queue of this.queues.values()) {
       queue.isHub = network.routesAt(queue.cityId) >= 2;
       queue.capacity = (this.baseCapacity.get(queue.cityId) ??
-        (queue.isHub ? HUB_WAITING_CAPACITY : CITY_WAITING_CAPACITY)) + queue.bonusCapacity;
+        (queue.isHub ? this.hubCapacity : CITY_WAITING_CAPACITY)) + queue.bonusCapacity;
     }
   }
 

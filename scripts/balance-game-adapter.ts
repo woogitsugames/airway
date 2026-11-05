@@ -2,7 +2,7 @@
  * Task 22 production adapter: the autoplay bot drives the REAL authoritative Sim through commands.
  * It only reads public views (sim.world.*) and submits commands via Sim.check/Sim.apply.
  */
-import { createGame, CONGESTION_GRACE_TICKS, type Sim } from '../src/sim/index.ts';
+import { createGame, CONGESTION_GRACE_TICKS, type LicenceClass, type Sim } from '../src/sim/index.ts';
 import type { RegionId } from '../src/data/regions.ts';
 import { botCommandToSim, botSnapshot } from '../src/game/dev/autoplay.ts';
 import type { BotCommand, BotSnapshot } from './bot.ts';
@@ -67,10 +67,10 @@ class GameSession {
   private extraOnBoard: string | undefined;
 
   constructor(seed: number, mode: 'endless' | 'daily' = 'endless', homeRegion: RegionId | null = null, weeklyContract = false,
-      demandSurge = false) {
+      demandSurge = false, licenceClass: LicenceClass = 1) {
     // [night-11aj] R2g: per-region balance check. [night-12ba] R2k: with or without the weekly contract.
-    // [night-12bb] R2i: with or without the demand surge.
-    this.sim = createGame(seed, mode, undefined, homeRegion, weeklyContract, demandSurge);
+    // [night-12bb] R2i: with or without the demand surge. [night-12bc] R2h: per licence class (balance:licences).
+    this.sim = createGame(seed, mode, undefined, homeRegion, weeklyContract, demandSurge, licenceClass);
     const start = [...this.sim.world.cities()].map((city) => city.id);
     for (const id of start) this.reachAtOpen.set(id, nearestKm(id, start));
   }
@@ -176,6 +176,6 @@ function nearestKm(id: string, others: readonly string[]): number {
 }
 
 export function createBalanceSession(seed: number, mode: 'endless' | 'daily' = 'endless',
-    homeRegion: RegionId | null = null, weeklyContract = false, demandSurge = false): GameSession {
-  return new GameSession(seed >>> 0, mode, homeRegion, weeklyContract, demandSurge);
+    homeRegion: RegionId | null = null, weeklyContract = false, demandSurge = false, licenceClass: LicenceClass = 1): GameSession {
+  return new GameSession(seed >>> 0, mode, homeRegion, weeklyContract, demandSurge, licenceClass);
 }

@@ -7,7 +7,7 @@ import { CITY_RECORDS, cityDistanceKm, cityIndex } from '../data/index.ts';
 import type { RegionId } from '../data/regions.ts';
 import { TICKS_PER_WEEK } from './clock.ts';
 import type { Command, CommandCheck, RejectReason } from './commands.ts';
-import { CurfewPlanner, isLocalCurfewHour, localHourAt, type CurfewSnapshot } from './daynight.ts';
+import { CurfewPlanner, isLocalCurfewHour, localHourAt, type CurfewSnapshot, type EndlessCurfewRules } from './daynight.ts';
 import type { DemandCity } from './demand.ts';
 import type { HubFailure } from './hubs.ts';
 import type { CauseCounters } from './ledger.ts';
@@ -73,6 +73,11 @@ export interface Scenario {
   readonly weeklyContract?: boolean;
   /** [night-12bb] R2i, D-249: announced demand surge from week 3 (Endless with `GameConfig.demandSurge` only). */
   readonly demandSurge?: boolean;
+  /**
+   * [night-12bc] R2h, D-251: Endless licence class knobs (`GameConfig.licenceClass`; src/sim/licence.ts). Absent =
+   * class I, the shared constants; `reserve` above carries the class's starting turboprops.
+   */
+  readonly licence?: { readonly curfew: EndlessCurfewRules; readonly hubCapacity: number };
 }
 
 export const ENDLESS_SCENARIO: Scenario = Object.freeze({
@@ -305,8 +310,11 @@ export class World implements WorldView {
       if (km === undefined) throw new Error(`Unknown city pair ${a}-${b}`);
       return km;
     }, streams.demand, startIds, scenario.capacityByCity);
-    this.curfew = new CurfewPlanner(scenario.curfewCityIds ? 'puzzle' : 'endless', CURFEW_CITIES,
-      new Rng(seed >>> 0), scenario.curfewCityIds ?? []);
+    this.curfew = scenario.licence
+      ? new CurfewPlanner('endless', CURFEW_CITIES, new Rng(seed >>> 0), [], scenario.licence.curfew)
+      : new CurfewPlanner(scenario.curfewCityIds ? 'puzzle' : 'endless', CURFEW_CITIES,
+        new Rng(seed >>> 0), scenario.curfewCityIds ?? []);
+    if (scenario.licence) this.passengers.hubs.hubCapacity = scenario.licence.hubCapacity;
     this.curfew.setActiveCities(this.activeCityIds());
     this.curfew.advance(0);
     this.fleet = createPlaneFleet(scenario.reserve);

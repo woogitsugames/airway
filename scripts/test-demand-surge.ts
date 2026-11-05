@@ -247,7 +247,7 @@ await test('save → load keeps the surge and the exact hash (envelope v4); v3 e
   assert.ok(sim.world.surge?.active);
   const save = encodeSave(saveSourceFromSim(sim), 1000);
   assert.equal(save.v, SAVE_VERSION);
-  assert.equal(SAVE_VERSION, 4);
+  assert.ok(SAVE_VERSION >= 4); // [night-12bc] R2h: 4 -> 5 (licence class)
   const decoded = decodeSave(JSON.stringify(save));
   assert.equal(decoded.status, 'ok');
   if (decoded.status !== 'ok') return;
@@ -275,7 +275,7 @@ await test('save → load keeps the surge and the exact hash (envelope v4); v3 e
   assert.equal(loaded.save.v, SAVE_VERSION);
   assert.equal(restoreSimDetailed(loaded.save)?.sim.hash(), plain.hash());
   assert.equal(decodeSave(JSON.stringify({ ...v3, checksum: current.checksum })).status, 'error', 'v3 is checked as v3');
-  assert.equal(decodeSave(JSON.stringify({ ...save, v: 5 })).status, 'error', 'a newer envelope is refused');
+  assert.equal(decodeSave(JSON.stringify({ ...save, v: SAVE_VERSION + 1 })).status, 'error', 'a newer envelope is refused');
   // A surge snapshot cannot be loaded into a run without the flag, nor the reverse.
   const snap = JSON.parse(sim.snapshot());
   snap.state.config = { mode: 'endless', weeklyContract: true };

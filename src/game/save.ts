@@ -8,7 +8,7 @@ import { RULES_VERSION, type GameConfig } from '../sim/state.ts';
  * A v1 envelope (always Random) still loads unchanged; a build before R2g refuses a v2 save as 'unsupported'
  * instead of continuing a home-region run in a random world.
  */
-export const SAVE_VERSION = 4 as const;
+export const SAVE_VERSION = 5 as const;
 /** Envelope versions this build reads: v0 (pre-checksum, migrated), v1 (pre-R2g) and the current one. */
 const LEGACY_V1 = 1;
 /**
@@ -21,6 +21,12 @@ const LEGACY_V2 = 2;
  * unchanged; a build before R2i refuses a v4 save as 'unsupported' instead of dropping the surge.
  */
 const LEGACY_V3 = 3;
+/**
+ * [night-12bc] R2h, D-251: 4 -> 5, the config may carry an Endless licence class (II or III). A v4 envelope (always
+ * class I, possibly with a surge) loads unchanged; a build before R2h refuses a v5 save as 'unsupported' instead of
+ * continuing a class II/III run under class I rules.
+ */
+const LEGACY_V4 = 4;
 export const TICKS_PER_DAY = 1440;
 export const MAX_SAVE_BYTES = 8 * 1024 * 1024;
 const MAX_LOG_ENTRIES = 100_000;
@@ -119,7 +125,7 @@ function normaliseAndValidate(raw: unknown): LoadResult {
     return { status: 'error', issue: 'corrupt' };
   }
   if (raw.v > SAVE_VERSION) return { status: 'error', issue: 'unsupported' };
-  if (raw.v !== 0 && raw.v !== LEGACY_V1 && raw.v !== LEGACY_V2 && raw.v !== LEGACY_V3 && raw.v !== SAVE_VERSION) return { status: 'error', issue: 'corrupt' };
+  if (raw.v !== 0 && raw.v !== LEGACY_V1 && raw.v !== LEGACY_V2 && raw.v !== LEGACY_V3 && raw.v !== LEGACY_V4 && raw.v !== SAVE_VERSION) return { status: 'error', issue: 'corrupt' };
   const migrated = raw.v === 0;
   const snapshot = migrated ? raw.snapshot ?? raw.state : raw.snapshot;
   if (!isRecord(snapshot) || !safeJsonTree(snapshot)) return { status: 'error', issue: 'corrupt' };
@@ -141,7 +147,7 @@ function normaliseAndValidate(raw: unknown): LoadResult {
   };
   const digest = checksum(body);
   // A v1 envelope was checksummed with its own version number; it is verified as written, then re-tagged.
-  const written = raw.v === LEGACY_V1 || raw.v === LEGACY_V2 || raw.v === LEGACY_V3
+  const written = raw.v === LEGACY_V1 || raw.v === LEGACY_V2 || raw.v === LEGACY_V3 || raw.v === LEGACY_V4
     ? checksum({ ...body, v: raw.v } as unknown as Omit<GameSaveV1, 'checksum'>) : digest;
   if (!migrated && (typeof raw.checksum !== 'string' || written !== raw.checksum)) {
     return { status: 'error', issue: 'corrupt' };
@@ -296,8 +302,10 @@ export function replaySave(save: GameSaveV1): Sim | null {
       // [night-12bb] R2i: and its demand surge flag (absent in every save before R2i).
       ...(config?.demandSurge === true ? { demandSurge: true } : {}),
     };
+    // [night-12bc] R2h: and its licence class (absent = class I, every save before R2h).
+    const licence = config?.licenceClass === undefined ? {} : { licenceClass: config.licenceClass };
     const sim = Sim.replay(save.seed, save.commands as never, save.tick,
-      (homeRegion === undefined ? { mode, ...contract } : { mode, homeRegion, ...contract }) as GameConfig);
+      (homeRegion === undefined ? { mode, ...contract, ...licence } : { mode, homeRegion, ...contract, ...licence }) as GameConfig);
     if (sim.world.status !== 'running' && sim.world.status !== 'upgrade') return null;
     // Commands issued in the saved tick but not yet simulated still belong to the run.
     const pending = save.snapshot.pending;
