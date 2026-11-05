@@ -17,12 +17,12 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Ryga Wenecja Bagdad Ankara Ateny ANK 0 z 24 RIX 0 z 24 KHI Tydzień 1 40 pasażerów 0 6 12 18 00:10 dzień 2 z 3 Cofnij za 1 dzień za 1 dzień za 1 dzień",
+   "text": "Ryga Wenecja Bagdad Amman Ankara Ateny ANK 0 z 24 AMM 5 z 36 5 RIX 0 z 24 KHI Tydzień 1 40 pasażerów 0 6 12 18 00:11 dzień 2 z 3 Cofnij za 1 dzień za 1 dzień za 1 dzień",
    "sun": "180@camera",
    "contrast": {
     "routes": 10.14,
     "airports": 11.38,
-    "planes": 10.36,
+    "planes": 10.37,
     "tags": 1.02
    },
    "warmth": {
@@ -32,8 +32,8 @@
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 67.7,
-    "lumaStd": 74.9,
+    "meanLuma": 68.1,
+    "lumaStd": 75.4,
     "whiteShare": 0,
     "colours": 327
    }
@@ -46,12 +46,12 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Ryga Wenecja Bagdad Ankara Ateny ANK 0 z 24 AMM 5 z 36 5 VCE 0 z 24 RIX 0 z 24 KHI Tydzień 1 40 pasażerów 0 6 12 18 00:07 dzień 2 z 3 Cofnij za 1 dzień za 1 dzień za 1 dzień Satelita Tempo 1×",
+   "text": "Ryga Wenecja Bagdad Amman Ankara Ateny ATH 3 z 36 ANK 0 z 24 AMM 5 z 36 5 BGW 3 z 24 VCE 0 z 24 RIX 0 z 24 KHI Tydzień 1 40 pasażerów 0 6 12 18 00:09 dzień 2 z 3 Cofnij za 1 dzień za 1 dzień za 1 dzień Satelita Tempo 1×",
    "sun": "180@camera",
    "contrast": {
     "routes": 9.95,
     "airports": 10.71,
-    "planes": 9.3,
+    "planes": 9.35,
     "tags": 1.03
    },
    "warmth": {
@@ -61,10 +61,10 @@
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 65.3,
-    "lumaStd": 70.9,
+    "meanLuma": 65.5,
+    "lumaStd": 71.2,
     "whiteShare": 0,
-    "colours": 316
+    "colours": 319
    }
   },
   {
@@ -75,25 +75,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Ryga Wenecja Bagdad Amman Ankara Ateny ANK 0 z 24 AMM 5 z 36 5 VCE 0 z 24 RIX 0 z 24 KHI Tydzień 1 40 pasażerów 0 6 12 18 00:11 dzień 2 z 3 Cofnij za 1 dzień za 1 dzień za 1 dzień Satelita Tempo 1×",
+   "text": "Ryga Wenecja Bagdad Amman Ankara Ateny ATH 3 z 36 3 ANK 0 z 24 AMM 5 z 36 5 BGW 3 z 24 2 1 VCE 0 z 24 RIX 0 z 24 KHI Tydzień 1 40 pasażerów 0 6 12 18 00:10 dzień 2 z 3 Cofnij za 1 dzień za 1 dzień za 1 dzień Satelita Tempo 1×",
    "sun": "180@camera",
    "contrast": {
     "routes": 9.95,
     "airports": 10.03,
-    "planes": 9.19,
+    "planes": 9.41,
     "tags": 1.02
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.81
+    "ratio": 0.809
    },
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 64.5,
-    "lumaStd": 70.9,
+    "meanLuma": 64.7,
+    "lumaStd": 71.1,
     "whiteShare": 0,
-    "colours": 324
+    "colours": 328
    }
   },
   {
@@ -104,12 +104,12 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Ryga Wenecja Bagdad Ankara Ateny ANK 0 z 24 AMM 5 z 36 5 VCE 0 z 24 RIX 0 z 24 KHI Tydzień 1 40 pasażerów 0 6 12 18 00:10 dzień 2 z 3 Cofnij za 1 dzień za 1 dzień za 1 dzień Satelita Tempo 1×",
+   "text": "Ryga Wenecja Bagdad Amman Ankara Ateny ATH 3 z 36 3 AMM 5 z 36 5 BGW 3 z 24 RIX 0 z 24 KHI Tydzień 1 40 pasażerów 0 6 12 18 00:06 dzień 2 z 3 Cofnij za 1 dzień za 1 dzień za 1 dzień Satelita Tempo 1×",
    "sun": "180@camera",
    "contrast": {
     "routes": 10.06,
     "airports": 11.25,
-    "planes": 10.4,
+    "planes": 10.27,
     "tags": 1.02
    },
    "warmth": {
@@ -119,10 +119,10 @@
    "png": {
     "width": 1320,
     "height": 2868,
-    "meanLuma": 68.1,
-    "lumaStd": 76.9,
+    "meanLuma": 68.3,
+    "lumaStd": 77,
     "whiteShare": 0,
-    "colours": 343
+    "colours": 346
    }
   },
   {
@@ -133,12 +133,12 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Ryga Wenecja Bagdad Amman Ankara Ateny ATH 3 z 36 3 ANK 0 z 24 AMM 5 z 36 5 VCE 0 z 24 RIX 0 z 24 KHI Tydzień 1 40 pasażerów 0 6 12 18 00:10 dzień 2 z 3 Cofnij za 1 dzień za 1 dzień za 1 dzień Satelita Tempo 1×",
+   "text": "Ryga Wenecja Bagdad Amman Ankara Ateny ATH 3 z 36 3 ANK 0 z 24 AMM 5 z 36 5 BGW 3 z 24 2 1 VCE 0 z 24 RIX 0 z 24 KHI Tydzień 1 40 pasażerów 0 6 12 18 00:11 dzień 2 z 3 Cofnij za 1 dzień za 1 dzień za 1 dzień Satelita Tempo 1×",
    "sun": "180@camera",
    "contrast": {
     "routes": 9.87,
     "airports": 10.03,
-    "planes": 9.63,
+    "planes": 9.45,
     "tags": 1.03
    },
    "warmth": {
@@ -149,9 +149,9 @@
     "width": 2064,
     "height": 2752,
     "meanLuma": 64,
-    "lumaStd": 69.4,
+    "lumaStd": 69.5,
     "whiteShare": 0,
-    "colours": 343
+    "colours": 350
    }
   },
   {
@@ -162,7 +162,7 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Karaczi Ryga Wenecja Bagdad Ankara Ateny ATH 3 z 36 3 ANK 0 z 24 AMM 5 z 36 5 BGW 3 z 24 2 1 VCE 0 z 24 RIX 0 z 24 KHI 0 z 24 Tydzień 1, dzień 2 z 3 40 pasażerów 00:11 Cofnij za 1 dzień za 1 dzień za 1 dzień Satelita Tempo 1×",
+   "text": "Karaczi Ryga Wenecja Bagdad Amman Ankara Ateny ATH 3 z 36 3 ANK 0 z 24 AMM 5 z 36 5 BGW 3 z 24 2 1 VCE 0 z 24 RIX 0 z 24 KHI 0 z 24 Tydzień 1, dzień 2 z 3 40 pasażerów 00:08 Cofnij za 1 dzień za 1 dzień za 1 dzień Satelita Tempo 1×",
    "sun": "180@camera",
    "contrast": {
     "routes": 9.95,
@@ -172,15 +172,15 @@
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.838
+    "ratio": 0.839
    },
    "png": {
     "width": 1920,
     "height": 1080,
-    "meanLuma": 99.7,
+    "meanLuma": 99.8,
     "lumaStd": 77.6,
     "whiteShare": 0,
-    "colours": 317
+    "colours": 316
    }
   },
   {
@@ -191,25 +191,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Ryga Wenecja Bagdad Ankara Ateny ANK 1 z 24 1 RIX 0 z 24 KHI Tydzień 1 34 pasażerów 0 6 12 18 17:01 dzień 2 z 3 Cofnij za 1 dzień za 1 dzień za 1 dzień",
+   "text": "Ryga Wenecja Bagdad Amman Ankara Ateny ANK 1 z 24 1 AMM 3 z 36 RIX 0 z 24 KHI Tydzień 1 34 pasażerów 0 6 12 18 17:03 dzień 2 z 3 Cofnij za 1 dzień za 1 dzień za 1 dzień",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
     "routes": 10.06,
     "airports": 11.54,
-    "planes": 9.47,
+    "planes": 9.53,
     "tags": 1.02
    },
    "warmth": {
     "gold": 0.157,
-    "ratio": 1.386
+    "ratio": 1.387
    },
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 76.5,
-    "lumaStd": 72.8,
+    "meanLuma": 76.4,
+    "lumaStd": 73.4,
     "whiteShare": 0,
-    "colours": 438
+    "colours": 422
    }
   },
   {
@@ -220,25 +220,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Ryga Wenecja Bagdad Ankara Ateny ANK 1 z 24 1 AMM 3 z 36 1 2 VCE 1 z 24 1 RIX 0 z 24 KHI Tydzień 1 34 pasażerów 0 6 12 18 17:04 dzień 2 z 3 Cofnij za 1 dzień za 1 dzień za 1 dzień Satelita Tempo 1×",
+   "text": "Ryga Wenecja Bagdad Amman Ankara Ateny ATH 4 z 36 2 2 ANK 1 z 24 1 AMM 3 z 36 1 2 BGW 2 z 24 VCE 1 z 24 1 RIX 0 z 24 KHI Tydzień 1 34 pasażerów 0 6 12 18 17:01 dzień 2 z 3 Cofnij za 1 dzień za 1 dzień za 1 dzień Satelita Tempo 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
-    "routes": 9.87,
-    "airports": 11.53,
-    "planes": 9.72,
+    "routes": 9.88,
+    "airports": 11.52,
+    "planes": 9.47,
     "tags": 1.03
    },
    "warmth": {
     "gold": 0.153,
-    "ratio": 1.289
+    "ratio": 1.295
    },
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 73.3,
-    "lumaStd": 69.6,
+    "meanLuma": 73.9,
+    "lumaStd": 69.8,
     "whiteShare": 0,
-    "colours": 441
+    "colours": 428
    }
   },
   {
@@ -249,25 +249,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Ryga Wenecja Bagdad Amman Ankara Ateny ANK 1 z 24 1 AMM 3 z 36 1 2 VCE 1 z 24 1 RIX 0 z 24 KHI Tydzień 1 34 pasażerów 0 6 12 18 17:04 dzień 2 z 3 Cofnij za 1 dzień za 1 dzień za 1 dzień Satelita Tempo 1×",
+   "text": "Ryga Wenecja Bagdad Amman Ankara Ateny ATH 2 z 36 2 ANK 1 z 24 1 AMM 3 z 36 1 2 BGW 2 z 24 1 1 VCE 1 z 24 1 RIX 0 z 24 KHI Tydzień 1 34 pasażerów 0 6 12 18 17:02 dzień 2 z 3 Cofnij za 1 dzień za 1 dzień za 1 dzień Satelita Tempo 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
     "routes": 9.87,
     "airports": 11.44,
-    "planes": 9.76,
+    "planes": 9.59,
     "tags": 1.02
    },
    "warmth": {
     "gold": 0.15,
-    "ratio": 1.296
+    "ratio": 1.301
    },
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 72.4,
-    "lumaStd": 69.6,
+    "meanLuma": 72.8,
+    "lumaStd": 69.7,
     "whiteShare": 0,
-    "colours": 448
+    "colours": 446
    }
   },
   {
@@ -278,25 +278,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Ryga Wenecja Bagdad Ankara Ateny ANK 1 z 24 1 VCE 1 z 24 1 RIX 0 z 24 KHI Tydzień 1 34 pasażerów 0 6 12 18 17:04 dzień 2 z 3 Cofnij za 1 dzień za 1 dzień za 1 dzień Satelita Tempo 1×",
+   "text": "Ryga Wenecja Bagdad Amman Ankara Ateny ATH 2 z 36 2 AMM 3 z 36 1 2 BGW 2 z 24 RIX 0 z 24 KHI Tydzień 1 34 pasażerów 0 6 12 18 17:06 dzień 2 z 3 Cofnij za 1 dzień za 1 dzień za 1 dzień Satelita Tempo 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
     "routes": 9.95,
     "airports": 11.56,
-    "planes": 9.62,
+    "planes": 9.83,
     "tags": 1.02
    },
    "warmth": {
-    "gold": 0.135,
-    "ratio": 1.378
+    "gold": 0.134,
+    "ratio": 1.371
    },
    "png": {
     "width": 1320,
     "height": 2868,
     "meanLuma": 76,
-    "lumaStd": 74.4,
+    "lumaStd": 74.8,
     "whiteShare": 0,
-    "colours": 469
+    "colours": 455
    }
   },
   {
@@ -307,12 +307,12 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Ryga Wenecja Bagdad Amman Ankara Ateny ATH 2 z 36 2 ANK 1 z 24 1 AMM 3 z 36 1 2 VCE 1 z 24 1 RIX 0 z 24 KHI Tydzień 1 34 pasażerów 0 6 12 18 17:03 dzień 2 z 3 Cofnij za 1 dzień za 1 dzień za 1 dzień Satelita Tempo 1×",
+   "text": "Ryga Wenecja Bagdad Amman Ankara Ateny ATH 2 z 36 2 ANK 1 z 24 1 AMM 3 z 36 1 2 BGW 2 z 24 1 1 VCE 1 z 24 1 RIX 0 z 24 KHI Tydzień 1 34 pasażerów 0 6 12 18 17:03 dzień 2 z 3 Cofnij za 1 dzień za 1 dzień za 1 dzień Satelita Tempo 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
     "routes": 9.87,
     "airports": 11.43,
-    "planes": 9.57,
+    "planes": 9.62,
     "tags": 1.02
    },
    "warmth": {
@@ -325,7 +325,7 @@
     "meanLuma": 72.7,
     "lumaStd": 68.1,
     "whiteShare": 0,
-    "colours": 464
+    "colours": 466
    }
   },
   {
@@ -336,25 +336,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Karaczi Ryga Wenecja Bagdad Ankara Ateny ATH 4 z 36 2 2 ANK 1 z 24 1 AMM 3 z 36 1 2 BGW 2 z 24 1 1 VCE 1 z 24 1 RIX 0 z 24 KHI 4 z 24 3 1 Tydzień 1, dzień 2 z 3 34 pasażerów 17:01 Cofnij za 1 dzień za 1 dzień za 1 dzień Satelita Tempo 1×",
+   "text": "Karaczi Ryga Wenecja Bagdad Amman Ankara Ateny ATH 2 z 36 2 ANK 1 z 24 1 AMM 3 z 36 1 2 BGW 2 z 24 1 1 VCE 1 z 24 1 RIX 0 z 24 KHI 4 z 24 3 1 Tydzień 1, dzień 2 z 3 34 pasażerów 17:03 Cofnij za 1 dzień za 1 dzień za 1 dzień Satelita Tempo 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
     "routes": 9.95,
     "airports": 10.03,
-    "planes": 9.34,
+    "planes": 9.28,
     "tags": 1.04
    },
    "warmth": {
-    "gold": 0.145,
-    "ratio": 1.206
+    "gold": 0.146,
+    "ratio": 1.205
    },
    "png": {
     "width": 1920,
     "height": 1080,
-    "meanLuma": 112.6,
-    "lumaStd": 72.5,
+    "meanLuma": 112.4,
+    "lumaStd": 72.7,
     "whiteShare": 0,
-    "colours": 438
+    "colours": 435
    }
   },
   {
@@ -705,10 +705,10 @@
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 87,
+    "meanLuma": 85.1,
     "lumaStd": 77.4,
     "whiteShare": 0,
-    "colours": 459
+    "colours": 455
    }
   },
   {
@@ -723,10 +723,10 @@
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 94.8,
+    "meanLuma": 94.2,
     "lumaStd": 76.3,
     "whiteShare": 0,
-    "colours": 466
+    "colours": 465
    }
   },
   {
@@ -741,10 +741,10 @@
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 94.4,
+    "meanLuma": 94.1,
     "lumaStd": 76.2,
     "whiteShare": 0,
-    "colours": 487
+    "colours": 492
    }
   },
   {
@@ -809,12 +809,12 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Riga Venice Baghdad Ankara ATH ANK 0 of 24 RIX 0 of 24 KHI Week 1 40 passengers 0 6 12 18 00:10 day 2 of 3 Undo in 1 day in 1 day in 1 day",
+   "text": "Riga Venice Baghdad Amman Ankara Athens ANK 0 of 24 AMM 5 of 36 RIX 0 of 24 KHI Week 1 40 passengers 0 6 12 18 00:07 day 2 of 3 Undo in 1 day in 1 day in 1 day",
    "sun": "180@camera",
    "contrast": {
     "routes": 10.14,
     "airports": 11.38,
-    "planes": 10.41,
+    "planes": 10.44,
     "tags": 1.02
    },
    "warmth": {
@@ -824,10 +824,10 @@
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 67.6,
-    "lumaStd": 74.8,
+    "meanLuma": 68,
+    "lumaStd": 75.4,
     "whiteShare": 0,
-    "colours": 327
+    "colours": 320
    }
   },
   {
@@ -838,23 +838,23 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Riga Venice Baghdad Ankara Athens ANK 0 of 24 AMM 5 of 36 5 VCE 0 of 24 RIX 0 of 24 KHI Week 1 40 passengers 0 6 12 18 00:11 day 2 of 3 Undo in 1 day in 1 day in 1 day Satellite Speed 1×",
+   "text": "Riga Venice Baghdad Amman Ankara Athens ANK 0 of 24 AMM 5 of 36 5 BGW 3 of 24 VCE 0 of 24 RIX 0 of 24 KHI Week 1 40 passengers 0 6 12 18 00:09 day 2 of 3 Undo in 1 day in 1 day in 1 day Satellite Speed 1×",
    "sun": "180@camera",
    "contrast": {
     "routes": 9.95,
     "airports": 10.71,
-    "planes": 8.95,
+    "planes": 9.29,
     "tags": 1.03
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.809
+    "ratio": 0.808
    },
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 65.3,
-    "lumaStd": 70.9,
+    "meanLuma": 65.4,
+    "lumaStd": 71.1,
     "whiteShare": 0,
     "colours": 320
    }
@@ -867,12 +867,12 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Riga Venice Baghdad Amman Ankara Athens ANK 0 of 24 AMM 5 of 36 5 VCE 0 of 24 RIX 0 of 24 KHI Week 1 40 passengers 0 6 12 18 00:11 day 2 of 3 Undo in 1 day in 1 day in 1 day Satellite Speed 1×",
+   "text": "Riga Venice Baghdad Amman Ankara Athens ATH 3 of 36 3 ANK 0 of 24 AMM 5 of 36 5 BGW 3 of 24 2 1 VCE 0 of 24 RIX 0 of 24 KHI Week 1 40 passengers 0 6 12 18 00:12 day 2 of 3 Undo in 1 day in 1 day in 1 day Satellite Speed 1×",
    "sun": "180@camera",
    "contrast": {
     "routes": 9.95,
     "airports": 10.03,
-    "planes": 9.17,
+    "planes": 9.21,
     "tags": 1.02
    },
    "warmth": {
@@ -882,10 +882,10 @@
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 64.5,
-    "lumaStd": 70.9,
+    "meanLuma": 64.7,
+    "lumaStd": 71.1,
     "whiteShare": 0,
-    "colours": 318
+    "colours": 327
    }
   },
   {
@@ -896,12 +896,12 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Riga Venice Baghdad Ankara Athens ANK 0 of 24 AMM 5 of 36 5 VCE 0 of 24 RIX 0 of 24 KHI Week 1 40 passengers 0 6 12 18 00:09 day 2 of 3 Undo in 1 day in 1 day in 1 day Satellite Speed 1×",
+   "text": "Riga Venice Baghdad Amman Ankara Athens ANK 0 of 24 AMM 5 of 36 5 BGW 3 of 24 RIX 0 of 24 KHI Week 1 40 passengers 0 6 12 18 00:08 day 2 of 3 Undo in 1 day in 1 day in 1 day Satellite Speed 1×",
    "sun": "180@camera",
    "contrast": {
     "routes": 10.06,
-    "airports": 11.25,
-    "planes": 10.31,
+    "airports": 11.03,
+    "planes": 10.4,
     "tags": 1.02
    },
    "warmth": {
@@ -911,10 +911,10 @@
    "png": {
     "width": 1320,
     "height": 2868,
-    "meanLuma": 68.1,
-    "lumaStd": 76.9,
+    "meanLuma": 68.3,
+    "lumaStd": 77,
     "whiteShare": 0,
-    "colours": 342
+    "colours": 339
    }
   },
   {
@@ -925,12 +925,12 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Riga Venice Baghdad Amman Ankara Athens ATH 3 of 36 3 ANK 0 of 24 AMM 5 of 36 5 VCE 0 of 24 RIX 0 of 24 KHI Week 1 40 passengers 0 6 12 18 00:11 day 2 of 3 Undo in 1 day in 1 day in 1 day Satellite Speed 1×",
+   "text": "Riga Venice Baghdad Amman Ankara Athens ATH 3 of 36 3 ANK 0 of 24 AMM 5 of 36 5 BGW 3 of 24 2 1 VCE 0 of 24 RIX 0 of 24 KHI Week 1 40 passengers 0 6 12 18 00:09 day 2 of 3 Undo in 1 day in 1 day in 1 day Satellite Speed 1×",
    "sun": "180@camera",
    "contrast": {
     "routes": 9.87,
     "airports": 10.03,
-    "planes": 9.6,
+    "planes": 9.63,
     "tags": 1.03
    },
    "warmth": {
@@ -941,9 +941,9 @@
     "width": 2064,
     "height": 2752,
     "meanLuma": 64,
-    "lumaStd": 69.4,
+    "lumaStd": 69.5,
     "whiteShare": 0,
-    "colours": 344
+    "colours": 345
    }
   },
   {
@@ -954,12 +954,12 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Karachi Riga Venice Baghdad Ankara Athens ATH 3 of 36 3 ANK 0 of 24 AMM 5 of 36 5 BGW 3 of 24 2 1 VCE 0 of 24 RIX 0 of 24 KHI 0 of 24 Week 1, day 2 of 3 40 passengers 00:09 Undo in 1 day in 1 day in 1 day Satellite Speed 1×",
+   "text": "Karachi Riga Venice Baghdad Amman Ankara Athens ATH 3 of 36 3 ANK 0 of 24 AMM 5 of 36 5 BGW 3 of 24 2 1 VCE 0 of 24 RIX 0 of 24 KHI 0 of 24 Week 1, day 2 of 3 40 passengers 00:10 Undo in 1 day in 1 day in 1 day Satellite Speed 1×",
    "sun": "180@camera",
    "contrast": {
     "routes": 9.95,
-    "airports": 10.78,
-    "planes": 9.16,
+    "airports": 10.7,
+    "planes": 9.17,
     "tags": 1.04
    },
    "warmth": {
@@ -969,10 +969,10 @@
    "png": {
     "width": 1920,
     "height": 1080,
-    "meanLuma": 99.7,
+    "meanLuma": 99.8,
     "lumaStd": 77.6,
     "whiteShare": 0,
-    "colours": 319
+    "colours": 315
    }
   },
   {
@@ -983,25 +983,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Riga Venice Baghdad Ankara ATH RIX 0 of 24 KHI Week 1 34 passengers 0 6 12 18 17:02 day 2 of 3 Undo in 1 day in 1 day in 1 day",
+   "text": "Riga Venice Baghdad Amman Ankara Athens ANK 1 of 24 AMM 3 of 36 RIX 0 of 24 KHI Week 1 34 passengers 0 6 12 18 17:01 day 2 of 3 Undo in 1 day in 1 day in 1 day",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
     "routes": 10.06,
     "airports": 11.56,
-    "planes": 9.62,
+    "planes": 9.6,
     "tags": 1.02
    },
    "warmth": {
     "gold": 0.157,
-    "ratio": 1.38
+    "ratio": 1.381
    },
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 75.8,
-    "lumaStd": 72.6,
+    "meanLuma": 76.7,
+    "lumaStd": 73.2,
     "whiteShare": 0,
-    "colours": 425
+    "colours": 430
    }
   },
   {
@@ -1012,25 +1012,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Riga Venice Baghdad Ankara Athens ANK 1 of 24 1 AMM 3 of 36 1 2 VCE 1 of 24 1 RIX 0 of 24 KHI Week 1 34 passengers 0 6 12 18 17:03 day 2 of 3 Undo in 1 day in 1 day in 1 day Satellite Speed 1×",
+   "text": "Riga Venice Baghdad Amman Ankara Athens ANK 1 of 24 1 AMM 3 of 36 1 2 BGW 2 of 24 VCE 1 of 24 1 RIX 0 of 24 KHI Week 1 34 passengers 0 6 12 18 17:03 day 2 of 3 Undo in 1 day in 1 day in 1 day Satellite Speed 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
     "routes": 9.87,
-    "airports": 11.53,
-    "planes": 9.49,
+    "airports": 11.37,
+    "planes": 9.72,
     "tags": 1.03
    },
    "warmth": {
     "gold": 0.153,
-    "ratio": 1.292
+    "ratio": 1.29
    },
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 73.5,
-    "lumaStd": 69.6,
+    "meanLuma": 73.6,
+    "lumaStd": 69.7,
     "whiteShare": 0,
-    "colours": 439
+    "colours": 436
    }
   },
   {
@@ -1041,25 +1041,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Riga Venice Baghdad Amman Ankara Athens ANK 1 of 24 1 AMM 3 of 36 1 2 VCE 1 of 24 1 RIX 0 of 24 KHI Week 1 34 passengers 0 6 12 18 17:03 day 2 of 3 Undo in 1 day in 1 day in 1 day Satellite Speed 1×",
+   "text": "Riga Venice Baghdad Amman Ankara Athens ATH 2 of 36 2 ANK 1 of 24 1 AMM 3 of 36 1 2 BGW 2 of 24 1 1 VCE 1 of 24 1 RIX 0 of 24 KHI Week 1 34 passengers 0 6 12 18 17:04 day 2 of 3 Undo in 1 day in 1 day in 1 day Satellite Speed 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
     "routes": 9.87,
     "airports": 11.44,
-    "planes": 9.5,
+    "planes": 9.64,
     "tags": 1.02
    },
    "warmth": {
     "gold": 0.15,
-    "ratio": 1.302
+    "ratio": 1.298
    },
    "png": {
     "width": 1536,
     "height": 2048,
     "meanLuma": 72.7,
-    "lumaStd": 69.5,
+    "lumaStd": 69.7,
     "whiteShare": 0,
-    "colours": 445
+    "colours": 456
    }
   },
   {
@@ -1070,25 +1070,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Riga Venice Baghdad Ankara Athens ANK 1 of 24 1 VCE 1 of 24 1 RIX 0 of 24 KHI Week 1 34 passengers 0 6 12 18 17:00 day 2 of 3 Undo in 1 day in 1 day in 1 day Satellite Speed 1×",
+   "text": "Riga Venice Baghdad Amman Ankara Athens ATH 2 of 36 ANK 1 of 24 1 AMM 3 of 36 1 2 BGW 2 of 24 RIX 0 of 24 KHI Week 1 34 passengers 0 6 12 18 17:02 day 2 of 3 Undo in 1 day in 1 day in 1 day Satellite Speed 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
     "routes": 9.95,
-    "airports": 11.52,
-    "planes": 9.5,
+    "airports": 11.56,
+    "planes": 9.59,
     "tags": 1.02
    },
    "warmth": {
     "gold": 0.136,
-    "ratio": 1.384
+    "ratio": 1.38
    },
    "png": {
     "width": 1320,
     "height": 2868,
-    "meanLuma": 76.3,
-    "lumaStd": 74.3,
+    "meanLuma": 76.6,
+    "lumaStd": 74.8,
     "whiteShare": 0,
-    "colours": 458
+    "colours": 466
    }
   },
   {
@@ -1099,25 +1099,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Riga Venice Baghdad Amman Ankara Athens ATH 2 of 36 2 ANK 1 of 24 1 AMM 3 of 36 1 2 VCE 1 of 24 1 RIX 0 of 24 KHI Week 1 34 passengers 0 6 12 18 17:04 day 2 of 3 Undo in 1 day in 1 day in 1 day Satellite Speed 1×",
+   "text": "Riga Venice Baghdad Amman Ankara Athens ATH 2 of 36 2 ANK 1 of 24 1 AMM 3 of 36 1 2 BGW 2 of 24 1 1 VCE 1 of 24 1 RIX 0 of 24 KHI Week 1 34 passengers 0 6 12 18 17:05 day 2 of 3 Undo in 1 day in 1 day in 1 day Satellite Speed 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
     "routes": 9.87,
-    "airports": 11.44,
-    "planes": 9.58,
+    "airports": 11.43,
+    "planes": 9.6,
     "tags": 1.02
    },
    "warmth": {
-    "gold": 0.161,
-    "ratio": 1.313
+    "gold": 0.163,
+    "ratio": 1.321
    },
    "png": {
     "width": 2064,
     "height": 2752,
-    "meanLuma": 72.4,
+    "meanLuma": 72.6,
     "lumaStd": 68.2,
     "whiteShare": 0,
-    "colours": 463
+    "colours": 470
    }
   },
   {
@@ -1128,12 +1128,12 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Karachi Riga Venice Baghdad Ankara Athens ATH 2 of 36 2 ANK 1 of 24 1 AMM 3 of 36 1 2 BGW 2 of 24 1 1 VCE 1 of 24 1 RIX 0 of 24 KHI 4 of 24 3 1 Week 1, day 2 of 3 34 passengers 17:03 Undo in 1 day in 1 day in 1 day Satellite Speed 1×",
+   "text": "Karachi Riga Venice Baghdad Amman Ankara Athens ATH 2 of 36 2 ANK 1 of 24 1 AMM 3 of 36 1 2 BGW 2 of 24 1 1 VCE 1 of 24 1 RIX 0 of 24 KHI 4 of 24 3 1 Week 1, day 2 of 3 34 passengers 17:03 Undo in 1 day in 1 day in 1 day Satellite Speed 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
     "routes": 9.95,
-    "airports": 10.95,
-    "planes": 9.37,
+    "airports": 10.03,
+    "planes": 9.3,
     "tags": 1.04
    },
    "warmth": {
@@ -1144,9 +1144,9 @@
     "width": 1920,
     "height": 1080,
     "meanLuma": 112.4,
-    "lumaStd": 72.5,
+    "lumaStd": 72.6,
     "whiteShare": 0,
-    "colours": 451
+    "colours": 437
    }
   },
   {
@@ -1497,10 +1497,10 @@
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 86.9,
-    "lumaStd": 77.4,
+    "meanLuma": 84.9,
+    "lumaStd": 77.5,
     "whiteShare": 0,
-    "colours": 463
+    "colours": 455
    }
   },
   {
@@ -1515,10 +1515,10 @@
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 94.9,
+    "meanLuma": 94.2,
     "lumaStd": 76.4,
     "whiteShare": 0,
-    "colours": 469
+    "colours": 462
    }
   },
   {
@@ -1533,10 +1533,10 @@
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 94.4,
+    "meanLuma": 94,
     "lumaStd": 76.2,
     "whiteShare": 0,
-    "colours": 488
+    "colours": 490
    }
   },
   {
