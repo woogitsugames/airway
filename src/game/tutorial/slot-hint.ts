@@ -4,6 +4,7 @@
 import { t } from '../../i18n';
 import { browserTutorialStorage } from './controller';
 import { FirstTimeRegistry, LEGACY_SLOT_KEY } from './first-time';
+import '../../ui/skin/current.css'; // [night-11as] skin tokens read by atcStrip.css
 import '../../ui/atcStrip.css';
 
 export const SLOT_HINT_KEY = LEGACY_SLOT_KEY;

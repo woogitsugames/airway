@@ -3,7 +3,8 @@
 //   node e2e/skin-pixels.mjs capture <dir>      screens of e2e/screen-fixtures.mjs (menu, settings, logbook, puzzle
 //                                               board, weekly board over the HUD, game over, HUD, first-time card) +
 //                                               pause sheet, airport overlay (tags, jam, NEW, curfew, slot ticket,
-//                                               trend, demand surge, edge chips) and hub cause board; PL/EN × 412×915, 915×412,
+//                                               trend, demand surge, edge chips), hub cause board and [night-11as] ATC
+//                                               strip + route menu + handles, leaderboard, puzzle game, tutorial; PL/EN × 412×915, 915×412,
 //                                               320×568 at 100 % text, 412×915 also at 150 % (D-248). PNG + a JSON of
 //                                               computed visual properties of every element.
 //   node e2e/skin-pixels.mjs compare <a[,a2…]> <b[,b2…]>  every shot identical (pixels and computed style) in some base/new pair (a few
@@ -22,7 +23,9 @@ import { SCREENS, mountScreen } from './screen-fixtures.mjs';
 const started = performance.now();
 const [mode, dirA, dirB] = process.argv.slice(2);
 const SIZES = [[412, 915], [915, 412], [320, 568]];
-const EXTRA = ['pause', 'overlay', 'hub-board'];
+// [night-11as] + the components the D-250 follow-up covers: ATC strip / route menu / handles, leaderboard, puzzle game
+// screen (with a curfew barrier), tutorial vignette.
+const EXTRA = ['pause', 'overlay', 'hub-board', 'atc', 'leaderboard', 'puzzle-game', 'tutorial'];
 const PROPS = ['color', 'background-color', 'background-image', 'border-top-color', 'border-right-color', 'border-bottom-color',
   'border-left-color', 'border-top-width', 'border-left-width', 'border-top-left-radius', 'outline-color', 'box-shadow',
   'font-family', 'font-weight', 'font-size', 'line-height', 'letter-spacing', 'fill', 'stroke', 'width', 'height',
@@ -89,6 +92,35 @@ async function mountExtra(page, screen, language) {
       add('LIM', -170, 20); overlay.setPassengers('LIM', glyphs(2)); overlay.setCurfew('LIM', true);
       add('JNB', -150, -30); overlay.setSurge?.('JNB', { phase: 'announced', passengers: 12, time: '09:00' });
       overlay.update();
+    } else if (screen === 'atc') {
+      const { mountAtcStrip, mountRouteContextMenu, mountRouteHandles } = await import('/src/ui/atcStrip.ts');
+      const layer = document.createElement('div');
+      layer.style.cssText = 'position:fixed;inset:0';
+      host.append(layer);
+      mountAtcStrip(layer).show({ from: 'FRA', to: 'SIN', distanceKm: 10260, rangeKm: 3000, aircraft: 'turboprop' });
+      mountRouteContextMenu(layer, { remove() {}, shorten() {}, close() {} }).show({ routeId: 'r1', end: 'end', x: 40, y: 60, canShorten: true });
+      mountRouteHandles(layer).show([{ routeId: 'r1', end: 'start', cityId: 'FRA', x: 290, y: 120 },
+        { routeId: 'r2', end: 'end', cityId: 'MAD', x: 340, y: 180 }], 'r2');
+    } else if (screen === 'leaderboard') {
+      const { createRankingView } = await import('/src/ui/leaderboard/index.ts');
+      const entry = (rank, callSign, score, me = false) => ({ rank, callSign, score, me });
+      const board = (me) => ({ entries: [entry(1, 'KITE-41', 2310), entry(2, 'HERON-7', 1984), entry(3, 'OWL-12', 1702)], me });
+      const ready = createRankingView('2026-11-05');
+      ready.update({ kind: 'ready', daily: board(entry(17, 'GULL-3', 912, true)), weekly: board(null) });
+      const status = createRankingView('2026-11-05');
+      status.update({ kind: 'queued' });
+      host.append(ready.element, status.element);
+    } else if (screen === 'puzzle-game') {
+      const { mountPuzzleSelector } = await import('/src/ui/puzzles/index.ts');
+      mountPuzzleSelector(host, () => {});
+      const flaps = [...document.querySelectorAll('.puzzle-flap')];
+      (flaps.find((flap) => flap.querySelector('.puzzle-flap-number')?.textContent === '08') ?? flaps[0])?.click();
+    } else if (screen === 'tutorial') {
+      const { mountTutorial } = await import('/src/game/tutorial/index.ts');
+      mountTutorial(host);
+      // The route guide loops; freeze every animation at its start so two captures of one tree match.
+      await new Promise((done) => requestAnimationFrame(done));
+      for (const animation of document.getAnimations()) { animation.pause(); animation.currentTime = 0; }
     } else if (screen === 'hub-board') {
       const { HubDepartureLog } = await import('/src/game/hubBoard.ts');
       const { mountHubBoard } = await import('/src/ui/hubBoard.ts');

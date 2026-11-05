@@ -5,6 +5,7 @@ import { dispatchPuzzle, resetPuzzle, startPuzzle, undoPuzzle, type PuzzleSessio
 import { readPuzzleMargins, recordPuzzleMargin } from '../../game/puzzleBest';
 import { t, type TranslationKey } from '../../i18n';
 import { displayCode } from '../../data/index.ts'; // [night-12h] R4a: ids stay, the screen shows the known code
+import '../skin/current.css'; // [night-11as] skin tokens read by board.css
 import './board.css';
 
 const PROGRESS_KEY = 'airway.puzzles.v1';
@@ -78,10 +79,11 @@ function curfewMark(code: string, hours: string): HTMLElement {
   mark.setAttribute('role', 'img');
   mark.setAttribute('aria-label', t('puzzle.curfew.mark', { city: displayCode(code), hours }));
   mark.title = t('puzzle.curfew.mark', { city: displayCode(code), hours });
+  // [night-11as] D-250 follow-up: the inks are the airport tag's barrier tokens (src/ui/skin/current.css).
   mark.innerHTML = '<svg viewBox="0 0 22 12" width="26" height="14" aria-hidden="true" focusable="false">' +
-    '<rect x="1" y="2" width="3" height="9" fill="#13302e"/>' +
-    '<rect x="4" y="3" width="17" height="4" fill="#fbf8f1" stroke="#13302e" stroke-width="1"/>' +
-    '<path d="M7 3h3l-2 4H5zM13 3h3l-2 4h-3zM19 3h2v1.6L20 7h-3z" fill="#b8322a"/></svg>';
+    '<rect x="1" y="2" width="3" height="9" style="fill:var(--skin-tag-barrier-post)"/>' +
+    '<rect x="4" y="3" width="17" height="4" style="fill:var(--skin-tag-barrier-boom);stroke:var(--skin-tag-barrier-post)" stroke-width="1"/>' +
+    '<path d="M7 3h3l-2 4H5zM13 3h3l-2 4h-3zM19 3h2v1.6L20 7h-3z" style="fill:var(--skin-tag-barrier-stripe)"/></svg>';
   return mark;
 }
 /** [night-07d] Airport code followed by the curfew barrier when that airport closes at night. */

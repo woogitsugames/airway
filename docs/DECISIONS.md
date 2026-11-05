@@ -2299,7 +2299,8 @@ globe-less fixture shots — the eight `e2e/screen-fixtures.mjs` screens + pause
 Rejected: a TS token map (the values are CSS-only; inline styles would beat media queries), palette-named tokens
 (`--skin-paper` used by every paper object would couple the components a direction separates), tokenising sizes and
 paddings now (a new typeface changes them per component anyway; tag widths are tied to `overlay.ts` constants).
-Not covered yet: ATC strip, logbook, puzzle board, leaderboard, tutorial, `glyphs.ts` outline, the globe.
+Not covered yet: ATC strip, logbook, puzzle board, leaderboard, tutorial, `glyphs.ts` outline, the globe. [N11as] Follow-up: all
+of these but the globe are covered now (286 tokens; the tutorial's painted mini-world SVG stays art, like the globe).
 Guards: `test:skin-tokens` (`test:fast`). **Status: in force.**
 
 ## D-251 — Endless licence classes: three difficulty tiers from scenario knobs only, unlocked on the device (2026-11-05, Claude, night N12bc)

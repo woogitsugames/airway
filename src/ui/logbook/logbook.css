@@ -1,46 +1,46 @@
 /* [night-10n] Logbook: a pilot's logbook page on the settings paper. Ruled cells, ink numbers in Overpass Mono,
    a red margin rule like a printed logbook; no cards, no charts. */
-.airway-logbook__paper { position:relative; border-left:3px double #c8352a; }
+.airway-logbook__paper { position:relative; border-left:3px double var(--skin-logbook-edge); }
 .airway-logbook__columns { display:grid; gap:14px; }
 @media (orientation:landscape) and (min-width:700px) { .airway-logbook__columns { grid-template-columns:1fr 1fr; column-gap:22px; } }
 .airway-logbook__section { min-width:0; margin-bottom:14px; }
-.airway-logbook__totals { display:grid; grid-template-columns:1fr 1fr; margin:8px 0 0; border-top:2px solid #2a2420; }
+.airway-logbook__totals { display:grid; grid-template-columns:1fr 1fr; margin:8px 0 0; border-top:2px solid var(--skin-logbook-rule); }
 .airway-logbook__records .airway-logbook__piece { white-space:nowrap; }
-.airway-logbook__totals .airway-logbook__cell { display:flex; flex-direction:column; justify-content:space-between; padding:8px 8px 9px; border-bottom:1px solid #c2b5a6; min-width:0; }
-.airway-logbook__totals .airway-logbook__cell:nth-child(odd) { border-right:1px solid #c2b5a6; }
-.airway-logbook__totals dt { font:700 calc(11px * var(--airway-text-scale))/1.25 'Overpass Mono',monospace; letter-spacing:.04em; text-transform:uppercase; color:#55514a; overflow-wrap:anywhere; }
-.airway-logbook__totals dd { margin:4px 0 0; font:800 calc(24px * var(--airway-text-scale-title))/1.1 'Overpass Mono',monospace; color:#13302e; overflow-wrap:anywhere; }
-.airway-logbook__records { margin:8px 0 0; border-top:2px solid #2a2420; }
-.airway-logbook__records .airway-logbook__cell { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.15fr); gap:10px; align-items:baseline; padding:9px 2px; border-bottom:1px dashed #c2b5a6; }
-.airway-logbook__records dt { font:700 calc(13px * var(--airway-text-scale))/1.25 'Atkinson Hyperlegible Next',sans-serif; color:#2a2420; overflow-wrap:anywhere; }
-.airway-logbook__records dd { margin:0; font:700 calc(13px * var(--airway-text-scale))/1.3 'Overpass Mono',monospace; color:#13302e; text-align:right; overflow-wrap:anywhere; }
-.airway-logbook__flights { width:100%; margin-top:8px; border-collapse:collapse; table-layout:fixed; font:700 calc(12px * var(--airway-text-scale-dense))/1.2 'Overpass Mono',monospace; color:#2a2420; }
-.airway-logbook__flights th { text-align:left; font:700 calc(10px * var(--airway-text-scale-dense))/1.2 'Overpass Mono',monospace; letter-spacing:.06em; text-transform:uppercase; color:#55514a; padding:6px 4px; border-top:2px solid #2a2420; border-bottom:2px solid #2a2420; overflow-wrap:anywhere; vertical-align:bottom; }
-.airway-logbook__flights td { padding:9px 4px; border-bottom:1px solid #c2b5a6; overflow-wrap:anywhere; } /* [night-11ac] R7h: longer copy wraps, no ellipsis */
+.airway-logbook__totals .airway-logbook__cell { display:flex; flex-direction:column; justify-content:space-between; padding:8px 8px 9px; border-bottom:1px solid var(--skin-logbook-row-rule); min-width:0; }
+.airway-logbook__totals .airway-logbook__cell:nth-child(odd) { border-right:1px solid var(--skin-logbook-row-rule); }
+.airway-logbook__totals dt { font:var(--skin-weight-bold) calc(11px * var(--airway-text-scale))/1.25 var(--skin-face-mono); letter-spacing:.04em; text-transform:uppercase; color:var(--skin-logbook-label-ink); overflow-wrap:anywhere; }
+.airway-logbook__totals dd { margin:4px 0 0; font:var(--skin-weight-heavy) calc(24px * var(--airway-text-scale-title))/1.1 var(--skin-face-mono); color:var(--skin-logbook-value-ink); overflow-wrap:anywhere; }
+.airway-logbook__records { margin:8px 0 0; border-top:2px solid var(--skin-logbook-rule); }
+.airway-logbook__records .airway-logbook__cell { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.15fr); gap:10px; align-items:baseline; padding:9px 2px; border-bottom:1px dashed var(--skin-logbook-row-rule); }
+.airway-logbook__records dt { font:var(--skin-weight-bold) calc(13px * var(--airway-text-scale))/1.25 var(--skin-face-text); color:var(--skin-logbook-ink); overflow-wrap:anywhere; }
+.airway-logbook__records dd { margin:0; font:var(--skin-weight-bold) calc(13px * var(--airway-text-scale))/1.3 var(--skin-face-mono); color:var(--skin-logbook-value-ink); text-align:right; overflow-wrap:anywhere; }
+.airway-logbook__flights { width:100%; margin-top:8px; border-collapse:collapse; table-layout:fixed; font:var(--skin-weight-bold) calc(12px * var(--airway-text-scale-dense))/1.2 var(--skin-face-mono); color:var(--skin-logbook-ink); }
+.airway-logbook__flights th { text-align:left; font:var(--skin-weight-bold) calc(10px * var(--airway-text-scale-dense))/1.2 var(--skin-face-mono); letter-spacing:.06em; text-transform:uppercase; color:var(--skin-logbook-label-ink); padding:6px 4px; border-top:2px solid var(--skin-logbook-rule); border-bottom:2px solid var(--skin-logbook-rule); overflow-wrap:anywhere; vertical-align:bottom; }
+.airway-logbook__flights td { padding:9px 4px; border-bottom:1px solid var(--skin-logbook-row-rule); overflow-wrap:anywhere; } /* [night-11ac] R7h: longer copy wraps, no ellipsis */
 .airway-logbook__flights th:nth-child(1), .airway-logbook__flights td:nth-child(1) { width:17%; }
 .airway-logbook__flights th:nth-child(3), .airway-logbook__flights td:nth-child(3) { width:15%; }
 .airway-logbook__flights th:nth-child(4), .airway-logbook__flights td:nth-child(4) { width:13%; }
 .airway-logbook__flights th:nth-child(5), .airway-logbook__flights td:nth-child(5) { width:21%; }
 .airway-logbook__flights th:nth-child(n+4), .airway-logbook__flights .is-num { text-align:right; }
 /* Daily flights carry the teal stub of the daily challenge; Endless rows stay plain ink. Shape, not only colour. */
-.airway-logbook__flights tr[data-mode="daily"] .airway-logbook__mode::before { content:''; display:inline-block; width:8px; height:10px; margin-right:5px; background:#1e6f6a; clip-path:polygon(0 0,100% 0,100% 100%,50% 70%,0 100%); vertical-align:-1px; }
+.airway-logbook__flights tr[data-mode="daily"] .airway-logbook__mode::before { content:''; display:inline-block; width:8px; height:10px; margin-right:5px; background:var(--skin-logbook-daily-mark); clip-path:polygon(0 0,100% 0,100% 100%,50% 70%,0 100%); vertical-align:-1px; }
 /* [night-11aj] R2g: the home region of an Endless flight, a second line under the mode. */
 .airway-logbook__region { display:block; font-size: calc(11px * var(--airway-text-scale)); color:var(--airway-kraft-empty-ink); }
-.airway-logbook__empty { margin:10px 0 0; font:400 calc(14px * var(--airway-text-scale))/1.4 'Atkinson Hyperlegible Next',sans-serif; color:#2a2420; }
+.airway-logbook__empty { margin:10px 0 0; font:var(--skin-weight-regular) calc(14px * var(--airway-text-scale))/1.4 var(--skin-face-text); color:var(--skin-logbook-ink); }
 .airway-logbook__local { margin-top:4px; }
 /* [night-12am] R1o: "Copy summary" — the settings' dark action strip; the fallback text is ruled logbook paper. */
 .airway-logbook__summary { margin-top:4px; }
 .airway-logbook__summary .airway-logbook__copy { margin-top:0; }
 .airway-logbook__copy-status:empty { display:none; }
-.airway-logbook__summary-text { display:block; box-sizing:border-box; width:100%; margin-top:6px; padding:8px; border:1px solid #2a2420; background:#fbf6ec; color:#13302e; font:400 calc(12px * var(--airway-text-scale))/1.4 'Overpass Mono',monospace; resize:vertical; }
+.airway-logbook__summary-text { display:block; box-sizing:border-box; width:100%; margin-top:6px; padding:8px; border:1px solid var(--skin-logbook-rule); background:var(--skin-logbook-summary-bg); color:var(--skin-logbook-value-ink); font:var(--skin-weight-regular) calc(12px * var(--airway-text-scale))/1.4 var(--skin-face-mono); resize:vertical; }
 .airway-logbook__summary-text[hidden] { display:none; }
 @media (max-width:370px) { .airway-logbook__totals dd { font-size: calc(20px * var(--airway-text-scale-title)); } .airway-logbook__records .airway-logbook__cell { grid-template-columns:1fr; gap:3px; } .airway-logbook__records dd { text-align:left; } .airway-logbook__flights { font-size: calc(11px * var(--airway-text-scale-dense)); } .airway-logbook__flights td, .airway-logbook__flights th { padding-left:2px; padding-right:2px; } }
 /* [night-12ax] R1n, D-242: Endless milestones as record rows; a reached one has a filled square before its name, an
    open one a hollow square (shape, not only colour), as on the game-over row. */
-.airway-logbook__milestones { --aw-ms-done:#1e6f6a; --aw-ms-open:#6b6257; }
+.airway-logbook__milestones { --aw-ms-done:var(--skin-logbook-milestone-done); --aw-ms-open:var(--skin-logbook-milestone-open); }
 .airway-logbook__milestones dt::before { content:''; display:inline-block; width:8px; height:8px; margin-right:6px; box-sizing:border-box; border:1.5px solid var(--aw-ms-open); vertical-align:1px; }
 .airway-logbook__milestones [data-reached="true"] dt::before { border-color:var(--aw-ms-done); background:var(--aw-ms-done); }
-.airway-logbook__milestones [data-reached="false"] dd { color:var(--aw-ms-open); font-weight:400; }
+.airway-logbook__milestones [data-reached="false"] dd { color:var(--aw-ms-open); font-weight:var(--skin-weight-regular); }
 /* [night-11ap] R1g: at the 150 % text step a record's value sits under its label (as on the narrowest phones), so a
    long unbreakable piece such as "gwiazdki 7 z 120" keeps the full width. */
 :root[data-airway-text-scale="150"] .airway-logbook__records .airway-logbook__cell { grid-template-columns:1fr; gap:3px; }

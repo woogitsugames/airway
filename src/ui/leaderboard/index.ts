@@ -1,6 +1,7 @@
 // [night-06c] D-66 ranking board on the daily game-over screen: a second split-flap style board with the
 // day's and the ISO week's standings. Read-only view of src/net results; shows its own sending state.
 import { localNumber, t, type TranslationKey } from '../../i18n';
+import '../skin/current.css'; // [night-11as] skin tokens read by leaderboard.css
 import './leaderboard.css';
 
 export interface RankingEntry { readonly rank: number; readonly callSign: string; readonly score: number; readonly me: boolean }
