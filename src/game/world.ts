@@ -9,6 +9,7 @@ import {
   contrastRatio, relativeLuminance, insetsFromLayout, menuFraming, solveZoomForRadius, menuSpinRate, type LayoutRect,
 } from '../render'; // [task-34] [task-39] menuSpinRate
 import { cityByCode } from '../data'; // [task-34]
+import { menuNetworkClashes, menuTilt, type ClearRect } from './menu-clear'; // [night-16a] D-262
 import { t } from '../i18n'; // [night-11h]
 import { forgetAdaptiveSteps, readAdaptiveSteps, writeAdaptiveSteps } from './adaptiveMemory'; // [night-07b]
 import { reducedMotion } from '../ui/motion'; // [night-11g] D-88
@@ -74,8 +75,10 @@ export interface World {
 
 /** [task-34] Menu camera target: North Atlantic between New York and Europe (mockup menu-p). */
 const MENU_TARGET = { lon: -16, lat: 40 };
-/** [night-14b] D-259: degrees the Róża menu looks south of MENU_TARGET in portrait, and the Róża menu entries. */
-const MENU_ROZA_TILT = 16;
+/**
+ * [night-14b] D-259: the Róża menu entries; the view looks south of MENU_TARGET so the demo network rides above them
+ * ([night-16a] D-262: as far as it takes for no demo airport to stand on an entry, src/game/menu-clear.ts).
+ */
 const MENU_ROZA_ENTRIES = '.airway-board .airway-flight, .airway-board .airway-flight__region, .roza-menu-rose';
 const rozaMenu = (): boolean => typeof document !== 'undefined' && document.documentElement.dataset.skin === 'roza';
 
@@ -115,6 +118,8 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
   const frozenSpin = import.meta.env.DEV && new URLSearchParams(location.search).has('storeShot');
   let measureRaf = 0;
   let lastFrame = ''; // last applied framing; unchanged layout never resizes the drawing buffer
+  let demoCities: readonly { lon: number; lat: number }[] = []; // [night-16a] D-262: the menu network's airports
+  let menuTiltNow = 0; // [night-16a] D-262: degrees the Róża menu looks south of MENU_TARGET (DEV probe)
   const panelObserver = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(() => scheduleMeasure()) : null;
   const observed = new Set<Element>();
   const boxOf = (element: Element | null, origin: DOMRect): LayoutRect | null => {
@@ -135,6 +140,15 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
         right: Math.max(box.right, next.right), bottom: Math.max(box.bottom, next.bottom) } : next;
     }
     return box;
+  };
+  /** [night-16a] D-262: every Róża menu entry's box (layer coordinates), for the demo network's clearance. */
+  const entryRects = (origin: DOMRect): ClearRect[] => {
+    const rects: ClearRect[] = [];
+    for (const element of host.querySelectorAll(MENU_ROZA_ENTRIES)) {
+      const r = element.getBoundingClientRect();
+      if (r.width >= 1 && r.height >= 1) rects.push({ left: r.left - origin.left, top: r.top - origin.top, right: r.right - origin.left, bottom: r.bottom - origin.top });
+    }
+    return rects;
   };
   const measure = (): void => {
     measureRaf = 0;
@@ -162,7 +176,7 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
         };
       }
       // The entries' box is part of the key: the tilt below needs them laid out (a first measure may come before).
-      const key = `menu ${w} ${h} ${entries ? `${Math.round(entries.left)},${Math.round(entries.top)}` : '-'} ${JSON.stringify(framing)}`;
+      const key = `menu ${w} ${h} ${entries ? `${Math.round(entries.left)},${Math.round(entries.top)}` : '-'} ${demoCities.length} ${JSON.stringify(framing)}`;
       if (key === lastFrame) return;
       lastFrame = key;
       appliedInsets = framing.insets; // [task-39]
@@ -178,7 +192,19 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
       // [night-14b] D-259 Róża: the entries stand in the lower half, so the view looks further south and the demo network
       // (London–Dakar) rides above them (it ran under "Lot bez końca" / "Ustawienia" on tall phones and foldables). The
       // globe's outline does not move; the slow menu spin keeps this latitude.
-      if (entries) orbit.setTarget(orbit.getState().longitude, MENU_TARGET.lat - MENU_ROZA_TILT);
+      // [night-16a] D-262: 16° was not enough on a short phone (Dakar under "Ustawienia"): the tilt grows until no demo
+      // airport comes near an entry at any turn of the spin.
+      if (entries) {
+        const longitude = orbit.getState().longitude;
+        const rects = entryRects(origin);
+        const tilt = menuTilt((next) => {
+          orbit.setTarget(longitude, MENU_TARGET.lat - next);
+          renderer.camera.updateMatrixWorld();
+          return menuNetworkClashes(demoCities, rects, (lon, lat, out) => renderer.project(lon, lat, 1.01, out));
+        });
+        orbit.setTarget(longitude, MENU_TARGET.lat - tilt);
+        menuTiltNow = tilt;
+      }
       return;
     }
     const boxes: LayoutRect[] = [];
@@ -212,7 +238,15 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
   const menuWatcher = typeof MutationObserver !== 'undefined' ? new MutationObserver(() => scheduleMeasure()) : null;
   panelObserver?.observe(host);
   let spin = 0;
-  const demo = createMenuNetwork(renderer, (code) => cityByCode(code) ?? null); // [task-34]
+  // [night-16a] D-262: the demo airports pass through to the renderer and are kept for the menu clearance (measure).
+  const demo = createMenuNetwork({
+    setCities: (cities) => { demoCities = cities; renderer.setCities(cities); },
+    setRoutes: (routes, revision) => renderer.setRoutes(routes, revision),
+    setHubLoad: (loads) => renderer.setHubLoad(loads),
+    setPlanes: (previous, current) => renderer.setPlanes(previous, current),
+    setCurfew: (closedIds) => renderer.setCurfew(closedIds),
+    setRoutePreview: (model) => renderer.setRoutePreview(model),
+  }, (code) => cityByCode(code) ?? null); // [task-34]
   let frameCallback: ((dt: number) => FrameState | void) | null = null;
   let last = performance.now();
   let raf = 0;
@@ -223,7 +257,11 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
   // [task-39] What the first rendered menu frame used vs. the framing now (scripts/shots-34.mjs).
   let firstMenuFrame: string | null = null;
   const framingKey = (): string => `${lastFrame} zoom=${renderer.orbit.zoomLevel.toFixed(4)}`;
-  if (import.meta.env.DEV) installWorldProbe(renderer, () => ({ first: firstMenuFrame, now: framingKey(), menuSpin: menuSpin() }), () => drawn); // [task-34]
+  if (import.meta.env.DEV) installWorldProbe(renderer, () => ({ first: firstMenuFrame, now: framingKey(), menuSpin: menuSpin(), // [task-34]
+    // [night-16a] D-262: the menu tilt in use and how many (demo airport, spin angle) samples still touch an entry.
+    menuTilt: menuTiltNow, menuClashes: menuActive && rozaMenu() ? (renderer.camera.updateMatrixWorld(),
+      menuNetworkClashes(demoCities, entryRects(host.getBoundingClientRect()), (lon, lat, out) => renderer.project(lon, lat, 1.01, out))) : 0,
+  }), () => drawn);
   /** [task-39] D-62: degrees per second the menu globe turns right now. */
   const menuSpin = (): number => menuSpinRate({
     menuActive, menuShown, reducedMotion: reducedMotion() || frozenSpin, // [night-11g] D-88 the game's switch
@@ -340,7 +378,8 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
 }
 
 // [task-34] DEV-only probe for scripts/shots-34.mjs: camera centre and night readability measurements.
-function installWorldProbe(renderer: WorldRenderer, framing: () => { first: string | null; now: string; menuSpin: number },
+function installWorldProbe(renderer: WorldRenderer,
+  framing: () => { first: string | null; now: string; menuSpin: number; menuTilt: number; menuClashes: number },
   frames: () => number): void {
   const probe = {
     ready: false,

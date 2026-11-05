@@ -2605,3 +2605,28 @@ crate or of the game-over report lies outside the viewport (it failed on the old
 PR (render-owned rose ring offset and medallions between crates; "Ustawienia" touching the Dakar medallion on the PL
 phone menu; on the 360×640 phone game shot Amman, Athens, Venice and Baghdad show no note and Amman no name, so the
 busiest hub is unlabelled). **Status: in force.**
+
+## D-262 — Róża labels by importance; the menu network clears the entries (2026-11-05, Claude, night N16a)
+The store shot game-phone (360×640) left Amman, the busiest hub, with neither a curved name nor a note in the Levant
+cluster, and Athens, Venice and Baghdad without notes: the notes were placed in array order, and a name blocked on top
+of its ring had nowhere else to go. Now: (1) names and notes share one priority, **jam > hub > fuller airport**
+(`roseRank`); the higher one is laid out first and so takes the room a lower one wanted (names: `rozaNameLayout`; notes:
+`TagSlot.rank` inside the jam / passenger / plate tiers of `layoutTags`). (2) A name whose top is taken runs along the
+bottom of the ring (`name-below`, read left to right) before it shortens to the code (on top, then below) or drops.
+(3) A note tries its side, the other side, under its rose and over it (clear of the rose's name); where the full note
+fits nowhere it tries the **compact form** — code and "14 z 24" only (`.airport-bubble--compact`; a jam keeps its
+sentence) — before it hides. (4) The busiest hub in view (`must`) always shows at least its code and fill: compact over
+a lower-ranked rose if need be, and as the very last resort anywhere. (5) A rose's obstacle box is what it shows (its
+ring, plus its name on top or below), so a rose without a name no longer blocks notes above it; the Róża dock symbols
+are fixed obstacles too, and a dock caption under a shown note steps back like one under a rose. (6) 3 px hysteresis
+stays: a name already shown, and a note at the place it held last frame, need 3 px less clearance (the note's lenient
+try only runs when the normal one fails, so an unchanged frame lays out exactly as before). On the PL phone menu
+"Ustawienia" touched the Dakar medallion: D-259's 16° southward tilt is now a minimum; the view looks further south
+(up to 32°) until no demo airport comes within 22 px of a menu entry at any turn of the menu spin
+(`src/game/menu-clear.ts`, measured on the real projection in `src/game/world.ts`). Checked by `test:roza-names` and
+`test:overlay-layout` (the Levant cluster fixture at 360×640), `test:menu-clear` and `test:e2e:menu-clear` (real
+renderer, six sizes; the DEV probe `__awWorld.framing().menuClashes`). On the real renderer (`docs/shots/n16a/`, before
+and after, half size) the phone shot now shows Amman's name along the bottom of its ring and the notes of Venice, Riga and
+Baghdad; Amman's compact note "AMM 3 z 36" stands partly over Baghdad's ring (the must pass: on 360 px every free place
+is taken), Athens and Ankara still show no note. The menu looks 24° south at 360×640 and Dakar clears "Ustawienia". Store
+shots are recaptured by the coordinator after the merge. **Status: in force.**

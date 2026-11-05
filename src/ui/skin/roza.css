@@ -201,6 +201,8 @@
   position: absolute; left: 2px; top: calc(100% - 4px); white-space: nowrap; pointer-events: none;
   font: 700 14px/18px var(--skin-face-text); color: var(--roza-vermilion);
 }
+/* D-262: no room for the full note: code and "14 z 24" only (a jam keeps its sentence). */
+:root[data-skin="roza"] .airport-bubble--compact > :not(.airport-bubble__plate):not(.roza-fill):not(.roza-jam) { display: none; }
 :root[data-skin="roza"] .airport-bubble__surge, :root[data-skin="roza"] .airport-bubble__front { text-shadow: none; }
 :root[data-skin="roza"] .airport-bubble__new { font: 700 11px/20px var(--skin-face-text); text-shadow: none; }
 /* Off-screen airport: a margin note in ink with a chalk hairline, 48 px tall, and its distance from the view centre. */

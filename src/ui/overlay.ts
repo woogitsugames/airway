@@ -13,6 +13,7 @@ import type { FrontMark } from '../game/weather'; // [night-12bd] R2j (type only
 import './skin/current.css'; // [night-11aq] skin tokens read by overlay.css
 import {
   skin, rozaEdgeClash, rozaEdgeNote, rozaExtraWidth, rozaJamShare, rozaJamWidth, rozaCaptionsYield, rozaNameLayout, rozaNoteChildren, rozaRose, MEDAL_RADIUS,
+  rozaCompactWidth, rozaDockObstacles, rozaNotePlaces, rozaRoseObstacle, roseLabelBelow, roseLabelText, roseRank,
   ROZA_JAM_LINE, type Rose, type RoseLabel, type RoseLabelMode,
 } from './skin/roza'; // [night-11az] D-257: Róża skin helpers
 import './overlay.css';
@@ -129,6 +130,8 @@ interface BubbleEntry {
   /** Screen position of the airport itself (the tag anchor is moved beside the rose for the note's layout). */
   screenX: number;
   screenY: number;
+  /** [night-16a] D-262: the note shows its compact form (code and fill) this frame. */
+  compact: boolean;
 }
 
 export interface AirportOverlay {
@@ -316,6 +319,10 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
   const layoutSlots: TagSlot[] = [];
   const roseLabels: RoseLabel[] = []; // [night-14b] D-259: this frame's roses in view, for rozaNameLayout
   const roseEntries: BubbleEntry[] = [];
+  // [night-16a] D-262: the Róża dock symbols as fixed obstacles for the notes (filled by rozaDockObstacles).
+  const dockSlots: TagSlot[] = skin.roza ? Array.from({ length: 8 }, (_, i) => ({ id: 'dock~' + i, anchorX: 0, anchorY: 0, width: 0,
+    height: 0, active: false, jammed: false, fixed: true, x: 0, y: 0, placed: false })) : [];
+  layoutSlots.push(...dockSlots);
   const chips: EdgeChip[] = []; // [night-11x] parallel to `slots`
   const byId = new Map<string, BubbleEntry>();
   const marker = new Vector3();
@@ -615,7 +622,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
         lastBubbleX: NaN, lastBubbleY: NaN, lastEdgeX: NaN, lastEdgeY: NaN, lastEdgeSide: -1, lastOpacity: NaN,
         rose: skin.roza ? rozaRose(layer) : null, screenX: 0, screenY: 0,
         roseSlot: { id: airport.id + '~rose', anchorX: 0, anchorY: 0, width: 0, height: 0, active: false, jammed: false, fixed: true, x: 0, y: 0, placed: false },
-        roseLabel: 'name',
+        roseLabel: 'name', compact: false,
       };
       entries.push(entry);
       slots.push(tag);
@@ -794,30 +801,22 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
             r = Math.min(40, Math.max(north, Math.hypot(projected.x - x, projected.y - y)));
           }
           // Drawn after this loop, once rozaNameLayout has seen every rose in view.
-          if (inView) roseLabels.push({ x, y, r, hub: entry.hub, jam: entry.jamSeconds !== null, name: entry.airport.name ?? entry.airport.code,
-            code: entry.airport.code, fill: entry.capacity > 0 ? Math.min(1, entry.waiting.length / entry.capacity) : 0, last: entry.roseLabel });
+          const jam = entry.jamSeconds !== null;
+          const fill = entry.capacity > 0 ? Math.min(1, entry.waiting.length / entry.capacity) : 0;
+          const label: RoseLabel = { x, y, r, hub: entry.hub, jam, name: entry.airport.name ?? entry.airport.code,
+            code: entry.airport.code, fill, last: entry.roseLabel };
+          if (inView) roseLabels.push(label);
           if (inView) roseEntries.push(entry);
           entry.rose.place(x, y, inView);
-          // The rose's box (ticks and the name arc above) as a fixed obstacle for the notes.
-          const box = entry.roseSlot, jam = entry.jamSeconds !== null, half = r + (jam ? 20 : 8);
-          const top = r + (jam ? 22 : entry.hub ? 13 : 11) + 13;
-          box.active = inView;
-          box.x = x - half;
-          box.y = y - top;
-          box.width = half * 2;
-          box.height = top + half;
-          // The note stands right of the rose, level with its centre (KARTA-V2 C: "RIX 0 z 12" beside the ring);
-          // layoutTags centres a tag on anchorX and puts its top at anchorY − height − 11, then moves it off others.
-          const side = r + (entry.jamSeconds !== null ? 26 : 14);
-          // Right of the rose when it fits on screen, else left of it (the mockup's VCE / ATH notes); the other side is
-          // the fallback, and a note never drifts more than its own height away (it hides instead: the rose's ticks
-          // still show the fill, and zooming in makes room).
-          const right = x + side + entry.tag.width / 2, left = x - side - entry.tag.width / 2;
-          const rightFirst = x + side + entry.tag.width <= width - 6 || x - side - entry.tag.width < 6;
-          entry.tag.anchorX = rightFirst ? right : left;
-          entry.tag.altAnchorX = rightFirst ? left : right;
-          entry.tag.maxShift = entry.jamSeconds !== null ? 160 : entry.tag.height + 6;
-          entry.tag.anchorY = y - 10 + entry.tag.height + 11;
+          // [night-16a] D-262: the note's full width again (the last layout may have left the compact one), its compact
+          // form, and its priority: a jam, a hub, the fuller airport; the rose's box shares it (a must note's pass).
+          sizeGroup(entry);
+          entry.tag.compactWidth = Math.max(rozaCompactWidth(entry.bubble, entry.plate.textContent ?? entry.airport.code), entry.slotRect.width);
+          entry.tag.rank = entry.roseSlot.rank = roseRank(label);
+          entry.tag.must = false;
+          // The rose's box (ticks and the name arc) is a fixed obstacle for the notes; it and the note's places beside
+          // and under the rose are set from the rose's name after the name layout below.
+          entry.roseSlot.active = inView;
         }
         const chip = entry.chip;
         chip.offscreen = !inView;
@@ -834,21 +833,35 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
         // [night-14b] D-259: in a dense cluster at close zoom a lower-priority rose shortens its name to the code or drops it,
         // and a dock caption that would lie over a rose steps back.
         const modes = roseEntries.length ? rozaNameLayout(roseLabels) : [];
+        let busiest: BubbleEntry | null = null;
         roseEntries.forEach((entry, i) => {
           const label = roseLabels[i];
-          entry.roseLabel = modes[i];
+          const mode = modes[i];
+          entry.roseLabel = mode;
           entry.rose?.draw({ cap: entry.capacity, taken: Math.min(entry.waiting.length, entry.capacity), hub: entry.hub,
-            jam: rozaJamShare(entry.jamSeconds), name: modes[i] === 'name' ? label.name : modes[i] === 'code' ? label.code : '' }, label.r);
+            jam: rozaJamShare(entry.jamSeconds), name: roseLabelText(label, mode), below: roseLabelBelow(mode) }, label.r);
+          // [night-16a] D-262: the rose's box is what it shows (a rose without a name is only its ring), and the note's
+          // place under the rose starts below that box.
+          rozaRoseObstacle(entry.roseSlot, label, mode);
+          rozaNotePlaces(entry.tag, label, mode, width);
+          if (entry.hub && entry.tag.active && (!busiest || (entry.tag.rank ?? 0) > (busiest.tag.rank ?? 0))) busiest = entry;
         });
-        rozaCaptionsYield(host, roseLabels, modes);
+        // The busiest hub in view always shows at least its code and fill (TagSlot.must).
+        if (busiest) (busiest as BubbleEntry).tag.must = true;
+        rozaDockObstacles(host, dockSlots);
+        layoutTags(layoutSlots, bounds);
+        rozaCaptionsYield(host, roseLabels, modes, slots);
         roseEntries.length = 0;
         roseLabels.length = 0;
+      } else {
+        layoutTags(layoutSlots, bounds);
       }
-      layoutTags(layoutSlots, bounds);
       placeEdgeChips(chips, slots, edgeBounds);
       for (const entry of entries) {
         const tag = entry.tag;
         const showBubble = tag.placed && entry.mainWidth > 0; // [task-38] the box may hold only a slot tag
+        const compact = showBubble && tag.compact === true; // [night-16a] D-262
+        if (compact !== entry.compact) { entry.compact = compact; entry.bubble.classList.toggle('airport-bubble--compact', compact); }
         attachSlotTag(tag, entry.mainWidth > 0, entry.slotRect);
         const showSlot = entry.slotRect.visible;
         if (entry.slotVisible !== showSlot) { updateVisibility(entry.slot, showSlot); entry.slotVisible = showSlot; }

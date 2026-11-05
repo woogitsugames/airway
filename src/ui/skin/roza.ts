@@ -16,6 +16,7 @@
  */
 import type { TranslationKey, TranslationParams } from '../../i18n';
 import type { DestinationRegion } from '../glyphs';
+import type { TagSlot } from '../overlay-layout';
 
 export const skin = { roza: false };
 
@@ -151,7 +152,7 @@ const FILL_CHAR = 8.2;
 const COUNT_DIGIT = 7.8;
 const GLYPH = 18;
 
-interface NoteState { fill: HTMLSpanElement; more: HTMLSpanElement; jam: HTMLSpanElement; counts: Map<string, HTMLSpanElement>; extra: number; jamWidth: number }
+interface NoteState { fill: HTMLSpanElement; more: HTMLSpanElement; jam: HTMLSpanElement; counts: Map<string, HTMLSpanElement>; extra: number; jamWidth: number; fillWidth: number }
 const notes = new WeakMap<HTMLElement, NoteState>();
 function noteState(bubble: HTMLElement): NoteState {
   let state = notes.get(bubble);
@@ -162,7 +163,7 @@ function noteState(bubble: HTMLElement): NoteState {
       el.setAttribute('aria-hidden', 'true');
       return el;
     };
-    state = { fill: span('roza-fill'), more: span('roza-count roza-more'), jam: span('roza-jam'), counts: new Map(), extra: 0, jamWidth: 0 };
+    state = { fill: span('roza-fill'), more: span('roza-count roza-more'), jam: span('roza-jam'), counts: new Map(), extra: 0, jamWidth: 0, fillWidth: 0 };
     notes.set(bubble, state);
   }
   return state;
@@ -186,11 +187,13 @@ export function rozaNoteChildren(bubble: HTMLElement, want: Node[], plate: Node 
   const added: Node[] = [];
   let width = -removed;
   const taken = Math.min(waiting.length, capacity);
+  state.fillWidth = 0;
   if (capacity > 0 && plate) {
     const text = t('roza.fill', { taken, capacity });
     setText(state.fill, text);
     added.push(state.fill);
     width += 2 + 5 + text.length * FILL_CHAR;
+    state.fillWidth = 3 + 3 + text.length * FILL_CHAR;
     if (trend) added.push(trend);
   }
   const ready = waiting.length - Math.min(connecting, waiting.length);
@@ -239,6 +242,16 @@ export function rozaNoteChildren(bubble: HTMLElement, want: Node[], plate: Node 
 export function rozaExtraWidth(bubble: HTMLElement): number { return notes.get(bubble)?.extra ?? 0; }
 /** Width of the jam line under the note (0 without a jam); the note's layout box is at least this wide. */
 export function rozaJamWidth(bubble: HTMLElement): number { return notes.get(bubble)?.jamWidth ?? 0; }
+/** Code plate: Atkinson Hyperlegible Next 700 at 14.5 px, ~0.62 em a letter (roza.css .airport-bubble__plate). */
+const PLATE_CHAR = 9;
+/**
+ * [night-16a] D-262: the width of the note's compact form, code and "14 z 24" only (roza.css .airport-bubble--compact),
+ * tried where the full note does not fit before it hides; a jam keeps its sentence line under it.
+ */
+export function rozaCompactWidth(bubble: HTMLElement, code: string): number {
+  const state = notes.get(bubble);
+  return Math.ceil(Math.max(2 + code.length * PLATE_CHAR + (state?.fillWidth ?? 0) + 4, state?.jamWidth ?? 0));
+}
 /** Height the jam line adds under the note (roza.css: an 18 px line). */
 export const ROZA_JAM_LINE = 18;
 
@@ -282,7 +295,11 @@ export const MEDAL_RADIUS = { airport: 0.038 * 1.2, hub: 0.038 * 1.7 } as const;
 /** At most this many ticks around one rose; a larger waiting area folds 2–3 places into one tick (KARTA-V2, risks). */
 const MAX_TICKS = 24;
 
-export interface RoseState { cap: number; taken: number; hub: boolean; jam: number | null; name: string }
+export interface RoseState {
+  cap: number; taken: number; hub: boolean; jam: number | null; name: string;
+  /** [night-16a] D-262: the name runs along the bottom of the ring (its top is taken by a neighbour). */
+  below?: boolean;
+}
 export interface Rose {
   readonly element: SVGSVGElement;
   /** Redraws when the state or the radius bucket changed; returns quickly otherwise. */
@@ -291,14 +308,25 @@ export interface Rose {
 }
 let roseId = 0;
 
-/** The radius of the name's path round a rose of inner radius `r` and the name's font size (shared by draw and layout). */
-function roseNameMetrics(r: number, hub: boolean, jam: boolean, name: string): { R: number; size: number } {
-  const R = r + (jam ? 22 : hub ? 13 : 11);
-  return { R, size: Math.min(jam ? 15 : 13.5, (Math.PI * 1.5 * R) / Math.max(1, name.length * .62)) };
+/**
+ * The radius of the name's path round a rose of inner radius `r` and the name's font size (shared by draw and layout).
+ * [night-16a] D-262: along the bottom the letters stand inward of the path, so that path runs one cap height further out.
+ */
+function roseNameMetrics(r: number, hub: boolean, jam: boolean, name: string, below = false): { R: number; size: number } {
+  const R0 = r + (jam ? 22 : hub ? 13 : 11);
+  const size = Math.min(jam ? 15 : 13.5, (Math.PI * 1.5 * R0) / Math.max(1, name.length * .62));
+  return { R: below ? R0 + size * .75 : R0, size };
 }
 
-/** What a rose shows along its ring: the city name, the IATA code (a short name for a crowded spot) or nothing. */
-export type RoseLabelMode = 'name' | 'code' | 'none';
+/**
+ * What a rose shows along its ring: the city name, the IATA code (a short name for a crowded spot) or nothing;
+ * [night-16a] D-262: `-below` sets it along the bottom of the ring when the top is taken.
+ */
+export type RoseLabelMode = 'name' | 'code' | 'name-below' | 'code-below' | 'none';
+/** The text a mode shows ('' for none). */
+export const roseLabelText = (label: Pick<RoseLabel, 'name' | 'code'>, mode: RoseLabelMode | undefined): string =>
+  mode === 'name' || mode === 'name-below' ? label.name : mode === 'code' || mode === 'code-below' ? label.code : '';
+export const roseLabelBelow = (mode: RoseLabelMode | undefined): boolean => mode === 'name-below' || mode === 'code-below';
 export interface RoseLabel {
   x: number; y: number;
   /** The rose's inner radius on screen (px), as handed to Rose.draw. */
@@ -312,15 +340,37 @@ export interface RoseLabel {
 }
 interface Box { l: number; t: number; r: number; b: number }
 
-/** The screen box of a name set along the top of a rose (centred on twelve o'clock, as Rose.draw sets it). */
-export function roseNameBox(label: Pick<RoseLabel, 'x' | 'y' | 'r' | 'hub' | 'jam'>, text: string): Box {
+/**
+ * The screen box of a name set along the top of a rose (centred on twelve o'clock, as Rose.draw sets it), or along its
+ * bottom (centred on six o'clock) with `below`.
+ */
+export function roseNameBox(label: Pick<RoseLabel, 'x' | 'y' | 'r' | 'hub' | 'jam'>, text: string, below = false): Box {
   const r = Math.max(8, Math.round(label.r * 2) / 2);
-  const { R, size } = roseNameMetrics(r, label.hub, label.jam, text);
+  const { R, size } = roseNameMetrics(r, label.hub, label.jam, text, below);
   // Half the angle the text spans on its path (the draw budget is .62 em a letter), at most the path's 135°.
   const half = Math.min(135 * DEG, (text.length * .62 * size) / (2 * R));
-  const outer = R + size * .8; // the letters stand outward of the path
+  // On top the letters stand outward of the path; along the bottom they stand inward and the descenders hang out.
+  const outer = below ? R + size * .3 : R + size * .8;
+  const inner = below ? R - size * .8 : R - size * .3;
   const w = half >= 90 * DEG ? outer : Math.sin(half) * outer;
-  return { l: label.x - w, r: label.x + w, t: label.y - outer, b: label.y - Math.cos(half) * (R - size * .3) };
+  if (below) return { l: label.x - w, r: label.x + w, t: label.y + Math.cos(half) * inner, b: label.y + outer };
+  return { l: label.x - w, r: label.x + w, t: label.y - outer, b: label.y - Math.cos(half) * inner };
+}
+
+/** Half the size of a rose's ring of ticks (and of a jam's countdown arc) around its centre, px. */
+export const roseRingHalf = (label: Pick<RoseLabel, 'r' | 'jam'>): number => Math.max(8, label.r) + (label.jam ? 20 : 9);
+
+/**
+ * [night-16a] D-262: the screen box a rose takes with what it shows this frame (its ring, and its name on top or along
+ * the bottom), for the note layout's fixed obstacle; a rose without a name is only its ring.
+ */
+export function roseBox(label: RoseLabel, mode: RoseLabelMode | undefined): Box {
+  const half = roseRingHalf(label);
+  const box = { l: label.x - half, t: label.y - half, r: label.x + half, b: label.y + half };
+  const text = roseLabelText(label, mode);
+  if (!text) return box;
+  const name = roseNameBox(label, text, roseLabelBelow(mode));
+  return { l: Math.min(box.l, name.l), t: Math.min(box.t, name.t), r: Math.max(box.r, name.r), b: Math.max(box.b, name.b) };
 }
 
 const hits = (a: Box, b: Box, pad: number): boolean =>
@@ -331,31 +381,75 @@ const hitsDisc = (a: Box, x: number, y: number, radius: number, pad: number): bo
 };
 
 /**
- * Name collisions in a dense cluster at close zoom (D-259): each rose keeps its name only where it clears every
- * name already placed and every other rose's ring of ticks; otherwise it falls back to the IATA code, then to no name
- * (the note beside the rose still reads the code). Priority: a jam, a hub, the fuller airport, then the one that
- * already showed a label (which also gets 3 px less clearance, so labels do not flicker), then list order.
+ * Priority of a rose's labels (D-262): a jam, then a hub, then the fuller airport; the higher one is laid out first and
+ * so takes the room a lower one wanted. Shared by the names (rozaNameLayout) and the notes (the overlay's tag rank).
+ */
+export const roseRank = (label: Pick<RoseLabel, 'jam' | 'hub' | 'fill'>): number =>
+  (label.jam ? 4 : 0) + (label.hub ? 2 : 0) + Math.max(0, Math.min(1, label.fill));
+
+/**
+ * Name collisions in a dense cluster at close zoom (D-259, D-262): each rose keeps its name only where it clears every
+ * name already placed and every other rose's ring of ticks. It tries the name on top of the ring, then along its
+ * bottom, then the IATA code on top and along the bottom, else no name (the note beside the rose still reads the
+ * code). Priority (roseRank): a jam, a hub, the fuller airport, then list order; a higher-priority rose is placed
+ * first, so it displaces the lower ones. A label a rose already showed needs 3 px less clearance, so labels do not
+ * flicker.
  */
 export function rozaNameLayout(labels: readonly RoseLabel[]): RoseLabelMode[] {
-  const rank = (a: RoseLabel): number => (a.jam ? 8 : 0) + (a.hub ? 4 : 0) + a.fill * 2 + (a.last && a.last !== 'none' ? .5 : 0);
-  const order = labels.map((_, i) => i).sort((a, b) => rank(labels[b]) - rank(labels[a]) || a - b);
+  const order = labels.map((_, i) => i).sort((a, b) => roseRank(labels[b]) - roseRank(labels[a]) || a - b);
   const placed: Box[] = [];
   const out: RoseLabelMode[] = labels.map(() => 'none');
   for (const i of order) {
     const label = labels[i];
     const fits = (mode: RoseLabelMode): Box | null => {
-      const box = roseNameBox(label, mode === 'name' ? label.name : label.code);
+      const text = roseLabelText(label, mode);
+      if (!text) return null;
+      const box = roseNameBox(label, text, roseLabelBelow(mode));
       const pad = label.last === mode ? 0 : 3;
       if (placed.some((other) => hits(box, other, pad))) return null;
       // Every other rose's ticks (inner radius + the 7 px hub tick + its halo).
       return labels.some((other, j) => j !== i && hitsDisc(box, other.x, other.y, Math.max(8, other.r) + 9, pad)) ? null : box;
     };
-    for (const mode of (label.name && label.name !== label.code ? ['name', 'code'] : ['code']) as RoseLabelMode[]) {
-      const box = label[mode === 'name' ? 'name' : 'code'] ? fits(mode) : null;
+    const modes: RoseLabelMode[] = label.name && label.name !== label.code
+      ? ['name', 'name-below', 'code', 'code-below'] : ['code', 'code-below'];
+    for (const mode of modes) {
+      const box = fits(mode);
       if (box) { placed.push(box); out[i] = mode; break; }
     }
   }
   return out;
+}
+
+/**
+ * [night-16a] D-262: the places a rose's note may take, for layoutTags: right of the rose level with its centre
+ * (KARTA-V2 C: "RIX 0 z 12" beside the ring) when it fits on screen, else left of it (the mockup's VCE / ATH notes); the
+ * other side, the place under the rose and the one over it (clear of its name) are the fallbacks, then the compact
+ * form (TagSlot.compactWidth). A note never drifts more than its own height away (a jam's: 160 px); it hides instead:
+ * the rose's ticks still show the fill, and zooming in makes room. `tag.width`/`height` are the full note's.
+ */
+export function rozaNotePlaces(tag: TagSlot, label: RoseLabel, mode: RoseLabelMode | undefined, viewWidth: number): void {
+  const { x, y, r, jam } = label;
+  // layoutTags centres a tag on anchorX and puts its top at anchorY − height − 11, then moves it off others.
+  const side = r + (jam ? 26 : 14);
+  const right = x + side + tag.width / 2, left = x - side - tag.width / 2;
+  const rightFirst = x + side + tag.width <= viewWidth - 6 || x - side - tag.width < 6;
+  tag.anchorX = rightFirst ? right : left;
+  tag.altAnchorX = rightFirst ? left : right;
+  tag.maxShift = jam ? 160 : tag.height + 6;
+  tag.anchorY = y - 10 + tag.height + 11;
+  const box = roseBox(label, mode);
+  tag.belowX = x;
+  tag.belowY = box.b + 4;
+  tag.aboveY = box.t - 4;
+}
+
+/** [night-16a] D-262: the rose as a fixed obstacle for the notes: its box with what it shows this frame (roseBox). */
+export function rozaRoseObstacle(slot: TagSlot, label: RoseLabel, mode: RoseLabelMode | undefined): void {
+  const box = roseBox(label, mode);
+  slot.x = box.l;
+  slot.y = box.t;
+  slot.width = box.r - box.l;
+  slot.height = box.b - box.t;
 }
 
 /** One airport's rose in the overlay layer: seat ticks, the name along the ring, the jam countdown arc. */
@@ -378,7 +472,7 @@ export function rozaRose(layer: HTMLElement): Rose {
     draw(state, radius): void {
       const r = Math.max(8, Math.round(radius * 2) / 2);
       const jamStep = state.jam === null ? -1 : Math.round(state.jam * 90);
-      const next = `${state.cap} ${state.taken} ${state.hub} ${jamStep} ${r} ${state.name}`;
+      const next = `${state.cap} ${state.taken} ${state.hub} ${jamStep} ${r} ${state.name} ${state.below === true}`;
       if (next === key) return;
       key = next;
       const col = state.jam !== null ? RED : CHALK;
@@ -407,12 +501,14 @@ export function rozaRose(layer: HTMLElement): Rose {
       }
       if (state.name) {
         // The name along the top of the ring, centred on twelve o'clock; the path runs 270° so a long name still fits.
-        const { R, size } = roseNameMetrics(r, state.hub, state.jam !== null, state.name);
-        const a0 = 135 * DEG, a1 = 45 * DEG;
-        s += `<path id="${id}" d="M${f1(Math.cos(a0) * R)} ${f1(Math.sin(a0) * R)}A${R} ${R} 0 1 1 ${f1(Math.cos(a1) * R)} ${f1(Math.sin(a1) * R)}" fill="none"/>`;
+        // [night-16a] D-262: or along the bottom, centred on six o'clock, running anticlockwise so it reads left to right.
+        const below = state.below === true;
+        const { R, size } = roseNameMetrics(r, state.hub, state.jam !== null, state.name, below);
+        const a0 = (below ? 225 : 135) * DEG, a1 = (below ? -45 : 45) * DEG;
+        s += `<path id="${id}" d="M${f1(Math.cos(a0) * R)} ${f1(Math.sin(a0) * R)}A${f1(R)} ${f1(R)} 0 1 ${below ? 0 : 1} ${f1(Math.cos(a1) * R)} ${f1(Math.sin(a1) * R)}" fill="none"/>`;
         s += `<text class="roza-rose__name" font-size="${f1(size)}" fill="${col}"><textPath href="#${id}" startOffset="50%" text-anchor="middle"></textPath></text>`;
       }
-      const span = r + 36;
+      const span = r + 46; // [night-16a] room for a name along the bottom
       element.setAttribute('viewBox', `${-span} ${-span} ${span * 2} ${span * 2}`);
       element.setAttribute('width', String(span * 2));
       element.setAttribute('height', String(span * 2));
@@ -441,27 +537,60 @@ export function rozaCaptionClashes(captions: readonly CaptionRect[], labels: rea
   return captions.map((c) => labels.some((label, i) => {
     if (hitsDisc(c, label.x, label.y, Math.max(8, label.r) + (label.jam ? 20 : 9), 2)) return true;
     const mode = modes[i];
-    return mode !== undefined && mode !== 'none' && hits(c, roseNameBox(label, mode === 'name' ? label.name : label.code), 2);
+    const text = roseLabelText(label, mode);
+    return text !== '' && hits(c, roseNameBox(label, text, roseLabelBelow(mode)), 2);
   }));
 }
-const captionCache = { els: [] as HTMLElement[], rects: [] as CaptionRect[], frame: 0 };
+const captionCache = { els: [] as HTMLElement[], rects: [] as CaptionRect[], dock: [] as CaptionRect[], frame: 0 };
 /**
- * Hides the dock captions that clash with a rose this frame. The caption boxes are re-measured every 15th frame (they
- * move only with a layout change or a new text), so a frame reads no layout.
+ * Re-measures the dock captions and the dock symbols every 15th frame (they move only with a layout change or a new
+ * text), so a frame reads no layout.
  */
-export function rozaCaptionsYield(host: HTMLElement, labels: readonly RoseLabel[], modes: readonly RoseLabelMode[]): void {
-  if (captionCache.frame++ % 15 === 0) {
-    const root = host.getRootNode() as Document | ShadowRoot;
-    const origin = host.getBoundingClientRect();
-    captionCache.els = [...(root.querySelectorAll?.('.airway-hud .roza-caption') ?? [])] as HTMLElement[];
-    captionCache.rects = captionCache.els.map((el) => {
-      const r = el.getBoundingClientRect();
-      return { l: r.left - origin.left, t: r.top - origin.top, r: r.right - origin.left, b: r.bottom - origin.top };
-    });
-  }
+function measureDock(host: HTMLElement): void {
+  if (captionCache.frame++ % 15 !== 0) return;
+  const root = host.getRootNode() as Document | ShadowRoot;
+  const origin = host.getBoundingClientRect();
+  const rect = (el: Element): CaptionRect => {
+    const r = el.getBoundingClientRect();
+    return { l: r.left - origin.left, t: r.top - origin.top, r: r.right - origin.left, b: r.bottom - origin.top };
+  };
+  captionCache.els = [...(root.querySelectorAll?.('.airway-hud .roza-caption') ?? [])] as HTMLElement[];
+  captionCache.rects = captionCache.els.map(rect);
+  captionCache.dock = ([...(root.querySelectorAll?.('.airway-hud .airway-dock__holder') ?? [])] as HTMLElement[])
+    .map(rect).filter((r) => r.r - r.l >= 1 && r.b - r.t >= 1);
+}
+
+/**
+ * [night-16a] D-262: the dock symbols on their arc as fixed obstacles for the notes (a note under a rose near the dock
+ * stood on the hub symbol in the store shot). `slots` is the overlay's fixed pool; unused ones go inactive. Call once a
+ * frame before layoutTags; it also re-measures the dock (see measureDock).
+ */
+export function rozaDockObstacles(host: HTMLElement, slots: readonly TagSlot[]): void {
+  measureDock(host);
+  slots.forEach((slot, i) => {
+    const r = captionCache.dock[i];
+    slot.active = r !== undefined;
+    if (!r) return;
+    slot.x = r.l;
+    slot.y = r.t;
+    slot.width = r.r - r.l;
+    slot.height = r.b - r.t;
+    slot.rank = Infinity; // never given up for a must note's pass over lower-ranked roses
+  });
+}
+
+/**
+ * Hides the dock captions that clash with a rose ([night-16a] D-262: or with a note shown) this frame; call after
+ * layoutTags. A caption repeats its button's accessible name, the rose and the note carry the game.
+ */
+export function rozaCaptionsYield(host: HTMLElement, labels: readonly RoseLabel[], modes: readonly RoseLabelMode[],
+  notes: readonly TagSlot[] = []): void {
+  if (!captionCache.frame) measureDock(host);
   const clash = rozaCaptionClashes(captionCache.rects, labels, modes);
   captionCache.els.forEach((el, i) => {
-    const want = clash[i] ? '1' : undefined;
+    const c = captionCache.rects[i];
+    const covered = clash[i] || notes.some((n) => n.placed && !n.fixed && c.l < n.x + n.width + 2 && n.x < c.r + 2 && c.t < n.y + n.height + 2 && n.y < c.b + 2);
+    const want = covered ? '1' : undefined;
     if (el.dataset.rozaYield !== want) { if (want) el.dataset.rozaYield = want; else delete el.dataset.rozaYield; }
   });
 }
