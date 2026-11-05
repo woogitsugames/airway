@@ -39,6 +39,6 @@ of up to 20 code points (`test:e2e:pseudo-320`).
 | The run ends (game over) | Network closed | Sieć zamknięta | "wstrzymana" (reads as a pause you come back from) |
 | Game time is stopped | paused / time | pauza / czas | simulation / symulacja |
 
-Exceptions (`allow` in `scripts/test-i18n.mjs`): `menu.terminal` ("AIRWAY.GAMES · TERMINAL 1", the airport sign on
-the menu) and `puzzle.board.subtitle` ("Route planning terminal"), where "terminal" is a building, not a hub.
+Exception (`allow` in `scripts/test-i18n.mjs`): `puzzle.board.subtitle` ("Route planning terminal"), where "terminal"
+is a planning desk, not a hub. The menu sign `menu.sign` reads "AIRWAY.GAMES · HUB 1" in both languages (D-223).
 Store texts in `docs/store/` are owner decisions outside the catalogs; since D-203 they use "sieć" too (PL title "Buduj sieć lotów").

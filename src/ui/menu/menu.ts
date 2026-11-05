@@ -158,7 +158,7 @@ function makeSign():HTMLElement {
   // Original top-down aircraft silhouette; no icon packs or image assets.
   symbol.innerHTML='<svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><path fill="currentColor" d="M30 5c0-3 4-3 4 0l2 20 21 13v6L36 38l-1 12 8 6v4L32 57l-11 3v-4l8-6-1-12-21 6v-6l21-13z"/></svg>';
   const titleBox=el('div','airway-sign__copy');
-  titleBox.append(el('div','airway-sign__title',t('app.title')),el('div','airway-sign__subtitle',t('menu.terminal')));
+  titleBox.append(el('div','airway-sign__title',t('app.title')),el('div','airway-sign__subtitle',t('menu.sign')));
   sign.append(symbol,titleBox);
   // [night-11av] D-256, DEV-only KARTA preview: the title block carries the chart's graphic scale.
   if (import.meta.env.DEV&&skinPreview.karta) sign.append(kartaScale());

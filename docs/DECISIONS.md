@@ -1816,7 +1816,9 @@ checks, merges with a merge commit and syncs `main` (D-64). **Status: in force.*
 ## D-223 — "hub" in the store texts too (2026-11-04, owner)
 The glossary word "hub" (D-195) also replaces "terminal" in the store listings (`docs/store/*.md`), so the game, the
 site, the press kit and the stores use one word. Done together with R2c (keywords). Supersedes D-216 where it kept the
-store wording. **Status: in force.**
+store wording. [N12bi] The menu's airport sign follows too: `menu.sign` "AIRWAY.GAMES · HUB 1" (PL = EN, was
+`menu.terminal` "… · TERMINAL 1", 25-character budget); it left the `test:i18n` "terminal" allowlist, which keeps only
+the puzzle board's "Route planning terminal" (a desk, not an airport). **Status: in force.**
 
 ## D-224 — Play Data safety: the anonymous leaderboard UID is "Device or other IDs" (2026-11-04, owner, Q-03)
 Answers Q-03: when leaderboards ship, the anonymous Firebase UID goes under "Device or other IDs", not "User IDs"; it is

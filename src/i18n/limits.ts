@@ -44,6 +44,8 @@ export const LENGTH_BUDGETS: Partial<Record<TranslationKey, LengthBudget>> = {
   'menu.onTime': flapStatus,
   'menu.new': flapStatus,
   'menu.gate': { max: 6, where: 'departures board: gate column head (46 px at 320 px)' },
+  // [night-12bi] D-195: the airport sign under the logo (mono, nowrap); the old "AIRWAY.GAMES · TERMINAL 1" length.
+  'menu.sign': { max: 25, where: 'menu: airport sign under the logo (one row, no wrap)' },
   'menu.homeRegion.random': regionCell,
   'licence.short.1': licenceStamp,
   'licence.short.2': licenceStamp,
