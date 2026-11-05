@@ -20,7 +20,7 @@ const GROUPS = [
   ['settings-group-display', { en: 'Display', pl: 'Obraz' }, ['select', 'select', 'select', '[data-testid="settings-colorblind"]', '[data-testid="settings-reduce-motion"]']],
   ['settings-group-sound', { en: 'Sound and touch', pl: 'Dźwięk i dotyk' },
     ['[data-testid="settings-sound"]', '[data-testid="settings-music"]', '[data-testid="settings-haptics"]']],
-  ['settings-group-help', { en: 'Help', pl: 'Pomoc' }, ['[data-testid="settings-tutorial-replay"]', '[data-testid="settings-licenses"]', '[data-testid="settings-privacy"]', '[data-testid="settings-publisher"]']],
+  ['settings-group-help', { en: 'Help', pl: 'Pomoc' }, ['[data-testid="settings-tutorial-replay"]', '[data-testid="settings-licenses"]', '[data-testid="settings-privacy"]', '[data-testid="settings-terms"]', '[data-testid="settings-publisher"]']],
 ];
 
 let fatal = null;

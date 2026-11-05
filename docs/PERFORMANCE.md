@@ -315,3 +315,13 @@ itself; the ocean shell (r 1.0002) and the haze shell (r 1.0125) are no longer a
 transparent layers: low/saver 1 (the outer halo), medium/high 2 (halo + cloud shell). `perf:scene` (SwiftShader,
 412×915, DPR 1, 40 s; orientation only): low 397 frames / 10.5–9.4 fps / 209 k triangles / 41 draw calls (375 frames
 with the shells), medium 168 frames / 228 k / 41 (174). SwiftShader does not model mobile fill rate; G7 measures it.
+
+## Test Lab game loop (R3i, D-245)
+
+Real game on real budget phones: `docs/ANDROID.md` "Firebase Test Lab game loop" (scenario 1: Endless `0xA1A1`, bot,
+4×, 120 s, release build). Numbers are rAF frame intervals in the WebView, not render CPU; the budgets are the ones
+above (33 ms low-end, 16.7 ms mid-range). Fill one row per device after a run (owner, Q-07); not run yet.
+
+| Date | Model (Test Lab ID, API) | GPU (report `renderer`) | Preset → adaptations | Frames | p50 / p95 ms | Mean fps | > 33 ms | Week, routes |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| — | — | — | — | — | — | — | — | — |

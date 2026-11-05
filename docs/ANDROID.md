@@ -203,3 +203,36 @@ removes those devices from Play's compatible list for new installs; players who 
 keep it but get no updates. `test:android-config` (`sdk-versions`) requires exactly `minSdkVersion = 29` in
 `variables.gradle` and no hard-coded minSdk in `app/build.gradle`; `play-gles3-filter` requires minSdk ≥ 29.
 Not checked here: a Gradle build with the new minSdk (no offline Gradle plugins) and the Play Console device count.
+
+## Firebase Test Lab game loop (R3i, D-245)
+
+Real-device frame times on budget phones without owning them: Firebase Test Lab starts the app with the intent
+action `com.google.intent.action.TEST_LOOP` (manifest: second intent filter on `MainActivity`, category `DEFAULT`,
+MIME `application/javascript`; `com.google.test.loops` = 1 scenario, label `perf`). `GameLoopPlugin.java`
+(Capacitor plugin `AirwayGameLoop`, registered in `MainActivity.onCreate` before the bridge starts) tells the web
+game the scenario number; `src/main.ts` then plays scenario 1 of `src/game/gameLoop.ts` on the real game in the
+**release build** (no DEV adapter): Endless seed `0xA1A1`, no tutorial and no first-time cards, 4× speed, the task-22
+bot (`src/game/dev/autoplay.ts`, an 8 kB lazy chunk that only a game-loop launch or DEV loads) sends real Commands
+every 30 ticks or every second on the weekly board, for 120 s of real time. It records the interval between
+`requestAnimationFrame` callbacks (p50/p95/p99/max, mean fps, frames over 33 ms) and writes one JSON — the
+`.perf/scene.json` frame fields plus the renderer string, the Settings graphics choice, the running preset, the
+adaptation steps (D-73), app version, week/passengers/routes reached — to the result file URI Test Lab passed, then
+`finish()`. If the page never reports, a native watchdog writes `{"error":"timeout"}` after 300 s and finishes.
+A normal launch, the web build and iOS never see a game loop. The run writes a logbook line if the bot loses
+(a test device, not a player's phone). No permission is added.
+
+Owner steps (Firebase project and billing are owner-only, Q-07):
+1. Build the release APK (`npm run android:release`, signed as in "Release signing"). A debug APK also works.
+2. Console: Firebase project → Test Lab → **Run a test** → **Game Loop** → upload the APK, scenario **1**, pick
+   physical devices (one per budget GPU class below), timeout 6 min. Or with the Cloud SDK:
+   `npm run perf:testlab -- --models MODEL:API,...` prints the `gcloud firebase test android run --type=game-loop`
+   command (it never runs it); `npm run perf:testlab` alone prints the model-list command and a template.
+   Budget GPU classes: Mali-G52 MC2, Mali-G57 MC2, PowerVR GE8320, Adreno 610/613, one mid-range reference.
+3. Spark (free) plan: 5 physical-device runs per day; 4–5 models fit one day.
+4. Results: each device folder has `game_loop_results/` with the JSON report (and a video and logcat; logcat has the
+   line `airway game-loop scenario=1 frames=… p50=… p95=…`). Copy the numbers into `docs/PERFORMANCE.md`
+   "Test Lab game loop".
+
+Not checked here: a Gradle build of the plugin (no Android SDK and no offline Gradle plugins in the agent
+environment) and a real Test Lab run; `test:game-loop` checks the manifest, the native bridge statically, the
+scenario table, the launch port, the frame statistics, the report and the printed command.

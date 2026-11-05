@@ -176,7 +176,7 @@ function deleteRankingRow(ranking:RankingData):HTMLElement {
   return wrap;
 }
 
-export function createSettings(onBack:()=>void,onLicenses:()=>void,onLanguageChanged:()=>void,onReplayTutorial?:()=>void,onPrivacy?:()=>void,ranking?:RankingData):SettingsHandle {
+export function createSettings(onBack:()=>void,onLicenses:()=>void,onLanguageChanged:()=>void,onReplayTutorial?:()=>void,onPrivacy?:()=>void,ranking?:RankingData,onTerms?:()=>void):SettingsHandle {
   const values=readSettings();
   const root=e('section','airway-settings');
   const paper=e('div','airway-settings__paper');
@@ -281,6 +281,12 @@ export function createSettings(onBack:()=>void,onLicenses:()=>void,onLanguageCha
     privacy.addEventListener('click',onPrivacy);
     host.append(privacy);
   }
+  if(onTerms){ // [night-11an] R7b, D-244: the terms of use, offline, like the privacy policy (D-86).
+    const terms=e('button','airway-settings__licenses',t('settings.terms'));
+    terms.type='button';terms.dataset.testid='settings-terms';
+    terms.addEventListener('click',onTerms);
+    host.append(terms);
+  }
   host.append(publisherBlock()); // [night-11al] R7c, D-241
   // [night-11v] D-197 (D-135, R7l): "Send results to the leaderboard", only when this build has leaderboards.
   if(ranking?.enabled && ranking.isSharing && ranking.setSharing) host.append(sharingRow(ranking));
@@ -355,7 +361,17 @@ export function createLicenses(onBack:()=>void):SettingsHandle {
 }
 
 /** [night-11e] Sections of the in-app privacy policy, in the order of site/privacy.html (test:privacy-text). */
-export const PRIVACY_SECTIONS=[1,2,3,4,5] as const;
+export const PRIVACY_SECTIONS=[1,2,3,4,5,6,7,8,9,10,11,12,13,14] as const;
+/** [night-11am] R7a: a policy or terms (R7b) body is paragraphs split by a blank line; a block of "• " lines is a list (as site.js). */
+export function policyBlocks(text:string):HTMLElement[] {
+  return text.split(/\n\s*\n/).map((block)=>{
+    const lines=block.split('\n');
+    if(!lines.every((line)=>line.startsWith('• '))) return e('p','',block);
+    const list=e('ul','');
+    for(const line of lines) list.append(e('li','',line.slice(2)));
+    return list;
+  });
+}
 export function createPrivacy(onBack:()=>void):SettingsHandle {
   const root=e('section','airway-settings');
   const paper=e('div','airway-settings__paper airway-privacy');
@@ -364,10 +380,28 @@ export function createPrivacy(onBack:()=>void):SettingsHandle {
   paper.append(top,e('p','airway-privacy__overline',t('privacy.overline')),e('p','airway-privacy__warning',t('privacy.warning')));
   for(const n of PRIVACY_SECTIONS){
     const section=e('section','airway-privacy__section');
-    section.append(e('h2','',t(`privacy.s${n}.title` as TranslationKey)),e('p','',t(`privacy.s${n}.body` as TranslationKey)));
+    section.append(e('h2','',t(`privacy.s${n}.title` as TranslationKey)),...policyBlocks(t(`privacy.s${n}.body` as TranslationKey)));
     paper.append(section);
   }
   paper.append(e('p','airway-privacy__date',t('privacy.date')),e('p','airway-setting__hint',t('privacy.offline')));
+  root.append(paper);
+  return {element:root,firstFocus:top.querySelector('button') as HTMLElement};
+}
+
+/** [night-11an] R7b, D-244: sections of the in-app terms of use, in the order of site/terms.html (test:terms). */
+export const TERMS_SECTIONS=[1,2,3,4,5,6,7,8,9,10] as const;
+export function createTerms(onBack:()=>void):SettingsHandle {
+  const root=e('section','airway-settings');
+  const paper=e('div','airway-settings__paper airway-privacy');
+  paper.dataset.testid='terms-page';
+  const top=header(t('terms.title'),onBack);
+  paper.append(top,e('p','airway-privacy__overline',t('terms.overline')),e('p','airway-privacy__warning',t('terms.warning')));
+  for(const n of TERMS_SECTIONS){
+    const section=e('section','airway-privacy__section');
+    section.append(e('h2','',t(`terms.s${n}.title` as TranslationKey)),...policyBlocks(t(`terms.s${n}.body` as TranslationKey)));
+    paper.append(section);
+  }
+  paper.append(e('p','airway-privacy__date',t('terms.date')),e('p','airway-setting__hint',t('terms.offline')));
   root.append(paper);
   return {element:root,firstFocus:top.querySelector('button') as HTMLElement};
 }

@@ -29,6 +29,17 @@ differs from the site strings.
 | trader | Przedsiębiorca (w App Store i Google Play: status „trader”) | Trader (declared as a trader in the App Store and Google Play) |
 <!-- /publisher:table -->
 
+## Terms of use and licence (R7b, D-244)
+
+- **App Store:** keep Apple's **standard EULA** (App Store Connect → App Information → License Agreement: leave the
+  standard agreement, https://www.apple.com/legal/internet-services/itunes/dev/stdeula/). Our terms say it applies in
+  the App Store; do not upload a custom EULA (D-134).
+- **Terms URL** for both consoles, the Google Play trader card (shown from 1 Mar 2027, `docs/legal/README.md` §3) and
+  the App Store description or support page: https://airway.games/terms.html (PL/EN via `?lang=pl|en`; the site is not
+  published yet, D-67).
+- The terms are a **draft v1 to verify with a lawyer** (`site/terms.html`, same text in the game under Settings →
+  Help → Terms of use); `test:terms` keeps the game copy and the leaderboard rules in line with the code.
+
 ## Naming and store limits
 
 - D-18 specifies **Airway: Globe Route Builder** (EN, 27 characters) and **Airway: Buduj siatkę lotów na globusie** (PL, 38 characters); D-203 (owner, Q-77 → B) changed the PL title to

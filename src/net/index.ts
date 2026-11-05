@@ -2,11 +2,13 @@
 // read-only boards. The server (functions/) replays every run with the same Sim before it counts.
 import { FirebaseRestClient, NetError, type Fetch, type Session, type TokenStore } from './client.ts';
 import { readNetConfig, type NetConfig } from './config.ts';
+import { appCheckTokenSource, type AppCheckPort, type AppCheckTokenSource } from './appCheck.ts';
 import { QUEUE_KEY, SubmissionQueue, type QueueStorage, type SendResult } from './queue.ts';
 import { selfCheck, type DailySubmission, type RejectReason } from './submission.ts';
 import { boardsForDaily } from './boards.ts';
 
 export { readNetConfig } from './config.ts';
+export { APP_CHECK_HEADER, appCheckTokenSource, type AppCheckPort, type AppCheckTokenSource } from './appCheck.ts';
 export { boardsForDaily, dailyBoardId, weeklyBoardId, weekKeyForDate, todayKey } from './boards.ts';
 export { buildDailySubmission, verifyDailySubmission, type DailySubmission, type Verdict } from './submission.ts';
 
@@ -97,6 +99,8 @@ export function createLeaderboards(options: {
   fetch?: Fetch;
   storage?: QueueStorage | null;
   now?: () => number;
+  /** [night-12az] D-246: App Check token for the callables; omitted = no header. */
+  appCheck?: AppCheckTokenSource | null;
 }): Leaderboards {
   const { config } = options;
   // Bound: browsers throw "Illegal invocation" when fetch is called as a method of another object.
@@ -104,7 +108,7 @@ export function createLeaderboards(options: {
   if (!config || !fetcher) return DISABLED;
   const storage = options.storage ?? null;
   const now = options.now ?? (() => Date.now());
-  const client = new FirebaseRestClient(config, fetcher, storageTokens(storage), now);
+  const client = new FirebaseRestClient(config, fetcher, storageTokens(storage), now, options.appCheck ?? null);
   const queue = new SubmissionQueue(storage, now);
   let last: LeaderboardStatus = 'idle';
   let sharing = readSharing(storage);
@@ -166,9 +170,20 @@ export function createLeaderboards(options: {
   };
 }
 
-/** Composition-root helper: config from Vite env, storage from the browser. */
-export function createBrowserLeaderboards(env: Readonly<Record<string, string | boolean | undefined>>): Leaderboards {
+/**
+ * [night-12az] D-246: the debug App Check provider in DEV (Vite dev server) and in builds made with
+ * `VITE_FIREBASE_APPCHECK_DEBUG=1` (debug APK / emulator); release builds refuse that flag (build-android.mjs).
+ */
+export function appCheckDebug(env: Readonly<Record<string, string | boolean | undefined>>): boolean {
+  return env.DEV === true || env.VITE_FIREBASE_APPCHECK_DEBUG === '1';
+}
+
+/** Composition-root helper: config from Vite env, storage from the browser, App Check from the native port. */
+export function createBrowserLeaderboards(env: Readonly<Record<string, string | boolean | undefined>>,
+  appCheckPort: AppCheckPort | null = null): Leaderboards {
   let storage: QueueStorage | null = null;
   try { storage = globalThis.localStorage ?? null; } catch { storage = null; }
-  return createLeaderboards({ config: readNetConfig(env), storage });
+  return createLeaderboards({
+    config: readNetConfig(env), storage, appCheck: appCheckTokenSource(appCheckPort, { debug: appCheckDebug(env) }),
+  });
 }

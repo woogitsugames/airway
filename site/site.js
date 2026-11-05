@@ -66,7 +66,7 @@ for (const tag of document.querySelectorAll('[data-store]')) {
 }
 // Language-specific canonical and og:url (the static markup names the language-neutral root).
 const page = document.body.dataset.page;
-const path = { home: '/', privacy: '/privacy.html', press: '/press.html' }[page];
+const path = { home: '/', privacy: '/privacy.html', press: '/press.html', terms: '/terms.html' }[page];
 if (path && requested) {
   const self = `${LAUNCH.origin}${path}?lang=${lang}`;
   document.querySelector('link[rel="canonical"]')?.setAttribute('href', self);
@@ -82,6 +82,7 @@ if (ogImageAlt) ogImageAlt.content = t['meta.ogimage'];
 const PAGE_META = {
   home: { description: 'meta.home', ogTitle: 'meta.ogtitle', ogDescription: 'meta.ogdescription', title: () => 'Airway — Globe Route Builder' },
   privacy: { description: 'meta.privacy', title: () => `${t['privacy.title']} — Airway` },
+  terms: { description: 'meta.terms', title: () => `${t['terms.title']} — Airway` }, // [night-11an] R7b
   press: { description: 'meta.press', ogTitle: 'press.title', ogDescription: 'meta.press', title: () => `${t['press.title']} — Airway` },
   notfound: { description: 'meta.notfound', title: () => '404 — Airway' },
 }[page] ?? { description: 'meta.home', title: () => 'Airway — Globe Route Builder' };

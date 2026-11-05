@@ -1,6 +1,8 @@
 # Rankingi online — szkic uzupełnienia polityki prywatności (D-66, D-72)
 
-**Status: SZKIC do sprawdzenia przez właściciela / prawnika. Nie publikować przed decyzją.** Tekst ma trafić do
+**Status: wcielone do polityki prywatności v1 (R7a, D-243: `site/i18n.js` `privacy.s4`–`s9`, ta sama treść w grze).** Ten plik zostaje jako notatka źródłowa; zmiany wprowadzaj w `site/i18n.js`.
+
+**Pierwotny status: SZKIC do sprawdzenia przez właściciela / prawnika. Nie publikować przed decyzją.** Tekst ma trafić do
 `site/privacy.html` (PL i EN) dopiero wtedy, gdy rankingi zostaną włączone w wydaniu.
 
 ## PL — proponowany tekst

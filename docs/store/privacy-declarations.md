@@ -41,7 +41,11 @@ Every request is HTTPS `POST` with a JSON body. Endpoint ids are what the test r
 <!-- /privacy:endpoints -->
 
 Request metadata: the Auth URLs carry the app's public Firebase API key as `?key=` (identifies the app, not the
-player); the callables carry `Authorization: Bearer <ID token>` of the anonymous account. No name, e-mail, phone,
+player); the callables carry `Authorization: Bearer <ID token>` of the anonymous account and, once App Check is
+installed (D-246, `docs/FIREBASE.md` "App Check"), `X-Firebase-AppCheck: <App Check token>` — a short-lived token from
+Play Integrity (Android) or App Attest (iOS) that says "this request comes from the genuine Airway app on a genuine
+device"; it names the app, not the player, and the server only checks it (nothing is stored). The Auth calls never
+carry it. No name, e-mail, phone,
 contact list, location, advertising ID, device ID, IDFV or free text is sent. Nothing is sent while the player has
 turned off "Send my daily results" (D-135, D-186), and nothing at all in practice runs, endless or puzzles.
 
@@ -123,5 +127,9 @@ declaration. `test:ios-config` and `test:privacy-declarations` check it.
 4. **Server request logs** — Cloud Functions (2nd gen, Cloud Run) request logs in our Google Cloud project record the
    caller's IP address and user agent by default. We do not read or use them, but whether they must be declared
    (or the logs shortened/excluded when the project is created, Q-07) is a question for the lawyer consult.
+6. **App Check (D-246, Q-53)** — when the owner installs the plugin, Play Integrity and App Attest run on the device
+   as platform services of Google and Apple; the token we send carries no user data and nothing new is stored, so we
+   read it as no new Data safety / App Privacy type. Re-check the Play Console wording on the day App Check is
+   switched on (`APP_CHECK_ENFORCED`).
 5. Public call sign on the boards: other players see `AW-xxxx` and the score; ask the lawyer whether this needs a
    line in the privacy policy beyond `docs/legal/leaderboards-privacy.md` (it is not "sharing" in either store's sense).

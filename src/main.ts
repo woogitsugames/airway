@@ -32,7 +32,9 @@ import { mountTutorial } from './game/tutorial';
 import { browserTutorialStorage, readTutorialOutcome, TUTORIAL_KEY } from './game/tutorial/controller';
 import { createWorld, type World } from './game/world';
 import { getLanguage, setPseudoLocale, t } from './i18n';
-import { configureHaptics, createDefaultStorage, createNativeInstallMarker, forgetIdentityOnNewInstall, GameLifecycle, shareDailyResult, type KeyValueStorage } from './platform';
+import { FrameRecorder, gameLoopLogLine, gameLoopReport, gameLoopScenario, type GameLoopRunFacts } from './game/gameLoop'; // [night-12ay] R3i
+import { nativeGameLoopPort, readGameLoop, type GameLoopBridge } from './platform/gameLoop'; // [night-12ay] R3i
+import { configureHaptics, nativeAppCheckPort, createDefaultStorage, createNativeInstallMarker, forgetIdentityOnNewInstall, GameLifecycle, shareDailyResult, type KeyValueStorage } from './platform';
 import { initializeAccessibility } from './ui/a11y';
 import { initializeMotion } from './ui/motion';
 import { mountUnsupported } from './ui/unsupported'; // [night-11h]
@@ -124,7 +126,7 @@ async function boot(): Promise<void> {
     try { return globalThis.localStorage ?? null; } catch { return null; }
   })(), IDENTITY_KEYS);
   // [night-06c] D-66: off without VITE_FIREBASE_* config; otherwise retry queued daily runs at start.
-  const leaderboards = createBrowserLeaderboards(import.meta.env);
+  const leaderboards = createBrowserLeaderboards(import.meta.env, nativeAppCheckPort()); // [night-12az] D-246 App Check
   void leaderboards.flush();
   let saved: SavedSummary | null = null;
   let session: GameSession | null = null;
@@ -195,7 +197,7 @@ async function boot(): Promise<void> {
       if (name !== 'game') {
         if (session) { endSession(); world?.reset(); }
         world?.showMenuBackdrop();
-        screenName = name === 'settings' || name === 'licenses' || name === 'privacy' ? 'settings' : name === 'logbook' ? 'logbook' : 'menu';
+        screenName = name === 'settings' || name === 'licenses' || name === 'privacy' || name === 'terms' ? 'settings' : name === 'logbook' ? 'logbook' : 'menu';
       }
     },
     onLanguageChanged: () => { document.title = t('app.title'); },
@@ -378,7 +380,7 @@ async function boot(): Promise<void> {
   function devState(): AwDevState {
     const run = session?.run;
     return {
-      screen: session ? screenName : (screens.current() === 'settings' || screens.current() === 'licenses' || screens.current() === 'privacy' ? 'settings'
+      screen: session ? screenName : (screens.current() === 'settings' || screens.current() === 'licenses' || screens.current() === 'privacy' || screens.current() === 'terms' ? 'settings'
         : screens.current() === 'logbook' ? 'logbook' : 'menu'),
       seed: run?.seed ?? pendingSeed ?? 0,
       homeRegion: run?.homeRegion ?? null, // [night-11aj] R2g
@@ -440,6 +442,73 @@ async function boot(): Promise<void> {
         return command?.type ?? null;
       },
     });
+  }
+
+  // [night-12ay] R3i (D-245): Firebase Test Lab game loop (Android only, TEST_LOOP intent; docs/ANDROID.md). Not DEV:
+  // the release build plays the scenario with the task-22 bot through real Commands, then writes the report.
+  const gameLoop = await readGameLoop(nativeGameLoopPort());
+  if (gameLoop) void runGameLoop(gameLoop);
+
+  async function runGameLoop(loop: GameLoopBridge): Promise<void> {
+    const scenario = gameLoopScenario(loop.launch.scenario);
+    const frames = new FrameRecorder();
+    let started = performance.now();
+    let commands = 0;
+    let error: string | undefined;
+    try {
+      if (!scenario) throw new Error('unknown-scenario');
+      if (!world) throw new Error('no-webgl2');
+      await world.ready.catch(() => undefined);
+      // A lazy chunk: only a game-loop launch (or DEV) ever loads the bot.
+      const bot = await import('./game/dev/autoplay');
+      skipTutorialOnce = true;
+      devFirstTimeCards = false;
+      startEndless(scenario.seed, null);
+      session?.setSpeed(scenario.speed);
+      started = performance.now();
+      let decidedTick = -Infinity;
+      let decidedAt = -Infinity;
+      await new Promise<void>((resolve) => {
+        const frame = (now: number): void => {
+          frames.push(now);
+          const run = session?.run;
+          // The weekly board holds the clock: decide again after a second of real time there.
+          if (run && !run.failed && (run.tick - decidedTick >= scenario.decisionTicks || now - decidedAt >= 1000)) {
+            decidedTick = run.tick;
+            decidedAt = now;
+            const command = bot.nextAutoplayCommand(run.sim);
+            if (command) { run.queue(command); commands++; }
+          }
+          if (now - started >= scenario.durationMs) resolve();
+          else requestAnimationFrame(frame);
+        };
+        requestAnimationFrame(frame);
+      });
+    } catch (failure) {
+      error = failure instanceof Error ? failure.message : String(failure);
+    }
+    const run = session?.run;
+    const facts: GameLoopRunFacts | null = run ? {
+      week: Math.floor(run.clockMinute / TICKS_PER_WEEK) + 1, passengers: run.passengers,
+      routes: run.routeList().length, commands, failed: run.failed !== null,
+    } : null;
+    let preset: string | null = null;
+    let adaptations: readonly string[] = [];
+    try {
+      preset = world?.renderer.quality.preset ?? null;
+      adaptations = world?.renderer.stats().adaptations ?? [];
+    } catch { /* A lost context reads nothing. */ }
+    const report = gameLoopReport({
+      scenarioNumber: loop.launch.scenario, scenario, measuredMs: performance.now() - started,
+      frames: frames.summarize(), run: facts, error,
+      device: {
+        userAgent: navigator.userAgent, renderer: gpuRendererString(() => document.createElement('canvas')),
+        viewport: { width: innerWidth, height: innerHeight, dpr: devicePixelRatio },
+        graphics: readSettings().graphics, preset, adaptations, appVersion: APP_VERSION,
+      },
+    });
+    console.info(gameLoopLogLine(report));
+    await loop.finish(JSON.stringify(report, null, 2) + '\n');
   }
 
   // Store screenshots (scripts/store-shots.mjs, DEV only): drive the real session to a scene through
