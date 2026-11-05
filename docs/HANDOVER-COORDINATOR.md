@@ -49,13 +49,14 @@ commitach.
 9. Właściciel: rejestracja aplikacji w App Check, przebieg Test Lab, akceptacja warunków przetwarzania Firebase.
 
 ## Znane problemy
-- **G7** (sesja ext): SwiftShader ~10 fps; `ui:matrix`, `e2e:smoke`, `store:shots` przekraczają czas. Nowe e2e
-  piszemy na stronach-fixture. Podpięcia w `session.ts` (R4c, R4d, R1n, R2k, R2i) sprawdzone tylko typecheckiem.
+- **G7** (sesja ext): SwiftShader ~10 fps. Obejście: `?render=stub` (D-254) — `test:e2e:session-stub` sprawdza
+  podpięcia nocnych funkcji w `session.ts`; `ui:matrix:stub` 48/48, `test:e2e:smoke:stub` 9/9. Piksele globu
+  (`store:shots`, `perf:scene`, pierścienie) nadal tylko na prawdziwym rendererze.
 - Zapas budżetu paczki mały (D-252): JS +4,2 %, CSS ~+0,3 %, dist ~+0,6 %.
 - Commity #206/#208 mają nazwę modelu w stopce (atrybucja środowiska); bez przepisywania historii.
 - Odczyt skali tekstu z systemu (Android/iOS) i Test Lab niesprawdzone na urządzeniu.
 
 ## Kolejka po nocy
 - Po wyborze kierunku UI: wdrożenie skórki (Agent #1), potem przegląd HUD/metek pod 150 % tekstu.
-- Agent #2: R2j (fala pogody, po premierze), R4f/R6e/R8f czekają (G7 / test zamknięty / urządzenie), N9d (#52).
+- Agent #2: R4f/R6e/R8f czekają (G7 / test zamknięty / urządzenie), N9d (#52).
 - Nie bierz: kroków G i `src/render/**` (ext/03), zagadek (ext/04+).
