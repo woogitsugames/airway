@@ -10,7 +10,9 @@ playtestu: linię maszynową `AW1:` pod tekstem, prawdziwe minuty gry, przyczyn�
 szkolenia, ustawienie i preset grafiki, kroki adaptacji i wersję gry, oraz `npm run playtest:decode` (CSV). **R3k**
 (D-232) dodał rekrutację, ostateczną tabelę decyzji z progami spisanymi przed testem i arkusz odpowiedzi do wniosku o
 produkcję (Q-42 → D-94; Q-52 wg rekomendacji A, do potwierdzenia). **R6i** dodał arkusz obserwacji pierwszej sesji
-(pierwsze 10 minut) i dwa sprawdzenia na urządzeniu (muzyka z innej aplikacji, wibracje na tanim telefonie).
+(pierwsze 10 minut) i dwa sprawdzenia na urządzeniu (muzyka z innej aplikacji, wibracje na tanim telefonie). **R8g**
+dodał siedem pytań audytu R8 (RESEARCH R8, „Pytania do testu zamkniętego”) do ankiet B i C i do arkusza obserwacji,
+każde z progiem w Tabeli decyzji (wiersze R8-1…R8-7).
 
 ## Prywatność (D-16, D-220)
 
@@ -216,6 +218,9 @@ odpowiadają na nie wprost.
 | B6 | Czy samolot czekał kiedyś na ziemi na „slot startowy”? (tak, często / raz-dwa / nie / nie wiem, co to) — Q-80 | Did an aircraft ever wait on the ground for a "departure slot"? (yes, often / once or twice / no / don't know what that is) — Q-80 |
 | B7 | Najlepszy i najgorszy moment tygodnia | Best and worst moment of the week |
 | B8 | Bateria / grzanie się telefonu (bez zmian / trochę / mocno) | Battery / phone heating (no change / a little / a lot) |
+| B9 | Czy przeniosłeś kiedyś samolot z jednej trasy na inną? (tak, kilka razy / raz-dwa / nie / nie wiedziałem, że można) — R8-2 | Did you ever move an aircraft from one route to another? (yes, several times / once or twice / no / didn't know I could) — R8-2 |
+| B10 | Którą kartę tygodnia wybrałeś ostatnio i dlaczego (jedno zdanie)? Czy któraś karta wydała się „bez sensu”? (nie / tak — która) — R8-3 | Which weekly card did you pick last time and why (one sentence)? Did any card seem pointless? (no / yes — which) — R8-3 |
+| B11 | Czy widziałeś przy lotnisku stempel „SLOT” (wstrzymany odlot)? (tak / nie / nie wiem); ile samolotów miałeś najwięcej na jednym lotnisku? (1–2 / 3–4 / 5+ / nie wiem) — R8-4 | Did you see a "SLOT" stamp by an airport (a held departure)? (yes / no / don't know); the most aircraft you had at one airport? (1–2 / 3–4 / 5+ / don't know) — R8-4 |
 
 ### C — dzień 14 (+ podsumowanie z dziennika)
 | # | PL | EN |
@@ -227,6 +232,9 @@ odpowiadają na nie wprost.
 | C5 | Czy poleciłbyś grę? (0–10) | Would you recommend the game? (0–10) |
 | C6 | Dźwięk (włączony / wyciszony; czy przeszkadza) — Q-29; noc na globusie (za ciemna / w sam raz / za jasna) — Q-14 | Sound (on / muted; does it bother you) — Q-29; night on the globe (too dark / right / too bright) — Q-14 |
 | C7 | Ile zapłaciłbyś za tę grę? (tylko sygnał; gra zostaje bez reklam i zakupów, D-16) | What would you pay for this game? (a signal only; the game stays without ads or purchases, D-16) |
+| C8 | Na ekranie końca gry: czy wiedziałeś, co mogło uratować lotnisko? (tak / nie / zgadywałem); czy miałeś wtedy wolny samolot w doku? (tak / nie / nie wiem) — R8-1 | On the game-over screen: did you know what could have saved the airport? (yes / no / I guessed); did you have a spare aircraft in the dock then? (yes / no / don't know) — R8-1 |
+| C9 | Czy doszedłeś do ciszy nocnej (lotniska gasną nocą, od tygodnia 3)? (tak / nie / nie wiem); jeśli tak — co wtedy dzieje się z lotniskiem? (własnymi słowami) — R8-5 | Did you reach the night curfew (airports go dark at night, from week 3)? (yes / no / don't know); if yes — what happens to the airport then? (your own words) — R8-5 |
+| C10 | Czy w ostatnich minutach biegu miałeś na co wydać decyzję, czy tylko patrzyłeś? (miałem co robić / trochę / tylko patrzyłem) — R8-7 | In the last minutes of a run, did you have decisions to make, or did you just watch? (had things to do / a little / just watched) — R8-7 |
 
 ## Arkusz obserwacji pierwszej sesji (R6i)
 
@@ -249,6 +257,8 @@ z licznika nagrania. Tester mówi na głos, co myśli; obserwator zapisuje cytat
 | O6 | **Tablica tygodnia (skrzynia)**: czy wybrał kartę i umieścił nowy samolot z doku **bez pomocy**; czy umie powiedzieć, co wybrał | z nagrania + pytanie | |
 | O7 | Pierwsza porażka: minuta; czy umie powiedzieć dlaczego (porównać z A1 i `cause` w CSV) | pytanie po biegu | |
 | O8 | Inne miejsca, gdzie utknął > 10 s (ekran, element, cytat) | z nagrania | |
+| O9 | **Przeniesienia samolotu** (R8-2): ile razy zdjął samolot z trasy i dał go innej (albo usunął trasę, by uwolnić samolot); czy zrobił to, gdy lotnisko nie miało trasy, a dok był pusty | z nagrania (licznik) | razy |
+| O10 | **Stempel SLOT** (R8-4): czy pojawił się wstrzymany odlot i czy tester go zauważył (sam / po pytaniu / nie); najwięcej samolotów na jednym lotnisku | z nagrania + pytanie | |
 
 **Sprawdzenia na urządzeniu** (obserwator albo tester według krótkiej instrukcji w Grupie; jedna próba na telefon):
 
@@ -267,8 +277,28 @@ obserwowanych jest mało, więc liczymy osoby, nie procenty):
 | O4 „nic do roboty” przed 3. minutą | ≥ 2 osoby | wraca tempo tygodnia 1 (Q-60, D-113) |
 | O5 glif źle | ≥ 2 osoby | legenda glifów w szkoleniu / na przywieszce |
 | O6 tablica tygodnia z pomocą | ≥ 2 osoby | przegląd tablicy tygodnia (skrzynia, dok) |
+| O9 zero przeniesień, gdy lotnisko bez trasy i pusty dok | ≥ 2 osoby | wskazówka przeniesienia samolotu (R8-2) przed premierą |
+| O10 SLOT nie zauważony mimo wstrzymania | ≥ 2 osoby | stempel SLOT wyraźniej (R8-4, Q-80) |
 | U1 muzyka zatrzymuje się przy wyłączonym dźwięku gry | 1 telefon | zadanie platformy: nie przejmować focusu audio, gdy dźwięk gry jest wyłączony |
 | U2 wibracja brak / brzęczy na tanim telefonie | ≥ 2 telefony | R6e (stałe systemowe Androida) przed premierą |
+
+## Pytania R8 (R8g, D-240)
+
+Siedem pytań audytu R8 (`docs/RESEARCH.md`, R8 — „Pytania do testu zamkniętego”). Audyt liczył na regułach v5; od
+reguł v6 cisza nocna zaczyna się w tygodniu 3 (D-151, Q-72 → B), a tablica tygodnia pokazuje tylko karty, które mogą
+zadziałać (D-150), więc progi dotyczą reguł v6 i odniesienie z bota bierzemy z `docs/balance/game-summary.md`. Dziennik
+nie zapisuje przeniesień samolotu ani wolnych samolotów w chwili porażki (D-16: tylko liczby potrzebne do Q-73/Q-78/Q-80),
+więc pytania 1, 2 i 4 idą przez ankietę i arkusz obserwacji; pytania 5 i 6 liczymy także z CSV.
+
+| R8 | Pytanie z RESEARCH R8 | Gdzie pytamy | Z dziennika (CSV) | Próg z RESEARCH R8 | Wiersz decyzji |
+|---|---|---|---|---|---|
+| 1 | Czy wiedziałeś, co mogło uratować lotnisko? Czy był wolny samolot? | C8 | `cause` (`no-route`) | „nie” > 30 % → rada R8b ma sens | R8-1 |
+| 2 | Ile razy gracz przeniósł samolot z trasy na trasę? | B9, O9 | — (nie zapisujemy) | „prawie nigdy” → przenoszenie jest ukryte | R8-2 |
+| 3 | Jaką kartę wybrał i dlaczego; czy któraś była „bez sensu”? | B10 | `picks` | ≥ 1/3 testerów → R8a | R8-3 |
+| 4 | Czy widział wstrzymany odlot (stempel SLOT); ile samolotów na najbardziej obciążonym lotnisku? | B11, O10 | `held_min` | odpowiedź na D-41 dla ludzi | R8-4 |
+| 5 | Czy doszedł do ciszy nocnej i czy zrozumiał zamknięcie lotniska? | C9 | `weeks` ≥ 2 (`endless`) | odsetek < 30 % → Q-72 B (już w mocy, D-151) | R8-5 |
+| 6 | Rozkład długości biegów (p10/p50/p90), czy najlepsi przekraczają 30 min? | — | `min_1x` (`endless`) | rozkład, nie sama mediana; > 30 min | R8-6 |
+| 7 | Czy w ostatnich minutach miałeś na co wydać decyzję, czy tylko patrzyłeś? | C10 | — | sufit tygodnia 4–5 (R8f) | R8-7 |
 
 ## Tabela decyzji (R3k, D-232) — progi spisane przed testem
 
@@ -295,6 +325,13 @@ więc porównujemy z kolumną `min_1x`; `min_real` mówi tylko, ile życia zajmu
 | Gra dnia | `dailies` i dni z `mode = daily` w podsumowaniu | — | ≥ 8 podsumowań | < 4 z 12 gra ≥ 5 z 7 dni (dni 8–14) → wraca Q-45 (przypomnienie) | bez zmian |
 | Czego brakuje | C4 = cel / odmiana | — | ≥ 8 odpowiedzi C | ≥ 5 z 12 → Q-50: R2g + R2h przed premierą | bez zmian |
 | Poprawka z dnia 8 | `version` biegów z dni 9–14 | — | — | < 9 z 12 testerów gra na nowej wersji do dnia 11 → przypomnienie w Grupie (aktualizacja w Play) | — |
+| **R8-1** rada końca gry (R8b, N12y) | C8 „nie” (bez „zgadywałem”) i C8 wolny samolot; `cause` = `no-route` | 50 biegów: porażka bez wolnego samolotu 48 z 50 (96 %), lotnisko bez trasy 14 (28 %); R8 (v5): 56 z 200 bez trasy | ≥ 8 odpowiedzi C | „nie” > 30 % odpowiedzi C8 → rada `gameover.unservedNoSpare` (R8b) nie wystarcza: przegląd raportu końca gry przed premierą (rada przy lotnisku na globusie). „Nie” przy „wolny samolot: tak” u ≥ 3 z 12 → brakuje rady „wolny samolot w doku”. ≤ 30 % → bez zmian | bez zmian |
+| **R8-2** przenoszenie samolotu | B9 „nie” + „nie wiedziałem, że można”; O9 | bot od N12z przenosi samolot, gdy lotnisko nie ma trasy, a rezerwa jest pusta; R8 (v5, bot bez przenoszenia): 56 z 200 porażek bez trasy | ≥ 8 odpowiedzi B | ≥ 6 z 12 (50 %) nie przeniosło nigdy **albo** O9 = 0 u ≥ 2 obserwowanych → przenoszenie jest ukryte: wskazówka w szkoleniu / raporcie końca przed premierą i Q-73 czeka na drugi pomiar po niej (krótkie biegi to wtedy nie tempo) | bez zmian |
+| **R8-3** karta „bez sensu” (R8a) | B10 „tak — która”; `picks` | 50 biegów (v6): „+2 sloty” w ofercie 3, wybrana 0; „Rozbudowa huba” w ofercie 95, wybrana 7 (7 %) | ≥ 8 odpowiedzi B | ≥ 4 z 12 (1/3) nazywa tę samą kartę „bez sensu” → D-150 nie wystarczyło: przegląd kart razem z Q-35 B (i Q-78 D, gdy to karta huba). < 4 z 12 → bez zmian | bez zmian |
+| **R8-4** stempel SLOT (D-41) | B11 „tak”, B11 samoloty na lotnisku; O10; `held_min` > 0 | 50 biegów: wstrzymanie w 5 (10 %), 8 wstrzymanych odlotów | ≥ 8 odpowiedzi B | ≥ 4 z 12 widziało SLOT **albo** ≥ 3 z 12 ma 5+ samolotów na jednym lotnisku → D-41 działa dla ludzi: wspiera Q-80 A. ≤ 1 z 12 widziało SLOT i nikt nie ma 5+ → wspiera Q-80 B. Decyduje wiersz Q-80 | bez zmian |
+| **R8-5** cisza nocna (D-17, D-151) | testerzy z biegiem `endless` o `weeks` ≥ 2 (doszli do tygodnia 3); C9 „tak” i poprawny opis | 50 biegów (v6): cisza w 33 (66 %), wstrzymanie ciszą w 32 z 33 (97 %); R8 (v5, od tyg. 4): 29 z 200 (15 %) | ≥ 8 podsumowań | < 30 % testerów doszło do ciszy → wraca Q-72 C (od tygodnia 2) do właściciela. Doszło ≥ 30 %, ale < 30 % z nich opisuje zamknięcie dobrze w C9 → przegląd sygnału ciszy (lotnisko gaśnie, przywieszka) przed premierą | bez zmian |
+| **R8-6** rozrzut długości biegu | p10 / p50 / p90 `min_1x` biegów `endless`; najdłuższy bieg każdego testera | 50 biegów: p10 11,16 · mediana 17,41 · p90 24,25 · max 29,45 min; R8 (v5, 200 biegów): max 31,6 min | ≥ 40 biegów `endless` od ≥ 8 testerów | ≥ 3 z 12 testerów ma bieg > 30 min → sufit bota nie jest sufitem ludzi: R8f odkładamy. 0 z 12 > 30 min **i** p90 ludzi ≤ p90 bota → ściana jest wspólna: argument dla Q-73 B (przegląd R8f). Wpisujemy p10/p50/p90, nie samą medianę | bez zmian |
+| **R8-7** ostatnie minuty | C10 „tylko patrzyłem” | 50 biegów: porażka w tyg. 4 w 10, w tyg. 5 w 1 (z 50) | ≥ 8 odpowiedzi C | ≥ 4 z 12 „tylko patrzyłem” → sufit tygodnia 4–5 jest odczuwalny: R8f (więcej samolotów / wolniejsza rampa) idzie do właściciela z Q-73. < 4 z 12 → bez zmian | bez zmian |
 
 Wyniki wpisujemy pod tabelą (kolumna „Wynik”, liczby z CSV) i każdą decyzję jako nowe D-xx. Progów **nie zmieniamy**
 po zobaczeniu danych; jeśli próg okaże się źle postawiony, zapisujemy to jako osobną decyzję z uzasadnieniem i

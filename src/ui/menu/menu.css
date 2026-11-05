@@ -101,3 +101,9 @@
 .airway-keys__caps { display:inline-flex; gap:4px; flex:none; }
 .airway-keys__cap { min-width:22px; padding:1px 5px; border:1px solid currentColor; font:700 12px/1.3 'Overpass Mono',monospace; text-align:center; }
 @media (any-hover: none) { .airway-keys { display:none; } }
+/* [night-11al] R7c, D-241: publisher block in settings → help, plain label/value rows like the glyph legend. */
+.airway-publisher { margin-top:14px; }
+.airway-publisher__rows { margin:0; }
+.airway-publisher__row { display:flex; flex-direction:column; gap:2px; padding:6px 0; border-bottom:1px dashed #c2b5a6; }
+.airway-publisher__row dt { font:700 11px/1.3 'Overpass Mono',monospace; letter-spacing:.04em; color:#55514a; overflow-wrap:anywhere; }
+.airway-publisher__row dd { margin:0; font:400 14px/1.35 'Atkinson Hyperlegible Next',sans-serif; color:#2a2420; overflow-wrap:anywhere; }

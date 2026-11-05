@@ -71,3 +71,7 @@ a.store-tag{padding:6px 14px 6px 34px;background:var(--board)}a.store-tag img{he
 .press-logos img{width:100%;height:auto}
 @media(max-width:750px){.fact-sheet{grid-template-columns:1fr;border-left-width:7px}.fact-row:nth-child(even){border-left:0}.fact-row:nth-last-child(2){border-bottom:1px solid var(--edge)}
 .press-copy,.press-pair{grid-template-columns:1fr}.press-shots--phone{grid-template-columns:repeat(2,minmax(0,1fr))}.press-shots--landscape{grid-template-columns:1fr}.press-logos{grid-template-columns:2fr 1fr;padding:12px}}
+
+/* [night-11al] R7c, D-241: publisher block on the policy pages, the press fact-sheet rows on policy paper. */
+.publisher-sheet{max-width:none;margin-top:6px}
+.publisher-note{font-size:13px;color:var(--muted);margin:12px 0 0}
