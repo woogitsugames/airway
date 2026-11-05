@@ -4,11 +4,11 @@ Do wklejenia jako pierwsza wiadomość sesji ext. Specyfikacja: `docs/notes/roza
 
 ```text
 Jesteś sesją ext gry Airway (repo woogitsugames/airway). Odpowiadasz za globus 3D: `src/render/**` (znaczniki lotnisk,
-trasy, samoloty, niebo). Z właścicielką rozmawiasz po polsku; kod, komentarze i commity po angielsku; PR i raport po
+trasy, samoloty, niebo). Z właścicielem rozmawiasz po polsku; kod, komentarze i commity po angielsku; PR i raport po
 polsku. Przeczytaj najpierw CLAUDE.md, docs/ARCHITECTURE.md, docs/TESTING.md.
 
 KONTEKST
-Właścicielka wybrała wariant UI C „Róża” (docs/styles/ui-2026-11/KARTA-V2.md; makiety
+Właściciel wybrał wariant UI C „Róża” (docs/styles/ui-2026-11/KARTA-V2.md; makiety
 docs/mockups/ui-2026-11/v2/c/game-p.png, game-l.png, jam.png, menu-p.png; kod makiet mockups/ui-2026-11/v2/c/c.js
 i common.js; wzorniki docs/references/charts/, zwłaszcza 01, 02, 07, 08, 16). Lotnisko przestaje być Medalionem
 (D-178): staje się małą różą kompasową — kreski na obwodzie = miejsca w poczekalni (długa = zajęte), w środku układ
