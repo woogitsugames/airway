@@ -94,3 +94,17 @@ export const CONTRACT_PARAMS_VERSION = 1 as const;
 export const CONTRACT_SHARE_PERCENT = 100 as const;
 export const CONTRACT_MIN_PASSENGERS = 8 as const;
 export const CONTRACT_MAX_PASSENGERS = 60 as const;
+// [night-12bb] R2i, D-249: announced demand surge (Endless runs with `GameConfig.demandSurge` only; Daily never).
+// From the week-2 board on (so the first surge falls in week 3), each board picks one open airport with a route; a
+// game day ahead of the window the airport announces it, then during SURGE_DURATION_MINUTES of its local day it sends
+// SURGE_EXTRA_PASSENGERS more passengers, one every SURGE_DURATION_MINUTES / SURGE_EXTRA_PASSENGERS minutes, on top
+// of its usual demand (destinations from the surge's own RNG fork; the kernel demand stream is untouched). A fixed
+// count, not "×2": doubling this game's demand (1.3 passengers per million inhabitants per day) adds a median of
+// 1 passenger in 6 hours (bot, 50 seeds), nothing a player would act on. Start hours keep the window clear of the
+// night curfew (23–06).
+export const SURGE_PARAMS_VERSION = 1 as const;
+export const SURGE_FIRST_BOARD_WEEK = 2 as const;
+export const SURGE_EXTRA_PASSENGERS = 12 as const;
+export const SURGE_DURATION_MINUTES = 360 as const;
+export const SURGE_NOTICE_MINUTES = SIM_MINUTES_PER_DAY;
+export const SURGE_START_LOCAL_HOURS: readonly number[] = Object.freeze([8, 11, 14, 16]);

@@ -37,6 +37,11 @@ export interface GameConfig {
    * Absent = the pre-R2k rules (older saves and every Daily replay unchanged); new Endless runs set it.
    */
   readonly weeklyContract?: true;
+  /**
+   * [night-12bb] R2i, D-249: Endless only. From week 3 one open airport per week announces a demand surge a game day
+   * ahead. Absent = no surges (older saves and every Daily replay unchanged); new Endless runs set it.
+   */
+  readonly demandSurge?: true;
 }
 
 /** [night-11aj] Canonical copy of a config: optional fields only when set (they are part of the state hash). */
@@ -46,6 +51,7 @@ export function copyConfig(config: GameConfig): GameConfig {
     ...(config.puzzleId === undefined ? {} : { puzzleId: config.puzzleId }),
     ...(config.homeRegion === undefined ? {} : { homeRegion: config.homeRegion }),
     ...(config.weeklyContract === true ? { weeklyContract: true } : {}),
+    ...(config.demandSurge === true ? { demandSurge: true } : {}),
   };
 }
 

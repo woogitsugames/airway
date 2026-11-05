@@ -120,7 +120,7 @@ await test('save → load keeps the region and the exact hash (envelope v2)', ()
   play(sim, 1500);
   const save = encodeSave(saveSourceFromSim(sim), 1000);
   assert.equal(save.v, SAVE_VERSION);
-  assert.equal(SAVE_VERSION, 3); // [night-12ba] R2k: 2 -> 3 (weekly contract)
+  assert.equal(SAVE_VERSION, 4); // [night-12ba] R2k: 2 -> 3 (weekly contract); [night-12bb] R2i: 3 -> 4 (demand surge)
   const decoded = decodeSave(JSON.stringify(save));
   assert.equal(decoded.status, 'ok');
   if (decoded.status !== 'ok') return;

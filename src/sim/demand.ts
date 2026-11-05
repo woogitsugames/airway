@@ -110,6 +110,26 @@ export class RegionalDemand {
     return Math.floor(scaled / 100_000_000);
   }
 
+  /**
+   * [night-12bb] R2i, D-249: one extra passenger from an active airport during its demand surge, to a region drawn
+   * with the airport's usual weights but from `rng` (the surge's own fork), never from the kernel demand stream.
+   * Returns false when the airport has nowhere to send anyone (no other region open).
+   */
+  surgePassenger(cityId: string, rng: DemandRandom, emit: (passenger: GeneratedPassenger) => void): boolean {
+    const options = this.choices.get(cityId);
+    if (!this.active.has(cityId) || !options?.length) return false;
+    let total = 0;
+    for (const choice of options) total += choice.weight;
+    const roll = rng.next();
+    if (roll < 0 || roll >= 1 || !Number.isFinite(roll)) throw new Error('Invalid surge RNG value');
+    let index = Math.floor(roll * total);
+    for (const choice of options) {
+      index -= choice.weight;
+      if (index < 0) { emit({ originCityId: cityId, destinationRegion: choice.regionId }); return true; }
+    }
+    return false;
+  }
+
   /** One simulation tick = one game minute; no new allocations without generated passengers. */
   tick(tick: number, emit: (passenger: GeneratedPassenger) => void): void {
     for (const city of this.cities) {

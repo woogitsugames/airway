@@ -12,17 +12,18 @@ export function scenarioFor(config: GameConfig): Scenario {
   }
   // [night-11aj] R2g: a chosen home region moves only the start cluster (D-236); Daily never carries one.
   // [night-12ba] R2k: the weekly contract (D-247) is an Endless flag too; without either it is the shared scenario.
-  if (config.homeRegion === undefined && config.weeklyContract !== true) return ENDLESS_SCENARIO;
-  return endlessScenario(config.homeRegion ?? null, config.weeklyContract === true);
+  // [night-12bb] R2i: so is the demand surge (D-249).
+  if (config.homeRegion === undefined && config.weeklyContract !== true && config.demandSurge !== true) return ENDLESS_SCENARIO;
+  return endlessScenario(config.homeRegion ?? null, config.weeklyContract === true, config.demandSurge === true);
 }
 
 const ENDLESS_VARIANTS = new Map<string, Scenario>();
-function endlessScenario(region: RegionId | null, contract: boolean): Scenario {
-  const key = `${region ?? '-'}/${contract ? 'c' : '-'}`;
+function endlessScenario(region: RegionId | null, contract: boolean, surge: boolean): Scenario {
+  const key = `${region ?? '-'}/${contract ? 'c' : '-'}/${surge ? 's' : '-'}`;
   let scenario = ENDLESS_VARIANTS.get(key);
   if (!scenario) {
     scenario = Object.freeze({ ...ENDLESS_SCENARIO, ...(region ? { homeRegionId: region } : {}),
-      ...(contract ? { weeklyContract: true } : {}) });
+      ...(contract ? { weeklyContract: true } : {}), ...(surge ? { demandSurge: true } : {}) });
     ENDLESS_VARIANTS.set(key, scenario);
   }
   return scenario;

@@ -231,3 +231,39 @@
 @media (hover: hover) and (pointer: fine) {
   .airport-bubble.is-hover, .airport-edge:hover { box-shadow: inset 0 -3px 0 currentColor; }
 }
+/* [night-12bb] R2i, D-249: announced demand surge. A pennant on a pole at the front of the tag (a shape of its own,
+   readable without colour): hollow while the surge is announced, filled while it runs, followed by "+N" and the
+   airport's local time (start, then "to" the end). The edge chip carries the same pennant in its top-right corner.
+   Paper stub with an ink frame, mono figures; static (an announcement is a state, not an alert). Local tokens until
+   the UI redesign brings shared ones. */
+.airport-bubble__surge {
+  --aw-surge-ink: #13302E;
+  --aw-surge-paper: #FBF8F1;
+  box-sizing: border-box;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  height: 20px;
+  margin-right: 2px;
+  padding: 0 4px;
+  border: 1px solid var(--aw-surge-ink);
+  background: var(--aw-surge-paper);
+  color: var(--aw-surge-ink);
+  font: 700 12px/18px 'Overpass Mono', monospace;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.airport-bubble__surge[data-phase="active"] { background: var(--aw-surge-ink); color: var(--aw-surge-paper); }
+.airport-bubble__pennant { display: inline-flex; line-height: 0; flex: none; }
+.airport-bubble__pennant svg { width: 12px; height: 16px; }
+.airport-edge--surge { padding-top: 12px; }
+.airport-edge__surge {
+  position: absolute;
+  top: 3px;
+  right: 4px;
+  line-height: 0;
+  pointer-events: none;
+}
+.airport-edge__surge[hidden] { display: none; }
+.airport-edge__surge svg { width: 10px; height: 13px; }
