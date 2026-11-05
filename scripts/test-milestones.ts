@@ -104,7 +104,8 @@ test('bot: the median run reaches the first four milestones, each reached by at 
 test('D-13: reading milestones never changes the Sim (same hash as a raw Sim driven by the same bot)', () => {
   const seed = 0xA1A1 + 7;
   const run = EndlessRun.create(seed);
-  const sim = createGame(seed, 'endless', undefined, null, run.sim.config.weeklyContract === true); // [night-12ba] same rules as the run (R2k)
+  const sim = createGame(seed, 'endless', undefined, null, run.sim.config.weeklyContract === true, // [night-12ba] same rules as the run (R2k)
+    run.sim.config.demandSurge === true); // [night-12bb] and the demand surge (R2i)
   for (let tick = 0; tick < 12_000 && !run.failed; tick++) {
     if (tick % AUTOPLAY_ACTION_INTERVAL === 0) {
       const a = nextAutoplayCommand(run.sim);

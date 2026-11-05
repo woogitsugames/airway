@@ -31,6 +31,7 @@ import { browserTutorialStorage } from './tutorial/controller';
 import { airportLabel } from '../ui/airportLabel'; // [night-05] D-68
 import { AudioCueMapper, cueRun } from './audioCues'; // [night-03]
 import { FillReadings } from './fillTrend'; // [night-11af] R4c
+import { surgeKey, surgeMark } from './surge'; // [night-12bb] R2i
 import { HubDepartureLog, boardOpensOnTap } from './hubBoard'; // [night-11ag] R4d
 import { mountHubBoard } from '../ui/hubBoard';
 import type { World, ScreenPoint } from './world';
@@ -383,6 +384,9 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
 
   // ---- read-only sync -----------------------------------------------------------------------
   let lastCurfewKey = '';
+  // [night-12bb] R2i: the airport whose tag carries the surge pennant, and the mark last drawn.
+  let lastSurgeKey = '';
+  let surgeTag: string | null = null;
   const closedTags = new Set<string>();
   function syncWorld(force = false): void {
     const cities = run.cityList();
@@ -438,6 +442,15 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       for (const id of closedTags) if (!closed.includes(id) && knownAirports.has(id)) overlay.setCurfew(id, false);
       closedTags.clear();
       for (const id of closed) { closedTags.add(id); if (knownAirports.has(id)) overlay.setCurfew(id, true); }
+    }
+    // [night-12bb] R2i, D-249: the announced or running demand surge as a pennant on the airport's tag and edge chip.
+    const surge = surgeMark(run.surge);
+    const nextSurgeKey = surgeKey(surge);
+    if (nextSurgeKey !== lastSurgeKey && (!surge || knownAirports.has(surge.cityId))) {
+      lastSurgeKey = nextSurgeKey;
+      if (surgeTag && surgeTag !== surge?.cityId && knownAirports.has(surgeTag)) overlay.setSurge(surgeTag, null);
+      surgeTag = surge?.cityId ?? null;
+      if (surge) overlay.setSurge(surge.cityId, surge.mark);
     }
     if (force || run !== lastRun || run.revision !== lastRunRevision) {
       lastRun = run;
@@ -582,6 +595,8 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       hubs: run.hubPressure(),
       minutesToBoard: run.mode === 'puzzle' ? null : run.nextWeekTick - run.tick,
       contract: run.contract, // [night-12ba] R2k
+      surge: run.surge ? { airport: airportLabel(run.surge.cityId), passengers: run.surge.passengers, // [night-12bb] R2i
+        startLocalHour: run.surge.startLocalHour, endLocalHour: run.surge.endLocalHour, active: run.surge.active } : null,
     });
     pauseSummaryList.replaceChildren(...rows.flatMap((row) => {
       const term = document.createElement('dt');

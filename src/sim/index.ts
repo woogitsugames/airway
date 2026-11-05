@@ -8,12 +8,13 @@ export type { Command, CommandEntry, CommandCheck, RejectReason, RouteEnd } from
 export type { GameConfig, SimState } from './state.ts';
 export type {
   CityView, RouteView, HubCauseLedgerView, SimEvent, GameMode, WorldStatus, UpgradeRecord, Scenario,
-  WorldView, DemandWave,
+  WorldView, DemandWave, SurgeView,
 } from './world.ts';
 export type { PlaneState } from './planes.ts';
 export type { PlaneType } from './params.ts';
 export type { UpgradeKind, UpgradeOffer, WeeklyUpgradeState } from './upgrades.ts';
 export type { WeeklyContract, ContractRecord } from './contracts.ts';
+export type { DemandSurge, SurgeRecord, SurgePhase } from './surge.ts';
 export type { HubFailure } from './hubs.ts';
 export { PLANE_TYPES, PLANE_PROGRESS_SCALE, CONGESTION_GRACE_TICKS } from './params.ts';
 export { clockAt, calendarWeekAt, calendarDayAt, ticksPerSecond, TICKS_PER_DAY, DAYS_PER_WEEK, TICKS_PER_WEEK, TICKS_PER_SECOND_1X } from './clock.ts';
@@ -26,9 +27,11 @@ export { HOME_REGIONS } from './spawner.ts';
  * [night-11aj] R2g: `homeRegion` (Endless only; null = Random) anchors the start cluster in that region.
  */
 export function createGame(seed: number, mode: GameConfig['mode'] = 'endless', puzzleId?: string,
-    homeRegion: GameConfig['homeRegion'] | null = null, weeklyContract = false): Sim {
+    homeRegion: GameConfig['homeRegion'] | null = null, weeklyContract = false, demandSurge = false): Sim {
   if (mode === 'puzzle') return new Sim(seed >>> 0, { mode, puzzleId: puzzleId ?? '' });
   if (mode !== 'endless') return new Sim(seed >>> 0, { mode });
   // [night-12ba] R2k: the weekly contract (D-247) is Endless only; the game layer turns it on for new runs.
-  return new Sim(seed >>> 0, { mode, ...(homeRegion ? { homeRegion } : {}), ...(weeklyContract ? { weeklyContract: true } : {}) });
+  // [night-12bb] R2i: so is the demand surge (D-249).
+  return new Sim(seed >>> 0, { mode, ...(homeRegion ? { homeRegion } : {}), ...(weeklyContract ? { weeklyContract: true } : {}),
+    ...(demandSurge ? { demandSurge: true } : {}) });
 }

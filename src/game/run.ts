@@ -11,6 +11,7 @@ import type { HubPressure } from '../sim/upgrades';
 import type { SlotPressure } from '../ui/upgrade/cards'; // [task-32]
 import type { ContractBoard } from '../ui/upgrade/cards'; // [night-12ba] R2k
 import type { WeeklyContract } from '../sim/contracts';
+import type { SurgeView } from '../sim';
 import { airportLabel, readAirportLabelMode } from '../ui/airportLabel'; // [night-05] D-68
 import { buildCauseReport, type HubCauseLedger } from './causes';
 import { PICK_LETTERS, type RunRecord, type RunStats } from './logbook';
@@ -21,6 +22,8 @@ export type AircraftType = 'turboprop' | 'widebody';
 const MAX_PLAY_FRAME_S = 0.5;
 /** [night-12ba] R2k, D-247: new Endless runs carry the weekly contract (one switch, should the owner hold it back). */
 export const ENDLESS_WEEKLY_CONTRACT = true;
+/** [night-12bb] R2i, D-249: new Endless runs carry the announced demand surge (one switch, like the contract). */
+export const ENDLESS_DEMAND_SURGE = true;
 export type RunCommand = Command;
 export type JournalEntry = CommandEntry;
 
@@ -96,10 +99,11 @@ export class EndlessRun {
   /**
    * [night-11aj] R2g: `homeRegion` (Endless only; null = Random) anchors the start cluster in that region.
    * [night-12ba] R2k, D-247: every new Endless run has the weekly contract (ENDLESS_WEEKLY_CONTRACT); Daily never.
+   * [night-12bb] R2i, D-249: and the announced demand surge (ENDLESS_DEMAND_SURGE); Daily never.
    */
   static create(seed: number, mode: GameMode = 'endless', homeRegion: RegionId | null = null): EndlessRun {
     return mode === 'daily' ? new EndlessRun(createGame(seed, 'daily'))
-      : new EndlessRun(createGame(seed, 'endless', undefined, homeRegion, ENDLESS_WEEKLY_CONTRACT));
+      : new EndlessRun(createGame(seed, 'endless', undefined, homeRegion, ENDLESS_WEEKLY_CONTRACT, ENDLESS_DEMAND_SURGE));
   }
 
   get seed(): number { return this.sim.seed; }
@@ -249,6 +253,9 @@ export class EndlessRun {
 
   /** [night-12ba] R2k, D-247: the running weekly contract (null without one, and in Daily). */
   get contract(): WeeklyContract | null { return this.sim.world.contract; }
+
+  /** [night-12bb] R2i, D-249: the announced or running demand surge (null otherwise, and in Daily). */
+  get surge(): SurgeView | null { return this.sim.world.surge; }
 
   /** [night-12ba] R2k: what the open weekly board shows: next week's contract and the one that just ended. */
   contractBoard(): ContractBoard | null {

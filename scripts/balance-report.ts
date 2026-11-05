@@ -12,7 +12,7 @@ import { pathToFileURL, fileURLToPath } from 'node:url';
 import { chooseBotAction } from './bot.ts';
 import type { AircraftType, BotCity, BotCommand, BotRoute, BotSnapshot, LedgerCause, UpgradeOffer } from './bot.ts';
 import { CURFEW_ENDLESS_START_WEEK, SIM_DAYS_PER_WEEK, SIM_MINUTES_PER_WEEK, SIM_TICKS_PER_SECOND } from '../src/sim/params.ts';
-import type { RunContracts, RunMechanics } from './balance-game-adapter.ts';
+import type { RunContracts, RunMechanics, RunSurges } from './balance-game-adapter.ts';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const BASE_SEED = 0xa1a1;
@@ -48,11 +48,13 @@ export interface BalanceSession {
   outcome(): BalanceOutcome;
   /** [night-12ba] R2k: the run's weekly contracts (real adapter only). */
   contracts?(): RunContracts;
+  /** [night-12bb] R2i: the run's demand surges (real adapter only). */
+  surges?(): RunSurges;
 }
 
 export interface BalanceAdapter {
   /** [night-11aj] R2g: `homeRegion` (real adapter only) starts the run in that Endless home region. */
-  createBalanceSession(seed: number, mode?: 'endless', homeRegion?: string | null, weeklyContract?: boolean): BalanceSession;
+  createBalanceSession(seed: number, mode?: 'endless', homeRegion?: string | null, weeklyContract?: boolean, demandSurge?: boolean): BalanceSession;
 }
 
 interface RunResult {
@@ -71,6 +73,8 @@ interface RunResult {
   mechanics: RunMechanics | null;
   /** [night-12ba] R2k: only in the contract comparison (balance:contracts). */
   contracts?: RunContracts;
+  /** [night-12bb] R2i: only in the surge comparison (balance:surges). */
+  surges?: RunSurges;
 }
 
 // LCG exists only inside the isolated fixture; the real sim must use src/core/rng.ts.
@@ -296,8 +300,10 @@ async function loadAdapter(path: string, fixture: boolean): Promise<BalanceAdapt
   return { createBalanceSession: module.createBalanceSession as BalanceAdapter['createBalanceSession'] };
 }
 
-function play(adapter: BalanceAdapter, seed: number, homeRegion: string | null = null, weeklyContract = false): RunResult {
-  const session = weeklyContract ? adapter.createBalanceSession(seed, 'endless', homeRegion, true)
+function play(adapter: BalanceAdapter, seed: number, homeRegion: string | null = null, weeklyContract = false,
+    demandSurge = false): RunResult {
+  const session = demandSurge ? adapter.createBalanceSession(seed, 'endless', homeRegion, weeklyContract, true)
+    : weeklyContract ? adapter.createBalanceSession(seed, 'endless', homeRegion, true)
     : homeRegion ? adapter.createBalanceSession(seed, 'endless', homeRegion) : adapter.createBalanceSession(seed);
   let commands = 0;
   let rejected = 0;
@@ -324,6 +330,7 @@ function play(adapter: BalanceAdapter, seed: number, homeRegion: string | null =
     warned: end.warned, warningLeadTicks: end.warningLeadTicks, commands, rejected, upgrades,
     week1Unreachable: end.week1Unreachable === true, mechanics: end.mechanics ?? null,
     ...(weeklyContract && session.contracts ? { contracts: session.contracts() } : {}),
+    ...(demandSurge && session.surges ? { surges: session.surges() } : {}),
   };
 }
 
@@ -650,10 +657,73 @@ async function contractsMain(test: boolean): Promise<void> {
   }
 }
 
+/**
+ * [night-12bb] R2i / D-249: the same bot sample as a new Endless run plays it today (weekly contract on) without and
+ * with the announced demand surge. The bot does not react to the announcement. Report: medians against D-79
+ * (10–18 min), surges announced/opened, extra passengers, losses at a surge airport. Fails only on invalid runs or
+ * when a run whose first surge window never opened differs from the same run without surges (the announcement alone
+ * must not touch the run).
+ */
+async function surgesMain(test: boolean): Promise<void> {
+  const label = test ? 'test:balance:surges' : 'balance:surges';
+  const n = Number(process.argv.find((arg) => arg.startsWith('--seeds='))?.slice(8) ?? 50);
+  try {
+    const adapter = await loadAdapter('scripts/balance-game-adapter.ts', false);
+    const off = Array.from({ length: n }, (_, i) => play(adapter, BASE_SEED + i, null, true));
+    const on = Array.from({ length: n }, (_, i) => play(adapter, BASE_SEED + i, null, true, true));
+    let invalid = [...off, ...on].filter((item) => item.ticks <= 0 || !Number.isFinite(item.score) || item.rejected > 0 ||
+      (item.reason === 'hubOverflow' && (!item.warned || item.warningLeadTicks <= 0))).length;
+    if (JSON.stringify(play(adapter, BASE_SEED, null, true, true)) !== JSON.stringify(on[0])) invalid++;
+    let untouched = 0;
+    for (let i = 0; i < n; i++) {
+      if (on[i]!.surges!.opened > 0) continue;
+      untouched++;
+      if (on[i]!.ticks !== off[i]!.ticks || on[i]!.score !== off[i]!.score) {
+        console.error(`seed ${BASE_SEED + i}: no surge window opened, yet the run differs`);
+        invalid++;
+      }
+    }
+    const sum = (key: 'announced' | 'opened' | 'extra'): number => on.reduce((total, item) => total + item.surges![key], 0);
+    const extras = on.filter((item) => item.surges!.opened > 0).map((item) => item.surges!.extra);
+    const lostAt = on.filter((item) => item.surges!.lostAtSurge).length;
+    const medOff = median(off.map((item) => item.minutes));
+    const medOn = median(on.map((item) => item.minutes));
+    const longer = on.filter((item, i) => item.minutes > off[i]!.minutes).length;
+    const shorter = on.filter((item, i) => item.minutes < off[i]!.minutes).length;
+    const lines = [
+      `| | Without surge | With surge |`, `| --- | ---: | ---: |`,
+      `| Median session (min, D-79 10–18) | ${medOff.toFixed(2)} | ${medOn.toFixed(2)} |`,
+      `| Median delivered passengers | ${median(off.map((item) => item.score)).toFixed(0)} | ${median(on.map((item) => item.score)).toFixed(0)} |`,
+      `| Reached the 3rd board | ${share(off, 3)} | ${share(on, 3)} |`,
+    ].join('\n');
+    const facts = [
+      `- Surges announced: ${sum('announced')}; windows opened before the run ended: ${sum('opened')} (runs with ≥ 1: ${extras.length}/${n}).`,
+      `- Extra passengers per run with an opened window: median ${extras.length ? median(extras).toFixed(0) : '—'}, range ${extras.length ? Math.min(...extras) : '—'}–${extras.length ? Math.max(...extras) : '—'} (total ${sum('extra')}).`,
+      `- Runs lost at the surge airport during its window or up to 6 game hours after: ${lostAt}/${n}.`,
+      `- Same seed with vs without: ${longer} longer, ${shorter} shorter, ${n - longer - shorter} equal; ${untouched} runs never reached a surge window (identical to the run without surges).`,
+    ].join('\n');
+    console.log(`${lines}\n\n${facts}`);
+    if (!test) {
+      writeFileSync(resolve(ROOT, 'docs/balance/surges-summary.md'), `# Bot sessions with and without the demand surge (R2i, D-249)\n\n` +
+        `Generated by \`npm run balance:surges -- --seeds=${n}\`: the \`test:balance\` bot on seeds 0xA1A1…+${n - 1}, ` +
+        `each seed played as a new Endless run (weekly contract on), once without and once with \`GameConfig.demandSurge\`. ` +
+        `The bot does not react to the announcement. Report only, nothing is retuned.\n\n${lines}\n\n${facts}\n`, 'utf8');
+    }
+    console.log(`SUMMARY ${label} seed=0xA1A1 seeds=${n} median_off=${medOff.toFixed(2)} median_on=${medOn.toFixed(2)} ` +
+      `announced=${sum('announced')} opened=${sum('opened')} extra=${sum('extra')} lost_at_surge=${lostAt} passed=${invalid ? 0 : 1} failed=${invalid}`);
+    if (invalid) process.exitCode = 1;
+  } catch (error) {
+    console.error(error instanceof Error ? error.stack ?? error.message : String(error));
+    console.log(`SUMMARY ${label} seed=0xA1A1 seeds=0 passed=0 failed=1`);
+    process.exitCode = 1;
+  }
+}
+
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
   if (args.includes('--regions')) { await regionsMain(args.includes('--test')); return; }
   if (args.includes('--contracts')) { await contractsMain(args.includes('--test')); return; }
+  if (args.includes('--surges')) { await surgesMain(args.includes('--test')); return; }
   const fixture = args.includes('--fixture');
   const test = args.includes('--test');
   // [task-31] The 50-seed sample runs in seconds, so the gate checks the same sample as the report.

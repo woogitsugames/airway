@@ -1,6 +1,7 @@
 // [night-10j] The pause sheet's matter-of-fact network summary: what the player has built and where the pressure
 // is, read once when the game pauses (nothing changes while paused). Pure: rows of translated label/value pairs.
 import { t, type TranslationKey } from '../i18n';
+import { localClock } from './surge';
 
 export interface PauseSummaryInput {
   readonly routes: number;
@@ -14,8 +15,11 @@ export interface PauseSummaryInput {
   readonly minutesToBoard: number | null;
   /** [night-12ba] R2k, D-247: the running weekly contract (region ids), absent/null without one. */
   readonly contract?: { readonly regions: readonly [string, string]; readonly delivered: number; readonly target: number } | null;
+  /** [night-12bb] R2i, D-249: the announced or running demand surge (airport label, local hours), absent/null without one. */
+  readonly surge?: { readonly airport: string; readonly passengers: number; readonly startLocalHour: number;
+    readonly endLocalHour: number; readonly active: boolean } | null;
 }
-export interface PauseSummaryRow { readonly key: 'network' | 'hub' | 'board' | 'contract'; readonly label: string; readonly value: string }
+export interface PauseSummaryRow { readonly key: 'network' | 'hub' | 'board' | 'contract' | 'surge'; readonly label: string; readonly value: string }
 
 /** Fullest hub by share of capacity, ties by waiting count, then by label (stable). */
 function busiestHub(hubs: PauseSummaryInput['hubs']): PauseSummaryInput['hubs'][number] | null {
@@ -60,6 +64,15 @@ export function pauseSummary(input: PauseSummaryInput): PauseSummaryRow[] {
       key: 'contract', label: t('pause.summary.contract'),
       value: t(delivered >= target ? 'pause.summary.contractMet' : 'pause.summary.contractValue', {
         from: t(`region.short.${from}` as TranslationKey), to: t(`region.short.${to}` as TranslationKey), delivered, target }),
+    });
+  }
+  if (input.surge) {
+    // [night-12bb] R2i: the airport, its extra passengers and the window on its local clock.
+    const { airport, passengers, startLocalHour, endLocalHour, active } = input.surge;
+    rows.push({
+      key: 'surge', label: t('pause.summary.surge'),
+      value: t(active ? 'pause.summary.surgeActive' : 'pause.summary.surgeSoon',
+        { airport, count: passengers, from: localClock(startLocalHour), to: localClock(endLocalHour) }),
     });
   }
   return rows;

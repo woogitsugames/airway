@@ -30,6 +30,17 @@ export interface RunMechanics {
   readonly loss: { readonly week: number; readonly isHub: boolean; readonly routes: number; readonly spareAircraft: number } | null;
 }
 
+/** [night-12bb] R2i, D-249: demand surges of one run (only with `demandSurge`). */
+export interface RunSurges {
+  /** Surges announced (shown on the globe), of which the window opened before the run ended. */
+  readonly announced: number;
+  readonly opened: number;
+  /** Extra passengers the surges generated. */
+  readonly extra: number;
+  /** The run was lost at a surge airport during its window or within 6 game hours after it. */
+  readonly lostAtSurge: boolean;
+}
+
 /** [night-12ba] R2k, D-247: weekly contracts of one run (only with `weeklyContract`). */
 export interface RunContracts {
   /** Contracts whose week ended before the run did, and how many of them were met. */
@@ -55,9 +66,11 @@ class GameSession {
   private extraPicked = 0;
   private extraOnBoard: string | undefined;
 
-  constructor(seed: number, mode: 'endless' | 'daily' = 'endless', homeRegion: RegionId | null = null, weeklyContract = false) {
+  constructor(seed: number, mode: 'endless' | 'daily' = 'endless', homeRegion: RegionId | null = null, weeklyContract = false,
+      demandSurge = false) {
     // [night-11aj] R2g: per-region balance check. [night-12ba] R2k: with or without the weekly contract.
-    this.sim = createGame(seed, mode, undefined, homeRegion, weeklyContract);
+    // [night-12bb] R2i: with or without the demand surge.
+    this.sim = createGame(seed, mode, undefined, homeRegion, weeklyContract, demandSurge);
     const start = [...this.sim.world.cities()].map((city) => city.id);
     for (const id of start) this.reachAtOpen.set(id, nearestKm(id, start));
   }
@@ -115,6 +128,20 @@ class GameSession {
     };
   }
 
+  /** [night-12bb] R2i, D-249: the run's demand surges (all zero without the surge rule). */
+  surges(): RunSurges {
+    const world = this.sim.world;
+    const tick = this.sim.tickCount;
+    const records = world.surgeRecords().filter((item) => item.announceTick <= tick);
+    const failure = world.failure;
+    return {
+      announced: records.length,
+      opened: records.filter((item) => item.startTick <= tick).length,
+      extra: records.reduce((sum, item) => sum + item.extra, 0),
+      lostAtSurge: !!failure && records.some((item) => item.cityId === failure.cityId && tick >= item.startTick && tick < item.endTick + 360),
+    };
+  }
+
   /** [night-12ba] R2k: the run's weekly contracts (all zero without the contract rule). */
   contracts(): RunContracts {
     const world = this.sim.world;
@@ -149,6 +176,6 @@ function nearestKm(id: string, others: readonly string[]): number {
 }
 
 export function createBalanceSession(seed: number, mode: 'endless' | 'daily' = 'endless',
-    homeRegion: RegionId | null = null, weeklyContract = false): GameSession {
-  return new GameSession(seed >>> 0, mode, homeRegion, weeklyContract);
+    homeRegion: RegionId | null = null, weeklyContract = false, demandSurge = false): GameSession {
+  return new GameSession(seed >>> 0, mode, homeRegion, weeklyContract, demandSurge);
 }

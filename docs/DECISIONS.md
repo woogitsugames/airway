@@ -2228,3 +2228,38 @@ fourth card is often "+2 slots" or the second aircraft. Owner choices left open:
 direction vs one-way, no penalty, whether a contract also shows on the game-over report.
 Guards: `test:weekly-contract` (`test:fast`), `test:e2e:weekly-contract`, `test:balance:contracts` (`test:ci`).
 **Status: in force (difficulty to confirm after the closed test).**
+
+## D-249 — Announced demand surge: from week 3 one served airport per week announces +12 passengers a game day ahead (2026-11-05, Claude, night N12bb)
+R2i. From the week-2 board on (so the first surge falls in week 3), every weekly board of a new Endless run draws one
+**open airport that has a route** and a local start hour (08, 11, 14 or 16 — the 6-hour window never touches the
+23–06 curfew). Exactly one game day before the window the airport **announces** the surge; during the window
+(6 game hours on its local clock) it sends **12 more passengers** than usual, one every 30 minutes, to regions
+drawn with its usual destination weights. The rule sits behind `GameConfig.demandSurge: true` (Endless only;
+`EndlessRun.create` sets it for every new Endless run through one switch, `ENDLESS_DEMAND_SURGE`), exactly like the
+weekly contract (D-247). Daily, puzzles, flagless and contract-only saves carry no flag, so their state, hashes,
+ticks and the leaderboard replay are bit-for-bit unchanged (pinned in `test:demand-surge` against
+origin/night/12ba-weekly-contract 4617dcb bot runs) and `RULES_VERSION` stays 6; the save envelope goes **v3 → v4**
+(v3 loads unchanged; a pre-R2i build refuses a v4 save as "newer version" instead of dropping the surge), and the
+D-76 replay keeps the flag. **Determinism** (`src/sim/surge.ts`): the airport, the hour and the extra passengers'
+destinations come from `new Rng(seed).fork('surge/<week>')`, whose state is kept in the world snapshot; no kernel
+stream moves — a surge run equals the run without surges until its first window opens, and the kernel demand stream
+stays equal even through the window. Versioned params `SURGE_*` (`SURGE_PARAMS_VERSION` 1).
+**Changed from the backlog's "e.g. ×2 for 6 hours"**: doubling this game's demand (1.3 passengers per million
+inhabitants per day) gave a median of **1** extra passenger per window (bot, 50 seeds, range 0–5) — nothing to act
+on, and a day-long notice for it would teach players to ignore the sign. A fixed count reads as a promise ("+12")
+and does not depend on the city's size. **Drawn in the world** (no `src/render/**` change; the existing tag/edge-chip
+DOM): a pennant stub on the airport's luggage tag right after its code plate — **hollow pennant + "+12 14:00"** (local
+start) while announced, **filled pennant + "+12 do 20:00" / "+12 to 20:00"** while running; shape and words carry
+the state, not colour; the off-screen edge chip carries the same pennant in its top-right corner; tag and chip aria
+name the surge; the pause sheet gets a "Szczyt ruchu / Passenger surge" row ("WAW +12, 14:00–20:00 czasu lok.").
+Local `--aw-surge-*` tokens until the UI redesign. Events `SurgeAnnounced` and `Surge` (start/end) for audio/HUD later.
+**Bot check** (`balance:surges`, test:balance policy, contract on in both, the bot ignores the sign; nothing else
+retuned): 50 seeds from 0xA1A1: median 17.41 / 17.41 min without / with, 26 windows opened in 23 runs, 6 runs
+shorter, 1 lost at the surge airport; 200 seeds: **16.75 / 16.75 min** (D-79 10–18), 140 surges announced, 85
+windows opened (79 runs), extra passengers per such run median 12 (3–24), 13 runs shorter, 0 longer, 4 lost at the
+surge airport during or within 6 h after its window, 3rd board reached 34 → 30 of 200 (`docs/balance/surges-summary.md`).
+Not done: a first-time card for the first announcement (would change the `first-time-cards` journey; the tag aria
+and the pause row explain it), a sound on the announcement. Owner choices left open: size (+12) and length (6 h),
+served airports only vs any open airport, the notice (one day), and whether the surge should also reach Daily.
+Guards: `test:demand-surge` (`test:fast`), `test:e2e:surge-tag`, `test:balance:surges` (`test:ci`).
+**Status: in force (size to confirm after the closed test).**

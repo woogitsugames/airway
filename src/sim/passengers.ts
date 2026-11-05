@@ -145,6 +145,14 @@ export class PassengerSimulation implements PassengerTransport {
     return this.demand.expectedPassengers(fromRegion, toRegion, days);
   }
 
+  /** [night-12bb] R2i, D-249: one extra surge passenger from `cityId` (after beginMinute); false when none was created. */
+  surgePassenger(cityId: string, rng: DemandRandom): boolean {
+    if (this.currentFailure) return false;
+    return this.demand.surgePassenger(cityId, rng, (generated) => {
+      this.seedPassenger(generated.originCityId, generated.destinationRegion);
+    });
+  }
+
   /** Phase 1 of a world minute: set the clock and generate demand. Returns passengers created. */
   beginMinute(tick: number, generateDemand = true): number {
     if (!Number.isSafeInteger(tick) || tick < this.currentTick) throw new Error('Passenger clock must not run backwards');
