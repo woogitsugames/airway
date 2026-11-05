@@ -33,7 +33,7 @@ game's `src/i18n` catalog.
 ## Verification
 
 ```sh
-npm run test:site       # local paths, alt texts, translated keys, privacy links, launch pack, press page + ZIP
+npm run test:site       # local paths, alt texts, translated keys, privacy links, launch pack, press page + ZIP, terms page
 npm run site:assets     # after store:shots: refresh site/assets/shots/ (Playwright)
 npm run build:site      # copy the static site into site/dist (+ og-image.png, airway-press-kit.zip)
 npm run shots:site      # builds site/dist first; Playwright must be available
@@ -117,8 +117,8 @@ pauses. Device pixel ratio is capped at 2.
   `hreflang` pl / en / x-default (`?lang=`); with an explicit `?lang=` the page points canonical and `og:url` to itself.
 - **404:** `site/404.html` in the site style, `noindex`, root-absolute URLs (hosts serve it at any depth); copied by
   `build:site`. Cloudflare Pages and GitHub Pages pick it up by name.
-- **Still open:** terms page (R7b) and publisher block (R7c) are not written yet, so the footer has no links to them;
-  no newsletter (Q-70 → A).
+- **Still open:** publisher block (R7c) is not written yet, so the footer has no link to it; no newsletter (Q-70 → A).
+  The terms page (R7b) is below.
 
 ## Press page (N11ae / R2e, D-219)
 
@@ -147,6 +147,18 @@ pauses. Device pixel ratio is capped at 2.
   `press.video.pending`. Once set (path relative to `site/`), switch the paragraph to `press.video.ready`: `test:site`
   then requires the file and its place in the ZIP. A video over 10 MB is git-ignored by R2b, so `build:site` must
   run where the file exists, or the build fails on the missing source.
+
+## Terms of use (N11an / R7b, D-244)
+
+- **Page:** `site/terms.html` (`?lang=pl|en`), built and served like `privacy.html` (same header, footer, `site.js`,
+  canonical + hreflang, copied by `build:site`), linked from every footer; its own footer links the privacy policy.
+  Copy: `terms.*` in `site/i18n.js`, ten sections, bodies as paragraphs and "• " lists (`data-i18n-paragraphs`).
+- **Game:** Settings → Help → "Terms of use" / "Regulamin" opens the same text offline (router screen `terms`);
+  `test:terms` keeps it word for word and checks the leaderboard rules against the game and `RETENTION_DAYS`.
+- **Draft:** the red banner says "draft v1 — to verify with a lawyer". Bracketed items (publisher Q-01, complaint
+  reply time, governing law, effective date) make `AIRWAY_RELEASE=1 npm run test:site` fail.
+- **Stores:** App Store keeps Apple's standard EULA; the terms URL for both consoles and the Play trader card is in
+  `docs/store/README.md`.
 
 ## Scope
 

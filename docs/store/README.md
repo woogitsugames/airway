@@ -9,6 +9,17 @@ and Polish until the game itself is translated. Same limits and keyword rules (`
 Data safety (Google Play) and App Privacy (App Store) answers for builds with and without leaderboards: [privacy-declarations.md](privacy-declarations.md) (R1f, D-220; kept in sync with the code by `npm run test:privacy-declarations`).
 App Store accessibility labels, the evidence for each and the PL/EN accessibility paragraph for both listings: [accessibility.md](accessibility.md) (R1i; kept in sync with the code by `npm run test:a11y-evidence`).
 
+## Terms of use and licence (R7b, D-244)
+
+- **App Store:** keep Apple's **standard EULA** (App Store Connect → App Information → License Agreement: leave the
+  standard agreement, https://www.apple.com/legal/internet-services/itunes/dev/stdeula/). Our terms say it applies in
+  the App Store; do not upload a custom EULA (D-134).
+- **Terms URL** for both consoles, the Google Play trader card (shown from 1 Mar 2027, `docs/legal/README.md` §3) and
+  the App Store description or support page: https://airway.games/terms.html (PL/EN via `?lang=pl|en`; the site is not
+  published yet, D-67).
+- The terms are a **draft v1 to verify with a lawyer** (`site/terms.html`, same text in the game under Settings →
+  Help → Terms of use); `test:terms` keeps the game copy and the leaderboard rules in line with the code.
+
 ## Naming and store limits
 
 - D-18 specifies **Airway: Globe Route Builder** (EN, 27 characters) and **Airway: Buduj siatkę lotów na globusie** (PL, 38 characters); D-203 (owner, Q-77 → B) changed the PL title to

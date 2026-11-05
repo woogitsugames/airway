@@ -2066,3 +2066,22 @@ e-mails 12 months (left to the lawyer). `docs/RELEASE.md` links the register (RL
 `test:privacy-declarations` keeps equal to the code), so a new data flow fails until the art. 30 record names it;
 the leaderboard retention must equal `RETENTION_DAYS`. Rejected: an English-only register (the owner and a Polish
 lawyer read it), filling the controller with guessed details. **Status: in force (Q-01, Q-67 and the lawyer open).**
+
+## D-244 — Terms of use v1 on `site/terms.html` and in Settings → Help; Apple's standard EULA in the App Store (2026-11-05, Claude, night N11an)
+R7b (D-134, Q-65 → A). A PL/EN terms page built like `privacy.html` (same header, footer, fonts, `site.js`,
+canonical/hreflang, copied by `build:site`), linked from every site footer, with ten sections: provider and contact
+("[Q-01 …]" placeholders), scope (game, daily leaderboard and website as electronic services, free, requirements),
+licence to play (personal, non-transferable; store rules; Apple's standard Licensed Application EULA in the App Store),
+leaderboard rules (only the first game of the day is ranked, the server replay rejects an unconfirmed score, entries
+expire 90 days after the last write, the opt-out switch and in-app deletion, no cheating, no prizes), availability
+(the leaderboard may be paused, changed or ended, the game works offline; consumer rights by law untouched), start
+and end of the agreement, complaints (reply time a bracketed proposal of 14 days), privacy, changes (14 days' notice),
+governing law (a bracketed proposal for the lawyer: Polish law without removing consumer protection of the country of
+residence). Draft banner "draft v1 — to verify with a lawyer, not legal advice". The game shows the same text offline
+under Settings → Help → "Terms of use" / "Regulamin" (router screen `terms`, like D-86), after the privacy policy.
+`docs/store/README.md` says to keep Apple's standard EULA and gives the terms URL for both consoles and the Play
+trader card. Guards: `test:terms` (game copy word for word, sections, leaderboard rules vs `rank.practice`,
+`RETENTION_DAYS` and the real switch labels, EULA and URL in the store notes), `test:site` (page, footers, banner;
+`AIRWAY_RELEASE=1` refuses bracketed placeholders), `test:e2e:terms-page`. Rejected: Apple's EULA alone (Q-65 B; the
+leaderboard and site need terms under the Polish e-services act); a custom App Store EULA. Not legal advice; goes to
+the same lawyer consultation as R7a. **Status: in force as a draft (Q-01 and the lawyer open).**

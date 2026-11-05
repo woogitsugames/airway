@@ -118,7 +118,7 @@ do kodu (NIEPEWNE). Każdy wiersz sprawdzić ponownie **przed premierą w USA**.
 | Punkt | Kto | Stan | Odniesienia |
 |---|---|---|---|
 | Polityka prywatności v1 (strona + gra, sekcja rankingów, IP w logach Auth, 180 dni kopii, DPF, UODO) | właściciel + agent | backlog R7a; czeka na Q-01 | Q-01, Q-56, D-86, D-135 |
-| Regulamin PL/EN + EULA Apple | właściciel + agent | backlog R7b | D-134, Q-65 |
+| Regulamin PL/EN + EULA Apple | właściciel + agent | projekt v1 gotowy (R7b, D-244): `site/terms.html` i Ustawienia → Pomoc → „Regulamin”; w App Store standardowa EULA Apple (`docs/store/README.md`); prawo właściwe i czas na reklamację w nawiasach dla prawnika | D-134, Q-65, D-244 |
 | Dane wydawcy w grze i na stronie | właściciel + agent | backlog R7c; czeka na Q-01 | D-134, Q-66 |
 | Przełącznik „Wysyłaj wyniki do rankingu” (sprzeciw, art. 21) | agent | warstwa sieci gotowa (D-186), przełącznik w ustawieniach — backlog R7l | D-135, D-186 |
 | Deklaracje Data safety / App Privacy | właściciel + agent | gotowe (`docs/store/privacy-declarations.md`) | D-220, D-224, Q-03 |
