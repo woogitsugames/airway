@@ -1,10 +1,10 @@
 # Przekazanie koordynatora Airway
 
-Ostatnia aktualizacja: 2026-11-05, ok. 13:00 UTC. Właściciel wybrał UI „Róża” (D-257) — scalone jako domyślne (#263).
+Ostatnia aktualizacja: 2026-11-05, ok. 23:00 UTC. UI „Róża” domyślne (D-257) i dopracowane (D-259…D-264); zrzuty i wideo sklepu w Róży.
 
 ## Stan repo
-- `main` = `dev`. W nocy scalone #211–#248, rano #249–#263.
-- Ostatnie numery: **D-258**, **Q-89**. D-160…D-179 należą do sesji ext.
+- `main` = `dev`. W nocy scalone #211–#248, 5.11 #249–#273.
+- Ostatnie numery: **D-265**, **Q-89**. D-160…D-179 należą do sesji ext.
 - Budziki koordynatora :15 i :45 (włączone): `trig_011aYp1uohavDkngVDFRndoA`, `trig_01TQogjhSE2ggjutqxxB6TtS`.
 
 ## Co weszło w nocy (skrót)
@@ -35,11 +35,21 @@ commitach.
   #252 (KARTA domyślna) zamknięty. Kontrast: `docs/notes/roza-contrast.md` (#259).
 - Sesja ext (glob): właściciel ma uruchomić prompt z `docs/notes/roza-ext-prompt.md` (medalion jako środek róży,
   paleta tras/samolotów; po zmianie rozmiaru medalionu poprawić `MEDAL_RADIUS` w `src/ui/skin/roza.ts`).
-- Strażnik `docs/TESTING.md` w `test:doc-ids` (#262); `test:fast` trwa ~6 min (107 kroków).
+- Strażnik `docs/TESTING.md` w `test:doc-ids` (#262); `test:fast` trwa ~6–7 min (110 kroków).
+
+## Popołudnie/wieczór 5.11
+- Róża dopracowana: typografia arkuszy, kolizje nazw, pauza (D-259, #266); macierz 12 rozmiarów + test zmiany rozmiaru
+  (R4f, D-260, #267); pierwszeństwo etykiet zator > hub > pełniejsze (D-262, #269); notka nigdy na pierścieniu róży
+  (D-263, #270); notka jednoznacznie przy swojej róży (D-264, #272); menu bez kolizji z lotniskami demo (#269).
+- Zrzuty sklepu/strony w Róży (#265, #268, #271, gry/nocy znowu w #272). `store-shots.mjs --only=game,night --merge`.
+- Wideo sklepu R2b: `npm run store:video` (D-265, #273), 6 plików × 24 s (~51 MB w gicie). Nagrane przed D-264 —
+  do ponownego nagrania. **Pytanie do właściciela:** trzymać mp4 poza gitem (zalecane), zostawić plakaty + manifest.
+- Dysk kontenera był pełny (store:shots padł) — usuwaj scalone worktree (`git worktree remove`) po każdym merge'u.
+- Znane, sesja ext: przesunięcie pierścienia róży względem medalionu na tablecie/iPadzie, medaliony między skrzyniami.
+
 
 ## W toku
-- Agent #1: dopracowanie Róży — kapitaliki w arkuszach, kolizje nazw po łuku, pauza w pionie (`night/14b-roza-polish`).
-- Agent #2: zrzuty sklepu i strony w UI Róża (`night/14a-store-shots-roza`).
+- Agent #1: odstęp między notkami (tablet: BGW pod notką Ankary) + ponowne zrzuty gry/nocy (`night/19a-note-gap`).
 
 ## Decyzje do właściciela rano
 1. Ocena Róży w grze (zestawienie `docs/shots/ui-roza/zestawienie.png`) i uruchomienie sesji ext z promptem Róży.
