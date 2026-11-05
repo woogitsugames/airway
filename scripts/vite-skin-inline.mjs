@@ -169,6 +169,8 @@ export function skinInline() {
     transform(code, id) {
       const file = normal(id);
       if (!enabled || !file.endsWith('.css') || !file.startsWith(normal(resolve(root, 'src')) + '/')) return null;
+      // [night-11au] D-256: a DEV-only preview skin (src/ui/skin/karta.css, never in a release build) keeps its tokens.
+      if (file.startsWith(normal(resolve(root, 'src/ui/skin')) + '/') && file !== normal(resolve(root, SKIN_FILE))) return null;
       const { resolved, keep } = build ? (cache ??= skinBuild(root)) : skinBuild(root);
       if (file === normal(resolve(root, SKIN_FILE))) return { code: keptSkin(resolved, keep), map: null };
       return { code: inlineSkin(code, resolved, file.slice(root.length + 1)), map: null };

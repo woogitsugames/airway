@@ -167,3 +167,20 @@ D-248 (100–150 %) zostają w `theme.css` i działają w każdym kierunku.
 Poza skórką (jeszcze nie przeniesione, ten sam wzór później): karta ATC (`atcStrip.css`, karty pierwszego razu),
 dziennik, tablica zadań, ranking, samouczek, obrys glifów w `glyphs.ts`. Globus (`src/render/**`, np. jasne niebo)
 to osobne zadanie.
+
+---
+
+## Podgląd KARTY w prawdziwej grze (N11au, D-256)
+
+Żeby ocenić KARTĘ w grze, a nie na makiecie: `npm run dev` i adres z `?skin=karta` (np.
+`http://localhost:5173/?skin=karta`). Działa tylko w wersji deweloperskiej; wydana gra i aplikacje mają bez zmian
+dzisiejszą skórkę (CSS w `dist/` identyczny bajt w bajt). Zrzuty i zestawienie „dziś | KARTA”:
+[`docs/shots/ui-karta/zestawienie.png`](../../shots/ui-karta/zestawienie.png). Co jest: pasek u góry jako margines
+mapy z linijką tygodnia (noce zakreskowane, znacznik „teraz”, skrzynia na końcu), kody lotnisk z obwódką, linie
+odniesienia do lotniska, podziałka miejsc pod kodem, zator jako magentowy blok i okrąg strefy zastrzeżonej, cichy
+dok-legenda, pauza, menu, ustawienia i tablice w atramencie z ramką. Czego jeszcze nie ma (jest na makiecie): glify
+pogrupowane z liczbą (⌄10 ☾7), podpisy pod przyciskami doku, łuk czasu do zamknięcia na okręgu zatoru, etykiety
+odległości tras, notka „KHI ▸ 1 790 km” na krawędzi, tabliczka tytułowa menu ze skalą.
+
+Kontrast podpisów nad najjaśniejszą pustynią (prawdziwa klatka, Sahara): sama jasna litera na piasku ≈ 1,1:1 — dlatego
+każdy podpis ma atramentową obwódkę; obwódka na piasku ≈ 14:1, litera na obwódce 15,1:1 (WCAG AA wymaga 4,5:1).

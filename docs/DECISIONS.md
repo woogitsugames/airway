@@ -2443,3 +2443,26 @@ the chunk when Settings opens (the page opens within milliseconds anyway). Guard
 file per language, same keys, literal strings, used, no banned synonyms, no key in both), `test:privacy-text` (bodies
 only in `src/i18n/legal/`, loaded only by `import()`, router waits), `test:terms`, `test:bundle` (exactly one non-main
 chunk holds both documents in every language). **Status: in force.**
+
+## D-256 — KARTA UI skin as a DEV-only preview (`?skin=karta`), pending the owner's choice (2026-11-05, Claude, night N11au)
+The owner called the current UI "AI slop" and picks one of three directions (`docs/styles/ui-2026-11/KIERUNKI.md`);
+the recommended one, **1 KARTA** (aeronautical-chart overprint on the photo globe), is built as an alternative skin so
+it can be judged in the real game, not only on mockups. **Preview only — not a style decision.** `src/ui/skin/karta.css`
+redefines every token of `current.css` (D-250) and adds structural tweaks, all scoped to `:root[data-skin="karta"]`:
+ink margins with a double neatline, chart caps (Barlow Condensed) and mono figures (IBM Plex Mono), lettering with an
+ink halo instead of cards, leader lines from each airport to its label, a seat scale (one segment per waiting place)
+under the code, a week ruler with hatched nights and a "now" marker in the top margin, chart magenta only for a jam
+(block + restricted-area ring), a quiet legend-strip dock, ruled 48 × 48 targets. `src/main.ts` turns it on only when
+`import.meta.env.DEV && ?skin=karta` (`src/ui/skin/preview.ts` sets `<html data-skin="karta">`); the few geometry hooks
+in `overlay.ts` / `boarding-pass.ts` are guarded by the same `import.meta.env.DEV`, so a release build folds them away.
+Evidence: the whole `dist/` of the branch is byte-identical to origin/dev e4c3a37 (sha256 of every file; CSS
+`index-D0mu2iKD.css` 89,463 B, main JS 1,132,834 B); `skin:pixels` default over three captures of each tree: 119/120
+identical, the one left (`overlay-en-412x915`) differs in the same 261-pixel band of the jam tag that also flips between
+two captures of origin/dev itself (run-to-run noise). Fonts are served from
+`mockups/fonts/` (OFL, licences there, `docs/ASSETS.md`) by the dev server only — nothing added to `dist/`.
+Label contrast over the brightest desert of the real frame (seed 0xA1A1, Sahara): paper letter on bare sand ≈ 1.1:1
+(why the halo is required), ink halo on sand ≈ 14:1, paper letter on its ink halo 15.1:1. Guards: `test:skin-tokens`
+(karta covers every token, adds none, every rule scoped, palette untouched, imported only by the DEV branch). Screens:
+`docs/shots/ui-karta/` (fixtures + two real-game frames, contact sheet `zestawienie.png`). If the owner picks KARTA, the
+next step is to make it `current.css` and move the fonts to `public/fonts/` (WOFF2 subset). `src/render/**` (flat sky
+constant) belongs to the ext session and is untouched. **Status: preview only, pending owner choice.**

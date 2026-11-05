@@ -5,6 +5,7 @@ import './ui/fonts.css';
 import './ui/base.css';
 import './ui/theme/theme.css';
 import './ui/skin/current.css'; // [night-11aq] UI skin tokens (D-249)
+import { startKartaPreview } from './ui/skin/preview'; // [night-11au] D-256 DEV-only skin preview
 import './ui/game.css';
 import { bootAudio, audioSettingsFromToggles } from './audio';
 import { createFlapRattle } from './game/flapSound'; // [night-07e]
@@ -63,6 +64,11 @@ const query = new URLSearchParams(location.search);
  * for new Endless runs in a DEV build only (production folds this to false).
  */
 const devWeatherFront = import.meta.env.DEV && query.get('weather') === 'front';
+// [night-11au] D-256: KARTA UI skin preview, DEV only (`?skin=karta`); production folds this away and ships current.css.
+if (import.meta.env.DEV && query.get('skin') === 'karta') {
+  startKartaPreview();
+  void import('./ui/skin/karta.css');
+}
 /** [task-36] Ticks of autoplay before a store scene is lit (game, night, failure). */
 const STORE_SHOT_PLAY_TICKS = 1500;
 /**
