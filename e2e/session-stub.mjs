@@ -9,7 +9,7 @@
 //  1. R2g  the menu's home-region select starts the run in Northern Europe (state + every start airport's region).
 //  2. R2k  week-1 board: the waybill shows next week's contract; a plain crate is clicked.
 //  3. R2k  week-2 board: last week's contract met (filled square), four crates, the "+2 slots" crate marked
-//          CONTRACT; it is clicked and its airport picked with a real tap (window.aw.gesture('pick')).
+//          Contract; it is clicked and its airport picked with a real tap (window.aw.gesture('pick')).
 //  4. R2i  the bot plays on until the demand surge is announced: the hollow pennant and "+N HH:00" on that airport's tag;
 //          the pause sheet lists surge and contract; Save → Menu → Continue keeps the hash and the pennant.
 //  5. R4c  the bot stops; ten-minute steps until a hub fills: a "filling" chevron on a tag.
@@ -124,7 +124,7 @@ async function endless(browser, url) {
       await answerPlain(page);
       return bill.regions;
     });
-    await step('R2k week-2 board: contract met, CONTRACT crate, airport pick', async () => {
+    await step('R2k week-2 board: contract met, Contract crate, airport pick', async () => {
       const s = await page.evaluate(() => window.aw.autoplay(2));
       assert(s.screen === 'upgrade', `screen ${s.screen}`);
       const board = await page.evaluate(() => {
@@ -135,7 +135,7 @@ async function endless(browser, url) {
       });
       assert(board.count === 4, `crates ${board.count}`);
       assert(/met\./.test(board.last ?? '') && !/not met/.test(board.last ?? ''), `last ${board.last}`);
-      assert(board.extra.length === 1 && board.extra[0][2] === 'departure-slots' && /CONTRACT/.test(board.extra[0][3]),
+      assert(board.extra.length === 1 && board.extra[0][2] === 'departure-slots' && /Contract/.test(board.extra[0][3]),
         `extra ${JSON.stringify(board.extra)}`);
       await clickTestId(page, `upgrade-option-${board.extra[0][0]}`);
       await page.waitForFunction(() => document.querySelector('.airway-game-layer')?.classList.contains('is-selecting-hub'));

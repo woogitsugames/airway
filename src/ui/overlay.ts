@@ -12,8 +12,8 @@ import type { SurgeMark } from '../game/surge'; // [night-12bb] R2i (type only)
 import type { FrontMark } from '../game/weather'; // [night-12bd] R2j (type only)
 import './skin/current.css'; // [night-11aq] skin tokens read by overlay.css
 import {
-  skin, rozaEdgeClash, rozaEdgeNote, rozaExtraWidth, rozaJamShare, rozaJamWidth, rozaNoteChildren, rozaRose, MEDAL_RADIUS, ROZA_JAM_LINE,
-  type Rose,
+  skin, rozaEdgeClash, rozaEdgeNote, rozaExtraWidth, rozaJamShare, rozaJamWidth, rozaCaptionsYield, rozaNameLayout, rozaNoteChildren, rozaRose, MEDAL_RADIUS,
+  ROZA_JAM_LINE, type Rose, type RoseLabel, type RoseLabelMode,
 } from './skin/roza'; // [night-11az] D-257: Róża skin helpers
 import './overlay.css';
 
@@ -124,6 +124,8 @@ interface BubbleEntry {
   rose: Rose | null;
   /** The rose's box as a fixed obstacle for the note layout (inactive without a rose). */
   roseSlot: TagSlot;
+  /** [night-14b] D-259: what the rose shows along its ring this frame (name, code or nothing; rozaNameLayout). */
+  roseLabel: RoseLabelMode;
   /** Screen position of the airport itself (the tag anchor is moved beside the rose for the note's layout). */
   screenX: number;
   screenY: number;
@@ -312,6 +314,8 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
   const slots: TagSlot[] = [];
   // [night-11az] D-257 Róża: the tags plus one fixed obstacle per airport rose, so a note never covers a rose.
   const layoutSlots: TagSlot[] = [];
+  const roseLabels: RoseLabel[] = []; // [night-14b] D-259: this frame's roses in view, for rozaNameLayout
+  const roseEntries: BubbleEntry[] = [];
   const chips: EdgeChip[] = []; // [night-11x] parallel to `slots`
   const byId = new Map<string, BubbleEntry>();
   const marker = new Vector3();
@@ -611,6 +615,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
         lastBubbleX: NaN, lastBubbleY: NaN, lastEdgeX: NaN, lastEdgeY: NaN, lastEdgeSide: -1, lastOpacity: NaN,
         rose: skin.roza ? rozaRose(layer) : null, screenX: 0, screenY: 0,
         roseSlot: { id: airport.id + '~rose', anchorX: 0, anchorY: 0, width: 0, height: 0, active: false, jammed: false, fixed: true, x: 0, y: 0, placed: false },
+        roseLabel: 'name',
       };
       entries.push(entry);
       slots.push(tag);
@@ -788,10 +793,10 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
             options.project(entry.airport.lon + angle / DEG / Math.max(.2, Math.cos(lat * DEG)), lat, alt, projected);
             r = Math.min(40, Math.max(north, Math.hypot(projected.x - x, projected.y - y)));
           }
-          if (inView) {
-            entry.rose.draw({ cap: entry.capacity, taken: Math.min(entry.waiting.length, entry.capacity), hub: entry.hub,
-              jam: rozaJamShare(entry.jamSeconds), name: entry.airport.name ?? entry.airport.code }, r);
-          }
+          // Drawn after this loop, once rozaNameLayout has seen every rose in view.
+          if (inView) roseLabels.push({ x, y, r, hub: entry.hub, jam: entry.jamSeconds !== null, name: entry.airport.name ?? entry.airport.code,
+            code: entry.airport.code, fill: entry.capacity > 0 ? Math.min(1, entry.waiting.length / entry.capacity) : 0, last: entry.roseLabel });
+          if (inView) roseEntries.push(entry);
           entry.rose.place(x, y, inView);
           // The rose's box (ticks and the name arc above) as a fixed obstacle for the notes.
           const box = entry.roseSlot, jam = entry.jamSeconds !== null, half = r + (jam ? 20 : 8);
@@ -824,6 +829,20 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
           // [night-11az] D-257 Róża: the distance note "1 790 km" from the view centre.
           if (skin.roza) rozaEdgeNote(entry.edge, transformedNormal, cameraPosition, chip.side);
         }
+      }
+      if (skin.roza) {
+        // [night-14b] D-259: in a dense cluster at close zoom a lower-priority rose shortens its name to the code or drops it,
+        // and a dock caption that would lie over a rose steps back.
+        const modes = roseEntries.length ? rozaNameLayout(roseLabels) : [];
+        roseEntries.forEach((entry, i) => {
+          const label = roseLabels[i];
+          entry.roseLabel = modes[i];
+          entry.rose?.draw({ cap: entry.capacity, taken: Math.min(entry.waiting.length, entry.capacity), hub: entry.hub,
+            jam: rozaJamShare(entry.jamSeconds), name: modes[i] === 'name' ? label.name : modes[i] === 'code' ? label.code : '' }, label.r);
+        });
+        rozaCaptionsYield(host, roseLabels, modes);
+        roseEntries.length = 0;
+        roseLabels.length = 0;
       }
       layoutTags(layoutSlots, bounds);
       placeEdgeChips(chips, slots, edgeBounds);

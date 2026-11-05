@@ -55,8 +55,6 @@
   overflow-wrap: anywhere;
   color: var(--skin-hubboard-title-ink);
   font: var(--skin-weight-bold) 13px/1.2 var(--skin-face-mono);
-  letter-spacing: .07em;
-  text-transform: uppercase;
 }
 .airway-hub-board__fill {
   flex: none;

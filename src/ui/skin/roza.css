@@ -221,16 +221,36 @@
 :root[data-skin="roza"] .airport-edge[data-roza-side="3"]::after { top: auto; bottom: calc(100% + 3px); }
 :root[data-skin="roza"] .airport-edge[data-roza-clash="1"]::after { display: none; }
 
-/* -- Pause: an ink legend panel with a chalk neatline, under the week line (the dock arc keeps the thumb corner). -- */
-:root[data-skin="roza"] .airway-pause { border-left: 0; outline: 1px solid var(--roza-chalk); outline-offset: -4px; padding: 16px 16px 14px; }
-:root[data-skin="roza"] .airway-pause h2 { font: 700 var(--airway-font-title) / 1.1 var(--skin-face-display); letter-spacing: 0; }
-:root[data-skin="roza"] .airway-pause__summary { border-top-width: 1px; }
-:root[data-skin="roza"] .airway-pause__summary dt { color: var(--roza-dim); letter-spacing: 0; text-transform: none; }
-:root[data-skin="roza"] .airway-pause__summary dt, :root[data-skin="roza"] .airway-pause__summary dd { border-bottom-style: solid; }
-:root[data-skin="roza"] .airway-pause__button { border-width: 1px; letter-spacing: 0; }
-@media (orientation: portrait) {
-  :root[data-skin="roza"] .airway-pause { bottom: auto; top: calc(var(--aw-safe-top) + 78px); }
+/* -- Pause: an ink legend panel with a chalk neatline, as low as the dock arc allows (D-259): it fills from the bottom of
+      the band between the week line and the arc (the arc's targets and captions reach 295 px above the bottom edge in
+      every portrait and foldable layout), so Resume sits nearer the thumb; `safe end` keeps its top under the week line
+      when the band is shorter. The arc stays usable while paused (undo, aircraft, globe view), so nothing covers it. -- */
+:root[data-skin="roza"] .airway-pause {
+  border-left: 0; outline: 1px solid var(--roza-chalk); outline-offset: -4px; padding: 16px 16px 14px;
+  top: calc(var(--aw-safe-top) + 78px); bottom: calc(var(--aw-safe-bottom) + 300px); height: fit-content; align-self: safe end;
 }
+:root[data-skin="roza"] .airway-pause h2 { font: 700 var(--airway-font-title) / 1.1 var(--skin-face-display); }
+:root[data-skin="roza"] .airway-pause__summary { border-top-width: 1px; }
+:root[data-skin="roza"] .airway-pause__summary dt { color: var(--roza-dim); }
+:root[data-skin="roza"] .airway-pause__summary dt, :root[data-skin="roza"] .airway-pause__summary dd { border-bottom-style: solid; }
+:root[data-skin="roza"] .airway-pause__button { border-width: 1px; }
+/* Landscape phone: the arc runs down the right edge (targets, captions up to 160 px left of the edge, the dial above);
+   the sheet stands left of it on the bottom edge. */
+@media (orientation: landscape) and (max-height: 599px) {
+  :root[data-skin="roza"] .airway-pause { left: calc(var(--aw-safe-left) + 12px); right: calc(var(--aw-safe-right) + 176px); width: auto; bottom: calc(var(--aw-safe-bottom) + 16px); }
+}
+/* A short screen keeps the actions in the band and drops the network summary (the HUD and the notes still show it). */
+@media (orientation: portrait) and (max-height: 679px), (orientation: landscape) and (max-height: 399px) {
+  :root[data-skin="roza"] .airway-pause { padding-top: 12px; padding-bottom: 10px; }
+  :root[data-skin="roza"] .airway-pause h2 { margin-bottom: 0; }
+  :root[data-skin="roza"] .airway-pause__summary { display: none; }
+}
+
+/* [night-14b] D-259: while the weekly crates are on screen (not during the airport pick, which has no crates), the map's
+   roses, notes and edge flags would show through the gaps between the sheets; they step back until the board closes. */
+:root[data-skin="roza"]:has(.airway-upgrade-tag) .airport-overlay { visibility: hidden; }
+/* A dock caption that would lie over an airport rose steps back (rozaCaptionsYield; the button keeps its name). */
+:root[data-skin="roza"] .roza-caption[data-roza-yield] { visibility: hidden; }
 
 /* -- Main menu: "Airway" on the sky, and the entries on the western arc of a big compass rose in the thumb corner
       (rozaMenuArc measures their places; a leader line runs from each entry's dot to the rose). -- */
@@ -309,12 +329,11 @@
 :root[data-skin="roza"] .airway-settings h1 { font-family: var(--skin-face-display); }
 :root[data-skin="roza"] .airway-settings__group-title {
   clip-path: none; background: transparent; color: var(--roza-chalk); border-bottom: 1px solid var(--roza-chalk); padding-left: 0;
-  font-family: var(--skin-face-display); letter-spacing: 0; text-transform: none;
+  font-family: var(--skin-face-display);
 }
 :root[data-skin="roza"] .airway-setting { border-bottom-style: solid; }
 :root[data-skin="roza"] .airway-setting__control { border-width: 1px; }
 :root[data-skin="roza"] .puzzle-flap::after { display: none; }
-:root[data-skin="roza"] .puzzle-flap { text-transform: none; }
 :root[data-skin="roza"] .aw-tutorial-hint { text-shadow: var(--roza-halo); }
 /* The catalog's menu titles are written for the split-flap board (capitals); Róża sets them in sentence case. */
 :root[data-skin="roza"] .roza-title { display: block; text-transform: lowercase; }
@@ -363,9 +382,6 @@
 }
 :root[data-skin="roza"] .airway-hub-board[data-layout='landscape'] { right: calc(var(--aw-safe-right) + 124px); }
 :root[data-skin="roza"] .airway-hub-board[data-layout='foldable'] { max-height: calc(100% - var(--aw-safe-top) - var(--aw-safe-bottom) - 80px - 80px); }
-/* Logbook heads in sentence case without tracking (KARTA v2: no spaced capitals). */
-:root[data-skin="roza"] .airway-logbook__flights th,
-:root[data-skin="roza"] .airway-logbook__totals dt { letter-spacing: 0; text-transform: none; }
 @media (max-width: 369px) {
   :root[data-skin="roza"] .roza-title { font-size: 18px; }
   :root[data-skin="roza"] .airway-flight__sub { font-size: 12.5px; }

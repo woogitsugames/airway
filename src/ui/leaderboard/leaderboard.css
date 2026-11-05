@@ -9,9 +9,7 @@
 .airway-rank-title {
   margin: 0 0 8px;
   color: var(--skin-rank-accent);
-  font: var(--skin-weight-bold) calc(13px * var(--airway-text-scale))/1.2 var(--skin-face-mono);
-  letter-spacing: .12em;
-  text-transform: uppercase;
+  font: var(--skin-weight-bold) calc(15px * var(--airway-text-scale))/1.2 var(--skin-face-display);
 }
 .airway-rank-body { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 14px; }
 .airway-rank-column { min-width: 0; }
@@ -21,8 +19,6 @@
   border-bottom: 1px solid var(--skin-rank-head-rule);
   color: var(--skin-rank-dim-ink);
   font: var(--skin-weight-bold) calc(11px * var(--airway-text-scale))/1.2 var(--skin-face-mono);
-  letter-spacing: .1em;
-  text-transform: uppercase;
 }
 .airway-rank-list { margin: 0; padding: 0; list-style: none; }
 .airway-rank-row {

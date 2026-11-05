@@ -2535,3 +2535,46 @@ hides; the dock's flat-row positions from one `--i` rule. The owner approved a c
 as the budget (+1.7 % headroom), so the next growth is again a decision. The way back towards 90 kB is to fold
 `roza.css` into the component CSS and delete the Diorama structure (drops `?skin=current`). Main JS 1,146.8 kB raw /
 344.6 kB gzip and `dist/` 3,955.5 kB stay within their budgets. **Status: in force.**
+
+## D-259 — Róża polish: sentence-case sheets, rose names that make room, the pause sheet nearer the thumb (2026-11-05, Claude, night N14b)
+Three leftovers of D-257 reported by its author, fixed without new fonts or new budget.
+**Sheets in Róża typography.** The crates (weekly board), game-over report, leaderboard, puzzle board, settings,
+logbook, hub cause board, pause sheet and ATC strip still carried the old split-flap look: letter-spaced capitals
+(`letter-spacing: .04–.14em` + `text-transform: uppercase`) and catalog labels written in capitals. The tracking and
+the uppercase transform are removed from the component CSS itself (not overridden in `roza.css`, so the release CSS
+shrinks; the DEV `?skin=current` comparison loses its capitals too, which is accepted), the Róża overrides that only
+undid them are deleted, the leaderboard title is set in Alegreya like the other sheet titles, and the catalog labels
+the sheets show are in sentence case in PL and EN (`pause.title` "Krążenie", `upgrade.freight` "Fracht",
+`gameover.report` "Raport zdarzenia ATC", `gameover.cancelled` "Odwołany", `action.back` "Wróć", `settings.on/off`
+"Wł./Wył.", the stamp captions, the menu titles that head their sheets — "Ustawienia", "Dziennik", "Zadania" … — and
+the rest of `upgrade.*`, `gameover.*`, `settings.*`, `menu.gate/status/onTime`). Kept in capitals: codes (IATA, flight
+numbers, `PRY-001`), the brand line `menu.sign`, the daily-share text (pasted outside the game) and
+`privacy.overline` (word for word with the landing page, `test:privacy-text`; `site/` belongs to another session).
+**Rose names make room** (`rozaNameLayout`, `src/ui/skin/roza.ts`; `src/ui/overlay.ts` draws the roses after laying
+the names out each frame). A curved city name is kept only where it clears every name already placed and every other
+rose's ring of ticks; otherwise the rose shows its IATA code, else no name (the note beside it still reads the code).
+Priority: a jam, a hub, the fuller airport, then the label already shown (it also needs 3 px less clearance, so
+labels do not flicker while the globe turns). Guard: `test:roza-names` (fast).
+**Pause.** The ringed pause target (top right) measures 48 × 48, hit-testable and clear of the week line, the dial and
+the dock arc at every size — no change. The pause *sheet* stood under the week line, so on a tall phone Resume sat in
+the top third, and at 320 × 568, 360 × 640, 1000 × 904 and in landscape it covered part of the dock arc, which stays
+usable while paused (undo, aircraft, globe view). Now it fills from the bottom of the band between the week line and
+the arc (the arc reaches 295 px above the bottom edge in portrait and foldable layouts; `align-self: safe end` keeps
+it under the week line when the band is shorter — where a WebView lacks abspos alignment it falls back to the old
+top position); in a landscape phone it stands left of the arc and its captions (176 px from the right edge). Short
+screens (portrait < 680 px, landscape < 400 px tall) drop the network summary from the sheet (the HUD and the notes
+still show it) so the actions never cover the arc. Resume now sits at 47–58 % of the height on 800–1088 px tall
+screens (was 26–35 %). Guard: `test:e2e:pause-reach:stub` (11 sizes PL/EN, in `test:ci`; fails 11/11 on the old
+placement).
+**Store-shot follow-ups** (the real-renderer store shots of PR #265). *Dock captions* ("Satelita", "Tempo 1×") that
+would lie over a rose's ticks or name step back for that frame (`rozaCaptionsYield`; the caption repeats its button's
+accessible name, the rose carries the game; boxes re-measured every 15th frame, no layout read per frame). *Rose names*
+already tested against every other rose's ring (Amman under Ankara now drops to its code or nothing). *Notes* no
+longer get the third layout try that drifted 3 × their height (`layoutTags`): a note blocked on both sides of its rose
+hides instead of standing beside another rose ("BGW 3 z 24" next to Ankara). *Menu* (`src/game/world.ts`, not the
+renderer): in portrait the view looks 16° further south than `MENU_TARGET`, so the demo network (London–Dakar) rides
+above the entries on the rose; in landscape the globe is a big horizon left of the entries under the title instead of
+a small disc between them. *Crates*: while the weekly crates are on screen the overlay (roses, notes, edge flags)
+steps back, and a 521–630 px tall wide screen with a waybill gives the model windows up 28 px more so the stats end on
+screen (960 × 540). Not ours: the rose ring offset against the medallion on tablet/iPad (render session).
+Release CSS 107.2 → 106.3 kB (D-258 budget 109 kB). **Status: in force.**
