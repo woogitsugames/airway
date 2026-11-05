@@ -1,10 +1,11 @@
-// Variant B "Nadruk" — no panels at all: everything is overprinted straight onto the globe in two chart inks,
-// VFR magenta and black, each letter and symbol with a white cartographic halo. Airports are magenta chart symbols
+// Variant B "Nadruk" — no panels at all: everything is overprinted straight onto the globe in two chart inks
+// (VFR magenta + chart blue), each letter and symbol with a white cartographic halo. Airports are magenta chart symbols
 // whose ring thickens with the waiting load; a jam is a hatched prohibited area; the dock is a row of printed symbols.
-import { AIRPORTS, MENU_PADS, rad, runways, glyphRow, T, sym, mount } from '../common.js';
+import { AIRPORTS, MENU_PADS, ROUTES, byCode, pos, rad, runways, glyphRow, T, sym, mount } from '../common.js';
 import { tw } from '../measure.js';
 
-const MAG = '#B0186C', BLK = '#151515', W = '#FFFFFF', GREY = '#77756F';
+// two print inks (ref. plates 08, 09): blue = hubs and the HUD, magenta = small airports, routes and alerts
+const MAG = '#B0186C', BLK = '#1B4A8F', W = '#FFFFFF', GREY = '#6F7A86';
 const F = 'Libre Franklin', S = 'Source Serif 4';
 const H = { halo: W, hw: 2.4 };
 
@@ -15,7 +16,7 @@ function arc(r, f0, f1) {
   return `M${x0.toFixed(2)} ${y0.toFixed(2)}A${r} ${r} 0 ${f1 - f0 > 0.5 ? 1 : 0} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}`;
 }
 function marker(a, [x, y], key) {
-  const r = rad(a, key), f = a.wait.length / a.cap, col = MAG;
+  const r = rad(a, key), f = a.wait.length / a.cap, col = a.hub && !a.jam ? BLK : MAG;
   let s = `<g transform="translate(${x} ${y})">`;
   if (a.jam) {
     // prohibited area: hatched band, its length = time left before the network closes
@@ -43,10 +44,10 @@ function block(a, [x, y], anchor = 'start') {
   const l2 = a.jam ? `Zator, sieć zamknie się za ${a.timer}` : `${a.code}  ${n} z ${a.cap}`;
   const end = anchor === 'end';
   const X = (w) => (end ? x - w : x);
-  s += T(X(w1), y, a.city, { size: a.jam ? 17 : 15, fam: F, w: 700, fill: a.jam ? MAG : BLK, ...H });
+  s += T(X(w1), y, a.city, { size: a.jam ? 17 : 15, fam: F, w: 700, italic: true, fill: a.jam ? MAG : a.hub ? BLK : MAG, ...H });
   let y2 = y + 17;
   const w2 = tw(l2, 13.5, F, 700);
-  s += T(X(w2), y2, l2, { size: 13.5, fam: F, w: 700, fill: MAG, ...H });
+  s += T(X(w2), y2, l2, { size: 13.5, fam: F, w: 700, fill: a.jam ? MAG : BLK, ...H });
   if (a.trend && !a.jam) s += `<path d="M${X(w2) + w2 + 6} ${y2 - 1}l4.5 -9 4.5 9z" fill="${MAG}" stroke="${W}" stroke-width="2.4" paint-order="stroke"/>`;
   if (a.jam) { y2 += 17; s += T(X(0), y2, `${a.code}  ${n} z ${a.cap}`, { size: 13.5, fam: F, w: 700, fill: MAG, ...H });
     s += `<path d="M${x + tw(`${a.code}  ${n} z ${a.cap}`, 13.5, F, 700) + 6} ${y2 - 1}l4.5 -9 4.5 9z" fill="${MAG}" stroke="${W}" stroke-width="2.4" paint-order="stroke"/>`; }
@@ -61,8 +62,20 @@ const PLACE = {
   p: { RIX: [168, 284], VCE: [16, 333], ATH: [14, 470], ANK: [210, 380], AMM: [128, 536], BGW: [306, 438] },
   l: { RIX: [378, 116], VCE: [266, 160, 'end'], ATH: [306, 272, 'end'], ANK: [410, 180], AMM: [440, 312], BGW: [496, 232], KHI: [656, 314] },
 };
-function world(key) {
+/** Routes as translucent ink bands with the route number set in the band (ref. plate 13). Proposal for src/render. */
+function bands(key) {
   let s = '';
+  ROUTES.forEach(([p, q], i) => {
+    const A = pos(byCode(p), key), B = pos(byCode(q), key);
+    s += `<line x1="${A[0]}" y1="${A[1]}" x2="${B[0]}" y2="${B[1]}" stroke="${MAG}" stroke-opacity=".32" stroke-width="8" stroke-linecap="butt"/>`;
+    const mx = (A[0] + B[0]) / 2, my = (A[1] + B[1]) / 2, ang = Math.atan2(B[1] - A[1], B[0] - A[0]) * 180 / Math.PI;
+    const rot = ang > 90 ? ang - 180 : ang < -90 ? ang + 180 : ang;
+    if (Math.hypot(B[0] - A[0], B[1] - A[1]) > 70) s += `<g transform="translate(${mx} ${my}) rotate(${rot})">${T(0, -7, `L${i + 1}`, { size: 11.5, fam: F, w: 700, fill: MAG, anchor: 'middle', halo: W, hw: 2.4 })}</g>`;
+  });
+  return s;
+}
+function world(key) {
+  let s = bands(key);
   for (const a of AIRPORTS) { const p = a[key]; if (p) s += marker(a, p, key); }
   for (const a of AIRPORTS) { const q = PLACE[key][a.code]; if (a[key] && q) s += block(a, q, q[2]); }
   return s;

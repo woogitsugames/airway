@@ -14,8 +14,23 @@ strefy zastrzeżone z kreskowaniem.
 (seed 0xA1A1), z **wymazanymi medalionami lotnisk** (`clean-frames.py`, wypełnienie z otoczenia), żeby pokazać nowe
 znaczniki. Trasy przerywane są dorysowane tylko w wymazanych miejscach. Źródła: `mockups/ui-2026-11/v2/`, render:
 `node mockups/ui-2026-11/v2/shoot.mjs`.
-Wzorniki map od agenta #2 (`docs/references/charts/`, gałąź `night/12bl-chart-references`) nie były jeszcze dostępne
-w chwili pracy; warianty opierają się na konwencjach legendy mapy VFR/IFR FAA (domena publiczna).
+Wzorniki: [`docs/references/charts/`](../../references/charts/README.md) (plansza `plansza.png`, PR #256);
+numery plansz poniżej to numery wycinków stamtąd (01–16).
+
+### Skąd co wzięte (plansze referencyjne)
+| Pomysł z wzorników | A Arkusz | B Nadruk | C Róża |
+|---|---|---|---|
+| Lotnisko = krążek z sylwetką pasów, hub rośnie geometrią (01, 02, 07) | tak: niebieski krążek z pasem, hub = trzy pasy | tak: magenta krążek, hub = trzy pasy w niebieskim | tak: róża z pasami, hub = podwójny pierścień + trzy pasy |
+| Liczba wpisana w pierścień zamiast paska zajętości (02) | kreski miejsc na obwodzie | pierścień grubieje na odcinku zajętym | kreski róży = miejsca |
+| Dwie farby nadruku z jasnym halo (08, 09) | niebieski + magenta (alarm) na papierze | **magenta + niebieski**, białe halo | biel + cynober (wariant „nocny”) |
+| Trasy jako półprzezroczyste pasy farby z numerem (13, 16) | — | **tak** (pasy magenty L1–L6, propozycja dla render) | — |
+| HUD jako tabela linii włosowych „mała etykieta nad dużą liczbą” (06) | **tak**: tabliczka Godzina / Dzień / Tydz. | — (nadruk bez tabeli) | — (tarcza) |
+| Dół jako neatline z podziałką czasu (12) | ramka arkusza + podziałka w tabliczce | linia kursu tygodnia (13) | tarcza 24 h = podziałka kołowa (16) |
+| Szeryf na tytuły, pochyły grotesk na nazwy lotnisk, liczby w ramkach jak częstotliwości (05, 07) | Young Serif + grotesk, **liczby w ramkach** | **nazwy pochyłym Libre Franklin** + Source Serif na zegar | Alegreya (szeryf) na nazwy, bez ramek |
+| Dok jako legenda tą samą kreską (11) | **tak**: legenda w dolnym marginesie | symbole nadrukowane | symbole na łuku róży |
+| Odnośnik: prosta ramka + cienka linia (15) | ramki z linią odniesienia | bez ramek (blok danych jak 01) | bez ramek |
+| Róża z podziałką (16, 04) | — | — | **cała idea wariantu** |
+| Obszar zastrzeżony z kreskowaniem (08: ramki ostrzeżeń, strefy) | zator = obszar zastrzeżony | zator = strefa zakazana | zator = łuk odliczania |
 
 **Wspólne dla A/B/C.** Zero ciemnych pasków. Tekst zdaniową pisownią („Tydzień 1, dzień 2 z 3”, „14 z 24”), bez
 rozstrzelenia i bez fontu mono, najmniejszy napis 12,5 px. **Nowy zestaw symboli doku narysowany dla Airway**
@@ -42,20 +57,24 @@ trójkąt trendu, glify) z linią odniesienia; prostokąt bez zaokrągleń i cie
 (magenta, kreskowanie od środka), długość kreskowania = czas do zamknięcia; ramka odnośnika magenta.
 Menu: tabliczka tytułowa rośnie w dolną połowę (Airway, „Mapa sieci lotniczej, arkusz 1”, podziałka 1 : 40 000 000,
 pozycje jak wiersze legendy).
+Po wzornikach: tabliczka ma układ nagłówka podejścia ILS (06: „Godzina / Dzień / Tydz.” mała etykieta nad dużą
+liczbą), a liczba w odnośniku stoi w ramce jak częstotliwość (05).
 **Ryzyka:** jasny margines i ramki to nadal płaszczyzny na zdjęciu (wrażenie „naklejki” z DIAGNOZY); dolna legenda
 to optycznie wciąż pas, choć jasny i drukowany; białe ramki zasłaniają globus przy wielu lotniskach.
 
 ## B. Nadruk — bez paneli, tylko farba na globusie
 ![B, pion](../../mockups/ui-2026-11/v2/b/game-p.png)
 
-Wszystko nadrukowane bezpośrednio na zdjęcie dwiema farbami mapy VFR: **magenta + czerń**, każda litera i symbol z
+Wszystko nadrukowane bezpośrednio na zdjęcie dwiema farbami mapy VFR: **magenta + niebieski**, każda litera i symbol z
 białą obwódką kartograficzną. Żadnego prostokąta na ekranie.
 1. Paski: brak. Zegar 46 px na niebie, pod nim **trasa tygodnia** jak linia kursu: dni ciągłe, noce przerywane,
 kreski co 6 h, trójkąt „teraz”, na końcu symbol skrzyni. 2. Typografia: Libre Franklin (grotesk z rodziny krojów
-amerykańskich map) + Source Serif 4 (zegar) — dwa nowe kroje OFL. 3. Ikony: te same symbole nadrukowane czernią;
+amerykańskich map, nazwy kursywą) + Source Serif 4 (zegar) — dwa nowe kroje OFL. 3. Ikony: te same symbole nadrukowane niebieskim;
 wybrany = magenta z podkreśleniem. 4. Przywieszki: **blok danych lotniska jak na mapie**: nazwa, kod + „z”,
 glify — bez ramki. 5. Lotniska: magenta; **pierścień grubieje na odcinku zajętych miejsc** (pierścień = wskaźnik).
 Zator = **strefa zakazana** z kreskowaniem po obwodzie, długość = czas.
+Po wzornikach: druga farba to **niebieski** (08) — huby, nazwy, HUD; nazwy lotnisk **pochyłym groteskiem** (05);
+trasy jako **półprzezroczyste pasy magenty z numerem** L1–L6 (13) — to propozycja dla renderu tras (ext).
 Menu: pozycje jako punkty trasy na magentowej linii kursu po stronie kciuka.
 **Ryzyka:** czarny tekst z białą obwódką na ciemnej nocy wygląda jak kontur — najsłabsza czytelność z trzech;
 przy dużej sieci nadruk robi się gęsty (brak tła, które porządkuje); nowe fonty.
@@ -84,7 +103,7 @@ pojemności kreska = 2 lub 3 miejsca.
 | | A Arkusz | B Nadruk | C Róża |
 |---|---|---|---|
 | **UI (`src/ui/**`, nasza sesja)**: tokeny, fonty, HUD, dok, przywieszki, menu | duży: margines + tabliczka + legenda, nowy układ przywieszek z liniami odniesienia | średni: same nadruki SVG/CSS z `paint-order` halo, brak paneli | średni–duży: komponent tarczy 24 h, dok na łuku (układ dla pion/poziom/fold), napisy po łuku w nakładce |
-| **Fonty** | 0 nowych | +2 (Libre Franklin, Source Serif 4) | 0 nowych |
+| **Fonty** | 0 nowych | +2 (Libre Franklin z kursywą, Source Serif 4) | 0 nowych |
 | **Znaczniki lotnisk (`src/render/**`, sesja ext)** | symbol z pierścieniem + pasy, kreski miejsc, obszar zastrzeżony | pierścień-wskaźnik, strefa zakazana | róża miejsc, łuk odliczania |
 | Szacunek | 4–5 nocy UI + 2 noce ext | 3 noce UI + 2 noce ext | 4 noce UI + 2–3 noce ext |
 

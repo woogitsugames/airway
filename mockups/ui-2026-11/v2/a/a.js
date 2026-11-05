@@ -39,7 +39,7 @@ function callout(a, [px, py], [bx, by], key) {
   const wc = tw(cnt, 13, S);
   const rowW = n ? 14 + groupsWidth(a) : 0;
   const extra = jam ? tw(`zator, sieć zamknie się za ${a.timer}`, 12.5, F, 700) : 0;
-  const W = Math.ceil(Math.max(w1, wc + (a.trend ? 14 : 0) + rowW, extra)) + 16;
+  const W = Math.ceil(Math.max(w1, wc + 4 + (a.trend ? 14 : 0) + rowW, extra)) + 16;
   const H = jam ? 62 : 42;
   // leader from marker edge to nearest box point
   const ex = Math.max(bx, Math.min(px, bx + W)), ey = Math.max(by, Math.min(py, by + H));
@@ -52,8 +52,9 @@ function callout(a, [px, py], [bx, by], key) {
   s += T(bx + 8 + tw(l1, 14, F, 700) + 6, by + 17, code, { size: 12, fam: F, w: 400, fill: jam ? MAG : '#55534D' });
   let y2 = by + 34;
   if (jam) { s += T(bx + 8, by + 34, `Zator, sieć zamknie się za ${a.timer}`, { size: 12.5, fam: F, w: 700, fill: MAG }); y2 = by + 53; }
+  s += `<rect x="${bx + 4.5}" y="${y2 - 12.5}" width="${wc + 7}" height="17" fill="none" stroke="${jam ? MAG : INK}" stroke-width=".9"/>`;
   s += T(bx + 8, y2, cnt, { size: 13, fam: S, fill: INK });
-  let gx = bx + 8 + wc + 4;
+  let gx = bx + 8 + wc + 8;
   if (a.trend) { s += `<path d="M${gx + 1} ${y2 - 1}l4.5 -8 4.5 8z" fill="${INK}"/>`; gx += 14; }
   if (n) s += glyphRow(gx + 6, y2 - 4.5, a.wait, { size: 11, ink: PAPER, inkW: 2, text: (x, y, t) => T(x, y, t, { size: 12.5, fam: S, fill: INK }), gap: 6 })[0];
   return s;
@@ -86,12 +87,13 @@ function panel(x, y, w, h) {
 function titleBlock(x, y) {
   const w = 192, h = 112;
   let s = panel(x, y, w, h);
-  s += T(x + 11, y + 22, 'Airway', { size: 15, fam: S, fill: INK });
-  s += T(x + w - 11, y + 22, 'Tydzień 1', { size: 13.5, fam: F, w: 700, fill: INK, anchor: 'end' });
-  s += `<path d="M${x + 11} ${y + 30}H${x + w - 11}" stroke="${INK}" stroke-width=".7"/>`;
-  s += T(x + 10, y + 66, '17:06', { size: 33, fam: S, fill: INK });
-  s += T(x + w - 11, y + 49, 'dzień 2 z 3', { size: 13.5, fam: F, fill: INK, anchor: 'end' });
-  s += T(x + w - 11, y + 66, '34 pasażerów', { size: 13.5, fam: F, fill: INK, anchor: 'end' });
+  // ILS approach-plate header (ref. plate 06): hairline cells, small label over a big value
+  const c1 = x + 104, c2 = x + 148;
+  s += `<path d="M${c1} ${y + 3}V${y + 72}M${c2} ${y + 3}V${y + 72}M${x + 3} ${y + 72}H${x + w - 3}" stroke="${INK}" stroke-width=".7"/>`;
+  s += T(x + 10, y + 19, 'Godzina', { size: 12, fam: F, fill: '#55534D' }) + T(x + 9, y + 60, '17:06', { size: 33, fam: S, fill: INK });
+  s += T(c1 + 8, y + 19, 'Dzień', { size: 12, fam: F, fill: '#55534D' }) + T(c1 + 8, y + 46, '2', { size: 22, fam: S, fill: INK }) + T(c1 + 22, y + 46, 'z 3', { size: 12, fam: F, fill: INK });
+  s += T(c2 + 8, y + 19, 'Tydz.', { size: 12, fam: F, fill: '#55534D' }) + T(c2 + 8, y + 46, '1', { size: 22, fam: S, fill: INK });
+  s += T(c1 + 8, y + 65, '34 pasażerów', { size: 12, fam: F, fill: INK });
   // scale bar: 12 blocks, alternating, night blocks hatched
   const bx = x + 11, bw = w - 22, by = y + 80, blk = bw / 12;
   for (let i = 0; i < 12; i++) {

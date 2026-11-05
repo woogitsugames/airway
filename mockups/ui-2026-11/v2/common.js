@@ -17,7 +17,7 @@ export const MASK = {
 };
 // Menu frame pads (decorative network behind the menu), [x, y, hub].
 export const MENU_PADS = [[314, 290, 0], [252, 336, 0], [291, 345, 1], [313, 368, 0], [289, 434, 1], [256, 450, 0], [269, 492, 0], [195, 667, 0]];
-const ROUTES = [['RIX', 'VCE'], ['VCE', 'ATH'], ['ATH', 'AMM'], ['ANK', 'AMM'], ['AMM', 'BGW'], ['BGW', 'KHI']];
+export const ROUTES = [['RIX', 'VCE'], ['VCE', 'ATH'], ['ATH', 'AMM'], ['ANK', 'AMM'], ['AMM', 'BGW'], ['BGW', 'KHI']];
 const OFF_P = { KHI: [470, 520] };
 
 export const byCode = (c) => AIRPORTS.find((a) => a.code === c);
@@ -78,9 +78,9 @@ export function glyphRow(x, y, wait, { size = 12, ink = '#fff', inkW = 2.2, text
 
 /** Text with a cartographic halo (stroke under fill). */
 export function T(x, y, txt, o = {}) {
-  const { size = 14, fam = 'Libre Franklin', w = 500, fill = '#111', anchor = 'start', halo = null, hw = 3, ls = 0, style = '' } = o;
+  const { size = 14, fam = 'Libre Franklin', w = 500, fill = '#111', anchor = 'start', halo = null, hw = 3, ls = 0, style = '', italic = false } = o;
   const h = halo ? `stroke="${halo}" stroke-width="${hw}" paint-order="stroke" stroke-linejoin="round"` : '';
-  return `<text x="${x}" y="${y}" font-family="${fam}" font-weight="${w}" font-size="${size}" fill="${fill}" text-anchor="${anchor}" letter-spacing="${ls}" font-variant-numeric="lining-nums tabular-nums" ${h} style="${style}">${txt}</text>`;
+  return `<text x="${x}" y="${y}" font-family="${fam}" font-weight="${w}" font-size="${size}" ${italic ? 'font-style="italic"' : ''} fill="${fill}" text-anchor="${anchor}" letter-spacing="${ls}" font-variant-numeric="lining-nums tabular-nums" ${h} style="${style}">${txt}</text>`;
 }
 
 // ---- Dock symbols drawn for Airway (no icon pack). viewBox -20 -20 40 40, stroke-based so each variant can ink them.

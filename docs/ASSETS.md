@@ -10,7 +10,7 @@ from Google Fonts (static TTF per weight) on 2026-11-02 by `mockups/fetch-fonts.
 | Overpass | 400, 800 | Diorama headlines | yes |
 | Atkinson Hyperlegible Next | 400, 700 | Diorama text | yes |
 | Young Serif | 400 | Poczta lotnicza headlines/numbers | yes |
-| Libre Franklin | 500, 700 | KARTA v2 B "Nadruk" (fetched 2026-11-05) | yes |
+| Libre Franklin | 500, 700, 700 italic | KARTA v2 B "Nadruk" (fetched 2026-11-05) | yes |
 | Source Serif 4 | 400, 700 | KARTA v2 B "Nadruk" clock (fetched 2026-11-05) | yes |
 | Familjen Grotesk | 400, 700 | Poczta lotnicza text, overview sheets | yes |
 | Alegreya SC | 500, 800 | Atlas headlines/labels | yes |

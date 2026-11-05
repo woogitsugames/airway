@@ -16,3 +16,4 @@ body { position: relative; }
 .frame { position: absolute; inset: 0; }
 .abs { position: absolute; }
 svg { display: block; overflow: visible; }
+@font-face { font-family: 'Libre Franklin'; font-weight: 700; font-style: italic; src: url(/mockups/fonts/LibreFranklin-700italic.ttf); }
