@@ -3,12 +3,12 @@
 import { installBackHandler, type BackOptions } from '../platform';
 import type { RegionId } from '../data/regions';
 import { createMenu, type MenuData, type MenuHandle, type MenuMode } from '../ui/menu/menu';
-import { createSettings, createLicenses, createPrivacy, type RankingData } from '../ui/settings/settings';
+import { createSettings, createLicenses, createPrivacy, createTerms, type RankingData } from '../ui/settings/settings';
 import { createLogbook, type LogbookData } from '../ui/logbook/logbook';
 
-export type ScreenName = 'menu' | 'settings' | 'licenses' | 'privacy' | 'logbook' | 'puzzles' | 'tutorial' | 'game';
-export type ModeScreen = Exclude<ScreenName, 'menu' | 'settings' | 'licenses' | 'privacy' | 'logbook'>;
-type RouterScreen = 'menu' | 'settings' | 'licenses' | 'privacy' | 'logbook';
+export type ScreenName = 'menu' | 'settings' | 'licenses' | 'privacy' | 'terms' | 'logbook' | 'puzzles' | 'tutorial' | 'game';
+export type ModeScreen = Exclude<ScreenName, 'menu' | 'settings' | 'licenses' | 'privacy' | 'terms' | 'logbook'>;
+type RouterScreen = 'menu' | 'settings' | 'licenses' | 'privacy' | 'terms' | 'logbook';
 
 /** A registered screen. back() returns true when it consumed the press (e.g. closed a sheet). */
 export interface ScreenView {
@@ -83,17 +83,18 @@ export function mountScreens(host: HTMLElement, options: ScreensOptions = {}): S
       replace('settings', createSettings(() => show('menu'), () => show('licenses'), () => {
         options.onLanguageChanged?.();
         show('settings', true);
-      }, options.onReplayTutorial, () => show('privacy'), options.ranking));
+      }, options.onReplayTutorial, () => show('privacy'), options.ranking, () => show('terms')));
     } else if (screen === 'logbook') {
       const data = options.getLogbookData?.();
       if (!data) return;
       replace('logbook', createLogbook(() => show('menu'), data));
     } else if (screen === 'privacy') replace('privacy', createPrivacy(() => show('settings'))); // [night-11e]
+    else if (screen === 'terms') replace('terms', createTerms(() => show('settings'))); // [night-11an] R7b
     else replace('licenses', createLicenses(() => show('settings')));
   }
   const back = (): boolean => {
     if (active.back?.()) return true;
-    if (name === 'licenses' || name === 'privacy') { show('settings'); return true; }
+    if (name === 'licenses' || name === 'privacy' || name === 'terms') { show('settings'); return true; }
     if (name !== 'menu') { show('menu'); return true; }
     // On the root menu the OS owns app exit.
     return false;

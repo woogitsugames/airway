@@ -2120,6 +2120,63 @@ week 2 50, week 3 33, week 5 1, 500 passengers 10, 1 000 passengers 0; 200 runs,
 run reaches (owner may prefer week 4 / 750 passengers). Guard: `test:milestones`, `test:e2e:gameover-milestones`.
 **Status: in force (thresholds to confirm by the owner).**
 
+## D-243 — Privacy policy v1: fourteen sections from RESEARCH R7, bound to the art. 30 record and the store declarations (2026-11-05, Claude, night N11am)
+R7a. `privacy.*` in `site/i18n.js` (PL/EN; the game copy follows through `test:privacy-text`, D-86) becomes a full
+draft in the order of RESEARCH R7: (1) controller and contact as "[Q-01 …]" placeholders, no DPO, UK representative
+"[Q-67 …]"; (2) in short; (3) what stays on the device (save, settings, logbook; share and "Copy summary" only on
+tap); (4) the daily leaderboard, merged from `docs/legal/leaderboards-privacy.md` (Q-56 per its recommendation A —
+one text for every build; the owner may still choose B): what is sent, what is stored, the anonymous account, the
+call sign, IP addresses in Google's request handling; (5) one purpose line per activity of the art. 30 record with
+its GDPR art. 6 point (legitimate interest per D-135, deletion as a legal obligation); (6) recipients (Google as
+processor under the Firebase DPST, `europe-west1`; host and mail provider placeholders); (7) transfers (EU-US DPF,
+SCC); (8) retention (entries 90 days, D-77; record of moves not stored; anonymous account until deletion + up to 180
+days in backups; Auth IP logs a few weeks; Cloud Run logs, e-mails and hosting logs as bracketed open items); (9)
+rights incl. objection through "Send results to the leaderboard" (D-197), in-app deletion (D-114), e-mail deletion
+within 30 days and a complaint to the President of UODO; (10) 13+; (11) no profiling, the server replay is the only
+automated check; (12) the website; (13) security; (14) changes with a version history. The red banner now says
+"draft v1 — to verify with a lawyer, not legal advice" and stays until the owner approves; the date line names the
+effective date as set at publication. Bodies are paragraphs and "• " lists (site: `data-i18n-paragraphs`; game:
+`policyBlocks`). Guards: `test:privacy-policy` maps every art. 30 activity, declared endpoint, submission field and
+stored field to plain words in the policy (a new data flow fails until the text names it) and checks the retention
+numbers against `RETENTION_DAYS` and the register; `AIRWAY_RELEASE=1 test:site` refuses bracketed placeholders.
+Rejected: a separate leaderboard-only section shown only in build B (Q-56 B: two texts to keep in sync); field names
+such as `expireAt` in player text. **Status: in force as a draft (Q-01, Q-56 confirmation, Q-67 and the lawyer open).**
+
+## D-244 — Terms of use v1 on `site/terms.html` and in Settings → Help; Apple's standard EULA in the App Store (2026-11-05, Claude, night N11an)
+R7b (D-134, Q-65 → A). A PL/EN terms page built like `privacy.html` (same header, footer, fonts, `site.js`,
+canonical/hreflang, copied by `build:site`), linked from every site footer, with ten sections: provider and contact
+("[Q-01 …]" placeholders), scope (game, daily leaderboard and website as electronic services, free, requirements),
+licence to play (personal, non-transferable; store rules; Apple's standard Licensed Application EULA in the App Store),
+leaderboard rules (only the first game of the day is ranked, the server replay rejects an unconfirmed score, entries
+expire 90 days after the last write, the opt-out switch and in-app deletion, no cheating, no prizes), availability
+(the leaderboard may be paused, changed or ended, the game works offline; consumer rights by law untouched), start
+and end of the agreement, complaints (reply time a bracketed proposal of 14 days), privacy, changes (14 days' notice),
+governing law (a bracketed proposal for the lawyer: Polish law without removing consumer protection of the country of
+residence). Draft banner "draft v1 — to verify with a lawyer, not legal advice". The publisher block (D-241) sits on the terms page too, above the date, and its footer links it; the game renders terms and policy bodies with one `policyBlocks` (D-243). The game shows the same text offline
+under Settings → Help → "Terms of use" / "Regulamin" (router screen `terms`, like D-86), after the privacy policy.
+`docs/store/README.md` says to keep Apple's standard EULA and gives the terms URL for both consoles and the Play
+trader card. Guards: `test:terms` (game copy word for word, sections, leaderboard rules vs `rank.practice`,
+`RETENTION_DAYS` and the real switch labels, EULA and URL in the store notes), `test:site` (page, footers, banner;
+`AIRWAY_RELEASE=1` refuses bracketed placeholders), `test:e2e:terms-page`. Rejected: Apple's EULA alone (Q-65 B; the
+leaderboard and site need terms under the Polish e-services act); a custom App Store EULA. Not legal advice; goes to
+the same lawyer consultation as R7a. **Status: in force as a draft (Q-01 and the lawyer open).**
+
+## D-245 — Firebase Test Lab game loop plays the real release build with the bot (2026-11-05, Claude, night N12ay)
+R3i. Real-device frame times on budget phones come from Firebase Test Lab's game-loop test type instead of borrowed
+phones. `MainActivity` takes `com.google.intent.action.TEST_LOOP` (second intent filter; `com.google.test.loops` = 1,
+label `perf`); a small Capacitor plugin (`GameLoopPlugin`, `AirwayGameLoop`) passes the scenario number to the web
+game and writes the report to the result file URI, then finishes the activity (watchdog after 300 s). Scenario 1 is
+the real game, not the perf fixture: Endless `0xA1A1`, no tutorial or first-time cards, 4×, the task-22 bot through
+real Commands every 30 ticks (or every second on the weekly board), 120 s of real time; the report keeps the
+`.perf/scene.json` frame fields (rAF interval p50/p95/max, mean fps) plus renderer string, graphics choice, running
+preset and adaptation steps. The bot leaves the DEV-only path: `src/game/dev/autoplay.ts` becomes an 8 kB lazy chunk
+of the release build, loaded only on a game-loop launch (or in DEV); the main chunk does not grow by it. `npm run
+perf:testlab` only prints the `gcloud … --type=game-loop` command (the owner runs it in their project, Q-07; Spark: 5
+physical runs/day); device rows go to `docs/PERFORMANCE.md`. Rejected: the perf fixture as the scenario (scripted
+network, DEV-only module, not what players run), a separate test APK flavour (a second build to sign and keep in step),
+fast-forwarding the sim (the point is the frame cost of real time). Not verified here: Gradle build of the plugin and a
+real Test Lab run (no Android SDK offline). Guard: `test:game-loop`. **Status: in force (owner run waits for Q-07).**
+
 ## D-246 — App Check ready behind a server param, plugin found by name, no dependency yet (2026-11-05, Claude, night N12az)
 R3e, prepares both answers of Q-53 without deciding it. Server: a deploy-time param `APP_CHECK_ENFORCED`
 (`defineBoolean`, default off) — when on, `submitDaily` and `getBoards` refuse a call without a verified App Check

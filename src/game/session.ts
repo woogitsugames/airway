@@ -74,6 +74,8 @@ export interface GameSession {
   /** Advance the authoritative clock synchronously (dev handle / tests). */
   advance(ticks: number): void;
   setPaused(paused: boolean): void;
+  /** [night-12ay] R3i: the HUD speed (1×/2×/4×) without the button; ignored while paused, like the keys. */
+  setSpeed(speed: GameSpeed): void;
   /** Screen points (canvas CSS px) for a route-drawing drag between two reachable cities. */
   routeGesture(): { from: { x: number; y: number }; to: { x: number; y: number } } | null;
   /** [night-07q] DEV/QA: canvas point of a visible airport the weekly board's pick accepts (from === to). */
@@ -634,6 +636,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     get run() { return run; },
     advance,
     setPaused,
+    setSpeed(next: GameSpeed) { keyAction({ type: 'speed', speed: next }); },
     routeGesture() {
       // Only airports clear of the boarding pass, the dock and the screen edge are actionable.
       const w = world.canvas.clientWidth;

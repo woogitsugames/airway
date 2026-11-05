@@ -1,6 +1,7 @@
 // DEV/QA autoplay (task 22 policy) on the real Sim: it reads public world views and returns real
-// Commands for Sim.check/apply. No rule shortcuts. Imported by the balance tools and, only through a
-// DEV-guarded dynamic import, by src/main.ts (window.aw.autoplay); never part of a production bundle.
+// Commands for Sim.check/apply. No rule shortcuts. Imported by the balance tools and, only through dynamic
+// imports, by src/main.ts: DEV-guarded for window.aw.autoplay and store shots; [night-12ay] R3i (D-245) a lazy
+// production chunk loaded only when Android starts the app as a Firebase Test Lab game loop.
 import { PLANE_TYPES, type Command, type Sim, type UpgradeKind } from '../../sim/index.ts';
 import { cityDistanceKm } from '../../data/index.ts';
 import {
