@@ -17,12 +17,12 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Ryga Wenecja Bagdad Amman Ankara Ateny AMM 5 z 36 5 RIX 0 z 24 KHI Tydzień 1 40 pasażerów 0 6 12 18 00:07 dzień 2 z 3 Cofnij za 1 dzień za 1 dzień za 1 dzień Satelita Tempo 1×",
+   "text": "Ryga Wenecja Bagdad Ankara Ateny ANK 0 z 24 RIX 0 z 24 KHI Tydzień 1 40 pasażerów 0 6 12 18 00:10 dzień 2 z 3 Cofnij za 1 dzień za 1 dzień za 1 dzień",
    "sun": "180@camera",
    "contrast": {
     "routes": 10.14,
     "airports": 11.38,
-    "planes": 10.14,
+    "planes": 10.36,
     "tags": 1.02
    },
    "warmth": {
@@ -32,10 +32,10 @@
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 67.8,
-    "lumaStd": 75.2,
+    "meanLuma": 67.7,
+    "lumaStd": 74.9,
     "whiteShare": 0,
-    "colours": 320
+    "colours": 327
    }
   },
   {
@@ -46,12 +46,12 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Ryga Wenecja Bagdad Amman Ankara Ateny ANK 0 z 24 AMM 5 z 36 5 VCE 0 z 24 RIX 0 z 24 KHI Tydzień 1 40 pasażerów 0 6 12 18 00:11 dzień 2 z 3 Cofnij za 1 dzień za 1 dzień za 1 dzień Satelita Tempo 1×",
+   "text": "Ryga Wenecja Bagdad Ankara Ateny ANK 0 z 24 AMM 5 z 36 5 VCE 0 z 24 RIX 0 z 24 KHI Tydzień 1 40 pasażerów 0 6 12 18 00:07 dzień 2 z 3 Cofnij za 1 dzień za 1 dzień za 1 dzień Satelita Tempo 1×",
    "sun": "180@camera",
    "contrast": {
     "routes": 9.95,
     "airports": 10.71,
-    "planes": 9.19,
+    "planes": 9.3,
     "tags": 1.03
    },
    "warmth": {
@@ -64,7 +64,7 @@
     "meanLuma": 65.3,
     "lumaStd": 70.9,
     "whiteShare": 0,
-    "colours": 321
+    "colours": 316
    }
   },
   {
@@ -75,25 +75,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Ryga Wenecja Bagdad Amman Ankara Ateny ANK 0 z 24 AMM 5 z 36 5 BGW 3 z 24 2 1 VCE 0 z 24 RIX 0 z 24 KHI Tydzień 1 40 pasażerów 0 6 12 18 00:12 dzień 2 z 3 Cofnij za 1 dzień za 1 dzień za 1 dzień Satelita Tempo 1×",
+   "text": "Ryga Wenecja Bagdad Amman Ankara Ateny ANK 0 z 24 AMM 5 z 36 5 VCE 0 z 24 RIX 0 z 24 KHI Tydzień 1 40 pasażerów 0 6 12 18 00:11 dzień 2 z 3 Cofnij za 1 dzień za 1 dzień za 1 dzień Satelita Tempo 1×",
    "sun": "180@camera",
    "contrast": {
     "routes": 9.95,
     "airports": 10.03,
-    "planes": 9.24,
+    "planes": 9.19,
     "tags": 1.02
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.811
+    "ratio": 0.81
    },
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 64.7,
-    "lumaStd": 71,
+    "meanLuma": 64.5,
+    "lumaStd": 70.9,
     "whiteShare": 0,
-    "colours": 326
+    "colours": 324
    }
   },
   {
@@ -104,12 +104,12 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Ryga Wenecja Bagdad Amman Ankara Ateny ATH 3 z 36 3 ANK 0 z 24 AMM 5 z 36 5 RIX 0 z 24 KHI Tydzień 1 40 pasażerów 0 6 12 18 00:09 dzień 2 z 3 Cofnij za 1 dzień za 1 dzień za 1 dzień Satelita Tempo 1×",
+   "text": "Ryga Wenecja Bagdad Ankara Ateny ANK 0 z 24 AMM 5 z 36 5 VCE 0 z 24 RIX 0 z 24 KHI Tydzień 1 40 pasażerów 0 6 12 18 00:10 dzień 2 z 3 Cofnij za 1 dzień za 1 dzień za 1 dzień Satelita Tempo 1×",
    "sun": "180@camera",
    "contrast": {
     "routes": 10.06,
-    "airports": 11.05,
-    "planes": 10.17,
+    "airports": 11.25,
+    "planes": 10.4,
     "tags": 1.02
    },
    "warmth": {
@@ -119,10 +119,10 @@
    "png": {
     "width": 1320,
     "height": 2868,
-    "meanLuma": 68.2,
-    "lumaStd": 77,
+    "meanLuma": 68.1,
+    "lumaStd": 76.9,
     "whiteShare": 0,
-    "colours": 340
+    "colours": 343
    }
   },
   {
@@ -133,7 +133,7 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Ryga Wenecja Bagdad Amman Ankara Ateny ATH 3 z 36 3 ANK 0 z 24 AMM 5 z 36 5 BGW 3 z 24 2 1 VCE 0 z 24 RIX 0 z 24 KHI Tydzień 1 40 pasażerów 0 6 12 18 00:13 dzień 2 z 3 Cofnij za 1 dzień za 1 dzień za 1 dzień Satelita Tempo 1×",
+   "text": "Ryga Wenecja Bagdad Amman Ankara Ateny ATH 3 z 36 3 ANK 0 z 24 AMM 5 z 36 5 VCE 0 z 24 RIX 0 z 24 KHI Tydzień 1 40 pasażerów 0 6 12 18 00:10 dzień 2 z 3 Cofnij za 1 dzień za 1 dzień za 1 dzień Satelita Tempo 1×",
    "sun": "180@camera",
    "contrast": {
     "routes": 9.87,
@@ -149,9 +149,9 @@
     "width": 2064,
     "height": 2752,
     "meanLuma": 64,
-    "lumaStd": 69.5,
+    "lumaStd": 69.4,
     "whiteShare": 0,
-    "colours": 347
+    "colours": 343
    }
   },
   {
@@ -162,12 +162,12 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Karaczi Ryga Wenecja Bagdad Amman Ankara Ateny ATH 3 z 36 3 ANK 0 z 24 AMM 5 z 36 5 BGW 3 z 24 2 1 VCE 0 z 24 RIX 0 z 24 KHI 0 z 24 Tydzień 1, dzień 2 z 3 40 pasażerów 00:10 Cofnij za 1 dzień za 1 dzień za 1 dzień Satelita Tempo 1×",
+   "text": "Karaczi Ryga Wenecja Bagdad Ankara Ateny ATH 3 z 36 3 ANK 0 z 24 AMM 5 z 36 5 BGW 3 z 24 2 1 VCE 0 z 24 RIX 0 z 24 KHI 0 z 24 Tydzień 1, dzień 2 z 3 40 pasażerów 00:11 Cofnij za 1 dzień za 1 dzień za 1 dzień Satelita Tempo 1×",
    "sun": "180@camera",
    "contrast": {
     "routes": 9.95,
-    "airports": 10.7,
-    "planes": 9.07,
+    "airports": 10.71,
+    "planes": 9.01,
     "tags": 1.04
    },
    "warmth": {
@@ -177,10 +177,10 @@
    "png": {
     "width": 1920,
     "height": 1080,
-    "meanLuma": 99.8,
+    "meanLuma": 99.7,
     "lumaStd": 77.6,
     "whiteShare": 0,
-    "colours": 314
+    "colours": 317
    }
   },
   {
@@ -191,25 +191,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Ryga Wenecja Bagdad Amman Ankara Ateny ANK 1 z 24 1 RIX 0 z 24 KHI Tydzień 1 34 pasażerów 0 6 12 18 17:03 dzień 2 z 3 Cofnij za 1 dzień za 1 dzień za 1 dzień Satelita Tempo 1×",
+   "text": "Ryga Wenecja Bagdad Ankara Ateny ANK 1 z 24 1 RIX 0 z 24 KHI Tydzień 1 34 pasażerów 0 6 12 18 17:01 dzień 2 z 3 Cofnij za 1 dzień za 1 dzień za 1 dzień",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
     "routes": 10.06,
-    "airports": 11.56,
-    "planes": 9.62,
+    "airports": 11.54,
+    "planes": 9.47,
     "tags": 1.02
    },
    "warmth": {
     "gold": 0.157,
-    "ratio": 1.381
+    "ratio": 1.386
    },
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 76.3,
-    "lumaStd": 73.1,
+    "meanLuma": 76.5,
+    "lumaStd": 72.8,
     "whiteShare": 0,
-    "colours": 427
+    "colours": 438
    }
   },
   {
@@ -220,25 +220,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Ryga Wenecja Bagdad Amman Ankara Ateny ANK 1 z 24 1 AMM 3 z 36 1 2 VCE 1 z 24 1 RIX 0 z 24 KHI Tydzień 1 34 pasażerów 0 6 12 18 17:04 dzień 2 z 3 Cofnij za 1 dzień za 1 dzień za 1 dzień Satelita Tempo 1×",
+   "text": "Ryga Wenecja Bagdad Ankara Ateny ANK 1 z 24 1 AMM 3 z 36 1 2 VCE 1 z 24 1 RIX 0 z 24 KHI Tydzień 1 34 pasażerów 0 6 12 18 17:04 dzień 2 z 3 Cofnij za 1 dzień za 1 dzień za 1 dzień Satelita Tempo 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
     "routes": 9.87,
     "airports": 11.53,
-    "planes": 9.65,
+    "planes": 9.72,
     "tags": 1.03
    },
    "warmth": {
     "gold": 0.153,
-    "ratio": 1.29
+    "ratio": 1.289
    },
    "png": {
     "width": 1346,
     "height": 1682,
     "meanLuma": 73.3,
-    "lumaStd": 69.7,
+    "lumaStd": 69.6,
     "whiteShare": 0,
-    "colours": 444
+    "colours": 441
    }
   },
   {
@@ -249,25 +249,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Ryga Wenecja Bagdad Amman Ankara Ateny ANK 1 z 24 1 AMM 3 z 36 1 2 VCE 1 z 24 1 RIX 0 z 24 KHI Tydzień 1 34 pasażerów 0 6 12 18 17:05 dzień 2 z 3 Cofnij za 1 dzień za 1 dzień za 1 dzień Satelita Tempo 1×",
+   "text": "Ryga Wenecja Bagdad Amman Ankara Ateny ANK 1 z 24 1 AMM 3 z 36 1 2 VCE 1 z 24 1 RIX 0 z 24 KHI Tydzień 1 34 pasażerów 0 6 12 18 17:04 dzień 2 z 3 Cofnij za 1 dzień za 1 dzień za 1 dzień Satelita Tempo 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
     "routes": 9.87,
     "airports": 11.44,
-    "planes": 9.72,
+    "planes": 9.76,
     "tags": 1.02
    },
    "warmth": {
     "gold": 0.15,
-    "ratio": 1.299
+    "ratio": 1.296
    },
    "png": {
     "width": 1536,
     "height": 2048,
     "meanLuma": 72.4,
-    "lumaStd": 69.7,
+    "lumaStd": 69.6,
     "whiteShare": 0,
-    "colours": 447
+    "colours": 448
    }
   },
   {
@@ -278,25 +278,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Ryga Wenecja Bagdad Amman Ankara Ateny ATH 2 z 36 2 ANK 1 z 24 1 RIX 0 z 24 KHI Tydzień 1 34 pasażerów 0 6 12 18 17:04 dzień 2 z 3 Cofnij za 1 dzień za 1 dzień za 1 dzień Satelita Tempo 1×",
+   "text": "Ryga Wenecja Bagdad Ankara Ateny ANK 1 z 24 1 VCE 1 z 24 1 RIX 0 z 24 KHI Tydzień 1 34 pasażerów 0 6 12 18 17:04 dzień 2 z 3 Cofnij za 1 dzień za 1 dzień za 1 dzień Satelita Tempo 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
     "routes": 9.95,
     "airports": 11.56,
-    "planes": 9.67,
+    "planes": 9.62,
     "tags": 1.02
    },
    "warmth": {
     "gold": 0.135,
-    "ratio": 1.379
+    "ratio": 1.378
    },
    "png": {
     "width": 1320,
     "height": 2868,
     "meanLuma": 76,
-    "lumaStd": 74.5,
+    "lumaStd": 74.4,
     "whiteShare": 0,
-    "colours": 464
+    "colours": 469
    }
   },
   {
@@ -307,17 +307,17 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Ryga Wenecja Bagdad Amman Ankara Ateny ATH 2 z 36 2 ANK 1 z 24 1 AMM 3 z 36 1 2 BGW 2 z 24 1 1 VCE 1 z 24 1 RIX 0 z 24 KHI Tydzień 1 34 pasażerów 0 6 12 18 17:03 dzień 2 z 3 Cofnij za 1 dzień za 1 dzień za 1 dzień Satelita Tempo 1×",
+   "text": "Ryga Wenecja Bagdad Amman Ankara Ateny ATH 2 z 36 2 ANK 1 z 24 1 AMM 3 z 36 1 2 VCE 1 z 24 1 RIX 0 z 24 KHI Tydzień 1 34 pasażerów 0 6 12 18 17:03 dzień 2 z 3 Cofnij za 1 dzień za 1 dzień za 1 dzień Satelita Tempo 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
     "routes": 9.87,
     "airports": 11.43,
-    "planes": 9.56,
+    "planes": 9.57,
     "tags": 1.02
    },
    "warmth": {
     "gold": 0.163,
-    "ratio": 1.322
+    "ratio": 1.321
    },
    "png": {
     "width": 2064,
@@ -325,7 +325,7 @@
     "meanLuma": 72.7,
     "lumaStd": 68.1,
     "whiteShare": 0,
-    "colours": 473
+    "colours": 464
    }
   },
   {
@@ -336,12 +336,12 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Karaczi Ryga Wenecja Bagdad Amman Ankara Ateny ATH 4 z 36 2 2 ANK 1 z 24 1 AMM 3 z 36 1 2 BGW 2 z 24 1 1 VCE 1 z 24 1 RIX 0 z 24 KHI 4 z 24 3 1 Tydzień 1, dzień 2 z 3 34 pasażerów 17:00 Cofnij za 1 dzień za 1 dzień za 1 dzień Satelita Tempo 1×",
+   "text": "Karaczi Ryga Wenecja Bagdad Ankara Ateny ATH 4 z 36 2 2 ANK 1 z 24 1 AMM 3 z 36 1 2 BGW 2 z 24 1 1 VCE 1 z 24 1 RIX 0 z 24 KHI 4 z 24 3 1 Tydzień 1, dzień 2 z 3 34 pasażerów 17:01 Cofnij za 1 dzień za 1 dzień za 1 dzień Satelita Tempo 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
     "routes": 9.95,
     "airports": 10.03,
-    "planes": 9.28,
+    "planes": 9.34,
     "tags": 1.04
    },
    "warmth": {
@@ -352,9 +352,9 @@
     "width": 1920,
     "height": 1080,
     "meanLuma": 112.6,
-    "lumaStd": 72.6,
+    "lumaStd": 72.5,
     "whiteShare": 0,
-    "colours": 433
+    "colours": 438
    }
   },
   {
@@ -365,11 +365,11 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Kopenhaga Ryga Wenecja Bagdad Amman Ankara Ateny ANK 0 z 24 RIX 0 z 24 KHI TUN RIO Tydzień 1 79 pasażerów 0 6 12 18 02:00 dzień 3 z 3 Cofnij za 3 dni za 3 dni za 3 dni Satelita Tempo 1× Tydzień 1 Hangar: przyszły trzy skrzynie. Otwierasz jedną. LIST PRZEWOZOWY Europa Południowa – Azja 11 pasażerów między nimi w tym tygodniu. Nagroda: czwarta skrzynia za tydzień. FRACHT · TP-48 1/3 Turbo­śmigłowiec ZASIĘG 2 500 km MIEJSC 48 NAJLEPSZY krótkie trasy FRACHT · WB-300 2/3 Szeroko­kadłubowiec ZASIĘG 11 000 km MIEJSC 300 NAJLEPSZY przez ocean FRACHT · HUB+6 3/3 Rozbudowa huba MIEJSCA +6 w poczekalni PRZESIADKA 25 → 15 min DLA wybranego huba NAJPEŁNIEJSZY HUB AMM 9/36",
+   "text": "Tydzień 1 79 pasażerów 0 6 12 18 02:00 dzień 3 z 3 Cofnij za 3 dni za 3 dni za 3 dni Tydzień 1 Hangar: przyszły trzy skrzynie. Otwierasz jedną. List przewozowy Europa Południowa – Azja 11 pasażerów między nimi w tym tygodniu. Nagroda: czwarta skrzynia za tydzień. Fracht · TP-48 1/3 Turbo­śmigłowiec Zasięg 2 500 km Miejsc 48 Najlepszy krótkie trasy Fracht · WB-300 2/3 Szeroko­kadłubowiec Zasięg 11 000 km Miejsc 300 Najlepszy przez ocean Fracht · HUB+6 3/3 Rozbudowa huba Miejsca +6 w poczekalni Przesiadka 25 → 15 min Dla wybranego huba Najpełniejszy hub AMM 9/36",
    "contrast": {
     "routes": 10.06,
     "airports": 11.28,
-    "planes": 8.69,
+    "planes": 8.76,
     "tags": 1.02
    },
    "warmth": {
@@ -379,10 +379,10 @@
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 44.4,
-    "lumaStd": 56.4,
+    "meanLuma": 43.8,
+    "lumaStd": 55.8,
     "whiteShare": 0,
-    "colours": 112
+    "colours": 113
    }
   },
   {
@@ -393,11 +393,11 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Kopenhaga Ryga Wenecja Bagdad Amman Ankara Ateny ANK 0 z 24 VCE 0 z 24 RIX 0 z 24 KHI TUN RIO Tydzień 1 79 pasażerów 0 6 12 18 02:00 dzień 3 z 3 Cofnij za 3 dni za 3 dni za 3 dni Satelita Tempo 1× Tydzień 1 Hangar: przyszły trzy skrzynie. Otwierasz jedną. LIST PRZEWOZOWY Europa Południowa – Azja 11 pasażerów między nimi w tym tygodniu. Nagroda: czwarta skrzynia za tydzień. FRACHT · TP-48 1/3 Turbo­śmigłowiec ZASIĘG 2 500 km MIEJSC 48 NAJLEPSZY krótkie trasy FRACHT · WB-300 2/3 Szeroko­kadłubowiec ZASIĘG 11 000 km MIEJSC 300 NAJLEPSZY przez ocean FRACHT · HUB+6 3/3 Rozbudowa huba MIEJSCA +6 w poczekalni PRZESIADKA 25 → 15 min DLA wybranego huba NAJPEŁNIEJSZY HUB AMM 9/36",
+   "text": "Tydzień 1 79 pasażerów 0 6 12 18 02:00 dzień 3 z 3 Cofnij za 3 dni za 3 dni za 3 dni Satelita Tempo 1× Tydzień 1 Hangar: przyszły trzy skrzynie. Otwierasz jedną. List przewozowy Europa Południowa – Azja 11 pasażerów między nimi w tym tygodniu. Nagroda: czwarta skrzynia za tydzień. Fracht · TP-48 1/3 Turbo­śmigłowiec Zasięg 2 500 km Miejsc 48 Najlepszy krótkie trasy Fracht · WB-300 2/3 Szeroko­kadłubowiec Zasięg 11 000 km Miejsc 300 Najlepszy przez ocean Fracht · HUB+6 3/3 Rozbudowa huba Miejsca +6 w poczekalni Przesiadka 25 → 15 min Dla wybranego huba Najpełniejszy hub AMM 9/36",
    "contrast": {
     "routes": 9.95,
     "airports": 10.6,
-    "planes": 8.44,
+    "planes": 8.51,
     "tags": 1.03
    },
    "warmth": {
@@ -407,8 +407,8 @@
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 41.7,
-    "lumaStd": 52.1,
+    "meanLuma": 41.6,
+    "lumaStd": 51.9,
     "whiteShare": 0,
     "colours": 99
    }
@@ -421,11 +421,11 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Kopenhaga Ryga Wenecja Bagdad Amman Ankara Ateny ANK 0 z 24 AMM 9 z 36 1 5 2 1 VCE 0 z 24 RIX 0 z 24 KHI TUN RIO Tydzień 1 79 pasażerów 0 6 12 18 02:00 dzień 3 z 3 Cofnij za 3 dni za 3 dni za 3 dni Satelita Tempo 1× Tydzień 1 Hangar: przyszły trzy skrzynie. Otwierasz jedną. LIST PRZEWOZOWY Europa Południowa – Azja 11 pasażerów między nimi w tym tygodniu. Nagroda: czwarta skrzynia za tydzień. FRACHT · TP-48 1/3 Turbo­śmigłowiec ZASIĘG 2 500 km MIEJSC 48 NAJLEPSZY krótkie trasy FRACHT · WB-300 2/3 Szeroko­kadłubowiec ZASIĘG 11 000 km MIEJSC 300 NAJLEPSZY przez ocean FRACHT · HUB+6 3/3 Rozbudowa huba MIEJSCA +6 w poczekalni PRZESIADKA 25 → 15 min DLA wybranego huba NAJPEŁNIEJSZY HUB AMM 9/36",
+   "text": "Tydzień 1 79 pasażerów 0 6 12 18 02:00 dzień 3 z 3 Cofnij za 3 dni za 3 dni za 3 dni Satelita Tempo 1× Tydzień 1 Hangar: przyszły trzy skrzynie. Otwierasz jedną. List przewozowy Europa Południowa – Azja 11 pasażerów między nimi w tym tygodniu. Nagroda: czwarta skrzynia za tydzień. Fracht · TP-48 1/3 Turbo­śmigłowiec Zasięg 2 500 km Miejsc 48 Najlepszy krótkie trasy Fracht · WB-300 2/3 Szeroko­kadłubowiec Zasięg 11 000 km Miejsc 300 Najlepszy przez ocean Fracht · HUB+6 3/3 Rozbudowa huba Miejsca +6 w poczekalni Przesiadka 25 → 15 min Dla wybranego huba Najpełniejszy hub AMM 9/36",
    "contrast": {
     "routes": 9.88,
     "airports": 10.03,
-    "planes": 8.57,
+    "planes": 8.6,
     "tags": 1.02
    },
    "warmth": {
@@ -435,10 +435,10 @@
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 49,
-    "lumaStd": 56.4,
+    "meanLuma": 48.8,
+    "lumaStd": 56.3,
     "whiteShare": 0,
-    "colours": 100
+    "colours": 98
    }
   },
   {
@@ -449,7 +449,7 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Kopenhaga Ryga Wenecja Bagdad Amman Ankara Ateny ATH 1 z 36 1 ANK 0 z 24 RIX 0 z 24 KHI TUN RIO Tydzień 1 79 pasażerów 0 6 12 18 02:00 dzień 3 z 3 Cofnij za 3 dni za 3 dni za 3 dni Satelita Tempo 1× Tydzień 1 Hangar: przyszły trzy skrzynie. Otwierasz jedną. LIST PRZEWOZOWY Europa Południowa – Azja 11 pasażerów między nimi w tym tygodniu. Nagroda: czwarta skrzynia za tydzień. FRACHT · TP-48 1/3 Turbo­śmigłowiec ZASIĘG 2 500 km MIEJSC 48 NAJLEPSZY krótkie trasy FRACHT · WB-300 2/3 Szeroko­kadłubowiec ZASIĘG 11 000 km MIEJSC 300 NAJLEPSZY przez ocean FRACHT · HUB+6 3/3 Rozbudowa huba MIEJSCA +6 w poczekalni PRZESIADKA 25 → 15 min DLA wybranego huba NAJPEŁNIEJSZY HUB AMM 9/36",
+   "text": "Tydzień 1 79 pasażerów 0 6 12 18 02:00 dzień 3 z 3 Cofnij za 3 dni za 3 dni za 3 dni Satelita Tempo 1× Tydzień 1 Hangar: przyszły trzy skrzynie. Otwierasz jedną. List przewozowy Europa Południowa – Azja 11 pasażerów między nimi w tym tygodniu. Nagroda: czwarta skrzynia za tydzień. Fracht · TP-48 1/3 Turbo­śmigłowiec Zasięg 2 500 km Miejsc 48 Najlepszy krótkie trasy Fracht · WB-300 2/3 Szeroko­kadłubowiec Zasięg 11 000 km Miejsc 300 Najlepszy przez ocean Fracht · HUB+6 3/3 Rozbudowa huba Miejsca +6 w poczekalni Przesiadka 25 → 15 min Dla wybranego huba Najpełniejszy hub AMM 9/36",
    "contrast": {
     "routes": 10.03,
     "airports": 10.92,
@@ -463,8 +463,8 @@
    "png": {
     "width": 1320,
     "height": 2868,
-    "meanLuma": 49.4,
-    "lumaStd": 59.3,
+    "meanLuma": 49.1,
+    "lumaStd": 58.9,
     "whiteShare": 0,
     "colours": 126
    }
@@ -477,11 +477,11 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Kopenhaga Tunis Ryga Wenecja Bagdad Amman Ankara Ateny ANK 0 z 24 AMM 9 z 36 1 5 2 1 BGW 0 z 24 VCE 0 z 24 RIX 0 z 24 KHI TUN 0 z 24 CPH 0 z 24 RIO Tydzień 1 79 pasażerów 0 6 12 18 02:00 dzień 3 z 3 Cofnij za 3 dni za 3 dni za 3 dni Satelita Tempo 1× Tydzień 1 Hangar: przyszły trzy skrzynie. Otwierasz jedną. LIST PRZEWOZOWY Europa Południowa – Azja 11 pasażerów między nimi w tym tygodniu. Nagroda: czwarta skrzynia za tydzień. FRACHT · TP-48 1/3 Turbo­śmigłowiec ZASIĘG 2 500 km MIEJSC 48 NAJLEPSZY krótkie trasy FRACHT · WB-300 2/3 Szeroko­kadłubowiec ZASIĘG 11 000 km MIEJSC 300 NAJLEPSZY przez ocean FRACHT · HUB+6 3/3 Rozbudowa huba MIEJSCA +6 w poczekalni PRZESIADKA 25 → 15 min DLA wybranego huba NAJPEŁNIEJSZY HUB AMM 9/36",
+   "text": "Tydzień 1 79 pasażerów 0 6 12 18 02:00 dzień 3 z 3 Cofnij za 3 dni za 3 dni za 3 dni Satelita Tempo 1× Tydzień 1 Hangar: przyszły trzy skrzynie. Otwierasz jedną. List przewozowy Europa Południowa – Azja 11 pasażerów między nimi w tym tygodniu. Nagroda: czwarta skrzynia za tydzień. Fracht · TP-48 1/3 Turbo­śmigłowiec Zasięg 2 500 km Miejsc 48 Najlepszy krótkie trasy Fracht · WB-300 2/3 Szeroko­kadłubowiec Zasięg 11 000 km Miejsc 300 Najlepszy przez ocean Fracht · HUB+6 3/3 Rozbudowa huba Miejsca +6 w poczekalni Przesiadka 25 → 15 min Dla wybranego huba Najpełniejszy hub AMM 9/36",
    "contrast": {
     "routes": 9.85,
     "airports": 10.03,
-    "planes": 8.41,
+    "planes": 8.35,
     "tags": 1.03
    },
    "warmth": {
@@ -491,8 +491,8 @@
    "png": {
     "width": 2064,
     "height": 2752,
-    "meanLuma": 41.4,
-    "lumaStd": 46.3,
+    "meanLuma": 41.1,
+    "lumaStd": 46.1,
     "whiteShare": 0,
     "colours": 91
    }
@@ -505,22 +505,22 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Kopenhaga Tunis Karaczi Ryga Wenecja Bagdad Amman Ankara Ateny ANK 0 z 24 AMM 9 z 36 1 5 2 1 BGW 0 z 24 VCE 0 z 24 RIX 0 z 24 KHI 7 z 24 1 6 TUN 0 z 24 CPH 0 z 24 RIO Tydzień 1, dzień 3 z 3 79 pasażerów 02:00 Cofnij za 3 dni za 3 dni za 3 dni Satelita Tempo 1× Tydzień 1 Hangar: przyszły trzy skrzynie. Otwierasz jedną. LIST PRZEWOZOWY Europa Południowa – Azja 11 pasażerów między nimi w tym tygodniu. Nagroda: czwarta skrzynia za tydzień. FRACHT · TP-48 1/3 Turbo­śmigłowiec ZASIĘG 2 500 km MIEJSC 48 NAJLEPSZY krótkie trasy FRACHT · WB-300 2/3 Szeroko­kadłubowiec ZASIĘG 11 000 km MIEJSC 300 NAJLEPSZY przez ocean FRACHT · HUB+6 3/3 Rozbudowa huba MIEJSCA +6 w poczekalni PRZESIADKA 25 → 15 min DLA wybranego huba NAJPEŁNIEJSZY HUB AMM 9/36",
+   "text": "Tydzień 1, dzień 3 z 3 79 pasażerów 02:00 Cofnij za 3 dni za 3 dni za 3 dni Satelita Tempo 1× Tydzień 1 Hangar: przyszły trzy skrzynie. Otwierasz jedną. List przewozowy Europa Południowa – Azja 11 pasażerów między nimi w tym tygodniu. Nagroda: czwarta skrzynia za tydzień. Fracht · TP-48 1/3 Turbo­śmigłowiec Zasięg 2 500 km Miejsc 48 Najlepszy krótkie trasy Fracht · WB-300 2/3 Szeroko­kadłubowiec Zasięg 11 000 km Miejsc 300 Najlepszy przez ocean Fracht · HUB+6 3/3 Rozbudowa huba Miejsca +6 w poczekalni Przesiadka 25 → 15 min Dla wybranego huba Najpełniejszy hub AMM 9/36",
    "contrast": {
     "routes": 9.95,
     "airports": 10.03,
-    "planes": 7.3,
+    "planes": 8.41,
     "tags": 1.04
    },
    "warmth": {
     "gold": 0.003,
-    "ratio": 0.859
+    "ratio": 0.86
    },
    "png": {
     "width": 1920,
     "height": 1080,
-    "meanLuma": 64,
-    "lumaStd": 64.3,
+    "meanLuma": 45.2,
+    "lumaStd": 47.9,
     "whiteShare": 0,
     "colours": 94
    }
@@ -533,7 +533,7 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Karaczi Ryga Bagdad BGW 9 z 24 1 8 RIX 1 z 24 1 KHI 24 z 24 1 5 1 +22 Zator, sieć zamknie się za 0 s Tydzień 1 51 pasażerów 0 6 12 18 22:44 dzień 3 z 3 SIEĆ ZAMKNIĘTA MAPA ODLOTY · KHI Żadna trasa nie obsługiwała KHI: pasażerowie nie mieli czym polecieć. Brak wolnych samolotów: przeciągnij do niego koniec trasy albo usuń mniej obłożoną trasę, żeby zwolnić jej samolot. ATC · RAPORT ZDARZENIA Dowiezieni pasażerowie: 51 Ukończone tygodnie: 0 ETAPY 1/7 PRZYCZYNY PRZEBIEG 29 pasażerów nie miało trasy do regionu docelowego. 76% oczekujących chciało dotrzeć do Bliskiego Wschodu (22 osoby). Poczekalnia przepełniona: 29 osób na 24 miejsca. NOWY REKORD LOKALNY JESZCZE RAZ · TEN SAM ŚWIAT NOWY ŚWIAT MENU",
+   "text": "Karaczi Ryga Bagdad RIX 1 z 24 1 KHI 24 z 24 1 5 1 +22 Zator, sieć zamknie się za 0 s Tydzień 1 51 pasażerów 0 6 12 18 22:44 dzień 3 z 3 Sieć zamknięta Mapa Odloty · KHI Żadna trasa nie obsługiwała KHI: pasażerowie nie mieli czym polecieć. Brak wolnych samolotów: przeciągnij do niego koniec trasy albo usuń mniej obłożoną trasę, żeby zwolnić jej samolot. Raport zdarzenia ATC Dowiezieni pasażerowie: 51 Ukończone tygodnie: 0 Etapy 1/7 Przyczyny Przebieg 29 pasażerów nie miało trasy do regionu docelowego. 76% oczekujących chciało dotrzeć do Bliskiego Wschodu (22 osoby). Poczekalnia przepełniona: 29 osób na 24 miejsca. Nowy rekord lokalny Jeszcze raz · ten sam świat Nowy świat Menu",
    "contrast": {
     "routes": 9.95,
     "airports": 3.38,
@@ -547,8 +547,8 @@
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 55.9,
-    "lumaStd": 65.9,
+    "meanLuma": 55.5,
+    "lumaStd": 65.4,
     "whiteShare": 0,
     "colours": 76
    }
@@ -561,7 +561,7 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Karaczi Ryga Bagdad BGW 9 z 24 1 8 RIX 1 z 24 1 KHI 24 z 24 1 5 1 22 Zator, sieć zamknie się za 0 s Tydzień 1 51 pasażerów 0 6 12 18 22:44 dzień 3 z 3 SIEĆ ZAMKNIĘTA MAPA ODLOTY · KHI Żadna trasa nie obsługiwała KHI: pasażerowie nie mieli czym polecieć. Brak wolnych samolotów: przeciągnij do niego koniec trasy albo usuń mniej obłożoną trasę, żeby zwolnić jej samolot. ATC · RAPORT ZDARZENIA Dowiezieni pasażerowie: 51 Ukończone tygodnie: 0 ETAPY 1/7 Pierwszy hub PIERWSZY RAZ Każdy region obsłużony Tydzień 2 Tydzień 3 Tydzień 5 500 pasażerów 1 000 pasażerów PRZYCZYNY PRZEBIEG 29 pasażerów nie miało trasy do regionu docelowego. 76% oczekujących chciało dotrzeć do Bliskiego Wschodu (22 osoby). Poczekalnia przepełniona: 29 osób na 24 miejsca. NOWY REKORD LOKALNY JESZCZE RAZ · TEN SAM ŚWIAT NOWY ŚWIAT MENU",
+   "text": "Karaczi Ryga Bagdad RIX 1 z 24 1 KHI 24 z 24 1 5 1 22 Zator, sieć zamknie się za 0 s Tydzień 1 51 pasażerów 0 6 12 18 22:44 dzień 3 z 3 Sieć zamknięta Mapa Odloty · KHI Żadna trasa nie obsługiwała KHI: pasażerowie nie mieli czym polecieć. Brak wolnych samolotów: przeciągnij do niego koniec trasy albo usuń mniej obłożoną trasę, żeby zwolnić jej samolot. Raport zdarzenia ATC Dowiezieni pasażerowie: 51 Ukończone tygodnie: 0 Etapy 1/7 Pierwszy hub Pierwszy raz Każdy region obsłużony Tydzień 2 Tydzień 3 Tydzień 5 500 pasażerów 1 000 pasażerów Przyczyny Przebieg 29 pasażerów nie miało trasy do regionu docelowego. 76% oczekujących chciało dotrzeć do Bliskiego Wschodu (22 osoby). Poczekalnia przepełniona: 29 osób na 24 miejsca. Nowy rekord lokalny Jeszcze raz · ten sam świat Nowy świat Menu",
    "contrast": {
     "routes": 9.95,
     "airports": 1.33,
@@ -575,8 +575,8 @@
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 58.7,
-    "lumaStd": 69.8,
+    "meanLuma": 58.3,
+    "lumaStd": 69.4,
     "whiteShare": 0,
     "colours": 71
    }
@@ -589,7 +589,7 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Karaczi Ryga Bagdad BGW 9 z 24 1 8 RIX 1 z 24 1 KHI 24 z 24 1 5 1 22 Zator, sieć zamknie się za 0 s Tydzień 1 51 pasażerów 0 6 12 18 22:44 dzień 3 z 3 SIEĆ ZAMKNIĘTA MAPA ODLOTY · KHI Żadna trasa nie obsługiwała KHI: pasażerowie nie mieli czym polecieć. Brak wolnych samolotów: przeciągnij do niego koniec trasy albo usuń mniej obłożoną trasę, żeby zwolnić jej samolot. ATC · RAPORT ZDARZENIA Dowiezieni pasażerowie: 51 Ukończone tygodnie: 0 ETAPY 1/7 Pierwszy hub PIERWSZY RAZ Każdy region obsłużony Tydzień 2 Tydzień 3 Tydzień 5 500 pasażerów 1 000 pasażerów PRZYCZYNY PRZEBIEG 29 pasażerów nie miało trasy do regionu docelowego. 76% oczekujących chciało dotrzeć do Bliskiego Wschodu (22 osoby). Poczekalnia przepełniona: 29 osób na 24 miejsca. NOWY REKORD LOKALNY JESZCZE RAZ · TEN SAM ŚWIAT NOWY ŚWIAT MENU",
+   "text": "Karaczi Ryga Bagdad BGW 9 z 24 1 8 RIX 1 z 24 1 KHI 24 z 24 1 5 1 22 Zator, sieć zamknie się za 0 s Tydzień 1 51 pasażerów 0 6 12 18 22:44 dzień 3 z 3 Sieć zamknięta Mapa Odloty · KHI Żadna trasa nie obsługiwała KHI: pasażerowie nie mieli czym polecieć. Brak wolnych samolotów: przeciągnij do niego koniec trasy albo usuń mniej obłożoną trasę, żeby zwolnić jej samolot. Raport zdarzenia ATC Dowiezieni pasażerowie: 51 Ukończone tygodnie: 0 Etapy 1/7 Pierwszy hub Pierwszy raz Każdy region obsłużony Tydzień 2 Tydzień 3 Tydzień 5 500 pasażerów 1 000 pasażerów Przyczyny Przebieg 29 pasażerów nie miało trasy do regionu docelowego. 76% oczekujących chciało dotrzeć do Bliskiego Wschodu (22 osoby). Poczekalnia przepełniona: 29 osób na 24 miejsca. Nowy rekord lokalny Jeszcze raz · ten sam świat Nowy świat Menu",
    "contrast": {
     "routes": 9.88,
     "airports": 1.31,
@@ -603,8 +603,8 @@
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 42.6,
-    "lumaStd": 53,
+    "meanLuma": 42.3,
+    "lumaStd": 52.5,
     "whiteShare": 0,
     "colours": 75
    }
@@ -617,7 +617,7 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Karaczi Ryga Bagdad BGW 9 z 24 1 8 RIX 1 z 24 1 KHI 24 z 24 1 5 1 22 Zator, sieć zamknie się za 0 s Tydzień 1 51 pasażerów 0 6 12 18 22:44 dzień 3 z 3 SIEĆ ZAMKNIĘTA MAPA ODLOTY · KHI Żadna trasa nie obsługiwała KHI: pasażerowie nie mieli czym polecieć. Brak wolnych samolotów: przeciągnij do niego koniec trasy albo usuń mniej obłożoną trasę, żeby zwolnić jej samolot. ATC · RAPORT ZDARZENIA Dowiezieni pasażerowie: 51 Ukończone tygodnie: 0 ETAPY 1/7 Pierwszy hub PIERWSZY RAZ Każdy region obsłużony Tydzień 2 Tydzień 3 Tydzień 5 500 pasażerów 1 000 pasażerów PRZYCZYNY PRZEBIEG 29 pasażerów nie miało trasy do regionu docelowego. 76% oczekujących chciało dotrzeć do Bliskiego Wschodu (22 osoby). Poczekalnia przepełniona: 29 osób na 24 miejsca. NOWY REKORD LOKALNY JESZCZE RAZ · TEN SAM ŚWIAT NOWY ŚWIAT MENU",
+   "text": "Karaczi Ryga Bagdad RIX 1 z 24 1 KHI 24 z 24 1 5 1 22 Zator, sieć zamknie się za 0 s Tydzień 1 51 pasażerów 0 6 12 18 22:44 dzień 3 z 3 Sieć zamknięta Mapa Odloty · KHI Żadna trasa nie obsługiwała KHI: pasażerowie nie mieli czym polecieć. Brak wolnych samolotów: przeciągnij do niego koniec trasy albo usuń mniej obłożoną trasę, żeby zwolnić jej samolot. Raport zdarzenia ATC Dowiezieni pasażerowie: 51 Ukończone tygodnie: 0 Etapy 1/7 Pierwszy hub Pierwszy raz Każdy region obsłużony Tydzień 2 Tydzień 3 Tydzień 5 500 pasażerów 1 000 pasażerów Przyczyny Przebieg 29 pasażerów nie miało trasy do regionu docelowego. 76% oczekujących chciało dotrzeć do Bliskiego Wschodu (22 osoby). Poczekalnia przepełniona: 29 osób na 24 miejsca. Nowy rekord lokalny Jeszcze raz · ten sam świat Nowy świat Menu",
    "contrast": {
     "routes": 10.03,
     "airports": 1.37,
@@ -631,10 +631,10 @@
    "png": {
     "width": 1320,
     "height": 2868,
-    "meanLuma": 58,
-    "lumaStd": 68,
+    "meanLuma": 57.4,
+    "lumaStd": 67.5,
     "whiteShare": 0,
-    "colours": 75
+    "colours": 72
    }
   },
   {
@@ -645,7 +645,7 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Karaczi Ryga Bagdad BGW 9 z 24 1 8 RIX 1 z 24 1 KHI 24 z 24 1 5 1 22 Zator, sieć zamknie się za 0 s Tydzień 1 51 pasażerów 0 6 12 18 22:44 dzień 3 z 3 SIEĆ ZAMKNIĘTA MAPA ODLOTY · KHI Żadna trasa nie obsługiwała KHI: pasażerowie nie mieli czym polecieć. Brak wolnych samolotów: przeciągnij do niego koniec trasy albo usuń mniej obłożoną trasę, żeby zwolnić jej samolot. ATC · RAPORT ZDARZENIA Dowiezieni pasażerowie: 51 Ukończone tygodnie: 0 ETAPY 1/7 Pierwszy hub PIERWSZY RAZ Każdy region obsłużony Tydzień 2 Tydzień 3 Tydzień 5 500 pasażerów 1 000 pasażerów PRZYCZYNY PRZEBIEG 29 pasażerów nie miało trasy do regionu docelowego. 76% oczekujących chciało dotrzeć do Bliskiego Wschodu (22 osoby). Poczekalnia przepełniona: 29 osób na 24 miejsca. NOWY REKORD LOKALNY JESZCZE RAZ · TEN SAM ŚWIAT NOWY ŚWIAT MENU",
+   "text": "Karaczi Ryga Bagdad BGW 9 z 24 1 8 RIX 1 z 24 1 KHI 24 z 24 1 5 1 22 Zator, sieć zamknie się za 0 s Tydzień 1 51 pasażerów 0 6 12 18 22:44 dzień 3 z 3 Sieć zamknięta Mapa Odloty · KHI Żadna trasa nie obsługiwała KHI: pasażerowie nie mieli czym polecieć. Brak wolnych samolotów: przeciągnij do niego koniec trasy albo usuń mniej obłożoną trasę, żeby zwolnić jej samolot. Raport zdarzenia ATC Dowiezieni pasażerowie: 51 Ukończone tygodnie: 0 Etapy 1/7 Pierwszy hub Pierwszy raz Każdy region obsłużony Tydzień 2 Tydzień 3 Tydzień 5 500 pasażerów 1 000 pasażerów Przyczyny Przebieg 29 pasażerów nie miało trasy do regionu docelowego. 76% oczekujących chciało dotrzeć do Bliskiego Wschodu (22 osoby). Poczekalnia przepełniona: 29 osób na 24 miejsca. Nowy rekord lokalny Jeszcze raz · ten sam świat Nowy świat Menu",
    "contrast": {
     "routes": 9.85,
     "airports": 1.31,
@@ -659,10 +659,10 @@
    "png": {
     "width": 2064,
     "height": 2752,
-    "meanLuma": 36.5,
-    "lumaStd": 44.5,
+    "meanLuma": 36.3,
+    "lumaStd": 44.2,
     "whiteShare": 0,
-    "colours": 76
+    "colours": 77
    }
   },
   {
@@ -673,7 +673,7 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Tunis Karaczi Ryga Wenecja Bagdad Amman Ankara Ateny BGW 9 z 24 1 8 RIX 1 z 24 1 KHI 24 z 24 1 5 1 22 Zator, sieć zamknie się za 0 s Tydzień 1, dzień 3 z 3 51 pasażerów 22:44 SIEĆ ZAMKNIĘTA MAPA ODLOTY · KHI Żadna trasa nie obsługiwała KHI: pasażerowie nie mieli czym polecieć. Brak wolnych samolotów: przeciągnij do niego koniec trasy albo usuń mniej obłożoną trasę, żeby zwolnić jej samolot. ATC · RAPORT ZDARZENIA Dowiezieni pasażerowie: 51 Ukończone tygodnie: 0 ETAPY 1/7 PRZYCZYNY PRZEBIEG 29 pasażerów nie miało trasy do regionu docelowego. 76% oczekujących chciało dotrzeć do Bliskiego Wschodu (22 osoby). Poczekalnia przepełniona: 29 osób na 24 miejsca. NOWY REKORD LOKALNY JESZCZE RAZ · TEN SAM ŚWIAT NOWY ŚWIAT MENU",
+   "text": "Karaczi Ryga VCE ANK BGW 9 z 24 1 8 RIX 1 z 24 1 KHI 24 z 24 1 5 1 22 Zator, sieć zamknie się za 0 s Tydzień 1, dzień 3 z 3 51 pasażerów 22:44 Sieć zamknięta Mapa Odloty · KHI Żadna trasa nie obsługiwała KHI: pasażerowie nie mieli czym polecieć. Brak wolnych samolotów: przeciągnij do niego koniec trasy albo usuń mniej obłożoną trasę, żeby zwolnić jej samolot. Raport zdarzenia ATC Dowiezieni pasażerowie: 51 Ukończone tygodnie: 0 Etapy 1/7 Przyczyny Przebieg 29 pasażerów nie miało trasy do regionu docelowego. 76% oczekujących chciało dotrzeć do Bliskiego Wschodu (22 osoby). Poczekalnia przepełniona: 29 osób na 24 miejsca. Nowy rekord lokalny Jeszcze raz · ten sam świat Nowy świat Menu",
    "contrast": {
     "routes": 9.95,
     "airports": 4.25,
@@ -687,8 +687,8 @@
    "png": {
     "width": 1920,
     "height": 1080,
-    "meanLuma": 55.5,
-    "lumaStd": 62.2,
+    "meanLuma": 55.3,
+    "lumaStd": 62,
     "whiteShare": 0,
     "colours": 76
    }
@@ -705,10 +705,10 @@
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 87.8,
-    "lumaStd": 78.3,
+    "meanLuma": 87,
+    "lumaStd": 77.4,
     "whiteShare": 0,
-    "colours": 467
+    "colours": 459
    }
   },
   {
@@ -723,10 +723,10 @@
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 96.9,
-    "lumaStd": 77.3,
+    "meanLuma": 94.8,
+    "lumaStd": 76.3,
     "whiteShare": 0,
-    "colours": 474
+    "colours": 466
    }
   },
   {
@@ -741,10 +741,10 @@
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 96.9,
-    "lumaStd": 77.8,
+    "meanLuma": 94.4,
+    "lumaStd": 76.2,
     "whiteShare": 0,
-    "colours": 488
+    "colours": 487
    }
   },
   {
@@ -759,10 +759,10 @@
    "png": {
     "width": 1320,
     "height": 2868,
-    "meanLuma": 83.7,
-    "lumaStd": 78.3,
+    "meanLuma": 84.3,
+    "lumaStd": 76.5,
     "whiteShare": 0,
-    "colours": 501
+    "colours": 489
    }
   },
   {
@@ -777,10 +777,10 @@
    "png": {
     "width": 2064,
     "height": 2752,
-    "meanLuma": 94.2,
-    "lumaStd": 78.6,
+    "meanLuma": 94.5,
+    "lumaStd": 75.8,
     "whiteShare": 0,
-    "colours": 521
+    "colours": 526
    }
   },
   {
@@ -795,10 +795,10 @@
    "png": {
     "width": 1920,
     "height": 1080,
-    "meanLuma": 163.5,
-    "lumaStd": 53.3,
+    "meanLuma": 142.9,
+    "lumaStd": 68.1,
     "whiteShare": 0,
-    "colours": 386
+    "colours": 439
    }
   },
   {
@@ -809,12 +809,12 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Riga Venice Baghdad Amman Ankara Athens ANK 0 of 24 RIX 0 of 24 KHI Week 1 40 passengers 0 6 12 18 00:04 day 2 of 3 Undo in 1 day in 1 day in 1 day Satellite Speed 1×",
+   "text": "Riga Venice Baghdad Ankara ATH ANK 0 of 24 RIX 0 of 24 KHI Week 1 40 passengers 0 6 12 18 00:10 day 2 of 3 Undo in 1 day in 1 day in 1 day",
    "sun": "180@camera",
    "contrast": {
     "routes": 10.14,
     "airports": 11.38,
-    "planes": 10.27,
+    "planes": 10.41,
     "tags": 1.02
    },
    "warmth": {
@@ -824,10 +824,10 @@
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 67.7,
-    "lumaStd": 75.1,
+    "meanLuma": 67.6,
+    "lumaStd": 74.8,
     "whiteShare": 0,
-    "colours": 316
+    "colours": 327
    }
   },
   {
@@ -838,25 +838,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Riga Venice Baghdad Amman Ankara Athens ANK 0 of 24 AMM 5 of 36 5 VCE 0 of 24 RIX 0 of 24 KHI Week 1 40 passengers 0 6 12 18 00:11 day 2 of 3 Undo in 1 day in 1 day in 1 day Satellite Speed 1×",
+   "text": "Riga Venice Baghdad Ankara Athens ANK 0 of 24 AMM 5 of 36 5 VCE 0 of 24 RIX 0 of 24 KHI Week 1 40 passengers 0 6 12 18 00:11 day 2 of 3 Undo in 1 day in 1 day in 1 day Satellite Speed 1×",
    "sun": "180@camera",
    "contrast": {
     "routes": 9.95,
     "airports": 10.71,
-    "planes": 9.3,
+    "planes": 8.95,
     "tags": 1.03
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.808
+    "ratio": 0.809
    },
    "png": {
     "width": 1346,
     "height": 1682,
     "meanLuma": 65.3,
-    "lumaStd": 71,
+    "lumaStd": 70.9,
     "whiteShare": 0,
-    "colours": 324
+    "colours": 320
    }
   },
   {
@@ -867,12 +867,12 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Riga Venice Baghdad Amman Ankara Athens ANK 0 of 24 AMM 5 of 36 5 BGW 3 of 24 2 1 VCE 0 of 24 RIX 0 of 24 KHI Week 1 40 passengers 0 6 12 18 00:12 day 2 of 3 Undo in 1 day in 1 day in 1 day Satellite Speed 1×",
+   "text": "Riga Venice Baghdad Amman Ankara Athens ANK 0 of 24 AMM 5 of 36 5 VCE 0 of 24 RIX 0 of 24 KHI Week 1 40 passengers 0 6 12 18 00:11 day 2 of 3 Undo in 1 day in 1 day in 1 day Satellite Speed 1×",
    "sun": "180@camera",
    "contrast": {
     "routes": 9.95,
     "airports": 10.03,
-    "planes": 9.22,
+    "planes": 9.17,
     "tags": 1.02
    },
    "warmth": {
@@ -882,10 +882,10 @@
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 64.7,
-    "lumaStd": 71,
+    "meanLuma": 64.5,
+    "lumaStd": 70.9,
     "whiteShare": 0,
-    "colours": 325
+    "colours": 318
    }
   },
   {
@@ -896,25 +896,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Riga Venice Baghdad Amman Ankara Athens ATH 3 of 36 3 ANK 0 of 24 AMM 5 of 36 5 RIX 0 of 24 KHI Week 1 40 passengers 0 6 12 18 00:11 day 2 of 3 Undo in 1 day in 1 day in 1 day Satellite Speed 1×",
+   "text": "Riga Venice Baghdad Ankara Athens ANK 0 of 24 AMM 5 of 36 5 VCE 0 of 24 RIX 0 of 24 KHI Week 1 40 passengers 0 6 12 18 00:09 day 2 of 3 Undo in 1 day in 1 day in 1 day Satellite Speed 1×",
    "sun": "180@camera",
    "contrast": {
     "routes": 10.06,
-    "airports": 11.05,
-    "planes": 10.35,
+    "airports": 11.25,
+    "planes": 10.31,
     "tags": 1.02
    },
    "warmth": {
     "gold": 0.002,
-    "ratio": 0.805
+    "ratio": 0.804
    },
    "png": {
     "width": 1320,
     "height": 2868,
-    "meanLuma": 68.3,
-    "lumaStd": 77,
+    "meanLuma": 68.1,
+    "lumaStd": 76.9,
     "whiteShare": 0,
-    "colours": 336
+    "colours": 342
    }
   },
   {
@@ -925,12 +925,12 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Riga Venice Baghdad Amman Ankara Athens ATH 3 of 36 3 ANK 0 of 24 AMM 5 of 36 5 BGW 3 of 24 2 1 VCE 0 of 24 RIX 0 of 24 KHI Week 1 40 passengers 0 6 12 18 00:11 day 2 of 3 Undo in 1 day in 1 day in 1 day Satellite Speed 1×",
+   "text": "Riga Venice Baghdad Amman Ankara Athens ATH 3 of 36 3 ANK 0 of 24 AMM 5 of 36 5 VCE 0 of 24 RIX 0 of 24 KHI Week 1 40 passengers 0 6 12 18 00:11 day 2 of 3 Undo in 1 day in 1 day in 1 day Satellite Speed 1×",
    "sun": "180@camera",
    "contrast": {
     "routes": 9.87,
     "airports": 10.03,
-    "planes": 9.45,
+    "planes": 9.6,
     "tags": 1.03
    },
    "warmth": {
@@ -940,10 +940,10 @@
    "png": {
     "width": 2064,
     "height": 2752,
-    "meanLuma": 64.1,
-    "lumaStd": 69.5,
+    "meanLuma": 64,
+    "lumaStd": 69.4,
     "whiteShare": 0,
-    "colours": 351
+    "colours": 344
    }
   },
   {
@@ -954,12 +954,12 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Karachi Riga Venice Baghdad Amman Ankara Athens ATH 3 of 36 3 ANK 0 of 24 AMM 5 of 36 5 BGW 3 of 24 2 1 VCE 0 of 24 RIX 0 of 24 KHI 0 of 24 Week 1, day 2 of 3 40 passengers 00:09 Undo in 1 day in 1 day in 1 day Satellite Speed 1×",
+   "text": "Karachi Riga Venice Baghdad Ankara Athens ATH 3 of 36 3 ANK 0 of 24 AMM 5 of 36 5 BGW 3 of 24 2 1 VCE 0 of 24 RIX 0 of 24 KHI 0 of 24 Week 1, day 2 of 3 40 passengers 00:09 Undo in 1 day in 1 day in 1 day Satellite Speed 1×",
    "sun": "180@camera",
    "contrast": {
     "routes": 9.95,
-    "airports": 10.7,
-    "planes": 9.17,
+    "airports": 10.78,
+    "planes": 9.16,
     "tags": 1.04
    },
    "warmth": {
@@ -969,10 +969,10 @@
    "png": {
     "width": 1920,
     "height": 1080,
-    "meanLuma": 99.8,
+    "meanLuma": 99.7,
     "lumaStd": 77.6,
     "whiteShare": 0,
-    "colours": 314
+    "colours": 319
    }
   },
   {
@@ -983,25 +983,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Riga Venice Baghdad Amman Ankara Athens ANK 1 of 24 1 RIX 0 of 24 KHI Week 1 34 passengers 0 6 12 18 17:01 day 2 of 3 Undo in 1 day in 1 day in 1 day Satellite Speed 1×",
+   "text": "Riga Venice Baghdad Ankara ATH RIX 0 of 24 KHI Week 1 34 passengers 0 6 12 18 17:02 day 2 of 3 Undo in 1 day in 1 day in 1 day",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
     "routes": 10.06,
-    "airports": 11.54,
-    "planes": 9.52,
+    "airports": 11.56,
+    "planes": 9.62,
     "tags": 1.02
    },
    "warmth": {
     "gold": 0.157,
-    "ratio": 1.384
+    "ratio": 1.38
    },
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 74.6,
-    "lumaStd": 72.3,
+    "meanLuma": 75.8,
+    "lumaStd": 72.6,
     "whiteShare": 0,
-    "colours": 430
+    "colours": 425
    }
   },
   {
@@ -1012,17 +1012,17 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Riga Venice Baghdad Amman Ankara Athens ANK 1 of 24 1 AMM 3 of 36 1 2 VCE 1 of 24 1 RIX 0 of 24 KHI Week 1 34 passengers 0 6 12 18 17:03 day 2 of 3 Undo in 1 day in 1 day in 1 day Satellite Speed 1×",
+   "text": "Riga Venice Baghdad Ankara Athens ANK 1 of 24 1 AMM 3 of 36 1 2 VCE 1 of 24 1 RIX 0 of 24 KHI Week 1 34 passengers 0 6 12 18 17:03 day 2 of 3 Undo in 1 day in 1 day in 1 day Satellite Speed 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
     "routes": 9.87,
-    "airports": 11.55,
-    "planes": 9.72,
+    "airports": 11.53,
+    "planes": 9.49,
     "tags": 1.03
    },
    "warmth": {
-    "gold": 0.152,
-    "ratio": 1.284
+    "gold": 0.153,
+    "ratio": 1.292
    },
    "png": {
     "width": 1346,
@@ -1030,7 +1030,7 @@
     "meanLuma": 73.5,
     "lumaStd": 69.6,
     "whiteShare": 0,
-    "colours": 437
+    "colours": 439
    }
   },
   {
@@ -1046,12 +1046,12 @@
    "contrast": {
     "routes": 9.87,
     "airports": 11.44,
-    "planes": 9.63,
+    "planes": 9.5,
     "tags": 1.02
    },
    "warmth": {
     "gold": 0.15,
-    "ratio": 1.301
+    "ratio": 1.302
    },
    "png": {
     "width": 1536,
@@ -1059,7 +1059,7 @@
     "meanLuma": 72.7,
     "lumaStd": 69.5,
     "whiteShare": 0,
-    "colours": 450
+    "colours": 445
    }
   },
   {
@@ -1070,25 +1070,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Riga Venice Baghdad Amman Ankara Athens ATH 2 of 36 2 ANK 1 of 24 1 RIX 0 of 24 KHI Week 1 34 passengers 0 6 12 18 17:05 day 2 of 3 Undo in 1 day in 1 day in 1 day Satellite Speed 1×",
+   "text": "Riga Venice Baghdad Ankara Athens ANK 1 of 24 1 VCE 1 of 24 1 RIX 0 of 24 KHI Week 1 34 passengers 0 6 12 18 17:00 day 2 of 3 Undo in 1 day in 1 day in 1 day Satellite Speed 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
     "routes": 9.95,
-    "airports": 11.56,
-    "planes": 9.83,
+    "airports": 11.52,
+    "planes": 9.5,
     "tags": 1.02
    },
    "warmth": {
-    "gold": 0.135,
-    "ratio": 1.373
+    "gold": 0.136,
+    "ratio": 1.384
    },
    "png": {
     "width": 1320,
     "height": 2868,
-    "meanLuma": 75.9,
-    "lumaStd": 74.5,
+    "meanLuma": 76.3,
+    "lumaStd": 74.3,
     "whiteShare": 0,
-    "colours": 455
+    "colours": 458
    }
   },
   {
@@ -1099,25 +1099,25 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Riga Venice Baghdad Amman Ankara Athens ATH 2 of 36 2 ANK 1 of 24 1 AMM 3 of 36 1 2 BGW 2 of 24 1 1 VCE 1 of 24 1 RIX 0 of 24 KHI Week 1 34 passengers 0 6 12 18 17:05 day 2 of 3 Undo in 1 day in 1 day in 1 day Satellite Speed 1×",
+   "text": "Riga Venice Baghdad Amman Ankara Athens ATH 2 of 36 2 ANK 1 of 24 1 AMM 3 of 36 1 2 VCE 1 of 24 1 RIX 0 of 24 KHI Week 1 34 passengers 0 6 12 18 17:04 day 2 of 3 Undo in 1 day in 1 day in 1 day Satellite Speed 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
     "routes": 9.87,
-    "airports": 11.43,
-    "planes": 9.62,
+    "airports": 11.44,
+    "planes": 9.58,
     "tags": 1.02
    },
    "warmth": {
-    "gold": 0.163,
-    "ratio": 1.32
+    "gold": 0.161,
+    "ratio": 1.313
    },
    "png": {
     "width": 2064,
     "height": 2752,
-    "meanLuma": 72.6,
+    "meanLuma": 72.4,
     "lumaStd": 68.2,
     "whiteShare": 0,
-    "colours": 469
+    "colours": 463
    }
   },
   {
@@ -1128,12 +1128,12 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Karachi Riga Venice Baghdad Amman Ankara Athens ATH 2 of 36 2 ANK 1 of 24 1 AMM 3 of 36 1 2 BGW 2 of 24 1 1 VCE 1 of 24 1 RIX 0 of 24 KHI 4 of 24 3 1 Week 1, day 2 of 3 34 passengers 17:05 Undo in 1 day in 1 day in 1 day Satellite Speed 1×",
+   "text": "Karachi Riga Venice Baghdad Ankara Athens ATH 2 of 36 2 ANK 1 of 24 1 AMM 3 of 36 1 2 BGW 2 of 24 1 1 VCE 1 of 24 1 RIX 0 of 24 KHI 4 of 24 3 1 Week 1, day 2 of 3 34 passengers 17:03 Undo in 1 day in 1 day in 1 day Satellite Speed 1×",
    "sun": "-68.6@29.7,41.3",
    "contrast": {
     "routes": 9.95,
-    "airports": 10.75,
-    "planes": 9.22,
+    "airports": 10.95,
+    "planes": 9.37,
     "tags": 1.04
    },
    "warmth": {
@@ -1144,9 +1144,9 @@
     "width": 1920,
     "height": 1080,
     "meanLuma": 112.4,
-    "lumaStd": 72.6,
+    "lumaStd": 72.5,
     "whiteShare": 0,
-    "colours": 438
+    "colours": 451
    }
   },
   {
@@ -1157,24 +1157,24 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Copenhagen Riga Venice Baghdad Amman Ankara Athens ANK 0 of 24 RIX 0 of 24 KHI TUN RIO Week 1 79 passengers 0 6 12 18 02:00 day 3 of 3 Undo in 3 days in 3 days in 3 days Satellite Speed 1× Week 1 Hangar: three crates arrived. You open one. WAYBILL Southern Europe – Asia 11 passengers between them this week. Reward: a fourth crate next week. FREIGHT · TP-48 1/3 Turbo­prop RANGE 2,500 km SEATS 48 BEST FOR short hops FREIGHT · WB-300 2/3 Wide­body RANGE 11,000 km SEATS 300 BEST FOR ocean crossings FREIGHT · HUB+6 3/3 Expand hub WAITING +6 seats TRANSFER 25 → 15 min FOR a hub you pick FULLEST HUB AMM 9/36",
+   "text": "Week 1 79 passengers 0 6 12 18 02:00 day 3 of 3 Undo in 3 days in 3 days in 3 days Week 1 Hangar: three crates arrived. You open one. Waybill Southern Europe – Asia 11 passengers between them this week. Reward: a fourth crate next week. Freight · TP-48 1/3 Turbo­prop Range 2,500 km Seats 48 Best for short hops Freight · WB-300 2/3 Wide­body Range 11,000 km Seats 300 Best for ocean crossings Freight · HUB+6 3/3 Expand hub Waiting +6 seats Transfer 25 → 15 min For a hub you pick Fullest hub AMM 9/36",
    "contrast": {
     "routes": 10.06,
     "airports": 11.28,
-    "planes": 7.58,
+    "planes": 8.69,
     "tags": 1.02
    },
    "warmth": {
     "gold": 0.003,
-    "ratio": 0.843
+    "ratio": 0.844
    },
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 42.6,
-    "lumaStd": 54,
+    "meanLuma": 42.1,
+    "lumaStd": 53.5,
     "whiteShare": 0,
-    "colours": 112
+    "colours": 114
    }
   },
   {
@@ -1185,11 +1185,11 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Copenhagen Riga Venice Baghdad Amman Ankara Athens ANK 0 of 24 VCE 0 of 24 RIX 0 of 24 KHI TUN RIO Week 1 79 passengers 0 6 12 18 02:00 day 3 of 3 Undo in 3 days in 3 days in 3 days Satellite Speed 1× Week 1 Hangar: three crates arrived. You open one. WAYBILL Southern Europe – Asia 11 passengers between them this week. Reward: a fourth crate next week. FREIGHT · TP-48 1/3 Turbo­prop RANGE 2,500 km SEATS 48 BEST FOR short hops FREIGHT · WB-300 2/3 Wide­body RANGE 11,000 km SEATS 300 BEST FOR ocean crossings FREIGHT · HUB+6 3/3 Expand hub WAITING +6 seats TRANSFER 25 → 15 min FOR a hub you pick FULLEST HUB AMM 9/36",
+   "text": "Week 1 79 passengers 0 6 12 18 02:00 day 3 of 3 Undo in 3 days in 3 days in 3 days Satellite Speed 1× Week 1 Hangar: three crates arrived. You open one. Waybill Southern Europe – Asia 11 passengers between them this week. Reward: a fourth crate next week. Freight · TP-48 1/3 Turbo­prop Range 2,500 km Seats 48 Best for short hops Freight · WB-300 2/3 Wide­body Range 11,000 km Seats 300 Best for ocean crossings Freight · HUB+6 3/3 Expand hub Waiting +6 seats Transfer 25 → 15 min For a hub you pick Fullest hub AMM 9/36",
    "contrast": {
     "routes": 9.95,
     "airports": 10.6,
-    "planes": 8.51,
+    "planes": 8.44,
     "tags": 1.03
    },
    "warmth": {
@@ -1199,8 +1199,8 @@
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 40.8,
-    "lumaStd": 50.7,
+    "meanLuma": 40.6,
+    "lumaStd": 50.5,
     "whiteShare": 0,
     "colours": 98
    }
@@ -1213,11 +1213,11 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Copenhagen Riga Venice Baghdad Amman Ankara Athens ANK 0 of 24 AMM 9 of 36 1 5 2 1 VCE 0 of 24 RIX 0 of 24 KHI TUN RIO Week 1 79 passengers 0 6 12 18 02:00 day 3 of 3 Undo in 3 days in 3 days in 3 days Satellite Speed 1× Week 1 Hangar: three crates arrived. You open one. WAYBILL Southern Europe – Asia 11 passengers between them this week. Reward: a fourth crate next week. FREIGHT · TP-48 1/3 Turbo­prop RANGE 2,500 km SEATS 48 BEST FOR short hops FREIGHT · WB-300 2/3 Wide­body RANGE 11,000 km SEATS 300 BEST FOR ocean crossings FREIGHT · HUB+6 3/3 Expand hub WAITING +6 seats TRANSFER 25 → 15 min FOR a hub you pick FULLEST HUB AMM 9/36",
+   "text": "Week 1 79 passengers 0 6 12 18 02:00 day 3 of 3 Undo in 3 days in 3 days in 3 days Satellite Speed 1× Week 1 Hangar: three crates arrived. You open one. Waybill Southern Europe – Asia 11 passengers between them this week. Reward: a fourth crate next week. Freight · TP-48 1/3 Turbo­prop Range 2,500 km Seats 48 Best for short hops Freight · WB-300 2/3 Wide­body Range 11,000 km Seats 300 Best for ocean crossings Freight · HUB+6 3/3 Expand hub Waiting +6 seats Transfer 25 → 15 min For a hub you pick Fullest hub AMM 9/36",
    "contrast": {
     "routes": 9.88,
     "airports": 10.03,
-    "planes": 8.33,
+    "planes": 8.57,
     "tags": 1.02
    },
    "warmth": {
@@ -1227,10 +1227,10 @@
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 48.4,
-    "lumaStd": 55.7,
+    "meanLuma": 48.2,
+    "lumaStd": 55.6,
     "whiteShare": 0,
-    "colours": 100
+    "colours": 98
    }
   },
   {
@@ -1241,11 +1241,11 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Copenhagen Riga Venice Baghdad Amman Ankara Athens ATH 1 of 36 1 ANK 0 of 24 RIX 0 of 24 KHI TUN RIO Week 1 79 passengers 0 6 12 18 02:00 day 3 of 3 Undo in 3 days in 3 days in 3 days Satellite Speed 1× Week 1 Hangar: three crates arrived. You open one. WAYBILL Southern Europe – Asia 11 passengers between them this week. Reward: a fourth crate next week. FREIGHT · TP-48 1/3 Turbo­prop RANGE 2,500 km SEATS 48 BEST FOR short hops FREIGHT · WB-300 2/3 Wide­body RANGE 11,000 km SEATS 300 BEST FOR ocean crossings FREIGHT · HUB+6 3/3 Expand hub WAITING +6 seats TRANSFER 25 → 15 min FOR a hub you pick FULLEST HUB AMM 9/36",
+   "text": "Week 1 79 passengers 0 6 12 18 02:00 day 3 of 3 Undo in 3 days in 3 days in 3 days Satellite Speed 1× Week 1 Hangar: three crates arrived. You open one. Waybill Southern Europe – Asia 11 passengers between them this week. Reward: a fourth crate next week. Freight · TP-48 1/3 Turbo­prop Range 2,500 km Seats 48 Best for short hops Freight · WB-300 2/3 Wide­body Range 11,000 km Seats 300 Best for ocean crossings Freight · HUB+6 3/3 Expand hub Waiting +6 seats Transfer 25 → 15 min For a hub you pick Fullest hub AMM 9/36",
    "contrast": {
     "routes": 10.03,
     "airports": 10.92,
-    "planes": 8.31,
+    "planes": 8.7,
     "tags": 1.02
    },
    "warmth": {
@@ -1255,8 +1255,8 @@
    "png": {
     "width": 1320,
     "height": 2868,
-    "meanLuma": 48.2,
-    "lumaStd": 57.8,
+    "meanLuma": 47.9,
+    "lumaStd": 57.5,
     "whiteShare": 0,
     "colours": 126
    }
@@ -1269,11 +1269,11 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Copenhagen Tunis Riga Venice Baghdad Amman Ankara Athens ANK 0 of 24 AMM 9 of 36 1 5 2 1 BGW 0 of 24 VCE 0 of 24 RIX 0 of 24 KHI TUN 0 of 24 CPH 0 of 24 RIO Week 1 79 passengers 0 6 12 18 02:00 day 3 of 3 Undo in 3 days in 3 days in 3 days Satellite Speed 1× Week 1 Hangar: three crates arrived. You open one. WAYBILL Southern Europe – Asia 11 passengers between them this week. Reward: a fourth crate next week. FREIGHT · TP-48 1/3 Turbo­prop RANGE 2,500 km SEATS 48 BEST FOR short hops FREIGHT · WB-300 2/3 Wide­body RANGE 11,000 km SEATS 300 BEST FOR ocean crossings FREIGHT · HUB+6 3/3 Expand hub WAITING +6 seats TRANSFER 25 → 15 min FOR a hub you pick FULLEST HUB AMM 9/36",
+   "text": "Week 1 79 passengers 0 6 12 18 02:00 day 3 of 3 Undo in 3 days in 3 days in 3 days Satellite Speed 1× Week 1 Hangar: three crates arrived. You open one. Waybill Southern Europe – Asia 11 passengers between them this week. Reward: a fourth crate next week. Freight · TP-48 1/3 Turbo­prop Range 2,500 km Seats 48 Best for short hops Freight · WB-300 2/3 Wide­body Range 11,000 km Seats 300 Best for ocean crossings Freight · HUB+6 3/3 Expand hub Waiting +6 seats Transfer 25 → 15 min For a hub you pick Fullest hub AMM 9/36",
    "contrast": {
     "routes": 9.85,
     "airports": 10.03,
-    "planes": 8.35,
+    "planes": 8.04,
     "tags": 1.03
    },
    "warmth": {
@@ -1283,8 +1283,8 @@
    "png": {
     "width": 2064,
     "height": 2752,
-    "meanLuma": 40.9,
-    "lumaStd": 45.5,
+    "meanLuma": 40.7,
+    "lumaStd": 45.3,
     "whiteShare": 0,
     "colours": 91
    }
@@ -1297,7 +1297,7 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Copenhagen Tunis Karachi Riga Venice Baghdad Amman Ankara Athens ANK 0 of 24 AMM 9 of 36 1 5 2 1 BGW 0 of 24 VCE 0 of 24 RIX 0 of 24 KHI 7 of 24 1 6 TUN 0 of 24 CPH 0 of 24 RIO Week 1, day 3 of 3 79 passengers 02:00 Undo in 3 days in 3 days in 3 days Satellite Speed 1× Week 1 Hangar: three crates arrived. You open one. WAYBILL Southern Europe – Asia 11 passengers between them this week. Reward: a fourth crate next week. FREIGHT · TP-48 1/3 Turbo­prop RANGE 2,500 km SEATS 48 BEST FOR short hops FREIGHT · WB-300 2/3 Wide­body RANGE 11,000 km SEATS 300 BEST FOR ocean crossings FREIGHT · HUB+6 3/3 Expand hub WAITING +6 seats TRANSFER 25 → 15 min FOR a hub you pick FULLEST HUB AMM 9/36",
+   "text": "Week 1, day 3 of 3 79 passengers 02:00 Undo in 3 days in 3 days in 3 days Satellite Speed 1× Week 1 Hangar: three crates arrived. You open one. Waybill Southern Europe – Asia 11 passengers between them this week. Reward: a fourth crate next week. Freight · TP-48 1/3 Turbo­prop Range 2,500 km Seats 48 Best for short hops Freight · WB-300 2/3 Wide­body Range 11,000 km Seats 300 Best for ocean crossings Freight · HUB+6 3/3 Expand hub Waiting +6 seats Transfer 25 → 15 min For a hub you pick Fullest hub AMM 9/36",
    "contrast": {
     "routes": 9.95,
     "airports": 10.03,
@@ -1311,10 +1311,10 @@
    "png": {
     "width": 1920,
     "height": 1080,
-    "meanLuma": 63.2,
-    "lumaStd": 63.5,
+    "meanLuma": 44.4,
+    "lumaStd": 46.4,
     "whiteShare": 0,
-    "colours": 91
+    "colours": 94
    }
   },
   {
@@ -1325,7 +1325,7 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Karachi Riga Baghdad BGW 9 of 24 1 8 RIX 1 of 24 1 KHI 24 of 24 1 5 1 +22 Jam, the network closes in 0 s Week 1 51 passengers 0 6 12 18 22:44 day 3 of 3 NETWORK CLOSED MAP DEPARTURES · KHI No route served KHI: its passengers had no flight to board. No spare aircraft: drag a route end to it, or remove a quieter route to free its plane. ATC · INCIDENT REPORT Passengers delivered: 51 Weeks completed: 0 MILESTONES 1/7 CAUSES TIMELINE 29 passengers had no available route to their destination region. 76% of waiting passengers were headed to the Middle East (22 people). The waiting area was full: 29 people for 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
+   "text": "Karachi Riga Baghdad RIX 1 of 24 1 KHI 24 of 24 1 5 1 +22 Jam, the network closes in 0 s Week 1 51 passengers 0 6 12 18 22:44 day 3 of 3 Network closed Map Departures · KHI No route served KHI: its passengers had no flight to board. No spare aircraft: drag a route end to it, or remove a quieter route to free its plane. ATC incident report Passengers delivered: 51 Weeks completed: 0 Milestones 1/7 Causes Timeline 29 passengers had no available route to their destination region. 76% of waiting passengers were headed to the Middle East (22 people). The waiting area was full: 29 people for 24 places. New local record Try again · same world New world Menu",
    "contrast": {
     "routes": 9.95,
     "airports": 3.38,
@@ -1339,10 +1339,10 @@
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 56.2,
-    "lumaStd": 66.4,
+    "meanLuma": 55.4,
+    "lumaStd": 65.6,
     "whiteShare": 0,
-    "colours": 76
+    "colours": 75
    }
   },
   {
@@ -1353,22 +1353,22 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Karachi Riga Baghdad BGW 9 of 24 1 8 RIX 1 of 24 1 KHI 24 of 24 1 5 1 22 Jam, the network closes in 0 s Week 1 51 passengers 0 6 12 18 22:44 day 3 of 3 NETWORK CLOSED MAP DEPARTURES · KHI No route served KHI: its passengers had no flight to board. No spare aircraft: drag a route end to it, or remove a quieter route to free its plane. ATC · INCIDENT REPORT Passengers delivered: 51 Weeks completed: 0 MILESTONES 1/7 First hub FIRST TIME Every region served Week 2 Week 3 Week 5 500 passengers 1,000 passengers CAUSES TIMELINE 29 passengers had no available route to their destination region. 76% of waiting passengers were headed to the Middle East (22 people). The waiting area was full: 29 people for 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
+   "text": "Karachi Riga Baghdad RIX 1 of 24 1 KHI 24 of 24 1 5 1 22 Jam, the network closes in 0 s Week 1 51 passengers 0 6 12 18 22:44 day 3 of 3 Network closed Map Departures · KHI No route served KHI: its passengers had no flight to board. No spare aircraft: drag a route end to it, or remove a quieter route to free its plane. ATC incident report Passengers delivered: 51 Weeks completed: 0 Milestones 1/7 First hub First time Every region served Week 2 Week 3 Week 5 500 passengers 1,000 passengers Causes Timeline 29 passengers had no available route to their destination region. 76% of waiting passengers were headed to the Middle East (22 people). The waiting area was full: 29 people for 24 places. New local record Try again · same world New world Menu",
    "contrast": {
     "routes": 9.95,
     "airports": 1.33,
-    "planes": 1.87,
+    "planes": 2.79,
     "tags": 1.09
    },
    "warmth": {
     "gold": 0.001,
-    "ratio": 0.687
+    "ratio": 0.688
    },
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 58.5,
-    "lumaStd": 69.5,
+    "meanLuma": 58,
+    "lumaStd": 69.1,
     "whiteShare": 0,
     "colours": 68
    }
@@ -1381,7 +1381,7 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Karachi Riga Baghdad BGW 9 of 24 1 8 RIX 1 of 24 1 KHI 24 of 24 1 5 1 22 Jam, the network closes in 0 s Week 1 51 passengers 0 6 12 18 22:44 day 3 of 3 NETWORK CLOSED MAP DEPARTURES · KHI No route served KHI: its passengers had no flight to board. No spare aircraft: drag a route end to it, or remove a quieter route to free its plane. ATC · INCIDENT REPORT Passengers delivered: 51 Weeks completed: 0 MILESTONES 1/7 First hub FIRST TIME Every region served Week 2 Week 3 Week 5 500 passengers 1,000 passengers CAUSES TIMELINE 29 passengers had no available route to their destination region. 76% of waiting passengers were headed to the Middle East (22 people). The waiting area was full: 29 people for 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
+   "text": "Karachi Riga Baghdad BGW 9 of 24 1 8 RIX 1 of 24 1 KHI 24 of 24 1 5 1 22 Jam, the network closes in 0 s Week 1 51 passengers 0 6 12 18 22:44 day 3 of 3 Network closed Map Departures · KHI No route served KHI: its passengers had no flight to board. No spare aircraft: drag a route end to it, or remove a quieter route to free its plane. ATC incident report Passengers delivered: 51 Weeks completed: 0 Milestones 1/7 First hub First time Every region served Week 2 Week 3 Week 5 500 passengers 1,000 passengers Causes Timeline 29 passengers had no available route to their destination region. 76% of waiting passengers were headed to the Middle East (22 people). The waiting area was full: 29 people for 24 places. New local record Try again · same world New world Menu",
    "contrast": {
     "routes": 9.88,
     "airports": 1.31,
@@ -1395,8 +1395,8 @@
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 42.5,
-    "lumaStd": 52.9,
+    "meanLuma": 42.1,
+    "lumaStd": 52.3,
     "whiteShare": 0,
     "colours": 73
    }
@@ -1409,11 +1409,11 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Karachi Riga Baghdad BGW 9 of 24 1 8 RIX 1 of 24 1 KHI 24 of 24 1 5 1 22 Jam, the network closes in 0 s Week 1 51 passengers 0 6 12 18 22:44 day 3 of 3 NETWORK CLOSED MAP DEPARTURES · KHI No route served KHI: its passengers had no flight to board. No spare aircraft: drag a route end to it, or remove a quieter route to free its plane. ATC · INCIDENT REPORT Passengers delivered: 51 Weeks completed: 0 MILESTONES 1/7 First hub FIRST TIME Every region served Week 2 Week 3 Week 5 500 passengers 1,000 passengers CAUSES TIMELINE 29 passengers had no available route to their destination region. 76% of waiting passengers were headed to the Middle East (22 people). The waiting area was full: 29 people for 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
+   "text": "Karachi Riga Baghdad RIX 1 of 24 1 KHI 24 of 24 1 5 1 22 Jam, the network closes in 0 s Week 1 51 passengers 0 6 12 18 22:44 day 3 of 3 Network closed Map Departures · KHI No route served KHI: its passengers had no flight to board. No spare aircraft: drag a route end to it, or remove a quieter route to free its plane. ATC incident report Passengers delivered: 51 Weeks completed: 0 Milestones 1/7 First hub First time Every region served Week 2 Week 3 Week 5 500 passengers 1,000 passengers Causes Timeline 29 passengers had no available route to their destination region. 76% of waiting passengers were headed to the Middle East (22 people). The waiting area was full: 29 people for 24 places. New local record Try again · same world New world Menu",
    "contrast": {
     "routes": 10.03,
     "airports": 1.37,
-    "planes": null,
+    "planes": 8.97,
     "tags": 1.06
    },
    "warmth": {
@@ -1423,10 +1423,10 @@
    "png": {
     "width": 1320,
     "height": 2868,
-    "meanLuma": 57.5,
-    "lumaStd": 67.7,
+    "meanLuma": 57,
+    "lumaStd": 67.3,
     "whiteShare": 0,
-    "colours": 72
+    "colours": 75
    }
   },
   {
@@ -1437,7 +1437,7 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Karachi Riga Baghdad BGW 9 of 24 1 8 RIX 1 of 24 1 KHI 24 of 24 1 5 1 22 Jam, the network closes in 0 s Week 1 51 passengers 0 6 12 18 22:44 day 3 of 3 NETWORK CLOSED MAP DEPARTURES · KHI No route served KHI: its passengers had no flight to board. No spare aircraft: drag a route end to it, or remove a quieter route to free its plane. ATC · INCIDENT REPORT Passengers delivered: 51 Weeks completed: 0 MILESTONES 1/7 First hub FIRST TIME Every region served Week 2 Week 3 Week 5 500 passengers 1,000 passengers CAUSES TIMELINE 29 passengers had no available route to their destination region. 76% of waiting passengers were headed to the Middle East (22 people). The waiting area was full: 29 people for 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
+   "text": "Karachi Riga Baghdad BGW 9 of 24 1 8 RIX 1 of 24 1 KHI 24 of 24 1 5 1 22 Jam, the network closes in 0 s Week 1 51 passengers 0 6 12 18 22:44 day 3 of 3 Network closed Map Departures · KHI No route served KHI: its passengers had no flight to board. No spare aircraft: drag a route end to it, or remove a quieter route to free its plane. ATC incident report Passengers delivered: 51 Weeks completed: 0 Milestones 1/7 First hub First time Every region served Week 2 Week 3 Week 5 500 passengers 1,000 passengers Causes Timeline 29 passengers had no available route to their destination region. 76% of waiting passengers were headed to the Middle East (22 people). The waiting area was full: 29 people for 24 places. New local record Try again · same world New world Menu",
    "contrast": {
     "routes": 9.85,
     "airports": 1.31,
@@ -1451,10 +1451,10 @@
    "png": {
     "width": 2064,
     "height": 2752,
-    "meanLuma": 36.5,
-    "lumaStd": 44.5,
+    "meanLuma": 36.3,
+    "lumaStd": 44.1,
     "whiteShare": 0,
-    "colours": 78
+    "colours": 77
    }
   },
   {
@@ -1465,11 +1465,11 @@
    "seed": 41377,
    "glyphs": [],
    "devOverlay": false,
-   "text": "Tunis Karachi Riga Venice Baghdad Amman Ankara Athens BGW 9 of 24 1 8 RIX 1 of 24 1 KHI 24 of 24 1 5 1 22 Jam, the network closes in 0 s Week 1, day 3 of 3 51 passengers 22:44 NETWORK CLOSED MAP DEPARTURES · KHI No route served KHI: its passengers had no flight to board. No spare aircraft: drag a route end to it, or remove a quieter route to free its plane. ATC · INCIDENT REPORT Passengers delivered: 51 Weeks completed: 0 MILESTONES 1/7 CAUSES TIMELINE 29 passengers had no available route to their destination region. 76% of waiting passengers were headed to the Middle East (22 people). The waiting area was full: 29 people for 24 places. NEW LOCAL RECORD TRY AGAIN · SAME WORLD NEW WORLD MENU",
+   "text": "Karachi Riga VCE ANK BGW 9 of 24 1 8 RIX 1 of 24 1 KHI 24 of 24 1 5 1 22 Jam, the network closes in 0 s Week 1, day 3 of 3 51 passengers 22:44 Network closed Map Departures · KHI No route served KHI: its passengers had no flight to board. No spare aircraft: drag a route end to it, or remove a quieter route to free its plane. ATC incident report Passengers delivered: 51 Weeks completed: 0 Milestones 1/7 Causes Timeline 29 passengers had no available route to their destination region. 76% of waiting passengers were headed to the Middle East (22 people). The waiting area was full: 29 people for 24 places. New local record Try again · same world New world Menu",
    "contrast": {
     "routes": 9.95,
     "airports": 4.25,
-    "planes": 5.38,
+    "planes": 5.29,
     "tags": 1.12
    },
    "warmth": {
@@ -1479,10 +1479,10 @@
    "png": {
     "width": 1920,
     "height": 1080,
-    "meanLuma": 55.3,
-    "lumaStd": 62.1,
+    "meanLuma": 55.1,
+    "lumaStd": 61.8,
     "whiteShare": 0,
-    "colours": 75
+    "colours": 74
    }
   },
   {
@@ -1497,10 +1497,10 @@
    "png": {
     "width": 1080,
     "height": 1920,
-    "meanLuma": 87.7,
-    "lumaStd": 78.4,
+    "meanLuma": 86.9,
+    "lumaStd": 77.4,
     "whiteShare": 0,
-    "colours": 469
+    "colours": 463
    }
   },
   {
@@ -1515,10 +1515,10 @@
    "png": {
     "width": 1346,
     "height": 1682,
-    "meanLuma": 97.1,
-    "lumaStd": 77.4,
+    "meanLuma": 94.9,
+    "lumaStd": 76.4,
     "whiteShare": 0,
-    "colours": 474
+    "colours": 469
    }
   },
   {
@@ -1533,8 +1533,8 @@
    "png": {
     "width": 1536,
     "height": 2048,
-    "meanLuma": 97,
-    "lumaStd": 77.9,
+    "meanLuma": 94.4,
+    "lumaStd": 76.2,
     "whiteShare": 0,
     "colours": 488
    }
@@ -1551,10 +1551,10 @@
    "png": {
     "width": 1320,
     "height": 2868,
-    "meanLuma": 83.7,
-    "lumaStd": 78.3,
+    "meanLuma": 84.2,
+    "lumaStd": 76.5,
     "whiteShare": 0,
-    "colours": 501
+    "colours": 491
    }
   },
   {
@@ -1569,10 +1569,10 @@
    "png": {
     "width": 2064,
     "height": 2752,
-    "meanLuma": 94.3,
-    "lumaStd": 78.6,
+    "meanLuma": 94.4,
+    "lumaStd": 75.8,
     "whiteShare": 0,
-    "colours": 519
+    "colours": 526
    }
   },
   {
@@ -1587,10 +1587,10 @@
    "png": {
     "width": 1920,
     "height": 1080,
-    "meanLuma": 163.5,
-    "lumaStd": 53.2,
+    "meanLuma": 143,
+    "lumaStd": 68.1,
     "whiteShare": 0,
-    "colours": 385
+    "colours": 442
    }
   }
  ]

@@ -510,6 +510,22 @@ async function capture(page, baseUrl, lang, scene, destination) {
     return '';
   });
   if (covered) throw new Error('Boarding pass covered by ' + covered + ': ' + scene);
+  // [night-15a] Every part of a crate (title, stats, the "fullest hub" stamp) and of the game-over report (its three
+  // actions) stays on screen: after PR #266 the 960×540 landscape shot cut the stamp's lower edge off at the bottom.
+  const offscreen = await page.evaluate(() => {
+    const parts = document.querySelectorAll('.airway-upgrade-tag, .airway-upgrade-tag *, .airway-go-content, '
+      + '.airway-go-content *');
+    for (const part of parts) {
+      const r = part.getBoundingClientRect();
+      if (!r.width || !r.height || getComputedStyle(part).visibility === 'hidden') continue;
+      if (r.bottom > innerHeight + 0.5 || r.right > innerWidth + 0.5 || r.top < -0.5 || r.left < -0.5) {
+        return part.className + ' ' + Math.round(r.left) + ',' + Math.round(r.top) + '..' + Math.round(r.right) + ','
+          + Math.round(r.bottom) + ' outside ' + innerWidth + 'x' + innerHeight;
+      }
+    }
+    return '';
+  });
+  if (offscreen) throw new Error('Cut off by the screen edge: ' + offscreen + ': ' + scene);
   // [task-40] Sun hour angle@camera latitude chosen by the fixture (game and night scenes).
   state.sun = await page.evaluate(() => document.documentElement.dataset.storeShotSun ?? null);
   await page.screenshot({ path: destination, animations: 'disabled', fullPage: false });
