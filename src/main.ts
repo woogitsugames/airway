@@ -195,7 +195,7 @@ async function boot(): Promise<void> {
       if (name !== 'game') {
         if (session) { endSession(); world?.reset(); }
         world?.showMenuBackdrop();
-        screenName = name === 'settings' || name === 'licenses' || name === 'privacy' ? 'settings' : name === 'logbook' ? 'logbook' : 'menu';
+        screenName = name === 'settings' || name === 'licenses' || name === 'privacy' || name === 'terms' ? 'settings' : name === 'logbook' ? 'logbook' : 'menu';
       }
     },
     onLanguageChanged: () => { document.title = t('app.title'); },
@@ -378,7 +378,7 @@ async function boot(): Promise<void> {
   function devState(): AwDevState {
     const run = session?.run;
     return {
-      screen: session ? screenName : (screens.current() === 'settings' || screens.current() === 'licenses' || screens.current() === 'privacy' ? 'settings'
+      screen: session ? screenName : (screens.current() === 'settings' || screens.current() === 'licenses' || screens.current() === 'privacy' || screens.current() === 'terms' ? 'settings'
         : screens.current() === 'logbook' ? 'logbook' : 'menu'),
       seed: run?.seed ?? pendingSeed ?? 0,
       homeRegion: run?.homeRegion ?? null, // [night-11aj] R2g

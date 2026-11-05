@@ -12,7 +12,7 @@ import { buildPressKit, pressShots, unzip } from './press-kit.mjs';
 import { PUBLISHER_FIELDS, PUBLISHER_KEYS, publisherGaps } from './publisher.js';
 
 const root = dirname(fileURLToPath(import.meta.url));
-const pages = ['index.html', 'privacy.html', 'press.html', '404.html'];
+const pages = ['index.html', 'privacy.html', 'terms.html', 'press.html', '404.html'];
 let count = 0, failures = 0;
 const check = (name, test) => {
   try { assert.ok(test(), name); count++; }
@@ -99,7 +99,7 @@ check('og:image is the feature graphic, absolute, copied by build:site', () => m
 check('og:image size matches the file', () => Number(meta(home, 'og:image:width')) === og.width && Number(meta(home, 'og:image:height')) === og.height);
 check('og:image alt, og:url, twitter card', () => Boolean(meta(home, 'og:image:alt')) && meta(home, 'og:url') === LAUNCH.origin + '/' &&
   meta(home, 'twitter:card') === 'summary_large_image' && keys.includes('meta.ogimage'));
-for (const [page, path] of [['index.html', '/'], ['privacy.html', '/privacy.html'], ['press.html', '/press.html']]) {
+for (const [page, path] of [['index.html', '/'], ['privacy.html', '/privacy.html'], ['terms.html', '/terms.html'], ['press.html', '/press.html']]) {
   const html = readFileSync(join(root, page), 'utf8');
   check(`${page}: canonical and hreflang pl/en/x-default`, () => html.includes(`<link rel="canonical" href="${LAUNCH.origin}${path}">`) &&
     ['pl', 'en'].every(code => html.includes(`<link rel="alternate" hreflang="${code}" href="${LAUNCH.origin}${path}?lang=${code}">`)) &&
@@ -131,7 +131,7 @@ check('Font licenses present', () => ['OFL-Overpass.txt','OFL-OverpassMono.txt',
 const css = readFileSync(join(root,'styles.css'),'utf8');
 check('Small screen and reduced motion layouts', () => css.includes('@media(max-width:750px)') && css.includes('prefers-reduced-motion'));
 check('No third-party font loads', () => !/@import|fonts\.googleapis/.test(css));
-check('No analytics or tracking', () => ['site.js','globe.js','launch.js','index.html','privacy.html','press.html','404.html'].every(p=>!/gtag\(|google-analytics|googletagmanager|facebook\.com\/tr|document\.cookie|localStorage|sendBeacon|fetch\(/.test(readFileSync(join(root,p),'utf8'))));
+check('No analytics or tracking', () => ['site.js','globe.js','launch.js','index.html','privacy.html','terms.html','press.html','404.html'].every(p=>!/gtag\(|google-analytics|googletagmanager|facebook\.com\/tr|document\.cookie|localStorage|sendBeacon|fetch\(/.test(readFileSync(join(root,p),'utf8'))));
 const script = readFileSync(join(root,'site.js'),'utf8');
 check('Translation insertion is text-only', () => !script.includes('innerHTML') && script.includes('createTextNode'));
 check('No undisclosed external assets', () => [...home.matchAll(/\b(src|href)="(https?:\/\/[^"]*)"/g)].every(m => m[2].startsWith(LAUNCH.origin + '/') && /rel="(canonical|alternate)"/.test(home.slice(home.lastIndexOf('<', m.index), m.index))));
@@ -232,19 +232,21 @@ const privacyGaps = ['pl', 'en'].flatMap(l => Object.entries(translations[l]).fi
 if (process.env.AIRWAY_RELEASE === '1') check('release: privacy policy has no bracketed placeholders', () => privacyGaps.length === 0);
 else if (privacyGaps.length) console.log(`note: ${privacyGaps.length} privacy texts with [placeholders]; AIRWAY_RELEASE=1 test:site fails until they are filled`);
 // [night-11al] R7c, D-241: one publisher block (publisher.*), on the policy page and linked from every footer.
-const publisherTarget = { 'index.html': 'privacy.html#publisher', 'press.html': 'privacy.html#publisher', 'privacy.html': '#publisher', '404.html': '/privacy.html#publisher' };
+const publisherTarget = { 'index.html': 'privacy.html#publisher', 'press.html': 'privacy.html#publisher', 'privacy.html': '#publisher', 'terms.html': '#publisher', '404.html': '/privacy.html#publisher' };
 for (const page of pages) {
   const html = readFileSync(join(root, page), 'utf8');
   const footer = html.slice(html.indexOf('<footer'));
   check(`${page}: footer links the publisher block`, () => footer.includes(`href="${publisherTarget[page]}" data-nav-lang data-i18n="footer.publisher"`));
 }
-const privacyHtml = readFileSync(join(root, 'privacy.html'), 'utf8');
-const block = privacyHtml.match(/<section id="publisher"[\s\S]*?<\/section>/)?.[0] ?? '';
-check('publisher block on privacy.html with every row, in order', () => {
+// [night-11an] R7c asks for the block on the privacy and the terms page: the same markup on both.
+for (const policyPage of ['privacy.html', 'terms.html']) {
+const block = readFileSync(join(root, policyPage), 'utf8').match(/<section id="publisher"[\s\S]*?<\/section>/)?.[0] ?? '';
+check(`publisher block on ${policyPage} with every row, in order`, () => {
   const order = [...block.matchAll(/data-i18n="publisher\.([a-z]+)"/g)].map(m => m[1]).filter(f => f !== "title" && f !== "note");
   return order.join() === PUBLISHER_FIELDS.join() && PUBLISHER_FIELDS.every(f => block.includes(`data-i18n="publisher.${f}.label"`)) &&
     block.includes('data-i18n="publisher.title"') && block.includes('data-i18n="publisher.note"');
 });
+}
 check('publisher keys in both languages', () => PUBLISHER_KEYS.every(k => keys.includes(k)) && keys.includes('footer.publisher'));
 const gaps = publisherGaps(translations);
 if (process.env.AIRWAY_RELEASE === '1') {
@@ -254,5 +256,28 @@ if (process.env.AIRWAY_RELEASE === '1') {
     PUBLISHER_KEYS.every(k => ['pl', 'en'].every(l => !translations[l][k].includes('[') || gaps.includes(`${l}:${k}`))));
   if (gaps.length) console.log(`note: ${gaps.length} publisher placeholders (Q-01); AIRWAY_RELEASE=1 test:site fails until they are filled`);
 }
+// [night-11an] R7b, D-244: terms of use page — built like privacy.html, linked from every other footer, the R7b
+// leaderboard rules present, the draft banner kept; a release build refuses bracketed placeholders.
+const termsPage = readFileSync(join(root, 'terms.html'), 'utf8');
+check('terms: built by build:site', () => /'terms\.html'/.test(buildSource));
+check('terms: canonical/meta handled by site.js', () => /terms: '\/terms\.html'/.test(script) && /terms: \{ description: 'meta\.terms'/.test(script));
+for (const page of pages.filter(p => p !== 'terms.html')) {
+  const html = readFileSync(join(root, page), 'utf8');
+  const footer = html.slice(html.indexOf('<footer'));
+  check(`${page}: footer links the terms`, () => new RegExp(`href="/?terms\\.html" data-nav-lang data-i18n="footer\\.terms"`).test(footer));
+}
+check('terms: footer links back to the privacy policy', () => termsPage.slice(termsPage.indexOf('<footer')).includes('href="privacy.html" data-nav-lang data-i18n="footer.privacy"'));
+const termsSections = [...termsPage.matchAll(/data-i18n="terms\.s(\d+)\.title"/g)].map(m => Number(m[1]));
+const termsCount = keys.filter(k => /^terms\.s\d+\.title$/.test(k)).length;
+check('terms: every catalog section on the page, in order, bodies as paragraphs', () => termsCount >= 8 &&
+  termsSections.join() === Array.from({ length: termsCount }, (_, i) => i + 1).join() &&
+  termsSections.every(n => termsPage.includes(`data-i18n-paragraphs="terms.s${n}.body"`)));
+check('terms: draft banner, "to verify with a lawyer", not legal advice', () => termsPage.includes('data-i18n="terms.warning"') &&
+  /do weryfikacji z prawnikiem/.test(translations.pl['terms.warning']) && /porada prawna/.test(translations.pl['terms.warning']) &&
+  /verified with a lawyer/.test(translations.en['terms.warning']) && /legal advice/.test(translations.en['terms.warning']));
+check('terms: no forms, inputs or iframes', () => !/<(form|input|textarea|select|iframe)\b/i.test(termsPage));
+const legalGaps = ['pl', 'en'].flatMap(l => Object.entries(translations[l]).filter(([k, v]) => /^terms\./.test(k) && /\[[^\]]+\]/.test(v)).map(([k]) => `${l}:${k}`));
+if (process.env.AIRWAY_RELEASE === '1') check('release: terms texts have no bracketed placeholders', () => legalGaps.length === 0);
+else if (legalGaps.length) console.log(`note: ${legalGaps.length} terms texts with [placeholders]; AIRWAY_RELEASE=1 test:site fails until they are filled`);
 console.log(`SUMMARY test:site seed=0xA1A1 assertions=${count+failures} passed=${count} failed=${failures}`);
 if (failures) process.exitCode = 1;
