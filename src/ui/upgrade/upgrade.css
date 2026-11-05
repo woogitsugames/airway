@@ -343,9 +343,10 @@
   .airway-upgrade-waybill { padding: 3px 12px 3px; font-size: 12px; line-height: 1.25; }
 }
 /* [night-14b] D-259: a wide screen 521–630 px tall (960×540 landscape store shot) keeps the sign above the board, so with
-   a waybill the window also gives up the sign's row (the third line of stats ran below the screen). */
+   a waybill the window also gives up the sign's row (the third line of stats ran below the screen). [night-15a] With
+   the hub crate's "fullest hub" stamp the third crate still ran 23 px below 960×540: 36 px more (a 12 px margin). */
 @media (min-width: 720px) and (min-height: 521px) {
-  .airway-upgrade:has(.airway-upgrade-waybill) { --upgrade-win: clamp(40px, calc(100vh - 400px - var(--aw-safe-top) - var(--aw-safe-bottom)), 230px); }
+  .airway-upgrade:has(.airway-upgrade-waybill) { --upgrade-win: clamp(40px, calc(100vh - 436px - var(--aw-safe-top) - var(--aw-safe-bottom)), 230px); }
 }
 /* [night-15b] R4f: 600–679 px tall (1024×640 tablet landscape) the 230 px windows plus the slip ran the crate buttons
    39 px below the screen: the window gives up 50 px more there (unchanged from 680 px up and on 960×540). */

@@ -2593,3 +2593,15 @@ symbols stay, each with its accessible name); **weekly crates at 1024×640** wit
 39 px below the screen — on wide screens 600–679 px tall the model window gives up 50 px more (unchanged from 680 px up
 and on the 960×540 store shot). `docs/shots/matrix/` gets the six new sizes on the next real-renderer `ui:matrix`.
 **Status: in force.**
+
+## D-261 — Store shots rerun after D-259: crates stay on the 960×540 screen (2026-11-05, Claude, night N15a)
+The 60 store PNGs and the site shots were recaptured on the real renderer after D-259 and D-260. The D-259 layout fixes
+hold: dock captions no longer lie over a rose, the curved names no longer collide (Amman under Ankara drops to its code
+or nothing), notes stand beside their own rose (BGW right of Baghdad in landscape), the menu entries clear the airports
+on every size except a near-touch of "Ustawienia" on the PL phone, the crates hide the airport layer. One defect was left:
+at 960×540 the hub crate's "fullest hub" stamp ran 23 px below the screen. On wide screens 521–599 px tall with a waybill
+the model window gives up 36 px more (`100vh - 436px`, a 12 px margin), and `store:shots` now fails when any part of a
+crate or of the game-over report lies outside the viewport (it failed on the old CSS). Remaining items are listed in the
+PR (render-owned rose ring offset and medallions between crates; "Ustawienia" touching the Dakar medallion on the PL
+phone menu; on the 360×640 phone game shot Amman, Athens, Venice and Baghdad show no note and Amman no name, so the
+busiest hub is unlabelled). **Status: in force.**
