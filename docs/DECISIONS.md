@@ -2364,3 +2364,38 @@ simpler), raising the CSS budget. Guards: `test:skin-tokens` (plugin unit cases 
 left), `test:bundle` (no other `var(--skin-` in dist CSS), `test:cities` (packed table up to date). Evidence: built CSS
 equals the pre-D-250 build apart from palette names written out and the kept `:root` block; `npm run skin:pixels` with
 `AW_SKIN_INLINE=1` against origin/dev (see the PR). **Status: in force.**
+
+## D-253 — Weather front: a weekly cloud band takes one departure slot from the airports under it; built, shipped OFF (2026-11-05, Claude, night N12bd)
+R2j (post-launch update candidate; D-252 taken by N11ar). From week 2 every week has one **weather front**: a band
+40° of latitude tall (southern edge drawn from 40°S…30°N in 10° steps) that forms 1–6 game hours after the weekly
+board at a drawn longitude (15° steps) and drifts **east at 6° per game hour**, sweeping the whole circle once (64 h:
+it forms over its first 4 h and thins out over its last 4 h) and is gone before the next board. Every airport inside
+its latitudes is under the deck for exactly **4 game hours** a week and has **one hourly departure slot fewer**
+(D-41: city 2 → 1, hub 3 → 2, upgrades keep their +2). The path is a pure function of the seed and the week
+(`new Rng(seed).fork('weather/<week>')`, `src/sim/weather.ts`, integer tenths of a degree, no transcendentals, D-13);
+nothing is added to the world snapshot and no kernel stream moves. Versioned params `WEATHER_*`
+(`WEATHER_PARAMS_VERSION` 1). **Off by default:** the rule sits behind `GameConfig.weatherFront: true` (Endless only;
+Daily and puzzles refuse it) and `EndlessRun.create` leaves it off (`ENDLESS_WEATHER_FRONT = false`); only the DEV
+switch `?weather=front` (folded to false in a production build), tests and the balance bot turn it on. Daily, its
+leaderboard replay and Endless with default flags are bit-for-bit origin/dev 7759457 — hashes, ticks, scores and the
+saved bytes (pinned in `test:weather-front`); `RULES_VERSION` stays 6. **Save:** only a weather run is written as
+envelope **v6**; every other save stays v5, byte for byte, so a pre-R2j build keeps loading them and refuses only a
+weather run as "newer version" instead of continuing it without the front (a v5 with the flag or a v6 without it is
+corrupt). The D-76 replay and "Same world" keep the flag. **Shown** (no `src/render/**` change; existing tag DOM, skin
+tokens `--skin-tag-front-*`): the weather-map cold-front line (a rule with three teeth) as a stub on the airport's
+luggage tag — **hollow teeth + "−1 14:20"** (local arrival) up to 6 game hours ahead, **filled teeth + "−1 to 18:20" /
+"−1 do 18:20"** while under the deck; shape and words carry the state, not colour; the tag aria names it; the pause
+sheet gets a "Front atmosferyczny / Weather front" row (airports under it and until when, else the next airport and
+time, else "away from your airports"). `world.weather` gives render the band (`westLon10…eastLon10`, latitudes) for the
+darker cloud deck (ext session). **Bot check** (`balance:weather`, the test:balance policy as a shipped Endless run,
+contract + surge on, the bot ignores the front; nothing retuned): 50 seeds from 0xA1A1: median **17.41 / 17.41** min
+without / with; 200 seeds: **16.75 / 16.75** min (D-79 10–18), 355 fronts formed (194 runs), served airports under a
+front in 149 runs (median 36 airport-hours), **1** departure held for a slot under a front (all slot holds 16 / 17),
+all 200 runs equal in length and passengers (`docs/balance/weather-summary.md`). As specified, "−1 slot" barely bites:
+the bot's airports almost never use their full hourly slots (16 holds in 200 runs), so the front changes nothing for
+the bot; a human who stacks aircraft on a hub would feel it. Not done: the darker cloud deck on the globe and its
+shape-coded edge (render, ext session; low-preset perf check D-73), an edge-chip mark, a first-time card, a sound.
+Owner choices left open: whether a front should bite harder (e.g. slots halved, or a ground hold) before it ships,
+its size/speed/frequency, whether it ever reaches Daily.
+Guards: `test:weather-front` (`test:fast`), `test:balance:weather` (`test:ci`).
+**Status: implemented behind a flag, OFF in shipped Endless (post-launch candidate; strength to decide).**

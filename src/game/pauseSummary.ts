@@ -2,6 +2,7 @@
 // is, read once when the game pauses (nothing changes while paused). Pure: rows of translated label/value pairs.
 import { t, type TranslationKey } from '../i18n';
 import { localClock } from './surge';
+import type { FrontSummary } from './weather';
 
 export interface PauseSummaryInput {
   readonly routes: number;
@@ -18,8 +19,10 @@ export interface PauseSummaryInput {
   /** [night-12bb] R2i, D-249: the announced or running demand surge (airport label, local hours), absent/null without one. */
   readonly surge?: { readonly airport: string; readonly passengers: number; readonly startLocalHour: number;
     readonly endLocalHour: number; readonly active: boolean } | null;
+  /** [night-12bd] R2j: the week's weather front over the network (absent/null without one). */
+  readonly front?: FrontSummary | null;
 }
-export interface PauseSummaryRow { readonly key: 'network' | 'hub' | 'board' | 'contract' | 'surge'; readonly label: string; readonly value: string }
+export interface PauseSummaryRow { readonly key: 'network' | 'hub' | 'board' | 'contract' | 'surge' | 'front'; readonly label: string; readonly value: string }
 
 /** Fullest hub by share of capacity, ties by waiting count, then by label (stable). */
 function busiestHub(hubs: PauseSummaryInput['hubs']): PauseSummaryInput['hubs'][number] | null {
@@ -73,6 +76,15 @@ export function pauseSummary(input: PauseSummaryInput): PauseSummaryRow[] {
       key: 'surge', label: t('pause.summary.surge'),
       value: t(active ? 'pause.summary.surgeActive' : 'pause.summary.surgeSoon',
         { airport, count: passengers, from: localClock(startLocalHour), to: localClock(endLocalHour) }),
+    });
+  }
+  if (input.front) {
+    // [night-12bd] R2j: airports under the deck now (one slot fewer), else the next one it reaches, else "away".
+    const { under, until, next } = input.front;
+    rows.push({
+      key: 'front', label: t('pause.summary.front'),
+      value: under.length > 0 ? t('pause.summary.frontUnder', { airports: under.join(', '), to: until ?? '' })
+        : next ? t('pause.summary.frontSoon', { airport: next.airport, time: next.time }) : t('pause.summary.frontAway'),
     });
   }
   return rows;

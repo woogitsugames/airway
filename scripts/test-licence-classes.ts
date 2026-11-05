@@ -210,7 +210,8 @@ await test('save → load keeps the class and the hash (envelope v5); v3 and v4 
   }
   const current = encodeSave(saveSourceFromSim(plain), 1000);
   // A newer envelope is refused as unsupported; a class snapshot cannot load as class I.
-  const { checksum: _c, ...newer } = { ...current, v: 6 };
+  // [night-12bd] R2j: v6 is now the weather-front envelope (a v6 without the front is corrupt), so "newer" is v7.
+  const { checksum: _c, ...newer } = { ...current, v: 7 };
   const decodedNewer = decodeSave(JSON.stringify({ ...newer, checksum: checksum(newer) }));
   assert.deepEqual(decodedNewer, { status: 'error', issue: 'unsupported' });
   const snap = JSON.parse(sim.snapshot());

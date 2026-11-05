@@ -80,6 +80,8 @@
   --skin-tag-glyph-hollow: var(--airway-ticket); /* overlay.ts transfer glyph inside the connection time */
   --skin-tag-surge-ink: var(--airway-panel); /* [night-12bb] D-249 demand-surge stub and edge pennant */
   --skin-tag-surge-paper: var(--airway-ticket);
+  --skin-tag-front-ink: var(--airway-panel); /* [night-12bd] R2j weather-front stub */
+  --skin-tag-front-paper: var(--airway-ticket);
   /* Off-screen airport chip (overlay.css .airport-edge) */
   --skin-edge-border: var(--airway-panel);
   --skin-edge-bg: var(--airway-ticket);
