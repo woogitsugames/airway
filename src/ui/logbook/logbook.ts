@@ -3,7 +3,7 @@
 // scores, puzzle stars). Opened from the departure board's service row; Back returns to the menu.
 import { airportLabel } from '../airportLabel';
 import { APP_VERSION } from '../../core/version'; // [night-12ap] R3j
-import { favouriteHub, localDay, type Logbook, type LogEntry } from '../../game/logbook';
+import { favouriteHub, localDay, milestoneFlights, type Logbook, type LogEntry } from '../../game/logbook'; // [night-11ao] milestoneFlights
 import type { TutorialOutcome } from '../../game/tutorial/controller';
 import { localNumber, t, type TranslationKey } from '../../i18n';
 import type { RegionId } from '../../data/regions';
@@ -214,10 +214,11 @@ export function createLogbook(onBack: () => void, data: LogbookData, copy: Clipb
   // [night-12ax] R1n, D-242: the flight in which each Endless milestone was first reached ("not yet" otherwise).
   const milestones = section(t('logbook.milestones'), 'milestones');
   const reachedRows = logbookMilestones(data.book);
+  const firsts = milestoneFlights(data.book); // [night-11ao] pre-R1n logbook objects render with every row open
   milestones.append(list(reachedRows, 'airway-logbook__records airway-logbook__milestones'));
   for (const [id] of reachedRows) {
     const cell = milestones.querySelector(`[data-row="${id}"]`);
-    if (cell instanceof HTMLElement) cell.dataset.reached = String(data.book.milestones[id] !== undefined);
+    if (cell instanceof HTMLElement) cell.dataset.reached = String(firsts[id] !== undefined);
   }
   paper.append(milestones);
   const recent = section(t('logbook.recent'), 'recent');

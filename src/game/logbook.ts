@@ -122,6 +122,16 @@ function milestoneRecord(value: unknown, flights: number): Partial<Record<Milest
   return out;
 }
 
+/**
+ * [night-11ao] The flight of each milestone's first reach, tolerating a logbook object that predates R1n (no
+ * `milestones` field) or carries a malformed one. `readLogbook` normalises stored records, but screens and dev
+ * fixtures also receive hand-built Logbook objects; every reader goes through here so none of them can throw.
+ */
+export function milestoneFlights(book: Logbook): Readonly<Partial<Record<MilestoneId, number>>> {
+  const value: unknown = (book as { readonly milestones?: unknown }).milestones;
+  return value && typeof value === 'object' && !Array.isArray(value) ? value as Partial<Record<MilestoneId, number>> : {};
+}
+
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
 const CODE = /^[A-Z]{3}$/;
 
@@ -237,7 +247,7 @@ export function recordFlight(storage: StorageLike | undefined, flight: LogEntry,
   }
   const runNote = run ? note({ ...clean, ...run }) : null;
   const flights = Math.min(MAX_COUNT, prior.flights + 1);
-  const firsts: Partial<Record<MilestoneId, number>> = { ...prior.milestones };
+  const firsts: Partial<Record<MilestoneId, number>> = { ...milestoneFlights(prior) };
   if (clean.mode === 'endless') for (const id of milestones) if (isMilestone(id) && firsts[id] === undefined) firsts[id] = flights;
   const next: Logbook = {
     flights,
@@ -256,7 +266,8 @@ export function recordFlight(storage: StorageLike | undefined, flight: LogEntry,
 
 /** [night-12ax] R1n: milestones this flight reached for the first time (its number is the book's last flight). */
 export function firstMilestones(book: Logbook, reached: readonly MilestoneId[]): MilestoneId[] {
-  return reached.filter((id) => book.milestones[id] === book.flights);
+  const firsts = milestoneFlights(book);
+  return reached.filter((id) => firsts[id] === book.flights);
 }
 
 /** The most-flown hub; a tie goes to the one flown most recently, then alphabetical. */
