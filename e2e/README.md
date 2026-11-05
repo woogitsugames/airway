@@ -9,6 +9,8 @@ handle and registers a production adapter (see below). `--fixture` can independe
 harness contract**: `node e2e/smoke.mjs --fixture` and
 `node scripts/ui-matrix.mjs --fixture`. Fixture images go to
 `docs/shots/matrix-fixture/`, never `docs/shots/matrix/`.
+When the real handle (`src/game/devHandle.ts`) gains or loses a method, change
+`e2e/fixtures/airway.html` in the same commit: `npm run test:fixture-adapter` (in `test:fast`) fails otherwise.
 
 ## Development-only integration
 

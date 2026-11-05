@@ -23,6 +23,10 @@
   nav { position: relative; z-index: 2; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; background: #13302e; padding: 12px 12px max(12px, env(safe-area-inset-bottom)); }
   button { min-height: 48px; min-width: 48px; padding: 8px 14px; border: 2px solid #153430; background: #f7f3ea; color: #13302e; font: 700 16px sans-serif; cursor: pointer; }
   button:focus-visible { outline: 3px solid #ffc72c; }
+  /* Harness stand-ins for the class names the smoke and matrix read (boarding pass, pause status, boards). */
+  .airway-pass { font-size: 13px; }
+  .airway-pause__status { min-height: 1em; margin: 0; }
+  .airway-upgrade-open, .airway-go-overlay { position: relative; z-index: 1; display: grid; gap: 8px; justify-items: center; overflow: hidden; }
   @media (max-height: 500px) { main { padding: 8px; } main h1 { font-size: 22px; } }
 </style>
 </head>
@@ -31,8 +35,8 @@
 <script>
 (() => {
   const labels = {
-    pl: {menu:'Menu', game:'Gra', upgrade:'Ulepszenie', gameover:'Porażka', newGame:'Nowa gra', continue:'Kontynuuj', save:'Zapisz', back:'Menu', choose:'Wybierz ulepszenie'},
-    en: {menu:'Menu', game:'Game', upgrade:'Upgrade', gameover:'Game over', newGame:'New game', continue:'Continue', save:'Save', back:'Menu', choose:'Choose upgrade'},
+    pl: {menu:'Menu', game:'Gra', upgrade:'Ulepszenie', gameover:'Porażka', newGame:'Nowa gra', continue:'Kontynuuj', save:'Zapisz', back:'Menu', choose:'Wybierz ulepszenie', pause:'Pauza', resume:'Wznów', saved:'Zapisano'},
+    en: {menu:'Menu', game:'Game', upgrade:'Upgrade', gameover:'Game over', newGame:'New game', continue:'Continue', save:'Save', back:'Menu', choose:'Choose upgrade', pause:'Pause', resume:'Resume', saved:'Saved'},
   };
   let settings;
   try { settings = JSON.parse(localStorage.getItem('airway.settings') || '{}'); } catch { settings = {}; }
@@ -50,17 +54,30 @@
   const view = document.getElementById('view');
   const actions = document.getElementById('actions');
   const status = document.getElementById('status');
-  const state = () => ({ screen, seed, tick, nextWeekTick, routeCount, aircraftAssignments,
-    snapshotHash: [seed,tick,routeCount,aircraftAssignments,+upgraded].join('-') });
+  let paused = false;
+  let saveNote = '';
+  let week = 0;
+  const upgrades = [];
+  const state = () => ({ screen, seed, homeRegion: null, licenceClass: 1, tick, nextWeekTick, routeCount,
+    aircraftAssignments, snapshotHash: [seed,tick,routeCount,aircraftAssignments,+upgraded].join('-'),
+    upgrades: upgrades.slice(), curfewClosed: [], curfewDrawn: 0, airports: [] });
+  function part(className, text) {
+    const el = document.createElement('p');
+    el.className = className;
+    el.textContent = text;
+    return el;
+  }
   function button(testid, label, onClick) {
     const el = document.createElement('button');
     el.dataset.testid = testid;
     el.textContent = label;
     el.addEventListener('click', onClick);
     actions.appendChild(el);
+    return el;
   }
   function render() {
     status.textContent = `${screen.toUpperCase()} | SEED ${seed} | TICK ${tick}`;
+    status.className = screen === 'menu' ? '' : 'airway-pass';
     view.replaceChildren();
     actions.replaceChildren();
     const title = document.createElement('h1');
@@ -72,12 +89,12 @@
     view.appendChild(note);
     if (screen === 'menu') {
       button('menu-endless', t.newGame, () => {
-        tick = 0; routeCount = 0; aircraftAssignments = 0; upgraded = false;
-        screen = 'game'; render();
+        tick = 0; routeCount = 0; aircraftAssignments = 0; upgraded = false; week = 0; upgrades.length = 0;
+        paused = false; saveNote = ''; screen = 'game'; render();
       });
       if (saved) button('menu-continue', t.continue, () => {
-        ({ tick, routeCount, aircraftAssignments, upgraded, seed } = saved);
-        screen = 'game'; render();
+        ({ tick, routeCount, aircraftAssignments, upgraded, seed, week } = saved);
+        paused = false; saveNote = ''; screen = 'game'; render();
       });
     } else if (screen === 'game') {
       const surface = document.createElement('div');
@@ -95,32 +112,67 @@
       line.id = 'route-line';
       line.hidden = routeCount === 0;
       view.appendChild(line);
-      button('action-save', t.save, () => {
-        saved = { seed, tick, routeCount, aircraftAssignments, upgraded };
-      });
-      button('action-menu', t.back, () => { screen = 'menu'; render(); });
+      // Like the real game, Save and Menu live on the pause sheet (Escape / Pause opens it).
+      if (paused) {
+        view.appendChild(part('airway-pause__status', saveNote));
+        button('action-resume', t.resume, () => { paused = false; render(); });
+        button('action-save', t.save, () => {
+          saved = { seed, tick, routeCount, aircraftAssignments, upgraded, week };
+          saveNote = t.saved; render();
+        });
+        button('action-menu', t.back, () => { paused = false; screen = 'menu'; render(); });
+      } else {
+        button('action-pause', t.pause, () => { paused = true; render(); });
+      }
     } else if (screen === 'upgrade') {
-      button('upgrade-option-0', t.choose, () => { upgraded = true; screen = 'game'; render(); });
+      const board = document.createElement('div');
+      board.className = 'airway-upgrade-open';
+      board.append(part('airway-upgrade-sign', t.choose), part('airway-upgrade-tag', `W${week}`));
+      view.appendChild(board);
+      const option = button('upgrade-option-0', t.choose, () => {
+        upgraded = true; upgrades.push({ week, upgrade: 'extra-plane' }); screen = 'game'; render();
+      });
+      option.dataset.upgrade = 'extra-plane';
     } else if (screen === 'gameover') {
-      const marker = document.createElement('p');
+      const board = document.createElement('div');
+      board.className = 'airway-go-overlay';
+      const marker = part('airway-go-sign', 'Hub overflow');
       marker.dataset.testid = 'game-over';
-      marker.textContent = 'Hub overflow';
-      view.appendChild(marker);
+      board.append(marker, part('airway-go-board', `TICK ${tick}`));
+      view.appendChild(board);
       button('gameover-menu', t.back, () => { screen = 'menu'; render(); });
     }
   }
-  window.aw = {
+  function weekUp() {
+    if (screen === 'game' && tick >= nextWeekTick * (week + 1)) { week++; screen = 'upgrade'; }
+  }
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && screen === 'game') { paused = !paused; render(); }
+  });
+  // Harness stand-in for the AwDevHandle contract (src/game/devHandle.ts). Every key below must match the real
+  // handle's: `npm run test:fixture-adapter` (test:fast) fails when one side gains or loses a method.
+  window.aw = Object.freeze({
     version: 1,
-    ready: true,
+    get ready() { return true; },
     state,
-    prepareSeed(value) { seed = value; render(); },
-    gesture() {
+    prepareSeed(value) { seed = value >>> 0; render(); },
+    advanceTicks(value) { tick += value; weekUp(); render(); },
+    gesture(kind) {
+      if (kind !== 'route' && kind !== 'plane' && kind !== 'pick') throw new TypeError('Unknown gesture');
       const { width, height } = document.documentElement.getBoundingClientRect();
+      if (kind === 'pick') return { from: { x: width * .5, y: height * .5 }, to: { x: width * .5, y: height * .5 } };
       return { from: { x: width * .25, y: height * .46 }, to: { x: width * .75, y: height * .54 } };
     },
-    advanceTicks(value) { tick += value; if (tick >= nextWeekTick) screen = 'upgrade'; render(); },
-    forceHubOverload() { screen = 'gameover'; render(); },
-  };
+    forceHubOverload() { paused = false; screen = 'gameover'; render(); },
+    autoplay(untilWeek) {
+      // Stand-in for the task-22 bot: plays whole weeks until the board for `untilWeek` opens.
+      if (screen !== 'game') throw new Error('autoplay needs a running game');
+      while (screen === 'game' && week < untilWeek) { tick = nextWeekTick * (week + 1); weekUp(); }
+      render();
+      return state();
+    },
+    botStep() { return null; },  // The stand-in bot never queues a command.
+  });
   render();
 })();
 </script>
