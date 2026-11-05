@@ -4,7 +4,9 @@
 // 41817 grow networks on several continents; at three sizes the run is sampled after the week-1 and week-2 boards and
 // a day later each: every visible chip must be clear of every visible tag (main tag and slot tag).
 import { performance } from 'node:perf_hooks';
-import { withBrowser, newGamePage, waitForScreen, assert, clickTestId, saveDiagnostics } from './browser.mjs';
+import {
+  withBrowser, newGamePage, waitForScreen, assert, clickTestId, saveDiagnostics, RENDER, gameUrl, assertRender,
+} from './browser.mjs';
 import { E2E_SEEDS } from './seeds.mjs';
 
 const started = performance.now();
@@ -28,7 +30,10 @@ async function audit(page) {
   });
 }
 
+// [night-12bf] `npm run test:e2e:edge-chip-tags:stub` (--render=stub): the chips and tags are DOM placed from the real
+// camera/projection, so the stub world (D-254) gives the same audit without the weekly-card click timeout (G7).
 async function journey(page, seed) {
+  await assertRender(page);
   assert(await page.evaluate(() => window.aw?.ready), 'window.aw.ready=false: no AwDevAdapter registered');
   await waitForScreen(page, 'menu');
   await page.evaluate((s) => window.aw.prepareSeed(s), seed);
@@ -62,14 +67,14 @@ try {
   await withBrowser(async ({ browser, url }) => {
     for (const seed of SEEDS) for (const [language, width, height] of SIZES) {
       const label = `seed ${seed} ${language} ${width}×${height}: edge chips clear of airport tags`;
-      const { page, errors } = await newGamePage(browser, url, language, { width, height });
+      const { page, errors } = await newGamePage(browser, gameUrl(url), language, { width, height });
       try {
         const chips = await journey(page, seed);
         sampled += chips;
         if (errors.length) throw new Error(`Browser errors: ${errors.join('; ')}`);
         results.push({ label: `${label} (${chips} chips)`, status: 'PASS' });
       } catch (error) {
-        const shot = await saveDiagnostics(page, `edge-chip-tags-${results.length + 1}`);
+        const shot = await saveDiagnostics(page, `edge-chip-tags${RENDER === 'stub' ? '-stub' : ''}-${results.length + 1}`);
         results.push({ label, status: 'FAIL', why: String(error?.message ?? error).split('\n')[0] + (shot ? ` (${shot})` : '') });
       }
       await page.close();
@@ -83,5 +88,5 @@ if (fatal) console.log(`FAIL harness — ${fatal.message}`);
 if (sampled < 20) results.push({ label: `chips sampled over all cases: ${sampled} (< 20, the scenes do not exercise the edges)`, status: 'FAIL' });
 const failed = results.filter((r) => r.status === 'FAIL').length + (fatal ? 1 : 0);
 const steps = SEEDS.length * SIZES.length;
-console.log(`SUMMARY test:e2e:edge-chip-tags seeds=${SEEDS.length} steps=${steps} chips=${sampled} passed=${results.filter((r) => r.status === 'PASS').length} failed=${failed} durationMs=${Math.round(performance.now() - started)}`);
+console.log(`SUMMARY test:e2e:edge-chip-tags${RENDER === 'stub' ? ' render=stub' : ''} seeds=${SEEDS.length} steps=${steps} chips=${sampled} passed=${results.filter((r) => r.status === 'PASS').length} failed=${failed} durationMs=${Math.round(performance.now() - started)}`);
 process.exitCode = failed || results.length < steps ? 1 : 0;

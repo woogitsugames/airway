@@ -3,6 +3,7 @@
 import { performance } from 'node:perf_hooks';
 import {
   withBrowser, newGamePage, waitForScreen, dragGesture, state, assert, clickTestId, saveDiagnostics,
+  RENDER, gameUrl, assertRender,
 } from './browser.mjs';
 import { E2E_SEEDS } from './seeds.mjs';
 
@@ -10,11 +11,22 @@ import { E2E_SEEDS } from './seeds.mjs';
 const SEED = E2E_SEEDS.smoke.seeds[0];
 
 const fixture = process.argv.includes('--fixture');
+// [night-12bf] `npm run test:e2e:smoke:stub` (--render=stub): the same nine steps on the DEV stub world (D-254). None of
+// them reads globe pixels (route and dock drags hit-test through the real camera/projection maths), so the stub run
+// covers the whole journey; the default run on the real renderer stays the check that the globe accepts the drags.
+const render = fixture ? 'fixture' : RENDER;
+
+/** A dragged route or plane is a queued Command, applied on the next sim tick. On the stub world the clock is frozen
+ *  (`&clock=frozen`, game time only through window.aw), so that tick is played explicitly; the real clock runs. */
+async function applyQueued(page) {
+  if (render === 'stub') await page.evaluate(() => window.aw.advanceTicks(1));
+}
 const started = performance.now();
 const results = [];
 
 const steps = [
   ['boot: dev adapter and menu', async (page) => {
+    if (!fixture) await assertRender(page);
     const ready = await page.evaluate(() => window.aw?.ready);
     assert(ready, 'window.aw.ready=false: no AwDevAdapter registered (src/game/devHandle.ts registerDevGameAdapter)');
     await waitForScreen(page, 'menu');
@@ -30,6 +42,7 @@ const steps = [
     const initial = await state(page);
     const gesture = await page.evaluate(() => window.aw.gesture('route'));
     await dragGesture(page, gesture);
+    await applyQueued(page);
     await page.waitForFunction((previous) => window.aw.state().routeCount === previous + 1,
       initial.routeCount, { timeout: 8000 })
       .catch(() => { throw new Error(`routeCount stayed ${initial.routeCount} after drag ${JSON.stringify(gesture)}`); });
@@ -38,6 +51,7 @@ const steps = [
     const initial = await state(page);
     const gesture = await page.evaluate(() => window.aw.gesture('plane'));
     await dragGesture(page, gesture);
+    await applyQueued(page);
     await page.waitForFunction((previous) => window.aw.state().aircraftAssignments === previous + 1,
       initial.aircraftAssignments, { timeout: 8000 })
       .catch(() => { throw new Error(`aircraftAssignments stayed ${initial.aircraftAssignments}`); });
@@ -98,7 +112,7 @@ try {
     let page;
     let errors = [];
     try {
-      ({ page, errors } = await newGamePage(browser, url, 'pl'));
+      ({ page, errors } = await newGamePage(browser, fixture ? url : gameUrl(url), 'pl'));
     } catch (error) {
       results.push({ label: steps[0][0], status: 'FAIL', why: 'page load: ' + message(error) });
       for (const [label] of steps.slice(1)) results.push({ label, status: 'SKIP', why: `after "${steps[0][0]}"` });
@@ -113,7 +127,7 @@ try {
           if (errors.length) throw new Error(`Browser errors: ${errors.splice(0).join('; ')}`);
           results.push({ label, status: 'PASS' });
         } catch (error) {
-          const shot = await saveDiagnostics(page, 'smoke-' + (results.length + 1));
+          const shot = await saveDiagnostics(page, (render === 'stub' ? 'smoke-stub-' : 'smoke-') + (results.length + 1));
           results.push({ label, status: 'FAIL', why: message(error) + (shot ? ` (screenshot ${shot})` : '') });
           blocked = label;
         }
@@ -134,6 +148,6 @@ try {
   const failed = results.filter((item) => item.status === 'FAIL').length + (fatal ? 1 : 0);
   const skipped = results.filter((item) => item.status === 'SKIP').length;
   const elapsedMs = Math.round(performance.now() - started);
-  console.log(`SUMMARY test:e2e:smoke seed=0x${SEED.toString(16).toUpperCase()} mode=${fixture ? 'fixture' : 'game'} steps=${steps.length} passed=${passed} failed=${failed} skipped=${skipped} durationMs=${elapsedMs}`);
+  console.log(`SUMMARY test:e2e:smoke seed=0x${SEED.toString(16).toUpperCase()} mode=${fixture ? 'fixture' : 'game'}${render === 'stub' ? ' render=stub' : ''} steps=${steps.length} passed=${passed} failed=${failed} skipped=${skipped} durationMs=${elapsedMs}`);
   if (failed || passed !== steps.length) process.exitCode = 1;
 }
