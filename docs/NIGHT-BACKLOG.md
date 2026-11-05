@@ -769,6 +769,13 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       opted out (no `submitDaily`), a Daily with unchanged results (hash = bare `createGame(seed, 'daily')` + bot).
       Headless seed twin `test:session-stub` in `test:fast`; `test:bundle` checks the stub stays out of `dist/`. No
       wiring bug found.
+- [x] N12bf **G7-blocked browser suites on the stub world** — `--render=stub` / `AW_RENDER=stub` (`e2e/browser.mjs`)
+      opens `?render=stub&clock=frozen` (D-254) in `test:e2e:smoke`, `ui:matrix`, `test:e2e:edge-chip-tags`; new
+      `test:e2e:smoke:stub`, `ui:matrix:stub` (PNGs to ignored `.e2e/matrix-stub/`), `test:e2e:edge-chip-tags:stub`.
+      Defaults stay on the real renderer; `store:shots` has no stub variant (globe pixels only). `ui:matrix:stub` found
+      the week-1 board with the contract waybill scrolling on portrait < 720 px: 673×841 55 px, 360×800 PL 58 px,
+      600×800 90 px, 384×854 PL 5 px (39 px with a missed contract) — fixed in `upgrade.css`, guarded by
+      `test:e2e:weekly-contract` (+3 sizes). Numbers in `docs/TESTING.md` "E2E contract".
 
 ## Globe look (D-170)
 Owner's choice 2026-11-03: the satellite globe (direction B). Plan, budgets and test lists per step:
