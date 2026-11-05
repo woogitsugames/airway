@@ -7,6 +7,8 @@ import type { TimelineWeek } from '../../game/runTimeline';
 import { gameOverTip, unservedHint, type GameOverTip, type TipKind } from '../../game/gameoverTip';
 import './gameover.css';
 import { reducedMotion } from '../motion'; // [night-11g] D-88
+import { gameOverMilestones } from '../milestones'; // [night-12ax] R1n
+import type { MilestoneId } from '../../game/milestones';
 
 export type { WorldIdentity } from './seed';
 export type { GameOverBest, BestStorage } from './storage';
@@ -37,6 +39,8 @@ export interface GameOverSnapshot extends WorldIdentity {
   readonly spareAircraft?: number;
   /** [night-11aj] R2g: the Endless home region the run started in (absent: Random or Daily). */
   readonly homeRegion?: RegionCode;
+  /** [night-12ax] R1n, D-242: Endless only — milestones reached in this run, and those reached for the first time. */
+  readonly milestones?: { readonly reached: readonly MilestoneId[]; readonly first: readonly MilestoneId[] };
 }
 
 /** [night-10r] Weeks of the run plus the day of the jam; hub ids in picks are already display labels. */
@@ -151,6 +155,34 @@ function entropySeed(): number {
   } catch {
     return Number.NaN;
   }
+}
+
+/**
+ * [night-12ax] R1n: one short ruled row on the paper strip. A reached milestone has a filled square, an open one a
+ * hollow square (shape, not only colour); one reached for the first time carries a small stamp that fades in once
+ * (no motion under "Reduce motion").
+ */
+function milestoneRow(reached: readonly MilestoneId[], first: readonly MilestoneId[]): HTMLElement {
+  const row = gameOverMilestones(reached, first);
+  const box = element('section', 'airway-go-milestones');
+  box.dataset.testid = 'gameover-milestones';
+  const title = element('h3', 'airway-go-milestones-title', row.title);
+  title.id = 'airway-go-milestones-title';
+  box.setAttribute('aria-labelledby', title.id);
+  const list = element('ul', 'airway-go-milestones-list');
+  for (const item of row.items) {
+    const li = element('li', 'airway-go-milestone');
+    li.dataset.milestone = item.id;
+    li.dataset.reached = String(item.reached);
+    if (item.first) li.dataset.first = 'true';
+    li.setAttribute('aria-label', item.label);
+    li.append(element('span', 'airway-go-milestone-mark'), element('span', 'airway-go-milestone-text', item.text));
+    if (item.first) li.append(element('span', 'airway-go-milestone-first', t('gameover.milestones.first')));
+    for (const child of li.children) child.setAttribute('aria-hidden', 'true');
+    list.append(li);
+  }
+  box.append(title, list);
+  return box;
 }
 
 /** [night-10e] Share button on the paper strip; a dismissed native sheet says nothing, never copies. */
@@ -360,6 +392,7 @@ function buildDialog(
     scoreRow.append(home);
   }
   strip.append(stripHeader, scoreRow);
+  if (snapshot.milestones) strip.append(milestoneRow(snapshot.milestones.reached, snapshot.milestones.first));
   if (snapshot.share) strip.append(shareRow(snapshot.share));
   if (snapshot.timeline) strip.append(...reportTabs(causesPanel, snapshot.timeline, snapshot.hubCode));
   else strip.append(causesTitle, causesPanel);
