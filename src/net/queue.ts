@@ -11,9 +11,20 @@ const BACKOFF_MS = [0, 30_000, 120_000, 600_000, 3_600_000];
 
 export type SendResult = 'accepted' | 'rejected' | 'retry';
 
+/** One queued run: the same day, seed and journal length is the same run (a newer run of the day replaces it). */
+function runKey(item: QueuedRun): string {
+  const submission = item.submission;
+  return `${submission.dateKey}|${submission.seed}|${submission.endTick}|${submission.claimedScore}|${(submission.journal ?? []).length}`;
+}
+
 export class SubmissionQueue {
   /** In-memory copy for when storage is missing or blocked: the run still goes out in this session. */
   private memory: QueuedRun[] = [];
+  /**
+   * [night-11ak] R7l: bumped by `clear()`. A flush that sees it change stops sending and writes nothing back, so an
+   * objection or a deletion made while a request is in flight drops the waiting runs for good (D-186, D-237).
+   */
+  private generation = 0;
 
   constructor(private readonly storage: QueueStorage | null, private readonly now: () => number = () => Date.now()) {}
 
@@ -32,7 +43,7 @@ export class SubmissionQueue {
   }
 
   /** [night-12k] D-114: drop every queued run (the player deleted their leaderboard data). */
-  clear(): void { this.write([]); }
+  clear(): void { this.generation++; this.write([]); }
 
   /** Newest run for a day replaces an older one; the oldest days drop out beyond MAX_QUEUED. */
   add(submission: DailySubmission): void {
@@ -42,17 +53,30 @@ export class SubmissionQueue {
     this.write(items.slice(-MAX_QUEUED));
   }
 
-  /** Try every due entry once; accepted and rejected entries leave the queue, others back off. */
+  /**
+   * Try every due entry once; accepted and rejected entries leave the queue, others back off.
+   * [night-11ak] The write-back merges with the queue as it is then: a run added while a request was in flight is
+   * kept (it used to be overwritten), and after a `clear()` during the flush nothing more is sent or written.
+   */
   async flush(send: (submission: DailySubmission) => Promise<SendResult>): Promise<{ sent: number; left: number }> {
+    const generation = this.generation;
     let sent = 0;
-    const remaining: QueuedRun[] = [];
+    const outcome = new Map<string, QueuedRun | null>();
     for (const item of this.list()) {
-      if (item.nextAttemptAt > this.now()) { remaining.push(item); continue; }
+      if (this.generation !== generation) return { sent, left: 0 };
+      if (item.nextAttemptAt > this.now()) continue;
       const result = await send(item.submission).catch((): SendResult => 'retry');
       if (result === 'retry') {
         const attempts = item.attempts + 1;
-        remaining.push({ ...item, attempts, nextAttemptAt: this.now() + BACKOFF_MS[Math.min(attempts, BACKOFF_MS.length - 1)] });
-      } else sent++;
+        outcome.set(runKey(item), { ...item, attempts, nextAttemptAt: this.now() + BACKOFF_MS[Math.min(attempts, BACKOFF_MS.length - 1)] });
+      } else { sent++; outcome.set(runKey(item), null); }
+    }
+    if (this.generation !== generation) return { sent, left: 0 };
+    const remaining: QueuedRun[] = [];
+    for (const item of this.list()) {
+      const key = runKey(item);
+      if (!outcome.has(key)) remaining.push(item);
+      else if (outcome.get(key)) remaining.push(outcome.get(key)!);
     }
     this.write(remaining);
     return { sent, left: remaining.length };

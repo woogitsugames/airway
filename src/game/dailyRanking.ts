@@ -16,7 +16,9 @@ export function dailyRankingBoard(leaderboards: Leaderboards, run: EndlessRun,
   void (async () => {
     const status = await leaderboards.submitDaily(submission);
     if (status === 'queued' || status === 'rejected' || status === 'opted-out') { view.update({ kind: status }); return; }
+    // [night-11ak] R7l: switched off while the boards were loading: say "not ranked", not "queued".
     const boards = await leaderboards.boards(daily.dateKey);
+    if (!leaderboards.isSharing()) { view.update({ kind: 'opted-out' }); return; }
     const state: RankingState = boards ? { kind: 'ready', daily: boards.daily, weekly: boards.weekly } : { kind: 'queued' };
     view.update(state);
   })();
