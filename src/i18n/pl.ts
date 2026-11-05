@@ -503,6 +503,8 @@ export const pl = {
   'settings.keys.back': 'Wstecz; w grze pauza',
   'settings.keys.wheel': 'Kółko myszy: przybliż lub oddal glob',
   'settings.keys.drag': 'Przeciągnij: obróć glob; z lotniska: wyznacz trasę',
+  // [night-11aw] R4b, D-27: clocks are solar time (Settings → Help).
+  'settings.solarTime': 'Zegary lotnisk pokazują czas słoneczny (godzina na każde 15° długości geograficznej), a nie urzędowe strefy czasowe ani czas letni, więc zgadzają się z granicą dnia i nocy na globie.',
   'firstTime.ok': 'OK',
   'firstTime.okAria': 'Rozumiem, ukryj wskazówkę',
   'firstTime.step.hubFull': 'ATC / HUB',
