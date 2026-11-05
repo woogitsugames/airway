@@ -27,7 +27,7 @@ for (const key of keys) {
 check('Exact catalog parity', () => keys.every(k => Object.hasOwn(translations.pl, k)) && Object.keys(translations.pl).every(k => Object.hasOwn(translations.en, k)));
 for (const page of pages) {
   const html = readFileSync(join(root, page), 'utf8');
-  for (const match of html.matchAll(/data-i18n(?:-alt|-aria)?="([^"]+)"/g)) keyMatches.add(match[1]);
+  for (const match of html.matchAll(/data-i18n(?:-alt|-aria|-paragraphs)?="([^"]+)"/g)) keyMatches.add(match[1]);
   check(`${page}: document language`, () => /<html lang="pl">/.test(html));
   check(`${page}: viewport safe area`, () => /viewport-fit=cover/.test(html));
   check(`${page}: stylesheet`, () => /href="\/?styles\.css"/.test(html));
@@ -220,6 +220,17 @@ try {
 } finally {
   rmSync(kitDir, { recursive: true, force: true });
 }
+// [night-11am] R7a, D-243: privacy policy v1 — every section body as paragraphs/lists, draft banner kept; a release
+// build of the site refuses the bracketed owner placeholders ("[Q-01 …]", "[to be filled in …]").
+const privacyPage = readFileSync(join(root, 'privacy.html'), 'utf8');
+const policySections = [...privacyPage.matchAll(/data-i18n="privacy\.s(\d+)\.title"/g)].map(m => Number(m[1]));
+check('privacy: 14 sections s1…s14 in order', () => policySections.join() === Array.from({ length: 14 }, (_, i) => i + 1).join());
+check('privacy: every section body is data-i18n-paragraphs', () => policySections.every(n => privacyPage.includes(`data-i18n-paragraphs="privacy.s${n}.body"`)));
+check('privacy: draft banner on the page', () => privacyPage.includes('data-i18n="privacy.warning"') &&
+  /do weryfikacji z prawnikiem/i.test(translations.pl['privacy.warning']) && /verified with a lawyer/i.test(translations.en['privacy.warning']));
+const privacyGaps = ['pl', 'en'].flatMap(l => Object.entries(translations[l]).filter(([k, v]) => k.startsWith('privacy.') && /\[[^\]]+\]/.test(v)).map(([k]) => `${l}:${k}`));
+if (process.env.AIRWAY_RELEASE === '1') check('release: privacy policy has no bracketed placeholders', () => privacyGaps.length === 0);
+else if (privacyGaps.length) console.log(`note: ${privacyGaps.length} privacy texts with [placeholders]; AIRWAY_RELEASE=1 test:site fails until they are filled`);
 // [night-11al] R7c, D-241: one publisher block (publisher.*), on the policy page and linked from every footer.
 const publisherTarget = { 'index.html': 'privacy.html#publisher', 'press.html': 'privacy.html#publisher', 'privacy.html': '#publisher', '404.html': '/privacy.html#publisher' };
 for (const page of pages) {

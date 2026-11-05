@@ -79,6 +79,7 @@
 .airway-privacy__section { padding:8px 0 4px; border-bottom:1px dashed #c2b5a6; }
 .airway-privacy__section h2 { margin:0 0 4px; font:800 16px/1.25 'Overpass',sans-serif; }
 .airway-privacy__section p { margin:0 0 6px; overflow-wrap:anywhere; }
+.airway-privacy__section ul { margin:0 0 6px; padding-left:20px; } .airway-privacy__section li { margin:0 0 4px; overflow-wrap:anywhere; } /* [night-11am] R7a */
 /* [night-11h] D-118: no-WebGL-2 page (src/ui/unsupported.ts). */
 .airway-unsupported { position:fixed; inset:0; }
 .airway-unsupported__title { margin:0 0 10px !important; overflow-wrap:anywhere; }

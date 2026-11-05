@@ -117,7 +117,7 @@ do kodu (NIEPEWNE). Każdy wiersz sprawdzić ponownie **przed premierą w USA**.
 
 | Punkt | Kto | Stan | Odniesienia |
 |---|---|---|---|
-| Polityka prywatności v1 (strona + gra, sekcja rankingów, IP w logach Auth, 180 dni kopii, DPF, UODO) | właściciel + agent | backlog R7a; czeka na Q-01 | Q-01, Q-56, D-86, D-135 |
+| Polityka prywatności v1 (strona + gra, sekcja rankingów, IP w logach Auth, 180 dni kopii, DPF, UODO) | właściciel + agent | projekt v1 gotowy (R7a, D-243; 14 sekcji, baner „do weryfikacji z prawnikiem”, `test:privacy-policy` porównuje z tym rejestrem); czeka na Q-01 i prawnika | Q-01, Q-56, D-86, D-135, D-243 |
 | Regulamin PL/EN + EULA Apple | właściciel + agent | backlog R7b | D-134, Q-65 |
 | Dane wydawcy w grze i na stronie | właściciel + agent | blok `publisher.*` gotowy (R7c, D-241): stopka i `privacy.html#publisher`, Ustawienia → Pomoc, tabela w `docs/store/README.md`; pola z Q-01 to znaczniki „[Q-01 …]”, których build wydania nie przepuści | D-241, D-134, Q-66, Q-01 |
 | Przełącznik „Wysyłaj wyniki do rankingu” (sprzeciw, art. 21) | agent | warstwa sieci gotowa (D-186), przełącznik w ustawieniach — backlog R7l | D-135, D-186 |
