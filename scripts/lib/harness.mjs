@@ -80,11 +80,22 @@ export function loadChromium() {
   }
 }
 
-export async function launchChromium() {
+/**
+ * [night-12bj] For pages that draw no WebGL (the DEV stub world `?render=stub`, D-254): composite and rasterise the
+ * page in software instead of through SwiftShader GL. With GPU compositing every frame of the DOM layers is rastered
+ * on emulated GL; at DPR 2 (904x1088@2 = 1808x2176 px) one frame of the weekly board took ~0.3 s (3.5 rAF/s) and one
+ * `page.screenshot` 18-28 s, so the ui:matrix screenshots hit Playwright's 30 s limit on a loaded host. In software
+ * the same page runs at ~60 rAF/s and a screenshot takes ~0.4 s. WebGL itself stays available (still SwiftShader);
+ * the real renderer keeps CHROMIUM_ARGS unchanged.
+ */
+export const SOFTWARE_COMPOSITING_ARGS = ['--disable-gpu-compositing'];
+
+/** `options.softwareCompositing`: add SOFTWARE_COMPOSITING_ARGS (stub-world suites only). */
+export async function launchChromium(options = {}) {
   return await loadChromium().launch({
     headless: true,
     ...(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {}),
-    args: CHROMIUM_ARGS,
+    args: options.softwareCompositing ? [...CHROMIUM_ARGS, ...SOFTWARE_COMPOSITING_ARGS] : CHROMIUM_ARGS,
   });
 }
 
