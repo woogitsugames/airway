@@ -34,12 +34,12 @@ import type { LicenceClass } from './licence.ts';
  */
 export function createGame(seed: number, mode: GameConfig['mode'] = 'endless', puzzleId?: string,
     homeRegion: GameConfig['homeRegion'] | null = null, weeklyContract = false, demandSurge = false,
-    licenceClass: LicenceClass = 1, weatherFront = false): Sim {
+    licenceClass: LicenceClass = 1, weatherFront = false, eusClusterV2 = true): Sim {
   if (mode === 'puzzle') return new Sim(seed >>> 0, { mode, puzzleId: puzzleId ?? '' });
   if (mode !== 'endless') return new Sim(seed >>> 0, { mode });
   // [night-12ba] R2k: the weekly contract (D-247) is Endless only; the game layer turns it on for new runs.
   // [night-12bb] R2i: so is the demand surge (D-249). [night-12bc] R2h: and a licence class above I (D-251).
   return new Sim(seed >>> 0, { mode, ...(homeRegion ? { homeRegion } : {}), ...(weeklyContract ? { weeklyContract: true } : {}),
     ...(demandSurge ? { demandSurge: true } : {}), ...(licenceClass === 1 ? {} : { licenceClass }),
-    ...(weatherFront ? { weatherFront: true } : {}) });
+    ...(weatherFront ? { weatherFront: true } : {}), ...(homeRegion === 'EUS' && eusClusterV2 ? { eusClusterV2: true } : {}) });
 }

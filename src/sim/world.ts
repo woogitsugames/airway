@@ -75,6 +75,7 @@ export interface Scenario {
   readonly capacityByCity: Readonly<Record<string, number>>;
   /** [night-11aj] R2g: Endless start cluster anchored in this region; absent/null = any region (seeded). */
   readonly homeRegionId?: RegionId | null;
+  readonly eusClusterV2?: boolean;
   /** [night-12ba] R2k, D-247: weekly contract on the board (Endless with `GameConfig.weeklyContract` only). */
   readonly weeklyContract?: boolean;
   /** [night-12bb] R2i, D-249: announced demand surge from week 3 (Endless with `GameConfig.demandSurge` only). */
@@ -334,7 +335,7 @@ export class World implements WorldView {
       this.spawner = null;
       startIds = [...scenario.startCityIds];
     } else {
-      this.spawner = createCitySpawner(streams.cities, scenario.homeRegionId ?? null);
+      this.spawner = createCitySpawner(streams.cities, scenario.homeRegionId ?? null, scenario.eusClusterV2 === true);
       startIds = this.spawner.activeCityIndices.map((index) => CITIES[index].code);
     }
     this.passengers = new PassengerSimulation(DEMAND_CITIES, (a, b) => {

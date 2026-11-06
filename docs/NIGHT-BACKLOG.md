@@ -808,7 +808,7 @@ legal-register notes (D-276…D-278). Left for separate items (each a branch fro
 - [ ] **Weather front ground hold (D-274)** — under the band, departures wait for a short hold instead of (or on top
       of) "−1 slot"; behind the existing flag, `ENDLESS_WEATHER_FRONT` stays `false`; bot report before/after,
       replay/hash guards; Daily never. Ships as a post-launch update (D-131).
-- [ ] **EUS start cluster at the next balance review (D-275)** — bring the bot's EUS median (18.49 min) into
+- [x] **EUS start cluster at the next balance review (D-275, D-282)** — bring the bot's EUS median (18.49 min) into
       10–18 (D-79) by adjusting the EUS start cluster only; `docs/balance/regions-summary.md`.
 - [ ] **After the closed test (D-270, D-271, D-272, D-273)** — re-check milestone thresholds on human runs, contract
       difficulty and reward, surge size and notice, licence class II strength; per-class leaderboards only after launch.

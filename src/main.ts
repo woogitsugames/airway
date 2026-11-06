@@ -311,7 +311,8 @@ async function boot(): Promise<void> {
         // [night-12bc] R2h: likewise "same world" keeps the run's licence class.
         // [night-12bd] R2j: and its weather front.
         if (mode !== 'daily') startEndless(seed, seed === run.seed ? run.homeRegion : preferredHomeRegion(),
-          seed === run.seed ? run.licenceClass : preferredLicence(), seed === run.seed ? run.weatherFront : devWeatherFront);
+          seed === run.seed ? run.licenceClass : preferredLicence(), seed === run.seed ? run.weatherFront : devWeatherFront,
+          seed === run.seed ? run.sim.config.eusClusterV2 === true : true);
         else if (seed === dailySeedForKey(dailyKey())) startDaily();
         else if (seed === failedDailySeed) screens.show('menu');
         else startEndless(seed);
@@ -383,17 +384,17 @@ async function boot(): Promise<void> {
   }
 
   function startEndless(seed: number, homeRegion: RegionId | null = preferredHomeRegion(),
-      licence: LicenceClass = preferredLicence(), weather = devWeatherFront): void {
+      licence: LicenceClass = preferredLicence(), weather = devWeatherFront, eusClusterV2 = true): void {
     pendingSeed = null;
     const firstRun = (() => {
       try { return !globalThis.localStorage?.getItem(TUTORIAL_KEY); } catch { return false; }
     })();
     if (skipTutorialOnce || !firstRun) {
       skipTutorialOnce = false;
-      openGame(EndlessRun.create(seed, 'endless', homeRegion, licence, weather), 'endless');
+      openGame(EndlessRun.create(seed, 'endless', homeRegion, licence, weather, eusClusterV2), 'endless');
       return;
     }
-    openTutorial(() => openGame(EndlessRun.create(seed, 'endless', homeRegion, licence, weather), 'endless'));
+    openTutorial(() => openGame(EndlessRun.create(seed, 'endless', homeRegion, licence, weather, eusClusterV2), 'endless'));
   }
 
   function startDaily(): void {
