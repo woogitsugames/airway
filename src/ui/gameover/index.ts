@@ -44,6 +44,7 @@ export interface GameOverSnapshot extends WorldIdentity {
   /** [night-12bc] R2h, D-251: the Endless run's licence class above I (absent: class I or Daily). */
   readonly licenceClass?: 2 | 3;
   /** [night-12ax] R1n, D-242: Endless only — milestones reached in this run, and those reached for the first time. */
+  readonly contracts?: { readonly met: number; readonly offered: number; readonly marks: readonly boolean[] };
   readonly milestones?: { readonly reached: readonly MilestoneId[]; readonly first: readonly MilestoneId[] };
 }
 
@@ -187,6 +188,25 @@ function milestoneRow(reached: readonly MilestoneId[], first: readonly Milestone
   }
   box.append(title, list);
   return box;
+}
+
+function contractsRow(contracts: NonNullable<GameOverSnapshot['contracts']>): HTMLElement {
+  const text = t('gameover.contracts', { met: contracts.met, offered: contracts.offered });
+  const row = element('section', 'airway-go-milestones airway-go-contracts');
+  row.dataset.testid = 'gameover-contracts';
+  row.setAttribute('aria-label', text);
+  row.append(element('span', 'airway-go-milestones-title', text));
+  const marks = element('span', 'airway-go-milestones-list');
+  marks.setAttribute('aria-hidden', 'true');
+  for (const met of contracts.marks) {
+    const mark = element('span', 'airway-go-milestone');
+    mark.dataset.met = String(met);
+    mark.dataset.reached = String(met);
+    mark.append(element('span', 'airway-go-milestone-mark'));
+    marks.append(mark);
+  }
+  row.append(marks);
+  return row;
 }
 
 /** [night-10e] Share button on the paper strip; a dismissed native sheet says nothing, never copies. */
@@ -403,6 +423,7 @@ function buildDialog(
   }
   strip.append(stripHeader, scoreRow);
   if (snapshot.milestones) strip.append(milestoneRow(snapshot.milestones.reached, snapshot.milestones.first));
+  if (snapshot.contracts?.offered) strip.append(contractsRow(snapshot.contracts));
   if (snapshot.share) strip.append(shareRow(snapshot.share));
   if (snapshot.timeline) strip.append(...reportTabs(causesPanel, snapshot.timeline, snapshot.hubCode));
   else strip.append(causesTitle, causesPanel);

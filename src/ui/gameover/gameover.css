@@ -445,7 +445,7 @@
 }
 @media (max-height: 600px) and (max-width: 619px) {
   .airway-go-milestones { margin-top: 3px; padding-top: 2px; }
-  .airway-go-milestones-title { line-height: 1.1; }
+  .airway-go-causes li { padding: 0; line-height: 1.1; }
 }
 /* [night-20a] D-267: at the 130/150 % text steps the report may be taller than the screen; it then scrolls under the
    boarding pass and its three actions stay pinned to the bottom edge on an ink band, so a run can always be restarted
@@ -456,3 +456,6 @@
   /* The band also covers the overlay's bottom padding (sticky stops at its content edge), so nothing scrolls under it. */
   box-shadow: 0 calc(var(--aw-safe-bottom) + 12px) 0 var(--skin-go-board-bg);
 }
+
+@media (max-height:700px) and (max-width:619px) { :has(.airway-go-contracts) .airway-go-flight-list { max-height:68px } }
+@media (max-height:600px) and (max-width:619px) { :has(.airway-go-contracts) .airway-go-flight-list { max-height:30px } }

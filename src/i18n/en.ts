@@ -619,6 +619,7 @@ export const en = {
   'milestone.week-4': 'Week {week}',
   'milestone.passengers-500': '{count} passengers',
   'milestone.passengers-750': '{count} passengers',
+  'gameover.contracts': 'Contracts: {met} of {offered}',
   'gameover.milestones.title': 'Milestones {reached}/{total}',
   'gameover.milestones.first': 'First time',
   'gameover.milestones.reachedLabel': '{milestone}: reached',
