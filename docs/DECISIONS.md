@@ -2892,3 +2892,16 @@ if it must (that name steps back for the frame), never over a ring of ticks or a
 in by rings may it still hide. When the mark goes the airport ranks as before. `src/ui/skin/roza.ts`
 (`roseRank`, `roseNoteMust`, `rozaCompactWidth`), `src/ui/overlay.ts`, `src/ui/overlay-layout.ts`; headless fixtures
 in `test:roza-names` and `test:overlay-layout`. **Status: in force.**
+
+## D-282 — Róża rejected as still AI slop in all four layers; new art direction from research, three directions proposed (owner, 2026-11-06)
+Owner, on the shipped look (store shots `docs/store/shots/pl/{game,menu,failure,upgrade,night}-phone.png`), for the
+third time: still "AI slop", in all four layers — the satellite globe (photographic Blue Marble, D-170) reads as
+stock; the Róża ornaments (compass rose in the menu, the day-dial clock, thin leader lines, rings around airports,
+D-257); typography and panels (serif with a drop shadow on the photo, dark sheets with dashed rules, boxed buttons);
+airports (pixelated medallions with runway and building, D-178) and plane icons. Instruction: "ty zaproponuj od zera,
+zrób research na Steam i w internecie jak gry wyglądają". The store video re-recording is on hold until the new look
+is chosen. Night 27a researched ~35 shipped games and print references (`docs/styles/kierunki-2026-11b/RESEARCH.md`)
+and proposes three complete systems in which world and UI share one rendering technique
+(`docs/styles/kierunki-2026-11b/KIERUNKI.md`, frames in `docs/styles/kierunki-2026-11b/png/`): **A "Linoryt"**
+(relief print in three inks; recommended), **B "Gwasz"** (flat gouache poster), **C "Makieta"** (physical model on
+a table). Nothing in `src/**` changes until the owner chooses. **Status: open — owner to choose A, B or C.**

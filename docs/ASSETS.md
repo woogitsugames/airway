@@ -163,6 +163,24 @@ experiment table above (`python3 -I dev/globe-look/bake.py <downloads> satellite
 | `clouds-2048.png` | procedural (bake.py) | Own work (CC0) |
 | `map-4096.jpg`, `map-2048.jpg` (G8, D-172) | Mapa mode: Blue Marble NG July classified into an own palette, ETOPO5 hillshade, Natural Earth admin-0 borders (`dev/globe-look/bake.py map`) | Public domain sources; own processing (CC0) |
 
+## Art-direction mockups 2026-11b (night 27a, D-282; not shipped)
+`docs/styles/kierunki-2026-11b/fonts/` holds four SIL OFL 1.1 variable fonts, fetched 2026-11-06 straight from
+github.com/google/fonts (`ofl/<dir>/<Family>[axes].ttf`), each with its licence `OFL-<dir>.txt` next to it. Polish
+glyphs (ą ć ę ł ń ó ś ź ż and capitals) checked with fontTools: all present. Used only by the mockups in
+`docs/styles/kierunki-2026-11b/src/`; nothing reaches `public/`, `dist/` or the apps.
+
+| Family | Axes | Used in | Licence file |
+|---|---|---|---|
+| Besley | wght 400–900 | A "Linoryt" headings, clock, names | `OFL-besley.txt` |
+| Schibsted Grotesk | wght 400–900 | A "Linoryt" text; C "Makieta" text; contact sheet | `OFL-schibstedgrotesk.txt` |
+| Anybody | wdth 50–150, wght 100–900 | B "Gwasz" all text | `OFL-anybody.txt` |
+| Big Shoulders Stencil Display | wght 100–900 | C "Makieta" clock, numbers, title | `OFL-bigshouldersstencildisplay.txt` |
+
+The globe in every frame is drawn by our own code (`src/globe.js`) from Natural Earth land via `world-atlas`
+(public domain / ISC) and the game's own ETOPO5 elevation raster (`public/data/globe/elevation-2048.png`, see
+"Production globe textures"); no photo texture is used. Icons, glyph layouts and all PNGs: own work (CC0). Games and
+print references in `RESEARCH.md` are links only; no third-party image is committed.
+
 ## Reference material — real aeronautical charts (task 12bl, not shipped)
 `docs/references/charts/` holds 16 JPEG crops (each < 1 MB, ≈ 3.5 MB total) and a contact sheet `plansza.png` used
 only to choose the UI direction (KARTA). Nothing there is imported by the app, the site or the store builds. All
