@@ -66,7 +66,8 @@ function prepare(path) {
       const start = node.getStart(ast), end = node.end, bodyStart = node.body.getStart(ast), bodyEnd = node.body.end;
       const candidates = points.filter((p) => {
         const original = originalStarts[p.line] + p.column;
-        return original > bodyStart && original < bodyEnd;
+        // A concise arrow body can have only a mapping at its first character.
+        return original >= bodyStart && original < bodyEnd;
       });
       if (candidates.length) functions.push({ start, end, points: candidates, hit: false });
     }

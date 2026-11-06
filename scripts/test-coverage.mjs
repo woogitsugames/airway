@@ -43,6 +43,29 @@ try {
   const native = spawnSync(process.execPath, ['--experimental-strip-types', file], { env: { ...process.env, NODE_V8_COVERAGE: nativeRaw }, encoding: 'utf8' });
   check('native type stripping runs', () => assert.equal(native.status, 0, native.stderr));
   check('native type stripping maps executed function', () => { const row = analyse(root, nativeRaw).find((r) => r.path.endsWith('/sample.ts')); assert.equal(row.coveredFunctions, 1); assert.ok(row.coveredLines > 0 && row.coveredLines < row.lines); });
+  const empty = join(src, 'empty-arrows.ts');
+  writeFileSync(empty, 'export const uncalled = () => {}; export const called = () => {}; called();\n');
+  const emptyRaw = join(root, 'empty'); mkdirSync(emptyRaw);
+  const emptyRun = spawnSync(process.execPath, ['--import', pathToFileURL(resolve('scripts/ts-test-loader.mjs')).href, empty], { env: { ...process.env, NODE_V8_COVERAGE: emptyRaw }, encoding: 'utf8' });
+  check('empty arrow fixture runs', () => assert.equal(emptyRun.status, 0, emptyRun.stderr));
+  check('empty arrow functions are counted', () => {
+    const row = analyse(root, emptyRaw).find((r) => r.path.endsWith('/empty-arrows.ts'));
+    assert.equal(row.functions, 2); assert.equal(row.coveredFunctions, 1);
+  });
+  const arrows = join(src, 'arrows.ts');
+  writeFileSync(arrows, 'export const uncalled = () => 42; export const called = () => 1; called();\n');
+  for (const [mode, args] of [
+    ['loader', ['--import', pathToFileURL(resolve('scripts/ts-test-loader.mjs')).href, arrows]],
+    ['native', ['--experimental-strip-types', arrows]],
+  ]) {
+    const directory = join(root, 'arrows-' + mode); mkdirSync(directory);
+    const run = spawnSync(process.execPath, args, { env: { ...process.env, NODE_V8_COVERAGE: directory }, encoding: 'utf8' });
+    check(`arrow fixture ${mode} runs`, () => assert.equal(run.status, 0, run.stderr));
+    check(`arrow fixture ${mode} counts both functions`, () => {
+      const row = analyse(root, directory).find((r) => r.path.endsWith('/arrows.ts'));
+      assert.equal(row.functions, 2); assert.equal(row.coveredFunctions, 1);
+    });
+  }
 } finally {
   if (dirname(resolve(root)) !== resolve(tmpdir())) throw new Error('Unexpected coverage fixture path');
   rmSync(root, { recursive: true, force: true });
