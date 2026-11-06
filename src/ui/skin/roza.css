@@ -247,6 +247,12 @@
   :root[data-skin="roza"] .airway-pause h2 { margin-bottom: 0; }
   :root[data-skin="roza"] .airway-pause__summary { display: none; }
 }
+/* [night-20a] D-267: at 130/150 % text the summary pushed the actions below a short landscape screen (915×412: 32 px
+   at 150 %), so there it gives way too. */
+@media (orientation: landscape) and (max-height: 599px) {
+  :root[data-skin="roza"][data-airway-text-scale="130"] .airway-pause__summary,
+  :root[data-skin="roza"][data-airway-text-scale="150"] .airway-pause__summary { display: none; }
+}
 
 /* [night-14b] D-259: while the weekly crates are on screen (not during the airport pick, which has no crates), the map's
    roses, notes and edge flags would show through the gaps between the sheets; they step back until the board closes. */

@@ -3,12 +3,18 @@
 // first-time card) at 320x568, 412x915 and 915x412 with the same layout audit as e2e/pseudo-320.mjs, plus: the root carries
 // the step and the screen's reading text really grew (a probe element's computed size = step x its base).
 // Shots into .e2e/text-scale-150/ (not committed). The full ui:matrix times out under SwiftShader (G7).
+// [night-20a] D-267 (Róża at large text, reviewed on the real renderer with scripts/shots-n20a.mjs): two more screens,
+// the hub cause board (its sentences now follow the step) and the pause sheet over the HUD (on a short landscape screen
+// its actions stay on screen); on the game-over report every action stays on screen and no part of the report lies
+// above where its scroll can reach.
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { withBrowser, saveDiagnostics, ARTIFACTS } from './browser.mjs';
 import { presetLanguage } from '../scripts/lib/harness.mjs';
-import { SCREENS, auditScreen, mountScreen } from './screen-fixtures.mjs'; // [night-11ap] shared with text-scale-150
+import { SCREENS as SHARED_SCREENS, auditScreen, mountScreen } from './screen-fixtures.mjs'; // [night-11ap] shared with text-scale-150
+
+const SCREENS = [...SHARED_SCREENS, 'hub-board', 'pause'];
 
 const started = performance.now();
 const SHOTS = resolve(ARTIFACTS, 'text-scale-150');
@@ -17,8 +23,87 @@ const SCALES = process.env.AW_TEXT_SCALE ? [Number(process.env.AW_TEXT_SCALE)] :
 /** One reading-text element per screen and its size at 100 %; the HUD and first-time card keep in-world sizes. */
 const PROBES = {
   menu: null, settings: ['.airway-setting', 14], logbook: ['.airway-logbook__records dt', 13], puzzles: null, upgrade: null,
-  gameover: null, hud: null, 'first-time': null,
+  gameover: null, hud: null, 'first-time': null, 'hub-board': ['.airway-hub-board__text', 13], pause: ['.airway-pause__button', 16],
 };
+
+/** [night-20a] The hub cause board and the pause sheet as the session builds them, over the real HUD. */
+async function mountGameSheet(page, screen, language, textScale) {
+  await page.evaluate(async ({ screen, language, textScale }) => {
+    const { setLanguage, t } = await import('/src/i18n/index.ts');
+    setLanguage(language);
+    const { applyAccessibilitySettings } = await import('/src/ui/a11y.ts');
+    applyAccessibilitySettings({ textScale, enhancedGlyphs: false, hapticsEnabled: true });
+    await import('/src/ui/game.css');
+    const host = document.getElementById('app');
+    const layer = document.createElement('div');
+    layer.className = 'airway-game-layer';
+    host.append(layer);
+    const { mountHud } = await import('/src/ui/hud/index.ts');
+    const hudHost = document.createElement('div');
+    layer.append(hudHost);
+    mountHud(hudHost, {}).render({ week: 3, day: 2, timeMinutes: 1026, passengers: 342, paused: screen === 'pause', speed: 1, canUndo: true,
+      selectedPlane: 'turboprop', stock: { turboprop: 1, widebody: 1, hub: 1 }, minutesToBoard: 1500 });
+    if (screen === 'pause') {
+      const sheet = document.createElement('section');
+      sheet.className = 'airway-pause';
+      const title = document.createElement('h2');
+      title.textContent = t('pause.title');
+      const list = document.createElement('dl');
+      list.className = 'airway-pause__summary';
+      for (const [k, v] of [['pause.summary.network', t('pause.summary.networkValue', { routes: 4, aircraft: 6 })],
+        ['pause.summary.hub', t('pause.summary.hubValue', { hub: 'AMM', waiting: 31, capacity: 36 })],
+        ['pause.summary.board', t('pause.summary.inDays', { days: 1, hours: 8 })]]) {
+        const dt = document.createElement('dt'); dt.textContent = t(k);
+        const dd = document.createElement('dd'); dd.textContent = v;
+        list.append(dt, dd);
+      }
+      const button = (cls, text) => { const b = document.createElement('button'); b.type = 'button'; b.className = cls; b.textContent = text; return b; };
+      const row = document.createElement('div');
+      row.className = 'airway-pause__row';
+      row.append(button('airway-pause__button', t('action.save')), button('airway-pause__button', t('action.menu')));
+      const status = document.createElement('p');
+      status.className = 'airway-pause__status';
+      sheet.append(title, list, button('airway-pause__button airway-pause__button--primary', t('action.resume')), row, status);
+      layer.append(sheet);
+    } else {
+      const { mountHubBoard } = await import('/src/ui/hubBoard.ts');
+      const board = mountHubBoard(layer, { close: () => {} });
+      board.show({ cityId: 'AMM', code: 'AMM', waiting: 31, capacity: 36, jammed: false, rows: [
+        { region: 'ME', waiting: 12, cause: 'no-route', minutes: 0 }, { region: 'EUS', waiting: 9, cause: 'left-full', minutes: 40 },
+        { region: 'ASI', waiting: 6, cause: 'slot', minutes: 25 }, { region: 'AFR', waiting: 4, cause: 'none', minutes: 0 }] });
+    }
+    await document.fonts.ready;
+    await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
+  }, { screen, language, textScale });
+  await page.waitForTimeout(150);
+}
+
+/** [night-20a] Sheets of the game screen: actions on screen, nothing above the reach of the report's scroll. */
+function sheetAudit(page, screen) {
+  return page.evaluate((screen) => {
+    const problems = [];
+    const onScreen = (el) => { const r = el.getBoundingClientRect(); return r.top >= -0.5 && r.bottom <= innerHeight + 0.5 && r.left >= -0.5 && r.right <= innerWidth + 0.5; };
+    if (screen === 'gameover') {
+      for (const button of document.querySelectorAll('.airway-go-actions button')) if (!onScreen(button)) problems.push(`game-over action "${button.textContent}" off screen`);
+      const overlay = document.querySelector('.airway-go-overlay');
+      const content = document.querySelector('.airway-go-content');
+      if (overlay && content && content.getBoundingClientRect().top < overlay.getBoundingClientRect().top - overlay.scrollTop - 0.5) problems.push('game-over report starts above its scroll');
+      const map = document.querySelector('.airway-go-map');
+      if (map && map.getBoundingClientRect().top < -0.5) problems.push('game-over "Map" above the screen');
+    }
+    if (screen === 'pause') {
+      const sheet = document.querySelector('.airway-pause');
+      if (!sheet || !onScreen(sheet)) problems.push(`pause sheet off screen (${Math.round(sheet?.getBoundingClientRect().bottom ?? 0)} > ${innerHeight})`);
+    }
+    if (screen === 'hub-board') {
+      const board = document.querySelector('.airway-hub-board');
+      if (!board || !onScreen(board)) problems.push('hub board off screen');
+      const close = document.querySelector('.airway-hub-board__close')?.getBoundingClientRect();
+      if (!close || close.width < 47.5 || close.height < 47.5) problems.push('hub board close under 48 px');
+    }
+    return problems;
+  }, screen);
+}
 const results = [];
 
 /**
@@ -67,9 +152,10 @@ try {
       try {
         await presetLanguage(page, language, { clear: true });
         await page.goto(url + '?perf=scene', { waitUntil: 'networkidle' });
-        await mountScreen(page, screen, language, { pseudo: false, textScale: SCALE });
+        if (SHARED_SCREENS.includes(screen)) await mountScreen(page, screen, language, { pseudo: false, textScale: SCALE });
+        else await mountGameSheet(page, screen, language, SCALE);
         const { problems, seen } = await auditScreen(page, { pseudo: false });
-        problems.push(...await largeTextAudit(page));
+        problems.push(...await largeTextAudit(page), ...await sheetAudit(page, screen));
         const scale = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--airway-text-scale').trim());
         if (scale !== String(SCALE / 100)) problems.push(`root text scale ${scale}`);
         const probe = PROBES[screen];
