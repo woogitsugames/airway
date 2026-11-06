@@ -54,7 +54,7 @@ try {
         assert(f.title === (language === 'pl' ? 'Etapy 7/7' : 'Milestones 7/7'), `title ${f.title}`);
         assert(f.items.length === 7, `${f.items.length} items`);
         assert(f.items.every((item) => item.reached === 'true' && item.fill !== 'rgba(0, 0, 0, 0)' && item.border === 'solid'), 'reached marks filled');
-        assert(f.items.filter((item) => item.first).map((item) => item.id).join() === 'week-5,passengers-1000', 'first-time stamps');
+        assert(f.items.filter((item) => item.first).map((item) => item.id).join() === 'week-4,passengers-750', 'first-time stamps');
         assert(f.items.every((item) => item.label && !item.label.includes('{')), 'spoken labels');
         assert(f.items.filter((item) => item.stamp !== null).every((item) => item.stamp === 'none' || !item.stampShown), 'no stamp motion under reduce');
         for (const b of f.buttons) assert(b.top >= -0.5 && b.bottom <= height + 0.5 && b.height >= 47.5, `action off-screen or small ${JSON.stringify(b)}`);

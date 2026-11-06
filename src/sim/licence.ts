@@ -11,10 +11,11 @@ export const LICENCE_CLASSES: readonly LicenceClass[] = Object.freeze([1, 2, 3])
 /** Bump when a class's knobs change (balance reports and the decision log quote it). */
 export const LICENCE_PARAMS_VERSION = 1 as const;
 /**
- * A class opens once a run of the class below it reached this calendar week (week 5 = four weeks flown,
+ * A class opens once a run of the class below it reached this calendar week (week 4 = three weeks flown,
  * the logbook's "weeks" unit + 1). Unlocks are stored on the device only (src/game/licence.ts).
+ * D-273 (owner, Q-84 → B): week 4, in line with the week-4 milestone (D-270); D-251 had week 5.
  */
-export const LICENCE_UNLOCK_WEEK = 5 as const;
+export const LICENCE_UNLOCK_WEEK = 4 as const;
 
 /** The scenario knobs a licence class sets. Nothing else differs between classes. */
 export interface LicenceParams {

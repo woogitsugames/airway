@@ -29,18 +29,18 @@ const view = (over: Partial<MilestoneView> = {}): MilestoneView =>
   ({ hubs: 0, regionsOpen: 1, regionsServed: 0, week: 1, passengers: 0, ...over });
 
 test('the seven milestones of R1n, in report order', () => {
-  assert.deepEqual([...MILESTONES], ['first-hub', 'all-regions', 'week-2', 'week-3', 'week-5', 'passengers-500', 'passengers-1000']);
+  assert.deepEqual([...MILESTONES], ['first-hub', 'all-regions', 'week-2', 'week-3', 'week-4', 'passengers-500', 'passengers-750']);
 });
 test('each milestone at its threshold and not one step below', () => {
   assert.deepEqual(milestonesIn(view(), true), []);
   assert.deepEqual(milestonesIn(view({ hubs: 1 }), false), ['first-hub']);
   assert.deepEqual(milestonesIn(view({ week: 2 }), false), ['week-2']);
-  assert.deepEqual(milestonesIn(view({ week: 4 }), false), ['week-2', 'week-3']);
-  assert.deepEqual(milestonesIn(view({ week: 5 }), false), ['week-2', 'week-3', 'week-5']);
+  assert.deepEqual(milestonesIn(view({ week: 3 }), false), ['week-2', 'week-3']);
+  assert.deepEqual(milestonesIn(view({ week: 4 }), false), ['week-2', 'week-3', 'week-4']);
   assert.deepEqual(milestonesIn(view({ passengers: 499 }), false), []);
   assert.deepEqual(milestonesIn(view({ passengers: 500 }), false), ['passengers-500']);
-  assert.deepEqual(milestonesIn(view({ passengers: 999 }), false), ['passengers-500']);
-  assert.deepEqual(milestonesIn(view({ passengers: 1000 }), false), ['passengers-500', 'passengers-1000']);
+  assert.deepEqual(milestonesIn(view({ passengers: 749 }), false), ['passengers-500']);
+  assert.deepEqual(milestonesIn(view({ passengers: 750 }), false), ['passengers-500', 'passengers-750']);
 });
 test('"every region served" only at a weekly board, with every open region served and at least two open', () => {
   const all = view({ regionsOpen: 4, regionsServed: 4 });
@@ -65,7 +65,7 @@ test('the tracker keeps what was reached (a hub that later closes still counts) 
   tracker.observe(view({ regionsOpen: 3, regionsServed: 3 }), true);
   tracker.observe(view({ hubs: 0 }));
   assert.deepEqual(tracker.list(), ['first-hub', 'all-regions', 'passengers-500']);
-  assert.deepEqual(milestoneItems(tracker.list(), ['all-regions', 'week-5']).filter((item) => item.reached || item.first)
+  assert.deepEqual(milestoneItems(tracker.list(), ['all-regions', 'week-4']).filter((item) => item.reached || item.first)
     .map((item) => `${item.id}:${item.first}`), ['first-hub:false', 'all-regions:true', 'passengers-500:false'],
   'first only for a reached milestone');
 });
@@ -97,7 +97,7 @@ test('bot: the median run reaches the first four milestones, each reached by at 
   for (const id of EARLY) assert.ok(median.reached.includes(id), `median run (${median.minutes.toFixed(2)} min) reaches ${id}`);
   assert.ok(median.minutes > 10 && median.minutes < 18, `median ${median.minutes.toFixed(2)} min (D-79)`);
   // Stretch goals stay rare for the bot (a human who plays well can pass it; nothing is earned by them).
-  for (const id of ['week-5', 'passengers-500', 'passengers-1000'] as const) assert.ok(reach(id) * 2 < SEEDS, `${id} is a stretch goal`);
+  for (const id of ['week-4', 'passengers-500', 'passengers-750'] as const) assert.ok(reach(id) * 2 < SEEDS, `${id} is a stretch goal`);
   console.log(`  bot reach (${SEEDS} runs, median ${median.minutes.toFixed(2)} min): ` +
     MILESTONES.map((id) => `${id} ${reach(id)}`).join(' · '));
 });
@@ -145,16 +145,20 @@ test('logbook: the flight of the first reach, Endless only, never overwritten; o
   assert.deepEqual(readLogbook(storage), book);
   const old = { flights: 4, passengers: 50, weeks: 3, longestWeeks: 2, hubs: {}, recent: [] };
   assert.deepEqual(readLogbook(memory({ [LOGBOOK_KEY]: JSON.stringify(old) })).milestones, {});
-  const bad = { ...old, milestones: { 'first-hub': 2, 'week-2': 0, 'week-3': 9, 'week-5': 1.5, nope: 1 } };
+  const bad = { ...old, milestones: { 'first-hub': 2, 'week-2': 0, 'week-3': 9, 'week-4': 1.5, nope: 1 } };
   assert.deepEqual(readLogbook(memory({ [LOGBOOK_KEY]: JSON.stringify(bad) })).milestones, { 'first-hub': 2 });
+  // D-270: a pre-D-270 record's week 5 / 1 000 passengers counts for week 4 / 750 (the earlier flight wins).
+  const legacy = { ...old, milestones: { 'week-5': 3, 'passengers-1000': 4, 'passengers-750': 2, 'week-4': 9 } };
+  assert.deepEqual(readLogbook(memory({ [LOGBOOK_KEY]: JSON.stringify(legacy) })).milestones,
+    { 'week-4': 3, 'passengers-750': 2 });
   assert.deepEqual(EMPTY_LOGBOOK.milestones, {});
 });
 test('game-over row and logbook section in EN and PL; every text in both catalogs', () => {
   setLanguage('en');
   const row = gameOverMilestones(['first-hub', 'week-2', 'week-3'], ['week-3']);
   assert.equal(row.title, 'Milestones 3/7');
-  assert.deepEqual(row.items.map((item) => item.text), ['First hub', 'Every region served', 'Week 2', 'Week 3', 'Week 5',
-    '500 passengers', '1,000 passengers']);
+  assert.deepEqual(row.items.map((item) => item.text), ['First hub', 'Every region served', 'Week 2', 'Week 3', 'Week 4',
+    '500 passengers', '750 passengers']);
   assert.deepEqual(row.items.slice(0, 4).map((item) => item.label), ['First hub: reached', 'Every region served: not reached',
     'Week 2: reached', 'Week 3: reached for the first time']);
   const book = { ...EMPTY_LOGBOOK, flights: 5, milestones: { 'first-hub': 1, 'week-3': 4 } };
@@ -164,7 +168,7 @@ test('game-over row and logbook section in EN and PL; every text in both catalog
   const plRow = gameOverMilestones(['first-hub'], []);
   assert.equal(plRow.title, 'Etapy 1/7');
   assert.deepEqual(plRow.items.map((item) => item.text), ['Pierwszy hub', 'Każdy region obsłużony', 'Tydzień 2', 'Tydzień 3',
-    'Tydzień 5', '500 pasażerów', `${localNumber(1000)} pasażerów`]);
+    'Tydzień 4', '500 pasażerów', '750 pasażerów']);
   assert.match(localNumber(1000), /^1\s000$/u, 'PL groups thousands with a space');
   assert.equal(plRow.items[1]!.label, 'Każdy region obsłużony: jeszcze nie');
   assert.deepEqual(logbookMilestones(book)[3], ['week-3', 'Tydzień 3', 'pierwszy raz w locie 4']);

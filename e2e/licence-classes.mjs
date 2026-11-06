@@ -1,7 +1,7 @@
 // [night-12bc] R2h / D-251: Endless licence classes on the menu board. With only class I open the Endless row is
-// unchanged (no licence select). Once the logbook has a class I flight that reached week 5 (4 weeks flown) and a class
-// II one, the gate cell of the Endless row becomes the licence stamp select: I/II/III, class I by default, >= 48 px
-// and inside the viewport, the Endless row no taller than the Puzzles row, the home-region select still there, no
+// unchanged (no licence select). Once the logbook has a class I flight that reached week 4 or later (D-273; the
+// fixture has week 5) and a class II one, the gate cell of the Endless row becomes the licence stamp select:
+// I/II/III, class I by default, >= 48 px and inside the viewport, the Endless row no taller than the Puzzles row, the home-region select still there, no
 // horizontal scroll. Picking a class stores it in 'airway.settings'; the logbook shows the per-class row. One case
 // starts Endless and the running game reports the class (window.aw state). Menu-only otherwise (G7: no long runs).
 // PL 412×915, EN 320×568, EN 915×412, PL 360×640; shots docs/shots/n12bc/. Fails on the old menu (no select).

@@ -3,8 +3,8 @@
 // and a new class I run carries no config field. Classes II/III change only scenario knobs (curfew start week and
 // airports, starting turboprops, hub seats) read from one table; the class survives save/restore, the v4 -> v5
 // envelope bump and the D-76 replay; Daily, puzzles and bad values refuse a class. The logbook keeps the best weeks
-// per class (older records start class I at their longest flight), classes open at week 5 of the class below, and
-// the menu choice lives in the device settings record. Fails on the old code: no licence module, no licenceClass.
+// per class (older records start class I at their longest flight), classes open at week 4 of the class below
+// (D-273; D-251 had week 5), and the menu choice lives in the device settings record. Fails on the old code: no licence module, no licenceClass.
 import assert from 'node:assert/strict';
 import { createGame, Sim, TICKS_PER_WEEK } from '../src/sim/index.ts';
 import { LICENCE_CLASSES, LICENCE_PARAMS, LICENCE_UNLOCK_WEEK } from '../src/sim/licence.ts';
@@ -98,7 +98,7 @@ await test('class I = today: Daily, Endless and Endless with contract are bit-fo
 
 await test('class params: one table, class I = the shared constants, II and III as the backlog names them', () => {
   assert.deepEqual([...LICENCE_CLASSES], [1, 2, 3]);
-  assert.equal(LICENCE_UNLOCK_WEEK, 5);
+  assert.equal(LICENCE_UNLOCK_WEEK, 4); // D-273 (Q-84 → B); D-251 had 5
   const one = LICENCE_PARAMS[1];
   assert.deepEqual(one, { curfewStartWeek: CURFEW_ENDLESS_START_WEEK, curfewStartCities: CURFEW_START_CITY_COUNT,
     turbopropReserve: INITIAL_PLANE_RESERVE.turboprop, hubCapacity: HUB_WAITING_CAPACITY });
@@ -243,21 +243,23 @@ await test('logbook: best weeks per class, class I counts Daily, older records s
   assert.deepEqual(licenceWeeks(readLogbook(legacy)), { 1: 4 });
 });
 
-await test('unlocks: class II at week 5 of class I (4 weeks flown), class III at week 5 of class II; issued once', () => {
+await test('unlocks: class II at week 4 of class I (3 weeks flown), class III at week 4 of class II; issued once', () => {
   const storage = memoryStorage();
   assert.deepEqual(openLicences(readLogbook(storage)), [1]);
-  recordFlight(storage, flight(3));
-  assert.deepEqual(openLicences(readLogbook(storage)), [1], 'week 4 is not enough');
+  recordFlight(storage, flight(2));
+  assert.deepEqual(openLicences(readLogbook(storage)), [1], 'week 3 is not enough');
   const before = readLogbook(storage);
-  const after = recordFlight(storage, flight(4));
+  const after = recordFlight(storage, flight(3));
   assert.deepEqual(openLicences(after), [1, 2]);
   assert.equal(licenceIssued(before, after), 2);
   assert.equal(licenceIssued(after, recordFlight(storage, flight(6))), null, 'issued once');
   // Class III only from class II flights, never from a long class I flight.
   recordFlight(storage, flight(9));
   assert.deepEqual(openLicences(readLogbook(storage)), [1, 2]);
+  recordFlight(storage, flight(2, { licence: 2 }));
+  assert.deepEqual(openLicences(readLogbook(storage)), [1, 2], 'class II week 3 is not enough');
   const beforeThree = readLogbook(storage);
-  const three = recordFlight(storage, flight(4, { licence: 2 }));
+  const three = recordFlight(storage, flight(3, { licence: 2 }));
   assert.deepEqual(openLicences(three), [1, 2, 3]);
   assert.equal(licenceIssued(beforeThree, three), 3);
   // A class III best without class II open (hand-edited record) opens nothing past the gap.

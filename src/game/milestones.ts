@@ -3,9 +3,20 @@
 // report shows which were reached in this run, and the logbook keeps the run in which each was first reached.
 // No i18n or DOM imports, so Node tests (and src/game/logbook.ts) load it directly.
 
-/** In the order the report lists them (roughly the order a run meets them). */
-export const MILESTONES = ['first-hub', 'all-regions', 'week-2', 'week-3', 'week-5', 'passengers-500', 'passengers-1000'] as const;
+/**
+ * In the order the report lists them (roughly the order a run meets them). D-270 (owner, Q-81 → B): week 4 and
+ * 750 passengers replace the D-242 stretch goals week 5 and 1 000 passengers, which almost no bot run reached.
+ */
+export const MILESTONES = ['first-hub', 'all-regions', 'week-2', 'week-3', 'week-4', 'passengers-500', 'passengers-750'] as const;
 export type MilestoneId = typeof MILESTONES[number];
+
+/**
+ * D-270: ids a pre-D-270 logbook may hold, read as the goal that replaced them (a run that reached week 5 or
+ * 1 000 passengers also reached week 4 or 750).
+ */
+export const LEGACY_MILESTONES: Readonly<Record<string, MilestoneId>> = Object.freeze({
+  'week-5': 'week-4', 'passengers-1000': 'passengers-750',
+});
 
 /** "Every region served" needs at least this many regions open, so a one-region start cannot count. */
 export const MIN_REGIONS_FOR_ALL = 2;
@@ -53,9 +64,9 @@ export function milestonesIn(view: MilestoneView, atBoard: boolean): MilestoneId
     'all-regions': atBoard && view.regionsOpen >= MIN_REGIONS_FOR_ALL && view.regionsServed === view.regionsOpen,
     'week-2': view.week >= 2,
     'week-3': view.week >= 3,
-    'week-5': view.week >= 5,
+    'week-4': view.week >= 4,
     'passengers-500': view.passengers >= 500,
-    'passengers-1000': view.passengers >= 1000,
+    'passengers-750': view.passengers >= 750,
   };
   return MILESTONES.filter((id) => hit[id]);
 }
