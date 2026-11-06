@@ -2708,3 +2708,30 @@ after). Of the 24 game/night store PNGs recaptured with `store-shots.mjs --only=
 ones changed their notes; the other 20 differed only by the clock and plane positions and were kept as committed (their
 manifest records too); the contact sheet was rendered again from that set. `npm run site:assets` changed nothing (the
 landing page uses the phone and landscape shots). **Status: in force.**
+
+## D-267 — Róża at large text: notes stay in-world size, sheets grow and stay reachable (2026-11-06, Claude, night N20a)
+N7. Nobody had looked at Róża at the large text steps on the real renderer. `scripts/shots-n20a.mjs` (a review tool,
+not CI) loads the DEV store-shot fixtures (seed 0xA1A1: the dense Levant cluster, the weekly crates, the game-over
+report) with the step preset, opens the pause sheet and (long press on the busiest rose) the hub cause board, and
+audits each frame in the page: text off the screen or clipped, notes over a ring / another note / the dock, captions
+over the dial, sheets over the dock arc or the week line, targets under 48 px; settings come from the stub fixture.
+Set: 360×640, 412×915, 915×412, 768×1024 × PL/EN at 150 % (48 frames) and 130 % (D-248 has no 125 % step; 130 is the
+nearest). Found at 150 %: (1) **game-over report**: centred in a scrolling overlay, a report taller than the screen
+overflowed both ways, so on 915×412 its sign and "Map" lay 54 px above the top where no scroll reaches, on 360×640 it
+covered the week line, and on 412×915 "New world" and "Menu" lay below the screen; (2) **pause sheet** on 915×412: its
+frame ran 32 px under the bottom edge (2 px at 130 %); (3) the **hub cause board** kept 13 px sentences at every step
+(D-248 left it fixed as world geometry; in Róża it is a plain reading sheet). Not problems: the in-world notes, rose
+names, dock captions and dial keep their size at every step (D-248), so the D-262…D-266 layout, which measures notes
+from fixed widths in `src/ui/skin/roza.ts`, lays out exactly as at 100 % (no note over a ring or another note, no
+caption over the dial in any frame); the weekly crates scroll (`align-items: safe center`); settings stack at 150 %.
+Rules now: the game-over overlay is `place-items: safe center` (a tall report starts under the boarding pass and
+scrolls); at 130/150 % the report has no height cap and its three actions are pinned to the bottom edge on an ink band
+(`position: sticky`), so a run can always be restarted without scrolling. On a short landscape screen (≤ 599 px tall) at
+130/150 % the pause summary gives way, as on short screens (D-259). The hub board's title, fill, counts and sentences
+follow the step (its count column and icons grow with it; the rows already scroll). Rejected: scaling the in-world
+notes (every D-262…D-266 width constant and fixture would follow the step, and at 150 % the 360×640 Levant cluster has
+no free place for them); scrolling the pause sheet (its actions would leave the thumb band). Guards: `test:text-scale`
+(notes/names/captions/dial unscaled, the new rules), `test:e2e:text-scale-150` (+ hub board and pause sheet screens,
+game-over actions on screen and nothing above its scroll; 13/60 failed at 150 % on the old CSS). Left: the hub board
+in landscape covers the notes under it (RIX on 915×412; notes do not treat the board as an obstacle); at 150 % on
+360×640 only one and a half crates show before the board scrolls. Before/after in `docs/shots/n20a/`. **Status: in force.**

@@ -4,7 +4,9 @@
   z-index: 100;
   inset: 0;
   display: grid;
-  place-items: center;
+  /* [night-20a] `safe`: a report taller than the screen (130/150 % text) starts under the boarding pass and scrolls,
+     instead of overflowing both ways from the centre, where its top (the sign and "Map") could not be scrolled to. */
+  place-items: safe center;
   overflow: auto;
   background: var(--skin-go-scrim);
   /* [night-07p] Top padding clears the boarding pass (top 10 px + 60 px tall): the final week, day, time and
@@ -444,4 +446,13 @@
 @media (max-height: 600px) and (max-width: 619px) {
   .airway-go-milestones { margin-top: 3px; padding-top: 2px; }
   .airway-go-milestones-title { line-height: 1.1; }
+}
+/* [night-20a] D-267: at the 130/150 % text steps the report may be taller than the screen; it then scrolls under the
+   boarding pass and its three actions stay pinned to the bottom edge on an ink band, so a run can always be restarted
+   without scrolling. */
+:root:is([data-airway-text-scale="130"], [data-airway-text-scale="150"]) .airway-go-content { max-height: none; }
+:root:is([data-airway-text-scale="130"], [data-airway-text-scale="150"]) .airway-go-actions {
+  position: sticky; bottom: 0; z-index: 1; padding-top: 6px; background: var(--skin-go-board-bg);
+  /* The band also covers the overlay's bottom padding (sticky stops at its content edge), so nothing scrolls under it. */
+  box-shadow: 0 calc(var(--aw-safe-bottom) + 12px) 0 var(--skin-go-board-bg);
 }
