@@ -13,7 +13,7 @@ import type { FrontMark } from '../game/weather'; // [night-12bd] R2j (type only
 import './skin/current.css'; // [night-11aq] skin tokens read by overlay.css
 import {
   skin, rozaEdgeClash, rozaEdgeNote, rozaExtraWidth, rozaJamShare, rozaJamWidth, rozaCaptionsYield, rozaNameLayout, rozaNoteChildren, rozaRose, MEDAL_RADIUS,
-  rozaCompactWidth, rozaDockObstacles, rozaBoardCovers, rozaNotePlaces, rozaRoseObstacles, roseLabelBelow, roseLabelText, roseRank,
+  rozaCompactWidth, rozaDockObstacles, rozaBoardCovers, rozaNotePlaces, rozaRoseObstacles, roseLabelBelow, roseLabelText, roseNoteMust, roseRank,
   ROZA_JAM_LINE, type Rose, type RoseLabel, type RoseLabelMode,
 } from './skin/roza'; // [night-11az] D-257: Róża skin helpers
 import './overlay.css';
@@ -70,6 +70,8 @@ interface BubbleEntry {
   /** [night-10a] Ink "NEW" stub at the front of the tag while the airport is newly opened. */
   fresh: HTMLSpanElement;
   isNew: boolean;
+  /** [night-24a] D-281: the NEW stub's layout width (0 without the mark), for the note's compact form. */
+  freshWidth: number;
   /**
    * [night-10u] Glyph nodes kept per kind ("EUN", "EUN~" hollow) and reused on every rebuild, plus the "+N" count
    * and the children last written, so a passenger change edits only the nodes that differ.
@@ -399,6 +401,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       entry.fresh.style.minWidth = freshWidth + 'px';
       want.push(entry.fresh);
     }
+    entry.freshWidth = freshWidth;
     if (entry.closed) want.push(entry.barrier);
     if (entry.surge) want.push(entry.surgeStub); // [night-12bb] R2i
     if (entry.front) want.push(entry.frontStub); // [night-12bd] R2j
@@ -621,7 +624,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       const chip: EdgeChip = { offscreen: false, jammed: false, side: 0, x: 0, y: 0, placed: false };
       const tag: TagSlot = { id: airport.id, anchorX: 0, anchorY: 0, width: 30, height: 30, active: false, jammed: false, x: 0, y: 0, placed: false };
       const entry: BubbleEntry = {
-        airport, normal, anchor, bubble, edge, gauge, gaugeFill, capacity: 0, lastGauge: '', timer, fresh, isNew: false, barrier, closed: false, tag,
+        airport, normal, anchor, bubble, edge, gauge, gaugeFill, capacity: 0, lastGauge: '', timer, fresh, isNew: false, freshWidth: 0, barrier, closed: false, tag,
         surgeStub, surgeText, surgeEdge, surge: null, surgeWidth: 0,
         frontStub, frontText, front: null, frontWidth: 0,
         plate, plateWidth, hub: airport.hub === true,
@@ -831,7 +834,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
           const jam = entry.jamSeconds !== null;
           const fill = entry.capacity > 0 ? Math.min(1, entry.waiting.length / entry.capacity) : 0;
           const label: RoseLabel = { x, y, r, hub: entry.hub, jam, name: entry.airport.name ?? entry.airport.code,
-            code: entry.airport.code, fill, last: entry.roseLabel };
+            code: entry.airport.code, fill, fresh: entry.isNew, last: entry.roseLabel };
           // [night-21a] D-268: a rose whose ring the open hub board covers steps back with its note (D-259 does the same
           // for the upgrade crates); the board's own airport keeps its rose wherever the board leaves it in view.
           const shown = inView && !(board !== null && rozaBoardCovers(label, board));
@@ -841,9 +844,11 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
           // [night-16a] D-262: the note's full width again (the last layout may have left the compact one), its compact
           // form, and its priority: a jam, a hub, the fuller airport; the rose's box shares it (a must note's pass).
           sizeGroup(entry);
-          entry.tag.compactWidth = Math.max(rozaCompactWidth(entry.bubble, entry.plate.textContent ?? entry.airport.code), entry.slotRect.width);
+          entry.tag.compactWidth = Math.max(rozaCompactWidth(entry.bubble, entry.plate.textContent ?? entry.airport.code,
+            roseNoteMust(label) ? entry.freshWidth : 0), entry.slotRect.width);
           entry.tag.rank = entry.roseSlot.rank = entry.nameSlot.rank = roseRank(label);
-          entry.tag.must = false;
+          // [night-24a] D-281: a newly opened airport's note must show (code + NEW at least) for as long as the mark lasts.
+          entry.tag.must = roseNoteMust(label);
           // The rose's box (ticks and the name arc) is a fixed obstacle for the notes; it and the note's places beside
           // and under the rose are set from the rose's name after the name layout below.
           entry.roseSlot.active = shown;
@@ -882,12 +887,17 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
         if (busiest) (busiest as BubbleEntry).tag.must = true;
         rozaDockObstacles(host, dockSlots);
         layoutTags(layoutSlots, bounds);
-        // [night-16b] D-263: a forced busiest-hub note over a lower-ranked rose's name: that name steps back this frame.
-        const forced = busiest ? (busiest as BubbleEntry).tag : null;
-        if (forced?.placed) roseEntries.forEach((entry, i) => {
+        // [night-16b] D-263: a forced note (the busiest hub's; [night-24a] D-281: a new airport's) over a lower-ranked rose's
+        // name: that name steps back this frame.
+        roseEntries.forEach((entry, i) => {
           const name = entry.nameSlot;
-          if (entry.tag === forced || !name.active || forced.x >= name.x + name.width || name.x >= forced.x + forced.width ||
-            forced.y >= name.y + name.height || name.y >= forced.y + forced.height) return;
+          if (!name.active) return;
+          const covered = roseEntries.some((other) => {
+            const forced = other.tag;
+            return other !== entry && forced.must === true && forced.placed && forced.x < name.x + name.width && name.x < forced.x + forced.width &&
+              forced.y < name.y + name.height && name.y < forced.y + forced.height;
+          });
+          if (!covered) return;
           name.active = false;
           modes[i] = 'none';
           entry.roseLabel = 'none';

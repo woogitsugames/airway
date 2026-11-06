@@ -98,6 +98,7 @@ export const en = {
   'upgrade.contract.task': '{target} {target|passenger|passengers} between them this week. Reward: a fourth crate next week.',
   'upgrade.contract.lastMet': 'Last week: {delivered}/{target}, met.',
   'upgrade.contract.lastMissed': 'Last week: {delivered}/{target}, not met.',
+  'upgrade.contract.line': '{target} pax → 4th crate',
   'upgrade.contract.crate': 'Contract',
   'pause.summary.contract': 'Contract',
   'pause.summary.contractValue': '{from} – {to} {delivered}/{target}',

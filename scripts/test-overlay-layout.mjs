@@ -292,6 +292,15 @@ assert('out-of-range label suppressed', layoutTags([{ ...crowd[0], width: 500 }]
     const jam = mk('jam', { jammed: true, rank: 0 }), hub = mk('hub', { rank: 3 });
     layoutTags([hub, jam].map((t) => Object.assign(t, { anchorX: 70, anchorY: 60 })), { width: 140, height: 80, top: 0, bottom: 0, gap: 3 });
     assert('rank: a jam still beats a higher-ranked passenger tag', jam.placed && !hub.placed);
+    // [night-24a] D-281: a newly opened airport ranks above a hub (roseRank: jam 8, new 4, hub 2, fill ≤ 1) and must
+    // show; a jam still goes first.
+    const wide = { width: 140, height: 80, top: 0, bottom: 0, gap: 3 };
+    const full = mk('hub', { rank: 3 }), fresh = mk('new', { rank: 4, must: true });
+    layoutTags([full, fresh].map((t) => Object.assign(t, { anchorX: 70, anchorY: 60 })), wide);
+    assert('rank (D-281): a new airport takes the room before a full hub', fresh.placed && !full.placed);
+    const jammed = mk('jam', { jammed: true, rank: 0 }), late = mk('new', { rank: 4, must: true });
+    layoutTags([late, jammed].map((t) => Object.assign(t, { anchorX: 70, anchorY: 60 })), wide);
+    assert('rank (D-281): a jam still beats a new airport', jammed.placed && !late.placed);
   }
   // Compact form: the full note fits nowhere near its rose, the compact one does, its near edge next to the rose.
   {

@@ -85,6 +85,23 @@ function waybill(contract: ContractBoard): HTMLElement | null {
     last.dataset.met = String(contract.last.met);
     title.after(last);
   }
+  // [night-24a] D-280: the one-line form a low screen shows instead (upgrade.css; 320×568 scrolled 45 px): last week's
+  // square and figures, the short region names, the target and the reward. The full slip stays for screen readers.
+  const line = document.createElement('p');
+  line.className = 'airway-upgrade-waybill-line';
+  line.setAttribute('aria-hidden', 'true');
+  if (contract.last) {
+    const mark = span('airway-upgrade-waybill-mark', `${contract.last.delivered}/${contract.last.target}`);
+    mark.dataset.met = String(contract.last.met);
+    line.append(mark);
+  }
+  if (contract.next) {
+    const [from, to] = contract.next.regions;
+    line.append(span('airway-upgrade-waybill-short', t('upgrade.contract.route', {
+      from: t(`region.short.${from}` as TranslationKey), to: t(`region.short.${to}` as TranslationKey) })),
+    span('airway-upgrade-waybill-goal', t('upgrade.contract.line', { target: contract.next.target })));
+  }
+  sheet.append(line);
   return sheet;
 }
 
