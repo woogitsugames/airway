@@ -86,6 +86,11 @@ function isRegion(value: string): value is RegionId {
   return (REGION_IDS as readonly string[]).includes(value);
 }
 
+/** A same-world restart keeps the EUS pool version, including the absent flag on old saves. */
+export function restartEusClusterV2(seed: number, run: Pick<EndlessRun, 'seed' | 'sim'>): boolean {
+  return seed === run.seed ? run.sim.config.eusClusterV2 === true : true;
+}
+
 export class EndlessRun {
   private revisionValue = 0;
   /** [night-12am] R1o: weekly-board offers drained so far (a resumed run counts the boards after resuming). */

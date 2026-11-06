@@ -4,13 +4,14 @@
 // menu preference keep it. Fails on the old code: no HOME_REGIONS, the config drops the region, the replay starts a
 // random world.
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { createGame, HOME_REGIONS, Sim, TICKS_PER_WEEK } from '../src/sim/index.ts';
 import { RULES_VERSION } from '../src/sim/state.ts';
 import { startClustersIn } from '../src/sim/spawner.ts';
 import { CITIES } from '../src/data/cities.ts';
 import { REGION_IDS, type RegionId } from '../src/data/regions.ts';
 import { decodeSave, encodeSave, restoreSimDetailed, saveSourceFromSim, SAVE_VERSION, WEATHER_SAVE_VERSION } from '../src/game/save.ts';
-import { EndlessRun } from '../src/game/run.ts';
+import { EndlessRun, restartEusClusterV2 } from '../src/game/run.ts';
 import { readLogbook, recordFlight } from '../src/game/logbook.ts';
 import { HOME_REGION_CHOICES, readHomeRegion, writeHomeRegion } from '../src/game/homeRegion.ts';
 import { buildRunTimeline } from '../src/game/runTimeline.ts';
@@ -108,11 +109,32 @@ await test('EUS v1 saves and journal replays keep the old pool; v2 is determinis
     const replay = restoreSimDetailed(replaySave);
     assert.ok(replay?.replayed);
     assert.equal(replay.sim.hash(), sim.hash());
-    const same = createGame(0xA1A1, 'endless', undefined, 'EUS', false, false, 1, false, version);
-    assert.deepEqual(startIndices(same), startIndices(createGame(0xA1A1, 'endless', undefined, 'EUS', false, false, 1, false, version)));
+    const run = new EndlessRun(sim);
+    assert.equal(restartEusClusterV2(sim.seed, run), version);
+    assert.equal(restartEusClusterV2(sim.seed + 1, run), true);
+    const restarted = EndlessRun.create(sim.seed, 'endless', 'EUS', 1, false, restartEusClusterV2(sim.seed, run));
+    assert.deepEqual(startIndices(restarted.sim), startIndices(sim));
   }
   assert.notDeepEqual(startIndices(createGame(0xA1A1, 'endless', undefined, 'EUS', false, false, 1, false, false)),
     startIndices(createGame(0xA1A1, 'endless', undefined, 'EUS')));
+});
+
+await test('pre-v2 EUS save restores and replays to the original baseline hashes', () => {
+  // Produced on origin/dev 52d5713 before EUS v2, using the shipped contract and surge flags.
+  const decoded = decodeSave(readFileSync(new URL('./fixtures/eus-pre-v2-save.json', import.meta.url), 'utf8'));
+  assert.equal(decoded.status, 'ok');
+  if (decoded.status !== 'ok') return;
+  const restored = restoreSimDetailed(decoded.save);
+  assert.ok(restored && !restored.replayed);
+  assert.equal(restored.sim.hash(), '7fb3af0d');
+  const run = new EndlessRun(restored.sim);
+  const same = EndlessRun.create(run.seed, 'endless', 'EUS', 1, false, restartEusClusterV2(run.seed, run));
+  assert.deepEqual(startIndices(same.sim), startIndices(restored.sim));
+  const replay = restoreSimDetailed({ ...decoded.save, paramsVersion: RULES_VERSION - 1 });
+  assert.ok(replay?.replayed);
+  assert.equal(replay.sim.hash(), '7fb3af0d');
+  restored.sim.advance(100);
+  assert.equal(restored.sim.hash(), '3a47b9e2');
 });
 
 await test('only the start cluster changes: later airports still spawn, anywhere the ordinary rules allow', () => {
