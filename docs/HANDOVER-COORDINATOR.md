@@ -1,13 +1,27 @@
 # Przekazanie koordynatora Airway
 
-Ostatnia aktualizacja: 2026-11-06, ok. 17:00 UTC. Sesja koordynatora kończy się (limit). Żaden agent nie pracuje,
-nic nie jest w toku, `main` = `dev`. Nowa sesja startuje promptem z `docs/notes/coordinator-start-prompt.md`.
+Ostatnia aktualizacja: 2026-11-06, ok. 20:20 UTC. Nowa sesja koordynatora (wieczór 6.11) pracuje ciągle; budziki
+włączone. Nowa sesja startuje promptem z `docs/notes/coordinator-start-prompt.md`.
+
+## Wieczór 6.11 (nowa sesja koordynatora)
+- **Róża odrzucona przez właściciela: „dalej jest AI slop”** — wszystkie cztery warstwy: glob satelitarny, ozdobniki
+  Róży, typografia i panele, medaliony lotnisk. Ponowne nagranie wideo sklepu **wstrzymane**. Właściciel: „zaproponuj
+  od zera, zrób research na Steam i w internecie”. Agent `night/27a-art-research` (worktree `/workspace/27a`):
+  research 25–40 gier + 3 kierunki z makietami w `docs/styles/kierunki-2026-11b/`, wpis **D-282**, szkic PR do `dev`.
+  Po PR: pokazać właścicielowi makiety i zapytać klikalnie o wybór.
+- **Wszystkie zlecenia GPT-01…21 daje właściciel GPT** (pierwsza tura nic nie oddała). Agenci Claude ich nie biorą;
+  koordynator tylko przegląda i scala PR-y `gpt/*`. Uwaga: GPT-09/10/21 dotyczą barw/słownictwa/kosztu Róży — przy
+  nowym kierunku mogą się zdezaktualizować.
+- Budziki: stare ID nie istniały; nowe `trig_01FGMRnRdDSKvi37LEhT7wqr` (:15) i `trig_013MsHiSDt3YqTZNEon7zeY7` (:45),
+  przypięte do tej sesji — **wyłączyć przed końcem limitu**.
+- Sesję ext globu (prompt `docs/notes/roza-ext-prompt.md`) właściciel uruchomi sam — ale przy odrzuceniu Róży prompt
+  jest nieaktualny; poczekać na wybór kierunku.
 
 ## Stan repo
 - `main` = `dev` (D-64). 4–5.11 scalone #204–#274, 6.11 #275–#282.
 - Ostatnie numery: **D-281**, **Q-89** (następne wolne: D-282, Q-90). D-160…D-179 należą do sesji ext.
-- Budziki koordynatora :15 i :45: `trig_011aYp1uohavDkngVDFRndoA`, `trig_01TQogjhSE2ggjutqxxB6TtS` — **wyłączone**
-  na koniec sesji 6.11 (oszczędność limitu); nowa sesja włącza je przez `update_trigger enabled=true` albo tworzy nowe.
+- Budziki koordynatora :15 i :45: `trig_01FGMRnRdDSKvi37LEhT7wqr`, `trig_013MsHiSDt3YqTZNEon7zeY7` (od 6.11 wieczór,
+  **włączone**); wyłączyć przed końcem limitu (`update_trigger enabled=false`).
 - Otwarte PR-y od koordynatora: brak. Gałęzie `night/*` scalonych PR-ów zostają na GitHubie (można sprzątać).
 
 ## 6.11 (dzień z właścicielem)
@@ -69,11 +83,11 @@ commitach.
 
 
 ## W toku
-- Nic. Brak agentów, brak otwartych PR-ów koordynatora.
+- Agent `night/27a-art-research` (research stylu od zera, D-282) — `/workspace/27a`.
 
 ## Decyzje do właściciela
-1. Ocena Róży (zrzuty sklepu) → od niej zależy ponowne nagranie wideo. Uruchomienie sesji ext z promptem
-   `docs/notes/roza-ext-prompt.md` (medalion jako środek róży, przesunięcie pierścienia na tablecie/iPadzie).
+1. Wybór nowego kierunku graficznego z `docs/styles/kierunki-2026-11b/` (po PR 27a). Róża odrzucona (D-282);
+   wideo sklepu i prompt sesji ext czekają na ten wybór.
 2. Starsze otwarte: Q-52 rekrutacja testerów, Q-01 dane wydawcy/administratora, Q-07 Firebase, Q-49, Q-50, Q-56,
    Q-67, data premiery; jedna konsultacja z prawnikiem (polityka, regulamin, rejestr; także „bezpłatne” w §2 regulaminu,
    D-278).
