@@ -202,7 +202,10 @@
   font: 700 14px/18px var(--skin-face-text); color: var(--roza-vermilion);
 }
 /* D-262: no room for the full note: code and "14 z 24" only (a jam keeps its sentence). */
-:root[data-skin="roza"] .airport-bubble--compact > :not(.airport-bubble__plate):not(.roza-fill):not(.roza-jam) { display: none; }
+/* [night-24a] D-281: a newly opened airport's compact form is its code and the NEW stub (the ticks show the fill). */
+:root[data-skin="roza"] .airport-bubble--compact > :not(.airport-bubble__plate):not(.roza-fill):not(.roza-jam):not(.airport-bubble__new),
+:root[data-skin="roza"] .airport-bubble--compact.airport-bubble--new:not(.airport-bubble--jam) > .roza-fill,
+:root[data-skin="roza"] .airport-bubble--compact.airport-bubble--jam > .airport-bubble__new { display: none; }
 :root[data-skin="roza"] .airport-bubble__surge, :root[data-skin="roza"] .airport-bubble__front { text-shadow: none; }
 :root[data-skin="roza"] .airport-bubble__new { font: 700 11px/20px var(--skin-face-text); text-shadow: none; }
 /* Off-screen airport: a margin note in ink with a chalk hairline, 48 px tall, and its distance from the view centre. */
@@ -240,6 +243,12 @@
    the sheet stands left of it on the bottom edge. */
 @media (orientation: landscape) and (max-height: 599px) {
   :root[data-skin="roza"] .airway-pause { left: calc(var(--aw-safe-left) + 12px); right: calc(var(--aw-safe-right) + 176px); width: auto; bottom: calc(var(--aw-safe-bottom) + 16px); }
+}
+/* [night-24a] D-279: the airport pick on a landscape phone: the sign beside the pass covered the arc's top (the speed
+   caption, the dial), so it stands like the pause sheet, on the bottom edge left of the arc's captions. */
+@media (min-width: 720px) and (max-height: 520px) {
+  :root[data-skin="roza"] .airway-upgrade-open.is-picking-hub { align-items: flex-end; padding-right: calc(var(--aw-safe-right) + 176px); padding-bottom: calc(var(--aw-safe-bottom) + 16px); }
+  :root[data-skin="roza"] .airway-upgrade-open.is-picking-hub .airway-upgrade-sign { margin-left: 0; max-width: 100%; }
 }
 /* A short screen keeps the actions in the band and drops the network summary (the HUD and the notes still show it). */
 @media (orientation: portrait) and (max-height: 679px), (orientation: landscape) and (max-height: 399px) {

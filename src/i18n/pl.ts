@@ -98,6 +98,7 @@ export const pl = {
   'upgrade.contract.task': '{target} {target|pasażer|pasażerów|pasażerów} między nimi w tym tygodniu. Nagroda: czwarta skrzynia za tydzień.',
   'upgrade.contract.lastMet': 'Zeszły tydzień: {delivered}/{target}, wykonany.',
   'upgrade.contract.lastMissed': 'Zeszły tydzień: {delivered}/{target}, niewykonany.',
+  'upgrade.contract.line': '{target} pas. → 4. skrzynia',
   'upgrade.contract.crate': 'Kontrakt',
   'pause.summary.contract': 'Kontrakt',
   'pause.summary.contractValue': '{from} – {to} {delivered}/{target}',

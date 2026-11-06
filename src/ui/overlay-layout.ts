@@ -24,7 +24,8 @@ export interface TagSlot {
   altAnchorX?: number;
   /**
    * [night-16a] D-262: priority inside a tier (jam, passenger tag, plate): the higher rank is placed first and so takes
-   * the room from a lower one (the overlay ranks a hub, then the fuller airport). Ties keep array order.
+   * the room from a lower one (the overlay ranks a hub, then the fuller airport; [night-24a] D-281: a newly opened airport
+   * above a hub). Ties keep array order.
    */
   rank?: number;
   /**
@@ -62,7 +63,8 @@ export interface TagSlot {
   compactWidth?: number;
   compact?: boolean;
   /**
-   * [night-16a] D-262: a tag that must show (the busiest hub's code and fill): when no place is free, it is placed in
+   * [night-16a] D-262: a tag that must show (the busiest hub's code and fill; [night-24a] D-281: a newly opened airport's
+   * code and NEW stub, which so never hides before its compact form was tried): when no place is free, it is placed in
    * its compact form over lower-ranked fixed obstacles (another rose's name), and then over any obstacle but a ring
    * ([night-16b] D-263: never over a `ring`, never away from its rose; boxed in by rings it hides).
    */

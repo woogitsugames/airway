@@ -248,9 +248,11 @@ const PLATE_CHAR = 9;
  * [night-16a] D-262: the width of the note's compact form, code and "14 z 24" only (roza.css .airport-bubble--compact),
  * tried where the full note does not fit before it hides; a jam keeps its sentence line under it.
  */
-export function rozaCompactWidth(bubble: HTMLElement, code: string): number {
+export function rozaCompactWidth(bubble: HTMLElement, code: string, freshWidth = 0): number {
   const state = notes.get(bubble);
-  return Math.ceil(Math.max(2 + code.length * PLATE_CHAR + (state?.fillWidth ?? 0) + 4, state?.jamWidth ?? 0));
+  // [night-24a] D-281: a newly opened airport's compact form is its code and the NEW stub (the ticks show the fill).
+  const second = freshWidth > 0 ? 3 + freshWidth : state?.fillWidth ?? 0;
+  return Math.ceil(Math.max(2 + code.length * PLATE_CHAR + second + 4, state?.jamWidth ?? 0));
 }
 /** Height the jam line adds under the note (roza.css: an 18 px line). */
 export const ROZA_JAM_LINE = 18;
@@ -335,6 +337,11 @@ export interface RoseLabel {
   /** Waiting share 0–1: a fuller airport keeps its name first. */
   fill: number;
   name: string; code: string;
+  /**
+   * [night-24a] D-281: the airport opened a moment ago and carries the NEW mark (12 game hours): its name and note go
+   * before a hub's (a jam still goes first), and its note must show, in the compact code + NEW form before it hides.
+   */
+  fresh?: boolean;
   /** What it showed last frame: it keeps that with a little less clearance, so names do not flicker while panning. */
   last?: RoseLabelMode;
 }
@@ -381,11 +388,16 @@ const hitsDisc = (a: Box, x: number, y: number, radius: number, pad: number): bo
 };
 
 /**
- * Priority of a rose's labels (D-262): a jam, then a hub, then the fuller airport; the higher one is laid out first and
+ * Priority of a rose's labels (D-262): a jam, then ([night-24a] D-281) a newly opened airport, then a hub, then the fuller airport; the higher one is laid out first and
  * so takes the room a lower one wanted. Shared by the names (rozaNameLayout) and the notes (the overlay's tag rank).
  */
-export const roseRank = (label: Pick<RoseLabel, 'jam' | 'hub' | 'fill'>): number =>
-  (label.jam ? 4 : 0) + (label.hub ? 2 : 0) + Math.max(0, Math.min(1, label.fill));
+export const roseRank = (label: Pick<RoseLabel, 'jam' | 'hub' | 'fill' | 'fresh'>): number =>
+  (label.jam ? 8 : 0) + (label.fresh ? 4 : 0) + (label.hub ? 2 : 0) + Math.max(0, Math.min(1, label.fill));
+/**
+ * [night-24a] D-281: a rose whose note must show (TagSlot.must) besides the busiest hub in view: a newly opened airport
+ * without a jam (a jammed one is laid out first anyway, in the jam tier).
+ */
+export const roseNoteMust = (label: Pick<RoseLabel, 'jam' | 'fresh'>): boolean => label.fresh === true && !label.jam;
 
 /**
  * Name collisions in a dense cluster at close zoom (D-259, D-262): each rose keeps its name only where it clears every

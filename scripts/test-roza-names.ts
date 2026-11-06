@@ -4,7 +4,7 @@
 // [night-16a] D-262: a name whose top is taken runs along the bottom of the ring before it shortens; the store shot's
 // Levant cluster (game-phone 360×640) keeps the busiest hub's name and its note (code and fill at least).
 import assert from 'node:assert/strict';
-import { roseLabelBelow, roseLabelText, roseNameBox, roseRank, rozaBoardCovers, rozaCaptionClashes, rozaNameLayout, rozaNotePlaces, rozaRoseObstacles, roseHomeReach, roseRingHalf,
+import { roseLabelBelow, roseLabelText, roseNameBox, roseNoteMust, roseRank, rozaBoardCovers, rozaCaptionClashes, rozaNameLayout, rozaNotePlaces, rozaRoseObstacles, roseHomeReach, roseRingHalf,
   type RoseLabel, type RoseLabelMode } from '../src/ui/skin/roza.ts';
 import { layoutTags, NOTE_GAP_X, NOTE_GAP_Y, OWN_MARGIN, type TagSlot } from '../src/ui/overlay-layout.ts';
 
@@ -142,7 +142,7 @@ function levantFrame(scene: Scene, last?: { modes: RoseLabelMode[]; tags: TagSlo
     tag.compactWidth = scene[i].compact;
     tag.minor = scene[i].minor ?? label.fill === 0;
     tag.rank = roseRank(label);
-    tag.must = i === busiest;
+    tag.must = i === busiest || roseNoteMust(label); // [night-24a] D-281: a new airport's note must show too
     rozaNotePlaces(tag, label, modes[i], screenWidth);
     const box: TagSlot = { id: label.code + '~rose', anchorX: 0, anchorY: 0, width: 0, height: 0, active: true, jammed: false, fixed: true,
       x: 0, y: 0, placed: false, rank: tag.rank };
@@ -475,6 +475,49 @@ test('hub board open (D-268): the selected hub\'s rose clear of the board stays 
   assert(tags[0].placed, 'the board\'s hub keeps its note');
   assert(!rozaBoardCovers(rose(180, 460, 'X', 'X', { r: 14 }), PORTRAIT_BOARD) && rozaBoardCovers(rose(180, 440, 'X', 'X', { r: 14 }), PORTRAIT_BOARD),
     'a ring 2 px past the board edge counts as covered');
+});
+// [night-24a] D-281 (owner, 2026-11-06): a newly opened airport's "NEW" never disappears in a dense cluster. While the
+// mark lasts its name and note go before a hub's (a jam still first), and its note must show: in full where it fits,
+// else in the compact code + NEW form (78 px here: "ANK" + the NOWE stub) before it may hide.
+test('new airport (D-281): rank order is jam > new > hub > fuller airport', () => {
+  const plain = rose(0, 0, 'A', 'A', { fill: 1 }), hub = rose(0, 0, 'B', 'B', { hub: true, fill: 1 });
+  const fresh = rose(0, 0, 'C', 'C', { fresh: true }), jam = rose(0, 0, 'D', 'D', { jam: true });
+  assert(roseRank(fresh) > roseRank(hub) && roseRank(hub) > roseRank(plain), 'new above a full hub above a full airport');
+  assert(roseRank(jam) > roseRank({ ...fresh, hub: true, fill: 1 }), 'a jam above a new full hub');
+  assert(roseNoteMust(fresh) && !roseNoteMust({ ...fresh, jam: true }) && !roseNoteMust(hub), 'only a new airport without a jam must show');
+});
+/** The Levant scene with one airport newly opened: nobody waiting yet, its note + the NEW stub (41 px), compact code + NEW. */
+const freshLevant = (code: string, extra: Partial<RoseLabel> = {}): Scene => LEVANT.map((s) => (s.label.code !== code ? s
+  : { ...s, label: { ...s.label, fresh: true, fill: 0, ...extra }, width: s.width + 41, compact: 2 + code.length * 9 + 3 + 41 + 4, minor: false }));
+for (const code of ['BGW', 'VCE']) test(`new airport (D-281): in the Levant cluster a new ${code} shows its note (a plain ${code} hides)`, () => {
+  const at = LEVANT.findIndex((s) => s.label.code === code);
+  assert(!levantFrame(LEVANT).tags[at].placed, `as a plain airport ${code}'s note hides (the fixture's premise)`);
+  const { labels, modes, tags } = levantFrame(freshLevant(code));
+  assert(tags[at].placed, `the new ${code}'s note shows`);
+  assert(tags[at].compact === true && tags[at].width === 2 + 27 + 3 + 41 + 4, `in the compact code + NEW form (${tags[at].width} px)`);
+  assert.notEqual(modes[at], 'none', 'and keeps a name');
+  assertClear(labels, modes);
+  assertNotesAtHome(labels, tags);
+  assert(tags[4].placed, 'the busiest hub (Amman) keeps its note');
+});
+test('new airport (D-281): a jam still goes first; a new airport\'s name goes before a hub\'s', () => {
+  const jam = LEVANT.findIndex((s) => s.label.code === 'AMM'), fresh = LEVANT.findIndex((s) => s.label.code === 'BGW');
+  const scene = freshLevant('BGW').map((s, i) => (i === jam ? { ...s, label: { ...s.label, jam: true } } : s));
+  const { labels, modes, tags } = levantFrame(scene);
+  assert(tags[jam].placed, 'the jam keeps its note');
+  assert.notEqual(modes[jam], 'none', 'the jam keeps its name');
+  assert(tags[fresh].placed, 'the new airport still shows its note');
+  assertNotesAtHome(labels, tags);
+  // Names: two roses wanting the same room at close range; the new airport is laid out before the hub.
+  const pair = (fresh: boolean) => [rose(200, 300, 'Frankfurt', 'FRA', { hub: true, fill: 1 }), rose(230, 300, 'Düsseldorf', 'DUS', { fresh })];
+  assert.deepEqual(rozaNameLayout(pair(false)), ['code-below', 'none'], 'a plain airport gives way to the full hub');
+  assert.deepEqual(rozaNameLayout(pair(true)), ['none', 'code-below'], 'the hub gives way to the new airport');
+});
+test('new airport (D-281): with the new airport\'s mark gone the cluster lays out as before (no lasting change)', () => {
+  const plain = levantFrame(LEVANT);
+  const again = levantFrame(LEVANT.map((s) => ({ ...s, label: { ...s.label, fresh: false } })));
+  assert.deepEqual(again.modes, plain.modes);
+  assert.deepEqual(again.tags.map((t) => [t.placed, t.x, t.y]), plain.tags.map((t) => [t.placed, t.x, t.y]));
 });
 console.log(`SUMMARY test:roza-names passed=${passed} failed=${failed}`);
 if (failed) process.exitCode = 1;

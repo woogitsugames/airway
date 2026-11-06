@@ -2862,3 +2862,33 @@ privacy policy, the terms and the art. 30 record. Rationale (the recommendation)
 covers a later move to ads or a paid version; the store and marketing texts still say nothing about price or "free"
 (RESEARCH R2). `site/terms.html` and the in-game copy are unchanged; the legal register row of the terms
 (`docs/legal/README.md`) lists the question for the lawyer. **Status: in force (lawyer to confirm).**
+
+## D-279 — Róża: the airport pick sign on a low landscape phone stands left of the dock arc, on the bottom edge (owner, 2026-11-06)
+Owner's answer to the design call PR #280 left open: on low landscape phones (740×360, 812×375, 852×393) the yellow
+sign of the airport pick ("+2 slots" / hub expansion) stood beside the boarding pass and covered the top of the dock
+arc — the "Tempo 1×" caption and the compact dial — so `test:e2e:pick-sign` and `test:e2e:notch` failed. In Róża on a
+landscape phone (≥ 720 px wide, ≤ 520 px tall) the sign now stands like the pause sheet (D-259): on the bottom edge,
+from the left inset to 176 px left of the right inset, so the arc, the dial and every caption stay visible and live
+while the player picks the airport. Rationale: the arc is the thumb's column and stays usable during the pick; the
+pause sheet already set the place for a panel in that layout. `src/ui/skin/roza.css`; shots `docs/shots/n24a/`.
+**Status: in force.**
+
+## D-280 — The weekly contract slip becomes one line above the crates on a low portrait screen (owner, 2026-11-06)
+Owner's answer: at 320×568 the weekly board (contract slip + three crates) scrolled by 45 px (`test:e2e:board-short`).
+On a portrait screen up to 600 px tall the slip shows one line instead of the title and the paragraph: last week's
+square (filled = met, hollow = missed) with its figures, the short region names (`region.short.*`), the target and
+the reward ("Eur. Płn. – Bl. Wschód 24 pas. → 4. skrzynia", new key `upgrade.contract.line`). The full slip stays in
+the page for screen readers (the line is `aria-hidden`); taller screens keep the full slip. Rationale: every crate
+fits without scrolling, and the line keeps every fact of the contract but the wording. `src/ui/upgrade/index.ts`,
+`src/ui/upgrade/upgrade.css`. **Status: in force.**
+
+## D-281 — A newly opened airport's "NEW" always shows: priority above a hub, compact "code + NEW" before it may hide (owner, 2026-11-06)
+Owner's answer: in a dense cluster the note of a newly opened airport with its "NOWE"/"NEW" stub disappeared, because
+D-262/D-263 hide a note that finds no room (`test:e2e:new-airport` failed). While the NEW mark lasts (until a route serves
+the airport, at most 12 game hours, `NEW_MARK_TICKS`) its name and note are laid out before a hub's (`roseRank`: jam 8, new 4, hub 2,
+fill ≤ 1 — a jam still goes first), and its note is a `must` note (as the busiest hub's, D-262): where the full note
+does not fit it takes the compact form "code + NEW" (the ticks still show the fill), over a lower-ranked rose's name
+if it must (that name steps back for the frame), never over a ring of ticks or away from its rose (D-263); only boxed
+in by rings may it still hide. When the mark goes the airport ranks as before. `src/ui/skin/roza.ts`
+(`roseRank`, `roseNoteMust`, `rozaCompactWidth`), `src/ui/overlay.ts`, `src/ui/overlay-layout.ts`; headless fixtures
+in `test:roza-names` and `test:overlay-layout`. **Status: in force.**
