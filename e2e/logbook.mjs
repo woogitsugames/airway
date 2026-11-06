@@ -16,7 +16,9 @@ const started = performance.now();
 const SHOTS = resolve(ROOT, 'docs/shots/n10n');
 const results = [];
 
-/** Service row: both halves inside the viewport, ≥ 48 px, on one line, flap titles not clipped. */
+/** Service row: both halves inside the viewport, ≥ 48 px, apart, titles not clipped. [night-23a] Róża (D-257) sets the
+ *  two as their own entries on the menu rose's arc (one above the other), so "on one line" became "not overlapping",
+ *  and the title checked is the one shown (Róża's Alegreya title; the split-flap is hidden there). */
 async function checkServiceRow(page) {
   const facts = await page.evaluate(() => {
     const ids = ['menu-settings', 'menu-logbook'];
@@ -24,9 +26,12 @@ async function checkServiceRow(page) {
       const node = document.querySelector(`[data-testid="${id}"]`);
       if (!node) return { id, missing: true };
       const box = node.getBoundingClientRect();
-      const flap = node.querySelector('.split-flap');
+      const title = [node.querySelector('.roza-title'), node.querySelector('.split-flap')]
+        .find((el) => el && getComputedStyle(el).display !== 'none' && el.getBoundingClientRect().width > 0);
+      const t = title?.getBoundingClientRect();
       return { id, top: box.top, bottom: box.bottom, left: box.left, right: box.right, height: box.height, width: box.width,
-        clipped: flap ? flap.scrollWidth > flap.clientWidth + 1 : true, vw: innerWidth, vh: innerHeight };
+        clipped: title ? title.scrollWidth > title.clientWidth + 1 || t.left < box.left - 0.5 || t.right > box.right + 0.5 : true,
+        vw: innerWidth, vh: innerHeight };
     });
   });
   for (const fact of facts) {
@@ -35,7 +40,9 @@ async function checkServiceRow(page) {
     assert(fact.left >= 0 && fact.right <= fact.vw && fact.top >= 0 && fact.bottom <= fact.vh, `${fact.id} outside the viewport`);
     assert(!fact.clipped, `${fact.id} title clipped`);
   }
-  assert(Math.abs(facts[0].top - facts[1].top) < 1, 'settings and logbook not on one row');
+  const [a, b] = facts;
+  assert(a.right <= b.left + 0.5 || b.right <= a.left + 0.5 || a.bottom <= b.top + 0.5 || b.bottom <= a.top + 0.5,
+    'settings and logbook overlap');
 }
 
 /** Logbook page: no horizontal scroll, no clipped table cell or value, Back is a 48 px target. */

@@ -1,7 +1,7 @@
 // [night-11q] R5c: route-end handles are quiet at rest and never painted over airport tags. In the real game a
 // route is drawn with a real pointer drag; at rest every visible handle is the small hollow marker (≤ 12 px, no
 // fill) in its 48 px area, and the handle layer paints below the airport overlay (tags, edge chips). Pressing a
-// handle and dragging turns that route's ends into the full yellow diamond (others stay quiet); moving back and
+// handle and dragging turns that route's ends into the full diamond (skin token fill) (others stay quiet); moving back and
 // releasing leaves the network as it was and the ends quiet again. EN 412×915, PL 915×412; shots docs/shots/n11q/.
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -22,8 +22,13 @@ const handleState = (page) => page.evaluate(() => {
     return { active: node.classList.contains('airway-route-handle--active'), width: parseFloat(mark.width) + (mark.boxSizing === 'border-box' ? 0 : 2 * parseFloat(mark.borderLeftWidth)),
       fill: mark.backgroundColor, x: box.left + box.width / 2, y: box.top + box.height / 2 };
   });
+  // [night-23a] The full diamond's fill is the active skin's token (Róża, D-257: chalk; Diorama: yellow), resolved here.
+  const probe = layer.appendChild(document.createElement('i'));
+  probe.style.background = 'var(--skin-atc-handle-active-bg)';
+  const activeFill = getComputedStyle(probe).backgroundColor;
+  probe.remove();
   return {
-    list, sameParent: layer?.parentElement === overlay?.parentElement,
+    list, activeFill, sameParent: layer?.parentElement === overlay?.parentElement,
     layerZ: Number(getComputedStyle(layer).zIndex), overlayZ: Number(getComputedStyle(overlay).zIndex),
     // later siblings paint above at equal z; the overlay must win on z-index alone
   };
@@ -60,8 +65,9 @@ try {
         await page.waitForTimeout(200);
         const held = await handleState(page);
         const active = held.list.filter((h) => h.active);
-        assert(active.length >= 1 && active.every((h) => h.width >= 20 && h.fill === 'rgb(255, 199, 44)'),
-          `grabbed route's ends not full: ${JSON.stringify(held.list)}`);
+        assert(active.length >= 1 && held.activeFill.startsWith('rgb(') &&
+          active.every((h) => h.width >= 20 && h.fill === held.activeFill),
+          `grabbed route's ends not full (${held.activeFill}): ${JSON.stringify(held.list)}`);
         assert(held.list.filter((h) => !h.active).every(quiet), 'another route lost its quiet ends');
         await page.screenshot({ path: resolve(SHOTS, `held-${language}-${viewport.width}x${viewport.height}.png`) });
         await page.mouse.move(grip.x, grip.y, { steps: 4 });

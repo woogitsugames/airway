@@ -2,7 +2,8 @@
 // opacity, so at night or under a cloud the globe showed through and hid its icon (docs/research/r5/
 // dock-disabled-night.png). Every empty tag must now be fully opaque (its own and every ancestor's opacity 1, an
 // opaque background), carry the dashed rack outline (shape, not only colour) and keep its count/icon ink at
-// ≥ 4.5:1 on its fill. EN 412×915, PL 915×412, PL 904×1088; dock shots docs/shots/n11n/.
+// ≥ 4.5:1 on its fill. [night-23a] Róża (D-257): the tag is bare on the globe, so the ink must reach 4.5:1 on its
+// opaque halo instead (no fill, no rack outline in that skin). EN 412×915, PL 915×412, PL 904×1088; dock shots docs/shots/n11n/.
 // [night-11s] R6c: an empty aircraft/hub tag no longer reads a bare "0": it counts down to the next weekly crates
 // ("2 days" / "2 dni", "5 h" / "5 godz."), matching the run's own clock (aw.state nextWeekTick − tick), not clipped,
 // inside its tag, and its aria-label adds "Next crates in …"; checked at the night start and again 9 game hours later
@@ -17,7 +18,8 @@ const SHOTS = resolve(ROOT, 'docs/shots/n11n');
 const results = [];
 const CASES = [['en', 412, 915], ['pl', 915, 412], ['pl', 904, 1088], ['pl', 320, 568]];
 const COUNTDOWN_SHOTS = resolve(ROOT, 'docs/shots/n11s');
-const WAIT = { en: /^(\d+) (day|days|h|min)$/, pl: /^(\d+) (dzień|dni|godz\.|min)$/ };
+// [night-23a] The Róża caption adds "in" / "za" (roza.dock.in).
+const WAIT = { en: /^(?:in )?(\d+) (day|days|h|min)$/, pl: /^(?:za )?(\d+) (dzień|dni|godz\.|min)$/ };
 const SPOKEN = { en: 'Next crates in ', pl: 'Następne skrzynie za ' };
 
 let fatal = null;
@@ -41,11 +43,18 @@ try {
             let opacity = 1;
             for (let node = tag; node && node instanceof Element; node = node.parentElement) opacity *= Number(getComputedStyle(node).opacity);
             const style = getComputedStyle(tag);
-            const bg = rgb(style.backgroundColor);
+            // [night-23a] Róża (D-257) draws the dock's symbols bare on the globe: a transparent tag, the symbol on an
+            // ink halo (drop-shadow) instead of a filled tag with the dashed rack outline (Diorama). The backdrop the
+            // ink must read on is then the halo, which must be opaque itself.
+            const own = rgb(style.backgroundColor);
+            const bare = own.length > 3 && own[3] === 0;
+            const icon = tag.querySelector('.airway-hud__icon');
+            const halo = bare && icon ? (getComputedStyle(icon).filter.match(/drop-shadow\((rgba?\([^)]*\))/) ?? [])[1] ?? '' : '';
+            const bg = bare ? rgb(halo) : own;
             const fg = rgb(style.color);
             const [a, b] = [lum(fg), lum(bg)].sort((x, y) => y - x);
             return {
-              action: tag.dataset.hudAction, opacity, bgAlpha: bg.length > 3 ? bg[3] : 1,
+              action: tag.dataset.hudAction, opacity, bare, bgAlpha: bg.length === 0 ? 0 : bg.length > 3 ? bg[3] : 1,
               outline: getComputedStyle(tag, '::after').borderTopStyle, contrast: (a + 0.05) / (b + 0.05),
             };
           });
@@ -53,8 +62,8 @@ try {
         assert(tags.length >= 2, `${label}: expected empty tags at the start, saw ${tags.length}`);
         for (const tag of tags) {
           assert(tag.opacity === 1, `${label}: ${tag.action} tag opacity ${tag.opacity}`);
-          assert(tag.bgAlpha === 1, `${label}: ${tag.action} tag background alpha ${tag.bgAlpha}`);
-          assert(tag.outline === 'dashed', `${label}: ${tag.action} tag has no dashed outline (${tag.outline})`);
+          assert(tag.bgAlpha === 1, `${label}: ${tag.action} tag ${tag.bare ? 'halo' : 'background'} alpha ${tag.bgAlpha}`);
+          if (!tag.bare) assert(tag.outline === 'dashed', `${label}: ${tag.action} tag has no dashed outline (${tag.outline})`);
           assert(tag.contrast >= 4.5, `${label}: ${tag.action} ink contrast ${tag.contrast.toFixed(2)}`);
         }
         const dock = await page.locator('.airway-dock').boundingBox();
@@ -67,12 +76,21 @@ try {
             return {
               left: s.nextWeekTick - s.tick,
               tags: [...document.querySelectorAll('.airway-dock__tag.is-empty')].filter((tag) => tag.dataset.hudAction !== 'undo').map((tag) => {
+                // [night-23a] Róża (D-257) hides the count and writes the wait in the symbol's caption beside the arc
+                // ("in 2 days"): that caption must then be shown whole, on screen and next to its symbol.
+                const shown = (node) => node && getComputedStyle(node).display !== 'none' && node.getBoundingClientRect().width > 0;
                 const count = tag.querySelector('.airway-dock__count');
-                const c = count.getBoundingClientRect(), r = tag.getBoundingClientRect();
+                const caption = tag.querySelector('.roza-caption');
+                const text = shown(count) ? count : shown(caption) ? caption : count;
+                const c = text.getBoundingClientRect(), r = tag.getBoundingClientRect();
+                const inside = text === caption
+                  ? c.width > 0 && c.left >= 0 && c.right <= innerWidth + 0.5 && c.top >= 0 && c.bottom <= innerHeight + 0.5 &&
+                    Math.max(r.left - c.right, c.left - r.right, r.top - c.bottom, c.top - r.bottom) <= 16
+                  : c.left >= r.left - 0.5 && c.right <= r.right + 0.5 && c.bottom <= r.bottom + 0.5 && c.width > 0;
                 return {
-                  action: tag.dataset.hudAction, countdown: tag.classList.contains('is-countdown'), text: count.textContent,
-                  aria: tag.getAttribute('aria-label') ?? '', clipped: count.scrollWidth > count.clientWidth + 1,
-                  inside: c.left >= r.left - 0.5 && c.right <= r.right + 0.5 && c.bottom <= r.bottom + 0.5 && c.width > 0,
+                  action: tag.dataset.hudAction, countdown: tag.classList.contains('is-countdown'), text: text.textContent,
+                  aria: tag.getAttribute('aria-label') ?? '', clipped: text.scrollWidth > text.clientWidth + 1, inside,
+                  box: [c.left, c.top, c.width, c.height, r.left, r.top].map(Math.round),
                 };
               }),
             };
@@ -85,7 +103,7 @@ try {
             const expected = days > 0 ? days : hours > 0 ? hours : left;
             assert(Number(match[1]) === expected, `${label} ${phase}: ${tag.action} "${tag.text}" vs ${left} min to the board`);
             assert(tag.aria.includes(SPOKEN[language]), `${label} ${phase}: ${tag.action} aria "${tag.aria}"`);
-            assert(!tag.clipped && tag.inside, `${label} ${phase}: ${tag.action} countdown clipped or outside its tag`);
+            assert(!tag.clipped && tag.inside, `${label} ${phase}: ${tag.action} countdown clipped or outside its tag ${tag.box}`);
           }
           if (dock) await page.screenshot({ path: resolve(COUNTDOWN_SHOTS, `dock-${language}-${width}x${height}-${phase}.png`), clip: dock });
           if (phase === 'day') await page.screenshot({ path: resolve(COUNTDOWN_SHOTS, `game-${language}-${width}x${height}-day.png`) });

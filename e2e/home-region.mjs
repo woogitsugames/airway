@@ -1,6 +1,7 @@
 // [night-11aj] R2g / D-236: Endless home region on the menu board. The select sits in the Endless row's status cell:
-// Random by default, Random + 7 regions (no Oceania), ≥ 48 px tall and inside the viewport, the Endless row no taller
-// than the Puzzles row (the board keeps its height), no horizontal scroll. Picking a region stores it in
+// Random by default, Random + 7 regions (no Oceania), ≥ 48 px tall and inside the viewport, the Endless entry no taller
+// than the Puzzles entry and the Endless line no more than the entry plus the select (night-23a: Róża sets the select
+// under the entry), no horizontal scroll. Picking a region stores it in
 // 'airway.settings' and the menu shows it again after a trip to Settings; Random removes it. One case then starts
 // Endless and the running game reports the picked region (window.aw state). Menu-only otherwise (G7: no long runs).
 // PL 412×915, EN 320×568, EN 915×412, PL 360×640; shots docs/shots/n11aj/. Fails on the old menu (no select).
@@ -16,6 +17,7 @@ const started = performance.now();
 const results = [];
 const CASES = [['pl', 412, 915, true], ['en', 320, 568, false], ['en', 915, 412, false], ['pl', 360, 640, false]];
 const REGIONS = ['random', 'NAM', 'SAM', 'EUN', 'EUS', 'AFR', 'ME', 'ASI'];
+const overlaps = (a, b) => a.x < b.x + b.width - 0.5 && b.x < a.x + a.width - 0.5 && a.y < b.y + b.height - 0.5 && b.y < a.y + a.height - 0.5;
 const stored = (page) => page.evaluate(() => JSON.parse(localStorage.getItem('airway.settings') || '{}').homeRegion ?? null);
 
 async function journey(page, language, width, height, startGame) {
@@ -30,9 +32,15 @@ async function journey(page, language, width, height, startGame) {
   const box = await select.boundingBox();
   assert(box && box.height >= 48 && box.width >= 48 && box.x >= 0 && box.x + box.width <= width + 0.5 &&
     box.y >= 0 && box.y + box.height <= height + 0.5, `select box ${JSON.stringify(box)}`);
-  const endless = await page.locator('.airway-flight-line').boundingBox();
-  const puzzles = await page.getByTestId('menu-puzzles').boundingBox();
-  assert(endless && puzzles && endless.height <= puzzles.height + 2, `Endless row ${endless?.height} vs ${puzzles?.height}`);
+  // [night-23a] Measured against the page, not one skin's layout (Róża, D-257, sets the select in a controls row under
+  // the entry): the Endless entry is no taller than the Puzzles entry, and the Endless line holds only the entry and
+  // the select (no extra row), side by side or stacked, without overlap.
+  const line = await page.locator('.airway-flight-line').boundingBox();
+  const [entry, puzzles] = await Promise.all(['menu-endless', 'menu-puzzles'].map((testId) => page.getByTestId(testId).boundingBox()));
+  assert(entry.height <= puzzles.height + 2, `Endless entry ${entry.height} vs Puzzles ${puzzles.height}`);
+  const span = Math.max(entry.y + entry.height, box.y + box.height) - Math.min(entry.y, box.y);
+  assert(line && line.height <= span + 2, `Endless line ${line?.height} taller than its entry and select (${span})`);
+  assert(!overlaps(box, entry), `select overlaps the entry ${JSON.stringify(box)} ${JSON.stringify(entry)}`);
   const board = await page.locator('.airway-board').boundingBox();
   assert(board && board.y >= 0 && board.y + board.height <= height + 0.5, `board ${JSON.stringify(board)}`);
   const text = await select.evaluate((node) => node.selectedOptions[0]?.textContent ?? '');

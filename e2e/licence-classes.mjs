@@ -1,8 +1,11 @@
 // [night-12bc] R2h / D-251: Endless licence classes on the menu board. With only class I open the Endless row is
 // unchanged (no licence select). Once the logbook has a class I flight that reached week 4 or later (D-273; the
-// fixture has week 5) and a class II one, the gate cell of the Endless row becomes the licence stamp select:
-// I/II/III, class I by default, >= 48 px and inside the viewport, the Endless row no taller than the Puzzles row, the home-region select still there, no
-// horizontal scroll. Picking a class stores it in 'airway.settings'; the logbook shows the per-class row. One case
+// fixture has 5 weeks flown in class I and exactly 3 in class II, the week-4 boundary that opens class III), the gate
+// cell of the Endless row becomes the licence stamp select: I/II/III, class I by default, >= 48 px and inside the
+// viewport, the home-region select still there, no horizontal scroll. [night-23a] Row geometry is measured against the
+// page itself, not a fixed skin layout (Róża, D-257, sets the entry and its controls row under it): the stamp adds no
+// height to the Endless line, the Endless entry is no taller than the Puzzles entry, and the stamp and the region
+// select share one row without overlapping each other or the entry. Picking a class stores it in 'airway.settings'; the logbook shows the per-class row. One case
 // starts Endless and the running game reports the class (window.aw state). Menu-only otherwise (G7: no long runs).
 // PL 412×915, EN 320×568, EN 915×412, PL 360×640; shots docs/shots/n12bc/. Fails on the old menu (no select).
 import { performance } from 'node:perf_hooks';
@@ -16,6 +19,7 @@ mkdirSync(SHOTS, { recursive: true });
 const started = performance.now();
 const results = [];
 const CASES = [['pl', 412, 915, true], ['en', 320, 568, false], ['en', 915, 412, false], ['pl', 360, 640, false]];
+const overlaps = (a, b) => a.x < b.x + b.width - 0.5 && b.x < a.x + a.width - 0.5 && a.y < b.y + b.height - 0.5 && b.y < a.y + a.height - 0.5;
 const stored = (page) => page.evaluate(() => JSON.parse(localStorage.getItem('airway.settings') || '{}').licenceClass ?? null);
 
 /** Re-open the menu so it reads the stores again (the page clears storage on navigation, so no reload). */
@@ -30,10 +34,11 @@ async function journey(page, language, width, height, startGame) {
   await waitForScreen(page, 'menu');
   await page.getByTestId('menu-home-region').waitFor({ timeout: 5000 });
   assert(await page.getByTestId('menu-licence').count() === 0, 'class I only: no licence select');
+  const lineBefore = await page.locator('.airway-flight-line').boundingBox();
 
   await page.evaluate(() => localStorage.setItem('airway.logbook.v1', JSON.stringify({ flights: 3, passengers: 900,
-    weeks: 10, longestWeeks: 5, hubs: {}, recent: [{ day: '2026-11-05', mode: 'endless', passengers: 300, weeks: 4, hub: null, licence: 2 }],
-    licenceWeeks: { 1: 5, 2: 4 } })));
+    weeks: 10, longestWeeks: 5, hubs: {}, recent: [{ day: '2026-11-05', mode: 'endless', passengers: 300, weeks: 3, hub: null, licence: 2 }],
+    licenceWeeks: { 1: 5, 2: 3 } })));
   await reopenMenu(page);
   const select = page.getByTestId('menu-licence');
   await select.waitFor({ timeout: 5000 });
@@ -47,9 +52,16 @@ async function journey(page, language, width, height, startGame) {
     assert(box && box.height >= 48 && box.width >= 48 && box.x >= 0 && box.x + box.width <= width + 0.5 &&
       box.y >= 0 && box.y + box.height <= height + 0.5, `${testId} box ${JSON.stringify(box)}`);
   }
-  const endless = await page.locator('.airway-flight-line').boundingBox();
-  const puzzles = await page.getByTestId('menu-puzzles').boundingBox();
-  assert(endless && puzzles && endless.height <= puzzles.height + 2, `Endless row ${endless?.height} vs ${puzzles?.height}`);
+  const line = await page.locator('.airway-flight-line').boundingBox();
+  assert(line && lineBefore && line.height <= lineBefore.height + 2,
+    `the stamp adds a row: Endless line ${lineBefore?.height} -> ${line?.height}`);
+  const [entry, puzzles, stamp, region] = await Promise.all(['menu-endless', 'menu-puzzles', 'menu-licence', 'menu-home-region']
+    .map((testId) => page.getByTestId(testId).boundingBox()));
+  assert(entry.height <= puzzles.height + 2, `Endless entry ${entry.height} vs Puzzles ${puzzles.height}`);
+  assert(Math.abs(stamp.y - region.y) <= 1, `stamp and region on different rows: ${stamp.y} vs ${region.y}`);
+  for (const [name, a, b] of [['stamp/region', stamp, region], ['stamp/entry', stamp, entry], ['region/entry', region, entry]]) {
+    assert(!overlaps(a, b), `${name} overlap ${JSON.stringify(a)} ${JSON.stringify(b)}`);
+  }
   const board = await page.locator('.airway-board').boundingBox();
   assert(board && board.y >= 0 && board.y + board.height <= height + 0.5, `board ${JSON.stringify(board)}`);
   const fits = await select.evaluate((node) => node.scrollWidth <= node.clientWidth + 1);
@@ -65,7 +77,7 @@ async function journey(page, language, width, height, startGame) {
   await clickTestId(page, 'menu-logbook');
   await waitForScreen(page, 'logbook');
   const row = await page.evaluate(() => document.querySelector('[data-row="licences"] dd')?.textContent ?? '');
-  const want = language === 'pl' ? 'I: 5 tygodni · II: 4 tygodnie · III: 0 tygodni' : 'I: 5 weeks · II: 4 weeks · III: 0 weeks';
+  const want = language === 'pl' ? 'I: 5 tygodni · II: 3 tygodnie · III: 0 tygodni' : 'I: 5 weeks · II: 3 weeks · III: 0 weeks';
   assert(row === want, `logbook row "${row}"`);
   assert(await page.locator('[data-licence="2"]').count() === 1, 'class II stamp in the recent flights');
   await page.keyboard.press('Escape');
