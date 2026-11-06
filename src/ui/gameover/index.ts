@@ -197,9 +197,19 @@ function contractsRow(contracts: NonNullable<GameOverSnapshot['contracts']>): HT
   row.setAttribute('aria-label', text);
   row.append(element('span', 'airway-go-milestones-title', text));
   const marks = element('span', 'airway-go-milestones-list');
-  marks.setAttribute('aria-hidden', 'true');
+  Object.assign(marks.style, { flex: '1', minWidth: '0', flexWrap: 'nowrap', overflowX: 'auto' });
+  marks.setAttribute('role', 'group');
+  marks.setAttribute('aria-label', text);
+  marks.tabIndex = 0;
+  marks.addEventListener('keydown', (event) => {
+    if (marks.scrollWidth <= marks.clientWidth) return;
+    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+    marks.scrollLeft += event.key === 'ArrowRight' ? 40 : -40;
+    event.preventDefault();
+  });
   for (const met of contracts.marks) {
     const mark = element('span', 'airway-go-milestone');
+    mark.setAttribute('aria-hidden', 'true');
     mark.dataset.met = String(met);
     mark.dataset.reached = String(met);
     mark.append(element('span', 'airway-go-milestone-mark'));

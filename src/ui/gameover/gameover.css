@@ -458,4 +458,4 @@
 }
 
 @media (max-height:700px) and (max-width:619px) { :has(.airway-go-contracts) .airway-go-flight-list { max-height:68px } }
-@media (max-height:600px) and (max-width:619px) { :has(.airway-go-contracts) .airway-go-flight-list { max-height:30px } }
+@media (max-height:600px) and (max-width:619px) { :has(.airway-go-contracts) .airway-go-flight-list { max-height:39px } }
