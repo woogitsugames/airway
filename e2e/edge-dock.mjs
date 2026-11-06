@@ -27,11 +27,16 @@ async function audit(page) {
     }
     // [night-10x] A right-column dock owns its whole band: an edge button between two tags is still in reach of
     // a thumb aimed at the dock. Portrait keeps the dock as a bottom row (the pass/tag test above covers it).
+    // [night-23a] The band is the box spanned by the dock's tags, not the dock element: Róża (D-257) sets the tags on
+    // an arc (down the right edge in landscape, round the corner dial on a foldable) whose element is only the bottom
+    // band; on the Diorama column both are the same strip.
     const hud = document.querySelector('.airway-hud');
-    const dock = document.querySelector('.airway-dock')?.getBoundingClientRect();
-    if (hud && dock && hud.dataset.layout !== 'portrait') {
+    const tags = boxes('.airway-dock__tag').map((tag) => tag.r);
+    if (hud && tags.length && hud.dataset.layout !== 'portrait') {
+      const band = { left: Math.min(...tags.map((r) => r.left)), top: Math.min(...tags.map((r) => r.top)),
+        right: Math.max(...tags.map((r) => r.right)), bottom: Math.max(...tags.map((r) => r.bottom)) };
       for (const edge of edges) {
-        if (edge.r.right > dock.left) problems.push(`${edge.name} ${Math.round(edge.r.left)}-${Math.round(edge.r.right)} in the dock column from ${Math.round(dock.left)} (${hud.dataset.layout})`);
+        if (hit(edge.r, band)) problems.push(`${edge.name} ${Math.round(edge.r.left)}-${Math.round(edge.r.right)},${Math.round(edge.r.top)} in the dock band ${Math.round(band.left)}-${Math.round(band.right)},${Math.round(band.top)}-${Math.round(band.bottom)} (${hud.dataset.layout})`);
       }
     }
     return { edges: edges.length, problems };

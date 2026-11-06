@@ -73,10 +73,12 @@ function journeys() {
       ['"+2 slots" opens the airport pick; Back returns to the crates untaken', async (page) => {
         // [night-12aa] Earlier boards' crates count too (the "+2 slots" board is no longer week 1).
         const before = ((await state(page)).upgrades ?? []).length;
+        // [night-23a] The same crates as before the pick, not a fixed 3: a met weekly contract adds a fourth (D-247).
+        const crates = (await offers(page)).join(',');
         await choose(page, 'departure-slots');
         await clickTestId(page, 'upgrade-pick-back');
         await page.locator('.airway-upgrade-open.is-picking-hub').waitFor({ state: 'detached', timeout: 5000 });
-        assert((await offers(page)).length === 3, `crates after Back: ${(await offers(page)).join(',')}`);
+        assert((await offers(page)).join(',') === crates, `crates after Back: ${(await offers(page)).join(',')} (before ${crates})`);
         assert(((await state(page)).upgrades ?? []).length === before, 'Back took an upgrade');
       }],
       ['a tap on an airport completes "+2 slots" for it', async (page) => {

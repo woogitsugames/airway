@@ -376,6 +376,11 @@
 @media (max-height: 550px) and (min-width: 620px) {
   :root[data-skin="roza"] .airway-go-content { row-gap: 3px; }
 }
+/* [night-23a] The same on short portrait phones: at 360 × 640 the PL week-2 jam report (e2e/gameover-short.mjs) was
+   4 px taller than the screen with Róża's line boxes and opened scrolled; the rows close up (the 48 px buttons stay). */
+@media (max-height: 700px) and (max-width: 619px) {
+  :root[data-skin="roza"] .airway-go-content { row-gap: 4px; }
+}
 /* While a hub cause board is open (it fills the screen above the bottom band), the dock arc lies flat: the six symbols
    in one row along the bottom band, captions and dial put away, so the board never covers a target (portrait,
    foldable). In landscape the board stops left of the dock column; the captions and the dial left of that column are put
@@ -395,4 +400,7 @@
   :root[data-skin="roza"] .roza-title { font-size: 18px; }
   :root[data-skin="roza"] .airway-flight__sub { font-size: 12.5px; }
   :root[data-skin="roza"] .roza-menu-rose { width: 120px; }
+  /* [night-23a] The licence stamp (48) + gap + home-region select (sized by its longest option) fit the Endless line's
+     arc width at 320 px (~140 px), so the stamp shares the controls row instead of adding one (menu.css: 10 px). */
+  :root[data-skin="roza"] .airway-flight__region:not(.airway-flight__licence) { min-width: 80px; font-size: 11px; }
 }

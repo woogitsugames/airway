@@ -770,7 +770,9 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       edgeBounds.height = height;
       edgeBounds.top = bounds.top;
       edgeBounds.bottom = bounds.bottom;
-      edgeBounds.right = live ? live.right : 0;
+      // [night-23a] Róża: the edge buttons keep left of the same arc band as the notes; the Diorama column width (96)
+      // let a button sit on the arc's hub symbol in landscape (e2e/edge-dock.mjs at 915 × 412).
+      edgeBounds.right = live ? (skin.roza && live.right > 0 ? live.right * 2 : live.right) : 0;
       const board = options.board?.() ?? null;
       boardSlot.active = board !== null;
       boardBlocked.length = 0;
