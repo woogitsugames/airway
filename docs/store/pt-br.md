@@ -2,6 +2,7 @@
 
 Translated from `en.md` (R1k, D-230). Every text below needs native review before it is uploaded. The game itself
 is in English and Polish until wave 1 of the game translation; the full description says so.
+The store title is approved by the owner as a draft (D-276, Q-87 → A); its final wording follows the native review.
 
 ## Review status
 needs native review

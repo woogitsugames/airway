@@ -796,6 +796,25 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       REPORT, PL/EN title, caption and alt text), press page 10 shots, ZIP 26 files. The store PNGs still show the
       old sign on the menu scene until the next `npm run store:shots`.
 
+## Owner decisions 2026-11-06 (Q-81…Q-89 → D-270…D-278, "accept the recommendations")
+Done in night/22b: milestones week 4 / 750 (D-270), licence unlock at week 4 (D-273), store-title, age-rating and
+legal-register notes (D-276…D-278). Left for separate items (each a branch from fresh `origin/dev`):
+- [ ] **Met weekly contracts on the game-over report (D-271)** — count the run's `ContractMet` events (Endless only),
+      one report row PL/EN ("Kontrakty 2/4" style, shape not only colour), fits the short-screen report without
+      scrolling; e2e layout check like `test:e2e:gameover-milestones`; nothing in Daily or the leaderboard.
+- [ ] **First demand-surge announcement: first-time card + short sound (D-272)** — one R6b card on the first
+      `SurgeAnnounced` event and one short audio cue; update `test:e2e:first-time-cards` and the audio cue tests.
+      Daily stays without surges.
+- [ ] **Weather front ground hold (D-274)** — under the band, departures wait for a short hold instead of (or on top
+      of) "−1 slot"; behind the existing flag, `ENDLESS_WEATHER_FRONT` stays `false`; bot report before/after,
+      replay/hash guards; Daily never. Ships as a post-launch update (D-131).
+- [ ] **EUS start cluster at the next balance review (D-275)** — bring the bot's EUS median (18.49 min) into
+      10–18 (D-79) by adjusting the EUS start cluster only; `docs/balance/regions-summary.md`.
+- [ ] **After the closed test (D-270, D-271, D-272, D-273)** — re-check milestone thresholds on human runs, contract
+      difficulty and reward, surge size and notice, licence class II strength; per-class leaderboards only after launch.
+- Owner/lawyer: "bezpłatne" in terms §2 in the single lawyer consultation (D-278); native review of the wave-1 store
+  titles (D-276).
+
 ## Globe look (D-170)
 Owner's choice 2026-11-03: the satellite globe (direction B). Plan, budgets and test lists per step:
 `docs/mockups/globe-2026-11/PLAN.md`; the DEV experiment to start from: `?globeLook=satellite`
@@ -1522,3 +1541,4 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
 - 2026-11-05 · N11aw "solar time" line in Settings → Help (R4b sentence, D-27, no new D) · night/11aw-solar-time-help · test:solar-time 4/4 (new; 1/4 on the old tree: no key, no line), test:i18n keys 619 + budgets ok, test:skin-tokens 36/36, test:e2e:settings-groups 4/4 (Help now lists the line), test:e2e:pseudo-320 16/16, test:fast 107/107, build ok, test:bundle 12/12 (main 1,133.3 kB / gzip 339.1 kB); PL 412×915 and EN 915×412 settings shots inspected (scratchpad, not committed); ui:matrix/store:shots not run (settings top unchanged)
 - 2026-11-05 · N12bh store shots + site assets refresh (no new D) · night/12bh-store-shots-refresh · `npm run store:shots` on the real renderer (SwiftShader, from origin/dev 58ef3f2): 60/60 captured and checked in 29.5 min, no scene timed out; 60 PNGs + manifest + contact sheet changed (failure banner "SIATKA WSTRZYMANA" → "SIEĆ ZAMKNIĘTA"/"NETWORK CLOSED", weekly-board waybill, menu "0 z 49"); `site:assets` 18 files (16 JPEGs changed, press PNGs identical); `test:store-shots` and `test:site` 620/620 pass
 - 2026-11-05 · N12bi menu sign "HUB 1" + site "failure" scene (D-223 note, no new D) · night/12bi-glossary-site-failure · test:i18n 1/1 (fails on the old sign: "pl: banned synonym "TERMINAL" in menu.sign"; self-check now covers "TERMINAL 1" in PL and EN and stale allowlist entries), test:site 650/650 (620 before: failure copy keys, phone and landscape JPEGs per language, press shots; card count = SITE_SHOTS.scenes), site:assets 22 files (4 new failure JPEGs, others byte-identical), build:site pressKit=26, shots:site preview/press re-shot and inspected, test:fast 107/107 (473.5 s), build ok, test:bundle 12/12. Not done: store:shots not re-run (30 min); the next run shows "HUB 1" on the menu scene
+- 2026-11-06 · N22b owner decisions Q-81…Q-89 accepted as recommended (D-270…D-278; D-269 reserved for the video decision) · night/22b-owner-q81-89 · milestones week 4 / 750 (`test:milestones` week-4 9/50, passengers-750 1/50, median 17.51 min, legacy logbook ids mapped), `LICENCE_UNLOCK_WEEK` 5 → 4 (`balance:licences` 200 seeds: week 4 reached I 30 / II 20 / III 12, medians unchanged), notes in store wave-1 files, RELEASE RL-19/20, legal register; follow-ups in "Owner decisions 2026-11-06"

@@ -12,7 +12,7 @@ const MAX_COUNT = 1_000_000_000;
 export const RUN_NOTES = 30;
 
 import { REGION_IDS, type RegionId } from '../data/regions';
-import { MILESTONES, isMilestone, type MilestoneId } from './milestones'; // [night-12ax] R1n
+import { LEGACY_MILESTONES, MILESTONES, isMilestone, type MilestoneId } from './milestones'; // [night-12ax] R1n
 
 type StorageLike = Pick<Storage, 'getItem' | 'setItem'>;
 export type LogMode = 'endless' | 'daily';
@@ -148,6 +148,11 @@ function milestoneRecord(value: unknown, flights: number): Partial<Record<Milest
   for (const id of MILESTONES) {
     const n = count((value as Record<string, unknown>)[id]);
     if (n !== null && n >= 1 && n <= flights) out[id] = n;
+  }
+  // D-270: a pre-D-270 record's week-5 / 1 000-passenger flight counts for week 4 / 750 when it is earlier.
+  for (const [old, id] of Object.entries(LEGACY_MILESTONES)) {
+    const n = count((value as Record<string, unknown>)[old]);
+    if (n !== null && n >= 1 && n <= flights && (out[id] === undefined || n < out[id]!)) out[id] = n;
   }
   return out;
 }

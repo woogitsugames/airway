@@ -246,8 +246,8 @@ async function endless(browser, url) {
       return `${reached.length} reached in the logbook`;
     });
     await step('R2h class II opened by the logbook, flown and reported', async () => {
-      // The bot does not live to week 5 (LICENCE_UNLOCK_WEEK); a class I flight of 4 weeks flown is logged through the
-      // logbook's own API (the record a week-5 game over writes), then the menu offers class II.
+      // The stub run need not live to week 4 (LICENCE_UNLOCK_WEEK, D-273); a class I flight of 4 weeks flown is
+      // logged through the logbook's own API (a week-5 game over, past the unlock), then the menu offers class II.
       await page.evaluate(async () => {
         const { recordFlight } = await import('/src/game/logbook.ts');
         recordFlight(localStorage, { day: '2026-11-04', mode: 'endless', passengers: 900, weeks: 4, hub: 'WAW' });

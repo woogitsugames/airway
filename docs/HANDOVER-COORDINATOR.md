@@ -53,13 +53,10 @@ commitach.
 
 ## Decyzje do właściciela rano
 1. Ocena Róży w grze (zestawienie `docs/shots/ui-roza/zestawienie.png`) i uruchomienie sesji ext z promptem Róży.
-2. Rozgrywka (arkusz `docs/OWNER-QUESTIONS.md`, sekcja B): Q-81 progi etapów, Q-82 kontrakt tygodnia, Q-83 szczyt
-   popytu, Q-84 klasy licencji, Q-85 siła frontu pogodowego, Q-86 mediana regionu EUS.
-3. Wydanie (sekcja F): Q-87 zlokalizowane tytuły sklepu, Q-88 PEGI 3 / Apple 4+ / grupa 13+, Q-89 „bezpłatne”
-   w regulaminie.
-4. Starsze otwarte: Q-52 rekrutacja testerów, Q-01 dane wydawcy/administratora, Q-07 Firebase, Q-49, Q-50, Q-56,
-   Q-67, data premiery; jedna konsultacja z prawnikiem (polityka, regulamin, rejestr).
-5. Właściciel: rejestracja aplikacji w App Check, przebieg Test Lab, akceptacja warunków przetwarzania Firebase.
+2. Starsze otwarte: Q-52 rekrutacja testerów, Q-01 dane wydawcy/administratora, Q-07 Firebase, Q-49, Q-50, Q-56,
+   Q-67, data premiery; jedna konsultacja z prawnikiem (polityka, regulamin, rejestr; także „bezpłatne” w §2 regulaminu,
+   D-278).
+3. Właściciel: rejestracja aplikacji w App Check, przebieg Test Lab, akceptacja warunków przetwarzania Firebase.
 
 ## Znane problemy
 - **G7** (sesja ext): SwiftShader ~10 fps. Obejście: `?render=stub` (D-254) — `test:e2e:session-stub` sprawdza
@@ -70,6 +67,8 @@ commitach.
 - Odczyt skali tekstu z systemu (Android/iOS) i Test Lab niesprawdzone na urządzeniu.
 
 ## Kolejka po nocy
+- Decyzje właściciela Q-81…Q-89 (D-270…D-278, 2026-11-06): pięć zadań do wzięcia w
+  `docs/NIGHT-BACKLOG.md` („Owner decisions 2026-11-06”).
 - Po dopracowaniu Róży: przegląd HUD/notek pod 150 % tekstu na prawdziwym globie, R2b wideo sklepu w nowym UI.
 - Agent #2: R4f/R6e/R8f czekają (G7 / test zamknięty / urządzenie), N9d (#52).
 - Nie bierz: kroków G i `src/render/**` (ext/03), zagadek (ext/04+).

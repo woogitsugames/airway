@@ -6,8 +6,8 @@ import { t, type TranslationKey } from '../i18n';
 
 const PARAMS: Record<MilestoneId, Record<string, number>> = {
   'first-hub': {}, 'all-regions': {},
-  'week-2': { week: 2 }, 'week-3': { week: 3 }, 'week-5': { week: 5 },
-  'passengers-500': { count: 500 }, 'passengers-1000': { count: 1000 },
+  'week-2': { week: 2 }, 'week-3': { week: 3 }, 'week-4': { week: 4 },
+  'passengers-500': { count: 500 }, 'passengers-750': { count: 750 },
 };
 
 export function milestoneLabel(id: MilestoneId): string {

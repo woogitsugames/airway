@@ -2120,7 +2120,7 @@ Bot check (test:balance policy, 0xA1A1…, 60 min cap): 50 runs, median 17.51 mi
 week 2 50, week 3 33, week 5 1, 500 passengers 10, 1 000 passengers 0; 200 runs, median 16.80 min — 200 / 146 /
 194 / 135 / 1 / 24 / 0. The median run reaches the first four; week 5 and 1 000 passengers are stretch goals no bot
 run reaches (owner may prefer week 4 / 750 passengers). Guard: `test:milestones`, `test:e2e:gameover-milestones`.
-**Status: in force (thresholds to confirm by the owner).**
+**Status: in force; thresholds week 4 / 750 since D-270 (owner, Q-81).**
 
 ## D-243 — Privacy policy v1: fourteen sections from RESEARCH R7, bound to the art. 30 record and the store declarations (2026-11-05, Claude, night N11am)
 R7a. `privacy.*` in `site/i18n.js` (PL/EN; the game copy follows through `test:privacy-text`, D-86) becomes a full
@@ -2338,7 +2338,7 @@ Daily counts toward class II, the class II/III knob sizes, the stamp under the "
 get their own records/leaderboards later. Rejected: a separate menu row (D-236: the board would grow), new rules per
 class (backlog: scenario knobs only), a rules-version bump (class I is unchanged).
 Guards: `test:licence-classes` (`test:fast`), `test:e2e:licence-classes`, `test:balance:licences` (`test:ci`).
-**Status: in force (knobs and unlock week to confirm after the closed test).**
+**Status: in force; unlock at week 4 since D-273 (owner, Q-84); class II strength after the closed test.**
 
 ## D-252 — Bundle budget back to green: skin tokens resolved at build, packed distance table, JS budgets 1,180 / 360 kB (2026-11-05, Claude, night N11ar)
 `test:bundle` was red on dev (7759457) with all four budgets over: main JS 1,181.6 kB raw (budget 1,150) / 353.1 kB
@@ -2400,7 +2400,7 @@ shape-coded edge (render, ext session; low-preset perf check D-73), an edge-chip
 Owner choices left open: whether a front should bite harder (e.g. slots halved, or a ground hold) before it ships,
 its size/speed/frequency, whether it ever reaches Daily.
 Guards: `test:weather-front` (`test:fast`), `test:balance:weather` (`test:ci`).
-**Status: implemented behind a flag, OFF in shipped Endless (post-launch candidate; strength to decide).**
+**Status: implemented behind a flag, OFF in shipped Endless (post-launch candidate; ground hold before release, D-274).**
 
 ## D-254 — The real session runs in browser tests on a DEV-only stub world without WebGL (2026-11-05, Claude, night N12be)
 G7 workaround for tests only (no gameplay or render change). Since the satellite globe, SwiftShader draws ~10 frames
@@ -2757,3 +2757,91 @@ the board's hub clear of it keeps its note), `test:overlay-layout` (a forced not
 `test:e2e:hub-board` (real session on the stub world, 915×412, 640×360, 360×640, 412×915: no shown note, slot tag,
 edge chip, ring or name intersects the board; the board's airport keeps its rose off the board; 2/4 failed on the
 old code). Before/after in `docs/shots/n21a/`. **Status: in force.**
+
+## D-270 — Endless milestones: week 4 and 750 passengers replace week 5 and 1 000 (owner, 2026-11-06; recommendation accepted, Q-81 → B)
+Owner's answer to Q-81 (D-242): the two stretch goals no bot run reached are lowered. The seven milestones are now
+**first hub, every region served, week 2 / 3 / 4, 500 / 750 passengers** (`MILESTONES` in `src/game/milestones.ts`,
+ids `week-4` and `passengers-750`, PL/EN labels "Tydzień 4" / "Week 4", "750 pasażerów" / "750 passengers"). Rationale
+(the recommendation): the median bot run reaches 4 of 7, and two goals that are practically unreachable discourage a
+first player rather than pull them on. A logbook written before D-270 keeps its history: a stored `week-5` or
+`passengers-1000` first-reach flight counts for `week-4` / `passengers-750` (the earlier flight wins), since a run that
+reached week 5 or 1 000 passengers passed week 4 and 750 too. No Sim, hash, save or leaderboard change (milestones
+are read from the run, D-242). Bot (`test:milestones`, 50 runs from 0xA1A1, median 17.51 min): first hub 50, every
+region 35, week 2 50, week 3 33, **week 4 9**, 500 passengers 7, **750 passengers 1** — still stretch goals, now in
+reach of a good run. Follow-up: correct the thresholds again after the closed test, on human runs (recommendation C
+part). Guards: `test:milestones` (thresholds and one step below, legacy ids), `test:e2e:gameover-milestones`.
+**Status: in force (supersedes the thresholds of D-242).**
+
+## D-271 — Weekly contract stays as built; met contracts go on the game-over report (owner, 2026-11-06; recommendation accepted, Q-82)
+Owner's answer to Q-82 (D-247): difficulty A stays (target 100 % of the pair's expected demand, cap 60, about half of
+the contracts met by the bot), **either direction**, **no accept step and no penalty**, reward the fourth crate on the
+next board. Rationale (the recommendation): the rule is optional and cheap to ignore; difficulty and reward cannot be
+judged from a bot that never takes the contract crate, so they are measured in the closed test (D-113). Added by the
+decision: the game-over report shows how many weekly contracts the run met. Nothing changes in this PR: the report
+line is UI work (count from the run's `ContractMet` events, one report row PL/EN that fits the short-screen report,
+`test:e2e:gameover-milestones`-style layout check) and is queued as a follow-up in `docs/NIGHT-BACKLOG.md` ("Owner
+decisions 2026-11-06"). Daily, puzzles and the leaderboard stay without contracts. **Status: in force (report line
+to implement; difficulty and reward to measure in the closed test).**
+
+## D-272 — Demand surge: size and notice unchanged until the closed test; a first-time card and sound later; Daily without surges (owner, 2026-11-06; recommendation accepted, Q-83)
+Owner's answer to Q-83 (D-249): the surge stays **+12 passengers over 6 game hours**, **served airports only**,
+announced **one game day ahead**, Endless only. Rationale (the recommendation): the size and the notice need human
+play to judge; **Daily stays without surges** so its leaderboard stays comparable with earlier days (`demandSurge`
+stays off in Daily; Daily state, hashes and replays unchanged). Added by the decision: a first-time card on the first
+announcement (R6b, like the other "first time" cards) and a short sound with the first announcement. Nothing changes
+in this PR: both touch the first-time cards journey (`test:e2e:first-time-cards`) and the audio cue set, so they are
+a follow-up in `docs/NIGHT-BACKLOG.md`. **Status: in force (first-time card and sound to implement).**
+
+## D-273 — Licence classes open at week 4 of the class below (owner, 2026-11-06; recommendation accepted, Q-84 → B)
+Owner's answer to Q-84 (D-251): the next licence class opens once a run of the class below reached **week 4**
+(three weeks flown), in line with the week-4 milestone (D-270); D-251 had week 5, which no bot run reached.
+`LICENCE_UNLOCK_WEEK` 5 → 4 in `src/sim/licence.ts` (read only by the device-side unlock in `src/game/licence.ts`
+and the balance report; no Sim state, hash, save or replay reads it). **Daily still counts** towards class I
+(unchanged). Class II stays mild (curfew from week 2, 3 turboprops); its strength is set after the closed test.
+Records stay one "best per class" row in the logbook; separate leaderboards per class only after launch. Rationale
+(the recommendation): an unlock nobody reaches hides two thirds of the feature. Bot (`balance:licences -- --seeds=200`,
+`docs/balance/licences-summary.md`): week 4 reached by 30/200 class I, 20/200 class II, 12/200 class III runs
+(week 5: 0/200 in each); medians unchanged (16.75 / 15.45 / 14.10 min). Guards: `test:licence-classes` (week 3 not
+enough, week 4 opens II, class II week 4 opens III, issued once). Follow-ups: class II strength and per-class
+leaderboards (closed test, after launch). **Status: in force (supersedes the unlock week of D-251).**
+
+## D-274 — Weather front: a short ground hold under the band before it ships, measured with the bot; ships after launch, never in Daily (owner, 2026-11-06; recommendation accepted, Q-85 → B)
+Owner's answer to Q-85 (D-253): "−1 slot" under the front is too weak to matter (the hourly departure limit almost
+never binds, Q-80), so before the front is switched on it gets a stronger effect: a **short ground hold** (departures
+from airports under the band wait) — felt even with a few aircraft. Rationale (the recommendation): a hold changes
+the player's plan at any fleet size, a halved slot count does not. The change is measured with the balance bot
+before release and the front ships as a **post-launch update** (D-131 rhythm); **Daily never gets the front**. Nothing
+changes in this PR: `ENDLESS_WEATHER_FRONT` stays `false` and the DEV switch `?weather=front` stays; the ground hold
+is sim work with its own replay/hash guards and a bot report, queued in `docs/NIGHT-BACKLOG.md`.
+**Status: in force (ground hold to implement and measure; front stays off).**
+
+## D-275 — EUS start region stays; its start cluster is corrected at the next balance review (owner, 2026-11-06; recommendation accepted, Q-86)
+Owner's answer to Q-86 (D-236): **A now** — Southern Europe (EUS) stays in the home-region menu as it is, although
+the bot's median there (18.49 min) is above the D-79 band of 10–18 min; the start region is the player's choice, not
+Daily, and the bot is not a human. **B later**: the EUS start cluster is corrected at the next balance review (its
+row in `docs/balance/regions-summary.md` stays marked). Nothing changes in this PR; the review item is in
+`docs/NIGHT-BACKLOG.md`. **Status: in force.**
+
+## D-276 — Wave-1 store titles approved as drafts for native review (owner, 2026-11-06; recommendation accepted, Q-87 → A)
+Owner's answer to Q-87 (D-230): the localized store titles "Airway: Flugrouten am Globus", "Airway : routes sur le
+globe", "Airway: rutas sobre el globo" and "Airway: rotas pelo globo" are approved as **drafts**; the final wording
+follows the native speaker's review (Q-69, D-136). Rationale (the recommendation): local titles keep the local search
+words that an English title would lose. `docs/store/{de,fr,es,pt-br}.md` say so under the intro; their review status
+stays "needs native review" (checked by `test:store-shots`), and nothing is uploaded before the review.
+**Status: in force (final wording after the native review).**
+
+## D-277 — Age rating PEGI 3 / USK 0 / Apple 4+ and Play target audience 13+ confirmed (owner, 2026-11-06; recommendation accepted, Q-88 → A)
+Owner's answer to Q-88 (D-235): the questionnaire answers of `docs/RELEASE.md` stand — expected **PEGI 3 / USK 0 /
+Apple 4+**, Play target audience **13 and older** (outside the Families policy, so the leaderboard needs no Families
+SDK and privacy rules). Rationale (the recommendation): the game has no violence, chat, user content, purchases, ads
+or location, and players are call signs only (Q-05); a nickname, chat or ads would change the answers and reopen this
+decision. RL-19 and RL-20 in `docs/RELEASE.md` cite D-277. The owner fills in the consoles. **Status: in force.**
+
+## D-278 — "Free of charge" in the terms: one lawyer consultation decides; until then the text stays (owner, 2026-11-06; recommendation accepted, Q-89 → C, A meanwhile)
+Owner's answer to Q-89 (D-244, D-16): §2 of the terms ("Wszystkie są bezpłatne, bez reklam i bez zakupów w
+aplikacji" / "free of charge") stays as written until the lawyer decides it in the same single consultation as the
+privacy policy, the terms and the art. 30 record. Rationale (the recommendation): it describes the service today
+(D-16: free for now) rather than advertising a price, and the terms already promise 14 days' notice of a change, which
+covers a later move to ads or a paid version; the store and marketing texts still say nothing about price or "free"
+(RESEARCH R2). `site/terms.html` and the in-game copy are unchanged; the legal register row of the terms
+(`docs/legal/README.md`) lists the question for the lawyer. **Status: in force (lawyer to confirm).**

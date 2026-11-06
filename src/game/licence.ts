@@ -15,7 +15,7 @@ type StorageLike = Pick<Storage, 'getItem' | 'setItem'>;
 
 /**
  * The classes this player may fly, in order: class I always; each further class once a run of the class below it
- * reached week LICENCE_UNLOCK_WEEK (the logbook counts weeks flown, so week 5 = 4 weeks flown).
+ * reached week LICENCE_UNLOCK_WEEK (the logbook counts weeks flown, so week 4 = 3 weeks flown).
  */
 export function openLicences(book: Logbook): LicenceClass[] {
   const best = licenceWeeks(book);
