@@ -4,7 +4,7 @@
 // [night-16a] D-262: a name whose top is taken runs along the bottom of the ring before it shortens; the store shot's
 // Levant cluster (game-phone 360×640) keeps the busiest hub's name and its note (code and fill at least).
 import assert from 'node:assert/strict';
-import { roseLabelBelow, roseLabelText, roseNameBox, roseRank, rozaCaptionClashes, rozaNameLayout, rozaNotePlaces, rozaRoseObstacles, roseHomeReach, roseRingHalf,
+import { roseLabelBelow, roseLabelText, roseNameBox, roseRank, rozaBoardCovers, rozaCaptionClashes, rozaNameLayout, rozaNotePlaces, rozaRoseObstacles, roseHomeReach, roseRingHalf,
   type RoseLabel, type RoseLabelMode } from '../src/ui/skin/roza.ts';
 import { layoutTags, NOTE_GAP_X, NOTE_GAP_Y, OWN_MARGIN, type TagSlot } from '../src/ui/overlay-layout.ts';
 
@@ -387,5 +387,94 @@ for (const [id, scene] of [['game', GAME_TABLET], ['night', NIGHT_TABLET]] as co
     assert.equal(snap(tabletFrame(scene, first)), snap(first));
   });
 }
+// [night-21a] D-268: the open hub board (long press on an airport) is an obstacle for the overlay. The overlay frame as
+// src/ui/overlay.ts runs it with a board box: a rose whose ring the board covers steps back with its note, the names
+// are laid out with the board as a taken box, and the board is a fixed rank-Infinity slot no note covers (not even the
+// busiest hub's forced one). Landscape 915×412 (the board left of the rack, under the pass; RIX right at its edge as in
+// the owner's report) and portrait 360×640 (the board across the top half).
+type Board = { l: number; t: number; r: number; b: number };
+function boardFrame(scene: Scene, board: Board, view: View, dock: number[][]) {
+  const shown = scene.filter((s) => !rozaBoardCovers(s.label, board));
+  const labels = shown.map((s) => ({ ...s.label }));
+  const modes = rozaNameLayout(labels, [board]);
+  const busiest = labels.reduce((best, l, i) => (l.hub && (best < 0 || roseRank(l) > roseRank(labels[best])) ? i : best), -1);
+  const slots: TagSlot[] = [{ id: 'board', anchorX: 0, anchorY: 0, width: board.r - board.l, height: board.b - board.t, active: true,
+    jammed: false, fixed: true, rank: Infinity, x: board.l, y: board.t, placed: false }];
+  const tags = labels.map((label, i) => {
+    const tag: TagSlot = { id: label.code, anchorX: 0, anchorY: 0, width: shown[i].width, height: 30, active: true, jammed: false,
+      x: 0, y: 0, placed: false, compactWidth: shown[i].compact, minor: label.fill === 0, rank: roseRank(label), must: i === busiest };
+    rozaNotePlaces(tag, label, modes[i], view.width);
+    const box: TagSlot = { id: label.code + '~rose', anchorX: 0, anchorY: 0, width: 0, height: 0, active: true, jammed: false, fixed: true,
+      x: 0, y: 0, placed: false, rank: tag.rank };
+    const name: TagSlot = { ...box, id: label.code + '~name' };
+    rozaRoseObstacles(box, name, label, modes[i]);
+    slots.push(tag, box, name);
+    return tag;
+  });
+  for (const [x, y] of dock) slots.push({ id: 'dock', anchorX: 0, anchorY: 0, width: 48, height: 48, active: true, jammed: false,
+    fixed: true, x: x - 24, y: y - 24, placed: false, rank: Infinity });
+  layoutTags(slots, view);
+  return { hidden: scene.filter((s) => rozaBoardCovers(s.label, board)).map((s) => s.label.code), labels, modes, tags };
+}
+const LANDSCAPE: View = { width: 915 - 96 * 2, height: 412, top: 40, bottom: 0, gap: 4 };
+const LANDSCAPE_BOARD: Board = { l: 413, t: 80, r: 813, b: 330 };
+const LANDSCAPE_SCENE: Scene = [
+  { label: rose(470, 210, 'Stambuł', 'IST', { r: 30, hub: true, fill: 30 / 36 }), width: 150, compact: 96 }, // the board's hub, under it
+  { label: rose(398, 150, 'Ryga', 'RIX', { r: 20, fill: 3 / 24 }), width: 104, compact: 84 }, // ring half under the board edge
+  { label: rose(370, 250, 'Wilno', 'VNO', { r: 14, fill: 2 / 24 }), width: 104, compact: 84 }, // right beside the board
+  { label: rose(520, 370, 'Ateny', 'ATH', { r: 16, hub: true, fill: 6 / 36 }), width: 132, compact: 84 }, // just under it
+  { label: rose(140, 190, 'Praga', 'PRG', { r: 18, fill: 5 / 24 }), width: 104, compact: 84 }, // well clear
+];
+const PORTRAIT: View = { width: 360, height: 640, top: 84, bottom: 96, gap: 4 };
+const PORTRAIT_BOARD: Board = { l: 12, t: 80, r: 348, b: 420 };
+const PORTRAIT_SCENE: Scene = [
+  { label: rose(180, 250, 'Stambuł', 'IST', { r: 30, hub: true, fill: 30 / 36 }), width: 150, compact: 96 },
+  { label: rose(120, 446, 'Ryga', 'RIX', { r: 18, fill: 3 / 24 }), width: 104, compact: 84 }, // name would reach into the board
+  { label: rose(250, 470, 'Kair', 'CAI', { r: 22, hub: true, fill: 9 / 36 }), width: 132, compact: 84 },
+  { label: rose(330, 425, 'Bagdad', 'BGW', { r: 14, fill: 2 / 24 }), width: 104, compact: 84 }, // ring under the board's corner
+];
+const off = (a: Board, b: Board): boolean => a.r <= b.l || b.r <= a.l || a.b <= b.t || b.b <= a.t;
+for (const [id, scene, board, view, dock] of [
+  ['landscape 915×412', LANDSCAPE_SCENE, LANDSCAPE_BOARD, LANDSCAPE, [[880, 120], [880, 200], [880, 280]]],
+  ['portrait 360×640', PORTRAIT_SCENE, PORTRAIT_BOARD, PORTRAIT, DOCK.map(([x, y]) => [x, y + 140])],
+] as const) {
+  test(`hub board open, ${id} (D-268): no note, name or ring stands on the board`, () => {
+    const { hidden, labels, modes, tags } = boardFrame(scene, board, view, dock as number[][]);
+    for (const label of labels) {
+      const half = roseRingHalf(label);
+      assert(off({ l: label.x - half, t: label.y - half, r: label.x + half, b: label.y + half }, { l: board.l + 2, t: board.t + 2, r: board.r - 2, b: board.b - 2 }) ||
+        !rozaBoardCovers(label, board), `${label.code}'s ring is on the board`);
+    }
+    labels.forEach((label, i) => {
+      const text = roseLabelText(label, modes[i]);
+      if (text) assert(off(roseNameBox(label, text, roseLabelBelow(modes[i])), board), `${label.code}'s name "${text}" is on the board`);
+    });
+    for (const tag of tags) if (tag.placed) assert(off({ l: tag.x, t: tag.y, r: tag.x + tag.width, b: tag.y + tag.height }, board), `${tag.id}'s note is on the board`);
+    assert(hidden.includes('IST'), 'the board\'s own hub, under the board, steps back');
+    assertClear(labels, modes);
+    assert(tags.some((t) => t.placed), 'roses clear of the board keep their notes');
+  });
+}
+test('hub board open (D-268): RIX at the landscape board\'s edge steps back; a rose beside it keeps ring, name and note', () => {
+  const { hidden, labels, modes, tags } = boardFrame(LANDSCAPE_SCENE, LANDSCAPE_BOARD, LANDSCAPE, []);
+  assert.deepEqual(hidden, ['IST', 'RIX']);
+  const vno = labels.findIndex((l) => l.code === 'VNO'), prg = labels.findIndex((l) => l.code === 'PRG');
+  assert.notEqual(modes[vno], 'none', 'Wilno keeps a name');
+  assert(tags[vno].placed && tags[vno].x + tags[vno].width <= LANDSCAPE_BOARD.l, `Wilno's note stands left of the board ${JSON.stringify(tags[vno])}`);
+  assert.equal(modes[prg], 'name');
+  assert(tags[prg].placed, 'Praga keeps its note');
+  // The same airports with the board closed: RIX shows and Wilno's note takes its first place, on the right.
+  const closed = levantFrame(LANDSCAPE_SCENE, undefined, LANDSCAPE, [], 915);
+  assert(closed.tags[1].placed || closed.modes[1] !== 'none', 'RIX shows with the board closed');
+});
+test('hub board open (D-268): the selected hub\'s rose clear of the board stays (portrait, the board over the top half)', () => {
+  const below = [{ ...PORTRAIT_SCENE[0], label: { ...PORTRAIT_SCENE[0].label, y: 500 } }, ...PORTRAIT_SCENE.slice(1, 3)];
+  const { hidden, labels, tags } = boardFrame(below, PORTRAIT_BOARD, PORTRAIT, []);
+  assert(!hidden.includes('IST'), 'the board\'s hub is shown');
+  assert.equal(labels[0].code, 'IST');
+  assert(tags[0].placed, 'the board\'s hub keeps its note');
+  assert(!rozaBoardCovers(rose(180, 460, 'X', 'X', { r: 14 }), PORTRAIT_BOARD) && rozaBoardCovers(rose(180, 440, 'X', 'X', { r: 14 }), PORTRAIT_BOARD),
+    'a ring 2 px past the board edge counts as covered');
+});
 console.log(`SUMMARY test:roza-names passed=${passed} failed=${failed}`);
 if (failed) process.exitCode = 1;

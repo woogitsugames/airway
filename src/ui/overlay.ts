@@ -3,7 +3,7 @@ import { Camera, Object3D, Vector3 } from 'three';
 import { t } from '../i18n';
 import { isDestinationRegion as isValidRegion, regionGlyph, type DestinationRegion } from './glyphs';
 import {
-  attachSlotTag, layoutTags, placeEdgeChips, projectEdgeChip, sizeTagGroup, slotCountdownText,
+  attachSlotTag, EDGE_CHIP_HEIGHT, EDGE_CHIP_WIDTH, layoutTags, placeEdgeChips, projectEdgeChip, sizeTagGroup, slotCountdownText,
   type EdgeBounds, type EdgeChip, type SlotTagRect, type TagBounds, type TagSlot,
 } from './overlay-layout'; // [task-38] slot tag; [night-11x] R5h edge chips
 import { REGIONS } from '../data/regions';
@@ -13,7 +13,7 @@ import type { FrontMark } from '../game/weather'; // [night-12bd] R2j (type only
 import './skin/current.css'; // [night-11aq] skin tokens read by overlay.css
 import {
   skin, rozaEdgeClash, rozaEdgeNote, rozaExtraWidth, rozaJamShare, rozaJamWidth, rozaCaptionsYield, rozaNameLayout, rozaNoteChildren, rozaRose, MEDAL_RADIUS,
-  rozaCompactWidth, rozaDockObstacles, rozaNotePlaces, rozaRoseObstacles, roseLabelBelow, roseLabelText, roseRank,
+  rozaCompactWidth, rozaDockObstacles, rozaBoardCovers, rozaNotePlaces, rozaRoseObstacles, roseLabelBelow, roseLabelText, roseRank,
   ROZA_JAM_LINE, type Rose, type RoseLabel, type RoseLabelMode,
 } from './skin/roza'; // [night-11az] D-257: Róża skin helpers
 import './overlay.css';
@@ -47,6 +47,11 @@ export interface AirportOverlayOptions {
   onNavigate?: (id: string) => void;
   /** The render facade's projection (WorldRenderer.project; altitude is a radius); preferred over the local fallback. */
   project?: (lon: number, lat: number, altitude: number, out: { x: number; y: number; visible: boolean }) => unknown;
+  /**
+   * [night-21a] D-268: the open hub board's box in the layer's coordinates, or null while it is closed (read every
+   * frame, so return a cached object). Notes, rose names and edge chips keep off it; a rose under it steps back.
+   */
+  board?: () => { readonly l: number; readonly t: number; readonly r: number; readonly b: number } | null;
 }
 
 interface BubbleEntry {
@@ -325,6 +330,11 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
   const dockSlots: TagSlot[] = skin.roza ? Array.from({ length: 8 }, (_, i) => ({ id: 'dock~' + i, anchorX: 0, anchorY: 0, width: 0,
     height: 0, active: false, jammed: false, fixed: true, x: 0, y: 0, placed: false })) : [];
   layoutSlots.push(...dockSlots);
+  // [night-21a] D-268: the open hub board as a fixed obstacle no note ever covers (rank Infinity, as the dock).
+  const boardSlot: TagSlot = { id: 'board~', anchorX: 0, anchorY: 0, width: 0, height: 0, active: false, jammed: false,
+    fixed: true, rank: Infinity, x: 0, y: 0, placed: false };
+  layoutSlots.push(boardSlot);
+  const boardBlocked: { l: number; t: number; r: number; b: number }[] = [];
   const chips: EdgeChip[] = []; // [night-11x] parallel to `slots`
   const byId = new Map<string, BubbleEntry>();
   const marker = new Vector3();
@@ -761,6 +771,16 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       edgeBounds.top = bounds.top;
       edgeBounds.bottom = bounds.bottom;
       edgeBounds.right = live ? live.right : 0;
+      const board = options.board?.() ?? null;
+      boardSlot.active = board !== null;
+      boardBlocked.length = 0;
+      if (board) {
+        boardSlot.x = board.l;
+        boardSlot.y = board.t;
+        boardSlot.width = board.r - board.l;
+        boardSlot.height = board.b - board.t;
+        boardBlocked.push(board);
+      }
       for (const entry of entries) {
         marker.copy(entry.anchor);
         transformedNormal.copy(entry.normal);
@@ -786,7 +806,9 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
         }
         // Only the viewport edge hides a tag; HUD clearance is handled by layoutTags(bounds).
         const inView = front && x >= 10 && x <= width - 10 && y >= 10 && y <= height - 10;
-        entry.tag.active = inView && (entry.mainWidth > 0 || entry.slotRect.width > 0); // [task-38]
+        // [night-21a] D-268: an airport under the open hub board shows no note (the board is drawn over it).
+        const underBoard = board !== null && inView && x > board.l - 2 && x < board.r + 2 && y > board.t - 2 && y < board.b + 2;
+        entry.tag.active = inView && !underBoard && (entry.mainWidth > 0 || entry.slotRect.width > 0); // [task-38]
         entry.tag.anchorX = x;
         entry.tag.anchorY = y;
         entry.screenX = x;
@@ -808,9 +830,12 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
           const fill = entry.capacity > 0 ? Math.min(1, entry.waiting.length / entry.capacity) : 0;
           const label: RoseLabel = { x, y, r, hub: entry.hub, jam, name: entry.airport.name ?? entry.airport.code,
             code: entry.airport.code, fill, last: entry.roseLabel };
-          if (inView) roseLabels.push(label);
-          if (inView) roseEntries.push(entry);
-          entry.rose.place(x, y, inView);
+          // [night-21a] D-268: a rose whose ring the open hub board covers steps back with its note (D-259 does the same
+          // for the upgrade crates); the board's own airport keeps its rose wherever the board leaves it in view.
+          const shown = inView && !(board !== null && rozaBoardCovers(label, board));
+          if (shown) roseLabels.push(label);
+          if (shown) roseEntries.push(entry);
+          entry.rose.place(x, y, shown);
           // [night-16a] D-262: the note's full width again (the last layout may have left the compact one), its compact
           // form, and its priority: a jam, a hub, the fuller airport; the rose's box shares it (a must note's pass).
           sizeGroup(entry);
@@ -819,8 +844,9 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
           entry.tag.must = false;
           // The rose's box (ticks and the name arc) is a fixed obstacle for the notes; it and the note's places beside
           // and under the rose are set from the rose's name after the name layout below.
-          entry.roseSlot.active = inView;
+          entry.roseSlot.active = shown;
           entry.nameSlot.active = false;
+          if (!shown) entry.tag.active = false;
         }
         const chip = entry.chip;
         chip.offscreen = !inView;
@@ -836,7 +862,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       if (skin.roza) {
         // [night-14b] D-259: in a dense cluster at close zoom a lower-priority rose shortens its name to the code or drops it,
         // and a dock caption that would lie over a rose steps back.
-        const modes = roseEntries.length ? rozaNameLayout(roseLabels) : [];
+        const modes = roseEntries.length ? rozaNameLayout(roseLabels, boardBlocked) : [];
         let busiest: BubbleEntry | null = null;
         roseEntries.forEach((entry, i) => {
           const label = roseLabels[i];
@@ -902,7 +928,10 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
             entry.lastOpacity = opacity;
           }
         }
-        const showEdge = entry.chip.offscreen && entry.chip.placed;
+        const chip = entry.chip;
+        // [night-21a] D-268: an edge chip the open hub board would cover steps back while it is open.
+        const showEdge = chip.offscreen && chip.placed && !(board !== null && chip.x < board.r && chip.x + EDGE_CHIP_WIDTH > board.l &&
+          chip.y < board.b && chip.y + EDGE_CHIP_HEIGHT > board.t);
         if (showEdge !== (entry.edge.hidden === false)) updateVisibility(entry.edge, showEdge);
         if (showEdge && (entry.chip.x !== entry.lastEdgeX || entry.chip.y !== entry.lastEdgeY)) {
           placeEl(entry.edge, entry.chip.x, entry.chip.y);

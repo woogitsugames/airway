@@ -48,6 +48,11 @@ export interface HubBoardView {
   show(model: (HubBoardModel & { readonly code: string }) | null): void;
   /** The airport the open sheet shows, or null. */
   readonly openId: string | null;
+  /**
+   * [night-21a] D-268: the open sheet's box in the host's coordinates (layout box, without the step-in transform), or
+   * null while closed; cached and re-measured on open and on a size or layout change, so a frame reads no layout.
+   */
+  readonly box: { readonly l: number; readonly t: number; readonly r: number; readonly b: number } | null;
   dispose(): void;
 }
 
@@ -91,7 +96,16 @@ export function mountHubBoard(host: HTMLElement, callbacks: { close(): void }): 
   empty.className = 'airway-hub-board__empty';
   sheet.append(head, list, empty);
   host.appendChild(sheet);
-  const stopLayout = watchHudLayout(host, (layout) => { sheet.dataset.layout = layout; });
+  let box: { l: number; t: number; r: number; b: number } | null = null;
+  const measure = (): void => {
+    // offset* is the layout box relative to the host (the positioned game layer), unaffected by the step-in transform.
+    box = sheet.hidden || !sheet.offsetWidth ? null : { l: sheet.offsetLeft, t: sheet.offsetTop,
+      r: sheet.offsetLeft + sheet.offsetWidth, b: sheet.offsetTop + sheet.offsetHeight };
+  };
+  const stopLayout = watchHudLayout(host, (layout) => { sheet.dataset.layout = layout; measure(); });
+  const sizes = typeof ResizeObserver === 'function' ? new ResizeObserver(measure) : null;
+  sizes?.observe(sheet);
+  sizes?.observe(host);
 
   let openId: string | null = null;
   let renderedKey = '';
@@ -100,17 +114,20 @@ export function mountHubBoard(host: HTMLElement, callbacks: { close(): void }): 
 
   return {
     get openId() { return openId; },
+    get box() { return box; },
     show(model) {
       if (!model) {
         if (!sheet.hidden) sheet.hidden = true;
         openId = null;
+        box = null;
         renderedKey = '';
         return;
       }
       const opening = openId !== model.cityId || sheet.hidden;
       const key = [model.code, model.waiting, model.capacity, model.jammed,
         ...model.rows.map((row) => `${row.region}:${row.waiting}:${row.cause}:${row.minutes}`)].join('|');
-      if (key !== renderedKey || opening) {
+      const changed = key !== renderedKey || opening;
+      if (changed) {
         renderedKey = key;
         title.textContent = t('hubBoard.title', { code: model.code });
         fill.textContent = t('hubBoard.fill', { waiting: model.waiting, capacity: model.capacity });
@@ -143,9 +160,11 @@ export function mountHubBoard(host: HTMLElement, callbacks: { close(): void }): 
         sheet.hidden = false;
         close.focus({ preventScroll: true });
       }
+      if (changed) measure(); // new rows change the height (the observer catches it too, a frame later)
     },
     dispose() {
       stopLayout();
+      sizes?.disconnect();
       sheet.remove();
     },
   };

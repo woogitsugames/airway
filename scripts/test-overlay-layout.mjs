@@ -342,6 +342,16 @@ assert('out-of-range label suppressed', layoutTags([{ ...crowd[0], width: 500 }]
     ring.y = 0; ring.height = ring.width = 600; ring.x = -120;
     layoutTags([own, ring, note], b);
     assert('must (D-263): a forced note never covers a ring', !note.placed);
+    // [night-21a] D-268: the open hub board is a fixed rank-Infinity box: a forced note never covers it either; with
+    // room beside the board the note takes it.
+    note.width = 160;
+    const board = box('board', 10, 200, 340, 200, Infinity);
+    layoutTags([own, board, note], b);
+    assert('board (D-268): a forced note never covers the open hub board', !note.placed);
+    note.width = 160;
+    const side = box('board', 280, 150, 125, 300, Infinity);
+    layoutTags([own, side, note], b);
+    assert('board (D-268): beside the board the note takes another place, off the board', note.placed && note.x + note.width <= 280 && !overlaps(note, own));
   }
   // [night-16b] D-263: a ring is a disc: a note may take the free corner of its box; a note never floats from its rose.
   {

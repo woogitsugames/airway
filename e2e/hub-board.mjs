@@ -6,10 +6,16 @@
 // inside the screen, off the pass and the dock (bottom in portrait, side rack in landscape), with no clipped text; the
 // close target is ≥ 48 px and closes it; the step-in is short and off under "Reduce motion".
 // `--shots` writes docs/shots/n11ag/hub-board-*.png.
+// [night-21a] D-268: then in the real session on the DEV stub world (`?render=stub&clock=frozen`, D-254; only DOM
+// geometry is read), landscape 915×412 and 640×360 and portrait 360×640 and 412×915: a run with a day of waiting
+// passengers, the board opened by a long press on the fullest airport in view (the hit test's point; the rose is
+// matched within 16 px, the stub's projection differs a little from the overlay's). No shown note, slot tag, edge chip, rose ring or rose name intersects the
+// board, and the board's own airport keeps its rose wherever its ring lies off the board.
+// `--shots` also writes docs/shots/n21a/hub-board-map-*-after.png (`--shots-tag=before` for the pre-D-268 frames).
 import { performance } from 'node:perf_hooks';
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { withBrowser, newGamePage, waitForScreen, assert, saveDiagnostics, ROOT } from './browser.mjs';
+import { withBrowser, newGamePage, waitForScreen, assert, saveDiagnostics, clickTestId, dragGesture, ROOT, SEED } from './browser.mjs';
 
 const started = performance.now();
 const SHOTS = process.argv.includes('--shots');
@@ -19,6 +25,82 @@ const results = [];
 const SHOT_SET = { 'pl 360x640': ['jam', 'curfew'], 'en 360x640': ['mixed'], 'en 915x412': ['mixed'], 'pl 640x360': ['curfew'],
   'pl 673x841': ['mixed'] };
 const CASES = [['pl', 360, 640], ['en', 360, 640], ['en', 915, 412], ['pl', 640, 360], ['pl', 673, 841]];
+/** [night-21a] D-268: the board over the map in the real session (stub world), landscape and portrait. */
+const MAP_CASES = [['pl', 915, 412], ['en', 640, 360], ['en', 360, 640], ['pl', 412, 915]];
+const MAP_SHOT_DIR = resolve(ROOT, 'docs/shots/n21a');
+const SHOT_TAG = process.argv.find((arg) => arg.startsWith('--shots-tag='))?.slice('--shots-tag='.length) ?? 'after';
+/** The stub world with the frozen clock (D-254), whatever --render says: only DOM geometry is read here. */
+const stubUrl = (url) => { const target = new URL(url); target.searchParams.set('render', 'stub'); target.searchParams.set('clock', 'frozen'); return target.href; };
+const settle = (page) => page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(() => requestAnimationFrame(done)))));
+
+/** One real session: a route, a day of waiting passengers, the board opened on the fullest airport in view. */
+async function mapCase(browser, url, language, width, height) {
+  const { page, errors } = await newGamePage(browser, stubUrl(url), language, { width, height });
+  try {
+    assert(await page.evaluate(() => typeof window.__awStub === 'object' && window.__awStub !== null), 'stub world missing (?render=stub needs the Vite dev build)');
+    await waitForScreen(page, 'menu');
+    await page.evaluate((seed) => window.aw.prepareSeed(seed), SEED);
+    await clickTestId(page, 'menu-endless');
+    await waitForScreen(page, 'game');
+    await page.evaluate(() => document.fonts.ready);
+    await dragGesture(page, await page.evaluate(() => window.aw.gesture('route')));
+    await page.evaluate(() => window.aw.advanceTicks(1));
+    await page.waitForFunction(() => window.aw.state().routeCount >= 1, null, { timeout: 5000 });
+    await page.evaluate(() => window.aw.advanceTicks(1400));
+    await settle(page);
+    // The fullest airport the hit test sees, off the HUD bands (a long press there opens the board as a player's does).
+    const target = await page.evaluate(() => {
+      const airports = [...(window.aw.state().airports ?? [])].sort((a, b) => b.waiting / b.capacity - a.waiting / a.capacity);
+      for (const airport of airports) {
+        const at = window.__awStub.airportPoint(airport.id);
+        if (at?.visible && at.x > 40 && at.x < innerWidth - 130 && at.y > 100 && at.y < innerHeight - 120) return { id: airport.id, ...at };
+      }
+      return null;
+    });
+    assert(target, 'no airport in view to long-press');
+    await page.mouse.move(target.x, target.y);
+    await page.mouse.down();
+    await page.waitForTimeout(450);
+    await page.mouse.up();
+    await page.getByTestId('hub-board').waitFor({ state: 'visible', timeout: 3000 });
+    await settle(page);
+    const m = await page.evaluate((at) => {
+      const box = (r) => ({ l: r.left, t: r.top, r: r.right, b: r.bottom });
+      const board = box(document.querySelector('[data-testid="hub-board"]').getBoundingClientRect());
+      const hits = (a) => a.l < board.r - .5 && board.l < a.r - .5 && a.t < board.b - .5 && board.t < a.b - .5;
+      const shown = (el) => !el.hidden && el.getClientRects().length > 0 && getComputedStyle(el).visibility !== 'hidden' &&
+        Number(getComputedStyle(el).opacity) > 0;
+      const items = [];
+      for (const el of document.querySelectorAll('.airport-overlay .airport-bubble, .airport-overlay .airport-slot, .airport-overlay .airport-edge')) {
+        if (shown(el)) items.push({ kind: el.className.split(' ')[0], text: el.textContent.trim().slice(0, 24), ...box(el.getBoundingClientRect()) });
+      }
+      const roses = [...document.querySelectorAll('.airport-overlay .roza-rose')].filter((el) => el.style.display !== 'none');
+      let own = null;
+      for (const rose of roses) {
+        const ring = rose.querySelector('circle');
+        if (ring) items.push({ kind: 'ring', text: '', ...box(ring.getBoundingClientRect()) });
+        const name = rose.querySelector('.roza-rose__name');
+        if (name && name.textContent) items.push({ kind: 'name', text: name.textContent, ...box(name.getBoundingClientRect()) });
+        const r = rose.getBoundingClientRect();
+        if (Math.hypot((r.left + r.right) / 2 - at.x, (r.top + r.bottom) / 2 - at.y) < 16) own = ring ? box(ring.getBoundingClientRect()) : null;
+      }
+      return { board, items, hits: items.filter(hits), own, roses: roses.length };
+    }, target);
+    if (SHOTS) {
+      mkdirSync(MAP_SHOT_DIR, { recursive: true });
+      await page.screenshot({ path: resolve(MAP_SHOT_DIR, `hub-board-map-${language}-${width}x${height}-${SHOT_TAG}.png`) });
+    }
+    assert(m.items.length > 0, 'nothing of the map is drawn beside the board');
+    assert(m.hits.length === 0, `on the board ${JSON.stringify(m.board)}: ${m.hits.map((h) => `${h.kind} "${h.text}" ${[h.l, h.t, h.r, h.b].map(Math.round)}`).join('; ')}`);
+    // The board's own airport keeps its rose when its ring (inner radius + ticks, at most 40 + 9 px) is off the board.
+    const gap = Math.max(m.board.l - target.x, 0, target.x - m.board.r, m.board.t - target.y, 0, target.y - m.board.b);
+    assert(gap < 52 || m.own, `the board's airport ${target.id} lost its rose ${gap} px off the board`);
+    if (errors.length) throw new Error(`Browser errors: ${errors.join('; ')}`);
+    return `${m.items.length} map marks beside the board, ${m.roses} roses, own rose ${m.own ? 'shown' : gap < 52 ? 'under the board' : 'missing'}`;
+  } finally {
+    await page.close().catch(() => {});
+  }
+}
 
 let fatal = null;
 try {
@@ -204,6 +286,14 @@ try {
       }
       await page.close();
     }
+    for (const [language, width, height] of MAP_CASES) {
+      const label = `map ${language} ${width}×${height}`;
+      try {
+        results.push({ label: `${label} (${await mapCase(browser, url, language, width, height)})`, status: 'PASS' });
+      } catch (error) {
+        results.push({ label, status: 'FAIL', why: String(error?.message ?? error).split('\n')[0] });
+      }
+    }
   });
 } catch (error) {
   fatal = String(error?.message ?? error).split('\n')[0];
@@ -214,4 +304,4 @@ const passed = results.filter((item) => item.status === 'PASS').length;
 const failedCount = results.length - passed + (fatal ? 1 : 0);
 console.log(`SUMMARY test:e2e:hub-board seed=0xA1A1 steps=${results.length} passed=${passed} failed=${failedCount} ` +
   `durationMs=${Math.round(performance.now() - started)}`);
-if (failedCount || results.length !== CASES.length) process.exitCode = 1;
+if (failedCount || results.length !== CASES.length + MAP_CASES.length) process.exitCode = 1;

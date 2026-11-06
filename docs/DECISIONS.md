@@ -2735,3 +2735,25 @@ no free place for them); scrolling the pause sheet (its actions would leave the 
 game-over actions on screen and nothing above its scroll; 13/60 failed at 150 % on the old CSS). Left: the hub board
 in landscape covers the notes under it (RIX on 915×412; notes do not treat the board as an obstacle); at 150 % on
 360×640 only one and a half crates show before the board scrolls. Before/after in `docs/shots/n20a/`. **Status: in force.**
+
+## D-268 — The open hub board is an obstacle for the map's notes and roses (2026-11-06, Claude, night N21a)
+Left by D-267: the hub cause board (long press on an airport, D-228) is drawn over the map, but the D-262…D-266 note
+layout did not know about it, so in landscape (915×412, 640×360) a note, a rose's ring of ticks or its curved name stood
+half under the board's edge ("ANK 4 z 24" and "Ank…" cut by the board; RIX in the owner's report). Rule now: while the
+board is open its box (`HubBoardView.box`, the sheet's layout box in the game layer, cached and re-measured on open,
+new rows, a size or layout change, so a frame reads no layout) reaches the overlay (`AirportOverlayOptions.board`).
+(1) A rose whose ring of ticks the board covers (`rozaBoardCovers`, 2 px margin) steps back with its note for as long
+as the board is open, as the airport layer does under the upgrade crates (D-259); this includes the board's own airport
+when it lies under the board. (2) Every other rose lays out its name with the board as a taken box
+(`rozaNameLayout(labels, blocked)`): on top, along the bottom, the code, else no name. (3) The board is a fixed layout
+slot of rank Infinity, like a dock symbol (D-262), so a note takes another of its places or hides; not even the busiest
+hub's forced note (`must`) covers it. (4) An edge chip the board would cover steps back; in the Diorama skin a tag whose
+airport lies under the board hides. The board's own airport keeps its rose, name and note wherever its ring lies off
+the board. Rejected: hiding the whole overlay while the board is open (the board explains one airport against its
+neighbours, so the map must stay readable), and moving the board away from the airport (D-228 fixes its place clear of
+the pass and the dock). Guards: `test:roza-names` (landscape 915×412 and portrait 360×640 fixtures with a board box:
+no ring, name or note on the board, the board's hub under it steps back, a rose beside it keeps ring, name and note,
+the board's hub clear of it keeps its note), `test:overlay-layout` (a forced note never covers the board slot), and
+`test:e2e:hub-board` (real session on the stub world, 915×412, 640×360, 360×640, 412×915: no shown note, slot tag,
+edge chip, ring or name intersects the board; the board's airport keeps its rose off the board; 2/4 failed on the
+old code). Before/after in `docs/shots/n21a/`. **Status: in force.**

@@ -338,7 +338,7 @@ export interface RoseLabel {
   /** What it showed last frame: it keeps that with a little less clearance, so names do not flicker while panning. */
   last?: RoseLabelMode;
 }
-interface Box { l: number; t: number; r: number; b: number }
+export interface Box { l: number; t: number; r: number; b: number }
 
 /**
  * The screen box of a name set along the top of a rose (centred on twelve o'clock, as Rose.draw sets it), or along its
@@ -393,11 +393,12 @@ export const roseRank = (label: Pick<RoseLabel, 'jam' | 'hub' | 'fill'>): number
  * bottom, then the IATA code on top and along the bottom, else no name (the note beside the rose still reads the
  * code). Priority (roseRank): a jam, a hub, the fuller airport, then list order; a higher-priority rose is placed
  * first, so it displaces the lower ones. A label a rose already showed needs 3 px less clearance, so labels do not
- * flicker.
+ * flicker. [night-21a] D-268: no name is set over a `blocked` box (the open hub board); it tries the next form or hides.
  */
-export function rozaNameLayout(labels: readonly RoseLabel[]): RoseLabelMode[] {
+export function rozaNameLayout(labels: readonly RoseLabel[], blocked: readonly Box[] = []): RoseLabelMode[] {
   const order = labels.map((_, i) => i).sort((a, b) => roseRank(labels[b]) - roseRank(labels[a]) || a - b);
-  const placed: Box[] = [];
+  // [night-21a] D-268: `blocked` boxes (the open hub board) take their room before any name.
+  const placed: Box[] = [...blocked];
   const out: RoseLabelMode[] = labels.map(() => 'none');
   for (const i of order) {
     const label = labels[i];
@@ -419,6 +420,14 @@ export function rozaNameLayout(labels: readonly RoseLabel[]): RoseLabelMode[] {
   }
   return out;
 }
+
+/**
+ * [night-21a] D-268: the open hub board `board` covers this rose's ring of ticks (with a 2 px margin): the rose and its
+ * note step back while the board is open (the board is drawn over the map; a ring half under its edge read as a stray
+ * mark). A rose clear of the board stays, its name and note laid out round the board. Pure.
+ */
+export const rozaBoardCovers = (label: Pick<RoseLabel, 'x' | 'y' | 'r' | 'jam'>, board: Box): boolean =>
+  hitsDisc(board, label.x, label.y, roseRingHalf(label), 2);
 
 /**
  * [night-16a] D-262: the places a rose's note may take, for layoutTags: right of the rose level with its centre
