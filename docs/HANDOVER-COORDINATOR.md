@@ -1,11 +1,31 @@
 # Przekazanie koordynatora Airway
 
-Ostatnia aktualizacja: 2026-11-05, ok. 23:00 UTC. UI „Róża” domyślne (D-257) i dopracowane (D-259…D-264); zrzuty i wideo sklepu w Róży.
+Ostatnia aktualizacja: 2026-11-06, ok. 17:00 UTC. Sesja koordynatora kończy się (limit). Żaden agent nie pracuje,
+nic nie jest w toku, `main` = `dev`. Nowa sesja startuje promptem z `docs/notes/coordinator-start-prompt.md`.
 
 ## Stan repo
-- `main` = `dev`. W nocy scalone #211–#248, 5.11 #249–#273.
-- Ostatnie numery: **D-265**, **Q-89**. D-160…D-179 należą do sesji ext.
-- Budziki koordynatora :15 i :45 (włączone): `trig_011aYp1uohavDkngVDFRndoA`, `trig_01TQogjhSE2ggjutqxxB6TtS`.
+- `main` = `dev` (D-64). 4–5.11 scalone #204–#274, 6.11 #275–#282.
+- Ostatnie numery: **D-281**, **Q-89** (następne wolne: D-282, Q-90). D-160…D-179 należą do sesji ext.
+- Budziki koordynatora :15 i :45: `trig_011aYp1uohavDkngVDFRndoA`, `trig_01TQogjhSE2ggjutqxxB6TtS` — **wyłączone**
+  na koniec sesji 6.11 (oszczędność limitu); nowa sesja włącza je przez `update_trigger enabled=true` albo tworzy nowe.
+- Otwarte PR-y od koordynatora: brak. Gałęzie `night/*` scalonych PR-ów zostają na GitHubie (można sprzątać).
+
+## 6.11 (dzień z właścicielem)
+- Filmy sklepu poza gitem (D-269, #278): Dysk Google właściciela, folder „gry/AirWay”
+  (https://drive.google.com/drive/folders/1_H49bE2oZRgA10jw64t3BsghtsrfgOgm), wgrane 6 plików (konto Drive przez
+  Composio `googledrive_arriet-trim`, upload z raw.githubusercontent.com — repo jest publiczne). Nagrane przed D-264 →
+  do ponownego nagrania po ocenie Róży (`npm run store:video`, ~1,5 h; potem upload na Dysk).
+- Q-81…Q-89 przyjęte wg rekomendacji (D-270…D-278, #279): etapy tydzień 4 / 750 pas., licencje od tygodnia 4;
+  reszta jako zadania w `docs/NIGHT-BACKLOG.md` „Owner decisions 2026-11-06”.
+- Róża przy tekście 150 % (D-267, #276), tablica huba jako przeszkoda dla notek (D-268, #277), odstęp notek (D-266,
+  #275), przegląd 63 suit e2e po Róży (#280, 9 nieaktualnych testów + 3 błędy naprawione), trzy decyzje właściciela
+  o układzie (D-279 tablica wyboru na lewo od łuku, D-280 kontrakt w jednej linii przy niskim ekranie, D-281 „NOWE”
+  zawsze widoczne, #281).
+- Paczka 21 zleceń dla GPT: `docs/gpt/ZLECENIA-2026-11-06.md` (#282). Właściciel może je puszczać w Codex/GPT;
+  PR-y z gałęzi `gpt/NN-*` przegląda i scala koordynator (scal `dev`, `test:fast` + build, merge commit, sync main).
+  Do 17:00 UTC 6.11 nie było żadnej gałęzi `gpt/*`.
+- Właściciel jeszcze **nie ocenił Róży** po zrzutach (wysłane 6.11 rano: `docs/store/contact-sheet.png`,
+  `docs/store/shots/pl/{game,night,menu,upgrade,failure}-phone.png`).
 
 ## Co weszło w nocy (skrót)
 - Gra: wybór regionu startowego (D-236), etapy biegu (D-242), kontrakt tygodnia (D-247), zapowiadany szczyt popytu
@@ -49,10 +69,11 @@ commitach.
 
 
 ## W toku
-- Agent #1: odstęp między notkami (tablet: BGW pod notką Ankary) + ponowne zrzuty gry/nocy (`night/19a-note-gap`).
+- Nic. Brak agentów, brak otwartych PR-ów koordynatora.
 
-## Decyzje do właściciela rano
-1. Ocena Róży w grze (zestawienie `docs/shots/ui-roza/zestawienie.png`) i uruchomienie sesji ext z promptem Róży.
+## Decyzje do właściciela
+1. Ocena Róży (zrzuty sklepu) → od niej zależy ponowne nagranie wideo. Uruchomienie sesji ext z promptem
+   `docs/notes/roza-ext-prompt.md` (medalion jako środek róży, przesunięcie pierścienia na tablecie/iPadzie).
 2. Starsze otwarte: Q-52 rekrutacja testerów, Q-01 dane wydawcy/administratora, Q-07 Firebase, Q-49, Q-50, Q-56,
    Q-67, data premiery; jedna konsultacja z prawnikiem (polityka, regulamin, rejestr; także „bezpłatne” w §2 regulaminu,
    D-278).
@@ -62,13 +83,19 @@ commitach.
 - **G7** (sesja ext): SwiftShader ~10 fps. Obejście: `?render=stub` (D-254) — `test:e2e:session-stub` sprawdza
   podpięcia nocnych funkcji w `session.ts`; `ui:matrix:stub` 48/48, `test:e2e:smoke:stub` 9/9. Piksele globu
   (`store:shots`, `perf:scene`, pierścienie) nadal tylko na prawdziwym rendererze.
-- Zapas budżetu paczki mały: JS 1146,8/1180 kB, CSS 107,2/109 kB (~1,7 %), dist 3955/4300 kB.
+- Budżet CSS prawie wyczerpany: **108,8/109 kB** (D-258). Następna zmiana UI wymaga wydzielenia CSS samej Dioramy
+  (`?skin=current`, GPT-08) albo decyzji o podniesieniu budżetu. JS ~1150/1180 kB.
+- Opisy sklepu (EN/PL/fala 1) i strona wciąż mówią o „dioramie” / „ręcznie stylizowanym globusie” — nieaktualne
+  wobec globu satelitarnego i Róży (GPT-11 przygotuje propozycję do akceptacji właściciela).
+- Zapis playtestu `AW1:` nie zbiera kontraktów, szczytów, klasy licencji, regionu (GPT-20) — potrzebne przed testem
+  zamkniętym.
+- `test:e2e:transfer-glyphs` niestabilny pod obciążeniem (GPT-05).
 - Commity #206/#208 mają nazwę modelu w stopce (atrybucja środowiska); bez przepisywania historii.
 - Odczyt skali tekstu z systemu (Android/iOS) i Test Lab niesprawdzone na urządzeniu.
 
-## Kolejka po nocy
-- Decyzje właściciela Q-81…Q-89 (D-270…D-278, 2026-11-06): pięć zadań do wzięcia w
-  `docs/NIGHT-BACKLOG.md` („Owner decisions 2026-11-06”).
-- Po dopracowaniu Róży: przegląd HUD/notek pod 150 % tekstu na prawdziwym globie, R2b wideo sklepu w nowym UI.
+## Kolejka
+- Najpierw: PR-y od GPT (jeśli są), potem zadania z paczki GPT, których GPT nie wziął (te same opisy nadają się dla
+  agentów Claude), w kolejności z pliku (01, 02, 05, 06, 20, potem 03, 04, 08, 09, 11…).
+- Po ocenie Róży: ponowne `store:video` + upload na Dysk; ewentualnie `store:shots`.
 - Agent #2: R4f/R6e/R8f czekają (G7 / test zamknięty / urządzenie), N9d (#52).
 - Nie bierz: kroków G i `src/render/**` (ext/03), zagadek (ext/04+).
