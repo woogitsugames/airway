@@ -38,3 +38,7 @@ firebase-debug*.log
 firestore-debug.log
 functions/node_modules/
 functions/lib/
+
+# [night-22a] D-269: store preview videos live on the owner's Google Drive ("gry/AirWay"), not in git.
+# `npm run store:video` writes them here locally; manifest.json and poster-*.jpg stay committed.
+docs/store/video/**/*.mp4

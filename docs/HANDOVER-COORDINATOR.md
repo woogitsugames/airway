@@ -42,7 +42,7 @@ commitach.
   (R4f, D-260, #267); pierwszeństwo etykiet zator > hub > pełniejsze (D-262, #269); notka nigdy na pierścieniu róży
   (D-263, #270); notka jednoznacznie przy swojej róży (D-264, #272); menu bez kolizji z lotniskami demo (#269).
 - Zrzuty sklepu/strony w Róży (#265, #268, #271, gry/nocy znowu w #272). `store-shots.mjs --only=game,night --merge`.
-- Wideo sklepu R2b: `npm run store:video` (D-265, #273), 6 plików × 24 s (~51 MB w gicie). Nagrane przed D-264 —
+- Wideo sklepu R2b: `npm run store:video` (D-265, #273), 6 plików × 24 s (~51 MB; od D-269 poza gitem, na Dysku Google właściciela „gry/AirWay”). Nagrane przed D-264 —
   do ponownego nagrania. **Pytanie do właściciela:** trzymać mp4 poza gitem (zalecane), zostawić plakaty + manifest.
 - Dysk kontenera był pełny (store:shots padł) — usuwaj scalone worktree (`git worktree remove`) po każdym merge'u.
 - Znane, sesja ext: przesunięcie pierścienia róży względem medalionu na tablecie/iPadzie, medaliony między skrzyniami.

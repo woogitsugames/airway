@@ -2686,7 +2686,8 @@ Files over 10 MB are git-ignored by a generated `docs/store/video/.gitignore` an
 facts in `manifest.json`; the 5 s posters are committed as JPEG. ffmpeg is a system tool (not an npm dependency, no
 licence entry: nothing of it ships). `test:store-video` (fast) checks the manifest, posters and `.gitignore`, and any
 preview present on disk. The press kit's video slot (`PRESS_KIT.video`, D-219) stays empty: the files are not in git.
-**Status: in force.**
+**Status: in force; the storage part ("in git if ≤ 10 MB", the generated `.gitignore`) superseded by D-269 (no MP4 in
+git, owner's Google Drive).**
 
 ## D-266 — Róża: a note never stacks against another rose's note (2026-11-05, Claude, night N19a)
 On the store shots game-tablet and night-tablet (768×1024, after D-264) "BGW 2 z 24" stood over Baghdad's name, 4 px
@@ -2758,6 +2759,22 @@ the board's hub clear of it keeps its note), `test:overlay-layout` (a forced not
 edge chip, ring or name intersects the board; the board's airport keeps its rose off the board; 2/4 failed on the
 old code). Before/after in `docs/shots/n21a/`. **Status: in force.**
 
+## D-269 — Store preview videos live on the owner's Google Drive, never in git (2026-11-06, owner, night N22a)
+Owner decision, supersedes the storage part of D-265 ("files over 10 MB git-ignored, the rest committed"; all six
+previews were 7.6–9.8 MiB, so ~51 MB of MP4 went into git with #273, commit 98f26dc). Rule now: **no `*.mp4` under `docs/store/video/`
+is committed** — the root `.gitignore` has `docs/store/video/**/*.mp4` and the generated per-folder
+`docs/store/video/.gitignore` is gone. The files are kept in the owner's Google Drive folder "gry/AirWay"
+(https://drive.google.com/drive/folders/1_H49bE2oZRgA10jw64t3BsghtsrfgOgm) as
+`airway-preview-{pl,en}-{play-1080x1920,iphone-886x1920,ipad-1200x1600}.mp4` (`manifest.json` `storage` and
+`videos[].drive`). `npm run store:video` still writes `{pl,en}/preview-*.mp4` locally and rewrites the manifest (size,
+SHA-256, ffprobe facts, shot ticks) and posters, then prints the upload list; **after every regeneration the files are
+uploaded to the Drive under those names, replacing the old ones** (the SHA-256 in the committed manifest identifies the
+current set). `manifest.json` and the 5 s `poster-*.jpg` stay in git. `test:store-video` (fast) validates the manifest
+(incl. storage and Drive names), the posters, the root ignore rule, that git tracks no MP4 there and that no stale
+per-folder `.gitignore` exists; it ffprobe-checks a preview only if it is on disk (absent ones are counted, not failed).
+The old blobs remain in git history (98f26dc); history is not rewritten. Rejected: Git LFS (quota and a tool
+dependency for 51 MB that only the owner uploads), keeping files ≤ 10 MB in git (every regeneration adds ~51 MB to
+history). **Status: in force.**
 ## D-270 — Endless milestones: week 4 and 750 passengers replace week 5 and 1 000 (owner, 2026-11-06; recommendation accepted, Q-81 → B)
 Owner's answer to Q-81 (D-242): the two stretch goals no bot run reached are lowered. The seven milestones are now
 **first hub, every region served, week 2 / 3 / 4, 500 / 750 passengers** (`MILESTONES` in `src/game/milestones.ts`,
