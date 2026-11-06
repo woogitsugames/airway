@@ -153,6 +153,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
   // ---- presentation layers -------------------------------------------------------------
   const overlay: AirportOverlay = createAirportOverlay(layer, world.camera, {
     reserved: () => overlayReserved,
+    board: () => hubBoard.box, // [night-21a] D-268: notes and roses keep off the open hub board
     project: (lon, lat, altitude, out) => world.renderer.project(lon, lat, altitude, out),
     onNavigate: (id) => {
       const city = run.cityList().find((item) => item.id === id);
