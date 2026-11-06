@@ -8,6 +8,10 @@
 //   npm run store:video -- --only=play --lang=en --out=/tmp/v   # one preview, outside the repo
 //   npm run test:store-video                  # re-check manifest, posters and (when present) the MP4 files
 //
+// D-269: the MP4 files are never committed (root .gitignore: docs/store/video/**/*.mp4). They live on the owner's
+// Google Drive (DRIVE below) under the names in manifest.json `videos[].drive`; upload them after every regeneration.
+// manifest.json (size, SHA-256, ffprobe facts) and the poster JPEGs stay in git.
+//
 // Without ffmpeg on PATH the frames are written to `--frames=<dir>` (default: a temp dir) with an encode.sh.
 import { spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
@@ -47,7 +51,20 @@ export const POSTER_S = 5;
 const DUSK_START_TICK = 1440 + 13.5 * 60;
 /** Fill (waiting / waiting places) of the fullest airport when the jam shot starts. */
 const JAM_START_FILL = 0.8;
-const SIZE_LIMIT = 10 * 1024 * 1024; // larger files are git-ignored and recorded in the manifest only
+/** D-269: where the MP4 files live (owner's Google Drive); git keeps only the manifest and the posters. */
+export const DRIVE = {
+  folder: 'gry/AirWay',
+  url: 'https://drive.google.com/drive/folders/1_H49bE2oZRgA10jw64t3BsghtsrfgOgm',
+};
+/** The name a preview carries on the Drive, e.g. airway-preview-pl-play-1080x1920.mp4. */
+export function driveName(lang, device) {
+  const [w, h] = PIXELS[device];
+  return 'airway-preview-' + lang + '-' + device + '-' + w + 'x' + h + '.mp4';
+}
+/** The root .gitignore rule that keeps the MP4 files out of git (D-269). */
+export const IGNORE_RULE = 'docs/store/video/**/*.mp4';
+const MANIFEST_NOTE = 'MP4 files are not in git (D-269): they are on the owner\'s Google Drive (storage) under videos[].drive; ' +
+  'regenerate with npm run store:video and upload them after every regeneration.';
 const MANIFEST = 'manifest.json';
 
 const args = process.argv.slice(2);
@@ -286,7 +303,13 @@ export function jpegSize(file) {
   throw new Error('No JPEG frame header: ' + file);
 }
 
-/** Re-checks the manifest, the posters and every MP4 that is present (git-ignored ones may be absent). */
+/** Git's view of the MP4 files under the output dir: tracked paths, or null when git is unavailable. */
+function trackedVideos(dir) {
+  const result = spawnSync('git', ['ls-files', '--', '*.mp4'], { cwd: dir, encoding: 'utf8' });
+  return result.status === 0 ? result.stdout.split('\n').filter(Boolean) : null;
+}
+
+/** Re-checks the manifest, the posters and every MP4 that is present (they are git-ignored and usually absent, D-269). */
 export function validate(dir = OUT) {
   const file = join(dir, MANIFEST);
   if (!existsSync(file)) throw new Error('Missing ' + relative(ROOT, file) + '; run npm run store:video');
@@ -295,7 +318,16 @@ export function validate(dir = OUT) {
     throw new Error('Manifest seed/fps/frames differ from the script');
   }
   if (manifest.posterS !== POSTER_S) throw new Error('Manifest poster time ' + manifest.posterS + ' s');
-  const ignore = existsSync(join(dir, '.gitignore')) ? readFileSync(join(dir, '.gitignore'), 'utf8').split('\n') : [];
+  if (manifest.storage?.url !== DRIVE.url || manifest.storage?.folder !== DRIVE.folder) {
+    throw new Error('Manifest storage is not the Drive folder of D-269 (' + DRIVE.url + ')');
+  }
+  if (dir === OUT) {
+    const rules = readFileSync(join(ROOT, '.gitignore'), 'utf8').split('\n').map((line) => line.trim());
+    if (!rules.includes(IGNORE_RULE)) throw new Error('.gitignore misses ' + IGNORE_RULE + ' (D-269)');
+    const tracked = trackedVideos(dir);
+    if (tracked?.length) throw new Error('MP4 files tracked by git (D-269 keeps them on the Drive): ' + tracked.join(', '));
+  }
+  if (existsSync(join(dir, '.gitignore'))) throw new Error('Stale ' + relative(ROOT, join(dir, '.gitignore')) + ' (D-269 uses the root .gitignore)');
   const want = LANGUAGES.flatMap((lang) => DEVICES.map((d) => lang + '/' + d.id));
   const have = manifest.videos.map((v) => v.lang + '/' + v.device);
   if (have.join() !== want.join()) throw new Error('Manifest lists ' + have.join(', ') + '; want ' + want.join(', '));
@@ -308,9 +340,8 @@ export function validate(dir = OUT) {
     if (!existsSync(poster)) throw new Error('Missing poster ' + video.poster);
     const size = jpegSize(poster);
     if (size.width !== video.probe.width || size.height !== video.probe.height) throw new Error(video.poster + ': wrong size');
-    if ((video.bytes > SIZE_LIMIT) !== ignore.includes(video.file)) {
-      throw new Error(video.file + ': ' + video.bytes + ' bytes but .gitignore ' + (ignore.includes(video.file) ? 'lists' : 'misses') + ' it');
-    }
+    if (video.drive !== driveName(video.lang, video.device)) throw new Error(video.file + ': Drive name ' + video.drive + ', want ' + driveName(video.lang, video.device));
+    if (!(video.bytes > 0) || !/^[0-9a-f]{64}$/.test(video.sha256 ?? '')) throw new Error(video.file + ': size or SHA-256 missing');
     const path = join(dir, video.file);
     if (!existsSync(path)) { absent++; continue; }
     if (statSync(path).size !== video.bytes || sha256(path) !== video.sha256) throw new Error(video.file + ': differs from the manifest');
@@ -399,8 +430,8 @@ async function main() {
         const problems = checkProbe(device.id, facts);
         if (problems.length) throw new Error(file + ': ' + problems.join('; '));
         const bytes = statSync(join(stage, file)).size;
-        videos.push({ lang, device: device.id, store: device.store, file, poster, bytes, sha256: sha256(join(stage, file)),
-          probe: facts, shots });
+        videos.push({ lang, device: device.id, store: device.store, file, drive: driveName(lang, device.id), poster, bytes,
+          sha256: sha256(join(stage, file)), probe: facts, shots });
         console.log('video ' + file + ' ' + facts.width + 'x' + facts.height + ' ' + facts.durationS + ' s ' +
           (bytes / 1048576).toFixed(1) + ' MB in ' + Math.round((Date.now() - t0) / 1000) + ' s');
       }
@@ -427,14 +458,14 @@ async function main() {
     const manifest = {
       generator: 'scripts/store-video.mjs', seed: '0xA1A1', fps: FPS, frames: TOTAL_FRAMES, durationS: TOTAL_FRAMES / FPS,
       posterS: POSTER_S, storyboard: SHOTS, audio: 'silent stereo AAC (no music, no game audio)',
-      note: 'Files over 10 MB are git-ignored (.gitignore here); regenerate with npm run store:video.',
+      note: MANIFEST_NOTE, storage: DRIVE,
       videos,
     };
     writeFileSync(join(out, MANIFEST), JSON.stringify(manifest, null, 2) + '\n');
-    const big = videos.filter((v) => v.bytes > SIZE_LIMIT).map((v) => v.file);
-    writeFileSync(join(out, '.gitignore'), '# Generated by scripts/store-video.mjs: previews over 10 MB (see manifest.json).\n' +
-      big.map((f) => f + '\n').join(''));
+    rmSync(join(out, '.gitignore'), { force: true }); // the pre-D-269 per-folder ignore file
     validate(out);
+    console.log('Upload the MP4 files to ' + DRIVE.url + ' (Drive "' + DRIVE.folder + '") as: ' +
+      videos.map((v) => v.file + ' → ' + v.drive).join(', '));
   }
   console.log('SUMMARY store:video seed=0xA1A1 videos=' + videos.length + ' frames=' + TOTAL_FRAMES + ' fps=' + FPS +
     ' durationS=' + Math.round((Date.now() - started) / 1000) + ' passed=1 failed=0');

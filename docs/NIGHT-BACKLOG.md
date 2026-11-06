@@ -948,7 +948,7 @@ the owner's answer in `docs/OWNER-QUESTIONS.md`. Tick and log like the N items.
       960×540 @2 (1920×1080, game in landscape HUD); keep the existing three. Update the manifest, contact sheet,
       `test:store-shots` count and `docs/store/README.md` (which file goes to which console slot). Inspect every PNG.
       **Area:** platform/scripts (`scripts/store-shots.mjs`, `docs/store/`).
-- [x] R2b → N18b (D-265) **Store preview video from real play** — `npm run store:video`: the DEV autoplay bot on seed 0xA1A1 played
+- [x] R2b → N18b (D-265; MP4 storage: D-269) **Store preview video from real play** — `npm run store:video`: the DEV autoplay bot on seed 0xA1A1 played
       through deterministic steps, frames captured with Playwright screenshots (not screen recording) at 30 fps and
       encoded with ffmpeg to H.264: iPhone 886×1920, iPad 1200×1600, Play 1080×1920; 20–28 s; gameplay in the first
       second (route drawn, plane departs, dusk crosses the network, weekly crates, a hub near jam); no text, no music

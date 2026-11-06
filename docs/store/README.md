@@ -140,16 +140,36 @@ Storyboard, 24 s at 30 fps (cuts between shots, every shot is real play of one r
 | --- | --- | --- |
 | `video/{pl,en}/preview-iphone.mp4` | 886×1920 | App Store Connect → iPhone 6.9" (and 6.5") app preview; poster frame 00:05 |
 | `video/{pl,en}/preview-ipad.mp4` | 1200×1600 | App Store Connect → iPad 13" (12.9") app preview; poster frame 00:05 |
-| `video/{pl,en}/preview-play.mp4` | 1080×1920 | Google Play takes only a YouTube link: the owner uploads this file to the "Airway" channel (Q-49), ads off, then pastes the URL into Main store listing → Video |
+| `video/{pl,en}/preview-play.mp4` | 1080×1920 | Google Play takes only a YouTube link: the owner uploads this file (from the Drive, D-269) to the "Airway" channel (Q-49), ads off, then pastes the URL into Main store listing → Video |
 | `video/{pl,en}/poster-*.jpg` | as the video | The 5 s frame (press kit, YouTube custom thumbnail source) |
 
 Encoding: H.264 High 4.0, yuv420p, 30 fps, CRF 18 capped at 12 Mbit/s, `+faststart`, AAC 128 kbit/s 48 kHz stereo —
 inside Apple's app-preview specification (H.264, ≤ 30 fps, 15–30 s, ≤ 500 MB). Re-check the specification in App Store
-Connect help before upload. `video/manifest.json` records per file the size, SHA-256, ffprobe facts and the ticks of
-every shot; files over 10 MB are git-ignored (`video/.gitignore`, generated) and must be regenerated locally before
-upload (`npm run store:video`, ~40 min on 4 vCPU; needs ffmpeg/ffprobe on PATH — without ffmpeg the script writes PNG
-frames and an `encode.sh`). `npm run test:store-video` re-checks the manifest, posters and `.gitignore`, and every
-preview present on disk (size, hash, ffprobe). A re-run is not byte-identical (SwiftShader), and the first-route tick varies by a few ticks (148–152) with the boot timing; the dusk shot ticks are identical in every file, the shot ticks are recorded per file.
+Connect help before upload.
+
+**Where the files are (D-269).** The MP4 files are **not in git** (root `.gitignore`: `docs/store/video/**/*.mp4`).
+They live in the owner's Google Drive folder **"gry/AirWay"**:
+https://drive.google.com/drive/folders/1_H49bE2oZRgA10jw64t3BsghtsrfgOgm
+
+| Local file (`docs/store/video/`) | Name on the Drive |
+| --- | --- |
+| `pl/preview-play.mp4` / `en/preview-play.mp4` | `airway-preview-pl-play-1080x1920.mp4` / `airway-preview-en-play-1080x1920.mp4` |
+| `pl/preview-iphone.mp4` / `en/preview-iphone.mp4` | `airway-preview-pl-iphone-886x1920.mp4` / `airway-preview-en-iphone-886x1920.mp4` |
+| `pl/preview-ipad.mp4` / `en/preview-ipad.mp4` | `airway-preview-pl-ipad-1200x1600.mp4` / `airway-preview-en-ipad-1200x1600.mp4` |
+
+Git keeps `video/manifest.json` (per file: size, SHA-256, ffprobe facts, the Drive name in `drive`, the ticks of every
+shot; the folder in `storage`) and the `poster-*.jpg` frames. To check a downloaded file, `sha256sum` it and compare
+with the `sha256` of its manifest entry.
+
+**Regenerate and upload.** `npm run store:video` (~40 min on 4 vCPU; needs ffmpeg/ffprobe on PATH — without ffmpeg
+the script writes PNG frames and an `encode.sh`) writes the six MP4 files locally into `docs/store/video/{pl,en}/`,
+rewrites the posters and `manifest.json`, and prints the upload list. Then (1) upload the six files to the Drive folder
+above under the names in the table, replacing the old ones, and (2) commit only `manifest.json` and the posters
+(`git status` shows no MP4: they are ignored). The committed manifest and the files on the Drive must always be the
+same set. `npm run test:store-video` (fast) re-checks the manifest, the Drive names, the posters, the ignore rule and
+that git tracks no MP4; previews present on disk are also checked (size, hash, ffprobe), absent ones are counted, not
+failed. A re-run is not byte-identical (SwiftShader), and the first-route tick varies by a few ticks (148–152) with the
+boot timing; the dusk shot ticks are identical in every file, the shot ticks are recorded per file.
 
 ## Development-only integration contract (task 36, D-48)
 
