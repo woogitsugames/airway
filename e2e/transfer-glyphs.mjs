@@ -5,7 +5,7 @@
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
-import { withBrowser, newGamePage, gameUrl, skinShotsDir, waitForScreen, clickTestId, state, assert, saveDiagnostics, ROOT } from './browser.mjs';
+import { withBrowser, newGamePage, gameUrl, skinShotsDir, waitForScreen, clickTestId, state, assert, saveDiagnostics, ROOT, RENDER, assertRender } from './browser.mjs';
 import { E2E_SEEDS } from './seeds.mjs';
 
 // [night-12ac] Seed from e2e/seeds.mjs, replayed headless by test:e2e-seeds (in test:fast).
@@ -13,7 +13,7 @@ const SEED = E2E_SEEDS['transfer-glyphs'].seeds[0];
 
 const STEPS = 2;
 const started = performance.now();
-const SHOTS = skinShotsDir(resolve(ROOT, 'docs/shots/n10i')); // [night-30a] with --skin: .e2e/skin-linoryt/, tracked shots untouched
+const SHOTS = RENDER === 'stub' ? resolve(ROOT, '.e2e/transfer-glyphs-stub') : skinShotsDir(resolve(ROOT, 'docs/shots/n10i'));
 const results = [];
 const frames = (page, n) => page.evaluate((count) => new Promise((done) => {
   let left = count; const step = () => (--left <= 0 ? done() : requestAnimationFrame(step)); requestAnimationFrame(step);
@@ -48,6 +48,7 @@ try {
       if (results.some((item) => item.status !== 'PASS')) { results.push({ label, status: 'SKIP' }); continue; }
       const { page, errors } = await newGamePage(browser, gameUrl(url), language, viewport);
       try {
+        await assertRender(page);
         await waitForScreen(page, 'menu');
         await page.evaluate((seed) => window.aw.prepareSeed(seed), SEED);
         await clickTestId(page, 'menu-endless');
