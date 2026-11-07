@@ -3,7 +3,7 @@
 // the week-1 and week-2 boards (week 2 carries the tall hub-expansion label) in PL/EN: at 360×640 nothing scrolls
 // and all three labels lie inside the viewport below the boarding pass; [night-08e] the same at 320×568.
 import { performance } from 'node:perf_hooks';
-import { withBrowser, newGamePage, waitForScreen, assert, clickTestId, saveDiagnostics } from './browser.mjs';
+import { withBrowser, newGamePage, waitForScreen, assert, clickTestId, saveDiagnostics, skinUrl } from './browser.mjs'; // [night-29a] --skin=linoryt
 import { E2E_SEEDS } from './seeds.mjs';
 
 // [night-12aa] Per-suite seed, replayed headless by test:e2e-seeds (rules v6 ended 0xA1A1 in week 2).
@@ -65,7 +65,7 @@ try {
       let page;
       try {
         let errors;
-        ({ page, errors } = await newGamePage(browser, url, language, { width, height }));
+        ({ page, errors } = await newGamePage(browser, skinUrl(url), language, { width, height }));
         await boards(page, allowed, language, width, height);
         if (errors.length) throw new Error(`Browser errors: ${errors.join('; ')}`);
         results.push({ label, status: 'PASS' });

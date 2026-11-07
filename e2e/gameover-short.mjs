@@ -6,14 +6,15 @@
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
-import { withBrowser, newGamePage, waitForScreen, clickTestId, state, assert, saveDiagnostics, ROOT } from './browser.mjs';
+import { withBrowser, newGamePage, waitForScreen, clickTestId, state, assert, saveDiagnostics, ROOT, ARTIFACTS, SKIN, skinUrl } from './browser.mjs'; // [night-29a] --skin=linoryt
 import { E2E_SEEDS } from './seeds.mjs';
 
 // [night-12ac] Seed from e2e/seeds.mjs, replayed headless by test:e2e-seeds (in test:fast).
 const SEED = E2E_SEEDS['gameover-short'].seeds[0];
 
 const started = performance.now();
-const SHOTS = resolve(ROOT, 'docs/shots/n10m');
+// [night-29a] A `--skin` preview run keeps its frames out of the committed shots.
+const SHOTS = SKIN ? resolve(ARTIFACTS, `gameover-short-${SKIN}`) : resolve(ROOT, 'docs/shots/n10m');
 const results = [];
 const cases = [['pl', 360, 640], ['en', 360, 640], ['pl', 320, 568], ['en', 320, 568]];
 
@@ -23,7 +24,7 @@ try {
     mkdirSync(SHOTS, { recursive: true });
     for (const [language, width, height] of cases) {
       const label = `${language} ${width}×${height}: game-over actions on screen`;
-      const { page, errors } = await newGamePage(browser, url, language, { width, height });
+      const { page, errors } = await newGamePage(browser, skinUrl(url), language, { width, height });
       try {
         await waitForScreen(page, 'menu');
         await page.evaluate((seed) => window.aw.prepareSeed(seed), SEED);
@@ -44,7 +45,7 @@ try {
         await checkActions(page, label, width, height);
         await page.screenshot({ path: resolve(SHOTS, `gameover-${language}-${width}x${height}.png`) });
         // Worst case from the long play: the DEV game-over preview has three departures from the jammed hub and three causes.
-        await page.goto(url + '?preview=gameover', { waitUntil: 'load' });
+        await page.goto(skinUrl(url + '?preview=gameover'), { waitUntil: 'load' });
         await page.getByTestId('game-over').waitFor({ timeout: 8000 });
         await page.waitForTimeout(800);
         await checkActions(page, label + ' (3 departures)', width, height, 3);

@@ -121,6 +121,7 @@ export function linorytPass(section: HTMLElement, minute: number, week: number, 
     section.querySelector('.airway-pass__ticket')?.appendChild(box);
     parts = { clock, week: weekLine, sub, cells, now, bar, minute: -1 };
     passParts.set(section, parts);
+    publishPassBottom(section);
   }
   setText(parts.clock, `${pad2(Math.floor(minute / 60))}:${pad2(minute % 60)}`);
   setText(parts.week, t('roza.week', { week }));
@@ -137,6 +138,21 @@ export function linorytPass(section: HTMLElement, minute: number, week: number, 
     parts.minute = minute;
     parts.now.style.setProperty('--at', (minute / 1440).toFixed(4));
   }
+}
+
+/**
+ * [night-29a] U3: the sheets (pause, hub board, weekly board, report) start under the top margin, whose height depends on
+ * the screen, the safe area and whether the day bar is folded away; its bottom edge is published as `--lin-pass-bottom`
+ * on <html> and re-measured whenever the margin changes size.
+ */
+function publishPassBottom(section: HTMLElement): void {
+  const root = document.documentElement;
+  const publish = (): void => {
+    const bottom = section.getBoundingClientRect().bottom;
+    if (bottom > 0) root.style.setProperty('--lin-pass-bottom', `${Math.ceil(bottom)}px`);
+  };
+  if (typeof ResizeObserver === 'function') new ResizeObserver(publish).observe(section);
+  publish();
 }
 
 // ---- Dock: captions ----------------------------------------------------------------------------------------------------
@@ -166,6 +182,20 @@ export function linorytDockLabel(button: HTMLElement, name: string, globeMode: s
   setText(caption, text);
   setText(when, wait === null ? '' : t('roza.dock.in', { when: wait }));
   when.hidden = wait === null;
+}
+
+// ---- Game-over report -----------------------------------------------------------------------------------------------
+
+/**
+ * [night-29a] U3: the failing hub's code on the report's one red block, beside the heading (the jam block of the map).
+ * The heading and the "Map" button already name the hub for screen readers, so the block is aria-hidden.
+ */
+export function linorytReportHub(sign: HTMLElement, hubCode: string): void {
+  const block = document.createElement('span');
+  block.className = 'lin-hub';
+  block.setAttribute('aria-hidden', 'true');
+  block.textContent = hubCode;
+  sign.querySelector('.airway-go-heading')?.after(block);
 }
 
 // ---- Menu ------------------------------------------------------------------------------------------------------------

@@ -828,8 +828,9 @@ Plan: `docs/styles/kierunki-2026-11b/PLAN-LINORYT.md` (one PR per step; ext = gl
       `projectAirport`, `STAMP_SIZE_PX`, `LINORYT_INKS`
 - [ ] **U2 (agent)** airport notes (Besley name, cut fill ticks, glyph chips, NOWE, jam block), edge chips; D-262…D-268 and
       D-281 behaviour on stamp boxes
-- [ ] **U3 (agent)** sheets in print: pause, weekly board + crates + contract slip, game-over report, hub board, ATC strip,
-      tutorial and first-time cards
+- [x] **U3 (agent)** sheets in print: pause, weekly board + crates + contract slip, game-over report, hub board, ATC strip,
+      tutorial and first-time cards; opaque paper pages under the top margin, red only for the failing hub (D-286);
+      `test:e2e:linoryt:stub` audits the sheets, `shots:linoryt:sheets` → `docs/shots/29a/` — night/29a-linoryt-sheets
 - [ ] **U4 (agent)** menu framing, settings (+ licences), about, logbook, puzzles, leaderboard
 - [ ] **E3 (ext)** the Linoryt look in release builds behind `DEFAULT_GLOBE_LOOK` (still satellite)
 - [ ] **U5 (agent)** the flip: Linoryt default skin + look; delete Róża and `?skin=current`; i18n renames; CSS budget back

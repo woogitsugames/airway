@@ -2960,3 +2960,26 @@ removed together with Satelita (D-283) in step E4: Linoryt is itself the map; on
 **L3** the day bar marks night 20:00–06:00 as in the mockup (not the 23–06 airport curfew). **L4** the UI red is
 #B33823 (D-284), not the mockup's #C8412A: paper letters on #C8412A reach only 3.9:1, under the D-47 4.5:1 floor.
 **Status: decided.**
+
+## D-286 — Linoryt sheets: the weekly board and the report are opaque paper pages under the top margin; red only for the failing hub (2026-11-07, Claude, night 29a)
+Step U3 of `docs/styles/kierunki-2026-11b/PLAN-LINORYT.md` (DEV preview `?skin=linoryt`, D-284): pause, weekly board
+(crates, contract slip with the D-280 one-liner, airport pick), game-over report, hub cause board, ATC strip and route
+menu, first-time card and slot hint, training flight, all in `src/ui/skin/linoryt.css` ("U3 sheets" section) over the
+base DOM. Rule kept from the plan: paper with a double print rule (an inset neatline that takes no layout room), the
+only filled blocks the chosen action (ink: Resume, "Again · same world", Back, OK, the aircraft tag) and danger (red);
+no translucent sheets, no shadows, no rounded cards; Besley for headings, Schibsted Grotesk for text and figures; state
+by shape (solid = chosen, outline = available, dashed or struck through = unavailable).
+Choices: (1) **The weekly board and the report are opaque paper pages that start under the HUD's top margin**
+(`--lin-pass-bottom`, measured by `linoryt.ts`), not a scrim over the whole screen: a half-transparent pull over the
+hatched world reads muddy, and under the base scrim the HUD stayed behind the sheet; while a page is open the margin
+keeps the clock and the week (the day bar folds as in U1; on a screen ≤ 700 px tall the day line too) and the pause
+target goes, because the page itself is the pause and the base scrim covered that target as well. On phones the board's
+sign drops its duplicate week heading (still read by screen readers) and prints only its line. (2) **The report's one
+red block is the failing hub's code** (`linorytReportHub`, beside the heading, aria-hidden); "Cancelled", the causes'
+numbers and the tip tag print in ink, so red marks the hub alone, as the jam block does on the map. (3) **Short
+landscape** (≤ 520 px tall): the contract slip uses the D-280 one line as on a low portrait screen, four crates stack
+each fact under its key, 640 × 360 lays the crates side by side (the base stacked them and scrolled ~240 px), and the
+report puts its actions under the departures beside the incident report; under 400 px only the leading cause shows.
+Result: no sheet scrolls where the shipped skin does not (`test:e2e:linoryt:stub` audits 9 sheets × 12 sizes × PL/EN,
+incl. notch and 150 %); at 640 × 360 and 844 × 390 the board and report now fit where Róża scrolls. Release `dist/`
+byte-identical. **Status: in force (preview).**
