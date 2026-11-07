@@ -40,9 +40,9 @@ export const PLANE_PATHS: Readonly<Record<AircraftKind, string>> = {
     'L44 36 Z M16 58 L22 55 L24 64 L18 66 Z M30 49 L36 46 L38 55 L32 57 Z M64 46 L70 49 L68 57 L62 55 Z M78 55 L84 58 L82 66 L76 64 Z',
 };
 
+// D-88: the one reduce-motion source is src/ui/motion.ts; it mirrors the choice on <html data-airway-motion>.
 const reduceMotion = (): boolean => typeof document !== 'undefined' &&
-  (document.documentElement.dataset['airwayMotion'] === 'reduce' ||
-    (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches));
+  document.documentElement.dataset['airwayMotion'] === 'reduce';
 
 // ---- Shared uniforms and GLSL -----------------------------------------------------------------------------------
 
@@ -110,7 +110,8 @@ function screenMaterial(uniforms: SharedUniforms, vertexShader: string, fragment
 
 // ---- Stamps and jam zone ----------------------------------------------------------------------------------------
 
-const STAMP_VERTEX = /* glsl */ `
+// A function, not a constant: interpolated values would keep this module in a release build.
+const STAMP_VERTEX = (): string => /* glsl */ `
 attribute vec3 aCenter;
 attribute vec4 aShape; // x: hub, y: closed by curfew, z: jam
 varying vec2 vPx;
@@ -123,7 +124,8 @@ void main() {
   gl_Position = awOffset(projectionMatrix * viewMatrix * vec4(aCenter, 1.0), vPx);
 }`;
 
-const STAMP_FRAGMENT = /* glsl */ `
+// A function, not a constant: interpolated values would keep this module in a release build.
+const STAMP_FRAGMENT = (): string => /* glsl */ `
 uniform vec3 uPaper;
 uniform vec3 uInk;
 uniform vec3 uRed;
@@ -161,7 +163,8 @@ void main() {
   #include <colorspace_fragment>
 }`;
 
-const JAM_VERTEX = /* glsl */ `
+// A function, not a constant: interpolated values would keep this module in a release build.
+const JAM_VERTEX = (): string => /* glsl */ `
 attribute vec3 aCenter;
 attribute vec2 aJam; // x: zone radius px, y: share of the grace period left
 varying vec2 vPx;
@@ -173,7 +176,8 @@ void main() {
   gl_Position = awOffset(projectionMatrix * viewMatrix * vec4(aCenter, 1.0), vPx);
 }`;
 
-const JAM_FRAGMENT = /* glsl */ `
+// A function, not a constant: interpolated values would keep this module in a release build.
+const JAM_FRAGMENT = (): string => /* glsl */ `
 uniform vec3 uRed;
 varying vec2 vPx;
 varying vec2 vJam;
@@ -240,8 +244,8 @@ export function createStampLayer(scene: Scene, uniforms: SharedUniforms, maxAirp
   scene.add(group);
   const stamps = instancedQuad(maxAirports, { aCenter: 3, aShape: 4 });
   const jams = instancedQuad(maxAirports, { aCenter: 3, aJam: 2 });
-  const jamMesh = new Mesh(jams.geometry, screenMaterial(uniforms, JAM_VERTEX, JAM_FRAGMENT, 'LinorytJam'));
-  const stampMesh = new Mesh(stamps.geometry, screenMaterial(uniforms, STAMP_VERTEX, STAMP_FRAGMENT, 'LinorytStamps'));
+  const jamMesh = new Mesh(jams.geometry, screenMaterial(uniforms, JAM_VERTEX(), JAM_FRAGMENT(), 'LinorytJam'));
+  const stampMesh = new Mesh(stamps.geometry, screenMaterial(uniforms, STAMP_VERTEX(), STAMP_FRAGMENT(), 'LinorytStamps'));
   jamMesh.renderOrder = 20;
   stampMesh.renderOrder = 21;
   for (const mesh of [jamMesh, stampMesh]) { mesh.frustumCulled = false; group.add(mesh); }
@@ -336,7 +340,8 @@ export function createStampLayer(scene: Scene, uniforms: SharedUniforms, maxAirp
 
 // ---- Ribbons: routes and the route preview ----------------------------------------------------------------------
 
-const RIBBON_VERTEX = /* glsl */ `
+// A function, not a constant: interpolated values would keep this module in a release build.
+const RIBBON_VERTEX = (): string => /* glsl */ `
 attribute vec3 aPrev;
 attribute vec3 aNext;
 attribute float aSide;
@@ -360,7 +365,8 @@ void main() {
   gl_Position = awOffset(c, normal * aSide * (aWidth.x + 1.0));
 }`;
 
-const RIBBON_FRAGMENT = /* glsl */ `
+// A function, not a constant: interpolated values would keep this module in a release build.
+const RIBBON_FRAGMENT = (): string => /* glsl */ `
 uniform vec3 uPaper;
 uniform vec3 uInk;
 uniform float uTime;
@@ -472,7 +478,7 @@ export class LinorytRouteLayer implements RouteLayerLike {
 
   constructor(private readonly uniforms: SharedUniforms) {
     this.group.name = 'linoryt-routes';
-    this.material = screenMaterial(uniforms, RIBBON_VERTEX, RIBBON_FRAGMENT, 'LinorytRoutes');
+    this.material = screenMaterial(uniforms, RIBBON_VERTEX(), RIBBON_FRAGMENT(), 'LinorytRoutes');
     this.material.uniforms['uDash'] = { value: 0 };
   }
 
@@ -553,7 +559,7 @@ export function createLinorytRoutePreview(uniforms: SharedUniforms): RoutePrevie
   buffers.index = new Uint32Array(PREVIEW_LEGS * 2 * (PREVIEW_SAMPLES + 2) * 6);
   const geometry = ribbonGeometry(buffers, true);
   geometry.setDrawRange(0, 0);
-  const material = screenMaterial(uniforms, RIBBON_VERTEX, RIBBON_FRAGMENT, 'LinorytRoutePreview');
+  const material = screenMaterial(uniforms, RIBBON_VERTEX(), RIBBON_FRAGMENT(), 'LinorytRoutePreview');
   material.uniforms['uDash'] = { value: 1 };
   const mesh = new Mesh(geometry, material);
   mesh.frustumCulled = false;
@@ -673,7 +679,8 @@ export function buildPlaneAtlas(): DataTexture {
   return texture;
 }
 
-const PLANE_VERTEX = /* glsl */ `
+// A function, not a constant: interpolated values would keep this module in a release build.
+const PLANE_VERTEX = (): string => /* glsl */ `
 attribute vec3 aPos;
 attribute vec3 aFwd;
 attribute vec2 aMeta; // x: widebody, y: load share
@@ -691,7 +698,8 @@ void main() {
   gl_Position = awOffset(c, vPx);
 }`;
 
-const PLANE_FRAGMENT = /* glsl */ `
+// A function, not a constant: interpolated values would keep this module in a release build.
+const PLANE_FRAGMENT = (): string => /* glsl */ `
 uniform sampler2D uAtlas;
 uniform vec3 uPaper;
 uniform vec3 uInk;
@@ -760,7 +768,7 @@ export class LinorytPlaneLayer implements PlaneLayerLike {
     const max = Math.max(1, Math.floor(options.maxPlanes ?? 100));
     this.quad = instancedQuad(max, { aPos: 3, aFwd: 3, aMeta: 2 });
     this.atlas = buildPlaneAtlas();
-    this.material = screenMaterial(uniforms, PLANE_VERTEX, PLANE_FRAGMENT, 'LinorytPlanes');
+    this.material = screenMaterial(uniforms, PLANE_VERTEX(), PLANE_FRAGMENT(), 'LinorytPlanes');
     this.material.uniforms['uAtlas'] = { value: this.atlas };
     this.mesh = new Mesh(this.quad.geometry, this.material);
     this.mesh.frustumCulled = false;

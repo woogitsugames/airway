@@ -215,19 +215,19 @@ export function createWorldRenderer(
   const linorytObjects = import.meta.env.DEV && opts.look === 'linoryt'
     ? createLinorytObjects(scene, { maxAirports: opts.maxAirports, maxPlanes: opts.maxPlanes, progressScale: opts.progressScale })
     : null;
-  const airports: AirportsLayer = linorytObjects ? linorytObjects.airports : createAirports(scene, {
+  const airports: AirportsLayer = import.meta.env.DEV && linorytObjects ? linorytObjects.airports : createAirports(scene, {
     style: airportStyle,
     maxAirports: opts.maxAirports ?? 64, maxHubSeats: opts.maxHubSeats ?? 48,
   });
   // [ext-03 G9] D-178: route tubes carry a dark ink outline unless the pre-D-178 `current` style is asked for.
-  const routes: RouteLayerLike = linorytObjects ? linorytObjects.routes : airportStyle === 'current' ? new RouteLayer()
+  const routes: RouteLayerLike = import.meta.env.DEV && linorytObjects ? linorytObjects.routes : airportStyle === 'current' ? new RouteLayer()
     : new RouteLayer({ outline: true, turboprop: airportStyle === 'apron' ? '#F39A2E' : undefined });
   scene.add(routes.group);
-  const planes: PlaneLayerLike = linorytObjects ? linorytObjects.planes : new PlaneLayer(routes as RouteLayer, {
+  const planes: PlaneLayerLike = import.meta.env.DEV && linorytObjects ? linorytObjects.planes : new PlaneLayer(routes as RouteLayer, {
     maxPlanes: opts.maxPlanes ?? 120, progressScale: opts.progressScale,
   });
   scene.add(planes.group);
-  const preview = linorytObjects ? linorytObjects.preview : createRoutePreview();
+  const preview = import.meta.env.DEV && linorytObjects ? linorytObjects.preview : createRoutePreview();
   scene.add(preview.object);
   let models: ModelPreviewRenderer | null = null;
 
