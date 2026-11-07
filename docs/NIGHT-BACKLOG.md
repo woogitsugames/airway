@@ -815,6 +815,28 @@ legal-register notes (D-276…D-278). Left for separate items (each a branch fro
 - Owner/lawyer: "bezpłatne" in terms §2 in the single lawyer consultation (D-278); native review of the wave-1 store
   titles (D-276).
 
+## Linoryt (D-283)
+Plan: `docs/styles/kierunki-2026-11b/PLAN-LINORYT.md` (one PR per step; ext = globe session, agent = UI). Ext hand-off:
+`docs/notes/linoryt-ext-prompt.md` + `docs/notes/linoryt-render-spec.md`. Strategy (D-284): DEV previews
+(`?skin=linoryt`, `?look=linoryt`) until one flip PR; release unchanged until then.
+- [x] **U1 (agent)** preview foundation: inks, Besley + Schibsted Grotesk (WOFF2, OFL, kept out of `dist/`), HUD top
+      margin (clock, week, day line, day bar), paper dock, menu index; `test:e2e:linoryt:stub`, `--skin=linoryt` for
+      the browser suites — night/28a-linoryt-ui
+- [ ] **E1 (ext)** Linoryt globe material behind `?look=linoryt` (sea lines, water-lining, ochre + relief hatching,
+      coastline, paper sky, night cross-hatch), `test:hatch-alias`, flicker strip, `perf:scene`
+- [ ] **E2 (ext)** stamps (square / octagon / outline / red jam zone + arc), double-line routes, cut plane silhouettes,
+      `projectAirport`, `STAMP_SIZE_PX`, `LINORYT_INKS`
+- [ ] **U2 (agent)** airport notes (Besley name, cut fill ticks, glyph chips, NOWE, jam block), edge chips; D-262…D-268 and
+      D-281 behaviour on stamp boxes
+- [ ] **U3 (agent)** sheets in print: pause, weekly board + crates + contract slip, game-over report, hub board, ATC strip,
+      tutorial and first-time cards
+- [ ] **U4 (agent)** menu framing, settings (+ licences), about, logbook, puzzles, leaderboard
+- [ ] **E3 (ext)** the Linoryt look in release builds behind `DEFAULT_GLOBE_LOOK` (still satellite)
+- [ ] **U5 (agent)** the flip: Linoryt default skin + look; delete Róża and `?skin=current`; i18n renames; CSS budget back
+- [ ] **E4 (ext)** remove Satelita (and Mapa if the owner agrees: open question L2 of the U1 PR) and the photo textures (−1.9 MB)
+- [ ] **U6 (agent)** D-47 / `test:cvd` on the inks, reduce motion, text scale, notch, `ui:matrix` on the real renderer
+- [ ] **U7 (agent/coordinator)** store shots, preview video (D-265/D-269), landing page assets
+
 ## Globe look (D-170)
 Owner's choice 2026-11-03: the satellite globe (direction B). Plan, budgets and test lists per step:
 `docs/mockups/globe-2026-11/PLAN.md`; the DEV experiment to start from: `?globeLook=satellite`

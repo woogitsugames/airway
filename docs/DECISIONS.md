@@ -2922,3 +2922,33 @@ Consequences: the store video and store shots wait for the Linoryt implementatio
 (GPT-09, GPT-10, GPT-21) are obsolete; the globe part (`src/render/**`) belongs to the ext session, the UI part
 (`src/ui/**`) to agents; both follow one staged plan. **Status: decided; implementation planned.**
 
+
+## D-284 — Linoryt is built behind DEV previews and switched on in one flip; UI red #B33823; what is DOM and what is world (2026-11-07, Claude, night 28a)
+How D-283 is implemented: the staged plan `docs/styles/kierunki-2026-11b/PLAN-LINORYT.md` (steps U1–U7 for agents,
+E1–E4 for the ext globe session; hand-off `docs/notes/linoryt-ext-prompt.md` + `linoryt-render-spec.md`).
+**Strategy.** The UI skin is a DEV-only preview `?skin=linoryt` (render: `?look=linoryt`) until one flip PR (U5) makes it
+the default and deletes Róża (`roza.css`, `roza.ts`, the `roza.*` keys) and the `?skin=current` Diorama comparison;
+the photo textures go after the flip (E4). Every step before the flip leaves the release untouched, so `dev` is never
+half-Róża/half-Linoryt and the CSS budget (108.8 of 109 kB, D-258) is not touched until the flip reclaims Róża's
+structure. Rejected: Linoryt as a non-default release skin (two structures over the base CSS would break the CSS
+budget) and one big-bang PR (untestable). The preview restyles the **base (Diorama) DOM**, not Róża's, because only the
+base components survive the flip.
+**Element split.** DOM: HUD (clock, week, day line, day bar, pause), dock, airport notes (name, cut fill ticks, glyphs,
+NOWE), the jam block "Zator za 0:42", edge chips, sheets, menu. World (ext): globe material and night hatching, sky,
+airport stamps (shape = type), jam zone and countdown arc, routes, planes. Reason: text, i18n, glyph colours and the
+D-262…D-268 layout engine are DOM; anything that lies on the globe and must hide behind the horizon or follow the camera
+without lag is world. Of the Róża layout rules the behaviour survives (priority jam > new > hub > fill, compact and
+must-show notes, never over a marker, owns its place, notes apart, in-world sizes at text steps, hub board as obstacle,
+NEW priority: D-262…D-268, D-281, D-280 one-line contract); the rose geometry (names along a ring, tick rings,
+`MEDAL_RADIUS`, the dial and the dock/menu arcs, D-279's placement left of the arc) is Róża-only and goes.
+**Red.** UI and world use one red, **#B33823** instead of the frame's #C8412A: paper letters at 13 px on the frame red
+reach only 3.9:1 (D-47 needs 4.5:1); #B33823 gives 4.7:1 both ways (paper on red, red on paper).
+**U1 (this night).** `src/ui/skin/linoryt.{ts,css}`: inks, Besley 800/900 (static instances, the variable range
+mis-rendered the tabular zero) and Schibsted Grotesk 500–700 (variable) as WOFF2 Latin subsets in `public/fonts/` with
+their OFL licences (`docs/ASSETS.md`), kept out of `dist/` by `PREVIEW_FONTS` in `scripts/vite-font-files.mjs` until
+U5; the HUD's paper top margin (clock, week, "dzień 2 z 3 · N pasażerów", day bar: night 20–06 solid, flown hours blue,
+red "now" cut), the paper dock (cut symbols, chosen = ink block, empty = outline, wait in blue), the menu as a printed
+index (run-starting entry on the red block). The DEV preview's `--roza-*` palette is re-inked for paper so the sheets not
+yet redrawn print on paper too. Release `dist/` is byte-identical to origin/dev (sha256 of all 32 files). Guards:
+`test:skin-tokens` (+8), `test:e2e:linoryt:stub` (48 audited screens incl. notch and 150 %), the browser harness flag
+`--skin=linoryt`. **Status: in force (plan); U1 done.**
