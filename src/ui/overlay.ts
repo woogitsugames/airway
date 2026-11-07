@@ -174,8 +174,8 @@ export interface AirportOverlay {
    */
   setSurge(id: string, surge: SurgeMark | null): void;
   /**
-   * [night-12bd] R2j: weather front ahead (hollow front line, "−1" and the local arrival time) or overhead (filled
-   * front line, "−1 to" the local clearing time) on the tag; null removes it.
+   * [night-12bd] R2j: weather front ahead (hollow front line, "HOLD ≤15 min" and the local arrival time) or
+   * overhead (filled front line, "HOLD ≤15 min to" the local clearing time; D-291) on the tag; null removes it.
    */
   setFront(id: string, front: FrontMark | null): void;
   /**

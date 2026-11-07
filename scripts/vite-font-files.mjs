@@ -8,8 +8,8 @@ import { join, resolve } from 'node:path';
 /**
  * [night-28a] Linoryt (D-283, docs/styles/kierunki-2026-11b/PLAN-LINORYT.md step U1): the Linoryt faces live in
  * public/fonts/ (the app's font dir, licences next to them, docs/ASSETS.md) while the skin is a DEV-only preview
- * (`?skin=linoryt`, D-284). Until the flip step (U6) makes Linoryt the shipped skin, a release build leaves them out, so
- * dist/ stays byte-identical to the build before them; U6 empties this list.
+ * (`?skin=linoryt`, D-284). Until the flip step (U5) makes Linoryt the shipped skin, a release build leaves them out, so
+ * dist/ stays byte-identical to the build before them; U5 empties this list.
  */
 export const PREVIEW_FONTS = Object.freeze(['Besley-800.woff2', 'Besley-900.woff2', 'SchibstedGrotesk-VF.woff2', 'OFL-Besley.txt', 'OFL-SchibstedGrotesk.txt']);
 

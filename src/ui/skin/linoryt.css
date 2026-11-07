@@ -2,14 +2,14 @@
    KIERUNKI.md, direction A; staged plan docs/styles/kierunki-2026-11b/PLAN-LINORYT.md). Step U1, a DEV-only preview:
    src/main.ts loads this file only for `?skin=linoryt` in a DEV build and sets <html data-skin="linoryt">; every rule
    below is scoped to it, a release build never sees the file (dist/ unchanged).
-   The preview restyles the base ("Diorama") HUD and menu DOM — not Róża's, which the flip step U6 deletes — with the
+   The preview restyles the base ("Diorama") HUD and menu DOM — not Róża's, which the flip step U5 deletes — with the
    helpers of src/ui/skin/linoryt.ts: a paper margin at the top (Besley clock, week, "day 2 of 3 · N passengers", a day
    bar of 24 carved hours), a paper dock behind a double print rule at the bottom (cut symbols, captions; the chosen
    aircraft a solid ink block, an empty one only its outline, its wait in blue), and the menu as a printed index (the
    run-starting entry on the one red block). Text is printed on paper or carries a paper ground, never a shadow; no
    gradients, glows, rounded cards or translucent sheets.
    Fonts: Besley (800 and 900 static instances: names and titles, the clock) and Schibsted Grotesk (500–700, text and figures), SIL OFL, WOFF2
-   subsets in public/fonts/ with their licences (docs/ASSETS.md); kept out of dist/ until U6 (scripts/vite-font-files.mjs).
+   subsets in public/fonts/ with their licences (docs/ASSETS.md); kept out of dist/ until U5 (scripts/vite-font-files.mjs).
    Sizes: HUD and dock keep in-world sizes at every text step (as D-248/D-267); the menu entries follow the title step. */
 @font-face { font-family: 'Besley'; font-weight: 800; font-display: swap; src: url('/fonts/Besley-800.woff2') format('woff2'); }
 @font-face { font-family: 'Besley'; font-weight: 900; font-display: swap; src: url('/fonts/Besley-900.woff2') format('woff2'); }
@@ -31,7 +31,7 @@
   --skin-face-text: 'Schibsted Grotesk', 'Atkinson Hyperlegible Next', 'Overpass', sans-serif;
   --skin-face-display: 'Besley', 'Alegreya', 'Atkinson Hyperlegible Next', serif;
   --skin-face-mono: 'Schibsted Grotesk', 'Atkinson Hyperlegible Next', 'Overpass Mono', sans-serif;
-  /* The Róża palette the component tokens point at, re-inked for paper (preview only; U6 replaces the token file):
+  /* The Róża palette the component tokens point at, re-inked for paper (preview only; U5 replaces the token file):
      its dark ground becomes paper, its chalk letters ink, so the sheets not yet redrawn (U4) print on paper too. */
   --roza-ink: #ECE3CC;
   --roza-ink-raised: #E0D5B8;
