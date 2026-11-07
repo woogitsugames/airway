@@ -23,6 +23,8 @@ export const HATCH_BASE_PERIOD_DEG = 22.5;
 /** §2 Screen spacing of the finer octave in CSS px: [min, 2·min). `saver` keeps the lines wider (one octave less). */
 export const HATCH_MIN_SPACING_PX = 4;
 export const HATCH_SAVER_MIN_SPACING_PX = 6;
+/** [ext-04 E3] D-300: open-sea parallels are one step sparser on every preset (they competed with stamps and notes). */
+export const HATCH_SEA_MIN_SPACING_PX = 6;
 /** §9 No line pattern may reach the screen with a period below this many device pixels (it fades to its mean). */
 export const HATCH_ALIAS_FLOOR_DEVICE_PX = 3;
 /** §2–§4 No hatch line is drawn thinner than this many device pixels (anti-aliased with the screen derivative). */

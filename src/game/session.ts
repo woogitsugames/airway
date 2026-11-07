@@ -403,12 +403,10 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       lastHubKey = hubKey;
       world.setCities(cities.map((city) => ({ id: city.id, lon: city.lon, lat: city.lat, hub: city.hub })));
     }
-    // [ext-04 E2] DEV (Linoryt jam zone): every airport with the share of its jam grace left; release: hubs only.
-    world.setHubLoad(import.meta.env.DEV
-      ? cities.map((city) => ({ id: city.id, used: Math.min(city.waiting.length, city.capacity), cap: Math.max(1, city.capacity),
-        jam01: city.jamTicksLeft === null ? null : city.jamTicksLeft / CONGESTION_GRACE_TICKS }))
-      : cities.filter((city) => city.hub)
-        .map((city) => ({ id: city.id, used: Math.min(city.waiting.length, city.capacity), cap: city.capacity })));
+    // [ext-04 E2/E3] Every airport with the share of its jam grace left (the Linoryt jam zone); the satellite renderer
+    // reads the seat load of the hubs only.
+    world.setHubLoad(cities.map((city) => ({ id: city.id, used: Math.min(city.waiting.length, city.capacity),
+      cap: Math.max(1, city.capacity), jam01: city.jamTicksLeft === null ? null : city.jamTicksLeft / CONGESTION_GRACE_TICKS })));
     for (const city of cities) {
       if (!knownAirports.has(city.id)) {
         knownAirports.add(city.id);

@@ -320,6 +320,13 @@ Not done: WOFF2 fonts (about −40 % of the 624 kB TTF; OFL allows the conversio
 entry) — a size win only, no parse-time effect.
 
 
+## E3 — Linoryt in the release build (2026-11-08, D-300)
+The print ships but is not selected (`DEFAULT_GLOBE_LOOK = 'satellite'`). Bundle (`test:bundle`): main chunk
+1,165.8 → **1,168.8 kB** raw (budget 1,180), two lazy chunks `linoryt-globe` 12.6 kB and `linoryt-objects` 20.9 kB
+(fetched only when the look is drawn), `dist/` 3,972.6 → 4,009.0 kB (budget 4,300; no new data file: the coast field
+and the plane atlas are built at load, D-298/D-299). Render numbers as in E2, except the open-sea parallels (≥ 6 px
+spacing): fewer, not more, fragments with lines.
+
 ## E2 — Linoryt stamps, routes and planes (2026-11-08, D-283, D-299)
 DEV look `?look=linoryt` (release unchanged until E3). Medallion parts, hub seat rings, curfew barriers, route tubes
 with outlines and horizon ghosts, 3D plane models, shadows and trails are replaced by **five screen-constant draws**:
