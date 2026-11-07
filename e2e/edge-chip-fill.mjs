@@ -4,7 +4,7 @@
 // Seeds 0xA1C2 and 41817 at EN 412×915 and PL 915×412: after the week-1 board, then a day later and zoomed in (more
 // airports leave the screen) and every 2 h for 12 h after that (until the run closes), every visible chip is checked against the run's waiting count and capacity.
 import { performance } from 'node:perf_hooks';
-import { withBrowser, newGamePage, waitForScreen, assert, clickTestId, saveDiagnostics } from './browser.mjs';
+import { withBrowser, newGamePage, gameUrl, SKIN, waitForScreen, assert, clickTestId, saveDiagnostics } from './browser.mjs';
 import { E2E_SEEDS } from './seeds.mjs';
 
 const started = performance.now();
@@ -13,7 +13,8 @@ const SEEDS = E2E_SEEDS['edge-chip-fill'].seeds; // [night-12ac] e2e/seeds.mjs
 const SIZES = [['en', 412, 915], ['pl', 915, 412]];
 
 async function audit(page) {
-  return page.evaluate(() => {
+  // [night-30a] the Linoryt preview prints a high fill in its own red ink (linoryt.css U2 notes).
+  return page.evaluate((highRed) => {
     const airports = new Map((window.aw.state().airports ?? []).map((a) => [a.id, a]));
     const problems = [];
     let filled = 0;
@@ -49,7 +50,7 @@ async function audit(page) {
       range.selectNodeContents(text);
       const label = range.getBoundingClientRect();
       if (label.bottom > track.top + 0.5) problems.push(`chip ${code}: code ${label.bottom.toFixed(1)} runs into the gauge ${track.top.toFixed(1)}`);
-      const red = getComputedStyle(gauge.querySelector('.airport-edge__fill')).backgroundColor === 'rgb(200, 53, 42)';
+      const red = getComputedStyle(gauge.querySelector('.airport-edge__fill')).backgroundColor === highRed;
       const isHigh = domTaken * 4 >= domCap * 3;
       if (isHigh) high++;
       if (!chip.classList.contains('airport-edge--jam') && red !== isHigh) problems.push(`chip ${code}: red=${red} at ${domTaken}/${domCap}`);
@@ -57,7 +58,7 @@ async function audit(page) {
       if (!aria.includes(String(domCap)) || !aria.includes(String(domTaken))) problems.push(`chip ${code}: label "${aria}" misses ${domTaken}/${domCap}`);
     }
     return { chips, filled, high, problems };
-  });
+  }, SKIN === 'linoryt' ? 'rgb(179, 56, 35)' : 'rgb(200, 53, 42)');
 }
 
 async function journey(page, seed, width, height) {
@@ -97,7 +98,7 @@ try {
   await withBrowser(async ({ browser, url }) => {
     for (const seed of SEEDS) for (const [language, width, height] of SIZES) {
       const label = `seed ${seed} ${language} ${width}×${height}: edge chips draw the waiting area`;
-      const { page, errors } = await newGamePage(browser, url, language, { width, height });
+      const { page, errors } = await newGamePage(browser, gameUrl(url), language, { width, height });
       try {
         const t = await journey(page, seed, width, height);
         sum.chips += t.chips; sum.filled += t.filled; sum.high += t.high;
