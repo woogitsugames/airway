@@ -88,7 +88,7 @@
   --skin-edge-highlight: var(--roza-chalk);
   --skin-edge-jam-bg: var(--roza-vermilion);
   --skin-edge-jam-border: var(--roza-chalk);
-  --skin-edge-jam-ink: var(--roza-chalk);
+  --skin-edge-jam-ink: var(--roza-ink);
   --skin-edge-new-bg: var(--roza-chalk);
   --skin-edge-new-ink: var(--roza-ink);
   --skin-edge-curfew-stripe: var(--roza-chalk);
@@ -159,7 +159,7 @@
   --skin-go-board-dim-ink: var(--roza-dim);
   --skin-go-board-row-rule: var(--roza-rule);
   --skin-go-board-gate-ink: var(--roza-chalk);
-  --skin-go-flap-ink: var(--roza-chalk);
+  --skin-go-flap-ink: var(--roza-ink);
   --skin-go-flap-bg: var(--roza-vermilion);
   --skin-go-flap-edge-light: var(--roza-vermilion);
   --skin-go-flap-edge-dark: var(--roza-vermilion);

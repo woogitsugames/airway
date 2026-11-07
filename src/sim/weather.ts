@@ -5,7 +5,7 @@
  * a few game hours after the weekly board at a drawn longitude and drifts east at a fixed speed, sweeping the whole
  * circle once before the next board. Its eastern edge leads; behind it the deck is WEATHER_WIDTH_TENTHS wide (narrower
  * while it forms and while it thins out over its starting longitude). An airport inside the band's latitudes is under
- * the deck for WEATHER_WIDTH_TENTHS / speed minutes and loses WEATHER_SLOT_PENALTY hourly departure slot meanwhile.
+ * the deck for WEATHER_WIDTH_TENTHS / speed minutes and departures wait on the ground.
  *
  * The path is a pure function of the seed and the week: `new Rng(seed).fork('weather/<week>')` (its own branch; no
  * kernel stream moves and nothing is added to the snapshot). Integer tenths of a degree and game minutes only, no
@@ -14,7 +14,7 @@
 import { Rng } from '../core/rng.ts';
 import {
   SIM_MINUTES_PER_WEEK, WEATHER_FIRST_WEEK, WEATHER_FORECAST_MINUTES, WEATHER_FORM_HOURS, WEATHER_HEIGHT_TENTHS,
-  WEATHER_SOUTH_TENTHS, WEATHER_SPEED_TENTHS_PER_MINUTE, WEATHER_START_STEP_TENTHS, WEATHER_WIDTH_TENTHS,
+  WEATHER_SOUTH_TENTHS, WEATHER_SPEED_TENTHS_PER_MINUTE, WEATHER_START_STEP_TENTHS, WEATHER_WIDTH_TENTHS, WEATHER_GROUND_HOLD_MINUTES,
 } from './params.ts';
 
 /** A full turn of longitude in tenths of a degree. */
@@ -104,4 +104,9 @@ export function frontBand(front: WeatherFront, minute: number): WeatherBand | nu
   const trail = Math.max(0, elapsed - UNDER_MINUTES) * WEATHER_SPEED_TENTHS_PER_MINUTE;
   return { westLon10: front.startLon10 + trail, eastLon10: front.startLon10 + lead,
     southLat10: front.southLat10, northLat10: front.northLat10 };
+}
+
+/** A ready aircraft waits under the front for the configured number of game minutes. */
+export function weatherGroundHold(covered: boolean, readyWaitMinutes: number): boolean {
+  return covered && readyWaitMinutes < WEATHER_GROUND_HOLD_MINUTES;
 }

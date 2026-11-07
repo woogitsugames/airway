@@ -46,9 +46,9 @@ export interface RunSurges {
 export interface RunWeather {
   /** Fronts that formed before the run ended. */
   readonly fronts: number;
-  /** Airport-minutes a served airport (≥ 1 route) spent under a front (one departure slot fewer). */
+  /** Airport-minutes a served airport (≥ 1 route) spent under a front. */
   readonly servedUnderMin: number;
-  /** Departures held for a slot (`DepartureHeld`) at an airport under a front. */
+  /** Departures actually held by weather (`DepartureHeld` with reason weather). */
   readonly slotHoldsUnder: number;
   /** The run was lost at an airport while it was under a front or within 6 game hours after. */
   readonly lostUnderFront: boolean;
@@ -121,7 +121,7 @@ class GameSession {
       }
     }
     for (const event of this.sim.drainEvents()) {
-      if (weather && event.type === 'DepartureHeld' && this.sim.world.airportWeather(event.cityId)?.phase === 'under') {
+      if (weather && event.type === 'DepartureHeld' && event.reason === 'weather') {
         this.weatherCounts.slotHoldsUnder++;
       }
       if (event.type === 'HubJamStarted') this.warned = true;

@@ -496,7 +496,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
     const surgeAria = entry.surge ? t(entry.surge.phase === 'active' ? 'airport.surgeActiveAria' : 'airport.surgeSoonAria',
       { code: entry.airport.code, count: entry.surge.passengers, time: entry.surge.time }) : '';
     const frontAria = entry.front ? t(entry.front.phase === 'under' ? 'airport.frontUnderAria' : 'airport.frontSoonAria',
-      { code: entry.airport.code, slots: entry.front.slots, time: entry.front.time }) : ''; // [night-12bd] R2j
+      { code: entry.airport.code, minutes: entry.front.minutes, time: entry.front.time }) : ''; // [night-12bd] R2j
     const taken = Math.min(entry.waiting.length, entry.capacity);
     const edgeAria = t('airport.focus', { code: entry.airport.code }) +
       (entry.closed ? ' ' + t('airport.curfewAria', { code: entry.airport.code }) : '') +
@@ -756,14 +756,14 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
     setFront(id, front): void {
       const entry = get(id);
       if (front !== null && ((front.phase !== 'ahead' && front.phase !== 'under') ||
-          !Number.isSafeInteger(front.slots) || front.slots < 1 || !/^\d\d:\d\d$/.test(front.time))) {
+          !Number.isSafeInteger(front.minutes) || front.minutes < 1 || !/^\d\d:\d\d$/.test(front.time))) {
         throw new RangeError('Invalid front mark');
       }
       const prev = entry.front;
-      if (prev === front || (prev && front && prev.phase === front.phase && prev.slots === front.slots && prev.time === front.time)) return;
+      if (prev === front || (prev && front && prev.phase === front.phase && prev.minutes === front.minutes && prev.time === front.time)) return;
       entry.front = front ? { ...front } : null;
       if (front) {
-        const text = t(front.phase === 'under' ? 'airport.frontUnder' : 'airport.frontSoon', { slots: front.slots, time: front.time });
+        const text = t(front.phase === 'under' ? 'airport.frontUnder' : 'airport.frontSoon', { minutes: front.minutes, time: front.time });
         entry.frontText.textContent = text;
         entry.frontWidth = Math.ceil(FRONT_FIXED + text.length * SURGE_CHAR);
         entry.frontStub.style.minWidth = (entry.frontWidth - 2) + 'px';

@@ -382,7 +382,7 @@ function buildDialog(
   }
   // [night-11b] The departures are the jammed airport's route neighbours, so an empty board always means no route
   // served it: say so (and what would have helped) instead of a bare "no scheduled departures".
-  // [night-33a] D-289: the sentence stands in the board itself, not in the departures list (whose height short phones
+  // [night-33a] D-292: the sentence stands in the board itself, not in the departures list (whose height short phones
   // trim to make room for the contracts row), so it is never cut.
   const none = element('div', 'airway-go-none');
   if (departing.length === 0) {

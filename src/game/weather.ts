@@ -1,12 +1,13 @@
 // [night-12bd] R2j: what the overlay and the pause sheet show of the weather front. Pure: reads the sim's per-airport
 // front views (null when none is near) and formats the airport's local clock; no DOM, no Sim.
 import type { AirportWeatherView } from '../sim';
+import { WEATHER_GROUND_HOLD_MINUTES } from '../sim/params';
 
-/** The tag's front stub: hollow front line + "−1 HH:MM" ahead of the deck, filled + "−1 to HH:MM" while under it. */
+/** The front stub shows hold duration and local arrival or clearing time. */
 export interface FrontMark {
   readonly phase: 'ahead' | 'under';
-  /** Departure slots fewer per hour while under the deck (WEATHER_SLOT_PENALTY). */
-  readonly slots: number;
+  /** Ground-hold duration in game minutes. */
+  readonly minutes: number;
   /** Local arrival time while ahead, local clearing time while under ("14:20"). */
   readonly time: string;
 }
@@ -16,9 +17,9 @@ export function localClockMinute(minuteOfDay: number): string {
   return `${String(Math.floor(minute / 60)).padStart(2, '0')}:${String(minute % 60).padStart(2, '0')}`;
 }
 
-export function frontMark(view: AirportWeatherView | null, slots = 1): FrontMark | null {
+export function frontMark(view: AirportWeatherView | null, minutes = WEATHER_GROUND_HOLD_MINUTES): FrontMark | null {
   if (!view) return null;
-  return { phase: view.phase, slots, time: localClockMinute(view.phase === 'under' ? view.toLocalMinute : view.fromLocalMinute) };
+  return { phase: view.phase, minutes, time: localClockMinute(view.phase === 'under' ? view.toLocalMinute : view.fromLocalMinute) };
 }
 
 /** Marks for every airport the front is over or forecast for, keyed by airport id (stable order of `ids`). */
@@ -33,7 +34,7 @@ export function frontMarks(ids: readonly string[], weatherOf: (id: string) => Ai
 
 /** Stable key so the session touches the overlay only when a mark changes. */
 export function frontKey(mark: FrontMark | null | undefined): string {
-  return mark ? `${mark.phase}/${mark.slots}/${mark.time}` : '';
+  return mark ? `${mark.phase}/${mark.minutes}/${mark.time}` : '';
 }
 
 /** The pause sheet's line: airports under the deck now, else the next airport it reaches, else "away". */

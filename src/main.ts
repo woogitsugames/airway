@@ -18,7 +18,7 @@ import { registerDevGameAdapter, type AwDevState, type AwScreen } from './game/d
 import { createDailyMode, servedTicketRegions } from './game/modes/daily';
 import { dailyRankingBoard } from './game/dailyRanking'; // [night-06c] D-66
 import { IDENTITY_KEYS, createBrowserLeaderboards } from './net'; // [night-06c] D-66
-import { EndlessRun } from './game/run';
+import { EndlessRun, restartEusClusterV2 } from './game/run';
 import { readHomeRegion, writeHomeRegion } from './game/homeRegion'; // [night-11aj] R2g
 import { LICENCE_SHORT_KEY, licenceForRun, licenceIssued, openLicences, readLicenceChoice, writeLicenceChoice } from './game/licence'; // [night-12bc] R2h
 import { CONGESTION_GRACE_TICKS, HOME_REGIONS, type LicenceClass } from './sim';
@@ -311,7 +311,8 @@ async function boot(): Promise<void> {
         // [night-12bc] R2h: likewise "same world" keeps the run's licence class.
         // [night-12bd] R2j: and its weather front.
         if (mode !== 'daily') startEndless(seed, seed === run.seed ? run.homeRegion : preferredHomeRegion(),
-          seed === run.seed ? run.licenceClass : preferredLicence(), seed === run.seed ? run.weatherFront : devWeatherFront);
+          seed === run.seed ? run.licenceClass : preferredLicence(), seed === run.seed ? run.weatherFront : devWeatherFront,
+          restartEusClusterV2(seed, run));
         else if (seed === dailySeedForKey(dailyKey())) startDaily();
         else if (seed === failedDailySeed) screens.show('menu');
         else startEndless(seed);
@@ -383,17 +384,17 @@ async function boot(): Promise<void> {
   }
 
   function startEndless(seed: number, homeRegion: RegionId | null = preferredHomeRegion(),
-      licence: LicenceClass = preferredLicence(), weather = devWeatherFront): void {
+      licence: LicenceClass = preferredLicence(), weather = devWeatherFront, eusClusterV2 = true): void {
     pendingSeed = null;
     const firstRun = (() => {
       try { return !globalThis.localStorage?.getItem(TUTORIAL_KEY); } catch { return false; }
     })();
     if (skipTutorialOnce || !firstRun) {
       skipTutorialOnce = false;
-      openGame(EndlessRun.create(seed, 'endless', homeRegion, licence, weather), 'endless');
+      openGame(EndlessRun.create(seed, 'endless', homeRegion, licence, weather, eusClusterV2), 'endless');
       return;
     }
-    openTutorial(() => openGame(EndlessRun.create(seed, 'endless', homeRegion, licence, weather), 'endless'));
+    openTutorial(() => openGame(EndlessRun.create(seed, 'endless', homeRegion, licence, weather, eusClusterV2), 'endless'));
   }
 
   function startDaily(): void {

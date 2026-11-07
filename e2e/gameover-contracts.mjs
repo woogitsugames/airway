@@ -20,7 +20,7 @@ const results = [];
 const sizes = [['pl', 412, 915], ['en', 412, 915], ['pl', 360, 640], ['en', 360, 640], ['pl', 320, 568], ['en', 320, 568],
   ['pl', 915, 412], ['en', 915, 412]];
 // [marks, language, width, height, shot name]: none met, all met (PL and EN, a phone and a landscape size), a long run.
-// A long run: 11 squares still share the title's line at 320 px, 14 at 360 px (a longer run wraps, D-289).
+// A long run: 11 squares still share the title's line at 320 px, 14 at 360 px (a longer run wraps, D-292).
 const states = [['000000', 'pl', 360, 640, 'none'], ['000000', 'en', 915, 412, 'none'], ['111111', 'pl', 915, 412, 'all'],
   ['111111', 'en', 360, 640, 'all'], ['10110100101', 'en', 320, 568, 'long'], ['10110100101101', 'pl', 360, 640, 'long'],
   ['10110100101101', 'pl', 915, 412, 'long']];
@@ -74,7 +74,7 @@ function checkRow(f, language, width, height, marks) {
   }
   assert(f.row.height > 0 && f.row.top >= -0.5 && f.row.bottom <= height + 0.5, `row off-screen ${JSON.stringify(f.row)}`);
   assert(f.titleBox.right <= f.row.right + 0.5 && f.titleBox.height < 20, `title cut or wrapped ${JSON.stringify(f.titleBox)}`);
-  // Under the milestones, or (a short landscape screen, D-289) beside them on the same line; never over them.
+  // Under the milestones, or (a short landscape screen, D-292) beside them on the same line; never over them.
   if (f.milestones) assert(f.row.top >= f.milestones.bottom - 0.5 || (f.row.left >= f.milestones.right - 0.5 && f.row.top >= f.milestones.top - 0.5),
     `row overlaps the milestones ${JSON.stringify(f.row)} ${JSON.stringify(f.milestones)}`);
   if (f.next) assert(f.next.top >= f.row.bottom - 0.5, `row overlaps ${f.next.cls}`);
