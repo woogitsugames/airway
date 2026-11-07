@@ -2,6 +2,7 @@
 // Authority flows input → RunCommand → EndlessRun.step() at fixed 100 ms ticks → read-only
 // snapshots → render / UI / audio. Nothing here writes run state except through queue().
 import type { MilestoneId } from './milestones'; // [night-12ax] R1n
+import { contractsSummary } from './contractsSummary'; // [night-33a] D-271
 import { pauseSummary } from './pauseSummary';
 import { t } from '../i18n';
 import { framingPoints } from './framing';
@@ -597,6 +598,8 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
         originHubId: failure.cityId, flightNumber: 'AW' + String(101 + i),
         destinationCode: airportLabel(departure.destination, 'code'), gate: String.fromCharCode(65 + (i % 6)) + String(1 + i),
       }));
+      // [night-33a] D-271: Endless only; a run that never saw a contract (or has none) shows no row.
+      const contracts = run.mode === 'endless' ? contractsSummary(run.sim.world.contract, run.sim.world.contractHistory) : null;
       void gameOver.show({
         seed: run.seed, initialHash: '', hubId: failure.cityId, hubCode: airportLabel(failure.cityId),
         delivered: run.passengers, completedWeeks: Math.floor(failure.tick / TICKS_PER_WEEK),
@@ -606,6 +609,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
         ...(run.homeRegion ? { homeRegion: run.homeRegion } : {}), // [night-11aj] R2g
         ...(run.mode === 'endless' && run.licenceClass !== 1 ? { licenceClass: run.licenceClass } : {}), // [night-12bc] R2h
         ...(run.mode === 'endless' ? { milestones: { reached: run.milestones(), first: callbacks.failureMilestones?.() ?? [] } } : {}), // [night-12ax] R1n
+        ...(contracts ? { contracts } : {}), // [night-33a] D-271
       });
     }
   }

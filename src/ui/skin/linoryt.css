@@ -670,6 +670,18 @@
   --aw-ms-ink: var(--lin-ink); --aw-ms-done: var(--lin-ink); --aw-ms-open: var(--lin-ink-dim); --aw-ms-rule: var(--lin-ink-dim); --aw-ms-stamp: var(--lin-ink);
   border-top-style: solid;
 }
+/* [night-33a] D-271: the weekly contracts row (the milestone row's structure) prints like the milestones; a missed
+   contract is a hollow square cut in full ink (2 px), so met and missed differ by shape, not by a paler ink. */
+:root[data-skin="linoryt"] .airway-go-contracts { --aw-ms-open: var(--lin-ink); }
+:root[data-skin="linoryt"] .airway-go-contracts .airway-go-milestone-mark { flex-basis: 9px; width: 9px; height: 9px; border-width: 2px; }
+/* The page starts under the top margin, so it has less height than the base report: at every size the contracts are one
+   printed line (count, then squares) closing the milestones' ruled block, without a rule of their own. */
+:root[data-skin="linoryt"] .airway-go-contracts { display: flex; align-items: center; gap: 8px; margin-top: 1px; padding-top: 0; border-top: 0; }
+:root[data-skin="linoryt"] .airway-go-contracts .airway-go-milestones-title { margin: 0; line-height: 1.1; }
+/* So on a short landscape page the milestones keep their full-width rule (the shipped report sets the two side by side). */
+@media (max-height: 550px) and (min-width: 620px) {
+  :root[data-skin="linoryt"] section.airway-go-milestones { display: flex; margin-right: 0; }
+}
 /* Actions: "Again · same world" is the chosen action (ink block); the others printed outlines. */
 :root[data-skin="linoryt"] .airway-go-button { border: 2px solid var(--lin-ink); background: var(--lin-paper); color: var(--lin-ink); font-weight: 800; }
 :root[data-skin="linoryt"] .airway-go-button:active { translate: none; background: var(--lin-paper-deep); }
