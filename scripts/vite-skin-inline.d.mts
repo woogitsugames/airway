@@ -6,7 +6,9 @@ export declare function resolveTokens(tokens: Map<string, string>): Map<string, 
 export declare function referencedProperties(resolved: Map<string, string>): Set<string>;
 export declare function constantProperties(cssSources: string[], scriptSources: string[]): Map<string, string>;
 export declare function withConstants(resolved: Map<string, string>, constants: Map<string, string>): Map<string, string>;
-export declare function skinBuild(root: string): { resolved: Map<string, string>; keep: Set<string> };
+export declare const REFERENCED_TOKENS: string[];
+export declare function referencedValues(tokens: Map<string, string>, refs: Iterable<string>, constants?: Map<string, string>): Map<string, string>;
+export declare function skinBuild(root: string): { resolved: Map<string, string>; inline: Map<string, string>; keep: Set<string>; refs: Set<string> };
 export declare function inlineSkin(css: string, resolved: Map<string, string>, file?: string): string;
 export declare function keptSkin(resolved: Map<string, string>, keep: Iterable<string>): string;
 export declare function tokensInScript(ts: string): string[];

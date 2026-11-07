@@ -10,7 +10,7 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { resolve, dirname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { constantProperties, inlineSkin, keptSkin, resolveTokens, skinBuild, skinTokens, withConstants } from './vite-skin-inline.mjs';
+import { constantProperties, inlineSkin, keptSkin, referencedValues, REFERENCED_TOKENS, resolveTokens, skinBuild, skinTokens, withConstants } from './vite-skin-inline.mjs';
 import { skinOverrides, pruneOverridden } from './vite-skin-prune.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -156,6 +156,31 @@ const leftover = COVERED.filter((file) => /var\(--skin-/.test(inlineSkin(read(fi
 check('inline: every covered file of the real skin inlines with no token left', leftover.length === 0, leftover.join(' '));
 check('inline: the real skin keeps exactly the tokens of the covered TypeScript', [...real.keep].sort().join() ===
   [...new Set(COVERED_TS.flatMap((file) => [...read(file).matchAll(/var\(--skin-([a-z0-9-]+)\)/g)].map((m) => m[1])))].sort().join());
+// [night-36a] D-294: the font stacks stay `var(--skin-face-*)` references in the release (one :root definition each);
+// every other token is still written in place, nested references included, and the kept skin defines each reference.
+{
+  const refUnit = referencedValues(new Map([['f', "'X', serif"], ['g', '700 1px var(--skin-f)'], ['h', 'var(--skin-c)'], ['c', '#fff']]),
+    ['f']);
+  check('inline: a referenced token stays var() (also inside other tokens), the rest resolves',
+    refUnit.get('f') === 'var(--skin-f)' && refUnit.get('g') === '700 1px var(--skin-f)' && refUnit.get('h') === '#fff',
+    [...refUnit].join(' | '));
+  const used = new Set(COVERED.flatMap((file) => [...inlineSkin(read(file), real.inline, file).matchAll(/var\(--skin-([a-z0-9-]+)/g)].map((m) => m[1])));
+  const kept = keptSkin(real.resolved, new Set([...real.keep, ...real.refs]));
+  check('inline: the release keeps only the font stacks as references, each defined (resolved) in the kept skin',
+    REFERENCED_TOKENS.every((name) => real.refs.has(name) && kept.includes(`--skin-${name}: ${real.resolved.get(name)};`) &&
+      !real.resolved.get(name).includes('var(')) && [...used].every((name) => real.refs.has(name)) && used.size > 0,
+    [...used].join(' '));
+  const cssFiles = [];
+  const walkCss = (dir) => { for (const name of readdirSync(resolve(ROOT, dir))) {
+    const path = `${dir}/${name}`;
+    if (statSync(resolve(ROOT, path)).isDirectory()) walkCss(path); else if (/\.css$/.test(name)) cssFiles.push(path);
+  } };
+  walkCss('src');
+  const setElsewhere = cssFiles.filter((file) => file !== SKIN && !/skin\/(diorama|linoryt)\.css$/.test(file) &&
+    REFERENCED_TOKENS.some((name) => new RegExp(`--skin-${name}\\s*:`).test(read(file))));
+  check('inline: no release stylesheet sets a referenced token (the :root value is the only one)', setElsewhere.length === 0,
+    setElsewhere.join(' '));
+}
 
 // 6. [night-11az] D-257: Róża (KARTA v2 C) is the shipped skin. current.css holds its tokens; the structure and the
 // rose palette are src/ui/skin/roza.css, loaded statically by src/main.ts after every component stylesheet, every rule

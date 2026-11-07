@@ -149,13 +149,36 @@ function sources(root, pattern, skip = []) {
   return out;
 }
 
-/** Everything the transform needs, read from the tree: resolved token values and the tokens scripts read. */
+/** [night-36a] D-294: tokens the release keeps as `var(--skin-x)` references instead of writing their value in place.
+ *  A font stack is long (~50 bytes) and named on dozens of rules (alone or inside a `font` shorthand), so one :root
+ *  definition plus a ~20-byte reference per use is ~2.5 kB smaller than the inlined text; the computed font is the
+ *  same (the token is defined once, on :root, and nothing else sets it: inlineSkin refuses that), so the pixels are too. */
+export const REFERENCED_TOKENS = ['face-text', 'face-display', 'face-mono'];
+
+/** `resolved` with every `refs` token written as `var(--skin-x)`, inside other tokens' values too. */
+export function referencedValues(tokens, refs, constants = new Map()) {
+  const mark = (name) => `\u0000${name}\u0000`;
+  const marked = new Map(tokens);
+  for (const name of refs) if (marked.has(name)) marked.set(name, mark(name));
+  const out = new Map();
+  for (const [name, value] of withConstants(resolveTokens(marked), constants)) {
+    out.set(name, value.replace(/\u0000([a-z0-9-]+)\u0000/g, (whole, ref) => `var(--skin-${ref})`));
+  }
+  return out;
+}
+
+/** Everything the transform needs, read from the tree: resolved token values, the tokens scripts read, and the values
+ *  written in place (`inline`: `resolved` with the REFERENCED_TOKENS kept as references, defined by keptSkin). */
 export function skinBuild(root) {
   const scripts = sources(root, /\.(ts|tsx|js|mjs)$/);
-  const resolved = resolveTokens(skinTokens(readFileSync(resolve(root, SKIN_FILE), 'utf8')));
+  const tokens = skinTokens(readFileSync(resolve(root, SKIN_FILE), 'utf8'));
+  const constants = constantProperties(sources(root, /\.css$/, [PREVIEW_SKIN_FILE]), scripts);
+  const refs = new Set(REFERENCED_TOKENS.filter((name) => tokens.has(name)));
   return {
-    resolved: withConstants(resolved, constantProperties(sources(root, /\.css$/, [PREVIEW_SKIN_FILE]), scripts)),
+    resolved: withConstants(resolveTokens(tokens), constants),
+    inline: referencedValues(tokens, refs, constants),
     keep: new Set(scripts.flatMap(tokensInScript)),
+    refs,
   };
 }
 
@@ -182,9 +205,9 @@ export function skinInline() {
       // [night-11ax] D-257: the DEV-only comparison skin (src/ui/skin/diorama.css, `?skin=current`, never in a release
       // build) keeps its tokens; the skin structure (roza.css) is inlined like any component CSS.
       if (DEV_ONLY_SKINS.some((skin) => file === normal(resolve(root, skin)))) return null; // [night-28a] + Linoryt
-      const { resolved, keep } = build ? (cache ??= skinBuild(root)) : skinBuild(root);
-      if (file === normal(resolve(root, SKIN_FILE))) return { code: keptSkin(resolved, keep), map: null };
-      const inlined = inlineSkin(code, resolved, file.slice(root.length + 1));
+      const { resolved, inline, keep, refs } = build ? (cache ??= skinBuild(root)) : skinBuild(root);
+      if (file === normal(resolve(root, SKIN_FILE))) return { code: keptSkin(resolved, new Set([...keep, ...refs])), map: null };
+      const inlined = inlineSkin(code, inline, file.slice(root.length + 1));
       // [night-11ax] D-257: a release always has <html data-skin="roza">, so its scope is written `:root:root` (same
       // specificity, 0-2-0; ~12 bytes less per selector). Dev (AW_SKIN_INLINE=1) keeps it for `?skin=current`.
       if (file === normal(resolve(root, SKIN_STRUCTURE_FILE))) return { code: build ? inlined.split(SKIN_SCOPE).join(':root:root') : inlined, map: null };

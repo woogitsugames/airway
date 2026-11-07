@@ -117,9 +117,10 @@ if (!STATIC_ONLY) {
     const { report, breaches } = measure(dist);
     // [night-11ar] D-252: the release CSS carries the skin values, not the tokens (scripts/vite-skin-inline.mjs);
     // only the tokens TypeScript reads at run time stay defined.
-    const { keep } = skinBuild(ROOT);
+    // [night-36a] D-294: plus the font stacks kept as references (REFERENCED_TOKENS).
+    const { keep, refs } = skinBuild(ROOT);
     const css = files(dist, (p) => extname(p) === '.css').map((p) => readFileSync(p, 'utf8')).join('\n');
-    const tokenUses = [...css.matchAll(/var\(--skin-([a-z0-9-]+)/g)].map((m) => m[1]).filter((name) => !keep.has(name));
+    const tokenUses = [...css.matchAll(/var\(--skin-([a-z0-9-]+)/g)].map((m) => m[1]).filter((name) => !keep.has(name) && !refs.has(name));
     check(tokenUses.length === 0, 'skin tokens left in dist CSS (vite-skin-inline off?): ' + [...new Set(tokenUses)].join(' '));
     // [night-11ax] D-257: fonts ship as WOFF2 only (scripts/vite-font-files.mjs drops the TTF twins from dist/), and
     // every font file the release CSS names is in dist/.

@@ -3094,6 +3094,29 @@ one shared line in portrait (about 330 px with both titles, wider than a 320 px 
 (the owner asked for the number), letting the report scroll (D-267 keeps that for the 130/150 % text steps), raising
 the CSS budget. **Status: in force (shipped skin and Linoryt preview).**
 
+## D-294 — CSS budget headroom: the font stacks stay token references in the release (2026-11-07, Claude, night 36a)
+Release CSS had reached **109.0 kB** of the 109 kB budget (D-258; 108,991 B after D-293), so the next UI change would
+have failed `test:bundle`. Measured per source (each module minified alone after inlining and pruning; the sum equals
+the dist file): `roza.css` 22.6 kB, `upgrade.css` 14.5, `gameover.css` 13.4, `menu.css` 10.7, `puzzles/board.css` 9.1,
+`tutorial.css` 8.3, `overlay.css` 6.1, `logbook.css` 5.4, `hud.css` 4.8, the other eight 14.1. Róża and the Diorama
+comparison share one component DOM (no TypeScript branch builds Diorama-only elements), so there are no Diorama-only
+rules to move into a DEV-only stylesheet: the only Diorama-only bytes are base declarations Róża overrides. The pruner
+(D-257) already drops 6.9 kB of them. Widening it to component rules whose subject compound contains Róża's selector
+would free 0.85 kB, but 0.77 kB of that rests on a specificity tie won by source order (roza.css last in the single CSS
+file), and the Linoryt preview needs the same base declarations; not done (owner question Q-91, option C).
+Decision: `scripts/vite-skin-inline.mjs` keeps the three font-stack tokens (`--skin-face-text`, `-display`, `-mono`,
+`REFERENCED_TOKENS`) as `var(--skin-face-*)` references in the release instead of writing their ~50-byte value on every
+use; the kept skin defines them once on `:root` with the resolved value. Every other token is still written in place
+(D-252). The computed font is the same: the token is defined once, on `:root`, and no release stylesheet sets it
+(`inlineSkin` refuses it, `test:skin-tokens` checks it); `skin:pixels` with `AW_SKIN_INLINE=1` matches origin/dev.
+Release CSS **109.0 → 105.3 kB** (−3.7 kB; headroom 0.0 → 3.4 %); the budget stays 109 kB. DEV skins (`?skin=current`,
+`?skin=linoryt`) are untouched: the dev server does not inline.
+Measured for U5 (PLAN-LINORYT.md expects CSS ≤ 100 kB): deleting `roza.css` frees 22.6 kB, but the component
+declarations Róża's pruning removes come back unless Linoryt prunes them, and `linoryt.css` today minifies to 65.2 kB
+with its scope folded to `:root:root`; with the pruner re-pointed at Linoryt the projected release CSS is ~135 kB
+(components 69.7 + Linoryt 65.2). U5 therefore needs either a smaller Linoryt structure or a new budget decision
+(Q-91). **Status: in force.**
+
 ## D-295 — Playtest record v2: contracts, surges, licence class, home region and milestones in the `AW1:` line (2026-11-07, Claude, night 37a)
 The closed test has to re-check D-270 (milestone thresholds), D-271 (contract difficulty and reward), D-272 (surge
 size) and D-273 (licence class II strength) on human runs, but the `AW1:` line (D-231) carried none of them. Each
