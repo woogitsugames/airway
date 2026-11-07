@@ -3,7 +3,7 @@
 // hardware/system back (router `back()`) does the same, and a fresh profile still opens at puzzle 01. Only the
 // departures list scrolls, never the page. EN 412×915, PL 915×412, PL 360×640.
 import { performance } from 'node:perf_hooks';
-import { withBrowser, newGamePage, waitForScreen, clickTestId, assert, saveDiagnostics, SEED } from './browser.mjs';
+import { gameUrl, withBrowser, newGamePage, waitForScreen, clickTestId, assert, saveDiagnostics, SEED } from './browser.mjs';
 
 const started = performance.now();
 const results = [];
@@ -35,7 +35,7 @@ try {
   await withBrowser(async ({ browser, url }) => {
     for (const [language, viewport] of cases) {
       const size = `${language} ${viewport.width}×${viewport.height}`;
-      const { page, errors } = await newGamePage(browser, url, language, viewport);
+      const { page, errors } = await newGamePage(browser, gameUrl(url), language, viewport);
       const step = async (label, run) => {
         try {
           await run();

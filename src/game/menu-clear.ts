@@ -57,3 +57,43 @@ export function menuTilt(clashesAt: (tilt: number) => number, base = MENU_TILT_B
   }
   return best;
 }
+
+/** [night-29b] D-284 U4: the Linoryt index's framing (the same shape as src/render MenuFraming, horizon mode). */
+export interface IndexFraming {
+  readonly mode: 'horizon';
+  readonly insets: { top: number; left: number; right: number; bottom: number };
+  readonly horizonY: number;
+  readonly radius: number;
+}
+/** Gap (px) kept between the printed globe and the index: the demo airports' clearance plus a margin. */
+export const INDEX_GLOBE_GAP = MENU_CLEAR_PX + 6;
+/** Gap (px) between the globe and the title or a screen edge (no clearance needed there, only air). */
+export const INDEX_EDGE_GAP = 10;
+/** Smallest disc radius (px) worth printing; below it the globe stays a horizon. */
+export const INDEX_DISC_MIN_PX = 48;
+
+/**
+ * [night-29b] D-284, D-286, PLAN-LINORYT.md step U4: the Linoryt menu prints the globe as an engraving between the title
+ * and the index (frame png/a-menu.png): the whole disc, centred in the free paper — under the title and over the index
+ * in portrait, left of the index column in landscape — at least INDEX_GLOBE_GAP from the index (so no demo airport comes near
+ * its rows at any turn of the spin: the disc holds them all) and INDEX_EDGE_GAP from the title and the screen edges.
+ * The index is the board box (opaque paper). A short phone gets a smaller disc rather than the horizon: under a
+ * horizon the demo network rides the index's top rule at every tilt (320×568, measured). Only a free area under
+ * INDEX_DISC_MIN_PX returns null (the caller keeps the horizon framing and the menu tilt). Pure.
+ */
+export function indexFraming(width: number, height: number, sign: ClearRect | null, board: ClearRect | null,
+  base: { top?: number; left?: number; right?: number; bottom?: number } = {}): IndexFraming | null {
+  if (!board) return null;
+  const beside = width > height;
+  const left = base.left ?? 0;
+  const right = beside ? Math.max(base.right ?? 0, Math.round(width - board.left)) : base.right ?? 0;
+  const bottom = beside ? base.bottom ?? 0 : Math.max(base.bottom ?? 0, Math.round(height - board.top));
+  const top = Math.max(base.top ?? 0, Math.round(sign ? sign.bottom : height * 0.12));
+  const free = {
+    w: width - left - right - 2 * (beside ? INDEX_GLOBE_GAP : INDEX_EDGE_GAP), // the disc is centred between the insets
+    h: height - top - bottom - INDEX_EDGE_GAP - (beside ? INDEX_EDGE_GAP : INDEX_GLOBE_GAP),
+  };
+  const radius = Math.floor(Math.min(free.w, free.h) / 2);
+  if (radius < INDEX_DISC_MIN_PX) return null;
+  return { mode: 'horizon', insets: { top, left, right, bottom }, horizonY: top + INDEX_EDGE_GAP + (free.h - 2 * radius) / 2, radius };
+}

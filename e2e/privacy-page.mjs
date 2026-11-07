@@ -5,11 +5,11 @@
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
-import { withBrowser, newGamePage, waitForScreen, clickTestId, assert, saveDiagnostics, state, ROOT, SEED } from './browser.mjs';
+import { gameUrl, skinShotsDir, withBrowser, newGamePage, waitForScreen, clickTestId, assert, saveDiagnostics, state, ROOT, SEED } from './browser.mjs';
 import { translations } from '../site/i18n.js';
 
 const started = performance.now();
-const SHOTS = resolve(ROOT, 'docs/shots/n11e');
+const SHOTS = skinShotsDir(resolve(ROOT, 'docs/shots/n11e')); // [night-29b] U4: --skin=linoryt keeps them out of docs/
 const results = [];
 const cases = [['pl', 412, 915], ['en', 915, 412], ['en', 412, 915], ['pl', 320, 568]];
 
@@ -19,7 +19,7 @@ try {
     mkdirSync(SHOTS, { recursive: true });
     for (const [language, width, height] of cases) {
       const label = `${language} ${width}×${height}: settings → privacy policy → back`;
-      const { page, errors } = await newGamePage(browser, url, language, { width, height });
+      const { page, errors } = await newGamePage(browser, gameUrl(url), language, { width, height });
       const external = [];
       // [night-11at] blob: URLs are in-memory globe textures (src/render/globe/look.ts), not network; they made this flaky.
       page.on('request', (request) => {

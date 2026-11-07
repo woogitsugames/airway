@@ -3,7 +3,7 @@
 // shot menu-phone (PL 360×640) had Dakar under "Ustawienia". PL/EN on the store phone, a short phone, a tall phone, a
 // foldable and landscape. No PNG is kept (failures leave a diagnostic screenshot in .e2e/).
 import { performance } from 'node:perf_hooks';
-import { withBrowser, newGamePage, waitForScreen, assert, saveDiagnostics, SEED } from './browser.mjs';
+import { gameUrl, withBrowser, newGamePage, waitForScreen, assert, saveDiagnostics, SEED, SKIN } from './browser.mjs';
 
 const started = performance.now();
 const results = [];
@@ -21,14 +21,15 @@ try {
   await withBrowser(async ({ browser, url }) => {
     for (const { language, width, height } of cases) {
       const label = `${language} ${width}×${height}`;
-      const { page, errors } = await newGamePage(browser, url, language, { width, height }, { reducedMotion: 'reduce' });
+      const { page, errors } = await newGamePage(browser, gameUrl(url), language, { width, height }, { reducedMotion: 'reduce' });
       try {
         await waitForScreen(page, 'menu');
         // The framing settles once the entries are laid out on the rose (a frame or two after the screen shows).
-        await page.waitForFunction(() => {
+        await page.waitForFunction((skin) => {
           const framing = window.__awWorld?.framing?.();
-          return framing && framing.first !== null && document.querySelector('.roza-menu-rose');
-        }, null, { timeout: 8000 });
+          // [night-29b] D-284 U4: the Linoryt preview (--skin=linoryt) has no rose; its index rows are the entries.
+          return framing && framing.first !== null && document.querySelector(skin ? '.lin-title' : '.roza-menu-rose');
+        }, SKIN, { timeout: 8000 });
         await page.waitForTimeout(400);
         const probe = await page.evaluate(() => window.__awWorld.framing());
         assert(probe.menuClashes === 0, `demo airports touch a menu entry (${probe.menuClashes} samples, tilt ${probe.menuTilt}°)`);
@@ -49,7 +50,7 @@ try {
   if (fatal) console.error('FAIL harness: ' + fatal);
   const passed = results.filter((item) => item.status === 'PASS').length;
   const failedCount = results.length - passed + (fatal ? 1 : 0);
-  console.log(`SUMMARY test:e2e:menu-clear seed=0x${SEED.toString(16).toUpperCase()} steps=${results.length} ` +
+  console.log(`SUMMARY test:e2e:menu-clear${SKIN ? ' skin=' + SKIN : ''} seed=0x${SEED.toString(16).toUpperCase()} steps=${results.length} ` +
     `passed=${passed} failed=${failedCount} durationMs=${Math.round(performance.now() - started)}`);
   if (failedCount || results.length !== cases.length) process.exitCode = 1;
 }
