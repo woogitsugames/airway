@@ -123,7 +123,11 @@ medium/high ≤ 2 (G4). "Shots" = PNGs to inspect against the CLAUDE.md forbidde
   audit: no note over a stamp/another note/the margins); `test:e2e:fill-trend`, `test:e2e:transfer-glyphs`,
   `test:e2e:edge-chip-*` with `--skin=linoryt`.
 - **Shots:** `docs/shots/<night>/` Levant cluster real renderer (`?look=linoryt&skin=linoryt`), jam, night.
-- **Done when:** the game frame reads like `png/a-game.png` at 360×640, 412×915, 915×412, 768×1024.
+- **Done when:** the game frame reads like `png/a-game.png` at 360×640, 412×915, 915×412, 768×1024. **Status: done
+  (night 30a, PR to `dev`, D-288):** notes, jam block, NOWE stub and printed edge chips on the `STAMP_SIZE_PX` fallback
+  (`LINORYT_STAMP_PX`); E2 swaps in `projectAirport(id, out)` as one overlay option. `test:roza-names` stays for Róża
+  next to the new `test:note-layout` until U5 deletes Róża. Shots on the stub world (stamps drawn as outlines in the PNGs
+  only) in `docs/shots/30a/`; the real-renderer shots wait for E1/E2.
 
 ### U3 — agent — sheets in print (preview)
 - **Files:** `src/ui/upgrade/*` (weekly board: crates as printed slips, contract slip incl. the D-280 one-liner),

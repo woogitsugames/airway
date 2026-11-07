@@ -3,7 +3,7 @@
 // matter. Checks: up/down chevron after the count, inside the tag (the width sum grew), aria text PL/EN, removed on
 // null, drawn in paper ink on a jammed tag, no animation under "Reduce motion", one short step-in otherwise.
 import { performance } from 'node:perf_hooks';
-import { withBrowser, newGamePage, waitForScreen, assert, saveDiagnostics } from './browser.mjs';
+import { withBrowser, newGamePage, gameUrl, waitForScreen, assert, saveDiagnostics } from './browser.mjs';
 
 const started = performance.now();
 const results = [];
@@ -18,7 +18,7 @@ try {
   await withBrowser(async ({ browser, url }) => {
     for (const [language, width, height] of CASES) {
       const label = `${language} ${width}×${height}`;
-      const { page, errors } = await newGamePage(browser, url, language, { width, height });
+      const { page, errors } = await newGamePage(browser, gameUrl(url), language, { width, height });
       try {
         await waitForScreen(page, 'menu');
         const m = await page.evaluate(async () => {

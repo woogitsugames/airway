@@ -2996,3 +2996,22 @@ report puts its actions under the departures beside the incident report; under 4
 Result: no sheet scrolls where the shipped skin does not (`test:e2e:linoryt:stub` audits 9 sheets × 12 sizes × PL/EN,
 incl. notch and 150 %); at 640 × 360 and 844 × 390 the board and report now fit where Róża scrolls. Release `dist/`
 byte-identical. **Status: in force (preview).**
+
+## D-288 — Linoryt notes: the stamp is a disc obstacle, a boxed-in note tries its one-line form, only a jam's edge chip may cover a note (2026-11-07, Claude, night 30a)
+Step U2 of PLAN-LINORYT.md moves the D-262…D-268 and D-281 note layout from Róża's rose rings to the Linoryt stamps
+(`src/ui/skin/linoryt.ts`, DEV `?skin=linoryt` only; the release build is byte-identical).
+**Choice.** (1) The stamp box enters `layoutTags` as the existing `ring` obstacle, a disc that holds the inked stamp
+(square: half·√2, hub octagon: half/cos π/8), sized from `LINORYT_STAMP_PX` (airport 22, hub 30) until E2's
+`projectAirport` hands the overlay real stamp boxes (one option, `projectAirport(id, out)`); a note's places start 5 px
+off that disc (side, below, above, level beside), so a note can never print over its own or another stamp, and D-263's
+"stays at its own airport" is measured from the stamp. (2) The printed note's compact form ("ANK 1 z 24" on one line,
+"BGW NOWE", a jam keeps its block) is lower as well as narrower, so a note that finds no place is laid out again in that
+form (up to three passes, `linorytCompactPasses`) instead of the width-only compact try; the must-show busiest hub and a
+new airport (D-281) keep their priority. (3) Printed edge chips carry the city name and "2 408 km · 8 z 12" and are
+up to 136 px wide (`placeSizedEdgeChips`, per-chip width, stamps as markers): on an edge too full for a place clear of
+the notes, only a jam's chip may sit under a note (the off-screen jam must stay visible); any other chip hides rather than
+print a second block over a note. (4) The fill-trend chevron is a cell of the note's row: it fades in place, never
+slides out of the note. Rejected: the stamp as a square box obstacle (a note's corner then touches the octagon's
+diagonal), keeping the 52 px code-only chips (the frame `png/a-game.png` prints the city), letting any chip cover a note
+(two printed blocks read as one). **Status: in force for the preview; carried into U5; the fallback goes when E2 lands.**
+
