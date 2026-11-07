@@ -1,0 +1,5 @@
+/* OFL fonts for the 2026-11b mockups (licences in ../fonts/). */
+@font-face { font-family: 'Besley'; src: url('../fonts/Besley-VF.ttf') format('truetype'); font-weight: 400 900; }
+@font-face { font-family: 'Schibsted Grotesk'; src: url('../fonts/SchibstedGrotesk-VF.ttf') format('truetype'); font-weight: 400 900; }
+@font-face { font-family: 'Anybody'; src: url('../fonts/Anybody-VF.ttf') format('truetype'); font-weight: 100 900; font-stretch: 50% 150%; }
+@font-face { font-family: 'Big Shoulders Stencil'; src: url('../fonts/BigShouldersStencilDisplay-VF.ttf') format('truetype'); font-weight: 100 900; }

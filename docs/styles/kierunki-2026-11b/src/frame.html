@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="pl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=1080">
+<link rel="stylesheet" href="fonts.css">
+<script type="importmap">{"imports":{"d3-geo":"/node_modules/d3-geo/src/index.js","d3-array":"/node_modules/d3-array/src/index.js","internmap":"/node_modules/internmap/src/index.js","topojson-client":"/node_modules/topojson-client/src/index.js"}}</script>
+<style>
+  html,body{margin:0;width:1080px;height:1920px;overflow:hidden}
+  #stage{position:relative;width:1080px;height:1920px;overflow:hidden}
+  #stage>canvas,#stage>svg{position:absolute;left:0;top:0}
+</style></head>
+<body><div id="stage"></div>
+<script type="module">
+  import { prepareWorld } from './globe.js';
+  const q = new URLSearchParams(location.search);
+  const dir = q.get('d') || 'a', frame = q.get('f') || 'game';
+  window.__ready = false;
+  const mod = await import(`./dir-${dir}.js`);
+  const world = await prepareWorld();
+  await document.fonts.load('40px Besley'); await document.fonts.load('40px "Schibsted Grotesk"');
+  await document.fonts.load('40px Anybody'); await document.fonts.load('40px "Big Shoulders Stencil"');
+  await mod.render({ world, stage: document.getElementById('stage'), frame });
+  window.__ready = true;
+</script></body></html>
