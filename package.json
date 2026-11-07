@@ -28,6 +28,7 @@
     "test:arch": "node scripts/test-arch.mjs",
     "test:framing": "node --import ./scripts/ts-test-loader.mjs scripts/test-framing.ts",
     "test:e2e:new-airport": "node e2e/new-airport.mjs",
+    "test:e2e:weather-linoryt": "node e2e/weather-linoryt.mjs",
     "test:e2e:session-stub": "node e2e/session-stub.mjs",
     "test:session-stub": "node --import ./scripts/ts-test-loader.mjs scripts/test-session-stub.ts",
     "test:fixture-adapter": "node scripts/test-fixture-adapter.mjs",
