@@ -3015,3 +3015,33 @@ slides out of the note. Rejected: the stamp as a square box obstacle (a note's c
 diagonal), keeping the 52 px code-only chips (the frame `png/a-game.png` prints the city), letting any chip cover a note
 (two printed blocks read as one). **Status: in force for the preview; carried into U5; the fallback goes when E2 lands.**
 
+
+## D-289 — Linoryt globe (E1): the coast field is baked at load, hatch periods are 360°/2ⁿ with a per-pixel octave, ±45° hatches are rhumb lines (2026-11-07, Claude, ext session E1)
+Step E1 of PLAN-LINORYT.md (spec `docs/notes/linoryt-render-spec.md` §1–§4, §9): the printed globe behind DEV
+`?look=linoryt` (also on with the UI preview `?skin=linoryt`), in `src/render/globe/linoryt.ts` (inks, hatch rules,
+pure) and `linoryt-globe.ts` (field, shaders, sky band; a DEV-only dynamic import, so the release `dist/` stays
+byte-identical until E3).
+**Choice.** (1) **No `coast-2048.png`, no `scripts/build-coast.mjs`:** one RGBA8 field (2048×1024) is built on the CPU
+when the globe loads, from data the game already ships: R = signed distance to the coast ±3° (exact Felzenszwalb EDT on
+the Natural Earth land raster the terrain mesh uses, east–west scaled by cos lat, wrapping at the antimeridian), G =
+Imhof shadow (1 − hillshade, light 315°/45°, 3×3-smoothed `elevation-2048.png`), B = city-light dots. 0 kB instead of
+≤ 350 kB, the printed coast matches the mesh's coast exactly, and the shader makes one texture fetch (spec: ≤ 2).
+(2) **Hatch periods are 360°/2ⁿ** (22.5°, 11.25°, …) and the octave is chosen **per pixel** from the screen derivative
+(finer octave 4–8 CSS px, cross-faded in log₂ spacing, weights sum to 1; under 3 device px a pattern prints as its
+mean), instead of one octave from the zoom: spacing then also holds at high latitudes and toward the limb. (3) **The
++45° relief and −45° night hatches are rhumb lines** (λ ∓ Mercator y): exactly 45° in the local east/north frame
+everywhere, and seamless across the antimeridian because every period divides 360° (a `lon·cos lat` coordinate
+would leave a seam through the Pacific, visible at night). Derivatives of λ and φ are analytic from the surface
+normal, so there is no seam in the octave choice either. (4) **Water lines are constant on screen** (3.5 / 7.5 / 12
+CSS px from the shore at the disc centre, the last one at most 2.6° out, inside the field), dropped where they would
+come closer than the alias floor; the open-sea parallels begin past them. (5) **`saver`** keeps the cross-fade but with
+a 6 px minimum spacing (the fine 4 px octave never prints) and no relief hatch. (6) **Sky band:** one opaque
+camera-facing quad through the globe centre drawn first without depth writes (inked limb 2.5 px, three blue lines at
+0.7/1.6/2.8 % of the radius); it replaces the satellite halo, so draw calls do not grow. (7) **Flicker score** of
+`npm run shots -- linoryt-motion` is measured on frames box-filtered over one hatch window (8 CSS px): unfiltered
+per-pixel change mostly counts honest line motion (≈ 5 % for a correct print). Limitation: with box-filtered AA in
+the shader even deliberately too-thin settings blur to their mean on SwiftShader and still score ~0 %, so the score
+guards against moiré bands, not against GPU-specific shimmer; the Test Lab game loop (D-245) before U5 stays the check
+for budget phones. Rejected: the spec's PNG + build script (bytes, a second coast source), a global zoom-driven octave
+(lines crowd at 60° N and near the limb), `lon·cos lat` hatches (Pacific seam). **Status: in force for the DEV look;
+E3 lifts the DEV guard.**

@@ -13,7 +13,7 @@ import type { QualityLevel, TerrainStyle } from './terrain';
 import type { DecorOptions } from './decorations';
 import { patchDayNightShader } from './daynight';
 
-export type GlobeLook = 'diorama' | 'refined' | 'satellite' | 'painted' | 'map';
+export type GlobeLook = 'diorama' | 'refined' | 'satellite' | 'painted' | 'map' | 'linoryt'; // [ext-04 E1] D-283
 export const GLOBE_LOOKS: readonly GlobeLook[] = ['diorama', 'refined', 'satellite', 'painted', 'map'];
 
 /** Parse a `?globeLook=` value; anything unknown is the shipped diorama. */
@@ -38,7 +38,7 @@ interface LookConfig {
   readonly haze?: number;
 }
 
-export const LOOKS: Record<Exclude<GlobeLook, 'diorama'>, LookConfig> = {
+export const LOOKS: Record<Exclude<GlobeLook, 'diorama' | 'linoryt'>, LookConfig> = {
   refined: {
     terrain: 'refined',
     decor: { trees: .6, rocks: .25, clouds: .7, lights: 1, tidy: true },
@@ -130,7 +130,7 @@ async function loadTexture(blob: Blob, srgb: boolean): Promise<Texture> {
 }
 
 /** Fetch everything a look needs before the terrain is built (heights must exist at build time). */
-export async function loadLookAssets(look: Exclude<GlobeLook, 'diorama'>, preset: QualityLevel, devBase: string,
+export async function loadLookAssets(look: Exclude<GlobeLook, 'diorama' | 'linoryt'>, preset: QualityLevel, devBase: string,
   signal?: AbortSignal, productionBase = 'data/globe/'): Promise<LookAssets> {
   const config = LOOKS[look];
   const base = config.production ? productionBase : devBase;
@@ -200,7 +200,7 @@ export async function fetchTexture(url: string, srgb: boolean, signal?: AbortSig
 }
 
 /** [G8] Day and night textures of a texture look for a preset (no elevation, no clouds). */
-export async function loadSurfaceTextures(look: Exclude<GlobeLook, 'diorama'>, preset: QualityLevel, devBase: string,
+export async function loadSurfaceTextures(look: Exclude<GlobeLook, 'diorama' | 'linoryt'>, preset: QualityLevel, devBase: string,
   productionBase: string, signal?: AbortSignal): Promise<{ day: Texture; night: Texture | null; config: LookConfig }> {
   const config = LOOKS[look];
   const base = config.production ? productionBase : devBase;
