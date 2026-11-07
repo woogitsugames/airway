@@ -23,3 +23,7 @@ CLAUDE.md.
 |---|---|---|---|---|
 | 11-07 19:25 | qwen_summarize | PLAN-LINORYT.md steps + risks | accurate, missed dependencies line | ~6.2k tokens |
 | 11-07 19:24 | qwen_summarize | handover on branch `claude/...` | FAIL: slash in branch name → 404 | — |
+| 11-07 19:40 | qwen_review | PR #299 via `github_pr` | FAIL: answered "Sure — what would you like me to create?" (14.7k tokens on their side) | — |
+| 11-07 19:42 | qwen_review | PR #299 diff as blob (192 lines) | FAIL: empty answer | — |
+| 11-07 19:43 | qwen_ask (thinking) | same diff, bug list | FAIL: empty, "TRUNCATED: raise max_tokens" at 1500 | — |
+
