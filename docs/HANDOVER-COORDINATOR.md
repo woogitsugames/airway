@@ -30,7 +30,8 @@ Zasady wykonania:
 - Do poprawy (z raportu GPT-17), poza src/render: komentarze „−1 slot” w `src/sim/world.ts` (AirportWeatherView) i `src/ui/overlay.ts` (setFront) → wstrzymanie do 15 min (D-291); „U6” jako flip w `src/ui/skin/linoryt.{ts,css}`, `scripts/vite-font-files.mjs` → U5. Dla sesji ext: komentarz `parseGlobeLook` w `src/render/globe/look.ts` („diorama” → satellite).
 - #309 scalony (komentarze). dev = main = 3f4bfd3.
 - **Sesja ext** session_01V6ZttYCN9VzaEWnk31mzUc była zarchiwizowana od ~19:30 (praca E1 niewypchnięta). Odarchiwizowana 22:15 i ma polecenie: wypchnąć WIP / zacząć E1 od nowa, pushować co 30 min. Sprawdzać przy każdym budziku (`get_session`, gałęzie ext/*).
-- Agenci: 40a (GPT-07, TESTING.md + linia w CLAUDE.md). Dalej: GPT-18/19, 12–15. Dalej: GPT-07/17 (dokumentacja), 18/19 (stub e2e), 12–15 (fale językowe). Następne w kolejce: GPT-20, GPT-11, GPT-07/17/18/19.
+- 22:50: #310 scalony squashem (E1 Linoryt: globus drukowany za ?look=linoryt, D-298). dev = main = f7e2d67. Sesja ext zaczyna E2. Ext ma własny log Free.AI w `docs/notes/freeai-trial.md` na dev; przy raporcie 8.11 połączyć go z logiem z tej gałęzi.
+- Agenci: 40a (GPT-07), 44a (GPT-18). Dalej: GPT-07/17 (dokumentacja), 18/19 (stub e2e), 12–15 (fale językowe). Następne w kolejce: GPT-20, GPT-11, GPT-07/17/18/19.
 
 ## Test Free.AI MCP (7.11 19:30 → 8.11 19:30 UTC)
 Właściciel dodał connector Free.AI MCP (Qwen3-30B): zlecać mu łatwiejsze rzeczy zamiast agentów Claude, testować
