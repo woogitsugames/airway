@@ -10,3 +10,6 @@ rules to CLAUDE.md. Log of delegated tasks (task → result → fixes needed):
   the indentation came back garbled, and a float sweep compared `s >= 0` on accumulated steps. Rewritten by hand from the
   draft (≈ 15 min of my work saved on the skeleton, not on the logic). Verdict: fine for test scaffolding with an
   exact spec; read every line.
+- 2026-11-07, first-pass review of `linoryt-globe.ts` (qwen_review with a `gh:` source): failed — the repo is private
+  (the connector has no GitHub token) and a branch name with `/` is parsed as path. With uploads blocked too, Qwen can
+  only see what is pasted inline (costs my own output tokens), so review of whole files is not worth it here.
