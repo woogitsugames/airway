@@ -281,7 +281,7 @@
   .airway-go-actions { grid-column: 1 / -1; grid-template-columns: 1.6fr 1fr .7fr; }
   .airway-go-same { grid-column: auto; }
   .airway-go-button { min-height: 48px; }
-  /* [night-33a] D-292: the contracts row stands beside the milestones where both fit (beats their flex row below). */
+  /* [night-33a] D-293: the contracts row stands beside the milestones where both fit (beats their flex row below). */
   section.airway-go-milestones { display: inline-flex; margin-right: 16px; }
 }
 /* [night-07p] Short portrait phones (360×640): the report still fits below the boarding pass without scrolling. */
@@ -297,16 +297,16 @@
   .airway-go-actions { grid-template-columns: 1.5fr 1fr .8fr; gap: 6px; }
   .airway-go-same { grid-column: auto; }
   .airway-go-button { padding: 6px; font-size: calc(12px * var(--airway-text-scale)); }
-  /* [night-33a] D-292: 86 px (was 100): just over two rows, the third still cut so the list reads as scrollable; the
+  /* [night-33a] D-293: 86 px (was 100): just over two rows, the third still cut so the list reads as scrollable; the
      line goes to the weekly contracts row under the milestones. */
   .airway-go-flight-list { max-height: 86px; }
   /* [night-11f] With a first-flight tip the report would scroll (48 px at 360×640, 64 px at 320×568): the leading
      cause and its tip stay, the two lesser causes give way (they are still read on bigger screens and later runs). */
   .airway-go-causes-panel .airway-go-causes li:nth-child(n+2) { display: none; }
-  /* [night-33a] D-292: a jam without departures has no list to give room back: under the contracts row the third
+  /* [night-33a] D-293: a jam without departures has no list to give room back: under the contracts row the third
      cause gives way, as the lesser causes do beside a tip (night-11f). */
   .airway-go-contracts ~ .airway-go-causes li + li + li { display: none; }
-  /* [night-33a] D-292: here the contracts row wraps under the milestones as the second line of their ruled block. */
+  /* [night-33a] D-293: here the contracts row wraps under the milestones as the second line of their ruled block. */
   section.airway-go-contracts { margin-top: 1px; padding: 0; border: 0; }
 }
 /* [night-10m] 320×568: one and a half departure rows before the list scrolls, a tighter sign and board. */
@@ -315,11 +315,11 @@
   .airway-go-sign { min-height: 40px; padding-block: 2px; }
   .airway-go-board { padding-block: 7px; }
   .airway-go-board-title { margin-bottom: 5px; }
-  .airway-go-flight-list { max-height: 50px; } /* [night-33a] D-292: was 60 (1½ rows), now 1¼ */
+  .airway-go-flight-list { max-height: 50px; } /* [night-33a] D-293: was 60 (1½ rows), now 1¼ */
   /* [night-11b] 1½ departure rows: the unserved reason fits, its hint would make the board scroll. */
   .airway-go-none { margin-block: 6px 0; }
   .airway-go-none-hint { display: none; }
-  .airway-go-strip { padding-block: 7px; } /* [night-33a] D-292: was 8 */
+  .airway-go-strip { padding-block: 7px; } /* [night-33a] D-293: was 8 */
   .airway-go-causes-title { margin-top: 6px; padding-top: 4px; }
 }
 /* [night-11g] D-88: the game's "Reduce motion" switch (default: the system). */
@@ -455,7 +455,7 @@
   .airway-go-milestones { margin-top: 3px; padding-top: 2px; }
   .airway-go-milestones-title { line-height: 1.1; }
 }
-/* [night-33a] D-271, D-292: the weekly contracts row reuses the milestone row (count, filled/hollow squares); its
+/* [night-33a] D-271, D-293: the weekly contracts row reuses the milestone row (count, filled/hollow squares); its
    squares wrap in a long run. */
 .airway-go-contracts ul { flex: 1; gap: 4px; flex-wrap: wrap; }
 /* [night-20a] D-267: at the 130/150 % text steps the report may be taller than the screen; it then scrolls under the

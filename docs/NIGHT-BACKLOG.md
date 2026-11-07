@@ -802,11 +802,11 @@ legal-register notes (D-276…D-278). Left for separate items (each a branch fro
 - [x] **Met weekly contracts on the game-over report (D-271)** — count the run's `ContractMet` events (Endless only),
       one report row PL/EN ("Kontrakty 2/4" style, shape not only colour), fits the short-screen report without
       scrolling; e2e layout check like `test:e2e:gameover-milestones`; nothing in Daily or the leaderboard.
-      [night-33a: done, D-292 — `src/game/contractsSummary.ts`, row "Kontrakty: 2 z 4" + squares under the milestones
+      [night-33a: done, D-293 — `src/game/contractsSummary.ts`, row "Kontrakty: 2 z 4" + squares under the milestones
       (Róża and the Linoryt preview); `test:contracts-summary` (fast), `test:e2e:gameover-contracts` (+ `:stub`).]
-- [ ] **First demand-surge announcement: first-time card + short sound (D-272)** — one R6b card on the first
+- [x] **First demand-surge announcement: first-time card + short sound (D-272)** — one R6b card on the first
       `SurgeAnnounced` event and one short audio cue; update `test:e2e:first-time-cards` and the audio cue tests.
-      Daily stays without surges.
+      Daily stays without surges. Done in night/35a (D-292): card `surge`, cue `surge-notice` with the card.
 - [x] **Weather front ground hold (D-274)** — under the band, departures wait for a short hold instead of (or on top
       of) "−1 slot"; behind the existing flag, `ENDLESS_WEATHER_FRONT` stays `false`; bot report before/after,
       replay/hash guards; Daily never. Ships as a post-launch update (D-131).

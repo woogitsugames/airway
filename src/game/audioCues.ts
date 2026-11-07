@@ -45,6 +45,7 @@ export class AudioCueMapper {
   private hour = -1;
   private readonly droning = new Set<string>();
   private readonly slotWaitHour = new Map<string, number>();
+  private surgeNoticed = false;
 
   constructor(private readonly cue: (cue: AudioCue) => void) {}
 
@@ -102,6 +103,16 @@ export class AudioCueMapper {
       blooms++;
       this.cue({ type: 'dawn', tick: run.tick, hubId: city.id, latitude: city.lat, regionId: city.region });
     }
+  }
+
+  /**
+   * [night-35a] D-272: one short notice with the first surge announcement the player sees. The session calls this
+   * when the surge "first time" card appears, which happens once per install; a second call is ignored anyway.
+   */
+  surgeNotice(): void {
+    if (this.surgeNoticed) return;
+    this.surgeNoticed = true;
+    this.cue({ type: 'surge-notice' }); // a UI effect: played at once, not on the sim clock
   }
 
   /** Player actions that land: tag for a new or longer route, paper for a removal, stamp for an upgrade. */

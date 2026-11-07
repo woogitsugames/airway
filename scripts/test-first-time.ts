@@ -1,8 +1,12 @@
 // [night-11p] R6a/R6b (D-130): the first-time card registry and triggers, and the three-step training flight.
 import assert from 'node:assert/strict';
 import {
-  FIRST_TIME_KEY, FIRST_TIME_VERSION, FirstTimeRegistry, LEGACY_SLOT_KEY, beyondRange, curfewAirport, fillingHub,
+  FIRST_TIME_CARDS, FIRST_TIME_KEY, FIRST_TIME_VERSION, FirstTimeRegistry, LEGACY_SLOT_KEY, beyondRange, curfewAirport,
+  fillingHub, surgeAnnouncement,
 } from '../src/game/tutorial/first-time.ts';
+import { clearFirstTimeCards } from '../src/game/tutorial/first-time.ts';
+import { createBalanceSession } from './balance-game-adapter.ts';
+import { chooseBotAction } from './bot.ts';
 import { TUTORIAL_ACTION_STEPS, TUTORIAL_KEY, TUTORIAL_STEPS, TutorialController, type TutorialPort } from '../src/game/tutorial/controller.ts';
 
 let passed = 0;
@@ -89,9 +93,57 @@ await test('[night-11r] D-192: "Replay tutorial" brings every first-time card ba
   const controller = new TutorialController(port(), storage);
   controller.replay();
   const after = new FirstTimeRegistry(storage);
-  for (const card of ['slots', 'hub-full', 'out-of-range', 'curfew', 'weekly-board'] as const) assert.equal(after.seen(card), false, card);
+  for (const card of FIRST_TIME_CARDS) assert.equal(after.seen(card), false, card);
   after.mark('curfew');
   assert.equal(new FirstTimeRegistry(storage).seen('curfew'), true);
+});
+// [night-35a] D-272: the demand-surge card.
+await test('surge card: a new id keeps every card an older install has seen, and is itself unseen (no version bump)', () => {
+  assert.equal(FIRST_TIME_VERSION, 1);
+  assert.ok((FIRST_TIME_CARDS as readonly string[]).includes('surge'));
+  const old = JSON.stringify({ v: 1, seen: ['hub-full', 'out-of-range', 'curfew', 'weekly-board'] });
+  const storage = memory({ [FIRST_TIME_KEY]: old, [LEGACY_SLOT_KEY]: '1' });
+  const registry = new FirstTimeRegistry(storage);
+  for (const card of ['slots', 'hub-full', 'out-of-range', 'curfew', 'weekly-board'] as const) assert.ok(registry.seen(card), card);
+  assert.equal(registry.seen('surge'), false);
+  registry.mark('surge');
+  const again = new FirstTimeRegistry(storage);
+  assert.ok(again.seen('surge'), 'shown once per install');
+  assert.deepEqual(JSON.parse(storage.data.get(FIRST_TIME_KEY)!).seen, ['hub-full', 'out-of-range', 'curfew', 'weekly-board', 'surge']);
+  clearFirstTimeCards(storage);
+  assert.equal(new FirstTimeRegistry(storage).seen('surge'), false, '"Replay tutorial" brings it back');
+});
+await test('surge trigger: an announced surge on a visible airport in Endless; not running, unseen, Daily or puzzle', () => {
+  const soon = { cityId: 'FRA', active: false };
+  const visible = (id: string) => id === 'FRA';
+  assert.equal(surgeAnnouncement('endless', soon, visible), soon);
+  assert.equal(surgeAnnouncement('endless', { cityId: 'FRA', active: true }, visible), null, 'already running');
+  assert.equal(surgeAnnouncement('endless', { cityId: 'SYD', active: false }, visible), null, 'airport not drawn yet');
+  assert.equal(surgeAnnouncement('endless', null, visible), null);
+  assert.equal(surgeAnnouncement('daily', soon, visible), null);
+  assert.equal(surgeAnnouncement('puzzle', soon, visible), null);
+});
+/** The bot's Endless run on this seed lives to its week-3 surge (first announced near tick 8 880); 0xA1A1 ends first. */
+const SURGE_SEED = 0xA1A2;
+await test('surge trigger in real play: the bot\'s Endless run announces one; the same seed in Daily never does', () => {
+  const play = (mode: 'endless' | 'daily') => {
+    const session = createBalanceSession(SURGE_SEED, mode, null, mode === 'endless', mode === 'endless');
+    for (let i = 0; i < 2000; i++) {
+      const snapshot = session.snapshot();
+      if (snapshot.status === 'finished' || snapshot.tick >= 18_000) break;
+      const world = session.simulation.world;
+      const announced = surgeAnnouncement(mode, world.surge, (id) => world.activeCityIds().includes(id));
+      if (announced) return { announced, tick: snapshot.tick };
+      const decision = chooseBotAction(snapshot);
+      if (decision) session.dispatch(decision.command);
+      session.advance(30);
+    }
+    return null;
+  };
+  const endless = play('endless');
+  assert.ok(endless, 'Endless: a surge is announced within 18 000 ticks');
+  assert.equal(endless.announced.active, false);
+  assert.equal(play('daily'), null, 'Daily: never');
 });
 console.log(`SUMMARY test:first-time seed=0xA1A1 passed=${passed} failed=${failed}`);
 if (failed) process.exitCode = 1;

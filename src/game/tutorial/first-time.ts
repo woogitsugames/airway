@@ -7,7 +7,11 @@ export const FIRST_TIME_KEY = 'aw-first-time';
 export const FIRST_TIME_VERSION = 1;
 /** [task-32] The departure-slot hint predates the registry and keeps its own flag, read and written here. */
 export const LEGACY_SLOT_KEY = 'aw-tutorial-slots';
-export const FIRST_TIME_CARDS = ['slots', 'hub-full', 'out-of-range', 'curfew', 'weekly-board'] as const;
+/**
+ * [night-35a] D-272: 'surge' joins the list without a version bump: the saved `seen` list keeps every card already
+ * shown, and a card id missing from it simply has not been shown yet, so nothing seen comes back.
+ */
+export const FIRST_TIME_CARDS = ['slots', 'hub-full', 'out-of-range', 'curfew', 'weekly-board', 'surge'] as const;
 export type FirstTimeCard = (typeof FIRST_TIME_CARDS)[number];
 /** A hub at or above this share of its waiting places shows the "hub filling up" card. */
 export const HUB_FULL_SHARE = 0.7;
@@ -95,4 +99,15 @@ export function beyondRange(
 /** The first airport closed by the night curfew, or null. */
 export function curfewAirport<T extends { readonly curfewClosed?: boolean }>(cities: readonly T[]): T | null {
   return cities.find((city) => city.curfewClosed) ?? null;
+}
+
+/**
+ * [night-35a] D-272: the demand surge the "first time" card and its sound announce: an announced surge (hollow
+ * pennant, not yet running) on an airport the player can see, in Endless only (Daily and puzzles never have one,
+ * D-249; the mode check keeps it that way even if a later rule set turned surges on there).
+ */
+export function surgeAnnouncement<T extends { readonly cityId: string; readonly active: boolean }>(
+  mode: string, view: T | null, visible: (cityId: string) => boolean,
+): T | null {
+  return mode === 'endless' && view && !view.active && visible(view.cityId) ? view : null;
 }
