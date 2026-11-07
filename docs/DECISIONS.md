@@ -2952,3 +2952,11 @@ index (run-starting entry on the red block). The DEV preview's `--roza-*` palett
 yet redrawn print on paper too. Release `dist/` is byte-identical to origin/dev (sha256 of all 32 files). Guards:
 `test:skin-tokens` (+8), `test:e2e:linoryt:stub` (48 audited screens incl. notch and 150 %), the browser harness flag
 `--skin=linoryt`. **Status: in force (plan); U1 done.**
+
+## D-285 — Linoryt open points L1–L4: the dock has five symbols, the "Mapa" mode goes, night on the day bar is 20–06, UI red #B33823 (owner, 2026-11-07; recommendations accepted)
+Owner's answers to the questions of night 28a (PR #285): **L1** the dock keeps five symbols (Undo, Turboprop, Jet,
+Hub, Speed) once the Satelita toggle is gone — larger touch targets at 320 dp. **L2** the "Mapa" globe mode (D-172) is
+removed together with Satelita (D-283) in step E4: Linoryt is itself the map; one look, smaller bundle, fewer tests.
+**L3** the day bar marks night 20:00–06:00 as in the mockup (not the 23–06 airport curfew). **L4** the UI red is
+#B33823 (D-284), not the mockup's #C8412A: paper letters on #C8412A reach only 3.9:1, under the D-47 4.5:1 floor.
+**Status: decided.**
