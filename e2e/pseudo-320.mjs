@@ -10,12 +10,12 @@
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
-import { withBrowser, saveDiagnostics, ARTIFACTS } from './browser.mjs';
+import { gameUrl, withBrowser, saveDiagnostics, ARTIFACTS, SKIN } from './browser.mjs';
 import { presetLanguage } from '../scripts/lib/harness.mjs';
 import { SCREENS, auditScreen, mountScreen } from './screen-fixtures.mjs'; // [night-11ap] shared with text-scale-150
 
 const started = performance.now();
-const SHOTS = resolve(ARTIFACTS, 'pseudo-320');
+const SHOTS = resolve(ARTIFACTS, SKIN ? `pseudo-320-${SKIN}` : 'pseudo-320'); // [night-29b] U4: `--skin=linoryt` audits the preview
 const SIZE = { width: 320, height: 568 };
 const results = [];
 
@@ -32,11 +32,13 @@ try {
       page.on('pageerror', (error) => errors.push(error.message));
       try {
         await presetLanguage(page, language, { clear: true });
-        await page.goto(url + '?perf=scene', { waitUntil: 'networkidle' });
+        await page.goto(gameUrl(url + '?perf=scene'), { waitUntil: 'networkidle' });
         await mountScreen(page, screen, language);
         const { problems, seen } = await auditScreen(page);
         await page.screenshot({ path: resolve(SHOTS, `${screen}-${language}.png`), animations: 'disabled' });
         if (!seen) problems.push('no visible text');
+        // [night-29b] D-284 U4: with --skin=linoryt the screens must really be in the preview's print.
+        if (SKIN && await page.evaluate(() => document.documentElement.dataset.skin) !== SKIN) problems.push(`skin not ${SKIN}`);
         if (errors.length) problems.push(`page errors: ${errors.join('; ')}`);
         if (problems.length) throw new Error(problems.join('; '));
         results.push({ name, status: 'PASS', why: `${seen} text boxes` });
@@ -55,6 +57,6 @@ try {
   if (fatal) console.error('FAIL harness: ' + fatal);
   const passed = results.filter((item) => item.status === 'PASS').length;
   const failed = results.length - passed + (fatal ? 1 : 0);
-  console.log(`SUMMARY test:e2e:pseudo-320 checks=${results.length} passed=${passed} failed=${failed} durationMs=${Math.round(performance.now() - started)}`);
+  console.log(`SUMMARY test:e2e:pseudo-320${SKIN ? ' skin=' + SKIN : ''} checks=${results.length} passed=${passed} failed=${failed} durationMs=${Math.round(performance.now() - started)}`);
   if (failed || results.length !== SCREENS.length * 2) process.exitCode = 1;
 }

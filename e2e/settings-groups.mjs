@@ -6,10 +6,10 @@
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
-import { withBrowser, newGamePage, waitForScreen, clickTestId, assert, saveDiagnostics, ROOT, SEED } from './browser.mjs';
+import { gameUrl, skinShotsDir, withBrowser, newGamePage, waitForScreen, clickTestId, assert, saveDiagnostics, ROOT, SEED, SKIN } from './browser.mjs';
 
 const started = performance.now();
-const SHOTS = resolve(ROOT, 'docs/shots/n10k');
+const SHOTS = skinShotsDir(resolve(ROOT, 'docs/shots/n10k')); // [night-29b] U4: --skin=linoryt keeps them out of docs/
 const results = [];
 const cases = [
   ['pl', 412, 915, 1], ['en', 915, 412, 2], ['pl', 1000, 904, 2], ['en', 320, 568, 1],
@@ -17,7 +17,8 @@ const cases = [
 const GROUPS = [
   ['settings-group-game', { en: 'Game', pl: 'Gra' }, ['select', 'select', '[data-testid="settings-airline"] select']],
   // [night-11ai] G8 (D-172) added the globe-view select to Display: three selects (globe view, graphics, text size).
-  ['settings-group-display', { en: 'Display', pl: 'Obraz' }, ['select', 'select', 'select', '[data-testid="settings-colorblind"]', '[data-testid="settings-reduce-motion"]']],
+  // [night-29b] D-283/D-285 U4: the Linoryt preview (--skin=linoryt) has no globe view (Satelita and Mapa leave): two.
+  ['settings-group-display', { en: 'Display', pl: 'Obraz' }, [...(SKIN ? [] : ['select']), 'select', 'select', '[data-testid="settings-colorblind"]', '[data-testid="settings-reduce-motion"]']],
   ['settings-group-sound', { en: 'Sound and touch', pl: 'Dźwięk i dotyk' },
     ['[data-testid="settings-sound"]', '[data-testid="settings-music"]', '[data-testid="settings-haptics"]']],
   ['settings-group-help', { en: 'Help', pl: 'Pomoc' }, ['[data-testid="settings-tutorial-replay"]', '[data-testid="settings-solar-time"]', '[data-testid="settings-licenses"]', '[data-testid="settings-privacy"]', '[data-testid="settings-terms"]', '[data-testid="settings-publisher"]']],
@@ -29,7 +30,7 @@ try {
     mkdirSync(SHOTS, { recursive: true });
     for (const [language, width, height, columns] of cases) {
       const label = `${language} ${width}×${height}: four groups, ${columns} column(s)`;
-      const { page, errors } = await newGamePage(browser, url, language, { width, height });
+      const { page, errors } = await newGamePage(browser, gameUrl(url), language, { width, height });
       try {
         await waitForScreen(page, 'menu');
         await clickTestId(page, 'menu-settings');
@@ -48,6 +49,7 @@ try {
               const found = selectors.every((selector) => section.querySelector(selector));
               return found ? rows : -2;
             }),
+            selects: document.querySelectorAll('[data-testid="settings-group-display"] select').length,
             lefts: sections.map((section) => Math.round(section.getBoundingClientRect().left)),
             scroll: document.documentElement.scrollWidth > innerWidth + 2,
           };
@@ -55,6 +57,7 @@ try {
         assert(JSON.stringify(m.ids) === JSON.stringify(GROUPS.map(([id]) => id)), `group order ${m.ids}`);
         assert(JSON.stringify(m.titles) === JSON.stringify(GROUPS.map(([, names]) => names[language])), `titles ${m.titles}`);
         assert(m.counts.every((count, i) => count === GROUPS[i][2].length), `controls per group ${m.counts}`);
+        assert(m.selects === (SKIN ? 2 : 3), `${m.selects} selects in Display`); // [night-29b] U4
         assert(new Set(m.lefts).size === columns, `${new Set(m.lefts).size} column(s), expected ${columns}: ${m.lefts}`);
         assert(!m.scroll, 'horizontal page scroll');
         await page.screenshot({ path: resolve(SHOTS, `settings-${language}-${width}x${height}.png`) });
@@ -74,7 +77,7 @@ try {
   if (fatal) console.error('FAIL harness: ' + fatal);
   const passed = results.filter((item) => item.status === 'PASS').length;
   const failedCount = results.length - passed + (fatal ? 1 : 0);
-  console.log(`SUMMARY test:e2e:settings-groups seed=0x${SEED.toString(16).toUpperCase()} steps=${results.length} ` +
+  console.log(`SUMMARY test:e2e:settings-groups${SKIN ? ' skin=' + SKIN : ''} seed=0x${SEED.toString(16).toUpperCase()} steps=${results.length} ` +
     `passed=${passed} failed=${failedCount} durationMs=${Math.round(performance.now() - started)}`);
   if (failedCount || results.length !== cases.length) process.exitCode = 1;
 }

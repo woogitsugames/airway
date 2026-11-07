@@ -2960,3 +2960,17 @@ removed together with Satelita (D-283) in step E4: Linoryt is itself the map; on
 **L3** the day bar marks night 20:00–06:00 as in the mockup (not the 23–06 airport curfew). **L4** the UI red is
 #B33823 (D-284), not the mockup's #C8412A: paper letters on #C8412A reach only 3.9:1, under the D-47 4.5:1 floor.
 **Status: decided.**
+
+## D-286 — Linoryt menu: the globe is printed whole between the title and the index, a smaller disc rather than a horizon on short phones (2026-11-07, Claude, night 29b)
+Step U4 of PLAN-LINORYT.md frames the menu globe from the printed index (the board box) instead of Róża's rose arc
+(`src/game/menu-clear.ts` `indexFraming`, used by `src/game/world.ts` only in the DEV `?skin=linoryt` preview).
+**Choice.** As in the frame `png/a-menu.png`, the whole disc stands in the free paper — under the title and over the index
+in portrait, left of the index column in landscape — at least 28 px (the 22 px demo-airport clearance + 6) above the
+index and 10 px from the title. The plan accepted a horizon only on a 320×568 phone; measured on the real renderer, the
+horizon framing leaves the demo network on the index's top rule at every tilt up to 32° (6 clashing spin samples), so a
+short phone gets a smaller disc instead (radius ≥ 48 px; Settings and Logbook share the index's last line in portrait so
+the disc keeps ~60 px of radius at 320×568). Only below 48 px (e.g. 320×568 with Continue) the horizon and the D-262
+tilt remain. The landscape preview, which had lost its globe (the base framing took the right-hand index for a left
+column), gets the disc left of the index. Rejected: keeping the horizon and lowering the clearance (a demo airport on the
+print rule), a larger tilt (the network leaves the view). **Status: in force for the preview; carried into U5.**
+
