@@ -3114,3 +3114,12 @@ Privacy (D-16, D-231): still counts and fixed words — a region id is a menu ch
 against every city code), no seed, name or identifier. `docs/PLAYTEST.md` documents the columns and gets decision rows
 D-270…D-273 with thresholds written before the test. Not recorded: the DEV-only weather front (off in every shipped
 run, so always empty in the closed test). Guard: `test:playtest`. **Status: in force.**
+
+## D-296 — Store and site copy: the new mechanics-only description waits for U7 (owner, 2026-11-07; Q-90 option B)
+Owner's answer to Q-90 (`docs/store/copy-review-2026-11.md`, night 38a): the full store description (EN/PL),
+`press.long` and the site's `about.p2` are rewritten together with the screenshots, alt texts and captions at step U7
+(Linoryt store shots), not now. Until then the files keep the current text; nothing is uploaded to a store before U7.
+The night-38a proposal (mechanics only: home region, weekly contract, demand surges, licence classes, game-over
+contracts row; no promise of a look; no weather front) is the starting point for U7, and the wave-1 languages
+(DE/FR/ES/PT-BR) are translated from that new EN, not from the current diorama paragraph. Rejected: changing the copy
+twice (now and at U7). **Status: in force (applies at U7).**
