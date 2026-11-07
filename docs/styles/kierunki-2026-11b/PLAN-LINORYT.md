@@ -167,8 +167,9 @@ medium/high ≤ 2 (G4). "Shots" = PNGs to inspect against the CLAUDE.md forbidde
   `PREVIEW_FONTS` emptied (fonts ship), Alegreya removed; i18n `roza.*` → `hud.week`, `dock.caption.*`, … (PL/EN,
   `src/i18n/limits.ts`); render default look via E3's constant; globe-view setting and the dock's globe tag removed
   (see open question L1 of PR #285: what the sixth dock slot becomes).
-- **Budgets:** CSS ≤ 100 kB (target; Róża structure −~28 kB, Linoryt structure +~16 kB) and the budget lowered to
-  the measurement + 3 kB (decision entry); JS −~20 kB (roza.ts); total + 87 kB fonts − 24 kB Alegreya.
+- **Budgets:** CSS: the budget becomes the measurement after the flip + 3 kB (D-297, owner; ~135 kB projected by
+  D-294 measurements, about 138 kB budget) — the earlier ≤ 100 kB target is dropped, no Linoryt slimming pass before
+  U5; JS −~20 kB (roza.ts); total + 87 kB fonts − 24 kB Alegreya.
 - **Tests:** whole `test:ci`; `test:skin-tokens` rewritten for Linoryt as the shipped skin; `test:glyphs` (Besley
   lacks U+2192 and U+202F, Schibsted lacks U+2009 and U+202F: borrowed through `unicode-range` from Atkinson, as
   today); `test:bundle` font check (named WOFF2 ≥ 4 instead of 6); `skin:pixels` proves inline/prune pixel-identical.
