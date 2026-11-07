@@ -27,3 +27,4 @@ CLAUDE.md.
 | 11-07 19:42 | qwen_review | PR #299 diff as blob (192 lines) | FAIL: empty answer | — |
 | 11-07 19:43 | qwen_ask (thinking) | same diff, bug list | FAIL: empty, "TRUNCATED: raise max_tokens" at 1500 | — |
 
+| 11-07 19:55 | qwen_code | port the Windows npm spawn (#291) onto the parallel runner (blob + 6-line spec) | PARTIAL: logic right (checked only `extra`, not all args); diff unusable (reindented every line), applied by hand | ~1k (prompt) |
