@@ -46,7 +46,27 @@ if (!Array.isArray(tokens.textPairs) || tokens.textPairs.length < 1) {
     }
   }
 }
+// These semantic pairs are used by the released Rose skin; resolve the current aliases rather than duplicating colours.
+const skinCss = readFileSync(new URL('../src/ui/skin/current.css', import.meta.url), 'utf8');
+const roseCss = readFileSync(new URL('../src/ui/skin/roza.css', import.meta.url), 'utf8');
+const root = (source) => source.replace(/\/\*[\s\S]*?\*\//g, '').match(/:root\s*\{([^}]*)\}/)?.[1] ?? '';
+const declarations = Object.fromEntries([...`${root(roseCss)};${root(skinCss)}`.matchAll(/(--[\w-]+)\s*:\s*([^;]+);/g)]
+  .map((match) => [match[1], match[2].trim()]));
+function resolveSkin(name, seen = new Set()) {
+  if (seen.has(name)) throw new Error('Cyclic skin token: ' + name);
+  seen.add(name);
+  const value = declarations[name];
+  if (!value) throw new Error('Missing skin token: ' + name);
+  if (/^#[0-9a-f]{6}$/i.test(value)) return value;
+  const alias = value.match(/^var\((--[\w-]+)\)$/);
+  if (!alias) throw new Error('Non-opaque skin token: ' + name);
+  return resolveSkin(alias[1], seen);
+}
+for (const [fg, bg] of [['--skin-go-flap-ink', '--skin-go-flap-bg'], ['--skin-edge-jam-ink', '--skin-edge-jam-bg']]) {
+  try { const value = contrast(resolveSkin(fg), resolveSkin(bg)); if (value < THRESHOLD) failures.push(`${fg} on ${bg}: ${value.toFixed(2)}`); }
+  catch (error) { failures.push(String(error)); }
+}
 for (const message of failures) console.error('FAIL ' + message);
-console.log('SUMMARY test:contrast seed=' + SEED + ' pairs=' + (tokens.textPairs?.length ?? 0) +
+console.log('SUMMARY test:contrast seed=' + SEED + ' pairs=' + ((tokens.textPairs?.length ?? 0) + 2) +
   ' threshold=' + THRESHOLD + ' passed=' + (failures.length ? 0 : 1) + ' failed=' + failures.length);
 if (failures.length) process.exitCode = 1;
