@@ -304,7 +304,7 @@ async function weather(browser, url) {
         const bubble = stub?.closest('[data-airport]');
         return stub && bubble ? { airport: bubble.dataset.airport, phase: stub.dataset.phase, text: stub.textContent?.trim() } : null;
       }, undefined, { bot: true });
-      assert(mark.phase === 'ahead' && /^\u22121 \d\d:\d\d$/.test(mark.text ?? ''), JSON.stringify(mark));
+      assert(mark.phase === 'ahead' && /^HOLD \u226415m \d\d:\d\d$/.test(mark.text ?? ''), JSON.stringify(mark));
       await page.keyboard.press('Space');
       await page.getByTestId('action-resume').waitFor({ state: 'visible', timeout: 3000 });
       const row = await page.evaluate(() => document.querySelector('[data-testid="pause-summary"] dd[data-row="front"]')?.textContent ?? null);

@@ -114,9 +114,9 @@ export const SURGE_START_LOCAL_HOURS: readonly number[] = Object.freeze([8, 11, 
 // WEATHER_SPEED_TENTHS_PER_MINUTE (6° per game hour), so it sweeps the whole circle once (forming over its first
 // WEATHER_WIDTH_TENTHS / speed minutes and thinning out over the last as many) and is gone before the next board.
 // Every airport inside the band's latitudes stays under the deck exactly WEATHER_WIDTH_TENTHS / speed minutes
-// (4 game hours) and loses WEATHER_SLOT_PENALTY hourly departure slot meanwhile. The UI forecasts an airport's front
+// (4 game hours); departures ready there wait WEATHER_GROUND_HOLD_MINUTES. The UI forecasts an airport's front
 // WEATHER_FORECAST_MINUTES ahead. All geometry in integer tenths of a degree (city data is rounded to 0.1°, D-13).
-export const WEATHER_PARAMS_VERSION = 1 as const;
+export const WEATHER_PARAMS_VERSION = 2 as const;
 export const WEATHER_FIRST_WEEK = 2 as const;
 export const WEATHER_FORM_HOURS: readonly number[] = Object.freeze([1, 2, 3, 4, 5, 6]);
 export const WEATHER_SPEED_TENTHS_PER_MINUTE = 1 as const;
@@ -126,5 +126,6 @@ export const WEATHER_HEIGHT_TENTHS = 400 as const;
 export const WEATHER_SOUTH_TENTHS: readonly number[] = Object.freeze([-400, -300, -200, -100, 0, 100, 200, 300]);
 /** Where the band forms (eastern edge, tenths of a degree): every 15° of longitude. */
 export const WEATHER_START_STEP_TENTHS = 150 as const;
-export const WEATHER_SLOT_PENALTY = 1 as const;
+export const WEATHER_SLOT_PENALTY = 0 as const;
+export const WEATHER_GROUND_HOLD_MINUTES = 15 as const;
 export const WEATHER_FORECAST_MINUTES = 360 as const;

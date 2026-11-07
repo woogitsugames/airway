@@ -7,13 +7,15 @@
 // a v5. Fails on the old code: no weather module, no weatherFront config, no front on the tags.
 import assert from 'node:assert/strict';
 import { createGame, Sim, TICKS_PER_WEEK } from '../src/sim/index.ts';
+import { assignPlane, createPlaneFleet, createScheduledRoute } from '../src/sim/planes.ts';
+import { tickPlaneSchedule } from '../src/sim/schedule.ts';
 import { RULES_VERSION } from '../src/sim/state.ts';
 import {
-  SIM_MINUTES_PER_WEEK, WEATHER_FIRST_WEEK, WEATHER_FORECAST_MINUTES, WEATHER_PARAMS_VERSION, WEATHER_SLOT_PENALTY,
+  SIM_MINUTES_PER_WEEK, WEATHER_FIRST_WEEK, WEATHER_FORECAST_MINUTES, WEATHER_PARAMS_VERSION, WEATHER_SLOT_PENALTY, WEATHER_GROUND_HOLD_MINUTES,
   WEATHER_WIDTH_TENTHS,
 } from '../src/sim/params.ts';
 import {
-  airportFrontPhase, drawFront, frontBand, frontCovers, frontOver, TURN_TENTHS, WEATHER_LIFE_MINUTES, weatherWeekAt,
+  airportFrontPhase, drawFront, frontBand, frontCovers, frontOver, TURN_TENTHS, WEATHER_LIFE_MINUTES, weatherWeekAt, weatherGroundHold,
 } from '../src/sim/weather.ts';
 import { seedFromString } from '../src/core/rng.ts';
 import { CITY_RECORDS } from '../src/data/index.ts';
@@ -21,6 +23,7 @@ import {
   decodeSave, encodeSave, replaySave, restoreSimDetailed, saveSourceFromSim, SAVE_VERSION, WEATHER_SAVE_VERSION,
 } from '../src/game/save.ts';
 import { EndlessRun, ENDLESS_WEATHER_FRONT } from '../src/game/run.ts';
+import { HubDepartureLog } from '../src/game/hubBoard.ts';
 import { frontKey, frontMark, frontMarks, frontSummary, localClockMinute } from '../src/game/weather.ts';
 import { pauseSummary } from '../src/game/pauseSummary.ts';
 import { en } from '../src/i18n/en.ts';
@@ -108,7 +111,7 @@ await test('switch: shipped Endless leaves the front off; only an explicit flag 
     { mode: 'endless', weatherFront: 1 }, { mode: 'puzzle', puzzleId: 'p01', weatherFront: true }]) {
     assert.throws(() => new Sim(7, config as never), JSON.stringify(config));
   }
-  assert.equal(WEATHER_PARAMS_VERSION, 1);
+  assert.equal(WEATHER_PARAMS_VERSION, 2);
   assert.equal(RULES_VERSION, 6, 'no rules bump: the flag-off rules are unchanged');
 });
 
@@ -167,7 +170,7 @@ await test('geometry: every point in the band latitudes is under the deck exactl
   assert.equal(airportFrontPhase(front, over, over.toTick), null);
 });
 
-await test('slots: an airport under the deck has one hourly departure slot fewer, every other airport the same (lockstep)', () => {
+await test('front coverage and unchanged slot capacity', () => {
   let under = 0;
   for (const seed of [0xA1A1, 0xA1A3]) {
     const off = createBalanceSession(seed, 'endless', null, true, true, 1, false);
@@ -203,6 +206,128 @@ await test('slots: an airport under the deck has one hourly departure slot fewer
   assert.ok(under > 200, `airport-minutes under the deck seen: ${under}`);
 });
 
+await test('bot departures wait under the front', () => {
+  const run = createBalanceSession(0xA1A2, 'endless', null, true, true, 1, true);
+  for (let i = 0; i < 2000; i++) {
+    const snapshot = run.snapshot();
+    if (snapshot.status === 'finished') break;
+    const decision = chooseBotAction(snapshot);
+    if (decision) run.dispatch(decision.command);
+    run.advance(30);
+  }
+  assert.ok(run.weather().slotHoldsUnder > 0, 'a departure is held while the airport is under the front');
+});
+
+await test('weather to slot: each reason reported once and curfew time counts from readiness', () => {
+  const setup = () => {
+    const sim = createGame(0xA1A1, 'endless', undefined, null, false, false, 1, true);
+    const world = sim.world as any;
+    let covered = true, limit = 0, curfew = false;
+    world.underFront = () => covered;
+    world.departureSlotLimit = () => limit;
+    const route = createScheduledRoute('test', ['FRA', 'NYC'], () => 100);
+    const fleet = createPlaneFleet({ turboprop: 1 });
+    assignPlane(fleet, route, 'turboprop');
+    const plane = fleet.planes[0]!; plane.remainingServiceTicks = 0;
+    world.fleet = fleet;
+    world.routes = () => [{ id: 'test', cityIds: ['FRA', 'NYC'], planeIds: [plane.id] }];
+    const run = new EndlessRun(sim);
+    const curfewGate = { canDepart: () => !curfew, canLand: () => true };
+    const tick = () => tickPlaneSchedule(fleet, [route], undefined, curfewGate, world.slotGate);
+    return { world, plane, run, tick, setCovered: (v: boolean) => { covered = v; }, setLimit: (v: number) => { limit = v; }, setCurfew: (v: boolean) => { curfew = v; } };
+  };
+  const a = setup();
+  for (let i = 0; i < WEATHER_GROUND_HOLD_MINUTES + 3; i++) a.tick();
+  const events = a.world.drainEvents().filter((e: { type: string }) => e.type === 'DepartureHeld');
+  assert.deepEqual(events.map((e: { reason?: string; first: boolean }) => [e.reason ?? 'slot', e.first]), [['weather', false], ['slot', true]]);
+  assert.equal(a.world.slotEverHeld, true);
+  assert.equal(a.world.slotWait.get('FRA'), 3);
+  a.tick(); assert.equal(a.world.drainEvents().length, 0, 'no repeated slot event');
+  a.setLimit(10); a.tick(); assert.equal(a.plane.phase, 'flight');
+  assert.equal(a.plane.weatherReadyTicks, undefined); assert.equal(a.plane.slotWaitReported, undefined);
+  const board = setup();
+  const log = new HubDepartureLog(); let minute = 0;
+  const city = (id: string, region: 'EUN' | 'NAM', waiting: ('NAM')[]) => ({ id, region, waiting, connecting: 0,
+    capacity: 12, hub: true, jamTicksLeft: null, slotHeld: 0, nextSlotMinutes: 0, curfewClosed: false, lon: 0, lat: 0 });
+  const view = () => ({ clockMinute: minute, cityList: () => [city('FRA', 'EUN', ['NAM']), city('NYC', 'NAM', [])],
+    routeList: () => [{ id: 'test', cityIds: ['FRA', 'NYC'], aircraft: 'turboprop' as const }],
+    planeList: () => board.run.planeList() });
+  log.observe(view());
+  for (let i = 0; i < WEATHER_GROUND_HOLD_MINUTES + 1; i++) { board.tick(); minute++; }
+  log.observe(view());
+  assert.equal(board.run.planeList()[0]!.slotWaitTicks, 1, 'weather time is not returned as slot time');
+  assert.equal(log.board(view(), 'FRA')!.rows.find((row) => row.region === 'NAM')!.minutes, 1,
+    'hub board attributes only the one slot minute');
+  board.setCovered(false); board.tick(); minute++; log.observe(view());
+  assert.equal(log.board(view(), 'FRA')!.rows.find((row) => row.region === 'NAM')!.minutes, 2);
+  const mixed = setup(); const mixedLog = new HubDepartureLog(); let mixedMinute = 0;
+  const mixedView = () => ({ clockMinute: mixedMinute, cityList: () => [city('FRA', 'EUN', ['NAM']), city('NYC', 'NAM', [])],
+    routeList: () => [{ id: 'test', cityIds: ['FRA', 'NYC'], aircraft: 'turboprop' as const }],
+    planeList: () => mixed.run.planeList() });
+  mixedLog.observe(mixedView()); mixed.setCovered(false);
+  for (let i = 0; i < 2; i++) { mixed.tick(); mixedMinute++; }
+  mixed.setCovered(true);
+  for (let i = 0; i < 13; i++) { mixed.tick(); mixedMinute++; }
+  mixed.setCovered(false);
+  for (let i = 0; i < 2; i++) { mixed.tick(); mixedMinute++; }
+  mixedLog.observe(mixedView());
+  assert.equal(mixed.world.slotWait.get('FRA'), 4);
+  assert.equal(mixed.run.planeList()[0]!.slotWaitTicks, 2, 'current streak alone is incomplete');
+  assert.equal(mixedLog.board(mixedView(), 'FRA')!.rows.find((row) => row.region === 'NAM')!.minutes, 4,
+    'both slot periods are counted despite unobserved weather');
+  const b = setup(); b.setCurfew(true); b.setLimit(10);
+  for (let i = 0; i < 20; i++) b.tick();
+  assert.equal(b.plane.weatherReadyTicks, 20); assert.equal(b.plane.slotWaitTicks, 0);
+  b.setCurfew(false); b.tick(); assert.equal(b.plane.phase, 'flight', 'curfew wait satisfies weather hold');
+  const c = setup(); c.setCovered(false);
+  c.tick(); c.setCovered(true); c.tick();
+  const both = c.world.drainEvents().filter((e: { type: string }) => e.type === 'DepartureHeld');
+  assert.deepEqual(both.map((e: { reason?: string }) => e.reason ?? 'slot'), ['slot', 'weather'], 'weather counted after prior slot wait');
+});
+
+await test('weather-to-slot state survives save and restore without changing plain saves', () => {
+  const session = createBalanceSession(0xA1A2, 'endless', null, true, true, 1, true);
+  let active: string | undefined;
+  for (let i = 0; i < 15000 && !active; i++) {
+    const snapshot = session.snapshot();
+    if (snapshot.status === 'finished') break;
+    if (i % 30 === 0) { const decision = chooseBotAction(snapshot); if (decision) session.dispatch(decision.command); }
+    session.advance(1);
+    active = session.simulation.world.planes.find((p) => p.weatherWaitReported && !p.slotWaitReported &&
+      (p.weatherReadyTicks ?? 0) < WEATHER_GROUND_HOLD_MINUTES)?.id;
+  }
+  assert.ok(active, 'a live weather-held plane was found');
+  const saved = encodeSave(saveSourceFromSim(session.simulation), 1000);
+  const decoded = decodeSave(JSON.stringify(saved)); assert.equal(decoded.status, 'ok');
+  if (decoded.status !== 'ok') return;
+  const restored = restoreSimDetailed(decoded.save); assert.ok(restored && !restored.replayed);
+  const w = restored.sim.world as any;
+  const p = w.fleet.planes.find((plane: { id: string }) => plane.id === active);
+  assert.equal(p.weatherWaitReported, true); assert.ok(p.weatherReadyTicks > 0);
+  w.underFront = () => true; w.departureSlotLimit = () => 0; w.drainEvents();
+  const gate = { canDepart: () => true, canLand: () => true };
+  for (let i = 0; i < WEATHER_GROUND_HOLD_MINUTES + 2; i++) tickPlaneSchedule(w.fleet, w.schedules, undefined, gate, w.slotGate);
+  const events = w.drainEvents().filter((e: { type: string; planeId?: string }) => e.type === 'DepartureHeld' && e.planeId === active);
+  assert.equal(events.filter((e: { reason?: string }) => e.reason === 'weather').length, 0, 'weather event is not duplicated');
+  assert.equal(events.filter((e: { reason?: string }) => e.reason !== 'weather').length, 1, 'first actual slot wait is reported');
+  assert.ok(p.weatherSlotWaitTicks > 0, 'slot-only count survives transition');
+  const beforeTotals = { ...p.weatherSlotWaitTotals };
+  const savedAgain = encodeSave(saveSourceFromSim(restored.sim), 1001);
+  const decodedAgain = decodeSave(JSON.stringify(savedAgain)); assert.equal(decodedAgain.status, 'ok');
+  if (decodedAgain.status !== 'ok') return;
+  const restoredAgain = restoreSimDetailed(decodedAgain.save); assert.ok(restoredAgain && !restoredAgain.replayed);
+  const restoredPlane = restoredAgain.sim.world.planes.find((plane) => plane.id === active);
+  assert.deepEqual(restoredPlane?.weatherSlotWaitTotals, beforeTotals, 'per-airport totals survive restore');
+});
+
+await test('ground hold boundaries: only under front and only until ready wait elapsed', () => {
+  assert.equal(weatherGroundHold(false, 0), false);
+  assert.equal(weatherGroundHold(true, 0), true);
+  assert.equal(weatherGroundHold(true, WEATHER_GROUND_HOLD_MINUTES - 1), true);
+  assert.equal(weatherGroundHold(true, WEATHER_GROUND_HOLD_MINUTES), false);
+  assert.equal(weatherGroundHold(false, WEATHER_GROUND_HOLD_MINUTES - 1), false);
+});
+
 await test('a weather run is deterministic: replay and undo-free resume reach the same hash', () => {
   const sim = botRun(0xA1A2, 'endless', true, true, 1, true, TICKS_PER_WEEK + 2400);
   assert.equal(sim.config.weatherFront, true);
@@ -213,11 +338,11 @@ await test('a weather run is deterministic: replay and undo-free resume reach th
   assert.notEqual(flagless.hash(), sim.hash(), 'the flag is part of the hash');
 });
 
-await test('save: a weather run writes envelope v6 and resumes with its front; v5 never carries it; D-76 replay keeps it', () => {
+await test('save: a weather run writes envelope v7 and resumes with its front; v5 never carries it; D-76 replay keeps it', () => {
   const sim = botRun(0xA1A2, 'endless', true, true, 1, true, TICKS_PER_WEEK + 2400);
   const save = encodeSave(saveSourceFromSim(sim), 1000);
   assert.equal(save.v, WEATHER_SAVE_VERSION);
-  assert.equal(WEATHER_SAVE_VERSION, 6);
+  assert.equal(WEATHER_SAVE_VERSION, 7);
   assert.equal(SAVE_VERSION, 5, 'every other save is still a v5');
   assert.ok(WEATHER_SAVE_VERSION > SAVE_VERSION, 'a pre-R2j build (reads ≤ v5) refuses it as unsupported');
   const decoded = decodeSave(JSON.stringify(save));
@@ -231,9 +356,9 @@ await test('save: a weather run writes envelope v6 and resumes with its front; v
   restored.sim.advance(600);
   sim.advance(600);
   assert.equal(restored.sim.hash(), sim.hash(), 'continues identically');
-  // Re-encoding the loaded weather save keeps v6.
+  // Re-encoding the loaded weather save keeps v7.
   assert.equal(encodeSave(saveSourceFromSim(restored.sim), 1000).v, WEATHER_SAVE_VERSION);
-  // Envelope and flag must agree: a weather snapshot tagged v5, or a v6 without the front, is corrupt.
+  // Envelope and flag must agree: a weather snapshot tagged v5, or a v7 without the front, is corrupt.
   const { checksum: _a, ...asV5 } = { ...save, v: SAVE_VERSION };
   assert.deepEqual(decodeSave(JSON.stringify({ ...asV5, checksum: checksum(asV5) })), { status: 'error', issue: 'corrupt' });
   const plain = encodeSave(saveSourceFromSim(botRun(0xA1A2, 'endless', true, true, 1, false, 1200)), 1000);
@@ -242,6 +367,8 @@ await test('save: a weather run writes envelope v6 and resumes with its front; v
   assert.deepEqual(decodeSave(JSON.stringify({ ...asV6, checksum: checksum(asV6) })), { status: 'error', issue: 'corrupt' });
   const { checksum: _c, ...v7 } = { ...save, v: WEATHER_SAVE_VERSION + 1 };
   assert.deepEqual(decodeSave(JSON.stringify({ ...v7, checksum: checksum(v7) })), { status: 'error', issue: 'unsupported' });
+  const { checksum: _legacy, ...legacyV6 } = { ...save, v: 6 };
+  assert.deepEqual(decodeSave(JSON.stringify({ ...legacyV6, checksum: checksum(legacyV6) })), { status: 'error', issue: 'unsupported' });
   // D-76: an older-rules save is replayed with its front.
   const old = encodeSave({ ...saveSourceFromSim(sim), paramsVersion: RULES_VERSION - 1 }, 1000);
   const replayed = replaySave(old);
@@ -256,8 +383,8 @@ await test('UI model: tag marks (ahead / under, local clock), stable keys, pause
   assert.equal(localClockMinute(-60), '23:00');
   const ahead = { fromTick: 5000, toTick: 5240, phase: 'ahead' as const, fromLocalMinute: 14 * 60 + 20, toLocalMinute: 18 * 60 + 20 };
   const under = { ...ahead, phase: 'under' as const };
-  assert.deepEqual(frontMark(ahead), { phase: 'ahead', slots: 1, time: '14:20' });
-  assert.deepEqual(frontMark(under), { phase: 'under', slots: 1, time: '18:20' });
+  assert.deepEqual(frontMark(ahead), { phase: 'ahead', slots: WEATHER_GROUND_HOLD_MINUTES, time: '14:20' });
+  assert.deepEqual(frontMark(under), { phase: 'under', slots: WEATHER_GROUND_HOLD_MINUTES, time: '18:20' });
   assert.equal(frontMark(null), null);
   assert.notEqual(frontKey(frontMark(ahead)), frontKey(frontMark(under)));
   assert.equal(frontKey(null), '');
@@ -268,13 +395,13 @@ await test('UI model: tag marks (ahead / under, local clock), stable keys, pause
   const base = { routes: 2, assigned: 2, spare: 0, hubs: [], minutesToBoard: 100 };
   setLanguage('en');
   const rowsEn = pauseSummary({ ...base, front: frontSummary(['WAW', 'BER'], of, (id) => id) });
-  assert.deepEqual(rowsEn.at(-1), { key: 'front', label: 'Weather front', value: 'WAW: 1 slot fewer until 18:20 local' });
+  assert.deepEqual(rowsEn.at(-1), { key: 'front', label: 'Weather front', value: 'WAW: front until 18:20 local' });
   assert.equal(pauseSummary({ ...base, front: frontSummary(['BER'], of, (id) => id) }).at(-1)!.value, 'Reaches BER at 14:20 local');
   assert.equal(pauseSummary({ ...base, front: { under: [], until: null, next: null } }).at(-1)!.value, 'Away from your airports');
   assert.equal(pauseSummary(base).some((row) => row.key === 'front'), false, 'no row without a front');
   setLanguage('pl');
   assert.deepEqual(pauseSummary({ ...base, front: frontSummary(['WAW'], of, (id) => id) }).at(-1),
-    { key: 'front', label: 'Front atmosferyczny', value: 'WAW: o 1 slot mniej do 18:20 czasu lok.' });
+    { key: 'front', label: 'Front atmosferyczny', value: 'WAW: front do 18:20 czasu lok.' });
   setLanguage('en');
   for (const key of ['airport.frontSoon', 'airport.frontUnder', 'airport.frontSoonAria', 'airport.frontUnderAria', 'pause.summary.front',
     'pause.summary.frontUnder', 'pause.summary.frontSoon', 'pause.summary.frontAway'] as const) {

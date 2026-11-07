@@ -805,9 +805,10 @@ legal-register notes (D-276…D-278). Left for separate items (each a branch fro
 - [ ] **First demand-surge announcement: first-time card + short sound (D-272)** — one R6b card on the first
       `SurgeAnnounced` event and one short audio cue; update `test:e2e:first-time-cards` and the audio cue tests.
       Daily stays without surges.
-- [ ] **Weather front ground hold (D-274)** — under the band, departures wait for a short hold instead of (or on top
+- [x] **Weather front ground hold (D-274)** — under the band, departures wait for a short hold instead of (or on top
       of) "−1 slot"; behind the existing flag, `ENDLESS_WEATHER_FRONT` stays `false`; bot report before/after,
       replay/hash guards; Daily never. Ships as a post-launch update (D-131).
+      Implemented and measured: 15-minute weather hold, front still off (D-291).
 - [x] **EUS start cluster at the next balance review (D-275, D-290)** — bring the bot's EUS median (18.49 min) into
       10–18 (D-79) by adjusting the EUS start cluster only; `docs/balance/regions-summary.md`.
 - [ ] **After the closed test (D-270, D-271, D-272, D-273)** — re-check milestone thresholds on human runs, contract

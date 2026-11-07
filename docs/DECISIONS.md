@@ -2830,7 +2830,7 @@ the player's plan at any fleet size, a halved slot count does not. The change is
 before release and the front ships as a **post-launch update** (D-131 rhythm); **Daily never gets the front**. Nothing
 changes in this PR: `ENDLESS_WEATHER_FRONT` stays `false` and the DEV switch `?weather=front` stays; the ground hold
 is sim work with its own replay/hash guards and a bot report, queued in `docs/NIGHT-BACKLOG.md`.
-**Status: in force (ground hold to implement and measure; front stays off).**
+**Status: in force (ground hold implemented and measured; front stays off).**
 
 ## D-275 — EUS start region stays; its start cluster is corrected at the next balance review (owner, 2026-11-06; recommendation accepted, Q-86)
 Owner's answer to Q-86 (D-236): **A now** — Southern Europe (EUS) stays in the home-region menu as it is, although
@@ -3043,3 +3043,13 @@ in `test:ci` (out of scope; one Vite/Chromium at a time keeps SwiftShader timing
 EUS v2 keeps only existing clusters whose third member is at least 800 km from the anchor. With weekly contracts and demand surges enabled, the 50-seed bot median falls from 18.49 to 17.26 minutes; the other six regions are unchanged. In 200 EUS seeds the median is 16.72 minutes. Thresholds 700 km and 900 km gave 17.76 and 17.26 minutes respectively on 50 seeds; 800 provides more margin than 700 without narrowing the pool as much as 900. These are bot measurements, not human difficulty evidence. New EUS runs carry a version flag; old snapshots, journal replays and same-world restarts retain the original pool. Random and Daily remain unchanged.
 
 **Status: in force.**
+
+## D-291 — Weather front ground hold and weather-save compatibility (2026-11-06)
+Weather stays disabled in shipped Endless and is never enabled in Daily. When an airport is under the band, a ready
+departure waits up to 15 game minutes; time already spent waiting for departure counts, and clearing the front releases
+the weather hold. Normal departure slots remain in force, without the former minus-one penalty. Weather parameters v2; weather
+saves now use envelope v7, and old v6 weather saves are refused as unsupported rather than replayed under changed rules.
+The 15-minute choice limits disruption: 200 paired bot seeds gave 128 runs with a weather hold, 5 shorter and 23
+longer, median 16.78 min (16.75 without); 30 and 60 minutes yielded 8 and 9 shorter respectively. The bot does not react to weather; device play and closed-test evidence are still needed
+before shipping. Results and 50/200-seed comparison: `docs/balance/weather-summary.md`. **Status: in force, behind the
+DEV flag only.**
