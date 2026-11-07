@@ -2904,4 +2904,21 @@ is chosen. Night 27a researched ~35 shipped games and print references (`docs/st
 and proposes three complete systems in which world and UI share one rendering technique
 (`docs/styles/kierunki-2026-11b/KIERUNKI.md`, frames in `docs/styles/kierunki-2026-11b/png/`): **A "Linoryt"**
 (relief print in three inks; recommended), **B "Gwasz"** (flat gouache poster), **C "Makieta"** (physical model on
-a table). Nothing in `src/**` changes until the owner chooses. **Status: open — owner to choose A, B or C.**
+a table). Nothing in `src/**` changes until the owner chooses. **Status: decided — owner chose A "Linoryt" on
+2026-11-07, see D-283.**
+
+## D-283 — "Linoryt" replaces Róża and the satellite globe; passenger glyphs keep the D-08 colours; the satellite mode goes (owner, 2026-11-07; recommendations accepted)
+Owner's answers to the three questions of night 27a (PR #284):
+- **Direction A "Linoryt"** (relief print in three inks on paper; `docs/styles/kierunki-2026-11b/KIERUNKI.md`) becomes
+  the shipped look for the world and the UI. It supersedes Róża (D-257) and the photographic satellite globe (D-170,
+  G3/G4 textures). One rendering technique for globe, airports, routes, planes and panels is the reason it was chosen:
+  the previous rounds failed because ornaments in one style were layered over a photo in another.
+- **Passenger glyphs: shape + the D-08 colours.** Shape stays the primary carrier (accessibility, D-47 / `test:cvd`);
+  the colours stay for fast reading of a busy network. The "one ink only" variant is dropped.
+- **The "Satelita" mode is removed entirely** (no setting): one coherent look, ~1.9 MB of photo textures and their
+  tests leave the bundle. The "Mapa" mode (D-172) is re-evaluated in the Linoryt plan (it is a texture set of the
+  satellite pipeline too).
+Consequences: the store video and store shots wait for the Linoryt implementation; the Róża-specific GPT orders
+(GPT-09, GPT-10, GPT-21) are obsolete; the globe part (`src/render/**`) belongs to the ext session, the UI part
+(`src/ui/**`) to agents; both follow one staged plan. **Status: decided; implementation planned.**
+
