@@ -34,7 +34,7 @@ function traffic(random, ids, from, to, every, out, extra = () => ({})) {
 }
 
 const SCENES = [
-  { file: 'preview-1-calm-europe.wav', title: 'Calm morning in Europe: arrivals, transfers, dawn bloom, route tags',
+  { file: 'preview-1-calm-europe.wav', title: 'Calm morning in Europe: arrivals, transfers, dawn bloom, route tags, surge notice at 10 s',
     cues: (() => {
       const r = rng(0xA1A1); const out = [];
       out.push({ at: 1.2, cue: { type: 'dawn', tick: 0, ...hub('FRA') } });
@@ -42,6 +42,7 @@ const SCENES = [
       for (const at of [6, 14.5, 22]) out.push({ at, cue: { type: 'tag' } });
       out.push({ at: 18, cue: { type: 'new-city', tick: 0, latitude: 52.2, regionId: 'EUN' } });
       out.push({ at: 26, cue: { type: 'stamp' } });
+      out.push({ at: 10, cue: { type: 'surge-notice' } }); // [night-35a] D-272: the first surge announcement
       return out;
     })() },
   { file: 'preview-2-hub-tension.wav', title: 'Frankfurt fills up: load drone and beating from 60 % to 100 %, slot waits, relief',
@@ -71,6 +72,7 @@ const SCENES = [
       for (let i = 0; i < 160; i++) out.push({ at: 1 + i / 80, cue: { type: 'arrival', tick: 0, ...hub(['FRA', 'DXB', 'SIN', 'NYC'][i % 4], { loadRatio: 0.95, capacity: 120 }) } });
       for (const id of ['FRA', 'DXB', 'SIN', 'NYC']) out.push({ at: 0.5, cue: { type: 'hub-load', tick: 0, ...hub(id, { loadRatio: 1 }) } });
       for (const at of [1.2, 1.5, 1.8]) out.push({ at, cue: { type: 'stamp' } }, { at: at + 0.05, cue: { type: 'tag' } });
+      out.push({ at: 1.6, cue: { type: 'surge-notice' } }); // [night-35a] D-272
       out.push({ at: 2, cue: { type: 'week', tick: 0, week: 3 } });
       void r;
       return out;

@@ -17,7 +17,7 @@
 // seeded by a fixed date (daily-share, daily-continue), and `{ gesture: 'route' }` is the route drag alone.
 import { EndlessRun, cityDistanceKm } from '../../src/game/run.ts';
 import { AUTOPLAY_ACTION_INTERVAL, nextAutoplayCommand } from '../../src/game/dev/autoplay.ts';
-import { beyondRange, fillingHub } from '../../src/game/tutorial/first-time.ts';
+import { beyondRange, fillingHub, surgeAnnouncement } from '../../src/game/tutorial/first-time.ts';
 import { PLANE_TYPES, TICKS_PER_WEEK, type UpgradeKind } from '../../src/sim/index.ts';
 
 /** Which card a suite clicks: 'plain' = not hub/slots, 'plane' = an aircraft, 'first' = index 0. */
@@ -25,7 +25,7 @@ export type Take = 'plain' | 'plane' | 'first';
 /** Conditions a suite waits for (`until`) or needs (`expect`). */
 /** 'cleared': the airport where `connecting` was first seen has no connecting transfer left. */
 export type Until = 'curfew' | 'no-curfew' | 'connecting' | 'cleared';
-export type FirstTimeTrigger = 'hub-full' | 'out-of-range' | 'curfew' | 'weekly-board';
+export type FirstTimeTrigger = 'hub-full' | 'out-of-range' | 'curfew' | 'weekly-board' | 'surge';
 
 export type PlanStep =
   | { board: number; mayEnd?: boolean }
@@ -241,6 +241,8 @@ export function playPlan(seed: number, plan: E2ePlan, idle = 0, pair = 0): PlanR
         const cities = run.cityList();
         if (fillingHub(cities.map((c) => ({ id: c.id, hub: c.hub, waiting: c.waiting.length, capacity: c.capacity })))) seen.add('hub-full');
         if (cities.some((c) => c.curfewClosed)) seen.add('curfew');
+        // [night-35a] D-272: an announced surge on an airport of the run (the session's own trigger).
+        if (surgeAnnouncement(run.mode, run.surge, (id) => cities.some((c) => c.id === id))) seen.add('surge');
         for (const event of run.drainEvents()) {
           if (event.type !== 'new-city') continue;
           const ids = run.cityList().map((c) => c.id);

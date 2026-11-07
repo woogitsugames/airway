@@ -538,6 +538,10 @@ export const en = {
   'firstTime.hint.curfew': 'Night curfew: no take-offs or landings at {airport} until morning. Route around it at night.',
   'firstTime.tag.weeklyBoard': 'WEEK {week} · CRATE',
   'firstTime.hint.weeklyBoard': 'A crate arrives every week and holds one upgrade. New aircraft wait on the dock tags: drag one onto a route.',
+  // [night-35a] D-272: the first announced demand surge (pennant on the airport's tag, D-249).
+  'firstTime.step.surge': 'ATC / SURGE',
+  'firstTime.tag.surge': '{airport} · +{count} {time}',
+  'firstTime.hint.surge': 'Surge at {airport}: +{count} {count|passenger|passengers} from {time} local. Hollow pennant: announced; filled: under way. Add seats or a plane on its routes.',
   'action.save': 'Save flight',
   'action.menu': 'Main menu',
   'pause.title': 'Holding pattern',

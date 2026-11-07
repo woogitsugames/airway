@@ -25,13 +25,13 @@ import { resolveHudLayout } from '../ui/layout'; // [night-10x]
 import { WeeklyUpgradeView } from '../ui/upgrade';
 import { EndlessRun, cityDistanceKm, type RunCommand, type RunEvent } from './run';
 import { mountSlotHint } from './tutorial/slot-hint'; // [task-32]
-import { FirstTimeRegistry, beyondRange, curfewAirport, fillingHub } from './tutorial/first-time'; // [night-11p] R6a
+import { FirstTimeRegistry, beyondRange, curfewAirport, fillingHub, surgeAnnouncement } from './tutorial/first-time'; // [night-11p] R6a
 import { mountFirstTimeCards } from './tutorial/first-time-card';
 import { browserTutorialStorage } from './tutorial/controller';
 import { airportLabel } from '../ui/airportLabel'; // [night-05] D-68
 import { AudioCueMapper, cueRun } from './audioCues'; // [night-03]
 import { FillReadings } from './fillTrend'; // [night-11af] R4c
-import { surgeKey, surgeMark } from './surge'; // [night-12bb] R2i
+import { localClock, surgeKey, surgeMark } from './surge'; // [night-12bb] R2i
 import { frontKey, frontMarks, frontSummary } from './weather'; // [night-12bd] R2j
 import { HubDepartureLog, boardOpensOnTap } from './hubBoard'; // [night-11ag] R4d
 import { mountHubBoard } from '../ui/hubBoard';
@@ -163,7 +163,10 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
   const atc = mountAtcStrip(layer);
   const firstTimeRegistry = new FirstTimeRegistry(browserTutorialStorage()); // [night-11p] one flag per card
   const slotHint = mountSlotHint(layer, firstTimeRegistry); // [task-32] one-time departure-slot step
-  const firstTime = mountFirstTimeCards(layer, firstTimeRegistry, callbacks.firstTimeCards !== false);
+  // [night-35a] D-272: the surge card brings the one short surge notice with it (once per install, like the card).
+  const firstTime = mountFirstTimeCards(layer, firstTimeRegistry, callbacks.firstTimeCards !== false, (card) => {
+    if (card === 'surge') audioCues?.surgeNotice();
+  });
   let boardSeen = false;
   const handles = mountRouteHandles(layer);
   const hubBoard = mountHubBoard(layer, { close: () => hubBoard.show(null) }); // [night-11ag] R4d
@@ -456,6 +459,16 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       if (surgeTag && surgeTag !== surge?.cityId && knownAirports.has(surgeTag)) overlay.setSurge(surgeTag, null);
       surgeTag = surge?.cityId ?? null;
       if (surge) overlay.setSurge(surge.cityId, surge.mark);
+    }
+    // [night-35a] D-272: the first announced surge the player can see gets one "first time" card (and its sound).
+    const announced = surgeAnnouncement(run.mode, run.surge, (id) => knownAirports.has(id));
+    if (announced) {
+      firstTime.offer('surge', () => ({
+        tag: t('firstTime.tag.surge', { airport: airportLabel(announced.cityId), count: announced.passengers,
+          time: localClock(announced.startLocalHour) }),
+        hint: t('firstTime.hint.surge', { airport: airportLabel(announced.cityId), count: announced.passengers,
+          time: localClock(announced.startLocalHour) }),
+      }));
     }
     // [night-12bd] R2j: weather front forecast / overhead on every affected airport's tag (runs with the rule only).
     if (run.weatherFront || frontKeys.size > 0) {

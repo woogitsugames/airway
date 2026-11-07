@@ -29,6 +29,14 @@ export const MIX = Object.freeze({
   limiterThresholdDb: -3,
 });
 
+/**
+ * [night-35a] D-272: synthesis of the one-time surge notice (E5 → A5, 0.48 s in all). Peak 0.04 per note sits under
+ * the route tag (0.043) and the slot-wait tick (0.05) on the same effects bus, so it is the quietest UI voice but one.
+ */
+export const SURGE_NOTICE = Object.freeze({
+  low: 659.26, high: 880, offset: 0.16, ring: 0.32, peak: 0.04, partial: 0.18, lowpass: 2600,
+});
+
 type SourceNode = OscillatorNode | AudioBufferSourceNode;
 interface LiveVoice { readonly sources: SourceNode[]; readonly nodes: AudioNode[] }
 interface StressVoice extends LiveVoice {
@@ -136,7 +144,7 @@ export class AirwayAudio {
     const ctx = this.context;
     if (!ctx) return false;
     const isUI = cue.type === 'flap' || cue.type === 'paper' ||
-      cue.type === 'tag' || cue.type === 'stamp' || cue.type === 'slot-wait';
+      cue.type === 'tag' || cue.type === 'stamp' || cue.type === 'slot-wait' || cue.type === 'surge-notice';
     const deltaTicks = cue.tick === undefined ? 0 : Math.max(0, cue.tick - this.tick);
     const when = ctx.currentTime + (isUI ? 0.008 : SIM_LATENCY_SECONDS) +
       deltaTicks / (TICKS_PER_SECOND * this.speed);
@@ -468,6 +476,7 @@ export class AirwayAudio {
       case 'tag': return 0.21;
       case 'stamp': return 0.18;
       case 'slot-wait': return 0.42;
+      case 'surge-notice': return SURGE_NOTICE.offset + SURGE_NOTICE.ring;
       case 'hub-load': return 0.5;
     }
   }
@@ -489,6 +498,9 @@ export class AirwayAudio {
         break;
       case 'slot-wait':
         this.slotWait(at);
+        break;
+      case 'surge-notice':
+        this.surgeNotice(at);
         break;
       case 'flap':
         this.flap(at);
@@ -570,6 +582,32 @@ export class AirwayAudio {
       filter.Q.value = 6;
       filter.connect(env);
       this.track([this.oscillator('triangle', frequency / 2, start, start + 0.2, filter)], [filter, env]);
+    }
+  }
+
+  /**
+   * [night-35a] D-272: the first surge announcement: two soft struck notes a fourth apart (E5 then A5), like a
+   * pennant run up the mast. Sine with a quiet second partial through a low-pass, on the effects bus, under the tag.
+   */
+  private surgeNotice(at: number): void {
+    const ctx = this.context;
+    const bus = this.effects;
+    if (!ctx || !bus) return;
+    for (const [offset, frequency] of [[0, SURGE_NOTICE.low], [SURGE_NOTICE.offset, SURGE_NOTICE.high]] as const) {
+      const start = at + offset;
+      const end = start + SURGE_NOTICE.ring;
+      const env = this.envelope(bus, start, end, SURGE_NOTICE.peak, 0.006);
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = SURGE_NOTICE.lowpass;
+      filter.connect(env);
+      const partial = ctx.createGain();
+      partial.gain.value = SURGE_NOTICE.partial;
+      partial.connect(filter);
+      this.track([
+        this.oscillator('sine', frequency, start, end, filter),
+        this.oscillator('sine', frequency * 2, start, end, partial),
+      ], [partial, filter, env]);
     }
   }
 
