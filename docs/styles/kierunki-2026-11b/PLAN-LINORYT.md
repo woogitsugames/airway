@@ -195,6 +195,8 @@ medium/high ≤ 2 (G4). "Shots" = PNGs to inspect against the CLAUDE.md forbidde
 ### U7 — agent (coordinator) — store shots, preview video, landing page
 - `npm run store:shots` (60 PNGs), `npm run store:video` (D-265, D-269: files to the owner's Drive), `npm run
   site:assets`; GPT-09/10/21 orders stay obsolete (D-283). Only after the owner has seen U5 on a phone.
+- Copy (D-296): the full store description EN/PL, `press.long`, site `about.p2`, screenshot/feature-graphic alt texts
+  and site captions are rewritten here, from `docs/store/copy-review-2026-11.md` (mechanics only, no promise of a look).
 
 ### Order and dependencies
 U1 → E1 → (E2 ∥ U2 with the constant fallback) → U3 → U4 → E3 → **U5 flip** → E4 → U6 → U7. U3/U4 do not depend on
