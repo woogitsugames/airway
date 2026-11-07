@@ -143,6 +143,11 @@ export async function createGlobe(scene: Scene, opts: GlobeOptions): Promise<Glo
   const landUrl = opts.landUrl ?? `${import.meta.env.BASE_URL}data/land-50m.json`;
   const mask = await loadLandMask(landUrl, opts.signal);
   if (opts.signal?.aborted) throw new DOMException('Aborted', 'AbortError');
+  // [ext-04 E1] D-283: the Linoryt print (DEV `?look=linoryt` until E3; a release build folds this branch away).
+  if (import.meta.env.DEV && opts.look === 'linoryt') {
+    const { createLinorytGlobe } = await import('./linoryt-globe');
+    return createLinorytGlobe(scene, mask, { quality: opts.quality, sunDirection: opts.sunDirection, signal: opts.signal });
+  }
   // [G2/G3] D-170: the satellite globe (Blue Marble, Black Marble, ETOPO5; public/data/globe/). If its textures cannot
   // be loaded the diorama is built instead, so the game never starts without a world. refined/painted/map are
   // DEV comparisons served from dev/globe-look/assets/.
@@ -150,7 +155,7 @@ export async function createGlobe(scene: Scene, opts: GlobeOptions): Promise<Glo
   let assets: LookAssets | null = null;
   if (look !== 'diorama') {
     try {
-      assets = await loadLookAssets(look, quality,
+      assets = await loadLookAssets(look as Exclude<GlobeLook, 'diorama' | 'linoryt'>, quality,
         opts.lookAssetBase ?? `${import.meta.env.BASE_URL}dev/globe-look/assets/`, opts.signal,
         `${import.meta.env.BASE_URL}data/globe/`);
     } catch (error) {

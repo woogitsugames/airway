@@ -5,6 +5,8 @@
 //   npm run shots -- --fold               also foldable 673x841 and 904x1000
 //   npm run shots -- --lang=en --dpr=2    language / device pixel ratio override
 //   npm run shots -- --list               print targets and exit
+//   npm run shots -- globe --look=linoryt  [ext-04] add ?look= (and/or --skin=) to every URL; PNGs go to
+//                                          docs/shots/look-<look>[-skin-<skin>]/<id>-<orientation>.png
 //
 // Output: docs/shots/<dir>/<file>-<orientation>.png (dir = the task that owns the view, see docs/shots/README.md).
 // Targets fail independently; the run exits nonzero if any requested capture failed. A missing
@@ -14,6 +16,7 @@ import { mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { ROOT, SEED, startVite, launchChromium, presetLanguage, errorText } from './lib/harness.mjs';
+import { linorytMotion } from '../dev/linoryt-motion.mjs';
 
 const PORTRAIT = { tag: 'p', width: 412, height: 915 };
 const LANDSCAPE = { tag: 'l', width: 915, height: 412 };
@@ -60,6 +63,10 @@ const TARGETS = [
     ready: { selector: '[data-gameover-state="open"]' }, note: 'game-over board (dev preview)' },
   { id: 'puzzles', dir: '17', file: 'board', path: '', open: ['.airway-board [data-mode="puzzles"]'],
     ready: { selector: '.puzzle-departures .puzzle-flap' }, note: 'puzzle departure board' },
+  // [ext-04 E1] D-283/D-298: the Linoryt globe in motion (8 frames, 0.15°/frame) and its flicker score (≤ 2 %), low preset.
+  { id: 'linoryt-motion', dir: 'ext-04', file: 'linoryt-motion', path: 'dev/globe.html?quality=low&look=linoryt&clean&zoom=2.2&lon=24&lat=38&sun=-10,-18',
+    ready: { fn: 'window.__globeReady && window.__globeMetrics' }, timeout: 120000, settle: 700,
+    note: 'Linoryt motion strip + flicker score (spec §9)', motion: true },
   // [night-07d] Curfew airports marked on the puzzle strips (barrier mark + hours line).
   ...[['08', 'pl'], ['30', 'en']].map(([level, lang]) => ({
     id: `puzzle-curfew-${level}`, dir: 'night-07d', file: `puzzle${level}-${lang}`, path: '', lang,
@@ -81,6 +88,13 @@ const option = (name) => args.find((arg) => arg.startsWith(`--${name}=`))?.split
 const names = args.filter((arg) => !arg.startsWith('--'));
 const dpr = Number(option('dpr') ?? 1);
 const langOverride = option('lang');
+const lookOption = option('look'); // [ext-04]
+const skinOption = option('skin');
+const withQuery = (path) => {
+  const extra = [lookOption && `look=${lookOption}`, skinOption && `skin=${skinOption}`].filter(Boolean).join('&');
+  if (!extra) return path;
+  return path + (path.includes('?') ? '&' : '?') + extra;
+};
 
 if (args.includes('--list')) {
   for (const t of TARGETS) console.log(`${t.id.padEnd(14)} docs/shots/${t.dir}/  /${t.path}  ${t.note}`);
@@ -109,7 +123,7 @@ async function shoot(target, size, baseUrl) {
   try {
     const lang = langOverride ?? target.lang;
     if (lang) await presetLanguage(page, lang);
-    await page.goto(baseUrl + target.path, { waitUntil: 'networkidle', timeout: 30000 });
+    await page.goto(baseUrl + withQuery(target.path), { waitUntil: 'networkidle', timeout: 30000 });
     const timeout = target.timeout ?? 15000;
     for (const selector of target.open ?? []) {
       await page.click(selector, { timeout }).catch(() => { throw new Error(`cannot open via "${selector}"`); });
@@ -124,8 +138,17 @@ async function shoot(target, size, baseUrl) {
     if (target.settle) await page.waitForTimeout(target.settle);
     if (errors.length) throw new Error('Browser errors: ' + errors.join('; '));
     const info = target.check ? ' ' + await target.check(page) : '';
-    const rel = `docs/shots/${target.dir}/${target.file}-${size.tag}${target.suffix ?? ''}.png`;
+    const lookDir = lookOption || skinOption
+      ? `look-${lookOption ?? 'default'}${skinOption ? '-skin-' + skinOption : ''}` : null;
+    const rel = lookDir ? `docs/shots/${lookDir}/${target.id}-${size.tag}${target.suffix ?? ''}.png`
+      : `docs/shots/${target.dir}/${target.file}-${size.tag}${target.suffix ?? ''}.png`;
     mkdirSync(dirname(resolve(ROOT, rel)), { recursive: true });
+    if (target.motion) {
+      const log = await linorytMotion(page, resolve(ROOT, rel));
+      captured++;
+      console.log(`shot ${rel} ${size.width}x${size.height}@${dpr} ${log}`);
+      return;
+    }
     await page.screenshot({ path: resolve(ROOT, rel), animations: 'disabled' });
     captured++;
     console.log(`shot ${rel} ${size.width}x${size.height}@${dpr}${info}`);
