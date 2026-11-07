@@ -6,6 +6,7 @@ import './ui/base.css';
 import './ui/theme/theme.css';
 import './ui/skin/current.css'; // [night-11aq] UI skin tokens (D-249); [night-11az] D-257: Róża values
 import { startRoza } from './ui/skin/roza'; // [night-11az] D-257: Róża skin helpers
+import { startLinoryt } from './ui/skin/linoryt'; // [night-28a] D-284: Linoryt preview helpers (DEV only)
 import './ui/game.css';
 import { bootAudio, audioSettingsFromToggles } from './audio';
 import { createFlapRattle } from './game/flapSound'; // [night-07e]
@@ -72,6 +73,11 @@ const devWeatherFront = import.meta.env.DEV && query.get('weather') === 'front';
 if (import.meta.env.DEV && query.get('skin') === 'current') {
   delete document.documentElement.dataset.skin; // index.html sets it so the first paint is already Róża
   void import('./ui/skin/diorama.css');
+} else if (import.meta.env.DEV && query.get('skin') === 'linoryt') {
+  // [night-28a] D-284: the Linoryt preview (D-283, PLAN-LINORYT.md step U1) on the base HUD/menu DOM: no Róża helpers,
+  // <html data-skin="linoryt"> scopes linoryt.css, loaded last. A release build folds this branch away.
+  startLinoryt({ t, localNumber });
+  void import('./ui/skin/linoryt.css');
 } else {
   startRoza({ t, localNumber, jamGraceSeconds: CONGESTION_GRACE_TICKS / SIM_TICKS_PER_SECOND });
 }

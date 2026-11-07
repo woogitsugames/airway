@@ -22,6 +22,8 @@ from Google Fonts (static TTF per weight) on 2026-11-02 by `mockups/fetch-fonts.
 | Barlow Condensed | 500, 700 | UI direction mockups 2026-11 "Karta" (`mockups/ui-2026-11/`); [N11au] KARTA preview skin (D-256); [N11ax] KARTA skin WOFF2 subset (draft D-257, not shipped: [N11az] Róża was chosen) | yes |
 | Archivo Narrow | 500, 700 | UI direction mockups 2026-11 "Kokpit" | yes |
 | Atkinson Hyperlegible Mono | 400, 700 | UI direction mockups 2026-11 "Kokpit" | yes |
+| Besley | 800, 900 | [N27a] direction A "Linoryt" frames; [N28a] Linoryt preview skin (D-284), static WOFF2 subsets in `public/fonts/`, not in `dist/` until U5 | yes |
+| Schibsted Grotesk | 500–700 (variable) | [N27a] directions A and C frames; [N28a] Linoryt preview skin (D-284), WOFF2 subset in `public/fonts/`, not in `dist/` until U5 | yes |
 
 [N11au] D-256: the DEV-only KARTA preview skin (`src/ui/skin/karta.css`, `?skin=karta`) loads Barlow Condensed and IBM
 Plex Mono straight from `mockups/fonts/` through the Vite dev server (licences `mockups/fonts/OFL-BarlowCondensed.txt`,
@@ -36,6 +38,19 @@ Chart Mono subsets are not shipped (removed from `public/fonts/` with their lice
 --layout-features='kern,liga,tnum,lnum,case,ccmp,locl,mark,mkmk'`. The Alegreya OFL declares no Reserved Font Name, so
 the subset keeps its name. Licence next to it: `public/fonts/OFL-Alegreya.txt`. The one glyph the subset lacks (U+202F)
 falls back to the shipped Atkinson Hyperlegible Next / Overpass named after it in `--skin-face-display`.
+
+[night-28a] D-283/D-284 "Linoryt": **Besley** (SIL OFL 1.1, Copyright 2020 The Besley Project Authors,
+github.com/indestructible-type/Besley) and **Schibsted Grotesk** (SIL OFL 1.1, Copyright 2023 The Schibsted-Grotesk
+Project Authors, github.com/schibsted/schibsted-grotesk), from `docs/styles/kierunki-2026-11b/fonts/` (night 27a).
+`public/fonts/Besley-800.woff2` (21.0 kB) and `Besley-900.woff2` (20.5 kB) are static instances of `Besley-VF.ttf`
+(`fonttools varLib.instancer … wght=800` / `wght=900`); `public/fonts/SchibstedGrotesk-VF.woff2` (46.0 kB) is the
+variable font limited to `wght=500:700`; all three subset with the Alegreya command above (same `--unicodes` and
+`--layout-features`, `--flavor=woff2`). Neither licence declares a Reserved Font Name, so the subsets keep their names.
+Licences next to them: `public/fonts/OFL-Besley.txt`, `public/fonts/OFL-SchibstedGrotesk.txt`. Gaps: Besley has no
+U+2192 or U+202F, Schibsted Grotesk no U+2009 or U+202F (the fallback stack covers them; U5 adds `unicode-range`
+borrowing and `test:glyphs` coverage). While Linoryt is a DEV preview (`?skin=linoryt`) these five files are left out of
+`dist/` and the apps (`PREVIEW_FONTS`, `scripts/vite-font-files.mjs`); the flip step U5 ships them and lists them in
+Settings → Licences.
 
 Rejected: **B612 / B612 Mono** (OFL, Airbus cockpit face) — no Polish diacritics (ą ć ę ł ń ś ź ż missing), checked with fontTools.
 
