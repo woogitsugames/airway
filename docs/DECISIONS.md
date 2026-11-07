@@ -2837,7 +2837,7 @@ Owner's answer to Q-86 (D-236): **A now** — Southern Europe (EUS) stays in the
 the bot's median there (18.49 min) is above the D-79 band of 10–18 min; the start region is the player's choice, not
 Daily, and the bot is not a human. **B later**: the EUS start cluster is corrected at the next balance review (its
 row in `docs/balance/regions-summary.md` stays marked). Nothing changes in this PR; the review item is in
-`docs/NIGHT-BACKLOG.md`. **Status: in force.**
+`docs/NIGHT-BACKLOG.md`. **Status: implemented at the next balance review (D-290).**
 
 ## D-276 — Wave-1 store titles approved as drafts for native review (owner, 2026-11-06; recommendation accepted, Q-87 → A)
 Owner's answer to Q-87 (D-230): the localized store titles "Airway: Flugrouten am Globus", "Airway : routes sur le
@@ -3015,7 +3015,6 @@ slides out of the note. Rejected: the stamp as a square box obstacle (a note's c
 diagonal), keeping the 52 px code-only chips (the frame `png/a-game.png` prints the city), letting any chip cover a note
 (two printed blocks read as one). **Status: in force for the preview; carried into U5; the fallback goes when E2 lands.**
 
-
 ## D-289 — `test:fast` runs its steps in parallel; lines and SUMMARY stay in list order; two timing steps run alone (2026-11-07, Claude, night 33b)
 Every agent runs `npm run test:fast` before every push, and its 111 headless steps ran one after another (199 s in a
 4-vCPU container on 7 Nov 2026, 301–354 s on the 8-vCPU integration runs). **Choice.** (1) `scripts/run-suite.mjs` runs
@@ -3037,4 +3036,10 @@ long steps (`test:e2e-seeds`, `test:puzzles`, `test:long-haul`) do not end the r
 Rejected: a `jobs` count from CPUs alone (a small container with many CPUs would run out of RAM), a serial list in
 package.json (the step lists are parsed by `test:doc-ids`, `test:gating` and the coordinator), parallel browser steps
 in `test:ci` (out of scope; one Vite/Chromium at a time keeps SwiftShader timings comparable).
+**Status: in force.**
+
+## D-290 — Versioned EUS start pool (2026-11-06)
+
+EUS v2 keeps only existing clusters whose third member is at least 800 km from the anchor. With weekly contracts and demand surges enabled, the 50-seed bot median falls from 18.49 to 17.26 minutes; the other six regions are unchanged. In 200 EUS seeds the median is 16.72 minutes. Thresholds 700 km and 900 km gave 17.76 and 17.26 minutes respectively on 50 seeds; 800 provides more margin than 700 without narrowing the pool as much as 900. These are bot measurements, not human difficulty evidence. New EUS runs carry a version flag; old snapshots, journal replays and same-world restarts retain the original pool. Random and Daily remain unchanged.
+
 **Status: in force.**

@@ -19,18 +19,18 @@ export function scenarioFor(config: GameConfig): Scenario {
   if (config.homeRegion === undefined && config.weeklyContract !== true && config.demandSurge !== true &&
       config.licenceClass === undefined && config.weatherFront !== true) return ENDLESS_SCENARIO;
   return endlessScenario(config.homeRegion ?? null, config.weeklyContract === true, config.demandSurge === true,
-    config.licenceClass ?? 1, config.weatherFront === true);
+    config.licenceClass ?? 1, config.weatherFront === true, config.eusClusterV2 === true);
 }
 
 const ENDLESS_VARIANTS = new Map<string, Scenario>();
 function endlessScenario(region: RegionId | null, contract: boolean, surge: boolean, licence: LicenceClass,
-    weather: boolean): Scenario {
-  const key = `${region ?? '-'}/${contract ? 'c' : '-'}/${surge ? 's' : '-'}/${licence}/${weather ? 'w' : '-'}`;
+    weather: boolean, eusClusterV2: boolean): Scenario {
+  const key = `${region ?? '-'}/${contract ? 'c' : '-'}/${surge ? 's' : '-'}/${licence}/${weather ? 'w' : '-'}/${eusClusterV2 ? 'v2' : 'v1'}`;
   let scenario = ENDLESS_VARIANTS.get(key);
   if (!scenario) {
     scenario = Object.freeze({ ...ENDLESS_SCENARIO, ...(region ? { homeRegionId: region } : {}),
       ...(contract ? { weeklyContract: true } : {}), ...(surge ? { demandSurge: true } : {}),
-      ...(weather ? { weatherFront: true } : {}),
+      ...(weather ? { weatherFront: true } : {}), ...(eusClusterV2 ? { eusClusterV2: true } : {}),
       ...(licence === 1 ? {} : licenceKnobs(licence)) });
     ENDLESS_VARIANTS.set(key, scenario);
   }

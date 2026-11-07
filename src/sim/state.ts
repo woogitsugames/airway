@@ -32,6 +32,8 @@ export interface GameConfig {
    * draw, so older saves and hashes are unchanged). Daily and puzzles never carry it.
    */
   readonly homeRegion?: RegionId;
+  /** Versioned EUS pool; absent keeps the original pool for old saves and replays. */
+  readonly eusClusterV2?: true;
   /**
    * [night-12ba] R2k, D-247: Endless only. The weekly board names a contract; meeting it adds a fourth crate next week.
    * Absent = the pre-R2k rules (older saves and every Daily replay unchanged); new Endless runs set it.
@@ -61,6 +63,7 @@ export function copyConfig(config: GameConfig): GameConfig {
     mode: config.mode,
     ...(config.puzzleId === undefined ? {} : { puzzleId: config.puzzleId }),
     ...(config.homeRegion === undefined ? {} : { homeRegion: config.homeRegion }),
+    ...(config.eusClusterV2 === true ? { eusClusterV2: true } : {}),
     ...(config.weeklyContract === true ? { weeklyContract: true } : {}),
     ...(config.demandSurge === true ? { demandSurge: true } : {}),
     ...(config.licenceClass === undefined ? {} : { licenceClass: config.licenceClass }),
