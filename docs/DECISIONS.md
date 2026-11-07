@@ -3146,3 +3146,11 @@ The night-38a proposal (mechanics only: home region, weekly contract, demand sur
 contracts row; no promise of a look; no weather front) is the starting point for U7, and the wave-1 languages
 (DE/FR/ES/PT-BR) are translated from that new EN, not from the current diorama paragraph. Rejected: changing the copy
 twice (now and at U7). **Status: in force (applies at U7).**
+
+## D-297 — CSS budget at the Linoryt flip: raise it to the measurement + 3 kB (owner, 2026-11-07; Q-91 option B)
+Owner's answer to Q-91 (D-294, night 36a): at U5 (Linoryt becomes the shipped skin) the CSS budget of `test:bundle`
+(109 kB, D-258) is replaced by the measured release CSS after the flip plus 3 kB, in the U5 PR's decision entry.
+D-294 projected about 135 kB (Róża −22.6 kB, `linoryt.css` +65.2 kB minified with its folded scope, plus base
+declarations Róża prunes today), so about 138 kB. PLAN-LINORYT's "CSS ≤ 100 kB" target is dropped; no slimming pass on
+`linoryt.css` before U5. Until U5 the 109 kB budget stays (105.3 kB after D-294). Rejected: slimming Linoryt to
+≤ 100 kB first (delays U5), measuring U5 before deciding (the owner chose now). **Status: in force (applies at U5).**
