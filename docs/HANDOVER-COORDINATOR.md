@@ -1,6 +1,6 @@
 # Przekazanie koordynatora Airway
 
-Ostatnia aktualizacja: 2026-11-07, ok. 13:40 UTC. Nowa sesja koordynatora (wieczór 6.11) pracuje ciągle; budziki
+Ostatnia aktualizacja: 2026-11-07, ok. 15:00 UTC. Nowa sesja koordynatora (wieczór 6.11) pracuje ciągle; budziki
 włączone. Nowa sesja startuje promptem z `docs/notes/coordinator-start-prompt.md`.
 
 ## 7.11 rano
@@ -17,6 +17,9 @@ włączone. Nowa sesja startuje promptem z `docs/notes/coordinator-start-prompt.
   `linoryt.css` w osobnych sekcjach; przy drugim scaleniu konflikt w CSS/BACKLOG/DECISIONS (przenumerować D-286).
 - #286 scalony (U4 menu/ekrany, D-286: na 320×568 mniejszy dysk zamiast horyzontu). `pseudo-320 --skin=linoryt`
   15/16 (tablica tygodnia — naprawi U3). Agent U2 notki lotnisk (`night/30a-linoryt-notes`, `/workspace/30a`).
+- #287 scalony (U3 arkusze, D-287). Suity przeglądarkowe honorują teraz `--skin=linoryt`; ekrany U4 pod skórką nie
+  przechodzą screens-fit/-320/text-scale-150 → poprawka `night/31a-linoryt-screens-fix` (`/workspace/31a`).
+  Do U6: pusty pas u góry ekranu skrzyń; Schibsted bez wąskiej spacji („2 ,500”).
 - Kolejność dalej: E1 (ext) → E2 ∥ U2 → E3 → U5 przełączenie → E4 → U6 → U7 (zrzuty/wideo).
 
 ## Wieczór 6.11 (nowa sesja koordynatora)
@@ -99,7 +102,7 @@ commitach.
 
 
 ## W toku
-- Agenci U3 `/workspace/29a` i U2 `/workspace/30a` (Linoryt, podgląd).
+- Agenci U2 `/workspace/30a` i poprawka ekranów U4 `/workspace/31a` (Linoryt, podgląd).
 
 ## Decyzje do właściciela
 1. Uruchomienie sesji ext z promptem Linorytu (po PR 28a). Wideo/zrzuty sklepu dopiero po wdrożeniu Linorytu.
