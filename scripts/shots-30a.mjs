@@ -110,13 +110,24 @@ async function scene(browser, url, name, language, width, height, scale) {
         if (await chip.count()) { await chip.click(); await page.waitForTimeout(1200); }
       }
     } else if (name === 'edge') {
-      // Turn the globe: a drag over open sea below the network (an orbit gesture) moves airports off the screen.
-      const from = { x: width * .5, y: height * .78 };
-      await page.mouse.move(from.x, from.y);
-      await page.mouse.down();
-      for (let k = 1; k <= 12; k++) { await page.mouse.move(from.x - width * .05 * k / 12, from.y); await frame(page, 1); }
-      await page.mouse.up();
-      await page.waitForTimeout(400);
+      // Turn the globe: short drags, one at a time, until an airport has left the screen (wider layouts keep more of the cluster). Each
+      // starts on open sea at least 60 px from every stamp (a press on an airport would draw a route instead).
+      const step = Math.min(width, height) * .05;
+      for (let drag = 0; drag < 8; drag++) {
+        const from = await page.evaluate(({ width, height }) => {
+          const stamps = window.__awLinoryt.stamps().filter((s) => s.visible);
+          const spots = [];
+          for (let y = .9; y >= .45; y -= .05) for (let x = .3; x <= .7; x += .05) spots.push({ x: width * x, y: height * y });
+          return spots.find((p) => stamps.every((s) => Math.hypot(s.x - p.x, s.y - p.y) > 60) &&
+            document.elementFromPoint(p.x, p.y)?.matches('canvas')) ?? { x: width * .5, y: height * .78 };
+        }, { width, height });
+        await page.mouse.move(from.x, from.y);
+        await page.mouse.down();
+        for (let k = 1; k <= 12; k++) { await page.mouse.move(from.x - step * k / 12, from.y); await frame(page, 1); }
+        await page.mouse.up();
+        await page.waitForTimeout(400);
+        if (await page.$('.airport-edge:not([hidden])')) break;
+      }
     }
     await frame(page, 6);
     await page.waitForTimeout(200);
