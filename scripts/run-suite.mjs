@@ -9,15 +9,24 @@ if (!suite || !steps.length) {
   console.error('usage: node scripts/run-suite.mjs <suite-name> <npm-script>...');
   process.exit(2);
 }
-const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+// npm provides its JavaScript entry point when invoked as a package script. Running it
+// with this Node executable also works on Windows, where .cmd cannot be spawned directly.
+const npmCli = process.env.npm_execpath;
+const command = npmCli ? process.execPath : (process.platform === 'win32' ? 'npm.cmd' : 'npm');
 const results = [];
 const started = performance.now();
 for (const step of steps) {
   const [script, ...extra] = step.split(' ');
   const t0 = performance.now();
-  const run = spawnSync(npm, ['run', '-s', script, ...extra], { encoding: 'utf8', maxBuffer: 64 << 20 });
+  const args = [...(npmCli ? [npmCli] : []), 'run', '-s', script, ...extra];
+  // A direct invocation on Windows needs cmd.exe for npm.cmd. Only plain arguments
+  // are accepted there, so shell metacharacters cannot be interpreted as commands.
+  const shell = !npmCli && process.platform === 'win32';
+  const safe = !shell || args.every((arg) => /^[\w./:@=+-]+$/.test(arg));
+  const run = safe ? spawnSync(command, args, { encoding: 'utf8', maxBuffer: 64 << 20, shell })
+    : { status: null, stdout: '', stderr: 'Unsafe argument for Windows npm.cmd fallback' };
   const seconds = (performance.now() - t0) / 1000;
-  const output = (run.stdout ?? '') + (run.stderr ?? '');
+  const output = (run.stdout ?? '') + (run.stderr ?? '') + (run.error ? `\n${run.error.message}\n` : '');
   const ok = run.status === 0;
   const summary = output.split('\n').filter((line) => line.startsWith('SUMMARY')).pop() ?? '';
   results.push({ step, ok, seconds });
