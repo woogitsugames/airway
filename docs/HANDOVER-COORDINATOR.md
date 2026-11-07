@@ -3,6 +3,13 @@
 Ostatnia aktualizacja: 2026-11-07, ok. 19:20 UTC. Nowa sesja koordynatora (wieczór 6.11) pracuje ciągle; budziki
 włączone. Nowa sesja startuje promptem z `docs/notes/coordinator-start-prompt.md`.
 
+## 7.11 ~20:00 — scalanie
+- Scalone: #299 (równoległy `test:fast`, D-289, ~100 s na 4 vCPU zamiast ~250–300 s) i #291 (poprawki Windows, przeniesione na nowy runner). `dev` = `main` = e8d330d.
+- #298 (GPT-06) zamknięty jako duplikat #299.
+- Agent integracji robi po kolei #292 → #294 → #295 → #296: merge `dev`, przenumerowanie D-xx (D-289 zajęte), testy, push na gałąź PR-a. Koordynator scala każdy PR po raporcie.
+- Agent 33a (GPT-01) wciąż pracuje. #293 GPT to ten sam zakres: wybrać jedno po raporcie 33a.
+- #297 (GPT-05) to WIP, nie scalać.
+
 ## Test Free.AI MCP (7.11 19:30 → 8.11 19:30 UTC)
 Właściciel dodał connector Free.AI MCP (Qwen3-30B): zlecać mu łatwiejsze rzeczy zamiast agentów Claude, testować
 ~24 h, potem raport dla właściciela i reguła w CLAUDE.md. Dziennik i zasady: `docs/notes/freeai-trial.md` (dopisuj
