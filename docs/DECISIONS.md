@@ -3093,3 +3093,24 @@ block, with 9 px squares cut 2 px in full ink both ways (shape, not tone); `test
 one shared line in portrait (about 330 px with both titles, wider than a 320 px strip), squares only without the count
 (the owner asked for the number), letting the report scroll (D-267 keeps that for the 130/150 % text steps), raising
 the CSS budget. **Status: in force (shipped skin and Linoryt preview).**
+
+## D-295 — Playtest record v2: contracts, surges, licence class, home region and milestones in the `AW1:` line (2026-11-07, Claude, night 37a)
+The closed test has to re-check D-270 (milestone thresholds), D-271 (contract difficulty and reward), D-272 (surge
+size) and D-273 (licence class II strength) on human runs, but the `AW1:` line (D-231) carried none of them. Each
+Endless run note in `airway.logbook.v1` may now also hold: weekly contracts met / offered (`contractsSummary`, the
+game-over row's own count, D-293; `0/0` when the run never saw one), demand surges announced / with an opened window /
+extra passengers sent / lost at a surge airport during its window or within 6 game hours after it (one helper,
+`src/game/surgesSummary.ts`, now shared with the balance adapter's `balance:surges` numbers, so human runs compare
+with the bot's), the licence class (1–3), the home region (`random` or one of the 8 region ids) and the milestones
+reached as one letter each in `MILESTONES` order (`H`, `R`, `2`, `3`, `4`, `F` 500, `S` 750). Every field is
+optional and validated alone (pairs only together and in order: met ≤ offered, opened ≤ announced; milestone letters
+only in order and once); a Daily note never carries them; notes written before stay valid (empty cells). The record
+goes to **`v: 2`** with nine run columns appended (`contracts_met`, `contracts_offered`, `surges_seen`,
+`surges_opened`, `surge_extra`, `surge_lost`, `licence`, `home`, `milestones`); the prefix stays `AW1:` (it names the
+line in the privacy sheet and the protocol) and the decoder reads v1 lines (18 columns, new cells empty) as well as
+v2; a row of the wrong width for its version is dropped. Read-only from the run (`EndlessRun.playtestStats()`), so
+no Sim, hash, save, replay or leaderboard change; nothing new on the readable "Copy summary" text or the logbook UI.
+Privacy (D-16, D-231): still counts and fixed words — a region id is a menu choice, never an airport code (checked
+against every city code), no seed, name or identifier. `docs/PLAYTEST.md` documents the columns and gets decision rows
+D-270…D-273 with thresholds written before the test. Not recorded: the DEV-only weather front (off in every shipped
+run, so always empty in the closed test). Guard: `test:playtest`. **Status: in force.**

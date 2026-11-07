@@ -12,7 +12,9 @@ szkolenia, ustawienie i preset grafiki, kroki adaptacji i wersję gry, oraz `npm
 produkcję (Q-42 → D-94; Q-52 wg rekomendacji A, do potwierdzenia). **R6i** dodał arkusz obserwacji pierwszej sesji
 (pierwsze 10 minut) i dwa sprawdzenia na urządzeniu (muzyka z innej aplikacji, wibracje na tanim telefonie). **R8g**
 dodał siedem pytań audytu R8 (RESEARCH R8, „Pytania do testu zamkniętego”) do ankiet B i C i do arkusza obserwacji,
-każde z progiem w Tabeli decyzji (wiersze R8-1…R8-7).
+każde z progiem w Tabeli decyzji (wiersze R8-1…R8-7). **Zapis v2** (D-295) dopisał do linii `AW1:` dane biegu
+`endless` do decyzji „po teście zamkniętym” D-270…D-273: kontrakty spełnione / zaoferowane, szczyty ruchu, klasę
+licencji, region startowy i osiągnięte etapy (sekcja „Linia `AW1:`”, wiersze D-270…D-273 w Tabeli decyzji).
 
 ## Prywatność (D-16, D-220)
 
@@ -23,7 +25,8 @@ każde z progiem w Tabeli decyzji (wiersze R8-1…R8-7).
   przyciskiem do ręcznego skopiowania — nadal bez sieci.
 - Tekst zawiera tylko liczby i daty biegów: bez kodów lotnisk, ziarna świata, imienia, adresu czy identyfikatora
   urządzenia. Linia `AW1:` (R3j) to te same liczby plus stałe słowa (przyczyna porażki, ustawienie grafiki, wersja
-  gry) zakodowane w base64url — czytelne dla każdego, kto ją zdekoduje, i nic poza tym.
+  gry; od D-295 także klasa licencji, region startowy — jedno z 8 słów `NAM` … `OCE` albo `random`, nie lotnisko — i
+  litery etapów) zakodowane w base64url — czytelne dla każdego, kto ją zdekoduje, i nic poza tym.
 - Dlatego eksport **nie zmienia** deklaracji Data safety / App Privacy: dane przekazywane przez użytkownika z jego
   inicjatywy (schowek, udostępnianie) nie są zbieraniem przez aplikację. Odnotowane w
   `docs/store/privacy-declarations.md` (sekcja „Build A”).
@@ -32,7 +35,8 @@ każde z progiem w Tabeli decyzji (wiersze R8-1…R8-7).
 ## Co jest w podsumowaniu
 
 Przycisk w **Dziennik lotów → Kopiuj podsumowanie** (także w buildach wydania). Przykład (EN, telefon z 3 biegami;
-najstarszy bieg zapisała wersja sprzed R3j, więc nie ma prawdziwych minut ani przyczyny):
+najstarszy bieg zapisała wersja sprzed R3j, więc nie ma prawdziwych minut ani przyczyny; najnowszy bieg `endless`
+ma pola zapisu v2, D-295 — widać je tylko w linii `AW1:` i w CSV, czytelny tekst się nie zmienia):
 
 ```text
 Airway logbook summary · 2026-11-18
@@ -51,7 +55,7 @@ Runs, newest first: date · mode · min at 1× · weeks · passengers · hub car
 2026-11-18 · Endless · 21.8 · 3 · 412 · 1/1 · 0/1 · 34
 2026-11-17 · Daily · 14.2 · 2 · 233 · 0/1 · 0/0 · 0
 2026-11-16 · Endless · 9.6 · 1 · 88 · 0/0 · 0/0 · 0
-AW1:eyJ2IjoxLCJkIjoiMjAyNi0xMS0xOCIsImFwcCI6IjAuMS4xIiwiZiI6MTQsImRsIjo0LCJ0dXQiOiJjb21wbGV0ZWQiLCJweiI6WzYsNDBdLCJyIjpbWyIyMDI2LTExLTE4IiwiZW5kbGVzcyIsMjEuOCwxNi4zLDMsNDEyLCJjYXBhY2l0eSIsIldIVCIsMSwxLDAsMSwzNCwiY29tcGxldGVkIiwiYXV0byIsIm1lZGl1bSIsMSwiMC4xLjEiXSxbIjIwMjYtMTEtMTciLCJkYWlseSIsMTQuMiwxMi4xLDIsMjMzLCJuby1yb3V0ZSIsIlRXIiwwLDEsMCwwLDAsImNvbXBsZXRlZCIsImF1dG8iLCJtZWRpdW0iLDAsIjAuMS4wIl0sWyIyMDI2LTExLTE2IiwiZW5kbGVzcyIsOS42LG51bGwsMSw4OCxudWxsLG51bGwsMCwwLDAsMCwwLG51bGwsbnVsbCxudWxsLG51bGwsbnVsbF1dfQ
+AW1:eyJ2IjoyLCJkIjoiMjAyNi0xMS0xOCIsImFwcCI6IjAuMS4xIiwiZiI6MTQsImRsIjo0LCJ0dXQiOiJjb21wbGV0ZWQiLCJweiI6WzYsNDBdLCJyIjpbWyIyMDI2LTExLTE4IiwiZW5kbGVzcyIsMjEuOCwxNi4zLDMsNDEyLCJjYXBhY2l0eSIsIldIVCIsMSwxLDAsMSwzNCwiY29tcGxldGVkIiwiYXV0byIsIm1lZGl1bSIsMSwiMC4xLjEiLDEsMiwxLDEsMTIsMCwyLCJFVU4iLCJIMjM0Il0sWyIyMDI2LTExLTE3IiwiZGFpbHkiLDE0LjIsMTIuMSwyLDIzMywibm8tcm91dGUiLCJUVyIsMCwxLDAsMCwwLCJjb21wbGV0ZWQiLCJhdXRvIiwibWVkaXVtIiwwLCIwLjEuMCIsbnVsbCxudWxsLG51bGwsbnVsbCxudWxsLG51bGwsbnVsbCxudWxsLG51bGxdLFsiMjAyNi0xMS0xNiIsImVuZGxlc3MiLDkuNixudWxsLDEsODgsbnVsbCxudWxsLDAsMCwwLDAsMCxudWxsLG51bGwsbnVsbCxudWxsLG51bGwsbnVsbCxudWxsLG51bGwsbnVsbCxudWxsLG51bGwsbnVsbCxudWxsLG51bGxdXX0
 ```
 
 | Wiersz | Skąd | Do czego |
@@ -82,9 +86,12 @@ Ograniczenia, o których trzeba pamiętać przy czytaniu:
 ## Linia `AW1:` i `npm run playtest:decode` (R3j, D-231)
 
 Ostatnia linia podsumowania to zapis playtestu dla arkusza: `AW1:` + base64url z JSON-a (ASCII, ten sam w PL i EN).
-Tester wkleja ją razem z resztą tekstu; nie musi jej rozumieć. Klucze JSON-a: `v` (1), `d` (dzień skopiowania),
+Tester wkleja ją razem z resztą tekstu; nie musi jej rozumieć. Klucze JSON-a: `v` (wersja zapisu: 2 od D-295, 1
+przed nim), `d` (dzień skopiowania),
 `app` (wersja), `f` / `dl` (loty / wyzwania dnia), `tut` (szkolenie teraz), `pz` (zagadki rozwiązane / wszystkie),
-`r` (biegi, od najnowszego, kolumny jak niżej). Brak pola w starszej notatce = `null`.
+`r` (biegi, od najnowszego, kolumny jak niżej). Brak pola w starszej notatce = `null`. Kolumny tylko dopisujemy na
+końcu: wiersz zapisu v1 ma 18 pierwszych kolumn, v2 — 27; dekoder czyta obie wersje, a kolumny, których linia nie ma,
+zostawia puste (podsumowanie z wersji gry sprzed D-295 nadal się dekoduje).
 
 | Kolumna CSV | Znaczenie |
 |---|---|
@@ -98,6 +105,11 @@ Tester wkleja ją razem z resztą tekstu; nie musi jej rozumieć. Klucze JSON-a:
 | `tutorial` | stan szkolenia w chwili końca biegu (`completed` / `skipped` / `in-progress` / `none`) |
 | `quality`, `preset`, `adapt_steps` | ustawienie grafiki (`auto`, `saver`, `low`, `medium`, `high`), preset, na którym renderer skończył bieg, i liczba kroków automatycznego obniżenia jakości (0–3, D-74) |
 | `version` | wersja gry, która grała ten bieg |
+| `contracts_met`, `contracts_offered` (v2) | kontrakty tygodnia spełnione / zaoferowane w biegu (D-271; liczone jak wiersz „Kontrakty” raportu końca gry, D-293: zamknięte + bieżący, bieżący spełniony, gdy już osiągnął cel); `0`/`0` — bieg nie doczekał kontraktu; puste — gra dnia albo zapis sprzed v2 |
+| `surges_seen`, `surges_opened`, `surge_extra`, `surge_lost` (v2) | szczyty ruchu (D-249, D-272): ogłoszone, z otwartym oknem, dodatkowi pasażerowie, których wysłały, i `1`, gdy bieg przegrał na lotnisku szczytu w jego oknie albo do 6 h gry po nim — dokładnie jak `balance:surges` (`src/game/surgesSummary.ts`), więc ludzie porównują się z botem |
+| `licence` (v2) | klasa licencji biegu: `1`, `2`, `3` (D-251, D-273) |
+| `home` (v2) | region startowy (D-236): `random` albo identyfikator regionu (`NAM`, `SAM`, `EUN`, `EUS`, `AFR`, `ME`, `ASI`, `OCE`) — wybór z menu, nie lotnisko |
+| `milestones` (v2) | etapy osiągnięte w biegu (D-242, D-270), po jednej literze w stałej kolejności: `H` pierwszy hub, `R` wszystkie regiony, `2` / `3` / `4` tydzień 2 / 3 / 4, `F` 500 pasażerów, `S` 750 pasażerów (np. `H23F`); pusto w komórce bez liter = żaden etap |
 
 Zebranie: odpowiedzi z ankiet B i C (eksport Formularza Google do pliku tekstowego albo CSV) zapisać lokalnie i:
 
@@ -110,10 +122,10 @@ zostają pustą komórką) i wypisuje jeden wiersz na bieg; na stderr podaje `re
 wyżej:
 
 ```csv
-summary,copied,app_version,flights,dailies,tutorial_now,puzzles_solved,puzzles_total,day,mode,min_1x,min_real,weeks,passengers,cause,picks,hub_picked,hub_offered,slots_picked,slots_offered,held_min,tutorial,quality,preset,adapt_steps,version
-1,2026-11-18,0.1.1,14,4,completed,6,40,2026-11-18,endless,21.8,16.3,3,412,capacity,WHT,1,1,0,1,34,completed,auto,medium,1,0.1.1
-1,2026-11-18,0.1.1,14,4,completed,6,40,2026-11-17,daily,14.2,12.1,2,233,no-route,TW,0,1,0,0,0,completed,auto,medium,0,0.1.0
-1,2026-11-18,0.1.1,14,4,completed,6,40,2026-11-16,endless,9.6,,1,88,,,0,0,0,0,0,,,,,
+summary,copied,app_version,flights,dailies,tutorial_now,puzzles_solved,puzzles_total,day,mode,min_1x,min_real,weeks,passengers,cause,picks,hub_picked,hub_offered,slots_picked,slots_offered,held_min,tutorial,quality,preset,adapt_steps,version,contracts_met,contracts_offered,surges_seen,surges_opened,surge_extra,surge_lost,licence,home,milestones
+1,2026-11-18,0.1.1,14,4,completed,6,40,2026-11-18,endless,21.8,16.3,3,412,capacity,WHT,1,1,0,1,34,completed,auto,medium,1,0.1.1,1,2,1,1,12,0,2,EUN,H234
+1,2026-11-18,0.1.1,14,4,completed,6,40,2026-11-17,daily,14.2,12.1,2,233,no-route,TW,0,1,0,0,0,completed,auto,medium,0,0.1.0,,,,,,,,,
+1,2026-11-18,0.1.1,14,4,completed,6,40,2026-11-16,endless,9.6,,1,88,,,0,0,0,0,0,,,,,,,,,,,,,,
 ```
 
 Dane nie zawierają kodów lotnisk, ziarna świata ani identyfikatorów; tester może je przeczytać (base64 to nie
@@ -332,6 +344,10 @@ więc porównujemy z kolumną `min_1x`; `min_real` mówi tylko, ile życia zajmu
 | **R8-5** cisza nocna (D-17, D-151) | testerzy z biegiem `endless` o `weeks` ≥ 2 (doszli do tygodnia 3); C9 „tak” i poprawny opis | 50 biegów (v6): cisza w 33 (66 %), wstrzymanie ciszą w 32 z 33 (97 %); R8 (v5, od tyg. 4): 29 z 200 (15 %) | ≥ 8 podsumowań | < 30 % testerów doszło do ciszy → wraca Q-72 C (od tygodnia 2) do właściciela. Doszło ≥ 30 %, ale < 30 % z nich opisuje zamknięcie dobrze w C9 → przegląd sygnału ciszy (lotnisko gaśnie, przywieszka) przed premierą | bez zmian |
 | **R8-6** rozrzut długości biegu | p10 / p50 / p90 `min_1x` biegów `endless`; najdłuższy bieg każdego testera | 50 biegów: p10 11,16 · mediana 17,41 · p90 24,25 · max 29,45 min; R8 (v5, 200 biegów): max 31,6 min | ≥ 40 biegów `endless` od ≥ 8 testerów | ≥ 3 z 12 testerów ma bieg > 30 min → sufit bota nie jest sufitem ludzi: R8f odkładamy. 0 z 12 > 30 min **i** p90 ludzi ≤ p90 bota → ściana jest wspólna: argument dla Q-73 B (przegląd R8f). Wpisujemy p10/p50/p90, nie samą medianę | bez zmian |
 | **R8-7** ostatnie minuty | C10 „tylko patrzyłem” | 50 biegów: porażka w tyg. 4 w 10, w tyg. 5 w 1 (z 50) | ≥ 8 odpowiedzi C | ≥ 4 z 12 „tylko patrzyłem” → sufit tygodnia 4–5 jest odczuwalny: R8f (więcej samolotów / wolniejsza rampa) idzie do właściciela z Q-73. < 4 z 12 → bez zmian | bez zmian |
+| **D-270** progi etapów (tydzień 4, 750 pasażerów) | `milestones` biegów `endless`: odsetek biegów z `4` i z `S`; odsetek testerów, którzy choć raz mają `4` / `S` | 50 biegów: tydzień 4 w 9 (18 %), 750 pasażerów w 1 (2 %); pierwszy hub 50, wszystkie regiony 35, tydz. 2 50, tydz. 3 33, 500 pasażerów 7 (D-270) | ≥ 40 biegów `endless` od ≥ 8 testerów | Etap, który ma ≥ 80 % biegów (np. `4` albo `S`) → za łatwy: próg w górę (tydzień 5 / 1 000) jako nowa decyzja. Etap, którego nie ma żaden tester (0 z 12) → za trudny: próg w dół o jeden krok. Pomiędzy → bez zmian | bez zmian (D-270) |
+| **D-271** kontrakt tygodnia: trudność i nagroda | `contracts_met / contracts_offered` (suma, biegi `endless` z `contracts_offered` > 0); odsetek testerów z ≥ 1 spełnionym | bot (D-247, trudność A): około połowa kontraktów spełniona; bot nie bierze skrzynki z kontraktu | ≥ 30 zaoferowanych kontraktów od ≥ 8 testerów | < 25 % spełnionych → za trudny: cel 80 % zamiast 100 % oczekiwanego popytu (nowa decyzja). > 75 % spełnionych → za łatwy albo nagroda za tania: cel 120 %. ≤ 3 z 12 testerów spełnia choć jeden → nikt nie gra o kontrakt: przegląd nagrody (czwarta skrzynka) przed premierą. 25–75 % → bez zmian | bez zmian (D-271) |
+| **D-272** wielkość szczytu ruchu (+12 w 6 h) | `surge_lost` = 1 wobec `surges_opened` (suma); `surge_extra` na otwarte okno | 200 biegów: 140 ogłoszonych, 85 okien w 79 biegach, dodatkowi pasażerowie na taki bieg mediana 12 (3–24), 4 porażki na lotnisku szczytu (D-249) | ≥ 30 otwartych okien od ≥ 8 testerów | `surge_lost` w ≥ 15 % otwartych okien → szczyt za duży albo zapowiedź za krótka: +8 zamiast +12 (nowa decyzja). `surge_lost` w 0 okien przy ≥ 60 otwartych **i** mediana `surge_extra` na okno ≥ 10 (szczyt w pełni obsłużony) → szczyt bez znaczenia: +16. Pomiędzy → bez zmian | bez zmian (D-272) |
+| **D-273** siła klasy II licencji | biegi `endless` z `licence` = 2 wobec `licence` = 1 tych samych testerów: mediana `weeks` i `min_1x`; liczba testerów z biegiem `licence` = 2 | 200 biegów: mediana 16,75 (I) / 15,45 (II) / 14,10 (III) min; tydzień 4: 30 / 20 / 12 z 200 (D-273) | ≥ 15 biegów klasy II od ≥ 4 testerów | Klasa II krótsza od I o < 1 min (mediana `min_1x` tych samych testerów) → za łagodna: cisza nocna od tygodnia 2 i 2 turbośmigłowce. Krótsza o > 4 min → za ostra: rezerwa 4 turbośmigłowców. < 4 z 12 testerów otworzyło klasę II → próg otwarcia (tydzień 4) wraca do właściciela. Pomiędzy → bez zmian | bez zmian (D-273) |
 
 Wyniki wpisujemy pod tabelą (kolumna „Wynik”, liczby z CSV) i każdą decyzję jako nowe D-xx. Progów **nie zmieniamy**
 po zobaczeniu danych; jeśli próg okaże się źle postawiony, zapisujemy to jako osobną decyzję z uzasadnieniem i

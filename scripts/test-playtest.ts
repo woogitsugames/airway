@@ -13,6 +13,9 @@
 // threshold for each; no names in the sheet.
 // [night-12aw] R8g, D-240: the seven R8 questions of RESEARCH R8 are asked (survey B9-B11, C8-C10, observation O9-O10),
 // mapped in a "Pytania R8" table and decided by rows R8-1..R8-7 whose bot references equal docs/balance/game-summary.md.
+// [night-37a] D-295: record v2 — an Endless note also keeps contracts met/offered, surges announced/opened/extra/lost
+// at, licence class, home region and milestones (D-270…D-273, D-236); a v1 line still decodes (new columns empty);
+// PLAYTEST.md's decision table reads D-270…D-273 from those columns.
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { EMPTY_LOGBOOK, LOGBOOK_KEY, RUN_NOTES, readLogbook, recordFlight, type LogEntry, type Logbook, type RunNote,
@@ -23,6 +26,9 @@ import { readTutorialOutcome, TUTORIAL_KEY } from '../src/game/tutorial/controll
 import { logbookSummary } from '../src/ui/logbook/summary.ts';
 import { decodePlaytestRecord, encodePlaytestRecord, playtestCsv, RECORD_PREFIX, RUN_COLUMNS, SUMMARY_COLUMNS } from '../src/game/playtestRecord.ts';
 import { buildCauseReport } from '../src/game/causes.ts';
+import { MILESTONE_LETTERS } from '../src/game/logbook.ts';
+import { CITIES } from '../src/data/cities.ts';
+import { REGION_IDS } from '../src/data/regions.ts';
 import { APP_VERSION } from '../src/core/version.ts';
 import { setLanguage } from '../src/i18n/index.ts';
 import { en } from '../src/i18n/en.ts';
@@ -89,6 +95,32 @@ test('R3j record fields are kept per run; a bad field is dropped alone; R1o note
   assert.equal(book.runs.length, 2);
 });
 
+test('v2 record fields (D-295): kept per Endless run, a bad one dropped alone, pairs kept only in order, daily drops them', () => {
+  const storage = memory();
+  const v2 = { contractsMet: 2, contractsOffered: 3, surges: 2, surgesOpened: 1, surgeExtra: 12, surgeLost: 1, licence: 2,
+    home: 'EUN', milestones: 'H234F' } as const;
+  let book = recordFlight(storage, flight(), { ...stats(), real: 90, ...v2 });
+  assert.deepEqual(book.runs[0], { day: '2026-11-18', mode: 'endless', passengers: 120, weeks: 2, ...stats(), real: 90, ...v2 });
+  assert.deepEqual(readLogbook(storage).runs[0], book.runs[0], 'stored and read back');
+  book = recordFlight(storage, flight(), { ...stats(), ...v2, home: 'random', licence: 1, milestones: '' });
+  assert.deepEqual([book.runs[0]!.home, book.runs[0]!.licence, book.runs[0]!.milestones], ['random', 1, '']);
+  book = recordFlight(storage, flight(), { ...stats(), real: 7, contractsMet: 4, contractsOffered: 3, surges: 1, surgesOpened: 2,
+    surgeExtra: -1, surgeLost: 2, licence: 4, home: 'LIS', milestones: 'HH' } as never);
+  assert.deepEqual(Object.keys(book.runs[0]!).sort(), ['day', 'held', 'hubOffered', 'hubPicked', 'mode', 'passengers', 'real',
+    'slotsOffered', 'slotsPicked', 'tenths', 'weeks'], 'every bad v2 field dropped, the note and its R3j field kept');
+  for (const bad of ['2H', 'HRR', 'X', 'h', 'H23FSS']) {
+    assert.equal(recordFlight(memory(), flight(), { ...stats(), milestones: bad } as never).runs[0]!.milestones, undefined, bad);
+  }
+  for (const id of REGION_IDS) assert.equal(recordFlight(memory(), flight(), { ...stats(), home: id }).runs[0]!.home, id);
+  book = recordFlight(storage, flight({ mode: 'daily' }), { ...stats(), ...v2 });
+  assert.deepEqual(book.runs[0], { day: '2026-11-18', mode: 'daily', passengers: 120, weeks: 2, ...stats() },
+    'a daily note never carries Endless-only fields');
+  // A note written before v2 (R3j fields only) loads unchanged, the v2 fields simply absent.
+  const old = { day: '2026-11-17', mode: 'endless', passengers: 9, weeks: 1, ...stats(), real: 12, cause: 'capacity' };
+  const legacy = readLogbook(memory({ [LOGBOOK_KEY]: JSON.stringify({ flights: 1, passengers: 9, weeks: 1, longestWeeks: 1,
+    hubs: {}, recent: [], runs: [old] }) }));
+  assert.deepEqual(legacy.runs, [old]);
+});
 /** The slice of Sim that EndlessRun.playtestStats and drainEvents read (and the R1n milestone view). */
 function fakeSim(over: { events: unknown[]; upgrades: { week: number; upgrade: UpgradeKind }[]; wait: Record<string, number>; tick: number }): Sim {
   const world = {
@@ -99,7 +131,8 @@ function fakeSim(over: { events: unknown[]; upgrades: { week: number; upgrade: U
     cityView: () => ({ departureSlots: 2, nextSlotMinutes: 10 }),
     upgrades: over.upgrades,
   };
-  return { world, tickCount: over.tick, drainEvents: () => over.events.splice(0) } as unknown as Sim;
+  // [night-37a] A daily config: the R1o/R3j stats only (the v2 Endless fields read the real world, tested below).
+  return { world, config: { mode: 'daily' }, tickCount: over.tick, drainEvents: () => over.events.splice(0) } as unknown as Sim;
 }
 test('EndlessRun.playtestStats: length at 1x, held minutes over airports, card offers and picks', () => {
   const offered = (week: number, offers: UpgradeKind[]) => ({ type: 'UpgradeOffered', minute: 0, week, offers });
@@ -142,6 +175,10 @@ test('a real bot run reports what its weekly boards showed and what it picked', 
     real: 0, picks: [...run.sim.world.upgrades].sort((a, b) => a.week - b.week).map((item) => item.upgrade[0]!.toUpperCase()
       .replace('D', 'S')).join(''),
     ...(run.failed ? { cause: buildCauseReport(run.failed.ledger)[0]!.kind } : {}),
+    // [night-37a] D-295: the v2 Endless fields (checked against events in their own test below).
+    contractsMet: got.contractsMet, contractsOffered: got.contractsOffered, surges: got.surges, surgesOpened: got.surgesOpened,
+    surgeExtra: got.surgeExtra, surgeLost: got.surgeLost, licence: 1, home: 'random',
+    milestones: run.milestones().map((id) => MILESTONE_LETTERS[id]).join(''),
   });
   assert.ok(got.tenths > 0 && got.hubOffered >= got.hubPicked && got.slotsOffered >= got.slotsPicked);
 });
@@ -191,7 +228,9 @@ const note = (day: string, mode: 'endless' | 'daily', tenths: number, weeks: num
   ({ day, mode, tenths, weeks, passengers, hubPicked: card[0], hubOffered: card[1], slotsPicked: card[2], slotsOffered: card[3], held, ...record });
 const sample: Logbook = { ...EMPTY_LOGBOOK, flights: 14, dailies: 4, runs: [
   note('2026-11-18', 'endless', 218, 3, 412, [1, 1, 0, 1], 34,
-    { real: 163, cause: 'capacity', picks: 'WHT', tutorial: 'completed', quality: 'auto', preset: 'medium', adapt: 1, version: '0.1.1' }),
+    { real: 163, cause: 'capacity', picks: 'WHT', tutorial: 'completed', quality: 'auto', preset: 'medium', adapt: 1, version: '0.1.1',
+      contractsMet: 1, contractsOffered: 2, surges: 1, surgesOpened: 1, surgeExtra: 12, surgeLost: 0, licence: 2, home: 'EUN',
+      milestones: 'H234' }), // [night-37a] D-295 v2 fields
   note('2026-11-17', 'daily', 142, 2, 233, [0, 1, 0, 0], 0,
     { real: 121, cause: 'no-route', picks: 'TW', tutorial: 'completed', quality: 'auto', preset: 'medium', adapt: 0, version: '0.1.0' }),
   note('2026-11-16', 'endless', 96, 1, 88, [0, 0, 0, 0], 0), // logged before R3j: no record fields
@@ -199,6 +238,49 @@ const sample: Logbook = { ...EMPTY_LOGBOOK, flights: 14, dailies: 4, runs: [
 const input = { book: sample, tutorial: 'completed' as const, puzzlesSolved: 6, puzzlesTotal: 40, today: '2026-11-18',
   version: '0.1.1' };
 const doc = read('docs/PLAYTEST.md');
+
+test('v2 record of a real Endless run equals its own events: contracts, surges, licence, home, milestones', () => {
+  // Seeds from 0xA1A1 until one run has offered a contract and announced a surge (bot policy, ends by jam or cap).
+  let checked = 0;
+  for (let seed = 0xa1a1; seed < 0xa1a1 + 40 && checked < 2; seed++) {
+    const run = EndlessRun.create(seed, 'endless', seed % 2 ? 'EUN' : null, seed % 2 ? 2 : 1);
+    const counts = { announced: 0, opened: 0, met: 0 };
+    for (let tick = 0; tick < 60 * 60 * 30 && !run.failed; tick++) {
+      if (tick % AUTOPLAY_ACTION_INTERVAL === 0) {
+        const command = nextAutoplayCommand(run.sim);
+        if (command) run.queue(command);
+      }
+      run.step();
+      for (const event of run.sim.drainEvents()) {
+        if (event.type === 'SurgeAnnounced') counts.announced++;
+        if (event.type === 'Surge' && event.phase === 'start') counts.opened++;
+        if (event.type === 'ContractMet') counts.met++;
+      }
+    }
+    const got = run.playtestStats();
+    if (!got.surges || !got.contractsOffered) continue;
+    checked++;
+    const world = run.sim.world;
+    const closed = world.contractHistory.length + (world.contract ? 1 : 0);
+    assert.equal(got.contractsOffered, closed, `seed ${seed}: contracts offered = closed + running`);
+    assert.equal(got.contractsMet, counts.met, `seed ${seed}: met = ContractMet events`);
+    assert.equal(got.surges, counts.announced, `seed ${seed}: surges = SurgeAnnounced events`);
+    assert.equal(got.surgesOpened, counts.opened, `seed ${seed}: opened = Surge start events`);
+    assert.equal(got.surgeExtra, world.surgeRecords().filter((item) => item.announceTick <= run.tick).reduce((n, item) => n + item.extra, 0));
+    assert.ok(got.surgeLost === 0 || got.surgeLost === 1);
+    assert.equal(got.licence, seed % 2 ? 2 : 1);
+    assert.equal(got.home, seed % 2 ? 'EUN' : 'random');
+    assert.equal(got.milestones, run.milestones().map((id) => MILESTONE_LETTERS[id]).join(''));
+    const note = recordFlight(memory(), flight(), got).runs[0]!;
+    assert.deepEqual(decodePlaytestRecord(encodePlaytestRecord({ ...input, book: { ...EMPTY_LOGBOOK, flights: 1, runs: [note] } }))!.runs,
+      [note], `seed ${seed}: the real note survives the AW1 line`);
+  }
+  assert.equal(checked, 2, 'two runs with a contract and a surge');
+  const daily = EndlessRun.create(0xa1a1, 'daily');
+  for (let tick = 0; tick < 600; tick++) daily.step();
+  assert.deepEqual(Object.keys(daily.playtestStats()).sort(), ['held', 'hubOffered', 'hubPicked', 'picks', 'real', 'slotsOffered',
+    'slotsPicked', 'tenths'], 'Daily writes no v2 field');
+});
 
 test('EN summary is the example printed in docs/PLAYTEST.md', () => {
   setLanguage('en');
@@ -243,17 +325,55 @@ test('AW1 line: base64url of ASCII JSON, same in PL and EN, decodes to the same 
   const json = JSON.parse(Buffer.from(line.slice(4), 'base64url').toString('utf8'));
   assert.deepEqual(Object.keys(json), ['v', 'd', 'app', 'f', 'dl', 'tut', 'pz', 'r']);
   assert.equal(json.r[0].length, RUN_COLUMNS.length);
-  assert.deepEqual(json.r[2].slice(RUN_COLUMNS.indexOf('min_real')), [null, 1, 88, null, null, 0, 0, 0, 0, 0, null, null, null, null, null],
-    'a pre-R3j note writes null for what it lacks');
+  assert.equal(json.v, 2, 'D-295: record v2');
+  assert.deepEqual(json.r[2].slice(RUN_COLUMNS.indexOf('min_real')), [null, 1, 88, null, null, 0, 0, 0, 0, 0, null, null, null, null, null,
+    null, null, null, null, null, null, null, null, null], 'a pre-R3j note writes null for what it lacks');
+  assert.deepEqual(json.r[0].slice(RUN_COLUMNS.indexOf('contracts_met')), [1, 2, 1, 1, 12, 0, 2, 'EUN', 'H234']);
+  assert.deepEqual(json.r[1].slice(RUN_COLUMNS.indexOf('contracts_met')), Array(9).fill(null), 'a daily run has no v2 field');
   const back = decodePlaytestRecord(line);
   assert.ok(back);
   assert.deepEqual(back.runs, sample.runs);
   assert.deepEqual({ ...back, runs: [] }, { copied: '2026-11-18', version: '0.1.1', flights: 14, dailies: 4, tutorial: 'completed',
     puzzlesSolved: 6, puzzlesTotal: 40, runs: [] });
   assert.doesNotMatch(JSON.stringify(json), /\b(LIS|FRA|SIN|seed|hub":)/i, 'no airport code, seed or hub field');
-  for (const bad of ['AW2:' + line.slice(4), 'AW1:!!!', 'AW1:' + Buffer.from('{"v":2,"r":[]}').toString('base64url'), 'AW1:']) {
+  for (const bad of ['AW2:' + line.slice(4), 'AW1:!!!', 'AW1:' + Buffer.from('{"v":3,"r":[]}').toString('base64url'),
+    'AW1:' + Buffer.from('{"v":"1","r":[]}').toString('base64url'), 'AW1:']) {
     assert.equal(decodePlaytestRecord(bad), null, bad.slice(0, 12));
   }
+});
+// [night-37a] The `AW1:` line PLAYTEST.md printed before D-295 (record v1, 18 run columns), copied verbatim.
+const V1_LINE = 'AW1:eyJ2IjoxLCJkIjoiMjAyNi0xMS0xOCIsImFwcCI6IjAuMS4xIiwiZiI6MTQsImRsIjo0LCJ0dXQiOiJjb21wbGV0ZWQiLCJweiI6WzYsNDBdLCJyIjpbWyIyMDI2LTExLTE4IiwiZW5kbGVzcyIsMjEuOCwxNi4zLDMsNDEyLCJjYXBhY2l0eSIsIldIVCIsMSwxLDAsMSwzNCwiY29tcGxldGVkIiwiYXV0byIsIm1lZGl1bSIsMSwiMC4xLjEiXSxbIjIwMjYtMTEtMTciLCJkYWlseSIsMTQuMiwxMi4xLDIsMjMzLCJuby1yb3V0ZSIsIlRXIiwwLDEsMCwwLDAsImNvbXBsZXRlZCIsImF1dG8iLCJtZWRpdW0iLDAsIjAuMS4wIl0sWyIyMDI2LTExLTE2IiwiZW5kbGVzcyIsOS42LG51bGwsMSw4OCxudWxsLG51bGwsMCwwLDAsMCwwLG51bGwsbnVsbCxudWxsLG51bGwsbnVsbF1dfQ';
+test('v1 line (before D-295) still decodes: same notes, new columns empty; a row of the wrong width is dropped', () => {
+  const back = decodePlaytestRecord(V1_LINE);
+  assert.ok(back);
+  const strip = (run: RunNote): RunNote => Object.fromEntries(Object.entries(run).filter(([key]) =>
+    !['contractsMet', 'contractsOffered', 'surges', 'surgesOpened', 'surgeExtra', 'surgeLost', 'licence', 'home', 'milestones']
+      .includes(key))) as unknown as RunNote;
+  assert.deepEqual(back.runs, sample.runs.map(strip));
+  assert.deepEqual({ ...back, runs: [] }, { copied: '2026-11-18', version: '0.1.1', flights: 14, dailies: 4, tutorial: 'completed',
+    puzzlesSolved: 6, puzzlesTotal: 40, runs: [] });
+  const rows = playtestCsv(V1_LINE).csv.trim().split('\n');
+  assert.equal(rows[1], '1,2026-11-18,0.1.1,14,4,completed,6,40,2026-11-18,endless,21.8,16.3,3,412,capacity,WHT,1,1,0,1,34,completed,auto,medium,1,0.1.1,,,,,,,,,');
+  // A v1 record with a v2-wide row (or the reverse) is not trusted: the row is dropped, the record kept.
+  const json = JSON.parse(Buffer.from(encodePlaytestRecord(input).slice(4), 'base64url').toString('utf8'));
+  const mixed = { ...json, v: 1 };
+  assert.deepEqual(decodePlaytestRecord('AW1:' + Buffer.from(JSON.stringify(mixed)).toString('base64url'))!.runs, []);
+});
+test('v2 record carries no forbidden data: no airport code, seed, name or hub; only fixed words and counts', () => {
+  const json = JSON.parse(Buffer.from(encodePlaytestRecord(input).slice(4), 'base64url').toString('utf8'));
+  const codes = new Set(CITIES.map((city) => city.code));
+  const words = new Set<string>();
+  const walk = (value: unknown): void => {
+    if (Array.isArray(value)) value.forEach(walk);
+    else if (value && typeof value === 'object') Object.values(value).forEach(walk);
+    else if (typeof value === 'string') words.add(value);
+  };
+  walk(json);
+  for (const word of words) assert.ok(!codes.has(word), `airport code ${word}`);
+  for (const id of REGION_IDS) assert.ok(!codes.has(id), `region id ${id} is no airport code`);
+  assert.doesNotMatch(JSON.stringify(json), /seed|name|device|hub"/i);
+  const home = json.r[0][RUN_COLUMNS.indexOf('home')];
+  assert.ok(['random', ...REGION_IDS].includes(home), 'home is "random" or a region id');
 });
 test('playtest:decode CSV: one row per run, summaries numbered, bad tokens skipped, forged fields dropped', () => {
   setLanguage('en');
@@ -264,9 +384,9 @@ test('playtest:decode CSV: one row per run, summaries numbered, bad tokens skipp
   assert.deepEqual([out.records, out.rows, out.skipped], [2, 4, 0]);
   const rows = out.csv.trim().split('\n');
   assert.equal(rows[0], [...SUMMARY_COLUMNS, ...RUN_COLUMNS].join(','));
-  assert.equal(rows[1], '1,2026-11-18,0.1.1,14,4,completed,6,40,2026-11-18,endless,21.8,16.3,3,412,capacity,WHT,1,1,0,1,34,completed,auto,medium,1,0.1.1');
-  assert.equal(rows[3], '1,2026-11-18,0.1.1,14,4,completed,6,40,2026-11-16,endless,9.6,,1,88,,,0,0,0,0,0,,,,,');
-  assert.equal(rows[4], '2,2026-11-18,0.1.0,1,0,none,0,40,2026-11-18,endless,5,6,0,7,,,0,0,0,0,0,none,auto,low,,',
+  assert.equal(rows[1], '1,2026-11-18,0.1.1,14,4,completed,6,40,2026-11-18,endless,21.8,16.3,3,412,capacity,WHT,1,1,0,1,34,completed,auto,medium,1,0.1.1,1,2,1,1,12,0,2,EUN,H234');
+  assert.equal(rows[3], '1,2026-11-18,0.1.1,14,4,completed,6,40,2026-11-16,endless,9.6,,1,88,,,0,0,0,0,0,,,,,,,,,,,,,,');
+  assert.equal(rows[4], '2,2026-11-18,0.1.0,1,0,none,0,40,2026-11-18,endless,5,6,0,7,,,0,0,0,0,0,none,auto,low,,,,,,,,,,,',
     'invalid cause, picks, adapt and version become empty cells');
   assert.equal(playtestCsv('AW1:AAAA').skipped, 1);
   const docCsv = doc.match(/```csv\n([\s\S]*?)\n```/)?.[1];
