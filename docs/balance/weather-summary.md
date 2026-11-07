@@ -1,4 +1,4 @@
-# Weather ground-hold balance (D-290)
+# Weather ground-hold balance (D-291)
 
 Paired Endless bot runs, fixed seeds 0xA1A1 onward, weekly contract and demand surge on; the bot does not react to weather. The shipped front remains disabled. Each variant holds every ready departure under the deck for up to the listed minutes, removes the old slot penalty and otherwise uses the same seed and bot. Counts include only `DepartureHeld` events whose reason is weather, once per ready departure, including a weather hold after an earlier slot hold.
 

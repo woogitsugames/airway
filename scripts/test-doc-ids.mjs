@@ -45,10 +45,10 @@ check('reader finds a duplicate question', duplicates(questionIds(fakeQuestions)
 export function testingRows(text) {
   return [...text.matchAll(/^\|\s*`npm run ([^\s`]+)/gm)].map((m) => m[1]);
 }
-/** The step list of a run-suite script: "node scripts/run-suite.mjs <suite> step…". */
+/** The step list of a run-suite script: "node scripts/run-suite.mjs [--jobs=N] <suite> step…" (D-289 options). */
 export function suiteSteps(command) {
   const words = command.trim().split(/\s+/);
-  return words.slice(words.indexOf('scripts/run-suite.mjs') + 2);
+  return words.slice(words.indexOf('scripts/run-suite.mjs') + 1).filter((word) => !word.startsWith('--jobs')).slice(1);
 }
 /** "steps=N" in the expected summary of the `npm run <suite>` row, or null. */
 export function documentedSteps(text, suite) {
@@ -60,7 +60,8 @@ const fakeTesting = '| `npm run a` | fast |\n| `npm run b -- --x` | fast |\nsee 
   '| `npm run test:fast` | — | `SUMMARY test:fast … steps=3 passed=3` |\n';
 check('reader finds a duplicate TESTING.md row', duplicates(testingRows(fakeTesting)).join() === 'a');
 check('reader reads a suite step list',
-  suiteSteps('node scripts/run-suite.mjs test:fast typecheck test:a test:arch').join() === 'typecheck,test:a,test:arch');
+  suiteSteps('node scripts/run-suite.mjs test:fast typecheck test:a test:arch').join() === 'typecheck,test:a,test:arch' &&
+  suiteSteps('node scripts/run-suite.mjs --jobs=1 test:ci test:fast build').join() === 'test:fast,build');
 check('reader reads the documented step count', documentedSteps(fakeTesting, 'test:fast') === 3);
 
 const testingText = readFileSync('docs/TESTING.md', 'utf8');

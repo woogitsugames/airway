@@ -28,7 +28,7 @@ const LEGACY_V3 = 3;
  */
 const LEGACY_V4 = 4;
 /**
- * [D-290] v7 = a save whose config carries the weather front (off in shipped Endless). Only such a save is
+ * [D-291] v7 = a save whose config carries the weather front (off in shipped Endless). Only such a save is
  * written as v7; every other save is still written as SAVE_VERSION (v5), byte for byte as before R2j, so a pre-R2j
  * build keeps loading it and refuses only a weather run as 'unsupported' (it would otherwise continue it without the
  * front). v5 never carries the flag; v6 weather saves are refused because their rules differ.
@@ -324,9 +324,10 @@ export function replaySave(save: GameSaveV1): Sim | null {
       ...(config?.weatherFront === true ? { weatherFront: true } : {}),
     };
     // [night-12bc] R2h: and its licence class (absent = class I, every save before R2h).
+    const eus = config?.eusClusterV2 === true ? { eusClusterV2: true } : {};
     const licence = config?.licenceClass === undefined ? {} : { licenceClass: config.licenceClass };
     const sim = Sim.replay(save.seed, save.commands as never, save.tick,
-      (homeRegion === undefined ? { mode, ...contract, ...licence } : { mode, homeRegion, ...contract, ...licence }) as GameConfig);
+      (homeRegion === undefined ? { mode, ...contract, ...licence } : { mode, homeRegion, ...contract, ...licence, ...eus }) as GameConfig);
     if (sim.world.status !== 'running' && sim.world.status !== 'upgrade') return null;
     // Commands issued in the saved tick but not yet simulated still belong to the run.
     const pending = save.snapshot.pending;

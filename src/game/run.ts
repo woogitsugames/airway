@@ -88,6 +88,11 @@ function isRegion(value: string): value is RegionId {
   return (REGION_IDS as readonly string[]).includes(value);
 }
 
+/** A same-world restart keeps the EUS pool version, including the absent flag on old saves. */
+export function restartEusClusterV2(seed: number, run: Pick<EndlessRun, 'seed' | 'sim'>): boolean {
+  return seed === run.seed ? run.sim.config.eusClusterV2 === true : true;
+}
+
 export class EndlessRun {
   private revisionValue = 0;
   /** [night-12am] R1o: weekly-board offers drained so far (a resumed run counts the boards after resuming). */
@@ -111,10 +116,10 @@ export class EndlessRun {
    * [night-12bd] R2j: `weatherFront` (Endless only) adds the weekly weather front; off unless a switch asks for it.
    */
   static create(seed: number, mode: GameMode = 'endless', homeRegion: RegionId | null = null,
-      licenceClass: LicenceClass = 1, weatherFront = ENDLESS_WEATHER_FRONT): EndlessRun {
+      licenceClass: LicenceClass = 1, weatherFront = ENDLESS_WEATHER_FRONT, eusClusterV2 = true): EndlessRun {
     return mode === 'daily' ? new EndlessRun(createGame(seed, 'daily'))
       : new EndlessRun(createGame(seed, 'endless', undefined, homeRegion, ENDLESS_WEEKLY_CONTRACT, ENDLESS_DEMAND_SURGE,
-        licenceClass, weatherFront));
+        licenceClass, weatherFront, eusClusterV2));
   }
 
   get seed(): number { return this.sim.seed; }
