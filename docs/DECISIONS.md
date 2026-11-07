@@ -3103,7 +3103,7 @@ comparison share one component DOM (no TypeScript branch builds Diorama-only ele
 rules to move into a DEV-only stylesheet: the only Diorama-only bytes are base declarations Róża overrides. The pruner
 (D-257) already drops 6.9 kB of them. Widening it to component rules whose subject compound contains Róża's selector
 would free 0.85 kB, but 0.77 kB of that rests on a specificity tie won by source order (roza.css last in the single CSS
-file), and the Linoryt preview needs the same base declarations; not done (owner question Q-90, option C).
+file), and the Linoryt preview needs the same base declarations; not done (owner question Q-91, option C).
 Decision: `scripts/vite-skin-inline.mjs` keeps the three font-stack tokens (`--skin-face-text`, `-display`, `-mono`,
 `REFERENCED_TOKENS`) as `var(--skin-face-*)` references in the release instead of writing their ~50-byte value on every
 use; the kept skin defines them once on `:root` with the resolved value. Every other token is still written in place
@@ -3115,7 +3115,7 @@ Measured for U5 (PLAN-LINORYT.md expects CSS ≤ 100 kB): deleting `roza.css` fr
 declarations Róża's pruning removes come back unless Linoryt prunes them, and `linoryt.css` today minifies to 65.2 kB
 with its scope folded to `:root:root`; with the pruner re-pointed at Linoryt the projected release CSS is ~135 kB
 (components 69.7 + Linoryt 65.2). U5 therefore needs either a smaller Linoryt structure or a new budget decision
-(Q-90). **Status: in force.**
+(Q-91). **Status: in force.**
 
 ## D-295 — Playtest record v2: contracts, surges, licence class, home region and milestones in the `AW1:` line (2026-11-07, Claude, night 37a)
 The closed test has to re-check D-270 (milestone thresholds), D-271 (contract difficulty and reward), D-272 (surge
@@ -3137,3 +3137,12 @@ Privacy (D-16, D-231): still counts and fixed words — a region id is a menu ch
 against every city code), no seed, name or identifier. `docs/PLAYTEST.md` documents the columns and gets decision rows
 D-270…D-273 with thresholds written before the test. Not recorded: the DEV-only weather front (off in every shipped
 run, so always empty in the closed test). Guard: `test:playtest`. **Status: in force.**
+
+## D-296 — Store and site copy: the new mechanics-only description waits for U7 (owner, 2026-11-07; Q-90 option B)
+Owner's answer to Q-90 (`docs/store/copy-review-2026-11.md`, night 38a): the full store description (EN/PL),
+`press.long` and the site's `about.p2` are rewritten together with the screenshots, alt texts and captions at step U7
+(Linoryt store shots), not now. Until then the files keep the current text; nothing is uploaded to a store before U7.
+The night-38a proposal (mechanics only: home region, weekly contract, demand surges, licence classes, game-over
+contracts row; no promise of a look; no weather front) is the starting point for U7, and the wave-1 languages
+(DE/FR/ES/PT-BR) are translated from that new EN, not from the current diorama paragraph. Rejected: changing the copy
+twice (now and at U7). **Status: in force (applies at U7).**

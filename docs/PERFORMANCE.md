@@ -307,7 +307,7 @@ release (defined once on `:root` by the kept skin; `REFERENCED_TOKENS` in `scrip
 **105.3 kB** (−3.7 kB, +3.4 % headroom), pixel-identical by `skin:pixels` with `AW_SKIN_INLINE=1`. Per source:
 `roza.css` 22.6 kB, `upgrade.css` 14.5, `gameover.css` 13.4, `menu.css` 10.7, `puzzles/board.css` 9.1, `tutorial.css`
 8.3, `overlay.css` 6.1, `logbook.css` 5.4, `hud.css` 4.8, the rest 14.1. U5 (Linoryt default) projects ~135 kB with
-today's `linoryt.css` (Q-90).
+today's `linoryt.css` (Q-91).
 
 The app is one chunk on purpose (three.js is about 494 kB of it; splitting puzzles, logbook, leaderboard and
 tutorial would save < 40 kB, R5). Files come from disk in the Capacitor app, so size is not a download cost; the
