@@ -799,9 +799,10 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
 ## Owner decisions 2026-11-06 (Q-81…Q-89 → D-270…D-278, "accept the recommendations")
 Done in night/22b: milestones week 4 / 750 (D-270), licence unlock at week 4 (D-273), store-title, age-rating and
 legal-register notes (D-276…D-278). Left for separate items (each a branch from fresh `origin/dev`):
-- [ ] **Met weekly contracts on the game-over report (D-271)** — count the run's `ContractMet` events (Endless only),
+- [x] **Met weekly contracts on the game-over report (D-271)** — count the run's `ContractMet` events (Endless only),
       one report row PL/EN ("Kontrakty 2/4" style, shape not only colour), fits the short-screen report without
       scrolling; e2e layout check like `test:e2e:gameover-milestones`; nothing in Daily or the leaderboard.
+      Implemented: read-only counts and chronological met/missed marks on the Endless report.
 - [ ] **First demand-surge announcement: first-time card + short sound (D-272)** — one R6b card on the first
       `SurgeAnnounced` event and one short audio cue; update `test:e2e:first-time-cards` and the audio cue tests.
       Daily stays without surges.

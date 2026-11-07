@@ -2797,8 +2797,7 @@ judged from a bot that never takes the contract crate, so they are measured in t
 decision: the game-over report shows how many weekly contracts the run met. Nothing changes in this PR: the report
 line is UI work (count from the run's `ContractMet` events, one report row PL/EN that fits the short-screen report,
 `test:e2e:gameover-milestones`-style layout check) and is queued as a follow-up in `docs/NIGHT-BACKLOG.md` ("Owner
-decisions 2026-11-06"). Daily, puzzles and the leaderboard stay without contracts. **Status: in force (report line
-to implement; difficulty and reward to measure in the closed test).**
+decisions 2026-11-06"). Daily, puzzles and the leaderboard stay without contracts. **Status: in force (report line implemented; difficulty and reward to measure in the closed test).**
 
 ## D-272 — Demand surge: size and notice unchanged until the closed test; a first-time card and sound later; Daily without surges (owner, 2026-11-06; recommendation accepted, Q-83)
 Owner's answer to Q-83 (D-249): the surge stays **+12 passengers over 6 game hours**, **served airports only**,

@@ -34,6 +34,7 @@ const logbookShort = { max: 4, where: 'logbook: narrow number column head' };
 const logbookWide = { max: 6, where: 'logbook: column head' };
 
 export const LENGTH_BUDGETS: Partial<Record<TranslationKey, LengthBudget>> = {
+  'gameover.contracts': { max: 24, where: 'game-over contract summary', sample: { met: 99, offered: 99 } },
   'menu.continue': flapTitle,
   'menu.endless': flapTitle,
   'menu.puzzles': flapTitle,

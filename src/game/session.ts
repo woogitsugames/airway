@@ -1,3 +1,4 @@
+import { contractsSummary } from './contractsSummary';
 // In-game composition (task 30 integration): one run, one world, every in-game layer.
 // Authority flows input → RunCommand → EndlessRun.step() at fixed 100 ms ticks → read-only
 // snapshots → render / UI / audio. Nothing here writes run state except through queue().
@@ -592,6 +593,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
         spareAircraft: run.inventory.turboprop + run.inventory.widebody, // [night-12y] R8b
         ...(run.homeRegion ? { homeRegion: run.homeRegion } : {}), // [night-11aj] R2g
         ...(run.mode === 'endless' && run.licenceClass !== 1 ? { licenceClass: run.licenceClass } : {}), // [night-12bc] R2h
+        ...(run.mode === 'endless' ? { contracts: contractsSummary(run.sim.world.contractHistory, run.sim.world.contract) } : {}),
         ...(run.mode === 'endless' ? { milestones: { reached: run.milestones(), first: callbacks.failureMilestones?.() ?? [] } } : {}), // [night-12ax] R1n
       });
     }
