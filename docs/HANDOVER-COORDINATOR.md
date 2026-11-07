@@ -20,6 +20,8 @@ włączone. Nowa sesja startuje promptem z `docs/notes/coordinator-start-prompt.
 - #308 scalony squashem (GPT-17, ARCHITECTURE.md). dev = main = 0c882ee.
 - **Uwaga — commity:** stopka ma brzmieć `Co-Authored-By: Claude <noreply@anthropic.com>`, BEZ nazwy modelu (reguła właściciela). 7.11 ok. 14 commitów na dev (i kilka na tej gałęzi) ma nazwę modelu w stopce; bez force-push na dev nie da się tego cofnąć. PR-y agentów z taką stopką scalać squashem z czystym opisem.
 - Do poprawy (z raportu GPT-17), poza src/render: komentarze „−1 slot” w `src/sim/world.ts` (AirportWeatherView) i `src/ui/overlay.ts` (setFront) → wstrzymanie do 15 min (D-291); „U6” jako flip w `src/ui/skin/linoryt.{ts,css}`, `scripts/vite-font-files.mjs` → U5. Dla sesji ext: komentarz `parseGlobeLook` w `src/render/globe/look.ts` („diorama” → satellite).
+- #309 scalony (komentarze). dev = main = 3f4bfd3.
+- **Sesja ext** session_01V6ZttYCN9VzaEWnk31mzUc była zarchiwizowana od ~19:30 (praca E1 niewypchnięta). Odarchiwizowana 22:15 i ma polecenie: wypchnąć WIP / zacząć E1 od nowa, pushować co 30 min. Sprawdzać przy każdym budziku (`get_session`, gałęzie ext/*).
 - Agenci: 40a (GPT-07, TESTING.md + linia w CLAUDE.md). Dalej: GPT-18/19, 12–15. Dalej: GPT-07/17 (dokumentacja), 18/19 (stub e2e), 12–15 (fale językowe). Następne w kolejce: GPT-20, GPT-11, GPT-07/17/18/19.
 
 ## Test Free.AI MCP (7.11 19:30 → 8.11 19:30 UTC)
