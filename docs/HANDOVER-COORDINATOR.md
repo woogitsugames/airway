@@ -3,6 +3,11 @@
 Ostatnia aktualizacja: 2026-11-07, ok. 19:20 UTC. Nowa sesja koordynatora (wieczór 6.11) pracuje ciągle; budziki
 włączone. Nowa sesja startuje promptem z `docs/notes/coordinator-start-prompt.md`.
 
+## Test Free.AI MCP (7.11 19:30 → 8.11 19:30 UTC)
+Właściciel dodał connector Free.AI MCP (Qwen3-30B): zlecać mu łatwiejsze rzeczy zamiast agentów Claude, testować
+~24 h, potem raport dla właściciela i reguła w CLAUDE.md. Dziennik i zasady: `docs/notes/freeai-trial.md` (dopisuj
+każde użycie). Przypomnienie `send_later` na 8.11 19:30 UTC.
+
 ## 7.11 wieczór — decyzje właściciela (19:15)
 - **Sesję ext uruchamia koordynator:** `session_01V6ZttYCN9VzaEWnk31mzUc` „Airway ext — Linoryt globus (E1–E3)”,
   prompt = `docs/notes/linoryt-ext-prompt.md` + dopiski (autonomicznie E1→E2→E3, PR-y draft do dev, scala koordynator;
