@@ -12,7 +12,8 @@ włączone. Nowa sesja startuje promptem z `docs/notes/coordinator-start-prompt.
 - 20:20: scalone #292 (EUS, D-290), #294 (kontrast Róży), #295 (front: wstrzymanie odlotów, D-291), #296 (raport pokrycia, steps=115). dev = main = 564df75.
 - Do zrobienia: `coverage:fast` (ręczny) w kontenerze Linux pada na budżecie czasu `test:overlay-layout` pod V8 coverage. Pominąć asercje czasowe przy NODE_V8_COVERAGE.
 - #300 scalony (etykieta frontu „≤15 min”, {minutes}). dev = main = bbf17e2.
-- Agenci: 33a (GPT-01, kontrakty; potem wybór vs #293 GPT), 35a (GPT-02, karta + dźwięk pierwszego szczytu popytu). Następne w kolejce: GPT-20, GPT-08 (budżet CSS jest na granicy, 108,8/109 kB), GPT-11, GPT-07/17/18/19.
+- #301 scalony (GPT-02: karta i dźwięk pierwszego szczytu popytu, D-292). dev = main = 88c4aa5. Do decyzji przy Linorycie: pusty proporczyk przy gęstości 1× wygląda prawie jak pełny; narysować go wyraźniej w overlay.ts.
+- Agenci: 33a (GPT-01; potem wybór vs #293 GPT), 36a (GPT-08, zapas budżetu CSS). Następne w kolejce: GPT-20, GPT-11, GPT-07/17/18/19.
 
 ## Test Free.AI MCP (7.11 19:30 → 8.11 19:30 UTC)
 Właściciel dodał connector Free.AI MCP (Qwen3-30B): zlecać mu łatwiejsze rzeczy zamiast agentów Claude, testować
