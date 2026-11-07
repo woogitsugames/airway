@@ -22,7 +22,8 @@ no analytics, no purchases (D-16; `src/platform/ads.ts`, `src/platform/store.ts`
 (`src/platform/share.ts`) hands plain text to the system share sheet or the clipboard only when the player taps
 "Share" — nothing goes to our servers. The logbook's "Copy summary" (R1o, D-227, `src/ui/logbook/summary.ts`) is the same
 kind of user-initiated transfer: counts and dates of the last runs (no airport codes, seed or identifier; the R3j
-`AW1:` line, D-231, adds the same counts with fixed words — game-over cause, graphics setting, app version — in
+`AW1:` line, D-231, adds the same counts with fixed words — game-over cause, graphics setting, app version; since
+D-295 also contracts, surges, licence class, home region and milestones as counts, region ids and letters — in
 base64url) go to the clipboard only when the player taps it, for the closed-test survey (`docs/PLAYTEST.md`); the logbook itself never
 leaves the device. Both questionnaires ask about data the app transmits off the device; text the player copies and
 pastes elsewhere is not, so nothing is added to the tables below.

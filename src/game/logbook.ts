@@ -57,6 +57,16 @@ export const PICK_LETTERS = { turboprop: 'T', widebody: 'W', 'hub-expansion': 'H
 export const RECORD_TUTORIAL = ['completed', 'skipped', 'in-progress', 'none'] as const;
 export const RECORD_QUALITY = ['auto', 'saver', 'low', 'medium', 'high'] as const;
 export const RECORD_PRESETS = ['low', 'medium', 'high'] as const;
+/**
+ * [night-37a] D-295: milestones a run reached as one letter each, in MILESTONES order (first Hub, every Region,
+ * weeks 2/3/4, Five hundred and Seven-fifty passengers), e.g. "H23F".
+ */
+export const MILESTONE_LETTERS: Readonly<Record<MilestoneId, string>> = Object.freeze({
+  'first-hub': 'H', 'all-regions': 'R', 'week-2': '2', 'week-3': '3', 'week-4': '4', 'passengers-500': 'F', 'passengers-750': 'S',
+});
+/** [night-37a] D-295: the home region word of an Endless run's note: a region id or "random". */
+export const RECORD_HOMES = ['random', ...REGION_IDS] as const;
+const MILESTONE_SET = new RegExp(`^${MILESTONES.map((id) => `${MILESTONE_LETTERS[id]}?`).join('')}$`);
 const MAX_PICKS = 60;
 const MAX_ADAPT = 3;
 const VERSION = /^[0-9A-Za-z.+-]{1,24}$/;
@@ -81,6 +91,22 @@ export interface RunRecord {
   readonly adapt?: number;
   /** App version that played the run (package.json; "dev" outside a Vite build). */
   readonly version?: string;
+  /**
+   * [night-37a] D-295, playtest record v2 (Endless only; absent for Daily and for notes written before it):
+   * weekly contracts met / offered (D-271; 0/0 when the run never saw one), demand surges announced / whose window
+   * opened / extra passengers they sent / 1 when the run was lost at a surge airport during its window or within 6
+   * game hours after it (D-272, the balance report's `lostAtSurge`), the licence class (D-273), the home region
+   * (D-236, "random" or a region id) and the milestones reached as MILESTONE_LETTERS (D-270).
+   */
+  readonly contractsMet?: number;
+  readonly contractsOffered?: number;
+  readonly surges?: number;
+  readonly surgesOpened?: number;
+  readonly surgeExtra?: number;
+  readonly surgeLost?: 0 | 1;
+  readonly licence?: 1 | 2 | 3;
+  readonly home?: typeof RECORD_HOMES[number];
+  readonly milestones?: string;
 }
 
 export interface RunNote extends RunStats, RunRecord {
@@ -219,14 +245,43 @@ export function runRecord(value: unknown): RunRecord {
     preset: oneOf(RECORD_PRESETS, item.preset),
     adapt: adapt !== null && adapt <= MAX_ADAPT ? adapt : undefined,
     version: typeof item.version === 'string' && VERSION.test(item.version) ? item.version : undefined,
+    ...v2Record(item),
   };
   return Object.fromEntries(Object.entries(fields).filter(([, v]) => v !== undefined)) as RunRecord;
 }
+/**
+ * [night-37a] D-295: the v2 fields that are valid. A pair (met/offered, announced/opened) stays only together and
+ * in order (met ≤ offered, opened ≤ announced); the others are checked alone.
+ */
+function v2Record(item: Record<string, unknown>): Record<string, unknown> {
+  const met = count(item.contractsMet);
+  const offered = count(item.contractsOffered);
+  const surges = count(item.surges);
+  const opened = count(item.surgesOpened);
+  const contracts = met !== null && offered !== null && met <= offered;
+  const windows = surges !== null && opened !== null && opened <= surges;
+  return {
+    contractsMet: contracts ? met : undefined,
+    contractsOffered: contracts ? offered : undefined,
+    surges: windows ? surges : undefined,
+    surgesOpened: windows ? opened : undefined,
+    surgeExtra: count(item.surgeExtra) ?? undefined,
+    surgeLost: item.surgeLost === 0 || item.surgeLost === 1 ? item.surgeLost : undefined,
+    licence: item.licence === 1 || item.licence === 2 || item.licence === 3 ? item.licence : undefined,
+    home: oneOf(RECORD_HOMES, item.home),
+    milestones: typeof item.milestones === 'string' && MILESTONE_SET.test(item.milestones) ? item.milestones : undefined,
+  };
+}
+/** [night-37a] D-295: fields only an Endless run has; a daily note drops them (a forged line cannot add them). */
+const ENDLESS_ONLY = ['contractsMet', 'contractsOffered', 'surges', 'surgesOpened', 'surgeExtra', 'surgeLost', 'licence',
+  'home', 'milestones'] as const;
 function note(value: unknown): RunNote | null {
   const base = entry(value);
   const extra = stats(value);
   if (!base || !extra) return null;
-  return { day: base.day, mode: base.mode, passengers: base.passengers, weeks: base.weeks, ...extra, ...runRecord(value) };
+  const record: Record<string, unknown> = { ...runRecord(value) };
+  if (base.mode !== 'endless') for (const key of ENDLESS_ONLY) delete record[key];
+  return { day: base.day, mode: base.mode, passengers: base.passengers, weeks: base.weeks, ...extra, ...record as RunRecord };
 }
 
 /** The stored logbook; a missing, malformed or unreadable record is an empty one (never throws). */

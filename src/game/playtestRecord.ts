@@ -6,10 +6,19 @@ import { LOGBOOK_KEY, readLogbook, runRecord, type Logbook, type RunNote } from 
 
 export const RECORD_PREFIX = 'AW1:';
 
-/** Per-run columns of the record, in order (also the CSV's run columns). */
+/** [night-37a] D-295: the record version the game writes; the decoder also reads every older one. */
+export const RECORD_VERSION = 2;
+/**
+ * Per-run columns of the record, in order (also the CSV's run columns). Columns are only ever appended: a record of
+ * version v has the first RUN_COLUMNS_BY_VERSION[v] of them, and the decoder leaves the rest empty.
+ * [night-37a] D-295 (v2): contracts, surges, licence class, home region, milestones (D-270…D-273, D-236).
+ */
 export const RUN_COLUMNS = ['day', 'mode', 'min_1x', 'min_real', 'weeks', 'passengers', 'cause', 'picks',
   'hub_picked', 'hub_offered', 'slots_picked', 'slots_offered', 'held_min', 'tutorial', 'quality', 'preset',
-  'adapt_steps', 'version'] as const;
+  'adapt_steps', 'version', 'contracts_met', 'contracts_offered', 'surges_seen', 'surges_opened', 'surge_extra',
+  'surge_lost', 'licence', 'home', 'milestones'] as const;
+/** Run columns per record version (v1: R3j, D-231; v2: D-295). */
+export const RUN_COLUMNS_BY_VERSION: Readonly<Record<number, number>> = Object.freeze({ 1: 18, 2: RUN_COLUMNS.length });
 /** Per-summary columns repeated on every CSV row. */
 export const SUMMARY_COLUMNS = ['summary', 'copied', 'app_version', 'flights', 'dailies', 'tutorial_now',
   'puzzles_solved', 'puzzles_total'] as const;
@@ -30,7 +39,9 @@ const minutes = (tenths: number | undefined): number | null => (tenths === undef
 function runRow(run: RunNote): Cell[] {
   return [run.day, run.mode, minutes(run.tenths), minutes(run.real), run.weeks, run.passengers, run.cause ?? null,
     run.picks ?? null, run.hubPicked, run.hubOffered, run.slotsPicked, run.slotsOffered, run.held,
-    run.tutorial ?? null, run.quality ?? null, run.preset ?? null, run.adapt ?? null, run.version ?? null];
+    run.tutorial ?? null, run.quality ?? null, run.preset ?? null, run.adapt ?? null, run.version ?? null,
+    run.contractsMet ?? null, run.contractsOffered ?? null, run.surges ?? null, run.surgesOpened ?? null,
+    run.surgeExtra ?? null, run.surgeLost ?? null, run.licence ?? null, run.home ?? null, run.milestones ?? null];
 }
 
 function base64url(text: string): string {
@@ -41,10 +52,13 @@ function unbase64url(text: string): string {
   return atob(padded + '='.repeat((4 - (padded.length % 4)) % 4));
 }
 
-/** The `AW1:` line: {v, d, app, f, dl, tut, pz, r: rows in RUN_COLUMNS order}. ASCII JSON, so btoa is safe. */
+/**
+ * The `AW1:` line: {v, d, app, f, dl, tut, pz, r: rows in RUN_COLUMNS order}. ASCII JSON, so btoa is safe. The
+ * prefix names the line, `v` its row layout (D-295: v2 rows carry 27 columns, v1 rows 18).
+ */
 export function encodePlaytestRecord(input: RecordInput): string {
   const json = JSON.stringify({
-    v: 1, d: input.today, app: input.version, f: input.book.flights, dl: input.book.dailies, tut: input.tutorial,
+    v: RECORD_VERSION, d: input.today, app: input.version, f: input.book.flights, dl: input.book.dailies, tut: input.tutorial,
     pz: [input.puzzlesSolved, input.puzzlesTotal], r: input.book.runs.map(runRow),
   });
   return RECORD_PREFIX + base64url(json.replace(/[^\x20-\x7e]/g, ''));
@@ -71,8 +85,10 @@ export function decodePlaytestRecord(token: string): DecodedRecord | null {
   try { data = JSON.parse(unbase64url(token.slice(RECORD_PREFIX.length).trim())); } catch { return null; }
   if (!data || typeof data !== 'object' || Array.isArray(data)) return null;
   const record = data as Record<string, unknown>;
-  if (record.v !== 1 || !Array.isArray(record.r)) return null;
-  const rows = record.r.filter((row): row is unknown[] => Array.isArray(row) && row.length === RUN_COLUMNS.length);
+  const width = typeof record.v === 'number' ? RUN_COLUMNS_BY_VERSION[record.v] : undefined;
+  if (width === undefined || !Array.isArray(record.r)) return null;
+  // A row of another width is not a row of this version; a column the version lacks reads as missing (null in CSV).
+  const rows = record.r.filter((row): row is unknown[] => Array.isArray(row) && row.length === width);
   const notes = rows.map((row) => {
     const cell = (name: typeof RUN_COLUMNS[number]): unknown => row[RUN_COLUMNS.indexOf(name)];
     const tenths = (name: typeof RUN_COLUMNS[number]): unknown => {
@@ -86,6 +102,9 @@ export function decodePlaytestRecord(token: string): DecodedRecord | null {
       slotsOffered: cell('slots_offered'), slotsPicked: cell('slots_picked'),
       cause: cell('cause'), picks: cell('picks'), tutorial: cell('tutorial'), quality: cell('quality'),
       preset: cell('preset'), adapt: cell('adapt_steps'), version: cell('version'),
+      contractsMet: cell('contracts_met'), contractsOffered: cell('contracts_offered'), surges: cell('surges_seen'),
+      surgesOpened: cell('surges_opened'), surgeExtra: cell('surge_extra'), surgeLost: cell('surge_lost'),
+      licence: cell('licence'), home: cell('home'), milestones: cell('milestones'),
     };
   });
   // Reuse the logbook reader: it validates and caps every note exactly as the game does.

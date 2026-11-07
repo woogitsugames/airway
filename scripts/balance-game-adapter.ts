@@ -9,6 +9,7 @@ import type { BotCommand, BotSnapshot } from './bot.ts';
 import { cityDistanceKm } from '../src/data/index.ts';
 import { PLANE_TYPES, SIM_MINUTES_PER_WEEK } from '../src/sim/params.ts';
 import { drawFront } from '../src/sim/weather.ts';
+import { surgesSummary } from '../src/game/surgesSummary.ts';
 
 /**
  * [night-12ab] R8d: what a run used, counted from the sim's own events (no prototype wrapping) and read-only views.
@@ -158,16 +159,8 @@ class GameSession {
 
   /** [night-12bb] R2i, D-249: the run's demand surges (all zero without the surge rule). */
   surges(): RunSurges {
-    const world = this.sim.world;
-    const tick = this.sim.tickCount;
-    const records = world.surgeRecords().filter((item) => item.announceTick <= tick);
-    const failure = world.failure;
-    return {
-      announced: records.length,
-      opened: records.filter((item) => item.startTick <= tick).length,
-      extra: records.reduce((sum, item) => sum + item.extra, 0),
-      lostAtSurge: !!failure && records.some((item) => item.cityId === failure.cityId && tick >= item.startTick && tick < item.endTick + 360),
-    };
+    // [night-37a] D-295: shared with the playtest record (src/game/surgesSummary.ts).
+    return surgesSummary(this.sim.world.surgeRecords(), this.sim.tickCount, this.sim.world.failure);
   }
 
   /** [night-12bd] R2j: the run's weather fronts (all zero without the rule). */

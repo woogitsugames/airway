@@ -14,7 +14,9 @@ import type { WeeklyContract } from '../sim/contracts';
 import type { AirportWeatherView, SurgeView, WeatherView } from '../sim';
 import { airportLabel, readAirportLabelMode } from '../ui/airportLabel'; // [night-05] D-68
 import { buildCauseReport, type HubCauseLedger } from './causes';
-import { PICK_LETTERS, type RunRecord, type RunStats } from './logbook';
+import { MILESTONE_LETTERS, PICK_LETTERS, type RunRecord, type RunStats } from './logbook';
+import { contractsSummary } from './contractsSummary'; // [night-37a] D-295
+import { surgesSummary } from './surgesSummary'; // [night-37a] D-295
 import { MilestoneTracker, milestoneView, type MilestoneId, type MilestoneView } from './milestones'; // [night-12ax] R1n
 
 export type AircraftType = 'turboprop' | 'widebody';
@@ -326,7 +328,7 @@ export class EndlessRun {
     if (Number.isFinite(seconds) && seconds > 0) this.playSeconds += Math.min(seconds, MAX_PLAY_FRAME_S);
   }
 
-  playtestStats(): RunStats & Pick<RunRecord, 'real' | 'cause' | 'picks'> {
+  playtestStats(): RunStats & Omit<RunRecord, 'tutorial' | 'quality' | 'preset' | 'adapt' | 'version'> {
     const world = this.sim.world;
     let held = 0;
     for (const city of world.cities()) held += world.hubCauseLedger(city.id).slotWaitMinutes;
@@ -341,6 +343,25 @@ export class EndlessRun {
       real: Math.round(this.playSeconds / 6),
       ...(this.failed ? { cause: buildCauseReport(this.failed.ledger)[0]!.kind } : {}),
       picks: [...world.upgrades].sort((a, b) => a.week - b.week).map((item) => PICK_LETTERS[item.upgrade]).join('').slice(0, 60),
+      ...(this.mode === 'endless' ? this.endlessRecord() : {}),
+    };
+  }
+
+  /**
+   * [night-37a] D-295, playtest record v2: what the closed test measures for D-270…D-273 — contracts met/offered,
+   * surges announced/opened/extra/lost at, licence class, home region, milestones. Endless only; read-only.
+   */
+  private endlessRecord(): Pick<RunRecord, 'contractsMet' | 'contractsOffered' | 'surges' | 'surgesOpened' | 'surgeExtra'
+      | 'surgeLost' | 'licence' | 'home' | 'milestones'> {
+    const world = this.sim.world;
+    const contracts = world.scenario.weeklyContract ? contractsSummary(world.contract, world.contractHistory) ?? { met: 0, offered: 0 } : null;
+    const surges = world.scenario.demandSurge ? surgesSummary(world.surgeRecords(), this.sim.tickCount, world.failure) : null;
+    return {
+      ...(contracts ? { contractsMet: contracts.met, contractsOffered: contracts.offered } : {}),
+      ...(surges ? { surges: surges.announced, surgesOpened: surges.opened, surgeExtra: surges.extra,
+        surgeLost: surges.lostAtSurge ? 1 : 0 } as const : {}),
+      licence: this.licenceClass, home: this.homeRegion ?? 'random',
+      milestones: this.milestones().map((id) => MILESTONE_LETTERS[id]).join(''),
     };
   }
 
