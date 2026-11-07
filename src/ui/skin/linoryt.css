@@ -274,7 +274,7 @@
    neatline`, inset lines that take no layout room); the only filled blocks are the chosen action (ink) and danger (red);
    no translucent dark sheets, no shadows, no rounded cards; Besley for headings, Schibsted Grotesk for text and figures;
    state by shape as well as ink (solid = chosen, outline = available, dashed = unavailable).
-   The weekly board and the report are opaque paper pages under the HUD's top margin (D-286): they start at
+   The weekly board and the report are opaque paper pages under the HUD's top margin (D-287): they start at
    `--lin-pass-bottom`, the margin's measured bottom edge (linoryt.ts), so the HUD stays readable and nothing of the
    hatched world shows through a half-transparent pull. Geometry otherwise follows the base sheets, so the fits measured
    by test:e2e:board-short / gameover-short / pause-reach / text-scale-150 carry over. */
@@ -768,3 +768,255 @@
 :root[data-skin="linoryt"] .aw-airport .aw-airport-ring path { stroke: var(--lin-paper); }
 :root[data-skin="linoryt"] .aw-airport .aw-airport-ring path[stroke="#FF9A3D"] { stroke: var(--lin-ink); }
 /* end U3 */
+
+/* U4 screens */
+/* ---- Part 6 (U4): settings, licences, privacy and terms, logbook, puzzles, daily ranking --------------------------------
+   [night-29b] PLAN-LINORYT.md step U4 (D-283, D-284, D-285). Every screen off the menu is a printed page on paper: a
+   Besley title over a double print rule (4 px + 1.5 px), sections headed in Besley over a 2 px rule, rows divided by
+   thin solid ink rules (no dashes), controls as printed outlines. The only solid blocks are the chosen state (a ticked
+   box, the primary puzzle action: ink) and danger (the delete-ranking confirmation: red); no shadows, no rounded or
+   raised cards, no translucent sheets. Faces: Besley for titles and figures that name things, Schibsted Grotesk for text
+   and numbers. Sizes follow the text-scale tokens (--airway-text-scale*, up to 150 %). The globe-view setting is gone in
+   the preview (settings.ts; Satelita and Mapa leave with E4, D-283/D-285). */
+:root[data-skin="linoryt"] {
+  --skin-settings-backdrop: var(--lin-paper);
+  --skin-settings-paper: var(--lin-paper);
+  --skin-settings-ink: var(--lin-ink);
+  --skin-settings-accent: var(--lin-ink);
+  --skin-settings-back-bg: transparent;
+  --skin-settings-rule: var(--lin-ink);
+  --skin-settings-control-bg: var(--lin-paper);
+  --skin-settings-control-ink: var(--lin-ink);
+  --skin-settings-alert: var(--lin-red);
+  --skin-settings-dim-ink: var(--lin-ink-dim);
+  --skin-settings-licenses-bg: transparent;
+  --skin-settings-licenses-ink: var(--lin-ink);
+  --skin-settings-warning-ink: var(--lin-ink);
+  --skin-settings-note-bg: var(--lin-paper-deep);
+  --skin-logbook-edge: transparent;
+  --skin-logbook-rule: var(--lin-ink);
+  --skin-logbook-row-rule: var(--lin-ink);
+  --skin-logbook-label-ink: var(--lin-ink-dim);
+  --skin-logbook-value-ink: var(--lin-ink);
+  --skin-logbook-ink: var(--lin-ink);
+  --skin-logbook-daily-mark: var(--lin-blue);
+  --skin-logbook-summary-bg: var(--lin-paper);
+  --skin-logbook-milestone-done: var(--lin-ink);
+  --skin-logbook-milestone-open: var(--lin-ink-dim);
+  --skin-puzzle-focus: var(--lin-red);
+  --skin-puzzle-board-bg: var(--lin-paper);
+  --skin-puzzle-board-ink: var(--lin-ink);
+  --skin-puzzle-board-edge: var(--lin-ink);
+  --skin-puzzle-sign-bg: var(--lin-ink);
+  --skin-puzzle-sign-ink: var(--lin-paper);
+  --skin-puzzle-board-accent: var(--lin-ink);
+  --skin-puzzle-scroll-track: var(--lin-paper-deep);
+  --skin-puzzle-pack-bg: var(--lin-ink);
+  --skin-puzzle-flap-bg: transparent;
+  --skin-puzzle-flap-split: transparent;
+  --skin-puzzle-flap-hover-bg: var(--lin-paper-deep);
+  --skin-puzzle-flap-dim-ink: var(--lin-ink-dim);
+  --skin-puzzle-best-ink: var(--lin-ink);
+  --skin-puzzle-dim: var(--lin-ink-dim);
+  --skin-puzzle-game-bg: var(--lin-paper);
+  --skin-puzzle-teal: var(--lin-ink);
+  --skin-puzzle-back-border: var(--lin-ink);
+  --skin-puzzle-paper: var(--lin-paper);
+  --skin-puzzle-ink: var(--lin-ink);
+  --skin-puzzle-stats-rule: var(--lin-ink);
+  --skin-puzzle-result-bg: var(--lin-paper);
+  --skin-puzzle-lost-bg: var(--lin-paper);
+  --skin-puzzle-lost-edge: var(--lin-red);
+  --skin-puzzle-error-ink: var(--lin-red);
+  --skin-puzzle-supply-ink: var(--lin-ink-dim);
+  --skin-puzzle-card-rule: var(--lin-ink);
+  --skin-puzzle-controls-bg: var(--lin-paper);
+  --skin-rank-bg: var(--lin-paper);
+  --skin-rank-ink: var(--lin-ink);
+  --skin-rank-accent: var(--lin-ink);
+  --skin-rank-head-rule: var(--lin-ink);
+  --skin-rank-dim-ink: var(--lin-ink-dim);
+  --skin-rank-row-rule: var(--lin-ink);
+}
+
+/* The page: paper edge to edge; on a wide screen the text column keeps a reading width. */
+:root[data-skin="linoryt"] .airway-settings {
+  padding: calc(var(--aw-safe-top) + 12px) calc(var(--aw-safe-right) + 16px) calc(var(--aw-safe-bottom) + 24px) calc(var(--aw-safe-left) + 16px);
+}
+:root[data-skin="linoryt"] .airway-settings__paper { max-width: 640px; padding: 0; border: 0; outline: 0; background: transparent; }
+/* Title line: the back control as a printed outline, the page name in Besley, the double print rule under both. */
+:root[data-skin="linoryt"] .airway-settings__heading {
+  position: relative; gap: 14px; margin-bottom: 18px; padding-bottom: 10px; border-bottom: 4px solid var(--lin-ink);
+}
+:root[data-skin="linoryt"] .airway-settings__heading::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: -8.5px; height: 1.5px; background: var(--lin-ink);
+}
+:root[data-skin="linoryt"] .airway-settings h1 {
+  font: 900 min(calc(30px * var(--airway-text-scale-title)), 8vw)/1.05 var(--skin-face-display); letter-spacing: -.01em;
+}
+:root[data-skin="linoryt"] .airway-settings__back {
+  min-width: 48px; min-height: 48px; padding: 8px 12px; border: 2px solid var(--lin-ink); background: transparent; color: var(--lin-ink);
+  font: 700 calc(14px * var(--airway-text-scale))/1.1 var(--skin-face-text);
+}
+:root[data-skin="linoryt"] .airway-settings__back:active,
+:root[data-skin="linoryt"] .airway-settings__licenses:active { background: var(--lin-paper-deep); }
+:root[data-skin="linoryt"] .airway-settings :is(button, select, input):focus-visible { outline: 3px solid var(--lin-red); outline-offset: 2px; }
+/* Section heads: a printed heading over a 2 px rule (Róża's ink tabs are filled blocks: not in print). */
+:root[data-skin="linoryt"] .airway-settings__group-title {
+  width: auto; margin: 10px 0 2px; padding: 0 0 6px; background: none; color: var(--lin-ink); clip-path: none;
+  border-bottom: 2px solid var(--lin-ink); font: 800 calc(19px * var(--airway-text-scale-title))/1.15 var(--skin-face-display);
+}
+:root[data-skin="linoryt"] .airway-setting {
+  min-height: 60px; border-bottom: 1px solid var(--lin-ink); font: 600 calc(15px * var(--airway-text-scale))/1.25 var(--skin-face-text);
+}
+/* A choice: a printed box with a cut "▾", no native chrome. */
+:root[data-skin="linoryt"] .airway-setting__control {
+  appearance: none; -webkit-appearance: none; padding: 8px 32px 8px 10px; border: 2px solid var(--lin-ink); border-radius: 0;
+  background: var(--lin-paper) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M0 0h10L5 6z' fill='%231E1C1F'/%3E%3C/svg%3E") right 10px center / 11px 7px no-repeat;
+  font: 700 calc(15px * var(--airway-text-scale))/1.2 var(--skin-face-text);
+}
+/* On / off: an outlined square; on = the square inked solid with a paper tick (shape and fill, not colour). */
+:root[data-skin="linoryt"] .airway-setting__switch { font: 700 calc(14px * var(--airway-text-scale))/1.2 var(--skin-face-text); }
+:root[data-skin="linoryt"] .airway-setting__switch input {
+  appearance: none; -webkit-appearance: none; flex: none; width: 28px; height: 28px; margin: 0; border: 2px solid var(--lin-ink);
+  border-radius: 0; background: var(--lin-paper);
+}
+:root[data-skin="linoryt"] .airway-setting__switch input:checked {
+  background: var(--lin-ink) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 12.5l5 5L20 6.5' stroke='%23ECE3CC' stroke-width='3.6' fill='none'/%3E%3C/svg%3E") center / 20px 20px no-repeat;
+}
+:root[data-skin="linoryt"] .airway-setting__swatch { box-shadow: none; } /* the tail fin in the airline colour, no edge shadow */
+:root[data-skin="linoryt"] .airway-setting__hint { font: 500 calc(13px * var(--airway-text-scale))/1.4 var(--skin-face-text); color: var(--lin-ink-dim); }
+/* Help links (tutorial, licences, privacy, terms, copy summary): index lines like the menu, a cut "▸" at the end. */
+:root[data-skin="linoryt"] .airway-settings__licenses {
+  min-height: 52px; margin-top: 6px; padding: 10px 30px 10px 0; border: 0; border-bottom: 1.5px solid var(--lin-ink);
+  background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 6 10'%3E%3Cpath d='M0 0l6 5-6 5z' fill='%231E1C1F'/%3E%3C/svg%3E") right 6px center / 7px 11px no-repeat;
+  color: var(--lin-ink); font: 800 calc(17px * var(--airway-text-scale-title))/1.2 var(--skin-face-display); overflow-wrap: anywhere;
+}
+:root[data-skin="linoryt"] .airway-settings__group .airway-settings__licenses { margin-top: 6px; }
+:root[data-skin="linoryt"] .airway-settings__licenses:hover { background-color: var(--lin-paper-deep); }
+/* Deleting the ranking data is the one danger on these pages: its confirmation is the red block. */
+:root[data-skin="linoryt"] .airway-settings__delete-confirm .airway-settings__licenses { padding-left: 12px; background-image: none; }
+:root[data-skin="linoryt"] [data-testid="settings-delete-ranking-confirm"] { background: var(--lin-red); color: var(--lin-paper); border-bottom: 0; }
+:root[data-skin="linoryt"] [data-testid="settings-delete-ranking-confirm"]:hover { background: var(--lin-red); }
+:root[data-skin="linoryt"] :is(.airway-glyph-legend__title, .airway-publisher, .airway-keys) .airway-glyph-legend__title,
+:root[data-skin="linoryt"] .airway-glyph-legend__title { font: 800 calc(15px * var(--airway-text-scale))/1.3 var(--skin-face-display); }
+:root[data-skin="linoryt"] :is(.airway-glyph-legend__row, .airway-keys__row, .airway-publisher__row, .airway-licenses li) { border-bottom: 1px solid var(--lin-ink); }
+:root[data-skin="linoryt"] .airway-keys__cap { border: 1.5px solid var(--lin-ink); font: 700 calc(12px * var(--airway-text-scale))/1.3 var(--skin-face-text); }
+:root[data-skin="linoryt"] .airway-publisher__row dt { font: 700 calc(12px * var(--airway-text-scale))/1.3 var(--skin-face-text); color: var(--lin-ink-dim); }
+:root[data-skin="linoryt"] .airway-licenses ul { list-style: none; padding: 0; }
+:root[data-skin="linoryt"] .airway-licenses strong { font: 800 calc(16px * var(--airway-text-scale-title))/1.25 var(--skin-face-display); }
+/* Privacy policy and terms: a printed document; the draft warning in a double neatline (a caution, not a danger). */
+:root[data-skin="linoryt"] .airway-privacy { font: 500 calc(15px * var(--airway-text-scale))/1.55 var(--skin-face-text); }
+:root[data-skin="linoryt"] .airway-privacy__overline { font: 700 calc(12px * var(--airway-text-scale))/1.3 var(--skin-face-text); letter-spacing: .04em; color: var(--lin-ink-dim); }
+:root[data-skin="linoryt"] .airway-privacy__warning { padding: 10px 12px; border: 4px double var(--lin-ink); color: var(--lin-ink); font-weight: 700; }
+:root[data-skin="linoryt"] .airway-privacy__section { padding: 12px 0 6px; border-bottom: 1px solid var(--lin-ink); }
+:root[data-skin="linoryt"] .airway-privacy__section h2 { margin-bottom: 6px; font: 800 calc(18px * var(--airway-text-scale-title))/1.25 var(--skin-face-display); }
+:root[data-skin="linoryt"] .airway-privacy__date { font: 600 calc(13px * var(--airway-text-scale))/1.4 var(--skin-face-text); }
+
+/* Logbook: totals as big printed figures, records and flights as ruled lines; daily flights keep their blue stub. */
+:root[data-skin="linoryt"] .airway-logbook__paper { border-left: 0; }
+:root[data-skin="linoryt"] .airway-logbook .airway-settings__paper { max-width: 920px; } /* two columns of whole figures in landscape */
+:root[data-skin="linoryt"] .airway-logbook__totals { border-top: 0; }
+:root[data-skin="linoryt"] .airway-logbook__totals dt { font: 700 calc(12px * var(--airway-text-scale))/1.25 var(--skin-face-text); }
+:root[data-skin="linoryt"] .airway-logbook__totals dd {
+  font: 900 min(calc(28px * var(--airway-text-scale-title)), 6.8vw, 30px)/1.05 var(--skin-face-display); /* proportional figures: the subset's tabular zero is a fallback */
+}
+:root[data-skin="linoryt"] .airway-logbook__records { border-top: 0; }
+:root[data-skin="linoryt"] .airway-logbook__records .airway-logbook__cell { border-bottom-style: solid; }
+:root[data-skin="linoryt"] .airway-logbook__records dt { font: 600 calc(14px * var(--airway-text-scale))/1.3 var(--skin-face-text); }
+:root[data-skin="linoryt"] .airway-logbook__records dd { font: 700 calc(14px * var(--airway-text-scale))/1.3 var(--skin-face-text); font-variant-numeric: tabular-nums; }
+:root[data-skin="linoryt"] .airway-logbook__milestones dt::before { width: 10px; height: 10px; border-width: 2px; }
+:root[data-skin="linoryt"] .airway-logbook__flights { font: 600 calc(13px * var(--airway-text-scale-dense))/1.25 var(--skin-face-text); font-variant-numeric: tabular-nums; }
+:root[data-skin="linoryt"] .airway-logbook__flights th { font: 700 calc(11px * var(--airway-text-scale-dense))/1.2 var(--skin-face-text); border-top-width: 0; }
+:root[data-skin="linoryt"] .airway-logbook__region { color: var(--lin-ink-dim); }
+:root[data-skin="linoryt"] .airway-logbook__summary-text { border: 1.5px solid var(--lin-ink); font: 500 calc(13px * var(--airway-text-scale))/1.4 var(--skin-face-text); }
+:root[data-skin="linoryt"] .airway-logbook__empty { font: 600 calc(15px * var(--airway-text-scale))/1.4 var(--skin-face-text); }
+
+/* Puzzles: the departures list as a printed table of contents (number, title, stars), packs as ruled heads. */
+:root[data-skin="linoryt"] .puzzle-board {
+  padding: calc(var(--aw-safe-top) + 12px) calc(var(--aw-safe-right) + 16px) calc(var(--aw-safe-bottom) + 10px) calc(var(--aw-safe-left) + 16px);
+  border: 0;
+}
+:root[data-skin="linoryt"] .puzzle-shell:has(.puzzle-board) { background: var(--lin-paper); }
+:root[data-skin="linoryt"] .puzzle-sign {
+  position: relative; min-height: 0; padding: 0 0 10px; gap: 10px 12px; background: none; color: var(--lin-ink);
+  border-bottom: 4px solid var(--lin-ink); margin-bottom: 9px;
+}
+:root[data-skin="linoryt"] .puzzle-sign::after { content: ''; position: absolute; left: 0; right: 0; bottom: -8.5px; height: 1.5px; background: var(--lin-ink); }
+:root[data-skin="linoryt"] .puzzle-sign strong { font: 900 calc(clamp(34px, 10vw, 46px) * var(--airway-text-scale-title))/.95 var(--skin-face-display); letter-spacing: -.02em; }
+:root[data-skin="linoryt"] .puzzle-sign-plane { display: none; }
+:root[data-skin="linoryt"] .puzzle-sign-meta { font: 600 calc(13px * var(--airway-text-scale))/1.25 var(--skin-face-text); max-width: calc(140px * var(--airway-text-scale)); }
+:root[data-skin="linoryt"] .puzzle-board-title { padding: 14px 0 8px; font: 800 calc(21px * var(--airway-text-scale-title))/1.15 var(--skin-face-display); }
+:root[data-skin="linoryt"] .puzzle-count { font: 600 calc(13px * var(--airway-text-scale))/1.25 var(--skin-face-text); color: var(--lin-ink); }
+:root[data-skin="linoryt"] .puzzle-departures { border-top: 2px solid var(--lin-ink); scrollbar-color: var(--lin-ink) var(--lin-paper-deep); }
+:root[data-skin="linoryt"] .puzzle-pack {
+  padding: 14px 0 4px; background: none; color: var(--lin-ink); border-bottom: 2px solid var(--lin-ink);
+  font: 800 calc(16px * var(--airway-text-scale-title))/1.25 var(--skin-face-display);
+}
+:root[data-skin="linoryt"] .puzzle-flap {
+  grid-template-columns: calc(34px * var(--airway-text-scale-title)) minmax(0, 1fr) auto; column-gap: 12px; min-height: 56px; padding: 8px 2px;
+  border-bottom: 1px solid var(--lin-ink); font-family: var(--skin-face-text) !important;
+}
+:root[data-skin="linoryt"] .puzzle-flap::after { display: none; }
+:root[data-skin="linoryt"] .puzzle-flap-number { font: 900 calc(19px * var(--airway-text-scale-title))/1 var(--skin-face-display); }
+:root[data-skin="linoryt"] .puzzle-flap-title { font: 800 calc(16px * var(--airway-text-scale-title))/1.2 var(--skin-face-display); }
+:root[data-skin="linoryt"] .puzzle-flap-gate { display: none; } /* the departures gate is board decor, not print */
+:root[data-skin="linoryt"] .puzzle-flap-stars { font: 600 calc(13px * var(--airway-text-scale))/1.2 var(--skin-face-text); }
+:root[data-skin="linoryt"] .puzzle-flap-stars.is-done { color: var(--lin-ink); font: 700 calc(18px * var(--airway-text-scale))/1 var(--skin-face-text); letter-spacing: .06em; }
+:root[data-skin="linoryt"] .puzzle-flap-best { font: 600 calc(12px * var(--airway-text-scale))/1.2 var(--skin-face-text); letter-spacing: 0; }
+:root[data-skin="linoryt"] .puzzle-best { font: 700 calc(14px * var(--airway-text-scale))/1.3 var(--skin-face-text); }
+:root[data-skin="linoryt"] .puzzle-board-footer { padding-top: 8px; border-top: 2px solid var(--lin-ink); color: var(--lin-ink-dim); font: 600 calc(13px * var(--airway-text-scale))/1.3 var(--skin-face-text); }
+:root[data-skin="linoryt"] :is(.puzzle-exit, .puzzle-back) {
+  min-width: 48px; min-height: 48px; padding: 8px 12px; border: 2px solid var(--lin-ink); background: transparent; color: var(--lin-ink);
+  font: 700 calc(14px * var(--airway-text-scale))/1.1 var(--skin-face-text) !important;
+}
+:root[data-skin="linoryt"] :is(.puzzle-exit, .puzzle-back):active { background: var(--lin-paper-deep); }
+/* The puzzle desk (a level open): the ticket on paper over a double rule, strips as ruled lines, the primary action ink. */
+:root[data-skin="linoryt"] .puzzle-game { border-left: 0; border-right: 0; }
+:root[data-skin="linoryt"] .puzzle-game-sign {
+  position: relative; background: none; color: var(--lin-ink); border-bottom: 4px solid var(--lin-ink); margin-bottom: 9px;
+  padding: calc(var(--aw-safe-top) + 10px) calc(var(--aw-safe-right) + 12px) 10px calc(var(--aw-safe-left) + 12px);
+}
+:root[data-skin="linoryt"] .puzzle-game-sign::after { content: ''; position: absolute; left: 0; right: 0; bottom: -8.5px; height: 1.5px; background: var(--lin-ink); }
+:root[data-skin="linoryt"] .puzzle-game-sign strong { font: 900 calc(20px * var(--airway-text-scale-title))/1.1 var(--skin-face-display); }
+:root[data-skin="linoryt"] .puzzle-game-status { font: 600 calc(12px * var(--airway-text-scale))/1.2 var(--skin-face-text); }
+:root[data-skin="linoryt"] .puzzle-ticket { border-bottom: 2px solid var(--lin-ink); }
+:root[data-skin="linoryt"] .puzzle-ticket h1 { font: 900 calc(24px * var(--airway-text-scale-title))/1.1 var(--skin-face-display); }
+:root[data-skin="linoryt"] .puzzle-kicker { font: 700 calc(12px * var(--airway-text-scale))/1.2 var(--skin-face-text); color: var(--lin-ink-dim); }
+:root[data-skin="linoryt"] .puzzle-notes { opacity: 1; color: var(--lin-ink-dim); }
+:root[data-skin="linoryt"] .puzzle-stat strong { font: 800 calc(16px * var(--airway-text-scale-title))/1.1 var(--skin-face-display); }
+:root[data-skin="linoryt"] .puzzle-result { border-left-width: 6px; }
+:root[data-skin="linoryt"] .puzzle-route-panel h2 { font: 800 calc(17px * var(--airway-text-scale-title))/1.2 var(--skin-face-display); }
+:root[data-skin="linoryt"] .puzzle-route { border: 0; border-bottom: 1px solid var(--lin-ink); border-left: 4px solid var(--lin-ink); }
+:root[data-skin="linoryt"] .puzzle-route.is-active { border-left-width: 10px; }
+:root[data-skin="linoryt"] :is(.puzzle-route-codes, .puzzle-curfews .puzzle-code) { font-family: var(--skin-face-text); }
+:root[data-skin="linoryt"] .puzzle-hub { border: 2px solid var(--lin-ink); }
+:root[data-skin="linoryt"] .puzzle-controls { border-top: 4px solid var(--lin-ink); }
+:root[data-skin="linoryt"] .puzzle-control { border: 2px solid var(--lin-ink); }
+:root[data-skin="linoryt"] .puzzle-control.primary { border-color: var(--lin-ink); background: var(--lin-ink); color: var(--lin-paper); }
+
+/* Menu index (U1) on a short phone: Settings and Logbook share the last line down to 320 px, so the index leaves the
+   globe room for a whole disc (src/game/menu-clear.ts indexFraming); at large text steps they still stack. */
+/* An entry's hint drops under its title when the line is too short for both (320 px at 150 %), never split mid-word. */
+:root[data-skin="linoryt"] .airway-flight__main { flex-wrap: wrap; row-gap: 2px; }
+:root[data-skin="linoryt"] .airway-flight__sub { flex: 1 1 7.5em; overflow-wrap: break-word; }
+@media (orientation: portrait) { :root[data-skin="linoryt"] .airway-board__service { grid-template-columns: repeat(auto-fit, minmax(min(100%, 124px), 1fr)); } }
+:root[data-skin="linoryt"][data-airway-text-scale="130"] .airway-board__service,
+:root[data-skin="linoryt"][data-airway-text-scale="150"] .airway-board__service { grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); }
+
+/* Long words (the harsh pseudo-locale at 320 px, `test:e2e:pseudo-320 -- --skin=linoryt`): the menu title and the HUD's
+   week line break instead of running past the screen or cutting to "…". */
+:root[data-skin="linoryt"] .airway-sign__title { overflow-wrap: anywhere; }
+:root[data-skin="linoryt"] .lin-week { white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; }
+
+/* Daily ranking (on the daily report): a printed table; the player's own line inked heavier with a bar in the margin. */
+:root[data-skin="linoryt"] .airway-rank { position: relative; padding: 14px 0 8px; border-top: 4px solid var(--lin-ink); font-family: var(--skin-face-text); }
+:root[data-skin="linoryt"] .airway-rank::before { content: ''; position: absolute; left: 0; right: 0; top: 3px; height: 1.5px; background: var(--lin-ink); }
+:root[data-skin="linoryt"] .airway-rank-title { margin-top: 6px; font: 800 calc(17px * var(--airway-text-scale-title))/1.2 var(--skin-face-display); }
+:root[data-skin="linoryt"] .airway-rank-column-title { border-bottom-width: 2px; font: 700 calc(12px * var(--airway-text-scale))/1.2 var(--skin-face-text); }
+:root[data-skin="linoryt"] .airway-rank-row { font: 600 calc(14px * var(--airway-text-scale))/1.3 var(--skin-face-text); font-variant-numeric: tabular-nums; }
+:root[data-skin="linoryt"] .airway-rank-row.is-me { padding-left: 6px; border-left: 4px solid var(--lin-ink); font-weight: 800; }
+:root[data-skin="linoryt"][data-airway-text-scale="130"] .airway-rank-body,
+:root[data-skin="linoryt"][data-airway-text-scale="150"] .airway-rank-body { grid-template-columns: minmax(0, 1fr); } /* call signs keep their width */
+@media (max-width: 400px) { :root[data-skin="linoryt"] .airway-rank-body { grid-template-columns: minmax(0, 1fr); } }
+/* end U4 */

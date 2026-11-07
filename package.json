@@ -206,6 +206,7 @@
     "test:e2e:linoryt:stub": "node e2e/linoryt-preview.mjs --render=stub",
     "shots:linoryt": "node e2e/linoryt-preview.mjs --render=stub --no-sheets --out=docs/shots/28a",
     "shots:linoryt:sheets": "node e2e/linoryt-preview.mjs --render=stub --sheets-only --out=docs/shots/29a --size=320x568 --size=412x915 --size=915x412 --size=768x1024",
+    "shots:linoryt:u4": "node e2e/linoryt-preview.mjs --render=stub --no-game --out=docs/shots/29b --size=320x568 --size=412x915 --size=915x412 --size=768x1024",
     "perf:scene": "node --experimental-strip-types scripts/perf-scene.ts",
     "test:perf-scene": "npm run perf:scene",
     "perf:overlay": "node scripts/perf-overlay.mjs",

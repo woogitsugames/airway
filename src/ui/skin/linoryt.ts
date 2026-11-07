@@ -207,3 +207,17 @@ export function linorytTagline(): HTMLElement {
   line.textContent = t('roza.menu.tagline');
   return line;
 }
+
+// ---- U4: settings ------------------------------------------------------------------------------------------------------
+
+/**
+ * [night-29b] PLAN-LINORYT.md step U4: the licences list of the preview gains the two Linoryt faces (SIL OFL, files and
+ * licences in public/fonts/, docs/ASSETS.md). The preview may not add catalog keys (they would ship in the release
+ * catalogue, which stays byte-identical), so the line reuses the Alegreya one with the face's proper name swapped in;
+ * the flip step U5 adds `licenses.besley` / `licenses.schibsted` and drops Alegreya.
+ */
+export const LINORYT_FACES = ['Besley', 'Schibsted Grotesk'] as const;
+export function linorytLicences(): Array<readonly [name: string, licence: string]> {
+  const template = t('licenses.alegreya');
+  return LINORYT_FACES.map((face) => [template.replace('Alegreya', face), t('licenses.ofl')] as const);
+}

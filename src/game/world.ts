@@ -9,7 +9,7 @@ import {
   contrastRatio, relativeLuminance, insetsFromLayout, menuFraming, solveZoomForRadius, menuSpinRate, type LayoutRect,
 } from '../render'; // [task-34] [task-39] menuSpinRate
 import { cityByCode } from '../data'; // [task-34]
-import { menuNetworkClashes, menuTilt, type ClearRect } from './menu-clear'; // [night-16a] D-262
+import { indexFraming, menuNetworkClashes, menuTilt, type ClearRect } from './menu-clear'; // [night-16a] D-262; [night-29b] U4
 import { t } from '../i18n'; // [night-11h]
 import { forgetAdaptiveSteps, readAdaptiveSteps, writeAdaptiveSteps } from './adaptiveMemory'; // [night-07b]
 import { reducedMotion } from '../ui/motion'; // [night-11g] D-88
@@ -81,6 +81,13 @@ const MENU_TARGET = { lon: -16, lat: 40 };
  */
 const MENU_ROZA_ENTRIES = '.airway-board .airway-flight, .airway-board .airway-flight__region, .roza-menu-rose';
 const rozaMenu = (): boolean => typeof document !== 'undefined' && document.documentElement.dataset.skin === 'roza';
+/**
+ * [night-29b] D-284, PLAN-LINORYT.md step U4: the DEV-only Linoryt preview (`?skin=linoryt`) frames the menu globe from
+ * its printed index (the board box, src/game/menu-clear.ts indexFraming) and clears the same rows as Róża's entries
+ * (MENU_ROZA_ENTRIES without a rose). Every call site reads `import.meta.env.DEV && linorytMenu()`, so a release build
+ * folds it away.
+ */
+const linorytMenu = (): boolean => typeof document !== 'undefined' && document.documentElement.dataset.skin === 'linoryt';
 
 /** [task-39] First menu show only: longest wait for the sign/board before the globe renders anyway. */
 const MENU_HOLD_MS = 1500;
@@ -163,7 +170,7 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
       if (sign && board) menuFramed = true;
       let framing = menuFraming(w, h, sign, board, insets);
       // [night-14b] D-259 Róża: the entries stand on a rose in the thumb corner, not on a board across the screen.
-      const entries = rozaMenu() ? unionBox(host.querySelectorAll(MENU_ROZA_ENTRIES), origin) : null;
+      const entries = rozaMenu() || (import.meta.env.DEV && linorytMenu()) ? unionBox(host.querySelectorAll(MENU_ROZA_ENTRIES), origin) : null;
       if (entries && w > h) {
         // Landscape: a big globe left of the entries, its horizon under the title like the portrait menu (the board
         // column used to be the left inset, which left a small disc between the title and the entries).
@@ -175,6 +182,9 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
           insets: { left, right, top, bottom: insets.bottom ?? 0 },
         };
       }
+      // [night-29b] D-284 U4 Linoryt preview: the whole globe printed between the title and the index (or left of the
+      // index column in landscape); a screen too short for it keeps the horizon framing above.
+      if (import.meta.env.DEV && linorytMenu()) framing = indexFraming(w, h, sign, board, insets) ?? framing;
       // The entries' box is part of the key: the tilt below needs them laid out (a first measure may come before).
       const key = `menu ${w} ${h} ${entries ? `${Math.round(entries.left)},${Math.round(entries.top)}` : '-'} ${demoCities.length} ${JSON.stringify(framing)}`;
       if (key === lastFrame) return;
@@ -259,7 +269,7 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
   const framingKey = (): string => `${lastFrame} zoom=${renderer.orbit.zoomLevel.toFixed(4)}`;
   if (import.meta.env.DEV) installWorldProbe(renderer, () => ({ first: firstMenuFrame, now: framingKey(), menuSpin: menuSpin(), // [task-34]
     // [night-16a] D-262: the menu tilt in use and how many (demo airport, spin angle) samples still touch an entry.
-    menuTilt: menuTiltNow, menuClashes: menuActive && rozaMenu() ? (renderer.camera.updateMatrixWorld(),
+    menuTilt: menuTiltNow, menuClashes: menuActive && (rozaMenu() || linorytMenu()) ? (renderer.camera.updateMatrixWorld(),
       menuNetworkClashes(demoCities, entryRects(host.getBoundingClientRect()), (lon, lat, out) => renderer.project(lon, lat, 1.01, out))) : 0,
   }), () => drawn);
   /** [task-39] D-62: degrees per second the menu globe turns right now. */

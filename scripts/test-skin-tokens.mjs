@@ -307,7 +307,19 @@ check('roza: the helpers have no runtime import (release bundle order unchanged)
       if (/'lin-title'|lin-title/.test(line) && !/import\.meta\.env\.DEV && linoryt\.on/.test(line)) unguarded.push(`${file}: ${line.trim()}`);
     }
   }
+  // [night-29b] U4: settings (globe view hidden, the faces' licences) and the menu framing (src/game/world.ts).
+  for (const line of read('src/ui/settings/settings.ts').split('\n')) {
+    if (/\blinoryt(Licences)?\b(?!')/.test(line) && !/^import /.test(line) && !/import\.meta\.env\.DEV && linoryt\.on/.test(line)) unguarded.push(`settings.ts: ${line.trim()}`);
+  }
+  for (const line of read('src/game/world.ts').split('\n')) {
+    if (/\b(linorytMenu\(\)|indexFraming\()/.test(line) && !/import\.meta\.env\.DEV && linorytMenu\(\)/.test(line) &&
+      !/menuClashes: menuActive && \(rozaMenu\(\) \|\| linorytMenu\(\)\)/.test(line)) unguarded.push(`world.ts: ${line.trim()}`);
+  }
   check('linoryt: every helper call is guarded by import.meta.env.DEV && linoryt.on', unguarded.length === 0, unguarded.slice(0, 3).join(' | '));
+  // [night-29b] U4: its screens' rules stay in one delimited section (a parallel step adds its own to the same file).
+  const u4 = read(LIN).match(/\/\* U4 screens \*\/([\s\S]*?)\/\* end U4 \*\//);
+  check('linoryt: the U4 screens are one delimited section and print without shadows, radii or gradients',
+    !!u4 && !/box-shadow:\s*(?!none\b)[^;\s]|border-radius:\s*[1-9]|gradient\(/.test(stripComments(u4[1])), u4 ? '' : 'section missing');
 }
 
 for (const { name, ok, why } of results) console[ok ? 'log' : 'error'](`${ok ? 'PASS' : 'FAIL'} ${name}${why && !ok ? ': ' + why : ''}`);

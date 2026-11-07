@@ -100,6 +100,15 @@ export function gameUrl(url) {
   return target.href;
 }
 
+/**
+ * [night-29b] D-284 U4: where a suite that keeps PNGs in docs/shots/<task>/ writes them. With `--skin=linoryt` the shots
+ * show the preview, not the shipped skin of that task, so they go to .e2e/skin-<skin>/<task>/ (tracked shots untouched).
+ */
+export function skinShotsDir(dir) {
+  if (!SKIN) return dir;
+  return resolve(ARTIFACTS, `skin-${SKIN}`, dir.split('/').filter(Boolean).at(-1));
+}
+
 /** Fails fast when a page that should run on the stub world did not load it (e.g. a production build). */
 export async function assertRender(page) {
   if (RENDER !== 'stub') return;
