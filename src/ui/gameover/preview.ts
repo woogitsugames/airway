@@ -5,6 +5,11 @@ export function mountGameOverPreview(host: HTMLElement): void {
   const query = new URLSearchParams(location.search);
   const requested = Number(query.get('seed') ?? '41321');
   const seed = Number.isSafeInteger(requested) ? requested >>> 0 : 41321;
+  // [night-33a] D-271: `&contracts=101101` sets the weekly contract marks (1 = met, 0 = missed) in week order;
+  // `&contracts=none` drops the row. Default: six contracts, four met (a six-week run).
+  const marksParam = query.get('contracts') ?? '101101';
+  const marks = /^[01]{1,40}$/.test(marksParam) ? [...marksParam].map((mark) => mark === '1') : [];
+  const contracts = marks.length ? { met: marks.filter(Boolean).length, offered: marks.length, marks } : null;
   const reset = (nextSeed: number): void => {
     location.search = '?preview=gameover&seed=' + nextSeed;
   };
@@ -23,6 +28,7 @@ export function mountGameOverPreview(host: HTMLElement): void {
     seed, initialHash: 'preview-seed-' + seed, hubId: 'LIS', hubCode: 'LIS',
     delivered: 1184, completedWeeks: 6, tip: true, // [night-11f] worst case: three causes and a tip
     // [night-12ax] R1n: Endless milestones, two of them reached for the first time (stamps shown).
+    ...(contracts ? { contracts } : {}), // [night-33a] D-271
     milestones: { reached: ['first-hub', 'all-regions', 'week-2', 'week-3', 'week-4', 'passengers-500', 'passengers-750'], first: ['week-4', 'passengers-750'] },
     ledger: {
       waiting: 100, capacity: 100, waitingByRegion: { NAM: 62, EUN: 18, AFR: 20 },

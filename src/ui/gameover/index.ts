@@ -10,6 +10,7 @@ import './gameover.css';
 import { reducedMotion } from '../motion'; // [night-11g] D-88
 import { gameOverMilestones } from '../milestones'; // [night-12ax] R1n
 import type { MilestoneId } from '../../game/milestones';
+import type { ContractsSummary } from '../../game/contractsSummary'; // [night-33a] D-271
 import { linoryt, linorytReportHub } from '../skin/linoryt'; // [night-29a] D-284 U3: Linoryt preview (DEV only)
 
 export type { WorldIdentity } from './seed';
@@ -45,6 +46,8 @@ export interface GameOverSnapshot extends WorldIdentity {
   readonly licenceClass?: 2 | 3;
   /** [night-12ax] R1n, D-242: Endless only — milestones reached in this run, and those reached for the first time. */
   readonly milestones?: { readonly reached: readonly MilestoneId[]; readonly first: readonly MilestoneId[] };
+  /** [night-33a] D-271: Endless only — weekly contracts met and offered (absent: no contract seen, Daily, puzzles). */
+  readonly contracts?: ContractsSummary;
 }
 
 /** [night-10r] Weeks of the run plus the day of the jam; hub ids in picks are already display labels. */
@@ -184,6 +187,34 @@ function milestoneRow(reached: readonly MilestoneId[], first: readonly Milestone
     if (item.first) li.append(element('span', 'airway-go-milestone-first', t('gameover.milestones.first')));
     for (const child of li.children) child.setAttribute('aria-hidden', 'true');
     list.append(li);
+  }
+  box.append(title, list);
+  return box;
+}
+
+/**
+ * [night-33a] D-271: the weekly contracts as one ruled row under the milestones — "Contracts: 2 of 4" and one square
+ * per offered contract in week order, filled = met, hollow = missed (shape, not only colour; the D-280 slip's marks).
+ * The heading's spoken label reads the numbers in a sentence; the squares are decoration for screen readers.
+ */
+function contractRow(summary: ContractsSummary): HTMLElement {
+  // The milestone row's classes and marks (gameover.css), so the shipped CSS grows only by the short-screen fit.
+  const box = element('section', 'airway-go-milestones airway-go-contracts');
+  box.dataset.testid = 'gameover-contracts';
+  box.dataset.met = String(summary.met);
+  box.dataset.offered = String(summary.offered);
+  const numbers = { met: summary.met, offered: summary.offered };
+  const title = element('h3', 'airway-go-milestones-title', t('gameover.contracts.title', numbers));
+  title.id = 'airway-go-contracts-title';
+  title.setAttribute('aria-label', t('gameover.contracts.label', numbers));
+  box.setAttribute('aria-labelledby', title.id);
+  const list = element('ul', 'airway-go-milestones-list');
+  list.setAttribute('aria-hidden', 'true');
+  for (const met of summary.marks) {
+    const item = element('li', 'airway-go-milestone');
+    item.dataset.reached = String(met);
+    item.append(element('span', 'airway-go-milestone-mark'));
+    list.append(item);
   }
   box.append(title, list);
   return box;
@@ -351,12 +382,13 @@ function buildDialog(
   }
   // [night-11b] The departures are the jammed airport's route neighbours, so an empty board always means no route
   // served it: say so (and what would have helped) instead of a bare "no scheduled departures".
+  // [night-33a] D-289: the sentence stands in the board itself, not in the departures list (whose height short phones
+  // trim to make room for the contracts row), so it is never cut.
+  const none = element('div', 'airway-go-none');
   if (departing.length === 0) {
-    const none = element('div', 'airway-go-none');
     none.dataset.testid = 'gameover-unserved';
     none.append(element('p', 'airway-go-none-line', t('gameover.unserved', { hub: snapshot.hubCode })),
       element('p', 'airway-go-none-hint', t(unservedHint(snapshot.spareAircraft))));
-    flightList.append(none);
   }
   // [night-11k] R5f: column headings only above real rows; over the unserved sentence they read as an unfinished table.
   if (departing.length > 0) {
@@ -366,7 +398,7 @@ function buildDialog(
     }
     board.append(boardTitle, columns, flightList);
   } else {
-    board.append(boardTitle, flightList);
+    board.append(boardTitle, none);
   }
 
   const strip = element('section', 'airway-go-strip');
@@ -403,6 +435,7 @@ function buildDialog(
   }
   strip.append(stripHeader, scoreRow);
   if (snapshot.milestones) strip.append(milestoneRow(snapshot.milestones.reached, snapshot.milestones.first));
+  if (snapshot.contracts && snapshot.contracts.offered > 0) strip.append(contractRow(snapshot.contracts)); // [night-33a] D-271
   if (snapshot.share) strip.append(shareRow(snapshot.share));
   if (snapshot.timeline) strip.append(...reportTabs(causesPanel, snapshot.timeline, snapshot.hubCode));
   else strip.append(causesTitle, causesPanel);

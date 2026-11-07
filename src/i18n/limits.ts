@@ -113,6 +113,8 @@ export const LENGTH_BUDGETS: Partial<Record<TranslationKey, LengthBudget>> = {
   'firstTime.ok': { max: 4, where: 'first-time card: OK tag' },
   'gameover.cancelled': { max: 10, where: 'game-over departures board: status cell' },
   'gameover.timeline.week': { max: 4, where: 'game-over timeline: week mark', sample: { week: 12 } },
+  // [night-33a] D-271: on short screens the title shares one line with up to 20 squares at 320 px.
+  'gameover.contracts.title': { max: 22, where: 'game-over report: weekly contracts row title (one line beside the squares)', sample: { met: 12, offered: 24 } },
   'logbook.col.date': logbookWide,
   'logbook.col.flight': logbookWide,
   'logbook.col.hub': logbookWide,

@@ -624,6 +624,9 @@ export const pl = {
   'gameover.milestones.reachedLabel': '{milestone}: osiągnięty',
   'gameover.milestones.firstLabel': '{milestone}: osiągnięty pierwszy raz',
   'gameover.milestones.openLabel': '{milestone}: jeszcze nie',
+  // [night-33a] D-271: weekly contracts met on the Endless game-over report.
+  'gameover.contracts.title': 'Kontrakty: {met} z {offered}',
+  'gameover.contracts.label': 'Spełnione kontrakty tygodnia: {met} z {offered}',
   'logbook.milestones': 'Etapy w trybie Bez końca',
   'logbook.milestones.first': 'pierwszy raz w locie {run}',
   'logbook.milestones.open': 'jeszcze nie',

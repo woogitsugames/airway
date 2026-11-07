@@ -2798,7 +2798,7 @@ decision: the game-over report shows how many weekly contracts the run met. Noth
 line is UI work (count from the run's `ContractMet` events, one report row PL/EN that fits the short-screen report,
 `test:e2e:gameover-milestones`-style layout check) and is queued as a follow-up in `docs/NIGHT-BACKLOG.md` ("Owner
 decisions 2026-11-06"). Daily, puzzles and the leaderboard stay without contracts. **Status: in force (report line
-to implement; difficulty and reward to measure in the closed test).**
+implemented in night/33a, D-289; difficulty and reward to measure in the closed test).**
 
 ## D-272 — Demand surge: size and notice unchanged until the closed test; a first-time card and sound later; Daily without surges (owner, 2026-11-06; recommendation accepted, Q-83)
 Owner's answer to Q-83 (D-249): the surge stays **+12 passengers over 6 game hours**, **served airports only**,
@@ -3015,3 +3015,24 @@ slides out of the note. Rejected: the stamp as a square box obstacle (a note's c
 diagonal), keeping the 52 px code-only chips (the frame `png/a-game.png` prints the city), letting any chip cover a note
 (two printed blocks read as one). **Status: in force for the preview; carried into U5; the fallback goes when E2 lands.**
 
+## D-289 — The met-contracts row sits under the milestones; on short phones the departures list (or the third cause) gives the room back (2026-11-07, Claude, night 33a)
+D-271's report row, built: "Kontrakty: 2 z 4" / "Contracts: 2 of 4" and one square per offered contract in week order
+(filled = met, hollow = missed, D-280's marks), under the milestones row (D-242), Endless only; the heading's spoken
+label reads "Spełnione kontrakty tygodnia: 2 z 4". Counted by `src/game/contractsSummary.ts` from the world's closed
+contracts plus the running one (met once it reached its target), which equals the run's `ContractMet` events
+(`test:contracts-summary`); a run that never saw a contract (an early jam, Daily, puzzles, an older save) shows no row.
+The row reuses the milestone row's classes and marks, because the shipped CSS had 0.2 kB left under D-258's 109 kB
+(now 108 991 of 109 000 bytes). Fit, since the short report had no spare line (`test:e2e:gameover-short` at 320×568
+was 2 px from scrolling): (1) on a portrait screen up to 700 px tall the row is the second line of the milestones'
+ruled block (no rule of its own), and the departures list gives the line back for every report — 86 px instead of 100
+at 360×640 (just over two rows), 50 px instead of 60 at 320×568 (one and a quarter; the strip's padding 7 px instead of
+8); the next row stays half-cut, so the list still reads as scrollable; the unserved sentence now stands in the board
+itself rather than inside that list, so the shorter list never cuts it; (2) under the contracts row the third cause
+gives way on those screens, as the lesser causes do beside a tip (night-11f) — a jam without departures has no list to
+shrink; (3) on a short landscape screen (≤ 550 px) the milestones and the contracts stand side by side where both fit.
+Up to 11 squares share the title's line at 320 px (14 at 360 px); a longer run wraps them. The Linoryt preview (its
+page starts under the top margin, so it is shorter) prints the row as one line at every size, closing the milestones'
+block, with 9 px squares cut 2 px in full ink both ways (shape, not tone); `test:e2e:linoryt:stub` 432/432. Rejected:
+one shared line in portrait (about 330 px with both titles, wider than a 320 px strip), squares only without the count
+(the owner asked for the number), letting the report scroll (D-267 keeps that for the 130/150 % text steps), raising
+the CSS budget. **Status: in force (shipped skin and Linoryt preview).**
