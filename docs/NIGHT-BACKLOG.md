@@ -825,8 +825,10 @@ Plan: `docs/styles/kierunki-2026-11b/PLAN-LINORYT.md` (one PR per step; ext = gl
 - [x] **U1 (agent)** preview foundation: inks, Besley + Schibsted Grotesk (WOFF2, OFL, kept out of `dist/`), HUD top
       margin (clock, week, day line, day bar), paper dock, menu index; `test:e2e:linoryt:stub`, `--skin=linoryt` for
       the browser suites — night/28a-linoryt-ui
-- [ ] **E1 (ext)** Linoryt globe material behind `?look=linoryt` (sea lines, water-lining, ochre + relief hatching,
-      coastline, paper sky, night cross-hatch), `test:hatch-alias`, flicker strip, `perf:scene`
+- [x] **E1 (ext)** Linoryt globe material behind `?look=linoryt` (sea lines, water-lining, ochre + relief hatching,
+      coastline, paper sky, night cross-hatch), `test:hatch-alias`, flicker strip, `perf:scene`; coast field baked at
+      load (no PNG), rhumb-line hatches, per-pixel octaves (D-298); shots `docs/shots/ext-04/`, `look-linoryt*/` —
+      ext/04-linoryt-e1-globe
 - [ ] **E2 (ext)** stamps (square / octagon / outline / red jam zone + arc), double-line routes, cut plane silhouettes,
       `projectAirport`, `STAMP_SIZE_PX`, `LINORYT_INKS`
 - [x] **U2 (agent)** airport notes (Besley name, cut fill ticks, glyph chips, NOWE, jam block), edge chips; D-262…D-268 and

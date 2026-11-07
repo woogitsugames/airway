@@ -226,6 +226,22 @@ try {
   const noon = sunCtl.daylight;
   sunCtl.update(0);
   check(noon === 1 && sunCtl.daylight === 0, 'view-centre daylight drives night-only behaviour');
+
+  // [ext-04 E1] D-283 Linoryt look: spec §1 inks, no photo textures, no clouds/ocean/haze shells, DEV-only until E3.
+  const linoryt = readFileSync(resolve(ROOT, 'src/render/globe/linoryt.ts'), 'utf8');
+  const linorytGlobe = readFileSync(resolve(ROOT, 'src/render/globe/linoryt-globe.ts'), 'utf8');
+  const globeIndex = readFileSync(resolve(ROOT, 'src/render/globe/index.ts'), 'utf8');
+  const renderIndex = readFileSync(resolve(ROOT, 'src/render/index.ts'), 'utf8');
+  const inks = { paper: '#ECE3CC', ink: '#1E1C1F', blue: '#2B4A66', ochre: '#D29C47', red: '#B33823' };
+  for (const [name, hex] of Object.entries(inks)) check(linoryt.includes(`${name}: '${hex}'`), `linoryt ink ${name} = ${hex}`);
+  check(/SKY_COLOUR = LINORYT_INKS\.paper/.test(linoryt), 'linoryt sky is paper');
+  check(/LINORYT_INKS/.test(renderIndex) && /SKY_COLOUR/.test(renderIndex), 'render index exports LINORYT_INKS and SKY_COLOUR');
+  check(!/\b(day|night|map|clouds)-\d+\.(jpg|png)/.test(linorytGlobe) && !/TextureLoader/.test(linorytGlobe),
+    'linoryt look loads no photo textures (only elevation-2048.png)');
+  check(!/createCloudShell|createOceanShell|createScatterAtmosphere/.test(linorytGlobe), 'linoryt look has no cloud, ocean or haze shell');
+  check(!/awRed|LINORYT_INKS\.red/.test(linorytGlobe), 'linoryt globe material has no red (red is for a jam only, E2)');
+  check(/import\.meta\.env\.DEV && opts\.look === 'linoryt'[\s\S]{0,120}await import\('\.\/linoryt-globe'\)/.test(globeIndex),
+    'linoryt globe is a DEV-only dynamic import until E3');
 } catch (error) {
   failed++;
   failures.push(error instanceof Error ? error.stack ?? error.message : String(error));

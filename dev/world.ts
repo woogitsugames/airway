@@ -8,6 +8,7 @@ import { createWorldRenderer, AdaptiveFrameScheduler, type PlaneView, type Route
 import { createAirportOverlay } from '../src/ui/overlay';
 import { initializeMotion } from '../src/ui/motion'; // [night-11g] D-88: same motion attribute as the game
 import type { DestinationRegion } from '../src/ui/glyphs';
+import type { GlobeLook } from '../src/render/globe';
 initializeMotion();
 
 declare global {
@@ -53,7 +54,10 @@ const world = createWorldRenderer(undefined, {
   autoResize: host,
   // HUD reservations: boarding pass on top and tag dock below (portrait) or at the side (landscape).
   insets: () => (host.clientWidth > host.clientHeight ? { top: 64, right: 96 } : { top: 96, bottom: 96 }),
-  camera: { longitude: 7, latitude: 35, zoom: Number(params.get('zoom')) || 3.3 },
+  camera: { longitude: Number(params.get('lon') ?? 7), latitude: Number(params.get('lat') ?? 35),
+    zoom: Number(params.get('zoom')) || 3.3 },
+  // [ext-04 E1] `?look=linoryt` (D-283), or any `?globeLook=` comparison.
+  look: (params.get('look') ?? params.get('globeLook') ?? undefined) as GlobeLook | undefined,
 });
 host.appendChild(world.canvas);
 (window as unknown as { __world: unknown }).__world = world; // probes (perf, LOD tests)
@@ -89,7 +93,7 @@ const place = (list: typeof current, tick: number): void => {
 };
 // Frozen moment of the mockup: UTC ~16:10 (tick 970 of the day).
 const frozen = params.has('frozen');
-let tick = 970;
+let tick = Number(params.get('tick') ?? 970); // [ext-04 E1] `?tick=` picks the time of day (day/terminator/night)
 place(previous, tick);
 place(current, tick + 1);
 world.setPlanes(previous, current);

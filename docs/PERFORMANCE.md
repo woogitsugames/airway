@@ -320,6 +320,30 @@ Not done: WOFF2 fonts (about −40 % of the 624 kB TTF; OFL allows the conversio
 entry) — a size win only, no parse-time effect.
 
 
+## E1 — Linoryt globe material (2026-11-07, D-283, D-298)
+DEV look `?look=linoryt` (release unchanged until E3). Same terrain mesh as the satellite look (textured relief); the
+print material is one `ShaderMaterial` with **one texture fetch** (RGBA8 field 2048×1024 built at load: coast distance,
+Imhof shadow, city dots; ~11 MB GPU with mips, like the `day-2048` texture it replaces) and four screen derivatives
+(normal ×2, coast field ×2). No cloud, ocean or haze shells; the halo becomes one opaque sky quad (inked limb +
+atmosphere lines): **full-screen transparent layers 0** on every preset. Field build on the CPU: ~0.3–0.6 s on a desktop
+core (two exact EDTs + hillshade), once per globe load. `perf:scene` (SwiftShader, 412×915, DPR 1, 120 samples; compare
+only within this table, never with devices):
+
+| Preset | Look | Frames | Idle fps | Render CPU ms | Draw calls (max) | Triangles (max) |
+| --- | --- | --- | --- | --- | --- | --- |
+| low | satellite | 1303 | 10.7 | 0.94 | 41 | 209 072 |
+| low | linoryt | 1995 | 17.1 | 0.72 | 41 | 204 082 |
+| saver | satellite | 2019 | 13.7 | 0.63 | 41 | 209 072 |
+| saver | linoryt | 2518 | 17.6 | 0.58 | 41 | 204 082 |
+| medium | satellite | 558 | 4.8 | 1.49 | 43 | 228 528 |
+| medium | linoryt | 806 | 6.5 | 1.02 | 42 | 204 082 |
+
+Terrain triangles are unchanged (same mesh); the totals drop by the halo sphere (and the cloud shell on medium).
+Shimmer: `npm run test:hatch-alias` (2 340 cases, smallest printed period 3.2 device px) and
+`npm run shots -- linoryt-motion` (low preset, 8 frames at 0.15°/frame: flicker 0.00 %, budget 2 %; raw per-pixel
+change ≈ 5 %, which is line motion; see D-298 for what the score can and cannot see). Still to do before U5: one Test
+Lab game loop (D-245) on a budget phone with the Linoryt look.
+
 ## G9 — Medalion airports and route ink outline (2026-11-04, D-178)
 The outline ring is one more part in the two airport instanced meshes' part lists (regular and hub: +2 draw calls
 when both kinds exist) and the route ink outline one inflated back-face mesh per route batch (+2: widebody and
