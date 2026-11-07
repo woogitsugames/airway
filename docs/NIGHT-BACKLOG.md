@@ -830,7 +830,10 @@ Plan: `docs/styles/kierunki-2026-11b/PLAN-LINORYT.md` (one PR per step; ext = gl
       D-281 behaviour on stamp boxes
 - [ ] **U3 (agent)** sheets in print: pause, weekly board + crates + contract slip, game-over report, hub board, ATC strip,
       tutorial and first-time cards
-- [ ] **U4 (agent)** menu framing, settings (+ licences), about, logbook, puzzles, leaderboard
+- [x] **U4 (agent)** menu framing (the whole globe between title and index, `indexFraming`, D-286), settings (globe view
+      hidden, Besley + Schibsted Grotesk in the licences), licences, privacy, terms, logbook, puzzles, daily ranking in
+      print; `test:e2e:linoryt:stub` audits them (216 screens), `--skin=linoryt` for settings-groups, logbook,
+      puzzle-board-scroll, privacy/terms, menu-clear, pseudo-320; shots `docs/shots/29b/` — night/29b-linoryt-menu
 - [ ] **E3 (ext)** the Linoryt look in release builds behind `DEFAULT_GLOBE_LOOK` (still satellite)
 - [ ] **U5 (agent)** the flip: Linoryt default skin + look; delete Róża and `?skin=current`; i18n renames; CSS budget back
 - [ ] **E4 (ext)** remove Satelita (and Mapa if the owner agrees: open question L2 of PR #285) and the photo textures (−1.9 MB)

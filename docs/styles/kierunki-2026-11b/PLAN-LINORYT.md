@@ -144,7 +144,11 @@ medium/high ≤ 2 (G4). "Shots" = PNGs to inspect against the CLAUDE.md forbidde
 - **Tests:** `test:e2e:menu-clear` (real renderer), `test:menu-clear`, `test:e2e:settings-groups`,
   `test:e2e:logbook`, `test:e2e:puzzle-board-scroll`, `test:e2e:privacy-page`, `test:e2e:terms-page`,
   `test:e2e:pseudo-320` with `--skin=linoryt`.
-- **Done when:** every screen of `e2e/screen-fixtures.mjs` is in print.
+- **Done when:** every screen of `e2e/screen-fixtures.mjs` is in print. **Status: done (night 29b, PR to `dev`):** settings,
+  licences, privacy, terms, logbook, puzzles (board and desk), daily ranking in print (`linoryt.css` section "U4 screens");
+  the menu globe is printed whole between title and index, also at 320×568 as a smaller disc (D-286: the horizon cannot
+  clear the index at any tilt); release `dist/` byte-identical; shots `docs/shots/29b/`. Open for U3: the weekly board
+  overflows at 320 px in the harsh pseudo-locale (`test:e2e:pseudo-320 -- --skin=linoryt`, upgrade screen).
 
 ### E3 — ext — the Linoryt look ships (not yet default)
 - **Files:** `src/render/globe/look.ts` (`DEFAULT_GLOBE_LOOK` constant, `'linoryt'` selectable in release builds),
