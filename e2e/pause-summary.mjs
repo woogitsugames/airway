@@ -5,14 +5,18 @@
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
-import { withBrowser, newGamePage, waitForScreen, clickTestId, state, assert, saveDiagnostics, ROOT } from './browser.mjs';
+import {
+  withBrowser, newGamePage, waitForScreen, clickTestId, state, assert, saveDiagnostics, ROOT, RENDER, gameUrl, assertRender, shotsDir,
+} from './browser.mjs';
 import { E2E_SEEDS } from './seeds.mjs';
 
 // [night-12ac] Seed from e2e/seeds.mjs, replayed headless by test:e2e-seeds (in test:fast).
 const SEED = E2E_SEEDS['pause-summary'].seeds[0];
 
 const started = performance.now();
-const SHOTS = resolve(ROOT, 'docs/shots/n10j');
+// [night-44a] `test:e2e:pause-summary:stub` (--render=stub): the bot and the sheet are DOM/sim only, so the stub world
+// (D-254) runs the same checks; its PNGs go to .e2e/stub/n10j/.
+const SHOTS = shotsDir(resolve(ROOT, 'docs/shots/n10j'));
 const results = [];
 
 const cases = [
@@ -33,8 +37,9 @@ try {
     mkdirSync(SHOTS, { recursive: true });
     for (const [language, viewport] of cases) {
       const label = `${language} ${viewport.width}×${viewport.height}: pause summary`;
-      const { page, errors } = await newGamePage(browser, url, language, viewport);
+      const { page, errors } = await newGamePage(browser, gameUrl(url), language, viewport);
       try {
+        await assertRender(page);
         await waitForScreen(page, 'menu');
         await page.evaluate((seed) => window.aw.prepareSeed(seed), SEED);
         await clickTestId(page, 'menu-endless');
@@ -88,7 +93,7 @@ try {
   if (fatal) console.error('FAIL harness: ' + fatal);
   const passed = results.filter((item) => item.status === 'PASS').length;
   const failedCount = results.length - passed + (fatal ? 1 : 0);
-  console.log(`SUMMARY test:e2e:pause-summary seed=0x${SEED.toString(16).toUpperCase()} steps=${results.length} ` +
+  console.log(`SUMMARY test:e2e:pause-summary seed=0x${SEED.toString(16).toUpperCase()}${RENDER === 'stub' ? ' render=stub' : ''} steps=${results.length} ` +
     `passed=${passed} failed=${failedCount} durationMs=${Math.round(performance.now() - started)}`);
   if (failedCount || results.length !== cases.length) process.exitCode = 1;
 }

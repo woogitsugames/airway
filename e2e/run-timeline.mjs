@@ -6,14 +6,18 @@
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
-import { withBrowser, newGamePage, waitForScreen, clickTestId, state, assert, saveDiagnostics, ROOT } from './browser.mjs';
+import {
+  withBrowser, newGamePage, waitForScreen, clickTestId, state, assert, saveDiagnostics, ROOT, RENDER, gameUrl, assertRender, shotsDir,
+} from './browser.mjs';
 import { E2E_SEEDS } from './seeds.mjs';
 
 // [night-12aa] Per-suite seed, replayed headless by test:e2e-seeds (rules v6 ended 0xA1A1 in week 2).
 const SEED = E2E_SEEDS['run-timeline'].seeds[0];
 
 const started = performance.now();
-const SHOTS = resolve(ROOT, 'docs/shots/n10r');
+// [night-44a] `test:e2e:run-timeline:stub` (--render=stub): bot, forced jam and report are DOM/sim only, so the stub
+// world (D-254) runs the same checks; its PNGs go to .e2e/stub/n10r/.
+const SHOTS = shotsDir(resolve(ROOT, 'docs/shots/n10r'));
 const cases = [['pl', 412, 915], ['en', 412, 915], ['pl', 360, 640], ['en', 360, 640]];
 const results = [];
 
@@ -28,8 +32,9 @@ try {
     mkdirSync(SHOTS, { recursive: true });
     for (const [language, width, height] of cases) {
       const label = `${language} ${width}×${height}: timeline`;
-      const { page, errors } = await newGamePage(browser, url, language, { width, height });
+      const { page, errors } = await newGamePage(browser, gameUrl(url), language, { width, height });
       try {
+        await assertRender(page);
         await waitForScreen(page, 'menu');
         await page.evaluate((seed) => window.aw.prepareSeed(seed), SEED);
         await clickTestId(page, 'menu-endless');
@@ -90,7 +95,7 @@ try {
   if (fatal) console.error('FAIL harness: ' + fatal);
   const passed = results.filter((item) => item.status === 'PASS').length;
   const failedCount = results.length - passed + (fatal ? 1 : 0);
-  console.log(`SUMMARY test:e2e:run-timeline seed=0x${SEED.toString(16).toUpperCase()} steps=${results.length} ` +
+  console.log(`SUMMARY test:e2e:run-timeline seed=0x${SEED.toString(16).toUpperCase()}${RENDER === 'stub' ? ' render=stub' : ''} steps=${results.length} ` +
     `passed=${passed} failed=${failedCount} durationMs=${Math.round(performance.now() - started)}`);
   if (failedCount || results.length !== cases.length) process.exitCode = 1;
 }

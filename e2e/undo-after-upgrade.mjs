@@ -3,7 +3,7 @@
 // week boundary with no board on screen (soft lock). Real clicks: take a card, resume, Undo on the dock; the
 // choice must stay recorded and the clock must keep running. Portrait phone and phone landscape, PL/EN.
 import { performance } from 'node:perf_hooks';
-import { withBrowser, newGamePage, waitForScreen, state, assert, clickTestId, saveDiagnostics } from './browser.mjs';
+import { withBrowser, newGamePage, waitForScreen, state, assert, clickTestId, saveDiagnostics, gameUrl, assertRender, RENDER } from './browser.mjs';
 import { E2E_SEEDS } from './seeds.mjs';
 
 // [night-12ac] Seed from e2e/seeds.mjs, replayed headless by test:e2e-seeds (in test:fast).
@@ -14,6 +14,7 @@ const results = [];
 const CASES = [['pl', 412, 915], ['en', 915, 412]];
 
 async function journey(page) {
+  await assertRender(page);
   assert(await page.evaluate(() => window.aw?.ready), 'window.aw.ready=false: no AwDevAdapter registered');
   await waitForScreen(page, 'menu');
   await page.evaluate((seed) => window.aw.prepareSeed(seed), SEED);
@@ -35,6 +36,10 @@ async function journey(page) {
   assert(after.upgrades?.length === 1, `weekly choice lost by Undo: ${JSON.stringify(after.upgrades)}`);
   // The clock must keep running (or the board must be back on screen): never a frozen game screen.
   const t0 = after.tick;
+  // [night-44a] `test:e2e:undo-after-upgrade:stub` (--render=stub): the stub clock is frozen (D-254), so the same 2.5 s
+  // pass as one game hour through window.aw. The session steps the run the same way as its frame hook does, and a run
+  // sent back to the week's board does not step at all (the soft lock this suite guards).
+  if (RENDER === 'stub') await page.evaluate(() => window.aw.advanceTicks(60));
   await page.waitForTimeout(2500);
   const later = await state(page);
   assert(later.screen === 'upgrade' || later.tick > t0, `clock frozen at tick ${t0} on screen "${later.screen}"`);
@@ -49,7 +54,7 @@ try {
       let page;
       try {
         let errors;
-        ({ page, errors } = await newGamePage(browser, url, language, { width, height }));
+        ({ page, errors } = await newGamePage(browser, gameUrl(url), language, { width, height }));
         await journey(page);
         if (errors.length) throw new Error(`Browser errors: ${errors.join('; ')}`);
         results.push({ label, status: 'PASS' });
@@ -71,7 +76,7 @@ try {
   if (fatal) console.error('FAIL harness: ' + fatal);
   const passed = results.filter((item) => item.status === 'PASS').length;
   const failed = results.filter((item) => item.status === 'FAIL').length + (fatal ? 1 : 0);
-  console.log(`SUMMARY test:e2e:undo-after-upgrade seed=0x${SEED.toString(16).toUpperCase()} steps=${CASES.length} passed=${passed} failed=${failed} durationMs=${Math.round(performance.now() - started)}`);
+  console.log(`SUMMARY test:e2e:undo-after-upgrade seed=0x${SEED.toString(16).toUpperCase()}${RENDER === 'stub' ? ' render=stub' : ''} steps=${CASES.length} passed=${passed} failed=${failed} durationMs=${Math.round(performance.now() - started)}`);
   if (failed || passed !== CASES.length) process.exitCode = 1;
 }
 

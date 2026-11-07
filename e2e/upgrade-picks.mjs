@@ -4,7 +4,9 @@
 // and phone landscape (the sign sits beside the boarding pass there, N7n). Fixed seed, fails closed; after the
 // first failure in a viewport the rest of that viewport is reported as SKIP.
 import { performance } from 'node:perf_hooks';
-import { withBrowser, newGamePage, waitForScreen, state, assert, clickTestId, saveDiagnostics } from './browser.mjs';
+// [night-44a] `test:e2e:upgrade-picks:stub` (--render=stub): the pick tap is hit-tested through the real camera and
+// projection maths on the stub world (D-254), so the same journey runs without the globe.
+import { withBrowser, newGamePage, waitForScreen, state, assert, clickTestId, saveDiagnostics, gameUrl, assertRender, RENDER } from './browser.mjs';
 import { E2E_SEEDS } from './seeds.mjs';
 
 // [night-12aa] Per-suite seed, replayed headless by test:e2e-seeds (rules v6: no "+2 slots" on 0xA1A1 before the end).
@@ -54,6 +56,7 @@ async function boardOffering(page, kind, fromWeek) {
 }
 
 async function startRun(page) {
+  await assertRender(page);
   assert(await page.evaluate(() => window.aw?.ready), 'window.aw.ready=false: no AwDevAdapter registered');
   await waitForScreen(page, 'menu');
   await page.evaluate((seed) => window.aw.prepareSeed(seed), SEED);
@@ -108,7 +111,7 @@ try {
       let page;
       let errors = [];
       try {
-        ({ page, errors } = await newGamePage(browser, url, 'pl', { width, height }));
+        ({ page, errors } = await newGamePage(browser, gameUrl(url), 'pl', { width, height }));
       } catch (error) {
         for (const [label] of steps) results.push({ label: `${tag} ${label}`, status: 'FAIL', why: 'page load: ' + message(error) });
         continue;
@@ -146,7 +149,7 @@ try {
   const failed = results.filter((item) => item.status === 'FAIL').length + (fatal ? 1 : 0);
   const skipped = results.filter((item) => item.status === 'SKIP').length;
   const elapsedMs = Math.round(performance.now() - started);
-  console.log(`SUMMARY test:e2e:upgrade-picks seed=0x${SEED.toString(16).toUpperCase()} steps=${total} passed=${passed} failed=${failed} skipped=${skipped} durationMs=${elapsedMs}`);
+  console.log(`SUMMARY test:e2e:upgrade-picks seed=0x${SEED.toString(16).toUpperCase()}${RENDER === 'stub' ? ' render=stub' : ''} steps=${total} passed=${passed} failed=${failed} skipped=${skipped} durationMs=${elapsedMs}`);
   if (failed || passed !== total) process.exitCode = 1;
 }
 
