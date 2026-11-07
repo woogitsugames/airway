@@ -3206,3 +3206,18 @@ sending hubs only. (6) **`projectAirport(id, out)`** (spec §8) is an optional m
 builds until E3 (the stub world has it too); it measures the point `pick()` measures and allocates nothing.
 Rejected: tangent stamps with depth test (relief cuts them), keeping the tubes (two techniques in one print), red
 for the out-of-range preview, a shipped PNG atlas. **Status: in force for the DEV look; E3 lifts the DEV guards.**
+
+## D-300 — Linoryt ships behind `DEFAULT_GLOBE_LOOK` (E3): the print loads as two lazy chunks, open-sea parallels one step sparser (2026-11-08, Claude, ext session E3)
+Step E3 of PLAN-LINORYT.md: the Linoryt look is part of the release build, nothing selects it yet.
+**Choice.** (1) **`DEFAULT_GLOBE_LOOK`** (`src/render/globe/look.ts`, exported from `src/render/globe`) is `'satellite'`;
+`createWorldRenderer` draws `opts.look ?? (DEFAULT_GLOBE_LOOK === 'linoryt' ? 'linoryt' : globeMode)`, so U5 flips one
+constant. The DEV guards of E1/E2 are gone (`projectAirport` is always there, the session always sends `jam01` for
+every airport; the satellite renderer still reads hub loads only). (2) **The print is loaded on demand:** the globe
+material (`linoryt-globe`, 12.6 kB) and the object layers (`linoryt-objects`, 20.9 kB) are dynamic imports in their own
+chunks; until the layers arrive, record-only stand-ins keep the airport set and the last routes, planes, hub loads and
+preview are replayed into the real layers (no medallion flashes in between; `ready` waits for both). The main chunk
+grows by 3 kB instead of 22 kB (budget 1,180 kB, D-252). (3) **Open-sea parallels print at ≥ 6 px spacing** on every
+preset (the relief and night hatches keep 4 px): at zoom 2 the denser sea competed with stamps and the notes' glyphs
+(Bay of Biscay, coordinator's review of #312); one constant, no cost. Rejected: lowering the sea contrast only under
+stamps (the terrain shader would need every stamp position), a bigger JS budget. **Status: in force; U5 flips the
+constant.**
