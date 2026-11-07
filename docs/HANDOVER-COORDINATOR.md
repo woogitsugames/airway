@@ -1,6 +1,6 @@
 # Przekazanie koordynatora Airway
 
-Ostatnia aktualizacja: 2026-11-07, ok. 12:00 UTC. Nowa sesja koordynatora (wieczór 6.11) pracuje ciągle; budziki
+Ostatnia aktualizacja: 2026-11-07, ok. 13:40 UTC. Nowa sesja koordynatora (wieczór 6.11) pracuje ciągle; budziki
 włączone. Nowa sesja startuje promptem z `docs/notes/coordinator-start-prompt.md`.
 
 ## 7.11 rano
@@ -15,6 +15,8 @@ włączone. Nowa sesja startuje promptem z `docs/notes/coordinator-start-prompt.
   symboli, Mapa usunięta, noc 20–06, czerwień #B33823).
 - W toku: U3 arkusze (`night/29a-linoryt-sheets`) i U4 menu/ekrany (`night/29b-linoryt-menu`) — obie dopisują do
   `linoryt.css` w osobnych sekcjach; przy drugim scaleniu konflikt w CSS/BACKLOG/DECISIONS (przenumerować D-286).
+- #286 scalony (U4 menu/ekrany, D-286: na 320×568 mniejszy dysk zamiast horyzontu). `pseudo-320 --skin=linoryt`
+  15/16 (tablica tygodnia — naprawi U3). Agent U2 notki lotnisk (`night/30a-linoryt-notes`, `/workspace/30a`).
 - Kolejność dalej: E1 (ext) → E2 ∥ U2 → E3 → U5 przełączenie → E4 → U6 → U7 (zrzuty/wideo).
 
 ## Wieczór 6.11 (nowa sesja koordynatora)
@@ -97,7 +99,7 @@ commitach.
 
 
 ## W toku
-- Agenci U3 `/workspace/29a` i U4 `/workspace/29b` (Linoryt, podgląd).
+- Agenci U3 `/workspace/29a` i U2 `/workspace/30a` (Linoryt, podgląd).
 
 ## Decyzje do właściciela
 1. Uruchomienie sesji ext z promptem Linorytu (po PR 28a). Wideo/zrzuty sklepu dopiero po wdrożeniu Linorytu.
