@@ -33,6 +33,7 @@ Zasady wykonania:
 - 22:50: #310 scalony squashem (E1 Linoryt: globus drukowany za ?look=linoryt, D-298). dev = main = f7e2d67. Sesja ext zaczyna E2. Ext ma własny log Free.AI w `docs/notes/freeai-trial.md` na dev; przy raporcie 8.11 połączyć go z logiem z tej gałęzi.
 - 23:05: #311 scalony (GPT-18: 13 wariantów :stub w test:ci; prawdziwe przebiegi zostają). dev = main = 67bc984. Do decyzji koordynatora później: czy wyjąć prawdziwe przebiegi z test:ci (oszczędność ~5–7 min).
 - 23:35: #312 scalony squashem (E2 Linoryt: stemple, strefa zatoru, trasy-wstęgi, sylwetki SDF, projectAirport; D-299). dev = main = 1b61395. Sesja ext bierze E3. Po E3 → U5 (nasz agent): flip + D-297 budżet CSS + „Tydzień 7”/skrzynia Róży; LINORYT_STAMP_PX → projectAirport.
+- 23:55: #313 scalony squashem (E3: Linoryt za DEFAULT_GLOBE_LOOK, leniwe chunki, rzadsze morze; D-300). dev = main = 1f40965. **Następne: U5** (nasz agent, gdy zwolni się miejsce) — potem wiadomość do sesji ext, żeby ruszyła z E4.
 - Agenci: 40a (GPT-07), 45a (GPT-05, od nowa: przyczyna niestabilności transfer-glyphs; zastępuje #297). Dalej: GPT-07/17 (dokumentacja), 18/19 (stub e2e), 12–15 (fale językowe). Następne w kolejce: GPT-20, GPT-11, GPT-07/17/18/19.
 
 ## Test Free.AI MCP (7.11 19:30 → 8.11 19:30 UTC)
