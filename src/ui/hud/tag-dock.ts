@@ -4,6 +4,7 @@ import { crateCountdown } from './crate-countdown';
 import type { HudActions, HudState, PlaneType } from './types';
 import { ARIA_KEYSHORTCUTS } from '../../input/keyboard';
 import { skin, rozaDockLabel } from '../skin/roza'; // [night-11az] D-257: Róża skin helpers
+import { linoryt, linorytDockLabel, linorytIcon } from '../skin/linoryt'; // [night-28a] D-284: Linoryt preview (DEV only; cut symbols)
 
 type TagId = 'undo' | PlaneType | 'hub' | 'globe' | 'speed';
 // [G8] D-172: the globe-view tag sits before speed (the two non-network tags together).
@@ -36,7 +37,7 @@ export function createTagDock(root: HTMLElement, actions: HudActions): { render(
     button.type = 'button';
     button.className = 'airway-dock__tag';
     button.dataset.hudAction = tag;
-    button.innerHTML = `<span class="airway-dock__eyelet" aria-hidden="true"></span>${iconSvg(tag === 'globe' ? 'satellite' : tag)}<span class="airway-dock__count" aria-hidden="true"></span>`;
+    button.innerHTML = `<span class="airway-dock__eyelet" aria-hidden="true"></span>${(import.meta.env.DEV && linoryt.on ? linorytIcon(tag === 'globe' ? 'satellite' : tag) : iconSvg(tag === 'globe' ? 'satellite' : tag))}<span class="airway-dock__count" aria-hidden="true"></span>`;
     holder.appendChild(button);
     dock.appendChild(holder);
     if (tag === 'speed') button.setAttribute('aria-keyshortcuts', ARIA_KEYSHORTCUTS.speed); // [night-11ai] R4g
@@ -89,7 +90,7 @@ export function createTagDock(root: HTMLElement, actions: HudActions): { render(
         const dy = event.clientY - drag.startY;
         if (!drag.moved && dx * dx + dy * dy >= DRAG_THRESHOLD_SQUARED) {
           drag.moved = true;
-          ghost.innerHTML = iconSvg(drag.type);
+          ghost.innerHTML = (import.meta.env.DEV && linoryt.on ? linorytIcon(drag.type) : iconSvg(drag.type));
           ghost.hidden = false;
           dock.classList.add('is-dragging');
         }
@@ -152,12 +153,14 @@ export function createTagDock(root: HTMLElement, actions: HudActions): { render(
         if (button.getAttribute('aria-label') !== label) button.setAttribute('aria-label', label);
         // [night-11az] D-257 Róża: the caption beside the symbol on the arc, or the wait for the next crates.
         if (skin.roza) rozaDockLabel(button, name, state.globeMode, state.speed, waiting ? countdown.short : null);
+        // [night-28a] D-284 Linoryt preview: the caption under the symbol, the wait under it in blue.
+        else if (import.meta.env.DEV && linoryt.on) linorytDockLabel(button, name, state.globeMode, state.speed, waiting ? countdown.short : null);
       }
       const mode = state.globeMode ?? 'satellite';
       if (lastMode !== mode) {
         lastMode = mode;
         const tag = controls.get('globe');
-        tag?.querySelector('svg')?.replaceWith(document.createRange().createContextualFragment(iconSvg(mode === 'map' ? 'map' : 'satellite')));
+        tag?.querySelector('svg')?.replaceWith(document.createRange().createContextualFragment((import.meta.env.DEV && linoryt.on ? linorytIcon(mode === 'map' ? 'map' : 'satellite') : iconSvg(mode === 'map' ? 'map' : 'satellite'))));
         tag?.setAttribute('data-globe-mode', mode);
       }
       if (lastSpeed !== state.speed) {
@@ -165,7 +168,7 @@ export function createTagDock(root: HTMLElement, actions: HudActions): { render(
         const tag = controls.get('speed');
         tag?.setAttribute('data-speed', String(state.speed));
         // [night-11az] D-257: the speed symbol's wind barbs count the tempo (one per 1×).
-        tag?.querySelector('svg')?.replaceWith(document.createRange().createContextualFragment(iconSvg('speed', state.speed)));
+        tag?.querySelector('svg')?.replaceWith(document.createRange().createContextualFragment((import.meta.env.DEV && linoryt.on ? linorytIcon('speed', state.speed) : iconSvg('speed', state.speed))));
       }
       // Invalidate a pending drag when its item is depleted by another command.
       if (active && controls.get(active.type)?.disabled) {

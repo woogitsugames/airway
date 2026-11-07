@@ -16,6 +16,11 @@ import { SKIN_STRUCTURE_FILE, SKIN_SCOPE, skinOverrides, pruneOverridden } from 
 export const SKIN_FILE = 'src/ui/skin/current.css';
 /** [night-11ax] D-257: the previous skin ("Diorama"), DEV comparison only (`?skin=current`). */
 export const COMPARISON_SKIN_FILE = 'src/ui/skin/diorama.css';
+/** [night-28a] D-284: the DEV-only Linoryt preview (`?skin=linoryt`, never in a release build). Like the comparison skin
+ *  it keeps its tokens, and its re-inked `--roza-*` palette does not count against the palette constants (they stay
+ *  constants of the release, written out as before). The flip step U6 (PLAN-LINORYT.md) makes it the shipped skin. */
+export const PREVIEW_SKIN_FILE = 'src/ui/skin/linoryt.css';
+const DEV_ONLY_SKINS = [COMPARISON_SKIN_FILE, PREVIEW_SKIN_FILE];
 const stripComments = (css) => css.replace(/\/\*[\s\S]*?\*\//g, '');
 const USE = /var\(\s*--skin-([a-z0-9-]+)\s*([,)])/g;
 
@@ -130,13 +135,14 @@ export function tokensInScript(ts) {
   return [...ts.matchAll(/var\(--skin-([a-z0-9-]+)\)/g)].map((m) => m[1]);
 }
 
-function sources(root, pattern) {
+function sources(root, pattern, skip = []) {
   const out = [];
+  const skipped = new Set(skip.map((file) => resolve(root, file)));
   const walk = (dir) => {
     for (const name of readdirSync(dir)) {
       const path = join(dir, name);
       if (statSync(path).isDirectory()) walk(path);
-      else if (pattern.test(name)) out.push(readFileSync(path, 'utf8'));
+      else if (pattern.test(name) && !skipped.has(resolve(path))) out.push(readFileSync(path, 'utf8'));
     }
   };
   walk(join(root, 'src'));
@@ -148,7 +154,7 @@ export function skinBuild(root) {
   const scripts = sources(root, /\.(ts|tsx|js|mjs)$/);
   const resolved = resolveTokens(skinTokens(readFileSync(resolve(root, SKIN_FILE), 'utf8')));
   return {
-    resolved: withConstants(resolved, constantProperties(sources(root, /\.css$/), scripts)),
+    resolved: withConstants(resolved, constantProperties(sources(root, /\.css$/, [PREVIEW_SKIN_FILE]), scripts)),
     keep: new Set(scripts.flatMap(tokensInScript)),
   };
 }
@@ -175,7 +181,7 @@ export function skinInline() {
       if (!enabled || !file.endsWith('.css') || !file.startsWith(normal(resolve(root, 'src')) + '/')) return null;
       // [night-11ax] D-257: the DEV-only comparison skin (src/ui/skin/diorama.css, `?skin=current`, never in a release
       // build) keeps its tokens; the skin structure (roza.css) is inlined like any component CSS.
-      if (file === normal(resolve(root, COMPARISON_SKIN_FILE))) return null;
+      if (DEV_ONLY_SKINS.some((skin) => file === normal(resolve(root, skin)))) return null; // [night-28a] + Linoryt
       const { resolved, keep } = build ? (cache ??= skinBuild(root)) : skinBuild(root);
       if (file === normal(resolve(root, SKIN_FILE))) return { code: keptSkin(resolved, keep), map: null };
       const inlined = inlineSkin(code, resolved, file.slice(root.length + 1));

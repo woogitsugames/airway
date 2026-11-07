@@ -72,13 +72,23 @@ if (!['stub', 'real'].includes(renderChoice)) {
   throw new Error(`--render / AW_RENDER must be "stub" or "real", got "${renderChoice}"`);
 }
 export const RENDER = renderChoice;
+/**
+ * [night-28a] D-284: `--skin=linoryt` (or `AW_SKIN=linoryt`): a suite that builds its URL with gameUrl() loads the DEV-only
+ * Linoryt preview (`?skin=linoryt`), e.g. `npm run ui:matrix:stub -- --skin=linoryt`. Unset = the shipped skin.
+ */
+const skinArg = process.argv.find((arg) => arg.startsWith('--skin='))?.slice('--skin='.length);
+export const SKIN = skinArg ?? process.env.AW_SKIN ?? '';
+if (!['', 'linoryt'].includes(SKIN)) throw new Error(`--skin / AW_SKIN must be "linoryt" or unset, got "${SKIN}"`);
 
 /** The game URL for the current `RENDER` mode (unchanged on the real renderer). */
 export function gameUrl(url) {
-  if (RENDER !== 'stub') return url;
+  if (RENDER !== 'stub' && !SKIN) return url;
   const target = new URL(url);
-  target.searchParams.set('render', 'stub');
-  target.searchParams.set('clock', 'frozen');
+  if (RENDER === 'stub') {
+    target.searchParams.set('render', 'stub');
+    target.searchParams.set('clock', 'frozen');
+  }
+  if (SKIN) target.searchParams.set('skin', SKIN); // [night-28a] D-284
   return target.href;
 }
 
