@@ -63,7 +63,9 @@ host.appendChild(world.canvas);
 (window as unknown as { __world: unknown }).__world = world; // probes (perf, LOD tests)
 world.setCities(cities);
 world.setRoutes(ROUTES, 1);
-world.setHubLoad(Object.entries(HUBS).map(([id, hub]) => ({ id, used: hub.waiting.length, cap: hub.cap })));
+// [ext-04 E2] The Linoryt jam zone reads the share of the 45 s grace left (LON: 42 s).
+world.setHubLoad(Object.entries(HUBS).map(([id, hub]) => ({ id, used: hub.waiting.length, cap: hub.cap,
+  jam01: hub.jam === undefined ? null : hub.jam / 45 })));
 world.setCurfew(['CAI', 'KIV']);
 world.setRoutePreview({
   points: [cities.find((c) => c.id === 'LIS')!, { lon: -0.2, lat: 5.6 }],
