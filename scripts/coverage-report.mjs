@@ -30,7 +30,7 @@ const pct = (covered, total) => total ? `${(100 * covered / total).toFixed(1)}%`
 const table = ['| Module | Lines | Functions |', '| --- | ---: | ---: |', ...results.map((r) =>
   `| ${r.path} | ${pct(r.coveredLines, r.lines)} (${r.coveredLines}/${r.lines}) | ${pct(r.coveredFunctions, r.functions)} (${r.coveredFunctions}/${r.functions}) |`)];
 const text = '# Headless coverage\n\nMapped executable source lines and function bodies covered at least once across all V8 processes.\n' +
-  'Modules not loaded have zero coverage. Generated temporary copies of source modules are not attributed.\n' +
+  'Modules not loaded have zero coverage. Only unique exact data-URL copies are attributed; other temporary copies are not.\n' +
   'This is execution evidence, not branch coverage or a quality threshold.\n\n' + table.join('\n') + '\n';
 writeFileSync(join(dir, 'summary.md'), text);
 writeFileSync(join(dir, 'summary.json'), JSON.stringify(results, null, 2) + '\n');

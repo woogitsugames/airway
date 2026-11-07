@@ -79,12 +79,24 @@ function prepare(path) {
 export function analyse(root, coverageDir) {
   const src = resolve(root, 'src');
   const modules = new Map(files(src).map((path) => [resolve(path), prepare(path)]));
+  // Some headless tests load transpiled source through a data URL. Attribute it
+  // only when its exact emitted text identifies a single source file.
+  const emittedModules = new Map();
+  for (const mod of modules.values()) {
+    if (emittedModules.has(mod.generated)) emittedModules.set(mod.generated, null);
+    else emittedModules.set(mod.generated, mod);
+  }
   for (const name of readdirSync(coverageDir).filter((n) => n.endsWith('.json'))) {
     const data = JSON.parse(readFileSync(join(coverageDir, name), 'utf8'));
     for (const script of data.result ?? []) {
-      if (!script.url.startsWith('file:')) continue;
-      let path; try { path = resolve(fileURLToPath(script.url)); } catch { continue; }
-      const mod = modules.get(path); if (!mod || !script.functions?.length) continue;
+      let mod;
+      if (script.url.startsWith('file:')) {
+        try { mod = modules.get(resolve(fileURLToPath(script.url))); } catch { continue; }
+      } else if (script.url.startsWith('data:text/javascript') && !script.url.slice(0, script.url.indexOf(',')).includes(';base64')) {
+        try { mod = emittedModules.get(decodeURIComponent(script.url.slice(script.url.indexOf(',') + 1))); } catch { continue; }
+      }
+      if (!mod || !script.functions?.length) continue;
+      const path = mod.path;
       const rootRange = script.functions[0].ranges[0];
       const emitted = rootRange.endOffset === mod.generated.length;
       const original = rootRange.endOffset >= mod.source.length && rootRange.endOffset - mod.source.length <= 512;

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, rmSync, unlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -39,6 +39,22 @@ try {
   const actual = spawnSync(process.execPath, ['--import', pathToFileURL(resolve('scripts/ts-test-loader.mjs')).href, file], { env: { ...process.env, NODE_V8_COVERAGE: realRaw }, encoding: 'utf8' });
   check('real V8 fixture runs', () => assert.equal(actual.status, 0, actual.stderr));
   check('real V8 coverage maps executed function', () => { const row = analyse(root, realRaw).find((r) => r.path.endsWith('/sample.ts')); assert.equal(row.coveredFunctions, 1); assert.ok(row.coveredLines > 0 && row.coveredLines < row.lines); });
+  const dataRaw = join(root, 'data'); mkdirSync(dataRaw);
+  const dataUrl = 'data:text/javascript;charset=utf-8,' + encodeURIComponent(generated);
+  const dataRun = spawnSync(process.execPath, ['--input-type=module', '-e', `await import(${JSON.stringify(dataUrl)})`],
+    { env: { ...process.env, NODE_V8_COVERAGE: dataRaw }, encoding: 'utf8' });
+  check('real V8 data URL fixture runs', () => assert.equal(dataRun.status, 0, dataRun.stderr));
+  check('data URL maps to its unique original source', () => {
+    const row = analyse(root, dataRaw).find((r) => r.path.endsWith('/sample.ts'));
+    assert.equal(row.functions, 2); assert.equal(row.coveredFunctions, 1);
+    assert.ok(row.coveredLines > 0 && row.coveredLines < row.lines);
+  });
+  const duplicate = join(src, 'duplicate.ts'); writeFileSync(duplicate, source);
+  check('ambiguous data URL is not attributed', () => {
+    const rows = analyse(root, dataRaw).filter((r) => /\/(sample|duplicate)\.ts$/.test(r.path));
+    assert.equal(rows.length, 2); assert.ok(rows.every((r) => r.coveredLines === 0 && r.coveredFunctions === 0));
+  });
+  unlinkSync(duplicate);
   const nativeRaw = join(root, 'native'); mkdirSync(nativeRaw);
   const native = spawnSync(process.execPath, ['--experimental-strip-types', file], { env: { ...process.env, NODE_V8_COVERAGE: nativeRaw }, encoding: 'utf8' });
   check('native type stripping runs', () => assert.equal(native.status, 0, native.stderr));
