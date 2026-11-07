@@ -1,6 +1,6 @@
 # Przekazanie koordynatora Airway
 
-Ostatnia aktualizacja: 2026-11-07, ok. 15:40 UTC. Nowa sesja koordynatora (wieczór 6.11) pracuje ciągle; budziki
+Ostatnia aktualizacja: 2026-11-07, ok. 17:00 UTC. Nowa sesja koordynatora (wieczór 6.11) pracuje ciągle; budziki
 włączone. Nowa sesja startuje promptem z `docs/notes/coordinator-start-prompt.md`.
 
 ## 7.11 rano
@@ -24,6 +24,12 @@ włączone. Nowa sesja startuje promptem z `docs/notes/coordinator-start-prompt.
   U2 na prawdziwym rendererze dopiero po E1/E2.
 - `test:e2e:edge-chip-airports` pada w 915×412 („No gesture available for pick”) już na dev 6caa25b → agent
   `night/32a-edge-chip-landscape` (`/workspace/32a`).
+- #290 scalony (planer gestu `pick` uwzględnia tabliczkę wyboru na dolnej krawędzi, D-279; edge-chip-airports 2/2).
+- #289 scalony (ekrany U4 pod skórką: screens-fit 18/18, -320 12/12, text-scale-150 120/120, pseudo-320 16/16;
+  cyfry proporcjonalne dla liczb z separatorem — „12,270 km”).
+- Otwarte drobne: fixture „Tydzień 7” w `e2e/screen-fixtures.mjs` (brak `pendingHub`) — poprawka odsłania przepełnienie
+  skrzyń Róży w pseudo-320; zrobić przy U5. Chipy ← CMN/← DKR zasłaniają pierścienie Róży (EN 412×915) — znika z Różą.
+- **Wszystkie etapy agentów bez renderu zrobione (U1–U4 + poprawki). Dalej czeka na sesję ext (E1→E2→E3), potem U5.**
 - Kolejność dalej: E1 (ext) → E2 ∥ U2 → E3 → U5 przełączenie → E4 → U6 → U7 (zrzuty/wideo).
 
 ## Wieczór 6.11 (nowa sesja koordynatora)
@@ -106,8 +112,7 @@ commitach.
 
 
 ## W toku
-- Agenci: poprawka ekranów U4 `/workspace/31a`, edge-chip w poziomie `/workspace/32a`. Bez E1 (ext) zostały już
-  tylko poprawki; U5 czeka na E3.
+- Brak agentów; czekamy na gałąź sesji ext (E1).
 
 ## Decyzje do właściciela
 1. Uruchomienie sesji ext z promptem Linorytu (po PR 28a). Wideo/zrzuty sklepu dopiero po wdrożeniu Linorytu.
