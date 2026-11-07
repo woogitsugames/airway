@@ -15,7 +15,7 @@ import type { HubFailure } from './hubs.ts';
 import type { CauseCounters } from './ledger.ts';
 import {
   CONGESTION_GRACE_TICKS, DEPARTURE_SLOTS_PER_HOUR_CITY, DEPARTURE_SLOTS_PER_HOUR_HUB, GAME_TICKS_PER_HOUR,
-  INITIAL_PLANE_RESERVE, PLANE_TYPES, WEATHER_SLOT_PENALTY, type PlaneType,
+  INITIAL_PLANE_RESERVE, PLANE_TYPES, type PlaneType,
 } from './params.ts';
 import { PassengerSimulation, type PassengerSimulationSnapshot } from './passengers.ts';
 import {
@@ -39,7 +39,7 @@ import {
   closeSurge, drawSurge, EMPTY_SURGES, surgePassengerDue, surgePhase, validSurgeSnapshot, type DemandSurge, type SurgeRecord, type SurgeSnapshot,
 } from './surge.ts';
 import {
-  airportFrontPhase, drawFront, frontBand, frontOver, weatherWeekAt, type AirportFront, type AirportFrontPhase,
+  airportFrontPhase, drawFront, frontBand, frontOver, weatherWeekAt, weatherGroundHold, type AirportFront, type AirportFrontPhase,
   type WeatherBand, type WeatherFront,
 } from './weather.ts';
 
@@ -147,7 +147,7 @@ export type SimEvent =
   | { readonly type: 'HubJamStarted'; readonly minute: number; readonly cityId: string }
   | { readonly type: 'HubJamCleared'; readonly minute: number; readonly cityId: string }
   /** [task-32] An aircraft became ready but its airport had no departure slot left this hour. */
-  | { readonly type: 'DepartureHeld'; readonly minute: number; readonly cityId: string; readonly planeId: string; readonly first: boolean }
+  | { readonly type: 'DepartureHeld'; readonly minute: number; readonly cityId: string; readonly planeId: string; readonly first: boolean; readonly reason?: 'weather' }
   /** [night-12ab] One aircraft-minute held by a curfew: on the ground (departure refused) or in the air (landing refused). */
   | { readonly type: 'CurfewHeld'; readonly minute: number; readonly cityId: string; readonly where: 'ground' | 'air' }
   /** [night-12ba] R2k: the running weekly contract reached its target (once per contract). */
@@ -497,7 +497,7 @@ export class World implements WorldView {
 
   departureSlotLimit(cityId: string): number {
     return (this.isHub(cityId) ? DEPARTURE_SLOTS_PER_HOUR_HUB : DEPARTURE_SLOTS_PER_HOUR_CITY) +
-      (this.slotBonus.get(cityId) ?? 0) - (this.underFront(cityId) ? WEATHER_SLOT_PENALTY : 0);
+      (this.slotBonus.get(cityId) ?? 0);
   }
   /** Live, read-only aircraft states for the renderer (no copy per frame). */
   get planes(): readonly Readonly<PlaneState>[] { return this.fleet.planes; }
@@ -782,15 +782,38 @@ export class World implements WorldView {
 
   // [task-32] D-41: per-airport hourly departure allowance; slots reset at every game hour.
   private readonly slotGate: DepartureSlotGate = {
-    tryTake: (cityId) => {
+    ready: (_cityId, plane) => {
+      if (this.scenario.weatherFront) plane.weatherReadyTicks = (plane.weatherReadyTicks ?? 0) + 1;
+    },
+    curfewHeld: (plane) => {
+      if (this.scenario.weatherFront) delete plane.weatherSlotWaitTicks;
+    },
+    tryTake: (cityId, plane) => {
+      if (weatherGroundHold(this.underFront(cityId), (plane.weatherReadyTicks ?? 1) - 1)) return false;
       const used = this.slotsUsed.get(cityId) ?? 0;
       if (used >= this.departureSlotLimit(cityId)) return false;
       this.slotsUsed.set(cityId, used + 1);
       return true;
     },
     held: (cityId, plane) => {
+      const weatherHold = weatherGroundHold(this.underFront(cityId), (plane.weatherReadyTicks ?? 1) - 1);
+      if (weatherHold) {
+        delete plane.weatherSlotWaitTicks;
+        if (!plane.weatherWaitReported) {
+          plane.weatherWaitReported = true;
+          this.events.push({ type: 'DepartureHeld', minute: this.minuteValue, cityId, planeId: plane.id, first: false, reason: 'weather' });
+        }
+        return;
+      }
       this.slotWait.set(cityId, (this.slotWait.get(cityId) ?? 0) + 1);
-      if (plane.slotWaitTicks === 1) {
+      if (this.scenario.weatherFront) {
+        plane.weatherSlotWaitTicks = (plane.weatherSlotWaitTicks ?? 0) + 1;
+        const totals = plane.weatherSlotWaitTotals ??= {};
+        totals[cityId] = (totals[cityId] ?? 0) + 1;
+      }
+      const firstSlotWait = this.scenario.weatherFront ? !plane.slotWaitReported : plane.slotWaitTicks === 1;
+      if (firstSlotWait) {
+        if (this.scenario.weatherFront) plane.slotWaitReported = true;
         this.events.push({ type: 'DepartureHeld', minute: this.minuteValue, cityId, planeId: plane.id, first: !this.slotEverHeld });
         this.slotEverHeld = true;
       }
@@ -902,7 +925,7 @@ export class World implements WorldView {
   private slotHeldAt(cityId: string): number {
     let count = 0;
     for (const plane of this.fleet.planes) {
-      if (plane.phase !== 'ground' || plane.slotWaitTicks === 0) continue;
+      if (plane.phase !== 'ground' || (this.scenario.weatherFront ? (plane.weatherSlotWaitTicks ?? 0) === 0 : plane.slotWaitTicks === 0)) continue;
       const route = this.route(plane.routeId);
       if (route && route.cityIds[plane.cityIndex] === cityId) count++;
     }
@@ -989,7 +1012,14 @@ export class World implements WorldView {
       const route = this.route(plane.routeId);
       if (!Array.isArray(manifest) || manifest.length !== plane.load || !route || !isPlaneType(plane.type) ||
           plane.cityIndex < 0 || plane.cityIndex >= route.cityIds.length ||
-          !Number.isSafeInteger(plane.slotWaitTicks) || plane.slotWaitTicks < 0) {
+          !Number.isSafeInteger(plane.slotWaitTicks) || plane.slotWaitTicks < 0 ||
+          (plane.weatherReadyTicks !== undefined && (!Number.isSafeInteger(plane.weatherReadyTicks) || plane.weatherReadyTicks < 1)) ||
+          (plane.weatherWaitReported !== undefined && plane.weatherWaitReported !== true) ||
+          (plane.slotWaitReported !== undefined && plane.slotWaitReported !== true) ||
+          (plane.weatherSlotWaitTicks !== undefined && (!Number.isSafeInteger(plane.weatherSlotWaitTicks) || plane.weatherSlotWaitTicks < 1)) ||
+          (plane.weatherSlotWaitTotals !== undefined && (!plane.weatherSlotWaitTotals || typeof plane.weatherSlotWaitTotals !== 'object' ||
+            Array.isArray(plane.weatherSlotWaitTotals) || Object.entries(plane.weatherSlotWaitTotals).some(([key, value]) =>
+              !key || !Number.isSafeInteger(value) || value < 1)))) {
         throw new TypeError('aircraft does not match its manifest or route');
       }
       this.manifests.set(plane.id, [...manifest]);

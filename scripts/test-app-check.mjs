@@ -6,6 +6,7 @@ import './ts-test-loader.mjs';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { registerHooks } from 'node:module';
 
 const stub = {
@@ -194,7 +195,7 @@ await check('composition: main.ts passes the native port; the plugin is found by
     const path = join(dir, name);
     return statSync(path).isDirectory() ? walk(path) : [path];
   });
-  const offenders = walk(new URL('../src', import.meta.url).pathname).filter((file) => /\.(ts|js)$/.test(file) &&
+  const offenders = walk(fileURLToPath(new URL('../src', import.meta.url))).filter((file) => /\.(ts|js)$/.test(file) &&
     /from ['"](firebase|@capacitor-firebase)\b/.test(readFileSync(file, 'utf8')));
   assert.deepEqual(offenders, [], 'no Firebase SDK / plugin import in the bundle');
 });

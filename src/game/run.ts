@@ -61,6 +61,8 @@ export interface RunPlane {
   readonly phase?: 'ground' | 'flight';
   readonly cityIndex?: number;
   readonly slotWaitTicks?: number;
+  /** Weather runs: cumulative actual slot-wait minutes by airport. */
+  readonly slotWaitTotals?: Readonly<Record<string, number>>;
 }
 export interface RunFailure {
   readonly tick: number;
@@ -211,6 +213,7 @@ export class EndlessRun {
         case 'HubJamStarted': out.push({ type: 'jam', cityId: event.cityId, jammed: true }); break;
         case 'HubJamCleared': out.push({ type: 'jam', cityId: event.cityId, jammed: false }); break;
         case 'DepartureHeld': { // [task-32]
+          if (event.reason === 'weather') break;
           const view = this.sim.world.cityView(event.cityId);
           out.push({ type: 'slot-held', cityId: event.cityId, limit: view.departureSlots, minutesToSlot: view.nextSlotMinutes });
           break;
@@ -256,12 +259,16 @@ export class EndlessRun {
   }
 
   planeList(): RunPlane[] {
-    return this.sim.world.planes.map((plane) => ({
-      id: plane.id, routeId: plane.routeId, type: plane.type, segment: plane.segment,
-      progress01: plane.progress01, direction: plane.direction, load: plane.load,
-      capacity: PLANE_TYPES[plane.type].seats,
-      phase: plane.phase, cityIndex: plane.cityIndex, slotWaitTicks: plane.slotWaitTicks, // [night-11ag] R4d
-    }));
+    const world = this.sim.world;
+    return world.planes.map((plane) => {
+      return {
+        id: plane.id, routeId: plane.routeId, type: plane.type, segment: plane.segment,
+        progress01: plane.progress01, direction: plane.direction, load: plane.load,
+        capacity: PLANE_TYPES[plane.type].seats,
+        phase: plane.phase, cityIndex: plane.cityIndex, slotWaitTicks: this.weatherFront ? (plane.weatherSlotWaitTicks ?? 0) : plane.slotWaitTicks, // [night-11ag] R4d
+        ...(this.weatherFront ? { slotWaitTotals: plane.weatherSlotWaitTotals ?? {} } : {}),
+      };
+    });
   }
 
   /** [night-12ba] R2k, D-247: the running weekly contract (null without one, and in Daily). */
