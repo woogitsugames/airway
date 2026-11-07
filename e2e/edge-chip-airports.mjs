@@ -6,10 +6,10 @@
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
-import { withBrowser, newGamePage, waitForScreen, assert, clickTestId, saveDiagnostics, ROOT } from './browser.mjs';
+import { withBrowser, newGamePage, gameUrl, skinShotsDir, waitForScreen, assert, clickTestId, saveDiagnostics, ROOT } from './browser.mjs';
 import { E2E_SEEDS } from './seeds.mjs';
 
-const SHOTS = resolve(ROOT, 'docs/shots/n10v');
+const SHOTS = skinShotsDir(resolve(ROOT, 'docs/shots/n10v')); // [night-30a] with --skin: .e2e/skin-linoryt/, tracked shots untouched
 
 const started = performance.now();
 const results = [];
@@ -61,7 +61,7 @@ try {
   await withBrowser(async ({ browser, url }) => {
     for (const [language, width, height] of CASES) {
       const label = `${language} ${width}×${height}: "+2 slots" pick clear of edge chips`;
-      const { page, errors } = await newGamePage(browser, url, language, { width, height });
+      const { page, errors } = await newGamePage(browser, gameUrl(url), language, { width, height });
       try {
         await journey(page, language, width, height);
         if (errors.length) throw new Error(`Browser errors: ${errors.join('; ')}`);

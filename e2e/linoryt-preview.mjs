@@ -29,6 +29,10 @@
 //   - no word of a title, heading or big figure broken over two lines ("Ustawieni|a"; also the menu entries and title);
 //   - print only: no box shadow, no rounded corner, no translucent background, no gradient on any element; the red
 //     #B33823 fills no block except the danger action (delete ranking data); the globe-view setting is gone (D-285).
+// [night-30a] Step U2: on every game screen the airport notes and edge chips (e2e/linoryt-notes.mjs): no note over a
+// stamp (the DEV probe `window.__awLinoryt.stamps()`), another note, the paper margins or off the screen, every row
+// inside its note, names in Besley, a jam note with its block; chips ≥ 48 px, clear of notes, stamps, margins and each
+// other. The summary counts the notes and chips audited.
 // Shots: .e2e/linoryt/ (default) or `--out=docs/shots/28a` (`npm run shots:linoryt`); `npm run shots:linoryt:u4`
 // writes the menu and the U4 screens at 320×568, 412×915, 915×412, 768×1024 (100 and 150 %) to docs/shots/29b/
 // (`--no-game`). Inspect every PNG.
@@ -38,6 +42,7 @@ import { performance } from 'node:perf_hooks';
 import { withBrowser, newGamePage, waitForScreen, assert, clickTestId, ROOT, ARTIFACTS, SEED, gameUrl, assertRender, RENDER } from './browser.mjs';
 import { presetLanguage } from '../scripts/lib/harness.mjs';
 import { auditScreen, mountScreen } from './screen-fixtures.mjs';
+import { auditNotes } from './linoryt-notes.mjs'; // [night-30a] U2
 
 const started = performance.now();
 const outArg = process.argv.find((arg) => arg.startsWith('--out='))?.slice('--out='.length);
@@ -58,6 +63,8 @@ const cases = only.length ? CASES.filter(([w, h]) => only.includes(`${w}x${h}`))
 const failures = [];
 let checked = 0;
 let shots = 0;
+let noteCount = 0; // [night-30a] U2: notes and edge chips audited on the game screens
+let chipCount = 0;
 
 function linorytUrl(url) {
   const target = new URL(gameUrl(url));
@@ -530,6 +537,13 @@ try {
               await page.waitForTimeout(150);
             }
             const problems = await audit(page, screen);
+            if (screen === 'game') {
+              const notes = await auditNotes(page);
+              problems.push(...notes.problems);
+              if (notes.notes === 0) problems.push('no airport note shown');
+              noteCount += notes.notes;
+              chipCount += notes.chips;
+            }
             for (const word of await splitWords(page, '.lin-title, .airway-flight__sub, .airway-sign__title, .lin-week')) problems.push(`word split over two lines: "${word}"`);
             if (errors.length) problems.push(`browser errors: ${errors.splice(0).join('; ')}`);
             checked++;
@@ -611,5 +625,5 @@ try {
 }
 const failed = failures.length;
 for (const line of failures) console.error('FAIL ' + line);
-console.log(`SUMMARY linoryt-preview render=${RENDER} screens=${checked} shots=${shots} out=${OUT.replace(ROOT + '/', '')} failed=${failed} ${((performance.now() - started) / 1000).toFixed(1)}s`);
+console.log(`SUMMARY linoryt-preview render=${RENDER} screens=${checked} shots=${shots} notes=${noteCount} chips=${chipCount} out=${OUT.replace(ROOT + '/', '')} failed=${failed} ${((performance.now() - started) / 1000).toFixed(1)}s`);
 if (failed || checked === 0) process.exitCode = 1;

@@ -259,6 +259,112 @@
   :root[data-skin="linoryt"] .airway-flight { min-height: 48px; padding: 4px 0; }
 }
 :root[data-airway-motion="reduce"][data-skin="linoryt"] .lin-day__now { transition: none; }
+/* U2 notes */
+/* ---- Part 7 (U2): airport notes, the jam block, edge chips ----------------------------------------------------------
+   [night-30a] PLAN-LINORYT.md step U2 (D-283, D-284; frame png/a-game.png). The world prints the airport's stamp (E2);
+   beside it the note is printed row by row, each on a paper ground (no halo, no shadow, no rounded box): the city name in
+   Besley 800 (a hub's larger), the fill bar of cut ticks (one tick = two places; taken solid, free as outlines), the
+   waiting passengers as their D-08 glyphs in their own colours with a count each. A newly opened airport leads with the
+   red "NOWE" stub; a jam prints name, ticks and counts in red and the red jam block under the note ("Zator za / 0:42 /
+   36 z 36", paper letters). The compact form (D-262) is one line: code and "14 z 24" (or code and NOWE). Sizes are
+   fixed CSS px (in-world, D-267) and match the metrics in src/ui/skin/linoryt.ts (noteSize), which size the layout box.
+   Off-screen airports: a paper chip with the name in Besley and the arrow, "2 408 km · 8 z 12" under it, the fill gauge
+   at its foot, an ink rule on its left; red block for a jam. */
+:root[data-skin="linoryt"] .airport-overlay { color: var(--lin-ink); font-family: var(--skin-face-text); }
+:root[data-skin="linoryt"] .airport-bubble {
+  box-sizing: border-box; display: flex; flex-wrap: wrap; align-items: flex-start; align-content: flex-start; gap: 0;
+  height: auto; padding: 0; clip-path: none; background: transparent; color: var(--lin-ink); white-space: nowrap;
+  font: 700 12.5px/20px var(--skin-face-text); font-variant-numeric: tabular-nums;
+}
+:root[data-skin="linoryt"] .airport-bubble::before,
+:root[data-skin="linoryt"] .airport-bubble__plate,
+:root[data-skin="linoryt"] .airport-bubble__timer { display: none; }
+:root[data-skin="linoryt"] .airport-bubble--compact { width: var(--lin-compact-w) !important; }
+:root[data-skin="linoryt"] .lin-br { flex: 0 0 100%; height: 0; }
+:root[data-skin="linoryt"] .lin-name,
+:root[data-skin="linoryt"] .lin-code {
+  flex: none; height: 19px; padding: 0 4px; background: var(--lin-paper); font: 800 14px/19px var(--skin-face-display);
+}
+:root[data-skin="linoryt"] .lin-name--hub { font-size: 16px; }
+:root[data-skin="linoryt"] .lin-fill {
+  flex: none; height: 19px; padding: 0 4px 0 0; background: var(--lin-paper); font: 700 12.5px/19px var(--skin-face-text);
+  font-variant-numeric: tabular-nums;
+}
+:root[data-skin="linoryt"] .airport-bubble:not(.airport-bubble--compact) > .lin-code,
+:root[data-skin="linoryt"] .airport-bubble:not(.airport-bubble--compact) > .lin-fill,
+:root[data-skin="linoryt"] .airport-bubble--compact > :not(.lin-code):not(.lin-fill):not(.lin-br):not(.lin-jam):not(.airport-bubble__new),
+:root[data-skin="linoryt"] .airport-bubble--compact.airport-bubble--new:not(.airport-bubble--jam) > .lin-fill,
+:root[data-skin="linoryt"] .airport-bubble--compact.airport-bubble--jam > .airport-bubble__new { display: none; }
+/* NOWE: the one red stub of a note, paper capitals. */
+:root[data-skin="linoryt"] .airport-bubble__new {
+  height: 19px; margin-right: 4px; padding: 0 4px; background: var(--lin-red); color: var(--lin-paper);
+  font: 700 10.5px/19px var(--skin-face-text); letter-spacing: .04em;
+}
+/* The fill bar: cut ticks on a paper ground. */
+:root[data-skin="linoryt"] .lin-ticks { flex: none; box-sizing: content-box; height: 8px; padding: 2px 4px; background: var(--lin-paper); overflow: visible; }
+:root[data-skin="linoryt"] .lin-ticks__on { fill: currentColor; }
+:root[data-skin="linoryt"] .lin-ticks__off { fill: none; stroke: currentColor; stroke-width: 1.2; }
+/* The glyph row: each passenger region once, its count after it; stubs (curfew, surge, front) lead the row. */
+:root[data-skin="linoryt"] .airport-bubble .airport-region-glyph {
+  flex: none; box-sizing: content-box; padding: 2px 0; background: var(--lin-paper); /* D-08 size from the theme (16/21 px) */
+}
+:root[data-skin="linoryt"] .lin-br + .airport-region-glyph { padding-left: 4px; }
+:root[data-skin="linoryt"] .lin-count {
+  flex: none; align-self: stretch; margin: 0; padding: 0 6px 0 2px; background: var(--lin-paper); font: 700 12.5px/20px var(--skin-face-text);
+  font-variant-numeric: tabular-nums;
+}
+:root[data-skin="linoryt"] .lin-more { padding-left: 4px; }
+:root[data-skin="linoryt"] .airport-bubble__trend {
+  align-self: stretch; height: auto; margin-left: 0; padding: 0 3.5px 0 3px; border-left-color: currentColor; background: var(--lin-paper);
+  --trend-from: 0px; /* the chevron's cell is printed in the note's row: it fades in place, never slides out of the note */
+}
+:root[data-skin="linoryt"] .airport-bubble__curfew,
+:root[data-skin="linoryt"] .airport-bubble__surge,
+:root[data-skin="linoryt"] .airport-bubble__front { align-self: center; margin: 0 2px 0 0; background-color: var(--lin-paper); }
+:root[data-skin="linoryt"] .lin-br + .airport-bubble__curfew,
+:root[data-skin="linoryt"] .lin-br + .airport-bubble__surge,
+:root[data-skin="linoryt"] .lin-br + .airport-bubble__front { margin-left: 4px; }
+:root[data-skin="linoryt"] .airport-bubble__surge,
+:root[data-skin="linoryt"] .airport-bubble__front { --aw-surge-ink: var(--lin-ink); --aw-surge-paper: var(--lin-paper); --aw-front-ink: var(--lin-ink); --aw-front-paper: var(--lin-paper); font-family: var(--skin-face-text); }
+/* A jam: the note in red (glyphs keep their D-08 colours), the red jam block under it. */
+:root[data-skin="linoryt"] .airport-bubble--jam { background: transparent; color: var(--lin-red); }
+:root[data-skin="linoryt"] .lin-jam {
+  flex: none; box-sizing: border-box; display: grid; grid-template-columns: auto 1fr; align-items: baseline; column-gap: 8px;
+  width: var(--lin-jam-w); height: 46px; margin-top: 3px; padding: 4px 8px 0; background: var(--lin-red); color: var(--lin-paper);
+}
+:root[data-skin="linoryt"] .lin-jam__head { grid-column: 1 / -1; font: 700 12.5px/14px var(--skin-face-text); }
+:root[data-skin="linoryt"] .lin-jam__time { font: 900 22px/26px var(--skin-face-display); }
+:root[data-skin="linoryt"] .lin-jam__fill { justify-self: end; font: 700 12.5px/14px var(--skin-face-text); font-variant-numeric: tabular-nums; }
+/* The departure-slot ticket under the note: paper, ink outline, its stub in ink. */
+:root[data-skin="linoryt"] .airport-slot { border-color: var(--lin-ink); background: var(--lin-paper); color: var(--lin-ink); clip-path: none; font-family: var(--skin-face-text); }
+:root[data-skin="linoryt"] .airport-slot__stub { background: var(--lin-ink); color: var(--lin-paper); }
+:root[data-skin="linoryt"] .airport-slot__label,
+:root[data-skin="linoryt"] .airport-slot__time,
+:root[data-skin="linoryt"] .airport-slot__count { font-family: var(--skin-face-text); }
+/* Edge chip: name and arrow, the distance and fill line, the gauge at its foot; the code stays its (unprinted) text. */
+:root[data-skin="linoryt"] .airport-edge {
+  display: block; box-sizing: border-box; height: 48px; min-width: 58px; padding: 2px 6px 0 9px; border: 1.5px solid var(--lin-ink);
+  border-left-width: 4px; border-radius: 0; background: var(--lin-paper); color: var(--lin-ink); box-shadow: none;
+  font-size: 0; line-height: 0; letter-spacing: 0; text-align: left; white-space: nowrap; animation: none;
+}
+:root[data-skin="linoryt"] .airport-edge::before {
+  content: attr(data-lin-name); display: block; overflow: hidden; padding-right: 16px; font: 800 14px/16px var(--skin-face-display);
+}
+:root[data-skin="linoryt"] .airport-edge::after {
+  content: attr(data-lin-line); display: block; overflow: hidden; font: 600 11.5px/13px var(--skin-face-text); font-variant-numeric: tabular-nums;
+}
+:root[data-skin="linoryt"] .airport-edge > svg:first-child { position: absolute; top: 5px; right: 5px; width: 12px; height: 12px; }
+:root[data-skin="linoryt"] .airport-edge--gauge { padding-bottom: 0; }
+:root[data-skin="linoryt"] .airport-edge__gauge { left: 9px; right: 6px; bottom: 3px; height: 5px; }
+:root[data-skin="linoryt"] .airport-edge__gauge--high .airport-edge__fill { background: var(--lin-red); }
+:root[data-skin="linoryt"] .airport-edge--surge { padding-top: 3px; }
+:root[data-skin="linoryt"] .airport-edge__surge { top: auto; bottom: 12px; right: 5px; }
+:root[data-skin="linoryt"] .airport-edge--new { border-color: var(--lin-ink); border-left-color: var(--lin-red); background: var(--lin-paper); color: var(--lin-ink); box-shadow: none; }
+:root[data-skin="linoryt"] .airport-edge--curfew:not(.airport-edge--jam) { background-image: none; border-style: dashed; border-left-style: solid; }
+:root[data-skin="linoryt"] .airport-edge--jam { border-color: var(--lin-red); background: var(--lin-red); color: var(--lin-paper); animation: none; }
+:root[data-skin="linoryt"] .airport-edge--jam .airport-edge__gauge--high .airport-edge__fill { background: currentColor; }
+:root[data-skin="linoryt"] .airport-edge:focus-visible { outline: 3px solid var(--lin-red); outline-offset: 2px; }
+/* end U2 */
 
 /* ---- Part 5: sheets until U3 redraws them --------------------------------------------------------------------------
    The weekly board's top padding clears the old 70 px boarding pass (night-07n). Game time stands still while the board

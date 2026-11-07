@@ -415,6 +415,11 @@ export interface EdgeChip {
   x: number;
   y: number;
   placed: boolean;
+  /**
+   * [night-30a] PLAN-LINORYT.md U2: the chip's width when it is not EDGE_CHIP_WIDTH (the Linoryt preview prints the
+   * city name and "2 408 km · 8 z 12"); read only by `placeSizedEdgeChips`.
+   */
+  width?: number;
 }
 
 /** Free screen area for chips: HUD bands at the top/bottom and (landscape dock) on the right. */
@@ -524,6 +529,110 @@ export function placeEdgeChips(chips: readonly EdgeChip[], tags: readonly TagSlo
       for (let k = 0; k < same.length; k++) {
         const other = chips[same[k]];
         if (x < other.x + EDGE_CHIP_WIDTH + EDGE_CHIP_GAP && x + EDGE_CHIP_WIDTH + EDGE_CHIP_GAP > other.x
+          && y < other.y + EDGE_CHIP_HEIGHT + EDGE_CHIP_GAP && y + EDGE_CHIP_HEIGHT + EDGE_CHIP_GAP > other.y) { collides = true; break; }
+      }
+      if (collides) continue;
+      chip.x = x;
+      chip.y = y;
+      chip.placed = true;
+      same.push(i);
+      placed++;
+      break;
+    }
+  }
+  return placed;
+}
+
+// [night-30a] PLAN-LINORYT.md step U2: the Linoryt preview's edge chips carry the city name and the distance line, so
+// they are wider than EDGE_CHIP_WIDTH and differ per airport. `placeSizedEdgeChips` is `placeEdgeChips` with each chip's
+// own width (`EdgeChip.width`, default EDGE_CHIP_WIDTH): the same rules (jams first, never on an on-screen airport, none
+// off the band), except that only a jam's chip may sit under a note when the edge is full (others hide). Only the DEV preview calls it, so a release build drops it;
+// the flip (U5) makes it the one placement and removes `placeEdgeChips`.
+const chipWidth = (chip: EdgeChip): number => chip.width ?? EDGE_CHIP_WIDTH;
+const sizedNear: number[] = [];
+
+/** Where an on-screen airport is drawn (its marker or stamp) and the half size the chip keeps clear of beyond EDGE_CHIP_CLEAR. */
+export interface ChipMarker { x: number; y: number; half: number }
+
+function hitsObstacleSized(x: number, y: number, w: number, tags: readonly TagSlot[], markers: readonly ChipMarker[] | undefined, avoidTags: boolean): boolean {
+  for (let k = 0; k < sizedNear.length; k++) {
+    const i = sizedNear[k];
+    const tag = tags[i];
+    const marker = markers?.[i];
+    const ax = marker ? marker.x : tag.anchorX;
+    const ay = marker ? marker.y : tag.anchorY;
+    const clear = marker ? Math.max(EDGE_CHIP_CLEAR, marker.half * 1.5 + 2) : EDGE_CHIP_CLEAR;
+    if (ax > x - clear && ax < x + w + clear && ay > y - clear && ay < y + EDGE_CHIP_HEIGHT + clear) return true;
+    if (avoidTags && tag.placed && x < tag.x + tag.width + EDGE_CHIP_GAP && x + w + EDGE_CHIP_GAP > tag.x
+      && y < tag.y + tag.height + EDGE_CHIP_GAP && y + EDGE_CHIP_HEIGHT + EDGE_CHIP_GAP > tag.y) return true;
+  }
+  return false;
+}
+
+/**
+ * `placeEdgeChips` for chips of their own width (see above). The ideal place of `projectEdgeChip` (computed for an
+ * EDGE_CHIP_WIDTH chip) is first widened round the same point: a chip on the right edge grows leftward, one on the top
+ * or bottom edge grows round its centre and stays inside the band. `markers[i]`, when given, is where airport `i` is
+ * drawn (the Linoryt stamp: its note's anchor is not the airport); the chip keeps clear of it by EDGE_CHIP_CLEAR and of
+ * a larger stamp's corners. A chip slides along the whole free edge (not only one step per other chip: the wide chips
+ * meet more notes). No allocations per frame.
+ */
+export function placeSizedEdgeChips(chips: readonly EdgeChip[], tags: readonly TagSlot[], bounds: EdgeBounds, markers?: readonly ChipMarker[]): number {
+  obstacleScratch.length = 0;
+  for (const list of sideScratch) list.length = 0;
+  for (let i = 0; i < chips.length; i++) {
+    const chip = chips[i];
+    chip.placed = false;
+    if (!chip.offscreen) { obstacleScratch.push(i); continue; }
+    const w = chipWidth(chip);
+    if (chip.side === 1) chip.x = Math.round(bounds.width - bounds.right - EDGE_CHIP_PAD - w);
+    else if (chip.side >= 2) chip.x = Math.round(clamp(chip.x + (EDGE_CHIP_WIDTH - w) / 2, EDGE_CHIP_PAD, bounds.width - bounds.right - w - EDGE_CHIP_PAD));
+  }
+  let placed = 0;
+  for (let pass = 1; pass >= 0; pass--) for (let i = 0; i < chips.length; i++) {
+    const chip = chips[i];
+    if (!chip.offscreen || Number(chip.jammed) !== pass) continue;
+    const w = chipWidth(chip);
+    const vertical = chip.side < 2;
+    const start = vertical ? chip.y : chip.x;
+    const min = vertical ? bounds.top + EDGE_CHIP_PAD : EDGE_CHIP_PAD;
+    const max = vertical ? bounds.height - bounds.bottom - EDGE_CHIP_HEIGHT - EDGE_CHIP_PAD
+      : bounds.width - bounds.right - w - EDGE_CHIP_PAD;
+    const step = (vertical ? EDGE_CHIP_HEIGHT : w) + EDGE_CHIP_GAP;
+    const reach = Math.max(start - min, max - start) + 1;
+    const same = sideScratch[chip.side];
+    sizedNear.length = 0;
+    for (let k = 0; k < obstacleScratch.length; k++) {
+      const tag = tags[obstacleScratch[k]];
+      const marker = markers?.[obstacleScratch[k]];
+      const ax = marker ? marker.x : tag.anchorX, ay = marker ? marker.y : tag.anchorY;
+      const clear = marker ? Math.max(EDGE_CHIP_CLEAR, marker.half * 1.5 + 2) : EDGE_CHIP_CLEAR;
+      const near = vertical
+        ? (ax > chip.x - clear && ax < chip.x + w + clear)
+          || (tag.placed && chip.x < tag.x + tag.width + EDGE_CHIP_GAP && chip.x + w + EDGE_CHIP_GAP > tag.x)
+        : (ay > chip.y - clear && ay < chip.y + EDGE_CHIP_HEIGHT + clear)
+          || (tag.placed && chip.y < tag.y + tag.height + EDGE_CHIP_GAP && chip.y + EDGE_CHIP_HEIGHT + EDGE_CHIP_GAP > tag.y);
+      if (near) sizedNear.push(obstacleScratch[k]);
+    }
+    // The chip slides in steps of its own size (wide chips on the top or bottom edge in thirds, so a gap narrower than
+    // the chip is found) until both directions leave the edge.
+    const fine = vertical ? 1 : 3;
+    // A printed chip over a note reads as one block with it, so only a jam's chip may sit under a note when the edge is
+    // full (the off-screen jam must stay visible); any other chip without a place clear of the notes hides.
+    for (let avoidTags = 1; avoidTags >= (chip.jammed ? 0 : 1) && !chip.placed; avoidTags--)
+    for (let offset = 0; ; offset++) {
+      const shift = Math.ceil(offset / 2) * step / fine;
+      if (shift > reach) break;
+      const coord = Math.round(start + (offset === 0 ? 0 : (offset % 2 ? 1 : -1) * shift));
+      if (coord < min || coord > max) continue;
+      const x = vertical ? chip.x : coord;
+      const y = vertical ? coord : chip.y;
+      if (hitsObstacleSized(x, y, w, tags, markers, avoidTags === 1)) continue;
+      // Every chip placed so far, on any edge: a wide chip near a corner may reach a chip of the next edge.
+      let collides = false;
+      for (let s = 0; s < 4 && !collides; s++) for (let k = 0; k < sideScratch[s].length; k++) {
+        const other = chips[sideScratch[s][k]];
+        if (x < other.x + chipWidth(other) + EDGE_CHIP_GAP && x + w + EDGE_CHIP_GAP > other.x
           && y < other.y + EDGE_CHIP_HEIGHT + EDGE_CHIP_GAP && y + EDGE_CHIP_HEIGHT + EDGE_CHIP_GAP > other.y) { collides = true; break; }
       }
       if (collides) continue;

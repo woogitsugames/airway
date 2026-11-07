@@ -315,7 +315,23 @@ check('roza: the helpers have no runtime import (release bundle order unchanged)
     if (/\b(linorytMenu\(\)|indexFraming\()/.test(line) && !/import\.meta\.env\.DEV && linorytMenu\(\)/.test(line) &&
       !/menuClashes: menuActive && \(rozaMenu\(\) \|\| linorytMenu\(\)\)/.test(line)) unguarded.push(`world.ts: ${line.trim()}`);
   }
+  // [night-30a] U2: the overlay's note, stamp, margin and edge-chip calls (src/ui/overlay.ts), each line or block guarded.
+  {
+    const lines = read('src/ui/overlay.ts').split('\n');
+    let depth = 0; // brace depth inside an open `if (import.meta.env.DEV && linoryt.on…) {` block (0: none open)
+    const braces = (line) => (line.match(/\{/g) ?? []).length - (line.match(/\}/g) ?? []).length;
+    for (const line of lines) {
+      if (!depth && /if \(import\.meta\.env\.DEV && linoryt\.on[^{]*\{\s*$/.test(line)) { depth = braces(line); continue; }
+      if (depth) { depth += braces(line); continue; }
+      if (/\b(linoryt[A-Z]\w*|placeSizedEdgeChips)\(/.test(line) && !/import\.meta\.env\.DEV && linoryt\.on/.test(line)) unguarded.push(`overlay.ts: ${line.trim()}`);
+    }
+  }
   check('linoryt: every helper call is guarded by import.meta.env.DEV && linoryt.on', unguarded.length === 0, unguarded.slice(0, 3).join(' | '));
+  // [night-30a] U2: the airport notes' rules stay in one delimited section, print without shadows, radii or gradients,
+  // and keep fixed in-world sizes at every text step (D-267: no text-scale token in the section).
+  const u2 = read(LIN).match(/\/\* U2 notes \*\/([\s\S]*?)\/\* end U2 \*\//);
+  check('linoryt: the U2 notes are one delimited section, in print and in-world sizes (no shadow, radius, gradient, text scale)',
+    !!u2 && !/box-shadow:\s*(?!none\b)[^;\s]|border-radius:\s*[1-9]|gradient\(|--airway-text-scale/.test(stripComments(u2[1])), u2 ? '' : 'section missing');
   // [night-29b] U4: its screens' rules stay in one delimited section (a parallel step adds its own to the same file).
   const u4 = read(LIN).match(/\/\* U4 screens \*\/([\s\S]*?)\/\* end U4 \*\//);
   check('linoryt: the U4 screens are one delimited section and print without shadows, radii or gradients',

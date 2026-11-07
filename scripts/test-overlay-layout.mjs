@@ -6,7 +6,8 @@ const ts = require('typescript');
 const source = readFileSync(new URL('../src/ui/overlay-layout.ts', import.meta.url), 'utf8');
 const js = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText;
 const { layoutTags, sizeTagGroup, attachSlotTag, slotCountdownText, MAIN_TAG_HEIGHT, SLOT_TAG_HEIGHT, SLOT_TAG_GAP,
-  placeEdgeChips, projectEdgeChip, EDGE_CHIP_WIDTH: EW, EDGE_CHIP_HEIGHT: EH, EDGE_CHIP_PAD, EDGE_CHIP_CLEAR } = await import('data:text/javascript;charset=utf-8,' + encodeURIComponent(js));
+  placeEdgeChips, projectEdgeChip, EDGE_CHIP_WIDTH: EW, EDGE_CHIP_HEIGHT: EH, EDGE_CHIP_PAD, EDGE_CHIP_CLEAR,
+  placeSizedEdgeChips } = await import('data:text/javascript;charset=utf-8,' + encodeURIComponent(js));
 let passed = 0;
 let failed = 0;
 const assert = (name, ok) => { if (ok) passed++; else { failed++; console.error('FAIL ' + name); } };
@@ -472,6 +473,116 @@ assert('out-of-range label suppressed', layoutTags([{ ...crowd[0], width: 500 }]
     for (const t of slots) if (!t.fixed) t.width = scene().find((u) => u.id === t.id).width;
     layoutTags(slots, b);
     assert('levant: stable on the next frame', slots.map((t) => [t.placed, t.compact, t.x, t.y].join()).join('|') === snap);
+  }
+}
+// [night-30a] PLAN-LINORYT.md U2: the Linoryt preview's edge chips carry the city name and "2 408 km · 8 z 12", each as
+// wide as its lines (58–136 px). placeSizedEdgeChips keeps the placeEdgeChips rules with each chip's own width: no two
+// chips meet (on any edge, corners included), none leaves the free band, none covers an on-screen airport, a jam keeps
+// its place in a crowd, tags are avoided while there is room; deterministic and under 1 ms for 150 airports.
+{
+  const eb = { width: 412, height: 915, top: 100, bottom: 90, right: 0 };
+  function sizedScene(n, seed, b) {
+    let st = seed;
+    const rnd = () => { st = (Math.imul(st, 1664525) + 1013904223) >>> 0; return st / 0x100000000; };
+    const tags = [], chips = [];
+    for (let i = 0; i < n; i++) {
+      const off = rnd() < 0.6;
+      const ax = rnd() < 0.5 ? (rnd() < 0.5 ? 12 + rnd() * 80 : b.width - b.right - 92 + rnd() * 80) : 60 + rnd() * (b.width - 120);
+      const ay = b.top + rnd() * (b.height - b.top - b.bottom);
+      tags.push({ id: 's' + i, anchorX: ax, anchorY: ay, width: 60 + Math.round(rnd() * 60), height: 51, active: !off && rnd() < 0.8, jammed: false, x: 0, y: 0, placed: false });
+      const chip = { offscreen: off, jammed: off && rnd() < 0.15, side: 0, x: 0, y: 0, placed: false, width: 58 + Math.round(rnd() * 78) };
+      if (off) { const angle = rnd() * Math.PI * 2; projectEdgeChip(chip, Math.cos(angle), Math.sin(angle), rnd() * 360 - 180, b); }
+      chips.push(chip);
+    }
+    layoutTags(tags, { width: b.width - b.right, height: b.height, top: b.top, bottom: b.bottom, gap: 4 });
+    return { tags, chips };
+  }
+  const meet = (a, b, gap) => a.x < b.x + b.width + gap && a.x + a.width + gap > b.x && a.y < b.y + EH + gap && a.y + EH + gap > b.y;
+  let clean = 0, shown = 0;
+  const problems = [];
+  for (let k = 0; k < 200; k++) {
+    const b = k % 3 === 0 ? { width: 915, height: 412, top: 90, bottom: 0, right: 132 } : eb;
+    const s = sizedScene(12 + (k % 6) * 14, 0x5A1D + k, b);
+    placeSizedEdgeChips(s.chips, s.tags, b);
+    const placed = s.chips.filter((c) => c.offscreen && c.placed);
+    shown += placed.length;
+    let ok = true;
+    for (const c of placed) {
+      if (c.x < EDGE_CHIP_PAD || c.x + c.width > b.width - b.right - EDGE_CHIP_PAD || c.y < b.top + EDGE_CHIP_PAD ||
+        c.y + EH > b.height - b.bottom - EDGE_CHIP_PAD) { ok = false; problems.push(`scene ${k}: chip outside the band`); }
+      for (const o of placed) if (o !== c && meet(c, o, 0)) { ok = false; problems.push(`scene ${k}: chips meet`); }
+      for (let i = 0; i < s.tags.length; i++) {
+        if (s.chips[i].offscreen) continue;
+        const t = s.tags[i];
+        if (t.anchorX > c.x - EDGE_CHIP_CLEAR && t.anchorX < c.x + c.width + EDGE_CHIP_CLEAR && t.anchorY > c.y - EDGE_CHIP_CLEAR && t.anchorY < c.y + EH + EDGE_CHIP_CLEAR) {
+          ok = false; problems.push(`scene ${k}: chip on an on-screen airport`);
+        }
+      }
+    }
+    if (ok) clean++;
+  }
+  assert(`sized edge chips: 200 scenes, no chip meets another, leaves the band or covers an airport (${clean}/200; ${problems[0] ?? ''})`, clean === 200);
+  assert(`sized edge chips: most chips find a place (${shown})`, shown > 1500);
+  {
+    const crowd = Array.from({ length: 30 }, (_, i) => ({ offscreen: true, jammed: i === 29, side: 1, x: 412 - 7 - EW, y: 400, placed: false, width: 120 }));
+    const tags = crowd.map((_, i) => ({ id: 'c' + i, anchorX: -100, anchorY: -100, width: 30, height: 30, active: false, jammed: false, x: 0, y: 0, placed: false }));
+    placeSizedEdgeChips(crowd, tags, eb);
+    assert('sized edge chips: a wide chip on the right edge grows leftward from the pad', crowd[29].placed && crowd[29].x === 412 - 7 - 120);
+    assert('sized edge chips: the jammed chip keeps its ideal place in a crowd', crowd[29].y === 400);
+  }
+  {
+    const chip = { offscreen: true, jammed: false, side: 2, x: 0, y: 0, placed: false, width: 130 };
+    projectEdgeChip(chip, 0.02, -1, 0, eb);
+    const centre = chip.x + EW / 2;
+    placeSizedEdgeChips([chip], [{ id: 'x', anchorX: -100, anchorY: -100, width: 0, height: 0, active: false, jammed: false, x: 0, y: 0, placed: false }], eb);
+    assert('sized edge chips: on the top edge the chip widens round its ideal centre', chip.placed && Math.abs(chip.x + 65 - centre) <= 1);
+    const tag = { id: 'on', anchorX: 300, anchorY: 600, width: 140, height: 51, active: true, jammed: false, x: chip.x, y: chip.y, placed: true };
+    const again = { offscreen: true, jammed: false, side: 2, x: 0, y: 0, placed: false, width: 130 };
+    projectEdgeChip(again, 0.02, -1, 0, eb);
+    placeSizedEdgeChips([again, { offscreen: false }], [{ id: 'x', anchorX: -100, anchorY: -100, width: 0, height: 0, active: false, placed: false }, tag], eb);
+    // On an edge too short for a place clear of the note, only a jam's chip sits under it; any other chip hides.
+    const short = { width: 412, height: 100 + 90 + 14 + EH, top: 100, bottom: 90, right: 0 };
+    const under = { id: 'on', anchorX: -100, anchorY: -100, width: 300, height: 51, active: true, jammed: false, x: 60, y: 100, placed: true };
+    for (const jammed of [false, true]) {
+      const c = { offscreen: true, jammed, side: 2, x: 177, y: 107, placed: false, width: 100 };
+      placeSizedEdgeChips([c, { offscreen: false }], [{ id: 'x', anchorX: -100, anchorY: -100, width: 0, height: 0, active: false, placed: false }, under], short);
+      assert(`sized edge chips: on a full edge ${jammed ? 'a jam\'s chip sits under the note' : 'a plain chip hides rather than cover a note'}`, c.placed === jammed);
+    }
+    assert('sized edge chips: a wide chip slides off a luggage tag when there is room',
+      again.placed && !(again.x < tag.x + tag.width + 3 && again.x + 130 + 3 > tag.x && again.y < tag.y + tag.height + 3 && again.y + EH + 3 > tag.y));
+  }
+  {
+    // The Linoryt note's anchor is beside its stamp, not on it: the chip keeps off the stamp given as a marker.
+    const chip = { offscreen: true, jammed: false, side: 1, x: 412 - 7 - EW, y: 300, placed: false, width: 120 };
+    const on = { offscreen: false, side: 0, x: 0, y: 0, placed: false };
+    const tag = { id: 'rix', anchorX: 120, anchorY: 330, width: 60, height: 31, active: true, jammed: false, x: 60, y: 600, placed: true };
+    const off = { id: 'x', anchorX: -100, anchorY: -100, width: 0, height: 0, active: false, jammed: false, x: 0, y: 0, placed: false };
+    placeSizedEdgeChips([chip, on], [off, tag], eb, [{ x: 0, y: 0, half: 0 }, { x: 350, y: 320, half: 11 }]);
+    assert('sized edge chips: never on an on-screen stamp given as a marker (not its note\'s anchor)',
+      chip.placed && !(350 > chip.x - 18.5 && 350 < chip.x + 120 + 18.5 && 320 > chip.y - 18.5 && 320 < chip.y + EH + 18.5));
+    // Many notes along the edge and few chips: the chip still finds the free stretch beyond them (scene shots-30a "new").
+    const notes = [0, 1, 2, 3].map((k) => ({ id: 'n' + k, anchorX: -100, anchorY: -100, width: 100, height: 40, active: true, jammed: false, x: 280, y: 130 + k * 52, placed: true }));
+    const lone = { offscreen: true, jammed: false, side: 1, x: 412 - 7 - EW, y: 140, placed: false, width: 120 };
+    placeSizedEdgeChips([lone, ...notes.map(() => ({ offscreen: false, side: 0, x: 0, y: 0, placed: false }))], [off, ...notes], eb);
+    assert(`sized edge chips: slides past more notes than there are chips to a free place (y ${lone.y})`,
+      lone.placed && notes.every((n) => !(lone.x < n.x + n.width && lone.x + 120 > n.x && lone.y < n.y + n.height && lone.y + EH > n.y)));
+  }
+  {
+    const s = sizedScene(80, 0xD00D, eb);
+    const ideal = s.chips.map((c) => [c.x, c.y]);
+    placeSizedEdgeChips(s.chips, s.tags, eb);
+    const first = JSON.stringify(s.chips);
+    s.chips.forEach((c, i) => { c.x = ideal[i][0]; c.y = ideal[i][1]; });
+    placeSizedEdgeChips(s.chips, s.tags, eb);
+    assert('sized edge chips: deterministic output', JSON.stringify(s.chips) === first);
+    const big = sizedScene(150, 0xBEEF, eb);
+    const start = big.chips.map((c) => [c.x, c.y]);
+    const run = () => { big.chips.forEach((c, i) => { c.x = start[i][0]; c.y = start[i][1]; }); placeSizedEdgeChips(big.chips, big.tags, eb); };
+    for (let r = 0; r < 50; r++) run();
+    const t0 = performance.now();
+    for (let r = 0; r < 400; r++) run();
+    const ms = (performance.now() - t0) / 400;
+    assert(`sized edge chips: 150 airports under 1 ms per frame (${ms.toFixed(3)} ms)`, ms < 1);
   }
 }
 console.log(`SUMMARY test:overlay-layout seed=0xA1A1 cases=${passed + failed} passed=${passed} failed=${failed}`);
