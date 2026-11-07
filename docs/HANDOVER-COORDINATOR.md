@@ -1,6 +1,6 @@
 # Przekazanie koordynatora Airway
 
-Ostatnia aktualizacja: 2026-11-07, ok. 11:05 UTC. Nowa sesja koordynatora (wieczór 6.11) pracuje ciągle; budziki
+Ostatnia aktualizacja: 2026-11-07, ok. 12:00 UTC. Nowa sesja koordynatora (wieczór 6.11) pracuje ciągle; budziki
 włączone. Nowa sesja startuje promptem z `docs/notes/coordinator-start-prompt.md`.
 
 ## 7.11 rano
@@ -10,6 +10,12 @@ włączone. Nowa sesja startuje promptem z `docs/notes/coordinator-start-prompt.
   prompt dla sesji ext `docs/notes/linoryt-ext-prompt.md` (+ spec renderu), pierwszy etap UI. Po PR: wysłać
   właścicielowi prompt ext (stary `roza-ext-prompt.md` nieaktualny).
 - GPT-09/10/21 (Róża) nieaktualne — nie scalać, jeśli przyjdą.
+- #285 scalony: plan `PLAN-LINORYT.md` (U1…U7 agent, E1…E4 ext), prompt ext `docs/notes/linoryt-ext-prompt.md` +
+  `linoryt-render-spec.md` (wysłane właścicielowi), U1 za `?skin=linoryt` (D-284). Odpowiedzi L1–L4 → D-285 (dok 5
+  symboli, Mapa usunięta, noc 20–06, czerwień #B33823).
+- W toku: U3 arkusze (`night/29a-linoryt-sheets`) i U4 menu/ekrany (`night/29b-linoryt-menu`) — obie dopisują do
+  `linoryt.css` w osobnych sekcjach; przy drugim scaleniu konflikt w CSS/BACKLOG/DECISIONS (przenumerować D-286).
+- Kolejność dalej: E1 (ext) → E2 ∥ U2 → E3 → U5 przełączenie → E4 → U6 → U7 (zrzuty/wideo).
 
 ## Wieczór 6.11 (nowa sesja koordynatora)
 - **Róża odrzucona przez właściciela: „dalej jest AI slop”** — wszystkie cztery warstwy: glob satelitarny, ozdobniki
@@ -91,7 +97,7 @@ commitach.
 
 
 ## W toku
-- Agent `night/28a-linoryt-ui` (plan Linorytu, prompt ext, etap UI 1) — `/workspace/28a`.
+- Agenci U3 `/workspace/29a` i U4 `/workspace/29b` (Linoryt, podgląd).
 
 ## Decyzje do właściciela
 1. Uruchomienie sesji ext z promptem Linorytu (po PR 28a). Wideo/zrzuty sklepu dopiero po wdrożeniu Linorytu.
