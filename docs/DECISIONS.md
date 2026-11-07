@@ -3015,7 +3015,7 @@ slides out of the note. Rejected: the stamp as a square box obstacle (a note's c
 diagonal), keeping the 52 px code-only chips (the frame `png/a-game.png` prints the city), letting any chip cover a note
 (two printed blocks read as one). **Status: in force for the preview; carried into U5; the fallback goes when E2 lands.**
 
-## D-289 ? Versioned EUS start pool (2026-11-06)
+## D-289 — Versioned EUS start pool (2026-11-06)
 
 EUS v2 keeps only existing clusters whose third member is at least 800 km from the anchor. With weekly contracts and demand surges enabled, the 50-seed bot median falls from 18.49 to 17.26 minutes; the other six regions are unchanged. In 200 EUS seeds the median is 16.72 minutes. Thresholds 700 km and 900 km gave 17.76 and 17.26 minutes respectively on 50 seeds; 800 provides more margin than 700 without narrowing the pool as much as 900. These are bot measurements, not human difficulty evidence. New EUS runs carry a version flag; old snapshots, journal replays and same-world restarts retain the original pool. Random and Daily remain unchanged.
 
