@@ -837,6 +837,15 @@ Plan: `docs/styles/kierunki-2026-11b/PLAN-LINORYT.md` (one PR per step; ext = gl
       hidden, Besley + Schibsted Grotesk in the licences), licences, privacy, terms, logbook, puzzles, daily ranking in
       print; `test:e2e:linoryt:stub` audits them (216 screens), `--skin=linoryt` for settings-groups, logbook,
       puzzle-board-scroll, privacy/terms, menu-clear, pseudo-320; shots `docs/shots/29b/` — night/29b-linoryt-menu
+- [x] **U4 fix (agent)** `--skin=linoryt` suites green: settings choices get a 184 px column (the printed "▾" sits in
+      the padding), settings rows and logbook record labels at the D-248 base (14 / 13 px × step, the text-scale-150
+      probes), crate title floor 13 px for Besley (pseudo-320), no `tnum` on numbers with separators (Schibsted's tabular
+      comma/colon printed "2 ,500"; not a missing glyph). Shots `docs/shots/31a/` — night/31a-linoryt-screens-fix.
+      Open: `e2e/screen-fixtures.mjs` mounts the weekly board without `pendingHub`, so `classList.toggle('is-picking-hub',
+      undefined)` shows the airport-pick layout; its D-210 screen-reader-only week is the 4 shipped-skin "Tydzień 7"
+      failures of text-scale-150 at 915×412. Passing `pendingHub: false` fixes those but exposes a shipped Róża overflow
+      (pseudo-320 crates 12..327 px at 320, nowrap crate heading) → fix with the U5 flip (Róża goes) or a release PR.
+      The `tnum` fix also covers the U2 notes and edge chips ("12 , 270 km" → "12,270 km"; shots `docs/shots/31a/u2/`).
 - [ ] **E3 (ext)** the Linoryt look in release builds behind `DEFAULT_GLOBE_LOOK` (still satellite)
 - [ ] **U5 (agent)** the flip: Linoryt default skin + look; delete Róża and `?skin=current`; i18n renames; CSS budget back
 - [ ] **E4 (ext)** remove Satelita (and Mapa if the owner agrees: open question L2 of PR #285) and the photo textures (−1.9 MB)
