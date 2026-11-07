@@ -320,6 +320,25 @@ Not done: WOFF2 fonts (about −40 % of the 624 kB TTF; OFL allows the conversio
 entry) — a size win only, no parse-time effect.
 
 
+## E2 — Linoryt stamps, routes and planes (2026-11-08, D-283, D-299)
+DEV look `?look=linoryt` (release unchanged until E3). Medallion parts, hub seat rings, curfew barriers, route tubes
+with outlines and horizon ghosts, 3D plane models, shadows and trails are replaced by **five screen-constant draws**:
+stamps (1), jam zone (1, only while a jam exists), all routes as one ribbon (1), the route preview (1, while drawing),
+planes as SDF sprites (1). Stamps/jam/planes are quads sized in CSS px in the vertex shader; the route ribbon is
+rebuilt only on a network change; plane positions are two dynamic instanced attributes per frame (no allocation).
+The plane atlas (256×128 R8 SDF from the two icon paths, ~85 kB GPU with mips) is built once per layer.
+`perf:scene` (SwiftShader, 412×915, DPR 1, 120 samples; Linoryt look before → after E2; compare only within this
+table, never with devices):
+
+| Preset | Draw calls | Triangles | Idle fps | Render CPU ms |
+| --- | --- | --- | --- | --- |
+| low | 41 → **14** | 204 082 → **38 953** | 17.1 → 28.9 | 0.72 → 0.47 |
+| saver | 41 → **14** | 204 082 → **38 882** | 17.6 → 27.9 | 0.58 → 0.32 |
+| medium | 42 → **14** | 204 082 → **38 930** | 6.5 → 15.2 | 1.02 → 0.49 |
+
+Terrain triangles are unchanged; the drop is the medallion, tube and plane-model geometry. Full-screen transparent
+layers stay 0 (the object quads are small and transparent only at their AA edges).
+
 ## E1 — Linoryt globe material (2026-11-07, D-283, D-298)
 DEV look `?look=linoryt` (release unchanged until E3). Same terrain mesh as the satellite look (textured relief); the
 print material is one `ShaderMaterial` with **one texture fetch** (RGBA8 field 2048×1024 built at load: coast distance,

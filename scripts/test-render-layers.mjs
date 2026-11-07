@@ -15,7 +15,8 @@ const folder = mkdtempSync(resolve(ROOT, 'node_modules/.render-layers-'));
 try {
   writeFileSync(join(folder, 'package.json'), JSON.stringify({ type: 'module' }));
   for (const path of ['globe/geo-math.ts', 'routes.ts', 'models/planes.ts', 'planes.ts', 'routePreview.ts', 'airports.ts',
-    'camera.ts', 'framing.ts', 'contrast.ts', 'menuNetwork.ts', 'sun.ts'] /* [task-34] */) {
+    'camera.ts', 'framing.ts', 'contrast.ts', 'menuNetwork.ts', 'sun.ts', /* [task-34] */
+    'globe/linoryt.ts', 'linoryt-objects.ts'] /* [ext-04 E2] */) {
     const file = resolve(ROOT, 'src/render', path);
     const target = join(folder, path.replace(/\.ts$/, '.js'));
     mkdirSync(dirname(target), { recursive: true });
@@ -242,6 +243,69 @@ try {
   check(!/awRed|LINORYT_INKS\.red/.test(linorytGlobe), 'linoryt globe material has no red (red is for a jam only, E2)');
   check(/import\.meta\.env\.DEV && opts\.look === 'linoryt'[\s\S]{0,120}await import\('\.\/linoryt-globe'\)/.test(globeIndex),
     'linoryt globe is a DEV-only dynamic import until E3');
+
+  // [ext-04 E2] D-283 spec §5–§8: Linoryt stamps by shape, curfew outline, jam zone + countdown arc, palette, routes.
+  {
+    const lino = await load('linoryt-objects.js');
+    const inksModule = await load('globe/linoryt.js');
+    check(inksModule.STAMP_SIZE_PX.airport === 22 && inksModule.STAMP_SIZE_PX.hub === 30, 'STAMP_SIZE_PX = { airport: 22, hub: 30 }');
+    const scene2 = new three.Scene();
+    const objects = { uViewport: { value: { x: 412, y: 915 } }, uDpr: { value: 1 }, uTime: { value: 0 }, uPxPerRad: { value: 200 },
+      uPaper: { value: new three.Color('#ECE3CC') }, uInk: { value: new three.Color('#1E1C1F') }, uRed: { value: new three.Color('#B33823') } };
+    const stamps = lino.createStampLayer(scene2, objects, 8);
+    stamps.addAirport({ id: 'WAW', lon: 21, lat: 52.2 });
+    stamps.addAirport({ id: 'IST', lon: 28.9, lat: 41, hub: true });
+    stamps.update();
+    const [jamMesh, stampMesh] = stamps.group.children;
+    const shape = stampMesh.geometry.getAttribute('aShape').array;
+    check(stampMesh.geometry.instanceCount === 2 && shape[0] === 0 && shape[4] === 1,
+      'stamps: regular airport = square kind 0, hub = octagon kind 1 (shape, not colour)');
+    check(stamps.halfSize('WAW') === 11 && stamps.halfSize('IST') === 15 && stamps.halfSize('XXX') === 0, 'stamp half size 11 / 15 px');
+    stamps.setCurfew('WAW', true); stamps.update();
+    check(stampMesh.geometry.getAttribute('aShape').array[1] === 1, 'curfew: the stamp is drawn as an outline (closed flag)');
+    check(!jamMesh.visible && jamMesh.geometry.instanceCount === 0, 'no jam zone without a jam');
+    stamps.setJam('IST', 0.4); stamps.update();
+    const jam = jamMesh.geometry.getAttribute('aJam').array;
+    check(jamMesh.visible && jamMesh.geometry.instanceCount === 1 && jam[0] === 45 && Math.abs(jam[1] - 0.4) < 1e-6 &&
+      stampMesh.geometry.getAttribute('aShape').array[6] === 1, 'jam: zone r = 3 × half (45 px for a hub), arc = share left, stamp in red');
+    stamps.setJam('IST', 7); stamps.update();
+    check(Math.abs(jamMesh.geometry.getAttribute('aJam').array[1] - 1) < 1e-6, 'jam share clamped to 1');
+    stamps.setJam('IST', null); stamps.update();
+    check(!jamMesh.visible, 'jam cleared → zone gone');
+    check(stamps.group.children.length === 2, 'stamps + jam zone: two instanced draws');
+    const stampFrag = stampMesh.material.fragmentShader, jamFrag = jamMesh.material.fragmentShader;
+    check(/vShape\.z > 0\.5 \? uRed : uInk/.test(stampFrag), 'stamp red only when jammed');
+    check(/sdOctagon/.test(stampFrag) && /sdBox/.test(stampFrag) && /abs\(outer \+ 1\.25\) - 1\.25/.test(stampFrag),
+      'stamp SDF: octagon hub, square airport, 2.5 px outline when closed');
+    check(/atan\(vPx\.x, vPx\.y\)/.test(jamFrag) && /vJam\.y \* 6\.2831853/.test(jamFrag), 'jam arc from 12 o\'clock, clockwise, length = share');
+    // Palette (L5): the route ribbon, the preview and the planes never use red.
+    const routes2 = new lino.LinorytRouteLayer(objects);
+    routes2.setRoutes([{ id: 'r', type: 'widebody', waypoints: [{ lon: -0.1, lat: 51.5 }, { lon: -74, lat: 40.7 }] },
+      { id: 't', type: 'turboprop', waypoints: [{ lon: 21, lat: 52.2 }, { lon: 28.9, lat: 41 }, { lon: 31.2, lat: 30 }] }], 1);
+    const ribbon = routes2.group.children[0];
+    check(routes2.stats.routes === 2 && routes2.stats.drawCalls === 1 && ribbon.renderOrder === 10, 'routes: one ribbon draw for every route');
+    const widths = ribbon.geometry.getAttribute('aWidth').array;
+    const pairs = new Set(); for (let i = 0; i < widths.length; i += 2) pairs.add(widths[i] + '/' + widths[i + 1]);
+    check(pairs.has('3.25/1.25') && pairs.has('2.5/1'), 'double line: widebody 6.5/2.5 px, turboprop 5/2 px (outer/core)');
+    check(!/uRed/.test(ribbon.material.fragmentShader), 'routes: no red');
+    check(routes2.getRoute('t')?.arcs.length === 2, 'ribbon routes keep the prepared arcs for the planes');
+    const preview2 = lino.createLinorytRoutePreview(objects);
+    preview2.update({ points: [{ lon: -9.1, lat: 38.7 }, { lon: -0.2, lat: 5.6 }], legDistancesKm: [3788], rangeKm: 2500, aircraft: 'turboprop' });
+    const previewMesh = preview2.object.children[0];
+    check(previewMesh.visible && previewMesh.geometry.drawRange.count > 0 && previewMesh.material.uniforms.uDash.value === 1 &&
+      !/uRed/.test(previewMesh.material.fragmentShader), 'route preview: dashed ink, no red (beyond the range: dots)');
+    const beyond = previewMesh.geometry.getAttribute('aTrack').array;
+    let flagged = 0; for (let i = 1; i < beyond.length; i += 3) if (beyond[i] === 1) flagged++;
+    check(flagged > 0, 'route preview marks the part beyond the range');
+    preview2.update(null);
+    check(!previewMesh.visible, 'route preview hides on null');
+    const worldSrc = readFileSync(resolve(ROOT, 'src/render/world.ts'), 'utf8');
+    const body = worldSrc.slice(worldSrc.indexOf('world.projectAirport = '), worldSrc.indexOf('return world;'));
+    check(/project\(city\.lon, city\.lat, 1\.01, point\)/.test(body) && /project\(city\.lon, city\.lat, 1\.01, point\)/.test(worldSrc.slice(worldSrc.indexOf('pick(x, y)'))),
+      'projectAirport measures the same point as pick() (altitude 1.01)');
+    check(!/new |\[\]|=> \(\{/.test(body), 'projectAirport allocates nothing (writes into out)');
+    stamps.dispose(); routes2.dispose(); preview2.dispose();
+  }
 } catch (error) {
   failed++;
   failures.push(error instanceof Error ? error.stack ?? error.message : String(error));

@@ -120,3 +120,6 @@ export const ATMOSPHERE_LINES: readonly { readonly offset: number; readonly widt
 ];
 /** §4 The inked limb ring, CSS px. */
 export const LIMB_RING_PX = 2.5;
+
+/** §5/§8 Airport stamp side in CSS px, constant on screen (regular square / hub octagon across its flats). E2. */
+export const STAMP_SIZE_PX = { airport: 22, hub: 30 } as const;

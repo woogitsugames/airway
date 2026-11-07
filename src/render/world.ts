@@ -24,6 +24,9 @@ import { RouteLayer, type AircraftKind, type GeoWaypoint, type RouteRenderSpec }
 import { createSunController, type SunController } from './sun';
 import { measureLayerContrast, sampleLuminance, type LayerContrast, type PixelRect } from './contrast';
 import type { UpgradeKind } from '../sim/upgrades';
+// [ext-04 E2] D-283: Linoryt stamps, ribbons and silhouettes; only reached behind `import.meta.env.DEV` until E3.
+import { createLinorytObjects, type PlaneLayerLike, type RouteLayerLike, type StampLayer } from './linoryt-objects';
+import { STAMP_SIZE_PX } from './globe/linoryt';
 
 export const DIORAMA_SKY = '#8CC3D8';
 /** Airport tap radius in CSS px (dp); matches the route tool's start radius. */
@@ -39,6 +42,15 @@ export interface HubLoadView {
   readonly id: string;
   readonly used: number;
   readonly cap: number;
+  /** [ext-04 E2] Linoryt: share of the jam grace period left (0..1), null/absent = not jammed; any airport. */
+  readonly jam01?: number | null;
+}
+/** [ext-04 E2] Spec §8: an airport stamp on screen (CSS px): centre, half the side, on the visible hemisphere. */
+export interface AirportScreenBox {
+  x: number;
+  y: number;
+  half: number;
+  visible: boolean;
 }
 export interface RouteView {
   readonly id: string;
@@ -141,6 +153,11 @@ export interface WorldRenderer {
   setTime(tick: number, fraction?: number): void;
   setCities(cities: readonly CityView[]): void;
   setHubLoad(loads: readonly HubLoadView[]): void;
+  /**
+   * [ext-04 E2] Spec §8: the stamp of airport `id` on screen, written into `out` without allocating (DEV builds until
+   * E3; the UI calls it as `projectAirport?.(id, out)`). Unknown id → `visible: false`.
+   */
+  projectAirport?(id: string, out: AirportScreenBox): AirportScreenBox;
   /** Complete set of airports whose curfew barrier is closed. */
   setCurfew(closedIds: readonly string[]): void;
   /** Rebuilds route tubes only when `revision` changes (or is omitted). */
@@ -194,19 +211,23 @@ export function createWorldRenderer(
   scene.add(lights.group);
   const sun: SunController = createSunController(lights, renderer);
   const airportStyle: AirportStyle = opts.airportStyle ?? 'medal';
-  const airports: AirportsLayer = createAirports(scene, {
+  // [ext-04 E2] The Linoryt look draws stamps, double-line ribbons, a dashed preview and cut silhouettes instead.
+  const linorytObjects = import.meta.env.DEV && opts.look === 'linoryt'
+    ? createLinorytObjects(scene, { maxAirports: opts.maxAirports, maxPlanes: opts.maxPlanes, progressScale: opts.progressScale })
+    : null;
+  const airports: AirportsLayer = import.meta.env.DEV && linorytObjects ? linorytObjects.airports : createAirports(scene, {
     style: airportStyle,
     maxAirports: opts.maxAirports ?? 64, maxHubSeats: opts.maxHubSeats ?? 48,
   });
   // [ext-03 G9] D-178: route tubes carry a dark ink outline unless the pre-D-178 `current` style is asked for.
-  const routes = airportStyle === 'current' ? new RouteLayer()
+  const routes: RouteLayerLike = import.meta.env.DEV && linorytObjects ? linorytObjects.routes : airportStyle === 'current' ? new RouteLayer()
     : new RouteLayer({ outline: true, turboprop: airportStyle === 'apron' ? '#F39A2E' : undefined });
   scene.add(routes.group);
-  const planes = new PlaneLayer(routes, {
+  const planes: PlaneLayerLike = import.meta.env.DEV && linorytObjects ? linorytObjects.planes : new PlaneLayer(routes as RouteLayer, {
     maxPlanes: opts.maxPlanes ?? 120, progressScale: opts.progressScale,
   });
   scene.add(planes.group);
-  const preview = createRoutePreview();
+  const preview = import.meta.env.DEV && linorytObjects ? linorytObjects.preview : createRoutePreview();
   scene.add(preview.object);
   let models: ModelPreviewRenderer | null = null;
 
@@ -362,6 +383,9 @@ export function createWorldRenderer(
     },
     setHubLoad(loads) {
       for (const load of loads) if (airports.isHub(load.id)) airports.setHubLoad(load.id, load.used, load.cap);
+      if (import.meta.env.DEV && linorytObjects) {
+        for (const load of loads) linorytObjects.airports.setJam(load.id, load.jam01 ?? null);
+      }
     },
     setCurfew(closedIds) {
       const next = new Set(closedIds);
@@ -493,5 +517,18 @@ export function createWorldRenderer(
       if (!canvas) element.remove();
     },
   };
+  // [ext-04 E2] Spec §8 (DEV until E3): stamp boxes for the overlay; the centre is the same point `pick()` measures.
+  if (import.meta.env.DEV) {
+    world.projectAirport = (id, out) => {
+      const city = cities.get(id);
+      if (!city) { out.visible = false; out.half = 0; return out; }
+      camera.updateMatrixWorld();
+      project(city.lon, city.lat, 1.01, point);
+      out.x = point.x; out.y = point.y; out.visible = point.visible;
+      out.half = linorytObjects ? (linorytObjects.airports as StampLayer).halfSize(id)
+        : (city.hub ? STAMP_SIZE_PX.hub : STAMP_SIZE_PX.airport) / 2;
+      return out;
+    };
+  }
   return world;
 }
