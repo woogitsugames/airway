@@ -1,6 +1,6 @@
-# EUS start cluster review (D-289)
+# EUS start cluster review (D-290)
 
-EUS v2 (D-289), with contracts and surges on: 200 seeds median 16.72 min (p10 11.77, p90 21.28). The original EUS pool measured 18.49 min (p10 12.94, p90 22.37) on 50 seeds; 700 km and 900 km alternatives measured medians 17.76 and 17.26 min. Other regions retained their baseline medians. These are bot measurements, not human difficulty evidence.
+EUS v2 (D-290), with contracts and surges on: 200 seeds median 16.72 min (p10 11.77, p90 21.28). The original EUS pool measured 18.49 min (p10 12.94, p90 22.37) on 50 seeds; 700 km and 900 km alternatives measured medians 17.76 and 17.26 min. Other regions retained their baseline medians. These are bot measurements, not human difficulty evidence.
 
 Before the change, with the same 50 seeds, contracts and surges:
 
