@@ -41,7 +41,7 @@ function parseArgs(argv) {
       if (!VALID_PRESETS.has(value)) throw new Error('Invalid quality preset: ' + value);
       options.preset = value;
     } else if (flag === '--look') {
-      if (!['diorama', 'refined', 'satellite', 'painted', 'map'].includes(value)) throw new Error('Invalid look: ' + value);
+      if (!['diorama', 'refined', 'satellite', 'painted', 'map', 'linoryt'].includes(value)) throw new Error('Invalid look: ' + value);
       options.look = value === 'diorama' ? '' : value;
     } else if (flag === '--viewport') {
       const parts = /^(\d{3,4})x(\d{3,4})$/.exec(value);
