@@ -8,7 +8,9 @@
 // docs/shots/n12bb/ (inspected before committing).
 import { performance } from 'node:perf_hooks';
 import { mkdirSync } from 'node:fs';
-import { withBrowser, newGamePage, waitForScreen, assert, saveDiagnostics } from './browser.mjs';
+// [night-44a] `test:e2e:surge-tag:stub` (--render=stub): the same overlay on the stub world's menu page (D-254); its
+// PNGs go to .e2e/stub/n12bb/.
+import { withBrowser, newGamePage, waitForScreen, assert, saveDiagnostics, gameUrl, assertRender, shotsDir, RENDER } from './browser.mjs';
 
 const started = performance.now();
 const results = [];
@@ -21,7 +23,7 @@ const TEXT = {
     activeAria: 'Szczyt ruchu w FRA: 12 dodatkowych pasażerów do 20:00 czasu lokalnego.',
     edgeAria: 'Szczyt ruchu w SYD: 12 dodatkowych pasażerów od 08:00 czasu lokalnego.' },
 };
-const SHOTS = 'docs/shots/n12bb';
+const SHOTS = shotsDir('docs/shots/n12bb');
 
 let fatal = null;
 try {
@@ -29,8 +31,9 @@ try {
   await withBrowser(async ({ browser, url }) => {
     for (const [language, width, height] of CASES) {
       const label = `${language} ${width}×${height}`;
-      const { page, errors } = await newGamePage(browser, url, language, { width, height });
+      const { page, errors } = await newGamePage(browser, gameUrl(url), language, { width, height });
       try {
+        await assertRender(page);
         await waitForScreen(page, 'menu');
         const m = await page.evaluate(async () => {
           const { createAirportOverlay } = await import('/src/ui/overlay.ts');
@@ -141,6 +144,6 @@ for (const { label, status, why } of results) console[status === 'FAIL' ? 'error
 if (fatal) console.error('FAIL harness: ' + fatal);
 const passed = results.filter((item) => item.status === 'PASS').length;
 const failedCount = results.length - passed + (fatal ? 1 : 0);
-console.log(`SUMMARY test:e2e:surge-tag seed=0xA1A1 steps=${results.length} passed=${passed} failed=${failedCount} ` +
+console.log(`SUMMARY test:e2e:surge-tag seed=0xA1A1${RENDER === 'stub' ? ' render=stub' : ''} steps=${results.length} passed=${passed} failed=${failedCount} ` +
   `durationMs=${Math.round(performance.now() - started)}`);
 if (failedCount || results.length !== CASES.length) process.exitCode = 1;

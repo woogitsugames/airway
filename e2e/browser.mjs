@@ -61,7 +61,8 @@ export async function newGamePage(browser, url, language, viewport = { width: 41
 }
 
 /**
- * [night-12bf] `--render=stub` (or `AW_RENDER=stub`): a suite that supports it (smoke, ui:matrix, edge-chip-tags; `npm run <suite>:stub`)
+ * [night-12bf] `--render=stub` (or `AW_RENDER=stub`): a suite that supports it (smoke, ui:matrix, edge-chip-tags, [night-44a] 13 more listed in e2e/README.md;
+ * `npm run <suite>:stub`)
  * loads the game on the DEV stub world `?render=stub&clock=frozen` (D-254) instead of the WebGL globe, so its UI/flow
  * checks finish under SwiftShader (G7). Game time then passes only through `window.aw`. Anything `src/render` draws
  * (globe, rings, planes, barriers) is not on that page: those checks stay on the default real renderer.
@@ -107,6 +108,17 @@ export function gameUrl(url) {
 export function skinShotsDir(dir) {
   if (!SKIN) return dir;
   return resolve(ARTIFACTS, `skin-${SKIN}`, dir.split('/').filter(Boolean).at(-1));
+}
+
+/**
+ * [night-44a] Where a suite that keeps PNGs in docs/shots/<task>/ writes them in this run: `skinShotsDir` with a skin;
+ * on the stub world (`--render=stub`) the shots show the stub's dots instead of the globe, so they go to the git-ignored
+ * .e2e/stub/<task>/ (tracked shots untouched). Unchanged on the real renderer.
+ */
+export function shotsDir(dir) {
+  if (SKIN) return skinShotsDir(dir);
+  if (RENDER !== 'stub') return dir;
+  return resolve(ARTIFACTS, 'stub', dir.split('/').filter(Boolean).at(-1));
 }
 
 /** Fails fast when a page that should run on the stub world did not load it (e.g. a production build). */

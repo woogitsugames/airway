@@ -3,7 +3,8 @@
 // matter. Checks: up/down chevron after the count, inside the tag (the width sum grew), aria text PL/EN, removed on
 // null, drawn in paper ink on a jammed tag, no animation under "Reduce motion", one short step-in otherwise.
 import { performance } from 'node:perf_hooks';
-import { withBrowser, newGamePage, gameUrl, waitForScreen, assert, saveDiagnostics } from './browser.mjs';
+// [night-44a] `test:e2e:fill-trend:stub` (--render=stub): the same overlay on the stub world's menu page (D-254).
+import { withBrowser, newGamePage, gameUrl, waitForScreen, assert, saveDiagnostics, assertRender, RENDER } from './browser.mjs';
 
 const started = performance.now();
 const results = [];
@@ -20,6 +21,7 @@ try {
       const label = `${language} ${width}×${height}`;
       const { page, errors } = await newGamePage(browser, gameUrl(url), language, { width, height });
       try {
+        await assertRender(page);
         await waitForScreen(page, 'menu');
         const m = await page.evaluate(async () => {
           const { createAirportOverlay } = await import('/src/ui/overlay.ts');
@@ -113,6 +115,6 @@ for (const { label, status, why } of results) console[status === 'FAIL' ? 'error
 if (fatal) console.error('FAIL harness: ' + fatal);
 const passed = results.filter((item) => item.status === 'PASS').length;
 const failedCount = results.length - passed + (fatal ? 1 : 0);
-console.log(`SUMMARY test:e2e:fill-trend seed=0xA1A1 steps=${results.length} passed=${passed} failed=${failedCount} ` +
+console.log(`SUMMARY test:e2e:fill-trend seed=0xA1A1${RENDER === 'stub' ? ' render=stub' : ''} steps=${results.length} passed=${passed} failed=${failedCount} ` +
   `durationMs=${Math.round(performance.now() - started)}`);
 if (failedCount || results.length !== CASES.length) process.exitCode = 1;

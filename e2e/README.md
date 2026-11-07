@@ -87,6 +87,9 @@ npm run test:e2e:smoke:stub          # = node e2e/smoke.mjs --render=stub (or AW
 npm run ui:matrix:stub               # PNGs to the git-ignored .e2e/matrix-stub/, never docs/shots/matrix/
 npm run test:e2e:edge-chip-tags:stub
 npm run test:e2e:resize:stub         # [night-15b] R4f resize mid-run with a sheet open (stub only: needs the frozen clock)
+# [night-44a] 13 more bot-driven/overlay suites as `npm run test:e2e:<suite>:stub` (PNGs of a stub run go to .e2e/stub/<task>/
+# through `shotsDir()`, never docs/shots/): new-airport, pause-summary, run-timeline, edge-chip-airports, edge-chip-fill,
+# board-short, upgrade-picks, undo-after-upgrade, home-region, licence-classes, fill-trend, surge-tag, hub-board
 # Harness-only validation; does NOT test the shipped game:
 npm run test:e2e:fixture   # = node e2e/smoke.mjs --fixture && node scripts/ui-matrix.mjs --fixture
 ```

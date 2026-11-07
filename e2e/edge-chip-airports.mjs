@@ -6,10 +6,14 @@
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
-import { withBrowser, newGamePage, gameUrl, skinShotsDir, waitForScreen, assert, clickTestId, saveDiagnostics, ROOT } from './browser.mjs';
+import {
+  withBrowser, newGamePage, gameUrl, shotsDir, waitForScreen, assert, clickTestId, saveDiagnostics, ROOT, RENDER, assertRender,
+} from './browser.mjs';
 import { E2E_SEEDS } from './seeds.mjs';
 
-const SHOTS = skinShotsDir(resolve(ROOT, 'docs/shots/n10v')); // [night-30a] with --skin: .e2e/skin-linoryt/, tracked shots untouched
+// [night-30a] with --skin: .e2e/skin-linoryt/; [night-44a] with --render=stub (`test:e2e:edge-chip-airports:stub`; chips,
+// the pick and its tap are DOM and the real camera/projection, D-254): .e2e/stub/. Tracked shots untouched either way.
+const SHOTS = shotsDir(resolve(ROOT, 'docs/shots/n10v'));
 
 const started = performance.now();
 const results = [];
@@ -31,6 +35,7 @@ async function reachSlotsBoard(page) {
 }
 
 async function journey(page, language, width, height) {
+  await assertRender(page);
   assert(await page.evaluate(() => window.aw?.ready), 'window.aw.ready=false: no AwDevAdapter registered');
   await waitForScreen(page, 'menu');
   await page.evaluate((seed) => window.aw.prepareSeed(seed), SEED);
@@ -78,5 +83,5 @@ try {
 for (const r of results) console.log(`${r.status} ${r.label}${r.why ? ` — ${r.why}` : ''}`);
 if (fatal) console.log(`FAIL harness — ${fatal.message}`);
 const failed = results.filter((r) => r.status === 'FAIL').length + (fatal ? 1 : 0);
-console.log(`SUMMARY test:e2e:edge-chip-airports seed=${SEED} steps=${results.length} passed=${results.length - failed + (fatal ? 1 : 0)} failed=${failed} durationMs=${Math.round(performance.now() - started)}`);
+console.log(`SUMMARY test:e2e:edge-chip-airports seed=${SEED}${RENDER === 'stub' ? ' render=stub' : ''} steps=${results.length} passed=${results.length - failed + (fatal ? 1 : 0)} failed=${failed} durationMs=${Math.round(performance.now() - started)}`);
 process.exitCode = failed ? 1 : 0;

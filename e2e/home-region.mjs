@@ -8,10 +8,14 @@
 import { performance } from 'node:perf_hooks';
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { withBrowser, newGamePage, waitForScreen, clickTestId, assert, saveDiagnostics, SEED } from './browser.mjs';
+import {
+  withBrowser, newGamePage, waitForScreen, clickTestId, assert, saveDiagnostics, SEED, RENDER, gameUrl, assertRender, shotsDir,
+} from './browser.mjs';
 import { ROOT } from '../scripts/lib/harness.mjs';
 
-const SHOTS = resolve(ROOT, 'docs/shots/n11aj');
+// [night-44a] `test:e2e:home-region:stub` (--render=stub): the menu and the started run on the stub world (D-254); its PNGs
+// go to .e2e/stub/n11aj/.
+const SHOTS = shotsDir(resolve(ROOT, 'docs/shots/n11aj'));
 mkdirSync(SHOTS, { recursive: true });
 const started = performance.now();
 const results = [];
@@ -21,6 +25,7 @@ const overlaps = (a, b) => a.x < b.x + b.width - 0.5 && b.x < a.x + a.width - 0.
 const stored = (page) => page.evaluate(() => JSON.parse(localStorage.getItem('airway.settings') || '{}').homeRegion ?? null);
 
 async function journey(page, language, width, height, startGame) {
+  await assertRender(page);
   await waitForScreen(page, 'menu');
   const select = page.getByTestId('menu-home-region');
   await select.waitFor({ timeout: 5000 });
@@ -76,7 +81,7 @@ try {
       const label = `${language} ${width}×${height}: select, store, reopen${startGame ? ', start Endless' : ', back to Random'}`;
       let page = null;
       try {
-        ({ page } = await newGamePage(browser, url, language, { width, height }));
+        ({ page } = await newGamePage(browser, gameUrl(url), language, { width, height }));
         await journey(page, language, width, height, startGame);
         results.push({ label, status: 'PASS' });
       } catch (error) {
@@ -93,6 +98,6 @@ for (const { label, status, why } of results) console[status === 'FAIL' ? 'error
 if (fatal) console.error('FAIL harness: ' + fatal);
 const passed = results.filter((item) => item.status === 'PASS').length;
 const failedCount = results.length - passed + (fatal ? 1 : 0);
-console.log(`SUMMARY test:e2e:home-region seed=0x${SEED.toString(16).toUpperCase()} steps=${results.length} ` +
+console.log(`SUMMARY test:e2e:home-region seed=0x${SEED.toString(16).toUpperCase()}${RENDER === 'stub' ? ' render=stub' : ''} steps=${results.length} ` +
   `passed=${passed} failed=${failedCount} durationMs=${Math.round(performance.now() - started)}`);
 if (failedCount || results.length !== CASES.length) process.exitCode = 1;

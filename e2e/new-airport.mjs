@@ -7,14 +7,18 @@
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
-import { withBrowser, newGamePage, waitForScreen, assert, clickTestId, saveDiagnostics, ROOT } from './browser.mjs';
+import {
+  withBrowser, newGamePage, waitForScreen, assert, clickTestId, saveDiagnostics, ROOT, RENDER, gameUrl, assertRender, shotsDir,
+} from './browser.mjs';
 import { E2E_SEEDS } from './seeds.mjs';
 
 const SEED = E2E_SEEDS['new-airport'].seeds[0]; // [night-12ac] e2e/seeds.mjs (4242): opens its 5th airport in the first game day, on the visible side of the globe
 const STEPS = 4; // 2 per language
 const MARK_TICKS = 720;
 const started = performance.now();
-const SHOTS = resolve(ROOT, 'docs/shots/n10a');
+// [night-44a] `test:e2e:new-airport:stub` (--render=stub): only DOM tags are read and time already passes through
+// window.aw, so the frozen stub clock (D-254) changes nothing but the speed; its PNGs go to .e2e/stub/n10a/.
+const SHOTS = shotsDir(resolve(ROOT, 'docs/shots/n10a'));
 const results = [];
 
 let fatal = null;
@@ -22,7 +26,7 @@ try {
   await withBrowser(async ({ browser, url }) => {
     mkdirSync(SHOTS, { recursive: true });
     for (const [language, word, aria] of [['en', 'NEW', 'New airport'], ['pl', 'NOWE', 'Nowe lotnisko']]) {
-      const { page, errors } = await newGamePage(browser, url, language, { width: 412, height: 915 });
+      const { page, errors } = await newGamePage(browser, gameUrl(url), language, { width: 412, height: 915 });
       let markedId = null;
       let known = [];
       let openedAt = 0;
@@ -38,6 +42,7 @@ try {
         }
       };
       await step(`${language}: the airport opened mid-run carries the ${word} stub`, async () => {
+        await assertRender(page);
         await waitForScreen(page, 'menu');
         await page.evaluate((seed) => window.aw.prepareSeed(seed), SEED);
         await clickTestId(page, 'menu-endless');
@@ -92,7 +97,7 @@ try {
   if (fatal) console.error('FAIL harness: ' + fatal);
   const passed = results.filter((item) => item.status === 'PASS').length;
   const failedCount = results.length - passed + (fatal ? 1 : 0);
-  console.log(`SUMMARY test:e2e:new-airport seed=${SEED} steps=${results.length} passed=${passed} failed=${failedCount} ` +
+  console.log(`SUMMARY test:e2e:new-airport seed=${SEED}${RENDER === 'stub' ? ' render=stub' : ''} steps=${results.length} passed=${passed} failed=${failedCount} ` +
     `durationMs=${Math.round(performance.now() - started)}`);
   if (failedCount || results.length !== STEPS) process.exitCode = 1;
 }
