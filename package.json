@@ -143,6 +143,7 @@
     "test:solar-time": "node --import ./scripts/ts-test-loader.mjs scripts/test-solar-time.ts",
     "test:contracts-summary": "node --import ./scripts/ts-test-loader.mjs scripts/test-contracts-summary.ts",
     "test:e2e:gameover-contracts": "node e2e/gameover-contracts.mjs",
+    "test:e2e:gameover-contracts:linoryt": "node e2e/gameover-contracts.mjs --skin=linoryt",
     "test:weekly-contract": "node --import ./scripts/ts-test-loader.mjs scripts/test-weekly-contract.ts",
     "test:e2e:weekly-contract": "node e2e/weekly-contract.mjs",
     "test:balance:contracts": "node --import ./scripts/ts-test-loader.mjs scripts/balance-report.ts --contracts --test",

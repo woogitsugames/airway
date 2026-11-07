@@ -2,7 +2,8 @@ import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { withBrowser, assert, ROOT } from './browser.mjs';
 import { presetLanguage } from '../scripts/lib/harness.mjs';
-const shots = resolve(ROOT, 'docs/shots/gpt01');
+const skin = process.argv.includes('--skin=linoryt') ? 'linoryt' : 'roza';
+const shots = resolve(ROOT, '.e2e', 'gameover-contracts', skin);
 let passed = 0, failed = 0;
 try {
   await withBrowser(async ({ browser, url }) => {
@@ -16,8 +17,9 @@ try {
       page.on('pageerror', error => errors.push(error.message));
       try {
         await presetLanguage(page, language, { clear: true });
-        await page.goto(url + '?preview=gameover', { waitUntil: 'load' });
+        await page.goto(url + '?preview=gameover' + (skin === 'linoryt' ? '&skin=linoryt' : ''), { waitUntil: 'load' });
         await page.evaluate(() => document.fonts.ready);
+        assert(await page.evaluate(() => document.documentElement.dataset.skin) === skin, `expected ${skin} skin`);
         await page.evaluate(async ({ met, offered }) => {
           const { createGameOverController } = await import('/src/ui/gameover/index.ts');
           const host = document.querySelector('#app'); host.replaceChildren();
