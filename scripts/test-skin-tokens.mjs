@@ -203,7 +203,7 @@ const lastImport = [...main.matchAll(/^import\s[^;]*;/gm)].pop()?.[0] ?? '';
 check('roza: src/main.ts (only) imports the structure, after every other import', rozaImports.join() === 'src/main.ts' &&
   lastImport === "import './ui/skin/roza.css';", rozaImports.join(' '));
 check('roza: on by default in src/main.ts (startRoza outside the DEV comparison branch)',
-  /if \(import\.meta\.env\.DEV && query\.get\('skin'\) === 'current'\) \{[^}]*void import\('\.\/ui\/skin\/diorama\.css'\);\s*\} else \{\s*startRoza\(/.test(main) &&
+  /if \(import\.meta\.env\.DEV && query\.get\('skin'\) === 'current'\) \{[^}]*void import\('\.\/ui\/skin\/diorama\.css'\);\s*\}(?: else if \(import\.meta\.env\.DEV && query\.get\('skin'\) === 'linoryt'\) \{[\s\S]*?linoryt\.css'\);\s*\})? else \{\s*startRoza\(/.test(main) &&
   /<html[^>]*data-skin="roza"/.test(read('index.html')));
 const dioramaImports = tsFiles.filter((file) => /diorama\.css'/.test(read(file)));
 check('diorama: imported only by the DEV comparison branch of src/main.ts', dioramaImports.join() === 'src/main.ts' &&
@@ -242,6 +242,73 @@ check('roza: the rose helpers are not DEV-only', guarded.length === 0, guarded.j
 // bundle order unchanged.
 const helperImports = [...read('src/ui/skin/roza.ts').matchAll(/^import\s+(?!type\b)[^;]*;/gm)].map((m) => m[0]);
 check('roza: the helpers have no runtime import (release bundle order unchanged)', helperImports.length === 0, helperImports.join(' '));
+
+// [night-28a] D-284: the Linoryt preview (D-283, PLAN-LINORYT.md step U1) is DEV-only and leaves the release untouched:
+// linoryt.css is loaded only by the DEV `?skin=linoryt` branch of src/main.ts, every rule is scoped to
+// :root[data-skin="linoryt"], its faces live in public/fonts/ with their OFL licences and are listed in PREVIEW_FONTS
+// (dropped from dist/ by scripts/vite-font-files.mjs until the flip step U6), the helpers have no runtime import, and
+// every call site is guarded by `import.meta.env.DEV && linoryt.on` (so a release build folds it away).
+{
+  const LIN = 'src/ui/skin/linoryt.css';
+  const lin = stripComments(read(LIN));
+  const rules = [];
+  let depth = 0;
+  let start = 0;
+  for (let i = 0; i < lin.length; i++) {
+    const ch = lin[i];
+    if (ch === '{') { const sel = lin.slice(start, i).trim(); if (depth === 0 || !sel.startsWith('@')) rules.push(sel); depth++; start = i + 1; }
+    else if (ch === '}') { depth--; start = i + 1; }
+    else if (ch === ';') start = i + 1;
+  }
+  /** A selector list split on top-level commas (not the ones inside :has(…)). */
+  const splitList = (sel) => {
+    const parts = [];
+    let depth = 0;
+    let from = 0;
+    for (let i = 0; i < sel.length; i++) {
+      if (sel[i] === '(') depth++;
+      else if (sel[i] === ')') depth--;
+      else if (sel[i] === ',' && depth === 0) { parts.push(sel.slice(from, i)); from = i + 1; }
+    }
+    return [...parts, sel.slice(from)];
+  };
+  const loose = rules.filter((sel) => !/^@(media|font-face)\b/.test(sel) &&
+    !splitList(sel).every((part) => /^:root(\[data-airway-motion="reduce"\])?\[data-skin="linoryt"\]/.test(part.trim())));
+  check('linoryt: every rule is scoped to :root[data-skin="linoryt"]', rules.length > 40 && loose.length === 0, loose.slice(0, 3).join(' | '));
+  check('linoryt: never redefines the palette or text-scale tokens', !/--airway-[a-z-]+\s*:/.test(lin));
+  // D-47: every text pair of the preview's inks reaches 4.5:1 (paper letters on the red block included, D-284).
+  const ink = Object.fromEntries([...lin.matchAll(/--lin-([a-z-]+):\s*(#[0-9A-Fa-f]{6})/g)].map((m) => [m[1], m[2]]));
+  const lum = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
+    .map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4)).reduce((sum, c, i) => sum + c * [0.2126, 0.7152, 0.0722][i], 0);
+  const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+  const pairs = [['ink', 'paper'], ['ink-dim', 'paper'], ['blue', 'paper'], ['red', 'paper'], ['ink', 'paper-deep'], ['blue', 'paper-deep'], ['paper', 'ink']];
+  const weak = pairs.filter(([fg, bg]) => !ink[fg] || !ink[bg] || ratio(ink[fg], ink[bg]) < 4.5)
+    .map(([fg, bg]) => `${fg}/${bg} ${ink[fg] && ink[bg] ? ratio(ink[fg], ink[bg]).toFixed(2) : 'missing'}`);
+  check('linoryt: text inks reach 4.5:1 on paper and paper on the red block (D-47)', weak.length === 0, weak.join(' '));
+  const faces = [...lin.matchAll(/url\('\/fonts\/([^']+)'\)/g)].map((m) => m[1]);
+  const absent = [...faces, 'OFL-Besley.txt', 'OFL-SchibstedGrotesk.txt']
+    .filter((file) => { try { return statSync(resolve(ROOT, 'public/fonts', file)).size === 0; } catch { return true; } });
+  check('linoryt: Besley and Schibsted Grotesk WOFF2 and their OFL licences are in public/fonts/',
+    faces.length === 3 && absent.length === 0, absent.join(' '));
+  const { PREVIEW_FONTS } = await import('./vite-font-files.mjs');
+  const shipped = [...faces, 'OFL-Besley.txt', 'OFL-SchibstedGrotesk.txt'].filter((file) => !PREVIEW_FONTS.includes(file));
+  check('linoryt: its faces stay out of dist/ while it is a preview (PREVIEW_FONTS)', shipped.length === 0, shipped.join(' '));
+  const linImports = tsFiles.filter((file) => /linoryt\.css'/.test(read(file)));
+  check('linoryt: the stylesheet is imported only by the DEV `?skin=linoryt` branch of src/main.ts',
+    linImports.join() === 'src/main.ts' && !/^import\s+'[^']*linoryt\.css'/m.test(main) &&
+    /else if \(import\.meta\.env\.DEV && query\.get\('skin'\) === 'linoryt'\) \{[^}]*startLinoryt\(\{ t, localNumber \}\);\s*void import\('\.\/ui\/skin\/linoryt\.css'\);/.test(main),
+    linImports.join(' '));
+  const runtime = [...read('src/ui/skin/linoryt.ts').matchAll(/^import\s+(?!type\b)[^;]*;/gm)].map((m) => m[0]);
+  check('linoryt: the helpers have no runtime import', runtime.length === 0, runtime.join(' '));
+  const unguarded = [];
+  for (const file of ['src/ui/hud/boarding-pass.ts', 'src/ui/hud/tag-dock.ts', 'src/ui/menu/menu.ts']) {
+    for (const line of read(file).split('\n')) {
+      if (/\blinoryt(Pass|DockLabel|Icon|Tagline)\(/.test(line) && !/import\.meta\.env\.DEV && linoryt\.on/.test(line)) unguarded.push(`${file}: ${line.trim()}`);
+      if (/'lin-title'|lin-title/.test(line) && !/import\.meta\.env\.DEV && linoryt\.on/.test(line)) unguarded.push(`${file}: ${line.trim()}`);
+    }
+  }
+  check('linoryt: every helper call is guarded by import.meta.env.DEV && linoryt.on', unguarded.length === 0, unguarded.slice(0, 3).join(' | '));
+}
 
 for (const { name, ok, why } of results) console[ok ? 'log' : 'error'](`${ok ? 'PASS' : 'FAIL'} ${name}${why && !ok ? ': ' + why : ''}`);
 const failed = results.filter((r) => !r.ok).length;

@@ -1,0 +1,268 @@
+/* [night-28a] D-283 / D-284: UI skin "Linoryt" — a relief print in three inks on paper (docs/styles/kierunki-2026-11b/
+   KIERUNKI.md, direction A; staged plan docs/styles/kierunki-2026-11b/PLAN-LINORYT.md). Step U1, a DEV-only preview:
+   src/main.ts loads this file only for `?skin=linoryt` in a DEV build and sets <html data-skin="linoryt">; every rule
+   below is scoped to it, a release build never sees the file (dist/ unchanged).
+   The preview restyles the base ("Diorama") HUD and menu DOM — not Róża's, which the flip step U6 deletes — with the
+   helpers of src/ui/skin/linoryt.ts: a paper margin at the top (Besley clock, week, "day 2 of 3 · N passengers", a day
+   bar of 24 carved hours), a paper dock behind a double print rule at the bottom (cut symbols, captions; the chosen
+   aircraft a solid ink block, an empty one only its outline, its wait in blue), and the menu as a printed index (the
+   run-starting entry on the one red block). Text is printed on paper or carries a paper ground, never a shadow; no
+   gradients, glows, rounded cards or translucent sheets.
+   Fonts: Besley (800 and 900 static instances: names and titles, the clock) and Schibsted Grotesk (500–700, text and figures), SIL OFL, WOFF2
+   subsets in public/fonts/ with their licences (docs/ASSETS.md); kept out of dist/ until U6 (scripts/vite-font-files.mjs).
+   Sizes: HUD and dock keep in-world sizes at every text step (as D-248/D-267); the menu entries follow the title step. */
+@font-face { font-family: 'Besley'; font-weight: 800; font-display: swap; src: url('/fonts/Besley-800.woff2') format('woff2'); }
+@font-face { font-family: 'Besley'; font-weight: 900; font-display: swap; src: url('/fonts/Besley-900.woff2') format('woff2'); }
+@font-face { font-family: 'Schibsted Grotesk'; font-weight: 500 700; font-display: swap; src: url('/fonts/SchibstedGrotesk-VF.woff2') format('woff2'); }
+
+/* ---- Part 1: inks (D-283) and the skin tokens of the preview ------------------------------------------------------ */
+:root[data-skin="linoryt"] {
+  --lin-paper: #ECE3CC;
+  --lin-paper-deep: #E0D5B8; /* pressed paper (a second pull of the same ink, no new colour) */
+  --lin-ink: #1E1C1F;
+  --lin-ink-dim: #4F4A44; /* ink at ~75 % on paper, opaque so contrast is measurable (7.2:1) */
+  --lin-blue: #2B4A66;
+  --lin-ochre: #D29C47;
+  /* One red, slightly deeper than the mockup's #C8412A (3.9:1 under paper letters): #B33823 carries 13 px paper text on
+     the red block and red letters on paper at 4.7:1 (D-47, D-284). */
+  --lin-red: #B33823;
+  --lin-rule: 2px;
+  /* Faces of the whole UI: Besley for display, Schibsted Grotesk for text and figures (no mono face). */
+  --skin-face-text: 'Schibsted Grotesk', 'Atkinson Hyperlegible Next', 'Overpass', sans-serif;
+  --skin-face-display: 'Besley', 'Alegreya', 'Atkinson Hyperlegible Next', serif;
+  --skin-face-mono: 'Schibsted Grotesk', 'Atkinson Hyperlegible Next', 'Overpass Mono', sans-serif;
+  /* The Róża palette the component tokens point at, re-inked for paper (preview only; U6 replaces the token file):
+     its dark ground becomes paper, its chalk letters ink, so the sheets not yet redrawn (U4) print on paper too. */
+  --roza-ink: #ECE3CC;
+  --roza-ink-raised: #E0D5B8;
+  --roza-ink-pressed: #D3C7A6;
+  --roza-chalk: #1E1C1F;
+  --roza-dim: #4F4A44;
+  --roza-rule: #8C826F;
+  --roza-vermilion: #B33823;
+  --roza-vermilion-ink: #B33823;
+  --roza-sky-ink: #1E1C1F;
+  --roza-sky-halo: #ECE3CC;
+  --roza-halo: none;
+  --roza-sky-glow: none;
+  --skin-hud-ink: var(--lin-ink);
+  --skin-hud-paper: var(--lin-paper);
+  --skin-hud-alert: var(--lin-red);
+  --skin-dock-tag-empty-ink: var(--lin-ink);
+  --skin-hover-rule: inset 0 -3px 0 var(--lin-ink);
+  --skin-control-radius: 0;
+  /* Behind the weekly board and the report: a pull of paper over the print, not a dark translucent sheet. */
+  --skin-crate-scrim: rgba(236, 227, 204, .86);
+  --skin-go-scrim: rgba(236, 227, 204, .86);
+}
+:root[data-skin="linoryt"] body { background: var(--lin-paper); }
+
+/* ---- Part 2: HUD top margin -------------------------------------------------------------------------------------- */
+:root[data-skin="linoryt"] .airway-hud { color: var(--lin-ink); text-shadow: none; }
+:root[data-skin="linoryt"] .airway-hud button:focus-visible { outline: 3px solid var(--lin-red); outline-offset: 2px; }
+:root[data-skin="linoryt"] .airway-pass {
+  top: 0; left: 0; right: 0; width: auto; height: auto; gap: 12px; align-items: flex-start;
+  padding: calc(var(--hud-safe-top) + 8px) calc(var(--hud-safe-right) + 16px) 8px calc(var(--hud-safe-left) + 16px);
+  background: var(--lin-paper); border-bottom: var(--lin-rule) solid var(--lin-ink);
+}
+:root[data-skin="linoryt"] .airway-pass__ticket { flex: 1 1 auto; min-width: 0; background: transparent; -webkit-mask: none; mask: none; }
+:root[data-skin="linoryt"] .airway-pass__band,
+:root[data-skin="linoryt"] .airway-pass__perf,
+:root[data-skin="linoryt"] .airway-pass__field { display: none; }
+:root[data-skin="linoryt"] .lin-pass {
+  flex: 1 1 auto; min-width: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 12px; row-gap: 12px;
+  align-items: center;
+}
+:root[data-skin="linoryt"] .lin-clock {
+  font: 900 46px/.9 var(--skin-face-display); white-space: nowrap;
+}
+:root[data-skin="linoryt"] .lin-lines { min-width: 0; }
+:root[data-skin="linoryt"] .lin-week { font: 800 20px/1.1 var(--skin-face-display); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+:root[data-skin="linoryt"] .lin-sub { margin-top: 2px; white-space: normal; font: 600 14px/1.25 var(--skin-face-text); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+/* The day bar: 24 carved hours; night solid ink, flown hours blue, the hour now and the rest hollow; a red cut = now. */
+:root[data-skin="linoryt"] .lin-day { grid-column: 1 / -1; min-width: 0; }
+:root[data-skin="linoryt"] .lin-day__cells { position: relative; display: flex; gap: 2px; height: 11px; }
+:root[data-skin="linoryt"] .lin-day__cells i { flex: 1 1 0; min-width: 0; box-shadow: inset 0 0 0 1.5px var(--lin-ink); }
+:root[data-skin="linoryt"] .lin-day__cells i.is-night { background: var(--lin-ink); }
+:root[data-skin="linoryt"] .lin-day__cells i.is-past { background: var(--lin-blue); box-shadow: none; }
+:root[data-skin="linoryt"] .lin-day__now {
+  position: absolute; top: -5px; bottom: -3px; left: calc(var(--at, 0) * 100% - 1.5px); width: 3px; background: var(--lin-red);
+}
+:root[data-skin="linoryt"] .lin-day__now::before {
+  content: ''; position: absolute; left: -4.5px; top: -6px; border: 6px solid transparent; border-bottom: 0;
+  border-top: 7px solid var(--lin-red);
+}
+:root[data-skin="linoryt"] .lin-day__hours { position: relative; height: 15px; margin-top: 2px; font: 600 11px/15px var(--skin-face-text); }
+:root[data-skin="linoryt"] .lin-day__hours span { position: absolute; left: calc(var(--h) / 24 * 100%); }
+/* Pause: a solid ink block with paper bars, 48 × 48 (resume: a paper triangle). */
+:root[data-skin="linoryt"] .airway-pass__pause {
+  flex: 0 0 48px; width: 48px; height: 48px; margin-top: 2px; background: var(--lin-ink); color: var(--lin-paper);
+  border-top: 0 !important;
+}
+:root[data-skin="linoryt"] .airway-pass__pause .airway-hud__icon { width: 30px; height: 30px; }
+:root[data-skin="linoryt"] .airway-pass__pause[aria-pressed="true"] { background: var(--lin-red); }
+
+/* ---- Part 3: the dock, a paper margin behind a double print rule ---------------------------------------------------- */
+:root[data-skin="linoryt"] .airway-dock {
+  left: 0; right: 0; bottom: 0; gap: 0; grid-template-columns: repeat(6, minmax(0, 1fr)); justify-content: stretch;
+  padding: 10px calc(var(--hud-safe-right) + 6px) calc(var(--hud-safe-bottom) + 6px) calc(var(--hud-safe-left) + 6px);
+  background: var(--lin-paper); border-top: 4px solid var(--lin-ink);
+}
+:root[data-skin="linoryt"] .airway-dock::before { top: 3px; left: 0; right: 0; height: 1.5px; opacity: 1; background: var(--lin-ink); }
+:root[data-skin="linoryt"] .airway-dock__holder { padding: 0 2px; }
+:root[data-skin="linoryt"] .airway-dock__holder::before,
+:root[data-skin="linoryt"] .airway-dock__eyelet { display: none; }
+:root[data-skin="linoryt"] .airway-dock__tag {
+  flex-direction: column; justify-content: flex-start; gap: 3px; height: auto; min-height: 58px; padding: 6px 0 5px;
+  clip-path: none; background: transparent; color: var(--lin-ink);
+  font: 700 12px/1.1 var(--skin-face-text) !important;
+}
+:root[data-skin="linoryt"] .airway-dock__tag .airway-hud__icon { width: 28px; height: 28px; }
+:root[data-skin="linoryt"] .airway-dock__count {
+  position: absolute; top: 3px; left: calc(50% + 14px); min-width: 14px; font: 700 12px/1 var(--skin-face-text);
+}
+:root[data-skin="linoryt"] .airway-dock__tag.is-countdown .airway-dock__count,
+:root[data-skin="linoryt"] .airway-dock__tag[data-hud-action='speed'] .airway-dock__count { display: none; } /* the caption says it */
+:root[data-skin="linoryt"] .airway-dock__tag.is-countdown { padding-top: 6px; gap: 3px; }
+:root[data-skin="linoryt"] .airway-dock__tag.is-countdown .airway-hud__icon { width: 28px; height: 28px; }
+:root[data-skin="linoryt"] .lin-caption { max-width: 100%; white-space: nowrap; letter-spacing: -.01em; }
+:root[data-skin="linoryt"] .lin-wait { font: 500 11px/1.1 var(--skin-face-text); color: var(--lin-blue); white-space: nowrap; }
+:root[data-skin="linoryt"] .lin-wait[hidden] { display: none; }
+/* Chosen aircraft: the one solid ink block of the dock, paper symbol and caption. */
+:root[data-skin="linoryt"] .airway-dock__tag.is-selected { background: var(--lin-ink); color: var(--lin-paper); }
+/* Unavailable: the symbol printed as its outline only (shape, not colour, says "none left"). */
+:root[data-skin="linoryt"] .airway-dock__tag.is-empty { background: transparent; color: var(--lin-ink); }
+:root[data-skin="linoryt"] .airway-dock__tag.is-empty::after { display: none; }
+:root[data-skin="linoryt"] .airway-dock__tag.is-empty .lin-icon path { fill: none; stroke: currentColor; stroke-width: 5; }
+:root[data-skin="linoryt"] .airway-dock__ghost { background: var(--lin-paper); color: var(--lin-ink); clip-path: none; box-shadow: inset 0 0 0 2px var(--lin-ink); }
+@media (max-width: 369px) {
+  :root[data-skin="linoryt"] .airway-dock { padding-left: calc(var(--hud-safe-left) + 2px); padding-right: calc(var(--hud-safe-right) + 2px); }
+  :root[data-skin="linoryt"] .airway-dock__holder { padding: 0 1px; }
+  :root[data-skin="linoryt"] .airway-dock__tag { font-size: 10.5px !important; }
+  :root[data-skin="linoryt"] .lin-caption { letter-spacing: -.03em; }
+  :root[data-skin="linoryt"] .lin-wait { font-size: 10px; }
+  :root[data-skin="linoryt"] .lin-clock { font-size: 38px; }
+  :root[data-skin="linoryt"] .lin-week { font-size: 17px; }
+  :root[data-skin="linoryt"] .lin-sub { font-size: 13px; }
+  :root[data-skin="linoryt"] .airway-hud__icon { width: 26px; }
+}
+
+/* Landscape phone: the HUD is a paper block in the top-left corner, the dock a paper column down the right edge with
+   the double rule on its left; captions sit beside the symbol so six 48 px rows fit a 320 px tall screen. */
+:root[data-skin="linoryt"] .airway-hud[data-layout='landscape'] .airway-pass {
+  right: auto; width: min(480px, calc(100% - var(--hud-safe-left) - var(--hud-safe-right) - 160px));
+  padding-top: calc(var(--hud-safe-top) + 6px); padding-bottom: 6px; border-right: var(--lin-rule) solid var(--lin-ink);
+}
+:root[data-skin="linoryt"] .airway-hud[data-layout='landscape'] .lin-clock { font-size: 36px; }
+:root[data-skin="linoryt"] .airway-hud[data-layout='landscape'] .lin-week { font-size: 18px; }
+:root[data-skin="linoryt"] .airway-hud[data-layout='landscape'] .lin-sub { font-size: 13px; }
+:root[data-skin="linoryt"] .airway-hud[data-layout='landscape'] .lin-pass { row-gap: 10px; }
+:root[data-skin="linoryt"] .airway-hud[data-layout='landscape'] .airway-dock {
+  left: auto; top: 0; bottom: 0; right: 0; width: calc(var(--hud-safe-right) + 132px);
+  padding: calc(var(--hud-safe-top) + 4px) calc(var(--hud-safe-right) + 4px) calc(var(--hud-safe-bottom) + 4px) 10px;
+  border-top: 0; border-left: 4px solid var(--lin-ink);
+}
+:root[data-skin="linoryt"] .airway-hud[data-layout='landscape'] .airway-dock::before { top: 0; bottom: 0; left: 3px; right: auto; width: 1.5px; height: auto; }
+:root[data-skin="linoryt"] .airway-hud[data-layout='landscape'] .airway-dock__holder { padding: 1px 0; height: auto; flex: 1 1 0; min-height: 48px; max-height: 64px; }
+:root[data-skin="linoryt"] .airway-hud[data-layout='landscape'] .airway-dock__tag {
+  flex-direction: row; justify-content: flex-start; gap: 6px; height: 100%; min-height: 48px; max-height: none; padding: 0 6px;
+  text-align: left; flex-wrap: wrap; align-content: center; column-gap: 6px; row-gap: 0;
+}
+:root[data-skin="linoryt"] .airway-hud[data-layout='landscape'] .airway-dock__tag .airway-hud__icon { width: 24px; height: 24px; }
+:root[data-skin="linoryt"] .airway-hud[data-layout='landscape'] .airway-dock__count { top: 2px; left: 26px; }
+:root[data-skin="linoryt"] .airway-hud[data-layout='landscape'] .lin-wait { flex-basis: 100%; padding-left: 30px; }
+
+/* Foldables and tablets: the portrait margins, the dock's six cells centred at phone width. */
+:root[data-skin="linoryt"] .airway-hud[data-layout='foldable'] .airway-dock {
+  top: auto; left: 0; right: 0; bottom: 0; width: auto; display: grid; grid-template-columns: repeat(6, minmax(0, 92px));
+  justify-content: center; border-left: 0; border-top: 4px solid var(--lin-ink);
+  padding: 10px calc(var(--hud-safe-right) + 6px) calc(var(--hud-safe-bottom) + 8px) calc(var(--hud-safe-left) + 6px);
+}
+:root[data-skin="linoryt"] .airway-hud[data-layout='foldable'] .airway-dock::before { top: 3px; left: 0; right: 0; width: auto; height: 1.5px; }
+:root[data-skin="linoryt"] .airway-hud[data-layout='foldable'] .airway-dock__holder { height: auto; min-height: 0; }
+:root[data-skin="linoryt"] .airway-hud[data-layout='foldable'] .airway-dock__tag { height: auto; max-height: none; }
+:root[data-skin="linoryt"] .airway-hud[data-layout='foldable'] .airway-pass { width: auto; }
+:root[data-skin="linoryt"] .airway-hud[data-layout='foldable'] .lin-pass { max-width: 560px; }
+
+/* ---- Part 4: menu, a printed index under the title ------------------------------------------------------------------ */
+:root[data-skin="linoryt"] .airway-menu { color: var(--lin-ink); }
+:root[data-skin="linoryt"] .airway-sign {
+  top: 0; left: 0; right: 0; max-width: none; display: block; background: var(--lin-paper); color: var(--lin-ink);
+  padding: calc(var(--aw-safe-top) + 14px) calc(var(--aw-safe-right) + 20px) 10px calc(var(--aw-safe-left) + 20px);
+}
+:root[data-skin="linoryt"] .airway-sign__pictogram,
+:root[data-skin="linoryt"] .airway-sign__subtitle { display: none; }
+:root[data-skin="linoryt"] .airway-sign__title { font: 900 clamp(52px, 17vw, 92px)/.92 var(--skin-face-display); letter-spacing: -.02em; }
+:root[data-skin="linoryt"] .lin-tagline { margin-top: 12px; font: 600 calc(15px * var(--airway-text-scale-title))/1.25 var(--skin-face-text); }
+:root[data-skin="linoryt"] .airway-board {
+  inset: auto 0 0 0; width: auto; background: var(--lin-paper); border: 0; box-shadow: none; font-family: var(--skin-face-text);
+  padding: 14px calc(var(--aw-safe-right) + 20px) calc(var(--aw-safe-bottom) + 10px) calc(var(--aw-safe-left) + 20px);
+}
+/* The double print rule over the index. */
+:root[data-skin="linoryt"] .airway-board::before {
+  content: ''; display: block; height: 4px; margin-bottom: 3px; background: var(--lin-ink); box-shadow: 0 6px 0 -4.5px var(--lin-ink);
+}
+:root[data-skin="linoryt"] .airway-board__header { display: none; }
+:root[data-skin="linoryt"] .airway-flight {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 52px; padding: 6px 0;
+  border-top: 0; border-bottom: 1.5px solid var(--lin-ink); color: var(--lin-ink);
+}
+:root[data-skin="linoryt"] .airway-flight:hover,
+:root[data-skin="linoryt"] .airway-flight:focus-visible { outline: 3px solid var(--lin-red); outline-offset: -3px; background: var(--lin-paper-deep); }
+:root[data-skin="linoryt"] .airway-flight:active { background: var(--lin-paper-deep); }
+:root[data-skin="linoryt"] .airway-flight__main { flex: 1 1 auto; flex-direction: row; align-items: baseline; justify-content: space-between; gap: 12px; }
+:root[data-skin="linoryt"] .airway-flight__main .split-flap,
+:root[data-skin="linoryt"] .airway-flight__gate,
+:root[data-skin="linoryt"] .airway-flight__status:not(.airway-flight__region-cell) { display: none; }
+:root[data-skin="linoryt"] .lin-title { flex: 0 1 auto; max-width: 72%; min-width: 0; font: 800 calc(clamp(18px, 5.4vw, 22px) * var(--airway-text-scale-title))/1.1 var(--skin-face-display); overflow-wrap: break-word; }
+:root[data-skin="linoryt"] .airway-flight__sub {
+  flex: 1 1 0; min-width: 0; text-align: right; color: var(--lin-ink); font: 600 calc(13px * var(--airway-text-scale-dense))/1.2 var(--skin-face-text);
+}
+/* The run-starting entry (the row the menu marks hot: Continue, else Endless): the one red block, paper letters. */
+:root[data-skin="linoryt"] .airway-flight:has(.split-flap--highlight) {
+  background: var(--lin-red); color: var(--lin-paper); border-bottom: 0; min-height: 60px; padding: 8px 14px; margin: 4px 0;
+}
+:root[data-skin="linoryt"] .airway-flight:has(.split-flap--highlight) .airway-flight__sub { color: var(--lin-paper); }
+:root[data-skin="linoryt"] .airway-flight:has(.split-flap--highlight) .lin-title { font-size: calc(clamp(21px, 6.6vw, 27px) * var(--airway-text-scale-title)); }
+:root[data-skin="linoryt"] .airway-flight:has(.split-flap--highlight):hover,
+:root[data-skin="linoryt"] .airway-flight:has(.split-flap--highlight):focus-visible { background: var(--lin-red); outline-color: var(--lin-ink); }
+/* The Endless line: home region (and licence) as a printed "▾" choice over the red entry, right-aligned. */
+:root[data-skin="linoryt"] .airway-flight-line,
+:root[data-skin="linoryt"] .airway-flight-line--licence {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto auto; column-gap: 8px; border-top: 0;
+}
+:root[data-skin="linoryt"] .airway-flight-line > .airway-flight { grid-row: 2; grid-column: 1 / -1; }
+:root[data-skin="linoryt"] .airway-flight-line > .airway-flight__licence-cell { grid-row: 1; grid-column: 2; display: flex; }
+:root[data-skin="linoryt"] .airway-flight-line > .airway-flight__region-cell { grid-row: 1; grid-column: 3; display: flex; }
+:root[data-skin="linoryt"] .airway-flight__region {
+  min-height: 48px; min-width: 48px; width: auto; padding: 0 22px 0 6px; border: 0; color: var(--lin-ink);
+  background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M0 0h10L5 6z' fill='%231E1C1F'/%3E%3C/svg%3E") right 4px center / 10px 6px no-repeat;
+  font: 700 calc(14px * var(--airway-text-scale-dense))/1.2 var(--skin-face-text); text-align: right;
+}
+:root[data-skin="linoryt"] .airway-flight__licence { border: var(--lin-rule) solid var(--lin-ink); padding: 0 22px 0 8px; }
+/* Settings and the logbook share the last line of the index; on a narrow screen or at large text they stack. */
+:root[data-skin="linoryt"] .airway-board__service { border-top: 0; column-gap: 0; grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); }
+:root[data-skin="linoryt"] .airway-board__service .lin-title { max-width: none; }
+:root[data-skin="linoryt"] .airway-board__service { column-gap: 20px; }
+:root[data-skin="linoryt"] .airway-board__service .airway-flight--half + .airway-flight--half { border-left: 0; padding-left: 0; }
+:root[data-skin="linoryt"] .airway-notice { background: var(--lin-paper); color: var(--lin-ink); border-left-color: var(--lin-red); box-shadow: inset 0 0 0 1.5px var(--lin-ink); top: auto; bottom: auto; }
+@media (orientation: landscape) {
+  /* Landscape: the title top-left, the index as a paper column down the right edge, the globe between. */
+  :root[data-skin="linoryt"] .airway-sign { right: auto; background: transparent; padding-top: calc(var(--aw-safe-top) + 10px); }
+  :root[data-skin="linoryt"] .airway-sign__title { font-size: clamp(40px, 11vh, 60px); }
+  :root[data-skin="linoryt"] .airway-board {
+    inset: 0 0 0 auto; width: min(440px, 48%); display: flex; flex-direction: column; justify-content: center;
+    padding: calc(var(--aw-safe-top) + 8px) calc(var(--aw-safe-right) + 16px) calc(var(--aw-safe-bottom) + 8px) 16px;
+    border-left: 4px solid var(--lin-ink); overflow-y: auto;
+  }
+  :root[data-skin="linoryt"] .airway-board::before { display: none; }
+  :root[data-skin="linoryt"] .airway-flight { min-height: 48px; padding: 4px 0; }
+}
+:root[data-airway-motion="reduce"][data-skin="linoryt"] .lin-day__now { transition: none; }
+
+/* ---- Part 5: sheets until U3 redraws them --------------------------------------------------------------------------
+   The weekly board's top padding clears the old 70 px boarding pass (night-07n). Game time stands still while the board
+   or the game-over report is open (the world is frozen), so the top margin folds its day bar away and fits that space
+   (`npm run ui:matrix:stub -- --skin=linoryt` checks overlap and scroll); U3 lays the sheets out for the margin. */
+:root[data-skin="linoryt"]:has(.airway-upgrade-open, .airway-go-overlay) .lin-day { display: none; }
+:root[data-skin="linoryt"]:has(.airway-upgrade-open, .airway-go-overlay) .airway-hud[data-layout='landscape'] .airway-pass { width: auto; max-width: 400px; }
