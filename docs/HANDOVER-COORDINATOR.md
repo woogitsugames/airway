@@ -1,6 +1,6 @@
 # Przekazanie koordynatora Airway
 
-Ostatnia aktualizacja: 2026-11-07, ok. 15:00 UTC. Nowa sesja koordynatora (wieczór 6.11) pracuje ciągle; budziki
+Ostatnia aktualizacja: 2026-11-07, ok. 15:40 UTC. Nowa sesja koordynatora (wieczór 6.11) pracuje ciągle; budziki
 włączone. Nowa sesja startuje promptem z `docs/notes/coordinator-start-prompt.md`.
 
 ## 7.11 rano
@@ -20,6 +20,10 @@ włączone. Nowa sesja startuje promptem z `docs/notes/coordinator-start-prompt.
 - #287 scalony (U3 arkusze, D-287). Suity przeglądarkowe honorują teraz `--skin=linoryt`; ekrany U4 pod skórką nie
   przechodzą screens-fit/-320/text-scale-150 → poprawka `night/31a-linoryt-screens-fix` (`/workspace/31a`).
   Do U6: pusty pas u góry ekranu skrzyń; Schibsted bez wąskiej spacji („2 ,500”).
+- #288 scalony (U2 notki lotnisk, D-288; stała `LINORYT_STAMP_PX` do podmiany na `projectAirport` z E2). Zrzuty
+  U2 na prawdziwym rendererze dopiero po E1/E2.
+- `test:e2e:edge-chip-airports` pada w 915×412 („No gesture available for pick”) już na dev 6caa25b → agent
+  `night/32a-edge-chip-landscape` (`/workspace/32a`).
 - Kolejność dalej: E1 (ext) → E2 ∥ U2 → E3 → U5 przełączenie → E4 → U6 → U7 (zrzuty/wideo).
 
 ## Wieczór 6.11 (nowa sesja koordynatora)
@@ -102,7 +106,8 @@ commitach.
 
 
 ## W toku
-- Agenci U2 `/workspace/30a` i poprawka ekranów U4 `/workspace/31a` (Linoryt, podgląd).
+- Agenci: poprawka ekranów U4 `/workspace/31a`, edge-chip w poziomie `/workspace/32a`. Bez E1 (ext) zostały już
+  tylko poprawki; U5 czeka na E3.
 
 ## Decyzje do właściciela
 1. Uruchomienie sesji ext z promptem Linorytu (po PR 28a). Wideo/zrzuty sklepu dopiero po wdrożeniu Linorytu.
