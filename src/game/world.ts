@@ -22,11 +22,16 @@ function devAirportStyle(): AirportStyle | undefined {
   return value === 'current' || value === 'ink' || value === 'apron' || value === 'medal' ? value : undefined;
 }
 
-/** [ext-03] `?globeLook=` in DEV builds (docs/mockups/globe-2026-11/). */
+/**
+ * [ext-03] `?globeLook=` in DEV builds (docs/mockups/globe-2026-11/). [ext-04 E1] D-283: `?look=linoryt` (or the
+ * Linoryt UI preview `?skin=linoryt`) draws the printed globe.
+ */
 function devGlobeLook(): GlobeLook | undefined {
-  const value = new URLSearchParams(location.search).get('globeLook');
-  return value === 'diorama' || value === 'refined' || value === 'satellite' || value === 'painted' || value === 'map'
-    ? value : undefined;
+  const query = new URLSearchParams(location.search);
+  const value = query.get('globeLook') ?? query.get('look');
+  if (value === 'diorama' || value === 'refined' || value === 'satellite' || value === 'painted' || value === 'map' ||
+    value === 'linoryt') return value;
+  return query.get('skin') === 'linoryt' ? 'linoryt' : undefined;
 }
 
 // [task-34] HTML panels the globe must stay clear of. Their boxes become camera insets (D-47).
