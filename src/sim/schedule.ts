@@ -22,7 +22,11 @@ export interface PlaneCurfewGate {
  * slot and returns true, or returns false when the airport has no slot left this game hour.
  */
 export interface DepartureSlotGate {
-  tryTake(cityId: string): boolean;
+  tryTake(cityId: string, plane: PlaneState): boolean;
+  /** Called once per ready minute, even if a curfew blocks departure. */
+  ready?(cityId: string, plane: PlaneState): void;
+  /** Reset a slot-wait streak when curfew interrupts it. */
+  curfewHeld?(plane: PlaneState): void;
   /** Called once per minute for every ready aircraft that is held for a slot. */
   held?(cityId: string, plane: PlaneState): void;
 }
@@ -54,15 +58,23 @@ function advancePlane(
     const segment = plane.direction === 1 ? plane.cityIndex : plane.cityIndex - 1;
     const from = route.cityIds[plane.cityIndex];
     const to = route.cityIds[plane.cityIndex + plane.direction];
+    slots?.ready?.(from, plane);
     // A closed departure or arrival airport keeps the aircraft (and its boarding) on the ground.
-    if (!gate.canDepart(from, to, route.segments[segment].durationTicks[plane.type])) return;
+    if (!gate.canDepart(from, to, route.segments[segment].durationTicks[plane.type])) {
+      slots?.curfewHeld?.(plane);
+      return;
+    }
     // [task-32] No free departure slot this hour: keep waiting; passengers board only at departure.
-    if (slots && !slots.tryTake(from)) {
+    if (slots && !slots.tryTake(from, plane)) {
       plane.slotWaitTicks++;
       slots.held?.(from, plane);
       return;
     }
     plane.slotWaitTicks = 0;
+    delete plane.weatherReadyTicks;
+    delete plane.weatherWaitReported;
+    delete plane.slotWaitReported;
+    delete plane.weatherSlotWaitTicks;
 
     // Board only after the minimum service window, allowing eligible transfers.
     const seats = PLANE_TYPES[plane.type].seats;

@@ -68,6 +68,7 @@ function planeKey(plane: RunPlane): string {
 export class HubDepartureLog {
   private minute = -1;
   private planes = new Map<string, string>();
+  private slotTotals = new Map<string, Readonly<Record<string, number>>>();
   private departures: Departure[] = [];
   private slots: SlotSample[] = [];
 
@@ -75,6 +76,7 @@ export class HubDepartureLog {
   reset(): void {
     this.minute = -1;
     this.planes.clear();
+    this.slotTotals.clear();
     this.departures = [];
     this.slots = [];
   }
@@ -86,6 +88,7 @@ export class HubDepartureLog {
     const elapsed = this.minute < 0 ? 0 : Math.min(now - this.minute, BOARD_WINDOW_MINUTES);
     const routes = new Map(run.routeList().map((route) => [route.id, route.cityIds]));
     const seen = new Map<string, string>();
+    const seenTotals = new Map<string, Readonly<Record<string, number>>>();
     for (const plane of run.planeList()) {
       if (plane.phase === undefined || plane.cityIndex === undefined) continue;
       const key = planeKey(plane);
@@ -98,11 +101,22 @@ export class HubDepartureLog {
       if (plane.phase === 'flight' && before !== undefined && before !== key) {
         const next = stops[plane.cityIndex + plane.direction];
         if (next) this.departures.push({ minute: now, cityId: at, routeId: plane.routeId, next, full: plane.load >= plane.capacity });
+      }
+      if (plane.slotWaitTotals !== undefined) {
+        const previous = this.slotTotals.get(plane.id);
+        for (const [cityId, total] of Object.entries(plane.slotWaitTotals)) {
+          // A newly seen plane has no earlier counters in this log. On its first observation the elapsed time is zero;
+          // if it appeared between later observations, its counter began within this interval.
+          const delta = Math.min(elapsed, Math.max(0, total - (previous?.[cityId] ?? 0)));
+          if (delta > 0) this.slots.push({ minute: now, cityId, routeId: plane.routeId, minutes: delta });
+        }
+        seenTotals.set(plane.id, { ...plane.slotWaitTotals });
       } else if (plane.phase === 'ground' && (plane.slotWaitTicks ?? 0) > 0 && elapsed > 0) {
         this.slots.push({ minute: now, cityId: at, routeId: plane.routeId, minutes: Math.min(elapsed, plane.slotWaitTicks ?? 0) });
       }
     }
     this.planes = seen;
+    this.slotTotals = seenTotals;
     this.minute = now;
     const since = now - BOARD_WINDOW_MINUTES;
     if (this.departures.length && this.departures[0].minute <= since) this.departures = this.departures.filter((item) => item.minute > since);
