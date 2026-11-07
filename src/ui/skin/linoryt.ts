@@ -9,10 +9,10 @@
  * Step U1 is a DEV-only preview: src/main.ts turns it on only when `import.meta.env.DEV && ?skin=linoryt`, and every
  * call site is guarded by the same `import.meta.env.DEV`, so a release build folds the helpers away (dist/ stays
  * byte-identical). The preview builds on the base ("Diorama") DOM of the HUD and menu, not on Róża's: the flip step
- * (U6) deletes Róża and keeps the base components, restyled by linoryt.css.
+ * (U5) deletes Róża and keeps the base components, restyled by linoryt.css.
  *
  * Like roza.ts this module has no runtime imports (only types): src/main.ts hands in what it needs. Player text reuses
- * existing catalog keys (`roza.*`, `menu.*`); U6 renames them to skin-neutral keys.
+ * existing catalog keys (`roza.*`, `menu.*`); U5 renames them to skin-neutral keys.
  */
 import type { TranslationKey, TranslationParams } from '../../i18n';
 import type { DestinationRegion } from '../glyphs';

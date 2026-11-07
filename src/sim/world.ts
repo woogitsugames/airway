@@ -219,7 +219,7 @@ export interface WeatherView {
   readonly front: WeatherFront;
   readonly band: WeatherBand | null;
 }
-/** [night-12bd] R2j: one airport's front: 'ahead' (forecast) or 'under' (one departure slot fewer until `toTick`). */
+/** [night-12bd] R2j: one airport's front: 'ahead' (forecast) or 'under' (ready departures held up to 15 minutes until `toTick`; D-291). */
 export interface AirportWeatherView extends AirportFront {
   readonly phase: AirportFrontPhase;
   /** Local minute of day (airport clock) at which the deck arrives / leaves. */
@@ -444,7 +444,7 @@ export class World implements WorldView {
     return { ...over, phase, fromLocalMinute: localMinuteOfDay(over.fromTick, offset), toLocalMinute: localMinuteOfDay(over.toTick, offset) };
   }
 
-  /** [night-12bd] R2j: one hourly departure slot fewer while the airport is under the front. */
+  /** [night-12bd] R2j: true while the airport is under the front (departures held, D-291; was one slot fewer). */
   private underFront(cityId: string): boolean {
     const front = this.frontAt(this.minuteValue);
     const position = front ? POSITION10.get(cityId) : undefined;
