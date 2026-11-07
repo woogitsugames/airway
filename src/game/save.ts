@@ -322,9 +322,10 @@ export function replaySave(save: GameSaveV1): Sim | null {
       ...(config?.weatherFront === true ? { weatherFront: true } : {}),
     };
     // [night-12bc] R2h: and its licence class (absent = class I, every save before R2h).
+    const eus = config?.eusClusterV2 === true ? { eusClusterV2: true } : {};
     const licence = config?.licenceClass === undefined ? {} : { licenceClass: config.licenceClass };
     const sim = Sim.replay(save.seed, save.commands as never, save.tick,
-      (homeRegion === undefined ? { mode, ...contract, ...licence } : { mode, homeRegion, ...contract, ...licence }) as GameConfig);
+      (homeRegion === undefined ? { mode, ...contract, ...licence } : { mode, homeRegion, ...contract, ...licence, ...eus }) as GameConfig);
     if (sim.world.status !== 'running' && sim.world.status !== 'upgrade') return null;
     // Commands issued in the saved tick but not yet simulated still belong to the run.
     const pending = save.snapshot.pending;

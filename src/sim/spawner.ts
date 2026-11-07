@@ -70,6 +70,8 @@ function buildStartClusters(): readonly StartCluster[] {
 }
 
 const START_CLUSTERS = buildStartClusters();
+// EUS v2 excludes especially compact starts; v1 remains the default for old configs.
+const EUS_V2_MIN_ANCHOR_THIRD_KM = 800;
 
 /**
  * [night-11aj] R2g: start clusters whose anchor (the first airport) lies in `region`; the same list order as
@@ -87,8 +89,9 @@ export const HOME_REGIONS: readonly RegionId[] = Object.freeze(REGION_IDS.filter
  * the draw to clusters anchored in that region (Endless "home region"); only the start cluster changes, later spawns
  * follow the ordinary rules. Without it (Random, Daily) the draw is exactly the pre-R2g one.
  */
-export function createCitySpawner(rng: Rng, homeRegion: RegionId | null = null): CitySpawnerState {
-  const pool = homeRegion === null ? START_CLUSTERS.map((cluster) => cluster.members) : startClustersIn(homeRegion);
+export function createCitySpawner(rng: Rng, homeRegion: RegionId | null = null, eusClusterV2 = false): CitySpawnerState {
+  let pool = homeRegion === null ? START_CLUSTERS.map((cluster) => cluster.members) : startClustersIn(homeRegion);
+  if (homeRegion === 'EUS' && eusClusterV2) pool = pool.filter((cluster) => distanceKm(cluster[0], cluster[2]) >= EUS_V2_MIN_ANCHOR_THIRD_KM);
   if (pool.length === 0) throw new Error(`City dataset has no viable starting cluster${homeRegion ? ` in ${homeRegion}` : ''}`);
   const cluster = pool[rng.int(pool.length)];
   const count = SPAWNER_START_CITY_MIN + rng.int(SPAWNER_START_CITY_MAX - SPAWNER_START_CITY_MIN + 1);
