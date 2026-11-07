@@ -16,7 +16,8 @@ włączone. Nowa sesja startuje promptem z `docs/notes/coordinator-start-prompt.
 - 21:18: #302 scalony (GPT-01 nasz agent: kontrakty w raporcie końca gry, D-293). #293 GPT zamknięty jako duplikat. dev = main = 73d6f25. CSS 108 991 / 109 000 B, budżet wyczerpany.
 - 21:35: #303 scalony (GPT-20 zapis playtestu v2, D-295; D-294 zarezerwowane dla 36a). dev = main = 43ff284. Pytania do właściciela z #303: progi w Tabeli decyzji PLAYTEST (rekomendacja: przyjąć), etapy literami (rekomendacja: zostawić).
 - #304 scalony (GPT-11: przegląd opisów, Q-90). Właściciel wybrał „Poczekaj do U7” → D-296 (#305). dev = main = 4a25ad0.
-- Agenci: 36a (GPT-08, budżet CSS). Dalej: GPT-07/17 (dokumentacja), 18/19 (stub e2e), 12–15 (fale językowe). Następne w kolejce: GPT-20, GPT-11, GPT-07/17/18/19.
+- #306 scalony (GPT-08: CSS 109,0 → 105,3 kB, D-294). Q-91 → właściciel: podnieść limit przy U5 = pomiar + 3 kB (D-297, #307). dev = main = 9330a30.
+- Agenci: 40a (GPT-07, TESTING.md + linia w CLAUDE.md). Dalej: GPT-17, 18/19, 12–15. Dalej: GPT-07/17 (dokumentacja), 18/19 (stub e2e), 12–15 (fale językowe). Następne w kolejce: GPT-20, GPT-11, GPT-07/17/18/19.
 
 ## Test Free.AI MCP (7.11 19:30 → 8.11 19:30 UTC)
 Właściciel dodał connector Free.AI MCP (Qwen3-30B): zlecać mu łatwiejsze rzeczy zamiast agentów Claude, testować
