@@ -845,7 +845,7 @@ Plan: `docs/styles/kierunki-2026-11b/PLAN-LINORYT.md` (one PR per step; ext = gl
       undefined)` shows the airport-pick layout; its D-210 screen-reader-only week is the 4 shipped-skin "Tydzień 7"
       failures of text-scale-150 at 915×412. Passing `pendingHub: false` fixes those but exposes a shipped Róża overflow
       (pseudo-320 crates 12..327 px at 320, nowrap crate heading) → fix with the U5 flip (Róża goes) or a release PR.
-      U2 notes/edge chips still use `tabular-nums` with Schibsted (small counts only today).
+      The `tnum` fix also covers the U2 notes and edge chips ("12 , 270 km" → "12,270 km"; shots `docs/shots/31a/u2/`).
 - [ ] **E3 (ext)** the Linoryt look in release builds behind `DEFAULT_GLOBE_LOOK` (still satellite)
 - [ ] **U5 (agent)** the flip: Linoryt default skin + look; delete Róża and `?skin=current`; i18n renames; CSS budget back
 - [ ] **E4 (ext)** remove Satelita (and Mapa if the owner agrees: open question L2 of PR #285) and the photo textures (−1.9 MB)

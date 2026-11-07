@@ -274,7 +274,7 @@
 :root[data-skin="linoryt"] .airport-bubble {
   box-sizing: border-box; display: flex; flex-wrap: wrap; align-items: flex-start; align-content: flex-start; gap: 0;
   height: auto; padding: 0; clip-path: none; background: transparent; color: var(--lin-ink); white-space: nowrap;
-  font: 700 12.5px/20px var(--skin-face-text); font-variant-numeric: tabular-nums;
+  font: 700 12.5px/20px var(--skin-face-text);
 }
 :root[data-skin="linoryt"] .airport-bubble::before,
 :root[data-skin="linoryt"] .airport-bubble__plate,
@@ -288,7 +288,6 @@
 :root[data-skin="linoryt"] .lin-name--hub { font-size: 16px; }
 :root[data-skin="linoryt"] .lin-fill {
   flex: none; height: 19px; padding: 0 4px 0 0; background: var(--lin-paper); font: 700 12.5px/19px var(--skin-face-text);
-  font-variant-numeric: tabular-nums;
 }
 :root[data-skin="linoryt"] .airport-bubble:not(.airport-bubble--compact) > .lin-code,
 :root[data-skin="linoryt"] .airport-bubble:not(.airport-bubble--compact) > .lin-fill,
@@ -311,7 +310,6 @@
 :root[data-skin="linoryt"] .lin-br + .airport-region-glyph { padding-left: 4px; }
 :root[data-skin="linoryt"] .lin-count {
   flex: none; align-self: stretch; margin: 0; padding: 0 6px 0 2px; background: var(--lin-paper); font: 700 12.5px/20px var(--skin-face-text);
-  font-variant-numeric: tabular-nums;
 }
 :root[data-skin="linoryt"] .lin-more { padding-left: 4px; }
 :root[data-skin="linoryt"] .airport-bubble__trend {
@@ -334,7 +332,7 @@
 }
 :root[data-skin="linoryt"] .lin-jam__head { grid-column: 1 / -1; font: 700 12.5px/14px var(--skin-face-text); }
 :root[data-skin="linoryt"] .lin-jam__time { font: 900 22px/26px var(--skin-face-display); }
-:root[data-skin="linoryt"] .lin-jam__fill { justify-self: end; font: 700 12.5px/14px var(--skin-face-text); font-variant-numeric: tabular-nums; }
+:root[data-skin="linoryt"] .lin-jam__fill { justify-self: end; font: 700 12.5px/14px var(--skin-face-text); }
 /* The departure-slot ticket under the note: paper, ink outline, its stub in ink. */
 :root[data-skin="linoryt"] .airport-slot { border-color: var(--lin-ink); background: var(--lin-paper); color: var(--lin-ink); clip-path: none; font-family: var(--skin-face-text); }
 :root[data-skin="linoryt"] .airport-slot__stub { background: var(--lin-ink); color: var(--lin-paper); }
@@ -351,7 +349,7 @@
   content: attr(data-lin-name); display: block; overflow: hidden; padding-right: 16px; font: 800 14px/16px var(--skin-face-display);
 }
 :root[data-skin="linoryt"] .airport-edge::after {
-  content: attr(data-lin-line); display: block; overflow: hidden; font: 600 11.5px/13px var(--skin-face-text); font-variant-numeric: tabular-nums;
+  content: attr(data-lin-line); display: block; overflow: hidden; font: 600 11.5px/13px var(--skin-face-text);
 }
 :root[data-skin="linoryt"] .airport-edge > svg:first-child { position: absolute; top: 5px; right: 5px; width: 12px; height: 12px; }
 :root[data-skin="linoryt"] .airport-edge--gauge { padding-bottom: 0; }
@@ -1137,7 +1135,7 @@
 /* [night-31a] Figures with separators. The `tnum` of the Schibsted Grotesk subset also sets the comma, full stop and
    colon on a figure width (1300 units against 558 for the comma), so EN "2,500" printed as "2 ,500" and "10:42" as
    "10 : 42" (not a missing glyph: U+00A0, the PL/EN group, is in the face; Besley's `tnum` leaves punctuation alone).
-   Text-face numbers that carry a separator print with the face's own figures (`normal`); only small counts and codes
-   (hub board, ATC strip) keep tabular ones. */
+   Text-face numbers that carry a separator print with the face's own figures (`normal`), the U2 notes and edge chips
+   too ("12,270 km"); only small counts and codes (hub board, ATC strip) keep tabular ones. */
 :root[data-skin="linoryt"] :is(.airway-go-flight, .airway-rank-score) { font-variant-numeric: normal; }
 /* end U4 */
