@@ -17,7 +17,10 @@ włączone. Nowa sesja startuje promptem z `docs/notes/coordinator-start-prompt.
 - 21:35: #303 scalony (GPT-20 zapis playtestu v2, D-295; D-294 zarezerwowane dla 36a). dev = main = 43ff284. Pytania do właściciela z #303: progi w Tabeli decyzji PLAYTEST (rekomendacja: przyjąć), etapy literami (rekomendacja: zostawić).
 - #304 scalony (GPT-11: przegląd opisów, Q-90). Właściciel wybrał „Poczekaj do U7” → D-296 (#305). dev = main = 4a25ad0.
 - #306 scalony (GPT-08: CSS 109,0 → 105,3 kB, D-294). Q-91 → właściciel: podnieść limit przy U5 = pomiar + 3 kB (D-297, #307). dev = main = 9330a30.
-- Agenci: 40a (GPT-07, TESTING.md + linia w CLAUDE.md). Dalej: GPT-17, 18/19, 12–15. Dalej: GPT-07/17 (dokumentacja), 18/19 (stub e2e), 12–15 (fale językowe). Następne w kolejce: GPT-20, GPT-11, GPT-07/17/18/19.
+- #308 scalony squashem (GPT-17, ARCHITECTURE.md). dev = main = 0c882ee.
+- **Uwaga — commity:** stopka ma brzmieć `Co-Authored-By: Claude <noreply@anthropic.com>`, BEZ nazwy modelu (reguła właściciela). 7.11 ok. 14 commitów na dev (i kilka na tej gałęzi) ma nazwę modelu w stopce; bez force-push na dev nie da się tego cofnąć. PR-y agentów z taką stopką scalać squashem z czystym opisem.
+- Do poprawy (z raportu GPT-17), poza src/render: komentarze „−1 slot” w `src/sim/world.ts` (AirportWeatherView) i `src/ui/overlay.ts` (setFront) → wstrzymanie do 15 min (D-291); „U6” jako flip w `src/ui/skin/linoryt.{ts,css}`, `scripts/vite-font-files.mjs` → U5. Dla sesji ext: komentarz `parseGlobeLook` w `src/render/globe/look.ts` („diorama” → satellite).
+- Agenci: 40a (GPT-07, TESTING.md + linia w CLAUDE.md). Dalej: GPT-18/19, 12–15. Dalej: GPT-07/17 (dokumentacja), 18/19 (stub e2e), 12–15 (fale językowe). Następne w kolejce: GPT-20, GPT-11, GPT-07/17/18/19.
 
 ## Test Free.AI MCP (7.11 19:30 → 8.11 19:30 UTC)
 Właściciel dodał connector Free.AI MCP (Qwen3-30B): zlecać mu łatwiejsze rzeczy zamiast agentów Claude, testować
