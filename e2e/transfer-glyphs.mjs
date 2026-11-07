@@ -22,18 +22,40 @@ const frames = (page, n) => page.evaluate((count) => new Promise((done) => {
 /** Per tag: hollow glyph count, filled glyph count, whether it is on screen, its box, and its label. */
 const hollowTags = (page) => page.evaluate(() => [...document.querySelectorAll('.airport-bubble')].map((bubble) => {
   const box = bubble.getBoundingClientRect();
+  const groups = {};
+  for (const glyph of bubble.querySelectorAll('.airport-region-glyph')) {
+    const region = glyph.dataset.airwayDestination;
+    if (!region) continue;
+    const next = glyph.nextElementSibling;
+    const grouped = next && (next.classList.contains('roza-count') || next.classList.contains('lin-count'));
+    const count = grouped ? Number(next.textContent) : 1;
+    const entry = groups[region] ??= { hollow: 0, filled: 0 };
+    entry[glyph.classList.contains('airport-region-glyph--connecting') ? 'hollow' : 'filled'] += count;
+  }
   return {
+    id: bubble.dataset.airport,
     label: bubble.getAttribute('aria-label') ?? '',
+    groups,
     hollow: bubble.querySelectorAll('.airport-region-glyph--connecting').length,
     filled: bubble.querySelectorAll('.airport-region-glyph:not(.airport-region-glyph--connecting)').length,
     connectingClass: bubble.classList.contains('airport-bubble--connecting'),
-    shown: !bubble.hidden && box.width > 0 && box.left >= 0 && box.top >= 0 &&
+    shown: !bubble.hidden && bubble.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true }) &&
+      box.width > 0 && box.left >= 0 && box.top >= 0 &&
       box.right <= innerWidth && box.bottom <= innerHeight,
     box: { x: box.left, y: box.top, width: box.width, height: box.height },
   };
 }));
 
 const step = async (page, ticks = 1) => { await page.evaluate((n) => window.aw.advanceTicks(n), ticks); await frames(page, 2); };
+
+/** At least one observed destination must lose connecting passengers and gain ready passengers. */
+function transferFilled(before, after) {
+  if (!after) return false;
+  return Object.entries(before).some(([region, old]) => {
+    const current = after[region] ?? { hollow: 0, filled: 0 };
+    return old.hollow > 0 && current.hollow < old.hollow && current.filled > old.filled;
+  });
+}
 
 const cases = [
   ['en 412×915: transfers drawn hollow, then filled', 'en', { width: 412, height: 915 }],
@@ -42,6 +64,10 @@ const cases = [
 
 let fatal = null;
 try {
+  const example = { EUN: { hollow: 2, filled: 1 } };
+  assert(!transferFilled(example, null), 'self-check: a missing tag is not a filled transfer');
+  assert(!transferFilled(example, { EUN: { hollow: 0, filled: 1 } }), 'self-check: disappearing glyphs are not filled transfers');
+  assert(transferFilled(example, { EUN: { hollow: 1, filled: 2 } }), 'self-check: a filled transfer was not detected');
   await withBrowser(async ({ browser, url }) => {
     mkdirSync(SHOTS, { recursive: true });
     for (const [label, language, viewport] of cases) {
@@ -92,15 +118,20 @@ try {
         });
         // The connection time is 25 minutes (15 after a hub upgrade): within it the hollow glyphs must clear at
         // some tag that had them, unless another plane keeps landing; allow two windows.
-        const code = /\b([A-Z]{3}):/.exec(found.label)?.[1] ?? '';
-        assert(code, `no airport code in ${found.label}`);
+        const code = found.id;
+        assert(code, `no airport id in ${found.label}`);
+        const connectingRegions = Object.entries(found.groups).filter(([, group]) => group.hollow > 0);
+        assert(connectingRegions.length > 0, `${code}: hollow glyph has no destination`);
         let cleared = false;
         for (let minute = 0; minute < 50 && !cleared; minute++) {
           await step(page);
-          const now = (await hollowTags(page)).find((tag) => tag.label.includes(code + ':'));
-          cleared = !now || now.hollow === 0;
+          const current = await state(page);
+          assert(current.screen === 'game', `${code}: left the game before a transfer filled in (${current.screen})`);
+          const now = (await hollowTags(page)).find((tag) => tag.id === code);
+          assert(now, `${code}: tag disappeared before a transfer filled in`);
+          cleared = now.shown && transferFilled(Object.fromEntries(connectingRegions), now.groups);
         }
-        assert(cleared, `${code}: hollow glyphs never filled in within 50 minutes`);
+        assert(cleared, `${code}: no observed transfer changed from hollow to filled within 50 minutes`);
         if (errors.length) throw new Error(`Browser errors: ${errors.join('; ')}`);
         results.push({ label, status: 'PASS' });
       } catch (error) {
