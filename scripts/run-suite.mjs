@@ -94,11 +94,21 @@ export async function runPool(steps, { jobs, serial, order, run, report }) {
 }
 
 /** Runs one npm script; resolves with its exit status, its output (stdout then stderr) and seconds. */
-function runStep(step, npm) {
+function runStep(step, npmCli) {
   const [script, ...extra] = step.split(' ');
   const t0 = performance.now();
+  // npm provides its JavaScript entry point when it runs us as a package script; running it with this Node
+  // executable also works on Windows, where a .cmd file cannot be spawned directly.
+  const command = npmCli ? process.execPath : (process.platform === 'win32' ? 'npm.cmd' : 'npm');
+  const args = [...(npmCli ? [npmCli] : []), 'run', '-s', script, ...extra];
+  // A direct invocation on Windows needs cmd.exe for npm.cmd; only plain arguments are accepted there, so shell
+  // metacharacters cannot be interpreted as commands.
+  const shell = !npmCli && process.platform === 'win32';
+  if (shell && !args.every((arg) => /^[\w./:@=+-]+$/.test(arg))) {
+    return Promise.resolve({ status: null, seconds: 0, output: 'Unsafe argument for Windows npm.cmd fallback\n' });
+  }
   return new Promise((done) => {
-    const child = spawn(npm, ['run', '-s', script, ...extra], { stdio: ['ignore', 'pipe', 'pipe'] });
+    const child = spawn(command, args, { stdio: ['ignore', 'pipe', 'pipe'], shell, windowsHide: true });
     const out = [];
     const err = [];
     child.stdout.on('data', (chunk) => out.push(chunk));
@@ -137,13 +147,13 @@ async function main() {
     console.error('usage: node scripts/run-suite.mjs [--jobs=N] <suite-name> <npm-script>...');
     process.exit(2);
   }
-  const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+  const npmCli = process.env.npm_execpath;
   const started = performance.now();
   let previous = {};
   try { previous = JSON.parse(readFileSync(cacheFile(suite), 'utf8')); } catch { /* first run: list order */ }
   const results = await runPool(steps, {
     jobs, serial: SERIAL_STEPS, order: startOrder(steps, jobs, SERIAL_STEPS, previous),
-    run: (step) => runStep(step, npm),
+    run: (step) => runStep(step, npmCli),
     report: (i, result) => console.log(stepLine(steps[i], result)),
   });
   try {
