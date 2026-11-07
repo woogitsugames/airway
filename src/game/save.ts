@@ -28,12 +28,12 @@ const LEGACY_V3 = 3;
  */
 const LEGACY_V4 = 4;
 /**
- * [night-12bd] R2j: v6 = a save whose config carries the weather front (off in shipped Endless). Only such a save is
- * written as v6; every other save is still written as SAVE_VERSION (v5), byte for byte as before R2j, so a pre-R2j
+ * [D-291] v7 = a save whose config carries the weather front (off in shipped Endless). Only such a save is
+ * written as v7; every other save is still written as SAVE_VERSION (v5), byte for byte as before R2j, so a pre-R2j
  * build keeps loading it and refuses only a weather run as 'unsupported' (it would otherwise continue it without the
- * front). v5 never carries the flag and v6 always does.
+ * front). v5 never carries the flag; v6 weather saves are refused because their rules differ.
  */
-export const WEATHER_SAVE_VERSION = 6 as const;
+export const WEATHER_SAVE_VERSION = 7 as const;
 type EnvelopeVersion = typeof SAVE_VERSION | typeof WEATHER_SAVE_VERSION;
 /** [night-12bd] R2j: does a sim snapshot's config carry the weather front? */
 function snapshotHasWeather(snapshot: Record<string, unknown>): boolean {
@@ -137,13 +137,15 @@ function normaliseAndValidate(raw: unknown): LoadResult {
   if (typeof raw.v !== 'number' || !Number.isSafeInteger(raw.v) || raw.v < 0) {
     return { status: 'error', issue: 'corrupt' };
   }
+  // v6 used different weather physics; never silently replay it with changed rules.
+  if (raw.v === 6) return { status: 'error', issue: 'unsupported' };
   if (raw.v > WEATHER_SAVE_VERSION) return { status: 'error', issue: 'unsupported' };
   if (raw.v !== 0 && raw.v !== LEGACY_V1 && raw.v !== LEGACY_V2 && raw.v !== LEGACY_V3 && raw.v !== LEGACY_V4 && raw.v !== SAVE_VERSION &&
     raw.v !== WEATHER_SAVE_VERSION) return { status: 'error', issue: 'corrupt' };
   const migrated = raw.v === 0;
   const snapshot = migrated ? raw.snapshot ?? raw.state : raw.snapshot;
   if (!isRecord(snapshot) || !safeJsonTree(snapshot)) return { status: 'error', issue: 'corrupt' };
-  // [night-12bd] R2j: the weather front lives in v6 envelopes only, and every v6 envelope carries it.
+  // [night-12bd] R2j: the weather front lives in v7 envelopes only, and every v7 envelope carries it.
   if (snapshotHasWeather(snapshot) !== (raw.v === WEATHER_SAVE_VERSION)) return { status: 'error', issue: 'corrupt' };
   const tick = raw.tick ?? (migrated ? snapshot.tick : undefined);
   const seed = raw.seed ?? (migrated ? snapshot.seed : undefined);
@@ -181,7 +183,7 @@ export function encodeSave(source: SaveSource, savedAt = Date.now()): GameSaveV1
   // JSON round-trip provides a detached, validated snapshot/journal, not mutable Sim references.
   const snapshot = source.snapshot();
   const body = {
-    // [night-12bd] R2j: v6 only for a weather run; every other save stays a byte-identical v5.
+    // [night-12bd] R2j: v7 only for a weather run; every other save stays a byte-identical v5.
     v: snapshotHasWeather(snapshot) ? WEATHER_SAVE_VERSION : SAVE_VERSION, savedAt, seed: source.seed, tick: source.tick,
     snapshot, commands: source.commandLog, stateHash: String(source.hash()),
     paramsVersion: source.paramsVersion ?? null,
@@ -322,9 +324,10 @@ export function replaySave(save: GameSaveV1): Sim | null {
       ...(config?.weatherFront === true ? { weatherFront: true } : {}),
     };
     // [night-12bc] R2h: and its licence class (absent = class I, every save before R2h).
+    const eus = config?.eusClusterV2 === true ? { eusClusterV2: true } : {};
     const licence = config?.licenceClass === undefined ? {} : { licenceClass: config.licenceClass };
     const sim = Sim.replay(save.seed, save.commands as never, save.tick,
-      (homeRegion === undefined ? { mode, ...contract, ...licence } : { mode, homeRegion, ...contract, ...licence }) as GameConfig);
+      (homeRegion === undefined ? { mode, ...contract, ...licence } : { mode, homeRegion, ...contract, ...licence, ...eus }) as GameConfig);
     if (sim.world.status !== 'running' && sim.world.status !== 'upgrade') return null;
     // Commands issued in the saved tick but not yet simulated still belong to the run.
     const pending = save.snapshot.pending;

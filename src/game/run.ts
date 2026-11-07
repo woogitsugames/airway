@@ -61,6 +61,8 @@ export interface RunPlane {
   readonly phase?: 'ground' | 'flight';
   readonly cityIndex?: number;
   readonly slotWaitTicks?: number;
+  /** Weather runs: cumulative actual slot-wait minutes by airport. */
+  readonly slotWaitTotals?: Readonly<Record<string, number>>;
 }
 export interface RunFailure {
   readonly tick: number;
@@ -86,6 +88,11 @@ function isRegion(value: string): value is RegionId {
   return (REGION_IDS as readonly string[]).includes(value);
 }
 
+/** A same-world restart keeps the EUS pool version, including the absent flag on old saves. */
+export function restartEusClusterV2(seed: number, run: Pick<EndlessRun, 'seed' | 'sim'>): boolean {
+  return seed === run.seed ? run.sim.config.eusClusterV2 === true : true;
+}
+
 export class EndlessRun {
   private revisionValue = 0;
   /** [night-12am] R1o: weekly-board offers drained so far (a resumed run counts the boards after resuming). */
@@ -109,10 +116,10 @@ export class EndlessRun {
    * [night-12bd] R2j: `weatherFront` (Endless only) adds the weekly weather front; off unless a switch asks for it.
    */
   static create(seed: number, mode: GameMode = 'endless', homeRegion: RegionId | null = null,
-      licenceClass: LicenceClass = 1, weatherFront = ENDLESS_WEATHER_FRONT): EndlessRun {
+      licenceClass: LicenceClass = 1, weatherFront = ENDLESS_WEATHER_FRONT, eusClusterV2 = true): EndlessRun {
     return mode === 'daily' ? new EndlessRun(createGame(seed, 'daily'))
       : new EndlessRun(createGame(seed, 'endless', undefined, homeRegion, ENDLESS_WEEKLY_CONTRACT, ENDLESS_DEMAND_SURGE,
-        licenceClass, weatherFront));
+        licenceClass, weatherFront, eusClusterV2));
   }
 
   get seed(): number { return this.sim.seed; }
@@ -211,6 +218,7 @@ export class EndlessRun {
         case 'HubJamStarted': out.push({ type: 'jam', cityId: event.cityId, jammed: true }); break;
         case 'HubJamCleared': out.push({ type: 'jam', cityId: event.cityId, jammed: false }); break;
         case 'DepartureHeld': { // [task-32]
+          if (event.reason === 'weather') break;
           const view = this.sim.world.cityView(event.cityId);
           out.push({ type: 'slot-held', cityId: event.cityId, limit: view.departureSlots, minutesToSlot: view.nextSlotMinutes });
           break;
@@ -256,12 +264,16 @@ export class EndlessRun {
   }
 
   planeList(): RunPlane[] {
-    return this.sim.world.planes.map((plane) => ({
-      id: plane.id, routeId: plane.routeId, type: plane.type, segment: plane.segment,
-      progress01: plane.progress01, direction: plane.direction, load: plane.load,
-      capacity: PLANE_TYPES[plane.type].seats,
-      phase: plane.phase, cityIndex: plane.cityIndex, slotWaitTicks: plane.slotWaitTicks, // [night-11ag] R4d
-    }));
+    const world = this.sim.world;
+    return world.planes.map((plane) => {
+      return {
+        id: plane.id, routeId: plane.routeId, type: plane.type, segment: plane.segment,
+        progress01: plane.progress01, direction: plane.direction, load: plane.load,
+        capacity: PLANE_TYPES[plane.type].seats,
+        phase: plane.phase, cityIndex: plane.cityIndex, slotWaitTicks: this.weatherFront ? (plane.weatherSlotWaitTicks ?? 0) : plane.slotWaitTicks, // [night-11ag] R4d
+        ...(this.weatherFront ? { slotWaitTotals: plane.weatherSlotWaitTotals ?? {} } : {}),
+      };
+    });
   }
 
   /** [night-12ba] R2k, D-247: the running weekly contract (null without one, and in Daily). */

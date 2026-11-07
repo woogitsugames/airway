@@ -65,6 +65,15 @@ export interface PlaneState {
   remainingServiceTicks: number;
   /** [task-32] D-41: minutes this ready aircraft has waited on the ground for a departure slot. */
   slotWaitTicks: number;
+  /** Weather runs only: elapsed ready minutes, including time blocked by curfew. */
+  weatherReadyTicks?: number;
+  /** Weather runs only: one report per cause for the current departure. */
+  weatherWaitReported?: true;
+  slotWaitReported?: true;
+  /** Weather runs only: consecutive minutes actually blocked by the slot limit. */
+  weatherSlotWaitTicks?: number;
+  /** Weather runs only: actual slot-wait minutes by airport, across departures. */
+  weatherSlotWaitTotals?: Record<string, number>;
 }
 
 export interface PlaneFleet {
