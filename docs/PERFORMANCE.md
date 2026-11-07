@@ -302,6 +302,12 @@ Vite's chunk warning limit follows the raw budget (1,180 kB).
 release CSS measured **107.2 kB** after the pruning of `scripts/vite-skin-prune.mjs` (declarations Róża overrides and
 rules of elements it hides), so the CSS budget is 109 kB (the owner's ceiling, +1.7 % headroom). Folding `roza.css`
 into the component CSS (and dropping the DEV `?skin=current` comparison) is the lever back towards 90 kB.
+[night-36a] D-294: at 109.0 kB (no headroom) the three font-stack tokens became `var(--skin-face-*)` references in the
+release (defined once on `:root` by the kept skin; `REFERENCED_TOKENS` in `scripts/vite-skin-inline.mjs`): release CSS
+**105.3 kB** (−3.7 kB, +3.4 % headroom), pixel-identical by `skin:pixels` with `AW_SKIN_INLINE=1`. Per source:
+`roza.css` 22.6 kB, `upgrade.css` 14.5, `gameover.css` 13.4, `menu.css` 10.7, `puzzles/board.css` 9.1, `tutorial.css`
+8.3, `overlay.css` 6.1, `logbook.css` 5.4, `hud.css` 4.8, the rest 14.1. U5 (Linoryt default) projects ~135 kB with
+today's `linoryt.css` (Q-90).
 
 The app is one chunk on purpose (three.js is about 494 kB of it; splitting puzzles, logbook, leaderboard and
 tutorial would save < 40 kB, R5). Files come from disk in the Capacitor app, so size is not a download cost; the
