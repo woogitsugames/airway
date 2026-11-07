@@ -301,9 +301,9 @@ check('roza: the helpers have no runtime import (release bundle order unchanged)
   const runtime = [...read('src/ui/skin/linoryt.ts').matchAll(/^import\s+(?!type\b)[^;]*;/gm)].map((m) => m[0]);
   check('linoryt: the helpers have no runtime import', runtime.length === 0, runtime.join(' '));
   const unguarded = [];
-  for (const file of ['src/ui/hud/boarding-pass.ts', 'src/ui/hud/tag-dock.ts', 'src/ui/menu/menu.ts']) {
+  for (const file of ['src/ui/hud/boarding-pass.ts', 'src/ui/hud/tag-dock.ts', 'src/ui/menu/menu.ts', 'src/ui/gameover/index.ts']) {
     for (const line of read(file).split('\n')) {
-      if (/\blinoryt(Pass|DockLabel|Icon|Tagline)\(/.test(line) && !/import\.meta\.env\.DEV && linoryt\.on/.test(line)) unguarded.push(`${file}: ${line.trim()}`);
+      if (/\blinoryt(Pass|DockLabel|Icon|Tagline|ReportHub)\(/.test(line) && !/import\.meta\.env\.DEV && linoryt\.on/.test(line)) unguarded.push(`${file}: ${line.trim()}`);
       if (/'lin-title'|lin-title/.test(line) && !/import\.meta\.env\.DEV && linoryt\.on/.test(line)) unguarded.push(`${file}: ${line.trim()}`);
     }
   }

@@ -5,7 +5,7 @@ import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import {
-  withBrowser, newGamePage, waitForScreen, state, assert, clickTestId, ROOT, ARTIFACTS, SEED, RENDER, gameUrl, assertRender,
+  withBrowser, newGamePage, waitForScreen, state, assert, clickTestId, ROOT, ARTIFACTS, SEED, RENDER, gameUrl, assertRender, SKIN,
 } from '../e2e/browser.mjs';
 
 const fixture = process.argv.includes('--fixture');
@@ -29,8 +29,9 @@ const WEEK_SEED = SEED;
 // under SwiftShader (G7). Its PNGs show dots instead of the globe: they go to the git-ignored `.e2e/matrix-stub/` and
 // never replace `docs/shots/matrix/`. The look of the screens over the globe needs the real renderer (default run).
 const stub = !fixture && RENDER === 'stub';
-const outdir = resolve(ROOT, fixture ? 'docs/shots/matrix-fixture' : stub ? '.e2e/matrix-stub' : 'docs/shots/matrix');
-const shotLabel = fixture ? 'matrix-fixture' : stub ? '.e2e/matrix-stub' : 'matrix';
+// [night-29a] A `--skin` preview on the real renderer never replaces docs/shots/matrix/ either.
+const outdir = resolve(ROOT, fixture ? 'docs/shots/matrix-fixture' : stub ? '.e2e/matrix-stub' : SKIN ? `.e2e/matrix-${SKIN}` : 'docs/shots/matrix');
+const shotLabel = fixture ? 'matrix-fixture' : stub ? '.e2e/matrix-stub' : SKIN ? `.e2e/matrix-${SKIN}` : 'matrix';
 const expected = sizes.length * screens.length * 2;
 const failures = [];
 let captured = 0;

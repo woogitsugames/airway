@@ -3,7 +3,7 @@
 // and pause sheet in PL/EN (ext-05: no puzzle title splits a word), and every select keeps ≥ 8 px to spare beside its longest option, so "Automatyczna"
 // no longer runs into the arrow. screens-fit.mjs keeps the 360/412/915 sizes with the plain fit rule.
 import { performance } from 'node:perf_hooks';
-import { withBrowser, newGamePage, waitForScreen, assert, clickTestId, saveDiagnostics, SEED } from './browser.mjs';
+import { withBrowser, newGamePage, waitForScreen, assert, clickTestId, saveDiagnostics, SEED, skinUrl } from './browser.mjs'; // [night-29a] --skin=linoryt
 
 const started = performance.now();
 const SIZES = [[320, 568], [568, 320]];
@@ -88,7 +88,7 @@ try {
       let page;
       try {
         let errors;
-        ({ page, errors } = await newGamePage(browser, url, lang, { width, height }));
+        ({ page, errors } = await newGamePage(browser, skinUrl(url), lang, { width, height }));
         await waitForScreen(page, 'menu');
         const root = await open(page);
         await page.waitForTimeout(300);
