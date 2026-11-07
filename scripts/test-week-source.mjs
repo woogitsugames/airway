@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const SOURCE = 'src/sim/params.ts';
+const repoPath = (path) => path.replace(/\\/g, '/');
 let passed = 0;
 const failures = [];
 function check(name, fn) {
@@ -68,10 +69,15 @@ const files = [...walk(resolve(ROOT, 'src')), ...walk(resolve(ROOT, 'scripts'))]
   .filter((file) => !file.endsWith('test-week-source.mjs'));
 const definition = /\b[A-Z_]*(DAYS_PER_WEEK|MINUTES_PER_WEEK|TICKS_PER_WEEK)\b\s*(?::[^=;]+)?=\s*([^;\n]+)/g;
 const literalWeek = /\b(?:7|3)\s*\*\s*(?:24\s*\*\s*60|1_?440)\b|\b10_?080\b/;
+check('repository paths use slash separators on Windows and POSIX', () => {
+  assert(repoPath('src\\sim\\params.ts') === SOURCE, 'Windows params path');
+  assert(repoPath('scripts\\test-schedule.mjs').startsWith('scripts/test-'), 'Windows test path');
+  assert(repoPath('src/sim/params.ts') === SOURCE, 'POSIX params path');
+});
 check('no second literal week definition', () => {
   const bad = [];
   for (const file of files) {
-    const rel = relative(ROOT, file);
+    const rel = repoPath(relative(ROOT, file));
     const text = readFileSync(file, 'utf8');
     for (const match of text.matchAll(definition)) {
       const literal = /^\s*\d/.test(match[2]);
