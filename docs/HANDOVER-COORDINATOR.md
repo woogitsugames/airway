@@ -1,7 +1,17 @@
 # Przekazanie koordynatora Airway
 
-Ostatnia aktualizacja: 2026-11-07, ok. 17:00 UTC. Nowa sesja koordynatora (wieczór 6.11) pracuje ciągle; budziki
+Ostatnia aktualizacja: 2026-11-07, ok. 19:20 UTC. Nowa sesja koordynatora (wieczór 6.11) pracuje ciągle; budziki
 włączone. Nowa sesja startuje promptem z `docs/notes/coordinator-start-prompt.md`.
+
+## 7.11 wieczór — decyzje właściciela (19:15)
+- **Sesję ext uruchamia koordynator:** `session_01V6ZttYCN9VzaEWnk31mzUc` „Airway ext — Linoryt globus (E1–E3)”,
+  prompt = `docs/notes/linoryt-ext-prompt.md` + dopiski (autonomicznie E1→E2→E3, PR-y draft do dev, scala koordynator;
+  E4 dopiero po U5 — koordynator wysyła jej wiadomość `send_message`). Gałęzie `ext/04-linoryt-e*`.
+- **Zlecenia z paczki GPT biorą agenci Claude** (bez GPT-09/10/21): kolejność 01, 06 → 02, 05, 20 → 03, 04, 08, 11, …
+  Pliki zleceń: scratchpad `gpt-zlecenia/GPT-NN.txt` (odtwarzalne z `docs/gpt/ZLECENIA-2026-11-06.md`). W toku:
+  GPT-01 `night/33a-contracts-report` (`/workspace/33a`), GPT-06 `night/33b-parallel-test-fast` (`/workspace/33b`).
+- Fixture „Tydzień 7” / przepełnienie skrzyń Róży → przy U5.
+- Budziki: :45 włączony, gdy pracują agenci; bez pracy tylko :15.
 
 ## 7.11 rano
 - Właściciel wybrał **A „Linoryt”** (D-283): glify pasażerów kształt + kolory D-08, tryb „Satelita” usunięty
@@ -112,7 +122,7 @@ commitach.
 
 
 ## W toku
-- Brak agentów; czekamy na gałąź sesji ext (E1).
+- Sesja ext (E1), agenci GPT-01 `/workspace/33a` i GPT-06 `/workspace/33b`.
 
 ## Decyzje do właściciela
 1. Uruchomienie sesji ext z promptem Linorytu (po PR 28a). Wideo/zrzuty sklepu dopiero po wdrożeniu Linorytu.
