@@ -1,7 +1,15 @@
 # Przekazanie koordynatora Airway
 
-Ostatnia aktualizacja: 2026-11-06, ok. 20:20 UTC. Nowa sesja koordynatora (wieczór 6.11) pracuje ciągle; budziki
+Ostatnia aktualizacja: 2026-11-07, ok. 11:05 UTC. Nowa sesja koordynatora (wieczór 6.11) pracuje ciągle; budziki
 włączone. Nowa sesja startuje promptem z `docs/notes/coordinator-start-prompt.md`.
+
+## 7.11 rano
+- Właściciel wybrał **A „Linoryt”** (D-283): glify pasażerów kształt + kolory D-08, tryb „Satelita” usunięty
+  całkiem, koordynator scala sam (D-222 potwierdzone). #284 scalony (research + makiety, D-282 zamknięta).
+- Agent `night/28a-linoryt-ui` (`/workspace/28a`): plan etapów `docs/styles/kierunki-2026-11b/PLAN-LINORYT.md`,
+  prompt dla sesji ext `docs/notes/linoryt-ext-prompt.md` (+ spec renderu), pierwszy etap UI. Po PR: wysłać
+  właścicielowi prompt ext (stary `roza-ext-prompt.md` nieaktualny).
+- GPT-09/10/21 (Róża) nieaktualne — nie scalać, jeśli przyjdą.
 
 ## Wieczór 6.11 (nowa sesja koordynatora)
 - **Róża odrzucona przez właściciela: „dalej jest AI slop”** — wszystkie cztery warstwy: glob satelitarny, ozdobniki
@@ -83,11 +91,10 @@ commitach.
 
 
 ## W toku
-- Agent `night/27a-art-research` (research stylu od zera, D-282) — `/workspace/27a`.
+- Agent `night/28a-linoryt-ui` (plan Linorytu, prompt ext, etap UI 1) — `/workspace/28a`.
 
 ## Decyzje do właściciela
-1. Wybór nowego kierunku graficznego z `docs/styles/kierunki-2026-11b/` (po PR 27a). Róża odrzucona (D-282);
-   wideo sklepu i prompt sesji ext czekają na ten wybór.
+1. Uruchomienie sesji ext z promptem Linorytu (po PR 28a). Wideo/zrzuty sklepu dopiero po wdrożeniu Linorytu.
 2. Starsze otwarte: Q-52 rekrutacja testerów, Q-01 dane wydawcy/administratora, Q-07 Firebase, Q-49, Q-50, Q-56,
    Q-67, data premiery; jedna konsultacja z prawnikiem (polityka, regulamin, rejestr; także „bezpłatne” w §2 regulaminu,
    D-278).
