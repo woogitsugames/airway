@@ -3,6 +3,14 @@
 Ostatnia aktualizacja: 2026-11-07, ok. 19:20 UTC. Nowa sesja koordynatora (wieczór 6.11) pracuje ciągle; budziki
 włączone. Nowa sesja startuje promptem z `docs/notes/coordinator-start-prompt.md`.
 
+## 7.11 22:20 — polecenie właściciela: praca autonomiczna, ciągła
+„Pracuj autonomicznie. Jak jakieś inne AI nie oddały pracy, zrób to sam swoimi agentami, rozwijaj grę w sposób ciągły.”
+Zasady wykonania:
+- Zawsze 2 agentów (opus). Po każdym raporcie: scal, main = dev, od razu następne zadanie z kolejki.
+- Sesja ext (E1–E3): jeśli do ~23:15 nie wypchnie gałęzi ext/* albo znów stanie, E1 → E2 → E3 przejmują nasi agenci (wyjątek od „nie dotykaj src/render/**”, za zgodą właściciela z 22:20), po jednym kroku na agenta, według `docs/notes/linoryt-render-spec.md`.
+- Kolejka po GPT-07/18: GPT-05 (#297 WIP: niestabilny test:e2e:transfer-glyphs, nasz agent od nowa), GPT-19 (długie przejścia na stubie), Q-91/D-297 ok; potem U5 (po E3), U6, U7 (z D-296: opisy sklepu); fale językowe GPT-12–15; naprawa `coverage:fast` (budżet czasu pod V8).
+- Owner-level decyzje: pytać klikalnie z rekomendacją; gdy brak odpowiedzi, nie blokować — iść dalej z rekomendacją tam, gdzie da się to odwrócić.
+
 ## 7.11 ~20:00 — scalanie
 - Scalone: #299 (równoległy `test:fast`, D-289, ~100 s na 4 vCPU zamiast ~250–300 s) i #291 (poprawki Windows, przeniesione na nowy runner). `dev` = `main` = e8d330d.
 - #298 (GPT-06) zamknięty jako duplikat #299.
