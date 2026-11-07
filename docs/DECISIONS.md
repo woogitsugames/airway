@@ -2807,7 +2807,7 @@ play to judge; **Daily stays without surges** so its leaderboard stays comparabl
 stays off in Daily; Daily state, hashes and replays unchanged). Added by the decision: a first-time card on the first
 announcement (R6b, like the other "first time" cards) and a short sound with the first announcement. Nothing changes
 in this PR: both touch the first-time cards journey (`test:e2e:first-time-cards`) and the audio cue set, so they are
-a follow-up in `docs/NIGHT-BACKLOG.md`. **Status: in force (first-time card and sound to implement).**
+a follow-up in `docs/NIGHT-BACKLOG.md`. **Status: in force; the first-time card and the sound are built (D-292).**
 
 ## D-273 — Licence classes open at week 4 of the class below (owner, 2026-11-06; recommendation accepted, Q-84 → B)
 Owner's answer to Q-84 (D-251): the next licence class opens once a run of the class below reached **week 4**
@@ -3053,3 +3053,21 @@ The 15-minute choice limits disruption: 200 paired bot seeds gave 128 runs with 
 longer, median 16.78 min (16.75 without); 30 and 60 minutes yielded 8 and 9 shorter respectively. The bot does not react to weather; device play and closed-test evidence are still needed
 before shipping. Results and 50/200-seed comparison: `docs/balance/weather-summary.md`. **Status: in force, behind the
 DEV flag only.**
+
+## D-292 — The first surge announcement: a "first time" card that brings one short sound (2026-11-07, Claude, night 35a)
+Implements D-272. (1) A sixth first-time card, `surge`, is offered when an announced (not yet running) surge stands on
+an airport the player can see, in Endless only (`surgeAnnouncement` in `src/game/tutorial/first-time.ts`; Daily and
+puzzles never carry a surge, and the mode check keeps it so). Stamp "ATC / SURGE" (PL "ATC / SZCZYT"), tag
+"EDI · +12 08:00" (the same "+N HH:00" as the pennant), hint: what hollow and filled pennants mean and what to do (seats
+or an aircraft on that airport's routes). Like the other cards it names its airport and does not move the camera.
+(2) `FIRST_TIME_VERSION` stays 1: the saved `seen` list keeps every card it holds, and a card id missing from it has
+simply not been shown, so adding `surge` re-shows nothing; "Replay tutorial" clears it with the rest (D-192).
+(3) The sound is tied to the card, not to the sim event: `mountFirstTimeCards` calls `onShow`, and the session plays
+`surge-notice` when the surge card appears. So it plays once per install, together with the card, never in Daily or
+puzzles, never when seeded test runs switch the cards off, and it goes through the effects bus (the sound switch and
+mute apply). A card waiting behind another card delays its sound with it. (4) Synthesis (`SURGE_NOTICE` in
+`src/audio/engine.ts`): two struck sines a fourth apart, E5 659.26 Hz then A5 880 Hz 0.16 s later, each ringing
+0.32 s (0.48 s in all), second partial at 0.18, low-pass 2.6 kHz, peak 0.04 per note, under the route tag (0.043).
+No sample files. `docs/audio/preview-1-calm-europe.wav` carries it at 10 s. Rejected: playing the sound on every
+announcement (D-272 asks for the first one), a separate "sound heard" flag (two flags could disagree after a replay).
+**Status: in force.**

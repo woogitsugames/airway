@@ -6,7 +6,7 @@ jest syntezą z oscylatorów i generowanego szumu.
 
 | Plik | Co słychać |
 | --- | --- |
-| `preview-1-calm-europe.wav` | Spokojny poranek w Europie: przyloty (trójkąt) i przesiadki (krótki sinus) w skalach EUN/EUS, rozkwit świtu nad Frankfurtem na początku, „tag” przy nowej trasie (6 s, 14,5 s, 22 s), dzwonek nowego miasta (18 s), pieczątka ulepszenia (26 s). |
+| `preview-1-calm-europe.wav` | Spokojny poranek w Europie: przyloty (trójkąt) i przesiadki (krótki sinus) w skalach EUN/EUS, rozkwit świtu nad Frankfurtem na początku, „tag” przy nowej trasie (6 s, 14,5 s, 22 s), dzwonek nowego miasta (18 s), pieczątka ulepszenia (26 s); w 10 s jednorazowa zapowiedź szczytu ruchu (D-272: dwie miękkie nuty E5 → A5, 0,48 s, ciszej niż „tag”). |
 | `preview-2-hub-tension.wav` | Frankfurt się zapełnia: dron węzła narasta od 60% do 100% obciążenia, dudnienie przyspiesza do ok. 6 Hz, cztery „tik-tak” czekania na slot (9, 15, 19, 22 s); w 25 s ulga — dron gaśnie. |
 | `preview-3-week-turn.wav` | Sieć przez kilka regionów (każdy region ma własną odmianę tej samej skali pentatonicznej); w 11,5 s koniec tygodnia: kadencja dominanta → tonika i zmiana tonacji o kwintę, potem świt nad Tokio (19 s) i nowe miasto w Oceanii (24 s). |
 

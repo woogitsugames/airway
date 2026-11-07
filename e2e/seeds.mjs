@@ -122,8 +122,8 @@ export const E2E_SEEDS = {
   },
   'first-time-cards': {
     seeds: [0xA1A2],
-    plans: [{ name: 'all four first-time triggers within 4 weeks', steps: [
-      { triggers: ['hub-full', 'out-of-range', 'curfew', 'weekly-board'], ticks: 4 * 4320, every: 30, take: 'plain' },
+    plans: [{ name: 'all five first-time triggers within 4 weeks (surge: D-272)', steps: [
+      { triggers: ['hub-full', 'out-of-range', 'curfew', 'weekly-board', 'surge'], ticks: 4 * 4320, every: 30, take: 'plain' },
     ] }],
   },
   'focus-pause': {

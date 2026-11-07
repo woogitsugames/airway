@@ -1,9 +1,11 @@
 // [night-11p] R6a / D-130: the one-time "first time" cards in the real game. The DEV bot plays Endless on a fixed
 // seed through real Commands (weekly boards answered on the real board, one plain card), the clock stepped 30 game
 // minutes at a time; every card that appears is checked (strip on screen, aria-live, a 48 px "OK" that hides it) and
-// dismissed. All four cards must appear (hub 70 % full, airport beyond turboprop range, first curfew night, first
-// weekly board). A second run on the same install replays the same flight and must show none.
-// EN 412×915 and PL 915×412; fails closed; shots docs/shots/n11p/.
+// dismissed. All five cards must appear (hub 70 % full, airport beyond turboprop range, first curfew night, first
+// weekly board, [night-35a] D-272 first announced demand surge). A second run on the same install replays the same
+// flight and must show none.
+// EN 412×915 and PL 915×412; fails closed; shots docs/shots/n11p/. The surge card is also shot in the other
+// orientation (the viewport turned while it is up, checked inside the screen too) into docs/shots/gpt02/.
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
@@ -11,11 +13,12 @@ import { withBrowser, newGamePage, waitForScreen, clickTestId, assert, saveDiagn
 import { E2E_SEEDS } from './seeds.mjs';
 
 const SEED = E2E_SEEDS['first-time-cards'].seeds[0]; // [night-12ac] e2e/seeds.mjs (0xA1A2): reaches week 4 under rules v6: its network has a hub over 70 %, a far airport and curfew nights
-const CARDS = ['hub-full', 'out-of-range', 'curfew', 'weekly-board'];
+const CARDS = ['hub-full', 'out-of-range', 'curfew', 'weekly-board', 'surge'];
 const STEP_TICKS = 30;
 const MAX_TICKS = 4 * 4320;
 const started = performance.now();
 const SHOTS = resolve(ROOT, 'docs/shots/n11p');
+const SURGE_SHOTS = resolve(ROOT, 'docs/shots/gpt02');
 const results = [];
 const CASES = [['en', { width: 412, height: 915 }], ['pl', { width: 915, height: 412 }]];
 
@@ -61,7 +64,27 @@ async function play(page, language, viewport, { shots }) {
     assert(card.box.left >= 0 && card.box.top >= 0 && card.box.right <= card.vw && card.box.bottom <= card.vh,
       `${card.card}: strip outside the screen ${JSON.stringify(card.box)}`);
     assert(card.ok.width >= 48 && card.ok.height >= 48, `${card.card}: OK ${card.ok.width}×${card.ok.height} < 48`);
-    if (shots) await page.screenshot({ path: resolve(SHOTS, `${card.card}-${language}-${viewport.width}x${viewport.height}.png`) });
+    if (shots && card.card !== 'surge') await page.screenshot({ path: resolve(SHOTS, `${card.card}-${language}-${viewport.width}x${viewport.height}.png`) });
+    if (card.card === 'surge') {
+      // [night-35a] D-272: the card names the announced airport and its local start hour (the pennant's "+N HH:00").
+      const pennant = await page.evaluate(() => document.querySelector('.airport-bubble__surge[data-phase="announced"]')
+        ?.closest('[data-airport]')?.dataset.airport ?? null);
+      assert(/\+\d+ \d\d:00/.test(card.text), `surge: no "+N HH:00" in ${card.text}`);
+      assert(pennant && card.text.includes(pennant), `surge: card does not name the pennant's airport ${pennant}: ${card.text}`);
+      if (shots) {
+        await page.screenshot({ path: resolve(SURGE_SHOTS, `surge-${language}-${viewport.width}x${viewport.height}.png`) });
+        const turned = { width: viewport.height, height: viewport.width };
+        await page.setViewportSize(turned);
+        await page.waitForTimeout(300);
+        const again = await cardState(page);
+        assert(again?.card === 'surge', 'surge: the card left when the screen turned');
+        assert(again.box.left >= 0 && again.box.top >= 0 && again.box.right <= again.vw && again.box.bottom <= again.vh,
+          `surge: strip outside the turned screen ${JSON.stringify(again.box)}`);
+        await page.screenshot({ path: resolve(SURGE_SHOTS, `surge-${language}-${turned.width}x${turned.height}.png`) });
+        await page.setViewportSize(viewport);
+        await page.waitForTimeout(300);
+      }
+    }
     await clickTestId(page, 'first-time-ok');
     assert(await cardState(page) === null, `${card.card}: OK did not hide the card`);
   }
@@ -72,6 +95,7 @@ let fatal = null;
 try {
   await withBrowser(async ({ browser, url }) => {
     mkdirSync(SHOTS, { recursive: true });
+    mkdirSync(SURGE_SHOTS, { recursive: true });
     for (const [language, viewport] of CASES) {
       const label = `${language} ${viewport.width}×${viewport.height}`;
       const { page, errors } = await newGamePage(browser, url, language, viewport);

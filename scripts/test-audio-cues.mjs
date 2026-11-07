@@ -75,6 +75,39 @@ check('week and jam cues pass through', () => {
   assert.equal(cues[1].loadRatio, 1);
 });
 
+// [night-35a] D-272: the surge notice comes with the surge "first time" card, which shows once per install.
+const { FirstTimeRegistry, surgeAnnouncement } = await import('../src/game/tutorial/first-time.ts');
+const { SURGE_NOTICE } = await import('../src/audio/engine.ts');
+check('surge notice: the first announcement seen on an install sounds once; later ones, a new run, Daily stay silent', () => {
+  const data = new Map();
+  const storage = { getItem: (key) => data.get(key) ?? null, setItem: (key, value) => { data.set(key, value); } };
+  // The session's path: an announced surge offers the card; the card shows once (registry); showing it sounds.
+  const runOnce = (mode, announcements) => {
+    const { cues, map } = mapper();
+    const registry = new FirstTimeRegistry(storage);
+    for (const view of announcements) {
+      if (!surgeAnnouncement(mode, view, () => true) || registry.seen('surge')) continue;
+      registry.mark('surge');
+      map.surgeNotice();
+    }
+    return cues;
+  };
+  const soon = (cityId) => ({ cityId, active: false });
+  assert.deepEqual(runOnce('daily', [soon('FRA')]), [], 'Daily never');
+  const first = runOnce('endless', [soon('FRA'), { cityId: 'FRA', active: true }, soon('MAD')]);
+  assert.deepEqual(first, [{ type: 'surge-notice' }], 'one cue, on the effects path (no sim tick)');
+  assert.deepEqual(runOnce('endless', [soon('ROM')]), [], 'a later run on the same install');
+  const { cues, map } = mapper();
+  map.surgeNotice();
+  map.surgeNotice();
+  assert.equal(cues.length, 1, 'the mapper itself never repeats it');
+});
+check('surge notice synthesis: short (<= 0.6 s) and quieter than the route tag', () => {
+  assert.ok(SURGE_NOTICE.offset + SURGE_NOTICE.ring <= 0.6, `length ${SURGE_NOTICE.offset + SURGE_NOTICE.ring}`);
+  assert.ok(SURGE_NOTICE.peak < 0.043, `peak ${SURGE_NOTICE.peak}`);
+  assert.ok(SURGE_NOTICE.high > SURGE_NOTICE.low);
+});
+
 // [night-07e] Split-flap rattle: capped, spaced clicks; simultaneous boards merge into one rattle.
 const flap = await import('../src/game/flapSound.ts');
 check('flap plan: a few clicks per animation, spaced and capped', () => {

@@ -20,7 +20,7 @@ export type AudioCue =
   | ({ readonly type: 'hub-load'; readonly tick: number; readonly loadRatio: number } & HubAudioData)
   | { readonly type: 'week'; readonly tick: number; readonly week: number }
   | { readonly type: 'new-city'; readonly tick: number; readonly latitude?: number; readonly regionId?: string }
-  | { readonly type: 'flap' | 'paper' | 'tag' | 'stamp' | 'slot-wait'; readonly tick?: number };
+  | { readonly type: 'flap' | 'paper' | 'tag' | 'stamp' | 'slot-wait' | 'surge-notice'; readonly tick?: number };
 
 export type AudioEventStream = {
   subscribe(listener: (event: AudioCue) => void): () => void;

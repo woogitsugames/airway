@@ -30,9 +30,13 @@ const STEP_KEYS = {
   'out-of-range': 'firstTime.step.outOfRange',
   curfew: 'firstTime.step.curfew',
   'weekly-board': 'firstTime.step.weeklyBoard',
+  surge: 'firstTime.step.surge', // [night-35a] D-272
 } as const;
 
-export function mountFirstTimeCards(host: HTMLElement, registry: FirstTimeRegistry, enabled = true): FirstTimeCards {
+/** [night-35a] D-272: `onShow` runs once when a card appears (the surge card's one-time sound). */
+export function mountFirstTimeCards(
+  host: HTMLElement, registry: FirstTimeRegistry, enabled = true, onShow?: (card: FirstTimeCard) => void,
+): FirstTimeCards {
   const strip = document.createElement('aside');
   strip.className = 'airway-atc-strip airway-first-time';
   strip.dataset.testid = 'first-time-card';
@@ -81,6 +85,7 @@ export function mountFirstTimeCards(host: HTMLElement, registry: FirstTimeRegist
       dismiss.setAttribute('aria-label', t('firstTime.okAria'));
       strip.hidden = false;
       timer = setTimeout(hide, VISIBLE_MS);
+      onShow?.(next.card);
     },
     get visible() { return current; },
     hide,
