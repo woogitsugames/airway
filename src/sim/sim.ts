@@ -62,6 +62,7 @@ function readConfig(value: unknown): GameConfig {
       ((value.mode === 'puzzle') !== (value.puzzleId !== undefined)) ||
       // [night-11aj] R2g: a home region is an Endless choice only (Daily stays one world for everyone).
       (value.homeRegion !== undefined && (value.mode !== 'endless' || !isHomeRegion(value.homeRegion))) ||
+      (value.eusClusterV2 !== undefined && (value.homeRegion !== 'EUS' || value.eusClusterV2 !== true)) ||
       // [night-12ba] R2k: the weekly contract is an Endless rule only (Daily and its leaderboards stay as they were).
       (value.weeklyContract !== undefined && (value.mode !== 'endless' || value.weeklyContract !== true)) ||
       // [night-12bb] R2i: the demand surge is an Endless rule only, like the contract.

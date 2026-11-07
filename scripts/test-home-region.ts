@@ -4,13 +4,14 @@
 // menu preference keep it. Fails on the old code: no HOME_REGIONS, the config drops the region, the replay starts a
 // random world.
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { createGame, HOME_REGIONS, Sim, TICKS_PER_WEEK } from '../src/sim/index.ts';
 import { RULES_VERSION } from '../src/sim/state.ts';
 import { startClustersIn } from '../src/sim/spawner.ts';
 import { CITIES } from '../src/data/cities.ts';
 import { REGION_IDS, type RegionId } from '../src/data/regions.ts';
 import { decodeSave, encodeSave, restoreSimDetailed, saveSourceFromSim, SAVE_VERSION, WEATHER_SAVE_VERSION } from '../src/game/save.ts';
-import { EndlessRun } from '../src/game/run.ts';
+import { EndlessRun, restartEusClusterV2 } from '../src/game/run.ts';
 import { readLogbook, recordFlight } from '../src/game/logbook.ts';
 import { HOME_REGION_CHOICES, readHomeRegion, writeHomeRegion } from '../src/game/homeRegion.ts';
 import { buildRunTimeline } from '../src/game/runTimeline.ts';
@@ -69,12 +70,21 @@ await test('Random is the pre-R2g game: same hashes, no region in the config', (
   }
 });
 
+await test('other regions and Daily retain their pre-change hashes', () => {
+  const golden: Partial<Record<RegionId, string>> = { NAM: 'cadffad5', SAM: '7d5b470e', EUN: 'ac058807', AFR: '5abd3978', ME: '4bcc2ca5', ASI: '1000587c' };
+  for (const [region, hash] of Object.entries(golden)) {
+    const sim = createGame(0xA1A1, 'endless', undefined, region as RegionId);
+    sim.advance(3000); assert.equal(sim.hash(), hash, region);
+  }
+  const daily = createGame(0xA1A1, 'daily'); daily.advance(3000); assert.equal(daily.hash(), '87a76e71');
+});
+
 await test('a home region anchors the start cluster there, for every region and seed', () => {
   for (const region of HOME_REGIONS) {
     const anchors = new Set(startClustersIn(region).map((cluster) => cluster[0]));
     for (const seed of SEEDS) {
       const sim = createGame(seed, 'endless', undefined, region);
-      assert.deepEqual(sim.config, { mode: 'endless', homeRegion: region });
+      assert.deepEqual(sim.config, { mode: 'endless', homeRegion: region, ...(region === 'EUS' ? { eusClusterV2: true } : {}) });
       const start = startIndices(sim);
       assert.ok(start.length >= 3 && start.length <= 4, `${region} ${seed}: ${start.length} airports`);
       assert.equal(CITIES[start[0]].region, region, `${region} ${seed}: anchor ${CITIES[start[0]].code}`);
@@ -83,6 +93,48 @@ await test('a home region anchors the start cluster there, for every region and 
       assert.ok(new Set(start.map((index) => CITIES[index].region)).size >= 2);
     }
   }
+});
+
+await test('EUS v1 saves and journal replays keep the old pool; v2 is deterministic', () => {
+  for (const version of [false, true]) {
+    const sim = createGame(0xA1A1, 'endless', undefined, 'EUS', false, false, 1, false, version);
+    play(sim, 600);
+    const save = encodeSave(saveSourceFromSim(sim), 1000);
+    const restored = restoreSimDetailed(save);
+    assert.ok(restored && !restored.replayed);
+    assert.equal(restored.sim.hash(), sim.hash());
+    restored.sim.advance(100); sim.advance(100);
+    assert.equal(restored.sim.hash(), sim.hash());
+    const replaySave = encodeSave({ ...saveSourceFromSim(sim), paramsVersion: RULES_VERSION - 1 }, 1000);
+    const replay = restoreSimDetailed(replaySave);
+    assert.ok(replay?.replayed);
+    assert.equal(replay.sim.hash(), sim.hash());
+    const run = new EndlessRun(sim);
+    assert.equal(restartEusClusterV2(sim.seed, run), version);
+    assert.equal(restartEusClusterV2(sim.seed + 1, run), true);
+    const restarted = EndlessRun.create(sim.seed, 'endless', 'EUS', 1, false, restartEusClusterV2(sim.seed, run));
+    assert.deepEqual(startIndices(restarted.sim), startIndices(sim));
+  }
+  assert.notDeepEqual(startIndices(createGame(0xA1A1, 'endless', undefined, 'EUS', false, false, 1, false, false)),
+    startIndices(createGame(0xA1A1, 'endless', undefined, 'EUS')));
+});
+
+await test('pre-v2 EUS save restores and replays to the original baseline hashes', () => {
+  // Produced on origin/dev 52d5713 before EUS v2, using the shipped contract and surge flags.
+  const decoded = decodeSave(readFileSync(new URL('./fixtures/eus-pre-v2-save.json', import.meta.url), 'utf8'));
+  assert.equal(decoded.status, 'ok');
+  if (decoded.status !== 'ok') return;
+  const restored = restoreSimDetailed(decoded.save);
+  assert.ok(restored && !restored.replayed);
+  assert.equal(restored.sim.hash(), '7fb3af0d');
+  const run = new EndlessRun(restored.sim);
+  const same = EndlessRun.create(run.seed, 'endless', 'EUS', 1, false, restartEusClusterV2(run.seed, run));
+  assert.deepEqual(startIndices(same.sim), startIndices(restored.sim));
+  const replay = restoreSimDetailed({ ...decoded.save, paramsVersion: RULES_VERSION - 1 });
+  assert.ok(replay?.replayed);
+  assert.equal(replay.sim.hash(), '7fb3af0d');
+  restored.sim.advance(100);
+  assert.equal(restored.sim.hash(), '3a47b9e2');
 });
 
 await test('only the start cluster changes: later airports still spawn, anywhere the ordinary rules allow', () => {
