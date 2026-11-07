@@ -685,14 +685,23 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       return null;
     },
     pickGesture() {
-      // Clear of the boarding pass, the yellow sign above the globe, the dock and the screen edge.
+      // Clear of the boarding pass, the pick sign, the dock and the screen edge. [night-32a] The sign stands above
+      // the globe, except on a low landscape phone where D-279 puts it on the bottom edge left of the dock arc: there
+      // it blocks the strip below its top edge as far right as it reaches, not everything above its bottom edge
+      // (that left no target at all on 915×412 and failed test:e2e:edge-chip-airports).
       const w = world.canvas.clientWidth;
       const h = world.canvas.clientHeight;
-      const sign = upgradeHost.querySelector('.airway-upgrade-sign')?.getBoundingClientRect();
+      const box = upgradeHost.querySelector('.airway-upgrade-sign')?.getBoundingClientRect();
       const canvas = world.canvas.getBoundingClientRect();
-      const top = Math.max(100, (sign ? sign.bottom - canvas.top : 0) + 24);
+      const sign = box && box.width > 0 && box.height > 0
+        ? { top: box.top - canvas.top, bottom: box.bottom - canvas.top, left: box.left - canvas.left, right: box.right - canvas.left }
+        : null;
+      const onBottom = !!sign && sign.top + sign.bottom > h; // its middle in the lower half
+      const top = Math.max(100, (sign && !onBottom ? sign.bottom : 0) + 24);
+      const underSign = (x: number, y: number) => !!sign && onBottom &&
+        y > sign.top - 24 && x > sign.left - 24 && x < sign.right + 24;
       const target = projectedCities().find((c) => hubSelection.includes(c.id) && c.visible &&
-        c.x > 40 && c.x < w - 120 && c.y > top && c.y < h - 120);
+        c.x > 40 && c.x < w - 120 && c.y > top && c.y < h - 120 && !underSign(c.x, c.y));
       return target ? { from: { x: target.x, y: target.y }, to: { x: target.x, y: target.y } } : null;
     },
     planeGesture() {
