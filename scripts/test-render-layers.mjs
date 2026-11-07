@@ -241,13 +241,14 @@ try {
     'linoryt look loads no photo textures (only elevation-2048.png)');
   check(!/createCloudShell|createOceanShell|createScatterAtmosphere/.test(linorytGlobe), 'linoryt look has no cloud, ocean or haze shell');
   check(!/awRed|LINORYT_INKS\.red/.test(linorytGlobe), 'linoryt globe material has no red (red is for a jam only, E2)');
-  check(/opts\.look === 'linoryt'[\s\S]{0,120}await import\('\.\/linoryt-globe'\)/.test(globeIndex) && !/import\.meta\.env\.DEV && opts\.look === 'linoryt'/.test(globeIndex),
-    '[E3] linoryt globe ships as a dynamic import (own chunk), no DEV guard');
+  check(/await import\('\.\/linoryt-globe'\)/.test(globeIndex) && !/createTexturedTerrainMaterial|loadLookAssets|createDecorations|createAtmosphere/.test(globeIndex),
+    '[E4] createGlobe builds only the Linoryt print (lazy chunk); no texture looks, decorations or atmosphere shell');
   const lookSrc = readFileSync(resolve(ROOT, 'src/render/globe/look.ts'), 'utf8');
-  check(/export const DEFAULT_GLOBE_LOOK = 'satellite' as 'satellite' \| 'linoryt'/.test(lookSrc), '[E3] DEFAULT_GLOBE_LOOK is still satellite (U5 flips it)');
+  check(/export type GlobeLook = 'linoryt';/.test(lookSrc) && !/satellite|painted|refined|diorama'/.test(lookSrc.replace(/^\/\/.*$/gm, '')),
+    '[E4] GlobeLook is the print only (Satelita, Mapa and the comparisons removed, D-285)');
   const worldSrcE3 = readFileSync(resolve(ROOT, 'src/render/world.ts'), 'utf8');
-  check(!/import\.meta\.env\.DEV/.test(worldSrcE3) && /opts\.look \?\? \(DEFAULT_GLOBE_LOOK === 'linoryt'/.test(worldSrcE3),
-    '[E3] world renderer: Linoryt layers and projectAirport without DEV guards, default look from DEFAULT_GLOBE_LOOK');
+  check(!/import\.meta\.env\.DEV/.test(worldSrcE3) && !/createAirports\(|new RouteLayer\(|new PlaneLayer\(|createRoutePreview\(/.test(worldSrcE3),
+    '[E4] world renderer draws only the Linoryt layers (no medallions, tubes or plane models)');
 
   // [ext-04 E2] D-283 spec §5–§8: Linoryt stamps by shape, curfew outline, jam zone + countdown arc, palette, routes.
   {

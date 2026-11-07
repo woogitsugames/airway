@@ -476,7 +476,6 @@ export async function createLinorytGlobe(scene: Scene, mask: LandMask, opts: Lin
     group, quality: opts.quality, lod,
     decor: { drawn: 0, total: 0, repacks: 0 },
     surfaceLook: 'linoryt',
-    setSurfaceLook: async () => false,
     update(camera, pixelsPerDegree) { lod.update(camera, pixelsPerDegree); },
     setDecorDensity() { /* no decorations in print */ },
     dispose() {

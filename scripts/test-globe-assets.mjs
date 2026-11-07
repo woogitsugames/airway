@@ -12,21 +12,17 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const DIR = join(ROOT, 'public/data/globe');
 const MANIFEST = join(DIR, 'manifest.json');
 const KB = 1000;
-/** Per-file caps and the folder total (D-171: ~1.8 MB; the bundle `total` budget is raised with G1). */
-const CAP = { 'day-4096.jpg': 1200 * KB, 'day-2048.jpg': 400 * KB, 'night-2048.jpg': 120 * KB,
-  'night-1024.jpg': 40 * KB, 'elevation-2048.png': 350 * KB, 'clouds-2048.png': 120 * KB,
-  'map-4096.jpg': 480 * KB, 'map-2048.jpg': 200 * KB }; // [G8] D-172 "Mapa" mode
-const TOTAL_CAP = 2600 * KB;
+/**
+ * [ext-04 E4] D-285: the Linoryt print needs only the elevation raster (relief hatching and the terrain heights; the
+ * coast field and the plane atlas are built at load, D-298/D-299). The photo textures (Blue Marble, Black Marble, Mapa,
+ * clouds) were removed with Satelita and Mapa; nothing may bring them back unnoticed.
+ */
+const CAP = { 'elevation-2048.png': 350 * KB };
+const TOTAL_CAP = 350 * KB;
 const SOURCES = {
-  'day-4096.jpg': 'NASA Blue Marble NG July 2004 (world.topo.bathy.200407), graded; public domain',
-  'day-2048.jpg': 'NASA Blue Marble NG July 2004 (world.topo.bathy.200407), graded; public domain',
-  'night-2048.jpg': 'NASA Black Marble 2016 (BlackMarble_2016_3km), lights only; public domain',
-  'night-1024.jpg': 'NASA Black Marble 2016 (BlackMarble_2016_3km), lights only; public domain',
   'elevation-2048.png': 'NOAA ETOPO5 land elevation, sqrt-encoded 8 bit (m = (v/255)^2 * 8000); public domain',
-  'clouds-2048.png': 'procedural cloud cover (dev/globe-look/bake.py); own work, CC0',
-  'map-4096.jpg': 'D-172 Mapa: Blue Marble NG July classified into an own palette + ETOPO5 hillshade + Natural Earth borders; public domain sources, own processing (CC0)',
-  'map-2048.jpg': 'D-172 Mapa: Blue Marble NG July classified into an own palette + ETOPO5 hillshade + Natural Earth borders; public domain sources, own processing (CC0)',
 };
+const REMOVED = ['day-4096.jpg', 'day-2048.jpg', 'night-2048.jpg', 'night-1024.jpg', 'clouds-2048.png', 'map-4096.jpg', 'map-2048.jpg'];
 
 /** Width/height from a PNG IHDR or a JPEG SOFn marker. */
 export function imageSize(bytes) {
@@ -80,5 +76,11 @@ for (const [name, file] of Object.entries(actual)) {
   check(typeof file.source === 'string' && file.source.length > 0, name + ' has a source/licence line');
 }
 check(total <= TOTAL_CAP, 'globe assets total ' + total + ' B over ' + TOTAL_CAP);
+// No source file may still ask for a removed photo texture.
+const { execSync } = await import('node:child_process');
+for (const name of REMOVED) {
+  const hits = execSync(`git grep -l -F ${JSON.stringify(name)} -- src public index.html vite.config.ts || true`, { cwd: ROOT, encoding: 'utf8' }).trim();
+  check(hits === '', name + ' is not referenced by src/public/index.html (got ' + hits.replace(/\n/g, ', ') + ')');
+}
 console.log(`SUMMARY test:globe-assets files=${Object.keys(actual).length} bytes=${total} passed=${passed} failed=${failed}`);
 process.exitCode = failed ? 1 : 0;
