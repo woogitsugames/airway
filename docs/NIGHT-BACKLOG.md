@@ -833,7 +833,7 @@ Plan: `docs/styles/kierunki-2026-11b/PLAN-LINORYT.md` (one PR per step; ext = gl
 - [ ] **U4 (agent)** menu framing, settings (+ licences), about, logbook, puzzles, leaderboard
 - [ ] **E3 (ext)** the Linoryt look in release builds behind `DEFAULT_GLOBE_LOOK` (still satellite)
 - [ ] **U5 (agent)** the flip: Linoryt default skin + look; delete Róża and `?skin=current`; i18n renames; CSS budget back
-- [ ] **E4 (ext)** remove Satelita (and Mapa if the owner agrees: open question L2 of the U1 PR) and the photo textures (−1.9 MB)
+- [ ] **E4 (ext)** remove Satelita (and Mapa if the owner agrees: open question L2 of PR #285) and the photo textures (−1.9 MB)
 - [ ] **U6 (agent)** D-47 / `test:cvd` on the inks, reduce motion, text scale, notch, `ui:matrix` on the real renderer
 - [ ] **U7 (agent/coordinator)** store shots, preview video (D-265/D-269), landing page assets
 

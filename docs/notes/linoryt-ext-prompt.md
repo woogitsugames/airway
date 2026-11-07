@@ -14,7 +14,7 @@ Właściciel odrzucił Różę i fotograficzny globus satelitarny jako „AI slo
 (D-283): cały ekran to jeden druk z linoleum w trzech farbach na papierze. Opis i ryzyka:
 docs/styles/kierunki-2026-11b/KIERUNKI.md (sekcja A); kadry: docs/styles/kierunki-2026-11b/png/a-game.png i
 a-menu.png (OBEJRZYJ je); kod kadrów: docs/styles/kierunki-2026-11b/src/dir-a.js, globe.js, icons.js. Tryb
-„Satelita” znika całkowicie; „Mapa” (D-172) rekomendujemy usunąć (decyzja właściciela, pytanie L2 w PR #28a).
+„Satelita” znika całkowicie; „Mapa” (D-172) rekomendujemy usunąć (decyzja właściciela, pytanie L2 w PR #285).
 Agent UI zrobił już podgląd skórki za DEV `?skin=linoryt` (src/ui/skin/linoryt.{ts,css}, zrzuty docs/shots/28a/);
 papierowe marginesy HUD i doku czekają na papierowe niebo. Pełna specyfikacja z farbami, kątami i odstępami kresek,
 kształtami, API i kryteriami: docs/notes/linoryt-render-spec.md — to jest Twoje zadanie.

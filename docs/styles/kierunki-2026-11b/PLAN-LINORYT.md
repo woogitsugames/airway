@@ -158,7 +158,7 @@ medium/high ≤ 2 (G4). "Shots" = PNGs to inspect against the CLAUDE.md forbidde
   `roza.css`, `roza.ts`, `diorama.css`, `scripts/vite-skin-prune.mjs` structure file → `linoryt.css`;
   `PREVIEW_FONTS` emptied (fonts ship), Alegreya removed; i18n `roza.*` → `hud.week`, `dock.caption.*`, … (PL/EN,
   `src/i18n/limits.ts`); render default look via E3's constant; globe-view setting and the dock's globe tag removed
-  (see open question L1 of the U1 PR: what the sixth dock slot becomes).
+  (see open question L1 of PR #285: what the sixth dock slot becomes).
 - **Budgets:** CSS ≤ 100 kB (target; Róża structure −~28 kB, Linoryt structure +~16 kB) and the budget lowered to
   the measurement + 3 kB (decision entry); JS −~20 kB (roza.ts); total + 87 kB fonts − 24 kB Alegreya.
 - **Tests:** whole `test:ci`; `test:skin-tokens` rewritten for Linoryt as the shipped skin; `test:glyphs` (Besley
