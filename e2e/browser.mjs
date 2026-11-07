@@ -80,6 +80,14 @@ const skinArg = process.argv.find((arg) => arg.startsWith('--skin='))?.slice('--
 export const SKIN = skinArg ?? process.env.AW_SKIN ?? '';
 if (!['', 'linoryt'].includes(SKIN)) throw new Error(`--skin / AW_SKIN must be "linoryt" or unset, got "${SKIN}"`);
 
+/** [night-29a] The URL with the `--skin` preview only (render mode untouched): suites that always use one renderer. */
+export function skinUrl(url) {
+  if (!SKIN) return url;
+  const target = new URL(url);
+  target.searchParams.set('skin', SKIN);
+  return target.href;
+}
+
 /** The game URL for the current `RENDER` mode (unchanged on the real renderer). */
 export function gameUrl(url) {
   if (RENDER !== 'stub' && !SKIN) return url;

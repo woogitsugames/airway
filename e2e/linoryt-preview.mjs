@@ -8,6 +8,18 @@
 //   - dock cells apart from each other and from the top margin; the clock, week and day lines and every dock caption
 //     unclipped (scrollWidth within its box); 24 day-bar hours, each ≥ 4 px wide, the "now" cut inside the bar;
 //   - the menu's run-starting entry is the one red block; the menu index does not cover the title.
+// [night-29a] U3: then the sheets in the same session — pause, hub cause board (long press on the fullest airport), ATC
+// strip + route menu and the first-time card (mounted through their modules on the game layer), the weekly board (DEV
+// bot to week 1, contract slip; at 320×568 the D-280 one-liner), the four-crate board of a met contract (the real
+// WeeklyUpgradeView over the session's board), the airport pick, the game-over report, and the training flight (a
+// fresh install). Each sheet is audited (`auditSheet`): shown, inside the viewport, under the top margin and off the
+// dock where it stands over the map, every target ≥ 48 × 48 inside the safe rectangle and hit-testable (the report's
+// actions too at 150 %, D-267), no clipped text, no scroll at 100 % where the base sheet has none, and print rules:
+// Besley/Schibsted only (headings in Besley), no shadow with blur or offset, no rounded corner, every filled
+// background opaque paper/ink/red, ink blocks only on the chosen action and red only on danger, no running animation
+// under "Reduce motion".
+// Shots: .e2e/linoryt/ (default) or `--out=docs/shots/28a` (`npm run shots:linoryt`); `--sheets-only` writes only the
+// sheets (`npm run shots:linoryt:sheets` → docs/shots/29a), `--no-sheets` only the menu and game. Inspect every PNG.
 // [night-29b] Step U4 adds the screens off the menu, each mounted alone on `?perf=scene&skin=linoryt` (the
 // e2e/screen-fixtures.mjs fixtures: settings, logbook, puzzles; plus licences, privacy, terms and the daily ranking) at the
 // same sizes, PL/EN, 100/150 %, notch:
@@ -40,6 +52,8 @@ const CASES = [
 const U4_SCREENS = ['settings', 'logbook', 'puzzles', 'licences', 'privacy', 'terms', 'ranking'];
 const noGame = process.argv.includes('--no-game');
 const only = process.argv.filter((arg) => arg.startsWith('--size=')).map((arg) => arg.slice('--size='.length));
+const SHEETS_ONLY = process.argv.includes('--sheets-only');
+const NO_SHEETS = process.argv.includes('--no-sheets'); // [night-29a] the U1 run only (`npm run shots:linoryt`)
 const cases = only.length ? CASES.filter(([w, h]) => only.includes(`${w}x${h}`)) : CASES;
 const failures = [];
 let checked = 0;
@@ -147,6 +161,258 @@ async function audit(page, screen) {
   }, { screen });
 }
 
+
+/** Hex inks of the preview (linoryt.css). */
+const INK = { paper: 'rgb(236, 227, 204)', ink: 'rgb(30, 28, 31)', red: 'rgb(179, 56, 35)' };
+/** Ink blocks allowed: the chosen action of each sheet (and marks under 16 px: squares, ticks). Red: danger only. */
+const CHOSEN = '.airway-pause__button--primary, .airway-go-same, .airway-go-mapback, .airway-upgrade-back, .airway-first-time__ok, .aw-plane-tag, .aw-action-tag, .aw-settings-sign';
+const DANGER = '.lin-hub, .airway-route-menu-danger, .airway-atc-strip:not(.airway-first-time, .airway-slot-hint) .airway-atc-error, .airway-hub-board--jammed .airway-hub-board__head';
+/**
+ * One sheet's audit. `sheet`: its root selector; `heading`: selector of the headings that must print in Besley;
+ * `targets`: its buttons; `reach`: targets that must be on screen and hit-testable; `overMap`: it stands over the live
+ * map (keep off the top margin and the dock); `noScroll`: the sheet (or overlay) must not scroll at this text step.
+ */
+async function auditSheet(page, { sheet, heading, targets = 'button', reach = '', overMap = false, noScroll = false }) {
+  return await page.evaluate(({ sheet, heading, targets, reach, overMap, noScroll, INK, CHOSEN, DANGER }) => {
+    const problems = [];
+    const root = document.querySelector(sheet);
+    if (!root) return [`${sheet} missing`];
+    const box = (el) => el.getBoundingClientRect();
+    const r = box(root);
+    if (r.width < 1 || r.height < 1 || getComputedStyle(root).visibility === 'hidden') return [`${sheet} not shown`];
+    const probe = document.createElement('div');
+    probe.style.cssText = 'position:fixed;left:var(--aw-safe-left);top:var(--aw-safe-top);right:var(--aw-safe-right);bottom:var(--aw-safe-bottom);pointer-events:none;visibility:hidden';
+    document.body.append(probe);
+    const safe = box(probe);
+    probe.remove();
+    const meet = (a, b) => a.left < b.right - .5 && b.left < a.right - .5 && a.top < b.bottom - .5 && b.top < a.bottom - .5;
+    const label = (el) => (el.dataset?.testid || el.className?.baseVal || el.className || el.tagName).toString().split(' ')[0];
+    if (document.documentElement.scrollWidth > innerWidth + 1) problems.push('horizontal page overflow');
+    if (r.left < -.5 || r.right > innerWidth + .5 || r.top < -.5 || r.bottom > innerHeight + .5) problems.push(`sheet outside the viewport (${Math.round(r.left)},${Math.round(r.top)},${Math.round(r.right)},${Math.round(r.bottom)})`);
+    const pass = document.querySelector('.airway-pass');
+    if (pass && box(pass).height > 0 && r.top < box(pass).bottom - 1.5 && getComputedStyle(pass).visibility !== 'hidden') problems.push(`sheet top ${Math.round(r.top)} over the top margin (${Math.round(box(pass).bottom)})`);
+    if (overMap) {
+      for (const tag of document.querySelectorAll('.airway-dock__tag')) if (box(tag).width && meet(box(tag), r)) problems.push(`sheet over the dock (${tag.dataset.hudAction})`);
+    }
+    if (noScroll) {
+      const scroller = [root, ...root.querySelectorAll('*')].find((el) => /auto|scroll/.test(getComputedStyle(el).overflowY) && el.scrollHeight > el.clientHeight + 1 && !el.matches('.airway-go-flight-list, .airway-go-timeline, .airway-hub-board__rows'));
+      if (scroller) problems.push(`${label(scroller)} scrolls by ${scroller.scrollHeight - scroller.clientHeight} px`);
+    }
+    const all = [root, ...root.querySelectorAll('*')].filter((el) => !(el instanceof SVGElement) && box(el).width > 0 && !el.closest('[hidden], .split-flap'));
+    for (const el of all) {
+      const style = getComputedStyle(el);
+      if (style.visibility === 'hidden') continue;
+      const b = box(el);
+      const ownText = [...el.childNodes].some((node) => node.nodeType === 3 && node.textContent.trim());
+      // Fonts: Besley and Schibsted Grotesk only.
+      if (ownText && b.width > 1) {
+        const face = style.fontFamily.split(',')[0].replace(/["']/g, '').trim();
+        if (face !== 'Besley' && face !== 'Schibsted Grotesk') problems.push(`${label(el)} set in ${face}`);
+        const clips = /hidden|clip/.test(style.overflowX) || style.textOverflow === 'ellipsis';
+        if (clips && el.scrollWidth > el.clientWidth + 1 && !el.matches('.airway-upgrade-waybill-short') && b.width > 1) problems.push(`${label(el)} text clipped (${el.scrollWidth} > ${el.clientWidth})`);
+        // Text stays inside its frame (the nearest ancestor drawn with a rule or a neatline), unless a scroller is between.
+        let shown = b.width > 1 && b.height > 1;
+        for (let up = el; shown && up && up !== root.parentElement; up = up.parentElement) if (getComputedStyle(up).clipPath !== 'none' && up.getBoundingClientRect().width <= 1) shown = false;
+        for (let up = shown ? el.parentElement : null; up && root.contains(up); up = up.parentElement) {
+          const us = getComputedStyle(up);
+          if (/auto|scroll/.test(us.overflowY)) break;
+          const framed = us.boxShadow !== 'none' || ['Top', 'Right', 'Bottom', 'Left'].every((side) => parseFloat(us[`border${side}Width`]) > 0);
+          if (!framed) continue;
+          const range = document.createRange();
+          range.selectNodeContents(el);
+          const t = range.getBoundingClientRect();
+          const f = up.getBoundingClientRect();
+          if (t.height && (t.top < f.top - 1 || t.bottom > f.bottom + 1 || t.left < f.left - 1 || t.right > f.right + 1)) problems.push(`${label(el)} text outside its frame ${label(up)}`);
+          break;
+        }
+      }
+      // Print: no soft or offset shadow, no rounded corner, no translucent fill.
+      if (style.textShadow !== 'none') problems.push(`${label(el)} text-shadow`);
+      if (style.boxShadow !== 'none') {
+        for (const shadow of style.boxShadow.split(/,(?![^(]*\))/)) {
+          const nums = shadow.replace(/rgba?\([^)]*\)/, '').match(/-?[\d.]+px/g)?.map(parseFloat) ?? [];
+          const [x = 0, y = 0, blur = 0] = nums;
+          if (blur > 0 || (!/inset/.test(shadow) && (x || y))) { problems.push(`${label(el)} shadow "${shadow.trim()}"`); break; }
+        }
+      }
+      if (['borderTopLeftRadius', 'borderTopRightRadius', 'borderBottomLeftRadius', 'borderBottomRightRadius'].some((k) => parseFloat(style[k]) > 0)) problems.push(`${label(el)} rounded`);
+      const bg = style.backgroundColor;
+      const alpha = /rgba\([^)]*,\s*([\d.]+)\)/.exec(bg)?.[1];
+      if (alpha === undefined || Number(alpha) > 0) {
+        if (alpha !== undefined && Number(alpha) < 1) problems.push(`${label(el)} translucent ${bg}`);
+        else if (![INK.paper, INK.ink, INK.red].includes(bg)) problems.push(`${label(el)} fill ${bg}`);
+        else if (b.width >= 16 && b.height >= 16) {
+          if (bg === INK.ink && !el.matches(CHOSEN)) problems.push(`${label(el)} is an ink block but not the chosen action`);
+          if (bg === INK.red && !el.matches(DANGER)) problems.push(`${label(el)} is a red block but not danger`);
+        }
+      }
+      if (ownText && style.color === INK.red && !el.closest(DANGER)) problems.push(`${label(el)} red letters but not danger`);
+    }
+    if (heading) for (const el of root.querySelectorAll(heading)) {
+      if (box(el).width && getComputedStyle(el).fontFamily.split(',')[0].replace(/["']/g, '').trim() !== 'Besley') problems.push(`heading ${label(el)} not in Besley`);
+    }
+    const buttons = !targets ? [] : [...root.querySelectorAll(targets)].filter((el) => box(el).width > 0 && getComputedStyle(el).visibility !== 'hidden' && !el.closest('[hidden]'));
+    if (!buttons.length && targets) problems.push('no targets');
+    for (const el of buttons) {
+      const b = box(el);
+      if (b.width < 47.5 || b.height < 47.5) problems.push(`${label(el)} ${b.width.toFixed(1)}×${b.height.toFixed(1)} < 48`);
+      if (b.left < safe.left - .5 || b.right > safe.right + .5) problems.push(`${label(el)} outside the safe sides`);
+      const onScreen = b.top >= safe.top - .5 && b.bottom <= safe.bottom + .5;
+      if (reach && el.matches(reach)) {
+        if (!onScreen) problems.push(`${label(el)} off screen (${Math.round(b.top)}..${Math.round(b.bottom)})`);
+        const hit = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2);
+        if (!hit || !(el === hit || el.contains(hit))) problems.push(`${label(el)} covered by ${hit ? label(hit) : 'nothing'}`);
+      }
+    }
+    const running = document.getAnimations().filter((a) => a.playState === 'running' && a.effect?.target instanceof Element && root.contains(a.effect.target));
+    if (document.documentElement.dataset.airwayMotion === 'reduce' && running.length) problems.push(`${running.length} animation(s) under Reduce motion`);
+    return problems;
+  }, { sheet, heading, targets, reach, overMap, noScroll, INK, CHOSEN, DANGER });
+}
+
+const settle = (page) => page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(() => requestAnimationFrame(done)))));
+
+/** The sheets of one session (already in the game screen); calls `record(sheet, problems)` after each. */
+async function sheetsInSession(page, scale, record) {
+  const large = scale > 100;
+  // Pause sheet.
+  await page.locator('.airway-pass__pause').click();
+  await page.getByTestId('action-resume').waitFor({ state: 'visible', timeout: 5000 });
+  await settle(page);
+  await record('pause', await auditSheet(page, { sheet: '.airway-pause', heading: 'h2', reach: 'button', overMap: true }));
+  await clickTestId(page, 'action-resume');
+  // Hub cause board: a long press on the fullest airport in view (as e2e/hub-board.mjs).
+  const target = await page.evaluate(() => {
+    const airports = [...(window.aw.state().airports ?? [])].sort((a, b) => b.waiting / b.capacity - a.waiting / a.capacity);
+    for (const airport of airports) {
+      const at = window.__awStub?.airportPoint(airport.id);
+      const pass = document.querySelector('.airway-pass')?.getBoundingClientRect().bottom ?? 100;
+      if (at?.visible && at.x > 40 && at.x < innerWidth - 150 && at.y > pass + 20 && at.y < innerHeight - 120) return at;
+    }
+    return null;
+  });
+  if (!target) await record('hub-board', ['no airport in view to long-press']);
+  else {
+    await page.mouse.move(target.x, target.y);
+    await page.mouse.down();
+    await page.waitForTimeout(450);
+    await page.mouse.up();
+    await page.getByTestId('hub-board').waitFor({ state: 'visible', timeout: 3000 });
+    await settle(page);
+    await record('hub-board', await auditSheet(page, { sheet: '[data-testid="hub-board"]', heading: '.airway-hub-board__title', reach: 'button', overMap: true }));
+    await clickTestId(page, 'hub-board-close');
+  }
+  // ATC strip (a route over range) and the route menu, through their modules on the game layer.
+  await page.evaluate(async () => {
+    const layer = document.querySelector('.airway-game-layer');
+    const before = new Set(layer.children);
+    const { mountAtcStrip, mountRouteContextMenu } = await import('/src/ui/atcStrip.ts');
+    const strip = mountAtcStrip(layer);
+    strip.show({ distanceKm: 2408, aircraft: 'turboprop', from: 'ATH', to: 'KHI' });
+    const menu = mountRouteContextMenu(layer, { remove() {}, shorten() {}, close() {} });
+    const pass = document.querySelector('.airway-pass').getBoundingClientRect();
+    menu.show({ x: innerWidth / 2 - 40, y: pass.bottom + 60, canShorten: false });
+    window.__linAtc = [strip, menu];
+    for (const child of layer.children) if (!before.has(child)) child.classList.add('lin-audit-atc');
+  });
+  await settle(page);
+  const atc = [...await auditSheet(page, { sheet: '.lin-audit-atc.airway-atc-strip', targets: '', overMap: true }),
+    ...await auditSheet(page, { sheet: '.lin-audit-atc.airway-route-menu', reach: 'button:not(:disabled)' })];
+  await record('atc', atc);
+  await page.evaluate(() => { for (const part of window.__linAtc) part.dispose(); });
+  // First-time card (the real module, the "hub 70 % full" card).
+  await page.evaluate(async () => {
+    const layer = document.querySelector('.airway-game-layer');
+    const { t } = await import('/src/i18n/index.ts');
+    const { FirstTimeRegistry } = await import('/src/game/tutorial/first-time.ts');
+    const { mountFirstTimeCards } = await import('/src/game/tutorial/first-time-card.ts');
+    const host = document.createElement('div');
+    host.className = 'lin-audit-first-time';
+    host.style.cssText = 'position:absolute;inset:0;pointer-events:none';
+    layer.append(host);
+    const cards = mountFirstTimeCards(host, new FirstTimeRegistry(null));
+    cards.offer('hub-full', () => ({ tag: t('firstTime.tag.hubFull', { airport: 'AMM', waiting: 26, capacity: 36 }), hint: t('firstTime.hint.hubFull', { airport: 'AMM' }) }));
+    cards.flush(false);
+  });
+  await settle(page);
+  await record('first-time', await auditSheet(page, { sheet: '.lin-audit-first-time [data-testid="first-time-card"]', reach: 'button', overMap: true }));
+  await page.evaluate(() => document.querySelector('.lin-audit-first-time')?.remove());
+  // Weekly board (week 1, with the contract slip).
+  await page.evaluate(() => window.aw.autoplay(1));
+  await waitForScreen(page, 'upgrade');
+  await settle(page);
+  await record('upgrade', await auditSheet(page, { sheet: '.airway-upgrade-open', heading: '.airway-upgrade-week, .airway-upgrade-title', targets: 'button',
+    reach: large ? '' : 'button:not(:disabled)', noScroll: !large }));
+  // Four crates of a met contract: the real view rendered over the session's board.
+  await page.evaluate(async () => {
+    const real = document.querySelector('.airway-upgrade-open');
+    real.style.display = 'none';
+    const host = document.createElement('div');
+    host.className = 'airway-upgrade-host lin-audit-crates';
+    real.after(host);
+    const { WeeklyUpgradeView } = await import('/src/ui/upgrade/index.ts');
+    new WeeklyUpgradeView(host, { onCommand: () => {}, onCancelPick: () => {}, onPreviewModel: () => {} }).render(
+      { week: 3, paused: true, pendingHub: false, offers: ['turboprop', 'hub-expansion', 'widebody', 'departure-slots'].map((id) => ({ id, week: 3 })), extraCrate: 'departure-slots' },
+      [{ hubId: 'AMM', waiting: 11, capacity: 36, label: 'AMM' }],
+      [{ cityId: 'AMM', label: 'AMM', held: 2, waitMinutes: 40 }, { cityId: 'ATH', label: 'ATH', held: 0, waitMinutes: 0 }],
+      { next: { regions: ['EUN', 'ME'], target: 24 }, last: { delivered: 31, target: 30, met: true }, extraCrate: 'departure-slots' });
+  });
+  await settle(page);
+  await record('crates4', await auditSheet(page, { sheet: '.lin-audit-crates.airway-upgrade-open', heading: '.airway-upgrade-week, .airway-upgrade-title', reach: large ? '' : 'button', noScroll: !large }));
+  await page.evaluate(() => { document.querySelector('.lin-audit-crates')?.remove(); document.querySelector('.airway-upgrade-open').style.display = ''; });
+  // The airport pick (a hub crate waits for a tap on the globe), then back to the crates.
+  if (await page.locator('[data-upgrade="hub-expansion"]:not(:disabled)').count()) {
+    await page.locator('[data-upgrade="hub-expansion"]').click();
+    await page.getByTestId('upgrade-pick-back').waitFor({ state: 'visible', timeout: 5000 });
+    await settle(page);
+    await record('pick', await auditSheet(page, { sheet: '.airway-upgrade-open.is-picking-hub .airway-upgrade-sign', heading: '', reach: 'button', overMap: true }));
+    await clickTestId(page, 'upgrade-pick-back');
+    await page.locator('[data-testid^="upgrade-option-"]').first().waitFor({ state: 'visible', timeout: 5000 });
+  } else await record('pick', ['no hub crate on the week-1 board']);
+  // Game-over report.
+  const option = await page.evaluate(() => document.querySelector('[data-testid^="upgrade-option-"]:not([data-upgrade="hub-expansion"]):not([data-upgrade="departure-slots"])')?.getAttribute('data-testid') ?? 'upgrade-option-0');
+  await clickTestId(page, option);
+  await waitForScreen(page, 'game');
+  await page.evaluate(() => window.aw.forceHubOverload());
+  await waitForScreen(page, 'gameover');
+  await page.waitForSelector('[data-gameover-state="open"]', { timeout: 15000 });
+  await settle(page);
+  await record('gameover', await auditSheet(page, { sheet: '.airway-go-overlay', heading: 'h1, .airway-go-strip-title', reach: '.airway-go-actions button, .airway-go-map', noScroll: !large }));
+}
+
+/** The training flight on a fresh install: the route step, then the aircraft step (the tag to drag = ink block). */
+async function tutorialSheet(page) {
+  await clickTestId(page, 'menu-endless');
+  await page.waitForFunction(() => document.querySelector('[data-testid="tutorial"]')?.getAttribute('data-step') === 'route', null, { timeout: 8000 });
+  const mid = async (id) => { const r = await page.getByTestId(id).boundingBox(); return { x: r.x + r.width / 2, y: r.y + r.height / 2 }; };
+  const a = await mid('city-lon');
+  const b = await mid('city-par');
+  await page.mouse.move(a.x, a.y);
+  await page.mouse.down();
+  await page.mouse.move(b.x, b.y, { steps: 9 });
+  await page.mouse.up();
+  await page.waitForFunction(() => document.querySelector('[data-testid="tutorial"]')?.getAttribute('data-step') === 'aircraft', null, { timeout: 5000 });
+  await settle(page);
+  // The stage's parts never overlap: ticket, world, card, hint text and dock (the large text steps grow all of them).
+  const overlaps = await page.evaluate(() => {
+    const parts = {};
+    for (const [name, sel] of [['ticket', '.aw-tutorial-ticket'], ['world', '.aw-tutorial-world'], ['card', '.aw-tutorial-strip'], ['dock', '.aw-tutorial-dock']]) {
+      const el = document.querySelector(sel);
+      if (el && el.getBoundingClientRect().height) parts[name] = el.getBoundingClientRect();
+    }
+    const hint = document.querySelector('[data-testid="tutorial-hint"]');
+    if (hint?.textContent.trim()) { const range = document.createRange(); range.selectNodeContents(hint); parts.hint = range.getBoundingClientRect(); }
+    const names = Object.keys(parts);
+    const out = [];
+    for (let i = 0; i < names.length; i++) for (let j = i + 1; j < names.length; j++) {
+      const a = parts[names[i]]; const b = parts[names[j]];
+      if (a.left < b.right - 1 && b.left < a.right - 1 && a.top < b.bottom - 1 && b.top < a.bottom - 1) out.push(`${names[i]} overlaps ${names[j]}`);
+    }
+    return out;
+  });
+  return [...overlaps, ...await auditSheet(page, { sheet: '.aw-tutorial-stage', heading: '.aw-tutorial-kicker, .aw-strip-index', targets: '.aw-ticket-skip, .aw-plane-tag', reach: '.aw-ticket-skip, .aw-plane-tag' })];
+}
+
 /** [night-29b] U4: mounts one screen alone (no session, no globe) on the preview. */
 async function mountU4(page, screen, language, scale) {
   if (['settings', 'logbook', 'puzzles'].includes(screen)) return mountScreen(page, screen, language, { pseudo: false, textScale: scale });
@@ -242,12 +508,13 @@ try {
             const { applyAccessibilitySettings } = await import('/src/ui/a11y.ts');
             applyAccessibilitySettings({ textScale: scale, enhancedGlyphs: false, hapticsEnabled: true });
           }, scale);
-          if (profile === 'notch') {
-            const sides = width > height
-              ? { top: 0, bottom: 21, left: notch.side, right: notch.side }
-              : { top: notch.top, bottom: notch.bottom, left: 0, right: 0 };
-            await page.addStyleTag({ content: `:root{--aw-safe-top:${sides.top}px!important;--aw-safe-bottom:${sides.bottom}px!important;--aw-safe-left:${sides.left}px!important;--aw-safe-right:${sides.right}px!important}` });
-          }
+          const sides = width > height
+            ? { top: 0, bottom: 21, left: notch.side, right: notch.side }
+            : { top: notch.top, bottom: notch.bottom, left: 0, right: 0 };
+          const notchStyle = profile === 'notch'
+            ? `:root{--aw-safe-top:${sides.top}px!important;--aw-safe-bottom:${sides.bottom}px!important;--aw-safe-left:${sides.left}px!important;--aw-safe-right:${sides.right}px!important}`
+            : '';
+          if (notchStyle) await page.addStyleTag({ content: notchStyle });
           await waitForScreen(page, 'menu');
           await page.evaluate(() => document.fonts.ready);
           await page.evaluate((seed) => window.aw.prepareSeed(seed), SEED);
@@ -267,9 +534,33 @@ try {
             if (errors.length) problems.push(`browser errors: ${errors.splice(0).join('; ')}`);
             checked++;
             for (const problem of problems) failures.push(`${tag} ${screen}: ${problem}`);
-            await page.screenshot({ path: resolve(OUT, `${screen}-${tag}.png`), animations: 'disabled' });
-            shots++;
+            if (!SHEETS_ONLY) {
+              await page.screenshot({ path: resolve(OUT, `${screen}-${tag}.png`), animations: 'disabled' });
+              shots++;
+            }
             console.log(`${problems.length ? 'FAIL' : 'PASS'} ${screen} ${tag}${problems.length ? ': ' + problems.join(' | ') : ''}`);
+          }
+          // [night-29a] U3: the sheets of the same run (not with --no-sheets, nor --no-game: they need the run).
+          if (!NO_SHEETS && !noGame) {
+            const record = async (sheet, problems) => {
+              if (errors.length) problems.push(`browser errors: ${errors.splice(0).join('; ')}`);
+              checked++;
+              for (const problem of problems) failures.push(`${tag} ${sheet}: ${problem}`);
+              await page.screenshot({ path: resolve(OUT, `${sheet}-${tag}.png`), animations: 'disabled' });
+              shots++;
+              console.log(`${problems.length ? 'FAIL' : 'PASS'} ${sheet} ${tag}${problems.length ? ': ' + problems.join(' | ') : ''}`);
+            };
+            await sheetsInSession(page, scale, record);
+            await page.close();
+            // The training flight: a fresh install (no prepared seed, so the first Endless opens the tutorial).
+            ({ page, errors } = await newGamePage(browser, linorytUrl(url), language, { width, height }));
+            await page.evaluate(async (scale) => {
+              const { applyAccessibilitySettings } = await import('/src/ui/a11y.ts');
+              applyAccessibilitySettings({ textScale: scale, enhancedGlyphs: false, hapticsEnabled: true });
+            }, scale);
+            if (notchStyle) await page.addStyleTag({ content: notchStyle });
+            await waitForScreen(page, 'menu');
+            await record('tutorial', await tutorialSheet(page));
           }
         } catch (error) {
           failures.push(`${tag}: ${(error instanceof Error ? error.message : String(error)).split('\n')[0]}`);
@@ -278,7 +569,7 @@ try {
           if (page) await page.close();
         }
         // [night-29b] U4: the screens off the menu, each alone on the preview at the same size and text step.
-        for (const screen of U4_SCREENS) {
+        for (const screen of SHEETS_ONLY ? [] : U4_SCREENS) {
           const page = await browser.newPage({ viewport: { width, height }, deviceScaleFactor: 1, hasTouch: true, reducedMotion: 'reduce',
             locale: language === 'pl' ? 'pl-PL' : 'en-US' });
           const pageErrors = [];

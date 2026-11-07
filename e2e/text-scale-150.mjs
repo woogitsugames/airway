@@ -10,7 +10,7 @@
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
-import { withBrowser, saveDiagnostics, ARTIFACTS } from './browser.mjs';
+import { withBrowser, saveDiagnostics, ARTIFACTS, skinUrl } from './browser.mjs'; // [night-29a] --skin=linoryt
 import { presetLanguage } from '../scripts/lib/harness.mjs';
 import { SCREENS as SHARED_SCREENS, auditScreen, mountScreen } from './screen-fixtures.mjs'; // [night-11ap] shared with text-scale-150
 
@@ -40,6 +40,9 @@ async function mountGameSheet(page, screen, language, textScale) {
     host.append(layer);
     const { mountHud } = await import('/src/ui/hud/index.ts');
     const hudHost = document.createElement('div');
+    // [night-29a] The session's HUD host is the whole game layer; an unsized host measured 412 × 0 and resolved the
+    // landscape layout on a portrait screen (watchHudLayout).
+    hudHost.style.cssText = 'position:absolute;inset:0;pointer-events:none';
     layer.append(hudHost);
     mountHud(hudHost, {}).render({ week: 3, day: 2, timeMinutes: 1026, passengers: 342, paused: screen === 'pause', speed: 1, canUndo: true,
       selectedPlane: 'turboprop', stock: { turboprop: 1, widebody: 1, hub: 1 }, minutesToBoard: 1500 });
@@ -151,7 +154,7 @@ try {
       page.on('pageerror', (error) => errors.push(error.message));
       try {
         await presetLanguage(page, language, { clear: true });
-        await page.goto(url + '?perf=scene', { waitUntil: 'networkidle' });
+        await page.goto(skinUrl(url + '?perf=scene'), { waitUntil: 'networkidle' });
         if (SHARED_SCREENS.includes(screen)) await mountScreen(page, screen, language, { pseudo: false, textScale: SCALE });
         else await mountGameSheet(page, screen, language, SCALE);
         const { problems, seen } = await auditScreen(page, { pseudo: false });

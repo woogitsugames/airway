@@ -10,6 +10,7 @@ import './gameover.css';
 import { reducedMotion } from '../motion'; // [night-11g] D-88
 import { gameOverMilestones } from '../milestones'; // [night-12ax] R1n
 import type { MilestoneId } from '../../game/milestones';
+import { linoryt, linorytReportHub } from '../skin/linoryt'; // [night-29a] D-284 U3: Linoryt preview (DEV only)
 
 export type { WorldIdentity } from './seed';
 export type { GameOverBest, BestStorage } from './storage';
@@ -331,6 +332,7 @@ function buildDialog(
   mapButton.dataset.testid = 'gameover-map';
   mapButton.setAttribute('aria-label', t('gameover.mapLabel', { hub: snapshot.hubCode }));
   sign.append(mark, title, mapButton);
+  if (import.meta.env.DEV && linoryt.on) linorytReportHub(sign, snapshot.hubCode); // [night-29a] U3: the red hub block
 
   const board = element('section', 'airway-go-board');
   board.setAttribute('aria-label', t('gameover.departures', { hub: snapshot.hubCode }));
