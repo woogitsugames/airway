@@ -27,7 +27,7 @@ try {
             overlay.addAirport({ id: 'WAW', code: 'WAW', name: 'Warszawa', lon: 21, lat: 52, hub: true });
             overlay.setCapacity('WAW', 24);
             overlay.setPassengers('WAW', ['EUN', 'NAM', 'EUN']);
-            overlay.setFront('WAW', { phase, slots: 15, time: '18:20' });
+            overlay.setFront('WAW', { phase, minutes: 15, time: '18:20' });
             overlay.update();
             const bubble = host.querySelector('.airport-bubble');
             const stub = host.querySelector('.airport-bubble__front');
@@ -44,7 +44,7 @@ try {
               contrast: (Math.max(a, b) + .05) / (Math.min(a, b) + .05),
               box: { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom, width: rect.width, height: rect.height } };
           }, phase);
-          assert(note.skin === 'linoryt' && !note.hidden && note.text.includes('≤15m'), JSON.stringify(note));
+          assert(note.skin === 'linoryt' && !note.hidden && note.text.includes('≤15 min'), JSON.stringify(note));
           assert(note.aria.includes(language === 'pl' ? 'do 15 minut' : 'up to 15 minutes'), JSON.stringify(note));
           assert(note.contrast >= 4.5 && note.box.width > 0 && note.box.height > 0 && note.box.left >= 0 &&
             note.box.right <= 412 && note.box.top >= 0 && note.box.bottom <= 915, JSON.stringify(note));

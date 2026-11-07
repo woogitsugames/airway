@@ -28,7 +28,7 @@ import { frontKey, frontMark, frontMarks, frontSummary, localClockMinute } from 
 import { pauseSummary } from '../src/game/pauseSummary.ts';
 import { en } from '../src/i18n/en.ts';
 import { pl } from '../src/i18n/pl.ts';
-import { setLanguage } from '../src/i18n/index.ts';
+import { setLanguage, t } from '../src/i18n/index.ts';
 import { createBalanceSession } from './balance-game-adapter.ts';
 import { chooseBotAction } from './bot.ts';
 
@@ -383,8 +383,8 @@ await test('UI model: tag marks (ahead / under, local clock), stable keys, pause
   assert.equal(localClockMinute(-60), '23:00');
   const ahead = { fromTick: 5000, toTick: 5240, phase: 'ahead' as const, fromLocalMinute: 14 * 60 + 20, toLocalMinute: 18 * 60 + 20 };
   const under = { ...ahead, phase: 'under' as const };
-  assert.deepEqual(frontMark(ahead), { phase: 'ahead', slots: WEATHER_GROUND_HOLD_MINUTES, time: '14:20' });
-  assert.deepEqual(frontMark(under), { phase: 'under', slots: WEATHER_GROUND_HOLD_MINUTES, time: '18:20' });
+  assert.deepEqual(frontMark(ahead), { phase: 'ahead', minutes: WEATHER_GROUND_HOLD_MINUTES, time: '14:20' });
+  assert.deepEqual(frontMark(under), { phase: 'under', minutes: WEATHER_GROUND_HOLD_MINUTES, time: '18:20' });
   assert.equal(frontMark(null), null);
   assert.notEqual(frontKey(frontMark(ahead)), frontKey(frontMark(under)));
   assert.equal(frontKey(null), '');
@@ -406,6 +406,18 @@ await test('UI model: tag marks (ahead / under, local clock), stable keys, pause
   for (const key of ['airport.frontSoon', 'airport.frontUnder', 'airport.frontSoonAria', 'airport.frontUnderAria', 'pause.summary.front',
     'pause.summary.frontUnder', 'pause.summary.frontSoon', 'pause.summary.frontAway'] as const) {
     assert.ok(en[key] && pl[key] && en[key] !== '' && pl[key] !== '', key);
+  }
+  // [night-34a] The stub counts minutes with the unit "min" ("m" reads as metres in Polish); the placeholder is {minutes}.
+  const mark = { minutes: WEATHER_GROUND_HOLD_MINUTES, time: '18:20', code: 'WAW' };
+  assert.equal(t('airport.frontSoon', mark), `HOLD \u2264${WEATHER_GROUND_HOLD_MINUTES} min 18:20`);
+  assert.equal(t('airport.frontUnder', mark), `HOLD \u2264${WEATHER_GROUND_HOLD_MINUTES} min to 18:20`);
+  setLanguage('pl');
+  assert.equal(t('airport.frontSoon', mark), `STOP \u2264${WEATHER_GROUND_HOLD_MINUTES} min 18:20`);
+  assert.equal(t('airport.frontUnder', mark), `STOP \u2264${WEATHER_GROUND_HOLD_MINUTES} min do 18:20`);
+  assert.match(t('airport.frontUnderAria', mark), new RegExp(`do ${WEATHER_GROUND_HOLD_MINUTES} minut\\.$`));
+  setLanguage('en');
+  for (const key of ['airport.frontSoon', 'airport.frontUnder', 'airport.frontSoonAria', 'airport.frontUnderAria'] as const) {
+    assert.ok(!en[key].includes('{slots}') && !pl[key].includes('{slots}') && en[key].includes('{minutes}') && pl[key].includes('{minutes}'), key);
   }
 });
 
