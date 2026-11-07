@@ -15,11 +15,15 @@
 import { performance } from 'node:perf_hooks';
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { withBrowser, newGamePage, waitForScreen, assert, saveDiagnostics, clickTestId, dragGesture, ROOT, SEED } from './browser.mjs';
+import {
+  withBrowser, newGamePage, waitForScreen, assert, saveDiagnostics, clickTestId, dragGesture, ROOT, SEED, RENDER, gameUrl, assertRender, shotsDir,
+} from './browser.mjs';
 
 const started = performance.now();
 const SHOTS = process.argv.includes('--shots');
-const SHOT_DIR = resolve(ROOT, 'docs/shots/n11ag');
+// [night-44a] `test:e2e:hub-board:stub` (--render=stub): the menu-page cases also run on the stub world (D-254; the board
+// and the HUD are DOM) and their --shots go to .e2e/stub/n11ag/. The map cases are on the stub world either way.
+const SHOT_DIR = shotsDir(resolve(ROOT, 'docs/shots/n11ag'));
 const results = [];
 /** The shots kept in docs/shots/n11ag (portrait 360×640, landscape phones, foldable). */
 const SHOT_SET = { 'pl 360x640': ['jam', 'curfew'], 'en 360x640': ['mixed'], 'en 915x412': ['mixed'], 'pl 640x360': ['curfew'],
@@ -107,8 +111,9 @@ try {
   await withBrowser(async ({ browser, url }) => {
     for (const [language, width, height] of CASES) {
       const label = `${language} ${width}×${height}`;
-      const { page, errors } = await newGamePage(browser, url, language, { width, height });
+      const { page, errors } = await newGamePage(browser, gameUrl(url), language, { width, height });
       try {
+        await assertRender(page);
         await waitForScreen(page, 'menu');
         const m = await page.evaluate(async () => {
           const { EndlessRun } = await import('/src/game/run.ts');
@@ -302,6 +307,6 @@ for (const { label, status, why } of results) console[status === 'FAIL' ? 'error
 if (fatal) console.error('FAIL harness: ' + fatal);
 const passed = results.filter((item) => item.status === 'PASS').length;
 const failedCount = results.length - passed + (fatal ? 1 : 0);
-console.log(`SUMMARY test:e2e:hub-board seed=0xA1A1 steps=${results.length} passed=${passed} failed=${failedCount} ` +
+console.log(`SUMMARY test:e2e:hub-board seed=0xA1A1${RENDER === 'stub' ? ' render=stub' : ''} steps=${results.length} passed=${passed} failed=${failedCount} ` +
   `durationMs=${Math.round(performance.now() - started)}`);
 if (failedCount || results.length !== CASES.length + MAP_CASES.length) process.exitCode = 1;

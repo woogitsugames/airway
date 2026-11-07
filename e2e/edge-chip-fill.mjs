@@ -4,7 +4,12 @@
 // Seeds 0xA1C2 and 41817 at EN 412×915 and PL 915×412: after the week-1 board, then a day later and zoomed in (more
 // airports leave the screen) and every 2 h for 12 h after that (until the run closes), every visible chip is checked against the run's waiting count and capacity.
 import { performance } from 'node:perf_hooks';
-import { withBrowser, newGamePage, gameUrl, SKIN, waitForScreen, assert, clickTestId, saveDiagnostics } from './browser.mjs';
+import {
+  withBrowser, newGamePage, gameUrl, SKIN, RENDER, assertRender, waitForScreen, assert, clickTestId, saveDiagnostics,
+} from './browser.mjs';
+// [night-44a] `test:e2e:edge-chip-fill:stub` (--render=stub): chips are DOM placed from the real camera/projection and
+// the wheel zoom goes to the same orbit camera, so the stub world (D-254) gives the same audit; time already passes
+// only through window.aw (the frozen clock just removes the drift the audit allows).
 import { E2E_SEEDS } from './seeds.mjs';
 
 const started = performance.now();
@@ -62,6 +67,7 @@ async function audit(page) {
 }
 
 async function journey(page, seed, width, height) {
+  await assertRender(page);
   assert(await page.evaluate(() => window.aw?.ready), 'window.aw.ready=false: no AwDevAdapter registered');
   await waitForScreen(page, 'menu');
   await page.evaluate((s) => window.aw.prepareSeed(s), seed);
@@ -120,5 +126,5 @@ if (sum.filled < 6) results.push({ label: `chips with a gauge over all cases: ${
 if (sum.high < 1) results.push({ label: 'no chip reached three quarters full: the red gauge is not exercised', status: 'FAIL' });
 const failed = results.filter((r) => r.status === 'FAIL').length + (fatal ? 1 : 0);
 const steps = SEEDS.length * SIZES.length;
-console.log(`SUMMARY test:e2e:edge-chip-fill steps=${steps} chips=${sum.chips} gauges=${sum.filled} high=${sum.high} passed=${results.filter((r) => r.status === 'PASS').length} failed=${failed} durationMs=${Math.round(performance.now() - started)}`);
+console.log(`SUMMARY test:e2e:edge-chip-fill${RENDER === 'stub' ? ' render=stub' : ''} steps=${steps} chips=${sum.chips} gauges=${sum.filled} high=${sum.high} passed=${results.filter((r) => r.status === 'PASS').length} failed=${failed} durationMs=${Math.round(performance.now() - started)}`);
 process.exitCode = failed || results.length < steps ? 1 : 0;

@@ -3,7 +3,9 @@
 // the week-1 and week-2 boards (week 2 carries the tall hub-expansion label) in PL/EN: at 360×640 nothing scrolls
 // and all three labels lie inside the viewport below the boarding pass; [night-08e] the same at 320×568.
 import { performance } from 'node:perf_hooks';
-import { withBrowser, newGamePage, waitForScreen, assert, clickTestId, saveDiagnostics, skinUrl } from './browser.mjs'; // [night-29a] --skin=linoryt
+// [night-29a] --skin=linoryt; [night-44a] --render=stub (`test:e2e:board-short:stub`): the board is DOM over the HUD, so
+// the stub world (D-254) measures the same layout. gameUrl() is skinUrl() on the real renderer.
+import { withBrowser, newGamePage, waitForScreen, assert, clickTestId, saveDiagnostics, gameUrl, assertRender, RENDER } from './browser.mjs';
 import { E2E_SEEDS } from './seeds.mjs';
 
 // [night-12aa] Per-suite seed, replayed headless by test:e2e-seeds (rules v6 ended 0xA1A1 in week 2).
@@ -30,6 +32,7 @@ async function measure(page) {
 }
 
 async function boards(page, allowed, language, width, height) {
+  await assertRender(page);
   assert(await page.evaluate(() => window.aw?.ready), 'window.aw.ready=false: no AwDevAdapter registered');
   await waitForScreen(page, 'menu');
   await page.evaluate((seed) => window.aw.prepareSeed(seed), SEED);
@@ -65,7 +68,7 @@ try {
       let page;
       try {
         let errors;
-        ({ page, errors } = await newGamePage(browser, skinUrl(url), language, { width, height }));
+        ({ page, errors } = await newGamePage(browser, gameUrl(url), language, { width, height }));
         await boards(page, allowed, language, width, height);
         if (errors.length) throw new Error(`Browser errors: ${errors.join('; ')}`);
         results.push({ label, status: 'PASS' });
@@ -88,7 +91,7 @@ try {
   const total = LANGUAGES.length * SIZES.length;
   const passed = results.filter((item) => item.status === 'PASS').length;
   const failed = results.filter((item) => item.status === 'FAIL').length + (fatal ? 1 : 0);
-  console.log(`SUMMARY test:e2e:board-short seed=0x${SEED.toString(16).toUpperCase()} steps=${total} passed=${passed} failed=${failed} durationMs=${Math.round(performance.now() - started)}`);
+  console.log(`SUMMARY test:e2e:board-short seed=0x${SEED.toString(16).toUpperCase()}${RENDER === 'stub' ? ' render=stub' : ''} steps=${total} passed=${passed} failed=${failed} durationMs=${Math.round(performance.now() - started)}`);
   if (failed || passed !== total) process.exitCode = 1;
 }
 

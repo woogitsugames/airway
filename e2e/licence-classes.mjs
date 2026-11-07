@@ -11,10 +11,14 @@
 import { performance } from 'node:perf_hooks';
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { withBrowser, newGamePage, waitForScreen, clickTestId, assert, saveDiagnostics, SEED } from './browser.mjs';
+import {
+  withBrowser, newGamePage, waitForScreen, clickTestId, assert, saveDiagnostics, SEED, RENDER, gameUrl, assertRender, shotsDir,
+} from './browser.mjs';
 import { ROOT } from '../scripts/lib/harness.mjs';
 
-const SHOTS = resolve(ROOT, 'docs/shots/n12bc');
+// [night-44a] `test:e2e:licence-classes:stub` (--render=stub): the menu and the started run on the stub world (D-254); its PNGs
+// go to .e2e/stub/n12bc/.
+const SHOTS = shotsDir(resolve(ROOT, 'docs/shots/n12bc'));
 mkdirSync(SHOTS, { recursive: true });
 const started = performance.now();
 const results = [];
@@ -31,6 +35,7 @@ async function reopenMenu(page) {
 }
 
 async function journey(page, language, width, height, startGame) {
+  await assertRender(page);
   await waitForScreen(page, 'menu');
   await page.getByTestId('menu-home-region').waitFor({ timeout: 5000 });
   assert(await page.getByTestId('menu-licence').count() === 0, 'class I only: no licence select');
@@ -103,7 +108,7 @@ try {
       const label = `${language} ${width}×${height}: no stamp at class I, stamp once II is open, store, logbook${startGame ? ', start Endless in class II' : ', back to class I'}`;
       let page = null;
       try {
-        ({ page } = await newGamePage(browser, url, language, { width, height }));
+        ({ page } = await newGamePage(browser, gameUrl(url), language, { width, height }));
         await journey(page, language, width, height, startGame);
         results.push({ label, status: 'PASS' });
       } catch (error) {
@@ -120,6 +125,6 @@ for (const { label, status, why } of results) console[status === 'FAIL' ? 'error
 if (fatal) console.error('FAIL harness: ' + fatal);
 const passed = results.filter((item) => item.status === 'PASS').length;
 const failedCount = results.length - passed + (fatal ? 1 : 0);
-console.log(`SUMMARY test:e2e:licence-classes seed=0x${SEED.toString(16).toUpperCase()} steps=${results.length} ` +
+console.log(`SUMMARY test:e2e:licence-classes seed=0x${SEED.toString(16).toUpperCase()}${RENDER === 'stub' ? ' render=stub' : ''} steps=${results.length} ` +
   `passed=${passed} failed=${failedCount} durationMs=${Math.round(performance.now() - started)}`);
 if (failedCount || results.length !== CASES.length) process.exitCode = 1;
