@@ -639,6 +639,11 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
         ...(run.mode === 'endless' && run.licenceClass !== 1 ? { licenceClass: run.licenceClass } : {}), // [night-12bc] R2h
         ...(run.mode === 'endless' ? { milestones: { reached: run.milestones(), first: callbacks.failureMilestones?.() ?? [] } } : {}), // [night-12ax] R1n
         ...(contracts ? { contracts } : {}), // [night-33a] D-271
+        // [night-77a] D-332: plain facts for the DEV board preview's print-out (the shipped report does not read them).
+        facts: { hubName: airportLabel(failure.cityId, 'name'), mode: run.mode,
+          clock: { week: calendarWeekAt(run.clockMinute), day: calendarDayAt(run.clockMinute), minute: ((run.localMinute % 1440) + 1440) % 1440 },
+          network: { routes: run.routeList().length, aircraft: run.assignments,
+            hubs: run.sim.world.cities().filter((city) => city.isHub).map((city) => airportLabel(city.id, 'code')) } },
       });
     }
   }

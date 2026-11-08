@@ -6,6 +6,7 @@ import type { LicenceClass } from '../../sim';
 import '../skin/current.css'; // [night-11aq] skin tokens read by menu.css
 import './menu.css';
 import { linoryt, linorytTagline } from '../skin/linoryt'; // [night-28a] D-284; [night-46a] D-301: the shipped skin
+import { sheetSkin } from '../sheet-skin'; // [night-77a] D-332: the DEV `?skin=board` preview's departures board (null in a release)
 
 export type MenuMode = 'continue' | 'endless' | 'puzzles' | 'daily';
 export interface MenuData {
@@ -183,6 +184,8 @@ export function createMenu(onFlight:(mode:MenuMode|MenuService)=>void,initial:Me
   const flaps:SplitFlap[]=[];
   const items=new Map<Flight['id'],{title:SplitFlap;gate:SplitFlap;status:SplitFlap;sub:HTMLElement}>();
   const service=el('div','airway-board__service');
+  const buttons=new Map<string,HTMLButtonElement>();
+  const options:HTMLElement[]=[];
   let region:(HTMLSelectElement&{refill?:(current:RegionId|null)=>void})|null=null;
   let licence:(HTMLSelectElement&{refill?:(open:readonly LicenceClass[],current:LicenceClass)=>void})|null=null;
   for(const flight of flightRows(initial)) {
@@ -211,6 +214,7 @@ export function createMenu(onFlight:(mode:MenuMode|MenuService)=>void,initial:Me
     else if(half || withRegion) button.append(main,gateWrap); else button.append(main,gateWrap,statusWrap);
     button.setAttribute('aria-label',ariaLabel(flight));
     button.addEventListener('click',()=>onFlight(flight.id));
+    buttons.set(flight.id,button);
     if(withRegion){
       // [night-11aj] R2g: one board row = the Endless button (title + gate) and the home-region select.
       const line=el('div','airway-flight-line');
@@ -228,7 +232,9 @@ export function createMenu(onFlight:(mode:MenuMode|MenuService)=>void,initial:Me
         const stamp=el('span','airway-flight__gate airway-flight__licence-cell');
         stamp.append(licence);
         line.append(button,stamp,cell);
+        options.push(stamp);
       } else line.append(button,cell);
+      options.unshift(cell);
       board.append(line);
     }
     else if(half) service.append(button); else board.append(button);
@@ -242,6 +248,10 @@ export function createMenu(onFlight:(mode:MenuMode|MenuService)=>void,initial:Me
     notice.hidden=!data.notice;
   };
   applyNotice(initial);
+  // [night-77a] D-332 (T5): the preview re-sets the rows as its departures board (the buttons keep listeners and names).
+  const skin=(data:MenuData):void => sheetSkin.current?.menu({root,board,buttons,options,flights:flightRows(data),
+    today:data.today ?? new Date(),solved:data.solvedPuzzles ?? 0,total:data.totalPuzzles ?? 0});
+  skin(initial);
   return {
     element:root,
     refresh(data:MenuData=initial):void {
@@ -269,6 +279,7 @@ export function createMenu(onFlight:(mode:MenuMode|MenuService)=>void,initial:Me
       const choice=board.querySelector('.lin-choice');
       if(choice) choice.textContent=t('menu.homeRegion');
       if(licence && data.licences) licence.refill?.(data.licences,data.licence ?? 1);
+      skin(data);
     },
     announce(message:string):void { notice.textContent=message; notice.hidden=false; },
     dispose():void { flaps.forEach(f=>f.dispose());root.remove(); },

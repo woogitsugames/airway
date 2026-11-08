@@ -175,6 +175,12 @@ if (!/\.bd-strip \.airport-region-glyph path\s*\{[^}]*stroke:\s*var\(--board-pri
   console.error('FAIL the strip glyphs lost their print outline');
   failed++;
 }
+// [night-77a] D-332 (T5): the print-out's queue at closing and the settings' glyph legend stand on the same paper.
+if (!/\.bd-print__glyphs \.airport-region-glyph path\s*\{[^}]*stroke:\s*var\(--board-print\)/.test(boardCss) ||
+  !/\.airway-glyph-legend__row \.airport-region-glyph path\s*\{[^}]*stroke:\s*var\(--board-print\)/.test(boardCss)) {
+  console.error('FAIL the print-out or legend glyphs lost their print outline');
+  failed++;
+}
 let boardChecks = 0;
 for (const [name, matrix] of Object.entries({ normal: IDENTITY, ...MATRICES })) {
   const enamelOutline = ratio(simLinear(board.cream, matrix), simLinear(board.enamel, matrix));

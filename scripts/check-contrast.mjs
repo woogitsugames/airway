@@ -135,6 +135,17 @@ for (const [fg, bg] of [['print', 'paper'], ['print-dim', 'paper'], ['red', 'pap
   if (value < THRESHOLD) failures.push(`board strip ${fg} on ${bg}: ${value.toFixed(2)}`);
 }
 if (!/\.bd-strip\s*\{[^}]*background:\s*var\(--board-paper\)/.test(boardCss)) failures.push('board: the hub strip lost its paper ground');
+// [night-77a] D-332 (T5): the menu board, the pages and the print-out. Cream and the board labels on enamel and on the
+// console (pause, keys), ink on the yellow sign (the main action), print and its labels and the stamp's red on paper,
+// the engraved status line on the console, the "REKORD" tag (paper on print).
+for (const [fg, bg] of [['cream', 'enamel'], ['cream-2', 'enamel'], ['cream', 'console'], ['engrave', 'console'], ['cream', 'flap-a'],
+  ['cream', 'flap-b'], ['sign-ink', 'sign'], ['print', 'paper'], ['print-dim', 'paper'], ['red', 'paper'], ['paper', 'print'], ['white', 'red']]) {
+  boardPairs++;
+  if (!board[fg] || !board[bg]) { failures.push(`board ${fg}/${bg}: missing token`); continue; }
+  const value = contrast(board[fg], board[bg]);
+  if (value < THRESHOLD) failures.push(`board sheet ${fg} on ${bg}: ${value.toFixed(2)}`);
+}
+if (!/\.bd-print__roll\s*\{[^}]*background:\s*var\(--board-paper\)/.test(boardCss)) failures.push('board: the print-out lost its paper ground');
 if (!/\.bd-atlas__label\s*\{[^}]*text-shadow:[^;]*var\(--board-atlas-halo\)/.test(boardCss)) failures.push('board: atlas labels lost their halo');
 linorytPairs += boardPairs;
 for (const message of failures) console.error('FAIL ' + message);

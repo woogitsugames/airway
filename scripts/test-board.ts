@@ -6,6 +6,9 @@
 // yellow budget of the direction signs (src/ui/skin/board-notes.ts), and the release overlay's empty sign slot.
 // [night-75a] D-330 (step T3): the hub strips' order, the bay's place and strip count, the strip layout and queue
 // (src/ui/skin/board-strips.ts), and the release session's empty strip slot.
+// [night-77a] D-332 (step T5): the menu board's plan (main sign and row order), the print-out's dates, clock, queue and
+// weeks table (src/ui/skin/board-sheets.ts), the Linoryt sections the twin leaves out, the T5 texts, and the release
+// menu and report's empty sheet slot.
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { BOARD_FLIP_MS, BOARD_NIGHT, BOARD_REFLIP_MS, BOARD_STAGGER_MS, boardFigures, boardTwin, isBoardNight, SPEED_ANGLE } from '../src/ui/skin/board.ts';
@@ -23,6 +26,8 @@ import {
   bayPlace, COLUMN_MIN, MAP_KEEP, QUEUE_MIN, STRIP_H, STRIP_STAY, stripClock, stripLayout, stripOrder, stripQueue, stripUrgency, queueFit,
 } from '../src/ui/skin/board-strips.ts';
 import { REGION_IDS, type RegionId } from '../src/data/regions.ts';
+import { boardDate, menuPlan, printClock, printDate, printQueue, printWeeks, PRINT_GLYPHS_PER_REGION } from '../src/ui/skin/board-sheets.ts';
+import { BOARD_TWIN_CUTS } from '../src/ui/skin/board.ts';
 import { en } from '../src/i18n/en.ts';
 import { pl } from '../src/i18n/pl.ts';
 
@@ -379,6 +384,75 @@ test('the release session reaches the strips only through the empty slot (no sta
   assert.match(main, /import\('\.\/ui\/skin\/board-strips'\)/);
   assert.match(main, /stripSkin\.current = strips\.createBoardStrips/);
   assert.match(readFileSync('src/game/world.ts', 'utf8'), /GAME_PANELS = \[[^\]]*'\.airway-strip-bay'/, 'the bay is a camera inset');
+});
+
+test('menu: the run-starting row is the yellow sign; the board lists Today, Puzzles, Logbook, Settings', () => {
+  const rows = (saved: boolean) => [...(saved ? [{ id: 'continue', hot: true }] : []), { id: 'endless', hot: !saved },
+    { id: 'puzzles' }, { id: 'daily' }, { id: 'settings' }, { id: 'logbook' }];
+  assert.deepEqual(menuPlan(rows(false)), { main: 'endless', list: ['daily', 'puzzles', 'logbook', 'settings'] });
+  assert.deepEqual(menuPlan(rows(true)), { main: 'continue', list: ['endless', 'daily', 'puzzles', 'logbook', 'settings'] });
+  assert.deepEqual(menuPlan([{ id: 'daily' }, { id: 'endless' }]), { main: 'endless', list: ['daily'] });
+});
+test('print-out: dates, the clock of the jam, wrapped into one day', () => {
+  const day = new Date(2026, 10, 8);
+  assert.equal(boardDate(day), '08.11');
+  assert.equal(printDate(day), '08.11.2026');
+  assert.equal(printClock(4 * 60 + 12), '04:12');
+  assert.equal(printClock(1440 + 61), '01:01');
+  assert.equal(printClock(-1), '23:59');
+  assert.equal(printClock(Number.NaN), '00:00');
+});
+test('print-out: the queue at closing is a row per direction, most numerous first, one glyph a passenger up to the cap', () => {
+  const rows = printQueue({ EUN: 3, ME: 12, AFR: 12, ASI: 0, OCE: PRINT_GLYPHS_PER_REGION + 5 }, REGION_IDS);
+  assert.deepEqual(rows.map((row) => row.region), ['OCE', 'AFR', 'ME', 'EUN']);
+  assert.deepEqual(rows[0], { region: 'OCE', glyphs: PRINT_GLYPHS_PER_REGION, more: 5 });
+  assert.deepEqual(rows[3], { region: 'EUN', glyphs: 3, more: 0 });
+  assert.deepEqual(printQueue({}, REGION_IDS), []);
+});
+test('print-out: the weeks table carries each crate and the jam on its last line', () => {
+  const weeks = [{ week: 1, routes: 3, extended: 0, removed: 0, aircraft: 3 },
+    { week: 2, routes: 1, extended: 1, removed: 0, aircraft: 2, pick: { upgrade: 'turboprop' as const } },
+    { week: 3, routes: 0, extended: 0, removed: 1, aircraft: 0, pick: { upgrade: 'hub-expansion' as const, hubId: 'AMM' } }];
+  const rows = printWeeks(weeks, (pick) => pick.hubId ? `Hub ${pick.hubId}` : pick.upgrade, 'Zator AMM');
+  assert.deepEqual(rows.map((row) => row.notes), [[], ['turboprop'], ['Hub AMM', 'Zator AMM']]);
+  assert.deepEqual(rows.map((row) => [row.week, row.routes, row.aircraft]), [[1, 3, 3], [2, 1, 2], [3, 0, 0]]);
+  assert.deepEqual(printWeeks([], () => '', 'x'), []);
+});
+test('boardTwin leaves Linoryt\'s menu, report and U4 pages out, keeps the pause and the training flight', () => {
+  const linoryt = readFileSync('src/ui/skin/linoryt.css', 'utf8');
+  for (const [from, to] of BOARD_TWIN_CUTS) assert.ok(linoryt.includes(from) && linoryt.includes(to), `marker ${from} / ${to}`);
+  const real = boardTwin(linoryt);
+  assert.equal(real.includes('.lin-title'), false, 'menu index');
+  assert.equal(real.includes('.airway-go-sign::after'), false, 'report');
+  assert.equal(real.includes('.airway-logbook__totals'), false, 'U4 pages');
+  assert.equal(real.includes('.airway-pause__summary'), true, 'pause geometry stays');
+  assert.equal(real.includes('.aw-tutorial-stage'), true, 'training flight geometry stays');
+  assert.equal(real.includes('.airway-upgrade'), true, 'weekly board stays (T4)');
+});
+test('T5 texts: PL + EN, the print-out\'s placeholders', () => {
+  for (const catalog of [pl, en]) {
+    for (const key of ['board.menu.tagline', 'board.menu.list', 'board.menu.choose', 'board.menu.daily', 'board.report.head',
+      'board.report.again', 'board.report.againSub', 'board.report.same', 'board.report.stamp', 'board.report.end'] as const) {
+      assert.ok(catalog[key].length > 0, key);
+    }
+    assert.match(catalog['board.report.hubClosed'], /\{code\}.*\{name\}/);
+    assert.match(catalog['board.report.when'], /\{week\}.*\{day\}.*\{time\}/);
+    assert.match(catalog['board.report.queue'], /\{waiting\}\/\{capacity\}/);
+    for (const key of ['board.report.colWeek', 'board.report.colRoutes', 'board.report.colAircraft', 'board.report.colNote'] as const) {
+      assert.ok(catalog[key].length <= 6, `${key} "${catalog[key]}" fits its column`);
+    }
+  }
+});
+test('the release menu and report reach the preview only through the empty sheet slot', () => {
+  for (const file of ['src/ui/menu/menu.ts', 'src/ui/gameover/index.ts']) {
+    const source = readFileSync(file, 'utf8');
+    assert.match(source, /from '\.\.\/sheet-skin'/, file);
+    assert.doesNotMatch(source, /board-sheets|skin\/board/, file);
+  }
+  assert.match(readFileSync('src/ui/sheet-skin.ts', 'utf8'), /export const sheetSkin: \{ current: SheetSkin \| null \} = \{ current: null \}/);
+  const main = readFileSync('src/main.ts', 'utf8');
+  assert.match(main, /import\('\.\/ui\/skin\/board-sheets'\)/);
+  assert.match(main, /sheetSkin\.current = sheets\.createBoardSheets/);
 });
 
 console.log(`SUMMARY test:board seed=0xA1A1 passed=${passed} failed=${failed}`);

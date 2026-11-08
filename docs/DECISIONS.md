@@ -3980,6 +3980,55 @@ pairs), `test:e2e:board-week:stub` (new, ci: 14 sizes × PL/EN incl. notch, tabl
 aircraft on 412×915 and 915×412), `test:e2e:board:stub` (the jam pass and T2's dense run take their strip through the main action), shots
 `docs/shots/t4/` (`npm run shots:board:t4`, real renderer).
 **Status:** preview; the owner sees it with T3 (plan §7 gate).
+## D-332 — UI-A menu as a departures board, the game-over report as a teleprinter print-out, the pause and every page in the board's language, behind the DEV `?skin=board` preview (2026-11-08, Claude, night 77a)
+Step T5 of `docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md` (D-323; UI-A-SPEC.md §3 "Wydruk", mockups `ui-a-menu.png`,
+`ui-a-raport.png`). Nothing the release ships changes. (D-331 is held for T4, the weekly board.)
+**Slot.** The menu and the report hand their own elements to a fourth slot, `src/ui/sheet-skin.ts` (`sheetSkin.current`,
+null in a release), which the DEV `?skin=board` branch of `src/main.ts` fills with `src/ui/skin/board-sheets.ts` (lazy chunk,
+type-only imports). The skin moves the screens' buttons (listeners, test ids and spoken names stay) and adds aria-hidden
+drawing; it never acts on the run. The session adds plain `facts` to the game-over snapshot (city name, mode, calendar
+week/day and home clock at the jam, routes, aircraft, hub codes); the shipped report does not read them. `boardTwin` now
+leaves Linoryt's menu index, report and U4 pages out (`BOARD_TWIN_CUTS`); the pause and the training flight keep the twin's
+geometry (their tested fits on short and landscape screens) and take only the board's inks and faces.
+**Menu = departures board, with its own accent.** The title AIRWAY on still flap tiles (no flip on the menu: nothing for
+"Reduce motion" to stop), the tagline "Sieć lotnicza na prawdziwej Ziemi", an empty `[data-globe-frame="menu"]` box (with a
+hidden caption line) where the night globe shows — **R4 frames the globe to it** —, then the board "ODLOTY · WYBIERZ" with
+the date on flaps and the rows Dziś (status NOWY/PLANOWO), Zadania (progress on flaps), Dziennik and Ustawienia (an arrow:
+they open a page), each name on a flap tile and each row at its **gate** ("C2", "B4", "D1", "D0") printed as the map's airport
+sign, so the list reads as a real FIDS board and repeats the map's sign language instead of being "title + globe + list"
+(the K1/K2 weakness). The run-starting row (Continue when a flight is saved, else Endless) leaves the board and becomes the
+screen's one yellow sign at the thumb ("LOT BEZ KOŃCA", the record, an arrow); its home-region and licence selects stand on
+an enamel line above it (landscape: under the globe, at the left thumb). Landscape (any size): title and globe left, the
+board and the sign right.
+**Report = teleprinter print-out.** One paper roll (torn top edge, perforated margins, Chivo Mono): head "AIRWAY · RAPORT
+KOŃCOWY" with the date and mode; the shipped heading ("Sieć zamknięta", still the dialog's name) and "HUB AMM AMMAN
+ZAMKNIĘTY" with "TYDZ. 6 · DZIEŃ 3 · 04:12"; the queue at closing "36/36" as D-08 glyphs, one per passenger, a row per
+direction (30 a row, then "+n"); figures on dotted leaders (delivered with "REKORD", weeks, routes, aircraft, hubs, home
+region, licence); the weeks table from the run timeline (new routes, aircraft placed, the crate taken; "ZATOR AMM" on the
+last line) — **deviation:** the mockup's per-week passengers are not recorded by the run, so the table shows what is; the
+shipped causes (+ tip), milestones, contracts, departures and share row moved in, set in print; the daily ranking under
+them; a foot "KONIEC RAPORTU" with its own dashed **stamp field** holding a plain upright red rectangle "ZATOR" + "AMM ·
+04:12" (no rotation, no ink texture, no "hit": the #347 self-review's "trope"), ≥ 8 px from every printed line. The roll
+scrolls inside; the actions stand under it on the console: Menu, Map, Same world (enamel keys) and "JESZCZE RAZ · Nowy
+świat, ta sama Ziemia" as the yellow direction sign (a new world, as in the mockup). Landscape: the roll left, the actions
+in a column right.
+**Pause and pages.** Pause: the console, the name on a flap, the summary on strip paper, Resume the yellow sign, Save and
+Menu enamel keys. Settings, Licences ("O grze"), Privacy and Terms, the logbook, the puzzle board and desk, the daily
+ranking, the training flight and the no-WebGL page: enamel ground, flap tiles only in headings, a back key with a drawn
+arrow, lists and documents on strip paper in a console holder (settings groups, records, licences, the policy text),
+selects as enamel fields; the tutorial's vignette in the board's night inks with the drawn route as the grease pencil.
+One yellow element a screen (pause: one in the sheet, ≤ 3 with the map's direction signs). Red: only the stamp and the
+ranking-data deletion confirmation (white on red, the pages' one danger).
+**Budgets.** Release CSS 129.0 → 129.0 kB (byte-identical file); main JS 1,065.2 → 1,068.5 kB raw (gzip 319.9 → 320.8; the
+PL/EN T5 strings, the slot calls and the snapshot facts); `dist/` 2,011.7 → 2,015.0 kB. The sheet code and its CSS are
+DEV-only.
+**Tests.** `test:board` (+7: menu plan, dates and clock, queue rows, weeks table, twin cuts, texts, slot), `test:contrast`
+(+12 sheet pairs, the roll's paper), `test:cvd` (print outline of the print-out and legend glyphs), new
+`test:e2e:board-sheets:stub` (ci; 11 sizes × PL/EN incl. notch and 150 %: menu, settings, licences, privacy, logbook,
+puzzles, training flight, pause, report, no-WebGL page), `ui:matrix:stub -- --skin=board` 96/96, shots `docs/shots/t5/`
+(`npm run shots:board:t5`).
+**Status:** preview; the owner sees it with T4 (plan §7 gate before the flip).
+
 ## D-333 — Release icons and launch screens from the mark I-1 "Węzeł" (2026-11-08, Claude, night 78a)
 Step Z of `docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md`, implementing D-326. One definition, `scripts/icon-assets.mjs`
 (the double hub ring `r 262/176`, strokes 44/16, in cream `#EFE7D3`, the D-08 bow-tie in `#F3C317`, on enamel `#0E0F0F`; the
@@ -3997,4 +4046,3 @@ set) plus dark and tinted (grey) variants, all RGB without alpha; launch image 2
 first frame until T6 switches the theme. `brand/wayfinding.svg` (the wordmark sign, yellow plane) is unchanged: the plan
 asks for an Archivo wordmark, a separate task. The Play feature graphic (`store:feature`) still carries it.
 **Status: in force (implements D-326); owner reviews the PR.** (D-332 is reserved for T5.)
-

@@ -62,6 +62,8 @@
   --board-holder-slots: #5A6068;
   --board-print-2: #4A4234;
   --board-print-dim: #5E5647; /* [night-75a] D-330: column labels on strip paper (5.7:1) */
+  /* [night-77a] D-332 (T5): the dim over the frozen map behind the report's roll (the jam still shows through it). */
+  --board-scrim: rgba(3, 4, 4, .82);
   /* [night-73a] D-328 (T2): atlas labels on the photo globe. Cream capitals for countries, pale water blue for seas, each
      on a dark cartographic halo (a 2 px shadow in the photo's own night, not a glow): the halo is the ground the letters
      are read against (test:contrast), the photo only shows round it. */
@@ -304,6 +306,528 @@
   grid-template-columns: 76px 100px 100px 80px 76px; border-left: 0; border-top: 2px solid var(--board-console-2);
 }
 
+/* T5 */
+/* ---- T5: the menu (departures board), the pause, the report (teleprinter print-out) and the pages ---------------------
+   [night-77a] D-332 (PLAN-NOWY-KIERUNEK.md step T5; UI-A-SPEC.md §3 "Wydruk", mockups ui-a-menu.png / ui-a-raport.png).
+   Flap tiles only in headings (the title AIRWAY, a page's name, the board's row names, the pause); enamel for the pages'
+   ground and keys; strip paper for lists (settings rows, logbook, licences, the pause summary) and the print-out; Chivo
+   Mono on paper. One yellow element a screen: the main action (menu: the run-starting sign; pause: Resume; report: a new
+   world). Red stays the jam's: only the print-out's stamp. Nothing moves here: no flip, slide or stamp "hit". */
+
+/* A word on a flap tile: two halves and the hinge on every line (the hinge repeats with the line height, so a heading
+   that wraps keeps a hinge through each of its lines). */
+:root[data-skin="board"] :is(.bd-row .bd-item__title, .airway-settings h1:not(.airway-unsupported__title), .airway-pause h2, .puzzle-sign strong, .puzzle-game-sign strong) {
+  --bd-lh: calc(var(--bd-fs) * 1.32);
+  width: fit-content; max-width: 100%; box-sizing: border-box; padding: 0 .32em; border-radius: 2px;
+  font: 700 var(--bd-fs)/var(--bd-lh) var(--board-face); font-stretch: 80%; letter-spacing: .01em; color: var(--board-cream);
+  background: repeating-linear-gradient(to bottom, var(--board-flap-a) 0 calc(var(--bd-lh) / 2 - .5px), var(--board-hinge) calc(var(--bd-lh) / 2 - .5px) calc(var(--bd-lh) / 2 + .5px), var(--board-flap-b) calc(var(--bd-lh) / 2 + .5px) var(--bd-lh));
+  overflow-wrap: anywhere;
+}
+/* Still flap tiles (one character a tile): the title, the board's date, a count. */
+:root[data-skin="board"] .bd-tiles { display: inline-flex; gap: var(--bd-gap, 3px); }
+:root[data-skin="board"] .bd-tile {
+  position: relative; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box;
+  min-width: var(--bd-tw, 18px); height: var(--bd-th, 26px); border-radius: 2px;
+  background: repeating-linear-gradient(to bottom, var(--board-flap-a) 0 calc(var(--bd-th, 26px) / 2), var(--board-flap-b) calc(var(--bd-th, 26px) / 2) var(--bd-th, 26px));
+  color: var(--board-cream); font: 800 calc(var(--bd-th, 26px) * .74)/1 var(--board-face); font-stretch: 80%; font-variant-numeric: tabular-nums;
+}
+:root[data-skin="board"] .bd-tile::after { content: ''; position: absolute; left: 0; right: 0; top: calc(50% - .75px); height: 1.5px; background: var(--board-hinge); }
+:root[data-skin="board"] .bd-tile--sign { min-width: calc(var(--bd-tw, 18px) * .5); background: transparent; }
+:root[data-skin="board"] .bd-tile--sign::after { display: none; }
+/* The direction sign's arrow, drawn (Chivo Mono has no U+2192); a page key's arrow is the same shape as a mask. */
+:root[data-skin="board"] .bd-item__end:is(svg) { width: 30px; height: 30px; flex: none; color: currentColor; }
+
+/* ---- Menu: title, tagline, the globe's frame (R4), the departures board, the yellow sign at the thumb ---------------- */
+:root[data-skin="board"] .airway-menu.bd-menu {
+  display: flex; flex-direction: column; gap: 10px; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain;
+  padding: calc(var(--aw-safe-top) + 16px) calc(var(--aw-safe-right) + 10px) calc(var(--aw-safe-bottom) + 12px) calc(var(--aw-safe-left) + 10px);
+  color: var(--board-cream); font-family: var(--board-face);
+}
+:root[data-skin="board"] .bd-menu > * { flex: none; }
+:root[data-skin="board"] .bd-menu > .airway-sign { display: none; }
+:root[data-skin="board"] .bd-menu__head { display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 0 2px; pointer-events: none; }
+:root[data-skin="board"] .bd-menu__title { margin: 0; --bd-th: clamp(50px, 14.6vw, 64px); --bd-tw: clamp(38px, 11.4vw, 50px); --bd-gap: clamp(3px, 1.2vw, 6px); }
+:root[data-skin="board"] .bd-menu__title .bd-tile { font-size: calc(var(--bd-th) * .78); }
+:root[data-skin="board"] .bd-menu__tagline { margin: 0; color: var(--board-cream-2); font: 600 calc(15px * var(--airway-text-scale-title))/1.25 var(--board-face); }
+/* R4 frames the night globe to this box; until then the shared world shows through it as it does today. */
+:root[data-skin="board"] .bd-menu .bd-menu__globe { flex: 1 1 auto; min-height: 0; position: relative; pointer-events: none; }
+:root[data-skin="board"] .bd-menu__caption {
+  position: absolute; left: 4px; bottom: 6px; margin: 0; color: var(--board-cream-2);
+  font: 600 11px/1.2 var(--board-face); letter-spacing: .16em; text-transform: uppercase;
+}
+:root[data-skin="board"] .bd-menu .airway-board {
+  position: static; inset: auto; width: auto; margin: 0; padding: 0; border: 1px solid var(--board-enamel-edge); border-radius: 3px;
+  background: var(--board-enamel); color: var(--board-cream); box-shadow: none; font-family: var(--board-face);
+}
+:root[data-skin="board"] .bd-menu :is(.airway-board__header, .airway-board__service, .airway-flight-line[hidden]) { display: none; }
+:root[data-skin="board"] .bd-list__head {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 14px 9px 16px;
+  border-bottom: 1px solid var(--board-enamel-edge);
+}
+:root[data-skin="board"] .bd-list__label { font: 600 calc(11px * var(--airway-text-scale-title))/1.2 var(--board-face); letter-spacing: .2em; text-transform: uppercase; color: var(--board-cream-2); }
+:root[data-skin="board"] .bd-list__choose { color: var(--board-cream); text-decoration: underline 2px; text-underline-offset: 4px; }
+:root[data-skin="board"] .bd-tiles--date { --bd-th: 22px; --bd-tw: 14px; --bd-gap: 2px; }
+:root[data-skin="board"] .bd-tiles--date .bd-tile { font-size: 14px; }
+/* A row: the name on a flap tile, the hint under it, the end (status, count or arrow) on the right. */
+:root[data-skin="board"] .bd-menu .airway-flight > :not(.bd-item) { display: none; }
+:root[data-skin="board"] .bd-menu .airway-flight.bd-row {
+  display: block; width: 100%; min-height: 64px; margin: 0; padding: 10px 14px 10px 16px; border: 0; border-top: 1px solid var(--board-enamel-edge);
+  background: transparent; color: var(--board-cream); text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+:root[data-skin="board"] .bd-menu .bd-list__head + .airway-flight.bd-row { border-top: 0; }
+:root[data-skin="board"] .bd-menu .airway-flight.bd-row:is(:hover, :focus-visible) { outline: 3px solid var(--board-cream); outline-offset: -3px; background: var(--board-panel); }
+:root[data-skin="board"] .bd-menu .airway-flight.bd-row:active { background: var(--board-flap-b); }
+:root[data-skin="board"] .bd-row > .bd-item {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-rows: auto auto; column-gap: 12px; row-gap: 5px; align-items: center;
+}
+/* The gate, printed as the map's airport sign: a cream code in a cream frame on the enamel. */
+:root[data-skin="board"] .bd-row .bd-item__gate {
+  grid-column: 1; grid-row: 1 / span 2; align-self: center; min-width: 2.6em; padding: 3px 5px 2px; box-sizing: border-box; text-align: center;
+  box-shadow: inset 0 0 0 1.5px var(--board-cream); color: var(--board-cream);
+  font: 800 calc(14px * var(--airway-text-scale-title))/1.1 var(--board-face); font-stretch: 80%; letter-spacing: .04em;
+}
+:root[data-skin="board"] .bd-row .bd-item__title { --bd-fs: calc(22px * var(--airway-text-scale-title)); grid-column: 2; }
+:root[data-skin="board"] .bd-row .bd-item__sub {
+  grid-column: 2; min-width: 0; color: var(--board-cream-2); font: 600 calc(13px * var(--airway-text-scale))/1.25 var(--board-face); overflow-wrap: anywhere;
+}
+:root[data-skin="board"] .bd-row .bd-item__end { grid-column: 3; grid-row: 1 / span 2; justify-self: end; }
+:root[data-skin="board"] .bd-item__status {
+  padding: 4px 8px 3px; border: 2px solid var(--board-cream); color: var(--board-cream); white-space: nowrap;
+  font: 800 calc(12px * var(--airway-text-scale-title))/1.1 var(--board-face); letter-spacing: .14em; text-transform: uppercase;
+}
+:root[data-skin="board"] .bd-tiles--count { --bd-th: 30px; --bd-tw: 20px; --bd-gap: 3px; }
+/* The main action: black on yellow, the arrow at the far end (a direction sign, not a card). */
+:root[data-skin="board"] .bd-menu__go { display: flex; flex-direction: column; gap: 8px; }
+:root[data-skin="board"] .airway-flight.bd-go, :root[data-skin="board"] .airway-go-button.bd-go {
+  display: block; width: 100%; min-height: 76px; margin: 0; padding: 12px 18px 12px 20px; border: 0; border-radius: 3px;
+  background: var(--board-sign); color: var(--board-sign-ink); text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+:root[data-skin="board"] .bd-go:is(:hover, :focus-visible) { outline: 3px solid var(--board-cream); outline-offset: 2px; }
+:root[data-skin="board"] .bd-go:active { transform: translateY(1px); }
+:root[data-skin="board"] .bd-go > .bd-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 14px; row-gap: 3px; align-items: center; }
+:root[data-skin="board"] .bd-go .bd-item__title {
+  grid-column: 1; min-width: 0; text-transform: uppercase; overflow-wrap: anywhere;
+  font: 800 calc(clamp(22px, 6.6vw, 28px) * var(--airway-text-scale-title))/1.05 var(--board-face); font-stretch: 80%; letter-spacing: .01em;
+}
+:root[data-skin="board"] .bd-go .bd-item__sub { grid-column: 1; min-width: 0; font: 600 calc(14px * var(--airway-text-scale))/1.25 var(--board-face); overflow-wrap: anywhere; }
+:root[data-skin="board"] .bd-go .bd-item__end { grid-column: 2; grid-row: 1 / span 2; width: 44px; height: 44px; }
+/* The Endless choices (home region, licence): enamel selects on the line over the sign. */
+:root[data-skin="board"] .bd-menu__options {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; align-self: flex-end; max-width: 100%;
+  padding: 0 0 0 12px; border-radius: 3px; background: var(--board-enamel);
+}
+:root[data-skin="board"] .bd-menu__options > * { display: flex; align-items: center; gap: 8px; min-width: 0; border: 0; padding: 0; }
+:root[data-skin="board"] .bd-menu .lin-choice { color: var(--board-cream-2); font: 600 calc(13px * var(--airway-text-scale))/1.2 var(--board-face); text-align: right; }
+:root[data-skin="board"] .bd-menu .airway-flight__region {
+  appearance: none; -webkit-appearance: none; width: auto; min-width: 48px; min-height: 48px; padding: 0 32px 0 12px; border: 1px solid var(--board-cream-2); border-radius: 3px;
+  color: var(--board-cream); background-color: var(--board-enamel);
+  background-image: linear-gradient(45deg, transparent 50%, var(--board-cream) 50%), linear-gradient(135deg, var(--board-cream) 50%, transparent 50%);
+  background-position: calc(100% - 17px) 52%, calc(100% - 12px) 52%; background-size: 5px 5px; background-repeat: no-repeat;
+  font: 700 calc(14px * var(--airway-text-scale))/1.2 var(--board-face); text-align: left;
+}
+:root[data-skin="board"] .bd-menu .airway-flight__licence { border: 3px double var(--board-cream); text-align: center; }
+:root[data-skin="board"] .bd-menu .airway-flight__region option { color: var(--board-print); background: var(--board-paper); }
+:root[data-skin="board"] .bd-menu .airway-flight__region:focus-visible { outline: 3px solid var(--board-cream); outline-offset: 2px; }
+:root[data-skin="board"] .bd-menu .airway-notice {
+  position: static; order: -1; margin: 0; padding: 8px 12px; border: 0; border-left: 8px solid var(--board-console); background: var(--board-paper); color: var(--board-print);
+  font: 600 calc(13px * var(--airway-text-scale))/1.35 var(--board-mono); box-shadow: none;
+}
+:root[data-skin="board"] .bd-menu .airway-notice[hidden] { display: none; }
+/* Short phones: the hints step back where the board would push the sign off the screen. */
+@media (orientation: portrait) and (max-height: 600px) {
+  :root[data-skin="board"] .bd-menu { gap: 8px; padding-top: calc(var(--aw-safe-top) + 10px); }
+  :root[data-skin="board"] .bd-menu .airway-flight.bd-row { min-height: 52px; padding-top: 6px; padding-bottom: 6px; }
+  :root[data-skin="board"] .bd-row .bd-item__sub { display: none; }
+  :root[data-skin="board"] .bd-menu__title { --bd-th: 46px; --bd-tw: 36px; }
+  :root[data-skin="board"] .bd-go { min-height: 64px; }
+}
+/* Landscape (phones, tablets, desktop): title and globe on the left, the board and the sign in a column on the right; the
+   choices under the globe at the left thumb. */
+@media (orientation: landscape) {
+  :root[data-skin="board"] .airway-menu.bd-menu {
+    display: grid; grid-template-columns: minmax(0, 1fr) min(430px, 54%); grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-areas: 'head board' 'globe board' 'options go'; column-gap: 16px; row-gap: 8px;
+    padding-top: calc(var(--aw-safe-top) + 10px); padding-bottom: calc(var(--aw-safe-bottom) + 10px);
+  }
+  :root[data-skin="board"] .bd-menu__head { grid-area: head; }
+  :root[data-skin="board"] .bd-menu__title { --bd-th: clamp(40px, 12vh, 54px); --bd-tw: clamp(30px, 9vh, 42px); }
+  :root[data-skin="board"] .bd-menu .bd-menu__globe { grid-area: globe; }
+  :root[data-skin="board"] .bd-menu .airway-board { grid-area: board; overflow-y: auto; overscroll-behavior: contain; align-self: start; max-height: 100%; }
+  :root[data-skin="board"] .bd-menu__go { display: contents; }
+  :root[data-skin="board"] .bd-menu__options { grid-area: options; justify-content: flex-start; align-self: end; justify-self: start; }
+  :root[data-skin="board"] .bd-menu__go > .bd-go { grid-area: go; }
+  :root[data-skin="board"] .bd-menu .airway-notice { grid-area: head; align-self: end; }
+}
+@media (orientation: landscape) and (max-height: 599px) {
+  :root[data-skin="board"] .bd-menu__go > .bd-go { min-height: 60px; padding-top: 8px; padding-bottom: 8px; }
+  :root[data-skin="board"] .bd-menu .airway-flight.bd-row { min-height: 52px; padding-top: 6px; padding-bottom: 6px; }
+  :root[data-skin="board"] .bd-row .bd-item__title { --bd-fs: calc(19px * var(--airway-text-scale-title)); }
+  :root[data-skin="board"] .bd-go .bd-item__title { font-size: calc(22px * var(--airway-text-scale-title)); }
+}
+@media (orientation: landscape) and (max-height: 459px) {
+  :root[data-skin="board"] .bd-row .bd-item__sub { display: none; }
+  :root[data-skin="board"] .bd-menu__tagline { display: none; }
+}
+/* Foldables and tablets: the phone column, centred. */
+@media (orientation: portrait) and (min-width: 600px) {
+  :root[data-skin="board"] .bd-menu > :not(.bd-menu__globe) { width: 100%; max-width: 560px; align-self: center; }
+}
+
+/* ---- Pause: the console with the name on a flap, the summary on strip paper, Resume the yellow sign ------------------ */
+:root[data-skin="board"] .airway-pause {
+  background: var(--board-console); color: var(--board-cream); border: 0; border-radius: 3px; box-shadow: inset 0 0 0 1px var(--board-console-ring);
+  font-family: var(--board-face); gap: 10px;
+}
+:root[data-skin="board"] .airway-pause h2 { --bd-fs: calc(22px * var(--airway-text-scale-title)); margin: 0; text-transform: uppercase; letter-spacing: .06em; }
+:root[data-skin="board"] .airway-pause__summary {
+  margin: 0; padding: 4px 10px 4px 12px; border: 0; border-left: 8px solid var(--board-console-shade); border-radius: 2px;
+  background: var(--board-paper); color: var(--board-print);
+}
+:root[data-skin="board"] .airway-pause__summary :is(dt, dd) { border-bottom: 1px dashed var(--board-rule); }
+:root[data-skin="board"] .airway-pause__summary :is(dt, dd):nth-last-child(-n + 2) { border-bottom: 0; }
+:root[data-skin="board"] .airway-pause__summary dt { color: var(--board-print-dim); font: 600 calc(10.5px * var(--airway-text-scale))/1.6 var(--board-mono); text-transform: uppercase; letter-spacing: .04em; }
+:root[data-skin="board"] .airway-pause__summary dd { color: var(--board-print); font: 700 calc(14px * var(--airway-text-scale))/1.3 var(--board-mono); }
+:root[data-skin="board"] .airway-pause__button {
+  min-height: 52px; padding: 10px 12px; border: 0; border-radius: 3px; background: var(--board-enamel); color: var(--board-cream);
+  box-shadow: inset 0 0 0 4px var(--board-enamel), inset 0 0 0 5.5px var(--board-cream-2);
+  font: 800 calc(16px * var(--airway-text-scale-title))/1.1 var(--board-face); font-stretch: 80%; letter-spacing: .04em; text-transform: uppercase; text-align: center;
+}
+:root[data-skin="board"] .airway-pause__button:active { background: var(--board-flap-b); transform: translateY(1px); }
+:root[data-skin="board"] .airway-pause__button--primary,
+:root[data-skin="board"] .airway-pause__button--primary:active {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 64px; padding: 10px 16px 10px 18px;
+  background: var(--board-sign); color: var(--board-sign-ink); box-shadow: none; text-align: left;
+  font-size: calc(22px * var(--airway-text-scale-title));
+}
+:root[data-skin="board"] .airway-pause__button--primary::after { content: ''; flex: none; width: 34px; height: 34px; background: currentColor; mask: var(--bd-arrow) center / contain no-repeat; -webkit-mask: var(--bd-arrow) center / contain no-repeat; }
+:root[data-skin="board"] .airway-pause__button:focus-visible { outline: 3px solid var(--board-cream); outline-offset: 2px; }
+:root[data-skin="board"] .airway-pause__status { color: var(--board-engrave); font: 600 calc(13px * var(--airway-text-scale))/1.3 var(--board-face); }
+:root[data-skin="board"] .airway-pause, :root[data-skin="board"] .airway-settings, :root[data-skin="board"] .bd-report {
+  --bd-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M1 9.2h13.2V3.5L23 12l-8.8 8.5v-5.7H1z'/%3E%3C/svg%3E");
+  --bd-arrow-back: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M23 9.2H9.8V3.5L1 12l8.8 8.5v-5.7H23z'/%3E%3C/svg%3E");
+}
+
+/* ---- Report: a teleprinter roll over the frozen map, the actions on the console under it ------------------------------ */
+:root[data-skin="board"] .airway-go-overlay.bd-report:not(.is-map) {
+  display: flex; justify-content: center; align-items: stretch; overflow: hidden; background: var(--board-scrim); box-shadow: none;
+  padding: calc(var(--aw-safe-top) + 10px) calc(var(--aw-safe-right) + 8px) calc(var(--aw-safe-bottom) + 8px) calc(var(--aw-safe-left) + 8px);
+}
+:root[data-skin="board"] .bd-report .airway-go-content {
+  display: flex; flex-direction: column; gap: 8px; width: min(100%, 520px); max-height: 100%; min-height: 0;
+}
+:root[data-skin="board"] .bd-print { flex: 1 1 auto; min-height: 0; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; }
+:root[data-skin="board"] .bd-print__roll {
+  position: relative; box-sizing: border-box; min-height: 100%; padding: 26px 36px 20px; background: var(--board-paper); color: var(--board-print);
+  font: 500 calc(13px * var(--airway-text-scale))/1.45 var(--board-mono); text-transform: uppercase;
+  -webkit-mask: conic-gradient(from 135deg at top, var(--board-black) 90deg, transparent 0) top / 12px 7px repeat-x, linear-gradient(var(--board-black) 0 0) 0 7px / 100% calc(100% - 7px) no-repeat;
+  mask: conic-gradient(from 135deg at top, var(--board-black) 90deg, transparent 0) top / 12px 7px repeat-x, linear-gradient(var(--board-black) 0 0) 0 7px / 100% calc(100% - 7px) no-repeat;
+}
+/* Perforation: a row of holes down each margin, a dashed tear line beside it. */
+:root[data-skin="board"] .bd-print__roll::before, :root[data-skin="board"] .bd-print__roll::after {
+  content: ''; position: absolute; top: 7px; bottom: 0; width: 22px;
+  background: radial-gradient(circle at 11px 13px, var(--board-enamel) 0 4.5px, transparent 5px) 0 0 / 22px 26px repeat-y;
+}
+:root[data-skin="board"] .bd-print__roll::before { left: 0; border-right: 1px dashed var(--board-rule); }
+:root[data-skin="board"] .bd-print__roll::after { right: 0; border-left: 1px dashed var(--board-rule); }
+:root[data-skin="board"] .bd-print__block + .bd-print__block { margin-top: 12px; padding-top: 12px; border-top: 1.5px dashed var(--board-rule); }
+:root[data-skin="board"] .bd-print p, :root[data-skin="board"] .bd-print h3 { margin: 0; }
+:root[data-skin="board"] .bd-print__head { font: 800 calc(17px * var(--airway-text-scale-title))/1.25 var(--board-mono); letter-spacing: .02em; }
+:root[data-skin="board"] .bd-print__line { font: 500 calc(13px * var(--airway-text-scale))/1.45 var(--board-mono); overflow-wrap: anywhere; }
+:root[data-skin="board"] .bd-print__strong { font: 800 calc(14px * var(--airway-text-scale))/1.4 var(--board-mono); overflow-wrap: anywhere; }
+:root[data-skin="board"] .bd-print__sub { margin: 0 0 6px; font: 700 calc(12px * var(--airway-text-scale))/1.3 var(--board-mono); color: var(--board-print-dim); letter-spacing: .06em; }
+/* The shipped heading ("Sieć zamknięta") is the first line of the hub block; its sign and the Linoryt block stay out. */
+:root[data-skin="board"] .bd-print__sign { display: block; min-height: 0; margin: 0 0 2px; padding: 0; border: 0; background: transparent; color: var(--board-print); }
+:root[data-skin="board"] .bd-print__sign > :not(.airway-go-heading) { display: none; }
+:root[data-skin="board"] .bd-print__sign::after { display: none; }
+:root[data-skin="board"] .bd-print .airway-go-heading { font: 800 calc(15px * var(--airway-text-scale-title))/1.3 var(--board-mono); letter-spacing: .06em; color: var(--board-print); }
+/* The queue at closing: one D-08 glyph a passenger, a row per direction, a print outline (test:cvd). */
+:root[data-skin="board"] .bd-print__queue { display: flex; flex-direction: column; gap: 3px; margin-top: 6px; }
+:root[data-skin="board"] .bd-print__glyphs { display: flex; flex-wrap: wrap; align-items: center; gap: 1px; }
+:root[data-skin="board"] .bd-print__glyphs .airport-region-glyph { flex: none; display: block; width: var(--airway-glyph-size); height: var(--airway-glyph-size); }
+:root[data-skin="board"] .bd-print__glyphs .airport-region-glyph path { stroke: var(--board-print) !important; }
+:root[data-skin="board"] .bd-print__more { margin-left: 4px; font: 700 calc(12px * var(--airway-text-scale))/1 var(--board-mono); }
+/* Figures on dotted leaders. */
+:root[data-skin="board"] .bd-print__figures { display: grid; gap: 3px; margin: 0; }
+:root[data-skin="board"] .bd-print__figures .bd-print__block, :root[data-skin="board"] .bd-print__figure { display: flex; align-items: baseline; gap: 0; min-width: 0; }
+:root[data-skin="board"] .bd-print__label { flex: 1 1 auto; display: flex; align-items: baseline; min-width: 0; font: 500 calc(13px * var(--airway-text-scale))/1.45 var(--board-mono); }
+:root[data-skin="board"] .bd-print__label::after { content: ''; flex: 1 1 12px; min-width: 12px; margin: 0 6px; border-bottom: 2px dotted var(--board-print-dim); transform: translateY(-4px); }
+:root[data-skin="board"] .bd-print__value { flex: 0 1 auto; display: flex; align-items: baseline; gap: 8px; margin: 0; min-width: 0; text-align: right; overflow-wrap: anywhere; font: 700 calc(14px * var(--airway-text-scale))/1.45 var(--board-mono); }
+:root[data-skin="board"] .bd-print__record { padding: 1px 6px; background: var(--board-print); color: var(--board-paper); font: 800 calc(12px * var(--airway-text-scale))/1.3 var(--board-mono); letter-spacing: .04em; }
+/* The weeks table. */
+:root[data-skin="board"] .bd-print__table { width: 100%; border-collapse: collapse; font: 500 calc(13px * var(--airway-text-scale))/1.4 var(--board-mono); }
+:root[data-skin="board"] .bd-print__table th { text-align: left; padding: 0 8px 3px 0; color: var(--board-print-dim); font: 600 calc(11px * var(--airway-text-scale))/1.3 var(--board-mono); }
+:root[data-skin="board"] .bd-print__table td { padding: 1px 8px 1px 0; vertical-align: top; overflow-wrap: anywhere; }
+:root[data-skin="board"] .bd-print__table :is(th, td):is(:nth-child(2), :nth-child(3)) { text-align: right; padding-right: 14px; }
+:root[data-skin="board"] .bd-print__table :is(th, td):last-child { padding-right: 0; }
+:root[data-skin="board"] .bd-print__table tr:last-child td:last-child { font-weight: 800; }
+:root[data-skin="board"] .bd-print__note { color: var(--board-print-dim); }
+/* The moved sections of the shipped report, set in print. */
+:root[data-skin="board"] .bd-print :is(.airway-go-causes, .airway-go-causes-panel) { margin: 0; padding: 0 0 0 2.2em; color: var(--board-print); background: transparent; border: 0; height: auto; overflow: visible; }
+:root[data-skin="board"] .bd-print .airway-go-causes-panel { padding: 0; }
+:root[data-skin="board"] .bd-print .airway-go-causes li::marker { color: var(--board-print); font-weight: 800; }
+:root[data-skin="board"] .bd-print .airway-go-causes li { margin: 0 0 3px; padding: 0; border: 0; font: 500 calc(13px * var(--airway-text-scale))/1.4 var(--board-mono); text-transform: none; color: var(--board-print); }
+:root[data-skin="board"] .bd-print .airway-go-tip { margin: 6px 0 0; padding: 0; border: 0; background: transparent; color: var(--board-print); font: 500 calc(13px * var(--airway-text-scale))/1.4 var(--board-mono); text-transform: none; }
+:root[data-skin="board"] .bd-print .airway-go-tip-label { font-weight: 800; text-transform: uppercase; color: var(--board-print); background: transparent; }
+:root[data-skin="board"] .bd-print .airway-go-milestones { margin: 0; padding: 0; border: 0; background: transparent; color: var(--board-print); }
+:root[data-skin="board"] .bd-print .airway-go-milestones + .airway-go-milestones { margin-top: 8px; }
+:root[data-skin="board"] .bd-print .airway-go-milestones-title { margin: 0 0 4px; font: 700 calc(12px * var(--airway-text-scale))/1.3 var(--board-mono); color: var(--board-print-dim); letter-spacing: .06em; }
+:root[data-skin="board"] .bd-print .airway-go-milestones-list { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 0; padding: 0; list-style: none; }
+:root[data-skin="board"] .bd-print .airway-go-milestone { display: inline-flex; align-items: center; gap: 5px; color: var(--board-print); font: 500 calc(12px * var(--airway-text-scale))/1.3 var(--board-mono); }
+:root[data-skin="board"] .bd-print .airway-go-milestone-mark { width: 10px; height: 10px; box-sizing: border-box; border: 1.5px solid var(--board-print); background: transparent; }
+:root[data-skin="board"] .bd-print .airway-go-milestone[data-reached="true"] .airway-go-milestone-mark { background: var(--board-print); }
+:root[data-skin="board"] .bd-print .airway-go-milestone-first { padding: 0 4px; border: 1.5px solid var(--board-print); color: var(--board-print); background: transparent; font-weight: 800; animation: none; }
+:root[data-skin="board"] .bd-print .airway-go-share { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 10px 0 0; }
+:root[data-skin="board"] .bd-print .airway-go-share-status { margin: 0; color: var(--board-print); font: 500 calc(12px * var(--airway-text-scale))/1.3 var(--board-mono); text-transform: none; }
+:root[data-skin="board"] .bd-print .airway-go-share-text { width: 100%; box-sizing: border-box; border: 1px solid var(--board-rule); background: var(--board-paper); color: var(--board-print); font: 500 12px/1.4 var(--board-mono); }
+:root[data-skin="board"] .bd-print .airway-go-board { min-height: 0; padding: 0; background: transparent; color: var(--board-print); border-left: 0; border-right: 0; border-bottom: 0; }
+:root[data-skin="board"] .bd-print .airway-go-board.bd-print__block { padding-top: 12px; }
+:root[data-skin="board"] .bd-print .airway-go-board-title { margin: 0 0 6px; color: var(--board-print-dim); font: 700 calc(12px * var(--airway-text-scale))/1.3 var(--board-mono); letter-spacing: .06em; }
+:root[data-skin="board"] .bd-print :is(.airway-go-board-head, .airway-go-flight) { grid-template-columns: minmax(0, 1fr) 40px auto; padding: 1px 0; border: 0; color: var(--board-print); background: transparent; font: 500 calc(13px * var(--airway-text-scale))/1.4 var(--board-mono); min-height: 0; }
+:root[data-skin="board"] .bd-print .airway-go-board-head { color: var(--board-print-dim); font-size: calc(11px * var(--airway-text-scale)); }
+:root[data-skin="board"] .bd-print .airway-go-flight-list { max-height: none; overflow: visible; }
+:root[data-skin="board"] .bd-print .airway-go-flap { padding: 0 5px; border: 1.5px solid var(--board-print); background: transparent; color: var(--board-print); font: 700 calc(11px * var(--airway-text-scale))/1.4 var(--board-mono); letter-spacing: .04em; }
+:root[data-skin="board"] .bd-print .airway-go-none { padding: 0; background: transparent; border: 0; color: var(--board-print); }
+:root[data-skin="board"] .bd-print .airway-go-none p { margin: 0 0 4px; font: 500 calc(13px * var(--airway-text-scale))/1.4 var(--board-mono); text-transform: none; }
+:root[data-skin="board"] .bd-print .airway-go-none-line { font-weight: 800; }
+:root[data-skin="board"] .bd-print .airway-rank { margin-top: 12px; padding: 12px 0 0; border-top: 1.5px dashed var(--board-rule); background: transparent; color: var(--board-print); font-family: var(--board-mono); }
+:root[data-skin="board"] .bd-print .airway-rank-title { color: var(--board-print); font: 800 calc(13px * var(--airway-text-scale))/1.3 var(--board-mono); }
+:root[data-skin="board"] .bd-print .airway-rank-column-title { color: var(--board-print-dim); border-bottom: 1px solid var(--board-rule); font-family: var(--board-mono); }
+:root[data-skin="board"] .bd-print .airway-rank-row { border-bottom: 1px dashed var(--board-rule); }
+:root[data-skin="board"] .bd-print .airway-rank-row.is-me { color: var(--board-paper); background: var(--board-print); }
+:root[data-skin="board"] .bd-print :is(.airway-rank-empty, .airway-rank-status) { color: var(--board-print-dim); font-family: var(--board-mono); text-transform: none; }
+/* The foot: "End of report" and its own stamp field; the stamp a plain upright red rectangle, apart from every line. */
+:root[data-skin="board"] .bd-print__foot { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 16px; }
+:root[data-skin="board"] .bd-stamp-field {
+  display: flex; flex-direction: column; align-items: center; gap: 8px; margin-left: auto; padding: 6px 12px 12px;
+  border: 1.5px dashed var(--board-rule);
+}
+:root[data-skin="board"] .bd-stamp-field__label { align-self: flex-start; color: var(--board-print-dim); font: 600 10px/1.2 var(--board-mono); letter-spacing: .14em; }
+:root[data-skin="board"] .bd-stamp {
+  display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 14px 5px; border: 3px solid var(--board-red); color: var(--board-red);
+  opacity: .92;
+}
+:root[data-skin="board"] .bd-stamp__word { font: 800 22px/1.05 var(--board-face); font-stretch: 80%; letter-spacing: .14em; }
+:root[data-skin="board"] .bd-stamp__code { font: 700 12px/1.2 var(--board-mono); letter-spacing: .08em; }
+/* The actions: on the console, under the roll. */
+:root[data-skin="board"] .bd-report .airway-go-actions {
+  flex: none; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; margin: 0; padding: 8px; border-radius: 3px; background: var(--board-console); box-shadow: inset 0 0 0 1px var(--board-console-ring);
+}
+:root[data-skin="board"] .bd-report__keys { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+:root[data-skin="board"] .bd-report__keys > .airway-go-same { grid-column: auto; }
+:root[data-skin="board"] .airway-go-button.bd-key, :root[data-skin="board"] .airway-go-map.bd-key {
+  min-width: 0; min-height: 52px; margin: 0; padding: 8px 6px; border: 0; border-radius: 3px; background: var(--board-enamel); color: var(--board-cream);
+  box-shadow: inset 0 0 0 4px var(--board-enamel), inset 0 0 0 5.5px var(--board-cream-2);
+  font: 800 calc(15px * var(--airway-text-scale-title))/1.1 var(--board-face); font-stretch: 80%; letter-spacing: .04em; text-transform: uppercase; text-align: center;
+  overflow-wrap: anywhere; cursor: pointer;
+}
+:root[data-skin="board"] .bd-key:active { background: var(--board-flap-b); transform: translateY(1px); }
+:root[data-skin="board"] .bd-key:focus-visible { outline: 3px solid var(--board-cream); outline-offset: 2px; }
+:root[data-skin="board"] .bd-go--report { min-height: 72px; }
+/* The map view: one console strip at thumb height brings the report back. */
+:root[data-skin="board"] .bd-report .airway-go-mapbar { background: var(--board-console); color: var(--board-cream); border: 0; box-shadow: inset 0 0 0 1px var(--board-console-ring); font-family: var(--board-face); }
+:root[data-skin="board"] .bd-report .airway-go-mapback { min-height: 48px; border: 0; border-radius: 3px; background: var(--board-enamel); color: var(--board-cream); box-shadow: inset 0 0 0 4px var(--board-enamel), inset 0 0 0 5.5px var(--board-cream-2); font: 800 15px/1.1 var(--board-face); text-transform: uppercase; }
+/* Landscape phone: the roll on the left, the actions in a column on the right. */
+@media (orientation: landscape) and (max-height: 599px) {
+  :root[data-skin="board"] .bd-report .airway-go-content { flex-direction: row; align-items: stretch; width: min(100%, 880px); }
+  :root[data-skin="board"] .bd-report .airway-go-actions { width: min(270px, 36%); align-self: flex-end; }
+  :root[data-skin="board"] .bd-report__keys { grid-template-columns: 1fr 1fr; }
+  :root[data-skin="board"] .bd-report__keys > .airway-go-same { grid-column: 1 / -1; }
+  :root[data-skin="board"] .bd-go--report { min-height: 64px; }
+}
+@media (max-width: 370px) {
+  :root[data-skin="board"] .bd-print__roll { padding-left: 30px; padding-right: 30px; }
+  :root[data-skin="board"] .bd-print__roll::before, :root[data-skin="board"] .bd-print__roll::after { width: 18px; background-position: -2px 0; }
+}
+
+/* ---- Pages: settings, licences, privacy and terms, logbook, the no-WebGL page ------------------------------------------ */
+:root[data-skin="board"] .airway-settings { background: var(--board-enamel); color: var(--board-cream); font-family: var(--board-face); }
+:root[data-skin="board"] .airway-settings__paper { max-width: 600px; padding: 0; border: 0; background: transparent; color: var(--board-cream); }
+:root[data-skin="board"] .airway-settings__heading { gap: 12px; margin: 0 0 14px; padding: 0 0 12px; border-bottom: 1px solid var(--board-enamel-edge); }
+:root[data-skin="board"] .airway-settings h1 { --bd-fs: min(calc(26px * var(--airway-text-scale-title)), 7.6vw); margin: 0; }
+:root[data-skin="board"] .airway-settings__back {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 48px; min-width: 48px; padding: 8px 14px 8px 12px; border: 0; border-radius: 3px;
+  background: var(--board-console); color: var(--board-cream); box-shadow: inset 0 0 0 1px var(--board-console-ring);
+  font: 800 calc(14px * var(--airway-text-scale-title))/1.1 var(--board-face); font-stretch: 80%; letter-spacing: .06em; text-transform: uppercase;
+}
+:root[data-skin="board"] .airway-settings__back::before { content: ''; flex: none; width: 20px; height: 20px; background: currentColor; mask: var(--bd-arrow-back) center / contain no-repeat; -webkit-mask: var(--bd-arrow-back) center / contain no-repeat; }
+:root[data-skin="board"] .airway-settings__back:active { transform: translateY(1px); }
+:root[data-skin="board"] .airway-settings :is(button, select, input):focus-visible { outline: 3px solid var(--board-cream); outline-offset: 2px; }
+/* A group: its name as a board label on the enamel, its rows on a strip of paper in a holder. */
+:root[data-skin="board"] .airway-settings__groups { gap: 16px; }
+:root[data-skin="board"] .airway-settings__group-title, :root[data-skin="board"] .airway-logbook__section > h2 {
+  margin: 0 0 6px; padding: 0 2px; clip-path: none; background: transparent; color: var(--board-cream-2);
+  font: 600 calc(11px * var(--airway-text-scale-title))/1.3 var(--board-face); letter-spacing: .2em; text-transform: uppercase;
+}
+:root[data-skin="board"] .airway-settings__group, :root[data-skin="board"] .airway-licenses ul, :root[data-skin="board"] .airway-logbook__section {
+  box-sizing: border-box; min-width: 0; padding: 0 12px 4px 14px; border-left: 10px solid var(--board-console); border-radius: 2px;
+  background: var(--board-paper); color: var(--board-print);
+}
+:root[data-skin="board"] .airway-settings__group > .airway-settings__group-title, :root[data-skin="board"] .airway-logbook__section > h2 {
+  margin: 0 -12px 0 -24px; padding: 8px 12px 6px 14px; background: var(--board-enamel);
+}
+:root[data-skin="board"] .airway-setting { border-bottom: 1px dashed var(--board-rule); color: var(--board-print); font: 600 calc(14px * var(--airway-text-scale))/1.3 var(--board-face); }
+:root[data-skin="board"] .airway-setting:last-child { border-bottom: 0; }
+:root[data-skin="board"] .airway-setting__control {
+  appearance: none; -webkit-appearance: none; min-height: 48px; padding: 0 32px 0 10px; border: 0; border-radius: 3px;
+  background-color: var(--board-enamel); color: var(--board-cream);
+  background-image: linear-gradient(45deg, transparent 50%, var(--board-cream) 50%), linear-gradient(135deg, var(--board-cream) 50%, transparent 50%);
+  background-position: calc(100% - 17px) 52%, calc(100% - 12px) 52%; background-size: 5px 5px; background-repeat: no-repeat;
+  font: 700 calc(14px * var(--airway-text-scale))/1.2 var(--board-face);
+}
+:root[data-skin="board"] .airway-setting__control option { color: var(--board-print); background: var(--board-paper); }
+:root[data-skin="board"] .airway-setting__switch { color: var(--board-print); font: 700 calc(13px * var(--airway-text-scale))/1.2 var(--board-mono); text-transform: uppercase; }
+:root[data-skin="board"] .airway-setting__switch input { width: 26px; height: 26px; accent-color: var(--board-print); }
+:root[data-skin="board"] .airway-setting__hint { color: var(--board-print-dim); font: 500 calc(12px * var(--airway-text-scale))/1.4 var(--board-mono); }
+:root[data-skin="board"] .airway-settings__heading ~ .airway-setting__hint, :root[data-skin="board"] .airway-unsupported .airway-setting__hint, :root[data-skin="board"] .airway-logbook__local { color: var(--board-cream-2); }
+/* Index lines (tutorial, licences, privacy, terms, copy, ranking data): enamel keys with the arrow of a page. */
+:root[data-skin="board"] .airway-settings__licenses {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 52px; margin: 8px 0 0; padding: 10px 14px;
+  border: 0; border-radius: 3px; background: var(--board-enamel); color: var(--board-cream); text-align: left;
+  font: 700 calc(14px * var(--airway-text-scale))/1.25 var(--board-face);
+}
+:root[data-skin="board"] .airway-settings__licenses::after { content: ''; flex: none; width: 22px; height: 22px; background: currentColor; mask: var(--bd-arrow) center / contain no-repeat; -webkit-mask: var(--bd-arrow) center / contain no-repeat; }
+:root[data-skin="board"] .airway-settings__group .airway-settings__licenses:last-child { margin-bottom: 8px; }
+:root[data-skin="board"] .airway-settings__licenses:active { transform: translateY(1px); }
+/* Deleting the ranking data is the one danger of the pages: its confirmation is white on red. */
+:root[data-skin="board"] .airway-settings__delete-confirm .airway-settings__licenses:first-of-type { background: var(--board-red); color: var(--board-white); }
+:root[data-skin="board"] .airway-setting__swatch { box-shadow: inset 0 0 0 1px var(--board-print); }
+:root[data-skin="board"] .airway-glyph-legend__title, :root[data-skin="board"] .airway-keys__title { color: var(--board-print); font: 700 calc(12px * var(--airway-text-scale))/1.3 var(--board-mono); text-transform: uppercase; letter-spacing: .06em; }
+:root[data-skin="board"] :is(.airway-glyph-legend__row, .airway-keys__row, .airway-publisher__row) { border-bottom: 1px dashed var(--board-rule); color: var(--board-print); font-family: var(--board-face); }
+:root[data-skin="board"] .airway-glyph-legend__row .airport-region-glyph path { stroke: var(--board-print) !important; }
+:root[data-skin="board"] .airway-publisher__row dt { color: var(--board-print-dim); font-family: var(--board-mono); }
+:root[data-skin="board"] .airway-publisher__row dd { color: var(--board-print); font-family: var(--board-face); }
+:root[data-skin="board"] .airway-keys__cap { border-color: var(--board-print); font-family: var(--board-mono); }
+/* Licences, privacy and terms: printed documents on the paper (Chivo Mono headings, Archivo text). */
+:root[data-skin="board"] .airway-licenses > p { margin: 0 0 12px; color: var(--board-cream-2); font: 500 calc(13px * var(--airway-text-scale))/1.5 var(--board-face); }
+:root[data-skin="board"] .airway-licenses ul { margin: 0; padding: 4px 12px 4px 14px; list-style: none; }
+:root[data-skin="board"] .airway-licenses li { border-bottom: 1px dashed var(--board-rule); font: 500 calc(13px * var(--airway-text-scale))/1.45 var(--board-mono); }
+:root[data-skin="board"] .airway-licenses li:last-child { border-bottom: 0; }
+:root[data-skin="board"] .airway-licenses strong { font: 700 calc(14px * var(--airway-text-scale))/1.35 var(--board-face); }
+:root[data-skin="board"] .airway-privacy:not(.airway-licenses) { background: var(--board-paper); color: var(--board-print); padding: 14px 16px 16px; border-left: 10px solid var(--board-console); border-radius: 2px; font: 500 calc(14px * var(--airway-text-scale))/1.55 var(--board-face); }
+:root[data-skin="board"] .airway-privacy:not(.airway-licenses) .airway-settings__heading { margin: -14px -16px 14px -26px; padding: 14px 16px 12px 16px; background: var(--board-enamel); }
+:root[data-skin="board"] .airway-privacy__overline { color: var(--board-print-dim); font: 700 calc(12px * var(--airway-text-scale))/1.3 var(--board-mono); text-transform: uppercase; letter-spacing: .06em; }
+:root[data-skin="board"] .airway-privacy__warning { border: 2px dashed var(--board-print); color: var(--board-print); background: transparent; }
+:root[data-skin="board"] .airway-privacy__section { border-bottom: 1px dashed var(--board-rule); }
+:root[data-skin="board"] .airway-privacy__section h2 { color: var(--board-print); font: 700 calc(14px * var(--airway-text-scale))/1.3 var(--board-mono); text-transform: uppercase; }
+:root[data-skin="board"] .airway-privacy__date { color: var(--board-print-dim); font-family: var(--board-mono); }
+:root[data-skin="board"] .airway-privacy .airway-setting__hint { color: var(--board-print-dim); }
+/* The no-WebGL page: an enamel sign with the reason, the device's renderer on a strip. */
+:root[data-skin="board"] .airway-unsupported .airway-privacy:not(.airway-licenses) { border-left: 0; background: transparent; color: var(--board-cream); padding: 0; }
+:root[data-skin="board"] .airway-unsupported__title {
+  padding: 10px 14px; border: 2px solid var(--board-cream); border-radius: 3px; box-shadow: inset 0 0 0 3px var(--board-enamel), inset 0 0 0 4.5px var(--board-cream-2);
+  color: var(--board-cream); font: 800 calc(22px * var(--airway-text-scale-title))/1.2 var(--board-face); font-stretch: 80%; text-transform: uppercase; letter-spacing: .03em;
+}
+:root[data-skin="board"] .airway-unsupported p { color: var(--board-cream-2); font: 500 calc(14px * var(--airway-text-scale))/1.5 var(--board-face); }
+:root[data-skin="board"] .airway-unsupported .airway-unsupported__gpu { border-left: 10px solid var(--board-console); background: var(--board-paper); color: var(--board-print); font: 600 calc(13px * var(--airway-text-scale))/1.4 var(--board-mono); }
+/* Logbook: totals as flap figures on the paper, records and flights as ruled print. */
+:root[data-skin="board"] .airway-logbook__paper { border-left: 0; }
+:root[data-skin="board"] .airway-logbook__section { margin-bottom: 16px; }
+:root[data-skin="board"] .airway-logbook__totals { border-top: 0; }
+:root[data-skin="board"] .airway-logbook__totals .airway-logbook__cell { border-color: var(--board-rule); }
+:root[data-skin="board"] .airway-logbook__totals dt { color: var(--board-print-dim); font-family: var(--board-mono); text-transform: uppercase; }
+:root[data-skin="board"] .airway-logbook__totals dd { color: var(--board-print); font: 800 calc(24px * var(--airway-text-scale-title))/1.1 var(--board-face); font-stretch: 80%; }
+:root[data-skin="board"] .airway-logbook__records { border-top: 0; }
+:root[data-skin="board"] .airway-logbook__records .airway-logbook__cell { border-bottom: 1px dashed var(--board-rule); }
+:root[data-skin="board"] .airway-logbook__records .airway-logbook__cell:last-child { border-bottom: 0; }
+:root[data-skin="board"] .airway-logbook__records dt { color: var(--board-print); font-family: var(--board-face); }
+:root[data-skin="board"] .airway-logbook__records dd { color: var(--board-print); font-family: var(--board-mono); }
+:root[data-skin="board"] .airway-logbook__milestones dt::before { border-color: var(--board-print-dim); }
+:root[data-skin="board"] .airway-logbook__milestones [data-reached="true"] dt::before { border-color: var(--board-print); background: var(--board-print); }
+:root[data-skin="board"] .airway-logbook__milestones [data-reached="false"] dd { color: var(--board-print-dim); }
+:root[data-skin="board"] .airway-logbook__flights { color: var(--board-print); font-family: var(--board-mono); }
+:root[data-skin="board"] .airway-logbook__flights th { color: var(--board-print-dim); border-color: var(--board-rule); font-family: var(--board-mono); }
+:root[data-skin="board"] .airway-logbook__flights td { border-color: var(--board-rule); }
+:root[data-skin="board"] .airway-logbook__flights tr[data-mode="daily"] .airway-logbook__mode::before { background: var(--board-print); }
+:root[data-skin="board"] .airway-logbook__region { color: var(--board-print-dim); }
+:root[data-skin="board"] .airway-logbook__empty { color: var(--board-print); font-family: var(--board-mono); }
+:root[data-skin="board"] .airway-logbook__summary-text { border-color: var(--board-rule); background: var(--board-paper); color: var(--board-print); font-family: var(--board-mono); }
+:root[data-skin="board"] .airway-logbook__copy-status { color: var(--board-print); }
+
+/* ---- Puzzles: the departures board on enamel (rows as flaps), the puzzle desk with its ticket on strip paper ---------- */
+:root[data-skin="board"] .puzzle-shell { font-family: var(--board-face); }
+:root[data-skin="board"] .puzzle-board { background: var(--board-enamel); color: var(--board-cream); border: 0; box-shadow: none; }
+:root[data-skin="board"] :is(.puzzle-sign, .puzzle-game-sign) { background: var(--board-black); color: var(--board-cream); clip-path: none; border: 0; }
+:root[data-skin="board"] :is(.puzzle-sign strong, .puzzle-game-sign strong) { --bd-fs: calc(clamp(22px, 5vw, 30px) * var(--airway-text-scale-title)); }
+:root[data-skin="board"] .puzzle-sign-plane::before, :root[data-skin="board"] .puzzle-sign-plane::after { background: var(--board-cream); }
+:root[data-skin="board"] .puzzle-sign-meta { color: var(--board-cream-2); font-family: var(--board-face); letter-spacing: .12em; text-transform: uppercase; }
+:root[data-skin="board"] .puzzle-board-title { color: var(--board-cream-2); font: 600 calc(11px * var(--airway-text-scale-title))/1.3 var(--board-face); letter-spacing: .2em; text-transform: uppercase; border: 0; }
+:root[data-skin="board"] .puzzle-count { color: var(--board-cream); font-family: var(--board-mono); }
+:root[data-skin="board"] .puzzle-departures { scrollbar-color: var(--board-cream-2) var(--board-enamel); }
+:root[data-skin="board"] .puzzle-pack { background: transparent; color: var(--board-cream-2); border: 0; border-bottom: 1px solid var(--board-enamel-edge); font: 600 calc(11px * var(--airway-text-scale))/1.3 var(--board-face); letter-spacing: .16em; text-transform: uppercase; }
+:root[data-skin="board"] .puzzle-flap {
+  min-height: 56px; margin: 0; border: 0; border-bottom: 1px solid var(--board-enamel-edge); background: transparent; color: var(--board-cream); font-family: var(--board-face);
+}
+:root[data-skin="board"] .puzzle-flap::after { display: none; }
+:root[data-skin="board"] .puzzle-flap:is(:hover, :focus-visible) { background: var(--board-panel); outline: 3px solid var(--board-cream); outline-offset: -3px; }
+:root[data-skin="board"] .puzzle-flap-number {
+  display: inline-flex; align-items: center; justify-content: center; height: 28px; border-radius: 2px; color: var(--board-cream);
+  background: repeating-linear-gradient(to bottom, var(--board-flap-a) 0 13.5px, var(--board-hinge) 13.5px 14.5px, var(--board-flap-b) 14.5px 28px);
+  font: 800 16px/1 var(--board-face); font-stretch: 80%;
+}
+:root[data-skin="board"] .puzzle-flap-title { color: var(--board-cream); font: 700 calc(clamp(13px, 2.6vw, 15px) * var(--airway-text-scale))/1.25 var(--board-face); }
+:root[data-skin="board"] :is(.puzzle-flap-gate, .puzzle-flap-stars, .puzzle-flap-best) { color: var(--board-cream-2); font-family: var(--board-mono); }
+:root[data-skin="board"] .puzzle-flap-stars.is-done { color: var(--board-cream); }
+:root[data-skin="board"] .puzzle-board-footer { color: var(--board-cream-2); border: 0; }
+:root[data-skin="board"] :is(.puzzle-exit, .puzzle-back) {
+  min-height: 48px; padding: 8px 14px; border: 0; border-radius: 3px; background: var(--board-console); color: var(--board-cream);
+  box-shadow: inset 0 0 0 1px var(--board-console-ring); font: 800 14px/1.1 var(--board-face) !important; text-transform: uppercase; letter-spacing: .06em;
+}
+:root[data-skin="board"] .puzzle-game { background: var(--board-enamel); border: 0; color: var(--board-cream); }
+:root[data-skin="board"] .puzzle-game-status { color: var(--board-cream-2); font-family: var(--board-mono); }
+:root[data-skin="board"] .puzzle-ticket { background: var(--board-paper); color: var(--board-print); border: 0; border-left: 10px solid var(--board-console); font-family: var(--board-face); }
+:root[data-skin="board"] .puzzle-kicker { color: var(--board-print-dim); font-family: var(--board-mono); text-transform: uppercase; letter-spacing: .06em; }
+:root[data-skin="board"] .puzzle-ticket h1 { color: var(--board-print); font: 800 calc(clamp(20px, 3.5vw, 26px) * var(--airway-text-scale-title))/1.15 var(--board-face); font-stretch: 80%; }
+:root[data-skin="board"] .puzzle-stats { background: var(--board-rule); border-color: var(--board-rule); }
+:root[data-skin="board"] .puzzle-stat { background: var(--board-paper); color: var(--board-print); }
+:root[data-skin="board"] .puzzle-stat strong { font-family: var(--board-mono); }
+:root[data-skin="board"] :is(.puzzle-result, .puzzle-error) { background: transparent; color: var(--board-print); border: 2px solid var(--board-print); font-family: var(--board-mono); }
+:root[data-skin="board"] .puzzle-route-panel h2 { color: var(--board-cream); font: 700 calc(15px * var(--airway-text-scale))/1.3 var(--board-mono); text-transform: uppercase; }
+:root[data-skin="board"] .puzzle-supply { color: var(--board-cream-2); }
+:root[data-skin="board"] .puzzle-route { border: 0; border-left: 10px solid var(--board-console); border-radius: 2px; background: var(--board-paper); color: var(--board-print); }
+:root[data-skin="board"] .puzzle-route.is-active { border-left-color: var(--board-print); }
+
+/* ---- Training flight: the night stage, the ticket and cards on strip paper, the vignette in the board's inks --------- */
+:root[data-skin="board"] .aw-tutorial { color: var(--board-cream); font-family: var(--board-face); }
+:root[data-skin="board"] .aw-tutorial-stage { background: var(--board-black); }
+:root[data-skin="board"] :is(.aw-tutorial-ticket, .aw-tutorial-strip) { border: 0; border-left: 10px solid var(--board-console); border-radius: 2px; box-shadow: none; background: var(--board-paper); color: var(--board-print); }
+:root[data-skin="board"] .aw-tutorial-kicker { color: var(--board-print); font: 800 calc(14px * var(--airway-text-scale-title))/1.2 var(--board-mono); text-transform: uppercase; letter-spacing: .04em; }
+:root[data-skin="board"] .aw-tutorial-ticket-id strong { color: var(--board-print-dim); font-family: var(--board-mono); }
+:root[data-skin="board"] .aw-ticket-perf { border-color: var(--board-rule); }
+:root[data-skin="board"] .aw-ticket-skip { margin: 4px; border-radius: 3px; background: var(--board-enamel); color: var(--board-cream); text-decoration: none; font: 800 calc(14px * var(--airway-text-scale-dense))/1.1 var(--board-face); text-transform: uppercase; letter-spacing: .06em; }
+:root[data-skin="board"] .aw-strip-index { color: var(--board-print-dim); font: 700 calc(12px * var(--airway-text-scale-title))/1.2 var(--board-mono); text-transform: uppercase; letter-spacing: .06em; }
+:root[data-skin="board"] .aw-strip-copy { color: var(--board-print); font: 600 calc(16px * var(--airway-text-scale))/1.25 var(--board-face); }
+:root[data-skin="board"] .aw-tutorial-hint { color: var(--board-cream-2); font: 600 calc(13px * var(--airway-text-scale))/1.3 var(--board-face); }
+:root[data-skin="board"] .aw-tutorial-dock { border: 0; border-radius: 3px; background: var(--board-console); box-shadow: inset 0 0 0 1px var(--board-console-ring); }
+:root[data-skin="board"] .aw-plane-tag { clip-path: none; border-radius: 3px; background: var(--board-cream); color: var(--board-enamel); font-weight: 800; }
+:root[data-skin="board"] .aw-plane-tag svg { color: var(--board-enamel); }
+:root[data-skin="board"] .aw-action-tag.aw-complete-action { clip-path: none; border-radius: 3px; background: var(--board-sign); color: var(--board-sign-ink); font: 800 calc(18px * var(--airway-text-scale-title))/1.1 var(--board-face); text-transform: uppercase; }
+:root[data-skin="board"] .aw-settings-sign { border: 0; border-radius: 3px; background: var(--board-console); color: var(--board-cream); box-shadow: inset 0 0 0 1px var(--board-console-ring); }
+:root[data-skin="board"] .aw-settings-dialog { border: 0; border-radius: 3px; background: var(--board-console); color: var(--board-cream); box-shadow: inset 0 0 0 1px var(--board-console-ring); }
+:root[data-skin="board"] .aw-settings-dialog button { border: 0; border-radius: 3px; background: var(--board-enamel); color: var(--board-cream); font-weight: 800; }
+:root[data-skin="board"] .aw-tutorial-world { filter: none; background: transparent; }
+/* The cities' signs: the airport sign of the map (cream code in a cream frame on enamel), the queue's glyphs outlined. */
+:root[data-skin="board"] .aw-tutorial .airport-bubble { padding: 2px; border: 0; border-radius: 0; clip-path: none; background: var(--board-enamel); color: var(--board-cream); box-shadow: none; }
+:root[data-skin="board"] .aw-tutorial .airport-bubble__plate {
+  padding: 2px 5px; border: 0; background: transparent; color: var(--board-cream); box-shadow: inset 0 0 0 1.5px var(--board-cream);
+  font: 800 13px/1.1 var(--board-face); font-stretch: 80%; letter-spacing: .04em;
+}
+:root[data-skin="board"] .aw-tutorial .airport-region-glyph path { stroke: var(--board-cream) !important; }
+/* The vignette: night sea, dark land with a cream coast, airports as the globe's cream points in black; the drawn route
+   is the grease pencil (yellow: "where to"), the second route a dashed cream line. */
+:root[data-skin="board"] .aw-world-art .aw-planet, :root[data-skin="board"] .aw-world-art path[fill="#3c9cb0"] { fill: var(--board-hour-night); }
+:root[data-skin="board"] .aw-world-art path:is([fill="#86b35a"], [fill="#b9c16a"], [fill="#6c9e55"], [fill="#759f58"], [fill="#87b15c"], [fill="#b4b56a"], [fill="#568d4e"], [fill="#dcb36e"], [fill="#91b75f"], [fill="#b8b36b"], [fill="#d2b273"], [fill="#3e7c47"], [fill="#4f8a45"]) { fill: var(--board-console-shade); }
+:root[data-skin="board"] .aw-world-art path[fill="#86b35a"] { stroke: var(--board-cream-2); stroke-width: 1.5; }
+:root[data-skin="board"] .aw-world-art path:is([fill="#f3f1ea"], [fill="#e4e4d2"]) { fill: var(--board-console); stroke: var(--board-cream-2); stroke-width: 1; }
+:root[data-skin="board"] .aw-world-art circle[stroke="#d5ecdf"] { stroke: var(--board-console-ring); stroke-opacity: 1; stroke-width: 3; }
+:root[data-skin="board"] .aw-world-art .aw-aircraft-symbol path { fill: var(--board-cream); stroke: var(--board-black); }
+:root[data-skin="board"] .aw-route { stroke: var(--board-cream); }
+:root[data-skin="board"] .aw-route-primary, :root[data-skin="board"] .aw-live-path, :root[data-skin="board"] .aw-guide { stroke: var(--board-sign); }
+:root[data-skin="board"] .aw-airport > circle:first-of-type { fill: var(--board-black); }
+:root[data-skin="board"] .aw-airport > circle:nth-of-type(2) { fill: var(--board-cream); }
+:root[data-skin="board"] .aw-airport rect { fill: var(--board-black); }
+:root[data-skin="board"] .aw-airport .aw-airport-ring path { stroke: var(--board-cream); }
+:root[data-skin="board"] .aw-route-drop { color: var(--board-sign); }
+/* end T5 */
 /* T2 */
 /* ---- T2: airport signs, the jam sign, direction signs, atlas labels ----------------------------------------------
    [night-73a] D-328 (PLAN-NOWY-KIERUNEK.md step T2; UI-A-SPEC.md §3, §6). The overlay layer carries `.bd-notes` (src/ui/
