@@ -122,19 +122,17 @@ await test('stylesheets: reading text scales through the tokens; titles and dens
   assert.match(read('src/ui/menu/menu.css'), /:root\[data-airway-text-scale="150"\] \.airway-setting \{ grid-template-columns:minmax\(0,1fr\)/);
 });
 
-await test('[night-20a] D-267: Róża at large text: notes stay fixed, sheets scale and stay reachable', () => {
-  // The note layout (layoutTags with D-262..D-266) measures notes from fixed widths in src/ui/skin/roza.ts
-  // (FILL_CHAR, COUNT_DIGIT, PLATE_CHAR for 14.5/13.5/13 px): the in-world lettering must not follow the text step.
-  const roza = read('src/ui/skin/roza.css');
-  const rules = roza.split('}').map((rule) => rule.trim());
-  for (const selector of ['.roza-fill', '.roza-count', '.airport-bubble', '.roza-rose__name', '.roza-caption', '.roza-dial']) {
-    const scaled = rules.filter((rule) => rule.includes(selector) && /--airway-text-scale/.test(rule));
-    assert.equal(scaled.length, 0, `${selector} scales with the text step: ${scaled[0]?.slice(0, 80)}`);
-  }
+await test('[night-20a] D-267 / [night-46a] D-301: Linoryt at large text: notes stay fixed, sheets scale and stay reachable', () => {
+  // The note layout (layoutTags with D-262..D-266) measures the printed notes from fixed sizes in src/ui/skin/linoryt.ts
+  // (NAME_LINE, besleyWidth/figureWidth at 14/16 and 12.5 px): the in-world lettering must not follow the text step.
+  const lin = read('src/ui/skin/linoryt.css');
+  const notes = lin.match(/\/\* U2 notes \*\/([\s\S]*?)\/\* end U2 \*\//)?.[1] ?? '';
+  assert.ok(notes.length > 500, 'linoryt.css has its U2 notes section');
+  assert.doesNotMatch(notes, /--airway-text-scale/, 'printed notes keep in-world sizes');
   assert.doesNotMatch(read('src/ui/overlay.css'), /--airway-text-scale/, 'airport notes keep in-world sizes');
-  const roseTs = read('src/ui/skin/roza.ts');
-  assert.match(roseTs, /const FILL_CHAR = 8\.2;/);
-  assert.match(roseTs, /const COUNT_DIGIT = 7\.8;/);
+  const linTs = read('src/ui/skin/linoryt.ts');
+  assert.match(linTs, /export const NAME_LINE = 19;/);
+  assert.match(linTs, /const namePx = \(hub: boolean\): number => \(hub \? 16 : 14\);/);
   // The hub cause board is a reading sheet: its sentences, title, fill and counts follow the step.
   const hub = read('src/ui/hubBoard.css');
   assert.ok((hub.match(/var\(--airway-text-scale\)/g) ?? []).length >= 6, 'hub board sizes scale');
@@ -143,8 +141,8 @@ await test('[night-20a] D-267: Róża at large text: notes stay fixed, sheets sc
   const go = read('src/ui/gameover/gameover.css');
   assert.match(go, /\.airway-go-overlay \{[^}]*place-items: safe center;/);
   assert.match(go, /:root:is\(\[data-airway-text-scale="130"\], \[data-airway-text-scale="150"\]\) \.airway-go-actions \{\s*position: sticky; bottom: 0;/);
-  // Pause on a short landscape screen: the summary gives way at 130/150 % so the sheet fits above the bottom edge.
-  assert.match(roza, /@media \(orientation: landscape\) and \(max-height: 599px\) \{\s*:root\[data-skin="roza"\]\[data-airway-text-scale="130"\] \.airway-pause__summary,\s*:root\[data-skin="roza"\]\[data-airway-text-scale="150"\] \.airway-pause__summary \{ display: none; \}/);
+  // Pause on a short screen: the summary gives way at 130/150 % so the sheet fits above the bottom edge.
+  assert.match(lin, /@media \(orientation: landscape\) and \(max-height: 599px\), \(orientation: portrait\) and \(max-height: 679px\) \{\s*:root\[data-skin="linoryt"\]:is\(\[data-airway-text-scale="130"\], \[data-airway-text-scale="150"\]\) \.airway-pause__summary \{ display: none; \}/);
 });
 
 console.log(`SUMMARY test:text-scale seed=0 cases=${passed + failed} passed=${passed} failed=${failed}`);

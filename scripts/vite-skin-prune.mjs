@@ -1,16 +1,17 @@
 // [night-11ax] D-257: release CSS without the base ("Diorama") declarations that the shipped skin structure always overrides.
-// src/ui/skin/roza.css ([night-11az] Róża; KARTA before it) restyles the components with rules `:root[data-skin="roza"] X { … }`; a release build always
-// has <html data-skin="roza"> (index.html; only the DEV `?skin=current` comparison removes it), and such a rule beats
-// every plain `X` rule (specificity + (0,2,0), and it comes last). So a declaration of a component rule is dead in a
-// release when, for every selector X of its rule, a structure rule `:root[data-skin="roza"] X` sets the same property (or
-// a shorthand that covers it) in the same @media/@container context or at the top level. Those declarations are
-// dropped (empty rules and at-rules with them); `!important` ones always stay. The DEV comparison skin needs them, so
-// this runs only where scripts/vite-skin-inline.mjs inlines (release builds; dev with AW_SKIN_INLINE=1, which is how
-// `npm run skin:pixels` proves the result pixel-identical). postcss is Vite's own CSS parser (a dependency of vite).
+// [night-46a] D-301: the structure is src/ui/skin/linoryt.css (Róża's roza.css before it, KARTA before that); it restyles
+// the components with rules `:root[data-skin="linoryt"] X { … }`, and a release build always has
+// <html data-skin="linoryt"> (index.html; nothing removes it since the DEV `?skin=` previews went with U5), so such a rule
+// beats every plain `X` rule (specificity + (0,2,0), and it comes last). A declaration of a component rule is therefore
+// dead in a release when, for every selector X of its rule, a structure rule `:root[data-skin="linoryt"] X` sets the
+// same property (or a shorthand that covers it) in the same @media/@container context or at the top level. Those
+// declarations are dropped (empty rules and at-rules with them); `!important` ones always stay. This runs only where
+// scripts/vite-skin-inline.mjs inlines (release builds; dev with AW_SKIN_INLINE=1, which is how `npm run skin:pixels`
+// proves the result pixel-identical). postcss is Vite's own CSS parser (a dependency of vite).
 import postcss from 'postcss';
 
-export const SKIN_STRUCTURE_FILE = 'src/ui/skin/roza.css';
-export const SKIN_SCOPE = ':root[data-skin="roza"]';
+export const SKIN_STRUCTURE_FILE = 'src/ui/skin/linoryt.css';
+export const SKIN_SCOPE = ':root[data-skin="linoryt"]';
 const norm = (s) => s.replace(/\s+/g, ' ').replace(/'/g, '"').trim();
 const SHORTHANDS = {
   font: ['font-size', 'font-weight', 'font-family', 'line-height', 'font-style', 'font-variant', 'font-stretch'],

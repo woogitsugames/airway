@@ -1,17 +1,19 @@
 // [night-30a] PLAN-LINORYT.md step U2: the Linoryt airport notes (src/ui/skin/linoryt.ts) laid out by the same engine as
-// the Róża notes (src/ui/overlay-layout.ts layoutTags), with the world's stamp (E2; until then LINORYT_STAMP_PX) as the
-// fixed obstacle instead of the rose ring. The fixtures of test:roza-names (D-262…D-268, D-281) re-run with stamp boxes:
+// the Róża notes (src/ui/overlay-layout.ts layoutTags), with the world's stamp ([night-46a] E2's STAMP_SIZE_PX, the size
+// projectAirport reports) as the fixed obstacle instead of the rose ring. The fixtures of the former test:roza-names
+// (D-262…D-268, D-281) re-run with stamp boxes:
 // the store shot game-phone Levant cluster (360×640), game-iphone and night-iphone (440×956), game-tablet and night-tablet
 // (768×1024), the hub board open in landscape (915×412) and portrait (360×640). The HUD bands are the Linoryt paper
-// margins measured on the preview (`?skin=linoryt`, stub world): top margin and dock. Kept beside test:roza-names while
-// Róża ships; the flip step U5 removes that one.
+// margins measured on the preview (`?skin=linoryt`, stub world): top margin and dock. [night-46a] D-301: Róża and
+// test:roza-names are gone (U5); this is the note layout's fixture suite.
 import assert from 'node:assert/strict';
 import { layoutTags, NOTE_GAP_X, NOTE_GAP_Y, OWN_MARGIN, type TagBounds, type TagSlot } from '../src/ui/overlay-layout.ts';
 import {
-  besleyWidth, figureWidth, freshWidth, LINORYT_STAMP_PX, linorytBoardCovers, linorytCompactPasses, linorytFrameEnd, linorytFrameStart,
+  besleyWidth, figureWidth, freshWidth, linorytBoardCovers, linorytCompactPasses, linorytFrameEnd, linorytFrameStart,
   linorytHomeReach, linorytNoteFrame, linorytNoteMust, linorytRank, linorytStampBox, linorytStampFallback, linorytStampSlot, NAME_LINE,
   noteSize, stampReach, type NoteSize,
 } from '../src/ui/skin/linoryt.ts';
+import { STAMP_SIZE_PX } from '../src/render/globe/linoryt.ts';
 
 let passed = 0;
 let failed = 0;
@@ -37,7 +39,7 @@ const sizeOf = (a: Airport, language: 'pl' | 'en' = 'pl'): NoteSize => noteSize(
   stubs: 0, trend: 0, fresh: a.fresh ? (language === 'pl' ? 'NOWE' : 'NEW') : null, jamSeconds: a.jam ?? null,
   jamHead: language === 'pl' ? 'Zator za' : 'Jam in', fillText: `${taken(a)} ${language === 'pl' ? 'z' : 'of'} ${capacity(a)}`,
 });
-const half = (a: Airport): number => (a.hub ? LINORYT_STAMP_PX.hub : LINORYT_STAMP_PX.airport) / 2;
+const half = (a: Airport): number => (a.hub ? STAMP_SIZE_PX.hub : STAMP_SIZE_PX.airport) / 2;
 const fakeHost = { querySelector: () => null } as unknown as HTMLElement; // no HUD: the fixture's view is the band
 const edge = { width: 0, height: 0, top: 0, bottom: 0, right: 0 };
 
@@ -60,7 +62,7 @@ function frame(airports: Airport[], view: View, opts: { board?: Box; fixed?: Box
     tag.active = !(opts.board && a.x > opts.board.l - 2 && a.x < opts.board.r + 2 && a.y > opts.board.t - 2 && a.y < opts.board.b + 2);
     tag.jammed = a.jam !== undefined;
     tag.minor = taken(a) === 0 && !a.fresh && a.jam === undefined;
-    linorytStampFallback(linorytStampBox(tag), a.x, a.y, a.hub === true, true);
+    linorytStampFallback(linorytStampBox(tag), a.x, a.y, half(a), true);
     linorytNoteFrame(tag, { code: a.code, hub: a.hub === true, jam: a.jam !== undefined, fresh: a.fresh === true,
       fill: taken(a) / capacity(a), size, viewWidth: view.width, board: opts.board ?? null });
     slots.push(tag, linorytStampSlot(tag));

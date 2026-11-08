@@ -25,11 +25,11 @@ try {
       try {
         await waitForScreen(page, 'menu');
         // The framing settles once the entries are laid out on the rose (a frame or two after the screen shows).
-        await page.waitForFunction((skin) => {
+        await page.waitForFunction(() => {
           const framing = window.__awWorld?.framing?.();
-          // [night-29b] D-284 U4: the Linoryt preview (--skin=linoryt) has no rose; its index rows are the entries.
-          return framing && framing.first !== null && document.querySelector(skin ? '.lin-title' : '.roza-menu-rose');
-        }, SKIN, { timeout: 8000 });
+          // [night-29b] D-284 U4 / [night-46a] D-301: the Linoryt index rows are the entries.
+          return framing && framing.first !== null && document.querySelector('.lin-title');
+        }, null, { timeout: 8000 });
         await page.waitForTimeout(400);
         const probe = await page.evaluate(() => window.__awWorld.framing());
         assert(probe.menuClashes === 0, `demo airports touch a menu entry (${probe.menuClashes} samples, tilt ${probe.menuTilt}°)`);

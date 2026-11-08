@@ -1,4 +1,4 @@
-// [night-11ax] D-257: the game loads its fonts as WOFF2 (src/ui/fonts.css, src/ui/skin/roza.css). public/fonts/ still
+// [night-11ax] D-257: the game loads its fonts as WOFF2 (src/ui/fonts.css, [night-46a] src/ui/skin/linoryt.css). public/fonts/ still
 // holds the TTF each WOFF2 was converted from, because dev pages (dev/globe.html) and the store-shot tool read the TTFs
 // from disk; Vite copies public/ whole, so a release build drops every dist/fonts/*.ttf that has a .woff2 twin (−377 kB
 // of dist/). `npm run test:bundle` fails on any .ttf left in dist/.
@@ -6,12 +6,11 @@ import { existsSync, readdirSync, rmSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
 /**
- * [night-28a] Linoryt (D-283, docs/styles/kierunki-2026-11b/PLAN-LINORYT.md step U1): the Linoryt faces live in
- * public/fonts/ (the app's font dir, licences next to them, docs/ASSETS.md) while the skin is a DEV-only preview
- * (`?skin=linoryt`, D-284). Until the flip step (U5) makes Linoryt the shipped skin, a release build leaves them out, so
- * dist/ stays byte-identical to the build before them; U5 empties this list.
+ * [night-28a] D-284: font files of public/fonts/ a release build leaves out. It held the Linoryt faces while the skin was
+ * a DEV-only preview; [night-46a] D-301 (step U5) ships them, so the list is empty (kept as the one place to park a
+ * preview face again).
  */
-export const PREVIEW_FONTS = Object.freeze(['Besley-800.woff2', 'Besley-900.woff2', 'SchibstedGrotesk-VF.woff2', 'OFL-Besley.txt', 'OFL-SchibstedGrotesk.txt']);
+export const PREVIEW_FONTS = Object.freeze([]);
 
 /** TTF files of `fontsDir` that have a WOFF2 twin (the ones a release build leaves out). */
 export function replacedFonts(fontsDir) {

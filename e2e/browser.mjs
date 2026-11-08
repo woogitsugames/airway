@@ -74,49 +74,40 @@ if (!['stub', 'real'].includes(renderChoice)) {
 }
 export const RENDER = renderChoice;
 /**
- * [night-28a] D-284: `--skin=linoryt` (or `AW_SKIN=linoryt`): a suite that builds its URL with gameUrl() loads the DEV-only
- * Linoryt preview (`?skin=linoryt`), e.g. `npm run ui:matrix:stub -- --skin=linoryt`. Unset = the shipped skin.
+ * [night-28a] D-284: `--skin=linoryt` loaded the DEV-only Linoryt preview. [night-46a] D-301 (PLAN-LINORYT.md step U5):
+ * Linoryt is the shipped skin and the game has no `?skin=` any more, so the flag is refused; `SKIN` stays '' and
+ * `skinUrl` / `skinShotsDir` return their input (kept so the suites that still call them need no edit).
  */
-const skinArg = process.argv.find((arg) => arg.startsWith('--skin='))?.slice('--skin='.length);
-export const SKIN = skinArg ?? process.env.AW_SKIN ?? '';
-if (!['', 'linoryt'].includes(SKIN)) throw new Error(`--skin / AW_SKIN must be "linoryt" or unset, got "${SKIN}"`);
+if (process.argv.some((arg) => arg.startsWith('--skin=')) || process.env.AW_SKIN) {
+  throw new Error('--skin / AW_SKIN: there is no skin preview any more (Linoryt ships, D-301); drop the flag');
+}
+export const SKIN = '';
 
-/** [night-29a] The URL with the `--skin` preview only (render mode untouched): suites that always use one renderer. */
+/** [night-29a] The URL unchanged ([night-46a] D-301: no skin preview any more). */
 export function skinUrl(url) {
-  if (!SKIN) return url;
-  const target = new URL(url);
-  target.searchParams.set('skin', SKIN);
-  return target.href;
+  return url;
 }
 
 /** The game URL for the current `RENDER` mode (unchanged on the real renderer). */
 export function gameUrl(url) {
-  if (RENDER !== 'stub' && !SKIN) return url;
+  if (RENDER !== 'stub') return url;
   const target = new URL(url);
-  if (RENDER === 'stub') {
-    target.searchParams.set('render', 'stub');
-    target.searchParams.set('clock', 'frozen');
-  }
-  if (SKIN) target.searchParams.set('skin', SKIN); // [night-28a] D-284
+  target.searchParams.set('render', 'stub');
+  target.searchParams.set('clock', 'frozen');
   return target.href;
 }
 
-/**
- * [night-29b] D-284 U4: where a suite that keeps PNGs in docs/shots/<task>/ writes them. With `--skin=linoryt` the shots
- * show the preview, not the shipped skin of that task, so they go to .e2e/skin-<skin>/<task>/ (tracked shots untouched).
- */
+/** [night-29b] D-284 U4: the shots folder unchanged ([night-46a] D-301: no skin preview any more). */
 export function skinShotsDir(dir) {
-  if (!SKIN) return dir;
-  return resolve(ARTIFACTS, `skin-${SKIN}`, dir.split('/').filter(Boolean).at(-1));
+  return dir;
 }
 
 /**
- * [night-44a] Where a suite that keeps PNGs in docs/shots/<task>/ writes them in this run: `skinShotsDir` with a skin;
- * on the stub world (`--render=stub`) the shots show the stub's dots instead of the globe, so they go to the git-ignored
- * .e2e/stub/<task>/ (tracked shots untouched). Unchanged on the real renderer.
+ * [night-44a] Where a suite that keeps PNGs in docs/shots/<task>/ writes them in this run: on the stub world
+ * (`--render=stub`) the shots show the stub's dots instead of the globe, so they go to the git-ignored .e2e/stub/<task>/
+ * (tracked shots untouched). Unchanged on the real renderer.
  */
 export function shotsDir(dir) {
-  if (SKIN) return skinShotsDir(dir);
   if (RENDER !== 'stub') return dir;
   return resolve(ARTIFACTS, 'stub', dir.split('/').filter(Boolean).at(-1));
 }

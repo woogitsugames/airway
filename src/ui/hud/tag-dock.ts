@@ -3,12 +3,11 @@ import { iconSvg } from './icons';
 import { crateCountdown } from './crate-countdown';
 import type { HudActions, HudState, PlaneType } from './types';
 import { ARIA_KEYSHORTCUTS } from '../../input/keyboard';
-import { skin, rozaDockLabel } from '../skin/roza'; // [night-11az] D-257: Róża skin helpers
-import { linoryt, linorytDockLabel, linorytIcon } from '../skin/linoryt'; // [night-28a] D-284: Linoryt preview (DEV only; cut symbols)
+import { linoryt, linorytDockLabel, linorytIcon } from '../skin/linoryt'; // [night-28a] D-284; [night-46a] D-301: cut symbols
 
-type TagId = 'undo' | PlaneType | 'hub' | 'globe' | 'speed';
-// [G8] D-172: the globe-view tag sits before speed (the two non-network tags together).
-const TAGS: readonly TagId[] = ['undo', 'turboprop', 'widebody', 'hub', 'globe', 'speed'];
+type TagId = 'undo' | PlaneType | 'hub' | 'speed';
+// [night-46a] D-285 L1, D-301: five symbols; the globe-view tag (G8, D-172) left with Satelita and Mapa.
+const TAGS: readonly TagId[] = ['undo', 'turboprop', 'widebody', 'hub', 'speed'];
 const DRAG_THRESHOLD_SQUARED = 64;
 
 interface DragState {
@@ -32,12 +31,11 @@ export function createTagDock(root: HTMLElement, actions: HudActions): { render(
   for (const tag of TAGS) {
     const holder = document.createElement('div');
     holder.className = 'airway-dock__holder';
-    holder.style.setProperty('--i', String(TAGS.indexOf(tag))); // [night-11az] D-257: place on the Róża arc / flat row
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'airway-dock__tag';
     button.dataset.hudAction = tag;
-    button.innerHTML = `<span class="airway-dock__eyelet" aria-hidden="true"></span>${(import.meta.env.DEV && linoryt.on ? linorytIcon(tag === 'globe' ? 'satellite' : tag) : iconSvg(tag === 'globe' ? 'satellite' : tag))}<span class="airway-dock__count" aria-hidden="true"></span>`;
+    button.innerHTML = `<span class="airway-dock__eyelet" aria-hidden="true"></span>${linoryt.on ? linorytIcon(tag) : iconSvg(tag)}<span class="airway-dock__count" aria-hidden="true"></span>`;
     holder.appendChild(button);
     dock.appendChild(holder);
     if (tag === 'speed') button.setAttribute('aria-keyshortcuts', ARIA_KEYSHORTCUTS.speed); // [night-11ai] R4g
@@ -52,7 +50,6 @@ export function createTagDock(root: HTMLElement, actions: HudActions): { render(
   let active: DragState | null = null;
   let locale = '';
   let lastSpeed = 0;
-  let lastMode = 'satellite';
 
   function hideGhost(): void {
     if (!ghost.hidden) ghost.hidden = true;
@@ -71,7 +68,6 @@ export function createTagDock(root: HTMLElement, actions: HudActions): { render(
     if (name === 'undo') button.addEventListener('click', () => actions.onUndo?.());
     else if (name === 'hub') button.addEventListener('click', () => actions.onUpgradeHub?.());
     else if (name === 'speed') button.addEventListener('click', () => actions.onCycleSpeed?.());
-    else if (name === 'globe') button.addEventListener('click', () => actions.onToggleGlobeMode?.());
     else {
       const plane: PlaneType = name;
       button.addEventListener('click', (event) => {
@@ -90,7 +86,7 @@ export function createTagDock(root: HTMLElement, actions: HudActions): { render(
         const dy = event.clientY - drag.startY;
         if (!drag.moved && dx * dx + dy * dy >= DRAG_THRESHOLD_SQUARED) {
           drag.moved = true;
-          ghost.innerHTML = (import.meta.env.DEV && linoryt.on ? linorytIcon(drag.type) : iconSvg(drag.type));
+          ghost.innerHTML = (linoryt.on ? linorytIcon(drag.type) : iconSvg(drag.type));
           ghost.hidden = false;
           dock.classList.add('is-dragging');
         }
@@ -130,7 +126,7 @@ export function createTagDock(root: HTMLElement, actions: HudActions): { render(
           : name === 'widebody' ? state.stock.widebody
           : name === 'hub' ? state.stock.hub : 0;
         const count = button.querySelector('.airway-dock__count');
-        const nextCount = name === 'speed' ? `${state.speed}×` : name === 'undo' || name === 'globe' ? '' : formatCount(stock);
+        const nextCount = name === 'speed' ? `${state.speed}×` : name === 'undo' ? '' : formatCount(stock);
         const disabled = (name === 'undo' && !state.canUndo)
           || ((isPlane || name === 'hub') && (!Number.isFinite(stock) || stock <= 0));
         // [night-11s] R6c: an empty aircraft/hub tag reads the wait for the next crates instead of a bare "0".
@@ -147,28 +143,18 @@ export function createTagDock(root: HTMLElement, actions: HudActions): { render(
           : name === 'hub' ? t('hud.hubCount', { count: nextCount })
           : name === 'turboprop' ? t('hud.turbopropCount', { count: nextCount })
           : name === 'widebody' ? t('hud.widebodyCount', { count: nextCount })
-          : name === 'globe' ? t('hud.globeMode', { mode: t(state.globeMode === 'map' ? 'settings.globeMode.map' : 'settings.globeMode.satellite') })
           : t('hud.speed', { speed: state.speed });
         if (waiting) label = `${label}. ${countdown.spoken}`;
         if (button.getAttribute('aria-label') !== label) button.setAttribute('aria-label', label);
-        // [night-11az] D-257 Róża: the caption beside the symbol on the arc, or the wait for the next crates.
-        if (skin.roza) rozaDockLabel(button, name, state.globeMode, state.speed, waiting ? countdown.short : null);
-        // [night-28a] D-284 Linoryt preview: the caption under the symbol, the wait under it in blue.
-        else if (import.meta.env.DEV && linoryt.on) linorytDockLabel(button, name, state.globeMode, state.speed, waiting ? countdown.short : null);
-      }
-      const mode = state.globeMode ?? 'satellite';
-      if (lastMode !== mode) {
-        lastMode = mode;
-        const tag = controls.get('globe');
-        tag?.querySelector('svg')?.replaceWith(document.createRange().createContextualFragment((import.meta.env.DEV && linoryt.on ? linorytIcon(mode === 'map' ? 'map' : 'satellite') : iconSvg(mode === 'map' ? 'map' : 'satellite'))));
-        tag?.setAttribute('data-globe-mode', mode);
+        // [night-28a] D-284: the Linoryt caption under the symbol, the wait under it in blue.
+        if (linoryt.on) linorytDockLabel(button, name, state.speed, waiting ? countdown.short : null);
       }
       if (lastSpeed !== state.speed) {
         lastSpeed = state.speed;
         const tag = controls.get('speed');
         tag?.setAttribute('data-speed', String(state.speed));
         // [night-11az] D-257: the speed symbol's wind barbs count the tempo (one per 1×).
-        tag?.querySelector('svg')?.replaceWith(document.createRange().createContextualFragment((import.meta.env.DEV && linoryt.on ? linorytIcon('speed', state.speed) : iconSvg('speed', state.speed))));
+        tag?.querySelector('svg')?.replaceWith(document.createRange().createContextualFragment(linoryt.on ? linorytIcon('speed', state.speed) : iconSvg('speed', state.speed)));
       }
       // Invalidate a pending drag when its item is depleted by another command.
       if (active && controls.get(active.type)?.disabled) {

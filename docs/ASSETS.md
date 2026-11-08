@@ -14,7 +14,7 @@ from Google Fonts (static TTF per weight) on 2026-11-02 by `mockups/fetch-fonts.
 | Source Serif 4 | 400, 700 | KARTA v2 B "Nadruk" clock (fetched 2026-11-05) | yes |
 | Familjen Grotesk | 400, 700 | Poczta lotnicza text, overview sheets | yes |
 | Alegreya SC | 500, 800 | Atlas headlines/labels | yes |
-| Alegreya | 400, 700 | Atlas text; KARTA v2 C "Róża" mockups; [N11az] shipped Róża skin, 700 as a WOFF2 subset in `public/fonts/` (D-257) | yes |
+| Alegreya | 400, 700 | Atlas text; KARTA v2 C "Róża" mockups; [N11az] shipped Róża skin, 700 as a WOFF2 subset in `public/fonts/` (D-257); [N46a] removed from `public/fonts/` with Róża (D-301) | yes |
 | Big Shoulders Display | 500, 800 | Mapa pilota (rejected) | yes |
 | IBM Plex Sans Condensed | 400, 600 | Mapa pilota (rejected) | yes |
 | IBM Plex Mono | 400, 600 | Mapa pilota (rejected); UI direction mockups 2026-11 "Karta"; [N11au] KARTA preview skin (D-256); [N11ax] KARTA skin WOFF2 subset (draft D-257, not shipped: [N11az] Róża was chosen) | yes |
@@ -22,8 +22,8 @@ from Google Fonts (static TTF per weight) on 2026-11-02 by `mockups/fetch-fonts.
 | Barlow Condensed | 500, 700 | UI direction mockups 2026-11 "Karta" (`mockups/ui-2026-11/`); [N11au] KARTA preview skin (D-256); [N11ax] KARTA skin WOFF2 subset (draft D-257, not shipped: [N11az] Róża was chosen) | yes |
 | Archivo Narrow | 500, 700 | UI direction mockups 2026-11 "Kokpit" | yes |
 | Atkinson Hyperlegible Mono | 400, 700 | UI direction mockups 2026-11 "Kokpit" | yes |
-| Besley | 800, 900 | [N27a] direction A "Linoryt" frames; [N28a] Linoryt preview skin (D-284), static WOFF2 subsets in `public/fonts/`, not in `dist/` until U5 | yes |
-| Schibsted Grotesk | 500–700 (variable) | [N27a] directions A and C frames; [N28a] Linoryt preview skin (D-284), WOFF2 subset in `public/fonts/`, not in `dist/` until U5 | yes |
+| Besley | 800, 900 | [N27a] direction A "Linoryt" frames; [N28a] Linoryt preview skin (D-284), static WOFF2 subsets in `public/fonts/`; [N46a] shipped (D-301) | yes |
+| Schibsted Grotesk | 500–700 (variable) | [N27a] directions A and C frames; [N28a] Linoryt preview skin (D-284), WOFF2 subset in `public/fonts/`; [N46a] shipped (D-301) | yes |
 
 [N11au] D-256: the DEV-only KARTA preview skin (`src/ui/skin/karta.css`, `?skin=karta`) loads Barlow Condensed and IBM
 Plex Mono straight from `mockups/fonts/` through the Vite dev server (licences `mockups/fonts/OFL-BarlowCondensed.txt`,
@@ -38,6 +38,8 @@ Chart Mono subsets are not shipped (removed from `public/fonts/` with their lice
 --layout-features='kern,liga,tnum,lnum,case,ccmp,locl,mark,mkmk'`. The Alegreya OFL declares no Reserved Font Name, so
 the subset keeps its name. Licence next to it: `public/fonts/OFL-Alegreya.txt`. The one glyph the subset lacks (U+202F)
 falls back to the shipped Atkinson Hyperlegible Next / Overpass named after it in `--skin-face-display`.
+[night-46a] D-301: Róża is gone (Linoryt ships), so `Alegreya-700.woff2` and `OFL-Alegreya.txt` are removed from
+`public/fonts/` and Settings → Licences; the subset command above stays the recipe for the Linoryt subsets.
 
 [night-28a] D-283/D-284 "Linoryt": **Besley** (SIL OFL 1.1, Copyright 2020 The Besley Project Authors,
 github.com/indestructible-type/Besley) and **Schibsted Grotesk** (SIL OFL 1.1, Copyright 2023 The Schibsted-Grotesk
@@ -47,10 +49,14 @@ Project Authors, github.com/schibsted/schibsted-grotesk), from `docs/styles/kier
 variable font limited to `wght=500:700`; all three subset with the Alegreya command above (same `--unicodes` and
 `--layout-features`, `--flavor=woff2`). Neither licence declares a Reserved Font Name, so the subsets keep their names.
 Licences next to them: `public/fonts/OFL-Besley.txt`, `public/fonts/OFL-SchibstedGrotesk.txt`. Gaps: Besley has no
-U+2192 or U+202F, Schibsted Grotesk no U+2009 or U+202F (the fallback stack covers them; U5 adds `unicode-range`
-borrowing and `test:glyphs` coverage). While Linoryt is a DEV preview (`?skin=linoryt`) these five files are left out of
-`dist/` and the apps (`PREVIEW_FONTS`, `scripts/vite-font-files.mjs`); the flip step U5 ships them and lists them in
-Settings → Licences.
+U+2192 or U+202F, Schibsted Grotesk no U+2009 or U+202F. [night-46a] D-301 (step U5): the five files ship in `dist/`
+and the apps (`PREVIEW_FONTS` is empty) and Settings → Licences lists both faces (`licenses.besley`,
+`licenses.schibsted`). The gaps are covered by the `--skin-face-*` stacks (`'Besley', 'Atkinson Hyperlegible Next',
+'Overpass', serif`; `'Schibsted Grotesk', 'Atkinson Hyperlegible Next', 'Overpass', sans-serif`): the browser draws a
+missing character with the next shipped face that has it (Atkinson for U+2009, Overpass for U+202F and U+2192, as
+Atkinson itself borrows U+2192 from Overpass by `unicode-range` in `src/ui/fonts.css`), so no extra `@font-face` is
+needed; `npm run test:glyphs` checks every catalog string, city name and wave-1 letter against each face with that
+fallback.
 
 Rejected: **B612 / B612 Mono** (OFL, Airbus cockpit face) — no Polish diacritics (ą ć ę ł ń ś ź ż missing), checked with fontTools.
 

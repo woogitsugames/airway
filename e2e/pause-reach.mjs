@@ -1,7 +1,7 @@
-// [night-14b] D-259: the pause in Róża. In play the ringed pause target top right is ≥ 48 × 48, hit-testable, inside
-// the safe area and clear of the week line, the day dial and the dock arc (targets and captions); paused, the sheet's
-// three buttons are 48 px targets, the sheet stays inside the viewport and clear of the week line and of every dock
-// target, caption and the dial (the arc stays usable while paused: undo, aircraft, globe view), and on a tall phone or
+// [night-14b] D-259: the pause target. In play it is ≥ 48 × 48, hit-testable, inside the safe area and clear of the
+// week line and the dock (targets and captions); paused, the sheet's three buttons are 48 px targets, the sheet stays
+// inside the viewport and clear of the week line and of every dock target and caption (the dock stays usable while
+// paused: undo, aircraft), and on a tall phone or
 // a foldable Resume sits in the lower 60 % of the screen, nearer the thumb. 320×568 … 1000×904 and landscape phones.
 // Runs on the DEV stub world (`--render=stub`, D-254; `npm run test:e2e:pause-reach:stub`): only DOM geometry is read.
 import { mkdirSync } from 'node:fs';
@@ -25,9 +25,9 @@ function geometry(page) {
     const shown = (el) => el.offsetParent !== null && getComputedStyle(el).visibility !== 'hidden' && el.getBoundingClientRect().width > 0;
     const hitOk = (el) => { const r = el.getBoundingClientRect(); return el.contains(document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2)); };
     const pause = document.querySelector('.airway-pass__pause');
-    const dock = [...document.querySelectorAll('.airway-dock button, .airway-dock .roza-caption, .roza-dial')].filter(shown)
+    const dock = [...document.querySelectorAll('.airway-dock button, .airway-dock .lin-caption, .airway-dock .lin-wait')].filter(shown)
       .map((el) => ({ name: (el.getAttribute('aria-label') || el.textContent || el.className.baseVal || el.className).trim().slice(0, 16), ...rect(el) }));
-    const week = document.querySelector('.roza-pass');
+    const week = document.querySelector('.lin-week');
     const sheet = document.querySelector('.airway-pause');
     const css = getComputedStyle(document.documentElement);
     return {
@@ -63,7 +63,7 @@ try {
         assert(p.hit, 'pause target is covered');
         const [st, sr, sb, sl] = play.safe;
         assert(p.l >= sl - .5 && p.t >= st - .5 && p.r <= width - sr + .5 && p.b <= height - sb + .5, `pause outside the safe area ${JSON.stringify(p)}`);
-        assert(!play.week || !overlap(p, play.week), 'pause overlaps the week line');
+        assert(!play.week || !overlap(p, play.week), 'pause overlaps the week line'); // [night-46a] Linoryt: .lin-week
         const under = play.dock.filter((item) => overlap(p, item)).map((item) => item.name);
         assert(under.length === 0, `pause overlaps the dock: ${under.join(', ')}`);
         await page.getByRole('button', { name: /^(Pauza|Pause)$/ }).click();
