@@ -89,7 +89,7 @@ async function upgradeGeometry(page) {
     const rects = [sign, ...cards].map(box);
     rects.forEach((r, i) => {
       if (i > 0 && (r.width < 48 || r.height < 48)) violations.push(`label ${i}: ${r.width}x${r.height}`);
-      if (r.left < -0.5 || r.top < -0.5 || r.right > innerWidth + 0.5 || r.bottom > innerHeight + 0.5) violations.push(`${i ? 'label ' + i : 'sign'} outside viewport`);
+      if (r.left < -0.5 || r.top < -0.5 || r.right > innerWidth + 0.5 || r.bottom > innerHeight + 0.5) violations.push(`${i ? 'label ' + i : 'sign'} outside viewport [${[r.left, r.top, r.right, r.bottom].map(Math.round)}]`);
       for (let j = 0; j < i; j++) {
         const o = rects[j];
         if (Math.min(r.right, o.right) - Math.max(r.left, o.left) > 1 && Math.min(r.bottom, o.bottom) - Math.max(r.top, o.top) > 1) violations.push(`${i} overlaps ${j}`);
@@ -364,7 +364,10 @@ try {
           const name = `${tag}${variant.suffix}`;
           check(board.cards === 3, `${name}: three cargo labels`);
           check(board.violations.length === 0, `${name}: ≥48px labels inside the viewport, no overlap or clipped text (${board.violations.join(', ')})`);
-          check(board.minWindow >= (view.w >= 720 ? 96 : 120), `${name}: model window ≥ ${view.w >= 720 ? 96 : 120}px (${board.minWindow})`);
+          // [night-46a] D-301: on a landscape phone the Linoryt sign takes its own row under the top margin and the window
+          // prints a flat cut symbol (no 3D model), so it gives up to 16 px of the 96 px floor (D-209 allows 48).
+          const floor = view.w >= 720 ? (view.h <= 520 ? 80 : 96) : 120;
+          check(board.minWindow >= floor, `${name}: model window ≥ ${floor}px (${board.minWindow})`);
           check(board.models === 3, `${name}: three rendered 3D models (${board.models})`);
           check(board.stamps.length === 1 && board.stamps[0] === 'hub-expansion', `${name}: context stamp only on the hub label (${board.stamps.join(',')})`);
           check(board.facts, `${name}: range and seats from PLANE_TYPES`);

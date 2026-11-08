@@ -453,7 +453,8 @@
 :root[data-skin="linoryt"] .airway-upgrade-stamp { border: 2px solid var(--lin-ink); color: var(--lin-ink); }
 /* The model window prints the cut symbol of the cargo (the dock's symbols) instead of the 3D model. */
 :root[data-skin="linoryt"] .airway-upgrade-model { border: 0; background: var(--lin-paper); color: var(--lin-ink); box-shadow: inset 0 0 0 1.5px currentColor; }
-:root[data-skin="linoryt"] .airway-upgrade-model canvas { display: none; }
+/* :is(#app, body) outweighs the base `#app canvas { display: block }` (the board is mounted inside #app in the game). */
+:root[data-skin="linoryt"] :is(#app, body) .airway-upgrade-model canvas { display: none; }
 :root[data-skin="linoryt"] .airway-upgrade-model::before,
 :root[data-skin="linoryt"] .airway-upgrade-model.has-model::before {
   display: block; width: 64%; height: 64%; clip-path: none; background: currentColor;
@@ -562,7 +563,12 @@
   :root[data-skin="linoryt"] .airway-upgrade-waybill-short { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
   :root[data-skin="linoryt"] :is(.airway-upgrade-waybill-mark, .airway-upgrade-waybill-goal) { flex: none; }
   :root[data-skin="linoryt"] .airway-upgrade-waybill-mark { color: var(--lin-ink-dim); }
-  :root[data-skin="linoryt"] .airway-upgrade-tag { padding-bottom: 8px; }
+  /* The sign takes a row of its own under the margin: the model window gives that height back (D-209's window assumed
+     the sign beside a 420 px pass), so the three crates end above the bottom inset; 14 px under the tilted stamp. */
+  :root[data-skin="linoryt"] .airway-upgrade-open:not(.is-picking-hub) {
+    --upgrade-win: clamp(48px, calc(100vh - var(--lin-top) - 264px - var(--aw-safe-bottom)), 230px);
+  }
+  :root[data-skin="linoryt"] .airway-upgrade-tag { padding-bottom: 14px; }
   :root[data-skin="linoryt"] .airway-upgrade[data-crates="4"] .airway-upgrade-grid { grid-template-columns: minmax(0, 1fr); gap: 0; }
   :root[data-skin="linoryt"] .airway-upgrade[data-crates="4"] .airway-upgrade-value { margin-bottom: 2px; }
   :root[data-skin="linoryt"] .airway-upgrade[data-crates="4"] .airway-upgrade-heading { font-size: calc(11px * var(--airway-text-scale)); gap: 4px; }
