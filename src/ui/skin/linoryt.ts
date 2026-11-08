@@ -69,7 +69,7 @@ export function linorytIcon(name: LinorytSymbol, barbs = 1): string {
 
 // ---- HUD: clock, week, day/passengers, day bar ------------------------------------------------------------------------
 
-interface PassParts { clock: HTMLElement; week: HTMLElement; sub: HTMLElement; cells: HTMLElement[]; now: HTMLElement; bar: HTMLElement; minute: number }
+interface PassParts { clock: HTMLElement; week: HTMLElement; sub: HTMLElement; cells: HTMLElement[]; now: HTMLElement; bar: HTMLElement; minute: number; at: number }
 const passParts = new WeakMap<HTMLElement, PassParts>();
 
 /**
@@ -118,7 +118,7 @@ export function linorytPass(section: HTMLElement, minute: number, week: number, 
     bar.append(row, figures);
     box.append(clock, lines, bar);
     section.querySelector('.airway-pass__ticket')?.appendChild(box);
-    parts = { clock, week: weekLine, sub, cells, now, bar, minute: -1 };
+    parts = { clock, week: weekLine, sub, cells, now, bar, minute: -1, at: -1 };
     passParts.set(section, parts);
     publishPassBottom(section);
   }
@@ -135,7 +135,14 @@ export function linorytPass(section: HTMLElement, minute: number, week: number, 
       });
     }
     parts.minute = minute;
-    parts.now.style.setProperty('--at', (minute / 1440).toFixed(4));
+  }
+  // [night-48a] U6, D-88: with reduce motion the red "now" cut steps once per game hour (to the hour just begun) instead
+  // of creeping every game minute; the switch can change mid-run, so the value is compared, not the minute.
+  const reduce = document.documentElement.dataset['airwayMotion'] === 'reduce';
+  const at = reduce ? Math.floor(minute / 60) * 60 : minute;
+  if (parts.at !== at) {
+    parts.at = at;
+    parts.now.style.setProperty('--at', (at / 1440).toFixed(4));
   }
 }
 
@@ -705,7 +712,7 @@ export function linorytMarkers(tags: readonly TagSlot[]): readonly StampBox[] {
 /** One stamp as the DEV probe reports it (page coordinates of the overlay layer, px). */
 export interface StampProbe { id: string; x: number; y: number; half: number; hub: boolean; visible: boolean }
 /**
- * DEV probe for the browser audits (e2e/linoryt-preview.mjs, the U2 shots): `window.__awLinoryt.stamps()` lists where the
+ * DEV probe for the browser audits (e2e/screen-audit.mjs, the U2 shots): `window.__awLinoryt.stamps()` lists where the
  * notes' layout put each stamp this frame, so the audit checks the printed notes against the same stamps.
  */
 export function linorytProbe(stamps: () => StampProbe[]): void {

@@ -98,8 +98,8 @@
   --skin-slot-ink: var(--lin-ink);
   --skin-slot-stub-bg: var(--lin-ink);
   --skin-slot-stub-ink: var(--lin-paper);
-  /* Full-screen layers: the flat sky stays the globe's (src/render/**, ext session) */
-  --skin-screen-sky: var(--airway-sky);
+  /* Full-screen layers off the globe (the puzzle desk) */
+  --skin-screen-sky: var(--lin-paper); /* [night-48a] U6: the puzzle desk's ground is the paper (was the Diorama sky) */
   /* Pause sheet: an ink panel with a neatline */
   --skin-pause-bg: var(--lin-paper);
   --skin-pause-ink: var(--lin-ink);

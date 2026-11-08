@@ -2,6 +2,7 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
+import { inflateSync } from 'node:zlib';
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const IOS = join(ROOT, 'ios', 'App', 'App');
@@ -94,6 +95,30 @@ function opaquePng(path, width, height) {
 }
 check('opaque 1024x1024 app icon', opaquePng('AppIcon.appiconset/AppIcon-512@2x.png', 1024, 1024));
 check('opaque 2732x2732 splash', opaquePng('Splash.imageset/splash-2732x2732.png', 2732, 2732));
+// [night-48a] PLAN-LINORYT U6 (D-301): the game is printed on light paper, so the app keeps the light appearance (dark
+// status-bar text in Dark Mode too) and the launch image is the mark on the paper (#ECE3CC), not on task 24's black.
+check('light appearance (dark status-bar text on paper)', /<key>UIUserInterfaceStyle<\/key>\s*<string>Light<\/string>/.test(plist));
+function cornerColour(path) {
+  try {
+    const data = readFileSync(join(IOS, 'Assets.xcassets', path));
+    const chunks = {};
+    for (let at = 8; at < data.length;) {
+      const length = data.readUInt32BE(at);
+      const type = data.subarray(at + 4, at + 8).toString('latin1');
+      chunks[type] = Buffer.concat([chunks[type] ?? Buffer.alloc(0), data.subarray(at + 8, at + 8 + length)]);
+      at += 12 + length;
+    }
+    const kind = chunks.IHDR[9];
+    const first = inflateSync(chunks.IDAT).subarray(1, 4); // filter byte, then the top-left pixel
+    const rgb = kind === 3 ? chunks.PLTE.subarray(first[0] * 3, first[0] * 3 + 3) : first;
+    return '#' + [...rgb].map((v) => v.toString(16).padStart(2, '0')).join('');
+  } catch {
+    return '';
+  }
+}
+const paper = read('src/ui/skin/linoryt.css').match(/--lin-paper:\s*(#[0-9A-Fa-f]{6})/)?.[1]?.toLowerCase();
+check('launch image on the Linoryt paper', !!paper && ['', '-1', '-2']
+  .every((n) => cornerColour(`Splash.imageset/splash-2732x2732${n}.png`) === paper));
 check('matching procedural SVG sources', existsSync(join(ROOT, 'ios/Brand/app-icon.svg')) && existsSync(join(ROOT, 'ios/Brand/splash.svg')));
 
 console.log('SUMMARY test:ios-config seed=0xA1A1 checks=' + checks +

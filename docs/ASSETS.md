@@ -162,8 +162,8 @@ distance field and the Imhof shadow (D-298), the plane silhouettes from the skin
 **Removed in E4 (ext/04, D-285):** the production photo textures `day-{4096,2048}.jpg` (NASA Blue Marble NG),
 `night-{2048,1024}.jpg` (NASA Black Marble 2016), `map-{4096,2048}.jpg` (Mapa, D-172) and `clouds-2048.png`
 (procedural), and the DEV comparison textures under `dev/globe-look/assets/` (satellite, painted, map). No NASA
-imagery ships any more, so the "NASA Earth Observatory (Blue Marble, Black Marble)" credit in Settings → Licences can
-go (UI); "NOAA ETOPO5" stays.
+imagery ships any more, so the "NASA Earth Observatory (Blue Marble, Black Marble)" credit left Settings → Licences in U6
+(night 48a, key `licenses.nasaEarth` removed in PL and EN); "NOAA ETOPO5" stays.
 
 ## Art-direction mockups 2026-11b (night 27a, D-282; not shipped)
 `docs/styles/kierunki-2026-11b/fonts/` holds four SIL OFL 1.1 variable fonts, fetched 2026-11-06 straight from

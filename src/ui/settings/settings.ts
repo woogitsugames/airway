@@ -341,7 +341,6 @@ const ASSETS: ReadonlyArray<{name:TranslationKey;license:TranslationKey}>=[
   {name:'licenses.besley',license:'licenses.ofl'}, // [night-46a] D-301: the Linoryt faces
   {name:'licenses.schibsted',license:'licenses.ofl'},
   {name:'licenses.naturalEarth',license:'licenses.publicDomain'},
-  {name:'licenses.nasaEarth',license:'licenses.publicDomain'}, // [ext-03 G1] D-170
   {name:'licenses.noaaRelief',license:'licenses.publicDomain'},
   {name:'licenses.worldAtlas',license:'licenses.isc'},
   {name:'licenses.three',license:'licenses.mit'},

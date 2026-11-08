@@ -1,5 +1,5 @@
 // [night-30a] PLAN-LINORYT.md step U2: the in-page audit of the Linoryt preview's airport notes and edge chips, shared by
-// e2e/linoryt-preview.mjs (test:e2e:linoryt:stub) and scripts/shots-30a.mjs (the U2 shots).
+// e2e/screen-audit.mjs (test:e2e:screen-audit:stub) and scripts/shots-30a.mjs (the U2 shots).
 /**
  * [night-30a] U2: the airport notes and edge chips of the game screen, against the stamps the notes' layout used
  * (`window.__awLinoryt.stamps()`, DEV probe): no shown note over a stamp (the inked square / hub octagon), over another
