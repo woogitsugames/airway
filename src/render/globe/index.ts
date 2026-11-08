@@ -28,7 +28,7 @@ export interface GlobeOptions {
   readonly signal?: AbortSignal;
   /** `SunLights.direction`; drives the night hatch. */
   readonly sunDirection: Vector3;
-  /** The one look (`linoryt`); kept so callers can pass it through. */
+  /** The print (`linoryt`, default) or, DEV only, the NASA preview (`earth`, [night-70a R1]). */
   readonly look?: GlobeLook;
 }
 export interface GlobeInstance {
@@ -106,6 +106,11 @@ export async function createGlobe(scene: Scene, opts: GlobeOptions): Promise<Glo
   const landUrl = opts.landUrl ?? `${import.meta.env.BASE_URL}data/land-50m.json`;
   const mask = await loadLandMask(landUrl, opts.signal);
   if (opts.signal?.aborted) throw new DOMException('Aborted', 'AbortError');
+  // [night-70a R1] D-323: the NASA globe is a DEV preview; the release build drops this branch and its chunk.
+  if (import.meta.env.DEV && opts.look === 'earth') {
+    const { createEarthGlobe } = await import('./earth-globe');
+    return createEarthGlobe(scene, mask, { quality: opts.quality, sunDirection: opts.sunDirection, signal: opts.signal });
+  }
   const { createLinorytGlobe } = await import('./linoryt-globe');
   return createLinorytGlobe(scene, mask, { quality: opts.quality, sunDirection: opts.sunDirection, signal: opts.signal });
 }

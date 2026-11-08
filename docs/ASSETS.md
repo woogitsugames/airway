@@ -151,39 +151,36 @@ No external images or fonts were used. Sources match task 24 PR #12 as of this c
 
 [N11ae] R2e, D-219: `site/assets/shots/{pl,en}/<scene>-landscape.jpg` are project-made 960×540 JPEG downscales of our own `docs/store/shots/<lang>/<scene>-landscape.png`; `site/assets/press/airway-wordmark.png` (1920×520) and `airway-icon.png` (1024×1024) are PNG renders of our own `brand/wayfinding.svg` (with the OFL Overpass 800 already listed) and `resources/icon.svg`, all made by `npm run site:assets`. The press kit ZIP (`site/dist/airway-press-kit.zip`, built, not committed) contains only these project files and the store PNGs; no third-party image.
 
-## Globe data (D-170 → E4, D-285 → D-323)
-`public/data/globe/` ships one file, checked by `npm run test:globe-assets` against `manifest.json` (SHA-256, size,
-format, 2:1 power-of-two dimensions, cap 350 kB) and against any source that still asks for a removed texture.
+## Globe data (D-170 → E4, D-285 → D-323, D-325)
+`public/data/globe/` holds five files, checked by `npm run test:globe-assets` against `manifest.json` (SHA-256, size,
+format, 2:1 power-of-two dimensions, a cap per file) and against any source that still asks for a removed texture.
 
 | File | Source | Licence |
 |---|---|---|
 | `elevation-2048.png` | NOAA NGDC **ETOPO5** 5-arc-minute relief (`ETOPO5.DAT`, `https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO5/TOPO/ETOPO5/ETOPO5.DAT`, downloaded 2026-11-03), land only, sqrt-encoded 8 bit `m = (v/255)² · 8000`; baked by `python3 -I dev/globe-look/bake.py <downloads> elevation` | Public domain (US Government work, NOAA) |
+| `day-4096.webp` (529 kB), `day-2048.webp` (172 kB) | **NASA Blue Marble Next Generation**, topography + bathymetry, **July 2004** (D-176), `https://assets.science.nasa.gov/content/dam/science/esd/eo/images/bmng/bmng-topography-bathymetry/july/world.topo.bathy.200407.3x5400x2700.jpg` (5400×2700, 8 km/px), downloaded 2026-11-08; resized (Lanczos) and saved as WebP q80 by `python3 -I dev/globe-look/bake-earth.py <downloads>`; the grading is in the shader | Public domain (US Government work, NASA Earth Observatory; NASA logos and insignia excluded, none used) |
+| `night-2048.webp` (60 kB), `night-1024.webp` (18 kB) | **NASA Black Marble 2016**, colour, `https://assets.science.nasa.gov/content/dam/science/esd/eo/images/imagerecords/144000/144898/BlackMarble_2016_3km.jpg` (13500×6750, Visible Earth record 144898; data VIIRS / Suomi NPP, M. Román, J. Stevens), downloaded 2026-11-08; resized, WebP q78, same script; the city lights are split from the blue base in the shader | Public domain (as above) |
 
-The Linoryt print (D-283) draws everything else from this raster and the Natural Earth land raster at load: the coast
-distance field and the Imhof shadow (D-298), the plane silhouettes from the skin's own icon paths (D-299).
-**Removed in E4 (ext/04, D-285):** the production photo textures `day-{4096,2048}.jpg` (NASA Blue Marble NG),
-`night-{2048,1024}.jpg` (NASA Black Marble 2016), `map-{4096,2048}.jpg` (Mapa, D-172) and `clouds-2048.png`
-(procedural), and the DEV comparison textures under `dev/globe-look/assets/` (satellite, painted, map). No NASA
-imagery ships any more, so the "NASA Earth Observatory (Blue Marble, Black Marble)" credit left Settings → Licences in U6
-(night 48a, key `licenses.nasaEarth` removed in PL and EN); "NOAA ETOPO5" stays.
+[night-70a R1] D-325: WebP was chosen by measurement (the same four textures as JPEG q82–84 weigh 1 506 kB, as WebP
+q78–80 778 kB, no visible difference at the game zoom; WebP decodes in every supported WebView: the Chromium Android System WebView and WKWebView on iOS 15+, the deployment target).
+`eoimages.gsfc.nasa.gov` serves the same files but drops long transfers through the agent proxy; use assets.science.nasa.gov.
+The 500 m/px Blue Marble tiles (`…3x21600x21600.{A1…D2}.jpg`) are not used: the 4096 level comes from the 5400 image
+(an option for `high` only after a memory measurement on a device).
 
-**Returning with D-323 (owner, 2026-11-08; not shipped yet, stages R1–R2 of
-`docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md`).** The realistic globe brings NASA imagery back as the one look
-(not a mode). Planned files under `public/data/globe/`, each to get a row in the table above, a `manifest.json` entry
-(SHA-256, size, format) and the `test:globe-assets` cap raised per file when it lands:
-
-| Planned file | Source | Licence |
-|---|---|---|
-| `day-{4096,2048}.{webp,jpg}` | **NASA Blue Marble Next Generation**, topography + bathymetry, **July 2004** (D-176), `world.topo.bathy.200407.3x5400x2700.jpg` (8 km/px) and, for the 4096 level, the 500 m/px tiles `…3x21600x21600.{A1…D2}.jpg` from assets.science.nasa.gov (`…/bmng/bmng-topography-bathymetry/july/`); own grading and resize, URL and download date recorded at bake time | Public domain (US Government work, NASA Earth Observatory; NASA logos and insignia excluded, none used) |
-| `night-{2048,1024}.{webp,jpg}` | **NASA Black Marble 2016**, colour (`BlackMarble_2016_3km.jpg`, 13500×6750, Visible Earth record 144898; data VIIRS / Suomi NPP, M. Román, J. Stevens); resized | Public domain (as above) |
-| `elevation-2048.png` | unchanged (NOAA ETOPO5) | Public domain (NOAA) |
-
-Credit: Settings → Licences regains "NASA Earth Observatory (Blue Marble, Black Marble)" (key `licenses.nasaEarth`, PL
-and EN) in the same PR that ships the first NASA file. The previous production textures are still in git history
-(`git show 79d9001^:public/data/globe/day-4096.jpg` etc.; Blue Marble July 2004) and may be reused if their grading
-fits. Never shipped: tiles or screenshots of Google Earth/Maps, Apple Maps, Mapbox, Cesium Ion, Flightradar24 (look
-references only, D-323). Borders and labels stay vector Natural Earth via `world-atlas`. The 2026-11c mockups fetch
-their own textures into a git-ignored folder (section "Art-direction mockups 2026-11c", added by PR #346).
+**Preview, not shipped yet.** The NASA globe (`?look=earth`) is a DEV preview until the flip (PLAN-NOWY-KIERUNEK.md R5),
+so a release build leaves the four photo textures out of `dist/` (`PREVIEW_GLOBE_FILES` in
+`scripts/vite-globe-preview.mjs`, checked by `npm run test:bundle`) and the apps do not carry them; Settings → Licences
+regains "NASA Earth Observatory (Blue Marble, Black Marble)" (key `licenses.nasaEarth`, PL and EN) in the PR that ships
+them (the flip). The Linoryt print (D-283) still draws everything from the elevation raster and the Natural Earth land
+raster at load: the coast distance field and the Imhof shadow (D-298), the plane silhouettes from the skin's own icon
+paths (D-299).
+**Removed in E4 (ext/04, D-285) and still forbidden:** `map-{4096,2048}` (Mapa, D-172), `clouds-2048.png`
+(procedural), the old JPEG names `day-{4096,2048}.jpg` / `night-{2048,1024}.jpg` (the E4 night files were lights only;
+R1 needs the blue base) and the DEV comparison textures under `dev/globe-look/assets/`. The old production textures are in
+git history (`git show 79d9001^:public/data/globe/day-4096.jpg` etc.). Never shipped: tiles or screenshots of Google
+Earth/Maps, Apple Maps, Mapbox, Cesium Ion, Flightradar24 (look references only, D-323). Borders and labels stay vector
+Natural Earth via `world-atlas`. The 2026-11c mockups fetch their own textures into a git-ignored folder (section
+"Art-direction mockups 2026-11c", added by PR #346).
 
 ## Art-direction mockups 2026-11b (night 27a, D-282; not shipped)
 `docs/styles/kierunki-2026-11b/fonts/` holds four SIL OFL 1.1 variable fonts, fetched 2026-11-06 straight from

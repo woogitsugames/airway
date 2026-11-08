@@ -158,7 +158,8 @@ await check('no other network path in src/: fetch only for bundled assets, no be
   const files = [];
   const walk = (dir) => { for (const name of readdirSync(dir)) { const p = join(dir, name); statSync(p).isDirectory() ? walk(p) : /\.(ts|js)$/.test(name) && files.push(p); } };
   walk(join(ROOT, 'src'));
-  const ASSET_FETCH = ['src/render/globe/land-mask.ts', 'src/render/globe/look.ts', 'src/render/globe/linoryt-globe.ts']; // [ext-04] elevation-2048.png
+  const ASSET_FETCH = ['src/render/globe/land-mask.ts', 'src/render/globe/look.ts', 'src/render/globe/elevation.ts', // [ext-04] elevation-2048.png ([night-70a] shared)
+    'src/render/globe/earth-globe.ts']; // [night-70a R1] D-325: bundled NASA textures (public/data/globe/)
   for (const file of files) {
     const rel = relative(ROOT, file).replaceAll('\\', '/');
     const text = readFileSync(file, 'utf8');

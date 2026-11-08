@@ -3715,6 +3715,42 @@ the PL/EN board strings and the HUD slot); `dist/` 1,997.3 → 1,998.5 kB. The C
 cases: no flap fold under reduce motion), shots `docs/shots/t1/` (`npm run shots:board`, real renderer).
 **Status:** preview; the owner sees it with T1+R1 (plan §7 gate) before T2.
 
+## D-325 — The NASA globe behind the DEV `?look=earth` preview: WebP textures, terminator from the game clock, presets, lazy chunk (2026-11-08, Claude, night 70a)
+Step R1 of `docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md` (D-323), done by an agent with the owner's consent (no
+ext session). Nothing the release ships changes.
+**Preview.** A DEV build with `?look=earth` (or `?skin=board`, which now turns it on unless `?look=linoryt` is given;
+the T1 item D-324 left for this stage) passes `look: 'earth'` to the renderer (`src/game/world.ts`); `createGlobe`
+loads `src/render/globe/earth-globe.ts` with a dynamic import behind `import.meta.env.DEV`, so a release build emits
+no chunk for it. `GlobeLook` is `'linoryt' | 'earth'`, the default stays `'linoryt'`. The Linoryt stamps, ribbons and
+silhouettes still draw on top (R3 replaces them); the paper sky is swapped for the K2 space `#010306` while the earth
+globe is mounted.
+**Shader** (after `makiety/src/globe.js`, on the existing terrain mesh and LOD, one texture-gradient lookup per map so
+the antimeridian has no mip seam): Blue Marble NG **July 2004** (D-176) with our own grading (saturation 0.84 on land,
+0.80 on water, gamma 0.92, deep water cooled); Black Marble 2016 by night with the city lights split from its blue
+base; the terminator from `SunLights.direction`, i.e. the existing `SunController` (game day clock, November
+declination D-63), so day and night follow game time and the sim is untouched (P1: "night by default" is the look of
+the menu/chrome, R4); a narrow warm dusk band (≈ −11° … +9° sun elevation) that only tints the lit colour; relief
+from `elevation-2048.png` as a normal tilt for the direct light (RG8 gradient built at load); limb haze on the lit
+side only. Pure weights and presets in `src/render/globe/earth.ts` (mirrored by the shader, tested headless).
+**Presets** (D-73/D-116): low and saver: day 2048 + night 1024, no glint, no shell, no stars; medium: starts on
+2048/1024 and swaps to 4096/2048 after the first frame (decoded with `createImageBitmap` off the render thread), faint
+star field; high: medium + sun glint on the sea + a thin additive atmosphere shell (strength 0.75, radius 1.02, no
+neon). Context loss: three.js re-uploads from the kept bitmaps (`contextGuard.ts` unchanged).
+**Textures.** `public/data/globe/day-{4096,2048}.webp`, `night-{2048,1024}.webp`, baked by
+`dev/globe-look/bake-earth.py` from assets.science.nasa.gov (public domain, `docs/ASSETS.md`). WebP by measurement:
+778 kB against 1,506 kB as JPEG at equal quality. `test:globe-assets` caps each file (~10 % over the bake) instead of
+the old 350 kB total and forbids Mapa, clouds and the old JPEG names. While the look is a preview, a release leaves the
+four files out of `dist/` (`scripts/vite-globe-preview.mjs`, `PREVIEW_GLOBE_FILES`, checked by `test:bundle`); the
+flip (R5) empties the list and adds the NASA credit to Settings → Licences.
+**Budgets.** Release CSS 129.0 → 129.0 kB and main JS 1,054.9 → 1,054.9 kB raw (gzip 314.7; no earth code reaches the release);
+`dist/` 1,998.5 → 1,999.8 kB (the longer `manifest.json`). At the flip the four textures add 778 kB and the earth chunk
+a few kB: `dist/` ≈ 2.79 MB, inside the 4,300 kB `total` budget (no new budget needed). SwiftShader `perf:scene`
+(412×915, never compared with devices): draw calls 13/14/15 on low/medium/high (Linoryt 14), render CPU p95 1.1 ms
+(Linoryt 1.3–1.6), delivered fps ≈ 21–22 against Linoryt's 27–28 (the photo shader costs fill rate on a CPU
+rasteriser; a device measurement before T6 decides whether medium needs a cheaper path). GPU memory: day 4096 ≈ 43 MB
+with mipmaps, night 2048 ≈ 11 MB, relief RG8 ≈ 5 MB; low ≈ 18 MB in all.
+**Status:** preview; the owner sees it with T1 (plan §7 gate) before T2/R2.
+
 ## D-326 — App mark: I-1 "Węzeł" (double hub ring + yellow D-08 bow-tie glyph) (owner, 2026-11-08)
 The owner rejected the earlier marks (D-317 proposals A/B/C, 2026-11b) and chose, from the six 2026-11c sketches
 (`docs/styles/kierunki-2026-11c/znak/`, ZNAK-2026-11c.md), the variant **I-1 Węzeł**: the hub's double ring in paper

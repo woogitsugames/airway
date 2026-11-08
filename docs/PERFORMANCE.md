@@ -337,6 +337,31 @@ Not done: WOFF2 fonts (about −40 % of the 624 kB TTF; OFL allows the conversio
 entry) — a size win only, no parse-time effect.
 
 
+## R1 — NASA globe preview `?look=earth` (2026-11-08, D-325)
+DEV-only until the flip; the release is unchanged (main JS 1,054.9 kB, CSS 129.0 kB, `dist/` 1,998.5 → 1,999.8 kB:
+the longer `manifest.json`). Presets: low/saver day 2048 + night 1024, no glint, no shell, no stars; medium starts on
+2048/1024 and swaps to 4096/2048 after the first frame (`createImageBitmap`, off the render thread); high = medium +
+sea glint + atmosphere shell (one additive transparent draw, the only full-screen transparent layer). GPU memory of
+the textures: low ≈ 18 MB (day 2048 ≈ 11 MB with mipmaps, night 1024 ≈ 3 MB, relief RG8 2048 ≈ 5 MB), medium/high ≈
+59 MB (day 4096 ≈ 43 MB, night 2048 ≈ 11 MB, relief) — a device measurement on a budget phone decides before T6.
+At the flip `dist/` grows by the 778 kB of WebP textures plus the earth chunk: ≈ 2.79 MB, inside `total` 4,300 kB.
+
+`npm run perf:scene` (SwiftShader, 412×915, DPR 1, 120 s at 4×; for the comparison with `dev` only, never with
+devices):
+
+| Run | Draw calls | Triangles | Render CPU p95 | Delivered fps (idle/active) | Frames |
+|---|---|---|---|---|---|
+| Linoryt low | 14 | 38,930 | 1.4 ms | 27.8 / 26.9 | 3,276 |
+| Linoryt medium | 14 | 38,930 | 1.6 ms | 26.6 / 27.3 | 3,234 |
+| Linoryt high | 14 | 38,930 | 1.3 ms | 26.9 / 28.7 | 3,335 |
+| `--look earth` low | 13 | 38,928 | 1.1 ms | 20.3 / 22.4 | 2,564 |
+| `--look earth` medium | 14 | 38,880 | 1.1 ms | 21.3 / 22.5 | 2,626 |
+| `--look earth` high | 15 | 47,952 | 1.1 ms | 21.0 / 22.2 | 2,593 |
+
+CPU per frame is the same or lower (no print sky band); the ~20 % fewer delivered frames are fill rate (three texture
+lookups per fragment on a CPU rasteriser). Draw calls stay far under 50 on every preset (`docs/shots/r1/`: 11–18 on
+`dev/globe.html`).
+
 ## Linoryt high preset — medium's terrain (2026-11-08, D-316)
 The print shades from the direction of the sphere (`normalize(vAwWorld)`), not from the facets, so the finest terrain
 mesh only moved relief fragments by a pixel. `high` now uses the `medium` / `low` meshes (`TERRAIN_LOD_LEVELS`) and

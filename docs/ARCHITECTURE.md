@@ -140,7 +140,8 @@ One renderer stack, one entry point: `createWorldRenderer(canvas?, opts)` in
 single `WebGLRenderer`, `Scene`, light rig (subsolar `DirectionalLight` + sky
 `HemisphereLight`, `globe/createSunLights`), quality profile (`quality.ts`, D-33) and
 `GlobeOrbitCamera`. Layers: the Linoryt globe (`globe/`, print material and paper sky band in the lazy
-`globe/linoryt-globe.ts`), and in the lazy `linoryt-objects.ts` the airport stamps with the jam zone,
+`globe/linoryt-globe.ts`; [night-70a R1] D-325 the DEV-only NASA preview `?look=earth` in the lazy `globe/earth-globe.ts`,
+presets and terminator weights in `globe/earth.ts`, the shared elevation decode in `globe/elevation.ts`), and in the lazy `linoryt-objects.ts` the airport stamps with the jam zone,
 one route ribbon, the dashed route preview and the plane sprites (contracts in `airports.ts`,
 `routes.ts`, `routePreview.ts`, `planes.ts`; the arc model in `routes.ts`, D-299/D-302). All lon/lat → cartesian math goes through
 `globe/geo-math.ts` (`setLatLonVec3` writes into a caller vector; `latLonToVec3` allocates).
