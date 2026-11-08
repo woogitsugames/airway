@@ -3280,7 +3280,31 @@ E4 stays small enough to review. (3) The D-177 contrast probe (`measureLayerCont
 the Linoryt stamp, ribbon and sprite groups (dev world, zoom 3.3, low: routes 4.6/5.5, airports 3.3/2.8, planes
 1.8/2.0 by day/night); the thresholds for the print are U6's (D-47 pass). **Status: in force.**
 
-## D-303 — Linoryt U6: contrast and CVD on paper, ochre and the night hatch; reduce motion steps the "now" cut; paper system bars; inks written in place; CSS budget 130 kB (2026-11-08, Claude, night 48a)
+## D-303 — The D-177 probe reads a print symbol by its ink against its own paper rim; the jam ring gets a paper rim (2026-11-08, Claude, ext session)
+The coordinator asked for the night contrast of the render layers after E4 (probe: airports 2.8, planes 2.0 against
+the ≥ 3:1 target). **Finding.** The Linoryt stamps, plane silhouettes and route lines are an ink body inside a paper
+outline 1.5–2 px wide; the D-177 probe compared the interior's median pixel with the anti-aliased rim, and most of
+the interior is still outline (paper against paper), so it reported 2–3 although the body is ink on paper (13.2:1)
+— the screenshots read clearly by day and at night. **Choice.** (1) The probe's core contrast is the ratio of the
+light and dark ends of the interior (90th / 10th percentile of the non-rim pixels): ink : paper for an outlined
+symbol, ~1 for a one-colour symbol (which must then stand off the ground by its edge, as before). (2) The probe
+measures the stamps and the jam zone as separate layers (`airports`, `jam`). (3) The jam ring and countdown arc sit on
+a 1.5 px paper rim like the stamps: the zone measured 1.3 (red hatch on blue sea and night hatch), now 4.3 (red on
+paper). Measured (dev world, zoom 3.3, low; day / night): routes 13.2 / 13.2, stamps 13.2 / 13.2, jam 4.3 / 4.3,
+planes 13.2 / 13.2; the outer edge against the globe stays 1.5–2.1 (the paper rim on ochre), which is the
+separation band, not the symbol. Rejected: darker or wider rims to raise the edge number (they would only move the
+grey AA pixels), dropping the paper rim (ink on night hatch would merge). **Status: in force; U6 sets the thresholds
+of its D-47 pass on these numbers.**
+
+## D-304 — Linoryt plane silhouettes 28 / 32 px with a 2.5 px paper rim (2026-11-08, Claude, ext session)
+On the night frames of #319 the planes (spec §7: 22 / 26 px, 1.5 px paper rim) read as small crosses between the
+route lines on the cross-hatched land (coordinator's review). **Choice.** Turboprop 28 px, widebody 32 px, paper rim
+2.5 px (the load bar's rim 1.5 px); the sprite quad grows from 46 to 56 px. Same draw (one instanced sprite pass), same
+atlas (the 16-texel SDF range covers the wider rim at both sizes). Stamps stay 22 / 30 px, so a plane is still smaller
+than a hub and the network hierarchy holds. Rejected: a solid paper disc behind each plane (reads as a stamp), more
+contrast in the hatch around planes (needs plane positions in the terrain shader). **Status: in force.**
+
+## D-305 — Linoryt U6: contrast and CVD on paper, ochre and the night hatch; reduce motion steps the "now" cut; paper system bars; inks written in place; CSS budget 130 kB (2026-11-08, Claude, night 48a)
 Step U6 of `docs/styles/kierunki-2026-11b/PLAN-LINORYT.md` (D-47, D-88, D-177, D-301).
 **Contrast (D-47/D-177).** `test:contrast` now holds the Linoryt pairs (ten UI ink text pairs, `LINORYT_INKS` of
 `src/render` equal to the UI inks, note text on its own paper ground over ochre land, blue sea, the night hatch and the

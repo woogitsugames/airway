@@ -197,7 +197,7 @@ medium/high ≤ 2 (G4). "Shots" = PNGs to inspect against the CLAUDE.md forbidde
   game hour.
 - Text scale (D-248/D-267), RTL-safe layout of the index (future), `test:e2e:notch`, `ui:matrix` on the real renderer.
 - Budget: CSS budget lowered to the measured value + 3 kB.
-- **Status: done (night 48a, draft PR to `dev`, D-303):** `test:contrast` +25 Linoryt pairs, `test:cvd` glyphs on paper
+- **Status: done (night 48a, draft PR to `dev`, D-305):** `test:contrast` +25 Linoryt pairs, `test:cvd` glyphs on paper
   and ochre, `test:e2e:linoryt-contrast` (real frames: 18 notes, 19 stamps; night stamps WARN only, render follow-ups in
   the PR), the "now" cut steps per game hour (`test:e2e:reduce-motion-game:stub`), paper system bars on Android and iOS,
   inks written in place (CSS 129.4 → 127.4 kB, budget 132 → 130 kB), board layouts, `test:e2e:screen-audit:stub`

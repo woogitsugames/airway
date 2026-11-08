@@ -27,8 +27,12 @@ export const JAM_ZONE_FACTOR = 3;
 export const ROUTE_WIDTH_PX: Readonly<Record<AircraftKind, readonly [number, number]>> = {
   turboprop: [5, 2], widebody: [6.5, 2.5],
 };
-/** §7 Plane silhouettes, CSS px; load bar length at a full plane. */
-export const PLANE_SIZE_PX: Readonly<Record<AircraftKind, number>> = { turboprop: 22, widebody: 26 };
+/**
+ * §7 Plane silhouettes, CSS px; load bar length at a full plane. D-304: 28 / 32 px (spec 22 / 26) with a 2.5 px paper rim
+ * (spec 1.5): at zoom 2 the smaller cut read as a cross between the route lines on the night hatch.
+ */
+export const PLANE_SIZE_PX: Readonly<Record<AircraftKind, number>> = { turboprop: 28, widebody: 32 };
+export const PLANE_RIM_PX = 2.5;
 export const PLANE_LOAD_BAR_PX = 18;
 /** §6 A new route draws itself from start to end in this many ms (instant with reduce motion). */
 export const ROUTE_REVEAL_MS = 200;
@@ -179,6 +183,7 @@ void main() {
 // A function, not a constant: interpolated values would keep this module in a release build.
 const JAM_FRAGMENT = (): string => /* glsl */ `
 uniform vec3 uRed;
+uniform vec3 uPaper;
 varying vec2 vPx;
 varying vec2 vJam;
 void main() {
@@ -193,10 +198,15 @@ void main() {
   float angle = atan(vPx.x, vPx.y);
   if (angle < 0.0) angle += 6.2831853;
   float band = clamp((3.0 - abs(r - R - 6.0)) / aa + 0.5, 0.0, 1.0);
-  float arc = band * clamp((vJam.y * 6.2831853 - angle) * r / aa + 0.5, 0.0, 1.0);
-  float alpha = max(hatch, max(ring, arc));
+  float arcOn = clamp((vJam.y * 6.2831853 - angle) * r / aa + 0.5, 0.0, 1.0);
+  float arc = band * arcOn;
+  // D-303: the ring and the arc sit on a 1.5 px paper rim (like the stamps), so they read on blue sea and night hatch.
+  float rim = max(clamp((3.0 - abs(r - R)) / aa + 0.5, 0.0, 1.0),
+    clamp((4.5 - abs(r - R - 6.0)) / aa + 0.5, 0.0, 1.0) * arcOn);
+  float red = max(hatch, max(ring, arc));
+  float alpha = max(red, rim);
   if (alpha <= 0.0) discard;
-  gl_FragColor = vec4(uRed, alpha);
+  gl_FragColor = vec4(mix(uPaper, uRed, red), alpha);
   #include <colorspace_fragment>
 }`;
 
@@ -217,6 +227,9 @@ export interface StampLayer extends AirportsLayer {
   /** Half the stamp's side in CSS px (constant on screen), or 0 for an unknown airport. */
   halfSize(id: string): number;
   readonly stats: { readonly stamps: number; readonly jams: number };
+  /** The stamp and jam-zone meshes, measured separately by the D-177 contrast probe (D-303). */
+  readonly stampMesh: Mesh;
+  readonly jamMesh: Mesh;
 }
 
 function instancedQuad(maxInstances: number, attributes: Record<string, number>): {
@@ -328,6 +341,7 @@ export function createStampLayer(scene: Scene, uniforms: SharedUniforms, maxAirp
       rebuild();
     },
     get stats() { return { stamps: records.size, jams: jamCount }; },
+    stampMesh, jamMesh,
     dispose(): void {
       if (disposed) return;
       disposed = true;
@@ -693,7 +707,7 @@ void main() {
   vec2 d = (f.xy / f.w - c.xy / c.w) * uViewport;
   vAngle = atan(d.y, d.x);
   vMeta = aMeta;
-  vPx = position.xy * 46.0;
+  vPx = position.xy * 56.0;
   if (!awFacing(aPos)) { gl_Position = vec4(2.0, 2.0, 2.0, 1.0); return; }
   gl_Position = awOffset(c, vPx);
 }`;
@@ -720,7 +734,7 @@ void main() {
     d = (texture2D(uAtlas, uv).r - 0.5) * ${(2 * ATLAS_RANGE).toFixed(1)} * size / ${(100 * ATLAS_SCALE).toFixed(3)};
   }
   float ink = clamp(0.5 - d / aa, 0.0, 1.0);
-  float paper = clamp(0.5 - (d - 1.5) / aa, 0.0, 1.0); // 1.5 px paper outline
+  float paper = clamp(0.5 - (d - ${PLANE_RIM_PX.toFixed(1)}) / aa, 0.0, 1.0); // paper rim (D-304)
   // Load: a 2 px ink bar under the silhouette, load/capacity × ${PLANE_LOAD_BAR_PX} px (screen-aligned).
   float barY = -size * 0.5 - 5.0;
   float len = vMeta.y * ${PLANE_LOAD_BAR_PX.toFixed(1)};
@@ -728,7 +742,7 @@ void main() {
   vec2 e = abs(b) - vec2(len * 0.5, 1.0);
   float bar = len > 0.0 ? length(max(e, 0.0)) + min(max(e.x, e.y), 0.0) : 1e3;
   ink = max(ink, clamp(0.5 - bar / aa, 0.0, 1.0));
-  paper = max(paper, clamp(0.5 - (bar - 1.0) / aa, 0.0, 1.0));
+  paper = max(paper, clamp(0.5 - (bar - 1.5) / aa, 0.0, 1.0));
   float alpha = max(paper, ink);
   if (alpha <= 0.0) discard;
   gl_FragColor = vec4(mix(uPaper, uInk, ink), alpha);

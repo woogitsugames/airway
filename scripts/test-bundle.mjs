@@ -22,7 +22,7 @@ export const BUDGET = Object.freeze({
   mainJsGzip: 360 * KB, // measured 307.0 kB on 2026-11-03, 347.8 kB on 2026-11-05 (the same gzip/raw ratio, 0.302)
   // [night-11az] D-258: 90 -> 109 kB (owner-approved ceiling) for the Róża structure over the component CSS.
   // [night-46a] D-297/D-301: 109 -> 132 kB at the Linoryt flip (U5): the measured release CSS after it (129.0 kB) + 3 kB.
-  // [night-48a] D-303 (U6): 132 -> 130 kB: the inks written in place (126.8 kB), then the U6 fixes, 127.4 kB measured + ~3 kB.
+  // [night-48a] D-305 (U6): 132 -> 130 kB: the inks written in place (126.8 kB), then the U6 fixes, 127.4 kB measured + ~3 kB.
   css: 130 * KB, // measured 70.2 kB, all CSS files together; 88.8 kB on 2026-11-05 with the skin inlined (D-252); 107.2 kB with Róża; 129.0 kB with Linoryt (2026-11-08); 127.4 kB after U6
   // [ext-03 G1] D-171: + ~1.8 MB globe textures (public/data/globe/, test:globe-assets) and ~0.55 MB for Mapa (G8).
   total: 4300 * KB, // measured 1,804.8 kB before G1, every file under dist/ (fonts, land mask, licences, globe)

@@ -193,6 +193,18 @@ try {
   check(outlined && outlined.core > 4.5 && outlined.ratio >= outlined.core && outlined.edge < 2,
     'outlined symbol: core vs outline counts (D-177) ' + JSON.stringify(outlined));
   check(plain === null || plain.ratio < 1.5, 'a light disc on a light ground stays unreadable (D-177)');
+  // [ext-04] D-303: a print stamp (ink body in a 3 px paper rim) on ochre reads by ink : paper inside the rim; a
+  // one-colour symbol has core ≈ 1 and must stand off the ground by its edge.
+  const ochre = new Uint8Array(W * W * 4); for (let i = 0; i < W * W; i++) ochre.set([210, 156, 71, 255], i * 4);
+  const stamp = ochre.slice(), flat = ochre.slice();
+  for (let y = 0; y < W; y++) for (let x = 0; x < W; x++) {
+    const d = Math.max(Math.abs(x - 20), Math.abs(y - 20));
+    if (d < 12) stamp.set(d >= 9 ? [236, 227, 204] : [30, 28, 31], (y * W + x) * 4);
+    if (d < 12) flat.set([30, 28, 31], (y * W + x) * 4);
+  }
+  const printed = layerContrast(stamp, ochre, 24, 20, W), oneInk = layerContrast(flat, ochre, 24, 20, W);
+  check(printed && printed.core > 10 && printed.ratio >= 3, 'print stamp: ink vs its paper rim > 10:1 (D-303) ' + JSON.stringify(printed));
+  check(oneInk && oneInk.core < 1.2 && oneInk.edge > 4, 'one-colour symbol: core ≈ 1, read by its edge ' + JSON.stringify(oneInk));
 
   // Menu decorative network: sets and clears its own layers; planes advance on a private clock.
   const calls = [];
@@ -278,6 +290,7 @@ try {
     check(/sdOctagon/.test(stampFrag) && /sdBox/.test(stampFrag) && /abs\(outer \+ 1\.25\) - 1\.25/.test(stampFrag),
       'stamp SDF: octagon hub, square airport, 2.5 px outline when closed');
     check(/atan\(vPx\.x, vPx\.y\)/.test(jamFrag) && /vJam\.y \* 6\.2831853/.test(jamFrag), 'jam arc from 12 o\'clock, clockwise, length = share');
+    check(/mix\(uPaper, uRed, red\)/.test(jamFrag), 'jam ring and arc sit on a paper rim (D-303)');
     // Palette (L5): the route ribbon, the preview and the planes never use red.
     const routes2 = new lino.LinorytRouteLayer(objects);
     routes2.setRoutes([{ id: 'r', type: 'widebody', waypoints: [{ lon: -0.1, lat: 51.5 }, { lon: -74, lat: 40.7 }] },

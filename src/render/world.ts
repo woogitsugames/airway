@@ -505,8 +505,10 @@ export function createWorldRenderer(
     },
     measureLayerContrast() {
       camera.updateMatrixWorld();
-      return measureLayerContrast(renderer, scene, camera,
-        { routes: routes.group, airports: airports.group, planes: planes.group });
+      // [ext-04] D-303: stamps and the jam zone apart (the zone is a hatch, not a symbol).
+      return measureLayerContrast(renderer, scene, camera, linorytObjects
+        ? { routes: routes.group, airports: linorytObjects.airports.stampMesh, jam: linorytObjects.airports.jamMesh, planes: planes.group }
+        : { routes: routes.group, airports: airports.group, planes: planes.group });
     },
     sampleLuminance(rects) {
       camera.updateMatrixWorld();
