@@ -39,8 +39,8 @@ variable syntax; the script selects `gradlew.bat` automatically.
 
 If you only want to refresh icons/splash without Android SDK, use
 `npm run android:assets`. This generates 5 densities each of legacy launcher,
-round launcher and adaptive foreground PNG, plus `drawable-nodpi/splash.png`,
-all from original repository SVG. Regenerated PNGs are intentionally ignored
+round launcher, adaptive foreground and monochrome (themed icon) PNG, plus `drawable-nodpi/splash.png`,
+all from the mark I-1 (D-333, `scripts/icon-assets.mjs`; the adaptive background is `@color/airway_enamel`). Regenerated PNGs are intentionally ignored
 by Git to avoid keeping duplicate binary assets; **run the npm script before
 opening the native project in Android Studio on a new checkout**.
 

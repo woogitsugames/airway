@@ -116,9 +116,14 @@ function cornerColour(path) {
     return '';
   }
 }
-const paper = read('src/ui/skin/linoryt.css').match(/--lin-paper:\s*(#[0-9A-Fa-f]{6})/)?.[1]?.toLowerCase();
-check('launch image on the Linoryt paper', !!paper && ['', '-1', '-2']
-  .every((n) => cornerColour(`Splash.imageset/splash-2732x2732${n}.png`) === paper));
+// [night-78a] Z, D-333: the launch image is the app mark I-1 on the black enamel of the mark (D-326), not on the paper.
+const enamel = read('resources/icon.svg').match(/<rect[^>]*fill="(#[0-9A-Fa-f]{6})"/)?.[1]?.toLowerCase();
+check('launch image on the mark enamel', enamel === '#0e0f0f' && ['', '-1', '-2']
+  .every((n) => cornerColour(`Splash.imageset/splash-2732x2732${n}.png`) === enamel));
+const iconSet = JSON.parse(read('ios/App/App/Assets.xcassets/AppIcon.appiconset/Contents.json')).images;
+check('icon set: default, dark and tinted 1024, all opaque', iconSet.length === 3 &&
+  ['dark', 'tinted'].every((value) => iconSet.some((image) => image.appearances?.[0]?.value === value)) &&
+  iconSet.every((image) => image.size === '1024x1024' && opaquePng('AppIcon.appiconset/' + image.filename, 1024, 1024)));
 check('matching procedural SVG sources', existsSync(join(ROOT, 'ios/Brand/app-icon.svg')) && existsSync(join(ROOT, 'ios/Brand/splash.svg')));
 
 console.log('SUMMARY test:ios-config seed=0xA1A1 checks=' + checks +
