@@ -50,6 +50,14 @@ try {
         await page.waitForTimeout(800);
         await checkActions(page, label + ' (3 departures)', width, height, 3);
         await page.screenshot({ path: resolve(SHOTS, `gameover-4-${language}-${width}x${height}.png`) });
+        // [night-58a] N58a: an Endless run with a home region and licence class III adds two fact lines; at 360×640 PL
+        // the report opened scrolled (13 of 46 px) with the sign cut off. (320×568 still scrolls 15 px: left open.)
+        if (width >= 360) {
+          await page.goto(url + '?preview=gameover&region=EUS&licence=3&contracts=00', { waitUntil: 'load' });
+          await page.getByTestId('game-over').waitFor({ timeout: 8000 });
+          await page.waitForTimeout(800);
+          await checkActions(page, label + ' (3 departures, region, class III)', width, height, 3);
+        }
         if (errors.length) throw new Error(`Browser errors: ${errors.join('; ')}`);
         results.push({ label, status: 'PASS' });
       } catch (error) {
