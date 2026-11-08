@@ -22,8 +22,8 @@ GPU raster time/overdraw, sustained frame rate and thermal throttling. The
 Provisional *mid-range* per-frame breakdown: simulation <= 2 ms,
 input/HUD/DOM <= 2 ms, render-side animation and draw submission <= 4 ms,
 GPU <= 6 ms, scheduling/GC headroom >= 2.7 ms. Measure and rebalance this
-allocation after tasks 06/10/11 are merged. Limit DPR to 2; shadows off in
-low/medium and on in high only, with a 1024 shadow map. Prefer instancing,
+allocation after tasks 06/10/11 are merged. Limit DPR to 2; no shadows and no MSAA on any preset
+(D-315: the Linoryt print anti-aliases in its shaders and lights nothing). Prefer instancing,
 pooled DOM and shared materials. Do not rebuild route geometry each frame.
 
 ## Shared quality API
@@ -42,7 +42,7 @@ profile and hands it to every layer:
   only; SwiftShader runs (`perf:scene` passes `--preset`) are unaffected. Persisting a manual choice belongs to
   the settings screen, which passes it to `world.setQuality(pref)`.
 - `resolveQualityProfile()`: preset (drives terrain subdivision and tree/rock/cloud/light
-  counts in `globe/`), capped DPR (1 / 1.5 / 2), antialias, shadows (high only, 2048 map),
+  counts in `globe/`), capped DPR (1 / 1.5 / 2), antialias and shadows (both off on every preset since D-315),
   overlay allowance.
 - `applyQualityProfile(renderer, profile)`: the single place that sets DPR, shadow map,
   colour space and tone mapping. Antialiasing is fixed at context creation.
@@ -326,6 +326,32 @@ module and only warns (the old dynamic `import('@capacitor/core')` in `platform/
 Not done: WOFF2 fonts (about −40 % of the 624 kB TTF; OFL allows the conversion, `docs/ASSETS.md` would need the
 entry) — a size win only, no parse-time effect.
 
+
+## Linoryt presets — no MSAA, no shadow map (2026-11-08, D-315)
+On the same 38,766 triangles medium rendered half the frames of low: the only difference left between them in the
+print was the context's 4× multisampling, and high also cleared a 2048² shadow map nobody samples. The print
+anti-aliases every line in its shaders (hatch, SDF stamps/planes, route ribbon); the one geometric edge, the globe's
+silhouette, is now inked from half a device pixel inside it by the terrain shader, so the polygon edge meets ink on
+both sides. No preset multisamples or shadow-maps any more (`test:quality` checks it). Images: the interior of the disc
+is pixel-identical (`dev/globe.html` medium/high, 412×915); the limb ring is at most 1 device px wider inward and has
+no stair-steps (`docs/shots/ext-04-perf/`: the limb at 4×, before | after).
+
+`perf:scene` (SwiftShader, 412×915, DPR 1, 60 s each, one run; ±30 % between runs on this container, a second low
+pair gave 23.9 → 23.8 fps):
+
+| Preset | Frames before → after | Idle / active fps before → after | Render CPU mean / p95 ms | Frame interval p95 ms | Draw calls / triangles (budget) | JS heap max MB |
+| --- | --- | --- | --- | --- | --- | --- |
+| saver | 2,005 → 1,842 | 26.6 / 39.9 → 26.4 / 34.9 | 0.40 / 0.9 → 0.48 / 1.3 | 50.0 → 50.1 | 14 / 38,766 (≤ 50 / ≤ 35 k terrain) | 20.2 → 20.8 |
+| low | 1,445 → 1,322 | 23.8 / 24.3 → 22.3 / 21.7 | 0.56 / 1.4 → 0.67 / 1.6 | 66.6 → 66.7 | 14 / 38,766 (≤ 50 / ≤ 35 k terrain) | 21.2 → 23.8 |
+| medium | 718 → **1,294** | 11.9 / 12.1 → **20.7 / 22.3** | 0.68 / 1.4 → 0.75 / 1.9 | 116.7 → **66.7** | 14 / 38,953 (≤ 50 / ≤ 160 k) | 19.3 → 21.9 |
+| high | 292 → **749** | 5.4 / 4.4 → **12.2 / 12.8** | 1.05 / 1.8 → 0.76 / 1.6 | 250.0 → **100.1** | 14 / 175,096 (≤ 50 / ≤ 200 k) | 16.4 → 21.8 |
+
+Every preset is inside its draw-call and triangle budgets; the frame-time budgets (p95 16.7 / 33 ms) are device
+targets and cannot be read from SwiftShader. Saver and low did not use MSAA before either: their spread is noise.
+The real game (`node dev/linoryt-frames.mjs`, 1× / 4×) is unchanged here (20.4 / 17.3 fps before, 19.5 / 16.5 after),
+because `auto` picks `low` on this 4-core container; phones with ≥ 5 cores and > 3 GB start on medium or high, which is
+where the gain lands. Not done (would change the look above low): fewer terrain triangles on high (157 k at zoom 1,
+the relief displaces the limb) and a lower DPR cap.
 
 ## Linoryt review (2026-11-08, D-302/D-304)
 The shipped look after E4 and the object cleanup. `perf:scene` (SwiftShader, 412×915, DPR 1, 120 samples):

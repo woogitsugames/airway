@@ -3481,3 +3481,13 @@ disc (radius ≤ 160 px → game globe ≥ 320 px) the relief tone tops out at 5
 tone is 0.6×, and the water lines appear only when ≥ 5 device px apart (full from 9). The paper diamonds at the route
 ends are the DOM route handles (`src/ui/atcStrip.css`, R5c), not render: handed to the UI. On presets that render at
 DPR 1 the menu's sea cannot print finer than 4 device px (the alias floor). **Status: in force.**
+
+## D-315 — No MSAA and no shadow map on any preset; the terrain inks its own limb (2026-11-08, Claude, ext session)
+Context: the Linoryt performance pass (`perf:scene` on saver/low/medium/high). Medium drew the same 38,766 triangles
+as low at half the frame rate; the difference was the context's multisampling, and high also cleared an unused 2048²
+shadow map every frame. Decision: `resolveQualityProfile` returns `antialias: false` and no shadows for every preset.
+The print anti-aliases in its shaders; the globe silhouette, the one geometric edge, is inked by the terrain shader
+from half a device px inside it (the sky band carries the ring outward), so the polygon edge needs no multisampling.
+Effect on SwiftShader: medium 11.9 → 20.7 fps, high 5.4 → 12.2 fps; saver/low unchanged. The disc's interior is
+pixel-identical; the limb ring is ≤ 1 device px wider inward. Rejected: fewer terrain triangles or a lower DPR cap on
+high (both change the look above low). **Status: in force.**
