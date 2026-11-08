@@ -3574,14 +3574,16 @@ a cut notch in the stamp itself (`src/render/**`, the render session's area). Sh
 ## D-320 — Tablets print the weekly board and the report enlarged; portrait tablets stack them (2026-11-08, night 57a)
 N55a measured the lower third of the tablet (768 × 1024) and iPad 13" (1032 × 1376) store shots of the weekly board and
 the game-over report at 97.5–98.8 % one colour: both pages printed at phone size from the top. On a page at least
-720 × 900 (`linoryt.css`, end) the sheet (`.airway-upgrade`, `.airway-go-content`) gets CSS `zoom` 1.25 (landscape
-tablets, 1920 × 1080), so type, rules, slips and touch targets grow together as one enlarged print. A portrait tablet
-also stacks it like a tall phone: zoom 1.2 (≥ 960 × 1200: 1.5, the report 1.65), three crates one under the other with
-the model window beside the text (150/170 px; a four-crate board keeps its row), the report in one column with the
-incident report under the departures. Measured (store shots PL/EN): lower third one colour 0.975 → 0.88–0.91 on the
-tablet, 0.982 → 0.90–0.91 for the iPad board; the iPad report fills to ~88 % of the page on the long preview report.
-Phones (< 720 px wide or < 900 px tall, incl. the 673 × 841 foldable and 440 × 956 iPhone) are byte-identical in
-layout; at 130/150 % text the sheet keeps today's size (it already fills the page there and must not scroll).
-CSS 126.8 → 128.2 kB (budget 129.8). Rejected: a max-width column centred on paper (the empty paper only moves to the
-sides), larger type tokens per element (dozens of rules, the CSS budget). Shots `docs/shots/n57a/{upgrade,failure}-*`.
+720 × 900 in portrait or 720 × 1000 in landscape (`linoryt.css`, end) the sheet (`.airway-upgrade`, `.airway-go-content`)
+gets CSS `zoom`, so type, rules, slips and touch targets grow together as one enlarged print: 1.25 on a landscape
+tablet (1376 × 1032, 1920 × 1080). A portrait page also stacks it like a tall phone: zoom 1.2 (768 × 1024, 904 × 1000
+unfolded; ≥ 960 × 1200: board 1.5, report 1.65), three crates one under the other with the model window beside the text
+(150/170 px; a four-crate board keeps its row), the report in one column with the incident report under the
+departures. Store shots PL/EN, lower third one colour: weekly board tablet 0.975 → 0.90, iPad 0.982 → 0.90–0.91;
+report tablet 0.975 → 0.88–0.91, iPad 0.982 → 0.89–0.92. Phone, foldable 673 × 841, iPhone 6.9" and 960 × 540 store
+shots are pixel-identical (one 308 × 17 px anti-aliasing strip on PL iPhone, run-to-run); 1088 × 904 keeps today's print (four crates ran 17 px below the page at 1.25). At 130/150 %
+text the sheet keeps today's size (it already fills the page there and must not scroll). CSS 126.8 → 128.3 kB
+(budget 129.8). `test:e2e:screen-audit:stub` gains 1032 × 1376 and 1376 × 1032 (504 screens). Rejected: a max-width
+column centred on paper (the empty paper only moves to the sides), larger type tokens per element (dozens of rules,
+the CSS budget). Shots `docs/shots/n57a/{upgrade,failure}-*`.
 **Status: in force (N57a).**

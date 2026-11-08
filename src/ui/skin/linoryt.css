@@ -1143,8 +1143,9 @@
    at phone size from the top and left the lower third to half as empty paper (98 % one colour in the store shots). On a
    page at least 720 × 900 the sheet is printed enlarged (zoom: type, rules, slips and 48 dp targets together); a portrait
    tablet also stacks it like a tall phone (three crates one under the other, window beside; the report in one column).
-   Phones (under 720 px wide or 900 px tall) keep their layout; at 130/150 % text the sheet keeps today's size. */
-@media (min-width: 720px) and (min-height: 900px) {
+   Phones (under 720 px wide or 900 px tall) keep their layout; at 130/150 % text the sheet keeps today's size. A landscape
+   page needs 1000 px (1088 × 904: four crates ran 17 px below the page). */
+@media (min-width: 720px) and (min-height: 1000px), (orientation: portrait) and (min-width: 720px) and (min-height: 900px) {
   :root[data-skin="linoryt"]:not([data-airway-text-scale="130"], [data-airway-text-scale="150"]) :is(.airway-upgrade-open:not(.is-picking-hub) .airway-upgrade, .airway-go-overlay:not(.is-map) .airway-go-content) { zoom: var(--lin-big, 1.25); }
 }
 @media (orientation: portrait) and (min-width: 720px) and (min-height: 900px) {
