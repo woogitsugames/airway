@@ -128,7 +128,7 @@ export class GestureRecognizer {
     pointer.timeMs = sample.timeMs;
     // [night-08d] Judge the long press at the sample's own position: a move that waited behind a long frame
     // past the 350 ms deadline is a drag, not a hold.
-    // [night-55a] D-312: a release is itself the queued input the late-frame deferral waits for, so it is judged
+    // [night-55a] D-313: a release is itself the queued input the late-frame deferral waits for, so it is judged
     // at once: a finger held still past the deadline and lifted during a stalled frame still opens the long press.
     this.advanceTime(sample.timeMs, sample.type === 'up');
     if (sample.type === 'cancel') {

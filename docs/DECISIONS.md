@@ -3446,7 +3446,30 @@ incident report's heading is kept for screen readers only (the sign above names 
 one 12 px line, the strip padding is 4 px; tabs and actions stay ≥ 48 px. Both languages now fit with 0 px of scroll.
 **Status: in force.**
 
-## D-312 — A release after a stalled frame keeps a due long press; Linoryt's tall Endless slab and paper pages pass their checks (2026-11-08, night 55a)
+## D-312 — Linoryt UI audit against the frames: the index's double rule, the labelled home-region choice over it, no red on the paused control, the report's stamp follows the airport (2026-11-08, Claude, night 54a)
+The shipped DOM UI (D-301, D-305) compared with the owner-approved frames `docs/styles/kierunki-2026-11b/png/a-game.png`
+and `a-menu.png` on the real renderer and the stub screen audit (HUD top, dock, notes, edge chips, menu, sheets, weekly
+board, pause, report, settings, logbook, puzzles). **Fixed (UI side).** (1) The menu index's double print rule printed
+as one thick line: its thin line was a box shadow whose negative spread was larger than the 4 px rule, so it never
+showed. Now a border pair (4 px, 2.5 px paper, 1.5 px). (2) As in the frame ("Tryb: losowy świat ▾" over the rule),
+the Endless choice prints **above** the double rule and the red entry under it when Endless leads the index (no saved
+run; with Continue the rule stays on top), and the bare "Losowy ▾" gets its printed label (`menu.homeRegion`, existing
+key, aria-hidden: the select keeps its aria-label; the select is sized to its value with `field-sizing: content`, wider
+where a WebView lacks it). (3) The paused HUD control was a red block: red belongs to a jam alone (KIERUNKI.md A, the
+screen audit's "red only on danger"). Paused now prints as the block's outline with the ink triangle (state by shape
+and fill). (4) The report's red block cut a hub octagon for every failing airport, which at 14 px read as a dot and
+named a non-hub a hub; it now cuts the failing airport's stamp of the map (octagon for a hub, square otherwise;
+`GameOverSnapshot.hubIsHub`, set in `src/game/session.ts`). **Kept on purpose (not drifts):** note names on a paper
+ground and passenger glyphs in their D-08 colours (PLAN-LINORYT.md U2/U6: contrast and CVD on ochre and the hatch), five
+dock cells (globe-view slot removed in D-301), the ink rule under the HUD top margin (it separates the margin from a
+paper sky in landscape). **Left for the render session** (listed in the PR): relief hatching reads as long uniform
+diagonal strokes over all land instead of tone on the slopes away from the light; sea lines on the menu disc are wide
+paper bands; small paper diamonds beside stamps that the frame does not have. Shots `docs/shots/n54a/` (before/after,
+real renderer, PL 412×915 and 915×412). **Budget:** with D-311 the CSS stood at 130.1 kB of 130 kB; two Linoryt dock
+rules that the general dock-cell rules already outweigh (countdown cell padding/gap and icon size) were removed and the
+licence line's duplicate selector merged: 129.9 kB. **Status: in force.**
+
+## D-313 — A release after a stalled frame keeps a due long press; Linoryt's tall Endless slab and paper pages pass their checks (2026-11-08, night 55a)
 **Long press.** `test:e2e:hub-board` failed its 915 × 412 and 412 × 915 map cases (7/9, `locator.waitFor` 3000 ms)
 on the full `test:ci`. Long-animation-frame entries showed one ~440 ms frame with no script and no blocking time
 (SwiftShader presentation) right after the test's `pointerdown`; the 450 ms hold's `pointerup` arrived before the
