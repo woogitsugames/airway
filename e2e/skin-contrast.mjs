@@ -1,12 +1,14 @@
-﻿import { withBrowser, newGamePage, waitForScreen, assert } from './browser.mjs';
+// [night-46a] D-301: the game-over flap and a jammed airport's edge chip reach 4.5:1 (D-47) in the shipped Linoryt skin
+// (formerly test:e2e:roza-contrast, which also measured Róża).
+import { withBrowser, newGamePage, waitForScreen, assert } from './browser.mjs';
 let passed=0,failed=0;
 try { await withBrowser(async ({browser,url}) => {
- for (const skin of ['roza','linoryt']) for (const language of ['en','pl']) {
+ const skin='linoryt'; for (const language of ['en','pl']) {
   const {page,errors}=await newGamePage(browser,url,language,{width:412,height:915});
   try {
-   await page.goto(url+`?preview=gameover${skin==='linoryt'?'&skin=linoryt':''}`,{waitUntil:'load'});
+   await page.goto(url+'?preview=gameover',{waitUntil:'load'});
    await page.getByTestId('game-over').waitFor(); await page.evaluate(()=>document.fonts.ready);
-   if(skin==='linoryt') await page.waitForFunction(()=>getComputedStyle(document.querySelector('.airway-go-flap')).backgroundColor==='rgb(236, 227, 204)');
+   await page.waitForFunction(()=>getComputedStyle(document.querySelector('.airway-go-flap')).backgroundColor==='rgb(236, 227, 204)');
    const result=await page.evaluate(async()=>{
     const {createAirportOverlay}=await import('/src/ui/overlay.ts'); const {PerspectiveCamera}=await import('/node_modules/three/build/three.module.js');
     const host=document.createElement('div');host.style.cssText='position:fixed;inset:0;z-index:200;pointer-events:none'; document.body.append(host);
@@ -23,4 +25,4 @@ try { await withBrowser(async ({browser,url}) => {
   } catch(e){failed++;console.error(`FAIL ${skin} ${language} ${e.message}`);} finally {await page.close();}
  }
 },{softwareCompositing:true});} catch(e) { failed++;console.error('FAIL harness '+e.message); }
-console.log(`SUMMARY test:e2e:roza-contrast seed=0xA1A1 passed=${passed} failed=${failed}`);if(failed||passed!==4)process.exitCode=1;
+console.log(`SUMMARY test:e2e:skin-contrast seed=0xA1A1 passed=${passed} failed=${failed}`);if(failed||passed!==2)process.exitCode=1;

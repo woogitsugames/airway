@@ -20,7 +20,7 @@ export const GLOBE_LOOKS: readonly GlobeLook[] = ['diorama', 'refined', 'satelli
  * [ext-04 E3] D-283: the globe a release build draws when no look is asked for. `satellite` until the flip (step U5 of
  * PLAN-LINORYT.md switches it to `linoryt` together with the Linoryt UI skin); the Linoryt look itself ships from E3.
  */
-export const DEFAULT_GLOBE_LOOK = 'satellite' as 'satellite' | 'linoryt';
+export const DEFAULT_GLOBE_LOOK = 'linoryt' as 'satellite' | 'linoryt';
 
 /** Parse a `?globeLook=` value; anything unknown is the diorama (the texture-free fallback; the shipped look is `satellite`, D-170). */
 export function parseGlobeLook(value: string | null | undefined): GlobeLook {

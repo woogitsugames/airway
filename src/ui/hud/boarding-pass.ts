@@ -3,8 +3,7 @@ import type { HudState } from './types';
 import { iconSvg } from './icons';
 import { DAYS_PER_WEEK } from '../../sim/clock';
 import { ARIA_KEYSHORTCUTS } from '../../input/keyboard';
-import { skin, rozaDial, rozaPass, type RozaDial } from '../skin/roza'; // [night-11az] D-257: Róża skin helpers
-import { linoryt, linorytIcon, linorytPass } from '../skin/linoryt'; // [night-28a] D-284: Linoryt preview (DEV only)
+import { linoryt, linorytIcon, linorytPass } from '../skin/linoryt'; // [night-28a] D-284; [night-46a] D-301: the shipped skin
 
 // [task-31] D-40: a game week has DAYS_PER_WEEK (3) days; the bar shows one square per day and the
 // day is a number ("2/3"), since weekday names no longer fit a 3-day week.
@@ -31,7 +30,7 @@ export function createBoardingPass(root: HTMLElement, onTogglePause?: () => void
       <div class="airway-pass__perf" aria-hidden="true"></div>
       <div class="airway-pass__field airway-pass__passengers"><span data-label="passengers" class="airway-pass__label"></span><strong data-value="passengers"></strong></div>
     </div>
-    <button type="button" class="airway-pass__pause" data-hud-action="pause">${import.meta.env.DEV && linoryt.on ? linorytIcon('pause') : iconSvg('pause')}</button>
+    <button type="button" class="airway-pass__pause" data-hud-action="pause">${linoryt.on ? linorytIcon('pause') : iconSvg('pause')}</button>
   `;
   root.appendChild(section);
   const field = (name: string): Element => {
@@ -52,9 +51,6 @@ export function createBoardingPass(root: HTMLElement, onTogglePause?: () => void
   let paused: boolean | undefined;
   let lastDay: number | undefined;
   let lastPassengers: number | undefined;
-  // [night-11az] D-257: the Róża day dial sits in the thumb corner of the HUD (a sibling of the pass, so the pass keeps
-  // only the week and passenger lines and the pause); the old ticket fields stay in the DOM, hidden by roza.css.
-  const dial: RozaDial | null = skin.roza ? rozaDial(root) : null;
 
   return {
     render(state): void {
@@ -75,12 +71,9 @@ export function createBoardingPass(root: HTMLElement, onTogglePause?: () => void
       const minute = integer(state.timeMinutes, 0, 1439);
       updateText(time, `${String(Math.floor(minute / 60)).padStart(2, '0')}:${String(minute % 60).padStart(2, '0')}`);
       const passengerCount = integer(state.passengers, 0, Number.MAX_SAFE_INTEGER);
-      if (dial) { // [night-11az] D-257: Róża week line, passenger line and day dial
-        dial.render(minute, dayNumber, DAYS_PER_WEEK);
-        rozaPass(section, integer(state.week, 1, 999), dayNumber, DAYS_PER_WEEK, passengerCount, root.dataset.layout === 'landscape');
-      }
-      // [night-28a] D-284 Linoryt preview: the clock, week line and day bar on the paper margin.
-      if (import.meta.env.DEV && linoryt.on) linorytPass(section, minute, integer(state.week, 1, 999), dayNumber, DAYS_PER_WEEK, passengerCount);
+      // [night-28a] D-284: the Linoryt clock, week line and day bar on the paper margin (the old ticket fields stay in the
+      // DOM, hidden by linoryt.css).
+      if (linoryt.on) linorytPass(section, minute, integer(state.week, 1, 999), dayNumber, DAYS_PER_WEEK, passengerCount);
       if (lastPassengers !== passengerCount || lastDay === undefined) {
         updateText(passengers, localNumber(passengerCount));
         lastPassengers = passengerCount;
@@ -98,7 +91,7 @@ export function createBoardingPass(root: HTMLElement, onTogglePause?: () => void
         if (pause.getAttribute('aria-label') !== nextLabel) pause.setAttribute('aria-label', nextLabel);
         const nextIcon = state.paused ? 'resume' : 'pause';
         if (pause.dataset.icon !== nextIcon) {
-          pause.innerHTML = import.meta.env.DEV && linoryt.on ? linorytIcon(nextIcon) : iconSvg(nextIcon); // [night-28a] D-284 cut symbol
+          pause.innerHTML = linoryt.on ? linorytIcon(nextIcon) : iconSvg(nextIcon); // [night-28a] D-284 cut symbol
           pause.dataset.icon = nextIcon;
         }
         pause.setAttribute('aria-pressed', String(state.paused));

@@ -46,11 +46,11 @@ if (!Array.isArray(tokens.textPairs) || tokens.textPairs.length < 1) {
     }
   }
 }
-// These semantic pairs are used by the released Rose skin; resolve the current aliases rather than duplicating colours.
+// These semantic pairs are used by the released skin ([night-46a] D-301: Linoryt); resolve the current aliases rather than duplicating colours.
 const skinCss = readFileSync(new URL('../src/ui/skin/current.css', import.meta.url), 'utf8');
-const roseCss = readFileSync(new URL('../src/ui/skin/roza.css', import.meta.url), 'utf8');
+const inkCss = readFileSync(new URL('../src/ui/skin/linoryt.css', import.meta.url), 'utf8');
 const root = (source) => source.replace(/\/\*[\s\S]*?\*\//g, '').match(/:root\s*\{([^}]*)\}/)?.[1] ?? '';
-const declarations = Object.fromEntries([...`${root(roseCss)};${root(skinCss)}`.matchAll(/(--[\w-]+)\s*:\s*([^;]+);/g)]
+const declarations = Object.fromEntries([...`${root(inkCss)};${root(skinCss)}`.matchAll(/(--[\w-]+)\s*:\s*([^;]+);/g)]
   .map((match) => [match[1], match[2].trim()]));
 function resolveSkin(name, seen = new Set()) {
   if (seen.has(name)) throw new Error('Cyclic skin token: ' + name);

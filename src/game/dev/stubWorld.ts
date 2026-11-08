@@ -192,7 +192,6 @@ export function createStubWorld(host: HTMLElement, label: string, options: StubW
     project: (lon, lat, out) => project(lon, lat, 1.01, out),
     pickGlobe,
     setQuality(_preference: QualityPreference) { /* no quality tiers without a renderer */ },
-    setGlobeMode() { /* no textures */ },
     reset() { cities = []; routes = []; planes = 0; curfew = []; },
     setCovered() { /* the stub always draws its cheap 2D frame */ },
     contextLost: () => false,

@@ -14,13 +14,9 @@ import { join, resolve } from 'node:path';
 import { SKIN_STRUCTURE_FILE, SKIN_SCOPE, skinOverrides, pruneOverridden } from './vite-skin-prune.mjs';
 
 export const SKIN_FILE = 'src/ui/skin/current.css';
-/** [night-11ax] D-257: the previous skin ("Diorama"), DEV comparison only (`?skin=current`). */
-export const COMPARISON_SKIN_FILE = 'src/ui/skin/diorama.css';
-/** [night-28a] D-284: the DEV-only Linoryt preview (`?skin=linoryt`, never in a release build). Like the comparison skin
- *  it keeps its tokens, and its re-inked `--roza-*` palette does not count against the palette constants (they stay
- *  constants of the release, written out as before). The flip step U6 (PLAN-LINORYT.md) makes it the shipped skin. */
-export const PREVIEW_SKIN_FILE = 'src/ui/skin/linoryt.css';
-const DEV_ONLY_SKINS = [COMPARISON_SKIN_FILE, PREVIEW_SKIN_FILE];
+// [night-46a] D-301: no DEV-only skins any more (the Diorama comparison and the Linoryt preview went with step U5); the
+// Linoryt structure (SKIN_STRUCTURE_FILE) is inlined like any component CSS and its inks (`--lin-*`, a plain :root) are
+// palette constants written out in place.
 const stripComments = (css) => css.replace(/\/\*[\s\S]*?\*\//g, '');
 const USE = /var\(\s*--skin-([a-z0-9-]+)\s*([,)])/g;
 
@@ -172,7 +168,7 @@ export function referencedValues(tokens, refs, constants = new Map()) {
 export function skinBuild(root) {
   const scripts = sources(root, /\.(ts|tsx|js|mjs)$/);
   const tokens = skinTokens(readFileSync(resolve(root, SKIN_FILE), 'utf8'));
-  const constants = constantProperties(sources(root, /\.css$/, [PREVIEW_SKIN_FILE]), scripts);
+  const constants = constantProperties(sources(root, /\.css$/), scripts);
   const refs = new Set(REFERENCED_TOKENS.filter((name) => tokens.has(name)));
   return {
     resolved: withConstants(resolveTokens(tokens), constants),
@@ -202,14 +198,11 @@ export function skinInline() {
     transform(code, id) {
       const file = normal(id);
       if (!enabled || !file.endsWith('.css') || !file.startsWith(normal(resolve(root, 'src')) + '/')) return null;
-      // [night-11ax] D-257: the DEV-only comparison skin (src/ui/skin/diorama.css, `?skin=current`, never in a release
-      // build) keeps its tokens; the skin structure (roza.css) is inlined like any component CSS.
-      if (DEV_ONLY_SKINS.some((skin) => file === normal(resolve(root, skin)))) return null; // [night-28a] + Linoryt
       const { resolved, inline, keep, refs } = build ? (cache ??= skinBuild(root)) : skinBuild(root);
       if (file === normal(resolve(root, SKIN_FILE))) return { code: keptSkin(resolved, new Set([...keep, ...refs])), map: null };
       const inlined = inlineSkin(code, inline, file.slice(root.length + 1));
-      // [night-11ax] D-257: a release always has <html data-skin="roza">, so its scope is written `:root:root` (same
-      // specificity, 0-2-0; ~12 bytes less per selector). Dev (AW_SKIN_INLINE=1) keeps it for `?skin=current`.
+      // [night-11ax] D-257: a release always has <html data-skin="linoryt">, so its scope is written `:root:root` (same
+      // specificity, 0-2-0; ~15 bytes less per selector). Dev (AW_SKIN_INLINE=1) keeps it as written.
       if (file === normal(resolve(root, SKIN_STRUCTURE_FILE))) return { code: build ? inlined.split(SKIN_SCOPE).join(':root:root') : inlined, map: null };
       // [night-11ax] D-257: drop the declarations the skin structure always overrides (scripts/vite-skin-prune.mjs).
       const over = build ? (overrides ??= skinOverrides(readFileSync(resolve(root, SKIN_STRUCTURE_FILE), 'utf8')))

@@ -1,18 +1,17 @@
 /**
  * [night-28a] D-283 / D-284: the "Linoryt" skin helpers (docs/styles/kierunki-2026-11b/KIERUNKI.md, direction A; plan
- * docs/styles/kierunki-2026-11b/PLAN-LINORYT.md, step U1). A relief print in three inks on paper: the HUD is printed on a
+ * docs/styles/kierunki-2026-11b/PLAN-LINORYT.md). A relief print in three inks on paper: the HUD is printed on a
  * paper margin at the top (a big Besley clock, the week, "day 2 of 3 · 34 passengers" and a day bar of 24 carved
- * hours, night hours inked solid, a red cut for "now") and a paper dock at the bottom behind a double print rule (six
+ * hours, night hours inked solid, a red cut for "now") and a paper dock at the bottom behind a double print rule (five
  * cut symbols with captions, the chosen aircraft a solid ink block, an empty one only its outline); the menu is a
  * printed index under the title (the run-starting entry on the one red block).
  *
- * Step U1 is a DEV-only preview: src/main.ts turns it on only when `import.meta.env.DEV && ?skin=linoryt`, and every
- * call site is guarded by the same `import.meta.env.DEV`, so a release build folds the helpers away (dist/ stays
- * byte-identical). The preview builds on the base ("Diorama") DOM of the HUD and menu, not on Róża's: the flip step
- * (U5) deletes Róża and keeps the base components, restyled by linoryt.css.
+ * [night-46a] D-301 (step U5): the shipped skin. src/main.ts calls startLinoryt() on every boot (index.html sets
+ * <html data-skin="linoryt">); the helpers restyle the base ("Diorama") DOM of the HUD, overlay and menu together with
+ * linoryt.css. Róża and the DEV `?skin=` previews are gone.
  *
- * Like roza.ts this module has no runtime imports (only types): src/main.ts hands in what it needs. Player text reuses
- * existing catalog keys (`roza.*`, `menu.*`); U5 renames them to skin-neutral keys.
+ * This module has no runtime imports (only types): src/main.ts hands in what it needs. Player text uses the
+ * skin-neutral catalog keys (`hud.*`, `dock.*`, `note.*`, `menu.*`).
  */
 import type { TranslationKey, TranslationParams } from '../../i18n';
 import type { DestinationRegion } from '../glyphs';
@@ -47,15 +46,13 @@ const pad2 = (n: number): string => String(n).padStart(2, '0');
 /**
  * Cut symbols drawn for Airway (docs/styles/kierunki-2026-11b/src/icons.js, 100 × 100 boxes): solid ink shapes, as a
  * linocut prints them; linoryt.css draws an empty (unavailable) one as its outline only. The speed arrow carries one
- * wind barb per 1× of game speed, as in Róża.
+ * wind barb per 1× of game speed.
  */
 const SYMBOL = {
   undo: 'M78 70L78 46Q78 26 58 26L30 26 30 12 8 32 30 52 30 38 58 38Q66 38 66 46L66 70Z',
   turboprop: 'M46 8L54 8 56 40 92 44 92 54 56 56 55 80 68 86 68 92 32 92 32 86 45 80 44 56 8 54 8 44 44 40ZM20 34L30 34 30 46 20 46ZM70 34L80 34 80 46 70 46Z',
   widebody: 'M47 6L53 6 56 36 94 62 94 70 56 56 55 80 70 90 70 95 50 90 30 95 30 90 45 80 44 56 6 70 6 62 44 36ZM16 58L22 55 24 64 18 66ZM30 49L36 46 38 55 32 57ZM64 46L70 49 68 57 62 55ZM78 55L84 58 82 66 76 64Z',
   hub: 'M44 6L56 6 56 94 44 94ZM12 22L18 12 88 78 82 88ZM82 12L88 22 18 88 12 78Z',
-  satellite: 'M50 8A42 42 0 1 1 49.9 8ZM50 18A32 32 0 0 0 50 82Q34 50 50 18Z',
-  map: 'M50 8A42 42 0 1 1 49.9 8ZM50 18A32 32 0 0 0 50 82Q34 50 50 18Z',
   speed: 'M8 46L68 46 68 30 94 52 68 74 68 58 8 58Z',
   pause: 'M30 18H44V82H30ZM56 18H70V82H56Z',
   resume: 'M30 14L82 50 30 86Z',
@@ -126,9 +123,9 @@ export function linorytPass(section: HTMLElement, minute: number, week: number, 
     publishPassBottom(section);
   }
   setText(parts.clock, `${pad2(Math.floor(minute / 60))}:${pad2(minute % 60)}`);
-  setText(parts.week, t('roza.week', { week }));
-  const count = t('roza.passengers', { count: passengers }).replace(String(passengers), deps.localNumber(passengers));
-  setText(parts.sub, `${t('roza.dayOf', { day, days })} · ${count}`);
+  setText(parts.week, t('hud.weekLine', { week }));
+  const count = t('hud.passengerLine', { count: passengers }).replace(String(passengers), deps.localNumber(passengers));
+  setText(parts.sub, `${t('hud.dayOf', { day, days })} · ${count}`);
   if (parts.minute !== minute) {
     const hour = Math.floor(minute / 60);
     if (Math.floor(parts.minute / 60) !== hour) {
@@ -163,13 +160,12 @@ function publishPassBottom(section: HTMLElement): void {
  * The caption under a dock symbol, and the wait for the next crates under an empty aircraft or hub ("za 1 dzień", in
  * blue). Captions repeat the button's accessible name, so they are aria-hidden.
  */
-export function linorytDockLabel(button: HTMLElement, name: string, globeMode: string | undefined, speed: number, wait: string | null): void {
-  const text = name === 'undo' ? t('roza.dock.undo')
-    : name === 'turboprop' ? t('roza.dock.turboprop')
-    : name === 'widebody' ? t('roza.dock.widebody')
-    : name === 'hub' ? t('roza.dock.hub')
-    : name === 'globe' ? t(globeMode === 'map' ? 'roza.dock.map' : 'roza.dock.satellite')
-    : t('roza.dock.speed', { speed });
+export function linorytDockLabel(button: HTMLElement, name: string, speed: number, wait: string | null): void {
+  const text = name === 'undo' ? t('dock.undo')
+    : name === 'turboprop' ? t('dock.turboprop')
+    : name === 'widebody' ? t('dock.widebody')
+    : name === 'hub' ? t('dock.hub')
+    : t('dock.speed', { speed });
   let caption = button.querySelector<HTMLElement>('.lin-caption');
   let when = button.querySelector<HTMLElement>('.lin-wait');
   if (!caption || !when) {
@@ -182,7 +178,7 @@ export function linorytDockLabel(button: HTMLElement, name: string, globeMode: s
     button.append(caption, when);
   }
   setText(caption, text);
-  setText(when, wait === null ? '' : t('roza.dock.in', { when: wait }));
+  setText(when, wait === null ? '' : t('dock.in', { when: wait }));
   when.hidden = wait === null;
 }
 
@@ -213,13 +209,6 @@ export function linorytReportHub(sign: HTMLElement, hubCode: string): void {
 // match linoryt.css ("U2 notes" section); widths are computed (no DOM measuring), so the layout box is the printed box.
 
 /**
- * Stamp sizes (px, screen-constant) of docs/notes/linoryt-render-spec.md §5/§8: a 22 px square, a hub octagon round a
- * 15 px circle. The fallback until E2 exports `STAMP_SIZE_PX` and `WorldRenderer.projectAirport` from src/render: the
- * overlay then reads the stamp's centre and half side from `projectAirport` (AirportOverlayOptions.projectAirport) and
- * this constant is only the fallback of the stub world.
- */
-export const LINORYT_STAMP_PX = { airport: 22, hub: 30 } as const;
-/**
  * Clearance between the stamp's disc (see stampReach) and a note: the layout's 4 px gap (TagBounds.gap) and 1 px, so a
  * note's first place is free of its own stamp.
  */
@@ -228,11 +217,15 @@ const NOTE_GAP = 5;
 /** Where the world prints a stamp this frame: centre, half side (px), and whether it is drawn. */
 export interface StampBox { x: number; y: number; half: number; visible: boolean }
 
-/** The fallback stamp box (no `projectAirport` yet): the projected airport and the constant stamp size. */
-export function linorytStampFallback(out: StampBox, x: number, y: number, hub: boolean, visible: boolean): StampBox {
+/**
+ * The stamp box when the world has no `projectAirport` answer (a world without stamps, an airport not yet in its set):
+ * the projected airport and half the world's stamp side (`STAMP_SIZE_PX` of src/render, spec §5/§8: a 22 px square,
+ * a 30 px hub octagon), which the caller passes in (this module has no runtime imports).
+ */
+export function linorytStampFallback(out: StampBox, x: number, y: number, half: number, visible: boolean): StampBox {
   out.x = x;
   out.y = y;
-  out.half = (hub ? LINORYT_STAMP_PX.hub : LINORYT_STAMP_PX.airport) / 2;
+  out.half = half;
   out.visible = visible;
   return out;
 }
@@ -405,8 +398,8 @@ export function noteSize(note: NoteShape): NoteSize {
 
 /** The jam block's head ("Zator za" / "Jam in") from the catalogue until U5 adds its own key (the preview adds none). */
 function jamHead(): string {
-  const word = t('roza.jam', { seconds: 0 }).split(/[,，]/)[0].trim();
-  return `${word} ${t('roza.dock.in', { when: '' }).trim()}`;
+  const word = t('note.jam', { seconds: 0 }).split(/[,，]/)[0].trim();
+  return `${word} ${t('dock.in', { when: '' }).trim()}`;
 }
 
 interface NoteParts {
@@ -500,7 +493,7 @@ export function linorytNoteChildren(bubble: HTMLElement, want: Node[], input: Li
   setText(parts.name, input.name);
   setText(parts.code, input.code);
   const taken = Math.min(input.waiting.length, input.capacity);
-  const fillText = t('roza.fill', { taken, capacity: input.capacity });
+  const fillText = t('note.fill', { taken, capacity: input.capacity });
   setText(parts.fill, input.capacity > 0 ? fillText : '');
   parts.name.classList.toggle('lin-name--hub', input.hub);
   if (input.fresh) want.push(input.fresh);
@@ -782,7 +775,7 @@ export function linorytEdge(edge: HTMLElement, name: string, code: string, norma
   const length = Math.hypot(camera.x, camera.y, camera.z) || 1;
   const cos = Math.max(-1, Math.min(1, (normal.x * camera.x + normal.y * camera.y + normal.z * camera.z) / length));
   const km = t('upgrade.value.km', { km: deps.localNumber(Math.round(Math.acos(cos) * EARTH_KM / 10) * 10) });
-  const line = capacity > 0 && taken > 0 ? `${km} · ${t('roza.fill', { taken, capacity })}` : km;
+  const line = capacity > 0 && taken > 0 ? `${km} · ${t('note.fill', { taken, capacity })}` : km;
   const second = figureWidth(line, 11.5);
   let title = name;
   let width = 18 + Math.max(besleyWidth(title, 14) + 16, second);
@@ -801,20 +794,7 @@ export function linorytEdge(edge: HTMLElement, name: string, code: string, norma
 export function linorytTagline(): HTMLElement {
   const line = document.createElement('div');
   line.className = 'lin-tagline';
-  line.textContent = t('roza.menu.tagline');
+  line.textContent = t('menu.tagline');
   return line;
 }
 
-// ---- U4: settings ------------------------------------------------------------------------------------------------------
-
-/**
- * [night-29b] PLAN-LINORYT.md step U4: the licences list of the preview gains the two Linoryt faces (SIL OFL, files and
- * licences in public/fonts/, docs/ASSETS.md). The preview may not add catalog keys (they would ship in the release
- * catalogue, which stays byte-identical), so the line reuses the Alegreya one with the face's proper name swapped in;
- * the flip step U5 adds `licenses.besley` / `licenses.schibsted` and drops Alegreya.
- */
-export const LINORYT_FACES = ['Besley', 'Schibsted Grotesk'] as const;
-export function linorytLicences(): Array<readonly [name: string, licence: string]> {
-  const template = t('licenses.alegreya');
-  return LINORYT_FACES.map((face) => [template.replace('Alegreya', face), t('licenses.ofl')] as const);
-}
