@@ -50,7 +50,7 @@ const OUT = outArg ? resolve(ROOT, outArg) : resolve(ARTIFACTS, 'linoryt');
 const notch = { top: 47, bottom: 34, side: 47 };
 /** [width, height, text scale, notch?] */
 const CASES = [
-  [320, 568, 100], [360, 640, 100], [412, 915, 100], [915, 412, 100], [640, 360, 100], [768, 1024, 100], [1088, 904, 100],
+  [320, 568, 100], [360, 640, 100], [412, 915, 100], [915, 412, 100], [640, 360, 100], [768, 1024, 100], [1088, 904, 100], [1032, 1376, 100], [1376, 1032, 100], // [night-57a] D-320 iPad 13"
   [390, 844, 100, 'notch'], [844, 390, 100, 'notch'], [320, 568, 150], [412, 915, 150], [915, 412, 150],
 ];
 /** [night-29b] U4 screens: e2e/screen-fixtures.mjs ones, then those this suite mounts itself. */

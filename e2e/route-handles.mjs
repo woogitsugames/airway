@@ -1,8 +1,9 @@
 // [night-11q] R5c: route-end handles are quiet at rest and never painted over airport tags. In the real game a
-// route is drawn with a real pointer drag; at rest every visible handle is the small hollow marker (≤ 12 px, no
-// fill) in its 48 px area, and the handle layer paints below the airport overlay (tags, edge chips). Pressing a
-// handle and dragging turns that route's ends into the full diamond (skin token fill) (others stay quiet); moving back and
-// releasing leaves the network as it was and the ends quiet again. EN 412×915, PL 915×412; shots docs/shots/n11q/.
+// route is drawn with a real pointer drag; at rest every visible handle is a printed route tail (D-319, night 57a:
+// the line continued past the stamp with a thin ink end bar ≤ 12 × 4 px, turned along its route) in its 48 px area,
+// and the handle layer paints below the airport overlay (tags, edge chips). Pressing a handle and dragging turns that
+// route's end bars bold (≥ 20 px, skin token fill) (others stay quiet); moving back and releasing leaves the network as
+// it was and the ends quiet again. EN 412×915, PL 915×412; shots docs/shots/n11q/.
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
@@ -19,8 +20,11 @@ const handleState = (page) => page.evaluate(() => {
   const list = [...document.querySelectorAll('.airway-route-handle')].filter((node) => !node.hidden).map((node) => {
     const mark = getComputedStyle(node, '::before');
     const box = node.getBoundingClientRect();
-    return { active: node.classList.contains('airway-route-handle--active'), width: parseFloat(mark.width) + (mark.boxSizing === 'border-box' ? 0 : 2 * parseFloat(mark.borderLeftWidth)),
-      fill: mark.backgroundColor, x: box.left + box.width / 2, y: box.top + box.height / 2 };
+    // [night-57a] D-319: the mark is the printed end bar (border-box): size = its long side, thickness = its short side.
+    const w = parseFloat(mark.width), h = parseFloat(mark.height);
+    return { active: node.classList.contains('airway-route-handle--active'), size: Math.max(w, h), thickness: Math.min(w, h),
+      turn: node.style.getPropertyValue('--aw-handle-turn'), fill: mark.backgroundColor,
+      target: Math.min(node.offsetWidth, node.offsetHeight), x: box.left + box.width / 2, y: box.top + box.height / 2 };
   });
   // [night-23a] The full diamond's fill is the active skin's token (Róża, D-257: chalk; Diorama: yellow), resolved here.
   const probe = layer.appendChild(document.createElement('i'));
@@ -33,7 +37,8 @@ const handleState = (page) => page.evaluate(() => {
     // later siblings paint above at equal z; the overlay must win on z-index alone
   };
 });
-const quiet = (h) => !h.active && h.width <= 12 && (h.fill === 'rgba(0, 0, 0, 0)' || h.fill === 'transparent');
+// [night-57a] D-319: quiet = a thin printed end bar (≤ 12 px long, ≤ 4 px thick) on a tail turned along its route.
+const quiet = (h) => !h.active && h.size <= 12 && h.thickness <= 4 && /rad$/.test(h.turn) && h.target >= 48;
 
 let fatal = null;
 try {
@@ -66,7 +71,7 @@ try {
         const held = await handleState(page);
         const active = held.list.filter((h) => h.active);
         assert(active.length >= 1 && held.activeFill.startsWith('rgb(') &&
-          active.every((h) => h.width >= 20 && h.fill === held.activeFill),
+          active.every((h) => h.size >= 20 && h.fill === held.activeFill),
           `grabbed route's ends not full (${held.activeFill}): ${JSON.stringify(held.list)}`);
         assert(held.list.filter((h) => !h.active).every(quiet), 'another route lost its quiet ends');
         await page.screenshot({ path: resolve(SHOTS, `held-${language}-${viewport.width}x${viewport.height}.png`) });

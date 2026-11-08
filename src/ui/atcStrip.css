@@ -65,31 +65,36 @@
   width: 48px;
   height: 48px;
   border: 0;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%) rotate(var(--aw-handle-turn, 0rad));
   pointer-events: none;
 }
 .airway-route-handle[hidden] { display: none; }
-.airway-route-handle::before {
-  content: '';
-  position: absolute;
-  /* [night-11q] R5c: at rest a small hollow diamond (ink rim, paper halo) inside the same 48 dp area */
-  left: 19px;
-  top: 19px;
-  width: 10px;
-  height: 10px;
-  box-sizing: border-box;
-  border: 2px solid var(--skin-atc-handle-rim);
-  outline: 1.5px solid var(--skin-atc-handle-halo);
-  background: transparent;
-  transform: rotate(45deg);
+/* [night-57a] D-319: a printed route tail, not a paper diamond. The box's +x points away from the airport; its centre
+   is 20 dp out (ENDPOINT_OFFSET_DP), the stamp's edge 11–15 dp. ::after continues the route line (paper core, ink edges) past the stamp,
+   ::before is the ink end bar a print sets at a line's loose end. All inside the same 48 dp area. */
+.airway-route-handle::before, .airway-route-handle::after { content: ''; position: absolute; box-sizing: border-box; }
+.airway-route-handle::after {
+  left: 17px;
+  top: 22px;
+  width: 9px;
+  height: 4px;
+  border-block: 1px solid var(--skin-atc-handle-halo);
+  background: var(--skin-atc-handle-rim);
 }
+.airway-route-handle::before {
+  left: 25px;
+  top: 18px;
+  width: 3px;
+  height: 12px;
+  outline: 1px solid var(--skin-atc-handle-rim);
+  background: var(--skin-atc-handle-halo);
+}
+.airway-route-handle--active::after { width: 12px; top: 21px; height: 6px; border-width: 1.5px; }
 .airway-route-handle--active::before {
-  left: 14px;
-  top: 14px;
-  width: 20px;
-  height: 20px;
-  box-sizing: content-box;
-  border-width: 3px;
+  left: 28px;
+  top: 13px;
+  width: 7px;
+  height: 22px;
   outline-width: 2px;
   background: var(--skin-atc-handle-active-bg);
 }
