@@ -3673,3 +3673,44 @@ Linoryt's frames and plan (`docs/styles/kierunki-2026-11b/`) stay as an archive.
 in `src/render/**`, UI stages for agents in `src/ui/**`, one flip, then removal of the Linoryt code), as with
 D-284. CLAUDE.md (images: own, CC0 or public domain) and `docs/ASSETS.md` (Globe data) are updated in the same PR.
 Store shots, video and site (U7) wait for the flip. **Status: in force (owner, 8.11).**
+
+## D-324 — UI-A foundations behind the DEV `?skin=board` preview: tokens, Archivo + Chivo Mono, the split-flap board and the controller's console (2026-11-08, Claude, night 69a)
+Step T1 of `docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md` (D-323). Nothing the release ships changes.
+**Preview.** A DEV build with `?skin=board` (`src/main.ts`, folded away by a release build) sets `<html data-skin="board">`,
+loads `src/ui/skin/board.ts` and `board.css` as lazy modules and fills the new HUD slot `hudSkin` (`src/ui/hud/skin.ts`,
+null in a release: the boarding pass and the dock ask it before their Linoryt branch). The Linoryt structure stays on
+every screen a later stage restyles (notes T2, strips T3, sheets T4/T5): `linoryt.css` is read as text in the DEV branch
+and re-scoped to `[data-skin="board"]` (`boardTwin`), so the preview needs no change to `linoryt.css` and none of it
+reaches `dist/`. `e2e/browser.mjs` takes `--skin=board` again (D-301 had refused every `--skin`); its shots go to
+`.e2e/skin-board/`. The globe stays Linoryt until R1 brings `?look=earth` (the plan's "`?skin=board` also turns on
+`?look=earth`" is left for the stage after R1 lands, since the look does not exist on `dev` yet).
+**Tokens.** One block `:root[data-skin="board"]` of `--board-*` (enamel, flaps, console, cream, engraving, lamp, sign
+yellow, red, strip paper, print, the hour-bar inks, the two face stacks, flip/press/select durations); the structure uses
+only those plus local `--bd-*` sizes. The mockup's red `#C9251C` gave red text on strip paper 4.36:1, so the token is
+**`#C0231B`** (4.70:1 on paper, white on it 6.0:1); the yellow `#F3C317` carries its black ink at 11.8:1 and is not
+used by T1 (spec §2: yellow means only "where to / what next").
+**Faces.** Archivo as three static instances of the used widths and weights (600 at wdth 100; 700 and 800 at wdth 80;
+14–15 kB each instead of the 659 kB variable file) and Chivo Mono `wght 500:800` (18.8 kB), WOFF2 subsets in
+`public/fonts/` with their OFL licences, listed in `PREVIEW_FONTS` until T6 (`docs/ASSETS.md`). Their gaps (U+202F,
+Chivo's U+2192) come from Atkinson Hyperlegible Next / Overpass in the `--board-face` / `--board-mono` stacks (`test:glyphs`).
+**Board.** The HUD's top band is a split-flap board on black enamel: "Czas lokalny" clock, "Tydz.", "Dzień" `2/3`,
+"Pasaż." (padded to three digits) on flap tiles, cell budgets `BOARD_CELLS` in `src/i18n/limits.ts`; abbreviated labels
+(PL/EN, ≤ 6) with one full spoken label (`board.label`, `role="img"`, flaps aria-hidden). Every figure cell is its own
+`SplitFlap` (new options: per-board duration/stagger, a start delay, no rattle; defaults unchanged), so only changed
+digits flip, 120 ms a cell, 30 ms apart; a cell that changes again within 360 ms is set without a flip (one game minute
+is 100 ms at 1×: the minute digit never flickers, the tens and the hour still flip), and under "Reduce motion" nothing
+flips (D-88). Under it a 24-hour bar: night hours 20–06 (D-285 L3) lower and darker, flown hours lighter, a white "now"
+mark (hourly steps under reduce motion). The pause key is a round push button on its own console block with "Stop" /
+"Start" engraved under it.
+**Console (dock).** Shape says the kind (spec §3): Undo a round push button (instant action), the two aircraft enamel
+plates with their route line printed on them (dashed turboprop, solid widebody, as on the map) and the count on a flap,
+Hub an octagon (to build), Speed a rotary selector with stops 1/2/4 (a setting). The chosen plate turns cream, goes down
+1 px and lights its lamp (no yellow); an empty plate or hub is hatched and hangs a paper tag with the wait in words
+("za 1 dzień"). Captions are i18n with short forms (`board.dock.*Short`) for ≤ 369 px, landscape and text ≥ 130 %.
+Keys ≥ 48 × 48 dp in every layout (portrait band, landscape right column, foldable/tablet centred row).
+**Budgets.** Release CSS 129.0 → 129.0 kB (byte-identical file); main JS 1,053.7 → 1,054.9 kB raw (gzip 314.4 → 314.7;
+the PL/EN board strings and the HUD slot); `dist/` 1,997.3 → 1,998.5 kB. The CSS budget needs no change.
+**Tests.** `test:board` (new, fast), `test:skin-tokens` (board contract), `test:glyphs` (board faces), `test:flap`,
+`test:e2e:board:stub` (new, ci: 12 sizes × PL/EN incl. notch and 150 %), `test:e2e:reduce-motion-game:stub` (+2 board
+cases: no flap fold under reduce motion), shots `docs/shots/t1/` (`npm run shots:board`, real renderer).
+**Status:** preview; the owner sees it with T1+R1 (plan §7 gate) before T2.

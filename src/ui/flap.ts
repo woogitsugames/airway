@@ -19,7 +19,13 @@ export interface FlapStep {
   readonly duration: number;
 }
 
-export function planFlapChange(previous: string, next: string, maxCells = 48): FlapStep[] {
+/** [night-69a] D-324: `timing` overrides the flip and the stagger (the UI-A board flips 120 ms per cell, 30 ms apart)
+ *  and `offset` delays the whole change (several one-cell boards flipping as one row). */
+export function planFlapChange(previous: string, next: string, maxCells = 48,
+  timing: { durationMs?: number; staggerMs?: number; offsetMs?: number } = {}): FlapStep[] {
+  const duration = timing.durationMs ?? FLAP_DURATION_MS;
+  const stagger = timing.staggerMs ?? FLAP_STAGGER_MS;
+  const offset = timing.offsetMs ?? 0;
   const before = splitFlapCells(previous, maxCells);
   const after = splitFlapCells(next, maxCells);
   const length = Math.max(before.length, after.length);
@@ -29,7 +35,7 @@ export function planFlapChange(previous: string, next: string, maxCells = 48): F
     const from = before[index] ?? ' ';
     const to = after[index] ?? ' ';
     if (from !== to) {
-      steps.push({ index, from, to, delay: changed++ * FLAP_STAGGER_MS, duration: FLAP_DURATION_MS });
+      steps.push({ index, from, to, delay: offset + changed++ * stagger, duration });
     }
   }
   return steps;
@@ -39,6 +45,11 @@ export interface FlapOptions {
   maxCells?: number;
   highlight?: boolean;
   initialAnimation?: boolean;
+  /** [night-69a] D-324: flip length and stagger in ms (default FLAP_DURATION_MS / FLAP_STAGGER_MS). */
+  durationMs?: number;
+  staggerMs?: number;
+  /** [night-69a] D-324: no rattle (the in-game board flips every game minute; the sound hook is for the menu boards). */
+  silent?: boolean;
 }
 
 /** [night-07e] Called when a board starts flipping `cells` tiles over `durationMs` (sound hook, D-71). */
@@ -61,6 +72,9 @@ function panel(className: string, letter: string): HTMLSpanElement {
 export class SplitFlap {
   readonly element: HTMLSpanElement;
   private readonly maxCells: number;
+  private readonly durationMs: number;
+  private readonly staggerMs: number;
+  private readonly silent: boolean;
   private readonly tiles: HTMLSpanElement[] = [];
   private readonly timers = new Set<ReturnType<typeof setTimeout>>();
   private value = '';
@@ -68,6 +82,9 @@ export class SplitFlap {
 
   constructor(value: string, options: FlapOptions = {}) {
     this.maxCells = options.maxCells ?? 48;
+    this.durationMs = options.durationMs ?? FLAP_DURATION_MS;
+    this.staggerMs = options.staggerMs ?? FLAP_STAGGER_MS;
+    this.silent = options.silent ?? false;
     this.element = document.createElement('span');
     this.element.className = 'split-flap' + (options.highlight ? ' split-flap--highlight' : '');
     this.element.setAttribute('role', 'text');
@@ -119,13 +136,13 @@ export class SplitFlap {
     while (this.tiles.length > length) this.tiles.pop()?.remove();
   }
 
-  /** Apply status or language changes; animates only changed cells. */
-  set(value: string, animate = true): void {
+  /** Apply status or language changes; animates only changed cells ([night-69a] `delayMs`: start the flips later). */
+  set(value: string, animate = true, delayMs = 0): void {
     if (this.disposed) return;
     const normalized = splitFlapCells(value, this.maxCells).join('');
     const previous = this.value;
     this.cancel();
-    const steps = planFlapChange(previous, normalized, this.maxCells);
+    const steps = planFlapChange(previous, normalized, this.maxCells, { durationMs: this.durationMs, staggerMs: this.staggerMs, offsetMs: delayMs });
     const target = splitFlapCells(normalized, this.maxCells);
     const shouldAnimate = animate && !this.isReducedMotion();
     this.ensureTiles(shouldAnimate ? Math.max(target.length, splitFlapCells(previous, this.maxCells).length) : target.length);
@@ -136,7 +153,7 @@ export class SplitFlap {
       target.forEach((letter, index) => this.putLetter(this.tiles[index], letter));
       return;
     }
-    if (steps.length) flapListener?.(steps.length, steps[steps.length - 1].delay + FLAP_DURATION_MS);
+    if (steps.length && !this.silent) flapListener?.(steps.length, steps[steps.length - 1].delay + this.durationMs);
     const stepsByIndex = new Map(steps.map((step) => [step.index, step]));
     for (let i = 0; i < this.tiles.length; i++) {
       const tile = this.tiles[i];
@@ -164,7 +181,7 @@ export class SplitFlap {
     }
     if (this.tiles.length > target.length) {
       const last = steps[steps.length - 1];
-      this.schedule(() => this.ensureTiles(target.length), (last?.delay ?? 0) + FLAP_DURATION_MS + 15);
+      this.schedule(() => this.ensureTiles(target.length), (last?.delay ?? 0) + this.durationMs + 15);
     }
   }
 

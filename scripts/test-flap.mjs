@@ -18,6 +18,10 @@ try {
   check('stagger',planFlapChange('ABC','XYZ').map(s=>s.delay).join(',')==='0,24,48');
   check('Polish change',planFlapChange('ZÓŁĆ','ŻÓŁĆ')[0]?.to==='Ż');
   check('shortening',planFlapChange('ABC','A').length===2);
+  // [night-69a] D-324: the UI-A board's own timing (120 ms a cell, 30 ms apart) and a delayed start; defaults unchanged.
+  check('timing',planFlapChange('09','10',48,{durationMs:120,staggerMs:30}).map(s=>`${s.delay}/${s.duration}`).join(',')==='0/120,30/120');
+  check('offset',planFlapChange('1','2',48,{offsetMs:60})[0]?.delay===60);
+  check('default timing',planFlapChange('A','B',48,{})[0]?.duration===FLAP_DURATION_MS);
   let threw=false;try{splitFlapCells('A',-1);}catch(e){threw=e instanceof RangeError;}
   check('invalid limit throws',threw);
 } catch(error){failed++;console.error(error);}

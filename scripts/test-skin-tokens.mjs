@@ -190,8 +190,11 @@ const main = read('src/main.ts');
 const gone = ['src/ui/skin/roza.css', 'src/ui/skin/roza.ts', 'src/ui/skin/diorama.css', 'public/fonts/Alegreya-700.woff2',
   'public/fonts/OFL-Alegreya.txt'].filter((file) => { try { statSync(resolve(ROOT, file)); return true; } catch { return false; } });
 check('linoryt: Róża, the Diorama comparison skin and Alegreya are gone from the tree', gone.length === 0, gone.join(' '));
-const skinRefs = tsFiles.filter((file) => /skin\/(roza|diorama)\b|\bstartRoza\b|query\.get\('skin'\)|dataset\.skin === '(roza|current)'/.test(read(file)));
-check('linoryt: no module reads Róża, the comparison skin or a `?skin=` query', skinRefs.length === 0, skinRefs.join(' '));
+// [night-69a] D-324: the one `?skin=` query left is the DEV-only UI-A preview (`=== 'board'` behind import.meta.env.DEV, part 7).
+const skinRefs = tsFiles.filter((file) => /skin\/(roza|diorama)\b|\bstartRoza\b|dataset\.skin === '(roza|current)'/.test(read(file)) ||
+  [...read(file).matchAll(/query\.get\('skin'\)[^\n]*/g)].some((m) => !/^query\.get\('skin'\) === 'board'/.test(m[0]) ||
+    !/import\.meta\.env\.DEV && query\.get\('skin'\) === 'board'/.test(read(file))));
+check('linoryt: no module reads Róża, the comparison skin or a `?skin=` query (but the DEV board preview)', skinRefs.length === 0, skinRefs.join(' '));
 check('linoryt: index.html sets <html data-skin="linoryt"> for the first paint', /<html[^>]*data-skin="linoryt"/.test(read('index.html')));
 check('linoryt: src/main.ts starts the helpers on every boot (not behind a DEV branch)',
   /^startLinoryt\(\{ t, localNumber \}\);$/m.test(main));
@@ -257,7 +260,7 @@ check('linoryt: src/main.ts starts the helpers on every boot (not behind a DEV b
   check('linoryt: Besley and Schibsted Grotesk WOFF2 and their OFL licences are in public/fonts/',
     faces.length === 3 && absent.length === 0, absent.join(' '));
   const { PREVIEW_FONTS } = await import('./vite-font-files.mjs');
-  check('linoryt: its faces ship (PREVIEW_FONTS is empty)', PREVIEW_FONTS.length === 0, PREVIEW_FONTS.join(' '));
+  check('linoryt: its faces ship (PREVIEW_FONTS names none of them)', faces.every((file) => !PREVIEW_FONTS.includes(file)), PREVIEW_FONTS.join(' '));
   const linImports = tsFiles.filter((file) => /import\s*\(?\s*'[^']*linoryt\.css'/.test(read(file)));
   const lastImport = [...main.matchAll(/^import\s[^;]*;/gm)].pop()?.[0] ?? '';
   check('linoryt: src/main.ts (only) imports the structure, after every other import', linImports.join() === 'src/main.ts' &&
@@ -276,6 +279,74 @@ check('linoryt: src/main.ts starts the helpers on every boot (not behind a DEV b
   check('linoryt: the U4 screens are one delimited section and print without shadows, radii or gradients',
     !!u4 && !/box-shadow:\s*(?!none\b)[^;\s]|border-radius:\s*[1-9]|gradient\(/.test(stripComments(u4[1])), u4 ? '' : 'section missing');
 }
+// 7. [night-69a] D-324 (PLAN-NOWY-KIERUNEK.md step T1): the UI-A preview "Lotniskowa tablica i paski lotu",
+// src/ui/skin/board.{css,ts}, loaded only by the DEV branch of src/main.ts (`?skin=board`). Its contract, as Linoryt's:
+// one token block `:root[data-skin="board"] { --board-*: … }` holds every colour, face and duration; every structural rule
+// is scoped to :root[data-skin="board"] and uses no literal; it never sets a --skin-* or palette token; its text pairs reach
+// D-47 4.5:1; its faces (Archivo, Chivo Mono, SIL OFL) are WOFF2 in public/fonts/ with licences and stay out of dist/
+// (PREVIEW_FONTS); the helpers have no runtime import; no module imports the preview statically; index.html is unchanged.
+{
+  const BOARD = 'src/ui/skin/board.css';
+  const raw = read(BOARD);
+  const board = stripComments(raw);
+  const blocks = [];
+  let depth = 0;
+  let start = 0;
+  for (let i = 0; i < board.length; i++) {
+    const ch = board[i];
+    if (ch === '{') { if (depth === 0) blocks.push({ sel: board.slice(start, i).trim(), from: i + 1 }); depth++; start = i + 1; }
+    else if (ch === '}') { depth--; if (depth === 0) blocks.at(-1).body = board.slice(blocks.at(-1).from, i); start = i + 1; }
+    else if (ch === ';' && depth === 0) start = i + 1;
+  }
+  const tokenBlocks = blocks.filter((b) => b.sel === ':root[data-skin="board"]');
+  check('board: one token block :root[data-skin="board"]', tokenBlocks.length === 1);
+  const tokenBody = tokenBlocks[0]?.body ?? '';
+  const declared = [...tokenBody.matchAll(/(--[a-z0-9-]+)\s*:/g)].map((m) => m[1]);
+  check('board: the token block sets only --board-* tokens', declared.length > 30 && declared.every((name) => name.startsWith('--board-')),
+    declared.filter((name) => !name.startsWith('--board-')).join(' '));
+  const structure = blocks.filter((b) => b !== tokenBlocks[0] && !/^@(font-face|keyframes)\b/.test(b.sel));
+  const nested = (b) => (/^@media\b/.test(b.sel) ? [...b.body.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => ({ sel: m[1].trim(), body: m[2] })) : [b]);
+  const rules = structure.flatMap(nested);
+  const parts = (sel) => { const out = []; let d = 0; let from = 0;
+    for (let i = 0; i < sel.length; i++) { if (sel[i] === '(') d++; else if (sel[i] === ')') d--; else if (sel[i] === ',' && d === 0) { out.push(sel.slice(from, i)); from = i + 1; } }
+    return [...out, sel.slice(from)].map((p) => p.trim()); };
+  const loose = rules.filter((r) => !parts(r.sel).every((p) => p.startsWith(':root[data-skin="board"]')));
+  check('board: every structural rule is scoped to :root[data-skin="board"]', rules.length > 60 && loose.length === 0, loose.slice(0, 3).map((r) => r.sel).join(' | '));
+  const boardLiterals = rules.flatMap((r) => literals(`x{${r.body}}`).filter((what) => !/^font weight /.test(what)));
+  check('board: the structure has no colour, font family or duration literal (all in the token block)', boardLiterals.length === 0, boardLiterals.slice(0, 4).join(' | '));
+  check('board: the structure sets only its local sizes (--bd-*), never a --board-*, --skin-* or palette token',
+    rules.every((r) => [...r.body.matchAll(/(?:^|;)\s*(--[a-z0-9-]+)\s*:/g)].every((m) => m[1].startsWith('--bd-'))) &&
+    !/--skin-[a-z0-9-]+\s*:|--airway-[a-z-]+\s*:/.test(board));
+  const usedBoard = new Set([...board.matchAll(/var\((--board-[a-z0-9-]+)\)/g)].map((m) => m[1]));
+  const undefinedBoard = [...usedBoard].filter((name) => !declared.includes(name));
+  check('board: every --board-* token used is defined', undefinedBoard.length === 0, undefinedBoard.join(' '));
+  // D-47: text pairs of the skin (T1 and the later stages' pairs: signs, jam, strips).
+  const hexOf = Object.fromEntries([...tokenBody.matchAll(/--board-([a-z0-9-]+):\s*(#[0-9A-Fa-f]{6})/g)].map((m) => [m[1], m[2]]));
+  const lum = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
+    .map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4)).reduce((sum, c, i) => sum + c * [0.2126, 0.7152, 0.0722][i], 0);
+  const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+  const textPairs = [['cream', 'flap-a'], ['cream', 'flap-b'], ['cream', 'enamel'], ['cream-2', 'enamel'], ['engrave', 'console'],
+    ['white', 'console'], ['sign-ink', 'cream'], ['print', 'paper'], ['sign-ink', 'sign'], ['white', 'red'], ['red', 'paper'], ['cream', 'console']];
+  const weakBoard = textPairs.filter(([fg, bg]) => !hexOf[fg] || !hexOf[bg] || ratio(hexOf[fg], hexOf[bg]) < 4.5)
+    .map(([fg, bg]) => `${fg}/${bg} ${hexOf[fg] && hexOf[bg] ? ratio(hexOf[fg], hexOf[bg]).toFixed(2) : 'missing'}`);
+  check('board: text pairs reach 4.5:1 (D-47: cream on flaps and enamel, captions on the console, white on red, red and print on paper, ink on yellow)',
+    weakBoard.length === 0, weakBoard.join(' '));
+  const faceFiles = [...raw.matchAll(/url\('\/fonts\/([^']+)'\)/g)].map((m) => m[1]);
+  const { PREVIEW_FONTS } = await import('./vite-font-files.mjs');
+  const absentBoard = [...faceFiles, 'OFL-Archivo.txt', 'OFL-ChivoMono.txt']
+    .filter((file) => { try { return statSync(resolve(ROOT, 'public/fonts', file)).size === 0; } catch { return true; } });
+  check('board: Archivo and Chivo Mono WOFF2 and their OFL licences are in public/fonts/', faceFiles.length === 4 &&
+    faceFiles.every((file) => file.endsWith('.woff2')) && absentBoard.length === 0, absentBoard.join(' '));
+  check('board: its faces and licences stay out of dist/ until the flip (PREVIEW_FONTS)',
+    [...faceFiles, 'OFL-Archivo.txt', 'OFL-ChivoMono.txt'].every((file) => PREVIEW_FONTS.includes(file)), PREVIEW_FONTS.join(' '));
+  const boardRuntime = [...read('src/ui/skin/board.ts').matchAll(/^import\s+(?!type\b)[^;]*;/gm)].map((m) => m[0]);
+  check('board: the helpers have no runtime import (src/main.ts hands in i18n and the flaps)', boardRuntime.length === 0, boardRuntime.join(' '));
+  const staticBoard = tsFiles.filter((file) => /^import\s[^;]*skin\/board(\.css)?'/m.test(read(file)));
+  check('board: no module imports the preview statically (main.ts loads it in its DEV branch only)', staticBoard.length === 0 &&
+    /import\('\.\/ui\/skin\/board'\)/.test(main) && /import\('\.\/ui\/skin\/board\.css'\)/.test(main), staticBoard.join(' '));
+  check('board: index.html keeps the shipped skin (data-skin="linoryt")', /<html[^>]*data-skin="linoryt"/.test(read('index.html')));
+}
+
 const dropped = ['BarlowCondensed-500.woff2', 'BarlowCondensed-700.woff2', 'AirwayChartMono-400.woff2', 'AirwayChartMono-600.woff2']
   .filter((file) => { try { statSync(resolve(ROOT, 'public/fonts', file)); return true; } catch { return false; } });
 check('the KARTA faces (Barlow Condensed, Airway Chart Mono) are gone from the release', dropped.length === 0, dropped.join(' '));

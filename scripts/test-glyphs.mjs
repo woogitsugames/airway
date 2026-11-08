@@ -79,9 +79,15 @@ const skinOwn = faces('src/ui/skin/linoryt.css');
 const skinCss = readFileSync(resolve(ROOT, 'src/ui/skin/current.css'), 'utf8');
 const stacks = [...skinCss.matchAll(/--skin-face-[a-z]+\s*:\s*([^;]+);/g)]
   .map((m) => m[1].split(',').map((f) => f.trim().replace(/['"]/g, '')));
+// [night-69a] D-324: the faces of the DEV UI-A preview (src/ui/skin/board.css: Archivo 600/700/800, Chivo Mono 500–800)
+// with the stacks of its token block (--board-face, --board-mono); checked like a shipped skin so the flip (T6) is safe.
+const boardOwn = faces('src/ui/skin/board.css');
+const boardCss = readFileSync(resolve(ROOT, 'src/ui/skin/board.css'), 'utf8');
+stacks.push(...[...boardCss.matchAll(/--board-(?:face|mono)\s*:\s*([^;]+);/g)]
+  .map((m) => m[1].split(',').map((f) => f.trim().replace(/['"]/g, ''))));
 const skinFaces = new Map();
 const fallbackFamilies = new Map();
-for (const [face, own] of skinOwn) {
+for (const [face, own] of [...skinOwn, ...boardOwn]) {
   const family = face.replace(/( \d+)+$/, '');
   const set = new Set(own);
   const after = new Set();
@@ -122,7 +128,7 @@ test('fonts.css declares the five shipped faces', () => {
   for (const [face, set] of shipped) if (set.size < 300) throw new Error(face + ' maps only ' + set.size + ' code points');
 });
 test('[night-11ax] every font file is WOFF2', () => {
-  const css = ['src/ui/fonts.css', 'src/ui/skin/linoryt.css'].map((f) => readFileSync(resolve(ROOT, f), 'utf8')).join('');
+  const css = ['src/ui/fonts.css', 'src/ui/skin/linoryt.css', 'src/ui/skin/board.css'].map((f) => readFileSync(resolve(ROOT, f), 'utf8')).join('');
   const urls = [...css.matchAll(/url\(['"]?([^'")]+)['"]?\)/g)].map((m) => m[1]);
   const other = urls.filter((u) => !u.endsWith('.woff2'));
   if (urls.length < 10 || other.length) throw new Error(urls.length + ' urls; not WOFF2: ' + other.join(', '));
@@ -148,6 +154,20 @@ test('[night-46a] the glyphs the Linoryt subsets lack (Besley U+2192 U+202F, Sch
   if (!(lacks('Besley 800', 0x202f) && lacks('Besley 800', 0x2192) && lacks('Schibsted Grotesk 500 700', 0x202f))) {
     throw new Error('subset changed: a Linoryt face now maps a borrowed glyph, update this test');
   }
+});
+test('[night-69a] board.css declares the UI-A faces (Archivo 600/700/800, Chivo Mono 500–800) with shipped fallbacks for their gaps', () => {
+  const keys = [...boardOwn.keys()].sort();
+  const want = ['Archivo 600', 'Archivo 700', 'Archivo 800', 'Chivo Mono 500 800'];
+  if (JSON.stringify(keys) !== JSON.stringify(want)) throw new Error('faces ' + keys.join(', '));
+  const gaps = [];
+  for (const [face, own] of boardOwn) {
+    if (own.size < 300) gaps.push(face + ' maps only ' + own.size + ' code points');
+    const after = [...fallbackFamilies.get(face)].filter((f) => !/^(sans-serif|serif|monospace)$/.test(f));
+    if (!after.length || after.some((f) => ![...shipped.keys()].some((k) => k.replace(/ \d+$/, '') === f))) gaps.push(face + ' falls back to ' + after.join(', '));
+    for (const cp of [0x2009, 0x202f, 0x2192]) if (!skinFaces.get(face).has(cp)) gaps.push(face + ' ' + show(cp));
+  }
+  if (!boardOwn.get('Chivo Mono 500 800').has(0x2192) === false) gaps.push('Chivo Mono now maps U+2192, update this test');
+  if (gaps.length) throw new Error(gaps.join('; '));
 });
 for (const [name, catalog] of [['en', en], ['pl', pl]]) {
   test(`every ${name} catalog string is in every face`, () => {

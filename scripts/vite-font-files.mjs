@@ -7,10 +7,11 @@ import { join, resolve } from 'node:path';
 
 /**
  * [night-28a] D-284: font files of public/fonts/ a release build leaves out. It held the Linoryt faces while the skin was
- * a DEV-only preview; [night-46a] D-301 (step U5) ships them, so the list is empty (kept as the one place to park a
- * preview face again).
+ * a DEV-only preview; [night-46a] D-301 (step U5) ships them. [night-69a] D-324 (PLAN-NOWY-KIERUNEK.md step T1): the
+ * UI-A faces of the DEV `?skin=board` preview (Archivo, Chivo Mono) and their licences park here until the flip (T6).
  */
-export const PREVIEW_FONTS = Object.freeze([]);
+export const PREVIEW_FONTS = Object.freeze(['Archivo-600.woff2', 'Archivo-80-700.woff2', 'Archivo-80-800.woff2', 'ChivoMono-VF.woff2',
+  'OFL-Archivo.txt', 'OFL-ChivoMono.txt']);
 
 /** TTF files of `fontsDir` that have a WOFF2 twin (the ones a release build leaves out). */
 export function replacedFonts(fontsDir) {
