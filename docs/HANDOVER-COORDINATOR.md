@@ -190,6 +190,10 @@ commitach.
 - Commity #206/#208 mają nazwę modelu w stopce (atrybucja środowiska); bez przepisywania historii.
 - Odczyt skali tekstu z systemu (Android/iOS) i Test Lab niesprawdzone na urządzeniu.
 
+- 8.11 ~05:10: #321 scalony (U6, decyzja przenumerowana D-303 → D-305; budżet CSS 130 kB, CSS 127,4 kB) i #322 scalony (GPT-19 długie przejścia na stubie, Q-92; zrzuty sprzed U6 cofnięte do wersji z dev). dev = main = 025102b. Notatki renderu z U6 (tło DIORAMA_SKY w world.ts, sonda layerContrast, obrys samolotów, stemple nocą) wysłane do sesji ext.
+- Agenci: 49a (pauza w 915×412 — test:e2e:pause-summary czerwony na dev od U5; tablica otwiera się przewinięta przy 150 %; usunięcie no-op `--skin=`), 50a (GPT-12 fala 1 DE). Dalej: GPT-13/14/15 (FR/ES/PT-BR), naprawa `coverage:fast`, U7 po telefonie właściciela (+ ikona/ekran startowy jako linoryt — rekomendacja U6).
+- Pytanie do właściciela: Q-92 (Cofnij po wyborze skrzyni kończy bieg wstecz), rekomendacja A.
+
 ## Kolejka
 - Najpierw: PR-y od GPT (jeśli są), potem zadania z paczki GPT, których GPT nie wziął (te same opisy nadają się dla
   agentów Claude), w kolejności z pliku (01, 02, 05, 06, 20, potem 03, 04, 08, 09, 11…).
