@@ -126,6 +126,15 @@ for (const ground of ['day photo', 'dusk photo', 'night photo']) {
   }
 }
 if (!/\.bd-notes \.bd-city\s*\{[^}]*background:\s*var\(--board-enamel\)/.test(boardCss)) failures.push('board: the city strip lost its enamel ground');
+// [night-75a] D-330 (T3): the hub flight strips, the full strip and the ATC strip are paper (opaque): print and the
+// labels' dimmer print on paper, the jam's red pencil figures on paper, the "+N" tile's cream on enamel (counted above).
+for (const [fg, bg] of [['print', 'paper'], ['print-dim', 'paper'], ['red', 'paper']]) {
+  boardPairs++;
+  if (!board[fg] || !board[bg]) { failures.push(`board ${fg}/${bg}: missing token`); continue; }
+  const value = contrast(board[fg], board[bg]);
+  if (value < THRESHOLD) failures.push(`board strip ${fg} on ${bg}: ${value.toFixed(2)}`);
+}
+if (!/\.bd-strip\s*\{[^}]*background:\s*var\(--board-paper\)/.test(boardCss)) failures.push('board: the hub strip lost its paper ground');
 if (!/\.bd-atlas__label\s*\{[^}]*text-shadow:[^;]*var\(--board-atlas-halo\)/.test(boardCss)) failures.push('board: atlas labels lost their halo');
 linorytPairs += boardPairs;
 for (const message of failures) console.error('FAIL ' + message);

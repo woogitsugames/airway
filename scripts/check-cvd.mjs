@@ -170,6 +170,11 @@ if (!/\.bd-notes \.airport-region-glyph path\s*\{[^}]*stroke:\s*var\(--board-cre
   console.error('FAIL the sign glyphs lost their cream outline (the dark fills would sink into the enamel)');
   failed++;
 }
+// [night-75a] D-330 (T3): on the strips' paper the glyphs keep the print outline the paper checks below assume.
+if (!/\.bd-strip \.airport-region-glyph path\s*\{[^}]*stroke:\s*var\(--board-print\)/.test(boardCss)) {
+  console.error('FAIL the strip glyphs lost their print outline');
+  failed++;
+}
 let boardChecks = 0;
 for (const [name, matrix] of Object.entries({ normal: IDENTITY, ...MATRICES })) {
   const enamelOutline = ratio(simLinear(board.cream, matrix), simLinear(board.enamel, matrix));

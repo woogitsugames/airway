@@ -237,6 +237,7 @@
     "test:e2e:board:stub": "node e2e/board.mjs --render=stub",
     "shots:board": "node e2e/board.mjs --shots",
     "shots:board:t2": "node e2e/board.mjs --shots=t2",
+    "shots:board:t3": "node e2e/board.mjs --shots=t3",
     "shots:r2": "node scripts/shots.mjs r2-day r2-dusk r2-night r2-night-low",
     "shots:r3": "node scripts/shots.mjs r3-day r3-dusk r3-night r3-night-low r3-linoryt",
     "test:e2e:linoryt-contrast": "node e2e/linoryt-contrast.mjs",
