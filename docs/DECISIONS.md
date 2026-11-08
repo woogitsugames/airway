@@ -3367,3 +3367,28 @@ thick as two fine ones) and never thinner than 1.5 device px. (3) The relief's f
 alias floor (`test:hatch-alias`, D-298); sea and night hatches keep their CSS spacing. Flicker strip 0.00 % (budget
 2 %). Rejected: the frame's ~1.3 CSS px lines (under the floor at DPR 1–2), more relief exaggeration without tone
 (darker dashes, same scatter). **Status: in force.**
+
+## D-308 — Wave-1 French and Spanish game drafts; the drafts guard refuses U+202F (2026-11-08, night 51a)
+GPT-13 and GPT-14 under D-96/D-136, in the pattern of D-306. `docs/i18n/fr.json` and `docs/i18n/es.json` are the R7i
+exchange files with all 582 rows translated; `npm run i18n:import -- fr|es --check` passes with 0 errors and
+0 warnings. Nothing ships: no `src/i18n/fr.ts`/`es.ts`, both stay in `PLANNED_LANGUAGE_ENTRIES`, legal texts untouched.
+**Register.** Each follows its store listing: French "vous" (`docs/store/fr.md`), Spanish "tú" in neutral Spanish for
+Spain and Latin America (`docs/store/es.md`; no "vosotros"). Sentence case per D-259; "hub" per D-195/D-223; network
+"réseau"/"red". French spacing before `: ; ? ! %` and inside `« »` is U+00A0 (D-146). Plural tokens give two forms
+(one|other; French `one` covers 0); `many` falls back to `other`. Where English counts with an invariant word, both add
+a token. The glossary in `docs/i18n/README.md` gains French and Spanish columns and open terms for each reviewer.
+**Shortened for a length budget.** FR: `menu.onTime` "Ponctuel" (8; "À l’heure" has 9), `menu.boarding` "Embarq." (8),
+`dock.turboprop` "Turboprop" (10), `dock.widebody` "Gros-port." (10), `upgrade.field.transfer` "Transit" (10),
+`upgrade.stampCaption.slots` "Créneau : attente max." (28), `airport.slot.label` "SLOT" and `airport.new` "NOUV." (5),
+`menu.logbook` "Journal" (10), `settings.saver` "Éco batterie" (14), `region.short.*` "Am. du N."/"Am. du S."/
+"Europe N."/"Europe S."/"M.-Orient" (10), `logbook.col.weeks` "Sem." (4). ES: `dock.turboprop` "Turboprop" (10;
+"Turbohélice" has 11), `dock.widebody` "Fus. ancho" (10), `dock.speed` "Vel. {speed}×" (10), `region.short.NAM`
+"América N." and `region.short.ME` "O. Medio" (10), `logbook.col.weeks` "Sem." (4).
+**Guard.** `test:i18n-drafts` (D-306) now covers three files and adds two self-checks: French and Spanish plural tokens
+take two or three forms, and a typed U+202F fails. The U+202F rule lives in `validateImport`, so `i18n:import` refuses
+it as well (one mechanism, no second guard). **Store.** `docs/store/review/fr.md` and `docs/store/review/es.md` list
+review notes per field of `docs/store/fr.md`/`es.md` (both unchanged), incl. the stale "monde en diorama"/"mundo de
+diorama" paragraph and the Róża alt texts that U7 rewrites from the new EN (D-296; the orders predate D-301, so the
+notes read Linoryt as shipped); they write no final store copy. Rejected: "tu" in French against the store listing
+(left to the reviewer), "Turbohélice" cut to "Turbohél." on the dock tag. **Status: in force (texts await native
+review).**

@@ -286,6 +286,9 @@ export function validateImport(options: {
       }
     }
     if (/[{}]/.test(text.replace(PLURAL, '').replace(PARAM, ''))) errors.push(`${key}: stray "{" or "}" (broken placeholder)`);
+    // [night-51a] GPT-13: D-146 maps Intl's U+202F to U+00A0 because the body font subset lacks U+202F; typed into a
+    // translation (French spacing before : ; ? ! » %) it would print as a missing glyph.
+    if (text.includes('\u202f')) errors.push(`${key}: narrow no-break space U+202F is not in the game font; use U+00A0 (D-146)`);
     const limit = limits?.get(key) ?? row.maxLength ?? null;
     if (limit !== null && Number.isFinite(limit) && measuredLength(text) > limit) {
       errors.push(`${key}: ${measuredLength(text)} characters, budget ${limit}`);
