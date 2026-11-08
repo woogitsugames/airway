@@ -55,7 +55,7 @@ If dependencies are stale: `cd ios/App && pod install`. Do not commit `Pods/`, g
 
 ## Original icon and launch art
 
-`ios/Brand/app-icon.svg` and `ios/Brand/splash.svg` are exact copies of task 24's original `resources/icon.svg` and `resources/splash.svg` (PR #12). The shared wayfinding mark uses black `#1C1E20` and yellow `#FFC72C`. The iOS icon is opaque 1024×1024; the 2732×2732 iOS launch PNG composites the shared transparent splash SVG over the **same black launch background used by Android**. All PNGs are procedural, with identical 1×/2×/3× splash image slots matching the Capacitor template. No third-party artwork.
+`ios/Brand/app-icon.svg` and `ios/Brand/splash.svg` are exact copies of task 24's original `resources/icon.svg` and `resources/splash.svg` (PR #12). The shared wayfinding mark uses black `#1C1E20` and yellow `#FFC72C`. The iOS icon is opaque 1024×1024; the 2732×2732 iOS launch PNG composites the shared transparent splash SVG over the **same launch background used by Android** — since U6 of PLAN-LINORYT (night 48a, D-301) the Linoryt paper `#ECE3CC` instead of task 24's black, and `Info.plist` keeps the light appearance (`UIUserInterfaceStyle` Light) so the status-bar text stays dark on the paper in Dark Mode too. All PNGs are procedural, with identical 1×/2×/3× splash image slots matching the Capacitor template. No third-party artwork.
 
 Task 24 exists as draft PR #12 and is not yet merged. The two iOS SVG copies are currently **byte-identical** to its asset sources; after merge, decide whether to generate both platforms from the common `resources/` SVGs rather than maintaining copies.
 
