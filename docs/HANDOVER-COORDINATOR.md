@@ -14,6 +14,14 @@ to historia (chronologicznie, najnowsze wpisy na końcu pliku przed „Kolejka�
   właściciela, makiety, nowa decyzja D-323+ (zmiana D-283/zakazów CLAUDE.md), plan etapów.
 - Nieposprzątane worktree: `/workspace/61a`, `/workspace/62a`.
 
+## STAN NA 8.11 wieczór (nowa sesja koordynatora) — czytaj najpierw
+- Q-92 A / Q-93 A potwierdzone. **Linoryt odrzucony (D-323).** Nowy kierunek: globus NASA (K2, noc domyślnie jako wygląd) + UI-A
+  „Lotniskowa tablica i paski lotu”. Plan: `docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md` (etapy R1–R6 render, T1–T7 UI, Z znak, U7).
+- Scalone: #344 research, #347 makiety UI-A (+K1/K2), #349 D-323+plan, #350 T1 (UI-A za ?skin=board, D-324). #346/#348 zamknięte (K1/K2 w #347, UI-B odrzucone). dev = main.
+- W toku: agent R1 `night/70a-earth-r1` (`/workspace/70a`, globus NASA za ?look=earth, D-325). Sesja ext nie istnieje — render robią nasi agenci (zgoda właściciela).
+- Następne: T2 po R2 (patrz plan), znak aplikacji (szkice z huba/glifów i ze znaku lotniskowego), U7 na końcu. Odchudzenie CSS niepotrzebne w tej formie.
+- Odpowiedzi właściciela: noc tylko wygląd; Blue Marble lipcowe (D-176); znak: szkice obu.
+
 ## STAN NA 8.11 11:45 UTC (poprzednia sesja)
 **Repo:** `woogitsugames/airway`. `dev` = `main` = `4de740a` (zsynchronizowane). Brak otwartych PR-ów poza
 nietykalnymi draftami #52/#88/#89. Brak worktree agentów (`git worktree list` = tylko główny). Brak agentów w tle.
