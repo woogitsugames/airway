@@ -3355,7 +3355,79 @@ glossary against the game draft, and the stale Diorama paragraph and Róża alt 
 (D-296); it writes no final store copy. Rejected: failing `test:fast` on untranslated rows (every new EN key would
 break it), a German catalog file in `src/i18n` before the review. **Status: in force (texts await native review).**
 
-## D-307 — Wall-clock budgets are info under V8 coverage; the report's tabs keep fractional heights; 640 × 360 report compacted (2026-11-08, Claude, night 52a)
+## D-307 — Linoryt relief hatch as engraved tone on the device grid (2026-11-08, Claude, ext session)
+Spec §10 L1 (the globe like `png/a-game.png` in technique; inks ±2 in sRGB). The inks print exactly (paper, ink, blue
+and ochre within ±0 of the hexes in the frames). The relief did not: short dashes 4–8 CSS px apart, their width set by
+the slope alone, read as scattered strokes, while the frame shows coherent slopes engraved in fine lines whose width
+carries the tone. **Choice.** (1) The Imhof shadow is smoothed once more (5×5, land only) so slopes form shapes, not
+speckle. (2) The relief hatch is a tone: each line takes a share of its own period (up to 80 % ink on the steepest
+shaded slopes, from a shadow of 0.06), so the mean ink is the same at every zoom (the coarse octave's lines are as
+thick as two fine ones) and never thinner than 1.5 device px. (3) The relief's finer octave keeps ≥ 4 device px and
+≥ 2.5 CSS px (spec: 4 CSS px): 4 device px at DPR 1 as before, 5–7.5 device px at DPR 2–3, still above the 3 device px
+alias floor (`test:hatch-alias`, D-298); sea and night hatches keep their CSS spacing. Flicker strip 0.00 % (budget
+2 %). Rejected: the frame's ~1.3 CSS px lines (under the floor at DPR 1–2), more relief exaggeration without tone
+(darker dashes, same scatter). **Status: in force.**
+
+## D-308 — Wave-1 French and Spanish game drafts; the drafts guard refuses U+202F (2026-11-08, night 51a)
+GPT-13 and GPT-14 under D-96/D-136, in the pattern of D-306. `docs/i18n/fr.json` and `docs/i18n/es.json` are the R7i
+exchange files with all 582 rows translated; `npm run i18n:import -- fr|es --check` passes with 0 errors and
+0 warnings. Nothing ships: no `src/i18n/fr.ts`/`es.ts`, both stay in `PLANNED_LANGUAGE_ENTRIES`, legal texts untouched.
+**Register.** Each follows its store listing: French "vous" (`docs/store/fr.md`), Spanish "tú" in neutral Spanish for
+Spain and Latin America (`docs/store/es.md`; no "vosotros"). Sentence case per D-259; "hub" per D-195/D-223; network
+"réseau"/"red". French spacing before `: ; ? ! %` and inside `« »` is U+00A0 (D-146). Plural tokens give two forms
+(one|other; French `one` covers 0); `many` falls back to `other`. Where English counts with an invariant word, both add
+a token. The glossary in `docs/i18n/README.md` gains French and Spanish columns and open terms for each reviewer.
+**Shortened for a length budget.** FR: `menu.onTime` "Ponctuel" (8; "À l’heure" has 9), `menu.boarding` "Embarq." (8),
+`dock.turboprop` "Turboprop" (10), `dock.widebody` "Gros-port." (10), `upgrade.field.transfer` "Transit" (10),
+`upgrade.stampCaption.slots` "Créneau : attente max." (28), `airport.slot.label` "SLOT" and `airport.new` "NOUV." (5),
+`menu.logbook` "Journal" (10), `settings.saver` "Éco batterie" (14), `region.short.*` "Am. du N."/"Am. du S."/
+"Europe N."/"Europe S."/"M.-Orient" (10), `logbook.col.weeks` "Sem." (4). ES: `dock.turboprop` "Turboprop" (10;
+"Turbohélice" has 11), `dock.widebody` "Fus. ancho" (10), `dock.speed` "Vel. {speed}×" (10), `region.short.NAM`
+"América N." and `region.short.ME` "O. Medio" (10), `logbook.col.weeks` "Sem." (4).
+**Guard.** `test:i18n-drafts` (D-306) now covers three files and adds two self-checks: French and Spanish plural tokens
+take two or three forms, and a typed U+202F fails. The U+202F rule lives in `validateImport`, so `i18n:import` refuses
+it as well (one mechanism, no second guard). **Store.** `docs/store/review/fr.md` and `docs/store/review/es.md` list
+review notes per field of `docs/store/fr.md`/`es.md` (both unchanged), incl. the stale "monde en diorama"/"mundo de
+diorama" paragraph and the Róża alt texts that U7 rewrites from the new EN (D-296; the orders predate D-301, so the
+notes read Linoryt as shipped); they write no final store copy. Rejected: "tu" in French against the store listing
+(left to the reviewer), "Turbohélice" cut to "Turbohél." on the dock tag. **Status: in force (texts await native
+review).**
+
+## D-309 — Linoryt objects shrink with a small disc; open-sea parallels follow the disc size (2026-11-08, Claude, ext session)
+Spec §10 L1 for the menu (`png/a-menu.png`). On the ~100 px menu globe the 22 / 30 px stamps (constant on screen,
+§5) stood over each other and over most of the North Atlantic; the frame prints them at ~12 px. The open-sea parallels
+kept the game globe's 6 px spacing (D-300) and read as wide bands on the small disc. **Choice.** (1) Stamps, the jam
+zone and planes are scaled by `objectScale` = disc radius / 320 px, between 0.55 and 1 (1 on the game globe at every
+zoom the player uses); `projectAirport` returns the drawn half size, so the notes follow. (2) The open-sea spacing
+blends from the relief's device grid (D-307) on a disc of ≤ 160 px to 6 CSS px (D-300) from 320 px; the line width is
+a tone of its period (0.13 at night → 0.37 under the sun, which is 0.8 → 2.2 px at 6 px spacing, spec §2). On the
+menu the finer lines show only on presets that render above DPR 1 (`low` renders at DPR 1, where 4 device px is the
+floor). The globe's size on the menu stays the UI's framing (D-286). Rejected: smaller stamps everywhere (touch
+targets and notes in the game), a separate menu shader. **Status: in force.**
+
+## D-310 — Wave-1 Brazilian Portuguese game draft as `docs/i18n/pt.json` (2026-11-08, night 53a)
+GPT-15 under D-96/D-136, in the pattern of D-306/D-308. `docs/i18n/pt.json` is the R7i exchange file with all 582
+rows translated; `npm run i18n:import -- pt --check` passes with 0 errors and 0 warnings. Nothing ships: no
+`src/i18n/pt.ts`, Portuguese stays in `PLANNED_LANGUAGE_ENTRIES`, legal texts untouched. **Code.** The repo already
+names Brazilian Portuguese `pt` (locale and store locale pt-BR, D-212; a pt-PT device gets it too), so the draft is
+`pt.json`, not `pt-br.json`; only the store files keep the store locale in their name (`docs/store/pt-br.md`).
+**Register.** Brazilian "você" with the imperative of the store listing ("Construa", "Conecte"), Brazilian spelling
+and words ("tela", "mouse", "aparelho", "salvar", "excluir", "compartilhar"), city names as `src/data/city-names.json`
+("Madri", "Acra"), quotes “ ”. Sentence case per D-259; "hub" per D-195/D-223; network "rede". Plural tokens give two
+forms (one|other; `one` covers 0); `many` falls back to `other`. `gameover.region.*` carry their article ("a América do
+Norte"), because every sentence that uses them says "para {region}". **Shortened for a length budget:**
+`hud.passengers` "Viajantes" (10; "Passageiros" has 11), `menu.onTime` "Pontual" (8), `settings.saver` "Modo economia"
+(14), `note.jam` "Congestionado: rede fecha em {seconds} s" (34), `dock.widebody` "Fus. larga" (10), `dock.speed`
+"Vel. {speed}×" (10), `menu.logbook` "Diário" (10), `region.short.*` "Am. Norte"/"Am. Sul"/"Eur. Norte"/"Eur. Sul"/
+"Or. Médio" (10), `logbook.col.weeks` "Sem." (4). **Guard.** `test:i18n-drafts` (D-306) now covers four files; the
+plural self-check runs for pt as well, and one self-check pins the code (`pt`, locale pt-BR; a `pt-br` draft is an
+unknown language). No second mechanism: the rules stay in `validateImport`. **Store.** `docs/store/review/pt-br.md`
+lists review notes per field of `docs/store/pt-br.md` (unchanged), incl. the stale "mundo em diorama" paragraph and the
+Róża alt texts that U7 rewrites from the new EN (D-296; the order predates D-301, so the notes read Linoryt as
+shipped); it writes no final store copy. Rejected: a `pt-br.json` file name (a second code for one language), the
+store's loanword "widebody" in the catalog (left to the reviewer). **Status: in force (texts await native review).**
+
+## D-311 — Wall-clock budgets are info under V8 coverage; the report's tabs keep fractional heights; 640 × 360 report compacted (2026-11-08, Claude, night 52a)
 **Coverage.** `coverage:fast` runs `test:fast` with `NODE_V8_COVERAGE`, where every function is instrumented and runs
 several times slower; on Linux the per-frame placement budget of `test:overlay-layout` (1 ms) and the replay budgets of
 `test:replay-cost` (600 ms per week, 5 s worst) failed there (night 40a). `scripts/lib/time-budget.mjs`

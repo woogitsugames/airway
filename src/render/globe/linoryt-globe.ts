@@ -19,8 +19,8 @@ import { chunkTerrain, createTerrainLod, TERRAIN_LOD_LEVELS } from './lod';
 import { buildTerrainArrays, type TerrainStyle } from './terrain';
 import {
   ATMOSPHERE_LINES, COAST_FIELD_RANGE_DEG, coastWidthCss, HATCH_ALIAS_FLOOR_DEVICE_PX, HATCH_BASE_PERIOD_DEG,
-  HATCH_MIN_SPACING_PX, HATCH_MIN_WIDTH_DEVICE_PX, HATCH_SAVER_MIN_SPACING_PX, HATCH_SEA_MIN_SPACING_PX, LIMB_RING_PX, LINORYT_INKS,
-  NIGHT_FULL_SUN_DEG, WATER_LINES_PX, waterLineScale,
+  HATCH_MIN_SPACING_PX, HATCH_MIN_WIDTH_DEVICE_PX, HATCH_RELIEF_MIN_CSS_PX, HATCH_RELIEF_MIN_DEVICE_PX, HATCH_SAVER_MIN_SPACING_PX, HATCH_SEA_MIN_SPACING_PX, LIMB_RING_PX, LINORYT_INKS,
+  NIGHT_FULL_SUN_DEG, seaMinSpacingCss, WATER_LINES_PX, waterLineScale,
 } from './linoryt';
 import type { GlobeInstance } from './index';
 
@@ -142,6 +142,7 @@ export function buildLinorytField(isLand: (lon: number, lat: number) => boolean,
       }
     }
   }
+  const shade = new Float32Array(width * height);
   for (let y = 0; y < height; y++) {
     const c = Math.max(0.2, Math.cos((90 - (y + 0.5) * 180 / height) * DEG));
     const up = Math.max(0, y - 1) * width, down = Math.min(height - 1, y + 1) * width;
@@ -158,11 +159,27 @@ export function buildLinorytField(isLand: (lon: number, lat: number) => boolean,
         const hs = Math.max(0, (-dzdx * lx - dzdy * ly + lz) / Math.hypot(dzdx, dzdy, 1));
         shadow = Math.max(0, Math.min(1, 1 - hs / lz));
       }
-      data[i * 4 + 1] = Math.round(shadow * 255);
+      shade[i] = shadow;
       data[i * 4 + 2] = lights[i];
       data[i * 4 + 3] = 255;
     }
   }
+  // D-307: the shadow is smoothed once more (5×5, land only) so the hatch prints coherent slopes, not speckle.
+  const blurred = new Float32Array(width * height);
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const i = y * width + x;
+      if (!land[i]) continue;
+      let sum = 0, count = 0;
+      for (let dy = -2; dy <= 2; dy++) {
+        const yy = y + dy;
+        if (yy < 0 || yy >= height) continue;
+        for (let dx = -2; dx <= 2; dx++) { const j = yy * width + (x + dx + width) % width; if (land[j]) { sum += shade[j]; count++; } }
+      }
+      blurred[i] = count ? sum / count : 0;
+    }
+  }
+  for (let i = 0; i < blurred.length; i++) data[i * 4 + 1] = Math.round(Math.min(1, blurred[i]) * 255);
   return { data, width, height, buildMs: Date.now() - started };
 }
 
@@ -221,6 +238,7 @@ export interface LinorytUniforms {
   awDpr: { value: number };
   awWaterScale: { value: number };
   awCoastWidth: { value: number };
+  awSeaMin: { value: number };
   awPaper: { value: Color };
   awInk: { value: Color };
   awBlue: { value: Color };
@@ -259,7 +277,25 @@ float awHatchMin(float u0, float g0, float wCss, float extra, float minCss) {
   float mean = min(1.0, 2.0 * hw / (2.0 * sf));
   return mix(mean, lines, smoothstep(${f(HATCH_ALIAS_FLOOR_DEVICE_PX)}, ${f(HATCH_ALIAS_FLOOR_DEVICE_PX * 2)}, 2.0 * sf));
 }
-float awHatch(float u0, float g0, float wCss, float extra) { return awHatchMin(u0, g0, wCss, extra, ${f(minSpacingPx)}); }`;
+float awHatch(float u0, float g0, float wCss, float extra) { return awHatchMin(u0, g0, wCss, extra, ${f(minSpacingPx)}); }
+// D-307: an engraver's tone: the line width is a share of its own period (tone 0..1), so the mean ink is the tone at
+// every zoom (the coarse octave's lines are as thick as two fine ones), never thinner than the device floor.
+float awHatchToneMin(float u0, float g0, float tone, float minPx) {
+  float s0 = 1.0 / max(g0, 1e-7);
+  float halvings = max(0.0, floor(log2(s0 / minPx)));
+  float k = exp2(halvings);
+  float sf = s0 / k;
+  float wf = clamp(log2(sf / minPx), 0.0, 1.0);
+  float floorHalf = ${f(HATCH_MIN_WIDTH_DEVICE_PX / 2)};
+  float fine = awLines(u0 * k, g0 * k, max(floorHalf, 0.5 * tone * sf));
+  float coarse = awLines(u0 * k * 0.5, g0 * k * 0.5, max(floorHalf, tone * sf));
+  float lines = mix(coarse, fine, wf);
+  return mix(tone, lines, smoothstep(${f(HATCH_ALIAS_FLOOR_DEVICE_PX)}, ${f(HATCH_ALIAS_FLOOR_DEVICE_PX * 2)}, 2.0 * sf));
+}
+// Relief spacing is set on the device grid: ≥ ${HATCH_RELIEF_MIN_DEVICE_PX} device px and ≥ ${HATCH_RELIEF_MIN_CSS_PX} CSS px.
+float awHatchTone(float u0, float g0, float tone) {
+  return awHatchToneMin(u0, g0, tone, max(${f(HATCH_RELIEF_MIN_DEVICE_PX)}, ${f(HATCH_RELIEF_MIN_CSS_PX)} * awDpr));
+}`;
 }
 
 function terrainFragment(saver: boolean): string {
@@ -269,6 +305,7 @@ uniform sampler2D awField;
 uniform vec3 awSunDirection;
 uniform float awWaterScale;
 uniform float awCoastWidth;
+uniform float awSeaMin; // D-309: open-sea spacing, CSS px (6 on the game globe, the relief's grid on a small disc)
 uniform vec3 awPaper;
 uniform vec3 awInk;
 uniform vec3 awBlue;
@@ -306,11 +343,12 @@ void main() {
   if (coast > 0.0) {
     colour = awOchre;
     #ifndef AW_SAVER
-    float relief = smoothstep(0.15, 0.6, field.g);
-    if (relief > 0.0) {
+    // D-307: relief as tone (the engraved share of each period), up to 80 % ink on the steepest shaded slopes.
+    float relief = smoothstep(0.06, 0.55, field.g) * 0.8;
+    if (relief > 0.02) {
       float u = (lambda - mercY) * AW_TO_BASE;
       float g = length(dLambda - dMerc) * AW_TO_BASE;
-      float lines = awHatch(u, g, mix(0.9, 2.4, relief), 1.0) * smoothstep(0.0, 0.25, relief);
+      float lines = awHatchTone(u, g, relief) * smoothstep(0.02, 0.12, relief);
       colour = mix(colour, awInk, lines);
     }
     #endif
@@ -331,7 +369,7 @@ void main() {
     float u = phi * AW_TO_BASE;
     float g = length(dPhi) * AW_TO_BASE;
     // D-300: the open-sea parallels print one step sparser (≥ 6 px) so stamps and notes stay on top of the sea.
-    float parallels = awHatchMin(u, g, mix(0.8, 2.2, day), 1.0, ${f(HATCH_SEA_MIN_SPACING_PX)});
+    float parallels = awHatchToneMin(u, g, mix(0.13, 0.37, day), awSeaMin * awDpr);
     colour = mix(colour, awPaper, max(water * (1.0 - open), parallels * open));
   }
   // Printed coast: an ink line centred on the shore, constant on screen.
@@ -391,7 +429,7 @@ export function createLinorytUniforms(field: LinorytField, sunDirection: Vector3
   texture.needsUpdate = true;
   return {
     awField: { value: texture }, awSunDirection: { value: sunDirection }, awDpr: { value: 1 },
-    awWaterScale: { value: waterLineScale(6) }, awCoastWidth: { value: 1.5 },
+    awWaterScale: { value: waterLineScale(6) }, awCoastWidth: { value: 1.5 }, awSeaMin: { value: HATCH_SEA_MIN_SPACING_PX },
     awPaper: { value: new Color(LINORYT_INKS.paper) }, awInk: { value: new Color(LINORYT_INKS.ink) },
     awBlue: { value: new Color(LINORYT_INKS.blue) }, awOchre: { value: new Color(LINORYT_INKS.ochre) },
   };
@@ -433,6 +471,7 @@ export function createLinorytSky(uniforms: LinorytUniforms): Mesh {
     if (perspective.fov && distance > 1) {
       const radiusPx = size.y / (2 * Math.tan(perspective.fov * DEG / 2)) / Math.sqrt(distance * distance - 1);
       uniforms.awWaterScale.value = waterLineScale(radiusPx * DEG);
+      uniforms.awSeaMin.value = seaMinSpacingCss(radiusPx, dpr);
       // Zoom ≥ 3 ⇔ the disc radius past ~3× the fitted one; the CSS radius at zoom 3 on a phone is ~520 px.
       uniforms.awCoastWidth.value = coastWidthCss(radiusPx * DEG >= 9 ? 3 : 1);
     }

@@ -5,7 +5,7 @@
 const {
   hatchOctaves, hatchWidthPx, HATCH_MIN_SPACING_PX, HATCH_SAVER_MIN_SPACING_PX, HATCH_ALIAS_FLOOR_DEVICE_PX,
   HATCH_MIN_WIDTH_DEVICE_PX, HATCH_BASE_PERIOD_DEG, seaLineWidthCss, nightLineWidthCss, reliefLineWidthCss,
-  nightCoverage, waterLineScale, WATER_LINES_PX, WATER_LINES_MAX_DEG, COAST_FIELD_RANGE_DEG,
+  nightCoverage, waterLineScale, reliefMinSpacingCss, seaMinSpacingCss, objectScale, WATER_LINES_PX, WATER_LINES_MAX_DEG, COAST_FIELD_RANGE_DEG,
 } = await import('../src/render/globe/linoryt.ts');
 const { GlobeOrbitCamera } = await import('../src/render/camera.ts');
 const { PerspectiveCamera } = await import('three');
@@ -29,7 +29,7 @@ for (const [w, h] of [[412, 915], [915, 412]]) {
       const pxPerDeg = disc.radius * dpr * Math.PI / 180;
       // foreshortening toward the limb × family scale: parallels, ±45° rhumb at the equator and at 50° N
       for (const f of [1, 0.7, 0.4, 0.2, 0.05]) for (const c of [1, Math.SQRT1_2, Math.SQRT1_2 * Math.cos(50 * Math.PI / 180)]) {
-        for (const min of [HATCH_MIN_SPACING_PX, HATCH_SAVER_MIN_SPACING_PX]) {
+        for (const min of [HATCH_MIN_SPACING_PX, HATCH_SAVER_MIN_SPACING_PX, reliefMinSpacingCss(dpr), seaMinSpacingCss(disc.radius, dpr)]) { // D-307 relief, D-309 sea
           const basePx = HATCH_BASE_PERIOD_DEG * pxPerDeg * f * c;
           const o = hatchOctaves(basePx, dpr, min);
           const at = `${w}x${h} z${zoom} dpr${dpr} f${f} c${c.toFixed(2)} min${min}`;
@@ -86,6 +86,14 @@ for (let p = 1; p <= 40; p += 0.5) {
   check(`water lines inside the field at ${p} px/°`, last <= WATER_LINES_MAX_DEG + EPS && last < COAST_FIELD_RANGE_DEG);
 }
 
+// 6. D-309: objects keep their size on the game globe and shrink to 0.55 on a small disc; the sea spacing blends from
+// the relief grid (small disc) to 6 CSS px (game globe) and never under 3 device px.
+check(objectScale(320) === 1 && objectScale(1000) === 1 && objectScale(100) === 0.55 && Math.abs(objectScale(240) - 0.75) < 1e-9, 'object scale 0.55…1 by disc radius');
+for (const dpr of [1, 1.5, 2, 3]) for (let r = 50; r <= 1200; r += 25) {
+  const min = seaMinSpacingCss(r, dpr);
+  check(min * dpr >= HATCH_ALIAS_FLOOR_DEVICE_PX && min <= 6 + EPS, `sea spacing r${r} dpr${dpr} = ${min}`);
+}
+check(seaMinSpacingCss(400, 2) === 6 && seaMinSpacingCss(100, 2) === reliefMinSpacingCss(2), 'sea spacing: 6 px on the game globe, relief grid on a small disc');
 for (const line of failures) console.error('FAIL ' + line);
 console.log(`SUMMARY test:hatch-alias cases=${cases} minPrintedPeriodPx=${minFine.toFixed(2)} checks=${passed + failed} ` +
   `passed=${passed} failed=${failed}`);
