@@ -1,4 +1,4 @@
-// [night-50a] GPT-12 (fr/es: night 51a, GPT-13/GPT-14): guard for the translator drafts committed in docs/i18n/<code>.json|.csv (wave 1, D-96/D-136).
+// [night-50a] GPT-12 (fr/es: night 51a, GPT-13/GPT-14; pt: night 53a, GPT-15): guard for the translator drafts committed in docs/i18n/<code>.json|.csv (wave 1, D-96/D-136).
 // A draft that would break the game when imported fails: unknown or duplicate key, a lost/invented {param}, a plural
 // token with the wrong number of forms, text over its length budget, broken braces, a file for the wrong language.
 // Missing rows (new EN keys), stale rows (EN changed since the export) and untranslated rows only print one WARN line
@@ -109,8 +109,11 @@ const onlyFor = (target: TargetLanguage, file: ExchangeFile, pattern: RegExp): v
   assert.match(problems[0], pattern);
 };
 
-test('structural: a French or Spanish plural token needs two or three forms', () => {
-  for (const target of [fr, es]) {
+// [night-53a] GPT-15: Brazilian Portuguese is code `pt` (locale pt-BR, D-212), one|other|many like fr/es.
+const pt = targets.find((entry) => entry.code === 'pt')!;
+
+test('structural: a French, Spanish or Portuguese plural token needs two or three forms', () => {
+  for (const target of [fr, es, pt]) {
     const ok = withRow(filledFor(target), 'menu.record', { translation: 'record {count} {count|passager|passagers|de passagers}' });
     assert.deepEqual(checkDraft({ file: ok, target, en, limits }).problems, []);
     const two = withRow(filledFor(target), 'menu.record', { translation: 'record {count} {count|passager|passagers}' });
@@ -119,6 +122,12 @@ test('structural: a French or Spanish plural token needs two or three forms', ()
       new RegExp(`menu\\.record: plural token .* has 4 forms, ${target.code} needs 2–3 \\(one\\|other\\|many\\)`));
     onlyFor(target, withRow(filledFor(target), 'menu.record', { translation: 'record {count} {count|passagers}' }), /has 1 forms/);
   }
+});
+
+test('the Brazilian Portuguese draft is docs/i18n/pt.json: code pt, locale pt-BR; a pt-br file is an unknown language', () => {
+  assert.deepEqual([pt.locale, pt.storeLocale, [...pt.plural]], ['pt-BR', 'pt-BR', ['one', 'other', 'many']]);
+  assert.equal(targets.find((entry) => entry.code === 'pt-br'), undefined);
+  onlyFor(pt, { ...filledFor(pt), language: 'pt-br' }, /not "pt"/);
 });
 
 test('structural: a narrow no-break space U+202F fails, U+00A0 passes (D-146)', () => {

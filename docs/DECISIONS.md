@@ -3392,3 +3392,25 @@ diorama" paragraph and the Róża alt texts that U7 rewrites from the new EN (D-
 notes read Linoryt as shipped); they write no final store copy. Rejected: "tu" in French against the store listing
 (left to the reviewer), "Turbohélice" cut to "Turbohél." on the dock tag. **Status: in force (texts await native
 review).**
+
+## D-309 — Wave-1 Brazilian Portuguese game draft as `docs/i18n/pt.json` (2026-11-08, night 53a)
+GPT-15 under D-96/D-136, in the pattern of D-306/D-308. `docs/i18n/pt.json` is the R7i exchange file with all 582
+rows translated; `npm run i18n:import -- pt --check` passes with 0 errors and 0 warnings. Nothing ships: no
+`src/i18n/pt.ts`, Portuguese stays in `PLANNED_LANGUAGE_ENTRIES`, legal texts untouched. **Code.** The repo already
+names Brazilian Portuguese `pt` (locale and store locale pt-BR, D-212; a pt-PT device gets it too), so the draft is
+`pt.json`, not `pt-br.json`; only the store files keep the store locale in their name (`docs/store/pt-br.md`).
+**Register.** Brazilian "você" with the imperative of the store listing ("Construa", "Conecte"), Brazilian spelling
+and words ("tela", "mouse", "aparelho", "salvar", "excluir", "compartilhar"), city names as `src/data/city-names.json`
+("Madri", "Acra"), quotes “ ”. Sentence case per D-259; "hub" per D-195/D-223; network "rede". Plural tokens give two
+forms (one|other; `one` covers 0); `many` falls back to `other`. `gameover.region.*` carry their article ("a América do
+Norte"), because every sentence that uses them says "para {region}". **Shortened for a length budget:**
+`hud.passengers` "Viajantes" (10; "Passageiros" has 11), `menu.onTime` "Pontual" (8), `settings.saver` "Modo economia"
+(14), `note.jam` "Congestionado: rede fecha em {seconds} s" (34), `dock.widebody` "Fus. larga" (10), `dock.speed`
+"Vel. {speed}×" (10), `menu.logbook` "Diário" (10), `region.short.*` "Am. Norte"/"Am. Sul"/"Eur. Norte"/"Eur. Sul"/
+"Or. Médio" (10), `logbook.col.weeks` "Sem." (4). **Guard.** `test:i18n-drafts` (D-306) now covers four files; the
+plural self-check runs for pt as well, and one self-check pins the code (`pt`, locale pt-BR; a `pt-br` draft is an
+unknown language). No second mechanism: the rules stay in `validateImport`. **Store.** `docs/store/review/pt-br.md`
+lists review notes per field of `docs/store/pt-br.md` (unchanged), incl. the stale "mundo em diorama" paragraph and the
+Róża alt texts that U7 rewrites from the new EN (D-296; the order predates D-301, so the notes read Linoryt as
+shipped); it writes no final store copy. Rejected: a `pt-br.json` file name (a second code for one language), the
+store's loanword "widebody" in the catalog (left to the reviewer). **Status: in force (texts await native review).**
