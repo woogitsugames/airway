@@ -38,7 +38,6 @@ import { HubDepartureLog, boardOpensOnTap } from './hubBoard'; // [night-11ag] R
 import { mountHubBoard } from '../ui/hubBoard';
 import type { World, ScreenPoint } from './world';
 import { NewAirportMarks } from './newAirports'; // [night-10a]
-import { onSettingsChange, readSettings, saveSettings } from '../ui/settings/settings'; // [G8] D-172
 
 /**
  * [night-11m] D-128: at the gameplay zoom and closer (the run opens at 3 of [1, 4]) every on-screen airport carries
@@ -107,11 +106,6 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
   let speed: GameSpeed = 1;
   let slow = 1;
   let selectedPlane: PlaneType = 'turboprop';
-  // [G8] D-172: the globe view on the dock tag; kept in sync with Settings → Globe view.
-  let globeMode = readSettings().globeMode;
-  const offGlobeMode = onSettingsChange((settings) => {
-    if (settings.globeMode !== globeMode) { globeMode = settings.globeMode; renderHud(); }
-  });
   let accumulator = 0;
   let disposed = false;
   let renderRevision = 0;
@@ -156,6 +150,12 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     reserved: () => overlayReserved,
     board: () => hubBoard.box, // [night-21a] D-268: notes and roses keep off the open hub board
     project: (lon, lat, altitude, out) => world.renderer.project(lon, lat, altitude, out),
+    // [night-46a] D-301 (U5): the notes stand beside the world's own stamp (E2 spec §8); an airport the renderer does not
+    // know yet (half 0) falls back to the projected airport and STAMP_SIZE_PX in the overlay.
+    projectAirport: (id, out) => {
+      const box = world.renderer.projectAirport?.(id, out);
+      return box !== undefined && box.half > 0;
+    },
     onNavigate: (id) => {
       const city = run.cityList().find((item) => item.id === id);
       if (city) world.orbit.setTarget(city.lon, city.lat);
@@ -175,8 +175,6 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     onUndo: () => { if (screen !== 'gameover') tool.undo(); }, // [night-11c] the map view leaves the dock reachable
     onTogglePause: () => setPaused(!paused),
     onCycleSpeed: () => { speed = speed === 1 ? 2 : speed === 2 ? 4 : 1; renderHud(); },
-    // [G8] D-172: the same setting as Settings → Globe view; main.ts applies it to the world.
-    onToggleGlobeMode: () => { saveSettings({ globeMode: globeMode === 'map' ? 'satellite' : 'map' }); },
     onSelectPlane: (type) => { selectedPlane = type; renderHud(); },
     onAssignPlane: (type, routeId) => {
       if (screen === 'gameover') return; // [night-11c]
@@ -203,6 +201,9 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     onPreviewModel: (container, kind) => {
       // The real low-poly model, rendered through the shared WebGL context into a 2D canvas.
       // Measured on the next frame, once the board is in the document.
+      // [night-45a] The draw compiles the model shaders and reads the pixels back synchronously: on SwiftShader the
+      // frame that draws a board's crates holds the page for 1–3 s (tens of seconds under CPU load). `data-model`
+      // ("drawn" / "none") marks the attempt as finished, so e2e suites wait for it before they click a crate.
       requestAnimationFrame(() => {
         if (!container.isConnected) return;
         const canvas = document.createElement('canvas');
@@ -210,8 +211,10 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
         canvas.width = Math.round(Math.max(64, container.clientWidth) * dpr);
         canvas.height = Math.round(Math.max(64, container.clientHeight) * dpr);
         container.append(canvas);
-        if (world.renderer.drawModelPreview(kind, canvas)) container.classList.add('has-model');
+        const drawn = world.renderer.drawModelPreview(kind, canvas);
+        if (drawn) container.classList.add('has-model');
         else canvas.remove();
+        container.dataset.model = drawn ? 'drawn' : 'none';
       });
     },
     onHubSelectionMode: (active, hubIds) => { hubSelection = active ? hubIds : []; layer.classList.toggle('is-selecting-hub', active); },
@@ -413,7 +416,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
         // D-68: the 58 px edge chip has no room for a city name, so it always shows the code.
         overlay.addAirport({ id: city.id, code: airportLabel(city.id, 'code'), lon: city.lon, lat: city.lat, hub: city.hub,
           label: airportLabel(city.id), // [night-11m] D-128 plate follows the D-68 code/name setting
-          name: airportLabel(city.id, 'name') }); // [night-11az] D-257 Róża: the city name along the rose
+          name: airportLabel(city.id, 'name') }); // [night-11az] D-257; [night-46a] the city name on the Linoryt note
       }
       overlay.setHub(city.id, city.hub); // [night-11m] D-128 hubs carry their plate; deduplicated inside
       overlay.setCapacity(city.id, city.capacity); // [night-11d] edge-chip gauge; deduplicated inside
@@ -509,7 +512,6 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       paused, speed, canUndo: run.networkUndoable,
       selectedPlane,
       stock: { turboprop: stock.turboprop, widebody: stock.widebody, hub: stock.hub },
-      globeMode,
       minutesToBoard: run.mode === 'puzzle' ? null : run.nextWeekTick - run.tick, // [night-11s] R6c
     });
   }
@@ -780,7 +782,6 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       firstTime.dispose();
       overlay.dispose();
       hud.destroy();
-      offGlobeMode();
       gameOver.dispose();
       jamHaptics.reset();
       layer.remove();

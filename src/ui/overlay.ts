@@ -8,19 +8,15 @@ import {
   type EdgeBounds, type EdgeChip, type SlotTagRect, type TagBounds, type TagSlot,
 } from './overlay-layout'; // [task-38] slot tag; [night-11x] R5h edge chips
 import { REGIONS } from '../data/regions';
+import { STAMP_SIZE_PX } from '../render/globe/linoryt'; // [night-46a] D-301: the world's stamp size (E2, spec §8)
 import type { FillTrend } from '../game/fillTrend'; // [night-11af] R4c (type only)
 import type { SurgeMark } from '../game/surge'; // [night-12bb] R2i (type only)
 import type { FrontMark } from '../game/weather'; // [night-12bd] R2j (type only)
 import './skin/current.css'; // [night-11aq] skin tokens read by overlay.css
 import {
-  skin, rozaEdgeClash, rozaEdgeNote, rozaExtraWidth, rozaJamShare, rozaJamWidth, rozaCaptionsYield, rozaNameLayout, rozaNoteChildren, rozaRose, MEDAL_RADIUS,
-  rozaCompactWidth, rozaDockObstacles, rozaBoardCovers, rozaNotePlaces, rozaRoseObstacles, roseLabelBelow, roseLabelText, roseNoteMust, roseRank,
-  ROZA_JAM_LINE, type Rose, type RoseLabel, type RoseLabelMode,
-} from './skin/roza'; // [night-11az] D-257: Róża skin helpers
-import {
   linoryt, linorytCompactPasses, linorytEdge, linorytFrameEnd, linorytFrameStart, linorytMarginSlot, linorytNoteChildren, linorytNoteFrame,
   linorytMarkers, linorytNoteSize, linorytProbe, linorytStampBox, linorytStampFallback, linorytStampProbe, linorytStampSlot, type StampBox,
-} from './skin/linoryt'; // [night-30a] D-284 U2: Linoryt preview notes (DEV only; every call guarded)
+} from './skin/linoryt'; // [night-30a] D-284 U2; [night-46a] D-301: the shipped skin's notes
 import './overlay.css';
 
 const DEG = Math.PI / 180;
@@ -35,7 +31,7 @@ export interface OverlayAirport {
   hub?: boolean;
   /** [night-11m] D-128: text of the airport's code plate (code or city name per the D-68 setting); default `code`. */
   label?: string;
-  /** [night-11az] D-257 Róża: the localized city name set along the airport's rose; default `code`. */
+  /** [night-11az] D-257: the localized city name printed on the airport's note; default `code`. */
   name?: string;
 }
 
@@ -54,13 +50,13 @@ export interface AirportOverlayOptions {
   project?: (lon: number, lat: number, altitude: number, out: { x: number; y: number; visible: boolean }) => unknown;
   /**
    * [night-21a] D-268: the open hub board's box in the layer's coordinates, or null while it is closed (read every
-   * frame, so return a cached object). Notes, rose names and edge chips keep off it; a rose under it steps back.
+   * frame, so return a cached object). Notes and edge chips keep off it.
    */
   board?: () => { readonly l: number; readonly t: number; readonly r: number; readonly b: number } | null;
   /**
    * [night-30a] PLAN-LINORYT.md U2: the world's airport stamp on screen (E2: `WorldRenderer.projectAirport(id, out)`,
-   * centre and half side, no allocation); returns false (or nothing) when it has none, and the Linoryt preview falls
-   * back to the projected airport and LINORYT_STAMP_PX. Read only by the preview's note layout.
+   * centre and half side, no allocation); returns false (or nothing) when it has none, and the Linoryt note layout falls
+   * back to the projected airport and STAMP_SIZE_PX ([night-46a] D-301: wired by src/game/session.ts).
    */
   projectAirport?: (id: string, out: StampBox) => unknown;
 }
@@ -139,15 +135,7 @@ interface BubbleEntry {
   lastEdgeY: number;
   lastEdgeSide: number;
   lastOpacity: number;
-  /** [night-11az] D-257 Róża: the rose around the renderer's medallion (null in the Diorama comparison skin). */
-  rose: Rose | null;
-  /** The rose's box as a fixed obstacle for the note layout (inactive without a rose). */
-  roseSlot: TagSlot;
-  /** [night-16b] D-263: the rose's name as a fixed obstacle (the ring is `roseSlot`; inactive without a name). */
-  nameSlot: TagSlot;
-  /** [night-14b] D-259: what the rose shows along its ring this frame (name, code or nothing; rozaNameLayout). */
-  roseLabel: RoseLabelMode;
-  /** Screen position of the airport itself (the tag anchor is moved beside the rose for the note's layout). */
+  /** Screen position of the airport itself (the tag anchor is moved beside the stamp for the note's layout). */
   screenX: number;
   screenY: number;
   /** [night-16a] D-262: the note shows its compact form (code and fill) this frame. */
@@ -335,23 +323,16 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
   host.appendChild(layer);
   const entries: BubbleEntry[] = [];
   const slots: TagSlot[] = [];
-  // [night-11az] D-257 Róża: the tags plus one fixed obstacle per airport rose, so a note never covers a rose.
+  // [night-11az] D-257: the tags plus one fixed obstacle per airport stamp ([night-30a] D-288), so a note never covers one.
   const layoutSlots: TagSlot[] = [];
-  const roseLabels: RoseLabel[] = []; // [night-14b] D-259: this frame's roses in view, for rozaNameLayout
-  const roseEntries: BubbleEntry[] = [];
-  // [night-16a] D-262: the Róża dock symbols as fixed obstacles for the notes (filled by rozaDockObstacles).
-  const dockSlots: TagSlot[] = skin.roza ? Array.from({ length: 8 }, (_, i) => ({ id: 'dock~' + i, anchorX: 0, anchorY: 0, width: 0,
-    height: 0, active: false, jammed: false, fixed: true, x: 0, y: 0, placed: false })) : [];
-  layoutSlots.push(...dockSlots);
   // [night-21a] D-268: the open hub board as a fixed obstacle no note ever covers (rank Infinity, as the dock).
   const boardSlot: TagSlot = { id: 'board~', anchorX: 0, anchorY: 0, width: 0, height: 0, active: false, jammed: false,
     fixed: true, rank: Infinity, x: 0, y: 0, placed: false };
   layoutSlots.push(boardSlot);
   // [night-30a] D-284 U2: the Linoryt top margin as a fixed obstacle (in landscape a block in the top-left corner).
-  if (import.meta.env.DEV && linoryt.on) layoutSlots.push(linorytMarginSlot(host));
+  if (linoryt.on) layoutSlots.push(linorytMarginSlot(host));
   // [night-30a] U2: the DEV probe of the browser audits (where the notes' layout puts each stamp).
-  if (import.meta.env.DEV && linoryt.on) linorytProbe(() => slots.map(linorytStampProbe));
-  const boardBlocked: { l: number; t: number; r: number; b: number }[] = [];
+  if (linoryt.on) linorytProbe(() => slots.map(linorytStampProbe));
   const chips: EdgeChip[] = []; // [night-11x] parallel to `slots`
   const byId = new Map<string, BubbleEntry>();
   const marker = new Vector3();
@@ -403,8 +384,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
     const jammedNow = entry.jamSeconds !== null;
     // [night-11m] D-128: the plate names the airport wherever the UI speaks of it (hub, jam countdown, NEW stub, slot
     // hold, curfew) and on every airport once the player zooms in; otherwise the disc stays unlabelled.
-    // [night-11az] D-257: Róża names every airport (the note beside its rose).
-    const plated = skin.roza || zoomedIn || entry.hub || jammedNow || entry.isNew ||
+    const plated = zoomedIn || entry.hub || jammedNow || entry.isNew ||
       entry.slotHeld > 0 || entry.closed || entry.surge !== null || entry.front !== null;
     if (plated) want.push(entry.plate);
     let freshWidth = 0;
@@ -435,15 +415,8 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
     const trendNode = entry.trend === 'filling' ? entry.trendUp : entry.trend === 'emptying' ? entry.trendDown : null;
     if (trendNode && entry.waiting.length > 0) want.push(trendNode);
     want.push(entry.timer);
-    // [night-11az] D-257 Róża: "14 z 24" after the code, one glyph per region with a count, the jam sentence.
-    if (skin.roza) {
-      usedKinds.clear();
-      rozaNoteChildren(bubble, want, plated ? entry.plate : null, entry.waiting, entry.connecting, entry.capacity,
-        limit * 18 + (entry.waiting.length > MAX_GLYPHS ? 27 : 0), Math.max(60, bounds.width - (entry.jamSeconds !== null ? 230 : 210)), entry.jamSeconds,
-        (region, hollowGlyph) => pooledGlyph(entry, region, hollowGlyph, usedKinds));
-    }
-    // [night-30a] D-284 U2 Linoryt preview: the printed note (name, fill bar of cut ticks, glyphs with counts, jam block).
-    if (import.meta.env.DEV && linoryt.on) {
+    // [night-30a] D-284 U2: the Linoryt printed note (name, fill bar of cut ticks, glyphs with counts, jam block).
+    if (linoryt.on) {
       usedKinds.clear();
       linorytNoteChildren(bubble, want, {
         name: entry.airport.name ?? entry.airport.code, code: entry.airport.code, hub: entry.hub, waiting: entry.waiting,
@@ -482,9 +455,8 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
         (surged ? entry.surgeWidth : 0) + (fronted ? entry.frontWidth : 0) +
         (trendNode && entry.waiting.length > 0 ? TREND_WIDTH : 0) +
         (plated ? entry.plateWidth - (plateOnly ? 8 : 0) : 0)) : 0;
-    if (skin.roza && entry.mainWidth > 0) entry.mainWidth = Math.max(entry.mainWidth + rozaExtraWidth(bubble), rozaJamWidth(bubble)); // [night-11az]
     // [night-30a] D-284 U2: every airport prints its note (name and fill bar at least); an empty one is placed last.
-    if (import.meta.env.DEV && linoryt.on) {
+    if (linoryt.on) {
       entry.mainWidth = linorytNoteSize(bubble).width;
       entry.tag.minor = !(entry.waiting.length > 0 || jammed || entry.isNew || entry.closed || surged || fronted);
     }
@@ -539,12 +511,11 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
     entry.edge.dataset.fill = show ? `${taken}/${entry.capacity}` : '';
   }
 
-  /** The note's layout box; [night-11az] D-257 Róża: a jam adds its sentence as a second line under the note. */
+  /** The note's layout box. */
   function sizeGroup(entry: BubbleEntry): void {
     sizeTagGroup(entry.tag, entry.mainWidth, entry.slotRect);
-    if (skin.roza && entry.mainWidth > 0 && entry.jamSeconds !== null) entry.tag.height += ROZA_JAM_LINE;
     // [night-30a] D-284 U2: the printed note's own height, the slot tag hung under it.
-    if (import.meta.env.DEV && linoryt.on && entry.mainWidth > 0) {
+    if (linoryt.on && entry.mainWidth > 0) {
       entry.tag.height = linorytNoteSize(entry.bubble).height + (entry.slotRect.width > 0 ? SLOT_TAG_GAP + SLOT_TAG_HEIGHT : 0);
     }
   }
@@ -671,16 +642,12 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
         trend: null, trendUp: trendChevron(true), trendDown: trendChevron(false),
         chip, bubbleVisible: false,
         lastBubbleX: NaN, lastBubbleY: NaN, lastEdgeX: NaN, lastEdgeY: NaN, lastEdgeSide: -1, lastOpacity: NaN,
-        rose: skin.roza ? rozaRose(layer) : null, screenX: 0, screenY: 0,
-        roseSlot: { id: airport.id + '~rose', anchorX: 0, anchorY: 0, width: 0, height: 0, active: false, jammed: false, fixed: true, x: 0, y: 0, placed: false },
-        nameSlot: { id: airport.id + '~name', anchorX: 0, anchorY: 0, width: 0, height: 0, active: false, jammed: false, fixed: true, x: 0, y: 0, placed: false },
-        roseLabel: 'name', compact: false,
+        screenX: 0, screenY: 0, compact: false,
       };
       entries.push(entry);
       slots.push(tag);
       layoutSlots.push(tag);
-      if (import.meta.env.DEV && linoryt.on) layoutSlots.push(linorytStampSlot(tag)); // [night-30a] U2: the stamp, a fixed obstacle
-      if (entry.rose) layoutSlots.push(entry.roseSlot, entry.nameSlot);
+      if (linoryt.on) layoutSlots.push(linorytStampSlot(tag)); // [night-30a] U2: the stamp, a fixed obstacle
       chips.push(chip);
       byId.set(airport.id, entry);
       rebuildBubble(entry);
@@ -803,28 +770,21 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       const live = options.reserved?.();
       bounds.top = live ? live.top : options.reservedTop ?? 72;
       bounds.bottom = live ? live.bottom : options.reservedBottom ?? 92;
-      // [night-11az] D-257 Róża: in landscape the dock arc's captions reach about twice the dock band into the screen;
-      // notes stay left of them.
-      if (skin.roza && live && live.right > 0) bounds.width = Math.max(120, width - live.right * 2);
       edgeBounds.width = width;
       edgeBounds.height = height;
       edgeBounds.top = bounds.top;
       edgeBounds.bottom = bounds.bottom;
-      // [night-23a] Róża: the edge buttons keep left of the same arc band as the notes; the Diorama column width (96)
-      // let a button sit on the arc's hub symbol in landscape (e2e/edge-dock.mjs at 915 × 412).
-      edgeBounds.right = live ? (skin.roza && live.right > 0 ? live.right * 2 : live.right) : 0;
+      edgeBounds.right = live ? live.right : 0;
       const board = options.board?.() ?? null;
       boardSlot.active = board !== null;
-      boardBlocked.length = 0;
       if (board) {
         boardSlot.x = board.l;
         boardSlot.y = board.t;
         boardSlot.width = board.r - board.l;
         boardSlot.height = board.b - board.t;
-        boardBlocked.push(board);
       }
       // [night-30a] D-284 U2: the Linoryt paper margins (top margin, dock) bound the notes and the edge chips.
-      if (import.meta.env.DEV && linoryt.on) linorytFrameStart(host, width, height, bounds, edgeBounds);
+      if (linoryt.on) linorytFrameStart(host, width, height, bounds, edgeBounds);
       for (const entry of entries) {
         marker.copy(entry.anchor);
         transformedNormal.copy(entry.normal);
@@ -857,51 +817,15 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
         entry.tag.anchorY = y;
         entry.screenX = x;
         entry.screenY = y;
-        if (entry.rose) {
-          // [night-11az] D-257 Róża: the rose rings the renderer's medallion; its inner radius is the medallion's
-          // footprint projected here (the larger of a north and an east offset, so a limb airport keeps its size).
-          let r = entry.hub ? 18 : 12;
-          if (inView && options.project && !transform) {
-            const angle = entry.hub ? MEDAL_RADIUS.hub : MEDAL_RADIUS.airport;
-            const lat = entry.airport.lat, alt = entry.airport.hub ? 1.075 : 1.045;
-            options.project(entry.airport.lon, lat + (lat > 80 ? -1 : 1) * angle / DEG, alt, projected);
-            const north = Math.hypot(projected.x - x, projected.y - y);
-            options.project(entry.airport.lon + angle / DEG / Math.max(.2, Math.cos(lat * DEG)), lat, alt, projected);
-            r = Math.min(40, Math.max(north, Math.hypot(projected.x - x, projected.y - y)));
-          }
-          // Drawn after this loop, once rozaNameLayout has seen every rose in view.
-          const jam = entry.jamSeconds !== null;
-          const fill = entry.capacity > 0 ? Math.min(1, entry.waiting.length / entry.capacity) : 0;
-          const label: RoseLabel = { x, y, r, hub: entry.hub, jam, name: entry.airport.name ?? entry.airport.code,
-            code: entry.airport.code, fill, fresh: entry.isNew, last: entry.roseLabel };
-          // [night-21a] D-268: a rose whose ring the open hub board covers steps back with its note (D-259 does the same
-          // for the upgrade crates); the board's own airport keeps its rose wherever the board leaves it in view.
-          const shown = inView && !(board !== null && rozaBoardCovers(label, board));
-          if (shown) roseLabels.push(label);
-          if (shown) roseEntries.push(entry);
-          entry.rose.place(x, y, shown);
-          // [night-16a] D-262: the note's full width again (the last layout may have left the compact one), its compact
-          // form, and its priority: a jam, a hub, the fuller airport; the rose's box shares it (a must note's pass).
-          sizeGroup(entry);
-          entry.tag.compactWidth = Math.max(rozaCompactWidth(entry.bubble, entry.plate.textContent ?? entry.airport.code,
-            roseNoteMust(label) ? entry.freshWidth : 0), entry.slotRect.width);
-          entry.tag.rank = entry.roseSlot.rank = entry.nameSlot.rank = roseRank(label);
-          // [night-24a] D-281: a newly opened airport's note must show (code + NEW at least) for as long as the mark lasts.
-          entry.tag.must = roseNoteMust(label);
-          // The rose's box (ticks and the name arc) is a fixed obstacle for the notes; it and the note's places beside
-          // and under the rose are set from the rose's name after the name layout below.
-          entry.roseSlot.active = shown;
-          entry.nameSlot.active = false;
-          if (!shown) entry.tag.active = false;
-        }
-        // [night-30a] D-284 U2: the note beside the world's stamp (projectAirport once E2 lands, else the constant size).
-        if (import.meta.env.DEV && linoryt.on) {
+        // [night-30a] D-284 U2: the note beside the world's stamp (projectAirport, else the projected airport and STAMP_SIZE_PX).
+        if (linoryt.on) {
           const stamp = linorytStampBox(entry.tag);
           if (!options.projectAirport?.(entry.airport.id, stamp)) {
             // The stamp lies on the ground (a quad tangent to the globe), not at the marker's height.
             if (options.project && !transform) options.project(entry.airport.lon, entry.airport.lat, 1, projected);
             else { projected.x = x; projected.y = y; projected.visible = true; }
-            linorytStampFallback(stamp, projected.x, projected.y, entry.hub, inView && projected.visible);
+            linorytStampFallback(stamp, projected.x, projected.y, (entry.hub ? STAMP_SIZE_PX.hub : STAMP_SIZE_PX.airport) / 2,
+              inView && projected.visible);
           }
           sizeGroup(entry);
           linorytNoteFrame(entry.tag, { code: entry.airport.code, hub: entry.hub, jam: entry.jamSeconds !== null, fresh: entry.isNew,
@@ -915,64 +839,18 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
           const dx = transformedNormal.x * cam[0] + transformedNormal.y * cam[1] + transformedNormal.z * cam[2];
           const dy = -(transformedNormal.x * cam[4] + transformedNormal.y * cam[5] + transformedNormal.z * cam[6]);
           projectEdgeChip(chip, dx, dy, entry.airport.lon, edgeBounds);
-          // [night-11az] D-257 Róża: the distance note "1 790 km" from the view centre.
-          if (skin.roza) rozaEdgeNote(entry.edge, transformedNormal, cameraPosition, chip.side);
           // [night-30a] D-284 U2: the printed chip "Karaczi → / 2 408 km · 8 z 12", as wide as its lines.
-          if (import.meta.env.DEV && linoryt.on) {
+          if (linoryt.on) {
             chip.width = linorytEdge(entry.edge, entry.airport.name ?? entry.airport.code, entry.airport.code, transformedNormal, cameraPosition,
               Math.min(entry.waiting.length, entry.capacity), entry.capacity);
           }
         }
       }
-      if (skin.roza) {
-        // [night-14b] D-259: in a dense cluster at close zoom a lower-priority rose shortens its name to the code or drops it,
-        // and a dock caption that would lie over a rose steps back.
-        const modes = roseEntries.length ? rozaNameLayout(roseLabels, boardBlocked) : [];
-        let busiest: BubbleEntry | null = null;
-        roseEntries.forEach((entry, i) => {
-          const label = roseLabels[i];
-          const mode = modes[i];
-          entry.roseLabel = mode;
-          entry.rose?.draw({ cap: entry.capacity, taken: Math.min(entry.waiting.length, entry.capacity), hub: entry.hub,
-            jam: rozaJamShare(entry.jamSeconds), name: roseLabelText(label, mode), below: roseLabelBelow(mode) }, label.r);
-          // [night-16a] D-262: the rose's box is what it shows (a rose without a name is only its ring), and the note's
-          // place under the rose starts below that box.
-          rozaRoseObstacles(entry.roseSlot, entry.nameSlot, label, mode);
-          rozaNotePlaces(entry.tag, label, mode, width);
-          if (entry.hub && entry.tag.active && (!busiest || (entry.tag.rank ?? 0) > (busiest.tag.rank ?? 0))) busiest = entry;
-        });
-        // The busiest hub in view always shows at least its code and fill (TagSlot.must).
-        if (busiest) (busiest as BubbleEntry).tag.must = true;
-        rozaDockObstacles(host, dockSlots);
-        layoutTags(layoutSlots, bounds);
-        // [night-16b] D-263: a forced note (the busiest hub's; [night-24a] D-281: a new airport's) over a lower-ranked rose's
-        // name: that name steps back this frame.
-        roseEntries.forEach((entry, i) => {
-          const name = entry.nameSlot;
-          if (!name.active) return;
-          const covered = roseEntries.some((other) => {
-            const forced = other.tag;
-            return other !== entry && forced.must === true && forced.placed && forced.x < name.x + name.width && name.x < forced.x + forced.width &&
-              forced.y < name.y + name.height && name.y < forced.y + forced.height;
-          });
-          if (!covered) return;
-          name.active = false;
-          modes[i] = 'none';
-          entry.roseLabel = 'none';
-          const label = roseLabels[i];
-          entry.rose?.draw({ cap: entry.capacity, taken: Math.min(entry.waiting.length, entry.capacity), hub: entry.hub,
-            jam: rozaJamShare(entry.jamSeconds), name: '' }, label.r);
-        });
-        rozaCaptionsYield(host, roseLabels, modes, slots);
-        roseEntries.length = 0;
-        roseLabels.length = 0;
-      } else {
-        if (import.meta.env.DEV && linoryt.on) linorytFrameEnd(); // [night-30a] U2: the busiest hub's note must show
-        layoutTags(layoutSlots, bounds);
-      }
+      if (linoryt.on) linorytFrameEnd(); // [night-30a] U2: the busiest hub's note must show
+      layoutTags(layoutSlots, bounds);
       // [night-30a] D-284 U2: a note with no room takes its one-line compact form (layout again); chips of their own width.
-      if (import.meta.env.DEV && linoryt.on) linorytCompactPasses(layoutSlots, bounds, layoutTags);
-      if (import.meta.env.DEV && linoryt.on) placeSizedEdgeChips(chips, slots, edgeBounds, linorytMarkers(slots));
+      if (linoryt.on) linorytCompactPasses(layoutSlots, bounds, layoutTags);
+      if (linoryt.on) placeSizedEdgeChips(chips, slots, edgeBounds, linorytMarkers(slots));
       else placeEdgeChips(chips, slots, edgeBounds);
       for (const entry of entries) {
         const tag = entry.tag;
@@ -981,7 +859,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
         if (compact !== entry.compact) { entry.compact = compact; entry.bubble.classList.toggle('airport-bubble--compact', compact); }
         attachSlotTag(tag, entry.mainWidth > 0, entry.slotRect);
         // [night-30a] D-284 U2: the slot tag hangs under the printed note (taller than the luggage tag).
-        if (import.meta.env.DEV && linoryt.on && entry.slotRect.visible && entry.mainWidth > 0) entry.slotRect.y = tag.y + tag.height - SLOT_TAG_HEIGHT;
+        if (linoryt.on && entry.slotRect.visible && entry.mainWidth > 0) entry.slotRect.y = tag.y + tag.height - SLOT_TAG_HEIGHT;
         const showSlot = entry.slotRect.visible;
         if (entry.slotVisible !== showSlot) { updateVisibility(entry.slot, showSlot); entry.slotVisible = showSlot; }
         if (showSlot && (entry.slotRect.x !== entry.lastSlotX || entry.slotRect.y !== entry.lastSlotY)) {
@@ -1006,7 +884,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
         }
         const chip = entry.chip;
         // [night-30a] D-284 U2: the same for a Linoryt chip, measured with its own width.
-        if (import.meta.env.DEV && linoryt.on && board !== null && chip.placed && chip.x < board.r && chip.x + (chip.width ?? EDGE_CHIP_WIDTH) > board.l &&
+        if (linoryt.on && board !== null && chip.placed && chip.x < board.r && chip.x + (chip.width ?? EDGE_CHIP_WIDTH) > board.l &&
           chip.y < board.b && chip.y + EDGE_CHIP_HEIGHT > board.t) chip.placed = false;
         // [night-21a] D-268: an edge chip the open hub board would cover steps back while it is open.
         const showEdge = chip.offscreen && chip.placed && !(board !== null && chip.x < board.r && chip.x + EDGE_CHIP_WIDTH > board.l &&
@@ -1017,7 +895,6 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
           entry.lastEdgeX = entry.chip.x;
           entry.lastEdgeY = entry.chip.y;
         }
-        if (skin.roza && showEdge) rozaEdgeClash(entry.edge, entry.chip, slots); // [night-11az]
         if (showEdge && entry.lastEdgeSide !== entry.chip.side) {
           const icon = entry.edge.firstElementChild as SVGElement | null;
           if (icon) icon.style.transform = `rotate(${entry.chip.side === 0 ? 180 : entry.chip.side === 1 ? 0 : entry.chip.side === 2 ? -90 : 90}deg)`;

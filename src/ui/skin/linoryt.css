@@ -1,59 +1,40 @@
 /* [night-28a] D-283 / D-284: UI skin "Linoryt" — a relief print in three inks on paper (docs/styles/kierunki-2026-11b/
-   KIERUNKI.md, direction A; staged plan docs/styles/kierunki-2026-11b/PLAN-LINORYT.md). Step U1, a DEV-only preview:
-   src/main.ts loads this file only for `?skin=linoryt` in a DEV build and sets <html data-skin="linoryt">; every rule
-   below is scoped to it, a release build never sees the file (dist/ unchanged).
-   The preview restyles the base ("Diorama") HUD and menu DOM — not Róża's, which the flip step U5 deletes — with the
-   helpers of src/ui/skin/linoryt.ts: a paper margin at the top (Besley clock, week, "day 2 of 3 · N passengers", a day
-   bar of 24 carved hours), a paper dock behind a double print rule at the bottom (cut symbols, captions; the chosen
-   aircraft a solid ink block, an empty one only its outline, its wait in blue), and the menu as a printed index (the
-   run-starting entry on the one red block). Text is printed on paper or carries a paper ground, never a shadow; no
-   gradients, glows, rounded cards or translucent sheets.
-   Fonts: Besley (800 and 900 static instances: names and titles, the clock) and Schibsted Grotesk (500–700, text and figures), SIL OFL, WOFF2
-   subsets in public/fonts/ with their licences (docs/ASSETS.md); kept out of dist/ until U5 (scripts/vite-font-files.mjs).
+   KIERUNKI.md, direction A; staged plan docs/styles/kierunki-2026-11b/PLAN-LINORYT.md). [night-46a] D-301 (step U5):
+   the shipped skin. src/main.ts imports this file after every component stylesheet; index.html sets
+   <html data-skin="linoryt"> and every structural rule below is scoped to it (a release build writes the scope as
+   `:root:root`, and scripts/vite-skin-prune.mjs drops the component declarations these rules always override). The
+   token values are src/ui/skin/current.css; this file holds the inks (one plain :root) and the structure.
+   It restyles the base ("Diorama") HUD, overlay and menu DOM with the helpers of src/ui/skin/linoryt.ts: a paper margin
+   at the top (Besley clock, week, "day 2 of 3 · N passengers", a day bar of 24 carved hours), a paper dock behind a
+   double print rule at the bottom (five cut symbols, captions; the chosen aircraft a solid ink block, an empty one only
+   its outline, its wait in blue), and the menu as a printed index (the run-starting entry on the one red block). Text is
+   printed on paper or carries a paper ground, never a shadow; no gradients, glows, rounded cards or translucent sheets.
+   Fonts: Besley (800 and 900 static instances: names and titles, the clock) and Schibsted Grotesk (500–700, text and
+   figures), SIL OFL, WOFF2 subsets in public/fonts/ with their licences (docs/ASSETS.md).
    Sizes: HUD and dock keep in-world sizes at every text step (as D-248/D-267); the menu entries follow the title step. */
 @font-face { font-family: 'Besley'; font-weight: 800; font-display: swap; src: url('/fonts/Besley-800.woff2') format('woff2'); }
 @font-face { font-family: 'Besley'; font-weight: 900; font-display: swap; src: url('/fonts/Besley-900.woff2') format('woff2'); }
 @font-face { font-family: 'Schibsted Grotesk'; font-weight: 500 700; font-display: swap; src: url('/fonts/SchibstedGrotesk-VF.woff2') format('woff2'); }
 
-/* ---- Part 1: inks (D-283) and the skin tokens of the preview ------------------------------------------------------ */
-:root[data-skin="linoryt"] {
+/* ---- Part 1: inks (D-283). Constants of a plain :root: the release writes them out in place (vite-skin-inline). ---- */
+:root {
   --lin-paper: #ECE3CC;
   --lin-paper-deep: #E0D5B8; /* pressed paper (a second pull of the same ink, no new colour) */
+  --lin-paper-pressed: #D3C7A6; /* a pressed control on paper */
   --lin-ink: #1E1C1F;
   --lin-ink-dim: #4F4A44; /* ink at ~75 % on paper, opaque so contrast is measurable (7.2:1) */
+  --lin-rule-ink: #8C826F; /* a hairline rule that must not read as text */
   --lin-blue: #2B4A66;
   --lin-ochre: #D29C47;
   /* One red, slightly deeper than the mockup's #C8412A (3.9:1 under paper letters): #B33823 carries 13 px paper text on
      the red block and red letters on paper at 4.7:1 (D-47, D-284). */
   --lin-red: #B33823;
   --lin-rule: 2px;
-  /* Faces of the whole UI: Besley for display, Schibsted Grotesk for text and figures (no mono face). */
-  --skin-face-text: 'Schibsted Grotesk', 'Atkinson Hyperlegible Next', 'Overpass', sans-serif;
-  --skin-face-display: 'Besley', 'Alegreya', 'Atkinson Hyperlegible Next', serif;
-  --skin-face-mono: 'Schibsted Grotesk', 'Atkinson Hyperlegible Next', 'Overpass Mono', sans-serif;
-  /* The Róża palette the component tokens point at, re-inked for paper (preview only; U5 replaces the token file):
-     its dark ground becomes paper, its chalk letters ink, so the sheets not yet redrawn (U4) print on paper too. */
-  --roza-ink: #ECE3CC;
-  --roza-ink-raised: #E0D5B8;
-  --roza-ink-pressed: #D3C7A6;
-  --roza-chalk: #1E1C1F;
-  --roza-dim: #4F4A44;
-  --roza-rule: #8C826F;
-  --roza-vermilion: #B33823;
-  --roza-vermilion-ink: #B33823;
-  --roza-sky-ink: #1E1C1F;
-  --roza-sky-halo: #ECE3CC;
-  --roza-halo: none;
-  --roza-sky-glow: none;
-  --skin-hud-ink: var(--lin-ink);
-  --skin-hud-paper: var(--lin-paper);
-  --skin-hud-alert: var(--lin-red);
-  --skin-dock-tag-empty-ink: var(--lin-ink);
-  --skin-hover-rule: inset 0 -3px 0 var(--lin-ink);
-  --skin-control-radius: 0;
-  /* Behind the weekly board and the report: a pull of paper over the print, not a dark translucent sheet. */
-  --skin-crate-scrim: rgba(236, 227, 204, .86);
-  --skin-go-scrim: rgba(236, 227, 204, .86);
+  /* Thick outer line, paper gap, thin inner line: the neatline of a printed sheet (inset, so it takes no room). */
+  --lin-neatline: inset 0 0 0 3px var(--lin-ink), inset 0 0 0 6px var(--lin-paper), inset 0 0 0 7.5px var(--lin-ink);
+  --lin-frame: inset 0 0 0 2px var(--lin-ink);
+  /* The first free line under the HUD's top margin (the base sheets assumed a 70 px boarding pass). */
+  --lin-top: calc(var(--lin-pass-bottom, calc(var(--aw-safe-top) + 72px)) + 8px);
 }
 :root[data-skin="linoryt"] body { background: var(--lin-paper); }
 
@@ -104,7 +85,7 @@
 
 /* ---- Part 3: the dock, a paper margin behind a double print rule ---------------------------------------------------- */
 :root[data-skin="linoryt"] .airway-dock {
-  left: 0; right: 0; bottom: 0; gap: 0; grid-template-columns: repeat(6, minmax(0, 1fr)); justify-content: stretch;
+  left: 0; right: 0; bottom: 0; gap: 0; grid-template-columns: repeat(5, minmax(0, 1fr)); justify-content: stretch;
   padding: 10px calc(var(--hud-safe-right) + 6px) calc(var(--hud-safe-bottom) + 6px) calc(var(--hud-safe-left) + 6px);
   background: var(--lin-paper); border-top: 4px solid var(--lin-ink);
 }
@@ -148,7 +129,7 @@
 }
 
 /* Landscape phone: the HUD is a paper block in the top-left corner, the dock a paper column down the right edge with
-   the double rule on its left; captions sit beside the symbol so six 48 px rows fit a 320 px tall screen. */
+   the double rule on its left; captions sit beside the symbol so five 48 px rows fit a 320 px tall screen. */
 :root[data-skin="linoryt"] .airway-hud[data-layout='landscape'] .airway-pass {
   right: auto; width: min(480px, calc(100% - var(--hud-safe-left) - var(--hud-safe-right) - 160px));
   padding-top: calc(var(--hud-safe-top) + 6px); padding-bottom: 6px; border-right: var(--lin-rule) solid var(--lin-ink);
@@ -172,9 +153,9 @@
 :root[data-skin="linoryt"] .airway-hud[data-layout='landscape'] .airway-dock__count { top: 2px; left: 26px; }
 :root[data-skin="linoryt"] .airway-hud[data-layout='landscape'] .lin-wait { flex-basis: 100%; padding-left: 30px; }
 
-/* Foldables and tablets: the portrait margins, the dock's six cells centred at phone width. */
+/* Foldables and tablets: the portrait margins, the dock's five cells centred at phone width. */
 :root[data-skin="linoryt"] .airway-hud[data-layout='foldable'] .airway-dock {
-  top: auto; left: 0; right: 0; bottom: 0; width: auto; display: grid; grid-template-columns: repeat(6, minmax(0, 92px));
+  top: auto; left: 0; right: 0; bottom: 0; width: auto; display: grid; grid-template-columns: repeat(5, minmax(0, 92px));
   justify-content: center; border-left: 0; border-top: 4px solid var(--lin-ink);
   padding: 10px calc(var(--hud-safe-right) + 6px) calc(var(--hud-safe-bottom) + 8px) calc(var(--hud-safe-left) + 6px);
 }
@@ -383,15 +364,6 @@
    `--lin-pass-bottom`, the margin's measured bottom edge (linoryt.ts), so the HUD stays readable and nothing of the
    hatched world shows through a half-transparent pull. Geometry otherwise follows the base sheets, so the fits measured
    by test:e2e:board-short / gameover-short / pause-reach / text-scale-150 carry over. */
-:root[data-skin="linoryt"] {
-  /* Thick outer line, paper gap, thin inner line: the neatline of a printed sheet (inset, so it takes no room). */
-  --lin-neatline: inset 0 0 0 3px var(--lin-ink), inset 0 0 0 6px var(--lin-paper), inset 0 0 0 7.5px var(--lin-ink);
-  --lin-frame: inset 0 0 0 2px var(--lin-ink);
-  /* The first free line under the HUD's top margin (the base sheets assumed a 70 px boarding pass). */
-  --lin-top: calc(var(--lin-pass-bottom, calc(var(--aw-safe-top) + 72px)) + 8px);
-  --skin-crate-scrim: var(--lin-paper);
-  --skin-go-scrim: var(--lin-paper);
-}
 
 /* While the weekly board or the report is open the top margin keeps the clock and the week only: game time stands still
    (U1 already folds the day bar), and the pause target goes too — the base sheets covered it with their scrim, and now
@@ -481,7 +453,8 @@
 :root[data-skin="linoryt"] .airway-upgrade-stamp { border: 2px solid var(--lin-ink); color: var(--lin-ink); }
 /* The model window prints the cut symbol of the cargo (the dock's symbols) instead of the 3D model. */
 :root[data-skin="linoryt"] .airway-upgrade-model { border: 0; background: var(--lin-paper); color: var(--lin-ink); box-shadow: inset 0 0 0 1.5px currentColor; }
-:root[data-skin="linoryt"] .airway-upgrade-model canvas { display: none; }
+/* :is(#app, body) outweighs the base `#app canvas { display: block }` (the board is mounted inside #app in the game). */
+:root[data-skin="linoryt"] :is(#app, body) .airway-upgrade-model canvas { display: none; }
 :root[data-skin="linoryt"] .airway-upgrade-model::before,
 :root[data-skin="linoryt"] .airway-upgrade-model.has-model::before {
   display: block; width: 64%; height: 64%; clip-path: none; background: currentColor;
@@ -590,7 +563,13 @@
   :root[data-skin="linoryt"] .airway-upgrade-waybill-short { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
   :root[data-skin="linoryt"] :is(.airway-upgrade-waybill-mark, .airway-upgrade-waybill-goal) { flex: none; }
   :root[data-skin="linoryt"] .airway-upgrade-waybill-mark { color: var(--lin-ink-dim); }
+  /* The sign takes a row of its own under the margin: the model window gives that height back (D-209's window assumed
+     the sign beside a 420 px pass), so the three crates end above the bottom inset; 14 px under the tilted stamp. */
+  :root[data-skin="linoryt"] .airway-upgrade-open:not(.is-picking-hub) {
+    --upgrade-win: clamp(48px, calc(100vh - var(--lin-top) - 264px - var(--aw-safe-bottom)), 230px);
+  }
   :root[data-skin="linoryt"] .airway-upgrade-tag { padding-bottom: 8px; }
+  :root[data-skin="linoryt"] .airway-upgrade:not([data-crates="4"]) .airway-upgrade-tag:has(.airway-upgrade-stamp) { padding-bottom: 14px; }
   :root[data-skin="linoryt"] .airway-upgrade[data-crates="4"] .airway-upgrade-grid { grid-template-columns: minmax(0, 1fr); gap: 0; }
   :root[data-skin="linoryt"] .airway-upgrade[data-crates="4"] .airway-upgrade-value { margin-bottom: 2px; }
   :root[data-skin="linoryt"] .airway-upgrade[data-crates="4"] .airway-upgrade-heading { font-size: calc(11px * var(--airway-text-scale)); gap: 4px; }
@@ -761,6 +740,11 @@
 :root[data-skin="linoryt"] .airway-hub-board__close:focus-visible { outline: 3px solid var(--lin-red); }
 :root[data-skin="linoryt"] .airway-hub-board__rows { padding: 0 6px; }
 :root[data-skin="linoryt"] .airway-hub-board__row { border-bottom: 1px solid var(--lin-ink-dim); font-weight: 600; }
+/* A short portrait phone: the top margin is ~40 px taller than the old pass, so the rows close up to keep a full board
+   (8 regions) without scrolling at 360 × 640. */
+@media (orientation: portrait) and (max-height: 700px) {
+  :root[data-skin="linoryt"] .airway-hub-board__row { padding: 3px 0; }
+}
 :root[data-skin="linoryt"] .airway-hub-board__count { font-weight: 700; font-variant-numeric: tabular-nums; }
 :root[data-skin="linoryt"] .airway-hub-board__mark { color: var(--lin-ink); }
 :root[data-skin="linoryt"] .airway-hub-board__row[data-cause='none'] :is(.airway-hub-board__mark, .airway-hub-board__text) { color: var(--lin-ink-dim); }
@@ -812,15 +796,6 @@
 :root[data-skin="linoryt"] .airway-route-menu .airway-route-menu-danger { color: var(--lin-red); }
 
 /* ---- Training flight: the stage on paper, the vignette re-inked (sea blue, land ochre, ink limb), cards as slips ---- */
-:root[data-skin="linoryt"] {
-  --skin-tutorial-ink: var(--lin-ink); --skin-tutorial-focus: var(--lin-red); --skin-tutorial-sky: var(--lin-paper);
-  --skin-tutorial-paper: var(--lin-paper); --skin-tutorial-card-ink: var(--lin-ink); --skin-tutorial-teal: var(--lin-ink);
-  --skin-tutorial-perforation: var(--lin-ink-dim); --skin-tutorial-route: var(--lin-ink); --skin-tutorial-route-feeder: var(--lin-ink);
-  --skin-tutorial-route-primary: var(--lin-ink); --skin-tutorial-guide: var(--lin-ink); --skin-tutorial-target: var(--lin-ink);
-  --skin-tutorial-strip-bg: var(--lin-paper); --skin-tutorial-strip-edge: var(--lin-ink); --skin-tutorial-dock-bg: var(--lin-paper);
-  --skin-tutorial-sign-bg: var(--lin-ink); --skin-tutorial-sign-ink: var(--lin-paper); --skin-tutorial-dialog-bg: var(--lin-paper);
-  --skin-tutorial-dialog-ink: var(--lin-ink); --skin-tutorial-dialog-button-bg: var(--lin-paper); --skin-tutorial-dialog-button-rule: var(--lin-ink);
-}
 :root[data-skin="linoryt"] .aw-tutorial-ticket { border: 0; box-shadow: var(--lin-neatline); padding: 4px; height: auto; min-height: 68px; }
 /* At the large text steps the card keeps its whole text (it shrank to its 64 px floor and the words ran out of it). */
 :root[data-skin="linoryt"] .aw-tutorial-strip { flex-shrink: 0; }
@@ -897,66 +872,6 @@
    raised cards, no translucent sheets. Faces: Besley for titles and figures that name things, Schibsted Grotesk for text
    and numbers. Sizes follow the text-scale tokens (--airway-text-scale*, up to 150 %). The globe-view setting is gone in
    the preview (settings.ts; Satelita and Mapa leave with E4, D-283/D-285). */
-:root[data-skin="linoryt"] {
-  --skin-settings-backdrop: var(--lin-paper);
-  --skin-settings-paper: var(--lin-paper);
-  --skin-settings-ink: var(--lin-ink);
-  --skin-settings-accent: var(--lin-ink);
-  --skin-settings-back-bg: transparent;
-  --skin-settings-rule: var(--lin-ink);
-  --skin-settings-control-bg: var(--lin-paper);
-  --skin-settings-control-ink: var(--lin-ink);
-  --skin-settings-alert: var(--lin-red);
-  --skin-settings-dim-ink: var(--lin-ink-dim);
-  --skin-settings-licenses-bg: transparent;
-  --skin-settings-licenses-ink: var(--lin-ink);
-  --skin-settings-warning-ink: var(--lin-ink);
-  --skin-settings-note-bg: var(--lin-paper-deep);
-  --skin-logbook-edge: transparent;
-  --skin-logbook-rule: var(--lin-ink);
-  --skin-logbook-row-rule: var(--lin-ink);
-  --skin-logbook-label-ink: var(--lin-ink-dim);
-  --skin-logbook-value-ink: var(--lin-ink);
-  --skin-logbook-ink: var(--lin-ink);
-  --skin-logbook-daily-mark: var(--lin-blue);
-  --skin-logbook-summary-bg: var(--lin-paper);
-  --skin-logbook-milestone-done: var(--lin-ink);
-  --skin-logbook-milestone-open: var(--lin-ink-dim);
-  --skin-puzzle-focus: var(--lin-red);
-  --skin-puzzle-board-bg: var(--lin-paper);
-  --skin-puzzle-board-ink: var(--lin-ink);
-  --skin-puzzle-board-edge: var(--lin-ink);
-  --skin-puzzle-sign-bg: var(--lin-ink);
-  --skin-puzzle-sign-ink: var(--lin-paper);
-  --skin-puzzle-board-accent: var(--lin-ink);
-  --skin-puzzle-scroll-track: var(--lin-paper-deep);
-  --skin-puzzle-pack-bg: var(--lin-ink);
-  --skin-puzzle-flap-bg: transparent;
-  --skin-puzzle-flap-split: transparent;
-  --skin-puzzle-flap-hover-bg: var(--lin-paper-deep);
-  --skin-puzzle-flap-dim-ink: var(--lin-ink-dim);
-  --skin-puzzle-best-ink: var(--lin-ink);
-  --skin-puzzle-dim: var(--lin-ink-dim);
-  --skin-puzzle-game-bg: var(--lin-paper);
-  --skin-puzzle-teal: var(--lin-ink);
-  --skin-puzzle-back-border: var(--lin-ink);
-  --skin-puzzle-paper: var(--lin-paper);
-  --skin-puzzle-ink: var(--lin-ink);
-  --skin-puzzle-stats-rule: var(--lin-ink);
-  --skin-puzzle-result-bg: var(--lin-paper);
-  --skin-puzzle-lost-bg: var(--lin-paper);
-  --skin-puzzle-lost-edge: var(--lin-red);
-  --skin-puzzle-error-ink: var(--lin-red);
-  --skin-puzzle-supply-ink: var(--lin-ink-dim);
-  --skin-puzzle-card-rule: var(--lin-ink);
-  --skin-puzzle-controls-bg: var(--lin-paper);
-  --skin-rank-bg: var(--lin-paper);
-  --skin-rank-ink: var(--lin-ink);
-  --skin-rank-accent: var(--lin-ink);
-  --skin-rank-head-rule: var(--lin-ink);
-  --skin-rank-dim-ink: var(--lin-ink-dim);
-  --skin-rank-row-rule: var(--lin-ink);
-}
 
 /* The page: paper edge to edge; on a wide screen the text column keeps a reading width. */
 :root[data-skin="linoryt"] .airway-settings {

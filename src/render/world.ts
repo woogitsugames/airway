@@ -93,9 +93,6 @@ export interface WorldStats {
   readonly decorTotal: number;
 }
 
-/** [G8] D-172: the two surfaces the player can choose. */
-export type GlobeMode = 'satellite' | 'map';
-
 export interface WorldRendererOptions {
   /** Device tier preference; persistence is owned by the settings screen. */
   readonly quality?: QualityPreference;
@@ -106,8 +103,6 @@ export interface WorldRendererOptions {
    * [ext-04 E4] The globe look; the Linoryt print is the only one (D-285).
    */
   readonly look?: GlobeLook;
-  /** [G8] D-172: the player's globe mode, Satelita (default) or Mapa; change it later with `setGlobeMode`. */
-  readonly globeMode?: GlobeMode;
   /** [ext-03] D-175/D-178 airport/route style; default `medal` (owner, D-178). DEV `?airportStyle=` compares. */
   readonly airportStyle?: AirportStyle;
   readonly camera?: OrbitCameraOptions;
@@ -148,8 +143,6 @@ export interface WorldRenderer {
   /** [night-11h] Called with true on context loss and false once it is restored and the quality re-applied. */
   onContextChange(listener: (lost: boolean) => void): () => void;
   setSun(lon: number, lat: number): void;
-  /** [G8] D-172: Satelita ↔ Mapa; swaps the surface textures of the current globe and keeps the mode across rebuilds. */
-  setGlobeMode(mode: GlobeMode): void;
   /** Day/night from the authoritative tick plus render interpolation fraction. */
   setTime(tick: number, fraction?: number): void;
   setCities(cities: readonly CityView[]): void;
@@ -375,7 +368,6 @@ export function createWorldRenderer(
     onContextChange: (listener) => guard.onChange(listener),
     get quality() { return quality; },
     setSun: (lon, lat) => lights.setSun(lon, lat),
-    setGlobeMode() { /* [ext-04 E4] D-285: one look; kept until the UI drops the call */ },
     setTime(tick, fraction = 0) {
       sun.setViewCenter(orbit.longitudeDeg, orbit.latitudeDeg);
       sun.update(tick, fraction);

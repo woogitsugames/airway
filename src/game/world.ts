@@ -1,7 +1,7 @@
 // Frame loop and menu/game framing around the single render facade (src/render, "Render API").
 // The renderer has no clock of its own; this owns requestAnimationFrame and feeds render(alpha, dt).
 import {
-  createWorldRenderer, createMenuNetwork, type CityView, type GlobeMode, type HubLoadView, type PlaneView, type QualityPreference,
+  createWorldRenderer, createMenuNetwork, type CityView, type HubLoadView, type PlaneView, type QualityPreference,
   type RouteView, type SafeAreaInsets, type ScreenPoint, type WorldRenderer,
 } from '../render';
 import type { RoutePreviewModel } from '../input/routeTool';
@@ -58,8 +58,6 @@ export interface World {
   project(lon: number, lat: number, out: ScreenPoint): ScreenPoint;
   pickGlobe(x: number, y: number): { lon: number; lat: number } | null;
   setQuality(preference: QualityPreference): void;
-  /** [G8] D-172: Satelita ↔ Mapa (texture swap, no rebuild). */
-  setGlobeMode(mode: GlobeMode): void;
   /** Clear all game layers (menu ↔ new run). */
   reset(): void;
   /** [night-11a] An opaque full-screen page (settings, logbook, puzzles, tutorial) hides the globe: stop drawing it. */
@@ -74,24 +72,17 @@ export interface World {
 /** [task-34] Menu camera target: North Atlantic between New York and Europe (mockup menu-p). */
 const MENU_TARGET = { lon: -16, lat: 40 };
 /**
- * [night-14b] D-259: the Róża menu entries; the view looks south of MENU_TARGET so the demo network rides above them
+ * [night-14b] D-259: the menu entries; the view looks south of MENU_TARGET so the demo network rides above them
  * ([night-16a] D-262: as far as it takes for no demo airport to stand on an entry, src/game/menu-clear.ts).
+ * [night-29b] D-284 U4 / [night-46a] D-301: the Linoryt menu frames its globe from the printed index (the board box,
+ * src/game/menu-clear.ts indexFraming) and clears these rows.
  */
-const MENU_ROZA_ENTRIES = '.airway-board .airway-flight, .airway-board .airway-flight__region, .roza-menu-rose';
-const rozaMenu = (): boolean => typeof document !== 'undefined' && document.documentElement.dataset.skin === 'roza';
-/**
- * [night-29b] D-284, PLAN-LINORYT.md step U4: the DEV-only Linoryt preview (`?skin=linoryt`) frames the menu globe from
- * its printed index (the board box, src/game/menu-clear.ts indexFraming) and clears the same rows as Róża's entries
- * (MENU_ROZA_ENTRIES without a rose). Every call site reads `import.meta.env.DEV && linorytMenu()`, so a release build
- * folds it away.
- */
-const linorytMenu = (): boolean => typeof document !== 'undefined' && document.documentElement.dataset.skin === 'linoryt';
+const MENU_ENTRIES = '.airway-board .airway-flight, .airway-board .airway-flight__region';
 
 /** [task-39] First menu show only: longest wait for the sign/board before the globe renders anyway. */
 const MENU_HOLD_MS = 1500;
 
-export function createWorld(host: HTMLElement, label: string, quality: QualityPreference,
-  globeMode: GlobeMode = 'satellite'): World {
+export function createWorld(host: HTMLElement, label: string, quality: QualityPreference): World {
   let insets: SafeAreaInsets = {};
   // [task-39] Insets last applied by the framing; the renderer's own resize observer reuses them
   // instead of falling back to the bare safe-area insets between two measurements.
@@ -101,8 +92,7 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
     quality, seed: 0xA1A1, autoResize: host, insets: () => appliedInsets,
     camera: { longitude: -18, latitude: 40, zoom: 2 }, maxAirports: 64, maxPlanes: 120,
     // [ext-03] DEV-only experimental globe look (`?globeLook=refined|satellite|painted`); production: diorama.
-    look: import.meta.env.DEV ? devGlobeLook() : undefined,
-    globeMode,
+    look: import.meta.env.DEV ? devGlobeLook() : undefined, // [night-46a] D-301: release = DEFAULT_GLOBE_LOOK (Linoryt)
     airportStyle: import.meta.env.DEV ? devAirportStyle() : undefined, // [ext-03] D-175 variants
     // [night-07b] D-74: a slow device starts where its last session ended up.
     adaptedSteps: quality === 'auto' ? readAdaptiveSteps() : [],
@@ -146,10 +136,10 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
     }
     return box;
   };
-  /** [night-16a] D-262: every Róża menu entry's box (layer coordinates), for the demo network's clearance. */
+  /** [night-16a] D-262: every menu entry's box (layer coordinates), for the demo network's clearance. */
   const entryRects = (origin: DOMRect): ClearRect[] => {
     const rects: ClearRect[] = [];
-    for (const element of host.querySelectorAll(MENU_ROZA_ENTRIES)) {
+    for (const element of host.querySelectorAll(MENU_ENTRIES)) {
       const r = element.getBoundingClientRect();
       if (r.width >= 1 && r.height >= 1) rects.push({ left: r.left - origin.left, top: r.top - origin.top, right: r.right - origin.left, bottom: r.bottom - origin.top });
     }
@@ -167,8 +157,8 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
       menuShown = sign !== null; // [task-39]
       if (sign && board) menuFramed = true;
       let framing = menuFraming(w, h, sign, board, insets);
-      // [night-14b] D-259 Róża: the entries stand on a rose in the thumb corner, not on a board across the screen.
-      const entries = rozaMenu() || (import.meta.env.DEV && linorytMenu()) ? unionBox(host.querySelectorAll(MENU_ROZA_ENTRIES), origin) : null;
+      // [night-14b] D-259: the entries' box (the printed index rows).
+      const entries = unionBox(host.querySelectorAll(MENU_ENTRIES), origin);
       if (entries && w > h) {
         // Landscape: a big globe left of the entries, its horizon under the title like the portrait menu (the board
         // column used to be the left inset, which left a small disc between the title and the entries).
@@ -180,9 +170,9 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
           insets: { left, right, top, bottom: insets.bottom ?? 0 },
         };
       }
-      // [night-29b] D-284 U4 Linoryt preview: the whole globe printed between the title and the index (or left of the
-      // index column in landscape); a screen too short for it keeps the horizon framing above.
-      if (import.meta.env.DEV && linorytMenu()) framing = indexFraming(w, h, sign, board, insets) ?? framing;
+      // [night-29b] D-284 U4, D-286: the whole globe printed between the title and the index (or left of the index
+      // column in landscape); a screen too short for it keeps the horizon framing above.
+      framing = indexFraming(w, h, sign, board, insets) ?? framing;
       // The entries' box is part of the key: the tilt below needs them laid out (a first measure may come before).
       const key = `menu ${w} ${h} ${entries ? `${Math.round(entries.left)},${Math.round(entries.top)}` : '-'} ${demoCities.length} ${JSON.stringify(framing)}`;
       if (key === lastFrame) return;
@@ -197,7 +187,7 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
       // Slide the view so the limb top lands on the wanted horizon line under the sign.
       const disc = orbit.getScreenDisc();
       if (disc) orbit.setViewShift(0, framing.horizonY - (disc.y - disc.radius));
-      // [night-14b] D-259 Róża: the entries stand in the lower half, so the view looks further south and the demo network
+      // [night-14b] D-259: the entries stand in the lower half, so the view looks further south and the demo network
       // (London–Dakar) rides above them (it ran under "Lot bez końca" / "Ustawienia" on tall phones and foldables). The
       // globe's outline does not move; the slow menu spin keeps this latitude.
       // [night-16a] D-262: 16° was not enough on a short phone (Dakar under "Ustawienia"): the tilt grows until no demo
@@ -267,7 +257,7 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
   const framingKey = (): string => `${lastFrame} zoom=${renderer.orbit.zoomLevel.toFixed(4)}`;
   if (import.meta.env.DEV) installWorldProbe(renderer, () => ({ first: firstMenuFrame, now: framingKey(), menuSpin: menuSpin(), // [task-34]
     // [night-16a] D-262: the menu tilt in use and how many (demo airport, spin angle) samples still touch an entry.
-    menuTilt: menuTiltNow, menuClashes: menuActive && (rozaMenu() || linorytMenu()) ? (renderer.camera.updateMatrixWorld(),
+    menuTilt: menuTiltNow, menuClashes: menuActive ? (renderer.camera.updateMatrixWorld(),
       menuNetworkClashes(demoCities, entryRects(host.getBoundingClientRect()), (lon, lat, out) => renderer.project(lon, lat, 1.01, out))) : 0,
   }), () => drawn);
   /** [task-39] D-62: degrees per second the menu globe turns right now. */
@@ -355,7 +345,6 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
     preview: (model) => renderer.setRoutePreview(model),
     project: (lon, lat, out) => renderer.project(lon, lat, 1.01, out),
     pickGlobe: (x, y) => renderer.pickGlobe(x, y),
-    setGlobeMode(mode) { renderer.setGlobeMode(mode); },
     setQuality(preference) {
       forgetAdaptiveSteps(); // [night-07b] an explicit choice (also back to auto) detects afresh
       void renderer.setQuality(preference).catch((error: unknown) => console.warn('Quality change failed', error));

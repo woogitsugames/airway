@@ -173,7 +173,12 @@ medium/high ≤ 2 (G4). "Shots" = PNGs to inspect against the CLAUDE.md forbidde
 - **Tests:** whole `test:ci`; `test:skin-tokens` rewritten for Linoryt as the shipped skin; `test:glyphs` (Besley
   lacks U+2192 and U+202F, Schibsted lacks U+2009 and U+202F: borrowed through `unicode-range` from Atkinson, as
   today); `test:bundle` font check (named WOFF2 ≥ 4 instead of 6); `skin:pixels` proves inline/prune pixel-identical.
-- **Done when:** release = Linoryt everywhere; `test:ci` green; store shots marked stale.
+- **Done when:** release = Linoryt everywhere; `test:ci` green; store shots marked stale. **Status: done (night 46a,
+  draft PR to `dev`, D-301):** CSS 129.0 kB → budget 132 kB (D-297), JS 1,167.6 kB, `dist/` 4,099.5 kB; `skin:pixels`
+  94/120 identical (the rest: the removed globe tag, one-level anti-aliasing); `test:e2e:text-scale-150` green on the
+  Linoryt board; notes use E2's `projectAirport` / `STAMP_SIZE_PX`; shots `docs/shots/u5/` (`node scripts/shots-u5.mjs`);
+  store shots marked stale in `docs/store/README.md`. Left for U6: inline the `var(--lin-*)` references of
+  `linoryt.css` (~3 kB), retire the `--skin=` no-op helpers of `e2e/browser.mjs`, rename `test:e2e:linoryt:stub`.
 
 ### E4 — ext — remove Satelita, Mapa (recommended) and the photo textures
 - **Files:** `src/render/globe/look.ts` (satellite, map, painted, refined, diorama looks), `public/data/globe/{day,
