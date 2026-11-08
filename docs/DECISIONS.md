@@ -3286,7 +3286,7 @@ Step U6 of `docs/styles/kierunki-2026-11b/PLAN-LINORYT.md` (D-47, D-88, D-177, D
 `src/render` equal to the UI inks, note text on its own paper ground over ochre land, blue sea, the night hatch and the
 paper sky, ink and red stamps through the better of their two boundaries). Real frames: the new
 `test:e2e:linoryt-contrast` (harness side; `src/render` untouched) reads screenshots of the real renderer (`game` PL
-412×915 and EN 915×412, `night` PL 412×915): 18 notes at 13.3:1 on their paper ground over every world ground, 19 stamps
+412×915 and EN 915×412, `night` PL 412×915): 19 notes (18 before E4) at 13.3:1 on their paper ground over every world ground, 19 stamps
 8.9–13.1:1 by the core/outline boundary (the 2 px paper outline alone is only 1.5–3.3:1 against ochre and the hatch,
 7.2:1 on blue sea). A stamp on the night hatch is reported, not gated (WARN), because E4's own probe reports the
 night stamps at 2.8:1 and planes at 1.8/2.0 by its layer measure; the render changes are listed in the U6 PR for the ext
