@@ -3451,8 +3451,7 @@ The shipped DOM UI (D-301, D-305) compared with the owner-approved frames `docs/
 and `a-menu.png` on the real renderer and the stub screen audit (HUD top, dock, notes, edge chips, menu, sheets, weekly
 board, pause, report, settings, logbook, puzzles). **Fixed (UI side).** (1) The menu index's double print rule printed
 as one thick line: its thin line was a box shadow whose negative spread was larger than the 4 px rule, so it never
-showed. Now a border pair (4 px, 2.5 px paper, 1.5 px); in landscape the index column's left edge is the same double
-rule (thick border, gap, thin line), like the dock column. (2) As in the frame ("Tryb: losowy świat ▾" over the rule),
+showed. Now a border pair (4 px, 2.5 px paper, 1.5 px). (2) As in the frame ("Tryb: losowy świat ▾" over the rule),
 the Endless choice prints **above** the double rule and the red entry under it when Endless leads the index (no saved
 run; with Continue the rule stays on top), and the bare "Losowy ▾" gets its printed label (`menu.homeRegion`, existing
 key, aria-hidden: the select keeps its aria-label; the select is sized to its value with `field-sizing: content`, wider
@@ -3466,4 +3465,6 @@ dock cells (globe-view slot removed in D-301), the ink rule under the HUD top ma
 paper sky in landscape). **Left for the render session** (listed in the PR): relief hatching reads as long uniform
 diagonal strokes over all land instead of tone on the slopes away from the light; sea lines on the menu disc are wide
 paper bands; small paper diamonds beside stamps that the frame does not have. Shots `docs/shots/n54a/` (before/after,
-real renderer, PL 412×915 and 915×412). **Status: in force.**
+real renderer, PL 412×915 and 915×412). **Budget:** with D-311 the CSS stood at 130.1 kB of 130 kB; two Linoryt dock
+rules that the general dock-cell rules already outweigh (countdown cell padding/gap and icon size) were removed and the
+licence line's duplicate selector merged: 129.9 kB. **Status: in force.**
