@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="pl"><head><meta charset="utf-8">
+<style>
+  @font-face { font-family: 'Chivo'; font-weight: 400; src: url(../fonts/Chivo-400.ttf); }
+  @font-face { font-family: 'Chivo'; font-weight: 900; src: url(../fonts/Chivo-900.ttf); }
+  @font-face { font-family: 'Chivo Mono'; font-weight: 500; src: url(../fonts/ChivoMono-500.ttf); }
+  html,body{margin:0;background:#E7E0CD;width:2300px;height:1180px;font-family:Chivo;color:#1A1D21}
+  h1{font:900 40px Chivo;letter-spacing:-.02em;margin:34px 60px 6px}
+  p.s{margin:0 60px 24px;font:400 17px/1.4 Chivo;max-width:2100px;color:#3E3D38}
+  .grid{display:grid;grid-template-columns:repeat(5,412px);gap:12px 32px;padding:0 60px}
+  .h{font:500 13px 'Chivo Mono';letter-spacing:.08em;border-top:3px solid #1A1D21;padding-top:8px;text-transform:uppercase}
+  .h small{display:block;font:400 15px Chivo;letter-spacing:0;text-transform:none;color:#3E3D38;margin-top:3px}
+  img{width:412px;height:915px;display:block;outline:1px solid #1A1D21}
+</style></head><body>
+<h1>Airway — UI-B „Karta lotnicza w świecie” (2026-11c)</h1>
+<p class="s">Globus K2 (NASA Blue Marble NG + Black Marble 2016, terminator od słońca), a cała informacja narysowana w świecie językiem map lotniczych: ramka arkusza ze współrzędnymi, siatka, symbole lotnisk z kodem, pasażerowie jako stos glifów D-08 z sufitem pojemności, zator jako kreskowana strefa rosnąca do granicy zamknięcia, kurs i odległość przy trasach, róża kursów, skala. Pora doby to cienka skala godzin na krawędzi globusa. Chivo + Chivo Mono (SIL OFL). Kadry 412×915 pt (PNG 824×1830).</p>
+<div class="grid">
+  <div class="h">Gra · noc 19:05<small>dok wysunięty, liczby samolotów jako powtórzone sylwetki</small></div>
+  <div class="h">Gra · dzień 16:20<small>margines arkusza jak papier, dok schowany</small></div>
+  <div class="h">Menu główne<small>tarcza 24 h wokół Ziemi, menu jako legenda</small></div>
+  <div class="h">Koniec tygodnia<small>trzy doby jako trzy łuki, wybór ulepszenia</small></div>
+  <div class="h">Koniec gry<small>strefa zatoru doszła do granicy</small></div>
+  <img src="../ui-b-gra-noc.png"><img src="../ui-b-gra-dzien.png"><img src="../ui-b-menu.png"><img src="../ui-b-tydzien.png"><img src="../ui-b-raport.png">
+</div>
+<script>window.__ready=false;Promise.all([document.fonts.ready,...[...document.images].map(i=>i.decode())]).then(()=>window.__ready=true)</script>
+</body></html>

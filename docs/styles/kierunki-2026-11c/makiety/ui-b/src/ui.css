@@ -1,0 +1,255 @@
+/* UI-B "Karta lotnicza w świecie" skin. Chart ink on the world; no boxes, no gradients, no blur, no glow, no glass. */
+@font-face { font-family: 'Chivo'; font-weight: 400; src: url(../fonts/Chivo-400.ttf); }
+@font-face { font-family: 'Chivo'; font-weight: 600; src: url(../fonts/Chivo-600.ttf); }
+@font-face { font-family: 'Chivo'; font-weight: 800; src: url(../fonts/Chivo-800.ttf); }
+@font-face { font-family: 'Chivo'; font-weight: 900; src: url(../fonts/Chivo-900.ttf); }
+@font-face { font-family: 'Chivo'; font-style: italic; font-weight: 400; src: url(../fonts/Chivo-Italic-400.ttf); }
+@font-face { font-family: 'Chivo'; font-style: italic; font-weight: 600; src: url(../fonts/Chivo-Italic-600.ttf); }
+@font-face { font-family: 'Chivo Mono'; font-weight: 400; src: url(../fonts/ChivoMono-400.ttf); }
+@font-face { font-family: 'Chivo Mono'; font-weight: 500; src: url(../fonts/ChivoMono-500.ttf); }
+@font-face { font-family: 'Chivo Mono'; font-weight: 700; src: url(../fonts/ChivoMono-700.ttf); }
+
+html, body { margin: 0; width: 412px; height: 915px; overflow: hidden; background: #000; }
+#stage { position: relative; width: 412px; height: 915px; overflow: hidden; font-family: Chivo, sans-serif; }
+#stage > canvas, #stage > svg { position: absolute; left: 0; top: 0; }
+button { all: unset; box-sizing: border-box; cursor: pointer; }
+
+.night {
+  --margin: #07080A; --ink: #ECE4D0; --ink2: #9C9584; --ink3: #5E5A50; --chart: #8EA7C2; --signal: #FF5A36; --sun: #F0B44A;
+  --halo: #040506; --label: #F3ECDB; --route: #ECE4D0; --casing: #050607; --plan: #F0B44A;
+}
+.day {
+  --margin: #E7E0CD; --ink: #1A1D21; --ink2: #5A5850; --ink3: #9A9585; --chart: #2C5A86; --signal: #D33A1C; --sun: #B87508;
+  --halo: #F4EEDF; --label: #14171A; --route: #14171A; --casing: #F4EEDF; --plan: #B05E00;
+}
+
+/* ---------- world: atlas ---------- */
+.border { fill: none; stroke: #B9C6D6; stroke-opacity: .2; stroke-width: .7; stroke-dasharray: 3 1.6 .6 1.6; }
+.day .border { stroke: #1A1D21; stroke-opacity: .42; }
+.border.faint { stroke-opacity: .14; stroke-dasharray: none; }
+.coast { fill: none; stroke: #9DB4CE; stroke-opacity: .26; stroke-width: .6; }
+.day .coast { stroke: #FFFFFF; stroke-opacity: .55; stroke-width: .8; }
+.grat path { fill: none; stroke: var(--chart); stroke-opacity: .32; stroke-width: .55; }
+.day .grat path { stroke: #FFFFFF; stroke-opacity: .5; }
+.atlas text { paint-order: stroke; stroke: var(--halo); stroke-width: 2.4px; stroke-linejoin: round; text-anchor: middle; }
+.country { font: 600 9.5px Chivo; letter-spacing: .32em; fill: var(--chart); fill-opacity: .9; stroke-opacity: .6; }
+.day .country { fill: #F4EEDF; fill-opacity: .92; stroke: #1A1D21; stroke-opacity: .55; }
+.sea { font: italic 400 11.5px Chivo; letter-spacing: .08em; fill: var(--chart); stroke-opacity: .5; }
+.day .sea { fill: #E6F0FA; stroke: #1B3A5A; stroke-opacity: .55; }
+
+/* ---------- world: routes ---------- */
+.rc { fill: none; stroke: var(--casing); stroke-linecap: round; stroke-linejoin: round; stroke-opacity: .9; }
+.rt { fill: none; stroke: var(--route); stroke-linecap: round; stroke-linejoin: round; }
+.rc.jet { stroke-width: 6.4; } .rt.jet { stroke-width: 2.6; }
+.rc.prop { stroke-width: 5.2; } .rt.prop { stroke-width: 1.8; stroke-dasharray: 7 3.5; stroke-linecap: butt; }
+.rc.plan { stroke-width: 4.6; stroke-opacity: .7; } .rt.plan { stroke: var(--plan); stroke-width: 2; stroke-dasharray: 2 4; }
+.small .rc.jet { stroke-width: 3.6; } .small .rt.jet { stroke-width: 1.5; }
+.small .rc.prop { stroke-width: 3; } .small .rt.prop { stroke-width: 1.1; stroke-dasharray: 3 2; }
+.small .mh, .small .mp { fill: var(--casing); stroke: var(--ink); stroke-width: 1.2; }
+.small .mh { stroke-width: 1.6; }
+.ann text { paint-order: stroke; stroke: var(--halo); stroke-width: 3px; stroke-linejoin: round; font-variant-numeric: tabular-nums; }
+.ann .crs { font: 700 10px 'Chivo Mono'; fill: var(--ink); letter-spacing: .02em; }
+.ann .dst { font: 400 9.5px 'Chivo Mono'; fill: var(--ink2); }
+.day .ann .dst { fill: #2B2C2C; }
+.ann.plan .crs, .ann.plan .dst { fill: var(--plan); }
+.ann.plan .crs { font-size: 11px; }
+
+.plane { fill: #F5F1E6; stroke: var(--casing); stroke-width: 7; stroke-linejoin: round; paint-order: stroke; }
+.day .plane { fill: #FFFFFF; stroke: #14171A; }
+.pshadow { fill: #000; opacity: .34; }
+
+/* rose */
+.rose path { fill: none; stroke: var(--ink); stroke-opacity: .55; stroke-width: .8; }
+.rose line { stroke: var(--ink); stroke-opacity: .55; stroke-width: .7; }
+.rose line.maj { stroke-opacity: .85; stroke-width: 1; }
+.rose .rn { font: 500 8px 'Chivo Mono'; fill: var(--ink); fill-opacity: .75; text-anchor: middle; paint-order: stroke; stroke: var(--halo); stroke-width: 2px; }
+.rose .north { fill: var(--ink); fill-opacity: .85; }
+
+/* jam ring: restricted-area hatch */
+.jamring .limit { fill: none; stroke: var(--signal); stroke-width: 1; stroke-dasharray: 5 3.5; stroke-opacity: .9; }
+.jamring .edge { fill: none; stroke: var(--signal); stroke-width: 2.2; }
+.jamring .hatch { stroke: var(--signal); stroke-width: .9; stroke-opacity: .8; }
+.jamring .grow { fill: none; stroke: var(--signal); stroke-width: 1.1; stroke-opacity: .9; }
+.jamring .jamtext { font: 700 9.6px 'Chivo Mono'; letter-spacing: .06em; fill: var(--signal); paint-order: stroke; stroke: var(--halo); stroke-width: 3px; stroke-linejoin: round; }
+.jamring.closed .edge { stroke-width: 3; }
+.jamring.closed .limit { stroke-dasharray: none; stroke-width: 1; }
+
+/* airport symbols */
+.sym .ring { fill: var(--casing); stroke: var(--ink); stroke-width: 1.8; }
+.sym .tick { stroke: var(--ink); stroke-width: 1.6; }
+.sym.new .ring { stroke: var(--plan); stroke-dasharray: 2.2 1.6; }
+.sym.new .tick { stroke: var(--plan); }
+.sym .ring-o { fill: var(--casing); stroke: var(--ink); stroke-width: 1.8; }
+.sym .ring-i { fill: none; stroke: var(--ink); stroke-width: 1.2; }
+.sym .hubmark { fill: var(--ink); }
+.sym.jam .ring-o, .sym.jam .tick, .sym.jam .ring-i { stroke: var(--signal); }
+.sym.jam .hubmark { fill: var(--signal); }
+
+/* labels: name in Chivo, ICAO-ish code in mono */
+.lbl text { paint-order: stroke; stroke: var(--halo); stroke-linejoin: round; }
+.lbl .nm { font: 600 12.5px Chivo; fill: var(--label); stroke-width: 3px; letter-spacing: .01em; }
+.lbl.hub .nm { font: 800 14.5px Chivo; letter-spacing: .02em; }
+.lbl .cd { font: 500 9px 'Chivo Mono'; fill: var(--ink2); stroke-width: 2.6px; letter-spacing: .12em; }
+.day .lbl .cd { fill: #33332F; }
+.lbl .note { font: italic 600 10px Chivo; fill: var(--plan); stroke-width: 2.6px; }
+
+/* passenger stacks */
+.stack .ground { stroke: var(--ink); stroke-width: 1.2; stroke-opacity: .8; }
+.stack .ceil { fill: none; stroke: var(--ink); stroke-width: .8; stroke-opacity: .55; }
+.stack.jam .ceil { stroke: var(--signal); stroke-width: 1.6; stroke-opacity: 1; }
+.gl { stroke: var(--halo); stroke-width: 1.3px; paint-order: stroke; vector-effect: non-scaling-stroke; }
+.night .gl.dk { stroke: #ECE4D0; stroke-width: 1.1px; }
+
+.cont text { paint-order: stroke; stroke: var(--halo); stroke-width: 3px; stroke-linejoin: round; }
+.cont .c1 { font: italic 600 11px Chivo; fill: var(--ink); }
+.cont .c2 { font: 500 9px 'Chivo Mono'; fill: var(--ink2); letter-spacing: .06em; }
+.stub { fill: none; stroke: var(--ink); stroke-width: 1.4; stroke-dasharray: 1 3.2; stroke-linecap: round; }
+.stack .gtick { stroke: var(--ink); stroke-width: .8; stroke-opacity: .6; }
+
+/* time of day riding the limb */
+.clockarc path { fill: none; stroke-linecap: butt; }
+.clockarc .dayseg { stroke: var(--ink); stroke-opacity: .7; stroke-width: 1; }
+.clockarc .nightseg { stroke: var(--ink); stroke-opacity: .55; stroke-width: 1; stroke-dasharray: 1 2.5; }
+.clockarc .elapsed { stroke: var(--sun); stroke-width: 2.4; stroke-opacity: .95; }
+.clockarc line { stroke: var(--ink); stroke-opacity: .6; stroke-width: .8; }
+.clockarc line.maj { stroke-opacity: .9; stroke-width: 1.1; }
+.clockarc .hl { font: 500 8.5px 'Chivo Mono'; fill: var(--ink2); text-anchor: middle; }
+.clockarc .now { stroke: var(--sun); stroke-width: 2.2; stroke-opacity: 1; }
+.clockarc .nowt { font: 700 13px 'Chivo Mono'; fill: var(--sun); text-anchor: middle; letter-spacing: .02em; }
+.weekarc path { fill: none; stroke: var(--sun); stroke-width: 2.4; }
+.weekarc text { font: 500 9px 'Chivo Mono'; letter-spacing: .1em; fill: var(--sun); text-anchor: middle; }
+
+/* neatline + margin */
+.margin { fill: var(--margin); }
+.neat .nl { fill: none; stroke: var(--ink); stroke-width: .8; stroke-opacity: .9; }
+.bars rect { fill: var(--ink); fill-opacity: .9; }
+.neat .ctk { stroke: var(--ink); stroke-width: .8; }
+.neat .coord { font: 500 8px 'Chivo Mono'; fill: var(--ink); fill-opacity: .82; paint-order: stroke; stroke: var(--halo); stroke-width: 2.4px; }
+.scale rect.f { fill: var(--ink); } .scale rect.o { fill: var(--halo); } .scale rect.box { fill: none; stroke: var(--ink); stroke-width: .7; }
+.scale text { font: 500 8.5px 'Chivo Mono'; fill: var(--ink); paint-order: stroke; stroke: var(--halo); stroke-width: 2.4px; }
+
+/* ---------- chrome that is not chrome ---------- */
+.statusbar { position: absolute; left: 0; right: 0; top: 0; height: 28px; display: flex; justify-content: space-between; align-items: center; padding: 0 18px; font: 600 13px Chivo; color: var(--ink); }
+.statusbar .sb-r { display: flex; gap: 2px; align-items: flex-end; }
+.statusbar .sb-r i { width: 3px; height: 10px; background: var(--ink); display: block; }
+.statusbar .sb-r b { width: 20px; height: 9px; border: 1.4px solid var(--ink); display: block; margin-left: 6px; }
+
+.line { position: absolute; left: 14px; top: 34px; height: 36px; right: 64px; display: flex; align-items: baseline; gap: 10px; color: var(--ink); font: 400 15px Chivo; white-space: nowrap; line-height: 36px; }
+.line b { font: 800 19px Chivo; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+.line .sep { width: 14px; height: 1px; background: var(--ink3); align-self: center; }
+.line .px b { color: var(--ink); }
+.pause { position: absolute; right: 4px; top: 28px; width: 48px; height: 48px; display: grid; place-items: center; }
+.pause svg { width: 20px; height: 20px; fill: var(--ink); }
+
+/* dock: shapes, not colours; counts by repetition */
+.dock { position: absolute; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-around; align-items: flex-start; color: var(--ink); }
+.dock.open { height: 100px; padding: 14px 6px 0; }
+.dock .grip { position: absolute; top: 6px; left: 50%; width: 34px; height: 3px; margin-left: -17px; background: var(--ink3); }
+.dock .t { position: relative; width: 78px; height: 66px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 6px; gap: 6px; }
+.dock .ic { height: 30px; display: flex; align-items: center; }
+.dock .ic svg { height: 30px; fill: var(--ink); }
+.dock .ic svg path:not(:first-child) { opacity: 1; }
+.dock .ic svg.dash { fill: none; stroke: var(--ink2); stroke-width: 5; stroke-dasharray: 9 6; }
+.dock .t b { font: 600 11px Chivo; letter-spacing: .01em; text-align: center; line-height: 1.15; }
+.dock .t b i { display: block; font: italic 400 10px Chivo; color: var(--ink2); }
+.dock .minor .ic svg { height: 22px; }
+.dock .off b { color: var(--ink2); }
+.dock .sel::before, .dock .sel::after { content: ''; position: absolute; width: 11px; height: 11px; border: 0 solid var(--sun); }
+.dock .sel::before { left: 0; top: 0; border-width: 2px 0 0 2px; }
+.dock .sel::after { right: 0; bottom: 0; border-width: 0 2px 2px 0; }
+.dock .sel .ic svg { fill: var(--sun); }
+.dock.tucked { height: 62px; padding: 10px 14px 0; justify-content: flex-start; gap: 16px; align-items: center; }
+.dock.tucked .t { flex-direction: row; width: auto; height: 48px; padding: 0 12px; gap: 10px; align-items: center; }
+.dock.tucked .t b { font-size: 12px; }
+.dock.tucked .more { font: italic 400 11.5px Chivo; color: var(--ink2); }
+
+/* ---------- menu ---------- */
+.f-menu .title { position: absolute; left: 22px; top: 44px; right: 22px; color: var(--ink); }
+.title h1 { margin: 0; font: 900 76px/0.9 Chivo; letter-spacing: -.035em; }
+.title .sub { margin: 10px 0 0; font: 400 16px Chivo; color: var(--ink); }
+.title .sheet { margin: 6px 0 0; font: 500 9.5px 'Chivo Mono'; letter-spacing: .12em; color: var(--ink2); }
+.title .sheet span { color: var(--sun); }
+.legend { position: absolute; left: 0; right: 0; bottom: 0; padding: 0 18px 22px; color: var(--ink); background: var(--margin); }
+.legend .lh { display: flex; align-items: center; gap: 10px; font: 700 9.5px 'Chivo Mono'; letter-spacing: .3em; color: var(--ink2); height: 30px; }
+.legend .lh i { flex: 1; height: 0; border-top: 1px solid var(--ink3); }
+.li { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 62px; border-top: 1px solid var(--ink3); }
+.li .sym { width: 42px; display: flex; justify-content: center; }
+.li .sym svg { width: 32px; height: 32px; fill: none; stroke: var(--ink); stroke-width: 1.6; }
+.li .sym svg path { fill: var(--ink); stroke: none; }
+.li .sym svg path.ln { fill: none; stroke: var(--ink); stroke-width: 1.6; stroke-dasharray: 4 2.5; }
+.li .sym svg circle { fill: var(--margin); }
+.li .sym.glyphs { gap: 1px; width: 42px; }
+.li .sym.glyphs svg { width: 14px; height: 14px; stroke: var(--halo); stroke-width: 1.2px; paint-order: stroke; }
+.li .sym.glyphs svg path { stroke: var(--halo); stroke-width: 1.6px; paint-order: stroke; }
+.li .sym.glyphs svg path.dk { stroke: var(--ink); stroke-width: 1.2px; }
+.li .tx { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.li .tx b { font: 800 19px Chivo; letter-spacing: -.005em; }
+.li .tx small { font: 400 12.5px Chivo; color: var(--ink2); }
+.li .num { font: 700 15px 'Chivo Mono'; color: var(--ink2); }
+.li.primary { min-height: 84px; border-top: 2px solid var(--ink); }
+.li.primary .tx b { font: 900 27px Chivo; letter-spacing: -.02em; }
+.li.primary .tx small { color: var(--sun); font-family: 'Chivo Mono'; font-size: 11px; letter-spacing: .04em; }
+.li.primary .sym svg { width: 38px; height: 38px; }
+.li .arw { width: 44px; height: 14px; fill: none; stroke: var(--ink); stroke-width: 2; }
+.legend .pair { display: flex; border-top: 1px solid var(--ink3); }
+.legend .pair .li { border-top: 0; min-height: 56px; }
+.legend .pair .li + .li { border-left: 1px solid var(--ink3); padding-left: 18px; }
+.legend .pair .li b { font: 600 16px Chivo; }
+
+/* ---------- end of week board ---------- */
+.wk-top { right: 14px; }
+.wk-note { position: absolute; left: 14px; top: 70px; font: italic 400 13px Chivo; color: var(--ink2); }
+.board { position: absolute; left: 0; right: 0; bottom: 0; padding: 0 18px 24px; background: var(--margin); color: var(--ink); }
+.board h2 { margin: 0; padding: 18px 0 10px; font: 900 24px Chivo; letter-spacing: -.015em; border-top: 2px solid var(--ink); }
+.opt { display: flex; align-items: center; gap: 16px; width: 100%; min-height: 86px; border-top: 1px solid var(--ink3); position: relative; }
+.opt .sym { width: 58px; height: 58px; display: grid; place-items: center; }
+.opt .sym svg { width: 52px; height: 52px; fill: var(--ink); }
+.opt .sym.hub svg circle { fill: none; stroke: var(--ink); stroke-width: 4; }
+.opt .tx { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.opt .tx b { font: 800 18px Chivo; }
+.opt .tx small { font: 400 12.5px/1.35 Chivo; color: var(--ink2); }
+.opt .k { font: 700 17px 'Chivo Mono'; color: var(--ink2); width: 34px; text-align: right; }
+.opt.sel .sym svg { fill: var(--sun); }
+.opt.sel .k { color: var(--sun); }
+.opt.sel::before, .opt.sel::after { content: ''; position: absolute; width: 14px; height: 14px; border: 0 solid var(--sun); }
+.opt.sel::before { left: -8px; top: 6px; border-width: 2px 0 0 2px; }
+.opt.sel::after { right: -8px; bottom: 6px; border-width: 0 2px 2px 0; }
+.board .hint { margin: 6px 0 0; padding-top: 12px; border-top: 1px solid var(--ink3); font: 500 10px 'Chivo Mono'; letter-spacing: .04em; color: var(--ink2); }
+
+/* ---------- report ---------- */
+.paperband { fill: var(--margin); }
+.bandedge { fill: var(--ink); }
+.report { position: absolute; left: 0; right: 0; top: 448px; bottom: 0; padding: 18px 20px 22px; color: var(--ink); display: flex; flex-direction: column; }
+.report .big { display: flex; align-items: flex-end; gap: 14px; }
+.report .big b { font: 900 92px/0.82 Chivo; letter-spacing: -.045em; font-variant-numeric: tabular-nums; }
+.report .big span { font: 600 16px/1.2 Chivo; padding-bottom: 4px; }
+.report .why { margin: 14px 0 10px; font: italic 400 13.5px/1.4 Chivo; color: var(--signal); }
+.report dl { margin: 0; }
+.report dl div { display: flex; align-items: baseline; gap: 6px; height: 27px; border-bottom: 1px dotted var(--ink3); }
+.report dt { font: 400 13px Chivo; color: var(--ink2); }
+.report dd { margin: 0 0 0 auto; font: 500 12.5px 'Chivo Mono'; }
+.report .rec dd { color: var(--sun); font-weight: 700; }
+.report .acts { margin-top: auto; }
+.report .go { display: flex; align-items: center; justify-content: space-between; width: 100%; height: 58px; padding: 0 18px; background: var(--ink); color: var(--margin); font: 900 20px Chivo; letter-spacing: -.01em; }
+.report .go svg { width: 44px; height: 14px; fill: none; stroke: var(--margin); stroke-width: 2.2; }
+.report .pair { display: flex; }
+.report .txt { flex: 1; height: 52px; display: flex; align-items: center; font: 600 15px Chivo; border-bottom: 1px solid var(--ink3); }
+.report .txt + .txt { padding-left: 16px; border-left: 1px solid var(--ink3); }
+
+/* day: things that sit in space or on dark imagery keep light ink */
+.day .clockarc .dayseg, .day .clockarc .nightseg, .day .clockarc line { stroke: #ECE4D0; }
+.day .clockarc .elapsed, .day .clockarc .now { stroke: #F0B44A; }
+.day .clockarc .nowt { fill: #F0B44A; }
+.day .clockarc .hl { fill: #9C9584; }
+.day .stack .ceil, .day .stack .ground, .day .stack .gtick { stroke: #FFFFFF; stroke-opacity: .85; }
+.day .stack.jam .ceil { stroke: var(--signal); }
+.day .sym .tick { stroke: #FFFFFF; stroke-width: 2; }
+.day .rose path, .day .rose line { stroke: #FFFFFF; stroke-opacity: .8; }
+.day .rose .north { fill: #FFFFFF; }
+.day .lbl .nm { stroke-width: 2.6px; }
+
+.callout path { fill: none; stroke: var(--ink); stroke-width: .9; }
+.callout text { paint-order: stroke; stroke: var(--halo); stroke-width: 3px; stroke-linejoin: round; }
+.callout .t1 { font: 700 10px 'Chivo Mono'; letter-spacing: .1em; fill: var(--ink); }
+.callout .t2 { font: italic 400 11.5px Chivo; fill: var(--ink2); }
+.callout.warn path { stroke: var(--signal); } .callout.warn .t1 { fill: var(--signal); }

@@ -216,3 +216,17 @@ crops are U.S. Government works — FAA sectional / terminal area charts and d-T
 U.S. Coast and Geodetic Survey and Department of Commerce sectional charts 1935–1956 scanned by the Library of
 Congress (`gct00089`) — public domain under 17 U.S.C. § 105. Per-file source URL, title, date and retrieval route:
 `docs/references/charts/SOURCES.md`. Contact-sheet layout: own work (CC0).
+
+## UI direction mockups 2026-11c, UI-B "Karta lotnicza w świecie" (night 67a; not shipped)
+`docs/styles/kierunki-2026-11c/makiety/ui-b/fonts/` holds static SIL OFL 1.1 TTFs fetched 2026-11-08 from the Google
+Fonts CSS API (same method as `mockups/fetch-fonts.sh`); licences from github.com/google/fonts `ofl/chivo/OFL.txt` and
+`ofl/chivomono/OFL.txt`, saved next to the fonts. Polish glyphs (ą ć ę ł ń ó ś ź ż and capitals) checked with fontTools:
+all present; U+2192 is missing in both, so the mockups draw arrows as SVG paths. Used only by
+`docs/styles/kierunki-2026-11c/makiety/ui-b/src/`; nothing reaches `public/`, `dist/` or the apps. The globe reuses the
+K1/K2 renderer and NASA textures (`../src/`, public domain, fetched by `fetch-textures.sh`, never committed); chart
+symbols, rings, stacks and dials are own work (CC0).
+
+| Family | Weights | Used in | Licence file |
+|---|---|---|---|
+| Chivo (+ Italic 400, 600) | 400, 600, 800, 900 | UI-B names, title, top line, menu legend, board, report | `OFL-Chivo.txt` |
+| Chivo Mono | 400, 500, 700 | UI-B codes, courses, distances, coordinates, clock | `OFL-ChivoMono.txt` |
