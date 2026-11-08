@@ -201,6 +201,8 @@ commitach.
 
 - 8.11 ~07:55: scalone #329 (ext: globus w menu, symbole skalowane z dyskiem, D-309) i #330 (GPT-15 PT-BR, przenumerowane D-309 → D-310). dev = main = 084979f. Fale językowe DE/FR/ES/PT-BR gotowe (szkice, nie w grze). Agenci: 52a (w toku), 54a (przegląd UI Linorytu względem a-game/a-menu). Kolejka GPT wyczerpana (21 = Róża, nieaktualne). Po 54a: Q-92 A (jeśli dalej brak odpowiedzi — odwracalne), U7 po telefonie.
 
+- 8.11 ~07:45: #331 scalony (52a: zakładki raportu bez przesunięcia 1 px, budżety czasu jako INFO pod coverage, raport 640×360 bez przewijania; przenumerowane D-307 → D-311; CSS 129,4/130 kB). test:ci na dev: 88/96 przed #331; otwarte: hub-board (map, timeout), store:shots pl/upgrade-phone „empty frame”, home-region + licence-classes (założenie „Endless nie wyższy niż Zadania”). Agenci: 54a (przegląd UI), 55a (czerwone kroki test:ci + pełny przebieg).
+
 ## Kolejka
 - Najpierw: PR-y od GPT (jeśli są), potem zadania z paczki GPT, których GPT nie wziął (te same opisy nadają się dla
   agentów Claude), w kolejności z pliku (01, 02, 05, 06, 20, potem 03, 04, 08, 09, 11…).
