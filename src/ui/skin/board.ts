@@ -74,13 +74,29 @@ export function boardFigures(state: Pick<HudState, 'timeMinutes' | 'week' | 'day
  * its own stage (T2–T5). DEV only (src/main.ts reads linoryt.css as text); the release never sees it.
  */
 export function boardTwin(linorytCss: string): string {
-  // [night-73a] D-328 (T2): the airport notes, edge chips and slot tags are the board's own signs (board.css "T2"), so
-  // Linoryt's U2 section (between its `U2 notes` and `end U2` markers) is left out of the twin.
-  const from = linorytCss.indexOf('/* U2 notes */');
-  const to = linorytCss.indexOf('/* end U2 */');
-  const css = from >= 0 && to > from ? linorytCss.slice(0, from) + linorytCss.slice(to) : linorytCss;
+  let css = linorytCss;
+  for (const [fromMark, toMark] of BOARD_TWIN_CUTS) {
+    const from = css.indexOf(fromMark);
+    const to = css.indexOf(toMark, from);
+    if (from >= 0 && to > from) css = css.slice(0, from) + css.slice(to);
+  }
   return css.split('[data-skin="linoryt"]').join('[data-skin="board"]');
 }
+
+/**
+ * Sections of linoryt.css the twin leaves out (from the first marker up to the second), because a stage prints them in
+ * the board's own language (board.css):
+ * - [night-73a] D-328 (T2): the airport notes, edge chips and slot tags (U2);
+ * - [night-77a] D-332 (T5): the menu index (Part 4), the game-over report and the U4 screens (settings, licences,
+ *   privacy and terms, logbook, puzzles, daily ranking). The pause and the training flight keep the twin's geometry
+ *   (their fits for short and landscape screens) and take only the board's inks and faces (board.css "T5").
+ */
+export const BOARD_TWIN_CUTS: readonly (readonly [string, string])[] = [
+  ['/* ---- Part 4: menu', '/* U2 notes */'],
+  ['/* U2 notes */', '/* end U2 */'],
+  ['/* ---- Game-over report:', '/* ---- Hub cause board:'],
+  ['/* U4 screens */', '/* end U4 */'],
+];
 
 // ---- Flap rows -----------------------------------------------------------------------------------------------------
 

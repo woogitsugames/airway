@@ -13,6 +13,7 @@ import type { MilestoneId } from '../../game/milestones';
 import type { ContractsSummary } from '../../game/contractsSummary'; // [night-33a] D-271
 import { linoryt, linorytReportHub } from '../skin/linoryt'; // [night-29a] D-284 U3: Linoryt preview (DEV only)
 import { setClass, setFlagAttribute } from '../classes'; // [night-59a] D-322
+import { sheetSkin } from '../sheet-skin'; // [night-77a] D-332: the DEV `?skin=board` preview's print-out (null in a release)
 
 export type { WorldIdentity } from './seed';
 export type { GameOverBest, BestStorage } from './storage';
@@ -51,6 +52,16 @@ export interface GameOverSnapshot extends WorldIdentity {
   readonly milestones?: { readonly reached: readonly MilestoneId[]; readonly first: readonly MilestoneId[] };
   /** [night-33a] D-271: Endless only — weekly contracts met and offered (absent: no contract seen, Daily, puzzles). */
   readonly contracts?: ContractsSummary;
+  /**
+   * [night-77a] D-332: plain facts of the ended run for a preview skin's print-out (src/ui/sheet-skin.ts): the city name,
+   * the mode, the calendar and home clock at the jam and the network's size. The shipped report does not read them.
+   */
+  readonly facts?: {
+    readonly hubName: string;
+    readonly mode: 'endless' | 'daily' | 'puzzle';
+    readonly clock: { readonly week: number; readonly day: number; readonly minute: number };
+    readonly network: { readonly routes: number; readonly aircraft: number; readonly hubs: readonly string[] };
+  };
 }
 
 /** [night-10r] Weeks of the run plus the day of the jam; hub ids in picks are already display labels. */
@@ -478,6 +489,15 @@ function buildDialog(
   mapButton.addEventListener('click', () => setMap(true));
   mapBack.addEventListener('click', () => setMap(false));
   overlay.append(content, mapBar);
+  sheetSkin.current?.report({ overlay, content, sign, map: mapButton, departures: board, strip, actions, same, next, menu, report: {
+    hubCode: snapshot.hubCode, hubName: snapshot.facts?.hubName ?? snapshot.hubCode, hubIsHub: snapshot.hubIsHub ?? true,
+    mode: snapshot.facts?.mode ?? null, clock: snapshot.facts?.clock ?? null, delivered: snapshot.delivered,
+    completedWeeks: snapshot.completedWeeks, newRecord: isNewRecord, waiting: snapshot.ledger.waiting,
+    capacity: snapshot.ledger.capacity, queue: snapshot.ledger.waitingByRegion ?? {}, network: snapshot.facts?.network ?? null,
+    homeRegion: snapshot.homeRegion ? t(REGION_NAME_KEYS[snapshot.homeRegion]) : null,
+    licence: snapshot.licenceClass ? t(snapshot.licenceClass === 2 ? 'licence.short.2' : 'licence.short.3') : null,
+    ...(snapshot.timeline ? { timeline: snapshot.timeline } : {}),
+  } }); // [night-77a] D-332 (T5)
   const closeMap = (): boolean => {
     if (!overlay.classList.contains('is-map')) return false;
     setMap(false);

@@ -44,6 +44,7 @@ import { initializeMotion, reducedMotion } from './ui/motion';
 import { hudSkin } from './ui/hud/skin'; // [night-69a] D-324: the DEV `?skin=board` preview's HUD slot
 import { noteSkin } from './ui/overlay-skin'; // [night-73a] D-328: the DEV `?skin=board` preview's sign slot
 import { stripSkin } from './ui/strip-skin'; // [night-75a] D-330: the DEV `?skin=board` preview's hub strip bay
+import { sheetSkin } from './ui/sheet-skin'; // [night-77a] D-332: the DEV `?skin=board` preview's menu board and print-out
 import { regionGlyph } from './ui/glyphs'; // [night-75a] D-330: glyphs on the strips (DEV branch only)
 import { REGION_IDS } from './data/regions'; // [night-75a]
 import { ATLAS_LABELS, atlasLabelEligible, atlasLabelKey } from './data/atlasLabels'; // [night-73a] D-328 (R2 data)
@@ -85,9 +86,10 @@ startLinoryt({ t, localNumber });
  */
 const devBoard: Promise<void> | null = import.meta.env.DEV && query.get('skin') === 'board' ? startBoardPreview() : null;
 async function startBoardPreview(): Promise<void> {
-  const [board, twin, notes, strips] = await Promise.all([import('./ui/skin/board'), import('./ui/skin/linoryt.css?raw'),
+  const [board, twin, notes, strips, sheets] = await Promise.all([import('./ui/skin/board'), import('./ui/skin/linoryt.css?raw'),
     import('./ui/skin/board-notes'), // [night-73a] D-328: T2 signs (the atlas labels are R2's static data)
-    import('./ui/skin/board-strips')]); // [night-75a] D-330: T3 hub strips
+    import('./ui/skin/board-strips'), // [night-75a] D-330: T3 hub strips
+    import('./ui/skin/board-sheets')]); // [night-77a] D-332: T5 menu board and report print-out
   const style = document.createElement('style');
   style.dataset.skinTwin = 'board';
   style.textContent = board.boardTwin(twin.default);
@@ -96,6 +98,7 @@ async function startBoardPreview(): Promise<void> {
   board.startBoard();
   noteSkin.current = notes.createBoardNotes({ t, localNumber, labels: ATLAS_LABELS, eligible: atlasLabelEligible, labelKey: atlasLabelKey });
   stripSkin.current = strips.createBoardStrips({ t, localNumber, glyph: regionGlyph, regions: REGION_IDS });
+  sheetSkin.current = sheets.createBoardSheets({ t, localNumber, glyph: regionGlyph, regions: REGION_IDS });
   hudSkin.current = board.createBoardSkin({ t, localNumber, Flap: SplitFlap, reducedMotion, cells: BOARD_CELLS, daysPerWeek: DAYS_PER_WEEK });
 }
 /** [task-36] Ticks of autoplay before a store scene is lit (game, night, failure). */
