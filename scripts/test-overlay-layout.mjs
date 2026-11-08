@@ -1,6 +1,7 @@
 // [task-06] Fixed-seed regression for deterministic collision avoidance.
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
+import { withinBudget } from './lib/time-budget.mjs';
 const require = createRequire(import.meta.url);
 const ts = require('typescript');
 const source = readFileSync(new URL('../src/ui/overlay-layout.ts', import.meta.url), 'utf8');
@@ -244,7 +245,7 @@ assert('out-of-range label suppressed', layoutTags([{ ...crowd[0], width: 500 }]
     const now = time(() => { reset(); placeEdgeChips(s.chips, s.tags, eb); }, 400);
     const old = time(() => { ref.forEach((e, i) => { e.edgeX = refIdeal[i][0]; e.edgeY = refIdeal[i][1]; }); referenceDistribute(ref, eb); }, 400);
     console.log(`edge chips 150 airports: placeEdgeChips ${now.toFixed(3)} ms/frame, old distributeEdges ${old.toFixed(3)} ms/frame (×${(old / now).toFixed(1)})`);
-    assert(`edge chips: 150 airports under 1 ms per frame (${now.toFixed(3)} ms)`, now < 1);
+    assert(`edge chips: 150 airports under 1 ms per frame (${now.toFixed(3)} ms)`, withinBudget('edge chips 150 airports', now, 1, { strict: true }));
   }
 }
 // [night-11az] D-257 Róża: a fixed obstacle (a rose) is never moved and keeps tags off it; a tag with maxShift tries
@@ -582,7 +583,7 @@ assert('out-of-range label suppressed', layoutTags([{ ...crowd[0], width: 500 }]
     const t0 = performance.now();
     for (let r = 0; r < 400; r++) run();
     const ms = (performance.now() - t0) / 400;
-    assert(`sized edge chips: 150 airports under 1 ms per frame (${ms.toFixed(3)} ms)`, ms < 1);
+    assert(`sized edge chips: 150 airports under 1 ms per frame (${ms.toFixed(3)} ms)`, withinBudget('sized edge chips 150 airports', ms, 1, { strict: true }));
   }
 }
 console.log(`SUMMARY test:overlay-layout seed=0xA1A1 cases=${passed + failed} passed=${passed} failed=${failed}`);

@@ -5,6 +5,7 @@
 // replay stays inside a time budget per game week and for a dense journal near MAX_JOURNAL_ENTRIES.
 import './ts-test-loader.mjs';
 import assert from 'node:assert/strict';
+import { withinBudget } from './lib/time-budget.mjs';
 const { Sim } = await import('../src/sim/sim.ts');
 const { TICKS_PER_WEEK } = await import('../src/sim/index.ts');
 const { buildDailySubmission, verifyDailySubmission, MAX_REPLAY_TICKS, MAX_JOURNAL_ENTRIES } =
@@ -76,7 +77,7 @@ check('an empty journal claiming 30 weeks is rejected as not finished, quickly',
   const { value: verdict, ms } = timed(() => verifyDailySubmission(clone(emptyLong), [attackDay]));
   assert.deepEqual(verdict, { ok: false, reason: 'not_finished' });
   console.log(`  empty 30-week claim rejected in ${ms.toFixed(0)} ms`);
-  assert.ok(ms < BUDGET_WORST_MS, `${ms.toFixed(0)} ms`);
+  assert.ok(withinBudget('empty 30-week claim', ms, BUDGET_WORST_MS, { strict: true }), `${ms.toFixed(0)} ms`);
 });
 
 check('an honest run with endTick inflated past its game over is rejected', () => {
@@ -106,7 +107,7 @@ check(`replay cost per game week stays within ${BUDGET_MS_PER_WEEK} ms (6 bot ru
   }
   const projected = worst * (MAX_REPLAY_TICKS / TICKS_PER_WEEK);
   console.log(`  worst ${worst.toFixed(0)} ms/week → a 30-week run would cost ~${projected.toFixed(0)} ms`);
-  assert.ok(worst <= BUDGET_MS_PER_WEEK, `${worst.toFixed(0)} ms/week`);
+  assert.ok(withinBudget('replay cost per game week', worst, BUDGET_MS_PER_WEEK), `${worst.toFixed(0)} ms/week`);
 });
 
 check(`a dense journal near MAX_JOURNAL_ENTRIES verifies within ${BUDGET_WORST_MS} ms`, () => {
@@ -135,7 +136,7 @@ check(`a dense journal near MAX_JOURNAL_ENTRIES verifies within ${BUDGET_WORST_M
   assert.equal(verdict.ok, true, JSON.stringify(verdict));
   assert.equal(verdict.score, base.claimedScore);
   console.log(`  dense ${journal.length} commands over ${(base.endTick / TICKS_PER_WEEK).toFixed(2)} weeks: ${ms.toFixed(0)} ms`);
-  assert.ok(ms <= BUDGET_WORST_MS, `${ms.toFixed(0)} ms`);
+  assert.ok(withinBudget('dense journal replay', ms, BUDGET_WORST_MS), `${ms.toFixed(0)} ms`);
 });
 
 console.log(`SUMMARY test:replay-cost ${passed}/${passed + failed}`);
