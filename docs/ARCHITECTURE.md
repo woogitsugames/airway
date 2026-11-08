@@ -141,7 +141,7 @@ single `WebGLRenderer`, `Scene`, light rig (subsolar `DirectionalLight` + sky
 `HemisphereLight`, `globe/createSunLights`), quality profile (`quality.ts`, D-33) and
 `GlobeOrbitCamera`. Layers: the Linoryt globe (`globe/`, print material and paper sky band in the lazy
 `globe/linoryt-globe.ts`; [night-70a R1] D-325 the DEV-only NASA preview `?look=earth` in the lazy `globe/earth-globe.ts`,
-presets and terminator weights in `globe/earth.ts`, the shared elevation decode in `globe/elevation.ts`), and in the lazy `linoryt-objects.ts` the airport stamps with the jam zone,
+presets and terminator weights in `globe/earth.ts`, the shared elevation decode in `globe/elevation.ts`; [night-72a R2] D-327 its country borders in `globe/borders.ts`: Natural Earth 50m land borders from `public/data/borders-50m.json` (`npm run build:borders`), one draw (a plain quad batch) of 0.8 CSS-px lines, hidden past the horizon in the shader, grey by night and white by day), and in the lazy `linoryt-objects.ts` the airport stamps with the jam zone,
 one route ribbon, the dashed route preview and the plane sprites (contracts in `airports.ts`,
 `routes.ts`, `routePreview.ts`, `planes.ts`; the arc model in `routes.ts`, D-299/D-302). All lon/lat → cartesian math goes through
 `globe/geo-math.ts` (`setLatLonVec3` writes into a caller vector; `latLonToVec3` allocates).
@@ -163,12 +163,15 @@ imports only) and never mutates state. The game composition root adapts sim snap
 | `pick(x, y)` | tap | `{kind:'city', id}` within 28 dp, else `{kind:'globe', lon, lat}`, else `null` |
 | `pickGlobe(x, y)` | route tool `cursorGeo` | analytic sphere hit |
 | `project(lon, lat, alt, out)` | HTML overlay, per frame | writes `{x, y, visible}` into `out`; no allocation |
+| `projectAirport?(id, out)` | airport signs, per frame | [ext-04 E2] the stamp box `{x, y, half, visible}` of a known airport at `SURFACE_ANCHOR_ALTITUDE` (1.01, the `pick()` point); unknown id → `visible: false`; no allocation |
+| `projectLonLat(lon, lat, out)` | atlas labels, per frame | [night-72a R2] D-327: any surface point into `{x, y, visible}` (`visible` = in front of the horizon), same projection and altitude as `projectAirport` (`projection.ts`), no allocation. The label points are `ATLAS_LABELS` in `src/data/atlasLabels.ts` (countries and seas, i18n `atlas.<kind>.<name>`, `weight` 1–4 with `atlasLabelEligible(label, frameSpanKm)` for the zoom) |
 | `orbit` | input | `GlobeOrbitCamera`: pass to `cameraGestureCallbacks(orbit, …)` |
 | `camera` | overlay | three.js camera for `createAirportOverlay(host, camera)` |
 | `resize(w, h, insets)` / `opts.autoResize` | layout | CSS px; insets keep the globe clear of HUD and safe areas. [task-34] `src/game/world.ts` measures them from the HUD/menu boxes (`insetsFromLayout`, `menuFraming` in `framing.ts`, D-47) |
 | `setQuality(pref)` | settings | `'auto' \| 'saver' \| 'low' \| 'medium' \| 'high'`; rebuilds terrain only when the preset changes, DPR ≤ 2, shadows on high only; `saver` = low terrain, DPR 1, 30 fps, 60 % decorations (D-73) |
 | `forceTerrainLevel(n \| null)` | tests, shots | pins the terrain LOD level (0 = preset mesh, 1 = far mesh) |
 | `drawModelPreview(kind, canvas2d)` | upgrade card | renders through the shared context into a 2D canvas |
+| `measureLayerContrast()` / `sampleLuminance(rects)` | probes, shots | [task-34] D-177 per-layer contrast against the globe (routes, airports, jam, planes; [night-72a R2] `borders` when the look draws them); diagnostic, never per frame |
 | `ready`, `stats()`, `dispose()` | lifecycle | `ready` resolves after the land mask/terrain load |
 
 Screen coordinates are CSS pixels relative to the canvas' top-left corner. Frame pacing:

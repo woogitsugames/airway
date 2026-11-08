@@ -7,7 +7,7 @@
 // dots and lines for failure screenshots. main.ts loads this module only behind `import.meta.env.DEV`, so release
 // bundles never contain it (`test:bundle` looks for STUB_WORLD_MARK in dist/).
 import { PerspectiveCamera, Vector3 } from 'three';
-import { GlobeOrbitCamera, STAMP_SIZE_PX, type AirportScreenBox, type CityView, type QualityPreference, type RouteView, type SafeAreaInsets, type ScreenPoint, type WorldRenderer } from '../../render';
+import { GlobeOrbitCamera, STAMP_SIZE_PX, SURFACE_ANCHOR_ALTITUDE, type AirportScreenBox, type CityView, type QualityPreference, type RouteView, type SafeAreaInsets, type ScreenPoint, type WorldRenderer } from '../../render';
 import { pickSphereNdc, setLatLonVec3 } from '../../render/globe/geo-math';
 import type { FrameState, World } from '../world';
 
@@ -153,6 +153,10 @@ export function createStubWorld(host: HTMLElement, label: string, options: StubW
       project(city.lon, city.lat, 1.01, out);
       out.half = (city.hub ? STAMP_SIZE_PX.hub : STAMP_SIZE_PX.airport) / 2;
       return out;
+    },
+    // [night-72a R2] D-327: atlas-label anchors through the same projection and altitude as projectAirport.
+    projectLonLat(lon: number, lat: number, out: ScreenPoint): ScreenPoint {
+      return project(lon, lat, SURFACE_ANCHOR_ALTITUDE, out);
     },
     drawModelPreview: () => false,
     stats: () => ({ adaptations: [] as string[], curfewAirports: curfew.length }),

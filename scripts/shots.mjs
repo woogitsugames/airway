@@ -83,6 +83,17 @@ const TARGETS = [
     })),
   { id: 'earth-menu', dir: 'r1', file: 'earth-menu', path: '?look=earth', lang: 'pl',
     ready: { selector: '.airway-board .airway-flight' }, settle: 3000, note: 'menu over the NASA globe preview' },
+  // [night-72a R2] D-327: country borders on the NASA globe, framed like the K2/UI-A mockups (Black Sea, eastern
+  // Mediterranean), by day, at dusk and by night. The check runs the D-177 probe on the border layer (gated: it must
+  // read, and stay quieter than the map objects to come) and compares projectLonLat with projectAirport.
+  ...[['day', '30,-18', 'high'], ['dusk', '-35,-18', 'high'], ['night', '-150,-18', 'medium'], ['night-low', '-150,-18', 'low']]
+    .map(([file, sun, quality]) => ({
+      id: `r2-${file}`, dir: 'r2', file: `borders-${file}`,
+      path: `dev/globe.html?quality=${quality}&look=earth&clean&zoom=6&lon=31&lat=39&sun=${sun}`,
+      ready: { fn: 'window.__globeReady && window.__globeMetrics' }, timeout: 120000, settle: 2500,
+      note: `NASA globe + country borders, ${file} (${quality})`,
+      check: (page) => bordersCheck(page),
+    })),
   // [night-07d] Curfew airports marked on the puzzle strips (barrier mark + hours line).
   ...[['08', 'pl'], ['30', 'en']].map(([level, lang]) => ({
     id: `puzzle-curfew-${level}`, dir: 'night-07d', file: `puzzle${level}-${lang}`, path: '', lang,
@@ -98,6 +109,44 @@ const TARGETS = [
     note: `long-haul puzzle ${level} (${lang})`,
   })),
 ];
+
+/**
+ * [night-72a R2] D-327: on the dev globe page (real renderer, SwiftShader): the border layer's D-177 probe and
+ * projectLonLat against projectAirport for a set of airports on both hemispheres.
+ */
+/**
+ * D-177 for a hairline: a 1–2 px line has no interior, so the probe's "core" term (light vs dark interior pixels)
+ * measures the photo under it (city lights), not the line. The gate reads the per-pixel median of the line against
+ * the globe behind it: it must show (≥ 1.2:1) and stay quieter than the map objects (≤ 2:1; routes and stamps ≥ 3:1).
+ */
+export const BORDER_PROBE = { min: 1.2, max: 2 };
+async function bordersCheck(page) {
+  const r = await page.evaluate(() => {
+    const world = window.__globeWorld;
+    const airports = [['WAW', 21.0, 52.2], ['IST', 28.8, 41.3], ['CAI', 31.4, 30.1], ['AMM', 35.99, 31.7], ['ATH', 23.9, 37.9],
+      ['KBP', 30.9, 50.3], ['SYD', 151.2, -33.9], ['LAX', -118.4, 33.9], ['GRU', -46.5, -23.4], ['HNL', -157.9, 21.3]];
+    world.setCities(airports.map(([id, lon, lat]) => ({ id, lon, lat })));
+    const a = { x: 0, y: 0, half: 0, visible: false }, b = { x: 0, y: 0, visible: false };
+    const rows = airports.map(([id, lon, lat]) => {
+      world.projectAirport(id, a); world.projectLonLat(lon, lat, b);
+      return { id, same: Math.abs(a.x - b.x) < 1e-6 && Math.abs(a.y - b.y) < 1e-6 && a.visible === b.visible, visible: b.visible };
+    });
+    world.setCities([]);
+    return { borders: world.measureLayerContrast().borders, rows };
+  });
+  const c = r.borders;
+  if (!c) throw new Error('no border pixels measured');
+  if (!(c.median >= BORDER_PROBE.min && c.median <= BORDER_PROBE.max)) {
+    throw new Error(`border contrast (median) ${c.median}:1 outside ${BORDER_PROBE.min}–${BORDER_PROBE.max}`);
+  }
+  const mismatch = r.rows.filter((row) => !row.same).map((row) => row.id);
+  if (mismatch.length) throw new Error('projectLonLat ≠ projectAirport for ' + mismatch.join(','));
+  const far = r.rows.filter((row) => ['SYD', 'LAX', 'GRU', 'HNL'].includes(row.id) && row.visible).map((row) => row.id);
+  if (far.length) throw new Error('far-side airports reported visible: ' + far.join(','));
+  const m = await page.evaluate(() => window.__globeMetrics);
+  return `calls=${m.drawCalls} borders median=${c.median} (D-177 edge=${c.edge} core=${c.core}) px=${c.pixels} ` +
+    `projectLonLat=projectAirport ${r.rows.length}/${r.rows.length}`;
+}
 
 const args = process.argv.slice(2);
 const option = (name) => args.find((arg) => arg.startsWith(`--${name}=`))?.split('=')[1];

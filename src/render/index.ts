@@ -18,5 +18,6 @@ export type { AircraftKind } from './routes';
 export { contrastRatio, relativeLuminance, type LayerContrast, type PixelRect } from './contrast'; // [task-34]
 export { insetsFromLayout, menuFraming, solveZoomForRadius, menuSpinRate, MENU_SPIN_DEG_PER_S, type LayoutRect, type MenuFraming } from './framing'; // [task-34] [task-39]
 export { createMenuNetwork, type MenuNetwork } from './menuNetwork'; // [task-34]
+export { SURFACE_ANCHOR_ALTITUDE } from './projection'; // [night-72a R2] D-327: altitude of projectAirport / projectLonLat
 export { gpuRendererString, webgl2Available } from './contextGuard'; // [night-11h] D-118
 export { LINORYT_INKS, SKY_COLOUR, STAMP_SIZE_PX, jamArcShare, type LinorytInk } from './globe/linoryt'; // [ext-04 E1] D-283 spec §1/§4

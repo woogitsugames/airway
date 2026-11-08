@@ -151,11 +151,14 @@ if (!STATIC_ONLY) {
     }
     // [night-70a R1] D-323: the NASA globe preview (`?look=earth`) never ships before the flip: no preview texture in
     // dist/ (scripts/vite-globe-preview.mjs) and no chunk with its shader (the import is behind import.meta.env.DEV).
-    const { PREVIEW_GLOBE_FILES } = await import('./vite-globe-preview.mjs');
+    const { PREVIEW_GLOBE_FILES, PREVIEW_DATA_FILES } = await import('./vite-globe-preview.mjs');
     const previewTextures = PREVIEW_GLOBE_FILES.filter((name) => existsSync(join(dist, 'data', 'globe', name)));
     check(previewTextures.length === 0, 'NASA globe preview textures in dist/: ' + previewTextures.join(' '));
+    // [night-72a R2] D-327: nor the border data of the preview.
+    const previewData = PREVIEW_DATA_FILES.filter((name) => existsSync(join(dist, 'data', name)));
+    check(previewData.length === 0, 'NASA globe preview data in dist/: ' + previewData.join(' '));
     const earthChunks = files(join(dist, 'assets'), (path) => extname(path) === '.js')
-      .filter((path) => /EarthGlobe|awNightGain/.test(readFileSync(path, 'utf8')));
+      .filter((path) => /EarthGlobe|awNightGain|EarthBorders/.test(readFileSync(path, 'utf8')));
     check(PREVIEW_GLOBE_FILES.length === 0 || earthChunks.length === 0,
       'NASA globe preview shader in the release bundle: ' + earthChunks.map((path) => relative(dist, path)).join(', '));
     // [night-12be] D-254: the DEV stub world (`?render=stub`, src/game/dev/stubWorld.ts) never ships.

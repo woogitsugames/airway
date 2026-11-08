@@ -7,7 +7,10 @@ import { join, resolve } from 'node:path';
 /** Files of public/data/globe/ a release build leaves out (the textures of `src/render/globe/earth.ts`). */
 export const PREVIEW_GLOBE_FILES = Object.freeze(['day-4096.webp', 'day-2048.webp', 'night-2048.webp', 'night-1024.webp']);
 
-/** Vite plugin: after a build, removes the preview textures from the output's data/globe/ folder. */
+/** [night-72a R2] D-327: files of public/data/ a release build leaves out while the look is a preview (the borders). */
+export const PREVIEW_DATA_FILES = Object.freeze(['borders-50m.json']);
+
+/** Vite plugin: after a build, removes the preview textures (data/globe/) and data files (data/) from the output. */
 export function globePreview() {
   let outGlobe = '';
   let build = false;
@@ -21,6 +24,7 @@ export function globePreview() {
     closeBundle() {
       if (!build || !existsSync(outGlobe)) return;
       for (const name of PREVIEW_GLOBE_FILES) rmSync(join(outGlobe, name), { force: true });
+      for (const name of PREVIEW_DATA_FILES) rmSync(join(outGlobe, '..', name), { force: true });
     },
   };
 }

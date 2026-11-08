@@ -7,12 +7,13 @@
  * Screen coordinates (`pick`, `project`, `resize`) are CSS pixels relative to the
  * canvas' top-left corner, matching `GlobeOrbitCamera` and the gesture recognizer.
  */
-import { Color, Group, PerspectiveCamera, Scene, Vector3, WebGLRenderer } from 'three';
+import { Color, Group, PerspectiveCamera, Scene, Vector3, WebGLRenderer, type Object3D } from 'three';
 import { createContextGuard } from './contextGuard'; // [night-11h]
 import type { AirportsLayer } from './airports';
 import { GlobeOrbitCamera, type OrbitCameraOptions, type SafeAreaInsets } from './camera';
 import { createGlobe, createSunLights, DEFAULT_GLOBE_LOOK, type GlobeInstance, type GlobeLook } from './globe';
-import { pickSphereNdc, setLatLonVec3, type LonLat } from './globe/geo-math';
+import { pickSphereNdc, type LonLat } from './globe/geo-math';
+import { projectToScreen, SURFACE_ANCHOR_ALTITUDE } from './projection';
 import type { PlaneRenderSnapshot } from './planes';
 import {
   AdaptiveQualityMonitor, adaptiveSteps, applyAdaptiveSteps, applyQualityProfile, frameDue, resolveQualityProfile,
@@ -149,6 +150,12 @@ export interface WorldRenderer {
    * E3; the UI calls it as `projectAirport?.(id, out)`). Unknown id → `visible: false`.
    */
   projectAirport?(id: string, out: AirportScreenBox): AirportScreenBox;
+  /**
+   * [night-72a R2] D-327: any surface point on screen (atlas labels, `ATLAS_LABELS` in src/data), written into `out`
+   * without allocating: CSS px and `visible` = in front of the horizon. Same altitude and projection as
+   * `projectAirport`, so a label and a stamp at the same lon/lat land on the same pixel.
+   */
+  projectLonLat(lon: number, lat: number, out: ScreenPoint): ScreenPoint;
   /** Complete set of airports whose curfew barrier is closed. */
   setCurfew(closedIds: readonly string[]): void;
   /** Rebuilds route tubes only when `revision` changes (or is omitted). */
@@ -316,14 +323,8 @@ export function createWorldRenderer(
   ready.catch(() => { /* surfaced to the caller through `ready` */ });
 
   function project(lon: number, lat: number, altitude: number, out: ScreenPoint): ScreenPoint {
-    setLatLonVec3(scratch, lon, lat, altitude);
-    toCamera.copy(camera.position).sub(scratch);
-    // Front-facing test against the local surface normal (radius-normalised position).
-    const facing = toCamera.dot(scratch) > 0;
-    scratch.project(camera);
-    out.x = (scratch.x + 1) / 2 * orbit.viewportWidth;
-    out.y = (1 - scratch.y) / 2 * orbit.viewportHeight;
-    out.visible = facing && scratch.z >= -1 && scratch.z <= 1;
+    // [night-72a R2] One projection for project, pick, projectAirport and projectLonLat (`projection.ts`).
+    projectToScreen(camera, orbit.viewportWidth, orbit.viewportHeight, lon, lat, altitude, scratch, toCamera, out);
     return out;
   }
 
@@ -454,7 +455,7 @@ export function createWorldRenderer(
       camera.updateMatrixWorld();
       for (let i = 0; i < cityList.length; i++) {
         const city = cityList[i];
-        project(city.lon, city.lat, 1.01, point);
+        project(city.lon, city.lat, SURFACE_ANCHOR_ALTITUDE, point);
         if (!point.visible) continue;
         const dx = point.x - x;
         const dy = point.y - y;
@@ -467,6 +468,10 @@ export function createWorldRenderer(
     },
     pickGlobe,
     project,
+    projectLonLat(lon, lat, out) {
+      camera.updateMatrixWorld();
+      return project(lon, lat, SURFACE_ANCHOR_ALTITUDE, out);
+    },
     resize,
     async setQuality(nextPreference) {
       preference = nextPreference;
@@ -506,9 +511,12 @@ export function createWorldRenderer(
     measureLayerContrast() {
       camera.updateMatrixWorld();
       // [ext-04] D-303: stamps and the jam zone apart (the zone is a hatch, not a symbol).
-      return measureLayerContrast(renderer, scene, camera, linorytObjects
+      const layers: Record<string, Object3D> = linorytObjects
         ? { routes: routes.group, airports: linorytObjects.airports.stampMesh, jam: linorytObjects.airports.jamMesh, planes: planes.group }
-        : { routes: routes.group, airports: airports.group, planes: planes.group });
+        : { routes: routes.group, airports: airports.group, planes: planes.group };
+      // [night-72a R2] D-327: the country borders of the earth look, measured like any layer (D-177).
+      if (globe?.borders) layers['borders'] = globe.borders;
+      return measureLayerContrast(renderer, scene, camera, layers);
     },
     sampleLuminance(rects) {
       camera.updateMatrixWorld();
@@ -537,7 +545,7 @@ export function createWorldRenderer(
       const city = cities.get(id);
       if (!city) { out.visible = false; out.half = 0; return out; }
       camera.updateMatrixWorld();
-      project(city.lon, city.lat, 1.01, point);
+      project(city.lon, city.lat, SURFACE_ANCHOR_ALTITUDE, point);
       out.x = point.x; out.y = point.y; out.visible = point.visible;
       out.half = linorytObjects ? linorytObjects.airports.halfSize(id)
         : (city.hub ? STAMP_SIZE_PX.hub : STAMP_SIZE_PX.airport) / 2;

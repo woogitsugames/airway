@@ -1,7 +1,7 @@
 // [ext-04 E4] D-283/D-285: the globe is the Linoryt print only. Satelita, Mapa, the diorama and the DEV comparison
 // looks, their textures, the cloud/ocean/haze shells and the decorations are gone; `linoryt-globe.ts` (a lazy chunk)
 // builds the terrain mesh, the print material and the paper sky band.
-import { Color, DirectionalLight, Group, HemisphereLight, Scene, Vector3, type Camera } from 'three';
+import { Color, DirectionalLight, Group, HemisphereLight, Scene, Vector3, type Camera, type Object3D } from 'three';
 import type { QualityProfile } from '../quality';
 import { setLatLonVec3 } from './geo-math';
 import { loadLandMask } from './land-mask';
@@ -41,6 +41,8 @@ export interface GlobeInstance {
   readonly lod: TerrainLod;
   readonly decor: DecorCullStats;
   readonly surfaceLook: GlobeLook;
+  /** [night-72a R2] D-327: the country-border layer (one draw), when the look draws one; for the contrast probe. */
+  readonly borders?: Object3D | null;
   dispose(): void;
 }
 

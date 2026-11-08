@@ -106,6 +106,14 @@ for `dev/globe.html` and `scripts/store-shots.mjs`; `scripts/vite-font-files.mjs
   downloaded or rasterized by a running browser.
 - Terrain, forests, rock formations, cloud puffs, city-light points and the
   atmosphere are custom procedural meshes/shaders in `src/render/globe/`.
+<!-- [night-72a R2] -->
+- `public/data/borders-50m.json` (D-327): country land borders for the NASA globe preview, generated with
+  `npm run build:borders` (`scripts/build-borders.mjs`) from the **Natural Earth 1:50m admin-0 countries** TopoJSON in
+  `world-atlas@2.0.2` (ISC; Natural Earth data public domain): arcs shared by two countries, simplified (0.02°) and
+  quantised (0.01°); the Crimean isthmus line and the Northern Cyprus / Somaliland lines are left out. Verified by
+  `npm run test:borders`. Left out of `dist/` until the flip (`PREVIEW_DATA_FILES`).
+- Atlas label anchors (`src/data/atlasLabels.ts`) and their PL/EN names: own work from general geographic knowledge
+  (conventional short names; Polish after the KSNG lists).
 <!-- [task-33] -->
 - Relief and biome regions (`src/render/globe/relief.ts`): ~45 mountain-range ridge lines
   (Alps, Atlas, Scandes, Himalaya, Andes, Rockies, …) and ~16 desert/steppe regions, typed in

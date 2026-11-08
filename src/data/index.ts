@@ -7,6 +7,9 @@ export { CITIES, CITY_DATA_VERSION, utcOffsetHFromLongitude, withUtcOffsetH } fr
 export type { City, CityUtcOffset } from './cities.ts';
 export { REGIONS, REGION_IDS, GLYPH_PATHS } from './regions.ts';
 export type { RegionId, RegionGlyph, RegionDefinition } from './regions.ts';
+// [night-72a R2] D-327: atlas labels (countries, seas) for the DOM layer, anchored with WorldRenderer.projectLonLat.
+export { ATLAS_LABELS, ATLAS_WEIGHT_MAX_SPAN_KM, atlasLabelEligible, atlasLabelKey } from './atlasLabels.ts';
+export type { AtlasLabel, AtlasLabelKind, AtlasLabelWeight } from './atlasLabels.ts';
 
 /** City records with their fictional whole-hour UTC offset (D-27), in stable CITIES order. */
 export const CITY_RECORDS: readonly (City & CityUtcOffset)[] = Object.freeze(CITIES.map(withUtcOffsetH));
