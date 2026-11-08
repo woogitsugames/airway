@@ -207,6 +207,8 @@ commitach.
 
 - 8.11 ~08:55: #333 scalony (ext: poprawki renderu z audytu 54a, D-314). dev = main = c8cee49. Ext dostał: perf:scene Linorytu (D-315+). Do kolejki UI: papierowe romby uchwytów tras (`.airway-route-handle::before` w src/ui/atcStrip.css) — w kadrze ich nie ma; zrobić po 56b (budżet CSS).
 
+- 8.11 ~09:30: #335 scalony squashem (ext perf: bez MSAA i map cieni, D-315; trailer z nazwą modelu wyczyszczony squashem). dev = main = 5e06a92. Ext: kolejne — mniej trójkątów terenu na high, jeśli niewidoczne (D-316+).
+
 ## Kolejka
 - Najpierw: PR-y od GPT (jeśli są), potem zadania z paczki GPT, których GPT nie wziął (te same opisy nadają się dla
   agentów Claude), w kolejności z pliku (01, 02, 05, 06, 20, potem 03, 04, 08, 09, 11…).
