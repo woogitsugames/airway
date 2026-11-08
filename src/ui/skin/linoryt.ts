@@ -624,6 +624,12 @@ export function linorytFrameStart(host: HTMLElement, width: number, height: numb
     bounds.width = Math.max(120, Math.min(width, m.dockLeft));
     edge.bottom = 0;
     edge.right = Math.max(0, width - m.dockLeft);
+    // [night-75a] D-330: the strip bay beside the console (top) or over the map's lower left (bottom) bounds the direction
+    // signs; the notes keep off its box through the board slot.
+    if (m.bay) {
+      if (m.bay.t < height / 2) edge.top = Math.max(edge.top, m.bay.b);
+      else edge.bottom = Math.max(0, height - m.bay.t);
+    }
     if (m.pass) {
       slot.active = true;
       slot.x = m.pass.l;
@@ -633,7 +639,8 @@ export function linorytFrameStart(host: HTMLElement, width: number, height: numb
     }
   } else {
     bounds.top = Math.max(0, m.top);
-    bounds.bottom = Math.max(0, height - m.dockTop);
+    // [night-75a] D-330: the strip bay stands on the console, so its top is the bottom margin.
+    bounds.bottom = Math.max(0, height - Math.min(m.dockTop, m.bay ? m.bay.t : m.dockTop));
     edge.bottom = bounds.bottom;
     edge.right = 0;
   }
@@ -746,17 +753,20 @@ export interface LinorytMargins {
   /** The top margin's box (in landscape a block in the top-left corner). */
   pass: { l: number; t: number; r: number; b: number } | null;
   column: boolean;
+  /** [night-75a] D-330: the UI-A preview's hub strip bay while it shows (null otherwise and in a release). */
+  bay: { l: number; t: number; r: number; b: number } | null;
 }
-const margins = new WeakMap<HTMLElement, { value: LinorytMargins; observer: ResizeObserver | null; pass: Element | null; dock: Element | null }>();
+const margins = new WeakMap<HTMLElement, { value: LinorytMargins; observer: ResizeObserver | null; pass: Element | null; dock: Element | null; bay: Element | null }>();
 /** The paper margins of the HUD mounted in `host` (null until both are there). Reads layout only after a resize. */
 export function linorytMargins(host: HTMLElement): LinorytMargins | null {
   let entry = margins.get(host);
   const pass = host.querySelector('.airway-pass');
   const dock = host.querySelector('.airway-dock');
   if (!pass || !dock) return null;
-  if (!entry || entry.pass !== pass || entry.dock !== dock) {
+  const bay = host.querySelector('.airway-strip-bay');
+  if (!entry || entry.pass !== pass || entry.dock !== dock || entry.bay !== bay) {
     entry?.observer?.disconnect();
-    const value: LinorytMargins = { top: 0, dockTop: 0, dockLeft: 0, pass: null, column: false };
+    const value: LinorytMargins = { top: 0, dockTop: 0, dockLeft: 0, pass: null, column: false, bay: null };
     const measure = (): void => {
       const origin = host.getBoundingClientRect();
       const p = pass.getBoundingClientRect(), d = dock.getBoundingClientRect();
@@ -765,13 +775,17 @@ export function linorytMargins(host: HTMLElement): LinorytMargins | null {
       value.pass = { l: p.left - origin.left, t: p.top - origin.top, r: p.right - origin.left, b: p.bottom - origin.top };
       value.dockTop = d.top - origin.top;
       value.dockLeft = d.left - origin.left;
+      const s = bay?.getBoundingClientRect();
+      value.bay = s && s.width >= 1 && s.height >= 1
+        ? { l: s.left - origin.left, t: s.top - origin.top, r: s.right - origin.left, b: s.bottom - origin.top } : null;
     };
     const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(measure);
     observer?.observe(pass);
     observer?.observe(dock);
     observer?.observe(host);
+    if (bay) observer?.observe(bay);
     measure();
-    entry = { value, observer, pass, dock };
+    entry = { value, observer, pass, dock, bay };
     margins.set(host, entry);
   }
   return entry.value;

@@ -37,6 +37,7 @@ const licenceStamp = { max: 3, where: 'departures board: licence class stamp in 
 const boardLabel = { max: 6, where: 'UI-A board: label over a figure (abbreviated, full text in board.label)' };
 const consoleLong = { max: 12, where: 'UI-A console: caption under an aircraft plate (92 px)' };
 const consoleShort = { max: 7, where: 'UI-A console: caption under a key (52 px at 320 px), also the short plate form' };
+const stripLabel = { max: 7, where: 'UI-A hub strip: column label (mono capitals, 54 px column)' };
 const logbookShort = { max: 4, where: 'logbook: narrow number column head' };
 const logbookWide = { max: 6, where: 'logbook: column head' };
 
@@ -102,6 +103,16 @@ export const LENGTH_BUDGETS: Partial<Record<TranslationKey, LengthBudget>> = {
   'board.sheet.qty.aircraft': { max: 9, where: 'UI-A weekly sheet: caption under a strip quantity', sample: { count: 2 } },
   'board.sheet.qty.seats': { max: 9, where: 'UI-A weekly sheet: caption under a strip quantity', sample: { count: 6 } },
   'board.sheet.qty.departures': { max: 9, where: 'UI-A weekly sheet: caption under a strip quantity', sample: { count: 2 } },
+  // [night-75a] D-330: the hub strip's column labels (7.5 px mono capitals over 54–62 px columns) and the "+N" tile word.
+  'board.strip.hub': stripLabel,
+  'board.strip.airport': stripLabel,
+  'board.strip.seats': stripLabel,
+  'board.strip.close': stripLabel,
+  'board.strip.queueShort': stripLabel,
+  'board.strip.closeNone': stripLabel,
+  'board.strip.queueEmpty': stripLabel,
+  'board.strip.queue': { max: 22, where: 'UI-A hub strip: label over the queue column', sample: { count: 5 } },
+  'board.strip.moreWord': { max: 7, where: 'UI-A strip bay: word under "+N" on the 56 px tile', sample: { count: 5 } },
   'hud.week': passLabel,
   'hud.day': passLabel,
   'hud.time': passLabel,

@@ -4,6 +4,8 @@
 // the Linoryt structure re-scoped to the preview, and the main.ts branch that loads the preview only in a DEV build.
 // [night-73a] D-328 (step T2): the airport signs' metrics, queue and level of detail, the atlas label placement and the
 // yellow budget of the direction signs (src/ui/skin/board-notes.ts), and the release overlay's empty sign slot.
+// [night-75a] D-330 (step T3): the hub strips' order, the bay's place and strip count, the strip layout and queue
+// (src/ui/skin/board-strips.ts), and the release session's empty strip slot.
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { BOARD_FLIP_MS, BOARD_NIGHT, BOARD_REFLIP_MS, BOARD_STAGGER_MS, boardFigures, boardTwin, isBoardNight, SPEED_ANGLE } from '../src/ui/skin/board.ts';
@@ -17,6 +19,10 @@ import { clockText, defaultChoice, figureTiles, SLOTS_SYMBOL, stripQuantity, wee
 import { upgradeFacts } from '../src/ui/upgrade/cards.ts';
 import { EndlessRun } from '../src/game/run.ts';
 import { nextAutoplayCommand } from '../src/game/dev/autoplay.ts';
+import {
+  bayPlace, COLUMN_MIN, MAP_KEEP, QUEUE_MIN, STRIP_H, STRIP_STAY, stripClock, stripLayout, stripOrder, stripQueue, stripUrgency, queueFit,
+} from '../src/ui/skin/board-strips.ts';
+import { REGION_IDS, type RegionId } from '../src/data/regions.ts';
 import { en } from '../src/i18n/en.ts';
 import { pl } from '../src/i18n/pl.ts';
 
@@ -278,6 +284,101 @@ test('the release board reaches the sheet only through the empty slot (no static
   assert.match(main, /upgradeSkin\.current = week\.createBoardWeek/);
   const runtime = [...readFileSync('src/ui/skin/board-week.ts', 'utf8').matchAll(/^import\s+(?!type\b)[^;]*;/gm)];
   assert.equal(runtime.length, 0, 'board-week.ts has no runtime import');
+// ---- T3: hub strips --------------------------------------------------------------------------------------------------
+const hub = (id: string, waiting: number, capacity = 36, jamSeconds: number | null = null) =>
+  ({ id, code: id, name: id, hub: true, waiting: Array.from({ length: waiting }, () => 'EUN' as RegionId), capacity, jamSeconds });
+test('strips: a jam first (the sooner it closes, the higher), then the fuller; ties by code', () => {
+  const order = stripOrder([hub('ATH', 14), hub('AMM', 30), hub('IST', 5, 36, 80), hub('CAI', 6, 36, 20), hub('BEY', 14)], []);
+  assert.deepEqual(order.map((h) => h.id), ['CAI', 'IST', 'AMM', 'ATH', 'BEY']);
+  assert.ok(stripUrgency(hub('X', 0, 36, 999)) > stripUrgency(hub('Y', 72, 36)), 'any jam outranks any fill');
+});
+test('strips: a strip on show keeps its place until another hub is fuller by the stay margin; a jam takes it at once', () => {
+  const shown = ['ATH'];
+  assert.equal(stripOrder([hub('ATH', 18), hub('AMM', 20)], shown)[0].id, 'ATH', '20/36 vs 18/36 is within the margin');
+  const clearly = Math.ceil((18 / 36 + STRIP_STAY) * 36) + 1;
+  assert.equal(stripOrder([hub('ATH', 18), hub('AMM', clearly)], shown)[0].id, 'AMM');
+  assert.equal(stripOrder([hub('ATH', 30), hub('AMM', 2, 36, 50)], shown)[0].id, 'AMM');
+});
+test('strips: two queue rows: a glyph row per direction for one or two; past that the first row and glyph + count pairs', () => {
+  const waiting: RegionId[] = ['ME', 'EUN', 'EUN', 'ASI', 'EUN', 'ME', 'AFR', 'NAM'];
+  const q = stripQueue(waiting, REGION_IDS, 8, 3, false);
+  assert.equal(q.directions, 5);
+  assert.deepEqual(q.rows, [{ region: 'EUN', glyphs: 3, more: 0 }]);
+  assert.deepEqual(q.pairs.map((p) => `${p.region}${p.count}`), ['ME2', 'NAM1'], 'ties in region order; the third pair would not fit');
+  assert.equal(q.pairsMore, 2, '"+2": AFR and ASI past the pairs');
+  assert.equal(stripQueue(waiting, REGION_IDS, 8, 4, false).pairsMore, 0);
+  const two = stripQueue(['EUN', 'ME', 'ME'], REGION_IDS, 8, 3, false);
+  assert.deepEqual(two.rows.map((r) => r.region), ['ME', 'EUN'], 'two directions: two glyph rows');
+  const long = stripQueue(Array.from({ length: 20 }, () => 'EUN' as RegionId), REGION_IDS, 8, 3, false);
+  assert.deepEqual(long.rows, [{ region: 'EUN', glyphs: 6, more: 14 }], 'a long row: perRow - 2 glyphs and "+n" (two glyphs wide)');
+  const compact = stripQueue(waiting, REGION_IDS, 8, 3, true);
+  assert.equal(compact.rows.length, 0);
+  assert.equal(compact.pairs.reduce((sum, p) => sum + p.count, 0), waiting.length, 'every passenger counted');
+  assert.equal(stripQueue([], REGION_IDS, 8, 3, false).directions, 0);
+  const fit = queueFit(110);
+  assert.deepEqual(fit, { perRow: 6, pairsFit: 2 }, 'D-08 glyphs at the theme floor (16 px)');
+  assert.ok(queueFit(110, 21).perRow < fit.perRow, 'enhanced glyphs (21 px) fit fewer');
+});
+test('strips: portrait bay on the console, two strips when the map keeps its height, one at 130 % or on a short phone', () => {
+  const base = { width: 412, height: 915, column: false, board: { l: 8, t: 6, r: 332, b: 90 }, dock: { l: 0, t: 820, r: 412, b: 915 },
+    insetLeft: 8, insetRight: 8, insetBottom: 8, strip: STRIP_H, textScale: 100 };
+  const tall = bayPlace(base);
+  assert.deepEqual([tall.anchor, tall.left, tall.right, tall.slots], ['bottom', 8, 8, 2]);
+  assert.equal(tall.y, 915 - 820 + 4, 'stands 4 px over the console');
+  assert.equal(bayPlace({ ...base, textScale: 130, strip: STRIP_H * 1.3 }).slots, 1);
+  const short = bayPlace({ ...base, width: 320, height: 568, dock: { l: 0, t: 470, r: 320, b: 568 } });
+  assert.equal(short.slots, 1, `a 568 px phone keeps ${MAP_KEEP} px of map`);
+});
+test('strips: landscape bay in the right column beside the console, level with the board; one strip over the map when too narrow', () => {
+  const base = { width: 915, height: 412, column: true, board: { l: 8, t: 6, r: 480, b: 92 }, dock: { l: 783, t: 0, r: 915, b: 412 },
+    insetLeft: 8, insetRight: 8, insetBottom: 8, strip: STRIP_H, textScale: 100 };
+  const wide = bayPlace(base);
+  assert.deepEqual([wide.anchor, wide.left, wide.right, wide.y, wide.slots], ['top', 488, 915 - 783 + 8, 6, 2]);
+  const narrow = bayPlace({ ...base, width: 844, dock: { l: 844 - COLUMN_MIN, t: 0, r: 844, b: 390 }, height: 390 });
+  assert.deepEqual([narrow.anchor, narrow.slots, narrow.y], ['bottom', 1, 8]);
+});
+test('strips: side by side with the tile beside, then with the tile under them, then stacked (always at 130 %)', () => {
+  const phone = stripLayout(396, 100, true);
+  assert.deepEqual([phone.stack, phone.tileRow, phone.compact, phone.extra], [false, false, false, 0]);
+  assert.ok(phone.perRow >= 7, `perRow ${phone.perRow}`);
+  const column = stripLayout(290, 100, true);
+  assert.deepEqual([column.stack, column.tileRow, column.height], [false, true, STRIP_H], 'landscape column: tile row, strips stay one line');
+  assert.ok(column.extra > 0);
+  assert.equal(stripLayout(290, 100, false).tileRow, false, 'nothing folded: no tile');
+  const big = stripLayout(396, 150, true);
+  assert.deepEqual([big.stack, big.tileRow, big.compact], [true, false, true]);
+  assert.ok(big.height > STRIP_H * 1.5);
+  const small = stripLayout(304, 150, true);
+  assert.deepEqual([small.stack, small.tileRow], [true, true]);
+  const narrow = stripLayout(250, 100, false);
+  assert.equal(narrow.stack, true, `queue under ${QUEUE_MIN} px`);
+});
+test('strips: the landscape column keeps two one-line strips and the tile row within 45 % of the height', () => {
+  const lay = stripLayout(915 - 488 - 140, 100, true);
+  const place = bayPlace({ width: 915, height: 412, column: true, board: { l: 8, t: 6, r: 480, b: 92 }, dock: { l: 783, t: 0, r: 915, b: 412 },
+    insetLeft: 8, insetRight: 8, insetBottom: 8, strip: lay.height, extra: lay.extra, textScale: 100 });
+  assert.equal(place.slots, 2);
+  const stacked = bayPlace({ width: 915, height: 412, column: true, board: { l: 8, t: 6, r: 480, b: 92 }, dock: { l: 783, t: 0, r: 915, b: 412 },
+    insetLeft: 8, insetRight: 8, insetBottom: 8, strip: stripLayout(250, 100, false).height, textScale: 100 });
+  assert.equal(stacked.slots, 1, 'stacked strips: one');
+});
+test('strips: countdown m:ss; every strip text PL + EN', () => {
+  assert.equal(stripClock(42), '0:42');
+  assert.equal(stripClock(61.2), '1:02');
+  for (const key of ['bay', 'hub', 'airport', 'ariaJamAirport', 'queue', 'queueShort', 'queueEmpty', 'seats', 'close', 'closeNone', 'aria', 'ariaJam', 'moreWord', 'moreAria', 'lessAria']) {
+    const full = `board.strip.${key}` as keyof typeof en;
+    assert.ok(en[full] && pl[full], `missing ${full}`);
+  }
+});
+test('the release session reaches the strips only through the empty slot (no static import of the preview)', () => {
+  const session = readFileSync('src/game/session.ts', 'utf8');
+  assert.match(session, /from '\.\.\/ui\/strip-skin'/);
+  assert.doesNotMatch(session, /board-strips|skin\/board/);
+  assert.match(readFileSync('src/ui/strip-skin.ts', 'utf8'), /export const stripSkin: \{ current: StripSkin \| null \} = \{ current: null \}/);
+  const main = readFileSync('src/main.ts', 'utf8');
+  assert.match(main, /import\('\.\/ui\/skin\/board-strips'\)/);
+  assert.match(main, /stripSkin\.current = strips\.createBoardStrips/);
+  assert.match(readFileSync('src/game/world.ts', 'utf8'), /GAME_PANELS = \[[^\]]*'\.airway-strip-bay'/, 'the bay is a camera inset');
 });
 
 console.log(`SUMMARY test:board seed=0xA1A1 passed=${passed} failed=${failed}`);

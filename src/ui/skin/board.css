@@ -61,6 +61,7 @@
   --board-holder-hub: #2F5A3A;
   --board-holder-slots: #5A6068;
   --board-print-2: #4A4234;
+  --board-print-dim: #5E5647; /* [night-75a] D-330: column labels on strip paper (5.7:1) */
   /* [night-73a] D-328 (T2): atlas labels on the photo globe. Cream capitals for countries, pale water blue for seas, each
      on a dark cartographic halo (a 2 px shadow in the photo's own night, not a glow): the halo is the ground the letters
      are read against (test:contrast), the photo only shows round it. */
@@ -408,7 +409,144 @@
 }
 :root[data-skin="board"] .bd-atlas__label--sea { color: var(--board-atlas-sea); font-size: 12px; letter-spacing: .12em; text-transform: none; }
 /* end T2 */
+/* T3 */
+/* ---- T3: hub flight strips, the full strip, the ATC strip ------------------------------------------------------------
+   [night-75a] D-330 (PLAN-NOWY-KIERUNEK.md step T3; UI-A-SPEC.md §3 "Pasek lotu"). The bay (`.bd-bay`, src/ui/skin/
+   board-strips.ts) is a dark recess on the console holding paper strips in coloured holders: blue = the hub in order, red
+   = jammed (the jam's countdown also ringed in red pencil, and "none" in words otherwise: never colour alone). Columns are
+   ruled like a controller's strip, in Chivo Mono; the holder carries the hub's asterisk. The bay's place comes from the
+   script (--bd-bay-l/-r/-y on the layer, data-anchor); the full strip (the hub cause board) and the ATC strip stand on
+   the same lines. No shadow, blur, rounding or motion; every target ≥ 48 px. */
+:root[data-skin="board"] .bd-bay {
+  position: absolute; z-index: 30; left: var(--bd-bay-l, 8px); right: var(--bd-bay-r, 8px); bottom: var(--bd-bay-y, 96px);
+  max-width: 560px; margin: 0 auto; box-sizing: border-box; display: flex; gap: 4px; padding: 4px;
+  background: var(--board-panel); border: 1px solid var(--board-enamel-edge); border-radius: 2px;
+}
+:root[data-skin="board"] .bd-bay[hidden] { display: none; }
+:root[data-skin="board"] .bd-bay[data-anchor="top"] { top: var(--bd-bay-y, 8px); bottom: auto; max-width: none; }
+:root[data-skin="board"] .bd-bay__strips { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+/* One strip: a button (the whole strip opens the full strip), holder + paper. */
+:root[data-skin="board"] .bd-strip {
+  display: flex; align-items: stretch; width: 100%; min-height: calc(56px * var(--airway-text-scale)); padding: 0; margin: 0;
+  border: 0; border-radius: 0; background: var(--board-paper); color: var(--board-print); text-align: left; cursor: pointer;
+  font: 500 12px/1.2 var(--board-mono); touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+}
+:root[data-skin="board"] .bd-strip:focus-visible { outline: 3px solid var(--board-cream); outline-offset: 2px; }
+:root[data-skin="board"] .bd-strip:active .bd-strip__paper { transform: translateY(1px); }
+:root[data-skin="board"] .bd-strip__grip {
+  flex: 0 0 22px; display: flex; align-items: center; justify-content: center; background: var(--board-blue); color: var(--board-white);
+}
+:root[data-skin="board"] .bd-strip--jam .bd-strip__grip { background: var(--board-red); }
+:root[data-skin="board"] .bd-strip__mark { width: 14px; height: 14px; }
+:root[data-skin="board"] .bd-strip__mark path { fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
+/* A jammed airport that is not a hub gets a strip too while the jam lasts: its holder carries the plain airport point. */
+:root[data-skin="board"] .bd-strip__mark--point path { fill: currentColor; stroke: none; }
+:root[data-skin="board"] .bd-strip__paper {
+  flex: 1 1 auto; min-width: 0; display: grid; grid-template-columns: calc(64px * var(--airway-text-scale)) minmax(0, 1fr) var(--bd-seats-w, 60px) var(--bd-close-w, 60px);
+  transition: transform var(--board-press) var(--board-ease);
+}
+:root[data-skin="board"] .bd-strip__col { min-width: 0; display: flex; flex-direction: column; gap: 2px; padding: 4px 5px; border-left: 1px solid var(--board-rule); overflow: hidden; }
+:root[data-skin="board"] .bd-strip__col:first-child { border-left: 0; }
+/* Seats and closes are as wide as the longest figure any strip of the bay prints there (board-strips.ts stripColumns),
+   so every strip's queue column lines up and holds the same glyphs; the city is cut short in the 64 px hub column. */
+:root[data-skin="board"] .bd-strip__lab {
+  display: block; overflow: hidden; white-space: nowrap; color: var(--board-print-dim);
+  font: 600 calc(7.5px * var(--airway-text-scale))/1.15 var(--board-mono); letter-spacing: .08em; text-transform: uppercase;
+}
+:root[data-skin="board"] .bd-strip__code { font: 800 calc(20px * var(--airway-text-scale))/1 var(--board-mono); letter-spacing: -.02em; white-space: nowrap; }
+:root[data-skin="board"] .bd-strip__city { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 600 calc(10.5px * var(--airway-text-scale))/1.15 var(--board-mono); }
+:root[data-skin="board"] .bd-strip__rows { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+:root[data-skin="board"] .bd-strip__row { display: flex; align-items: center; gap: 1px; min-width: 0; height: var(--airway-glyph-size); white-space: nowrap; }
+:root[data-skin="board"] .bd-strip__row--pairs { gap: 6px; }
+:root[data-skin="board"] .bd-strip__row--wrap { height: auto; min-height: var(--airway-glyph-size); flex-wrap: wrap; row-gap: 1px; }
+:root[data-skin="board"] .bd-strip__pair { display: inline-flex; align-items: center; gap: 2px; }
+:root[data-skin="board"] .bd-strip .airport-region-glyph { flex: none; display: block; }
+/* Glyphs on paper keep the D-08 fills with a print outline (test:cvd: fills apart from paper, the outline 3:1). */
+:root[data-skin="board"] .bd-strip .airport-region-glyph path { stroke: var(--board-print) !important; }
+:root[data-skin="board"] :is(.bd-strip__plus, .bd-strip__n, .bd-strip__none) { font: 700 calc(10px * var(--airway-text-scale))/1 var(--board-mono); }
+:root[data-skin="board"] .bd-strip__none { color: var(--board-print-dim); font-weight: 600; }
+:root[data-skin="board"] .bd-strip__val { position: relative; align-self: flex-start; white-space: nowrap; font: 700 calc(17px * var(--airway-text-scale))/1.1 var(--board-mono); letter-spacing: -.03em; }
+:root[data-skin="board"] .bd-strip__val--none { color: var(--board-print-dim); font-size: calc(13px * var(--airway-text-scale)); letter-spacing: 0; padding-top: 2px; }
+/* The jam's countdown: red pencil figures inside a hand-drawn red ring (the spec's "red pencil rings the urgent"). */
+:root[data-skin="board"] .bd-strip__val--jam { color: var(--board-red); font-weight: 800; padding: 1px 4px; margin-left: -4px; }
+:root[data-skin="board"] .bd-strip__ring { position: absolute; left: 0; top: -4px; width: 100%; height: calc(100% + 8px); overflow: visible; pointer-events: none; }
+:root[data-skin="board"] .bd-strip__ring path { fill: none; stroke: var(--board-red); stroke-width: 1.8; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+:root[data-skin="board"] .bd-bay--tilerow { flex-direction: column; }
+/* Stacked (text ≥ 130 % or a narrow bay): hub | seats | closes on top, the queue on its own row under them. */
+:root[data-skin="board"] .bd-bay--stack .bd-strip__paper { grid-template-columns: minmax(0, 1fr) var(--bd-seats-w, 60px) var(--bd-close-w, 60px); }
+:root[data-skin="board"] .bd-bay--stack .bd-strip__queue { grid-row: 2; grid-column: 1 / -1; border-left: 0; border-top: 1px solid var(--board-rule); }
+:root[data-skin="board"] .bd-bay--stack .bd-strip__hub { border-left: 0; }
+/* "+N paski": the strips that do not fit fold into a tile (dashed frame = more of the same kind), unfolding into a list. */
+:root[data-skin="board"] .bd-bay__more {
+  flex: 0 0 56px; min-width: 48px; min-height: 48px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px; padding: 0 2px; background: var(--board-enamel); color: var(--board-cream); border: 1.5px dashed var(--board-cream-2); border-radius: 0;
+  cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+}
+:root[data-skin="board"] .bd-bay__more[hidden] { display: none; }
+:root[data-skin="board"] .bd-bay--tilerow .bd-bay__more { flex: 0 0 auto; flex-direction: row; gap: 8px; }
+:root[data-skin="board"] .bd-bay__more[aria-expanded="true"] { background: var(--board-cream); color: var(--board-enamel); border-style: solid; }
+:root[data-skin="board"] .bd-bay__more:focus-visible { outline: 3px solid var(--board-cream); outline-offset: 2px; }
+:root[data-skin="board"] .bd-bay__more-n { font: 800 calc(19px * var(--airway-text-scale))/1 var(--board-face); font-stretch: 80%; }
+:root[data-skin="board"] .bd-bay__more-word { font: 700 calc(9.5px * var(--airway-text-scale))/1 var(--board-mono); }
+:root[data-skin="board"] .bd-bay__list {
+  position: absolute; left: -1px; right: -1px; bottom: calc(100% + 1px); z-index: 1; box-sizing: border-box; display: flex; flex-direction: column;
+  gap: 4px; padding: 4px; max-height: calc(100vh - var(--bd-bay-y, 96px) - var(--bd-pass-b, 100px) - 80px); overflow-y: auto; overscroll-behavior: contain;
+  background: var(--board-panel); border: 1px solid var(--board-enamel-edge); border-bottom: 0;
+}
+:root[data-skin="board"] .bd-bay__list[hidden] { display: none; }
+:root[data-skin="board"] .bd-bay[data-anchor="top"] .bd-bay__list { top: calc(100% + 1px); bottom: auto; max-height: calc(100vh - var(--bd-bay-y, 8px) - 140px); border-bottom: 1px solid var(--board-enamel-edge); border-top: 0; }
+/* The full strip (the hub cause board, src/ui/hubBoard.ts): the hub's strip pulled out long, over the bay. */
+:root[data-skin="board"] .airway-game-layer[data-bd-bay] .airway-hub-board {
+  left: var(--bd-bay-l, 8px); right: var(--bd-bay-r, 8px); top: auto; bottom: var(--bd-bay-y, 96px); max-width: 560px; margin: 0 auto;
+  max-height: calc(100% - var(--bd-bay-y, 96px) - var(--bd-pass-b, 100px) - 8px); padding: 0 0 4px; box-sizing: border-box;
+  background: var(--board-paper); color: var(--board-print); border-top: 0; border-left: 22px solid var(--board-blue);
+  border-image: none; box-shadow: 0 0 0 4px var(--board-panel); font: 500 calc(12px * var(--airway-text-scale))/1.3 var(--board-mono);
+  animation: none;
+}
+:root[data-skin="board"] .airway-game-layer[data-bd-bay="top"] .airway-hub-board { top: var(--bd-bay-y, 8px); bottom: auto; max-width: none; max-height: calc(100% - var(--bd-bay-y, 8px) - 12px); }
+:root[data-skin="board"] .airway-game-layer[data-bd-bay] .airway-hub-board--jammed { border-left-color: var(--board-red); }
+:root[data-skin="board"] .airway-hub-board__head { min-height: 48px; padding-left: 8px; border-bottom: 1px solid var(--board-rule); }
+:root[data-skin="board"] .airway-hub-board--jammed .airway-hub-board__head { padding-top: 0; }
+:root[data-skin="board"] .airway-hub-board--jammed .airway-hub-board__head::before { display: none; }
+:root[data-skin="board"] .airway-hub-board__title { color: var(--board-print); font: 800 calc(15px * var(--airway-text-scale))/1.2 var(--board-mono); }
+:root[data-skin="board"] .airway-hub-board__fill { color: var(--board-print); font: 700 calc(13px * var(--airway-text-scale))/1 var(--board-mono); }
+:root[data-skin="board"] .airway-hub-board__close { border-left: 1px solid var(--board-rule); color: var(--board-print); }
+:root[data-skin="board"] .airway-hub-board__close:focus-visible { outline: 3px solid var(--board-print); outline-offset: -4px; }
+:root[data-skin="board"] .airway-hub-board__rows { padding: 0 8px; }
+:root[data-skin="board"] .airway-hub-board__row { border-bottom: 1px dashed var(--board-rule); font-weight: 600; }
+:root[data-skin="board"] .airway-hub-board__row:last-child { border-bottom: 0; }
+:root[data-skin="board"] .airway-hub-board .airport-region-glyph path { stroke: var(--board-print) !important; }
+:root[data-skin="board"] .airway-hub-board__count { font: 700 calc(15px * var(--airway-text-scale))/1.2 var(--board-mono); }
+:root[data-skin="board"] .airway-hub-board__mark { color: var(--board-print); }
+:root[data-skin="board"] .airway-hub-board__row[data-cause='none'] :is(.airway-hub-board__mark, .airway-hub-board__text),
+:root[data-skin="board"] .airway-hub-board__empty { color: var(--board-print-dim); }
+/* The ATC strip (route hints, range, the refused Undo of D-321): a controller's strip in an enamel holder over the lower
+   chrome; the reason in heavy print behind a no-entry mark (shape, and no red: red is a jam). The first-time cards and
+   the slot hint keep their Linoryt slip but stand on the same line. */
+:root[data-skin="board"] .airway-game-layer .airway-atc-strip {
+  left: var(--bd-low-l, 8px); right: auto; bottom: var(--bd-low-b, 104px); max-width: calc(100% - var(--bd-low-l, 8px) - var(--bd-low-r, 8px));
+}
+:root[data-skin="board"] .airway-game-layer .airway-atc-strip:not(.airway-first-time, .airway-slot-hint) {
+  min-height: 48px; box-sizing: border-box; border-left: 22px solid var(--board-enamel); background: var(--board-paper); color: var(--board-print);
+  box-shadow: 0 0 0 4px var(--board-panel); font: 500 calc(12px * var(--airway-text-scale))/1.3 var(--board-mono);
+}
+:root[data-skin="board"] .airway-atc-strip:not(.airway-first-time, .airway-slot-hint) .airway-atc-field { display: flex; align-items: center; padding: 6px 8px; border-right: 1px solid var(--board-rule); border-bottom: 0; }
+:root[data-skin="board"] .airway-atc-strip:not(.airway-first-time, .airway-slot-hint) .airway-atc-field:last-child { border-right: 0; }
+:root[data-skin="board"] .airway-atc-strip:not(.airway-first-time, .airway-slot-hint) .airway-atc-field[hidden] { display: none; }
+:root[data-skin="board"] .airway-atc-strip:not(.airway-first-time, .airway-slot-hint) .airway-atc-flight { font: 700 calc(12px * var(--airway-text-scale))/1.3 var(--board-mono); }
+:root[data-skin="board"] .airway-atc-strip:not(.airway-first-time, .airway-slot-hint) .airway-atc-error { color: var(--board-print); font: 800 calc(12.5px * var(--airway-text-scale))/1.3 var(--board-mono); }
+:root[data-skin="board"] .airway-atc-strip:not(.airway-first-time, .airway-slot-hint) .airway-atc-error::before {
+  content: ''; flex: none; display: inline-block; width: 12px; height: 12px; margin-right: 6px; background: var(--board-print);
+  clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%, 0 40%, 100% 40%, 100% 60%, 0 60%, 0 30%);
+}
+:root[data-skin="board"] .airway-atc-strip:not(.airway-first-time, .airway-slot-hint) .airway-atc-hint { color: var(--board-print-dim); font-weight: 600; }
+@media (max-width: 599px) {
+  :root[data-skin="board"] .airway-atc-strip:not(.airway-first-time, .airway-slot-hint) .airway-atc-field { border-right: 0; border-bottom: 1px solid var(--board-rule); }
+  :root[data-skin="board"] .airway-atc-strip:not(.airway-first-time, .airway-slot-hint) .airway-atc-field:last-child { border-bottom: 0; }
+}
+/* end T3 */
 
 /* D-88 "Reduce motion": no flap, no key travel, no knob turn (the HUD's own rule already stops every animation). */
 :root[data-skin="board"][data-airway-motion="reduce"] .bd-face,
-:root[data-skin="board"][data-airway-motion="reduce"] .bd-dial__knob { transition: none; }
+:root[data-skin="board"][data-airway-motion="reduce"] .bd-dial__knob,
+:root[data-skin="board"][data-airway-motion="reduce"] .bd-strip__paper { transition: none; }
