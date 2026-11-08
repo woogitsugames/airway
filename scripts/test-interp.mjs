@@ -28,7 +28,7 @@ try {
   writeFileSync(join(folder, 'package.json'), JSON.stringify({ type: 'module' }));
   // [ext-04] D-302: the Linoryt ribbon and sprite layers replace the route tubes and plane models.
   for (const path of ['src/render/globe/geo-math.ts', 'src/render/routes.ts', 'src/render/planes.ts', 'src/render/routePreview.ts',
-    'src/render/airports.ts', 'src/render/globe/linoryt.ts', 'src/render/linoryt-objects.ts']) {
+    'src/render/airports.ts', 'src/render/globe/linoryt.ts', 'src/render/objects.ts']) {
     const file = resolve(ROOT, path);
     const target = join(folder, path.slice('src/render/'.length).replace(/\.ts$/, '.js'));
     mkdirSync(dirname(target), { recursive: true });
@@ -46,7 +46,7 @@ try {
   const { Vector3, PerspectiveCamera } = three;
   const { prepareRoute, sampleGreatCircleArc, sampleRouteDistance } = routes;
   const { planeProgressDistance, interpolatePlaneDistance } = planes;
-  const lino = await import(pathToFileURL(join(folder, 'linoryt-objects.js')).href);
+  const lino = await import(pathToFileURL(join(folder, 'objects.js')).href);
   const shared = { uViewport: { value: { x: 412, y: 915 } }, uDpr: { value: 1 }, uTime: { value: 0 }, uPxPerRad: { value: 200 }, uScale: { value: 1 },
     uPaper: { value: new three.Color() }, uInk: { value: new three.Color() }, uRed: { value: new three.Color() } };
   const RouteLayer = class extends lino.LinorytRouteLayer { constructor() { super(shared); } };

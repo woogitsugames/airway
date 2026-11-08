@@ -122,7 +122,7 @@ await test('the menu globe stands still with reduced motion', async () => {
 await test('reduced motion: a new route appears at once, no draw-on', async () => {
   const m = await fresh();
   (globalThis as Record<string, unknown>).document = { documentElement: root };
-  const { LinorytRouteLayer } = await import('../src/render/linoryt-objects.ts');
+  const { LinorytRouteLayer } = await import('../src/render/objects.ts');
   const { Color } = await import('three');
   const shared = { uViewport: { value: { x: 412, y: 915 } }, uDpr: { value: 1 }, uTime: { value: 0 }, uPxPerRad: { value: 200 }, uScale: { value: 1 },
     uPaper: { value: new Color() }, uInk: { value: new Color() }, uRed: { value: new Color() } };
@@ -165,11 +165,21 @@ await test('reduced motion: the jam arc steps once per game second', async () =>
 });
 
 await test('nothing in the print pulses: stamps, jam zone and planes read no clock', () => {
-  const src = readFileSync(resolve(ROOT, 'src/render/linoryt-objects.ts'), 'utf8');
+  const src = readFileSync(resolve(ROOT, 'src/render/objects.ts'), 'utf8');
   for (const name of ['STAMP_VERTEX', 'STAMP_FRAGMENT', 'JAM_VERTEX', 'JAM_FRAGMENT', 'PLANE_VERTEX', 'PLANE_FRAGMENT']) {
     const start = src.indexOf(`const ${name} =`);
     const body = src.slice(start, src.indexOf('}`;', start));
     assert.ok(start >= 0 && !/uTime|sin\(|cos\(uTime/.test(body), `${name} has no time-driven motion`);
+  }
+});
+
+// [night-74a R3] D-329: the NASA-globe objects do not pulse either (the jam ring spec's 1 Hz blink is left out).
+await test('nothing in the earth objects pulses: points, jam zone and planes read no clock', () => {
+  const src = readFileSync(resolve(ROOT, 'src/render/objects-earth.ts'), 'utf8');
+  for (const name of ['POINT_VERTEX', 'POINT_FRAGMENT', 'JAM_VERTEX', 'JAM_FRAGMENT', 'PLANE_VERTEX', 'PLANE_FRAGMENT']) {
+    const start = src.indexOf(`const ${name} =`);
+    const body = src.slice(start, src.indexOf('}`;', start));
+    assert.ok(start >= 0 && !/uTime/.test(body), `${name} has no time-driven motion`);
   }
 });
 

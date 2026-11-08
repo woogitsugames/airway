@@ -1,8 +1,10 @@
-// [ext-04 E2] D-283 "Linoryt" world objects (docs/notes/linoryt-render-spec.md §5–§8): airport stamps and the jam
-// zone (screen-constant SDF quads, one instanced draw each), routes as a double line (ink + paper core, one ribbon
-// draw), the finger-drawn route as dashed ink, planes as cut silhouettes from one SDF atlas (one instanced draw).
-// DEV-only until E3: `createWorldRenderer` picks these layers for `look: 'linoryt'` behind `import.meta.env.DEV`, so a
-// release build drops this module. No allocation in the frame path; nothing here reads the simulation.
+// [ext-04 E2] D-283 world objects (docs/notes/linoryt-render-spec.md §5–§8): airport stamps and the jam zone
+// (screen-constant SDF quads, one instanced draw each), routes as one screen ribbon draw, the finger-drawn route as a
+// second ribbon, planes as silhouettes from one SDF atlas (one instanced draw). A lazy chunk (D-300).
+// [night-74a R3] D-329: renamed from `linoryt-objects.ts`; the layers take an `ObjectStyle` (shaders, sizes, inks):
+// the Linoryt print below (the shipped default until R6) or, DEV only, the NASA-globe style in `objects-earth.ts`
+// (`createWorldObjects` imports it behind `import.meta.env.DEV`). No allocation in the frame path; nothing here reads
+// the simulation.
 import {
   BufferAttribute, BufferGeometry, ClampToEdgeWrapping, Color, DataTexture, DoubleSide, DynamicDrawUsage, Group,
   InstancedBufferAttribute, InstancedBufferGeometry, LinearFilter, LinearMipmapLinearFilter, Mesh, NoColorSpace,
@@ -60,6 +62,35 @@ interface SharedUniforms {
   uPaper: { value: Color };
   uInk: { value: Color };
   uRed: { value: Color };
+  /** [R3] The sign yellow (the earth style's route preview) and the plane shadow strength (0 = none). */
+  uSign: { value: Color };
+  uShadow: { value: number };
+}
+
+/**
+ * [night-74a R3] D-329: what tells the print from the NASA-globe objects: shaders (functions, so a release build can
+ * drop the ones it never calls), point and jam sizes, route widths and inks. Buffers, draws and the API are shared.
+ */
+export interface ObjectStyle {
+  readonly name: 'linoryt' | 'earth';
+  readonly inks: { readonly paper: string; readonly ink: string; readonly red: string; readonly sign: string };
+  readonly stampVertex: () => string;
+  readonly stampFragment: () => string;
+  readonly jamVertex: () => string;
+  readonly jamFragment: () => string;
+  readonly ribbonFragment: () => string;
+  readonly planeVertex: () => string;
+  readonly planeFragment: () => string;
+  /** Half the point's size in CSS px (what `projectAirport` reports, × the disc-radius scale). */
+  readonly stampHalf: { readonly airport: number; readonly hub: number };
+  /** Jam zone radius in CSS px from the point's half size. */
+  readonly jamRadius: (half: number) => number;
+  /** Route ribbon [outer, core] widths in CSS px per aircraft (a negative core = dashed core, earth style). */
+  readonly routeWidth: Readonly<Record<AircraftKind, readonly [number, number]>>;
+  /** The route preview's [outer, core] widths in CSS px. */
+  readonly previewWidth: readonly [number, number];
+  /** Plane shadow strength from the daylight at the view centre (0..1); absent = no shadow. */
+  readonly shadow?: (daylight: number) => number;
 }
 
 const COMMON = /* glsl */ `
@@ -78,12 +109,22 @@ bool awHidden(vec3 p) {
 vec2 awRot(vec2 p, float a) { float c = cos(a), s = sin(a); return vec2(c * p.x - s * p.y, s * p.x + c * p.y); }
 `;
 
-function sharedUniforms(): SharedUniforms {
+function sharedUniforms(style: ObjectStyle): SharedUniforms {
   return {
     uViewport: { value: { x: 412, y: 915 } }, uDpr: { value: 1 }, uTime: { value: 0 }, uPxPerRad: { value: 200 }, uScale: { value: 1 },
-    uPaper: { value: new Color(LINORYT_INKS.paper) }, uInk: { value: new Color(LINORYT_INKS.ink) },
-    uRed: { value: new Color(LINORYT_INKS.red) },
+    uPaper: { value: new Color(style.inks.paper) }, uInk: { value: new Color(style.inks.ink) },
+    uRed: { value: new Color(style.inks.red) }, uSign: { value: new Color(style.inks.sign) }, uShadow: { value: 0 },
   };
+}
+
+/** Material name prefix from the style ('Linoryt…', 'Earth…'). */
+const materialPrefix = (style: ObjectStyle): string => style.name[0].toUpperCase() + style.name.slice(1);
+
+/** Shared uniforms with defaults for the extras (`uSign`, `uShadow`) when a caller (a test) passes an older set. */
+function withExtras(uniforms: SharedUniforms): SharedUniforms {
+  if (!uniforms.uSign) uniforms.uSign = { value: new Color(LINORYT_INKS.ochre) };
+  if (!uniforms.uShadow) uniforms.uShadow = { value: 0 };
+  return uniforms;
 }
 
 /** Feed the shared uniforms from the renderer that draws `mesh` (viewport, DPR, time, px per radian at the centre). */
@@ -254,14 +295,17 @@ function instancedQuad(maxInstances: number, attributes: Record<string, number>)
   return { geometry, arrays, attrs };
 }
 
-export function createStampLayer(scene: Scene, uniforms: SharedUniforms, maxAirports = 64): StampLayer {
+export function createStampLayer(scene: Scene, uniforms: SharedUniforms, maxAirports = 64,
+  style: ObjectStyle = LINORYT_STYLE): StampLayer {
+  withExtras(uniforms);
   const group = new Group();
   group.name = 'linoryt-airports';
   scene.add(group);
   const stamps = instancedQuad(maxAirports, { aCenter: 3, aShape: 4 });
   const jams = instancedQuad(maxAirports, { aCenter: 3, aJam: 2 });
-  const jamMesh = new Mesh(jams.geometry, screenMaterial(uniforms, JAM_VERTEX(), JAM_FRAGMENT(), 'LinorytJam'));
-  const stampMesh = new Mesh(stamps.geometry, screenMaterial(uniforms, STAMP_VERTEX(), STAMP_FRAGMENT(), 'LinorytStamps'));
+  const label = materialPrefix(style);
+  const jamMesh = new Mesh(jams.geometry, screenMaterial(uniforms, style.jamVertex(), style.jamFragment(), label + 'Jam'));
+  const stampMesh = new Mesh(stamps.geometry, screenMaterial(uniforms, style.stampVertex(), style.stampFragment(), label + 'Stamps'));
   jamMesh.renderOrder = 20;
   stampMesh.renderOrder = 21;
   for (const mesh of [jamMesh, stampMesh]) { mesh.frustumCulled = false; group.add(mesh); }
@@ -279,8 +323,8 @@ export function createStampLayer(scene: Scene, uniforms: SharedUniforms, maxAirp
       i++;
       if (record.jam !== null) {
         jams.arrays.aCenter.set([c.x, c.y, c.z], j * 3);
-        const half = (record.hub ? STAMP_SIZE_PX.hub : STAMP_SIZE_PX.airport) / 2;
-        jams.arrays.aJam.set([half * JAM_ZONE_FACTOR, record.jam], j * 2);
+        const half = record.hub ? style.stampHalf.hub : style.stampHalf.airport;
+        jams.arrays.aJam.set([style.jamRadius(half), record.jam], j * 2);
         j++;
       }
     }
@@ -333,7 +377,7 @@ export function createStampLayer(scene: Scene, uniforms: SharedUniforms, maxAirp
     },
     halfSize(id) {
       const record = records.get(id);
-      return record ? (record.hub ? STAMP_SIZE_PX.hub : STAMP_SIZE_PX.airport) / 2 * uniforms.uScale.value : 0;
+      return record ? (record.hub ? style.stampHalf.hub : style.stampHalf.airport) * uniforms.uScale.value : 0;
     },
     has: (id) => records.has(id),
     isHub: (id) => records.get(id)?.hub === true,
@@ -493,9 +537,10 @@ export class LinorytRouteLayer implements RouteLayerLike {
   private segments = 0;
   private readonly sample = new Vector3();
 
-  constructor(private readonly uniforms: SharedUniforms) {
-    this.group.name = 'linoryt-routes';
-    this.material = screenMaterial(uniforms, RIBBON_VERTEX(), RIBBON_FRAGMENT(), 'LinorytRoutes');
+  constructor(private readonly uniforms: SharedUniforms, private readonly style: ObjectStyle = LINORYT_STYLE) {
+    withExtras(uniforms);
+    this.group.name = style.name + '-routes';
+    this.material = screenMaterial(uniforms, RIBBON_VERTEX(), style.ribbonFragment(), materialPrefix(style) + 'Routes');
     this.material.uniforms['uDash'] = { value: 0 };
   }
 
@@ -525,7 +570,7 @@ export class LinorytRouteLayer implements RouteLayerLike {
       buffers.index = new Uint32Array(quads * 6);
       let vertex = 0, index = 0;
       prepared.forEach((route, r) => {
-        const [outer, core] = ROUTE_WIDTH_PX[route.type];
+        const [outer, core] = this.style.routeWidth[route.type];
         const born = this.born.get(route.id) ?? -1e6;
         route.arcs.forEach((arc, leg) => {
           const n = counts[r][leg];
@@ -569,14 +614,16 @@ const PREVIEW_SAMPLES = 64;
 const PREVIEW_LEGS = 32;
 
 /** §6 The finger-drawn route: 3 px ink dashed 5/4 px, no core, no red (past the range: 2 px dots). */
-export function createLinorytRoutePreview(uniforms: SharedUniforms): RoutePreviewLayer {
+export function createLinorytRoutePreview(uniforms: SharedUniforms, style: ObjectStyle = LINORYT_STYLE): RoutePreviewLayer {
+  withExtras(uniforms);
+  const [previewOuter, previewCore] = style.previewWidth;
   // Two ribbons per leg at most (inside / beyond the range), fixed buffers: nothing is allocated per pointer move.
   const perLeg = (PREVIEW_SAMPLES + 2) * 2;
   const buffers = ribbonBuffers(PREVIEW_LEGS * perLeg * 2);
   buffers.index = new Uint32Array(PREVIEW_LEGS * 2 * (PREVIEW_SAMPLES + 2) * 6);
   const geometry = ribbonGeometry(buffers, true);
   geometry.setDrawRange(0, 0);
-  const material = screenMaterial(uniforms, RIBBON_VERTEX(), RIBBON_FRAGMENT(), 'LinorytRoutePreview');
+  const material = screenMaterial(uniforms, RIBBON_VERTEX(), style.ribbonFragment(), materialPrefix(style) + 'RoutePreview');
   material.uniforms['uDash'] = { value: 1 };
   const mesh = new Mesh(geometry, material);
   mesh.frustumCulled = false;
@@ -605,7 +652,7 @@ export function createLinorytRoutePreview(uniforms: SharedUniforms): RoutePrevie
         points[i * 3] = point.x; points[i * 3 + 1] = point.y; points[i * 3 + 2] = point.z;
       }
       // aTrack.y > 0.5 marks the part beyond the range (dots); the preview never animates in.
-      vertex = writeRibbon(buffers, vertex, index, points, n, 1.5, 0, beyond ? 1 : 0, 0, 0,
+      vertex = writeRibbon(buffers, vertex, index, points, n, previewOuter / 2, previewCore / 2, beyond ? 1 : 0, 0, 0,
         along + arc.angle * from, arc.angle * (to - from));
       index += (n - 1) * 6;
     };
@@ -780,20 +827,25 @@ export class LinorytPlaneLayer implements PlaneLayerLike {
   private turboprops = 0;
   private widebodies = 0;
 
-  constructor(private readonly routes: Pick<RouteLayerLike, 'getRoute'>, uniforms: SharedUniforms,
-    private readonly options: { maxPlanes?: number; progressScale?: number } = {}) {
+  private readonly style: ObjectStyle;
+
+  constructor(private readonly routes: Pick<RouteLayerLike, 'getRoute'>, private readonly uniforms: SharedUniforms,
+    private readonly options: { maxPlanes?: number; progressScale?: number; style?: ObjectStyle } = {}) {
+    withExtras(uniforms);
+    this.style = options.style ?? LINORYT_STYLE;
     const max = Math.max(1, Math.floor(options.maxPlanes ?? 100));
     this.quad = instancedQuad(max, { aPos: 3, aFwd: 3, aMeta: 2 });
     // Headless (tests, no DOM): a blank 1×1 atlas; the browser always rasterises the silhouettes.
     this.atlas = typeof document !== 'undefined' ? buildPlaneAtlas()
       : new DataTexture(new Uint8Array([255]), 1, 1, RedFormat, UnsignedByteType);
-    this.material = screenMaterial(uniforms, PLANE_VERTEX(), PLANE_FRAGMENT(), 'LinorytPlanes');
+    this.material = screenMaterial(uniforms, this.style.planeVertex(), this.style.planeFragment(),
+      materialPrefix(this.style) + 'Planes');
     this.material.uniforms['uAtlas'] = { value: this.atlas };
     this.mesh = new Mesh(this.quad.geometry, this.material);
     this.mesh.frustumCulled = false;
     this.mesh.renderOrder = 15;
     feed(this.mesh, uniforms);
-    this.group.name = 'linoryt-planes';
+    this.group.name = this.style.name + '-planes';
     this.group.add(this.mesh);
   }
 
@@ -843,7 +895,10 @@ export class LinorytPlaneLayer implements PlaneLayerLike {
     if (this.tracks.length) { this.quad.attrs.aPos.needsUpdate = true; this.quad.attrs.aFwd.needsUpdate = true; }
   }
 
-  setDaylight(): void { /* print: no shadows */ }
+  /** The print casts no shadow; the earth style's shadow fades with the daylight at the view centre. */
+  setDaylight(daylight: number): void {
+    this.uniforms.uShadow.value = this.style.shadow ? this.style.shadow(Number.isFinite(daylight) ? daylight : 1) : 0;
+  }
 
   get stats(): PlaneRenderStats {
     return { planes: this.tracks.length, turboprops: this.turboprops, widebodies: this.widebodies,
@@ -860,20 +915,65 @@ export class LinorytPlaneLayer implements PlaneLayerLike {
   }
 }
 
-// ---- Composition ------------------------------------------------------------------------------------------------
+// ---- Styles and composition -------------------------------------------------------------------------------------
+
+/**
+ * [night-74a R3] The plane SDF lookup as GLSL (`awPlaneSdf(q, size, wide)` → signed CSS px, + outside), for styles that
+ * draw from the same atlas as the print (`buildPlaneAtlas`). `q` is the screen offset turned onto the icon (nose up).
+ */
+export const ATLAS_SDF_GLSL = (): string => /* glsl */ `
+float awPlaneSdf(vec2 q, float size, bool wide) {
+  vec2 icon = vec2(q.x / size * 100.0 + 50.0, 50.0 - q.y / size * 100.0);
+  vec2 texel = icon * ${ATLAS_SCALE.toFixed(4)} + ${(ATLAS_CELL * 0.05).toFixed(2)};
+  if (any(lessThan(texel, vec2(0.0))) || any(greaterThan(texel, vec2(${ATLAS_CELL.toFixed(1)})))) return 1e3;
+  vec2 uv = vec2((texel.x + (wide ? ${ATLAS_CELL.toFixed(1)} : 0.0)) / ${(ATLAS_CELL * 2).toFixed(1)}, texel.y / ${ATLAS_CELL.toFixed(1)});
+  return (texture2D(uAtlas, uv).r - 0.5) * ${(2 * ATLAS_RANGE).toFixed(1)} * size / ${(100 * ATLAS_SCALE).toFixed(3)};
+}`;
+
+/** The Linoryt print (D-283 spec §5–§8): the shipped look until the flip (R5) and its removal (R6). */
+export const LINORYT_STYLE: ObjectStyle = {
+  name: 'linoryt',
+  inks: { paper: LINORYT_INKS.paper, ink: LINORYT_INKS.ink, red: LINORYT_INKS.red, sign: LINORYT_INKS.ochre },
+  stampVertex: STAMP_VERTEX, stampFragment: STAMP_FRAGMENT, jamVertex: JAM_VERTEX, jamFragment: JAM_FRAGMENT,
+  ribbonFragment: RIBBON_FRAGMENT, planeVertex: PLANE_VERTEX, planeFragment: PLANE_FRAGMENT,
+  stampHalf: { airport: STAMP_SIZE_PX.airport / 2, hub: STAMP_SIZE_PX.hub / 2 },
+  jamRadius: (half) => half * JAM_ZONE_FACTOR,
+  routeWidth: ROUTE_WIDTH_PX,
+  previewWidth: [3, 0],
+};
 
 export interface LinorytObjects {
   readonly airports: StampLayer;
   readonly routes: LinorytRouteLayer;
   readonly planes: LinorytPlaneLayer;
   readonly preview: RoutePreviewLayer;
+  readonly style: ObjectStyle['name'];
 }
 
-export function createLinorytObjects(scene: Scene, opts: { maxAirports?: number; maxPlanes?: number; progressScale?: number }): LinorytObjects {
-  const uniforms = sharedUniforms();
-  const airports = createStampLayer(scene, uniforms, opts.maxAirports ?? 64);
-  const routes = new LinorytRouteLayer(uniforms);
-  const planes = new LinorytPlaneLayer(routes, uniforms, { maxPlanes: opts.maxPlanes, progressScale: opts.progressScale });
-  const preview = createLinorytRoutePreview(uniforms);
-  return { airports, routes, planes, preview };
+export interface WorldObjectsOptions {
+  maxAirports?: number;
+  maxPlanes?: number;
+  progressScale?: number;
+  /** The globe look; `earth` (DEV preview only) draws the NASA-globe style, anything else the print. */
+  look?: 'linoryt' | 'earth';
+}
+
+/** The object layers for a look (the earth style is a DEV-only chunk; a release build folds the branch away). */
+export async function createWorldObjects(scene: Scene, opts: WorldObjectsOptions): Promise<LinorytObjects> {
+  let style = LINORYT_STYLE;
+  if (import.meta.env.DEV && opts.look === 'earth') {
+    const { earthObjectStyle } = await import('./objects-earth');
+    style = earthObjectStyle({ atlasSdf: ATLAS_SDF_GLSL, revealMs: ROUTE_REVEAL_MS });
+  }
+  return createObjects(scene, opts, style);
+}
+
+/** Synchronous composition for a known style (tests, `createWorldObjects`). */
+export function createObjects(scene: Scene, opts: WorldObjectsOptions, style: ObjectStyle = LINORYT_STYLE): LinorytObjects {
+  const uniforms = sharedUniforms(style);
+  const airports = createStampLayer(scene, uniforms, opts.maxAirports ?? 64, style);
+  const routes = new LinorytRouteLayer(uniforms, style);
+  const planes = new LinorytPlaneLayer(routes, uniforms, { maxPlanes: opts.maxPlanes, progressScale: opts.progressScale, style });
+  const preview = createLinorytRoutePreview(uniforms, style);
+  return { airports, routes, planes, preview, style: style.name };
 }

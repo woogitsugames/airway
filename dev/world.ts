@@ -23,17 +23,30 @@ const host = document.getElementById('root') as HTMLElement;
 const stats = document.getElementById('stats') as HTMLElement;
 if (params.has('clean')) document.body.classList.add('clean');
 
-const HUBS: Record<string, { cap: number; waiting: DestinationRegion[]; jam?: number }> = {
+// [night-74a R3] `?scene=r3`: the UI-A mockup's network over the eastern Mediterranean (ATH and AMM hubs, AMM jammed,
+// Kyiv closed for the night, BEG–ATH and AMM–DXB turboprops, ATH–AMM widebody, ANK→AMM being drawn past its range).
+const R3 = params.get('scene') === 'r3';
+const HUBS: Record<string, { cap: number; waiting: DestinationRegion[]; jam?: number }> = R3 ? {
+  AMM: { cap: 36, waiting: ['EUN', 'EUN', 'EUS', 'AFR', 'EUN', 'EUS'], jam: 21 },
+  ATH: { cap: 24, waiting: ['EUN', 'EUS', 'ME'] },
+} : {
   LON: { cap: 12, waiting: ['NAM', 'NAM', 'EUS', 'NAM', 'ME', 'EUN', 'NAM', 'AFR', 'SAM', 'NAM', 'EUS'], jam: 42 },
   LIS: { cap: 8, waiting: ['SAM', 'AFR', 'EUN'] },
   IST: { cap: 8, waiting: ['EUN', 'ME', 'EUN', 'EUN', 'AFR'] },
 };
-const WAITING: Record<string, DestinationRegion[]> = {
+const WAITING: Record<string, DestinationRegion[]> = R3 ? {
+  RIX: ['ME'], KIV: ['EUS'], BEG: ['ME', 'EUN'], ANK: ['EUS'], BGW: ['EUN', 'EUS'], CAI: ['EUN'], DXB: [],
+} : {
   WAW: ['EUS', 'NAM'], NYC: ['EUN', 'EUN', 'ME'], REK: [], OSL: ['NAM'], CAI: ['EUN', 'EUN'],
   DKR: ['SAM'], CMN: ['EUN'], MAD: ['NAM', 'AFR'], KIV: ['ME'], REC: ['EUN'], ROM: ['NAM', 'ME', 'EUN'],
   LOS: ['EUN', 'NAM'], ACC: [],
 };
-const ROUTES: RouteView[] = [
+const ROUTES: RouteView[] = R3 ? [
+  { id: 'r1', aircraft: 'turboprop', cityIds: ['BEG', 'ATH'] },
+  { id: 'r2', aircraft: 'widebody', cityIds: ['ATH', 'AMM'] },
+  { id: 'r3', aircraft: 'turboprop', cityIds: ['AMM', 'BGW', 'DXB'] },
+  { id: 'r4', aircraft: 'widebody', cityIds: ['ATH', 'CAI'] },
+] : [
   { id: 'r1', aircraft: 'widebody', cityIds: ['LON', 'NYC'] },
   { id: 'r2', aircraft: 'widebody', cityIds: ['LIS', 'REC'] },
   { id: 'r3', aircraft: 'turboprop', cityIds: ['LON', 'WAW', 'IST', 'CAI'] },
@@ -66,21 +79,26 @@ world.setRoutes(ROUTES, 1);
 // [ext-04 E2] The Linoryt jam zone reads the share of the 45 s grace left (LON: 42 s).
 world.setHubLoad(Object.entries(HUBS).map(([id, hub]) => ({ id, used: hub.waiting.length, cap: hub.cap,
   jam01: hub.jam === undefined ? null : hub.jam / 45 })));
-world.setCurfew(['CAI', 'KIV']);
-world.setRoutePreview({
+world.setCurfew(R3 ? ['KIV'] : ['CAI', 'KIV']);
+world.setRoutePreview(R3 ? {
+  points: [cities.find((c) => c.id === 'ANK')!, cities.find((c) => c.id === 'AMM')!],
+  legDistancesKm: [973], rangeKm: 560, aircraft: 'turboprop',
+} : {
   points: [cities.find((c) => c.id === 'LIS')!, { lon: -0.2, lat: 5.6 }],
   legDistancesKm: [3788], rangeKm: 2500, aircraft: 'turboprop',
 });
+// [night-74a R3] `?nooverlay`: the world objects alone (the airport signs are T2's DOM).
 const overlay = createAirportOverlay(host, world.camera, { reservedTop: 96, reservedBottom: 96 });
+if (params.has('nooverlay')) host.querySelectorAll<HTMLElement>(':scope > :not(canvas)').forEach((node) => { node.style.display = 'none'; });
 for (const city of cities) {
   overlay.addAirport(city);
   overlay.setPassengers(city.id, HUBS[city.id]?.waiting ?? WAITING[city.id] ?? []);
 }
-overlay.setJamCountdown('LON', HUBS.LON.jam ?? null);
+for (const [id, hub] of Object.entries(HUBS)) if (hub.jam !== undefined) overlay.setJamCountdown(id, hub.jam);
 // [night-11af] R4c: fill trend chevrons, as the game layer would set them from two hourly readings (≥ 50 % full).
 for (const [id, hub] of Object.entries(HUBS)) overlay.setCapacity(id, hub.cap);
-overlay.setFillTrend('IST', 'filling'); // 5 of 8 waiting, more arrived than left in the last hour
-overlay.setFillTrend('LON', 'emptying'); // full and jammed, but draining
+if (!R3) overlay.setFillTrend('IST', 'filling'); // 5 of 8 waiting, more arrived than left in the last hour
+if (!R3) overlay.setFillTrend('LON', 'emptying'); // full and jammed, but draining
 
 // Scripted visual planes (not a simulation): one per route leg, ping-ponging.
 const SCALE = 10_000;
