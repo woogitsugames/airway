@@ -182,7 +182,7 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       gone from `e2e/browser.mjs`, 15 suites and `ui-matrix` (the `--skin=` refusal stays); `edge-chip-fill` now
       compares with the Linoryt red. (4) Short landscape report: the departures list ends where the two action rows
       fit (`gameover-contracts:stub` 17/17, 12/17 on dev at 915×412); the worst-case fixture at 640×360 still scrolls
-      36–58 px (right column), the real run 0 px — left open.
+      36–58 px (right column), the real run 0 px — left open; [night-52a] D-307: compacted, 0 px PL/EN.
 - [ ] N7 When the queue is empty: pick the most valuable next improvement from `docs/HANDOVER*.md`, PR "Known issues"
       sections and the forbidden list review of current screenshots; add it here first, then do it.
 

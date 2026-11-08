@@ -3354,3 +3354,22 @@ with. The budget reader moved into `scripts/lib/i18n-exchange.ts` (`limitsFromMo
 glossary against the game draft, and the stale Diorama paragraph and Róża alt texts that U7 rewrites from the new EN
 (D-296); it writes no final store copy. Rejected: failing `test:fast` on untranslated rows (every new EN key would
 break it), a German catalog file in `src/i18n` before the review. **Status: in force (texts await native review).**
+
+## D-307 — Wall-clock budgets are info under V8 coverage; the report's tabs keep fractional heights; 640 × 360 report compacted (2026-11-08, Claude, night 52a)
+**Coverage.** `coverage:fast` runs `test:fast` with `NODE_V8_COVERAGE`, where every function is instrumented and runs
+several times slower; on Linux the per-frame placement budget of `test:overlay-layout` (1 ms) and the replay budgets of
+`test:replay-cost` (600 ms per week, 5 s worst) failed there (night 40a). `scripts/lib/time-budget.mjs`
+(`withinBudget`) checks a budget as before, but under coverage an overrun prints one `INFO … not enforced under V8
+coverage` line and passes; every other run (test:fast, test:ci, a single suite) still enforces it. These two suites
+are the only fast tests that assert wall-clock time (checked: no other step compares `performance.now`/`Date.now`/
+`hrtime` deltas). `test:coverage` self-checks both branches. Rejected: raising the budgets (they guard real regressions),
+dropping the two steps from the coverage run (their code would read as uncovered).
+**Timeline tab.** The causes panel and the timeline share one height so the actions do not move (night 10r); the height
+came from `offsetHeight`, which rounds, so a fractional causes panel (e.g. 140.4 px) gave a 140 px timeline and the
+actions moved 1 px at 412 × 915 and 360 × 640 (`test:e2e:run-timeline:stub` 1/4–3/4 failed on dev). The height is now
+`getBoundingClientRect().height` (no transform on the panel).
+**640 × 360.** The worst-case report (`?preview=gameover`) scrolled 36 px (EN) / 58 px (PL): under 400 px of height on a
+landscape page the departures list shows two rows (86 px, it scrolls inside itself as on short portrait phones), the
+incident report's heading is kept for screen readers only (the sign above names the closed hub), score and weeks share
+one 12 px line, the strip padding is 4 px; tabs and actions stay ≥ 48 px. Both languages now fit with 0 px of scroll.
+**Status: in force.**
