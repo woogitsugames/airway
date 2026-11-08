@@ -125,3 +125,13 @@ export const LIMB_RING_PX = 2.5;
 
 /** §5/§8 Airport stamp side in CSS px, constant on screen (regular square / hub octagon across its flats). E2. */
 export const STAMP_SIZE_PX = { airport: 22, hub: 30 } as const;
+
+/**
+ * [ext-04] §5, D-88: the jam countdown arc's share of the grace period left. With reduce motion the arc steps once per
+ * game second (whole seconds left, rounded up like the "0:42" text) instead of shrinking every tick.
+ */
+export function jamArcShare(ticksLeft: number | null, graceTicks: number, ticksPerSecond: number, reduced: boolean): number | null {
+  if (ticksLeft === null || !(graceTicks > 0)) return null;
+  const left = reduced ? Math.ceil(ticksLeft / ticksPerSecond) * ticksPerSecond : ticksLeft;
+  return Math.max(0, Math.min(1, left / graceTicks));
+}
