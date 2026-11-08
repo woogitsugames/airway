@@ -31,7 +31,7 @@ try {
   const linoE5 = await load('linoryt-objects.js'); // [ext-04] the print layers replace the satellite ones (D-302)
 
   // [ext-04] D-302: the Linoryt layers (stamps, ribbon, dashed preview, sprites) replace the satellite ones.
-  const sharedE5 = { uViewport: { value: { x: 412, y: 915 } }, uDpr: { value: 1 }, uTime: { value: 0 }, uPxPerRad: { value: 200 },
+  const sharedE5 = { uViewport: { value: { x: 412, y: 915 } }, uDpr: { value: 1 }, uTime: { value: 0 }, uPxPerRad: { value: 200 }, uScale: { value: 1 },
     uPaper: { value: new three.Color('#ECE3CC') }, uInk: { value: new three.Color('#1E1C1F') }, uRed: { value: new three.Color('#B33823') } };
   // Route preview: the part beyond the range is marked, and the ribbon lies on the committed (lifted) arc.
   const preview = linoE5.createLinorytRoutePreview(sharedE5);
@@ -265,7 +265,7 @@ try {
     const inksModule = await load('globe/linoryt.js');
     check(inksModule.STAMP_SIZE_PX.airport === 22 && inksModule.STAMP_SIZE_PX.hub === 30, 'STAMP_SIZE_PX = { airport: 22, hub: 30 }');
     const scene2 = new three.Scene();
-    const objects = { uViewport: { value: { x: 412, y: 915 } }, uDpr: { value: 1 }, uTime: { value: 0 }, uPxPerRad: { value: 200 },
+    const objects = { uViewport: { value: { x: 412, y: 915 } }, uDpr: { value: 1 }, uTime: { value: 0 }, uPxPerRad: { value: 200 }, uScale: { value: 1 },
       uPaper: { value: new three.Color('#ECE3CC') }, uInk: { value: new three.Color('#1E1C1F') }, uRed: { value: new three.Color('#B33823') } };
     const stamps = lino.createStampLayer(scene2, objects, 8);
     stamps.addAirport({ id: 'WAW', lon: 21, lat: 52.2 });
