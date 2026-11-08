@@ -3354,3 +3354,16 @@ with. The budget reader moved into `scripts/lib/i18n-exchange.ts` (`limitsFromMo
 glossary against the game draft, and the stale Diorama paragraph and Róża alt texts that U7 rewrites from the new EN
 (D-296); it writes no final store copy. Rejected: failing `test:fast` on untranslated rows (every new EN key would
 break it), a German catalog file in `src/i18n` before the review. **Status: in force (texts await native review).**
+
+## D-307 — Linoryt relief hatch as engraved tone on the device grid (2026-11-08, Claude, ext session)
+Spec §10 L1 (the globe like `png/a-game.png` in technique; inks ±2 in sRGB). The inks print exactly (paper, ink, blue
+and ochre within ±0 of the hexes in the frames). The relief did not: short dashes 4–8 CSS px apart, their width set by
+the slope alone, read as scattered strokes, while the frame shows coherent slopes engraved in fine lines whose width
+carries the tone. **Choice.** (1) The Imhof shadow is smoothed once more (5×5, land only) so slopes form shapes, not
+speckle. (2) The relief hatch is a tone: each line takes a share of its own period (up to 80 % ink on the steepest
+shaded slopes, from a shadow of 0.06), so the mean ink is the same at every zoom (the coarse octave's lines are as
+thick as two fine ones) and never thinner than 1.5 device px. (3) The relief's finer octave keeps ≥ 4 device px and
+≥ 2.5 CSS px (spec: 4 CSS px): 4 device px at DPR 1 as before, 5–7.5 device px at DPR 2–3, still above the 3 device px
+alias floor (`test:hatch-alias`, D-298); sea and night hatches keep their CSS spacing. Flicker strip 0.00 % (budget
+2 %). Rejected: the frame's ~1.3 CSS px lines (under the floor at DPR 1–2), more relief exaggeration without tone
+(darker dashes, same scatter). **Status: in force.**
