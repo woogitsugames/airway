@@ -13,7 +13,6 @@ import type { AirportsLayer, AirportStyle } from './airports';
 import { GlobeOrbitCamera, type OrbitCameraOptions, type SafeAreaInsets } from './camera';
 import { createGlobe, createSunLights, DEFAULT_GLOBE_LOOK, type GlobeInstance, type GlobeLook } from './globe';
 import { pickSphereNdc, setLatLonVec3, type LonLat } from './globe/geo-math';
-import { createModelPreviewRenderer, type ModelPreviewRenderer } from './modelPreview';
 import type { PlaneRenderSnapshot } from './planes';
 import {
   AdaptiveQualityMonitor, adaptiveSteps, applyAdaptiveSteps, applyQualityProfile, frameDue, resolveQualityProfile,
@@ -244,7 +243,6 @@ export function createWorldRenderer(
   let lastPlanes: readonly [readonly PlaneView[], readonly PlaneView[]] = [[], []];
   let lastPreview: RoutePreviewView | null = null;
   let lastLoads: readonly HubLoadView[] = [];
-  let models: ModelPreviewRenderer | null = null;
 
   const cities = new Map<string, CityView>();
   const cityList: CityView[] = [];
@@ -497,10 +495,10 @@ export function createWorldRenderer(
       globe?.setDecorDensity(quality.decorDensity);
       if (rebuild) await loadGlobe();
     },
-    drawModelPreview(kind, target) {
-      if (disposed || guard.lost()) return false;
-      models ??= createModelPreviewRenderer(renderer);
-      return models.draw(kind, target);
+    drawModelPreview() {
+      // [ext-04 E4] The Linoryt crates print their symbol (the model canvas is hidden by the skin), so no 3D model is
+      // drawn: no shader compile and no synchronous pixel read-back on the weekly board's first frame (#315).
+      return false;
     },
     stats() {
       const info = renderer.info;
@@ -531,7 +529,6 @@ export function createWorldRenderer(
       observer?.disconnect();
       globe?.dispose();
       globe = null;
-      models?.dispose();
       preview.dispose();
       planes.dispose();
       routes.dispose();
