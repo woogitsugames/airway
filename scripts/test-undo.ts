@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { Sim } from '../src/sim/sim.ts';
 import { CHECKPOINT_EVERY_TICKS } from '../src/sim/undo.ts';
+import { TICKS_PER_WEEK } from '../src/sim/clock.ts';
+import { withinBudget } from './lib/time-budget.mjs';
 import { createBalanceSession } from './balance-game-adapter.ts';
 import { chooseBotAction } from '../src/game/dev/bot-policy.ts';
 import { EndlessRun } from '../src/game/run.ts';
@@ -156,11 +158,12 @@ check('Q-92: Undo right after the week-1 pick never ends the run in the past (se
   assert.equal(run.sim.hash(), hash);
   assert.deepEqual(run.sim.world.upgrades, [{ week: 1, upgrade: 'turboprop' }]);
 });
-// [night-58a] Q-93 repro (N58a), pinned for `test:e2e:undo-ends-run:stub`: D-313 stops Undo at the pick, but the edits
-// after it still undo exactly, and without them the re-simulation can end the run in the past. Seed 42041 ASI class I,
-// week-1 turboprop, 24 game hours of bot edits (AssignPlane 4590, ExtendRoute 5760): the second Undo ends the run at
-// tick 5692 on DEL while the clock reads 5761. If Q-93 changes the rule, this check and that suite change with it.
-check('Q-93: undoing the post-pick edits can still end the run in the past (seed 42041 ASI, pinned)', () => {
+// [night-58a] Q-93 repro (N58a), pinned for the browser suite (`test:e2e:undo-refused-jam:stub`): D-313 stops Undo at
+// the pick, but the edits after it still undo exactly, and without them the re-simulation can end the run in the past.
+// Seed 42041 ASI class I, week-1 turboprop, 24 game hours of bot edits (AssignPlane 4591, ExtendRoute 5761): before
+// N60a the second Undo ended the run at tick 5692 on DEL with the clock at 5761. [night-60a] D-321 (Q-93 → A): that
+// Undo is refused, with the airport and the tick, and the run is exactly as before the tap.
+const q93 = (): EndlessRun => {
   const run = EndlessRun.create(42041, 'endless', 'ASI');
   const bot = (until: number) => {
     while (run.tick < until && run.sim.world.status === 'running') {
@@ -180,14 +183,67 @@ check('Q-93: undoing the post-pick edits can still end the run in the past (seed
   assert.equal(run.tick, 5761);
   assert.deepEqual(run.sim.getCommandLog().slice(-2).map(([tick, command]) => [tick, command.type]),
     [[4591, 'AssignPlane'], [5761, 'ExtendRoute']]);
-  assert.ok(run.undo(), 'first Undo');
+  return run;
+};
+const q93Run = q93();
+check('Q-93 (D-321): an Undo whose re-simulation ends the run is refused, the run unchanged (seed 42041 ASI)', () => {
+  const run = q93Run;
+  assert.ok(run.undo(), 'first Undo (the ExtendRoute) is fine');
   assert.equal(run.failed, null);
-  assert.ok(run.undo(), 'second Undo');
-  assert.equal(run.failed?.tick, 5692);
-  assert.equal(run.failed?.cityId, 'DEL');
+  const snapshot = run.sim.snapshot();
+  const log = JSON.stringify(run.sim.getCommandLog());
+  const outcomes = JSON.stringify(run.sim.getCommandOutcomes());
+  const revision = run.revision;
+  const refusal = run.tryUndo();
+  assert.ok(refusal && !(refusal instanceof EndlessRun), 'second Undo refused');
+  assert.equal(refusal.cityId, 'DEL');
+  assert.equal(refusal.tick, 5692, 'the tick the re-simulation jammed at (the run ended there before N60a)');
+  assert.equal(run.undo(), null, 'refused again on a second tap');
+  assert.equal(run.sim.world.status, 'running');
+  assert.equal(run.failed, null);
   assert.equal(run.tick, 5761);
+  assert.equal(run.revision, revision, 'nothing for the session to redraw');
+  assert.equal(run.sim.snapshot(), snapshot, 'state, journal, queue and checkpoint ring as before the tap');
+  assert.equal(JSON.stringify(run.sim.getCommandLog()), log);
+  assert.equal(JSON.stringify(run.sim.getCommandOutcomes()), outcomes, 'outcomes kept too (not part of the snapshot)');
   assert.deepEqual(run.sim.world.upgrades, [{ week: 1, upgrade: 'turboprop' }]);
-  assert.equal(run.networkUndoable, false, 'the barrier holds: nothing left to undo');
+  assert.equal(run.networkUndoable, true, 'canUndo stays cheap: the button stays enabled, the tap is refused');
+  assert.equal(run.sim.drainEvents().length, 0, 'the refused re-simulation leaks no events');
+});
+check('Q-93 (D-321): after a refusal the run plays on exactly like one that was never tapped', () => {
+  const tapped = q93Run;
+  const reference = q93();
+  assert.ok(reference.undo());
+  assert.equal(reference.sim.hash(), tapped.sim.hash());
+  for (let i = 0; i < 3 * CHECKPOINT_EVERY_TICKS && reference.sim.world.status === 'running'; i++) {
+    reference.step();
+    tapped.step();
+  }
+  assert.equal(tapped.tick, reference.tick);
+  assert.equal(tapped.sim.snapshot(), reference.sim.snapshot(), 'same hash, journal and checkpoints afterwards');
+  const replayed = Sim.replay(tapped.sim.seed, tapped.sim.getCommandLog(), tapped.tick, tapped.sim.config);
+  assert.equal(replayed.hash(), tapped.sim.hash(), 'the journal replays to the same state (Daily verification)');
+});
+// test:replay-cost style budget (600 ms per game week of replay on a CI runner, D-97): a refused Undo re-simulates
+// from the checkpoint before the removed command to the jam, the same loop and length an accepted Undo of it runs
+// up to the jam, then puts the old objects back (no copy of the world).
+const UNDO_BUDGET_MS_PER_WEEK = 600;
+check('Q-93 (D-321): a refused Undo costs one re-simulation to the jam, in the replay-cost budget', () => {
+  const run = q93();
+  assert.ok(run.undo());
+  const removedTick = run.sim.getCommandLog().at(-1)![0];
+  const fromTick = Math.floor((removedTick - 1) / CHECKPOINT_EVERY_TICKS) * CHECKPOINT_EVERY_TICKS;
+  const runs = 5;
+  let refusal: ReturnType<EndlessRun['tryUndo']> = null;
+  const started = performance.now();
+  for (let i = 0; i < runs; i++) refusal = run.tryUndo();
+  const ms = (performance.now() - started) / runs;
+  assert.ok(refusal && !(refusal instanceof EndlessRun));
+  const ticks = refusal.tick - fromTick;
+  const msPerWeek = ms * TICKS_PER_WEEK / ticks;
+  console.log(`INFO refused Undo: ${ticks} ticks re-simulated (${fromTick} → ${refusal.tick}) in ${ms.toFixed(1)} ms, ` +
+    `${msPerWeek.toFixed(0)} ms per game week (budget ${UNDO_BUDGET_MS_PER_WEEK})`);
+  assert.ok(withinBudget('refused Undo', msPerWeek, UNDO_BUDGET_MS_PER_WEEK), `${msPerWeek.toFixed(0)} ms per week`);
 });
 check('a queued weekly choice is a barrier too', () => {
   const sim = new Sim(SEED);

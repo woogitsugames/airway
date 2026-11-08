@@ -259,7 +259,7 @@ async function runReal() {
 // second literal here (test:week-source).
 let WEEK_TICKS = 0, DAY_TICKS = 0;
 let playedTicks = 0, hours = 0;
-const done = { pauses: 0, hubBoards: 0, rotations: 0, continues: 0, undos: 0, boards: 0, barriers: 0, undoWalks: 0 };
+const done = { pauses: 0, hubBoards: 0, rotations: 0, continues: 0, undos: 0, boards: 0, barriers: 0, undoWalks: 0, undoRefusals: 0 };
 /** [night-58a] An Undo walk to the weekly barrier waiting for its post-pick edits (null when none is due). */
 let undoWalk = null;
 const issueCounts = new Map();
@@ -572,6 +572,16 @@ async function undoToBarrier() {
     }
     if ((back.upgrades ?? []).length !== walk.upgrades) issue('Undo walk lost the weekly choice', JSON.stringify(back.upgrades));
     if (back.tick !== before.tick) issue('Undo moved the clock', `${before.tick} -> ${back.tick}`);
+    // [night-60a] D-321 (Q-93 → A): an Undo whose re-simulation would end the run is refused. The run stays exactly as
+    // it was (an accepted Undo always changes the hash: the journal is one command shorter) and the strip says why.
+    if (back.snapshotHash === before.snapshotHash) {
+      const notice = await page.locator('.airway-atc-strip[data-notice]').textContent({ timeout: 1000 }).catch(() => null);
+      if (!notice) { issue('Undo tap changed nothing and said nothing (D-321)', `tap ${taps + 1} of ${walk.edits} edits`); await shot(page, 'undo-silent'); }
+      done.undoRefusals++;
+      done.undoWalks++;
+      note('UI', `Undo walk after ${walk.what}: tap ${taps + 1} of ${walk.edits} edits refused (D-321): "${notice}"`);
+      return;
+    }
   }
   done.undoWalks++;
   if (taps > walk.edits) issue('Undo reached past the weekly pick', `${taps} taps > ${walk.edits} edits since ${walk.what}`);

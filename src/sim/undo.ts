@@ -39,6 +39,18 @@ export class CheckpointRing {
 
   export(): Checkpoint[] { return this.items.map(copyCheckpoint); }
 
+  /**
+   * [night-60a] D-321: the ring as it stands, for a refused Undo to put back. Checkpoints are never changed in place
+   * (capture and replace store fresh copies, before() hands out copies), so keeping the references is enough.
+   */
+  keep(): readonly Checkpoint[] { return this.items.slice(); }
+
+  /** [night-60a] Put back a ring taken by keep(). */
+  putBack(points: readonly Checkpoint[]): void {
+    this.items.length = 0;
+    this.items.push(...points);
+  }
+
   replace(points: readonly Checkpoint[]): void {
     this.items.length = 0;
     for (const point of points) this.items.push(copyCheckpoint(point));

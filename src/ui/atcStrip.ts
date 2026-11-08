@@ -4,7 +4,14 @@ import type { RangeWarning, RouteHandle, RouteMenuRequest } from '../input/route
 import './skin/current.css'; // [night-11as] skin tokens read by atcStrip.css
 import './atcStrip.css';
 
-export interface AtcStrip { show(warning: RangeWarning | null): void; dispose(): void }
+export interface AtcStrip {
+  show(warning: RangeWarning | null): void;
+  /** [night-60a] D-321: a one-field notice (the red reason line alone) for `ms`, cleared early by show(). */
+  notice(text: string, ms?: number): void;
+  dispose(): void;
+}
+/** [night-60a] How long a notice stays on the strip: long enough to read two lines, short enough to stay out of the way. */
+const NOTICE_MS = 4000;
 export interface RouteContextMenu { show(request: RouteMenuRequest | null): void; dispose(): void }
 
 export function mountAtcStrip(host: HTMLElement): AtcStrip {
@@ -22,8 +29,18 @@ export function mountAtcStrip(host: HTMLElement): AtcStrip {
   strip.append(flight, reason, instruction);
   host.appendChild(strip);
   let previous = '';
+  let noticeTimer: ReturnType<typeof setTimeout> | null = null;
+  const endNotice = (): void => {
+    if (noticeTimer === null) return;
+    clearTimeout(noticeTimer);
+    noticeTimer = null;
+    flight.hidden = false;
+    instruction.hidden = false;
+    delete strip.dataset.notice;
+  };
   return {
     show(warning) {
+      endNotice();
       if (!warning) { strip.hidden = true; previous = ''; return; }
       const distance = localNumber(warning.distanceKm);
       const aircraft = t(warning.aircraft === 'turboprop' ? 'route.aircraft.turboprop' : 'route.aircraft.widebody');
@@ -39,7 +56,20 @@ export function mountAtcStrip(host: HTMLElement): AtcStrip {
       }
       strip.hidden = false;
     },
-    dispose() { strip.remove(); },
+    notice(text, ms = NOTICE_MS) {
+      endNotice();
+      flight.hidden = true;
+      instruction.hidden = true;
+      reason.textContent = text;
+      previous = '';
+      strip.dataset.notice = '';
+      strip.hidden = false;
+      noticeTimer = setTimeout(() => {
+        endNotice();
+        strip.hidden = true;
+      }, ms);
+    },
+    dispose() { endNotice(); strip.remove(); },
   };
 }
 
