@@ -60,7 +60,13 @@ async function mount(page, screen, language) {
       mountHud(hudHost, {}).render({ week: 7, day: 3, timeMinutes: 642, passengers: 1284, paused: true, speed: 1, canUndo: true,
         selectedPlane: 'turboprop', stock: { turboprop: 2, widebody: 1, hub: 0 } });
       const { WeeklyUpgradeView } = await import('/src/ui/upgrade/index.ts');
-      const view = new WeeklyUpgradeView(host, { onCommand: () => {}, onCancelPick: () => {}, onPreviewModel: () => {} });
+      // [night-46a] Its own host, as src/game/session.ts mounts it: the view makes its host the fixed overlay, and on
+      // #app the id rule `#app { position: relative }` won, so a sheet that starts under the top margin (Linoryt,
+      // D-301) was shifted down instead of shortened.
+      const upgradeHost = document.createElement('div');
+      upgradeHost.className = 'airway-upgrade-host';
+      host.append(upgradeHost);
+      const view = new WeeklyUpgradeView(upgradeHost, { onCommand: () => {}, onCancelPick: () => {}, onPreviewModel: () => {} });
       // [night-11ab] D-210: 'upgrade-pick' is the airport pick after the hub crate (the slots pick follows in auditPick).
       const pick = screen === 'upgrade-pick';
       view.render({ week: 7, paused: true, pendingHub: pick, ...(pick ? { selected: 'hub-expansion' } : {}),

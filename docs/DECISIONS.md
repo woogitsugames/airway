@@ -3261,7 +3261,8 @@ the crates keep 14 px under the tilted hub stamp. The rule that prints the cargo
 lost to the base `#app canvas { display: block }` in the game (`:is(#app, body)` now outweighs it), so the game showed
 the small 3D models in Linoryt's frames. The e2e suites written for Róża read the Linoryt parts instead (`.lin-week`,
 `.lin-caption`/`.lin-wait`, `.lin-name`/`.lin-code`, the overlay's stamp probe); `hub-board` lets the margin's
-ResizeObserver run before it measures, `edge-dock` zooms one wheel step in while fewer than 3 edge buttons show.
+ResizeObserver run before it measures, `edge-dock` zooms one wheel step in while fewer than 3 edge buttons show. These
+fixes bring the release CSS to 129.4 kB (budget 132 kB unchanged); `test:hud-targets` 311/311, `test:fast` 116/116.
 Rejected: keeping `?skin=linoryt` as a no-op alias (dead code; the e2e harness now refuses `--skin`), removing
 `setGlobeMode` from `src/render` here (ext session, E4), folding the `:root[data-skin="linoryt"]` prefix out of the
 source (the scope keeps the structure file auditable and the pruner's selector match unchanged). **Status: in force.**
