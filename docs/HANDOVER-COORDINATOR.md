@@ -14,6 +14,28 @@ to historia (chronologicznie, najnowsze wpisy na końcu pliku przed „Kolejka�
   właściciela, makiety, nowa decyzja D-323+ (zmiana D-283/zakazów CLAUDE.md), plan etapów.
 - Nieposprzątane worktree: `/workspace/61a`, `/workspace/62a`.
 
+## STAN NA 8.11 noc (nowa sesja koordynatora) — czytaj najpierw
+- Linoryt odrzucony (D-323). Nowy kierunek: globus NASA + UI-A, plan `docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md`.
+  Znak aplikacji I-1 „Węzeł” (D-326). Q-92 A / Q-93 A ostateczne.
+- Scalone na dev (wszystko za `?skin=board` / `?look=earth`, wydanie dalej Linoryt): R1 #362 (D-325), R2 #365 (D-327),
+  T1 #350 (D-324), T2 #366 (D-328), R3 #367 (D-329), T3 #368 (D-330), T4 #369 (D-331), ikony #370 (D-333, wydanie ma już
+  nową ikonę i splash na emalii). dev = main.
+- W toku: T5 (`night/77a-board-t5`, D-332: raport, menu, pozostałe arkusze). Potem R4 (kadrowanie menu, noc domyślna),
+  T6+R5 (przełączenie, wymaga akceptacji właściciela po zrzutach z prawdziwej gry), R6, T7, U7.
+- Czekają: pomiar wydajności/pamięci GPU na tanim telefonie (SwiftShader −20% fps), Krym/granice (rekomendacja: bez linii
+  przez Perekop), pytania z PR T2–T5 (domyślnie przyjęte rekomendacje), pakiet GPT-22…33 (`docs/gpt/ZLECENIA-2026-11-08.md`).
+- Sesja ext nie istnieje; render robią nasi agenci (zgoda właściciela). Worktree: tylko agenci w toku.
+
+## STAN NA 8.11 (nowa sesja koordynatora) — czytaj najpierw
+- Właściciel potwierdził **Q-92 A** i **Q-93 A** (D-313, D-321 ostateczne).
+- Właściciel **odrzucił wygląd Linoryt, znak aplikacji A/B/C i obecny UI** („ohydne, AI slop”). Nowy kierunek: globus
+  realistyczny jak Google Earth + styl zwykłej mapy, UI wzorowany na dobrych grach ze Steama/mobilnych.
+  Wstrzymane: U7, odchudzanie CSS (62a, zatrzymane bez PR), pełny `test:ci` (61a, zatrzymany), ikony aplikacji.
+- W toku: agent research `night/63a-style-research` (`/workspace/63a`), plik
+  `docs/styles/kierunki-2026-11c/RESEARCH-NOWY-KIERUNEK.md`, 3 kierunki + rekomendacja. Potem: wybór kierunku przez
+  właściciela, makiety, nowa decyzja D-323+ (zmiana D-283/zakazów CLAUDE.md), plan etapów.
+- Nieposprzątane worktree: `/workspace/61a`, `/workspace/62a`.
+
 ## STAN NA 8.11 wieczór (nowa sesja koordynatora) — czytaj najpierw
 - Q-92 A / Q-93 A potwierdzone. **Linoryt odrzucony (D-323).** Nowy kierunek: globus NASA (K2, noc domyślnie jako wygląd) + UI-A
   „Lotniskowa tablica i paski lotu”. Plan: `docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md` (etapy R1–R6 render, T1–T7 UI, Z znak, U7).
