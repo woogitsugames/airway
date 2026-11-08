@@ -3555,3 +3555,33 @@ has under 24 colours, or two of its three horizontal thirds are one flat colour 
 the top or a blank paper frame with its neatline fails, all 60 fresh Linoryt shots and the committed ones pass.
 Noted for U7 (not changed here): on tablet/iPad the weekly board and the game-over report leave their bottom third
 blank paper (bottom third 0.984–0.988 one colour), which a store shot shows as empty space. **Status: in force.**
+
+## D-319 — Route-end handles print as a route tail with an end bar, not a paper diamond (2026-11-08, night 57a)
+The Linoryt frame (`docs/styles/kierunki-2026-11b/png/a-game.png`) has no marks at route ends; the D-191 hollow diamond
+(2 px paper rim, ink halo) read as a stray paper chip at every stamp, flagged by the render session and the UI audit.
+Hiding the handles at rest stays rejected for the D-191 reason (an extend gesture needs a visible start). Now the
+handle is drawn as the print draws a loose line end: the route continued 9 px past the stamp (paper core, ink edges,
+like the route line) closed by a thin ink end bar (3 × 12 px, 1 px paper halo), turned along the route away from the
+airport (`RouteHandle.angle` from `routeHandles`, `--aw-handle-turn` on the element). On the route in hand (D-191
+`activeRouteId`) the tail thickens and the bar becomes a 7 × 22 px ink block (the chosen action is the one filled ink
+block, PLAN-LINORYT U3). Unchanged: the 48 dp visual box and the 48 dp hit test in `routeTool` (20 dp beyond the
+airport), the layer under the airport notes (z 1 < 2), the skin tokens (`--skin-atc-handle-rim/halo/active-bg`).
+`test:e2e:route-handles` now checks a thin bar at rest (≤ 12 px long, ≤ 4 px thick, turned, 48 px target) and a bold
+≥ 20 px bar in the token fill when held. Rejected: showing handles only while editing (no visible start, D-191);
+a cut notch in the stamp itself (`src/render/**`, the render session's area). Shots `docs/shots/n57a/handles-*`.
+**Status: in force (N57a, `test:e2e:route-handles` 2).**
+
+## D-320 — Tablets print the weekly board and the report enlarged; portrait tablets stack them (2026-11-08, night 57a)
+N55a measured the lower third of the tablet (768 × 1024) and iPad 13" (1032 × 1376) store shots of the weekly board and
+the game-over report at 97.5–98.8 % one colour: both pages printed at phone size from the top. On a page at least
+720 × 900 (`linoryt.css`, end) the sheet (`.airway-upgrade`, `.airway-go-content`) gets CSS `zoom` 1.25 (landscape
+tablets, 1920 × 1080), so type, rules, slips and touch targets grow together as one enlarged print. A portrait tablet
+also stacks it like a tall phone: zoom 1.2 (≥ 960 × 1200: 1.5, the report 1.65), three crates one under the other with
+the model window beside the text (150/170 px; a four-crate board keeps its row), the report in one column with the
+incident report under the departures. Measured (store shots PL/EN): lower third one colour 0.975 → 0.88–0.91 on the
+tablet, 0.982 → 0.90–0.91 for the iPad board; the iPad report fills to ~88 % of the page on the long preview report.
+Phones (< 720 px wide or < 900 px tall, incl. the 673 × 841 foldable and 440 × 956 iPhone) are byte-identical in
+layout; at 130/150 % text the sheet keeps today's size (it already fills the page there and must not scroll).
+CSS 126.8 → 128.2 kB (budget 129.8). Rejected: a max-width column centred on paper (the empty paper only moves to the
+sides), larger type tokens per element (dozens of rules, the CSS budget). Shots `docs/shots/n57a/{upgrade,failure}-*`.
+**Status: in force (N57a).**

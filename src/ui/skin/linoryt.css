@@ -1139,3 +1139,26 @@
    too ("12,270 km"); only small counts and codes (hub board, ATC strip) keep tabular ones. */
 :root[data-skin="linoryt"] :is(.airway-go-flight, .airway-rank-score) { font-variant-numeric: normal; }
 /* end U4 */
+/* [night-57a] D-320: tablets (768 × 1024, iPad 13" 1032 × 1376 and their landscape) printed the weekly board and the report
+   at phone size from the top and left the lower third to half as empty paper (98 % one colour in the store shots). On a
+   page at least 720 × 900 the sheet is printed enlarged (zoom: type, rules, slips and 48 dp targets together); a portrait
+   tablet also stacks it like a tall phone (three crates one under the other, window beside; the report in one column).
+   Phones (under 720 px wide or 900 px tall) keep their layout; at 130/150 % text the sheet keeps today's size. */
+@media (min-width: 720px) and (min-height: 900px) {
+  :root[data-skin="linoryt"]:not([data-airway-text-scale="130"], [data-airway-text-scale="150"]) :is(.airway-upgrade-open:not(.is-picking-hub) .airway-upgrade, .airway-go-overlay:not(.is-map) .airway-go-content) { zoom: var(--lin-big, 1.25); }
+}
+@media (orientation: portrait) and (min-width: 720px) and (min-height: 900px) {
+  :root[data-skin="linoryt"] { --lin-big: 1.2; }
+  :root[data-skin="linoryt"] .airway-upgrade:not([data-crates="4"]) { --upgrade-win: 150px; }
+  :root[data-skin="linoryt"] .airway-upgrade:not([data-crates="4"]) .airway-upgrade-labels { grid-auto-flow: row; }
+  :root[data-skin="linoryt"] .airway-upgrade:not([data-crates="4"]) .airway-upgrade-tag { flex-direction: row; padding: 10px 14px 16px 10px; gap: 14px; }
+  :root[data-skin="linoryt"] .airway-upgrade:not([data-crates="4"]) .airway-upgrade-model { width: var(--upgrade-win); }
+  :root[data-skin="linoryt"] .airway-go-content { grid-template-columns: minmax(0, 1fr); }
+  :root[data-skin="linoryt"] :is(.airway-go-board, .airway-go-strip) { min-height: 0; }
+  :root[data-skin="linoryt"] .airway-go-strip { border-left: 0; border-top: 1.5px solid var(--lin-ink); padding-left: 4px; }
+}
+@media (orientation: portrait) and (min-width: 960px) and (min-height: 1200px) {
+  :root[data-skin="linoryt"] { --lin-big: 1.5; }
+  :root[data-skin="linoryt"] .airway-go-content { --lin-big: 1.65; }
+  :root[data-skin="linoryt"] .airway-upgrade:not([data-crates="4"]) { --upgrade-win: 170px; }
+}

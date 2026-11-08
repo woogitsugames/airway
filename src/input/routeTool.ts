@@ -69,7 +69,11 @@ export const ENDPOINT_TARGET_DP = 48;
 export const ENDPOINT_OFFSET_DP = 20;
 const EARTH_RADIUS_KM = 6371;
 
-export interface RouteHandle { readonly routeId: string; readonly end: RouteEnd; readonly cityId: string; readonly x: number; readonly y: number }
+export interface RouteHandle {
+  readonly routeId: string; readonly end: RouteEnd; readonly cityId: string; readonly x: number; readonly y: number;
+  /** [night-57a] D-319: screen angle (rad) from the airport outwards along the route, for the printed route tail. */
+  readonly angle: number;
+}
 
 /** Closest visible airport; deterministic ID tie-break for overlapping hit targets. */
 export function nearestCity(cities: readonly ProjectedCity[], x: number, y: number, radiusDp: number): ProjectedCity | null {
@@ -105,7 +109,7 @@ export function routeHandles(routes: readonly NetworkRoute[], cities: readonly P
       const ux = length > 0 ? dx / length : 0;
       const uy = length > 0 ? dy / length : -1;
       handles.push({ routeId: route.id, end, cityId: city.id,
-        x: city.x + ux * ENDPOINT_OFFSET_DP, y: city.y + uy * ENDPOINT_OFFSET_DP });
+        x: city.x + ux * ENDPOINT_OFFSET_DP, y: city.y + uy * ENDPOINT_OFFSET_DP, angle: Math.atan2(uy, ux) });
     }
   }
   return handles;
