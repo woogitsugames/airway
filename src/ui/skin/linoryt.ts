@@ -193,11 +193,12 @@ export function linorytDockLabel(button: HTMLElement, name: string, speed: numbe
 
 /**
  * [night-29a] U3: the failing hub's code on the report's one red block, beside the heading (the jam block of the map).
- * The heading and the "Map" button already name the hub for screen readers, so the block is aria-hidden.
+ * The heading and the "Map" button already name the hub for screen readers, so the block is aria-hidden. [night-54a]
+ * D-312: the glyph cut out of the block is the airport's stamp on the map: a hub's octagon, else a square.
  */
-export function linorytReportHub(sign: HTMLElement, hubCode: string): void {
+export function linorytReportHub(sign: HTMLElement, hubCode: string, isHub = true): void {
   const block = document.createElement('span');
-  block.className = 'lin-hub';
+  block.className = isHub ? 'lin-hub' : 'lin-hub lin-hub--airport'; // [night-54a] D-312: the stamp of the map
   block.setAttribute('aria-hidden', 'true');
   block.textContent = hubCode;
   sign.querySelector('.airway-go-heading')?.after(block);

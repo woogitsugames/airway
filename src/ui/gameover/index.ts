@@ -26,6 +26,8 @@ export interface FailedDeparture {
 export interface GameOverSnapshot extends WorldIdentity {
   readonly hubId: string;
   readonly hubCode: string;
+  /** [night-54a] D-312: whether the failing airport was an interchange hub (its stamp on the report; absent: a hub). */
+  readonly hubIsHub?: boolean;
   readonly delivered: number;
   readonly completedWeeks: number;
   readonly ledger: HubCauseLedger;
@@ -365,7 +367,7 @@ function buildDialog(
   mapButton.dataset.testid = 'gameover-map';
   mapButton.setAttribute('aria-label', t('gameover.mapLabel', { hub: snapshot.hubCode }));
   sign.append(mark, title, mapButton);
-  if (linoryt.on) linorytReportHub(sign, snapshot.hubCode); // [night-29a] U3: the red hub block
+  if (linoryt.on) linorytReportHub(sign, snapshot.hubCode, snapshot.hubIsHub ?? true); // [night-29a] U3: the red hub block
 
   const board = element('section', 'airway-go-board');
   board.setAttribute('aria-label', t('gameover.departures', { hub: snapshot.hubCode }));

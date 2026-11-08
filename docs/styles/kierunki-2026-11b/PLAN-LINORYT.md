@@ -202,6 +202,9 @@ medium/high ≤ 2 (G4). "Shots" = PNGs to inspect against the CLAUDE.md forbidde
   the PR), the "now" cut steps per game hour (`test:e2e:reduce-motion-game:stub`), paper system bars on Android and iOS,
   inks written in place (CSS 129.4 → 127.4 kB, budget 132 → 130 kB), board layouts, `test:e2e:screen-audit:stub`
   (renamed). Left: the `--skin=` no-op helpers of `e2e/browser.mjs`, RTL of the index (no RTL language yet).
+- **Audit (night 54a, D-312):** the UI against the frames: the index's double rule (its thin line never printed), the
+  labelled home-region choice over it, the paused control without red, the report's stamp per airport kind; shots
+  `docs/shots/n54a/`.
 
 ### U7 — agent (coordinator) — store shots, preview video, landing page
 - `npm run store:shots` (60 PNGs), `npm run store:video` (D-265, D-269: files to the owner's Drive), `npm run

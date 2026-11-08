@@ -214,9 +214,12 @@ export function createMenu(onFlight:(mode:MenuMode|MenuService)=>void,initial:Me
     if(withRegion){
       // [night-11aj] R2g: one board row = the Endless button (title + gate) and the home-region select.
       const line=el('div','airway-flight-line');
+      if(!initial.saved) line.classList.add('lin-lead'); // [night-54a] D-312: Endless leads the index (linoryt.css)
       button.classList.add('airway-flight--with-region');
       region=regionSelect(initial.homeRegions!,initial.homeRegion ?? null,(choice)=>onHomeRegion!(choice));
       const cell=el('span','airway-flight__status airway-flight__region-cell');
+      // [night-54a] D-312: the print names the choice beside it (frame png/a-menu.png); the select keeps its aria-label.
+      if(linoryt.on){ const label=el('span','lin-choice',t('menu.homeRegion')); label.setAttribute('aria-hidden','true'); cell.append(label); }
       cell.append(region);
       if(withLicence){
         line.classList.add('airway-flight-line--licence');
@@ -263,6 +266,8 @@ export function createMenu(onFlight:(mode:MenuMode|MenuService)=>void,initial:Me
         button?.setAttribute('aria-label',ariaLabel(flight));
       }
       if(region && data.homeRegions) region.refill?.(data.homeRegion ?? null);
+      const choice=board.querySelector('.lin-choice');
+      if(choice) choice.textContent=t('menu.homeRegion');
       if(licence && data.licences) licence.refill?.(data.licences,data.licence ?? 1);
     },
     announce(message:string):void { notice.textContent=message; notice.hidden=false; },
