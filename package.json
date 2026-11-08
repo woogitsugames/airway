@@ -243,6 +243,8 @@
     "shots:board:t4": "node e2e/board-week.mjs --shots",
     "shots:board:t3": "node e2e/board.mjs --shots=t3",
     "shots:board:t5": "node e2e/board-sheets.mjs --shots",
+    "test:e2e:menu-globe": "node e2e/menu-globe.mjs",
+    "shots:r4": "node e2e/menu-globe.mjs --shots",
     "shots:r2": "node scripts/shots.mjs r2-day r2-dusk r2-night r2-night-low",
     "shots:r3": "node scripts/shots.mjs r3-day r3-dusk r3-night r3-night-low r3-linoryt",
     "test:e2e:linoryt-contrast": "node e2e/linoryt-contrast.mjs",

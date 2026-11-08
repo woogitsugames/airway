@@ -28,7 +28,7 @@ export interface GlobeOptions {
   readonly signal?: AbortSignal;
   /** `SunLights.direction`; drives the night hatch. */
   readonly sunDirection: Vector3;
-  /** The print (`linoryt`, default) or, DEV only, the NASA preview (`earth`, [night-70a R1]). */
+  /** The print (`linoryt`, default) or the NASA globe (`earth`, [night-70a R1]; in the release chunk set since R4). */
   readonly look?: GlobeLook;
 }
 export interface GlobeInstance {
@@ -108,8 +108,9 @@ export async function createGlobe(scene: Scene, opts: GlobeOptions): Promise<Glo
   const landUrl = opts.landUrl ?? `${import.meta.env.BASE_URL}data/land-50m.json`;
   const mask = await loadLandMask(landUrl, opts.signal);
   if (opts.signal?.aborted) throw new DOMException('Aborted', 'AbortError');
-  // [night-70a R1] D-323: the NASA globe is a DEV preview; the release build drops this branch and its chunk.
-  if (import.meta.env.DEV && opts.look === 'earth') {
+  // [night-70a R1] D-323: the NASA globe, a lazy chunk of its own. [night-79a R4] D-334: in the release build too (no
+  // DEV guard), so the flip (R5) only changes DEFAULT_GLOBE_LOOK; until then nothing in a release asks for it.
+  if (opts.look === 'earth') {
     const { createEarthGlobe } = await import('./earth-globe');
     return createEarthGlobe(scene, mask, { quality: opts.quality, sunDirection: opts.sunDirection, signal: opts.signal });
   }

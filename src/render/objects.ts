@@ -2,8 +2,8 @@
 // (screen-constant SDF quads, one instanced draw each), routes as one screen ribbon draw, the finger-drawn route as a
 // second ribbon, planes as silhouettes from one SDF atlas (one instanced draw). A lazy chunk (D-300).
 // [night-74a R3] D-329: renamed from `linoryt-objects.ts`; the layers take an `ObjectStyle` (shaders, sizes, inks):
-// the Linoryt print below (the shipped default until R6) or, DEV only, the NASA-globe style in `objects-earth.ts`
-// (`createWorldObjects` imports it behind `import.meta.env.DEV`). No allocation in the frame path; nothing here reads
+// the Linoryt print below (the shipped default until R5) or the NASA-globe style in `objects-earth.ts` (a lazy chunk
+// `createWorldObjects` imports for the earth look; [night-79a R4] D-334: no DEV guard). No allocation in the frame path; nothing here reads
 // the simulation.
 import {
   BufferAttribute, BufferGeometry, ClampToEdgeWrapping, Color, DataTexture, DoubleSide, DynamicDrawUsage, Group,
@@ -954,14 +954,14 @@ export interface WorldObjectsOptions {
   maxAirports?: number;
   maxPlanes?: number;
   progressScale?: number;
-  /** The globe look; `earth` (DEV preview only) draws the NASA-globe style, anything else the print. */
+  /** The globe look; `earth` draws the NASA-globe style, anything else the print. */
   look?: 'linoryt' | 'earth';
 }
 
-/** The object layers for a look (the earth style is a DEV-only chunk; a release build folds the branch away). */
+/** The object layers for a look (the earth style is a lazy chunk, loaded only when the earth look is drawn). */
 export async function createWorldObjects(scene: Scene, opts: WorldObjectsOptions): Promise<LinorytObjects> {
   let style = LINORYT_STYLE;
-  if (import.meta.env.DEV && opts.look === 'earth') {
+  if (opts.look === 'earth') { // [night-79a R4] D-334: a release chunk too (DEFAULT_GLOBE_LOOK selects it at R5)
     const { earthObjectStyle } = await import('./objects-earth');
     style = earthObjectStyle({ atlasSdf: ATLAS_SDF_GLSL, revealMs: ROUTE_REVEAL_MS });
   }

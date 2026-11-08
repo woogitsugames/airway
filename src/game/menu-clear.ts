@@ -97,3 +97,25 @@ export function indexFraming(width: number, height: number, sign: ClearRect | nu
   if (radius < INDEX_DISC_MIN_PX) return null;
   return { mode: 'horizon', insets: { top, left, right, bottom }, horizonY: top + INDEX_EDGE_GAP + (free.h - 2 * radius) / 2, radius };
 }
+
+/** [night-79a R4] D-334: the most the framed menu view may look south of the menu target (the cap on short phones). */
+export const FRAME_TILT_MAX = 60;
+
+/**
+ * [night-79a R4] D-334: the tilt (whole degrees south of the menu target, 0…max) that puts the menu target's latitude
+ * closest to `wantY` on screen, i.e. the demo network into the middle of the globe's visible part (above the board;
+ * near the limb when only a horizon shows). `yAt` sets the camera to a tilt and returns the target's screen y, or null
+ * when it is behind the globe. Replaces the D-262 clash search for the UI-A menu: its board is opaque, so a demo airport
+ * behind it is simply hidden, and the search had pushed the network off the small globe (32° at 320×568). Pure.
+ */
+export function frameTilt(yAt: (tilt: number) => number | null, wantY: number, max = FRAME_TILT_MAX): number {
+  let best = 0;
+  let nearest = Infinity;
+  for (let tilt = 0; tilt <= max; tilt++) {
+    const y = yAt(tilt);
+    if (y === null) continue;
+    const off = Math.abs(y - wantY);
+    if (off < nearest) { nearest = off; best = tilt; }
+  }
+  return best;
+}

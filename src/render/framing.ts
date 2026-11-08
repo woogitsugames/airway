@@ -88,6 +88,70 @@ export function menuFraming(
   return { mode: 'horizon', insets, horizonY, radius };
 }
 
+/** [night-79a R4] Air (px) between the top of the menu globe frame (under the tagline) and the globe's limb. */
+export const GLOBE_FRAME_GAP = 8;
+/** [night-79a R4] Largest share of the disc's diameter that may stand behind the board (mockup ui-a-menu: ~0.2). */
+export const GLOBE_FRAME_HIDDEN_MAX = 0.3;
+/** [night-79a R4] Smallest radius (px) of a disc in the frame; a shorter frame shows the horizon instead. */
+export const GLOBE_FRAME_DISC_MIN = 72;
+
+/** [night-79a R4] The menu globe framed to the board skin's `[data-globe-frame="menu"]` box. */
+export interface GlobeFrameFraming extends MenuFraming {
+  readonly mode: 'horizon';
+  /** `disc`: the disc stands in the frame (at most GLOBE_FRAME_HIDDEN_MAX of it behind the board or the screen's
+   * bottom edge); `cap`: the frame is too short, only the top of a disc as wide as the board shows (the horizon). */
+  readonly kind: 'disc' | 'cap';
+  /** Screen y where the menu network's latitude should sit: the middle of the globe's visible part. */
+  readonly anchorY: number;
+}
+
+/**
+ * [night-79a R4] D-334 (PLAN-NOWY-KIERUNEK.md step R4; replaces D-286's `indexFraming` for the UI-A menu): the night
+ * globe framed to the departures board's globe box `frame` (between the tagline and the board in portrait, left of
+ * the board in landscape). `cover` is the opaque board under the frame (portrait), `null` when nothing is under it
+ * (landscape: the screen's bottom edge cuts the disc, like a horizon). Rules, in order:
+ * - the disc is centred on the frame's column and never wider than it (the board's edges in portrait);
+ * - its limb starts GLOBE_FRAME_GAP under the frame's top (or the whole disc is centred when it fits);
+ * - at most GLOBE_FRAME_HIDDEN_MAX of its diameter goes under `cover`/the bottom edge, and the part under `cover` is
+ *   always inside the board's width (no sliver of globe beside or under the board);
+ * - a frame too short for a disc of GLOBE_FRAME_DISC_MIN (320×568, 360×640) shows the top of a disc as wide as the
+ *   board instead (`cap`), hidden behind the board below the frame.
+ * Pure: the caller (src/game/world.ts) measures the boxes and solves the zoom, the view shift and the tilt.
+ */
+export function globeFrameFraming(
+  width: number, height: number, frame: LayoutRect, cover: LayoutRect | null, base: SafeAreaInsets = {},
+): GlobeFrameFraming {
+  const top = Math.max(base.top ?? 0, frame.top) + GLOBE_FRAME_GAP;
+  const bottomEdge = height - (base.bottom ?? 0);
+  const coverTop = Math.min(bottomEdge, cover ? cover.top : bottomEdge);
+  const visible = Math.max(1, coverTop - top);
+  const centerX = (frame.left + frame.right) / 2;
+  const half = Math.max(1, (frame.right - frame.left) / 2);
+  // Half-width the cover hides around the column's centre (no cover: the screen edge hides everything below it).
+  const pad = cover ? Math.max(0, Math.min(centerX - cover.left, cover.right - centerX)) : Infinity;
+  // Largest radius whose part under `coverTop` stays inside the cover's width: a centre above the cover needs the
+  // chord at coverTop within `pad` (2·h·r − h² ≤ pad²), a centre under it needs r ≤ pad.
+  // ... and the disc's foot stays above the cover's bottom (nothing shows under the board either).
+  const chordMax = pad === Infinity ? Infinity
+    : Math.min(pad > visible ? pad : (pad * pad + visible * visible) / (2 * visible), (cover!.bottom - top) / 2);
+  let radius = Math.min(half, visible / (2 * (1 - GLOBE_FRAME_HIDDEN_MAX)), chordMax);
+  let kind: 'disc' | 'cap' = 'disc';
+  if (radius < GLOBE_FRAME_DISC_MIN) {
+    kind = 'cap';
+    radius = Math.min(half, chordMax);
+  }
+  radius = Math.max(1, Math.floor(radius));
+  const horizonY = kind === 'disc' && 2 * radius <= visible ? top + (visible - 2 * radius) / 2 : top;
+  const visibleBottom = Math.min(horizonY + 2 * radius, coverTop);
+  const insets = {
+    top: Math.round(Math.max(base.top ?? 0, frame.top)),
+    left: Math.round(Math.max(base.left ?? 0, frame.left)),
+    right: Math.round(Math.max(base.right ?? 0, width - frame.right)),
+    bottom: Math.round(Math.max(base.bottom ?? 0, height - coverTop)),
+  };
+  return { mode: 'horizon', kind, insets, horizonY, radius, anchorY: (horizonY + visibleBottom) / 2 };
+}
+
 /**
  * Zoom in [lo, hi] at which the increasing function `radiusAt(zoom)` (the globe's screen radius)
  * reaches `target`; clamped to the range; bisection, 24 steps.

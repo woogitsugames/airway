@@ -159,6 +159,81 @@ try {
   const dml = camMenuL.getScreenDisc();
   check(dml.x - dml.radius >= 426, 'landscape menu disc does not slide under the board');
 
+  // [night-79a R4] D-334: the UI-A menu frames the night globe to its `[data-globe-frame="menu"]` box (boxes measured on
+  // the real board skin): centred on the frame's column, the limb under the tagline, at most 30 % behind the opaque
+  // board (or the bottom edge in landscape), the part under the board inside its width and above its foot; a frame too
+  // short for a 72 px disc shows the horizon of a disc as wide as the board. The camera reaches every radius (no clamp).
+  {
+    const { globeFrameFraming, GLOBE_FRAME_GAP, GLOBE_FRAME_HIDDEN_MAX, GLOBE_FRAME_DISC_MIN } = await load('framing.js');
+    const cases = [
+      ['412x915', 412, 915, { left: 10, top: 115, right: 402, bottom: 423 }, { left: 10, top: 433, right: 402, bottom: 761 }, 'disc'],
+      ['390x844', 390, 844, { left: 10, top: 112, right: 380, bottom: 352 }, { left: 10, top: 362, right: 380, bottom: 690 }, 'disc'],
+      ['768x1024', 768, 1024, { left: 10, top: 119, right: 758, bottom: 532 }, { left: 104, top: 542, right: 664, bottom: 870 }, 'disc'],
+      ['320x568', 320, 568, { left: 10, top: 101, right: 310, bottom: 153 }, { left: 10, top: 163, right: 310, bottom: 414 }, 'cap'],
+      ['360x640', 360, 640, { left: 10, top: 107, right: 350, bottom: 148 }, { left: 10, top: 158, right: 350, bottom: 486 }, 'cap'],
+      ['915x412', 915, 412, { left: 10, top: 67, right: 459, bottom: 334 }, null, 'disc'],
+      ['640x360', 640, 360, { left: 10, top: 61, right: 279, bottom: 282 }, null, 'disc'],
+    ];
+    for (const [tag, w, h, frame, cover, kind] of cases) {
+      const f = globeFrameFraming(w, h, frame, cover);
+      const cam = new GlobeOrbitCamera(new three.PerspectiveCamera(30, 1, 0.05, 30), { zoom: 1 });
+      cam.setViewport(w, h, f.insets);
+      const z = solveZoomForRadius((next) => { cam.setZoom(next); return cam.getScreenDisc().radius; }, f.radius);
+      cam.setZoom(z);
+      let d = cam.getScreenDisc();
+      cam.setViewShift(0, f.horizonY - (d.y - d.radius));
+      d = cam.getScreenDisc();
+      const cx = (frame.left + frame.right) / 2;
+      const coverTop = cover ? cover.top : h;
+      const hidden = Math.max(0, d.y + d.radius - coverTop) / (2 * d.radius);
+      const chordAt = (y) => (Math.abs(y - d.y) >= d.radius ? 0 : Math.sqrt(d.radius ** 2 - (y - d.y) ** 2));
+      const under = cover ? Math.max(chordAt(Math.max(coverTop, Math.min(d.y, cover.bottom))), chordAt(coverTop)) : 0;
+      check(f.kind === kind, `[R4] ${tag}: ${kind} (got ${f.kind}, radius ${f.radius})`);
+      check(Math.abs(d.radius - f.radius) < 1.5, `[R4] ${tag}: the camera reaches radius ${f.radius} (got ${d.radius.toFixed(1)}, zoom ${z.toFixed(3)})`);
+      check(Math.abs(d.x - cx) < 1.5, `[R4] ${tag}: centred on the frame's column (${d.x.toFixed(1)} vs ${cx})`);
+      check(d.x - d.radius >= frame.left - 1 && d.x + d.radius <= frame.right + 1, `[R4] ${tag}: never wider than the frame`);
+      check(d.y - d.radius >= frame.top + GLOBE_FRAME_GAP - 1, `[R4] ${tag}: the limb stays under the tagline (${(d.y - d.radius).toFixed(1)})`);
+      if (kind === 'disc') {
+        check(hidden <= GLOBE_FRAME_HIDDEN_MAX + 0.01 && d.radius >= GLOBE_FRAME_DISC_MIN, `[R4] ${tag}: ≤ 30 % behind the board/edge (${hidden.toFixed(2)})`);
+        check(f.anchorY > d.y - d.radius && f.anchorY < Math.min(d.y + d.radius, coverTop), `[R4] ${tag}: the network anchor is in the visible part`);
+      } else {
+        check(f.anchorY > f.horizonY && f.anchorY < coverTop, `[R4] ${tag}: horizon: the network anchor is in the strip above the board`);
+      }
+      if (cover) {
+        check(cx + under <= cover.right + 1 && cx - under >= cover.left - 1, `[R4] ${tag}: no sliver of globe beside the board (half chord ${under.toFixed(1)})`);
+        check(d.y + d.radius <= cover.bottom + 1, `[R4] ${tag}: nothing of the globe under the board's foot`);
+      }
+    }
+    // The old frames: on 412×915 the R4 disc is larger than D-286's index disc (142 px), on 915×412 than 171 px.
+    check(globeFrameFraming(412, 915, cases[0][3], cases[0][4]).radius > 170 && globeFrameFraming(915, 412, cases[5][3], null).radius > 200,
+      '[R4] the globe is larger than in the D-286 framing (412×915 > 170 px, 915×412 > 200 px)');
+    const world = readFileSync(resolve(ROOT, 'src/game/world.ts'), 'utf8');
+    check(world.includes(`'[data-globe-frame="menu"]'`) && /globeFrameFraming\(w, h, frame/.test(world) && /frameTilt\(/.test(world),
+      '[R4] world.ts frames the menu globe to the board skin\'s [data-globe-frame="menu"] box');
+    check(/menuShown = sign !== null \|\| frame !== null/.test(world), '[R4] the framed UI-A menu counts as shown: the D-62 spin runs there too');
+    // Menu sun: the print keeps the daylit backdrop (+25° ahead of the view), the earth look the K2 night (sun 105° west).
+    const sunR4 = await load('sun.js');
+    const lonOf = (tick) => sunR4.subsolarLongitudeAt(tick);
+    const wrap = (v) => ((v + 180) % 360 + 360) % 360 - 180;
+    check(Math.abs(wrap(lonOf(sunR4.menuSunTick(-16, false)) - 9)) <= 0.25 && Math.abs(wrap(lonOf(sunR4.menuSunTick(-16, true)) - (-98))) <= 0.25,
+      '[R4] menu sun: the print 25° east of the view (day), the earth look 82° west (night, the dusk band left of centre)');
+    for (const lon of [-180, -16, 0, 97.3, 179.9]) {
+      const tick = sunR4.menuSunTick(lon, true);
+      check(Number.isInteger(tick) && tick >= 0 && tick < 1440, `[R4] menu sun tick for ${lon}° in [0, 1440) (got ${tick})`);
+    }
+    // Under the menu sun (view at 16°W) London is at night and New York in daylight: the terminator crosses the network.
+    const daylightAt = (lon, lat) => {
+      const ctl = sunR4.createSunController({ setSun() {} });
+      ctl.setViewCenter(lon, lat);
+      ctl.update(sunR4.menuSunTick(-16, true));
+      return ctl.daylight;
+    };
+    check(daylightAt(-0.1, 51.5) === 0 && daylightAt(-74, 40.7) > 0.9,
+      `[R4] menu night: London dark (${daylightAt(-0.1, 51.5)}), New York lit (${daylightAt(-74, 40.7).toFixed(2)})`);
+    check(/menuSunTick\(renderer\.orbit\.getState\(\)\.longitude, nightMenu\)/.test(world) && /nightMenu = \(devLook \?\? DEFAULT_GLOBE_LOOK\) === 'earth'/.test(world),
+      '[R4] world.ts: the menu is night only on the earth look (the shipped print keeps its daylit menu until R5)');
+  }
+
   // [task-39] D-62 menu rotation: ~1.2°/s on the shown menu, 0 with reduced motion, hidden menu or in a run.
   const shown = { menuActive: true, menuShown: true, reducedMotion: false };
   check(Math.abs(menuSpinRate(shown) - 1.2) < 0.05 && MENU_SPIN_DEG_PER_S === menuSpinRate(shown), 'menu globe turns ~1.2°/s');
@@ -271,8 +346,10 @@ try {
   // [night-70a R1] D-323: the NASA globe preview: DEV-only lazy chunk, presets, terminator from the game clock.
   {
     const earthGlobe = readFileSync(resolve(ROOT, 'src/render/globe/earth-globe.ts'), 'utf8');
-    check(/if \(import\.meta\.env\.DEV && opts\.look === 'earth'\) \{\s*const \{ createEarthGlobe \} = await import\('\.\/earth-globe'\)/.test(globeIndex),
-      '[R1] the earth globe is a DEV-only dynamic import (a release build folds the chunk away)');
+    // [night-79a R4] D-334: no DEV guard any more: the release build carries the chunk, DEFAULT_GLOBE_LOOK selects it.
+    check(/if \(opts\.look === 'earth'\) \{\s*const \{ createEarthGlobe \} = await import\('\.\/earth-globe'\)/.test(globeIndex) &&
+      !/import\.meta\.env\.DEV && opts\.look === 'earth'/.test(globeIndex),
+      '[R1/R4] the earth globe is a dynamic import (its own chunk), in the release build too');
     const staticEarth = execGrep("from '(\\./|\\.\\./)*(globe/)?earth-globe'");
     check(staticEarth === '', '[R1] nothing imports earth-globe statically (got ' + staticEarth + ')');
     check(!/TextureLoader/.test(earthGlobe) && /createImageBitmap\(blob/.test(earthGlobe),
@@ -502,8 +579,8 @@ try {
     printPlanes.setDaylight(1);
     check(printPlanes.uniforms.uShadow.value === 0, '[R3] the print keeps no shadow');
     const objSrc = readFileSync(resolve(ROOT, 'src/render/objects.ts'), 'utf8');
-    check(/if \(import\.meta\.env\.DEV && opts\.look === 'earth'\) \{\s*const \{ earthObjectStyle \} = await import\('\.\/objects-earth'\)/.test(objSrc),
-      '[R3] the earth object style is a DEV-only dynamic import (a release build folds it away)');
+    check(/if \(opts\.look === 'earth'\) \{[^\n]*\n\s*const \{ earthObjectStyle \} = await import\('\.\/objects-earth'\)/.test(objSrc),
+      '[R3/R4] the earth object style is a dynamic import (its own chunk), in the release build too');
     const staticObjEarth = execGrep("from '(\\./|\\.\\./)*objects-earth'");
     check(staticObjEarth === '', '[R3] nothing imports objects-earth statically (got ' + staticObjEarth + ')');
     check(execGrep('linoryt-objects') === 'src/render/objects.ts\nsrc/render/world.ts' || !/import\('\.\/linoryt-objects'\)/.test(readFileSync(resolve(ROOT, 'src/render/world.ts'), 'utf8')),

@@ -104,16 +104,16 @@ for (const [name, file] of Object.entries(actual)) {
   check(typeof file.source === 'string' && file.source.length > 0, name + ' has a source/licence line');
 }
 check(total <= TOTAL_CAP, 'globe assets total ' + total + ' B over ' + TOTAL_CAP);
-// [night-70a R1] The earth look asks for exactly the photo textures listed here, and the release build leaves out the same
-// set while the look is a preview (scripts/vite-globe-preview.mjs).
+// [night-70a R1] The earth look asks for exactly the photo textures listed here; [night-79a R4] the release build ships
+// them (scripts/vite-globe-preview.mjs leaves nothing out since D-334).
 {
   const earth = readFileSync(join(ROOT, 'src/render/globe/earth.ts'), 'utf8');
   const asked = [...earth.matchAll(/'((?:day|night)-\d+\.webp)'/g)].map((m) => m[1]).sort();
   const photos = Object.keys(CAP).filter((name) => /^(day|night)-/.test(name)).sort();
   check(JSON.stringify(asked) === JSON.stringify(photos), 'earth.ts EARTH_TEXTURES = ' + photos.join(', ') + ' (got ' + asked.join(', ') + ')');
   const { PREVIEW_GLOBE_FILES } = await import('./vite-globe-preview.mjs');
-  check(PREVIEW_GLOBE_FILES.length === 0 || JSON.stringify([...PREVIEW_GLOBE_FILES].sort()) === JSON.stringify(photos),
-    'release leaves out exactly the preview photo textures (got ' + PREVIEW_GLOBE_FILES.join(', ') + ')');
+  // [night-79a R4] D-334: the earth look is in the release build behind DEFAULT_GLOBE_LOOK, so dist/ keeps every texture.
+  check(PREVIEW_GLOBE_FILES.length === 0, 'release carries the earth textures (preview list empty, got ' + PREVIEW_GLOBE_FILES.join(', ') + ')');
 }
 // No source file may still ask for a removed photo texture.
 const { execSync } = await import('node:child_process');

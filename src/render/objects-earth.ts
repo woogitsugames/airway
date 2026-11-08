@@ -5,8 +5,8 @@
 // (widebody solid, turboprop dashed), the route being drawn as a yellow grease pencil with dots past the range, plane
 // silhouettes 31 / 38 px with a dark outline and a shadow on the globe (no navigation lights), and the jam zone as a
 // red ring with the countdown arc on a light rim. Only the shaders and sizes differ from the print: the layers, the
-// draws (one each) and the buffers are the ones in `objects.ts`. DEV-only: `createWorldObjects` imports this module
-// behind `import.meta.env.DEV`, so a release build emits no chunk for it.
+// draws (one each) and the buffers are the ones in `objects.ts`. A lazy chunk: `createWorldObjects` imports this module
+// for the earth look ([night-79a R4] D-334: in the release build too, unused until DEFAULT_GLOBE_LOOK selects it, R5).
 import type { ObjectStyle } from './objects';
 
 /**

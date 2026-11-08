@@ -2,7 +2,7 @@
 // at any turn of the menu spin; the view looks further south until none does. Headless, with an orthographic globe as
 // the projection; the real renderer is checked by `npm run test:e2e:menu-clear`.
 import assert from 'node:assert/strict';
-import { INDEX_DISC_MIN_PX, INDEX_EDGE_GAP, INDEX_GLOBE_GAP, MENU_CLEAR_PX, MENU_TILT_BASE, MENU_TILT_MAX, indexFraming, menuNetworkClashes, menuTilt, type ClearPoint, type ClearRect } from '../src/game/menu-clear.ts';
+import { INDEX_DISC_MIN_PX, INDEX_EDGE_GAP, INDEX_GLOBE_GAP, MENU_CLEAR_PX, MENU_TILT_BASE, MENU_TILT_MAX, indexFraming, menuNetworkClashes, menuTilt, frameTilt, FRAME_TILT_MAX, type ClearPoint, type ClearRect } from '../src/game/menu-clear.ts';
 
 let passed = 0;
 let failed = 0;
@@ -106,6 +106,24 @@ test('Linoryt 320×568 with Continue: a smaller disc, never the horizon that rid
 test('Linoryt safe areas: the notch and the home bar push the free paper', () => {
   const f = indexFraming(390, 844, { left: 0, top: 0, right: 390, bottom: 160 }, { left: 0, top: 540, right: 390, bottom: 844 }, { top: 47, bottom: 34, left: 0, right: 0 });
   assert(f && f.insets.top === 160 && f.insets.bottom === 304);
+});
+// [night-79a R4] D-334: the UI-A menu tilt puts the menu target's latitude at the middle of the globe's visible part.
+test('R4 frame tilt: the network sits in the middle of the visible part (disc and horizon)', () => {
+  const ys = (cx: number, cy: number, R: number) => (tilt: number): number | null => {
+    const out: ClearPoint = { x: 0, y: 0, visible: false };
+    globe(cx, cy, R, -16, 40 - tilt)(-16, 40, out);
+    return out.visible ? out.y : null;
+  };
+  // A whole disc (anchor at the centre): no tilt.
+  assert.equal(frameTilt(ys(206, 319, 196), 319), 0);
+  // 412×915: the anchor 41 px above the centre → asin(41/196) ≈ 12°.
+  const t412 = frameTilt(ys(206, 319, 196), 278);
+  assert(t412 >= 11 && t412 <= 13, 'tilt ' + t412);
+  // 320×568 horizon (r 150, limb at 109, anchor 136): the target near the limb, a large tilt within the cap.
+  const t320 = frameTilt(ys(160, 259, 150), 136);
+  assert(t320 > 40 && t320 <= FRAME_TILT_MAX, 'tilt ' + t320);
+  // Every tilt hidden: no tilt.
+  assert.equal(frameTilt(() => null, 100), 0);
 });
 console.log(`SUMMARY test:menu-clear passed=${passed} failed=${failed}`);
 if (failed) process.exitCode = 1;

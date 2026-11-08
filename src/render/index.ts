@@ -12,11 +12,13 @@ export {
   AdaptiveQualityMonitor, adaptiveSteps, applyAdaptiveSteps, frameDue, QUALITY_PREFERENCES, SAVER_MAX_FPS,
   type AdaptiveStep, type QualityPreference, type QualityPreset, type QualityProfile, type FrameCallback,
 } from './quality';
-export { subsolarLongitudeAt, NOVEMBER_SUBSOLAR_LATITUDE_DEG } from './sun';
+export { subsolarLongitudeAt, NOVEMBER_SUBSOLAR_LATITUDE_DEG, menuSunTick } from './sun'; // [night-79a R4] menuSunTick
 export { latLonToVec3, vec3ToLatLon, normalizeLon, type LonLat } from './globe/geo-math';
 export type { AircraftKind } from './routes';
 export { contrastRatio, relativeLuminance, type LayerContrast, type PixelRect } from './contrast'; // [task-34]
 export { insetsFromLayout, menuFraming, solveZoomForRadius, menuSpinRate, MENU_SPIN_DEG_PER_S, type LayoutRect, type MenuFraming } from './framing'; // [task-34] [task-39]
+export { globeFrameFraming, type GlobeFrameFraming } from './framing'; // [night-79a R4] D-334
+export { DEFAULT_GLOBE_LOOK } from './globe/look'; // [night-79a R4] the menu's sun follows the look drawn
 export { createMenuNetwork, type MenuNetwork } from './menuNetwork'; // [task-34]
 export { SURFACE_ANCHOR_ALTITUDE } from './projection'; // [night-72a R2] D-327: altitude of projectAirport / projectLonLat
 export { gpuRendererString, webgl2Available } from './contextGuard'; // [night-11h] D-118
