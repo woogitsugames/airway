@@ -156,6 +156,39 @@ check('Q-92: Undo right after the week-1 pick never ends the run in the past (se
   assert.equal(run.sim.hash(), hash);
   assert.deepEqual(run.sim.world.upgrades, [{ week: 1, upgrade: 'turboprop' }]);
 });
+// [night-58a] Q-93 repro (N58a), pinned for `test:e2e:undo-ends-run:stub`: D-313 stops Undo at the pick, but the edits
+// after it still undo exactly, and without them the re-simulation can end the run in the past. Seed 42041 ASI class I,
+// week-1 turboprop, 24 game hours of bot edits (AssignPlane 4590, ExtendRoute 5760): the second Undo ends the run at
+// tick 5692 on DEL while the clock reads 5761. If Q-93 changes the rule, this check and that suite change with it.
+check('Q-93: undoing the post-pick edits can still end the run in the past (seed 42041 ASI, pinned)', () => {
+  const run = EndlessRun.create(42041, 'endless', 'ASI');
+  const bot = (until: number) => {
+    while (run.tick < until && run.sim.world.status === 'running') {
+      if (run.tick % AUTOPLAY_ACTION_INTERVAL === 0) {
+        const command = nextAutoplayCommand(run.sim);
+        if (command) run.queue(command);
+      }
+      run.step();
+    }
+  };
+  bot(Number.MAX_SAFE_INTEGER);
+  assert.equal(run.sim.world.status, 'upgrade');
+  assert.equal(run.tick, 4320);
+  assert.ok(run.queue({ type: 'ChooseUpgrade', week: 1, upgrade: 'turboprop' }));
+  run.step();
+  bot(run.tick + 24 * 60);
+  assert.equal(run.tick, 5761);
+  assert.deepEqual(run.sim.getCommandLog().slice(-2).map(([tick, command]) => [tick, command.type]),
+    [[4591, 'AssignPlane'], [5761, 'ExtendRoute']]);
+  assert.ok(run.undo(), 'first Undo');
+  assert.equal(run.failed, null);
+  assert.ok(run.undo(), 'second Undo');
+  assert.equal(run.failed?.tick, 5692);
+  assert.equal(run.failed?.cityId, 'DEL');
+  assert.equal(run.tick, 5761);
+  assert.deepEqual(run.sim.world.upgrades, [{ week: 1, upgrade: 'turboprop' }]);
+  assert.equal(run.networkUndoable, false, 'the barrier holds: nothing left to undo');
+});
 check('a queued weekly choice is a barrier too', () => {
   const sim = new Sim(SEED);
   sim.apply(route('before'));

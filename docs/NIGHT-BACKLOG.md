@@ -183,6 +183,29 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       compares with the Linoryt red. (4) Short landscape report: the departures list ends where the two action rows
       fit (`gameover-contracts:stub` 17/17, 12/17 on dev at 915×412); the worst-case fixture at 640×360 still scrolls
       36–58 px (right column), the real run 0 px — left open; [night-52a] D-311: compacted, 0 px PL/EN.
+- [x] N58a **Long play-throughs, round 5, on today's dev** (after U6/D-305, the UI audit D-312, #326, D-313, D-318,
+      D-315/D-316, #338) — `ui:long-play:stub` 21 sessions × 8 game weeks (577–581 game hours, 1.3–2.0 min each), run
+      in three rounds (12 and 9 sessions before the fixes, all 21 again after the Undo and surge fixes, 3 after the
+      last fix): PL/EN 360×640, 412×915, 915×412, 673×841 and the tablet
+      1024×1366; regions EUS/ASI/EUN/random; classes I/II/III; 8 with the weather front, 8 at 150 % text; the third round: 516
+      pauses, 175 hub boards by a 450 ms press, 150 rotations, 75 Save → Continue, 110 weekly picks. The
+      script now checks D-313 in play: Undo disabled right after every pick (110/110 in the third round), and on alternate
+      picks an Undo walk after ≥ 3 game hours with two edits (or 12 hours): 75 walks, 87 taps for 87 post-pick edits,
+      never past the pick; a contrast audit of text on its painted background (≥ 3:1); `--seed=N`. Found and fixed: (1) **an Undo whose
+      re-simulation ends the run left the game screen up** over the finished run until the clock stepped again (on the
+      frozen stub clock for good, so earlier rounds could not see it): the session shows the report at once
+      (`test:e2e:undo-ends-run:stub` new, 0/2 before); (2) **the running demand-surge pennant printed paper on paper**
+      in Linoryt — an empty box on every surge airport in shipped Endless (the front got the same fix in c013a29, the
+      surge did not): `linoryt.css`, `test:e2e:surge-tag` checks ≥ 4.5:1 (0/2 before); (3) **the game-over report at
+      360×640 PL scrolled 24 / 46 px** with a home-region (and class) line and opened with the sign cut off: tighter
+      fact lines and 1¼ departure rows beside them (`gameover-short` + the preview with `&region=&licence=`, failed
+      before). Found, for the owner: **Q-93** — D-313 holds, but undoing the edits made after a pick can still end
+      the run in the past (headless 25 of 791 walks, 3.2 %; in play 1 of 21 sessions: tablet seed 42033 class III, the
+      clock 12:01 → 04:25; pinned repro seed 42041 ASI in `test:undo`). Left open: 320×568 PL with region + class III
+      still scrolls 15 px (actions on screen). For the render session: nothing in `src/render/**`; `perf:scene`
+      (SwiftShader) medium 60 s 810 frames / 13.2 idle fps, low 860 / 13.7, both ~35 % under the D-315 table with the
+      same 14 draw calls / 38,766 triangles, i.e. this container (±30 % noted there), not D-315/D-316. Shots
+      `docs/shots/n58a/`.
 - [ ] N7 When the queue is empty: pick the most valuable next improvement from `docs/HANDOVER*.md`, PR "Known issues"
       sections and the forbidden list review of current screenshots; add it here first, then do it.
 
@@ -1623,3 +1646,4 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
 - 2026-11-08 · N56a Q-92 → A provisional: Undo never reaches past the last weekly choice (D-313, #334) · night/56a-undo-week-barrier · `Sim.undo()` refuses when the newest command is a weekly choice (`ChooseUpgrade`, `CancelUpgradePick`, queued or journaled), `Sim.canUndo` → `EndlessRun.networkUndoable` greys the dock's Undo right after a pick; journal, replays, Daily verification and hashes unchanged · `test:undo` 11 cases (seed 42704 repro), `test:e2e:undo-after-upgrade` real + stub, `test:replay`, `test:daily`, `test:net-server` green; owner may still pick B or C (Q-92)
 - 2026-11-08 · N56b release CSS 129.9 → 126.8 kB with no visual change (no new D, #338) · night/56b-css-slim · removed only rules no rendered element matches (CSS coverage over the stub screen audit, ui:matrix and ~45 e2e suites, checked against the DOM code): menu split-flap cells and tokens, Diorama ticket fields of the HUD, task-20 text roles, four overridden declarations; CSS budget 130 → 129.8 kB · `skin:pixels` (AW_SKIN_INLINE=1) identical except run-to-run unstable tutorial/settings areas; test:fast, build, test:bundle
 - 2026-11-08 · N57a route-end handles in print + tablet sheets (D-319, D-320) · night/57a-handles-tablet · handles: the D-191 paper diamond → the route continued past the stamp with a thin ink end bar turned along the route (`RouteHandle.angle`), a bold 7 × 22 px ink bar on the route in hand; 48 dp area and hit test unchanged; `test:e2e:route-handles` 2/2 with the new checks · tablets: weekly board and report zoomed as one print on ≥ 720 × 900 portrait / ≥ 720 × 1000 landscape, portrait stacks crates and sets the report in one column; store shots lower third one colour 0.975–0.982 → 0.88–0.92 on tablet/iPad, phone/foldable/iPhone/landscape unchanged; screen-audit + 1032 × 1376 and 1376 × 1032 · test:fast 117/117, build, test:bundle 14/14 (CSS 128.3 kB of 129.8), test:doc-ids, hud-targets 311/311, text-scale-150 120/120, screens-fit 18/18, screens-fit-320 12/12, board-short 5/5, gameover-short 4/4, gameover-contracts 17/17, tutorial 28/28, tutorial-layout 7/7, first-time-cards 4/4, keyboard-mouse 14/14, undo-after-upgrade 2/2, smoke 9/9, ui:matrix 96/96, screen-audit:stub 504/504, pseudo-320 16/16, weekly-contract 36/36, store:shots 60/60 (local, not committed); shots `docs/shots/n57a/`
+- 2026-11-08 · N58a long play-throughs round 5 (no new D; Q-93) · night/58a-long-play-5 · `ui:long-play:stub` 21 sessions × 8 game weeks ×3 rounds incl. tablet 1024×1366, D-313 barrier held in 110/110 picks and 75 Undo walks (third round); fixed: Undo that ends the run shows the report at once, Linoryt running surge pennant paper on paper, PL 360×640 report with region/class lines scrolled; Q-93 (Undo of post-pick edits can still end the run in the past) · test:undo 12/12, undo-ends-run:stub 2/2 (new), surge-tag 2/2 real + stub, gameover-short 4/4, test:fast, build, test:bundle (CSS 127.0 kB)
