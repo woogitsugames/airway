@@ -3933,6 +3933,53 @@ audit on all 24 screens; on 412×915 and 915×412 the full strip, the tile's lis
 `docs/shots/t3/` (`npm run shots:board:t3`).
 **Status:** preview; the owner sees it with T2+R3 (plan §7 gate).
 
+## D-331 — UI-A weekly board behind the DEV `?skin=board` preview: the "TYDZ N" board, take one strip, one yellow main action (2026-11-08, Claude, night 76a)
+Step T4 of `docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md` (D-323; UI-A-SPEC.md §2–§4, mockup
+`makiety/ui-a/ui-a-koniec-tygodnia.png`). Nothing the release ships changes. (D-330 is reserved for T3.)
+**Slot.** `WeeklyUpgradeView` (`src/ui/upgrade/index.ts`) asks a new slot `src/ui/upgrade/skin.ts` (`upgradeSkin.current`,
+null in a release) for its sheet; the DEV `?skin=board` branch of `src/main.ts` fills it with `src/ui/skin/board-week.ts`
+(lazy chunk, type-only imports; the board's symbols handed in) and loads `board-week.css` (same contract as `board.css`,
+checked by `test:skin-tokens`; four new tokens in board.css's block: three holder colours and the strip's second ink). The
+view keeps the commands, the airport-pick mode (D-49), the scroll reset (N47a) and the D-322 classes; no model windows
+(D-302 (1)). The test ids stay (`upgrade-option-N`, `upgrade-contract`, `upgrade-pick-back`); the main action is
+`upgrade-take`.
+**Sheet.** The week board replaces the HUD while it is open (top band, console and airport signs hidden): "KONIEC
+TYGODNIA" over "TYDZ 1" on large flap tiles (two hard halves and a hinge line, no animation), and the closed week's
+figures on small tiles: passengers and transfers delivered **that week**, routes and aircraft on routes at the board, one
+spoken label (`role="img"`). The week is counted by `EndlessRun` (UI only, not in the hash or a save): the score when the
+week began and the `afterTransfer` of each `Delivered` event; a session that resumed mid-week did not see the week and
+shows "–" for those two. Under it the contract as a paper slip (last week's result as a filled or hollow square; on short
+portrait pages one line, the full slip kept for screen readers, as D-280), then "Przydział na tydzień 2 · weź jeden pasek"
+and one flight strip per offer (3 or 4): paper in a holder whose colour and symbol say the kind (turboprop brown, widebody
+blue, hub green, slots slate; the slots symbol is a new runway with a take-off chevron), the description from the sim's
+numbers (`upgradeFacts`), the quantity in its own column, the context stamp as a note line, a hatched holder and the
+reason in words when it cannot act, a "KONTRAKT" tag on the strip a contract added.
+**Choosing is two steps.** A tap on a strip only chooses it; the main action takes it. The first strip that can act is
+chosen when the board opens (the main action always names it, so nothing is taken by accident), and the choice is kept
+per week (Back from the airport pick returns to it). **Yellow** stays one meaning (spec §2): the chosen strip is a cream
+outline and a "WYBRANY" clip, **not** a yellow frame (the plan's T4 line said "w żółtej ramce"; the spec and the mockup,
+which are later, took yellow off the strips); the only yellow on the sheet is the main action, black on yellow, "WEŹ
+TURBOŚMIGŁOWIEC →" over "Tydzień 2 zaczyna się o 02:00" (the home airport's local time at the board, from the clock; the
+mockup's 06:00 was a placeholder), or, for a hub or slots, "Potem wskaż hub / lotnisko na globusie". The airport pick is a
+yellow direction sign "WSKAŻ HUB NA GLOBUSIE ↓" with a round enamel Back key (≥ 64 px), the host lets taps through to the
+globe and the airport signs show again (at most three yellow elements on screen with T2's two direction signs).
+**Honest numbers.** The plan and mockup print "Turbośmigłowiec +2", "12 miejsc, 1 500 km" and "Hub +1"; the sheet prints
+what the sim grants today: +1 aircraft per aircraft strip (48 seats, 2 500 km; 300 seats, 11 000 km), and the hub strip is
+the existing hub expansion, "+6 miejsc, przesiadka 25 → 15 min". Changing the grants is a balance decision, not T4's.
+**Layout.** Portrait: the board on top, the globe free in the middle, the slip, strips and main action at the bottom (thumb
+reach), the main action pinned to the bottom edge while the strips scroll under it; at text 130/150 % it scrolls with
+the strips instead (a pinned key would cover the choices). Landscape: board, slip and main action on the left, strips on
+the right. Tablets (D-320): the same sheet printed larger with CSS `zoom` on its parts (1.25; 1.5 from 960 × 1200),
+two columns in landscape; text 130/150 % keeps the phone size. Touch targets ≥ 48 px everywhere; under "Reduce motion"
+nothing moves (the 1 px key travel is off).
+**Budgets.** Release CSS 129.0 → 129.0 kB (byte-identical; the sheet CSS is DEV-only); main JS 1,062.9 → 1,067.9 kB raw
+(gzip 319.4 → 320.6; the PL/EN strings of the sheet, the slot call and the week tally); `dist/` 2,009.4 → 2,014.3 kB.
+**Tests.** `test:board` (+6: tiles, figures, clock, default choice and quantities from the sim, the run's week figures on
+a played and a resumed run, the empty release slot), `test:skin-tokens` (+6: the sheet CSS contract and the holder/ink
+pairs), `test:e2e:board-week:stub` (new, ci: 14 sizes × PL/EN incl. notch, tablets and 150 %; the flow hub → pick → Back →
+aircraft on 412×915 and 915×412), `test:e2e:board:stub` (the jam pass and T2's dense run take their strip through the main action), shots
+`docs/shots/t4/` (`npm run shots:board:t4`, real renderer).
+**Status:** preview; the owner sees it with T3 (plan §7 gate).
 ## D-332 — UI-A menu as a departures board, the game-over report as a teleprinter print-out, the pause and every page in the board's language, behind the DEV `?skin=board` preview (2026-11-08, Claude, night 77a)
 Step T5 of `docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md` (D-323; UI-A-SPEC.md §3 "Wydruk", mockups `ui-a-menu.png`,
 `ui-a-raport.png`). Nothing the release ships changes. (D-331 is held for T4, the weekly board.)
@@ -3981,3 +4028,21 @@ DEV-only.
 puzzles, training flight, pause, report, no-WebGL page), `ui:matrix:stub -- --skin=board` 96/96, shots `docs/shots/t5/`
 (`npm run shots:board:t5`).
 **Status:** preview; the owner sees it with T4 (plan §7 gate before the flip).
+
+## D-333 — Release icons and launch screens from the mark I-1 "Węzeł" (2026-11-08, Claude, night 78a)
+Step Z of `docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md`, implementing D-326. One definition, `scripts/icon-assets.mjs`
+(the double hub ring `r 262/176`, strokes 44/16, in cream `#EFE7D3`, the D-08 bow-tie in `#F3C317`, on enamel `#0E0F0F`; the
+geometry of `znak-i-1.svg`), writes the source SVGs (`resources/icon.svg`, `icon-foreground.svg`, new `icon-monochrome.svg`,
+`splash.svg`, the `ios/Brand/` copies, `site/assets/favicon.svg`) and rasterizes every PNG with the dependency-free,
+byte-deterministic rasterizer of task 24 (extended with rings and an opaque RGB output). `npm run icons` writes the
+committed files, `npm run android:assets` the git-ignored Android ones, `npm run test:icons` fails on any stale file.
+**Android:** adaptive icon on `@color/airway_enamel` with a foreground (108 dp, the whole mark inside the 66/108 safe circle,
+outer ring 568 of 1024) and a `<monochrome>` layer for Android 13 themed icons; legacy square and round mipmaps; splash
+drawable 1152 px, the mark 0.317 of the tile so it sits inside the system's 192/288 circle; `windowSplashScreenBackground` =
+enamel. **Store:** `docs/store/icon-512.png` (opaque). **iOS:** one 1024 universal icon (the project's convention, no size
+set) plus dark and tinted (grey) variants, all RGB without alpha; launch image 2732 on enamel in the three slots.
+**Web:** `site/assets/favicon.svg` and the press-kit icon are the mark. **Not done (T6):** system bars, `windowBackground`,
+`theme-color` and the iOS light appearance stay paper, so a paper frame can show between the dark launch screen and the
+first frame until T6 switches the theme. `brand/wayfinding.svg` (the wordmark sign, yellow plane) is unchanged: the plan
+asks for an Archivo wordmark, a separate task. The Play feature graphic (`store:feature`) still carries it.
+**Status: in force (implements D-326); owner reviews the PR.** (D-332 is reserved for T5.)

@@ -57,13 +57,22 @@ check('splash', theme.includes('windowSplashScreenAnimatedIcon') && existsSync(j
 const colours = read('android/app/src/main/res/values/colors.xml');
 const paper = read('src/ui/skin/linoryt.css').match(/--lin-paper:\s*(#[0-9A-Fa-f]{6})/)?.[1]?.toLowerCase();
 check('linoryt-system-bars', hasAll(theme, ['<item name="android:windowLightStatusBar">true</item>',
-  '<item name="android:windowLightNavigationBar">true</item>', '<item name="android:windowBackground">@color/airway_paper</item>',
-  '<item name="windowSplashScreenBackground">@color/airway_paper</item>']) && !!paper &&
+  '<item name="android:windowLightNavigationBar">true</item>', '<item name="android:windowBackground">@color/airway_paper</item>']) && !!paper &&
   colours.match(/<color name="airway_paper">(#[0-9A-Fa-f]{6})<\/color>/)?.[1]?.toLowerCase() === paper &&
   new RegExp(`<meta name="theme-color" content="${paper}"`, 'i').test(read('index.html')));
+// [night-78a] Z, D-333: the launch screen and the adaptive icon sit on the mark's enamel (znak I-1), with a themed
+// (monochrome) layer; the system bars and the window stay paper until T6.
+const enamel = colours.match(/<color name="airway_enamel">(#[0-9A-Fa-f]{6})<\/color>/)?.[1]?.toUpperCase();
+const markSvg = read('resources/icon.svg');
+check('mark-enamel-splash-and-icon', enamel === '#0E0F0F' && markSvg.includes('fill="' + enamel + '"') &&
+  theme.includes('<item name="windowSplashScreenBackground">@color/airway_enamel</item>') &&
+  ['ic_launcher', 'ic_launcher_round'].every((name) => {
+    const xml = read('android/app/src/main/res/mipmap-anydpi-v26/' + name + '.xml');
+    return hasAll(xml, ['<background android:drawable="@color/airway_enamel" />', '@mipmap/ic_launcher_foreground', '<monochrome android:drawable="@mipmap/ic_launcher_monochrome" />']);
+  }));
 check('back-dispatch', hasAll(nativeBack, ['OnBackPressedCallback', 'getOnBackPressedDispatcher', 'airway:android-back']) && jsBack.includes("'airway:android-back'"));
 check('release-env-only', hasAll(appGradle, ["System.getenv('AW_KEYSTORE')", "System.getenv('AW_KEYSTORE_PASS')", 'signingConfigs.release']) && hasAll(buildScript, ['validateSigning()', 'AW_KEYSTORE']));
-check('procedural-assets', ['icon.svg', 'icon-foreground.svg', 'splash.svg'].every((file) => existsSync(join(ROOT, 'resources', file))));
+check('procedural-assets', ['icon.svg', 'icon-foreground.svg', 'icon-monochrome.svg', 'splash.svg'].every((file) => existsSync(join(ROOT, 'resources', file))));
 check('wrapper-present', existsSync(join(ANDROID, 'gradle/wrapper/gradle-wrapper.jar')) && readFileSync(join(ANDROID, 'gradle/wrapper/gradle-wrapper.jar')).subarray(0, 2).toString() === 'PK');
 check('build-flavours', hasAll(buildScript, ['assembleDebug', 'assembleRelease', 'bundleRelease', '@capacitor/cli@8.5.3']));
 // [night-12c] D-92: Auto Backup carries the game to a new phone (saves, logbook, streak, settings), include-only,

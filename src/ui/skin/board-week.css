@@ -1,0 +1,263 @@
+/* [night-76a] D-331 (docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md step T4; UI-A-SPEC.md; mockup
+   makiety/ui-a/ui-a-koniec-tygodnia.png): the weekly sheet of the UI-A preview, "take one strip" (src/ui/skin/board-week.ts).
+   DEV-only, loaded with board.css by the `?skin=board` branch of src/main.ts. Same contract as board.css (test:skin-tokens):
+   every rule scoped to :root[data-skin="board"], only --board-* tokens from board.css's token block and local --bd-* sizes,
+   no colour, face or duration literal. No glow, blur, glass or soft gradient: the flap tiles are two hard halves, the
+   unavailable holder the console's hard hatching. Yellow appears once: the main action (or, during the airport pick, the
+   direction sign); the chosen strip is shown by a cream outline and a "chosen" clip (spec §2). */
+
+/* The host: the sheet draws its own grounds, so the shipped page, scrim and paddings go (the twin's Linoryt page too). */
+:root[data-skin="board"] body .airway-upgrade-host.airway-upgrade-open {
+  inset: 0; padding: 0; display: block; overflow: hidden; background: none; box-shadow: none;
+}
+:root[data-skin="board"] body .airway-upgrade-host.airway-upgrade-open.is-picking-hub { pointer-events: none; }
+/* The week board takes the HUD's place; the airport signs come back for the pick (the player needs the codes). */
+:root[data-skin="board"]:has(.bw-sheet[data-mode="crates"]) :is(.airway-hud, .airport-overlay),
+:root[data-skin="board"]:has(.bw-sheet[data-mode^="pick"]) .airway-hud { visibility: hidden; }
+
+:root[data-skin="board"] .bw-sheet {
+  --bd-ts: var(--airway-text-scale, 1);
+  --bd-col: 560px;
+  --bd-strip: calc(74px * var(--bd-ts));
+  --bd-holder: 52px;
+  --bd-qty: calc(62px * var(--bd-ts));
+  position: absolute; inset: 0; box-sizing: border-box; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain;
+  display: grid; justify-content: center; align-content: stretch;
+  grid-template-columns: minmax(0, var(--bd-col));
+  grid-template-rows: max-content minmax(0, 1fr) max-content max-content max-content;
+  grid-template-areas: "board" "gap" "slip" "pick" "take";
+  row-gap: 10px;
+  padding: calc(var(--aw-safe-top) + 8px) calc(var(--aw-safe-right) + 8px) calc(var(--aw-safe-bottom) + 10px) calc(var(--aw-safe-left) + 8px);
+  font-family: var(--board-face); color: var(--board-cream);
+}
+:root[data-skin="board"] .bw-gap { grid-area: gap; }
+
+/* ---- The week board: black enamel, flap tiles in two hard halves with a hinge line ------------------------------- */
+:root[data-skin="board"] .bw-board {
+  grid-area: board; display: flex; flex-direction: column; gap: 6px; min-width: 0;
+  padding: 10px 12px 12px; background: var(--board-enamel); border: 1px solid var(--board-enamel-edge); border-radius: 3px;
+}
+:root[data-skin="board"] .bw-label {
+  margin: 0; font: 600 calc(8.5px * var(--bd-ts))/1.25 var(--board-face); letter-spacing: .16em; text-transform: uppercase;
+  color: var(--board-cream-2);
+}
+:root[data-skin="board"] .bw-tiles { display: inline-flex; gap: 2px; }
+:root[data-skin="board"] .bw-tile {
+  position: relative; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box;
+  width: var(--bd-tw); height: var(--bd-th); border-radius: 2px; color: var(--board-cream);
+  background: linear-gradient(var(--board-flap-a) 50%, var(--board-flap-b) 50%);
+  font: 700 var(--bd-tf)/1 var(--board-face); font-stretch: 80%;
+}
+:root[data-skin="board"] .bw-tile::after {
+  content: ''; position: absolute; left: 0; right: 0; top: calc(50% - .5px); height: 1px; background: var(--board-hinge);
+}
+:root[data-skin="board"] .bw-tile--blank { width: calc(var(--bd-tw) * .6); }
+:root[data-skin="board"] .bw-tiles--title { --bd-tw: 25px; --bd-th: 40px; --bd-tf: 34px; }
+:root[data-skin="board"] .bw-tiles--fig { --bd-tw: calc(17px * var(--bd-ts)); --bd-th: calc(25px * var(--bd-ts)); --bd-tf: calc(18px * var(--bd-ts)); }
+:root[data-skin="board"] .bw-figs { display: flex; flex-wrap: wrap; column-gap: 18px; row-gap: 6px; margin-top: 4px; }
+:root[data-skin="board"] .bw-fig { display: flex; flex-direction: column; gap: 4px; }
+
+/* ---- The contract slip: strip paper, the result of last week as a filled (met) or hollow (missed) square ---------- */
+:root[data-skin="board"] .bw-slip {
+  grid-area: slip; display: flex; min-width: 0; background: var(--board-paper); color: var(--board-print); border-radius: 1.5px;
+}
+:root[data-skin="board"] .bw-slip-head {
+  flex: none; display: flex; align-items: center; padding: 6px 8px; border-right: 1px solid var(--board-rule);
+  font: 700 calc(9.5px * var(--bd-ts))/1.1 var(--board-mono); letter-spacing: .1em; text-transform: uppercase;
+}
+:root[data-skin="board"] .bw-slip-text {
+  position: relative; flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; padding: 6px 10px 7px;
+  font: 500 calc(11.5px * var(--bd-ts))/1.35 var(--board-mono); color: var(--board-print-2);
+}
+:root[data-skin="board"] .bw-slip-route { color: var(--board-print); font-weight: 700; }
+:root[data-skin="board"] .bw-slip-last { display: flex; align-items: center; gap: 6px; color: var(--board-print); }
+:root[data-skin="board"] .bw-slip-last::before {
+  content: ''; flex: none; width: 9px; height: 9px; box-sizing: border-box; border: 2px solid var(--board-print);
+}
+:root[data-skin="board"] .bw-slip-last[data-met="true"]::before { background: var(--board-print); }
+
+/* ---- The strips: paper in a coloured holder; the symbol is the kind, the right column the quantity ---------------- */
+:root[data-skin="board"] .bw-pick { grid-area: pick; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+:root[data-skin="board"] .bw-allot {
+  align-self: flex-start; max-width: 100%; box-sizing: border-box; padding: 4px 8px; background: var(--board-enamel);
+  color: var(--board-cream); border-radius: 2px;
+}
+:root[data-skin="board"] .bw-strips { display: flex; flex-direction: column; gap: 10px; padding-top: 6px; }
+:root[data-skin="board"] .bw-strip {
+  appearance: none; position: relative; display: flex; align-items: stretch; width: 100%; min-height: var(--bd-strip);
+  margin: 0; padding: 0; border: 0; border-radius: 1.5px; background: var(--board-paper); color: var(--board-print);
+  text-align: left; font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  transition: transform var(--board-press) var(--board-ease);
+}
+:root[data-skin="board"] .bw-strip:active:not(:disabled) { transform: translateY(1px); }
+:root[data-skin="board"] .bw-strip:focus-visible { outline: 3px dashed var(--board-white); outline-offset: 3px; }
+:root[data-skin="board"] .bw-strip.is-chosen { outline: 3px solid var(--board-cream); outline-offset: 2px; }
+:root[data-skin="board"] .bw-strip.is-chosen:focus-visible { outline-style: double; outline-width: 5px; }
+:root[data-skin="board"] .bw-holder {
+  flex: none; width: var(--bd-holder); display: flex; align-items: center; justify-content: center;
+  background: var(--board-holder-prop); border-radius: 1.5px 0 0 1.5px;
+}
+:root[data-skin="board"] .bw-strip--jet .bw-holder { background: var(--board-blue); }
+:root[data-skin="board"] .bw-strip--hub .bw-holder { background: var(--board-holder-hub); }
+:root[data-skin="board"] .bw-strip--slots .bw-holder { background: var(--board-holder-slots); }
+:root[data-skin="board"] .bw-symbol { width: 34px; height: 34px; fill: var(--board-white); }
+/* Unavailable: the holder hatched (shape), the reason in words in the note line; the facts stay readable. */
+:root[data-skin="board"] .bw-strip:disabled { cursor: default; }
+:root[data-skin="board"] .bw-strip:disabled .bw-holder {
+  background: repeating-linear-gradient(135deg, var(--board-hatch-a) 0 4px, var(--board-hatch-b) 4px 8px);
+}
+:root[data-skin="board"] .bw-strip:disabled .bw-symbol { fill: none; stroke: var(--board-cream-2); stroke-width: 4px; }
+:root[data-skin="board"] .bw-main { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 3px; padding: 8px 10px 8px 12px; }
+:root[data-skin="board"] .bw-title {
+  display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 8px; row-gap: 2px; hyphens: manual;
+  font: 700 calc(16px * var(--bd-ts))/1.15 var(--board-mono); letter-spacing: -.02em; color: var(--board-print);
+}
+:root[data-skin="board"] .bw-extra {
+  padding: 2px 4px; border: 1.5px solid var(--board-print); font: 700 calc(9.5px * var(--bd-ts))/1 var(--board-mono);
+  letter-spacing: .1em; text-transform: uppercase;
+}
+:root[data-skin="board"] .bw-text { font: 500 calc(11.5px * var(--bd-ts))/1.35 var(--board-mono); color: var(--board-print-2); }
+:root[data-skin="board"] .bw-note { font: 700 calc(10.5px * var(--bd-ts))/1.3 var(--board-mono); color: var(--board-print); }
+:root[data-skin="board"] .bw-qty {
+  flex: none; width: var(--bd-qty); box-sizing: border-box; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 3px; padding: 4px 2px; border-left: 1px solid var(--board-rule);
+}
+:root[data-skin="board"] .bw-qty b { font: 800 calc(26px * var(--bd-ts))/1 var(--board-mono); letter-spacing: -.05em; color: var(--board-print); }
+:root[data-skin="board"] .bw-qty-caption {
+  max-width: 100%; text-align: center; white-space: nowrap; color: var(--board-print);
+  font: 500 calc(9.5px * var(--bd-ts))/1.1 var(--board-mono); letter-spacing: .02em; text-transform: uppercase;
+}
+:root[data-skin="board"] .bw-clip {
+  display: none; position: absolute; top: -10px; right: calc(var(--bd-qty) + 8px); padding: 3px 6px;
+  background: var(--board-paper); color: var(--board-print); border: 1.5px solid var(--board-print);
+  font: 700 calc(9.5px * var(--bd-ts))/1 var(--board-mono); letter-spacing: .12em; text-transform: uppercase;
+}
+:root[data-skin="board"] .bw-strip.is-chosen .bw-clip { display: block; }
+
+/* ---- The main action: a direction sign, black on yellow (the only yellow on the sheet) ---------------------------- */
+:root[data-skin="board"] .bw-take {
+  grid-area: take; position: sticky; bottom: calc(var(--aw-safe-bottom) + 10px); z-index: 1;
+  appearance: none; display: flex; align-items: center; gap: 12px; box-sizing: border-box; width: 100%; min-height: 68px;
+  margin: 4px 0 0; padding: 10px 16px 10px 18px; border: 0; border-radius: 2px;
+  background: var(--board-sign); color: var(--board-sign-ink); text-align: left; font: inherit; cursor: pointer;
+  transition: transform var(--board-press) var(--board-ease);
+}
+:root[data-skin="board"] .bw-take:active:not(:disabled) { transform: translateY(1px); }
+:root[data-skin="board"] .bw-take:focus-visible { outline: 3px solid var(--board-white); outline-offset: 3px; }
+:root[data-skin="board"] .bw-take:disabled { background: var(--board-console); color: var(--board-engrave); cursor: default; }
+:root[data-skin="board"] .bw-take-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+:root[data-skin="board"] .bw-take-main {
+  font: 800 calc(24px * var(--bd-ts))/1.02 var(--board-face); font-stretch: 80%; text-transform: uppercase;
+  hyphens: manual; overflow-wrap: break-word;
+}
+:root[data-skin="board"] .bw-take-sub { font: 600 calc(13px * var(--bd-ts))/1.25 var(--board-face); }
+:root[data-skin="board"] .bw-arrow { flex: none; width: 46px; height: 36px; fill: currentColor; }
+
+/* ---- The airport pick: a yellow direction sign and a round enamel Back key; the globe stays free for the tap ------ */
+:root[data-skin="board"] .bw-sheet[data-mode^="pick"] {
+  overflow: visible; pointer-events: none; grid-template-rows: auto; grid-template-areas: "sign"; align-content: start;
+}
+:root[data-skin="board"] .bw-pick-sign { grid-area: sign; display: flex; align-items: stretch; gap: 8px; min-width: 0; }
+:root[data-skin="board"] .bw-back {
+  appearance: none; flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  min-width: 64px; min-height: 64px; margin: 0; padding: 6px; border: 0; border-radius: 3px; background: var(--board-enamel);
+  color: var(--board-cream); font: inherit; cursor: pointer; pointer-events: auto;
+}
+:root[data-skin="board"] .bw-back-face {
+  display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%;
+  background: var(--board-console); box-shadow: inset 0 0 0 2px var(--board-console-ring), 0 2px 0 var(--board-black);
+  transition: transform var(--board-press) var(--board-ease), box-shadow var(--board-press) var(--board-ease);
+}
+:root[data-skin="board"] .bw-back:active .bw-back-face { transform: translateY(1px); box-shadow: inset 0 0 0 2px var(--board-console-ring), 0 1px 0 var(--board-black); }
+:root[data-skin="board"] .bw-back:focus-visible { outline: 3px solid var(--board-white); outline-offset: 2px; }
+:root[data-skin="board"] .bw-back-arrow { width: 18px; height: 18px; fill: var(--board-cream); }
+:root[data-skin="board"] .bw-back-caption {
+  font: 700 calc(9.5px * var(--bd-ts))/1 var(--board-face); letter-spacing: .1em; text-transform: uppercase; color: var(--board-engrave);
+}
+:root[data-skin="board"] .bw-direction {
+  flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 2px;
+  background: var(--board-sign); color: var(--board-sign-ink);
+}
+:root[data-skin="board"] .bw-direction-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+:root[data-skin="board"] .bw-direction-kicker {
+  font: 600 calc(11px * var(--bd-ts))/1.2 var(--board-face); letter-spacing: .08em; text-transform: uppercase; hyphens: manual;
+}
+:root[data-skin="board"] .bw-direction-main {
+  font: 800 calc(20px * var(--bd-ts))/1.08 var(--board-face); font-stretch: 80%; text-transform: uppercase; overflow-wrap: break-word;
+}
+:root[data-skin="board"] .bw-arrow--down { width: 30px; height: 24px; transform: rotate(90deg); }
+
+/* ---- Narrow phones (≤ 359 px): a smaller title and holder ------------------------------------------------------ */
+@media (max-width: 359px) {
+  :root[data-skin="board"] .bw-sheet { --bd-holder: 44px; --bd-qty: calc(58px * var(--bd-ts)); row-gap: 8px; }
+  :root[data-skin="board"] .bw-tiles--title { --bd-tw: 21px; --bd-th: 34px; --bd-tf: 28px; }
+  :root[data-skin="board"] .bw-symbol { width: 28px; height: 28px; }
+  :root[data-skin="board"] .bw-figs { column-gap: 12px; }
+  :root[data-skin="board"] .bw-take-main { font-size: calc(20px * var(--bd-ts)); }
+}
+/* ---- Short phones: the strips lose their slack -------------------------------------------------------------------- */
+@media (orientation: portrait) and (max-height: 700px) {
+  :root[data-skin="board"] .bw-sheet { --bd-strip: calc(64px * var(--bd-ts)); row-gap: 8px; }
+  :root[data-skin="board"] .bw-strips { gap: 8px; }
+  :root[data-skin="board"] .bw-tiles--title { --bd-th: 32px; --bd-tf: 27px; }
+  :root[data-skin="board"] .bw-main { padding-top: 6px; padding-bottom: 6px; }
+  :root[data-skin="board"] .bw-take { min-height: 60px; padding-top: 8px; padding-bottom: 8px; }
+}
+
+/* ---- Landscape: the board, the slip and the main action on the left, the strips on the right (thumb side) --------- */
+@media (orientation: landscape) {
+  :root[data-skin="board"] .bw-sheet[data-mode="crates"] {
+    --bd-strip: calc(62px * var(--bd-ts));
+    --bd-holder: 44px;
+    justify-content: stretch; column-gap: 12px; row-gap: 8px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+    grid-template-rows: max-content max-content minmax(0, 1fr) max-content;
+    grid-template-areas: "board pick" "slip pick" "gap pick" "take pick";
+  }
+  :root[data-skin="board"] .bw-sheet[data-mode="crates"] .bw-pick { align-self: start; }
+  :root[data-skin="board"] .bw-sheet[data-mode="crates"] .bw-symbol { width: 28px; height: 28px; }
+  :root[data-skin="board"] .bw-sheet[data-mode="crates"] .bw-main { padding-top: 6px; padding-bottom: 6px; }
+  :root[data-skin="board"] .bw-sheet[data-mode="crates"] .bw-strips { gap: 8px; }
+  :root[data-skin="board"] .bw-sheet[data-mode="crates"] .bw-take { align-self: end; }
+  :root[data-skin="board"] .bw-sheet[data-mode^="pick"] { justify-content: start; grid-template-columns: minmax(0, 620px); }
+}
+@media (orientation: landscape) and (max-height: 480px) {
+  :root[data-skin="board"] .bw-tiles--title { --bd-th: 30px; --bd-tw: 21px; --bd-tf: 26px; }
+  :root[data-skin="board"] .bw-board { padding: 8px 10px 10px; gap: 4px; }
+  :root[data-skin="board"] .bw-take { min-height: 56px; padding-top: 6px; padding-bottom: 6px; }
+  :root[data-skin="board"] .bw-take-main { font-size: calc(20px * var(--bd-ts)); }
+}
+
+/* ---- Tablets (D-320): the sheet printed larger, not stretched; text 130/150 % keeps the phone size ------------------ */
+@media (min-width: 720px) and (min-height: 900px) and (orientation: portrait) {
+  :root[data-skin="board"]:not([data-airway-text-scale="130"], [data-airway-text-scale="150"]) .bw-sheet { --bd-col: 640px; }
+  :root[data-skin="board"]:not([data-airway-text-scale="130"], [data-airway-text-scale="150"]) .bw-sheet > * { zoom: 1.25; }
+}
+@media (min-width: 960px) and (min-height: 1200px) and (orientation: portrait) {
+  :root[data-skin="board"]:not([data-airway-text-scale="130"], [data-airway-text-scale="150"]) .bw-sheet { --bd-col: 760px; }
+  :root[data-skin="board"]:not([data-airway-text-scale="130"], [data-airway-text-scale="150"]) .bw-sheet > * { zoom: 1.5; }
+}
+@media (orientation: landscape) and (min-height: 720px) {
+  :root[data-skin="board"] .bw-sheet[data-mode="crates"] { justify-content: center; grid-template-columns: minmax(0, 480px) minmax(0, 600px); }
+  :root[data-skin="board"]:not([data-airway-text-scale="130"], [data-airway-text-scale="150"]) .bw-sheet > * { zoom: 1.25; }
+  :root[data-skin="board"]:not([data-airway-text-scale="130"], [data-airway-text-scale="150"]) .bw-sheet[data-mode="crates"] { grid-template-columns: minmax(0, 520px) minmax(0, 680px); }
+}
+
+/* D-88 "Reduce motion": no key travel. */
+:root[data-skin="board"][data-airway-motion="reduce"] :is(.bw-strip, .bw-take, .bw-back-face) { transition: none; }
+:root[data-skin="board"][data-airway-motion="reduce"] :is(.bw-strip:active, .bw-take:active, .bw-back:active .bw-back-face) { transform: none; }
+
+/* Large text: the sheet scrolls, and a pinned main action would cover the strips it names, so it scrolls with them
+   (after the last strip, still ≥ 48 px and in thumb reach once there). */
+:root[data-skin="board"]:is([data-airway-text-scale="130"], [data-airway-text-scale="150"]) .bw-take { position: static; }
+
+/* Short portrait pages: the contract as one line (last week's square, the pair, the target); the full slip stays for
+   screen readers (D-280, as the shipped waybill). */
+:root[data-skin="board"] .bw-slip-line { display: none; }
+@media (orientation: portrait) and (max-height: 700px) {
+  :root[data-skin="board"] .bw-slip-task {
+    position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+  }
+  :root[data-skin="board"] .bw-slip-line { display: block; color: var(--board-print); }
+  :root[data-skin="board"] .bw-slip-head, :root[data-skin="board"] .bw-slip-text { padding-top: 4px; padding-bottom: 5px; }
+}

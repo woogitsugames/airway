@@ -53,11 +53,14 @@ If dependencies are stale: `cd ios/App && pod install`. Do not commit `Pods/`, g
 - `AppDelegate.swift` sets `AVAudioSession.Category.ambient`: the device's Ring/Silent switch mutes the game by default, without stopping other apps' audio. The Web Audio engine (`src/audio`) also requests `navigator.audioSession.type = 'ambient'` where WKWebView supports it; a play-in-silent-mode override would need a reviewed native bridge.
 - No camera, photo library, location, contacts, microphone, tracking or background privileges are requested. Native plugins: Haptics, Share, Preferences (UserDefaults, reason CA92.1) and Filesystem (file timestamps, reason C617.1), each with a pod in the `Podfile`; `test:ios-config` checks the pod list against `package.json` and forbids ad/analytics/billing SDKs. Review `PrivacyInfo.xcprivacy` whenever a plugin is added. Its `NSPrivacyCollectedDataTypes` declare the leaderboard build's data (User ID + Gameplay Content, linked, no tracking, App Functionality; R1f, D-220) in every build; the App Store Connect answers are in `docs/store/privacy-declarations.md`.
 
-## Original icon and launch art
+## Icon and launch art
 
-`ios/Brand/app-icon.svg` and `ios/Brand/splash.svg` are exact copies of task 24's original `resources/icon.svg` and `resources/splash.svg` (PR #12). The shared wayfinding mark uses black `#1C1E20` and yellow `#FFC72C`. The iOS icon is opaque 1024×1024; the 2732×2732 iOS launch PNG composites the shared transparent splash SVG over the **same launch background used by Android** — since U6 of PLAN-LINORYT (night 48a, D-301) the Linoryt paper `#ECE3CC` instead of task 24's black, and `Info.plist` keeps the light appearance (`UIUserInterfaceStyle` Light) so the status-bar text stays dark on the paper in Dark Mode too. All PNGs are procedural, with identical 1×/2×/3× splash image slots matching the Capacitor template. No third-party artwork.
-
-Task 24 exists as draft PR #12 and is not yet merged. The two iOS SVG copies are currently **byte-identical** to its asset sources; after merge, decide whether to generate both platforms from the common `resources/` SVGs rather than maintaining copies.
+Since night 78a (D-333) the icon is the mark I-1 "Węzeł" (D-326). `scripts/icon-assets.mjs` writes `ios/Brand/app-icon.svg` and
+`splash.svg` (copies of `resources/`) and, with `npm run icons`, the PNGs: one 1024×1024 universal icon (`AppIcon-512@2x.png`,
+the project's single-size convention) plus `AppIcon-dark.png` and the grey `AppIcon-tinted.png` (iOS 18 appearances), all RGB
+without an alpha channel, and the 2732×2732 launch image on enamel `#0E0F0F` in the three identical slots. `Info.plist` keeps
+the light appearance and the bars stay paper until T6, which switches the theme. `npm run test:icons` and
+`test:ios-config` check the files.
 
 ## TestFlight
 

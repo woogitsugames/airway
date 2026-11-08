@@ -146,7 +146,7 @@ class FlapRow {
 // ---- Symbols -------------------------------------------------------------------------------------------------------
 
 /** Airway's own symbols (the UI-A mockup set, docs/styles/kierunki-2026-11c/makiety/src/scene.js), 100 × 100 boxes. */
-const SYMBOL = {
+export const SYMBOL = { // [night-76a] D-331: exported for the weekly sheet (board-week.ts, handed in by main.ts)
   undo: 'M78 70L78 46Q78 26 58 26L30 26 30 12 8 32 30 52 30 38 58 38Q66 38 66 46L66 70Z',
   turboprop: 'M46 8L54 8 56 40 92 44 92 54 56 56 55 80 68 86 68 92 32 92 32 86 45 80 44 56 8 54 8 44 44 40ZM20 34L30 34 30 46 20 46ZM70 34L80 34 80 46 70 46Z',
   widebody: 'M47 6L53 6 56 36 94 62 94 70 56 56 55 80 70 90 70 95 50 90 30 95 30 90 45 80 44 56 6 70 6 62 44 36ZM16 58L22 55 24 64 18 66ZM30 49L36 46 38 55 32 57ZM64 46L70 49 68 57 62 55ZM78 55L84 58 82 66 76 64Z',

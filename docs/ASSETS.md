@@ -147,7 +147,13 @@ The production three.js world will replace this demo illustration after tasks 07
 - `resources/icon.svg`, `resources/icon-foreground.svg`, `resources/splash.svg` — original SVG geometry (yellow `#FFC72C` / black `#1C1E20`) authored for Airway, no third-party licence. Node script `scripts/build-android.mjs` generates Android launcher/splash PNG raster assets; no network graphics are used.
 - `brand/wayfinding.svg` — matching original airport wayfinding sign/wordmark; Overpass 800 (OFL licence already listed above).
 - [N12n] `docs/store/feature-graphic.png` — Google Play feature graphic: our own render of the game scene (globe from Natural Earth data as in the game) with `brand/wayfinding.svg` on the left; no third-party imagery (`npm run store:feature`).
-## iOS native art — task 25
+## App mark I-1 "Węzeł" — launcher, store and launch art (night 78a, D-333)
+Our own mark (D-326): two circles and two triangles, cream `#EFE7D3` and yellow `#F3C317` on enamel `#0E0F0F`, no font, no
+third-party shape. `resources/icon.svg`, `icon-foreground.svg`, `icon-monochrome.svg`, `splash.svg`, `ios/Brand/*.svg` and
+`site/assets/favicon.svg` are written by `scripts/icon-assets.mjs` (`npm run icons`); PNGs (`docs/store/icon-512.png`, the iOS
+`AppIcon-*.png` and `splash-2732x2732*.png`, the press-kit `airway-icon.png`, the git-ignored Android mipmaps and splash) are
+rendered from them. This replaces the task 24/25 wayfinding-sign icon below.
+## iOS native art — task 25 (superseded by the mark I-1 above)
 - `ios/Brand/app-icon.svg`: byte-identical copy of task 24 `resources/icon.svg` from draft PR #12, original black/yellow Airway airport wayfinding mark.
 - `ios/Brand/splash.svg`: byte-identical copy of task 24 `resources/splash.svg`; the opaque iOS PNG composites this mark over a black launch background matching Android.
 - `ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png`: opaque 1024×1024 rendering of the original icon SVG.

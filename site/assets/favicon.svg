@@ -1,1 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Airway"><rect width="64" height="64" fill="#ffc72c"/><path d="M30 5h4l4 23 17 8c3 1 4 3 4 5v3L35 38l-1 15 8 5v3l-10-4-10 4v-3l8-5-1-15-24 6v-3c0-2 2-4 4-5l17-8Z" fill="#1c1e20"/></svg>
+<svg role="img" aria-label="Airway" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <!-- [night-78a] D-326/D-333: app mark I-1 "Wezel", full-bleed tile (store, legacy and iOS icon). -->
+  <rect x="0" y="0" width="1024" height="1024" fill="#0E0F0F"/>
+  <circle cx="512" cy="512" r="262" fill="none" stroke="#EFE7D3" stroke-width="44"/>
+  <circle cx="512" cy="512" r="176" fill="none" stroke="#EFE7D3" stroke-width="16"/>
+  <polygon points="414,422.17 512,512 414,601.83" fill="#F3C317"/>
+  <polygon points="610,422.17 512,512 610,601.83" fill="#F3C317"/>
+</svg>

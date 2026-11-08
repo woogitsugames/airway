@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <!-- [night-78a] Android 13 themed icon: one-colour silhouette, only the alpha is used. -->
+  <circle cx="512" cy="512" r="262" fill="none" stroke="#000000" stroke-width="44"/>
+  <circle cx="512" cy="512" r="176" fill="none" stroke="#000000" stroke-width="16"/>
+  <polygon points="414,422.17 512,512 414,601.83" fill="#000000"/>
+  <polygon points="610,422.17 512,512 610,601.83" fill="#000000"/>
+</svg>

@@ -345,6 +345,37 @@ check('linoryt: src/main.ts starts the helpers on every boot (not behind a DEV b
   check('board: no module imports the preview statically (main.ts loads it in its DEV branch only)', staticBoard.length === 0 &&
     /import\('\.\/ui\/skin\/board'\)/.test(main) && /import\('\.\/ui\/skin\/board\.css'\)/.test(main), staticBoard.join(' '));
   check('board: index.html keeps the shipped skin (data-skin="linoryt")', /<html[^>]*data-skin="linoryt"/.test(read('index.html')));
+  // [night-76a] D-331 (T4): the weekly sheet's stylesheet keeps the same contract with board.css's tokens: no token block
+  // of its own, every rule scoped, no literal, only --bd-* local sizes, every --board-* it reads defined; the sheet's
+  // helpers have no runtime import and only main.ts's DEV branch loads them.
+  const WEEK = 'src/ui/skin/board-week.css';
+  const week = stripComments(read(WEEK));
+  const weekBlocks = [];
+  depth = 0; start = 0;
+  for (let i = 0; i < week.length; i++) {
+    const ch = week[i];
+    if (ch === '{') { if (depth === 0) weekBlocks.push({ sel: week.slice(start, i).trim(), from: i + 1 }); depth++; start = i + 1; }
+    else if (ch === '}') { depth--; if (depth === 0) weekBlocks.at(-1).body = week.slice(weekBlocks.at(-1).from, i); start = i + 1; }
+    else if (ch === ';' && depth === 0) start = i + 1;
+  }
+  const weekRules = weekBlocks.flatMap(nested);
+  const weekLoose = weekRules.filter((r) => !parts(r.sel).every((p) => p.startsWith(':root[data-skin="board"]')));
+  check('board week sheet: every rule is scoped to :root[data-skin="board"] (no token block of its own)',
+    weekRules.length > 40 && weekLoose.length === 0 && !weekBlocks.some((b) => b.sel === ':root[data-skin="board"]'), weekLoose.slice(0, 3).map((r) => r.sel).join(' | '));
+  const weekLiterals = weekRules.flatMap((r) => literals(`x{${r.body}}`).filter((what) => !/^font weight /.test(what)));
+  check('board week sheet: no colour, font family or duration literal', weekLiterals.length === 0, weekLiterals.slice(0, 4).join(' | '));
+  check('board week sheet: sets only local sizes (--bd-*)',
+    weekRules.every((r) => [...r.body.matchAll(/(?:^|;)\s*(--[a-z0-9-]+)\s*:/g)].every((m) => m[1].startsWith('--bd-'))));
+  const weekUndefined = [...new Set([...week.matchAll(/var\((--board-[a-z0-9-]+)\)/g)].map((m) => m[1]))].filter((name) => !declared.includes(name));
+  check('board week sheet: every --board-* token it reads is defined in board.css', weekUndefined.length === 0, weekUndefined.join(' '));
+  const weekPairs = [['white', 'holder-prop'], ['white', 'holder-hub'], ['white', 'holder-slots'], ['white', 'blue'], ['print-2', 'paper']];
+  const weakWeek = weekPairs.filter(([fg, bg]) => !hexOf[fg] || !hexOf[bg] || ratio(hexOf[fg], hexOf[bg]) < 4.5)
+    .map(([fg, bg]) => `${fg}/${bg} ${hexOf[fg] && hexOf[bg] ? ratio(hexOf[fg], hexOf[bg]).toFixed(2) : 'missing'}`);
+  check('board week sheet: holder symbols and the strip\'s second ink reach 4.5:1', weakWeek.length === 0, weakWeek.join(' '));
+  const weekRuntime = [...read('src/ui/skin/board-week.ts').matchAll(/^import\s+(?!type\b)[^;]*;/gm)].map((m) => m[0]);
+  const staticWeek = tsFiles.filter((file) => /^import\s[^;]*skin\/board-week(\.css)?'/m.test(read(file)));
+  check('board week sheet: no runtime import, loaded only by main.ts\'s DEV branch', weekRuntime.length === 0 && staticWeek.length === 0 &&
+    /import\('\.\/ui\/skin\/board-week'\)/.test(main) && /import\('\.\/ui\/skin\/board-week\.css'\)/.test(main), [...weekRuntime, ...staticWeek].join(' '));
 }
 
 const dropped = ['BarlowCondensed-500.woff2', 'BarlowCondensed-700.woff2', 'AirwayChartMono-400.woff2', 'AirwayChartMono-600.woff2']
