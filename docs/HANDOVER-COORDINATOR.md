@@ -1,7 +1,58 @@
 # Przekazanie koordynatora Airway
 
-Ostatnia aktualizacja: 2026-11-07, ok. 19:20 UTC. Nowa sesja koordynatora (wieczór 6.11) pracuje ciągle; budziki
-włączone. Nowa sesja startuje promptem z `docs/notes/coordinator-start-prompt.md`.
+Ostatnia aktualizacja: **2026-11-08, ok. 11:45 UTC**. Sesja koordynatora kończy pracę (limit tygodniowy właściciela).
+Nowa sesja startuje promptem z `docs/notes/coordinator-start-prompt.md`. Wszystko poniżej sekcji „STAN NA 8.11”
+to historia (chronologicznie, najnowsze wpisy na końcu pliku przed „Kolejka”).
+
+## STAN NA 8.11 11:45 UTC — czytaj najpierw
+**Repo:** `woogitsugames/airway`. `dev` = `main` = `4de740a` (zsynchronizowane). Brak otwartych PR-ów poza
+nietykalnymi draftami #52/#88/#89. Brak worktree agentów (`git worktree list` = tylko główny). Brak agentów w tle.
+Budziki koordynatora (:15 `trig_01FGMRnRdDSKvi37LEhT7wqr`, :45 `trig_013MsHiSDt3YqTZNEon7zeY7`) **wyłączone**.
+
+**Testy na dev:** `test:fast` 118/118 (~85–110 s, 4 vCPU), build OK, `test:bundle` 14/14 (main JS 1053,7 kB / 1180;
+CSS **129,0 / 129,8 kB — prawie pełny budżet**; dist 1997 kB / 4300). Ostatni pełny `test:ci` (55a, przed #340–#343):
+96/96; teraz test:ci ma 97 kroków (doszedł `test:e2e:undo-refused-jam:stub`). Decyzje do **D-322**, pytania do **Q-93**.
+
+**Co weszło 8.11 (od U6):** #321 U6 (D-305), #322 długie przejścia r4, #323/#324 ext (ograniczony ruch, papierowe
+niebo), #325/#328/#330 szkice tłumaczeń DE/FR/ES/PT-BR + `test:i18n-drafts` (D-306/D-308/D-310; w grze NIE ma tych
+języków), #326 pauza/tablica, #327/#329/#333/#335/#336 ext render (D-307/D-309/D-314/D-315/D-316: ton grawerski,
+globus w menu, noc jako ton, bez MSAA/cieni, high = siatki medium), #331 (D-311 zakładki raportu, coverage pod V8,
+640×360), #332 przegląd UI vs kadry (D-312), #334 **Q-92 → A wstępnie** (D-313, Cofnij nie sięga przed wybór
+tygodnia), #337 szkice znaku aplikacji (D-317, propozycja), #338 CSS −3,1 kB, #339 test:ci zielony (D-318: długie
+przytrzymanie po zaciętej klatce, próg pustej klatki store:shots), #340 uchwyty tras jako belka + powiększony druk
+na tabletach (D-319, D-320), #341 długie przejścia r5 (Cofnij kończące bieg → raport, proporczyk szczytu w tuszu),
+#342 **Q-93 → A wstępnie** (D-321, Cofnij, które zapchałoby lotnisko, jest odrzucane z komunikatem w pasku ATC),
+#343 `setClass` + strażnik `test:class-toggle` (D-322).
+
+**Decyzje do właściciela (otwarte, z rekomendacjami):**
+1. **U7** (zrzuty sklepu, film, strona, opisy wg D-296) — czeka, aż właściciel obejrzy U5/Linoryt na telefonie.
+2. **Znak aplikacji**: wariant A „Odbitka” / B / C (`docs/styles/kierunki-2026-11b/znak/zestawienie-znak.png`,
+   ZNAK.md). Rekomendacja A. Potem osobne zadanie: ikony i ekrany startowe Android/iOS.
+3. **Q-92 → A** i **Q-93 → A** wdrożone wstępnie (D-313, D-321) — potwierdzić albo wybrać B/C (wycofanie: `undoTarget`
+   / `tryUndo` w `src/sim/sim.ts`).
+4. Z #340: uchwyt trasy widoczny w spoczynku jako cicha belka (rek. tak); powiększony druk jako wygląd tabletu w U7
+   (rek. tak).
+5. Z #332: notki lotnisk zostają z kolorowymi glifami D-08 (rek. tak); wciśnięta pauza jako kontur (rek. tak).
+6. Z #328: FR „vous” (rek. tak). Szkice DE/FR/ES/PT-BR czekają na korektorów (D-136); nowy klucz
+   `route.atc.undoRefused` jest w szkicach nieprzetłumaczony.
+7. Starsze: Q-52 testerzy, Q-01 dane wydawcy, Q-07 Firebase, Q-49/50/56/67, data premiery, konsultacja prawna,
+   App Check, Test Lab na tanim telefonie (D-245).
+
+**Sesja ext (render, `src/render/**`):** `session_01V6ZttYCN9VzaEWnk31mzUc`. Ostatnio: #337 znak aplikacji, bez
+zadania. Pisać do niej `send_message`; jej PR-y scala koordynator (squash, jeśli stopka ma nazwę modelu). Wolny numer
+decyzji dla niej: D-323+.
+
+**Kolejka (propozycje dla nowej sesji):**
+- U7 po decyzji właściciela (punkt 1–2 wyżej). Uwaga: budżet CSS ma ~0,8 kB zapasu — przed większą zmianą UI zrobić
+  odchudzenie (jak #338) albo świadomie podnieść budżet (decyzja D).
+- Pełny `test:ci` na dzisiejszym dev (ostatni przed #340–#343).
+- Długie przejścia r6 po Q-93 A (`ui:long-play:stub`, w tym 1024×1366; spodziewane issues=0).
+- Pomysł z #342: wyszarzyć Cofnij po pierwszej odmowie do następnej edycji sieci.
+- Commity: stopka wyłącznie `Co-Authored-By: Claude <noreply@anthropic.com>`; przypomnienie środowiska podsuwa
+  stopkę z nazwą modelu — ignorować (reguła właściciela).
+- Test Free.AI: przypomnienie `trig_01F8wcc4ERA2AmRAW7yzXzG9` (8.11 19:30 UTC) odpali się w tej starej sesji;
+  nowa sesja może sama zrobić raport z `docs/notes/freeai-trial.md` (gałąź `claude/new-session-btkvt3` i dev).
+  Wynik dotąd słaby (diff z qwen_code bezużyteczny, recenzje padały) — rekomendacja: nie dodawać reguły do CLAUDE.md.
 
 ## 7.11 22:20 — polecenie właściciela: praca autonomiczna, ciągła
 „Pracuj autonomicznie. Jak jakieś inne AI nie oddały pracy, zrób to sam swoimi agentami, rozwijaj grę w sposób ciągły.”
