@@ -7,11 +7,31 @@ import { spawnSync } from 'node:child_process';
 import { resolve } from 'node:path';
 import ts from 'typescript';
 import { analyse, countAt, decodeMappings } from './lib/coverage.mjs';
+import { coverageRun, withinBudget } from './lib/time-budget.mjs';
 
 let passed = 0, failed = 0;
 function check(name, fn) { try { fn(); passed++; } catch (e) { failed++; console.error(`FAIL ${name}: ${e.stack}`); } }
 check('source map decoder', () => assert.deepEqual(decodeMappings({ mappings: 'AAAA;AACA' }, 'a\nb').map((p) => p.line), [0, 1]));
 check('nested zero overrides root', () => assert.equal(countAt([{ startOffset: 0, endOffset: 20, count: 1 }, { startOffset: 5, endOffset: 10, count: 0 }], 6), 0));
+// [night-52a] Wall-clock budgets: enforced on a plain run, reported as INFO (and not failed) under V8 coverage.
+check('time budget enforced without coverage', () => {
+  const lines = [];
+  const log = (line) => lines.push(line);
+  assert.equal(coverageRun({}), false);
+  assert.equal(withinBudget('x', 0.5, 1, { strict: true, env: {}, log }), true);
+  assert.equal(withinBudget('x', 1, 1, { strict: true, env: {}, log }), false);
+  assert.equal(withinBudget('x', 1, 1, { env: {}, log }), true);
+  assert.equal(withinBudget('x', 3.2, 1, { env: { NODE_V8_COVERAGE: '' }, log }), false);
+  assert.deepEqual(lines, []);
+});
+check('time budget reported as info under coverage', () => {
+  const lines = [];
+  const env = { NODE_V8_COVERAGE: '/tmp/raw' };
+  assert.equal(coverageRun(env), true);
+  assert.equal(withinBudget('edge chips', 3.2, 1, { strict: true, env, log: (line) => lines.push(line) }), true);
+  assert.equal(lines.length, 1);
+  assert.match(lines[0], /^INFO edge chips: 3\.200 ms over the 1 ms budget, not enforced under V8 coverage/);
+});
 const root = mkdtempSync(join(tmpdir(), 'airway-coverage-'));
 try {
   const src = join(root, 'src'), raw = join(root, 'raw'); mkdirSync(src); mkdirSync(raw);
