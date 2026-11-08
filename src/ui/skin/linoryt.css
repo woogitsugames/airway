@@ -727,10 +727,14 @@
      columns of the left page it broke in two at 915 × 412). */
   :root[data-skin="linoryt"] .airway-go-actions { grid-area: actions; align-self: end; grid-template-columns: 1fr 1fr; gap: 6px; }
   :root[data-skin="linoryt"] .airway-go-same { grid-column: 1 / -1; white-space: nowrap; }
+  /* [night-49a] The departures list gives that second row its height: it ends where the actions still fit the page
+     (the list scrolls inside itself; three departures and the two rows ran 14 px below 915 × 412). */
+  :root[data-skin="linoryt"] .airway-go-flight-list { max-height: clamp(41px, calc(100vh - var(--lin-top) - var(--aw-safe-bottom) - 234px), 145px); }
   @media (max-height: 400px) {
     /* No height for a second row under 400 px (640 × 360): the three stay in one row as before. */
     :root[data-skin="linoryt"] .airway-go-actions { grid-template-columns: 1.5fr 1fr .9fr; }
     :root[data-skin="linoryt"] .airway-go-same { grid-column: auto; white-space: normal; }
+    :root[data-skin="linoryt"] .airway-go-flight-list { max-height: 145px; }
   }
   :root[data-skin="linoryt"] .airway-go-button { padding: 4px 6px; }
   :root[data-skin="linoryt"] .airway-go-overlay:not(.is-map) { padding-top: 10px; }
