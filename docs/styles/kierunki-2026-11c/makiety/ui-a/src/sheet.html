@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="pl"><head><meta charset="utf-8"><link rel="stylesheet" href="ui.css">
+<style>
+  html,body{margin:0;width:3220px;height:1200px;background:#E9E2D0;font-family:'Archivo';color:#16140F;overflow:hidden}
+  h1{margin:34px 60px 6px;font:800 40px/1.1 'Archivo';font-stretch:80%;letter-spacing:.01em;text-transform:uppercase}
+  p.s{margin:0 60px 24px;font:500 17px/1.45 'Archivo';color:#4A4437;max-width:3000px}
+  .grid{display:grid;grid-template-columns:repeat(7,412px);gap:12px 28px;padding:0 60px}
+  .h{font:800 17px 'Archivo';font-stretch:85%;letter-spacing:.06em;text-transform:uppercase;border-top:5px solid #16140F;padding-top:8px;min-height:62px}
+  .h small{display:block;font:500 14px/1.35 'Archivo';letter-spacing:0;text-transform:none;color:#4A4437;margin-top:3px}
+  .h.new{border-top-color:#C9251C}
+  img{width:412px;height:915px;display:block;outline:1px solid #16140F}
+</style></head><body>
+<h1>Airway · UI-A „Lotniskowa tablica i paski lotu” · wersja 2 (2026-11c)</h1>
+<p class="s">Globus K2 (NASA Blue Marble / Black Marble, domena publiczna). Zmiany: dok narzędzi jako pulpit kontrolera (kształt = rodzaj: okrągły przycisk = akcja natychmiastowa, pokrętło = ustawienie, prostokątna tabliczka emaliowana = samolot do przydzielenia, z linią trasy, którą lata; ośmiokąt = budowa); żółty tylko dla kierunku i głównej akcji (rysowana trasa, jej odległość, znak kierunku przy krawędzi, główny przycisk), tabliczki lotnisk kremowe na czarnym; etykiety rozmieszczane regułami z poziomami szczegółowości; pieczątka zatoru we własnym polu wydruku; stan wysokiego kontrastu z tekstem 130%. Kroje: Archivo i Chivo Mono (SIL OFL). Kadry 412×915 pt, PNG 824×1830.</p>
+<div class="grid">
+  <div class="h">Gra · noc 19:05<small>poziom 1: kod, kolejka glifów, miasto; pulpit</small></div>
+  <div class="h">Gra · dzień 11:40<small>ta sama sytuacja w świetle dnia</small></div>
+  <div class="h new">Gra · gęsta sieć (nowy)<small>16 lotnisk, 8 tras; poziom 2, kody IATA, grupa LCA·BEY</small></div>
+  <div class="h new">Kontrast + tekst 130% (nowy)<small>biel na czerni, grubsze trasy, poziom 2, krótkie etykiety</small></div>
+  <div class="h">Menu główne<small>tablica odlotów; żółty tylko na głównej akcji</small></div>
+  <div class="h">Koniec tygodnia<small>przydział: weź jeden pasek</small></div>
+  <div class="h">Raport końca gry<small>wydruk, pieczątka we własnym polu</small></div>
+  <img src="../ui-a-gra-noc.png"><img src="../ui-a-gra-dzien.png"><img src="../ui-a-gra-gesta.png"><img src="../ui-a-gra-kontrast.png"><img src="../ui-a-menu.png"><img src="../ui-a-koniec-tygodnia.png"><img src="../ui-a-raport.png">
+</div>
+<script>window.__ready=false;Promise.all([document.fonts.load('800 20px Archivo'),document.fonts.load('500 20px Archivo'),...[...document.images].map(i=>i.decode())]).then(()=>window.__ready=true)</script>
+</body></html>
