@@ -9,7 +9,7 @@
  */
 import { Color, Group, PerspectiveCamera, Scene, Vector3, WebGLRenderer } from 'three';
 import { createContextGuard } from './contextGuard'; // [night-11h]
-import type { AirportsLayer, AirportStyle } from './airports';
+import type { AirportsLayer } from './airports';
 import { GlobeOrbitCamera, type OrbitCameraOptions, type SafeAreaInsets } from './camera';
 import { createGlobe, createSunLights, DEFAULT_GLOBE_LOOK, type GlobeInstance, type GlobeLook } from './globe';
 import { pickSphereNdc, setLatLonVec3, type LonLat } from './globe/geo-math';
@@ -103,8 +103,6 @@ export interface WorldRendererOptions {
    * [ext-04 E4] The globe look; the Linoryt print is the only one (D-285).
    */
   readonly look?: GlobeLook;
-  /** [ext-03] D-175/D-178 airport/route style; default `medal` (owner, D-178). DEV `?airportStyle=` compares. */
-  readonly airportStyle?: AirportStyle;
   readonly camera?: OrbitCameraOptions;
   readonly maxAirports?: number;
   readonly maxHubSeats?: number;
