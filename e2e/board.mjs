@@ -265,7 +265,10 @@ async function jamProblems(page) {
   for (let i = 0; i < 3000; i++) {
     const screen = await page.evaluate(() => window.aw.state().screen);
     if (screen === 'upgrade') {
-      await page.evaluate(() => document.querySelector('[data-testid^="upgrade-option-"]:not([data-upgrade="hub-expansion"]):not([data-upgrade="departure-slots"])')?.click());
+      await page.evaluate(() => { // [night-76a] D-331: a strip only chooses on the T4 sheet; the main action takes it
+        document.querySelector('[data-testid^="upgrade-option-"]:not([data-upgrade="hub-expansion"]):not([data-upgrade="departure-slots"])')?.click();
+        document.querySelector('[data-testid="upgrade-take"]')?.click();
+      });
       await page.waitForTimeout(100);
       continue;
     }
@@ -473,7 +476,11 @@ try {
           for (let hour = 0; hour < 400; hour++) {
             const screen = await page.evaluate(() => window.aw.state().screen);
             if (screen === 'upgrade') {
-              await page.evaluate(() => document.querySelector('[data-testid^="upgrade-option-"]:not([data-upgrade="hub-expansion"]):not([data-upgrade="departure-slots"])')?.click());
+              // [night-76a] D-331: a strip only chooses on the T4 sheet; the main action takes it.
+              await page.evaluate(() => {
+                document.querySelector('[data-testid^="upgrade-option-"]:not([data-upgrade="hub-expansion"]):not([data-upgrade="departure-slots"])')?.click();
+                document.querySelector('[data-testid="upgrade-take"]')?.click();
+              });
               await page.waitForTimeout(100);
               continue;
             }

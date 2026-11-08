@@ -9,7 +9,7 @@ import {
 import type { Sim } from '../sim';
 import type { HubPressure } from '../sim/upgrades';
 import type { SlotPressure } from '../ui/upgrade/cards'; // [task-32]
-import type { ContractBoard } from '../ui/upgrade/cards'; // [night-12ba] R2k
+import type { ContractBoard, WeekFigures } from '../ui/upgrade/cards'; // [night-12ba] R2k; [night-76a] D-331
 import type { WeeklyContract } from '../sim/contracts';
 import type { AirportWeatherView, SurgeView, WeatherView } from '../sim';
 import { airportLabel, readAirportLabelMode } from '../ui/airportLabel'; // [night-05] D-68
@@ -106,10 +106,31 @@ export class EndlessRun {
   private readonly homeOffsetMinutes: number;
   /** [night-12ax] R1n, D-242: milestones reached (a resumed run counts what it reaches after resuming, and its end). */
   private readonly milestoneTracker = new MilestoneTracker();
+  /**
+   * [night-76a] D-331: the running week's tally for the board's figures (UI only, never in the hash or a save): the
+   * score when the week began, the transfer passengers delivered since, and whether this session saw the week from its
+   * start (false after resuming mid-week). Undo cannot reach past a weekly board (D-313), so the start score holds; an
+   * undone delivery may stay in the transfer count (re-simulated events are cleared, D-321).
+   */
+  private readonly tally: { startScore: number; transfers: number; whole: boolean };
+  private closedWeek: { readonly passengers: number; readonly transfers: number } | null = null;
 
   constructor(readonly sim: Sim) {
     const home = sim.world.activeCityIds()[0];
     this.homeOffsetMinutes = Math.round((home ? cityByCode(home)?.utcOffsetH ?? 0 : 0) * 60);
+    this.tally = { startScore: sim.world.score, transfers: 0, whole: sim.tickCount === 0 };
+  }
+
+  /** [night-76a] D-331: the figures of the week the open weekly board closes (see WeekFigures). */
+  weekFigures(): WeekFigures {
+    const closed = this.closedWeek;
+    return {
+      passengers: closed ? closed.passengers : null,
+      transfers: closed ? closed.transfers : null,
+      routes: this.routeList().length,
+      aircraft: this.assignments,
+      startMinute: ((this.localMinute % 1440) + 1440) % 1440,
+    };
   }
 
   /**
@@ -226,12 +247,19 @@ export class EndlessRun {
           break;
         case 'RouteRemoved': case 'PlaneAssigned': case 'PlaneUnassigned':
           this.revisionValue++; break;
-        case 'Delivered': out.push({ type: 'arrival', cityId: event.cityId }); break;
-        case 'UpgradeOffered':
+        case 'Delivered':
+          this.tally.transfers += event.afterTransfer; // [night-76a] D-331
+          out.push({ type: 'arrival', cityId: event.cityId }); break;
+        case 'UpgradeOffered': {
           if (event.offers.includes('hub-expansion')) this.offered.hub++;
           if (event.offers.includes('departure-slots')) this.offered.slots++;
           this.milestoneTracker.observe(this.milestoneView(), true); // [night-12ax] the week closes: every region served?
+          // [night-76a] D-331: the week closes; its figures stay for the board, the next week's tally starts.
+          const score = this.sim.world.score;
+          this.closedWeek = this.tally.whole ? { passengers: score - this.tally.startScore, transfers: this.tally.transfers } : null;
+          Object.assign(this.tally, { startScore: score, transfers: 0, whole: true });
           out.push({ type: 'week', week: event.week }); break;
+        }
         case 'HubJamStarted': out.push({ type: 'jam', cityId: event.cityId, jammed: true }); break;
         case 'HubJamCleared': out.push({ type: 'jam', cityId: event.cityId, jammed: false }); break;
         case 'DepartureHeld': { // [task-32]

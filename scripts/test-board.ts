@@ -15,6 +15,10 @@ import {
   signLod, signQueue, signSize, textWidth, yellowSigns, type AtlasPlaced, type SignShape,
 } from '../src/ui/skin/board-notes.ts';
 import { ATLAS_LABELS, atlasLabelKey } from '../src/data/atlasLabels.ts';
+import { clockText, defaultChoice, figureTiles, SLOTS_SYMBOL, stripQuantity, weekTiles, WEEK_FIGURE_CELLS } from '../src/ui/skin/board-week.ts';
+import { upgradeFacts } from '../src/ui/upgrade/cards.ts';
+import { EndlessRun } from '../src/game/run.ts';
+import { nextAutoplayCommand } from '../src/game/dev/autoplay.ts';
 import {
   bayPlace, COLUMN_MIN, MAP_KEEP, QUEUE_MIN, STRIP_H, STRIP_STAY, stripClock, stripLayout, stripOrder, stripQueue, stripUrgency, queueFit,
 } from '../src/ui/skin/board-strips.ts';
@@ -203,6 +207,83 @@ test('the release overlay reaches the signs only through the empty slot (no stat
   assert.match(main, /noteSkin\.current = notes\.createBoardNotes/);
 });
 
+// [night-76a] D-331 (step T4): the weekly sheet's pure helpers, the week's figures the run keeps, and the release board's
+// empty slot.
+test('week sheet: title tiles are the word without its dot, a blank, the week (1–999)', () => {
+  assert.deepEqual(weekTiles('Tydz.', 1), ['T', 'Y', 'D', 'Z', ' ', '1']);
+  assert.deepEqual(weekTiles('Week', 12), ['W', 'E', 'E', 'K', ' ', '1', '2']);
+  assert.deepEqual(weekTiles('Tydz', 4000).slice(-3), ['9', '9', '9']);
+  assert.deepEqual(weekTiles('Tydz', Number.NaN).at(-1), '1');
+  for (const catalog of [pl, en]) assert.ok(Array.from(catalog['board.sheet.week']).length <= 5, catalog['board.sheet.week']);
+});
+test('week sheet: figures on tiles (passengers padded to 3, clamped, unknown = a dash)', () => {
+  assert.deepEqual(figureTiles(34, 3), ['0', '3', '4']);
+  assert.deepEqual(figureTiles(7), ['7']);
+  assert.deepEqual(figureTiles(null), ['–']);
+  assert.equal(figureTiles(10 ** 9).join(''), '9'.repeat(WEEK_FIGURE_CELLS));
+  assert.deepEqual(figureTiles(-3), ['0']);
+});
+test('week sheet: the next week\'s start as HH:MM', () => {
+  assert.equal(clockText(360), '06:00');
+  assert.equal(clockText(-60), '23:00');
+  assert.equal(clockText(1439 + 1440), '23:59');
+});
+test('week sheet: the default choice is the first strip that can act; quantities come from the sim', () => {
+  assert.equal(defaultChoice([{ kind: 'hub-expansion', unavailable: true }, { kind: 'widebody', unavailable: false }]), 'widebody');
+  assert.equal(defaultChoice([{ kind: 'hub-expansion', unavailable: true }]), null);
+  const facts = upgradeFacts();
+  assert.deepEqual(stripQuantity('turboprop', facts), { amount: facts.planes.turboprop.count, key: 'board.sheet.qty.aircraft' });
+  assert.deepEqual(stripQuantity('widebody', facts), { amount: facts.planes.widebody.count, key: 'board.sheet.qty.aircraft' });
+  assert.deepEqual(stripQuantity('hub-expansion', facts), { amount: facts.hub.extraSeats, key: 'board.sheet.qty.seats' });
+  assert.deepEqual(stripQuantity('departure-slots', facts), { amount: facts.slots.count, key: 'board.sheet.qty.departures' });
+  assert.ok(facts.planes.turboprop.count >= 1 && facts.hub.extraSeats >= 1 && facts.slots.count >= 1);
+  assert.match(SLOTS_SYMBOL, /^M[\d .MHVZL]+$/);
+});
+test('week figures: the closed week\'s passengers and transfers, the network at the board, the local start minute', () => {
+  const play = (run: EndlessRun, week: number) => {
+    for (let guard = 0; guard < 200_000; guard++) {
+      const offer = run.weeklyUpgrade;
+      if (offer && offer.week >= week && !offer.lastChoice) return offer;
+      if (offer && !offer.lastChoice) {
+        run.queue({ type: 'ChooseUpgrade', week: offer.week, upgrade: offer.offers.find((o) => o.id === 'turboprop' || o.id === 'widebody')!.id });
+        run.resolveBoundary();
+      } else {
+        const command = guard % 30 === 0 ? nextAutoplayCommand(run.sim) : null;
+        if (command && command.type !== 'ChooseUpgrade') run.queue(command);
+        if (!run.step()) break;
+      }
+      run.drainEvents();
+      if (run.failed) break;
+    }
+    return run.weeklyUpgrade;
+  };
+  const run = EndlessRun.create(0xA1A1);
+  assert.equal(run.weekFigures().passengers, null, 'no week closed yet');
+  assert.ok(play(run, 1), 'week-1 board');
+  const first = run.weekFigures();
+  assert.equal(first.passengers, run.passengers, 'week 1 counts from 0');
+  assert.ok(first.transfers !== null && first.transfers >= 0 && first.transfers <= run.passengers, `transfers ${first.transfers}`);
+  assert.equal(first.routes, run.routeList().length);
+  assert.equal(first.aircraft, run.assignments);
+  assert.equal(first.startMinute, ((run.localMinute % 1440) + 1440) % 1440);
+  // A session that resumes mid-way did not see the week: the closed figures are unknown, the network is known.
+  const resumed = new EndlessRun(run.sim);
+  assert.equal(resumed.weekFigures().passengers, null);
+  assert.equal(resumed.weekFigures().routes, first.routes);
+  const atWeek1 = run.passengers;
+  if (play(run, 2)?.week === 2) assert.equal(run.weekFigures().passengers, run.passengers - atWeek1, 'week 2 counts only week 2');
+});
+test('the release board reaches the sheet only through the empty slot (no static import of the preview)', () => {
+  const view = readFileSync('src/ui/upgrade/index.ts', 'utf8');
+  assert.match(view, /from '\.\/skin'/);
+  assert.doesNotMatch(view, /board-week|skin\/board/);
+  assert.match(readFileSync('src/ui/upgrade/skin.ts', 'utf8'), /export const upgradeSkin: \{ current: UpgradeSkin \| null \} = \{ current: null \}/);
+  const main = readFileSync('src/main.ts', 'utf8');
+  assert.match(main, /import\('\.\/ui\/skin\/board-week'\)/);
+  assert.match(main, /import\('\.\/ui\/skin\/board-week\.css'\)/);
+  assert.match(main, /upgradeSkin\.current = week\.createBoardWeek/);
+  const runtime = [...readFileSync('src/ui/skin/board-week.ts', 'utf8').matchAll(/^import\s+(?!type\b)[^;]*;/gm)];
+  assert.equal(runtime.length, 0, 'board-week.ts has no runtime import');
 // ---- T3: hub strips --------------------------------------------------------------------------------------------------
 const hub = (id: string, waiting: number, capacity = 36, jamSeconds: number | null = null) =>
   ({ id, code: id, name: id, hub: true, waiting: Array.from({ length: waiting }, () => 'EUN' as RegionId), capacity, jamSeconds });

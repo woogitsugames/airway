@@ -548,7 +548,8 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     const state = run.weeklyUpgrade;
     if (state && (force || state.week !== upgradeWeek || state.pendingHub)) {
       upgradeWeek = state.week;
-      upgrade.render(state, run.hubPressure(), run.slotPressure(), run.contractBoard()); // [task-32] airports for "+2 slots"; [night-12ba] R2k contract
+      upgrade.render(state, run.hubPressure(), run.slotPressure(), run.contractBoard(), // [task-32] airports for "+2 slots"; [night-12ba] R2k contract
+        run.weekFigures()); // [night-76a] D-331: the week's figures (the UI-A preview's "TYDZ. N" sheet)
       setScreen('upgrade');
     } else if (!state && screen === 'upgrade') {
       upgrade.render(null, []);

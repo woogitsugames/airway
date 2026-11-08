@@ -138,6 +138,20 @@ export function cardModel(kind: UpgradeKind, index: number, total: number, hubs:
  * [night-12ba] R2k, D-247: the weekly contract as the board shows it: next week's contract (null when no pair of
  * regions qualifies), the one that just ended (null on the first board) and the card the met contract added.
  */
+/**
+ * [night-76a] D-331 (UI-A step T4): the figures of the week that just closed, for the board's "TYDZ. N" sheet.
+ * `passengers` and `transfers` count that week only; null when this session did not see the whole week (a run resumed
+ * mid-week, or a save restored at the board). `routes` and `aircraft` are the network as it stands at the board;
+ * `startMinute` is the home airport's local minute of day at which the next week starts (the board holds the clock).
+ */
+export interface WeekFigures {
+  readonly passengers: number | null;
+  readonly transfers: number | null;
+  readonly routes: number;
+  readonly aircraft: number;
+  readonly startMinute: number;
+}
+
 export interface ContractBoard {
   readonly next: { readonly regions: readonly [string, string]; readonly target: number } | null;
   readonly last: { readonly delivered: number; readonly target: number; readonly met: boolean } | null;
