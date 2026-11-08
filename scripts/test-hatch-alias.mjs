@@ -5,7 +5,7 @@
 const {
   hatchOctaves, hatchWidthPx, HATCH_MIN_SPACING_PX, HATCH_SAVER_MIN_SPACING_PX, HATCH_ALIAS_FLOOR_DEVICE_PX,
   HATCH_MIN_WIDTH_DEVICE_PX, HATCH_BASE_PERIOD_DEG, seaLineWidthCss, nightLineWidthCss, reliefLineWidthCss,
-  nightCoverage, waterLineScale, WATER_LINES_PX, WATER_LINES_MAX_DEG, COAST_FIELD_RANGE_DEG,
+  nightCoverage, waterLineScale, reliefMinSpacingCss, WATER_LINES_PX, WATER_LINES_MAX_DEG, COAST_FIELD_RANGE_DEG,
 } = await import('../src/render/globe/linoryt.ts');
 const { GlobeOrbitCamera } = await import('../src/render/camera.ts');
 const { PerspectiveCamera } = await import('three');
@@ -29,7 +29,7 @@ for (const [w, h] of [[412, 915], [915, 412]]) {
       const pxPerDeg = disc.radius * dpr * Math.PI / 180;
       // foreshortening toward the limb × family scale: parallels, ±45° rhumb at the equator and at 50° N
       for (const f of [1, 0.7, 0.4, 0.2, 0.05]) for (const c of [1, Math.SQRT1_2, Math.SQRT1_2 * Math.cos(50 * Math.PI / 180)]) {
-        for (const min of [HATCH_MIN_SPACING_PX, HATCH_SAVER_MIN_SPACING_PX]) {
+        for (const min of [HATCH_MIN_SPACING_PX, HATCH_SAVER_MIN_SPACING_PX, reliefMinSpacingCss(dpr)]) { // D-307: relief on the device grid
           const basePx = HATCH_BASE_PERIOD_DEG * pxPerDeg * f * c;
           const o = hatchOctaves(basePx, dpr, min);
           const at = `${w}x${h} z${zoom} dpr${dpr} f${f} c${c.toFixed(2)} min${min}`;
