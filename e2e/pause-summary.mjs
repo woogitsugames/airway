@@ -6,7 +6,7 @@ import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import {
-  withBrowser, newGamePage, waitForScreen, clickTestId, state, assert, saveDiagnostics, ROOT, RENDER, gameUrl, assertRender, shotsDir,
+  withBrowser, newGamePage, waitForScreen, clickTestId, state, assert, saveDiagnostics, ROOT, RENDER, gameUrl, assertRender, shotsDir, waitForBoardModels,
 } from './browser.mjs';
 import { E2E_SEEDS } from './seeds.mjs';
 
@@ -50,6 +50,7 @@ try {
         assert(atBoard.screen === 'upgrade', `bot did not reach the week-1 board: ${atBoard.screen}`);
         const list = await page.evaluate(() =>
           [...document.querySelectorAll('[data-testid^="upgrade-option-"]')].map((node) => node.dataset.upgrade));
+        await waitForBoardModels(page); // [night-47a] crate-model frame first (N45a)
         await clickTestId(page, `upgrade-option-${list.findIndex((item) => item !== 'hub-expansion' && item !== 'departure-slots')}`);
         await waitForScreen(page, 'game');
         const s = await state(page);

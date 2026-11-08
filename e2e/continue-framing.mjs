@@ -4,7 +4,7 @@
 // from the pause sheet, Main menu, Continue; at least two airports must be actionable on screen (aw.gesture
 // 'route' finds a visible pair), in portrait and landscape.
 import { performance } from 'node:perf_hooks';
-import { withBrowser, newGamePage, waitForScreen, assert, clickTestId, saveDiagnostics } from './browser.mjs';
+import { withBrowser, newGamePage, waitForScreen, assert, clickTestId, saveDiagnostics, waitForBoardModels } from './browser.mjs';
 import { E2E_SEEDS } from './seeds.mjs';
 
 const started = performance.now();
@@ -23,6 +23,7 @@ async function journey(page) {
   const offers = await page.evaluate(() =>
     [...document.querySelectorAll('[data-testid^="upgrade-option-"]')].map((node) => node.dataset.upgrade));
   const index = offers.findIndex((kind) => kind === 'turboprop' || kind === 'widebody');
+  await waitForBoardModels(page); // [night-47a] crate-model frame first (N45a)
   await clickTestId(page, `upgrade-option-${Math.max(0, index)}`);
   await waitForScreen(page, 'game');
   await page.keyboard.press('Escape');

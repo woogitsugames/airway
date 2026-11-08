@@ -1,7 +1,9 @@
-/* Fill every screen shape with the empty Diorama world; later HUD layers use safe-area insets. */
+/* Fill every screen shape with the empty world; later HUD layers use safe-area insets. [night-48a] U6: the Linoryt paper
+   (--lin-paper, index.html theme-color), not the Diorama sky, so nothing blue shows before the first frame or behind a
+   screen that does not reach the edge. */
 :root {
   font-family: 'Atkinson Hyperlegible Next', sans-serif;
-  background: #8cc3d8;
+  background: #ECE3CC;
   color: #13302e;
 }
 *, *::before, *::after { box-sizing: border-box; }

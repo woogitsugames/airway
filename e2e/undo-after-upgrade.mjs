@@ -3,7 +3,7 @@
 // week boundary with no board on screen (soft lock). Real clicks: take a card, resume, Undo on the dock; the
 // choice must stay recorded and the clock must keep running. Portrait phone and phone landscape, PL/EN.
 import { performance } from 'node:perf_hooks';
-import { withBrowser, newGamePage, waitForScreen, state, assert, clickTestId, saveDiagnostics, gameUrl, assertRender, RENDER } from './browser.mjs';
+import { withBrowser, newGamePage, waitForScreen, state, assert, clickTestId, saveDiagnostics, gameUrl, assertRender, RENDER, waitForBoardModels } from './browser.mjs';
 import { E2E_SEEDS } from './seeds.mjs';
 
 // [night-12ac] Seed from e2e/seeds.mjs, replayed headless by test:e2e-seeds (in test:fast).
@@ -26,6 +26,7 @@ async function journey(page) {
     [...document.querySelectorAll('[data-testid^="upgrade-option-"]')].map((node) => node.dataset.upgrade));
   const index = offers.findIndex((kind) => kind === 'turboprop' || kind === 'widebody');
   assert(index >= 0, `no aircraft card on the board: ${offers.join(',')}`);
+  await waitForBoardModels(page); // [night-47a] crate-model frame first (N45a)
   await clickTestId(page, `upgrade-option-${index}`);
   await waitForScreen(page, 'game');
   const undo = page.locator('[data-hud-action="undo"]');

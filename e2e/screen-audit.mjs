@@ -626,5 +626,5 @@ try {
 }
 const failed = failures.length;
 for (const line of failures) console.error('FAIL ' + line);
-console.log(`SUMMARY linoryt-preview render=${RENDER} screens=${checked} shots=${shots} notes=${noteCount} chips=${chipCount} out=${OUT.replace(ROOT + '/', '')} failed=${failed} ${((performance.now() - started) / 1000).toFixed(1)}s`);
+console.log(`SUMMARY screen-audit render=${RENDER} screens=${checked} shots=${shots} notes=${noteCount} chips=${chipCount} out=${OUT.replace(ROOT + '/', '')} failed=${failed} ${((performance.now() - started) / 1000).toFixed(1)}s`);
 if (failed || checked === 0) process.exitCode = 1;

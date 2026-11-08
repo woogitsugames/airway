@@ -4,7 +4,7 @@
 // back with focus on "Map"; a second Escape leaves to the menu as before. Seed 0xA1A1 bot run to a jam.
 // EN 412×915, PL 915×412, PL 360×640.
 import { performance } from 'node:perf_hooks';
-import { withBrowser, newGamePage, waitForScreen, assert, clickTestId, saveDiagnostics } from './browser.mjs';
+import { withBrowser, newGamePage, waitForScreen, assert, clickTestId, saveDiagnostics, waitForBoardModels } from './browser.mjs';
 import { E2E_SEEDS } from './seeds.mjs';
 
 // [night-12ac] Seed from e2e/seeds.mjs, replayed headless by test:e2e-seeds (in test:fast).
@@ -25,6 +25,7 @@ async function toGameOver(page) {
     if (s.screen === 'upgrade') {
       const offers = await page.evaluate(() => [...document.querySelectorAll('[data-testid^="upgrade-option-"]')].map((n) => n.dataset.upgrade));
       const plane = offers.findIndex((o) => o === 'turboprop' || o === 'widebody');
+      await waitForBoardModels(page); // [night-47a] crate-model frame first (N45a)
       await clickTestId(page, `upgrade-option-${Math.max(0, plane)}`);
       await waitForScreen(page, 'game');
     }

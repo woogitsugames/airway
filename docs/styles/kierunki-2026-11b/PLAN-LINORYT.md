@@ -197,6 +197,11 @@ medium/high ≤ 2 (G4). "Shots" = PNGs to inspect against the CLAUDE.md forbidde
   game hour.
 - Text scale (D-248/D-267), RTL-safe layout of the index (future), `test:e2e:notch`, `ui:matrix` on the real renderer.
 - Budget: CSS budget lowered to the measured value + 3 kB.
+- **Status: done (night 48a, draft PR to `dev`, D-305):** `test:contrast` +25 Linoryt pairs, `test:cvd` glyphs on paper
+  and ochre, `test:e2e:linoryt-contrast` (real frames: 18 notes, 19 stamps; night stamps WARN only, render follow-ups in
+  the PR), the "now" cut steps per game hour (`test:e2e:reduce-motion-game:stub`), paper system bars on Android and iOS,
+  inks written in place (CSS 129.4 → 127.4 kB, budget 132 → 130 kB), board layouts, `test:e2e:screen-audit:stub`
+  (renamed). Left: the `--skin=` no-op helpers of `e2e/browser.mjs`, RTL of the index (no RTL language yet).
 
 ### U7 — agent (coordinator) — store shots, preview video, landing page
 - `npm run store:shots` (60 PNGs), `npm run store:video` (D-265, D-269: files to the owner's Drive), `npm run
@@ -224,7 +229,7 @@ owner prefers the curfew 23:00–06:00). City lights become paper dots cut out o
 ## i18n
 U1 reuses existing keys (`roza.*`, `menu.*`). U5 renames the Róża keys to skin-neutral ones in PL and EN with length
 budgets in `src/i18n/limits.ts` (dock captions ≤ 10 characters: at 320 px a dock cell is 52 px wide and a caption
-at 10.5 px Schibsted Grotesk Bold fits 9–10 characters, checked by `test:e2e:linoryt:stub`).
+at 10.5 px Schibsted Grotesk Bold fits 9–10 characters, checked by `test:e2e:screen-audit:stub`, formerly `test:e2e:linoryt:stub`).
 
 ## Risks
 1. **Hatching shimmer** on budget GPUs and low-density screens (E1 check above; fallback in `saver`).

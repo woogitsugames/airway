@@ -57,7 +57,7 @@ try {
         assert(JSON.stringify(m.ids) === JSON.stringify(GROUPS.map(([id]) => id)), `group order ${m.ids}`);
         assert(JSON.stringify(m.titles) === JSON.stringify(GROUPS.map(([, names]) => names[language])), `titles ${m.titles}`);
         assert(m.counts.every((count, i) => count === GROUPS[i][2].length), `controls per group ${m.counts}`);
-        assert(m.selects === (SKIN ? 2 : 3), `${m.selects} selects in Display`); // [night-29b] U4
+        assert(m.selects === 2, `${m.selects} selects in Display`); // [night-29b] U4; [night-48a] D-301 removed the globe-view select
         assert(new Set(m.lefts).size === columns, `${new Set(m.lefts).size} column(s), expected ${columns}: ${m.lefts}`);
         assert(!m.scroll, 'horizontal page scroll');
         await page.screenshot({ path: resolve(SHOTS, `settings-${language}-${width}x${height}.png`) });

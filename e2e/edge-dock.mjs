@@ -54,6 +54,7 @@ async function journey(page) {
   const offers = await page.evaluate(() =>
     [...document.querySelectorAll('[data-testid^="upgrade-option-"]')].map((node) => node.dataset.upgrade));
   const index = offers.findIndex((kind) => kind === 'turboprop' || kind === 'widebody');
+  await waitForBoardModels(page); // [night-47a] crate-model frame first (N45a)
   await clickTestId(page, `upgrade-option-${Math.max(0, index)}`);
   await waitForScreen(page, 'game');
   await page.waitForTimeout(500);

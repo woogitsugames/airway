@@ -216,7 +216,6 @@ export const pl = {
   'licenses.schibsted': 'Krój pisma Schibsted Grotesk',
   'licenses.naturalEarth': 'Dane geograficzne Natural Earth',
   'licenses.worldAtlas': 'Zbiór danych world-atlas',
-  'licenses.nasaEarth': 'Obrazy Ziemi: NASA Earth Observatory (Blue Marble, Black Marble)',
   'licenses.noaaRelief': 'Rzeźba terenu: NOAA ETOPO5',
   'licenses.three': 'Renderer 3D three.js',
   'licenses.ofl': 'SIL Open Font License 1.1',
