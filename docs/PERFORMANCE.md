@@ -327,6 +327,24 @@ Not done: WOFF2 fonts (about −40 % of the 624 kB TTF; OFL allows the conversio
 entry) — a size win only, no parse-time effect.
 
 
+## Linoryt review (2026-11-08, D-302/D-304)
+The shipped look after E4 and the object cleanup. `perf:scene` (SwiftShader, 412×915, DPR 1, 120 samples):
+low 13 draw calls / 38,930 triangles / 20.7 fps / render CPU 0.57 ms (p95 1.5 ms) / JS heap max 21.4 MB; medium
+14 / 38,766 / 10.6 fps / 0.66 ms (p95 1.4 ms) / 28.7 MB. Real game (`node dev/linoryt-frames.mjs`: Endless seed
+0xA1A1 at 1× speed, rAF intervals, 8 s of play, then the first 3 s of the week-1 board), Chrome CPU throttle 1× and
+4× (the "budget phone" profile; SwiftShader itself runs on the throttled CPU, so 4× is pessimistic for a real GPU):
+
+| Throttle | Play: frames / p50 / p95 / max ms / fps | Board open: p50 / p95 / max ms |
+| --- | --- | --- |
+| 1× | 185 / 33.4 / 83.3 / 116.7 / 23.1 | 33.4 / 83.3 / 149.9 |
+| 4× | 148 / 50.0 / 116.6 / 166.6 / 18.5 | 50.0 / 83.3 / 100.0 |
+
+The weekly board's first frame no longer stalls (it held the page 1.4–3.2 s on SwiftShader while it compiled and read
+back the crate models, #315; D-302 removed them). Nothing in the print is CPU-bound per frame: plane sprites write two
+attributes per plane, the route ribbon rebuilds only on a network change, stamps only on an airport/curfew/jam change.
+The SwiftShader frame time is fill: the terrain shader (one texture fetch, four derivatives) over the whole disc. The
+real budget-phone check stays the Test Lab game loop (D-245), not run yet with the print.
+
 ## E4 — Satelita, Mapa and the photo textures removed (2026-11-08, D-285, D-302)
 `test:bundle` on `dev` after U5 → E4: main JS **1,167.7 → 1,051.3 kB** raw (gzip 352.2 → 313.6 kB), `dist/`
 **4,100.0 → 1,992.0 kB** (−2.1 MB: day/night/map/clouds textures and the satellite/diorama code), CSS unchanged

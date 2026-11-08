@@ -3295,3 +3295,11 @@ planes 13.2 / 13.2; the outer edge against the globe stays 1.5–2.1 (the paper 
 separation band, not the symbol. Rejected: darker or wider rims to raise the edge number (they would only move the
 grey AA pixels), dropping the paper rim (ink on night hatch would merge). **Status: in force; U6 sets the thresholds
 of its D-47 pass on these numbers.**
+
+## D-304 — Linoryt plane silhouettes 28 / 32 px with a 2.5 px paper rim (2026-11-08, Claude, ext session)
+On the night frames of #319 the planes (spec §7: 22 / 26 px, 1.5 px paper rim) read as small crosses between the
+route lines on the cross-hatched land (coordinator's review). **Choice.** Turboprop 28 px, widebody 32 px, paper rim
+2.5 px (the load bar's rim 1.5 px); the sprite quad grows from 46 to 56 px. Same draw (one instanced sprite pass), same
+atlas (the 16-texel SDF range covers the wider rim at both sizes). Stamps stay 22 / 30 px, so a plane is still smaller
+than a hub and the network hierarchy holds. Rejected: a solid paper disc behind each plane (reads as a stamp), more
+contrast in the hatch around planes (needs plane positions in the terrain shader). **Status: in force.**
