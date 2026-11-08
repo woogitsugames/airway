@@ -3,7 +3,13 @@
 Instructions for AI coding agents working in this repository.
 
 ## Current stage: Production — MVP polish (after integration)
-- Stage 0 is complete: world style **A "Diorama"** (D-11) and title **Airway** (D-12).
+- Stage 0 chose the title **Airway** (D-12); its world style "Diorama" (D-11) and the later Róża and Linoryt looks
+  (D-257, D-283) are superseded.
+- **Visual direction (D-323, owner, 8.11):** a realistic lit globe from NASA Blue Marble (day) and Black Marble
+  (night), day and night as game state (terminator from the game clock, default presentation the K2 night), with our
+  own map language on it, and UI-A "Lotniskowa tablica i paski lotu" (split-flap board, ICAO/IATA signs, hub flight
+  strips, teleprinter report; Archivo + Chivo Mono). Linoryt is still what ships until the flip; follow the stages of
+  `docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md` (render = ext session `src/render/**`, UI = agents `src/ui/**`).
 - Tasks 01–36 (`docs/tasks/00-INDEX.md`) are merged and integrated on `dev` (PR #30, #33–#37). Decisions are in
   `docs/DECISIONS.md` (renumbering of the first merge: `docs/integration/RENUMBERING.md`).
 - Read `docs/ARCHITECTURE.md` (module map, Sim API, Render API) and `docs/TESTING.md` (every command, runtime, summary).
@@ -21,17 +27,22 @@ the route network, planes fly by themselves; passengers transfer at hubs; you lo
 - No copies of Mini Metro, Mini Airways, Fly Corp or any other game: no code, art, names or UI. Mechanics and general
   art movements may inspire us.
 - Forbidden: the "Mini" prefix; coloured lines on a flat pastel background; circle/square/triangle passengers;
-  subway-map look.
+  subway-map look. Allowed (D-323): routes over the realistic, lit and relief-shaded globe, drawn as cased lines.
 - **No AI slop** in mockups/UI: no purple-blue gradients, glassmorphism, gratuitous neon glow, generic SaaS rounded
   cards with default shadows, emoji icons, single-pack stock icons, Inter/Roboto/system font as the only typeface,
-  centred "Welcome!/Get Started", dashboard charts, clipart planes/globes.
-- **Not minimal (owner, D-05):** no flat diagram look. The world is rich and illustrated; gameplay info is drawn into it.
+  centred "Welcome!/Get Started", dashboard charts, clipart planes/globes, a bare satellite photo with none of our own
+  labels, routes and signage on it, a generic dark "navigation app" dashboard.
+- **Not minimal (owner, D-05):** no flat diagram look. The world is rich (since D-323 a realistic lit globe);
+  gameplay info is drawn into it.
 - Required: one authorial visual idea where **graphics explain gameplay**; types distinguishable by **shape**, not only
   colour; minimal in-world HUD; touch targets ≥ 48 dp; thumb-reach actions; safe areas; portrait + landscape +
   foldables; short matter-of-fact motion (no bouncy springs).
 - Self-check every mockup PNG against the forbidden list before showing it.
-- Fonts: SIL OFL only, licence file next to the font, entry in `docs/ASSETS.md`. Images: own or CC0 only, entry in
-  `docs/ASSETS.md`. Map data: Natural Earth (public domain) via `world-atlas` (ISC).
+- Fonts: SIL OFL only, licence file next to the font, entry in `docs/ASSETS.md`. Images: own, CC0 or public domain
+  only, entry in `docs/ASSETS.md`. Public domain covers NASA imagery (Blue Marble NG, Black Marble; US Government
+  work, credit "NASA Earth Observatory"; never NASA logos/insignia) and NOAA ETOPO5. Map data: Natural Earth (public
+  domain) via `world-atlas` (ISC). Never tiles or screenshots of Google Earth/Maps, Apple Maps, Mapbox, Cesium Ion or
+  Flightradar24 (look references only).
 - Reference repos of our other games (`commutopia`, `cebulak-express`, `Century-war`, `Frontier`, `AirWar`) are
   **read-only**. Never modify them.
 - Decisions that belong to the owner (style, title, scope, business model): ask briefly, give a recommendation.

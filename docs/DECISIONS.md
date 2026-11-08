@@ -2921,6 +2921,7 @@ Owner's answers to the three questions of night 27a (PR #284):
 Consequences: the store video and store shots wait for the Linoryt implementation; the Róża-specific GPT orders
 (GPT-09, GPT-10, GPT-21) are obsolete; the globe part (`src/render/**`) belongs to the ext session, the UI part
 (`src/ui/**`) to agents; both follow one staged plan. **Status: decided; implementation planned.**
+**Partly superseded by D-323 (owner, 2026-11-08):** Linoryt is rejected; the realistic NASA globe returns as the one look (not a mode); the D-08 glyph choice stays.
 
 
 ## D-284 — Linoryt is built behind DEV previews and switched on in one flip; UI red #B33823; what is DOM and what is world (2026-11-07, Claude, night 28a)
@@ -3265,7 +3266,7 @@ ResizeObserver run before it measures, `edge-dock` zooms one wheel step in while
 fixes bring the release CSS to 129.4 kB (budget 132 kB unchanged); `test:hud-targets` 311/311, `test:fast` 116/116.
 Rejected: keeping `?skin=linoryt` as a no-op alias (dead code; the e2e harness now refuses `--skin`), removing
 `setGlobeMode` from `src/render` here (ext session, E4), folding the `:root[data-skin="linoryt"]` prefix out of the
-source (the scope keeps the structure file auditable and the pruner's selector match unchanged). **Status: in force.**
+source (the scope keeps the structure file auditable and the pruner's selector match unchanged). **Status: in force; the Linoryt look is superseded by D-323 (mechanisms — inliner, pruner, budgets — stay).**
 
 ## D-302 — E4: the 3D crate models are not drawn in print; the satellite object layers leave in a separate PR (2026-11-08, Claude, ext session E4; agreed with the coordinator)
 Step E4 of PLAN-LINORYT.md removes Satelita, Mapa (D-285), the diorama and the DEV comparison looks with their
@@ -3278,7 +3279,7 @@ object layers (`airports.ts` medallions, the tube `RouteLayer`, `planes.ts` plan
 `models/planes.ts`) stay for one more PR, which also moves their tests (`test:render-layers`) and the model preview:
 E4 stays small enough to review. (3) The D-177 contrast probe (`measureLayerContrast`) needs no change: it measures
 the Linoryt stamp, ribbon and sprite groups (dev world, zoom 3.3, low: routes 4.6/5.5, airports 3.3/2.8, planes
-1.8/2.0 by day/night); the thresholds for the print are U6's (D-47 pass). **Status: in force.**
+1.8/2.0 by day/night); the thresholds for the print are U6's (D-47 pass). **Status: in force for (1); the texture removal is reversed by D-323.**
 
 ## D-303 — The D-177 probe reads a print symbol by its ink against its own paper rim; the jam ring gets a paper rim (2026-11-08, Claude, ext session)
 The coordinator asked for the night contrast of the render layers after E4 (probe: airports 2.8, planes 2.0 against
@@ -3632,3 +3633,43 @@ shows the state the fixture names (three crates without `is-picking-hub` / the s
 a syntactic "obviously boolean" rule for the force argument (typed fields like `entry.isNew` would all need `!!` and
 the rule still could not see the runtime value); a type-aware check alone (the field was already typed `boolean`).
 **Status: in force (N59a, `test:class-toggle` 9/9).**
+
+## D-323 — Linoryt is rejected; the new look is a realistic NASA globe (K1 day / K2 night, day and night as game state) with UI-A "Lotniskowa tablica i paski lotu" (owner, 2026-11-08)
+Owner, after the research of night 63a (`docs/styles/kierunki-2026-11c/RESEARCH-NOWY-KIERUNEK.md`, PR #344), the
+globe mockups K1 "Atlas satelitarny" / K2 "Nawigacja nocna" (PR #346) and the UI mockups UI-A (PR #347): the shipped
+Linoryt print (D-283, D-301) is rejected; the game moves to:
+- **World: a realistic, lit globe** from NASA Blue Marble NG (day) and NASA Black Marble 2016 (night city lights),
+  with relief shading (NOAA ETOPO5, already shipped), a thin physical atmosphere, ocean glint and a dusk band (shader
+  as in `docs/styles/kierunki-2026-11c/makiety/src/globe.js`). **Day and night are game state:** the terminator
+  follows the game day clock (the existing sun controller, `src/render/sun.ts`, D-63), not a fixed grading.
+  **Default presentation is the K2 night** (menu globe, the UI's dark enamel chrome, store frames); K1's day surface
+  is what the lit hemisphere shows. On the globe our own map language: Natural Earth borders and atlas-hierarchy
+  labels, routes as cased lines (dark casing + core; widebody solid, turboprop dotted), plane silhouettes from the
+  project's own icons, the D-08 passenger glyphs (shape + colour). A photo with no map language of our own on it is
+  the failure mode of D-170/D-282 and stays forbidden.
+- **UI: UI-A "Lotniskowa tablica i paski lotu"** (`docs/styles/kierunki-2026-11c/makiety/ui-a/`): a split-flap board
+  (clock, week, day, passengers, 24 h bar with night hours), ICAO/IATA airfield signs (yellow on black = airport,
+  black on yellow = direction and the main action, white on red = jam), controller flight-progress strips for hubs
+  (queue as D-08 glyphs, one per passenger) and for the weekly allotment (take one strip), a teleprinter print-out
+  for the game-over report. Faces **Archivo** (board, signs, labels) and **Chivo Mono** (strips, print-out), SIL OFL.
+**Why.** The owner asked for a globe "realistic like Google Earth", a proper map style and a game UI on the level of
+good strategy games; K1+K2 is the only direction that meets all three (research §4–§5). The D-283 objection to the
+satellite globe ("someone else's photograph", ornaments of one style over a photo of another) is answered by making
+the photo the board and putting a single authorial language over it: real-world airport signage and flight strips
+in the UI, cartographic labels and cased routes in the world, night as gameplay (city lights, curfew hours, the day
+bar) instead of decoration. UI-A was chosen over the plain K1/K2 chrome because the dark-dashboard look of K2 alone
+was the highest slop risk (research §3 K2, PR #346 self-review).
+**What this supersedes.** Partly **D-283** (Linoryt as the shipped look; "the Satelita mode is removed entirely" —
+NASA textures return, but as the one look, not as a mode or setting), **D-301** (Linoryt as the shipped skin and
+globe, its paper theme colour and the Besley/Schibsted Grotesk faces) and **D-302** (the removal of the photo
+textures; its choice (1), no 3D crate models on the weekly board, stays). Also replaced: D-284's red #B33823 and the
+paper inks (UI-A's palette is re-checked against D-47 in the plan), D-286's printed-index menu framing, D-305's paper
+system bars, D-317's Linoryt app-mark sketches (a new mark is a plan stage). **Kept:** D-08 glyph shapes and
+colours (shape stays the primary carrier, `test:cvd`), D-47/D-177 contrast floors (probe numbers re-measured on the
+photo), D-88 reduced motion, D-176 Blue Marble month July, D-284's DOM-vs-world split and the D-262…D-268 note layout
+behaviour, D-285 L1 (five dock symbols) and L2 (no second "Mapa" mode), D-322 and every non-visual decision.
+Linoryt's frames and plan (`docs/styles/kierunki-2026-11b/`) stay as an archive.
+**How.** Staged plan `docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md` (Polish; render stages for the ext session
+in `src/render/**`, UI stages for agents in `src/ui/**`, one flip, then removal of the Linoryt code), as with
+D-284. CLAUDE.md (images: own, CC0 or public domain) and `docs/ASSETS.md` (Globe data) are updated in the same PR.
+Store shots, video and site (U7) wait for the flip. **Status: in force (owner, 8.11).**
