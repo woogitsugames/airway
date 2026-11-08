@@ -93,7 +93,8 @@ sets `data-model="drawn"|"none"` on each crate when its draw is over, and `waitF
 up to 120 s, polling on a timer) waits for every crate before the click. [night-47a] Every suite that clicks a crate of a
 freshly opened board calls it before that click (board-short, continue-framing, edge-chip-airports, edge-chip-fill,
 edge-chip-tags, edge-dock, first-time-cards, gameover-contracts, -map, -short, -tip, -unserved, logbook, pause-summary,
-pick-sign, run-timeline, smoke, undo-after-upgrade, upgrade-picks); on the stub world it returns at once (`data-model="none"`).
+pick-sign, run-timeline, smoke, undo-after-upgrade, upgrade-picks); on the stub world, and since D-302 (the print draws no crate models) on the real renderer too, it returns on the
+board's first frame (`data-model="none"`).
 
 ## Commands
 

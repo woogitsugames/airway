@@ -154,20 +154,22 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       week 2 day 2 every time with "no route to Africa" (32/24 waiting): the bot does not open a second continent;
       a bot-policy matter, not a game bug (balance gate unaffected).
 - [x] N47a **Long play-throughs, round 4, on the stub world (GPT-19)** — `ui:long-play:stub` (`scripts/long-play.mjs
-      --render=stub`, frozen clock, one game hour per step, audits every hour) 9 sessions × 8 game weeks (577–582 game
-      hours, 1.2–1.8 min each): PL/EN 360×640, 412×915, 915×412, 673×841; regions EUS/ASI/EUN/random; classes I/II/III;
-      3 with `&weather=front`, 3 at 150 % text; 223 pauses, 74 hub boards, 67 rotations, 27 Save → Continue (tick/hash/
-      region/class kept every time), 20 Undo right after a weekly pick, 45 weekly boards (clock held on each). The bot
-      dies in week 1–4 (max week 4), so "4 weeks" is game weeks played across runs. Found, reported (not fixed: rules or
-      `src/ui`): (1) **Undo right after a weekly pick can end the run in the past** — it removes a network command from
-      up to 1.5 days earlier and the replay jams before the board; choice lost, game over (3 of 9 sessions, class I too;
-      headless: seed 42704 ASI class II, `run.undo()` → failure at tick 4124) → Q-92; (2) PL 915×412 pause sheet with
-      six summary rows (contract, surge, front) pushes Save/Menu 14 px below the screen, the sheet does not scroll;
-      (3) edge chips over the Róża dock tags (360×640 portrait, 841×673) and over each other (412×915) later in a run —
-      `test:e2e:edge-dock` checks only right after the week-1 board; (4) at 150 % text the next weekly board opens at
-      the scroll position the last one was left at (heading and contract result hidden; `.airway-upgrade-host` keeps
-      `scrollTop`). Shots `docs/shots/n47a/`. Also: every e2e suite that clicks a fresh board's crate now calls
-      `waitForBoardModels` (N45a), each run real + stub green.
+      --render=stub`, frozen clock, one game hour per step, audits every hour) 9 sessions × 8 game weeks (577–580 game
+      hours, 1.6–1.8 min each) on the Linoryt tree (after D-301/D-302): PL/EN 360×640, 412×915, 915×412, 673×841;
+      regions EUS/ASI/EUN/random; classes I/II/III; 3 with `&weather=front`, 3 at 150 % text; 222 pauses, 76 hub boards,
+      66 rotations, 26 Save → Continue (tick/hash/region/class kept every time), 26 Undo right after a weekly pick, 44
+      weekly boards (clock held on each), no page error. The bot dies in week 1–4 (max week 4), so "8 weeks" is game
+      weeks played across runs. Found, reported (not fixed: rules or `src/ui`): (1) **Undo right after a weekly pick can
+      end the run in the past** — it removes a network command from up to 1.5 days earlier and the replay jams before the
+      board; choice lost, game over (2 of 9 sessions, 3 of 9 on the Róża tree, class I too; headless: seed 42704 ASI
+      class II, `run.undo()` → failure at tick 4124) → Q-92; (2) 915×412: the pause sheet with five or six summary rows
+      (contract, surge, front) puts Save/Menu 5 px (Róża: 14 px) below the screen and does not scroll (PL class III and
+      EN class I); (3) at 150 % text the next weekly board opens at the scroll position the last one was left at (week
+      heading and contract result hidden; `.airway-upgrade-host` keeps `scrollTop`; `repro`: 360×640 EN, seed 0xA1A1,
+      scroll the week-1 board down, pick, autoplay to week 2 → `scrollTop` 148). On the Róża tree (before the merge) edge
+      chips also sat on the dock arc (360×640, 841×673) and on each other; none in the 9 Linoryt sessions. Shots
+      `docs/shots/n47a/`. Also: every e2e suite that clicks a fresh board's crate now calls `waitForBoardModels` (N45a),
+      each run real + stub green.
 - [ ] N7 When the queue is empty: pick the most valuable next improvement from `docs/HANDOVER*.md`, PR "Known issues"
       sections and the forbidden list review of current screenshots; add it here first, then do it.
 
@@ -1600,4 +1602,4 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
 - 2026-11-05 · N12bh store shots + site assets refresh (no new D) · night/12bh-store-shots-refresh · `npm run store:shots` on the real renderer (SwiftShader, from origin/dev 58ef3f2): 60/60 captured and checked in 29.5 min, no scene timed out; 60 PNGs + manifest + contact sheet changed (failure banner "SIATKA WSTRZYMANA" → "SIEĆ ZAMKNIĘTA"/"NETWORK CLOSED", weekly-board waybill, menu "0 z 49"); `site:assets` 18 files (16 JPEGs changed, press PNGs identical); `test:store-shots` and `test:site` 620/620 pass
 - 2026-11-05 · N12bi menu sign "HUB 1" + site "failure" scene (D-223 note, no new D) · night/12bi-glossary-site-failure · test:i18n 1/1 (fails on the old sign: "pl: banned synonym "TERMINAL" in menu.sign"; self-check now covers "TERMINAL 1" in PL and EN and stale allowlist entries), test:site 650/650 (620 before: failure copy keys, phone and landscape JPEGs per language, press shots; card count = SITE_SHOTS.scenes), site:assets 22 files (4 new failure JPEGs, others byte-identical), build:site pressKit=26, shots:site preview/press re-shot and inspected, test:fast 107/107 (473.5 s), build ok, test:bundle 12/12. Not done: store:shots not re-run (30 min); the next run shows "HUB 1" on the menu scene
 - 2026-11-06 · N22b owner decisions Q-81…Q-89 accepted as recommended (D-270…D-278; D-269 reserved for the video decision) · night/22b-owner-q81-89 · milestones week 4 / 750 (`test:milestones` week-4 9/50, passengers-750 1/50, median 17.51 min, legacy logbook ids mapped), `LICENCE_UNLOCK_WEEK` 5 → 4 (`balance:licences` 200 seeds: week 4 reached I 30 / II 20 / III 12, medians unchanged), notes in store wave-1 files, RELEASE RL-19/20, legal register; follow-ups in "Owner decisions 2026-11-06"
-- 2026-11-08 · N47a long play-throughs round 4 on the stub world (GPT-19, no new D; Q-92) · night/47a-long-stub-runs · `ui:long-play:stub` 9 sessions × 8 game weeks, 1.2–1.8 min each, issues: Undo-after-pick game over (Q-92) ×2 sessions, pause Save off screen PL 915×412, edge chip over dock 360×640 and 841×673; 4 sessions 0 issues · waitForBoardModels in 19 more suites, 19 real + 11 stub runs green · test:fast, build
+- 2026-11-08 · N47a long play-throughs round 4 on the stub world (GPT-19, no new D; Q-92) · night/47a-long-stub-runs · `ui:long-play:stub` 9 sessions × 8 game weeks, 1.6–1.8 min each on the Linoryt tree, issues: Undo after a pick game over (Q-92) ×2 sessions, pause Save/Menu 5 px off screen at 915×412 ×2; 5 sessions 0 issues; board reopens scrolled at 150 % (repro) · waitForBoardModels in 19 more suites, 19 real + 11 stub runs green · test:fast, build
