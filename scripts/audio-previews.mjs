@@ -5,7 +5,7 @@ import { build } from 'esbuild';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { chromium } from 'playwright';
+import { loadChromium } from './lib/harness.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const WRITE = !process.argv.includes('--check');
@@ -96,7 +96,7 @@ const bundle = await build({
   entryPoints: [resolve(ROOT, 'scripts/audio/offline-entry.ts')], bundle: true, write: false, format: 'iife',
   platform: 'browser', target: 'es2022', logLevel: 'silent',
 });
-const browser = await chromium.launch();
+const browser = await loadChromium().launch(); // [night-52a] ESM 'playwright' ignores NODE_PATH; the harness resolves it
 const page = await browser.newPage();
 await page.setContent('<!doctype html><title>audio</title>');
 await page.addScriptTag({ content: bundle.outputFiles[0].text });
