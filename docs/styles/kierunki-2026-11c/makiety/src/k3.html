@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=412, initial-scale=1">
+<title>Airway K3 Hipsometria</title>
+<style>
+@font-face{font-family:"Fraunces";src:url("./fonts/Fraunces-VF.ttf");font-weight:100 900}
+@font-face{font-family:"Figtree";src:url("./fonts/Figtree-VF.ttf");font-weight:300 900}
+:root{
+  --paper:#F4EFE4; --paper2:#E6DECB; --ink:#1B2430; --route:#D9482B; --atm:#A9CBEE;
+  --panel:var(--paper); --panel-ink:var(--ink); --frame:var(--ink); --muted:#56606B;
+  --serif:"Fraunces",Georgia,serif; --sans:"Figtree",Arial,sans-serif;
+}
+html.night{ --panel:#18212C; --panel-ink:#F4EFE4; --frame:#F4EFE4; --muted:#9FAAB6; }
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:412px;height:915px;overflow:hidden;background:#0B1B28}
+body{font-family:var(--sans);color:var(--panel-ink);-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+#app{position:relative;width:412px;height:915px;overflow:hidden}
+canvas#gl{position:absolute;inset:0;width:412px;height:915px}
+svg.layer{position:absolute;inset:0;width:412px;height:915px;overflow:visible;pointer-events:none}
+.panel{position:absolute;background:var(--panel);color:var(--panel-ink);border:1px solid var(--frame);border-radius:6px}
+.panel::after{content:"";position:absolute;inset:3px;border:1px solid color-mix(in srgb,var(--frame) 32%,transparent);border-radius:3px;pointer-events:none}
+.serif{font-family:var(--serif);font-variation-settings:"SOFT" 60,"WONK" 0}
+
+/* airport tags */
+.tag{position:absolute;background:var(--panel);color:var(--panel-ink);border:1px solid var(--frame);border-radius:11px;padding:3px 8px 3px 8px;white-space:nowrap;line-height:1}
+.tag .r1{display:flex;align-items:baseline;gap:6px}
+.tag b{font-family:var(--serif);font-weight:650;font-size:12.5px;letter-spacing:.01em;font-variation-settings:"SOFT" 70,"WONK" 0,"opsz" 14}
+.tag i{font-style:normal;font-weight:600;font-size:10.5px;color:var(--muted)}
+.tag .r2{display:flex;gap:7px;margin-top:3px;align-items:center}
+.tag .r2 span{display:flex;align-items:center;gap:2px;font-weight:700;font-size:11px}
+.tag.hub{border-radius:9px;padding:5px 10px 6px 10px;border-width:1.5px}
+.tag.hub b{font-size:17px;font-weight:700;font-variation-settings:"SOFT" 80,"WONK" 0,"opsz" 24}
+.tag.hub i{font-size:12px;color:var(--route);font-weight:700}
+html.night .tag.hub i{color:#FF8A6B}
+.tag.hub .queue{display:flex;margin-top:5px;align-items:center}
+.tag.hub .queue svg{margin-right:1px}
+.tag.hub .queue em{font-style:normal;font-weight:700;font-size:11px;margin-left:7px;color:var(--panel-ink)}
+.newtab{position:absolute;background:var(--route);color:#fff;font-weight:800;font-size:9.5px;letter-spacing:.08em;padding:2px 6px;border-radius:3px;line-height:1.1}
+.atlas{position:absolute;font-family:var(--serif);font-weight:500;font-size:9.5px;letter-spacing:.26em;color:#fff;text-transform:uppercase;white-space:nowrap;
+  text-shadow:0 0 3px rgba(20,30,40,.75),0 0 2px rgba(20,30,40,.8),0 0 6px rgba(20,30,40,.4);opacity:.8;transform:translate(-50%,-50%)}
+.atlas.sea{letter-spacing:.2em;font-size:9px;color:#DDF0FB;font-style:normal;opacity:.85}
+html.night .atlas{opacity:.55}
+
+/* HUD */
+#clock{left:12px;top:38px;width:326px;height:84px;padding:10px 14px}
+#clock .time{position:absolute;left:14px;top:9px;font-size:35px;font-weight:700;letter-spacing:-.01em;line-height:1.05}
+#clock .wk{position:absolute;left:128px;top:11px;line-height:1.1}
+#clock .wk b{font-family:var(--serif);font-weight:650;font-size:16px;font-variation-settings:"SOFT" 70,"WONK" 0,"opsz" 18;display:block}
+#clock .wk span{font-size:12px;font-weight:500;color:var(--muted);display:block;margin-top:2px}
+#clock .bar{position:absolute;left:14px;right:14px;top:58px;height:9px}
+#pause{left:344px;top:42px;width:56px;height:56px;border-radius:50%}
+#pause::after{border-radius:50%;inset:3px}
+#pause i{position:absolute;top:19px;width:6px;height:18px;background:var(--panel-ink);border-radius:1px}
+#pause i:nth-child(1){left:18px}#pause i:nth-child(2){left:32px}
+#pause em{position:absolute;left:0;right:0;top:61px;text-align:center;font-style:normal;font-size:10px;font-weight:700;letter-spacing:.06em;color:#fff;text-shadow:0 0 3px rgba(10,20,30,.9)}
+#atc{left:12px;right:12px;top:742px;height:50px;border-radius:4px;display:flex;align-items:stretch;overflow:hidden}
+#atc .tab{width:46px;background:var(--route);color:#fff;font-weight:800;font-size:12px;letter-spacing:.06em;display:flex;align-items:center;justify-content:center}
+#atc .tx{padding:7px 12px;line-height:1.15;flex:1}
+#atc .tx b{display:block;font-family:var(--serif);font-weight:650;font-size:14.5px;font-variation-settings:"SOFT" 70,"WONK" 0,"opsz" 16}
+#atc .tx span{display:block;font-size:11.5px;font-weight:500;color:var(--muted);margin-top:3px}
+#atc::after{display:none}
+#dock{left:0;right:0;top:803px;height:112px;border-radius:0;border-left:0;border-right:0;border-bottom:0}
+#dock::after{inset:3px 0 auto 0;height:0;border:0;border-top:1px solid color-mix(in srgb,var(--frame) 32%,transparent);border-radius:0}
+#dock .it{position:absolute;top:16px;width:76px;height:72px;display:flex;flex-direction:column;align-items:center;gap:4px}
+#dock .ic{width:52px;height:40px;border-radius:20px;display:flex;align-items:center;justify-content:center;position:relative}
+#dock .it.sel .ic{background:var(--route)}
+#dock .it label{font-size:11.5px;font-weight:600;letter-spacing:.01em}
+#dock .it.sel label{font-weight:800}
+#dock .cnt{position:absolute;right:-1px;top:-5px;min-width:19px;height:19px;border-radius:10px;background:var(--panel-ink);color:var(--panel);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 5px;border:1.5px solid var(--panel)}
+#dock .it.dim{opacity:.5}
+
+/* menu */
+#brand{position:absolute;left:22px;top:48px}
+#brand h1{font-family:var(--serif);font-weight:700;font-size:84px;line-height:.9;letter-spacing:-.02em;color:#F4EFE4;font-variation-settings:"SOFT" 100,"WONK" 0,"opsz" 144;text-shadow:0 1px 0 rgba(0,0,0,.25)}
+#brand h1 .dl{position:relative;display:inline-block}
+#brand h1 .dl svg{position:absolute;left:50%;top:9px;margin-left:-31px}
+#brand p{margin-top:12px;font-size:16.5px;font-weight:500;color:#C9DCEB;letter-spacing:.01em}
+.mbtn{position:absolute;left:14px;right:14px}
+.mbtn h3{font-family:var(--serif);font-weight:700;font-size:20px;font-variation-settings:"SOFT" 80,"WONK" 0,"opsz" 22;line-height:1.1}
+.mbtn p{font-size:12px;font-weight:500;color:var(--muted);margin-top:3px}
+#cont{top:672px;height:80px;padding:14px 18px}
+#cont .play{position:absolute;right:14px;top:10px;width:58px;height:58px;border-radius:50%;background:var(--route);display:flex;align-items:center;justify-content:center;border:1.5px solid var(--ink)}
+.half{width:calc((100% - 38px)/2)}
+.half.l{left:14px;right:auto}.half.r{left:auto;right:14px}
+.half{padding:12px 14px}
+#foot{position:absolute;left:0;right:0;top:884px;text-align:center;font-size:11px;font-weight:600;letter-spacing:.14em;color:#8FA6B8}
+#hello{display:none}
+</style>
+</head>
+<body>
+<div id="app">
+  <canvas id="gl"></canvas>
+  <svg class="layer" id="svgBase" viewBox="0 0 412 915"></svg>
+  <svg class="layer" id="svgRoutes" viewBox="0 0 412 915"></svg>
+  <svg class="layer" id="svgPlanes" viewBox="0 0 412 915"></svg>
+  <svg class="layer" id="svgMarks" viewBox="0 0 412 915"></svg>
+  <div id="tags"></div>
+  <div id="ui"></div>
+</div>
+<script type="module">
+import * as THREE from './node_modules/three/build/three.module.js';
+
+const Q = new URLSearchParams(location.search);
+const SCENE = Q.get('scene') || 'game';
+const NIGHT = Q.get('mode') === 'night';
+if (NIGHT) document.documentElement.classList.add('night');
+const W = 412, H = 915, D2R = Math.PI / 180;
+
+/* ---------- data from the repo (src/data/regions.ts, D-08) ---------- */
+const GLYPH = {
+  chevron: 'M-6 -5 L0 1 L6 -5 L6 0 L0 6 L-6 0Z',
+  bowtie: 'M-6 -5.5 L0 0 L-6 5.5Z M6 -5.5 L0 0 L6 5.5Z',
+  crescent: 'M2.5 -5.45 A6 6 0 1 0 2.5 5.45 A6.6 6.6 0 0 1 2.5 -5.45Z',
+  keyhole: 'M0 -6.2 A3.4 3.4 0 1 1 0 0.6 A3.4 3.4 0 1 1 0 -6.2Z M-1.7 -1 L1.7 -1 L3.4 6 L-3.4 6Z',
+  fin: 'M-6 6 L6 6 L6 2.5 L-1 -6 L-6 -6Z',
+  bracket: 'M-6 -6 L-1.5 -6 L-1.5 1.5 L6 1.5 L6 6 L-6 6Z',
+  wing: 'M-6 4 L-2 -1 L6 -6 L4 -1 L6 2 L-2 1 L-6 6Z',
+};
+const COL = { chevron: '#009E73', bowtie: '#CC79A7', crescent: '#E69F00', keyhole: '#13302E', fin: '#0072B2', bracket: '#56B4E9', wing: '#7B27D1' };
+// white shape, ink outline, region colour inside (research: "Wspólne dla K1-K3")
+function tok(g, px = 15) {
+  return `<svg width="${px}" height="${px}" viewBox="-8.5 -8.5 17 17"><path d="${GLYPH[g]}" fill="#fff" stroke="#1B2430" stroke-width="2.6" stroke-linejoin="round"/><path d="${GLYPH[g]}" fill="#fff"/><path d="${GLYPH[g]}" fill="${COL[g]}" transform="scale(.62)"/></svg>`;
+}
+
+/* own top-down aircraft silhouettes, one per type (distinct by shape) */
+const PLANE = {
+  wide: { sc: 1.18,
+    d: 'M0,-13 C1.6,-12.4 1.9,-9.5 1.9,-6 L1.9,-2 L13,5.5 L13,8 L1.9,4.6 L1.6,9.6 L5.2,12 L5.2,13.6 L0,12.3 L-5.2,13.6 L-5.2,12 L-1.6,9.6 L-1.9,4.6 L-13,8 L-13,5.5 L-1.9,-2 L-1.9,-6 C-1.9,-9.5 -1.6,-12.4 0,-13Z M4.7,-0.6 h2 v4.4 h-2z M9,2.1 h2 v4.2 h-2z M-6.7,-0.6 h2 v4.4 h-2z M-11,2.1 h2 v4.2 h-2z' },
+  prop: { sc: 1.1,
+    d: 'M0,-11 C1.2,-10.6 1.4,-8 1.4,-6 L1.4,-2.4 L12.5,-2.4 L12.5,0.6 L1.4,0.6 L1.2,7 L5,8.2 L5,10.4 L1,9.8 L0,12 L-1,9.8 L-5,10.4 L-5,8.2 L-1.2,7 L-1.4,0.6 L-12.5,0.6 L-12.5,-2.4 L-1.4,-2.4 L-1.4,-6 C-1.4,-8 -1.2,-10.6 0,-11Z M5,-6.6 h2.2 v4.2 h-2.2z M-7.2,-6.6 h2.2 v4.2 h-2.2z' },
+  reg: { sc: 1.05,
+    d: 'M0,-12 C1.3,-11.4 1.5,-8.5 1.5,-5 L1.5,-1 L10,4 L10,6.2 L1.5,3.6 L1.3,8.6 L4.2,10.4 L4.2,11.8 L0,10.8 L-4.2,11.8 L-4.2,10.4 L-1.3,8.6 L-1.5,3.6 L-10,6.2 L-10,4 L-1.5,-1 L-1.5,-5 C-1.5,-8.5 -1.3,-11.4 0,-12Z M1.6,3.6 h2.4 v5 h-2.4z M-4,3.6 h2.4 v5 h-2.4z' },
+};
+
+/* ---------- geometry ---------- */
+const P = (lat, lon, r = 1) => new THREE.Vector3(Math.cos(lat * D2R) * Math.sin(lon * D2R), Math.sin(lat * D2R), Math.cos(lat * D2R) * Math.cos(lon * D2R)).multiplyScalar(r);
+
+const VIEW = SCENE === 'menu'
+  ? { lat: 40, lon: 12, roll: -14, R: 420, cx: 206, cy: 612 }
+  : { lat: 41, lon: 14, roll: 0, R: 500, cx: 206, cy: 520 };
+const SUN = NIGHT ? P(18, VIEW.lon + 128) : (SCENE === 'menu' ? P(24, VIEW.lon - 70) : P(26, VIEW.lon - 38));
+const D = 4.0;
+
+const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('gl'), antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(2); renderer.setSize(W, H, false);
+renderer.setClearColor(0x0b1b28, 1);
+renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
+
+const tanHalf = Math.tan(Math.asin(1 / D));
+const f = VIEW.R / tanHalf;                              // focal length in px
+const fov = 2 * Math.atan((H / 2) / f) / D2R;
+const camera = new THREE.PerspectiveCamera(fov, W / H, 0.5, 20);
+const ctr = P(VIEW.lat, VIEW.lon);
+camera.position.copy(ctr).multiplyScalar(D);
+camera.up.copy(new THREE.Vector3(0, 1, 0).applyAxisAngle(ctr, VIEW.roll * D2R));
+camera.lookAt(0, 0, 0);
+camera.setViewOffset(W, H, 206 - VIEW.cx, 457.5 - VIEW.cy, W, H);
+camera.updateMatrixWorld();
+
+const scene = new THREE.Scene();
+const loader = new THREE.TextureLoader();
+const tex = (u, srgb) => new Promise((ok) => loader.load(u, (t) => { t.colorSpace = THREE.NoColorSpace; t.anisotropy = 8; t.wrapS = THREE.RepeatWrapping; t.minFilter = THREE.LinearMipmapLinearFilter; ok(t); }));
+const [dayT, reliefT, lightsT, elevT, tintT, borders] = await Promise.all([tex('./data/day.jpg'), tex('./data/relief.png'), tex('./data/lights.png'), tex('./data/elev.png'), tex('./data/tint.png'), fetch('./data/borders.json').then(r => r.json())]);
+await Promise.all([document.fonts.load('700 20px Fraunces'), document.fonts.load('600 12px Figtree'), document.fonts.load('800 12px Figtree')]);
+
+// background (deep ink-blue, sparse stars; no purple)
+const bg = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({
+  depthTest: false, depthWrite: false,
+  uniforms: { c: { value: new THREE.Vector2(VIEW.cx / W, 1 - VIEW.cy / H) }, night: { value: NIGHT ? 1 : 0 } },
+  vertexShader: 'varying vec2 vUv; void main(){vUv=uv; gl_Position=vec4(position.xy,1.,1.);}',
+  fragmentShader: `varying vec2 vUv; uniform vec2 c; uniform float night;
+    float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+    void main(){
+      vec2 a=(vUv-c)*vec2(412.,915.); float d=length(a)/560.;
+      vec3 inner=mix(vec3(.13,.27,.37),vec3(.045,.085,.14),night); vec3 outer=mix(vec3(.045,.10,.15),vec3(.016,.035,.06),night);
+      vec3 col=mix(inner,outer,smoothstep(.35,1.5,d));
+      vec2 g=floor(gl_FragCoord.xy/3.); float r=h(g); float s=step(.9965,r)*(.25+.5*h(g+7.));
+      col+=vec3(.75,.85,1.)*s*(1.-night*.2);
+      gl_FragColor=vec4(col,1.);}`
+}));
+bg.renderOrder = -10; bg.frustumCulled = false; scene.add(bg);
+
+// globe
+function sphereGeo(seg = 160) {
+  const pos = [], uv = [], idx = [];
+  for (let j = 0; j <= seg / 2; j++) for (let i = 0; i <= seg; i++) {
+    const lat = 90 - j / (seg / 2) * 180, lon = -180 + i / seg * 360;
+    const v = P(lat, lon); pos.push(v.x, v.y, v.z); uv.push(i / seg, 1 - j / (seg / 2));
+  }
+  for (let j = 0; j < seg / 2; j++) for (let i = 0; i < seg; i++) {
+    const a = j * (seg + 1) + i, b = a + seg + 1; idx.push(a, b, a + 1, b, b + 1, a + 1);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx);
+  return g;
+}
+const globe = new THREE.Mesh(sphereGeo(), new THREE.ShaderMaterial({
+  uniforms: { tint: { value: tintT }, elev: { value: elevT }, day: { value: dayT }, relief: { value: reliefT }, lights: { value: lightsT }, L: { value: SUN.clone().normalize() }, night: { value: NIGHT ? 1 : 0 } },
+  vertexShader: 'varying vec2 vUv; varying vec3 vN; varying vec3 vW; void main(){vUv=uv; vN=position; vW=position; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+  fragmentShader: `
+    uniform sampler2D day,relief,lights,elev,tint; uniform vec3 L; uniform float night;
+    varying vec2 vUv; varying vec3 vN; varying vec3 vW;
+    void main(){
+      vec3 N=normalize(vN); vec3 V=normalize(cameraPosition-vW);
+      vec3 t=texture2D(day,vUv).rgb;
+      float rel=texture2D(relief,vUv).r; float k=(rel-.5)*2.;
+      float lum=dot(t,vec3(.3,.59,.11));
+      float water=smoothstep(.005,.025,t.b-t.g)*smoothstep(.07,.10,t.b-t.r);   // sea: blue above green; lowland tints have green above blue
+      float ev=texture2D(elev,vUv).r; float m=ev*ev*8000.;
+      vec3 tb=texture2D(tint,vUv).rgb; float gn=smoothstep(.015,.11,tb.g-tb.r);                  // greenness of the source tint: humid vs arid lowland
+      vec3 low=mix(vec3(.87,.80,.58),vec3(.60,.74,.43),gn);   // #DECC94 arid -> #99BD6E humid
+      vec3 hyp=low;
+      hyp=mix(hyp,vec3(.89,.84,.63),smoothstep(120.,650.,m)); // #E3D6A0
+      hyp=mix(hyp,vec3(.79,.64,.42),smoothstep(650.,1300.,m)); // #C9A36B
+      hyp=mix(hyp,vec3(.61,.43,.29),smoothstep(1300.,2500.,m)); // #9B6E4A
+      hyp=mix(hyp,vec3(.945,.93,.90),smoothstep(3300.,4600.,m)); // #F1EDE6
+      vec3 land=hyp*(1.+(lum-.70)*1.0);
+      float ice=smoothstep(.84,.93,min(t.r,t.g));            // ice caps from the source raster
+      land=mix(land,vec3(.95,.955,.97),ice);
+      float sh=smoothstep(.55,.9,t.g);                       // bathymetry tint of the source -> shelf vs deep
+      vec3 sea=mix(vec3(.065,.205,.31),vec3(.17,.40,.52),sh); sea=mix(sea,vec3(.40,.64,.72),smoothstep(.86,.97,t.g)*.55);
+      vec3 c=mix(land,sea,water);
+      // Imhof: warm highlights on lit slopes, cool blue-green shadow in the lee
+      c*=1.+k*.62;
+      c=mix(c,c*vec3(.78,.9,1.08),clamp(-k,0.,1.)*.7);
+      c=mix(c,c*vec3(1.1,1.04,.88),clamp(k,0.,1.)*.55);
+      float ndl=dot(N,L), ndv=max(dot(N,V),0.);
+      float lit=smoothstep(-.16,.30,ndl);
+      vec3 dayC=c*(.60+.62*clamp(ndl,0.,1.));
+      vec3 R=reflect(-L,N);
+      dayC+=vec3(1.,.96,.88)*pow(max(dot(R,V),0.),70.)*.38*water*lit;
+      dayC*=mix(.60,1.,pow(ndv,.42));                     // limb darkening
+      vec3 atm=vec3(.66,.80,.95);
+      dayC=mix(dayC,atm,pow(1.-ndv,3.2)*.62*(.25+.75*lit));
+      // night side: dim blue-green land, physical city lights
+      vec3 nC=c*vec3(.16,.23,.33)*(.7+.5*pow(ndv,.6));
+      float li=texture2D(lights,vUv).r;
+      vec3 cityL=vec3(1.,.72,.40)*pow(li,1.15)*1.7*(1.-water*.95)*smoothstep(.05,.5,ndv);
+      nC=mix(nC,vec3(.10,.22,.36),pow(1.-ndv,3.)*.55*(1.-lit));
+      float tw=exp(-pow(ndl/.11,2.));
+      vec3 col=mix(nC,dayC,lit)+cityL*pow(1.-lit,2.);
+      col+=vec3(.95,.42,.14)*tw*.20*(1.-ndv*.4);
+      gl_FragColor=vec4(col,1.);}`
+}));
+scene.add(globe);
+
+// outer halo
+const halo = new THREE.Mesh(new THREE.SphereGeometry(1.1, 96, 48), new THREE.ShaderMaterial({
+  side: THREE.BackSide, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+  uniforms: { L: { value: SUN.clone().normalize() }, night: { value: NIGHT ? 1 : 0 } },
+  vertexShader: 'varying vec3 vW; void main(){vW=(modelMatrix*vec4(position,1.)).xyz; gl_Position=projectionMatrix*viewMatrix*vec4(vW,1.);}',
+  fragmentShader: `uniform vec3 L; uniform float night; varying vec3 vW;
+    void main(){
+      vec3 d=normalize(vW-cameraPosition); float t=dot(-cameraPosition,d); vec3 p=cameraPosition+d*t;
+      float b=length(p); float x=clamp((b-1.)/.1,0.,1.);
+      float lit=smoothstep(-.3,.45,dot(normalize(p),L));
+      float I=pow(1.-x,2.6)*(b>1.?1.:0.);
+      vec3 col=mix(vec3(.33,.52,.78),vec3(.20,.40,.66),1.-lit)*(.28+.82*lit);
+      col+=vec3(.9,.45,.2)*exp(-pow(dot(normalize(p),L)/.12,2.))*.22*I;
+      gl_FragColor=vec4(col*I*1.1,I);}`
+}));
+scene.add(halo);
+renderer.render(scene, camera);
+
+/* ---------- projection helpers for the overlay ---------- */
+const camPos = camera.position.clone();
+function pr(v) {
+  const q = v.clone().applyMatrix4(camera.matrixWorldInverse).applyMatrix4(camera.projectionMatrix);
+  const front = v.dot(camPos.clone().sub(v)) > 0.0;
+  return { x: (q.x + 1) / 2 * W, y: (1 - q.y) / 2 * H, front };
+}
+const ll = (lat, lon, r = 1) => pr(P(lat, lon, r));
+const onScreen = (p, m = 60) => p.x > -m && p.x < W + m && p.y > -m && p.y < H + m;
+function slerp(a, b, t) { const om = Math.acos(THREE.MathUtils.clamp(a.dot(b), -1, 1)); const s = Math.sin(om); return a.clone().multiplyScalar(Math.sin((1 - t) * om) / s).add(b.clone().multiplyScalar(Math.sin(t * om) / s)); }
+
+/* ---------- base svg: graticule + borders ---------- */
+const NS = 'http://www.w3.org/2000/svg';
+function path(d, attrs) { const e = document.createElementNS(NS, 'path'); e.setAttribute('d', d); for (const k in attrs) e.setAttribute(k, attrs[k]); return e; }
+function polyD(pts) { let d = '', pen = false; for (const p of pts) { if (p && p.front) { d += (pen ? 'L' : 'M') + p.x.toFixed(1) + ' ' + p.y.toFixed(1); pen = true; } else pen = false; } return d; }
+const base = document.getElementById('svgBase');
+{ // graticule every 10 deg
+  let d = '';
+  for (let lat = -70; lat <= 80; lat += 10) { const pts = []; for (let lon = -180; lon <= 180; lon += 2) pts.push(ll(lat, lon, 1.0015)); d += polyD(pts); }
+  for (let lon = -180; lon < 180; lon += 10) { const pts = []; for (let lat = -78; lat <= 78; lat += 2) pts.push(ll(lat, lon, 1.0015)); d += polyD(pts); }
+  base.appendChild(path(d, { fill: 'none', stroke: '#fff', 'stroke-opacity': NIGHT ? .08 : .13, 'stroke-width': .6 }));
+  let b = '';
+  for (const line of borders.coordinates) {
+    const pts = line.map(([lo, la]) => ll(la, lo, 1.001)); if (!pts.some(p => p.front && onScreen(p, 40))) continue; b += polyD(pts);
+  }
+  base.appendChild(path(b, { fill: 'none', stroke: '#2a1d12', 'stroke-opacity': NIGHT ? .0 : .0, 'stroke-width': 0 }));
+  base.appendChild(path(b, { fill: 'none', stroke: NIGHT ? '#9FB4C6' : '#fff', 'stroke-opacity': NIGHT ? .38 : .70, 'stroke-width': .9, 'stroke-dasharray': '3.2 2.2', 'stroke-linecap': 'butt' }));
+}
+
+/* ---------- game content ---------- */
+const AP = {
+  lon: { n: 'Londyn', lat: 51.5, lon: -0.12, side: 'l', pax: [['crescent', 2], ['bowtie', 1]], load: '3/12' },
+  mad: { n: 'Madryt', lat: 40.4, lon: -3.7, side: 't', pax: [['chevron', 2]], load: '2/12' },
+  ber: { n: 'Berlin', lat: 52.5, lon: 13.4, side: 't', pax: [['fin', 3], ['keyhole', 1]], load: '4/12' },
+  war: { n: 'Warszawa', lat: 52.2, lon: 21.0, side: 'r', pax: [['bowtie', 2], ['crescent', 1]], load: '3/12' },
+  rom: { n: 'Rzym', lat: 41.9, lon: 12.5, hub: true, queue: ['fin', 'chevron', 'crescent', 'crescent', 'bowtie', 'keyhole', 'chevron', 'fin', 'bowtie'], more: 5, load: '14/24' },
+  ath: { n: 'Ateny', lat: 38.0, lon: 23.7, side: 'r', pax: [['chevron', 4], ['fin', 2]], load: '6/12' },
+  ist: { n: 'Stambuł', lat: 41.0, lon: 29.0, side: 'r', pax: [], load: '', isNew: true },
+  cai: { n: 'Kair', lat: 30.05, lon: 31.25, side: 'l', pax: [['bracket', 2], ['crescent', 3]], load: '5/12' },
+};
+const ROUTES = [
+  { type: 'wide', stops: ['lon', 'rom', 'cai'], style: 'solid', planes: [0.30, 0.78] },
+  { type: 'reg', stops: ['mad', 'rom', 'ath'], style: 'white', planes: [0.32] },
+  { type: 'prop', stops: ['war', 'ber', 'rom'], style: 'dotted', planes: [0.22] },
+];
+const vec = (k) => P(AP[k].lat, AP[k].lon);
+
+function routePts(r, n = 64) {
+  const out = []; // each element {v:Vector3 (lifted), g:Vector3 (ground), t:global}
+  const segs = r.stops.length - 1;
+  for (let s = 0; s < segs; s++) {
+    const a = vec(r.stops[s]), b = vec(r.stops[s + 1]);
+    for (let i = (s ? 1 : 0); i <= n; i++) {
+      const u = i / n, g = slerp(a, b, u).normalize();
+      const dist = Math.acos(a.dot(b));
+      const lift = 1 + Math.min(0.06, dist * 0.10) * Math.sin(Math.PI * u) + 0.004;
+      out.push({ v: g.clone().multiplyScalar(lift), g: g.clone(), t: (s + u) / segs });
+    }
+  }
+  return out;
+}
+const svgR = document.getElementById('svgRoutes'), svgP = document.getElementById('svgPlanes');
+
+if (SCENE === 'game') {
+  const casingColor = NIGHT ? '#0A1118' : '#fff';
+  ROUTES.forEach((r) => {
+    const pts = routePts(r), sp = pts.map(p => pr(p.v));
+    const d = polyD(sp);
+    const g = document.createElementNS(NS, 'g');
+    if (r.style === 'solid') {
+      g.appendChild(path(d, { fill: 'none', stroke: '#fff', 'stroke-width': 6.2, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', opacity: NIGHT ? .95 : 1 }));
+      g.appendChild(path(d, { fill: 'none', stroke: '#D9482B', 'stroke-width': 3.4, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }));
+    } else if (r.style === 'white') {
+      g.appendChild(path(d, { fill: 'none', stroke: '#1B2430', 'stroke-width': 5.8, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', opacity: .92 }));
+      g.appendChild(path(d, { fill: 'none', stroke: '#fff', 'stroke-width': 3, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }));
+    } else {
+      g.appendChild(path(d, { fill: 'none', stroke: '#fff', 'stroke-width': 6, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', opacity: .95 }));
+      g.appendChild(path(d, { fill: 'none', stroke: '#D9482B', 'stroke-width': 3.3, 'stroke-linecap': 'butt', 'stroke-dasharray': '1.2 6.2', 'stroke-linejoin': 'round' }));
+      g.appendChild(path(d, { fill: 'none', stroke: '#D9482B', 'stroke-width': 3.3, 'stroke-linecap': 'round', 'stroke-dasharray': '0.1 6.4', 'stroke-linejoin': 'round' }));
+    }
+    svgR.appendChild(g);
+    // planes
+    r.planes.forEach((t) => {
+      const i = Math.min(pts.length - 2, Math.max(1, Math.round(t * (pts.length - 1))));
+      const a = sp[i - 1], b = sp[i + 1], c = sp[i];
+      const ang = Math.atan2(b.x - a.x, -(b.y - a.y)) / D2R;
+      const gs = pr(pts[i].g);
+      // shadow: on the ground, same silhouette, lowered contrast
+      const sh = document.createElementNS(NS, 'g');
+      const sdx = (gs.x - c.x) * 1.0 - 3, sdy = (gs.y - c.y) * 1.0 + 5;
+      sh.setAttribute('transform', `translate(${(c.x + sdx).toFixed(1)} ${(c.y + sdy).toFixed(1)}) rotate(${ang.toFixed(1)}) scale(${PLANE[r.type].sc * 0.98})`);
+      sh.appendChild(path(PLANE[r.type].d, { fill: '#0b1620', opacity: NIGHT ? .38 : .34 }));
+      svgP.appendChild(sh);
+    });
+    r.planes.forEach((t) => {
+      const i = Math.min(pts.length - 2, Math.max(1, Math.round(t * (pts.length - 1))));
+      const a = sp[i - 1], b = sp[i + 1], c = sp[i];
+      const ang = Math.atan2(b.x - a.x, -(b.y - a.y)) / D2R;
+      const pl = document.createElementNS(NS, 'g');
+      pl.setAttribute('transform', `translate(${c.x.toFixed(1)} ${c.y.toFixed(1)}) rotate(${ang.toFixed(1)}) scale(${PLANE[r.type].sc})`);
+      pl.appendChild(path(PLANE[r.type].d, { fill: '#fff', stroke: '#1B2430', 'stroke-width': 1.3, 'stroke-linejoin': 'round', 'paint-order': 'stroke' }));
+      pl.appendChild(path(PLANE[r.type].d, { fill: '#fff' }));
+      if (NIGHT) { // wing-tip lights: physical, tiny
+        [[-12.4, 7], [12.4, 7]].forEach(([x, y], k) => { const cc = document.createElementNS(NS, 'circle'); cc.setAttribute('cx', x * (PLANE[r.type].sc > 1.1 ? 1.02 : .85)); cc.setAttribute('cy', y * 0.8 - 1); cc.setAttribute('r', 1.2); cc.setAttribute('fill', k ? '#4CE08C' : '#FF5A44'); pl.appendChild(cc); });
+      }
+      svgP.appendChild(pl);
+    });
+  });
+}
+
+/* ---------- airports ---------- */
+const marks = document.getElementById('svgMarks'), tags = document.getElementById('tags');
+function mk(tag, attrs, parent = marks) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); parent.appendChild(e); return e; }
+const showTags = SCENE === 'game';
+const MENU_AP = ['lon', 'mad', 'rom', 'ath', 'cai', 'war', 'ber'];
+for (const k in AP) {
+  const a = AP[k]; if (SCENE === 'menu' && !MENU_AP.includes(k)) continue;
+  const p = ll(a.lat, a.lon, 1.002); if (!p.front) continue;
+  if (SCENE === 'menu') { mk('circle', { cx: p.x, cy: p.y, r: a.hub ? 7 : 4.6, fill: '#F4EFE4', stroke: '#1B2430', 'stroke-width': 2 }); if (a.hub) mk('circle', { cx: p.x, cy: p.y, r: 12, fill: 'none', stroke: '#F4EFE4', 'stroke-width': 2 }); continue; }
+  const T = document.createElement('div'); T.className = 'tag' + (a.hub ? ' hub' : '');
+  let h = `<div class="r1"><b>${a.n.toUpperCase() === a.n ? a.n : a.n}</b>${a.load ? `<i>${a.load}</i>` : ''}</div>`;
+  if (a.hub) h += `<div class="queue">${a.queue.map(g => tok(g, 17)).join('')}<em>+${a.more}</em></div>`;
+  else if (a.pax && a.pax.length) h += `<div class="r2">${a.pax.map(([g, n]) => `<span>${tok(g, 13)}${n}</span>`).join('')}</div>`;
+  T.innerHTML = h; tags.appendChild(T);
+  const w = T.offsetWidth, ht = T.offsetHeight;
+  const clampX = (v) => Math.max(6, Math.min(W - 6 - w, v));
+  let x, y; const gap = a.hub ? 20 : 11;
+  if (a.hub) { x = p.x - w + 30; y = p.y + 24; }
+  else if (a.side === 'r') { x = p.x + gap; y = p.y - ht / 2; }
+  else if (a.side === 'l') { x = p.x - gap - w; y = p.y - ht / 2; }
+  else if (a.side === 't') { x = p.x - w / 2; y = p.y - gap - ht - 2; }
+  else { x = p.x - w / 2; y = p.y + gap; }
+  x = clampX(x);
+  T.style.left = x.toFixed(1) + 'px'; T.style.top = y.toFixed(1) + 'px';
+  // leader
+  const lx = THREE_clamp(p.x, x, x + w), ly = THREE_clamp(p.y, y, y + ht);
+  mk('line', { x1: p.x, y1: p.y, x2: lx, y2: ly, stroke: NIGHT ? '#F4EFE4' : '#1B2430', 'stroke-width': 1.2 });
+  if (a.hub) {
+    mk('circle', { cx: p.x, cy: p.y, r: 17, fill: 'none', stroke: NIGHT ? '#0A1118' : '#fff', 'stroke-width': 5, opacity: .85 });
+    mk('circle', { cx: p.x, cy: p.y, r: 17, fill: 'none', stroke: '#F4EFE4', 'stroke-width': 3, opacity: .55 });
+    const C = 2 * Math.PI * 17;
+    mk('circle', { cx: p.x, cy: p.y, r: 17, fill: 'none', stroke: '#D9482B', 'stroke-width': 3.4, 'stroke-dasharray': `${C * .58} ${C}`, transform: `rotate(-90 ${p.x} ${p.y})`, 'stroke-linecap': 'butt' });
+    mk('circle', { cx: p.x, cy: p.y, r: 10.5, fill: '#F4EFE4', stroke: '#1B2430', 'stroke-width': 2.6 });
+    mk('circle', { cx: p.x, cy: p.y, r: 5, fill: '#F4EFE4', stroke: '#1B2430', 'stroke-width': 2.2 });
+    // control-tower mark, shape not colour, beside the hub
+    const t = mk('g', { transform: `translate(${p.x + 17} ${p.y - 25})` });
+    mk('path', { d: 'M-4 12 L-2.6 3 L-5 3 L-5 -1 L5 -1 L5 3 L2.6 3 L4 12Z M-1 -1 V-7 H1 V-1Z', fill: '#F4EFE4', stroke: '#1B2430', 'stroke-width': 1.6, 'stroke-linejoin': 'round' }, t);
+    mk('path', { d: 'M-1 -1 V-7 H1 V-1Z M-4 12 L-2.6 3 L-5 3 L-5 -1 L5 -1 L5 3 L2.6 3 L4 12Z', fill: '#F4EFE4' }, t);
+  } else {
+    mk('circle', { cx: p.x, cy: p.y, r: 6, fill: NIGHT ? '#0A1118' : '#fff', opacity: .9 });
+    mk('circle', { cx: p.x, cy: p.y, r: 4.2, fill: '#F4EFE4', stroke: '#1B2430', 'stroke-width': 2.2 });
+  }
+  if (a.isNew) { const n = document.createElement('div'); n.className = 'newtab'; n.textContent = 'NOWE'; n.style.left = (x + 2) + 'px'; n.style.top = (y - 14) + 'px'; tags.appendChild(n); }
+}
+function THREE_clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+/* atlas lettering (countries, seas) */
+if (SCENE === 'game') {
+  const LAB = [['Francja', 46.4, 0.2], ['Niemcy', 49.8, 7.0], ['Polska', 50.4, 19.0], ['Turcja', 38.7, 34.5], ['Egipt', 27.0, 29.5], ['Włochy', 44.2, 10.4, 'sea'], ['Morze Śródziemne', 34.7, 18, 'sea'], ['Morze Czarne', 44.2, 34.0, 'sea'], ['Libia', 27.5, 17.5], ['Ukraina', 49.2, 31.0]];
+  LAB.forEach(([t, la, lo, c]) => { const p = ll(la, lo); if (!p.front || !onScreen(p, -10)) return; const e = document.createElement('div'); e.className = 'atlas' + (c === 'sea' ? ' sea' : ''); e.textContent = t; e.style.left = p.x + 'px'; e.style.top = p.y + 'px'; tags.appendChild(e); });
+}
+
+/* ---------- UI ---------- */
+const ui = document.getElementById('ui');
+const icon = {
+  undo: '<svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 6 L4.5 11 L10 16"/><path d="M5 11 H16.5 a6 6 0 0 1 0 12 H11"/></svg>',
+  plane: (d, sc, fill = 'currentColor') => `<svg width="30" height="30" viewBox="-15 -15 30 30"><path d="${d}" transform="scale(${sc})" fill="${fill}"/></svg>`,
+  hub: '<svg width="30" height="30" viewBox="-15 -15 30 30" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"><circle r="10"/><circle r="4.2"/><path d="M12 -12 V-6 M9 -12 H15" stroke-linecap="round"/></svg>',
+};
+if (SCENE === 'game') {
+  const clock = NIGHT ? '23:40' : '14:20', hrs = NIGHT ? 23 + 40 / 60 : 14 + 20 / 60;
+  const bar = (() => { const x = hrs / 24 * 100; const nightA = '#1B2430'; return `<svg width="100%" height="9" viewBox="0 0 300 9" preserveAspectRatio="none"><rect x="0" y="1" width="300" height="7" fill="${NIGHT ? '#2B3745' : '#DDD3BE'}" rx="1"/><rect x="0" y="1" width="75" height="7" fill="${NIGHT ? '#0B1118' : '#1B2430'}"/><rect x="250" y="1" width="50" height="7" fill="${NIGHT ? '#0B1118' : '#1B2430'}"/><g stroke="${NIGHT ? '#F4EFE4' : '#F4EFE4'}" stroke-width="1" opacity=".55"><path d="M75 1v7M150 1v7M225 1v7"/></g><rect x="${(x * 3 - 1.6).toFixed(1)}" y="0" width="3.2" height="9" fill="#D9482B"/></svg>`; })();
+  ui.innerHTML = `
+  <div id="clock" class="panel"><div class="time">${clock}</div>
+    <div class="wk"><b>Tydzień 3</b><span>dzień 4 z 7</span><span style="color:var(--panel-ink);font-weight:600">128 pasażerów</span></div>
+    <div class="bar">${bar}</div></div>
+  <div id="pause" class="panel"><i></i><i></i></div>
+  <div id="atc" class="panel"><div class="tab">ATC</div><div class="tx"><b>Londyn → Rzym → Kair</b><span>3 507 km · Odrzutowy · 8/12 miejsc</span></div></div>
+  <div id="dock" class="panel">
+    <div class="it" style="left:6px"><div class="ic">${icon.undo}</div><label>Cofnij</label></div>
+    <div class="it" style="left:86px"><div class="ic">${icon.plane(PLANE.prop.d, 1.1)}<span class="cnt">2</span></div><label>Śmigłowy</label></div>
+    <div class="it sel" style="left:166px"><div class="ic" style="color:#fff">${icon.plane(PLANE.wide.d, 1.12)}<span class="cnt" style="border-color:var(--route)">1</span></div><label>Odrzutowy</label></div>
+    <div class="it" style="left:246px"><div class="ic">${icon.hub}<span class="cnt">1</span></div><label>Hub</label></div>
+    <div class="it" style="left:326px"><div class="ic" style="font-weight:800;font-size:19px">1×</div><label>Tempo 1×</label></div>
+  </div>`;
+}
+if (SCENE === 'menu') {
+  ui.innerHTML = `
+  <div id="brand"><h1>Airway</h1><p><svg width="22" height="22" viewBox="-13 -13 26 26" style="vertical-align:-5px;margin-right:9px"><circle r="10.5" fill="none" stroke="#F4EFE4" stroke-opacity=".45" stroke-width="3"/><circle r="10.5" fill="none" stroke="#D9482B" stroke-width="3.4" stroke-dasharray="38 66" transform="rotate(-90)"/><circle r="5.2" fill="#D9482B" stroke="#F4EFE4" stroke-width="1.6"/></svg>Sieć lotnicza na całym globie</p></div>
+  <div id="cont" class="mbtn panel"><h3>Kontynuuj</h3><p>tydzień 3 · 128 pasażerów</p><div class="play"><svg width="24" height="24" viewBox="-12 -12 24 24"><path d="M-6 -9 L9 0 L-6 9Z" fill="#fff" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></svg></div></div>
+  <div class="mbtn panel half l" style="top:762px;height:62px"><h3>Lot bez końca</h3><p>rekord 412 pasażerów</p></div>
+  <div class="mbtn panel half r" style="top:762px;height:62px"><h3>Dziś 8 lis</h3><p>seria 4 dni · zagraj dziś</p></div>
+  <div class="mbtn panel half l" style="top:834px;height:50px;padding:8px 14px"><h3 style="font-size:17px">Zadania</h3><p style="margin-top:1px">3 z 12 rozwiązanych</p></div>
+  <div class="mbtn panel half r" style="top:834px;height:50px;padding:8px 14px"><h3 style="font-size:17px">Ustawienia</h3><p style="margin-top:1px">PL · dźwięk · licencje</p></div>`;
+  // routes under the menu globe, drawn thinner, with planes
+  const MR = [{ type: 'wide', stops: ['lon', 'rom', 'cai'], planes: [0.3] }, { type: 'reg', stops: ['mad', 'rom', 'ath'], planes: [0.62] }, { type: 'prop', stops: ['war', 'ber', 'rom'], planes: [0.3] }];
+  MR.forEach((r) => {
+    const pts = routePts(r), sp = pts.map(p => pr(p.v)), d = polyD(sp);
+    svgR.appendChild(path(d, { fill: 'none', stroke: '#fff', 'stroke-width': 5.2, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }));
+    svgR.appendChild(path(d, { fill: 'none', stroke: r.type === 'reg' ? '#1B2430' : '#D9482B', 'stroke-width': 2.8, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-dasharray': r.type === 'prop' ? '0.1 6' : 'none' }));
+    r.planes.forEach((t) => {
+      const i = Math.round(t * (pts.length - 1)), a = sp[i - 1], b = sp[i + 1], c = sp[i], ang = Math.atan2(b.x - a.x, -(b.y - a.y)) / D2R;
+      const gs = pr(pts[i].g);
+      const sh = document.createElementNS(NS, 'g'); sh.setAttribute('transform', `translate(${c.x + (gs.x - c.x) - 3} ${c.y + (gs.y - c.y) + 5}) rotate(${ang}) scale(${PLANE[r.type].sc})`); sh.appendChild(path(PLANE[r.type].d, { fill: '#0b1620', opacity: .34 })); svgP.appendChild(sh);
+      const pl = document.createElementNS(NS, 'g'); pl.setAttribute('transform', `translate(${c.x} ${c.y}) rotate(${ang}) scale(${PLANE[r.type].sc})`);
+      pl.appendChild(path(PLANE[r.type].d, { fill: '#fff', stroke: '#1B2430', 'stroke-width': 1.3, 'stroke-linejoin': 'round', 'paint-order': 'stroke' })); pl.appendChild(path(PLANE[r.type].d, { fill: '#fff' })); svgP.appendChild(pl);
+    });
+  });
+  
+}
+window.__ready = true;
+</script>
+</body>
+</html>

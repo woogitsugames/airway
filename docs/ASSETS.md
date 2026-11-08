@@ -193,3 +193,18 @@ crops are U.S. Government works — FAA sectional / terminal area charts and d-T
 U.S. Coast and Geodetic Survey and Department of Commerce sectional charts 1935–1956 scanned by the Library of
 Congress (`gct00089`) — public domain under 17 U.S.C. § 105. Per-file source URL, title, date and retrieval route:
 `docs/references/charts/SOURCES.md`. Contact-sheet layout: own work (CC0).
+
+## Art-direction mockups K3 "Hipsometria" (night 65a; not shipped)
+`docs/styles/kierunki-2026-11c/makiety/` holds three portrait mockups (`k3-gra-dzien.png`, `k3-menu.png`,
+`k3-gra-noc.png`, 412×915 @2x) and the sources that render them (`src/`). Nothing reaches `public/`, `dist/` or the apps.
+Fonts: **Fraunces** (variable `opsz/wght/SOFT/WONK`, The Fraunces Project Authors) and **Figtree** (variable `wght`,
+The Figtree Project Authors), both SIL OFL 1.1, fetched 2026-11-08 from github.com/google/fonts (`ofl/fraunces`,
+`ofl/figtree`) into `makiety/fonts/` with `OFL-Fraunces.txt` and `OFL-Figtree.txt`. Polish letters checked with fontTools
+(all present); Fraunces lacks U+2192, so arrows are set in Figtree.
+Data (downloaded by `src/fetch-data.sh`, not committed): Natural Earth **HYP_50M_SR_W** (cross-blended hypsometric tints
+with shaded relief and water, `naturalearth.s3.amazonaws.com/50m_raster/HYP_50M_SR_W.zip`, public domain) downscaled to
+4096×2048 as sea and shading base, recoloured on land from our own ETOPO5 raster (`public/data/globe/elevation-2048.png`,
+NOAA, public domain) with an Imhof two-light hillshade; Natural Earth populated places (`ne_10m_populated_places_simple`,
+public domain) baked into a city-lights texture for the night side (no NASA imagery); country borders from `world-atlas`
+2.0.2 (Natural Earth via ISC licence). Renderer: three.js r170 (MIT), dev-time only. Aircraft silhouettes, passenger
+glyphs (D-08 paths from `src/data/regions.ts`) and UI are our own work.
