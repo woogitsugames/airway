@@ -854,7 +854,7 @@ Plan: `docs/styles/kierunki-2026-11b/PLAN-LINORYT.md` (one PR per step; ext = gl
       The `tnum` fix also covers the U2 notes and edge chips ("12 , 270 km" → "12,270 km"; shots `docs/shots/31a/u2/`).
 - [x] **E3 (ext)** the Linoryt look in release builds behind `DEFAULT_GLOBE_LOOK` (still satellite); lazy chunks `linoryt-globe` + `linoryt-objects`, main JS +3 kB, open-sea parallels ≥ 6 px (D-300) — ext/04-linoryt-e3-ship
 - [ ] **U5 (agent)** the flip: Linoryt default skin + look; delete Róża and `?skin=current`; i18n renames; CSS budget back
-- [ ] **E4 (ext)** remove Satelita (and Mapa if the owner agrees: open question L2 of PR #285) and the photo textures (−1.9 MB)
+- [x] **E4 (ext)** remove Satelita and Mapa (L2: removed, D-285) and the photo textures: looks, textures (−2.07 MB `dist/`), cloud/ocean/haze shells, decorations, day/night grading, `GlobeMode`/`setGlobeMode`; 3D crate models off (D-302); medallion/tube/plane-model files go in a follow-up PR — ext/04-linoryt-e4-cleanup
 - [ ] **U6 (agent)** D-47 / `test:cvd` on the inks, reduce motion, text scale, notch, `ui:matrix` on the real renderer
 - [ ] **U7 (agent/coordinator)** store shots, preview video (D-265/D-269), landing page assets
 

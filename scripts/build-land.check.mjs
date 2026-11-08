@@ -15,7 +15,6 @@ export const TERRAIN_BUDGET = { low: 45000, medium: 210000, high: 300000 };
 export async function checkTerrain({ log = console.log } = {}) {
   const { decodeLandMask } = await import('../src/render/globe/land-mask.ts');
   const terrain = await import('../src/render/globe/terrain.ts');
-  const { createDecorations, DECOR } = await import('../src/render/globe/decorations.ts');
   const { CITIES } = await import('../src/data/cities.ts');
   const mask = decodeLandMask(JSON.parse(readFileSync(resolve(ROOT, 'public/data/land-50m.json'), 'utf8')));
   let passed = 0, failed = 0;
@@ -204,46 +203,6 @@ export async function checkTerrain({ log = console.log } = {}) {
   for (const city of CITIES) worst = Math.max(worst, terrain.terrainHeight(city.lon, city.lat, mask));
   check(worst < .0045, `airports: terrain below every pad (max ${worst.toFixed(4)})`);
 
-  // Decorations: full counts, never in sand seas, on ice or on pads.
-  for (const level of ['low', 'medium', 'high']) {
-    const started = Date.now();
-    const group = createDecorations(mask, level, SEED, new Vector3(0, 1, 0));
-    const ms = Date.now() - started;
-    const byName = Object.fromEntries(group.children.map((c) => [c.name, c]));
-    const trees = byName.Conifers.count + byName.BroadleafTrees.count;
-    stats[level].trees = trees;
-    stats[level].rocks = byName.Rocks.count;
-    stats[level].decorMs = ms;
-    check(trees >= DECOR[level].trees * .97, `${level}: ${trees}/${DECOR[level].trees} trees placed`);
-    check(byName.Rocks.count >= DECOR[level].rocks * .9, `${level}: ${byName.Rocks.count}/${DECOR[level].rocks} rocks placed`);
-    let misplaced = 0;
-    const m = new Vector3();
-    for (const mesh of [byName.Conifers, byName.BroadleafTrees]) {
-      const arr = mesh.instanceMatrix.array;
-      for (let i = 0; i < mesh.count; i++) {
-        m.set(arr[i * 16 + 12], arr[i * 16 + 13], arr[i * 16 + 14]).normalize();
-        const lat = Math.asin(m.y) * 180 / Math.PI, lon = Math.atan2(m.x, m.z) * 180 / Math.PI;
-        terrain.sampleAt(lon, lat, mask, s);
-        if (s.dry > .6 || s.ice > .2 || s.dist <= 0 || terrain.airportFlatten(lon, lat) > .5) misplaced++;
-      }
-    }
-    check(misplaced === 0, `${level}: no trees in deserts, on ice, in the sea or on airport pads (${misplaced})`);
-    group.traverse((o) => { o.geometry?.dispose(); o.material?.dispose?.(); });
-  }
-  // Density at game zoom: trees per 10°x10° of central Europe on medium (mockup reads ~60+).
-  {
-    const group = createDecorations(mask, 'medium', SEED, new Vector3(0, 1, 0));
-    let europe = 0;
-    for (const mesh of group.children.filter((c) => c.name === 'Conifers' || c.name === 'BroadleafTrees')) {
-      const arr = mesh.instanceMatrix.array;
-      for (let i = 0; i < mesh.count; i++) {
-        const v = new Vector3(arr[i * 16 + 12], arr[i * 16 + 13], arr[i * 16 + 14]).normalize();
-        const lat = Math.asin(v.y) * 180 / Math.PI, lon = Math.atan2(v.x, v.z) * 180 / Math.PI;
-        if (lat > 45 && lat < 55 && lon > 5 && lon < 25) europe++;
-      }
-    }
-    stats.medium.treesEurope = europe;
-    check(europe > 80, `medium: central Europe has ${europe} trees (20°x10° box)`);
-  }
+  // [ext-04 E4] Decorations (trees, rocks) went with the diorama/satellite looks (D-285); the print has none.
   return { passed, failed, stats };
 }

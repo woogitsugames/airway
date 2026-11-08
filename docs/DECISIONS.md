@@ -3266,3 +3266,16 @@ fixes bring the release CSS to 129.4 kB (budget 132 kB unchanged); `test:hud-tar
 Rejected: keeping `?skin=linoryt` as a no-op alias (dead code; the e2e harness now refuses `--skin`), removing
 `setGlobeMode` from `src/render` here (ext session, E4), folding the `:root[data-skin="linoryt"]` prefix out of the
 source (the scope keeps the structure file auditable and the pruner's selector match unchanged). **Status: in force.**
+
+## D-302 — E4: the 3D crate models are not drawn in print; the satellite object layers leave in a separate PR (2026-11-08, Claude, ext session E4; agreed with the coordinator)
+Step E4 of PLAN-LINORYT.md removes Satelita, Mapa (D-285), the diorama and the DEV comparison looks with their
+textures (−2.07 MB `dist/`), shells, decorations and day/night grading, and `GlobeMode`/`setGlobeMode` (U5 already
+removed the setting and the dock tag). **Choice.** (1) `WorldRenderer.drawModelPreview` returns `false`: the Linoryt
+crates print their symbol and the skin hides the model canvas, yet the draw compiled the model shaders and read the
+pixels back synchronously on the weekly board's first frame (1.4–3.2 s on SwiftShader, flaky e2e #315; likely a hitch
+on budget phones). The session then marks `data-model="none"` and drops the canvas. (2) The files of the satellite
+object layers (`airports.ts` medallions, the tube `RouteLayer`, `planes.ts` plane models, `modelPreview.ts`,
+`models/planes.ts`) stay for one more PR, which also moves their tests (`test:render-layers`) and the model preview:
+E4 stays small enough to review. (3) The D-177 contrast probe (`measureLayerContrast`) needs no change: it measures
+the Linoryt stamp, ribbon and sprite groups (dev world, zoom 3.3, low: routes 4.6/5.5, airports 3.3/2.8, planes
+1.8/2.0 by day/night); the thresholds for the print are U6's (D-47 pass). **Status: in force.**

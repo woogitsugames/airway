@@ -9,18 +9,17 @@
  */
 import { Color, Group, PerspectiveCamera, Scene, Vector3, WebGLRenderer } from 'three';
 import { createContextGuard } from './contextGuard'; // [night-11h]
-import { createAirports, type AirportsLayer, type AirportStyle } from './airports';
+import type { AirportsLayer, AirportStyle } from './airports';
 import { GlobeOrbitCamera, type OrbitCameraOptions, type SafeAreaInsets } from './camera';
 import { createGlobe, createSunLights, DEFAULT_GLOBE_LOOK, type GlobeInstance, type GlobeLook } from './globe';
 import { pickSphereNdc, setLatLonVec3, type LonLat } from './globe/geo-math';
-import { createModelPreviewRenderer, type ModelPreviewRenderer } from './modelPreview';
-import { PlaneLayer, type PlaneRenderSnapshot } from './planes';
+import type { PlaneRenderSnapshot } from './planes';
 import {
   AdaptiveQualityMonitor, adaptiveSteps, applyAdaptiveSteps, applyQualityProfile, frameDue, resolveQualityProfile,
   SAVER_DECOR_DENSITY, type AdaptiveStep, type QualityPreference, type QualityProfile,
 } from './quality';
-import { createRoutePreview, type RoutePreviewLayer, type RoutePreviewView } from './routePreview';
-import { RouteLayer, type AircraftKind, type GeoWaypoint, type RouteRenderSpec } from './routes';
+import type { RoutePreviewLayer, RoutePreviewView } from './routePreview';
+import type { AircraftKind, GeoWaypoint, RouteRenderSpec } from './routes';
 import { createSunController, type SunController } from './sun';
 import { measureLayerContrast, sampleLuminance, type LayerContrast, type PixelRect } from './contrast';
 import type { UpgradeKind } from '../sim/upgrades';
@@ -94,9 +93,6 @@ export interface WorldStats {
   readonly decorTotal: number;
 }
 
-/** [G8] D-172: the two surfaces the player can choose. */
-export type GlobeMode = 'satellite' | 'map';
-
 export interface WorldRendererOptions {
   /** Device tier preference; persistence is owned by the settings screen. */
   readonly quality?: QualityPreference;
@@ -104,12 +100,9 @@ export interface WorldRendererOptions {
   readonly seed?: number;
   readonly landUrl?: string;
   /**
-   * [ext-03] Globe look override (DEV comparisons, docs/mockups/globe-2026-11/); default: `DEFAULT_GLOBE_LOOK`
-   * ([ext-04 E3] `linoryt` after the flip), otherwise the player's `globeMode`.
+   * [ext-04 E4] The globe look; the Linoryt print is the only one (D-285).
    */
   readonly look?: GlobeLook;
-  /** [G8] D-172: the player's globe mode, Satelita (default) or Mapa; change it later with `setGlobeMode`. */
-  readonly globeMode?: GlobeMode;
   /** [ext-03] D-175/D-178 airport/route style; default `medal` (owner, D-178). DEV `?airportStyle=` compares. */
   readonly airportStyle?: AirportStyle;
   readonly camera?: OrbitCameraOptions;
@@ -150,8 +143,6 @@ export interface WorldRenderer {
   /** [night-11h] Called with true on context loss and false once it is restored and the quality re-applied. */
   onContextChange(listener: (lost: boolean) => void): () => void;
   setSun(lon: number, lat: number): void;
-  /** [G8] D-172: Satelita ↔ Mapa; swaps the surface textures of the current globe and keeps the mode across rebuilds. */
-  setGlobeMode(mode: GlobeMode): void;
   /** Day/night from the authoritative tick plus render interpolation fraction. */
   setTime(tick: number, fraction?: number): void;
   setCities(cities: readonly CityView[]): void;
@@ -213,10 +204,9 @@ export function createWorldRenderer(
   const lights = createSunLights(quality);
   scene.add(lights.group);
   const sun: SunController = createSunController(lights, renderer);
-  const airportStyle: AirportStyle = opts.airportStyle ?? 'medal';
   // [ext-04 E2] The Linoryt look draws stamps, double-line ribbons, a dashed preview and cut silhouettes instead.
   // [ext-04 E3] The look this renderer draws: the override, else the default look when that is the print.
-  const look: GlobeLook | undefined = opts.look ?? (DEFAULT_GLOBE_LOOK === 'linoryt' ? 'linoryt' : undefined);
+  const look: GlobeLook = opts.look ?? DEFAULT_GLOBE_LOOK; // [ext-04 E4] always the print
   // The Linoryt layers live in their own chunk (with the print globe); until it arrives, record-only stand-ins keep
   // the airport set and the last routes, planes, loads and preview are replayed into the real layers (D-300).
   let linorytObjects: LinorytObjects | null = null;
@@ -224,29 +214,18 @@ export function createWorldRenderer(
   let routes: RouteLayerLike;
   let planes: PlaneLayerLike;
   let preview: RoutePreviewLayer;
-  if (look === 'linoryt') {
-    const known = new Map<string, boolean>();
-    airports = {
-      group: new Group(), addAirport: (def) => { known.set(def.id, def.hub === true); }, setHubLoad() { /* replayed */ },
-      setCurfew() { /* replayed */ }, setZoom() { /* screen-constant */ }, getPosition: () => null, has: (id) => known.has(id),
-      isHub: (id) => known.get(id) === true, clear: () => known.clear(), update() { /* nothing drawn yet */ }, dispose() { known.clear(); },
-    };
-    routes = { group: new Group(), getRoute: () => undefined, setRoutes() { /* replayed */ }, dispose() { /* nothing yet */ },
-      stats: { routes: 0, segments: 0, drawCalls: 0, triangles: 0, rebuilds: 0 } };
-    planes = { group: new Group(), setSnapshots() { /* replayed */ }, update() { /* nothing yet */ }, setDaylight() { /* print */ },
-      dispose() { /* nothing yet */ }, stats: { planes: 0, turboprops: 0, widebodies: 0, mainPassCalls: 0, triangles: 0, droppedPlanes: 0 } };
-    preview = { object: new Group(), update() { /* replayed */ }, dispose() { /* nothing yet */ } };
-  } else {
-    airports = createAirports(scene, {
-      style: airportStyle,
-      maxAirports: opts.maxAirports ?? 64, maxHubSeats: opts.maxHubSeats ?? 48,
-    });
-    // [ext-03 G9] D-178: route tubes carry a dark ink outline unless the pre-D-178 `current` style is asked for.
-    const tubes = airportStyle === 'current' ? new RouteLayer()
-      : new RouteLayer({ outline: true, turboprop: airportStyle === 'apron' ? '#F39A2E' : undefined });
-    routes = tubes;
-    planes = new PlaneLayer(tubes, { maxPlanes: opts.maxPlanes ?? 120, progressScale: opts.progressScale });
-    preview = createRoutePreview();
+  {
+  const known = new Map<string, boolean>();
+  airports = {
+    group: new Group(), addAirport: (def) => { known.set(def.id, def.hub === true); }, setHubLoad() { /* replayed */ },
+    setCurfew() { /* replayed */ }, setZoom() { /* screen-constant */ }, getPosition: () => null, has: (id) => known.has(id),
+    isHub: (id) => known.get(id) === true, clear: () => known.clear(), update() { /* nothing drawn yet */ }, dispose() { known.clear(); },
+  };
+  routes = { group: new Group(), getRoute: () => undefined, setRoutes() { /* replayed */ }, dispose() { /* nothing yet */ },
+    stats: { routes: 0, segments: 0, drawCalls: 0, triangles: 0, rebuilds: 0 } };
+  planes = { group: new Group(), setSnapshots() { /* replayed */ }, update() { /* nothing yet */ }, setDaylight() { /* print */ },
+    dispose() { /* nothing yet */ }, stats: { planes: 0, turboprops: 0, widebodies: 0, mainPassCalls: 0, triangles: 0, droppedPlanes: 0 } };
+  preview = { object: new Group(), update() { /* replayed */ }, dispose() { /* nothing yet */ } };
   }
   scene.add(routes.group);
   scene.add(planes.group);
@@ -257,7 +236,6 @@ export function createWorldRenderer(
   let lastPlanes: readonly [readonly PlaneView[], readonly PlaneView[]] = [[], []];
   let lastPreview: RoutePreviewView | null = null;
   let lastLoads: readonly HubLoadView[] = [];
-  let models: ModelPreviewRenderer | null = null;
 
   const cities = new Map<string, CityView>();
   const cityList: CityView[] = [];
@@ -266,7 +244,6 @@ export function createWorldRenderer(
   const toCamera = new Vector3();
   const point: ScreenPoint = { x: 0, y: 0, visible: false };
   let globe: GlobeInstance | null = null;
-  let globeMode: GlobeMode = opts.globeMode ?? 'satellite';
   let globeEpoch = 0;
   let disposed = false;
   let lastZoom = -1;
@@ -284,13 +261,11 @@ export function createWorldRenderer(
     const mine = ++globeEpoch;
     const next = await createGlobe(scene, {
       quality, seed: opts.seed ?? 0xA1A1, landUrl: opts.landUrl, sunDirection: lights.direction,
-      look: look ?? globeMode,
+      look,
     });
     if (disposed || mine !== globeEpoch) { next.dispose(); return; }
     globe?.dispose();
     globe = next;
-    // [G8] The mode may have changed while the globe was loading.
-    if (!look && globe.surfaceLook !== 'diorama' && globe.surfaceLook !== globeMode) void globe.setSurfaceLook(globeMode);
     globe.setDecorDensity(quality.decorDensity);
     globe.lod.forceLevel(forcedLevel);
   };
@@ -323,7 +298,7 @@ export function createWorldRenderer(
     lastPaintAt = 0;
     pendingDt = 0;
   });
-  const linorytReady = look === 'linoryt' ? import('./linoryt-objects').then((module) => {
+  const linorytReady = import('./linoryt-objects').then((module) => {
     if (disposed) return;
     const next = module.createLinorytObjects(scene,
       { maxAirports: opts.maxAirports, maxPlanes: opts.maxPlanes, progressScale: opts.progressScale });
@@ -338,8 +313,8 @@ export function createWorldRenderer(
     planes.setSnapshots(lastPlanes[0], lastPlanes[1]);
     preview.update(lastPreview);
     lastZoom = -1;
-  }) : null;
-  const ready = linorytReady ? Promise.all([loadGlobe(), linorytReady]).then(() => undefined) : loadGlobe();
+  });
+  const ready = Promise.all([loadGlobe(), linorytReady]).then(() => undefined);
   ready.catch(() => { /* surfaced to the caller through `ready` */ });
 
   function project(lon: number, lat: number, altitude: number, out: ScreenPoint): ScreenPoint {
@@ -393,12 +368,6 @@ export function createWorldRenderer(
     onContextChange: (listener) => guard.onChange(listener),
     get quality() { return quality; },
     setSun: (lon, lat) => lights.setSun(lon, lat),
-    setGlobeMode(mode) {
-      if (mode === globeMode) return;
-      globeMode = mode;
-      // A DEV look override pins the surface; otherwise swap the textures of the globe already in the scene.
-      if (!look && globe) void globe.setSurfaceLook(mode);
-    },
     setTime(tick, fraction = 0) {
       sun.setViewCenter(orbit.longitudeDeg, orbit.latitudeDeg);
       sun.update(tick, fraction);
@@ -518,10 +487,10 @@ export function createWorldRenderer(
       globe?.setDecorDensity(quality.decorDensity);
       if (rebuild) await loadGlobe();
     },
-    drawModelPreview(kind, target) {
-      if (disposed || guard.lost()) return false;
-      models ??= createModelPreviewRenderer(renderer);
-      return models.draw(kind, target);
+    drawModelPreview() {
+      // [ext-04 E4] The Linoryt crates print their symbol (the model canvas is hidden by the skin), so no 3D model is
+      // drawn: no shader compile and no synchronous pixel read-back on the weekly board's first frame (#315).
+      return false;
     },
     stats() {
       const info = renderer.info;
@@ -552,7 +521,6 @@ export function createWorldRenderer(
       observer?.disconnect();
       globe?.dispose();
       globe = null;
-      models?.dispose();
       preview.dispose();
       planes.dispose();
       routes.dispose();
