@@ -327,6 +327,15 @@ Not done: WOFF2 fonts (about −40 % of the 624 kB TTF; OFL allows the conversio
 entry) — a size win only, no parse-time effect.
 
 
+## E4 — Satelita, Mapa and the photo textures removed (2026-11-08, D-285, D-302)
+`test:bundle` on `dev` after U5 → E4: main JS **1,167.7 → 1,051.3 kB** raw (gzip 352.2 → 313.6 kB), `dist/`
+**4,100.0 → 1,992.0 kB** (−2.1 MB: day/night/map/clouds textures and the satellite/diorama code), CSS unchanged
+(129.4 kB). The print chunks grow a little because the look is no longer split from the rest (`linoryt-globe`
+31.6 kB with the terrain builder, `linoryt-objects` 22.8 kB). `perf:scene` (SwiftShader, 412×915, the shipped look):
+low 14 draw calls / 38,766 triangles / 21.8 fps, medium 14 / 38,766 / 11.5 fps (not comparable with devices; the fps
+spread between runs on this container is ±30 %). The weekly board's first frame no longer compiles the crate model
+shaders nor reads pixels back (`drawModelPreview` returns false, D-302).
+
 ## E3 — Linoryt in the release build (2026-11-08, D-300)
 The print ships but is not selected (`DEFAULT_GLOBE_LOOK = 'satellite'`). Bundle (`test:bundle`): main chunk
 1,165.8 → **1,168.8 kB** raw (budget 1,180), two lazy chunks `linoryt-globe` 12.6 kB and `linoryt-objects` 20.9 kB
