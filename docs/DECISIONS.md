@@ -3469,6 +3469,25 @@ real renderer, PL 412×915 and 915×412). **Budget:** with D-311 the CSS stood a
 rules that the general dock-cell rules already outweigh (countdown cell padding/gap and icon size) were removed and the
 licence line's duplicate selector merged: 129.9 kB. **Status: in force.**
 
+## D-313 — Q-92 → A, provisional: Undo never reaches past the last weekly choice (2026-11-08, night 56a)
+**Owner may reverse** (Q-92 is not answered yet; the coordinator took the recommendation because it is reversible).
+Undo (D-19) removed the newest network command at its original tick and re-simulated from the checkpoint before it.
+Right after a week-crate pick that command could be a route extension from about 1.5 game days earlier; without it a
+hub jammed before the weekly board, so one tap on Undo showed the game-over report and the pick was gone (N47a:
+2 of 9 long sessions; headless: seed 42704, `ASI`, class II, bot to the week-1 board, turboprop, `run.undo()` → over
+at tick 4124 on KHI, `upgrades` empty). **Rule:** a weekly choice (`ChooseUpgrade`, `CancelUpgradePick`) is a barrier,
+queued or journaled. `Sim.undo()` removes the newest command only if it is not a weekly choice; otherwise it refuses
+(returns false, state unchanged). The same check is `Sim.canUndo`, which `EndlessRun.networkUndoable` returns, so
+the dock's Undo is disabled right after a pick (no new player text) and becomes available again with the first network
+edit after it; those edits are undone one by one down to the pick. The session re-renders the HUD right after the
+pick, so the button greys out at once on a paused or frozen clock. N7x already kept the choice itself out of Undo.
+**Unchanged:** Undo only decides which commands stay in the journal, so replays, saves and Daily leaderboard
+verification (`Sim.replay` of the journal) and determinism are untouched (`test:replay`, `test:daily`,
+`test:net-server` green with the same hashes). Option B (refuse an Undo whose re-simulation ends the run) and C (exact
+time travel as before) stay open for the owner. Tests: `test:undo` 11 cases (the repro, a queued choice as a barrier,
+later edits still undo), `test:e2e:undo-after-upgrade` (real + stub) asserts the disabled Undo after the pick.
+**Status: in force (provisional, Q-92).**
+
 ## D-314 — Linoryt hatches below the line floor print lighter, night as tone, a quieter print on a small disc (2026-11-08, Claude, ext session)
 Notes for render from the UI audit against the frames (#332, D-312). (1) "Long even slanted strokes over all land":
 the −45° night hatch (and the faint ends of the relief tone) were widened to the 1.5 device px floor, so a faint tone
