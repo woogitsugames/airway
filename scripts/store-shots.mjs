@@ -372,7 +372,7 @@ export function checkFeatureGraphic(file) {
 
 /**
  * Pixel statistics on a 4-px grid: luminance spread, white share, dominant colour share, colour count, and
- * [night-55a] D-313 the dominant colour share of each horizontal third (top, middle, bottom).
+ * [night-55a] D-318 the dominant colour share of each horizontal third (top, middle, bottom).
  */
 export function pngStats(file) {
   const { width, height, pixels } = readPng(file);
@@ -417,7 +417,7 @@ function checkPixels(file, device, where) {
       device.w * device.dpr + 'x' + device.h * device.dpr);
   }
   if (stats.whiteShare > 0.6) throw new Error(where + ': white frame (' + stats.whiteShare + ' white)');
-  // [night-55a] D-313: Linoryt (D-301) prints two inks on one paper, and its weekly board and game-over report are
+  // [night-55a] D-318: Linoryt (D-301) prints two inks on one paper, and its weekly board and game-over report are
   // opaque paper pages: a full, legible board measured dominant 0.83–0.94 and 37–47 colours, which the Róża-era
   // limits (dominant > 0.85, colours < 60) called empty. A frame is empty when it barely varies, has almost no
   // colours, or when two of its three horizontal thirds are one flat colour (> 98 %: a page printed only at the top;

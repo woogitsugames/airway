@@ -332,20 +332,41 @@ export class Sim {
   }
 
   /**
+   * [night-56a] Whether undo() would remove a command (D-313): drives the HUD's Undo button.
+   */
+  get canUndo(): boolean { return this.undoTarget() !== null; }
+
+  /**
+   * [night-56a] D-313 (Q-92 → A): the newest undoable command, scanning back from the queue through the journal,
+   * but never past a weekly choice. A closed week is a barrier: removing a network command from before the pick
+   * re-simulated up to 1.5 days without it, which could jam a hub before the board and end the run in the past,
+   * the pick gone with it (seed 42704 ASI class II). Undo only ever drops commands from the log, so replay and
+   * Daily verification are unchanged.
+   */
+  private undoTarget(): { readonly pending: boolean; readonly index: number } | null {
+    if (this.pending.length) {
+      const index = this.pending.length - 1;
+      return undoable(this.pending[index]) ? { pending: true, index } : null;
+    }
+    if (!this.journal.length) return null;
+    const index = this.journal.length - 1;
+    return undoable(this.journal[index][1]) ? { pending: false, index } : null;
+  }
+
+  /**
    * Remove the newest player command and exactly re-simulate up to the same tick.
    * [night-07x] Weekly choices (ChooseUpgrade, CancelUpgradePick) are never undone: popping a
    * week's choice left the world back on that week's board after the UI had closed it, so the clock froze with
-   * no board on screen (soft lock). Later weekly choices are replayed at their ticks.
+   * no board on screen (soft lock). [night-56a] D-313: nor does Undo reach past one (see undoTarget).
    */
   undo(): boolean {
-    for (let i = this.pending.length - 1; i >= 0; i--) {
-      if (!undoable(this.pending[i])) continue;
-      this.pending.splice(i, 1);
+    const target = this.undoTarget();
+    if (!target) return false;
+    if (target.pending) {
+      this.pending.splice(target.index, 1);
       return true;
     }
-    let removedIndex = -1;
-    for (let i = this.journal.length - 1; i >= 0; i--) if (undoable(this.journal[i][1])) { removedIndex = i; break; }
-    if (removedIndex < 0) return false;
+    const removedIndex = target.index;
 
     const targetTick = this.kernel.tick;
     const removedTick = this.journal[removedIndex][0];

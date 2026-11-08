@@ -239,6 +239,7 @@ export interface LinorytUniforms {
   awWaterScale: { value: number };
   awCoastWidth: { value: number };
   awSeaMin: { value: number };
+  awDiscFull: { value: number };
   awPaper: { value: Color };
   awInk: { value: Color };
   awBlue: { value: Color };
@@ -287,8 +288,11 @@ float awHatchToneMin(float u0, float g0, float tone, float minPx) {
   float sf = s0 / k;
   float wf = clamp(log2(sf / minPx), 0.0, 1.0);
   float floorHalf = ${f(HATCH_MIN_WIDTH_DEVICE_PX / 2)};
-  float fine = awLines(u0 * k, g0 * k, max(floorHalf, 0.5 * tone * sf));
-  float coarse = awLines(u0 * k * 0.5, g0 * k * 0.5, max(floorHalf, tone * sf));
+  // D-314: a line thinner than the device floor is printed at the floor width but lighter (same mean ink), so faint
+  // tones stay faint instead of turning into even full strokes.
+  float fineHalf = 0.5 * tone * sf, coarseHalf = tone * sf;
+  float fine = awLines(u0 * k, g0 * k, max(floorHalf, fineHalf)) * min(1.0, fineHalf / floorHalf);
+  float coarse = awLines(u0 * k * 0.5, g0 * k * 0.5, max(floorHalf, coarseHalf)) * min(1.0, coarseHalf / floorHalf);
   float lines = mix(coarse, fine, wf);
   return mix(tone, lines, smoothstep(${f(HATCH_ALIAS_FLOOR_DEVICE_PX)}, ${f(HATCH_ALIAS_FLOOR_DEVICE_PX * 2)}, 2.0 * sf));
 }
@@ -305,6 +309,7 @@ uniform sampler2D awField;
 uniform vec3 awSunDirection;
 uniform float awWaterScale;
 uniform float awCoastWidth;
+uniform float awDiscFull; // D-314: 0 on a small disc (≤ 160 px radius, the menu) → 1 on the game globe (≥ 320 px)
 uniform float awSeaMin; // D-309: open-sea spacing, CSS px (6 on the game globe, the relief's grid on a small disc)
 uniform vec3 awPaper;
 uniform vec3 awInk;
@@ -344,7 +349,9 @@ void main() {
     colour = awOchre;
     #ifndef AW_SAVER
     // D-307: relief as tone (the engraved share of each period), up to 80 % ink on the steepest shaded slopes.
-    float relief = smoothstep(0.06, 0.55, field.g) * 0.8;
+    // D-314: from a shadow of 0.12 (flat and gently lit land stays clean), up to 80 % ink on the game globe and 50 % on
+    // a small disc (the menu, where the tone would close into blotches).
+    float relief = smoothstep(0.12, 0.6, field.g) * mix(0.5, 0.8, awDiscFull);
     if (relief > 0.02) {
       float u = (lambda - mercY) * AW_TO_BASE;
       float g = length(dLambda - dMerc) * AW_TO_BASE;
@@ -363,13 +370,14 @@ void main() {
       clamp(hw + 0.5 - abs(dist - ${f(w2)} * scale) / coastGrad, 0.0, 1.0));
     // Water lines closer together than the alias floor are left out (open blue, the coast line carries the shore).
     float spacing = ${f(w1 - w0)} * scale / coastGrad;
-    water *= smoothstep(${f(HATCH_ALIAS_FLOOR_DEVICE_PX)}, ${f(HATCH_ALIAS_FLOOR_DEVICE_PX * 2)}, spacing);
+    // D-314: water lines need room (≥ 5 device px apart, full from 9): on a small disc they would read as thick waves.
+    water *= smoothstep(5.0, 9.0, spacing);
     // Open sea starts past the last water line (and always inside the field, which saturates at ±3°).
     float open = clamp((dist - min(${f(w2 + 3)} * scale, ${f(COAST_FIELD_RANGE_DEG - 0.15)})) / coastGrad + 0.5, 0.0, 1.0);
     float u = phi * AW_TO_BASE;
     float g = length(dPhi) * AW_TO_BASE;
     // D-300: the open-sea parallels print one step sparser (≥ 6 px) so stamps and notes stay on top of the sea.
-    float parallels = awHatchToneMin(u, g, mix(0.13, 0.37, day), awSeaMin * awDpr);
+    float parallels = awHatchToneMin(u, g, mix(0.13, 0.37, day) * mix(0.6, 1.0, awDiscFull), awSeaMin * awDpr);
     colour = mix(colour, awPaper, max(water * (1.0 - open), parallels * open));
   }
   // Printed coast: an ink line centred on the shore, constant on screen.
@@ -381,11 +389,18 @@ void main() {
   if (night > 0.0) {
     float u = (lambda + mercY) * AW_TO_BASE;
     float g = length(dLambda + dMerc) * AW_TO_BASE;
-    float lines = awHatch(u, g, 1.0 + night, smoothstep(0.35, 1.0, night)) * smoothstep(0.0, 0.2, night);
+    // D-314: night as tone too: from nothing at the terminator to 45 % ink at ${NIGHT_FULL_SUN_DEG}°.
+    float lines = awHatchToneMin(u, g, 0.45 * night * night * (3.0 - 2.0 * night), ${f(HATCH_MIN_SPACING_PX)} * awDpr);
     colour = mix(colour, awInk, lines);
     // City lights: paper dots cut out of the night hatch.
     colour = mix(colour, awPaper, smoothstep(0.35, 0.75, field.b) * smoothstep(0.3, 0.6, night));
   }
+  // D-315: the inked limb starts half a device px inside the silhouette, so the edge of the terrain polygons meets
+  // ink on both sides and needs no multisampling (the sky band carries the ring outward).
+  vec3 awRay = normalize(vAwWorld - cameraPosition);
+  float awD = length(cross(cameraPosition, awRay));
+  float awDg = max(length(vec2(dFdx(awD), dFdy(awD))), 1e-7);
+  colour = mix(colour, awInk, clamp((awD - 1.0) / awDg + 1.5, 0.0, 1.0));
   gl_FragColor = vec4(colour, 1.0);
   #include <colorspace_fragment>
 }`;
@@ -429,7 +444,7 @@ export function createLinorytUniforms(field: LinorytField, sunDirection: Vector3
   texture.needsUpdate = true;
   return {
     awField: { value: texture }, awSunDirection: { value: sunDirection }, awDpr: { value: 1 },
-    awWaterScale: { value: waterLineScale(6) }, awCoastWidth: { value: 1.5 }, awSeaMin: { value: HATCH_SEA_MIN_SPACING_PX },
+    awWaterScale: { value: waterLineScale(6) }, awCoastWidth: { value: 1.5 }, awSeaMin: { value: HATCH_SEA_MIN_SPACING_PX }, awDiscFull: { value: 1 },
     awPaper: { value: new Color(LINORYT_INKS.paper) }, awInk: { value: new Color(LINORYT_INKS.ink) },
     awBlue: { value: new Color(LINORYT_INKS.blue) }, awOchre: { value: new Color(LINORYT_INKS.ochre) },
   };
@@ -472,6 +487,7 @@ export function createLinorytSky(uniforms: LinorytUniforms): Mesh {
       const radiusPx = size.y / (2 * Math.tan(perspective.fov * DEG / 2)) / Math.sqrt(distance * distance - 1);
       uniforms.awWaterScale.value = waterLineScale(radiusPx * DEG);
       uniforms.awSeaMin.value = seaMinSpacingCss(radiusPx, dpr);
+      uniforms.awDiscFull.value = Math.max(0, Math.min(1, (radiusPx - 160) / 160));
       // Zoom ≥ 3 ⇔ the disc radius past ~3× the fitted one; the CSS radius at zoom 3 on a phone is ~520 px.
       uniforms.awCoastWidth.value = coastWidthCss(radiusPx * DEG >= 9 ? 3 : 1);
     }

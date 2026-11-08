@@ -5,7 +5,7 @@
 // viewport, the home-region select still there, no horizontal scroll. [night-23a] Row geometry is measured against the
 // page itself, not a fixed skin layout (Róża, D-257, sets the entry and its controls row under it): the stamp adds no
 // height to the Endless line, the Endless and Puzzles entries are ≥ 48 px with the Endless entry inside the viewport
-// (night-55a, D-313: Linoryt's Endless slab may be taller than Puzzles), and the stamp and the region
+// (night-55a, D-318: Linoryt's Endless slab may be taller than Puzzles), and the stamp and the region
 // select share one row without overlapping each other or the entry. Picking a class stores it in 'airway.settings'; the logbook shows the per-class row. One case
 // starts Endless and the running game reports the class (window.aw state). Menu-only otherwise (G7: no long runs).
 // PL 412×915, EN 320×568, EN 915×412, PL 360×640; shots docs/shots/n12bc/. Fails on the old menu (no select).
@@ -63,7 +63,7 @@ async function journey(page, language, width, height, startGame) {
     `the stamp adds a row: Endless line ${lineBefore?.height} -> ${line?.height}`);
   const [entry, puzzles, stamp, region] = await Promise.all(['menu-endless', 'menu-puzzles', 'menu-licence', 'menu-home-region']
     .map((testId) => page.getByTestId(testId).boundingBox()));
-  // [night-55a] D-313: the Endless entry is the menu's prominent red slab in Linoryt (D-301, mockup a-menu.png), so it
+  // [night-55a] D-318: the Endless entry is the menu's prominent red slab in Linoryt (D-301, mockup a-menu.png), so it
   // may be taller than Puzzles; both stay ≥ 48 px targets and the Endless entry lies inside the viewport.
   for (const [name, item] of [['Endless', entry], ['Puzzles', puzzles]]) {
     assert(item && item.height >= 48 && item.width >= 48, `${name} entry below 48 px ${JSON.stringify(item)}`);

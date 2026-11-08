@@ -154,7 +154,7 @@ export class EndlessRun {
   get commandLog(): readonly JournalEntry[] { return this.sim.getCommandLog(); }
   get assignments(): number { return this.sim.world.planes.length; }
   get networkUndoable(): boolean {
-    return this.sim.pendingCount > 0 || this.sim.getCommandLog().some(([, command]) => command.type !== 'ChooseUpgrade' && command.type !== 'CancelUpgradePick' && command.type !== 'SetSpeed'); // [task-39]
+    return this.sim.canUndo; // [night-56a] D-313: false right after a weekly choice (a closed week is a barrier)
   }
   get failed(): RunFailure | null {
     if (this.sim.world.status !== 'over') return null;

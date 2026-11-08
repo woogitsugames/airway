@@ -1,6 +1,6 @@
 // [night-11aj] R2g / D-236: Endless home region on the menu board. The select sits in the Endless row's status cell:
 // Random by default, Random + 7 regions (no Oceania), ≥ 48 px tall and inside the viewport, the Endless and Puzzles
-// entries ≥ 48 px and the Endless entry inside the viewport (night-55a, D-313: Linoryt's Endless slab may be taller than
+// entries ≥ 48 px and the Endless entry inside the viewport (night-55a, D-318: Linoryt's Endless slab may be taller than
 // Puzzles) and the Endless line no more than the entry plus the select (night-23a: Róża sets the select
 // under the entry), no horizontal scroll. Picking a region stores it in
 // 'airway.settings' and the menu shows it again after a trip to Settings; Random removes it. One case then starts
@@ -43,7 +43,7 @@ async function journey(page, language, width, height, startGame) {
   // the select (no extra row), side by side or stacked, without overlap.
   const line = await page.locator('.airway-flight-line').boundingBox();
   const [entry, puzzles] = await Promise.all(['menu-endless', 'menu-puzzles'].map((testId) => page.getByTestId(testId).boundingBox()));
-  // [night-55a] D-313: the Endless entry is the menu's prominent red slab in Linoryt (D-301, mockup a-menu.png), so it
+  // [night-55a] D-318: the Endless entry is the menu's prominent red slab in Linoryt (D-301, mockup a-menu.png), so it
   // may be taller than Puzzles; both stay ≥ 48 px targets and the Endless entry lies inside the viewport.
   for (const [name, item] of [['Endless', entry], ['Puzzles', puzzles]]) {
     assert(item && item.height >= 48 && item.width >= 48, `${name} entry below 48 px ${JSON.stringify(item)}`);
@@ -51,7 +51,7 @@ async function journey(page, language, width, height, startGame) {
   assert(entry.x >= 0 && entry.x + entry.width <= width + 0.5 && entry.y >= 0 && entry.y + entry.height <= height + 0.5,
     `Endless entry outside the viewport ${JSON.stringify(entry)}`);
   const span = Math.max(entry.y + entry.height, box.y + box.height) - Math.min(entry.y, box.y);
-  // [night-55a] D-313: Linoryt spaces the slab off the next rule (4 px at 412×915); an extra row would hold a ≥ 48 px
+  // [night-55a] D-318: Linoryt spaces the slab off the next rule (4 px at 412×915); an extra row would hold a ≥ 48 px
   // control, so less than half of one is spacing, not a row.
   assert(line && line.height <= span + 24, `Endless line ${line?.height} taller than its entry and select (${span})`);
   assert(!overlaps(box, entry), `select overlaps the entry ${JSON.stringify(box)} ${JSON.stringify(entry)}`);

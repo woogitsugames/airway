@@ -134,6 +134,11 @@ for (const level of ['low', 'medium']) {
   const high = quality.resolveQualityProfile('high', { devicePixelRatio: 3 });
   check(high.maxFps === 0 && high.decorDensity === 1 && !high.batterySaver, 'presets keep full rate and decorations');
   check(quality.QUALITY_PREFERENCES.includes('saver'), 'saver is a selectable preference');
+  // [ext-04] D-315: the print anti-aliases in its shaders and casts no shadows: no preset multisamples or shadow-maps.
+  check(quality.QUALITY_PREFERENCES.every((p) => {
+    const profile = quality.resolveQualityProfile(p, { devicePixelRatio: 2 });
+    return !profile.antialias && !profile.shadowEnabled && profile.shadowMapSize === 0;
+  }), 'no preset pays for MSAA or a shadow map (D-315)');
   const rate = (hz) => {
     let last = 0, drawn = 0;
     for (let i = 1; i <= hz * 10; i++) {
