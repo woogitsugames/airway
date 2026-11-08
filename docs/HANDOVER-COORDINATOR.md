@@ -34,7 +34,8 @@ Zasady wykonania:
 - 23:05: #311 scalony (GPT-18: 13 wariantów :stub w test:ci; prawdziwe przebiegi zostają). dev = main = 67bc984. Do decyzji koordynatora później: czy wyjąć prawdziwe przebiegi z test:ci (oszczędność ~5–7 min).
 - 23:35: #312 scalony squashem (E2 Linoryt: stemple, strefa zatoru, trasy-wstęgi, sylwetki SDF, projectAirport; D-299). dev = main = 1b61395. Sesja ext bierze E3. Po E3 → U5 (nasz agent): flip + D-297 budżet CSS + „Tydzień 7”/skrzynia Róży; LINORYT_STAMP_PX → projectAirport.
 - 23:55: #313 scalony squashem (E3: Linoryt za DEFAULT_GLOBE_LOOK, leniwe chunki, rzadsze morze; D-300). dev = main = 1f40965. **Następne: U5** (nasz agent, gdy zwolni się miejsce) — potem wiadomość do sesji ext, żeby ruszyła z E4.
-- Agenci: 40a (GPT-07), 45a (GPT-05, od nowa: przyczyna niestabilności transfer-glyphs; zastępuje #297). Dalej: GPT-07/17 (dokumentacja), 18/19 (stub e2e), 12–15 (fale językowe). Następne w kolejce: GPT-20, GPT-11, GPT-07/17/18/19.
+- 00:10 (8.11): #314 scalony (GPT-07: TESTING.md zgodny z package.json, test:doc-ids pilnuje tabeli; CLAUDE.md: test:fast ~1,5–2 min, test:ci ~1,5–2 h). dev = main = 52c0bf3. Czerwone na dev pod obciążeniem: ui:matrix 92/96 (upgrade 8 s timeout), store:shots (timeout zrzutu), text-scale-150 4× „Tydzień 7” (prawdziwy błąd → U5).
+- Agenci: 46a (**U5 flip**), 45a (GPT-05, od nowa: przyczyna niestabilności transfer-glyphs; zastępuje #297). Dalej: GPT-07/17 (dokumentacja), 18/19 (stub e2e), 12–15 (fale językowe). Następne w kolejce: GPT-20, GPT-11, GPT-07/17/18/19.
 
 ## Test Free.AI MCP (7.11 19:30 → 8.11 19:30 UTC)
 Właściciel dodał connector Free.AI MCP (Qwen3-30B): zlecać mu łatwiejsze rzeczy zamiast agentów Claude, testować
