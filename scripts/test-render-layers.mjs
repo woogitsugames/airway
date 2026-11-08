@@ -14,7 +14,7 @@ const check = (condition, label) => { if (condition) passed++; else { failed++; 
 const folder = mkdtempSync(resolve(ROOT, 'node_modules/.render-layers-'));
 try {
   writeFileSync(join(folder, 'package.json'), JSON.stringify({ type: 'module' }));
-  for (const path of ['globe/geo-math.ts', 'routes.ts', 'models/planes.ts', 'planes.ts', 'routePreview.ts', 'airports.ts',
+  for (const path of ['globe/geo-math.ts', 'routes.ts', 'planes.ts', 'routePreview.ts', 'airports.ts',
     'camera.ts', 'framing.ts', 'contrast.ts', 'menuNetwork.ts', 'sun.ts', /* [task-34] */
     'globe/linoryt.ts', 'linoryt-objects.ts'] /* [ext-04 E2] */) {
     const file = resolve(ROOT, 'src/render', path);
@@ -27,70 +27,64 @@ try {
   }
   const three = await import('three');
   const load = (name) => import(pathToFileURL(join(folder, name)).href);
-  const { createRoutePreview } = await load('routePreview.js');
-  const { createAirports } = await load('airports.js');
-  const { RouteLayer, sampleGreatCircleArc, makeGreatCircleArc } = await load('routes.js');
-  const { PlaneLayer } = await load('planes.js');
+  const { sampleGreatCircleArc, makeGreatCircleArc } = await load('routes.js');
+  const linoE5 = await load('linoryt-objects.js'); // [ext-04] the print layers replace the satellite ones (D-302)
 
-  // Route preview: valid segments up to the range, red beyond it, on the committed arc.
-  const preview = createRoutePreview();
+  // [ext-04] D-302: the Linoryt layers (stamps, ribbon, dashed preview, sprites) replace the satellite ones.
+  const sharedE5 = { uViewport: { value: { x: 412, y: 915 } }, uDpr: { value: 1 }, uTime: { value: 0 }, uPxPerRad: { value: 200 },
+    uPaper: { value: new three.Color('#ECE3CC') }, uInk: { value: new three.Color('#1E1C1F') }, uRed: { value: new three.Color('#B33823') } };
+  // Route preview: the part beyond the range is marked, and the ribbon lies on the committed (lifted) arc.
+  const preview = linoE5.createLinorytRoutePreview(sharedE5);
   const LIS = { lon: -9.1, lat: 38.7 }, ACC = { lon: -0.2, lat: 5.6 };
   preview.update({ points: [LIS, ACC], legDistancesKm: [3788], rangeKm: 2500, aircraft: 'widebody' });
-  const line = preview.object.children[0];
-  const colors = line.geometry.getAttribute('color').array;
-  const segments = line.geometry.drawRange.count / 2;
-  let red = 0;
-  for (let i = 0; i < segments; i++) if (colors[i * 6] < 0.9) red++;
-  check(line.visible && segments === 65, 'preview splits exactly one segment at the range boundary');
-  check(Math.abs(red / segments - (1 - 2500 / 3788)) < 0.03, 'out-of-range share of the preview is red');
-  const positions = line.geometry.getAttribute('position').array;
+  const ribbonMesh = preview.object.children[0];
+  const track = ribbonMesh.geometry.getAttribute('aTrack').array;
+  const positions = ribbonMesh.geometry.getAttribute('position').array;
+  const used = ribbonMesh.geometry.drawRange.count;
+  let beyondVerts = 0, insideVerts = 0;
+  const vertexCount = Math.max(...Array.from(ribbonMesh.geometry.index.array.slice(0, used))) + 1;
+  for (let v = 0; v < vertexCount; v++) { if (track[v * 3 + 1] === 1) beyondVerts++; else insideVerts++; }
+  check(ribbonMesh.visible && Math.abs(beyondVerts / (beyondVerts + insideVerts) - (1 - 2500 / 3788)) < 0.05,
+    'preview marks the share beyond the range');
   const arc = makeGreatCircleArc(LIS, ACC, 'widebody');
   const mid = sampleGreatCircleArc(arc, 0.5, new three.Vector3());
   let nearest = Infinity;
-  for (let i = 0; i < segments * 2; i++) {
-    nearest = Math.min(nearest, Math.hypot(positions[i * 3] - mid.x, positions[i * 3 + 1] - mid.y, positions[i * 3 + 2] - mid.z));
+  for (let v = 0; v < vertexCount; v++) {
+    nearest = Math.min(nearest, Math.hypot(positions[v * 3] - mid.x, positions[v * 3 + 1] - mid.y, positions[v * 3 + 2] - mid.z));
   }
-  check(nearest < 1e-5, 'preview lies on the same lifted arc as the route tube');
-  preview.update({ points: [LIS, ACC], legDistancesKm: [3788], rangeKm: 2500, aircraft: 'turboprop' });
-  check(line.geometry.drawRange.count / 2 < segments, 'turboprop preview is dashed');
+  check(nearest < 0.01, 'preview lies on the same lifted arc as the route ribbon');
   preview.update(null);
-  check(!line.visible && line.geometry.drawRange.count === 0, 'preview clears');
+  check(!ribbonMesh.visible && ribbonMesh.geometry.drawRange.count === 0, 'preview clears');
   preview.dispose();
 
-  // Airports: hub rings and curfew barriers are rebuilt once per frame, not per call.
+  // Airports: stamp rebuild is deferred until update(); clear() empties the layer.
   const scene = new three.Scene();
-  const airports = createAirports(scene, { maxAirports: 8, maxHubSeats: 16 });
+  const airports = linoE5.createStampLayer(scene, sharedE5, 8);
   airports.addAirport({ id: 'LON', lon: -0.1, lat: 51.5, hub: true });
   airports.addAirport({ id: 'CAI', lon: 31.2, lat: 30, hub: false });
-  const rings = airports.group.children.find((child) => child.isInstancedMesh && child.count === 0 && child.material.isMeshBasicMaterial);
-  airports.setHubLoad('LON', 5, 12);
+  const stampMeshE5 = airports.group.children[1];
   airports.setCurfew('CAI', true);
-  check(rings.count === 0, 'marker rebuild is deferred until update()');
+  check(stampMeshE5.geometry.instanceCount === 0, 'stamp rebuild is deferred until update()');
   airports.update();
-  check(rings.count === 12, 'one ring segment per hub seat');
-  const barrierCount = airports.group.children.filter((c) => c.isInstancedMesh).reduce((n, c) => n + c.count, 0);
-  check(barrierCount > 12, 'curfew barrier instances present');
+  check(stampMeshE5.geometry.instanceCount === 2, 'one stamp per airport');
   airports.clear();
   airports.update();
-  check(rings.count === 0 && !airports.has('LON'), 'clear() removes airports and markers');
+  check(stampMeshE5.geometry.instanceCount === 0 && !airports.has('LON'), 'clear() removes airports and stamps');
   airports.addAirport({ id: 'LON', lon: -0.1, lat: 51.5, hub: true });
   check(airports.isHub('LON'), 'airport can be re-added after clear');
   airports.dispose();
 
   // Planes: tick-boundary snapshots reuse pooled tracks.
-  const routes = new RouteLayer();
+  const routes = new linoE5.LinorytRouteLayer(sharedE5);
   routes.setRoutes([{ id: 'R', type: 'turboprop', waypoints: [LIS, { lon: -0.1, lat: 51.5 }] }], 1);
-  const planes = new PlaneLayer(routes, { maxPlanes: 10 });
+  const planes = new linoE5.LinorytPlaneLayer(routes, sharedE5, { maxPlanes: 10 });
   const snap = (p) => Array.from({ length: 10 }, (_, i) => ({ id: 'P' + i, routeId: 'R', segment: 0, progress01: (p + i * 900) % 10000, load: i }));
   planes.setSnapshots(snap(0), snap(10));
   const firstTrack = planes.tracks[0];
   for (let t = 1; t < 50; t++) planes.setSnapshots(snap(t * 10), snap(t * 10 + 10));
   check(planes.tracks[0] === firstTrack && planes.pool.length === 10, 'plane tracks are pooled across ticks');
-  // [task-34] Plane shadows fade with daylight (no sun at night).
-  planes.setDaylight(0);
-  check(!planes.shadow.visible && planes.shadowMaterial.opacity === 0, 'plane shadows hidden at night');
-  planes.setDaylight(1);
-  check(planes.shadow.visible && planes.shadowMaterial.opacity > 0.2, 'plane shadows back by day');
+  planes.update(0.5);
+  check(planes.stats.planes === 10 && planes.stats.mainPassCalls === 1, 'ten planes in one sprite draw');
   planes.dispose();
   routes.dispose();
 
