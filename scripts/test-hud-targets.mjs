@@ -36,11 +36,9 @@ const UPGRADE_VARIANTS = [
 ];
 async function mountUpgrade(page, language, variant) {
   await page.evaluate(async ({ language, offers, hubs }) => {
-    // Bare 'three' does not resolve in page scripts: reuse the exact pre-bundled URL modelPreview.ts imports.
-    const threeUrl = (await (await fetch('/src/render/modelPreview.ts')).text()).match(/from\s+["']([^"']*three[^"']*)["']/)?.[1];
-    if (!threeUrl) throw new Error('three.js module URL not found');
-    const [{ WeeklyUpgradeView }, { setLanguage }, THREE, { createModelPreviewRenderer }] = await Promise.all([
-      import('/src/ui/upgrade/index.ts'), import('/src/i18n/index.ts'), import(threeUrl), import('/src/render/modelPreview.ts')]);
+    // [ext-04] D-302: no 3D crate models in print; the board is mounted as the game mounts it (no model canvas).
+    const [{ WeeklyUpgradeView }, { setLanguage }] = await Promise.all([
+      import('/src/ui/upgrade/index.ts'), import('/src/i18n/index.ts')]);
     setLanguage(language);
     document.querySelector('.test-upgrade-host')?.remove();
     // [night-46a] D-287/D-301: the Linoryt board is a paper page under the HUD's top margin (its bottom edge, measured by
@@ -57,7 +55,6 @@ async function mountUpgrade(page, language, variant) {
     const host = document.createElement('div');
     host.className = 'test-upgrade-host';
     document.body.append(host);
-    window.__previewRenderer ??= createModelPreviewRenderer(new THREE.WebGLRenderer({ alpha: true }));
     window.__upgradeEvents = [];
     window.__upgradeState = { week: 7, paused: true, pendingHub: false, offers: offers.map((id) => ({ id, week: 7 })) };
     window.__upgradeHubs = hubs;
@@ -70,14 +67,8 @@ async function mountUpgrade(page, language, variant) {
     window.__upgradeView.render(window.__upgradeState, hubs);
     await document.fonts.ready;
     await new Promise((done) => requestAnimationFrame(done));
-    // Same path as src/game/session.ts: measure the window, render the model into a 2D canvas.
-    for (const [container, kind] of pending) {
-      const canvas = document.createElement('canvas');
-      canvas.width = Math.round(container.clientWidth * devicePixelRatio);
-      canvas.height = Math.round(container.clientHeight * devicePixelRatio);
-      container.append(canvas);
-      if (window.__previewRenderer.draw(kind, canvas)) container.classList.add('has-model');
-    }
+    // Same path as src/game/session.ts: no model is drawn, the container is marked as finished.
+    for (const [container] of pending) container.dataset.model = 'none';
   }, { language, offers: variant.offers, hubs: UPGRADE_HUBS });
 }
 async function upgradeGeometry(page) {
@@ -368,7 +359,8 @@ try {
           // prints a flat cut symbol (no 3D model), so it gives up to 16 px of the 96 px floor (D-209 allows 48).
           const floor = view.w >= 720 ? (view.h <= 520 ? 80 : 96) : 120;
           check(board.minWindow >= floor, `${name}: model window ≥ ${floor}px (${board.minWindow})`);
-          check(board.models === 3, `${name}: three rendered 3D models (${board.models})`);
+          // [ext-04] D-302: the print draws no 3D crate models; the windows carry the cut symbol only.
+          check(board.models === 0, `${name}: no 3D model canvas in print (${board.models})`);
           check(board.stamps.length === 1 && board.stamps[0] === 'hub-expansion', `${name}: context stamp only on the hub label (${board.stamps.join(',')})`);
           check(board.facts, `${name}: range and seats from PLANE_TYPES`);
           check(!board.horizontalOverflow, `${name}: no horizontal overflow`);

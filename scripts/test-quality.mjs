@@ -82,72 +82,7 @@ for (const level of ['low', 'medium']) {
   check(culled > 0, `horizon test culls chunks (${culled} chunk-views)`);
 }
 
-// [night-07f] D-75: decoration culling keeps every visible tree/rock, draws far fewer, thins evenly.
-{
-  const { createDecorations } = await import('../src/render/globe/decorations.ts');
-  const cull = await import('../src/render/globe/decor-cull.ts');
-  const group = createDecorations(mask, 'medium', 7, new Vector3(1, 0, 0));
-  const meshes = group.children.filter((o) => o.isInstancedMesh && ['Conifers', 'BroadleafTrees', 'Rocks'].includes(o.name));
-  const key = (a, o) => `${a[o + 12].toFixed(5)},${a[o + 13].toFixed(5)},${a[o + 14].toFixed(5)}`;
-  const originals = meshes.map((m) => { const keys = new Map(); const a = m.instanceMatrix.array;
-    for (let i = 0; i < m.count; i++) { const k = key(a, i * 16); keys.set(k, (keys.get(k) ?? 0) + 1); } return keys; });
-  const total = meshes.reduce((n, m) => n + m.count, 0);
-  const culler = cull.createDecorCuller(meshes);
-  check(culler.stats.total === total, `culler owns all ${total} trees and rocks`);
-  const camera = new PerspectiveCamera(30, 412 / 915, 0.05, 30);
-  const frustum = new (await import('three')).Frustum();
-  const vp = new (await import('three')).Matrix4();
-  const p = new Vector3(), top = new Vector3(), dir = new Vector3();
-  let missing = 0, expected = 0, ratioSum = 0, views = 0;
-  for (let k = 0; k < 16; k++) {
-    const d = 1.5 + rand() * 6;
-    camera.position.set(rand() * 2 - 1, rand() * 2 - 1, rand() * 2 - 1).normalize().multiplyScalar(d);
-    camera.lookAt(0, 0, 0);
-    camera.updateMatrixWorld();
-    culler.update(camera);
-    views++;
-    ratioSum += culler.stats.drawn / total;
-    vp.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
-    frustum.setFromProjectionMatrix(vp);
-    meshes.forEach((m, mi) => {
-      const drawn = new Set();
-      const a = m.instanceMatrix.array;
-      for (let i = 0; i < m.count; i++) drawn.add(key(a, i * 16));
-      for (const k2 of originals[mi].keys()) {
-        const [x, y, z] = k2.split(',').map(Number);
-        p.set(x, y, z);
-        top.copy(p).multiplyScalar(1 + 0.008 / p.length());
-        if (!frustum.containsPoint(p)) continue;
-        dir.subVectors(top, camera.position);
-        const len = dir.length();
-        dir.divideScalar(len);
-        const t = Math.max(0, Math.min(len, -camera.position.dot(dir)));
-        if (camera.position.clone().addScaledVector(dir, t).length() <= 0.995) continue;
-        expected++;
-        if (!drawn.has(k2)) missing++;
-      }
-    });
-  }
-  check(missing === 0 && expected > 0, `culling never drops a visible tree/rock (${missing} of ${expected})`);
-  const meanShare = ratioSum / views;
-  console.log(`INFO decor culling: ${total} instances, mean drawn ${(meanShare * 100).toFixed(1)}%, visible checked ${expected}`);
-  check(meanShare < 0.6, `culling draws ${(meanShare * 100).toFixed(0)}% of trees/rocks on average (< 60%)`);
-  camera.position.set(0, 0, 3.2); camera.lookAt(0, 0, 0); camera.updateMatrixWorld();
-  culler.update(camera);
-  const full = culler.stats.drawn;
-  const repacks = culler.stats.repacks;
-  culler.update(camera);
-  check(culler.stats.repacks === repacks, 'an unchanged camera never repacks');
-  culler.setDensity(0.6);
-  culler.update(camera);
-  const thin = culler.stats.drawn;
-  check(Math.abs(thin / full - 0.6) < 0.02, `density 0.6 thins each chunk evenly (${thin}/${full})`);
-  culler.setDensity(1);
-  culler.update(camera);
-  check(culler.stats.drawn === full, 'density 1 restores every visible instance');
-  check(meshes.every((m) => m.boundingSphere && m.boundingSphere.radius >= 1.05 && !m.frustumCulled),
-    'culled meshes keep a whole-globe bounding sphere (no stale renderer culling)');
-}
+// [ext-04 E4] D-75 decoration culling went with the decorations (the Linoryt print has none, D-285).
 
 // LOD object: level by on-screen facet size, with hysteresis; runs cover exactly the visible chunks.
 {

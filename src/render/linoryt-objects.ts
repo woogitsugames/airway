@@ -767,7 +767,9 @@ export class LinorytPlaneLayer implements PlaneLayerLike {
     private readonly options: { maxPlanes?: number; progressScale?: number } = {}) {
     const max = Math.max(1, Math.floor(options.maxPlanes ?? 100));
     this.quad = instancedQuad(max, { aPos: 3, aFwd: 3, aMeta: 2 });
-    this.atlas = buildPlaneAtlas();
+    // Headless (tests, no DOM): a blank 1×1 atlas; the browser always rasterises the silhouettes.
+    this.atlas = typeof document !== 'undefined' ? buildPlaneAtlas()
+      : new DataTexture(new Uint8Array([255]), 1, 1, RedFormat, UnsignedByteType);
     this.material = screenMaterial(uniforms, PLANE_VERTEX(), PLANE_FRAGMENT(), 'LinorytPlanes');
     this.material.uniforms['uAtlas'] = { value: this.atlas };
     this.mesh = new Mesh(this.quad.geometry, this.material);

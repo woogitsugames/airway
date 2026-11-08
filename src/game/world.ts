@@ -14,24 +14,10 @@ import { t } from '../i18n'; // [night-11h]
 import { forgetAdaptiveSteps, readAdaptiveSteps, writeAdaptiveSteps } from './adaptiveMemory'; // [night-07b]
 import { reducedMotion } from '../ui/motion'; // [night-11g] D-88
 import type { GlobeLook } from '../render/globe';
-import type { AirportStyle } from '../render/airports';
 
-/** [ext-03] `?airportStyle=` in DEV builds: compare the D-178 default (`medal`) with the other D-175 variants. */
-function devAirportStyle(): AirportStyle | undefined {
-  const value = new URLSearchParams(location.search).get('airportStyle');
-  return value === 'current' || value === 'ink' || value === 'apron' || value === 'medal' ? value : undefined;
-}
-
-/**
- * [ext-03] `?globeLook=` in DEV builds (docs/mockups/globe-2026-11/). [ext-04 E1] D-283: `?look=linoryt` draws the
- * printed globe ([night-46a] D-301: the shipped look since U5, DEFAULT_GLOBE_LOOK).
- */
+/** [ext-04 E4] D-285: the Linoryt print is the only globe look; `?look=linoryt` is accepted for old links. */
 function devGlobeLook(): GlobeLook | undefined {
-  const query = new URLSearchParams(location.search);
-  const value = query.get('globeLook') ?? query.get('look');
-  if (value === 'diorama' || value === 'refined' || value === 'satellite' || value === 'painted' || value === 'map' ||
-    value === 'linoryt') return value;
-  return undefined;
+  return new URLSearchParams(location.search).get('look') === 'linoryt' ? 'linoryt' : undefined;
 }
 
 // [task-34] HTML panels the globe must stay clear of. Their boxes become camera insets (D-47).
@@ -100,7 +86,6 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
     camera: { longitude: -18, latitude: 40, zoom: 2 }, maxAirports: 64, maxPlanes: 120,
     // [ext-03] DEV-only experimental globe look (`?globeLook=refined|satellite|painted`); production: diorama.
     look: import.meta.env.DEV ? devGlobeLook() : undefined, // [night-46a] D-301: release = DEFAULT_GLOBE_LOOK (Linoryt)
-    airportStyle: import.meta.env.DEV ? devAirportStyle() : undefined, // [ext-03] D-175 variants
     // [night-07b] D-74: a slow device starts where its last session ended up.
     adaptedSteps: quality === 'auto' ? readAdaptiveSteps() : [],
     onAdapt: (steps) => writeAdaptiveSteps(steps),
