@@ -242,6 +242,9 @@ try {
   const inks = { paper: '#ECE3CC', ink: '#1E1C1F', blue: '#2B4A66', ochre: '#D29C47', red: '#B33823' };
   for (const [name, hex] of Object.entries(inks)) check(linoryt.includes(`${name}: '${hex}'`), `linoryt ink ${name} = ${hex}`);
   check(/SKY_COLOUR = LINORYT_INKS\.paper/.test(linoryt), 'linoryt sky is paper');
+  check(/scene\.background = new Color\(SKY_COLOUR\)/.test(readFileSync(resolve(ROOT, 'src/render/world.ts'), 'utf8')) &&
+    !/DIORAMA_SKY/.test(readFileSync(resolve(ROOT, 'src/render/world.ts'), 'utf8')),
+    'the scene starts on the paper sky (no blue frame before the print chunk loads)');
   check(/LINORYT_INKS/.test(renderIndex) && /SKY_COLOUR/.test(renderIndex), 'render index exports LINORYT_INKS and SKY_COLOUR');
   check(!/\b(day|night|map|clouds)-\d+\.(jpg|png)/.test(linorytGlobe) && !/TextureLoader/.test(linorytGlobe),
     'linoryt look loads no photo textures (only elevation-2048.png)');
