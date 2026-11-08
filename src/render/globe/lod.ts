@@ -15,7 +15,9 @@ import type { QualityLevel, TerrainArrays } from './terrain';
 export const TERRAIN_LOD_LEVELS: Record<QualityLevel, readonly QualityLevel[]> = {
   low: ['low'],
   medium: ['medium', 'low'],
-  high: ['high', 'medium'],
+  // [ext-04] D-316: the print shades from the sphere's direction, not the facets, so the finest mesh changed nothing
+  // the eye can see (1 px shifts of relief fragments zoomed in at DPR 2); high keeps medium's terrain and its DPR 2.
+  high: ['medium', 'low'],
 };
 /**
  * Switch to the near level when a finest far-level facet spans more than this many device
