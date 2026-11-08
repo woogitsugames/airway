@@ -460,6 +460,12 @@
 @media (max-height: 600px) and (max-width: 619px) {
   .airway-go-milestones { margin-top: 3px; padding-top: 2px; }
   .airway-go-milestones-title { line-height: 1.1; }
+  /* [night-60a] N58a: with the home-region and licence lines 320×568 still scrolled 19 / 35 px (EN / PL). The strip
+     title and the departures' column heads stay for screen readers only (the sign names the page; flight, gate and
+     stamp read without them), the milestones and contracts share a line where they fit, the fact lines tighten. */
+  .airway-go-content:has(.airway-go-home) :is(.airway-go-strip-title, .airway-go-board-head) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .airway-go-content:has(.airway-go-home) section.airway-go-milestones { display: inline-flex; margin-right: 12px; }
+  .airway-go-content:has(.airway-go-home) :is(.airway-go-score, .airway-go-weeks, .airway-go-home) { line-height: 1.15; }
 }
 /* [night-33a] D-271, D-293: the weekly contracts row reuses the milestone row (count, filled/hollow squares); its
    squares wrap in a long run. */
