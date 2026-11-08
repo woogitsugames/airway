@@ -351,7 +351,9 @@
    or the game-over report is open (the world is frozen), so the top margin folds its day bar away and fits that space
    (`npm run ui:matrix:stub -- --skin=linoryt` checks overlap and scroll); U3 lays the sheets out for the margin. */
 :root[data-skin="linoryt"]:has(.airway-upgrade-open, .airway-go-overlay) .lin-day { display: none; }
-:root[data-skin="linoryt"]:has(.airway-upgrade-open, .airway-go-overlay) .airway-hud[data-layout='landscape'] .airway-pass { width: auto; max-width: 400px; }
+/* [night-48a] U6: not while the player picks an airport (or views the report's map): the pause and the day line come back
+   there, and at 400 px the week broke inside its word ("Tydzie|ń 7", 852 × 393). */
+:root[data-skin="linoryt"]:has(.airway-upgrade-open:not(.is-picking-hub), .airway-go-overlay:not(.is-map)) .airway-hud[data-layout='landscape'] .airway-pass { width: auto; max-width: 400px; }
 
 /* U3 sheets */
 /* [night-29a] PLAN-LINORYT.md step U3 (D-283, D-284): the sheets in print — pause, weekly board (crates as printed slips,

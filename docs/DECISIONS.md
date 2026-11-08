@@ -3266,3 +3266,33 @@ fixes bring the release CSS to 129.4 kB (budget 132 kB unchanged); `test:hud-tar
 Rejected: keeping `?skin=linoryt` as a no-op alias (dead code; the e2e harness now refuses `--skin`), removing
 `setGlobeMode` from `src/render` here (ext session, E4), folding the `:root[data-skin="linoryt"]` prefix out of the
 source (the scope keeps the structure file auditable and the pruner's selector match unchanged). **Status: in force.**
+
+## D-303 — Linoryt U6: contrast and CVD on paper, ochre and the night hatch; reduce motion steps the "now" cut; paper system bars; inks written in place; CSS budget 130 kB (2026-11-08, Claude, night 48a)
+Step U6 of `docs/styles/kierunki-2026-11b/PLAN-LINORYT.md` (D-47, D-88, D-177, D-301).
+**Contrast (D-47/D-177).** `test:contrast` now holds the Linoryt pairs (ten UI ink text pairs, `LINORYT_INKS` of
+`src/render` equal to the UI inks, note text on its own paper ground over ochre land, blue sea, the night hatch and the
+paper sky, ink and red stamps through the better of their two boundaries). Real frames: the new
+`test:e2e:linoryt-contrast` (harness side; `src/render` untouched) reads screenshots of the real renderer (`game` PL
+412×915 and EN 915×412, `night` PL 412×915): 18 notes at 13.3:1 on their paper ground over every world ground, 19 stamps
+8.9–13.1:1 by the core/outline boundary (the 2 px paper outline alone is only 1.5–3.3:1 against ochre and the hatch,
+7.2:1 on blue sea). A stamp on the night hatch is reported, not gated (WARN), because E4's own probe reports the
+night stamps at 2.8:1 and planes at 1.8/2.0 by its layer measure; the render changes are listed in the U6 PR for the ext
+session.
+**CVD (D-08).** `test:cvd` checks the glyphs as printed: in normal vision and the three simulations the ink outline
+reaches 3:1 on paper (≥ 13:1) and ochre (≥ 6.3:1) and every fill stays ΔE76 ≥ 15 from paper (min 30, EUN protan). On bare
+ochre the EUS crescent would fall to ΔE 11 (tritan), so the glyph cell keeps its paper ground (checked in `linoryt.css`).
+**Reduce motion (D-88), UI side.** The day bar's red "now" cut steps once per game hour (to the hour just begun) instead
+of creeping per game minute; `test:e2e:reduce-motion-game:stub`. The route line-draw and the jam arc already read
+`data-airway-motion` in `src/render` (no UI change needed).
+**Native.** Android: dark status/navigation-bar icons, window and splash background `@color/airway_paper` (#ECE3CC)
+instead of task 24's black; iOS: `UIUserInterfaceStyle` Light (dark status-bar text in Dark Mode too) and the launch
+PNGs re-rendered on the paper (same mark). `test:android-config` / `test:ios-config` compare the colour with
+`--lin-paper`. The root and the puzzle desk lose the Diorama sky (#8CC3D8), which showed beside a landscape puzzle desk.
+**Boards.** Portrait weekly board and report print from the top of the page (no empty band above the sign); landscape
+with a contract slip the model windows give up only the slip's line (40 → 63 px at 915×412); on a landscape report
+≥ 401 px tall "Again · same world" spans its own row over "New world" and "Menu" (it broke in two).
+**Budget (D-294 mechanism, D-297).** `vite-skin-inline` writes the `--lin-*` ink constants in place of their
+`var()` references (inks a script sets or whose value holds a var() stay references; the definitions stay on `:root`):
+release CSS 129.4 → 126.8 kB; with the fixes above 127.4 kB; the `test:bundle` CSS budget becomes **130 kB** (measured +
+~3 kB). `test:e2e:linoryt:stub` is renamed `test:e2e:screen-audit:stub` (`e2e/screen-audit.mjs`): it audits the shipped
+skin, not a preview. **Status: in force.**
