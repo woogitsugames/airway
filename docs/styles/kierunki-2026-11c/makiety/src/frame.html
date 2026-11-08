@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="pl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=412">
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="ui.css">
+<script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","d3-geo":"/node_modules/d3-geo/src/index.js","d3-array":"/node_modules/d3-array/src/index.js","internmap":"/node_modules/internmap/src/index.js","topojson-client":"/node_modules/topojson-client/src/index.js"}}</script>
+</head>
+<body><div id="stage"></div>
+<script type="module">
+  import { render } from './ui.js';
+  const q = new URLSearchParams(location.search);
+  window.__ready = false;
+  try {
+    await render(document.getElementById('stage'), q.get('k') || 'k1', q.get('f') || 'game', q.has('debug'));
+  } catch (e) { console.error(e.stack || e); }
+  window.__ready = true;
+</script></body></html>
