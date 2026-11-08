@@ -179,6 +179,7 @@ void main() {
 // A function, not a constant: interpolated values would keep this module in a release build.
 const JAM_FRAGMENT = (): string => /* glsl */ `
 uniform vec3 uRed;
+uniform vec3 uPaper;
 varying vec2 vPx;
 varying vec2 vJam;
 void main() {
@@ -193,10 +194,15 @@ void main() {
   float angle = atan(vPx.x, vPx.y);
   if (angle < 0.0) angle += 6.2831853;
   float band = clamp((3.0 - abs(r - R - 6.0)) / aa + 0.5, 0.0, 1.0);
-  float arc = band * clamp((vJam.y * 6.2831853 - angle) * r / aa + 0.5, 0.0, 1.0);
-  float alpha = max(hatch, max(ring, arc));
+  float arcOn = clamp((vJam.y * 6.2831853 - angle) * r / aa + 0.5, 0.0, 1.0);
+  float arc = band * arcOn;
+  // D-303: the ring and the arc sit on a 1.5 px paper rim (like the stamps), so they read on blue sea and night hatch.
+  float rim = max(clamp((3.0 - abs(r - R)) / aa + 0.5, 0.0, 1.0),
+    clamp((4.5 - abs(r - R - 6.0)) / aa + 0.5, 0.0, 1.0) * arcOn);
+  float red = max(hatch, max(ring, arc));
+  float alpha = max(red, rim);
   if (alpha <= 0.0) discard;
-  gl_FragColor = vec4(uRed, alpha);
+  gl_FragColor = vec4(mix(uPaper, uRed, red), alpha);
   #include <colorspace_fragment>
 }`;
 
@@ -217,6 +223,9 @@ export interface StampLayer extends AirportsLayer {
   /** Half the stamp's side in CSS px (constant on screen), or 0 for an unknown airport. */
   halfSize(id: string): number;
   readonly stats: { readonly stamps: number; readonly jams: number };
+  /** The stamp and jam-zone meshes, measured separately by the D-177 contrast probe (D-303). */
+  readonly stampMesh: Mesh;
+  readonly jamMesh: Mesh;
 }
 
 function instancedQuad(maxInstances: number, attributes: Record<string, number>): {
@@ -328,6 +337,7 @@ export function createStampLayer(scene: Scene, uniforms: SharedUniforms, maxAirp
       rebuild();
     },
     get stats() { return { stamps: records.size, jams: jamCount }; },
+    stampMesh, jamMesh,
     dispose(): void {
       if (disposed) return;
       disposed = true;
@@ -767,7 +777,9 @@ export class LinorytPlaneLayer implements PlaneLayerLike {
     private readonly options: { maxPlanes?: number; progressScale?: number } = {}) {
     const max = Math.max(1, Math.floor(options.maxPlanes ?? 100));
     this.quad = instancedQuad(max, { aPos: 3, aFwd: 3, aMeta: 2 });
-    this.atlas = buildPlaneAtlas();
+    // Headless (tests, no DOM): a blank 1×1 atlas; the browser always rasterises the silhouettes.
+    this.atlas = typeof document !== 'undefined' ? buildPlaneAtlas()
+      : new DataTexture(new Uint8Array([255]), 1, 1, RedFormat, UnsignedByteType);
     this.material = screenMaterial(uniforms, PLANE_VERTEX(), PLANE_FRAGMENT(), 'LinorytPlanes');
     this.material.uniforms['uAtlas'] = { value: this.atlas };
     this.mesh = new Mesh(this.quad.geometry, this.material);
