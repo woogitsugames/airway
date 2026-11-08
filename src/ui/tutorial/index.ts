@@ -13,6 +13,7 @@ import { airportLabel } from '../airportLabel';
 import '../skin/current.css'; // [night-11aq] skin tokens read by overlay.css
 import '../overlay.css'; // [night-11p] D-129: the vignette uses the game's own luggage tag
 import './tutorial.css';
+import { setClass } from '../classes'; // [night-59a] D-322
 
 const SVG = `
 <svg class="aw-world-art" viewBox="0 0 412 520" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
@@ -160,7 +161,7 @@ export function mountTutorialUi(host: HTMLElement, controller: TutorialControlle
       const tag = cityButtons[city].querySelector<HTMLElement>('.aw-city-tag')!;
       const glyphs = tag.querySelector<HTMLElement>('.aw-city-glyphs')!;
       glyphs.replaceChildren(...Array.from({ length: count }, () => regionGlyph(PASSENGER_REGION, 16)));
-      tag.classList.toggle('airport-bubble--plate-only', count === 0);
+      setClass(tag, 'airport-bubble--plate-only', count === 0);
     }
   }
   let dragging: { kind: DragKind; pointerId: number; source: City | 'tag' } | null = null;
@@ -168,9 +169,9 @@ export function mountTutorialUi(host: HTMLElement, controller: TutorialControlle
   let closed = false;
 
   function render(state: TutorialState): void {
-    root.classList.toggle('is-active', state.visible);
-    root.classList.toggle('has-primary', state.step !== 'route');
-    root.classList.toggle('has-plane', state.step === 'transfer' || state.step === 'complete');
+    setClass(root, 'is-active', state.visible);
+    setClass(root, 'has-primary', state.step !== 'route');
+    setClass(root, 'has-plane', state.step === 'transfer' || state.step === 'complete');
     root.dataset.step = state.step;
     const index = TUTORIAL_STEPS.indexOf(state.step);
     query<HTMLElement>('[data-testid="tutorial-progress"]').textContent = t('tutorial.progress', {

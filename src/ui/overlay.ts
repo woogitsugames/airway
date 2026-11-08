@@ -18,6 +18,7 @@ import {
   linorytMarkers, linorytNoteSize, linorytProbe, linorytStampBox, linorytStampFallback, linorytStampProbe, linorytStampSlot, type StampBox,
 } from './skin/linoryt'; // [night-30a] D-284 U2; [night-46a] D-301: the shipped skin's notes
 import './overlay.css';
+import { setClass } from './classes'; // [night-59a] D-322
 
 const DEG = Math.PI / 180;
 const MAX_GLYPHS = 6;
@@ -440,14 +441,14 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       entry.children = want.slice();
     }
     const jammed = entry.jamSeconds !== null;
-    bubble.classList.toggle('airport-bubble--jam', jammed);
-    entry.edge.classList.toggle('airport-edge--jam', jammed);
+    setClass(bubble, 'airport-bubble--jam', jammed);
+    setClass(entry.edge, 'airport-edge--jam', jammed);
     entry.tag.jammed = jammed;
     // [task-38] mainWidth 0 = no passenger tag; the group box also holds the slot tag.
     const surged = entry.surge !== null; // [night-12bb] R2i
     const fronted = entry.front !== null; // [night-12bd] R2j
     const plateOnly = plated && !(entry.waiting.length > 0 || jammed || entry.isNew || entry.closed || surged || fronted);
-    bubble.classList.toggle('airport-bubble--plate-only', plateOnly);
+    setClass(bubble, 'airport-bubble--plate-only', plateOnly);
     entry.tag.minor = plateOnly; // a plate never takes the place of a passenger tag
     entry.mainWidth = entry.waiting.length > 0 || jammed || entry.isNew || entry.closed || surged || fronted || plated
       ? Math.max(30, 23 + limit * 18 + (entry.waiting.length > MAX_GLYPHS ? 27 : 0) + (jammed ? 53 : 0) +
@@ -460,10 +461,10 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       entry.mainWidth = linorytNoteSize(bubble).width;
       entry.tag.minor = !(entry.waiting.length > 0 || jammed || entry.isNew || entry.closed || surged || fronted);
     }
-    bubble.classList.toggle('airport-bubble--new', entry.isNew);
-    entry.edge.classList.toggle('airport-edge--new', entry.isNew && !jammed);
-    entry.edge.classList.toggle('airport-edge--curfew', entry.closed && !jammed); // [night-10h]
-    entry.edge.classList.toggle('airport-edge--surge', surged); // [night-12bb] R2i
+    setClass(bubble, 'airport-bubble--new', entry.isNew);
+    setClass(entry.edge, 'airport-edge--new', entry.isNew && !jammed);
+    setClass(entry.edge, 'airport-edge--curfew', entry.closed && !jammed); // [night-10h]
+    setClass(entry.edge, 'airport-edge--surge', surged); // [night-12bb] R2i
     entry.surgeEdge.hidden = !surged;
     const surgeAria = entry.surge ? t(entry.surge.phase === 'active' ? 'airport.surgeActiveAria' : 'airport.surgeSoonAria',
       { code: entry.airport.code, count: entry.surge.passengers, time: entry.surge.time }) : '';
@@ -489,7 +490,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       (entry.connecting > 0 ? ' ' + t('airport.connectingAria', { count: entry.connecting }) : '') +
       (trendNode && entry.waiting.length > 0 ? ' ' + t(entry.trend === 'filling' ? 'airport.trendFillingAria' : 'airport.trendEmptyingAria') : '');
     if (aria !== entry.ariaLabel) { bubble.setAttribute('aria-label', aria); entry.ariaLabel = aria; }
-    bubble.classList.toggle('airport-bubble--connecting', entry.connecting > 0);
+    setClass(bubble, 'airport-bubble--connecting', entry.connecting > 0);
   }
 
   /**
@@ -505,8 +506,8 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
     if (key === entry.lastGauge) return;
     entry.lastGauge = key;
     entry.gauge.hidden = !show;
-    entry.edge.classList.toggle('airport-edge--gauge', show);
-    entry.gauge.classList.toggle('airport-edge__gauge--high', high);
+    setClass(entry.edge, 'airport-edge--gauge', show);
+    setClass(entry.gauge, 'airport-edge__gauge--high', high);
     entry.gaugeFill.style.width = percent + '%';
     entry.edge.dataset.fill = show ? `${taken}/${entry.capacity}` : '';
   }
@@ -856,7 +857,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
         const tag = entry.tag;
         const showBubble = tag.placed && entry.mainWidth > 0; // [task-38] the box may hold only a slot tag
         const compact = showBubble && tag.compact === true; // [night-16a] D-262
-        if (compact !== entry.compact) { entry.compact = compact; entry.bubble.classList.toggle('airport-bubble--compact', compact); }
+        if (compact !== entry.compact) { entry.compact = compact; setClass(entry.bubble, 'airport-bubble--compact', compact); }
         attachSlotTag(tag, entry.mainWidth > 0, entry.slotRect);
         // [night-30a] D-284 U2: the slot tag hangs under the printed note (taller than the luggage tag).
         if (linoryt.on && entry.slotRect.visible && entry.mainWidth > 0) entry.slotRect.y = tag.y + tag.height - SLOT_TAG_HEIGHT;

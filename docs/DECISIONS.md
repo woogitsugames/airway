@@ -3614,3 +3614,21 @@ events; the refused run plays on exactly like one never tapped and replays to th
 `test:e2e:undo-refused-jam:stub` (renamed from `undo-ends-run:stub`: the strip line, the game screen, the hash, tick
 and pick kept, Undo still enabled). Options B (Undo reaches back 2 game hours) and C (exact time travel) stay open.
 **Status: in force (provisional, Q-93).**
+
+## D-322 — Conditional classes go through `setClass`, which never flips; the board fixtures show the state they name (2026-11-08, night 59a)
+`classList.toggle(name, force)` and `toggleAttribute(name, force)` flip the token when `force` is `undefined` instead of
+clearing it. `WeeklyUpgradeView` set `is-picking-hub` with `!!state?.paused && state.pendingHub`; the shared `upgrade`
+fixture (`e2e/screen-fixtures.mjs`) left `pendingHub` out, so the class went ON and `test:e2e:text-scale-150` and
+`test:e2e:pseudo-320` audited the crates in the airport-pick layout. Players were not affected (the sim always sends
+`pendingHub: false`), but a typed `boolean` can still arrive as `undefined` from untyped data (fixtures, the DEV
+adapter, old saves). Every conditional class and flag attribute in `src/` (25 `classList.toggle` calls in `src/ui` and
+`src/game`, one `toggleAttribute`) now goes through `setClass(el, name, on: boolean)` / `setFlagAttribute`
+(`src/ui/classes.ts`), which coerce with `!!` (the Linoryt note helper, which may not import at runtime, uses
+`classList.add`/`remove`); the pause button's `aria-pressed` is `String(!!state.paused)`. The fast
+TS-AST guard `test:class-toggle` fails on any two-argument `.toggle(…)` / `.toggleAttribute(…)` in `src/` outside that
+file (a one-argument flip stays allowed). The `upgrade` fixture passes `pendingHub: false`; the airport pick is its own
+fixture `upgrade-pick` (in pseudo-320 and text-scale-150, not in skin-pixels' set), and both suites check the board
+shows the state the fixture names (three crates without `is-picking-hub` / the sign and back tile, no crate). Rejected:
+a syntactic "obviously boolean" rule for the force argument (typed fields like `entry.isNew` would all need `!!` and
+the rule still could not see the runtime value); a type-aware check alone (the field was already typed `boolean`).
+**Status: in force (N59a, `test:class-toggle` 9/9).**

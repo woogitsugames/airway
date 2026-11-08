@@ -3,7 +3,8 @@
 // i.e. the longest translation the catalogs allow. Each screen is mounted alone through its public API on
 // ?perf=scene (no game, no globe: the globe suites are slow under SwiftShader, G7) at 320×568 in PL and EN:
 // departures menu, settings, logbook (with flights), puzzle board, weekly upgrade board over the HUD, game over,
-// in-game HUD and a first-time card. Audit (as e2e/pseudo-locale.mjs): buttons ≥ 48 px, no own text clipped by an
+// in-game HUD and a first-time card; [night-59a] D-322 also the board's airport pick (`upgrade-pick`), and both board
+// fixtures must show the state they name (crates vs pick). Audit (as e2e/pseudo-locale.mjs): buttons ≥ 48 px, no own text clipped by an
 // overflow/ellipsis box or wider than its box, nothing outside the viewport, no template token, no horizontal page
 // scroll, pseudo text present; plus: no split-flap cell ends in "…" (a budgeted title, status or half-row title
 // fits its cells). Shots into .e2e/pseudo-320/ (not committed).
@@ -12,7 +13,10 @@ import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { gameUrl, withBrowser, saveDiagnostics, ARTIFACTS } from './browser.mjs';
 import { presetLanguage } from '../scripts/lib/harness.mjs';
-import { SCREENS, auditScreen, mountScreen } from './screen-fixtures.mjs'; // [night-11ap] shared with text-scale-150
+import { SCREENS as SHARED_SCREENS, UPGRADE_PICK, auditScreen, fixtureStateAudit, mountScreen } from './screen-fixtures.mjs'; // [night-11ap] shared with text-scale-150
+
+/** [night-59a] D-322: plus the weekly board's airport pick, a case of its own (`upgrade` is the crate board). */
+const SCREENS = [...SHARED_SCREENS, UPGRADE_PICK];
 
 const started = performance.now();
 const SHOTS = resolve(ARTIFACTS, 'pseudo-320');
@@ -35,6 +39,7 @@ try {
         await page.goto(gameUrl(url + '?perf=scene'), { waitUntil: 'networkidle' });
         await mountScreen(page, screen, language);
         const { problems, seen } = await auditScreen(page);
+        problems.push(...await fixtureStateAudit(page, screen));
         await page.screenshot({ path: resolve(SHOTS, `${screen}-${language}.png`), animations: 'disabled' });
         if (!seen) problems.push('no visible text');
         if (errors.length) problems.push(`page errors: ${errors.join('; ')}`);

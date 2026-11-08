@@ -3,6 +3,7 @@ import { localNumber, t } from '../i18n'; // [task-37] D-61 formatter
 import type { RangeWarning, RouteHandle, RouteMenuRequest } from '../input/routeTool';
 import './skin/current.css'; // [night-11as] skin tokens read by atcStrip.css
 import './atcStrip.css';
+import { setClass } from './classes'; // [night-59a] D-322
 
 export interface AtcStrip {
   show(warning: RangeWarning | null): void;
@@ -160,7 +161,7 @@ export function mountRouteHandles(host: HTMLElement): {
         element.style.setProperty('--aw-handle-turn', handle.angle.toFixed(3) + 'rad');
         // [night-11q] R5c: quiet at rest; the bold end bar only on the route in hand (D-319).
         const active = handle.routeId === activeRouteId;
-        if (element.classList.contains('airway-route-handle--active') !== active) element.classList.toggle('airway-route-handle--active', active);
+        if (element.classList.contains('airway-route-handle--active') !== active) setClass(element, 'airway-route-handle--active', active);
       }
       for (const [id, element] of elements) {
         if (!visible.has(id)) element.hidden = true;

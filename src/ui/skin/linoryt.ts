@@ -503,7 +503,8 @@ export function linorytNoteChildren(bubble: HTMLElement, want: Node[], input: Li
   const taken = Math.min(input.waiting.length, input.capacity);
   const fillText = t('note.fill', { taken, capacity: input.capacity });
   setText(parts.fill, input.capacity > 0 ? fillText : '');
-  parts.name.classList.toggle('lin-name--hub', input.hub);
+  // [night-59a] D-322: add/remove, never a forced toggle (no runtime import here, so not setClass).
+  if (input.hub) parts.name.classList.add('lin-name--hub'); else parts.name.classList.remove('lin-name--hub');
   if (input.fresh) want.push(input.fresh);
   want.push(parts.name, parts.code, parts.fill, parts.br[0]);
   if (input.capacity > 0) {
