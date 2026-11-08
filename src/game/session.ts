@@ -15,7 +15,7 @@ import { createJamHaptics, hapticCommand, hapticNetworkClosed, routeHaptics } fr
 import { CONGESTION_GRACE_TICKS, PLANE_TYPES, SIM_TICKS_PER_SECOND } from '../sim/params';
 import { TICKS_PER_WEEK } from '../sim/upgrades';
 import { calendarDayAt, calendarWeekAt } from '../sim/clock'; // [task-31]
-import type { PlaneView as PlaneRenderSnapshot } from '../render';
+import { jamArcShare, type PlaneView as PlaneRenderSnapshot } from '../render'; // [ext-04] D-88 jam arc steps
 import type { AudioCue } from '../audio/events';
 import { mountAtcStrip, mountRouteContextMenu, mountRouteHandles } from '../ui/atcStrip';
 import { createGameOverController, type GameOverController, type GameOverSnapshot, type RunTimeline } from '../ui/gameover';
@@ -29,6 +29,7 @@ import { mountSlotHint } from './tutorial/slot-hint'; // [task-32]
 import { FirstTimeRegistry, beyondRange, curfewAirport, fillingHub, surgeAnnouncement } from './tutorial/first-time'; // [night-11p] R6a
 import { mountFirstTimeCards } from './tutorial/first-time-card';
 import { browserTutorialStorage } from './tutorial/controller';
+import { reducedMotion } from '../ui/motion'; // [ext-04] D-88: the jam arc steps per game second
 import { airportLabel } from '../ui/airportLabel'; // [night-05] D-68
 import { AudioCueMapper, cueRun } from './audioCues'; // [night-03]
 import { FillReadings } from './fillTrend'; // [night-11af] R4c
@@ -409,7 +410,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     // [ext-04 E2/E3] Every airport with the share of its jam grace left (the Linoryt jam zone); the satellite renderer
     // reads the seat load of the hubs only.
     world.setHubLoad(cities.map((city) => ({ id: city.id, used: Math.min(city.waiting.length, city.capacity),
-      cap: Math.max(1, city.capacity), jam01: city.jamTicksLeft === null ? null : city.jamTicksLeft / CONGESTION_GRACE_TICKS })));
+      cap: Math.max(1, city.capacity), jam01: jamArcShare(city.jamTicksLeft, CONGESTION_GRACE_TICKS, SIM_TICKS_PER_SECOND, reducedMotion()) })));
     for (const city of cities) {
       if (!knownAirports.has(city.id)) {
         knownAirports.add(city.id);
