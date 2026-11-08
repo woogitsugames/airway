@@ -194,6 +194,9 @@ commitach.
 - Agenci: 49a (pauza w 915×412 — test:e2e:pause-summary czerwony na dev od U5; tablica otwiera się przewinięta przy 150 %; usunięcie no-op `--skin=`), 50a (GPT-12 fala 1 DE). Dalej: GPT-13/14/15 (FR/ES/PT-BR), naprawa `coverage:fast`, U7 po telefonie właściciela (+ ikona/ekran startowy jako linoryt — rekomendacja U6).
 - Pytanie do właściciela: Q-92 (Cofnij po wyborze skrzyni kończy bieg wstecz), rekomendacja A.
 
+- 8.11 ~06:40: scalone #323 (ext: ograniczony ruch w renderze), #324 (ext: papierowe niebo od 1. klatki), #326 (49a: pauza mieści się wszędzie, tablica otwiera się na górze, sprzątnięte `--skin`; gameover-contracts 17/17), #325 (GPT-12 fala DE, D-306, `test:i18n-drafts`, 117 kroków fast). dev = main = 15308a1.
+- Agenci: 51a (GPT-13 + GPT-14: FR i ES na wzór DE), 52a (run-timeline:stub 1 px przy kartach; `coverage:fast` pod V8; raport 640×360; pełny test:ci). Dalej: GPT-15 (PT-BR), U7 po telefonie właściciela, Q-92 (rekomendacja A) czeka na właściciela.
+
 ## Kolejka
 - Najpierw: PR-y od GPT (jeśli są), potem zadania z paczki GPT, których GPT nie wziął (te same opisy nadają się dla
   agentów Claude), w kolejności z pliku (01, 02, 05, 06, 20, potem 03, 04, 08, 09, 11…).
