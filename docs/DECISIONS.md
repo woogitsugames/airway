@@ -3279,3 +3279,19 @@ object layers (`airports.ts` medallions, the tube `RouteLayer`, `planes.ts` plan
 E4 stays small enough to review. (3) The D-177 contrast probe (`measureLayerContrast`) needs no change: it measures
 the Linoryt stamp, ribbon and sprite groups (dev world, zoom 3.3, low: routes 4.6/5.5, airports 3.3/2.8, planes
 1.8/2.0 by day/night); the thresholds for the print are U6's (D-47 pass). **Status: in force.**
+
+## D-303 — The D-177 probe reads a print symbol by its ink against its own paper rim; the jam ring gets a paper rim (2026-11-08, Claude, ext session)
+The coordinator asked for the night contrast of the render layers after E4 (probe: airports 2.8, planes 2.0 against
+the ≥ 3:1 target). **Finding.** The Linoryt stamps, plane silhouettes and route lines are an ink body inside a paper
+outline 1.5–2 px wide; the D-177 probe compared the interior's median pixel with the anti-aliased rim, and most of
+the interior is still outline (paper against paper), so it reported 2–3 although the body is ink on paper (13.2:1)
+— the screenshots read clearly by day and at night. **Choice.** (1) The probe's core contrast is the ratio of the
+light and dark ends of the interior (90th / 10th percentile of the non-rim pixels): ink : paper for an outlined
+symbol, ~1 for a one-colour symbol (which must then stand off the ground by its edge, as before). (2) The probe
+measures the stamps and the jam zone as separate layers (`airports`, `jam`). (3) The jam ring and countdown arc sit on
+a 1.5 px paper rim like the stamps: the zone measured 1.3 (red hatch on blue sea and night hatch), now 4.3 (red on
+paper). Measured (dev world, zoom 3.3, low; day / night): routes 13.2 / 13.2, stamps 13.2 / 13.2, jam 4.3 / 4.3,
+planes 13.2 / 13.2; the outer edge against the globe stays 1.5–2.1 (the paper rim on ochre), which is the
+separation band, not the symbol. Rejected: darker or wider rims to raise the edge number (they would only move the
+grey AA pixels), dropping the paper rim (ink on night hatch would merge). **Status: in force; U6 sets the thresholds
+of its D-47 pass on these numbers.**

@@ -83,7 +83,14 @@ export function layerContrast(
   if (coreLums.length >= minPixels && edgeLums.length) {
     edgeLums.sort((x, y) => x - y);
     const edgeLum = edgeLums[edgeLums.length >> 1];
-    core = median(coreLums.map((lum) => contrastRatio(lum, edgeLum)));
+    // [ext-04] D-303: the print's symbols are an ink body inside a paper outline several pixels wide (stamps,
+    // silhouettes, the double route line), so the body reads against its own outline, not against the anti-aliased
+    // rim. The core contrast is the ratio of the light and dark ends of the interior (90th / 10th percentile of the
+    // non-rim pixels): ~1 for a one-colour symbol, ink : paper for an outlined one.
+    void edgeLum;
+    coreLums.sort((x, y) => x - y);
+    const dark = coreLums[Math.floor(coreLums.length * 0.1)], light = coreLums[Math.floor(coreLums.length * 0.9)];
+    core = Math.round(contrastRatio(light, dark) * 100) / 100;
   }
   return { ratio: Math.max(edge, core), pixels: ratios.length, edge, core, median: all };
 }
