@@ -3877,7 +3877,7 @@ range), 412×915 and 915×412 at 2×, SwiftShader: core against casing — route
 jam 12.2–12.4 by day and 4.9 at dusk and night (red on the light rim) — every layer ≥ 3:1 and routes ≥ 4.5:1, by day,
 at dusk and by night (medium and low). The outer edge against the photo is 1.2–2.1 (the black casing on night ground),
 which is the separation band, as for the print (D-303). Draw calls 14–16 in the frame (budget 50).
-**Budgets.** Release main JS 1,062.6 kB, CSS 129.0 kB unchanged; the lazy objects chunk 23.4 → 24.9 kB (the style
+**Budgets.** Release main JS (1,062.9 kB on `dev` with T2) and CSS (129.0 kB) unchanged by R3; the lazy objects chunk 23.4 → 24.9 kB (the style
 plumbing; no earth shader in it). `perf:scene` (SwiftShader, 412×915, 45 s, `--look earth`, run back to back with
 `dev`; never compared with devices): draw calls low/medium/high 14/15/16 → 13/14/16, render CPU p95 1.1/1.2/1.5 →
 1.1/1.1/1.2 ms, delivered fps (idle/active) low 22.2/23.0 → 22.2/22.7 (a first run read 18.2 idle: noise), medium
