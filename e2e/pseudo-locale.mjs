@@ -30,6 +30,9 @@ function audit(page, root, { translated = true } = {}) {
       const style = getComputedStyle(el);
       const r = el.getBoundingClientRect();
       if (r.width === 0 || r.height === 0 || style.visibility === 'hidden') continue;
+      // [night-52a] Visually hidden text (1 px box clipped by clip-path, kept for screen readers: the waybill's labels on
+      // short landscape boards, the report heading at 640×360) is not clipped player text; screen-audit skips it too.
+      if (r.width <= 1 && r.height <= 1 && style.clipPath !== 'none') continue;
       const inScroller = scrollsX(el);
       const ownText = [...el.childNodes].some((node) => node.nodeType === 3 && node.textContent.trim());
       if (el.matches('button')) {

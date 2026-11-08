@@ -744,6 +744,18 @@
 /* Under 400 px the leading cause stays and the lesser ones give way (as on short portrait phones with a tip). */
 @media (max-height: 400px) and (min-width: 620px) {
   :root[data-skin="linoryt"] .airway-go-causes li:nth-child(n+2) { display: none; }
+  /* [night-52a] 640 × 360 with the worst-case report (four departures, a tip, milestones and contracts) scrolled 36 px
+     (EN) / 58 px (PL): the incident report ran past the page. The departures list shows two rows and a cut third (it
+     scrolls inside itself, as on short portrait phones); the report's heading stays for screen readers only (the
+     sign above already names the closed hub); score and weeks keep one line; the tabs stay 48 px targets. */
+  :root[data-skin="linoryt"] .airway-go-flight-list { max-height: 86px; }
+  :root[data-skin="linoryt"] .airway-go-strip { padding-top: 4px; padding-bottom: 4px; }
+  :root[data-skin="linoryt"] .airway-go-strip-title {
+    position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+  }
+  :root[data-skin="linoryt"] .airway-go-score-row { gap: 2px 10px; }
+  :root[data-skin="linoryt"] :is(.airway-go-score, .airway-go-weeks, .airway-go-home) { font-size: calc(12px * var(--airway-text-scale)); }
+  :root[data-skin="linoryt"] .airway-go-tabs { margin-top: 4px; }
 }
 /* A 320 px phone at 130/150 %: the red hub block takes a line of its own under the heading, and "Again" spans the row
    over "New world" and "Menu", so no word has to break. */
