@@ -296,6 +296,65 @@ export function validateImport(options: {
   return { errors, warnings, catalog };
 }
 
+/**
+ * [night-50a] GPT-12: the length budgets of `src/i18n/limits.ts` from its module exports: any exported
+ * `Record<key, number>` (or `{ max }`) whose keys are catalog keys; the smallest budget wins. Shared by the CLI and
+ * `test:i18n-drafts`.
+ */
+export function limitsFromModule(module: Readonly<Record<string, unknown>>, keys: ReadonlySet<string>): Map<string, number> {
+  const limits = new Map<string, number>();
+  for (const value of Object.values(module)) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) continue;
+    for (const [key, limit] of Object.entries(value as Record<string, unknown>)) {
+      const max = typeof limit === 'number' ? limit : (limit as { max?: unknown } | null)?.max;
+      if (keys.has(key) && typeof max === 'number') limits.set(key, Math.min(max, limits.get(key) ?? Infinity));
+    }
+  }
+  return limits;
+}
+
+/** A committed translation draft sorted into what breaks it and what only means "re-export and translate more". */
+export interface DraftReport {
+  /** Structural problems: unknown/duplicate key, {param}s, plural forms, budget, broken braces, wrong language. */
+  readonly problems: string[];
+  /** EN keys without a row (new since the export). */
+  readonly missing: string[];
+  /** Rows whose English source changed since the export (checked against the English they were made from). */
+  readonly stale: string[];
+  /** Rows with no translation yet. */
+  readonly untranslated: string[];
+  readonly warnings: string[];
+}
+
+/**
+ * [night-50a] GPT-12: the `test:i18n-drafts` rules for a draft in `docs/i18n/`. A new or changed EN key must not
+ * break the fast suite, so missing, stale and untranslated rows are only counted; a stale row is still checked, but
+ * against the English and the budget it was exported with. Everything `validateImport` finds beyond that is a problem.
+ */
+export function checkDraft(options: {
+  file: ExchangeFile;
+  target: TargetLanguage;
+  en: readonly CatalogEntry[];
+  limits?: ReadonlyMap<string, number>;
+}): DraftReport {
+  const { file, target, en, limits } = options;
+  const current = new Map(en.map((entry) => [entry.key, entry.value]));
+  const exported = new Map<string, ExchangeRow>();
+  for (const row of file.rows) if (!exported.has(row.key)) exported.set(row.key, row);
+  const stale = [...exported.values()]
+    .filter((row) => current.has(row.key) && row.en !== current.get(row.key) && (row.translation ?? '').trim() !== '')
+    .map((row) => row.key);
+  const staleSet = new Set(stale);
+  const source = en.map((entry) => (staleSet.has(entry.key) ? { ...entry, value: exported.get(entry.key)!.en } : entry));
+  const ownLimits = new Map([...(limits ?? new Map<string, number>())].filter(([key]) => !staleSet.has(key)));
+  const result = validateImport({ file, target, en: source, limits: ownLimits });
+  const keyOf = (error: string): string => error.slice(0, error.indexOf(':'));
+  const missing = result.errors.filter((error) => error.endsWith(': missing row')).map(keyOf);
+  const untranslated = result.errors.filter((error) => error.endsWith(': no translation')).map(keyOf);
+  const problems = result.errors.filter((error) => !error.endsWith(': missing row') && !error.endsWith(': no translation'));
+  return { problems, missing, stale, untranslated, warnings: result.warnings };
+}
+
 /** `src/i18n/<code>.ts` in the shape of pl.ts (same key order as en.ts; type-checked against it). */
 export function renderCatalog(code: string, en: readonly CatalogEntry[], catalog: ReadonlyMap<string, string>): string {
   const name = code.replace(/[^A-Za-z0-9]/g, '_');

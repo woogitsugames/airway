@@ -3335,3 +3335,22 @@ release CSS 129.4 → 126.8 kB; with the fixes above 127.4 kB; the `test:bundle`
 skin, not a preview. **After E4 (D-302):** the NASA imagery credit leaves Settings → Licences (`licenses.nasaEarth`
 removed, PL/EN). During the airport pick the landscape top margin keeps its game width (at the board's 400 px the week
 broke inside its word at 852 × 393). **Status: in force.**
+
+## D-306 — Wave-1 German game draft in docs/i18n; drafts are guarded for structure, not completeness (2026-11-08, Claude, night 50a)
+GPT-12 under D-96/D-136 (agent translates, native speaker corrects). `docs/i18n/de.json` is the R7i exchange file
+(D-211) with all 582 rows translated (informal "du", sentence case per D-259, "Hub" per D-195/D-223, network "Netz");
+`npm run i18n:import -- de --check` passes with 0 errors and 0 warnings. Nothing ships: no `src/i18n/de.ts`, German
+stays in `PLANNED_LANGUAGE_ENTRIES`. `docs/i18n/README.md` holds the workflow, the EN → DE glossary (one column per
+wave-1 language to extend) and the open terms for the German reviewer. Where English counts with an invariant word
+("{count} aircraft"), German adds its own plural token. Shortened for a length budget: `menu.onTime` "Im Plan" (8),
+`menu.settings` "Optionen" (10; used everywhere for one word), `dock.widebody` "Großraum" (10), `region.short.NAM`/
+`SAM` "Nordamer."/"Südamer." (10), `logbook.col.weeks` "Wo." (4).
+**Guard.** `test:i18n-drafts` (fast) checks every `docs/i18n/<code>.json|.csv`: unknown or duplicate keys, `{param}`s,
+plural form counts, budgets, broken braces and a wrong or unknown language fail; missing, stale and untranslated rows
+print one WARN line with counts, so a new or reworded EN string never breaks `test:fast` (`i18n:export` refreshes the
+draft and keeps unchanged translations). A stale row is checked against the English and the budget it was exported
+with. The budget reader moved into `scripts/lib/i18n-exchange.ts` (`limitsFromModule`), shared by the CLI and the test.
+**Store.** `docs/store/review/de.md` lists review notes per field of `docs/store/de.md` (unchanged): counts, wording,
+glossary against the game draft, and the stale Diorama paragraph and Róża alt texts that U7 rewrites from the new EN
+(D-296); it writes no final store copy. Rejected: failing `test:fast` on untranslated rows (every new EN key would
+break it), a German catalog file in `src/i18n` before the review. **Status: in force (texts await native review).**
