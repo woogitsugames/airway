@@ -75,7 +75,7 @@
   right: calc(var(--hud-safe-right) + 14px);
   bottom: calc(var(--hud-safe-bottom) + 12px);
   display: grid;
-  grid-template-columns: repeat(6, minmax(48px, 64px)); /* [G8] D-172: + the globe-view tag */
+  grid-template-columns: repeat(5, minmax(48px, 64px)); /* [night-46a] D-285 L1: five tags (the globe-view tag went) */
   justify-content: space-between;
   gap: 5px;
   pointer-events: none;
@@ -189,8 +189,8 @@
   width: auto;
   height: 2px;
 }
-/* [N11w] D-199: with the G8 globe tag six tags no longer fit 58 px each on a 412 px landscape phone with insets; the
-   holders shrink (never below 48 px) and the tag fills its holder instead of spilling into the bottom safe area. */
+/* [N11w] D-199: holders shrink (never below 48 px) and the tag fills its holder instead of spilling into the bottom safe area
+   on a 412 px landscape phone with insets ([night-46a] five tags since D-285 L1). */
 .airway-hud[data-layout='landscape'] .airway-dock__tag,
 .airway-hud[data-layout='foldable'] .airway-dock__tag { width: 100%; height: 100%; max-height: 58px; }
 /* On foldables the rack becomes a permanent side panel; the world has the remaining screen. */

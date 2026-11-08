@@ -363,7 +363,7 @@ function buildDialog(
   mapButton.dataset.testid = 'gameover-map';
   mapButton.setAttribute('aria-label', t('gameover.mapLabel', { hub: snapshot.hubCode }));
   sign.append(mark, title, mapButton);
-  if (import.meta.env.DEV && linoryt.on) linorytReportHub(sign, snapshot.hubCode); // [night-29a] U3: the red hub block
+  if (linoryt.on) linorytReportHub(sign, snapshot.hubCode); // [night-29a] U3: the red hub block
 
   const board = element('section', 'airway-go-board');
   board.setAttribute('aria-label', t('gameover.departures', { hub: snapshot.hubCode }));

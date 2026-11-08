@@ -4,9 +4,8 @@
 import './ui/fonts.css';
 import './ui/base.css';
 import './ui/theme/theme.css';
-import './ui/skin/current.css'; // [night-11aq] UI skin tokens (D-249); [night-11az] D-257: Róża values
-import { startRoza } from './ui/skin/roza'; // [night-11az] D-257: Róża skin helpers
-import { startLinoryt } from './ui/skin/linoryt'; // [night-28a] D-284: Linoryt preview helpers (DEV only)
+import './ui/skin/current.css'; // [night-11aq] UI skin tokens (D-249); [night-46a] D-301: Linoryt values
+import { startLinoryt } from './ui/skin/linoryt'; // [night-28a] D-284; [night-46a] D-301: the shipped skin's helpers
 import './ui/game.css';
 import { bootAudio, audioSettingsFromToggles } from './audio';
 import { createFlapRattle } from './game/flapSound'; // [night-07e]
@@ -21,8 +20,7 @@ import { IDENTITY_KEYS, createBrowserLeaderboards } from './net'; // [night-06c]
 import { EndlessRun, restartEusClusterV2 } from './game/run';
 import { readHomeRegion, writeHomeRegion } from './game/homeRegion'; // [night-11aj] R2g
 import { LICENCE_SHORT_KEY, licenceForRun, licenceIssued, openLicences, readLicenceChoice, writeLicenceChoice } from './game/licence'; // [night-12bc] R2h
-import { CONGESTION_GRACE_TICKS, HOME_REGIONS, type LicenceClass } from './sim';
-import { SIM_TICKS_PER_SECOND } from './sim/params'; // [night-11av] D-256 DEV-only KARTA preview (jam arc)
+import { HOME_REGIONS, type LicenceClass } from './sim';
 import type { RegionId } from './data/regions';
 import { dailyRowHint } from './game/dailyRow'; // [night-10d]
 import { firstMilestones, localDay, readLogbook, recordFlight, runHub, type RunRecord } from './game/logbook'; // [night-10n]
@@ -51,8 +49,9 @@ import { onSettingsChange, readSettings } from './ui/settings/settings';
 import { applyAirlineColour, onAirlineColour, readAirlineColour } from './ui/airlineColour';
 import { TICKS_PER_WEEK } from './sim/clock'; // [task-31] single week length (D-40)
 import { NOVEMBER_SUBSOLAR_LATITUDE_DEG } from './render/sun'; // [task-40] store `game` scene light
-// [night-11az] D-257: Róża structure after every component stylesheet (its rules are scoped to <html data-skin="roza">).
-import './ui/skin/roza.css';
+// [night-46a] D-301: the Linoryt structure after every component stylesheet (its rules are scoped to
+// <html data-skin="linoryt">, set by index.html; a release build writes the scope as `:root:root`).
+import './ui/skin/linoryt.css';
 
 const mount = document.getElementById('app');
 if (!mount) throw new Error('Missing #app mount point');
@@ -68,19 +67,9 @@ const query = new URLSearchParams(location.search);
  * for new Endless runs in a DEV build only (production folds this to false).
  */
 const devWeatherFront = import.meta.env.DEV && query.get('weather') === 'front';
-// [night-11az] D-257: Róża (KARTA v2 C) is the shipped UI skin. A DEV build with `?skin=current` shows the previous
-// "Diorama" skin for comparison: no <html data-skin="roza">, no rose helpers, its tokens loaded last.
-if (import.meta.env.DEV && query.get('skin') === 'current') {
-  delete document.documentElement.dataset.skin; // index.html sets it so the first paint is already Róża
-  void import('./ui/skin/diorama.css');
-} else if (import.meta.env.DEV && query.get('skin') === 'linoryt') {
-  // [night-28a] D-284: the Linoryt preview (D-283, PLAN-LINORYT.md step U1) on the base HUD/menu DOM: no Róża helpers,
-  // <html data-skin="linoryt"> scopes linoryt.css, loaded last. A release build folds this branch away.
-  startLinoryt({ t, localNumber });
-  void import('./ui/skin/linoryt.css');
-} else {
-  startRoza({ t, localNumber, jamGraceSeconds: CONGESTION_GRACE_TICKS / SIM_TICKS_PER_SECOND });
-}
+// [night-46a] D-301 (PLAN-LINORYT.md step U5): Linoryt is the shipped UI skin; Róża and the DEV `?skin=` previews
+// (the Diorama comparison, the Linoryt preview) are gone.
+startLinoryt({ t, localNumber });
 /** [task-36] Ticks of autoplay before a store scene is lit (game, night, failure). */
 const STORE_SHOT_PLAY_TICKS = 1500;
 /**
@@ -121,7 +110,6 @@ async function boot(): Promise<void> {
   onSettingsChange((settings) => {
     audio.setSettings(audioSettingsFromToggles(settings));
     if (settings.graphics !== appliedQuality) { appliedQuality = settings.graphics; world?.setQuality(settings.graphics); }
-    world?.setGlobeMode(settings.globeMode); // [G8] D-172 (no-op when unchanged)
     document.title = t('app.title');
   });
 
@@ -131,7 +119,7 @@ async function boot(): Promise<void> {
     // journeys through the satellite globe). The ternary lets Vite drop the stub from release bundles entirely.
     const stub = import.meta.env.DEV && query.get('render') === 'stub' ? await import('./game/dev/stubWorld') : null;
     world = stub ? stub.createStubWorld(app, t('canvas.label'), { frozenClock: query.get('clock') === 'frozen' })
-      : createWorld(app, t('canvas.label'), readSettings().graphics, readSettings().globeMode);
+      : createWorld(app, t('canvas.label'), readSettings().graphics);
     world.showMenuBackdrop();
   } catch (error) {
     // [night-11h] D-118: no WebGL 2 (three.js r170 needs it). A plain page says so instead of a blank sky whose

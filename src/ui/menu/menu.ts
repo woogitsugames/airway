@@ -5,8 +5,7 @@ import type { RegionId } from '../../data/regions';
 import type { LicenceClass } from '../../sim';
 import '../skin/current.css'; // [night-11aq] skin tokens read by menu.css
 import './menu.css';
-import { skin, rozaMenuArc, rozaMenuRose, rozaTagline } from '../skin/roza'; // [night-11az] D-257: Róża skin helpers
-import { linoryt, linorytTagline } from '../skin/linoryt'; // [night-28a] D-284: Linoryt preview (DEV only)
+import { linoryt, linorytTagline } from '../skin/linoryt'; // [night-28a] D-284; [night-46a] D-301: the shipped skin
 
 export type MenuMode = 'continue' | 'endless' | 'puzzles' | 'daily';
 export interface MenuData {
@@ -161,9 +160,8 @@ function makeSign():HTMLElement {
   const titleBox=el('div','airway-sign__copy');
   titleBox.append(el('div','airway-sign__title',t('app.title')),el('div','airway-sign__subtitle',t('menu.sign')));
   sign.append(symbol,titleBox);
-  // [night-11az] D-257 Róża: the title on the sky carries the tagline (the airport sign line is hidden by roza.css).
-  if (skin.roza) titleBox.append(rozaTagline());
-  else if (import.meta.env.DEV && linoryt.on) titleBox.append(linorytTagline()); // [night-28a] D-284
+  // [night-28a] D-284: the printed title carries the tagline (the airport sign line is hidden by linoryt.css).
+  if (linoryt.on) titleBox.append(linorytTagline());
   return sign;
 }
 
@@ -201,11 +199,9 @@ export function createMenu(onFlight:(mode:MenuMode|MenuService)=>void,initial:Me
     const sub=el('span','airway-flight__sub',flight.sub);
     if(!flight.sub) sub.hidden=true;
     main.append(title.element,sub);
-    // [night-11az] D-257 Róża: the title set in Alegreya on the photo, not in split-flap cells (the button's aria-label
-    // names it; roza.css hides the flap).
-    if(skin.roza) main.insertBefore(el('span','roza-title',flight.title),sub).setAttribute('aria-hidden','true');
-    // [night-28a] D-284 Linoryt preview: the title printed in Besley, an index entry (linoryt.css hides the flap).
-    else if(import.meta.env.DEV && linoryt.on) main.insertBefore(el('span','roza-title lin-title',flight.title),sub).setAttribute('aria-hidden','true');
+    // [night-28a] D-284: the title printed in Besley, an index entry, not in split-flap cells (the button's aria-label
+    // names it; linoryt.css hides the flap).
+    if(linoryt.on) main.insertBefore(el('span','lin-title',flight.title),sub).setAttribute('aria-hidden','true');
     const gateWrap=el('span','airway-flight__gate');gateWrap.append(gate.element);
     const statusWrap=el('span','airway-flight__status');statusWrap.append(status.element);
     const withRegion=flight.id==='endless' && !!initial.homeRegions?.length && !!onHomeRegion;
@@ -237,8 +233,6 @@ export function createMenu(onFlight:(mode:MenuMode|MenuService)=>void,initial:Me
   }
   board.append(service);
   root.append(board,notice);
-  // [night-11az] D-257 Róża: the menu rose in the thumb corner; the board's entries sit on its western arc.
-  const arc=skin.roza ? rozaMenuArc(board,root.appendChild(rozaMenuRose())) : null;
   const applyNotice=(data:MenuData):void => {
     if(data.notice===undefined) return;
     notice.textContent=data.notice ?? '';
@@ -263,16 +257,15 @@ export function createMenu(onFlight:(mode:MenuMode|MenuService)=>void,initial:Me
         item.status.set(flight.status);
         item.sub.textContent=flight.sub;
         item.sub.hidden=!flight.sub;
-        const name=item.sub.parentElement?.querySelector('.roza-title');
+        const name=item.sub.parentElement?.querySelector('.lin-title');
         if(name) name.textContent=flight.title;
         const button=item.title.element.closest('button');
         button?.setAttribute('aria-label',ariaLabel(flight));
       }
       if(region && data.homeRegions) region.refill?.(data.homeRegion ?? null);
       if(licence && data.licences) licence.refill?.(data.licences,data.licence ?? 1);
-      arc?.layout();
     },
     announce(message:string):void { notice.textContent=message; notice.hidden=false; },
-    dispose():void { flaps.forEach(f=>f.dispose());arc?.dispose();root.remove(); },
+    dispose():void { flaps.forEach(f=>f.dispose());root.remove(); },
   };
 }

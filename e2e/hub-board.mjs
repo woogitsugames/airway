@@ -8,9 +8,9 @@
 // `--shots` writes docs/shots/n11ag/hub-board-*.png.
 // [night-21a] D-268: then in the real session on the DEV stub world (`?render=stub&clock=frozen`, D-254; only DOM
 // geometry is read), landscape 915×412 and 640×360 and portrait 360×640 and 412×915: a run with a day of waiting
-// passengers, the board opened by a long press on the fullest airport in view (the hit test's point; the rose is
-// matched within 16 px, the stub's projection differs a little from the overlay's). No shown note, slot tag, edge chip, rose ring or rose name intersects the
-// board, and the board's own airport keeps its rose wherever its ring lies off the board.
+// passengers, the board opened by a long press on the fullest airport in view (the hit test's point). No shown note,
+// slot tag or edge chip intersects the board ([night-46a] D-301: Linoryt's stamps are printed by the globe under the
+// opaque board; they are only counted).
 // `--shots` also writes docs/shots/n21a/hub-board-map-*-after.png (`--shots-tag=before` for the pre-D-268 frames).
 import { performance } from 'node:perf_hooks';
 import { mkdirSync } from 'node:fs';
@@ -78,29 +78,19 @@ async function mapCase(browser, url, language, width, height) {
       for (const el of document.querySelectorAll('.airport-overlay .airport-bubble, .airport-overlay .airport-slot, .airport-overlay .airport-edge')) {
         if (shown(el)) items.push({ kind: el.className.split(' ')[0], text: el.textContent.trim().slice(0, 24), ...box(el.getBoundingClientRect()) });
       }
-      const roses = [...document.querySelectorAll('.airport-overlay .roza-rose')].filter((el) => el.style.display !== 'none');
-      let own = null;
-      for (const rose of roses) {
-        const ring = rose.querySelector('circle');
-        if (ring) items.push({ kind: 'ring', text: '', ...box(ring.getBoundingClientRect()) });
-        const name = rose.querySelector('.roza-rose__name');
-        if (name && name.textContent) items.push({ kind: 'name', text: name.textContent, ...box(name.getBoundingClientRect()) });
-        const r = rose.getBoundingClientRect();
-        if (Math.hypot((r.left + r.right) / 2 - at.x, (r.top + r.bottom) / 2 - at.y) < 16) own = ring ? box(ring.getBoundingClientRect()) : null;
-      }
-      return { board, items, hits: items.filter(hits), own, roses: roses.length };
+      // [night-46a] D-301: Linoryt's airport stamps are printed by the globe (WebGL) under the opaque board, so only the
+      // DOM notes, slots and edge chips must clear it; the stamps are counted (the overlay's DEV probe).
+      const stamps = (globalThis.__awLinoryt?.stamps() ?? []).filter((stamp) => stamp.visible && stamp.half > 0).length;
+      return { board, items, hits: items.filter(hits), stamps };
     }, target);
     if (SHOTS) {
       mkdirSync(MAP_SHOT_DIR, { recursive: true });
       await page.screenshot({ path: resolve(MAP_SHOT_DIR, `hub-board-map-${language}-${width}x${height}-${SHOT_TAG}.png`) });
     }
-    assert(m.items.length > 0, 'nothing of the map is drawn beside the board');
+    assert(m.items.length + m.stamps > 0, 'nothing of the map is drawn beside the board'); // [night-46a] stamps count
     assert(m.hits.length === 0, `on the board ${JSON.stringify(m.board)}: ${m.hits.map((h) => `${h.kind} "${h.text}" ${[h.l, h.t, h.r, h.b].map(Math.round)}`).join('; ')}`);
-    // The board's own airport keeps its rose when its ring (inner radius + ticks, at most 40 + 9 px) is off the board.
-    const gap = Math.max(m.board.l - target.x, 0, target.x - m.board.r, m.board.t - target.y, 0, target.y - m.board.b);
-    assert(gap < 52 || m.own, `the board's airport ${target.id} lost its rose ${gap} px off the board`);
     if (errors.length) throw new Error(`Browser errors: ${errors.join('; ')}`);
-    return `${m.items.length} map marks beside the board, ${m.roses} roses, own rose ${m.own ? 'shown' : gap < 52 ? 'under the board' : 'missing'}`;
+    return `${m.items.length} map marks beside the board, ${m.stamps} stamps on the globe`;
   } finally {
     await page.close().catch(() => {});
   }
@@ -130,6 +120,10 @@ try {
           const hud = mountHud(host, {});
           hud.render({ week: 1, day: 3, timeMinutes: 14 * 60 + 5, passengers: 128, paused: false, speed: 1, canUndo: true,
             selectedPlane: 'turboprop', stock: { turboprop: 1, widebody: 0, hub: 0 }, minutesToBoard: 900 });
+          // [night-46a] D-301: the Linoryt sheets start under the top margin, whose bottom edge a ResizeObserver
+          // publishes (--lin-pass-bottom) once the margin is laid out: let it run, as a frame does in the game.
+          await document.fonts.ready;
+          await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
           let closed = 0;
           const board = mountHubBoard(host, { close: () => { closed++; board.show(null); } });
           document.documentElement.dataset.airwayMotion = 'full';

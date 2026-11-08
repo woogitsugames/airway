@@ -1,5 +1,10 @@
 # Airway store deliverables — tasks 26, 36 and 40
 
+> **Stale since the Linoryt flip (D-301, 2026-11-08).** The 60 PNGs in `shots/`, `contact-sheet.png`,
+> `feature-graphic.png`, the store video and the site screenshots still show Róża and the satellite globe. They are
+> re-recorded at step U7 of `docs/styles/kierunki-2026-11b/PLAN-LINORYT.md` together with the new copy (D-296); upload
+> nothing from this folder before then.
+
 The Polish and English copy is ready to paste from [pl.md](pl.md) and [en.md](en.md). Verify every described feature against the integrated release build before publishing.
 
 Wave-1 listings (D-96, R1k, D-230): [de.md](de.md), [fr.md](fr.md), [es.md](es.md), [pt-br.md](pt-br.md) — translated

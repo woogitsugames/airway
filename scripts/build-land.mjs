@@ -121,7 +121,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
       for (const [level, s] of Object.entries(result.stats)) console.log(`terrain ${level} ${JSON.stringify(s)}`);
       const m = result.stats.medium;
       terrain = ` checks=${result.passed + result.failed} tris=${result.stats.low.triangles}/${m.triangles}/` +
-        `${result.stats.high.triangles} teethPct=${m.teethPct} saharaStepP99=${m.saharaStepP99} trees=${m.trees}`;
+        `${result.stats.high.triangles} teethPct=${m.teethPct} saharaStepP99=${m.saharaStepP99}`;
     }
     console.log('SUMMARY build-land seed=0xA1A1 width=' + WIDTH + ' height=' + HEIGHT +
       ' land=' + stats.land + ' runs=' + stats.runs + ' bytes=' + Buffer.byteLength(contents) +

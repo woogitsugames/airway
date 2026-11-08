@@ -2,7 +2,7 @@
 // ui/a11y (task 20). Graphics and audio toggles live here; the composition root applies them
 // (world.setQuality, audio.setSettings) through onSettingsChange.
 import { getLanguage, LANGUAGES, legalText, setLanguage, t, type Language, type LegalKey, type TranslationKey } from '../../i18n';
-import { QUALITY_PREFERENCES, type GlobeMode, type QualityPreference } from '../../render';
+import { QUALITY_PREFERENCES, type QualityPreference } from '../../render';
 import { TEXT_SCALES, readAccessibilitySettings, updateAccessibilitySettings, type TextScale } from '../a11y';
 import { reducedMotion, setReducedMotion } from '../motion';
 import { readAirportLabelMode, type AirportLabelMode } from '../airportLabel';
@@ -10,7 +10,6 @@ import { AIRLINE_COLOURS, airlineColourHex, applyAirlineColour, isAirlineColour,
 import { regionGlyph } from '../glyphs';
 import { REGION_IDS } from '../../data/regions';
 import { SHORTCUT_HELP } from '../../input/keyboard';
-import { linoryt, linorytLicences } from '../skin/linoryt'; // [night-29b] D-284 U4: Linoryt preview (DEV only)
 import '../skin/current.css'; // [night-11aq] skin tokens read by menu.css
 import '../menu/menu.css';
 
@@ -28,11 +27,9 @@ export interface UserSettings {
   airlineColour: AirlineColourId;
   /** [night-11g] D-88: still the game's own motion; the system setting until the player changes it. */
   reduceMotion: boolean;
-  /** [G8] D-172: Satelita (default) or Mapa; also switched by the dock tag in game. */
-  globeMode: GlobeMode;
 }
 const KEY='airway.settings';
-type LocalField='sound'|'music'|'graphics'|'airportLabels'|'airlineColour'|'globeMode';
+type LocalField='sound'|'music'|'graphics'|'airportLabels'|'airlineColour';
 const QUALITY:readonly QualityPreference[]=QUALITY_PREFERENCES;
 const listeners=new Set<(settings:UserSettings)=>void>();
 
@@ -58,7 +55,6 @@ export function readSettings():UserSettings {
     airportLabels:readAirportLabelMode(),
     airlineColour:readAirlineColour(),
     reduceMotion:reducedMotion(),
-    globeMode:record.globeMode==='map'?'map':'satellite',
   };
 }
 
@@ -71,8 +67,7 @@ export function saveSettings(change:Partial<UserSettings>):UserSettings {
   if(change.textScale!==undefined) a11y.textScale=change.textScale;
   if(Object.keys(a11y).length) updateAccessibilitySettings(a11y);
   if(change.reduceMotion!==undefined) setReducedMotion(change.reduceMotion);
-  const local:Partial<Record<LocalField,boolean|QualityPreference|AirportLabelMode|AirlineColourId|GlobeMode>>={};
-  if(change.globeMode!==undefined) local.globeMode=change.globeMode==='map'?'map':'satellite';
+  const local:Partial<Record<LocalField,boolean|QualityPreference|AirportLabelMode|AirlineColourId>>={};
   if(change.sound!==undefined) local.sound=change.sound;
   if(change.music!==undefined) local.music=change.music;
   if(change.graphics!==undefined) local.graphics=change.graphics;
@@ -239,10 +234,7 @@ export function createSettings(onBack:()=>void,onLicenses:()=>void,onLanguageCha
   swatch.style.background=airlineColourHex(values.airlineColour);
   airlineRow.firstElementChild?.prepend(swatch);
   group(t('settings.group.display'),'settings-group-display');
-  // [night-29b] D-283/D-285 U4: Satelita and Mapa leave with the Linoryt look, so the preview hides the globe view.
-  if(!(import.meta.env.DEV && linoryt.on)) selectField(t('settings.globeMode'),values.globeMode,[['satellite',t('settings.globeMode.satellite')],['map',t('settings.globeMode.map')]],(v)=>{
-    saveSettings({globeMode:v==='map'?'map':'satellite'});
-  });
+  // [night-46a] D-283/D-285, D-301: no globe-view setting (G8, D-172): Satelita and Mapa left with the Linoryt look.
   selectField(t('settings.graphics'),values.graphics,[['auto',t('settings.auto')],['saver',t('settings.saver')],['low',t('settings.low')],['medium',t('settings.medium')],['high',t('settings.high')]],(v)=>{
     saveSettings({graphics:QUALITY.includes(v as QualityPreference)?v as QualityPreference:'auto'});
   });
@@ -346,7 +338,8 @@ const ASSETS: ReadonlyArray<{name:TranslationKey;license:TranslationKey}>=[
   {name:'licenses.overpass',license:'licenses.ofl'},
   {name:'licenses.overpassMono',license:'licenses.ofl'},
   {name:'licenses.atkinson',license:'licenses.ofl'},
-  {name:'licenses.alegreya',license:'licenses.ofl'}, // [night-11az] D-257
+  {name:'licenses.besley',license:'licenses.ofl'}, // [night-46a] D-301: the Linoryt faces
+  {name:'licenses.schibsted',license:'licenses.ofl'},
   {name:'licenses.naturalEarth',license:'licenses.publicDomain'},
   {name:'licenses.nasaEarth',license:'licenses.publicDomain'}, // [ext-03 G1] D-170
   {name:'licenses.noaaRelief',license:'licenses.publicDomain'},
@@ -364,8 +357,6 @@ export function createLicenses(onBack:()=>void):SettingsHandle {
     item.append(e('strong','',t(asset.name)),e('span','',t(asset.license)));
     list.append(item);
   }
-  // [night-29b] D-284 U4: the preview's faces (Besley, Schibsted Grotesk) join the list.
-  if(import.meta.env.DEV && linoryt.on) for(const [name,licence] of linorytLicences()){const item=e('li','');item.append(e('strong','',name),e('span','',licence));list.append(item);}
   paper.append(list);root.append(paper);
   return {element:root,firstFocus:top.querySelector('button') as HTMLElement};
 }

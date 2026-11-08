@@ -3221,3 +3221,61 @@ preset (the relief and night hatches keep 4 px): at zoom 2 the denser sea compet
 (Bay of Biscay, coordinator's review of #312); one constant, no cost. Rejected: lowering the sea contrast only under
 stamps (the terrain shader would need every stamp position), a bigger JS budget. **Status: in force; U5 flips the
 constant.**
+
+## D-301 — The Linoryt flip (U5): Linoryt is the shipped skin and globe; Róża, the Diorama comparison and the globe-view setting go; CSS budget 132 kB (2026-11-08, Claude, night 46a)
+Step U5 of `docs/styles/kierunki-2026-11b/PLAN-LINORYT.md` (D-283, D-284, D-285 L1–L4).
+**What changed.** `index.html` sets `<html data-skin="linoryt">` (theme colour paper `#ECE3CC`); `src/main.ts` calls
+`startLinoryt` on every boot and imports `linoryt.css` last; `?skin=` is gone (both DEV previews: `current` = Diorama,
+`linoryt`). `src/ui/skin/current.css` holds the Linoryt token values (the preview's overrides folded in, the Róża
+palette re-ink written as `--lin-*` inks; two tokens only the Diorama skin read are dropped); `linoryt.css` keeps its
+`:root[data-skin="linoryt"]` scope in source (a release writes it `:root:root`), its inks move to one plain `:root`
+(palette constants, written out in the token values), and it is the structure file of the pruner. Deleted: `roza.css`,
+`roza.ts`, `diorama.css`, Alegreya (font + licence, Settings → Licences now lists Besley and Schibsted Grotesk),
+`test:roza-names` (its fixtures live in `test:note-layout`), the Róża-only tools `e2e/roza-contrast-live.mjs`,
+`e2e/skin-roza-shots.mjs`; `test:e2e:roza-contrast` → `test:e2e:skin-contrast` (Linoryt only). `PREVIEW_FONTS` is
+empty: Besley 800/900 and Schibsted Grotesk ship; their missing glyphs (Besley U+2192/U+202F, Schibsted U+2009/U+202F)
+come from the `--skin-face-*` stacks (`'Besley', 'Atkinson Hyperlegible Next', 'Overpass', serif`), checked by
+`test:glyphs`, so no extra `unicode-range` face is needed. i18n: `roza.*` → `hud.weekLine`, `hud.passengerLine`,
+`hud.dayOf`, `note.fill`, `note.jam`, `dock.undo|turboprop|widebody|hub|speed|in`, `menu.tagline` (PL/EN, limits);
+`roza.weekDay`, `roza.dial`, the satellite/map captions, `hud.globeMode` and `settings.globeMode*` are removed.
+**Globe.** `DEFAULT_GLOBE_LOOK = 'linoryt'` (the one render line, D-300). The globe-view setting (D-172) and the dock's
+globe tag go (D-285 L1: five dock symbols); the UI no longer calls `setGlobeMode` (it stays in `src/render` as a no-op
+for E4 to remove with the textures), a stored `globeMode` is ignored. The notes stand beside the world's own stamp:
+the session hands the overlay `projectAirport` (E2), and `LINORYT_STAMP_PX` is replaced by E2's `STAMP_SIZE_PX` for the
+fallback (an airport the renderer does not know yet).
+**Budgets.** Release CSS 105.3 → **129.0 kB** (D-294 projected ~135); per the owner's D-297 the CSS budget becomes
+**132 kB** (measurement + 3 kB). Main JS 1,168.8 → 1,167.6 kB raw (gzip 352.2 → 352.2): `roza.ts` left and the
+formerly DEV-only Linoryt helpers arrived, so the JS budget (1,180 / 360 kB) is unchanged. `dist/` 4,009.0 →
+4,099.5 kB (fonts in, Alegreya out; budget 4,300 kB; E4 removes ~1.9 MB of photo textures). `test:bundle` keeps its
+"≥ 6 font files named, all present" check (8 are named now).
+**Evidence.** `skin:pixels` (base: origin/dev with the DEV `?skin=linoryt` preview; new: this tree with
+`AW_SKIN_INLINE=1`, i.e. inlined and pruned like a release): 94 of 120 screens pixel-identical; the 24 HUD/pause/weekly-
+board screens differ only by the removed globe tag, the two 915×412 tutorial screens by one-level anti-aliasing (max
+channel difference 1); computed styles differ only in the display stack (Alegreya out, Overpass in) and on elements the
+structure hides (the pruner drops their dead declarations). `test:e2e:text-scale-150` (red on dev at 915×412 for the
+Róża crate) passes 120/120 on the Linoryt board. Store shots are stale until U7 (D-296).
+**Found by the suites that ran on Róża until now.** The Linoryt weekly board on a landscape phone (720+ × ≤ 520 px) ran
+4 px past the bottom of a 412 px screen: its sign takes a row of its own under the top margin, so the model window now
+gives that height back (`100vh − --lin-top − 264 px`, floor 48 px as D-209; `test:hud-targets` asks ≥ 80 px there) and
+the crates keep 14 px under the tilted hub stamp. The rule that prints the cargo's cut symbol instead of the 3D model
+lost to the base `#app canvas { display: block }` in the game (`:is(#app, body)` now outweighs it), so the game showed
+the small 3D models in Linoryt's frames. The e2e suites written for Róża read the Linoryt parts instead (`.lin-week`,
+`.lin-caption`/`.lin-wait`, `.lin-name`/`.lin-code`, the overlay's stamp probe); `hub-board` lets the margin's
+ResizeObserver run before it measures, `edge-dock` zooms one wheel step in while fewer than 3 edge buttons show. These
+fixes bring the release CSS to 129.4 kB (budget 132 kB unchanged); `test:hud-targets` 311/311, `test:fast` 116/116.
+Rejected: keeping `?skin=linoryt` as a no-op alias (dead code; the e2e harness now refuses `--skin`), removing
+`setGlobeMode` from `src/render` here (ext session, E4), folding the `:root[data-skin="linoryt"]` prefix out of the
+source (the scope keeps the structure file auditable and the pruner's selector match unchanged). **Status: in force.**
+
+## D-302 — E4: the 3D crate models are not drawn in print; the satellite object layers leave in a separate PR (2026-11-08, Claude, ext session E4; agreed with the coordinator)
+Step E4 of PLAN-LINORYT.md removes Satelita, Mapa (D-285), the diorama and the DEV comparison looks with their
+textures (−2.07 MB `dist/`), shells, decorations and day/night grading, and `GlobeMode`/`setGlobeMode` (U5 already
+removed the setting and the dock tag). **Choice.** (1) `WorldRenderer.drawModelPreview` returns `false`: the Linoryt
+crates print their symbol and the skin hides the model canvas, yet the draw compiled the model shaders and read the
+pixels back synchronously on the weekly board's first frame (1.4–3.2 s on SwiftShader, flaky e2e #315; likely a hitch
+on budget phones). The session then marks `data-model="none"` and drops the canvas. (2) The files of the satellite
+object layers (`airports.ts` medallions, the tube `RouteLayer`, `planes.ts` plane models, `modelPreview.ts`,
+`models/planes.ts`) stay for one more PR, which also moves their tests (`test:render-layers`) and the model preview:
+E4 stays small enough to review. (3) The D-177 contrast probe (`measureLayerContrast`) needs no change: it measures
+the Linoryt stamp, ribbon and sprite groups (dev world, zoom 3.3, low: routes 4.6/5.5, airports 3.3/2.8, planes
+1.8/2.0 by day/night); the thresholds for the print are U6's (D-47 pass). **Status: in force.**

@@ -18,7 +18,7 @@ const SHOTS = resolve(ROOT, 'docs/shots/n11n');
 const results = [];
 const CASES = [['en', 412, 915], ['pl', 915, 412], ['pl', 904, 1088], ['pl', 320, 568]];
 const COUNTDOWN_SHOTS = resolve(ROOT, 'docs/shots/n11s');
-// [night-23a] The Róża caption adds "in" / "za" (roza.dock.in).
+// [night-23a] The dock caption adds "in" / "za" (dock.in, Linoryt since U5).
 const WAIT = { en: /^(?:in )?(\d+) (day|days|h|min)$/, pl: /^(?:za )?(\d+) (dzień|dni|godz\.|min)$/ };
 const SPOKEN = { en: 'Next crates in ', pl: 'Następne skrzynie za ' };
 
@@ -50,7 +50,16 @@ try {
             const bare = own.length > 3 && own[3] === 0;
             const icon = tag.querySelector('.airway-hud__icon');
             const halo = bare && icon ? (getComputedStyle(icon).filter.match(/drop-shadow\((rgba?\([^)]*\))/) ?? [])[1] ?? '' : '';
-            const bg = bare ? rgb(halo) : own;
+            // [U5] Linoryt (D-301): the bare tag sits on the dock's paper margin, so the backdrop is the nearest
+            // ancestor with a painted background when the symbol has no halo.
+            let backdrop = '';
+            if (bare && !halo) {
+              for (let node = tag.parentElement; node && node instanceof Element; node = node.parentElement) {
+                const paint = rgb(getComputedStyle(node).backgroundColor);
+                if (paint.length === 3 || (paint.length > 3 && paint[3] > 0)) { backdrop = getComputedStyle(node).backgroundColor; break; }
+              }
+            }
+            const bg = bare ? rgb(halo || backdrop) : own;
             const fg = rgb(style.color);
             const [a, b] = [lum(fg), lum(bg)].sort((x, y) => y - x);
             return {
@@ -80,7 +89,7 @@ try {
                 // ("in 2 days"): that caption must then be shown whole, on screen and next to its symbol.
                 const shown = (node) => node && getComputedStyle(node).display !== 'none' && node.getBoundingClientRect().width > 0;
                 const count = tag.querySelector('.airway-dock__count');
-                const caption = tag.querySelector('.roza-caption');
+                const caption = tag.querySelector('.lin-wait');
                 const text = shown(count) ? count : shown(caption) ? caption : count;
                 const c = text.getBoundingClientRect(), r = tag.getBoundingClientRect();
                 const inside = text === caption

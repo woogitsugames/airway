@@ -1,7 +1,7 @@
 // [night-12bb] R2i, D-249: the announced demand surge on the airport's luggage tag and edge chip (src/ui/overlay.ts)
 // in real Chromium, without a run: the overlay is built on the menu page with a fixed camera (like fill-trend), so the
-// globe frame rate (G7) does not matter. Checks: the pennant stub sits right after the code plate (in Róża, after the
-// note's reading of that code: fill, trend, region groups; night-23a) and inside the tag
+// globe frame rate (G7) does not matter. Checks: the pennant stub sits right after the code plate (in Linoryt, after the
+// code's fill and tick bar; night-46a) and inside the tag
 // (no clipping), hollow pennant + "+12 14:00" while announced, filled pennant + "+12 to/do 20:00" while running (the
 // state is told by shape and words, not colour), the tag aria names the surge (PL/EN), an off-screen airport's edge
 // chip carries the same pennant and aria, null removes both, an invalid mark is refused. Writes one PNG per case to
@@ -65,13 +65,14 @@ try {
               aria: tag.getAttribute('aria-label'), scroll: tag.scrollWidth - tag.clientWidth,
               text: stub?.querySelector('.airport-bubble__surge-text')?.textContent ?? null,
               phase: stub?.dataset.phase ?? null, fill: path?.getAttribute('fill') ?? null,
-              // [night-23a] Róża (D-257) reads the note as code, "14 of 24", trend, then the region groups, and the
-              // stubs follow that reading: only those parts may stand between the code plate and the pennant.
+              // [night-23a] The note reads code, "14 of 24", then the stubs and the region groups. [night-46a] Linoryt
+              // (D-301) prints the code (.lin-code) after the name, then the fill, its tick bar (an SVG) and line
+              // breaks: only those parts may stand between the code plate and the pennant.
               afterPlate: stub ? (() => {
-                const plateAt = kids.findIndex((kid) => kid.classList.contains('airport-bubble__plate'));
+                const plateAt = kids.findIndex((kid) => kid.classList.contains('airport-bubble__plate') || kid.classList.contains('lin-code'));
                 const between = kids.slice(plateAt + 1, kids.indexOf(stub));
                 return plateAt >= 0 && plateAt < kids.indexOf(stub) && between.every((kid) => kid instanceof SVGElement ||
-                  ['roza-fill', 'roza-count', 'roza-more', 'airport-bubble__trend'].some((cls) => kid.classList.contains(cls)));
+                  ['lin-fill', 'lin-br', 'lin-count', 'lin-more', 'airport-bubble__trend'].some((cls) => kid.classList.contains(cls)));
               })() : null,
               inside: s ? s.left >= r.left - 0.5 && s.right <= r.right + 0.5 && s.top >= r.top - 0.5 && s.bottom <= r.bottom + 0.5 : null,
               stubScroll: stub ? stub.scrollWidth - stub.clientWidth : null,

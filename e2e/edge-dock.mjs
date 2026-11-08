@@ -27,9 +27,8 @@ async function audit(page) {
     }
     // [night-10x] A right-column dock owns its whole band: an edge button between two tags is still in reach of
     // a thumb aimed at the dock. Portrait keeps the dock as a bottom row (the pass/tag test above covers it).
-    // [night-23a] The band is the box spanned by the dock's tags, not the dock element: Róża (D-257) sets the tags on
-    // an arc (down the right edge in landscape, round the corner dial on a foldable) whose element is only the bottom
-    // band; on the Diorama column both are the same strip.
+    // [night-23a] The band is the box spanned by the dock's tags, not the dock element (a skin may set the tags apart
+    // from the dock element; on the Linoryt column both are the same strip).
     const hud = document.querySelector('.airway-hud');
     const tags = boxes('.airway-dock__tag').map((tag) => tag.r);
     if (hud && tags.length && hud.dataset.layout !== 'portrait') {
@@ -51,6 +50,7 @@ async function journey(page) {
   await waitForScreen(page, 'game');
   const board = await page.evaluate(() => window.aw.autoplay(1));
   assert(board.screen === 'upgrade', `week-1 board not reached (${board.screen})`);
+  await waitForBoardModels(page); // [night-46a] the crates of a fresh board take taps once their models are drawn
   const offers = await page.evaluate(() =>
     [...document.querySelectorAll('[data-testid^="upgrade-option-"]')].map((node) => node.dataset.upgrade));
   const index = offers.findIndex((kind) => kind === 'turboprop' || kind === 'widebody');
@@ -58,7 +58,16 @@ async function journey(page) {
   await clickTestId(page, `upgrade-option-${Math.max(0, index)}`);
   await waitForScreen(page, 'game');
   await page.waitForTimeout(500);
-  const { edges, problems } = await audit(page);
+  let { edges, problems } = await audit(page);
+  // [night-46a] D-301: the Linoryt framing can hold most of the network in view; a wheel step in (a pinch on a phone)
+  // pushes airports off the screen so the edge buttons are exercised.
+  for (let step = 0; edges < 3 && step < 4; step++) {
+    const view = page.viewportSize();
+    await page.mouse.move(view.width / 2, view.height / 2);
+    await page.mouse.wheel(0, -150);
+    await page.waitForTimeout(500);
+    ({ edges, problems } = await audit(page));
+  }
   assert(edges >= 3, `only ${edges} edge buttons: the scene does not exercise the edges`);
   assert(problems.length === 0, problems.join('; '));
 }
