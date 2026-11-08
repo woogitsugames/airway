@@ -37,6 +37,7 @@ import { localClock, surgeKey, surgeMark } from './surge'; // [night-12bb] R2i
 import { frontKey, frontMarks, frontSummary, localClockMinute } from './weather'; // [night-12bd] R2j; [night-60a] the refused-Undo time
 import { HubDepartureLog, boardOpensOnTap } from './hubBoard'; // [night-11ag] R4d
 import { mountHubBoard } from '../ui/hubBoard';
+import { stripSkin, type StripHub } from '../ui/strip-skin'; // [night-75a] D-330: the UI-A preview's hub strip bay
 import type { World, ScreenPoint } from './world';
 import { NewAirportMarks } from './newAirports'; // [night-10a]
 import { setClass } from '../ui/classes'; // [night-59a] D-322
@@ -150,7 +151,8 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
   // ---- presentation layers -------------------------------------------------------------
   const overlay: AirportOverlay = createAirportOverlay(layer, world.camera, {
     reserved: () => overlayReserved,
-    board: () => hubBoard.box, // [night-21a] D-268: notes and roses keep off the open hub board
+    // [night-75a] D-330: and off the UI-A preview's strip bay (null in a release)
+    board: () => hubBoard.box ?? strips?.box ?? null, // [night-21a] D-268: notes and roses keep off the open hub board
     project: (lon, lat, altitude, out) => world.renderer.project(lon, lat, altitude, out),
     // [night-46a] D-301 (U5): the notes stand beside the world's own stamp (E2 spec §8); an airport the renderer does not
     // know yet (half 0) falls back to the projected airport and STAMP_SIZE_PX in the overlay.
@@ -187,6 +189,10 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       return hitTestRouteSegments(networkRoutes(), projectedCities(), clientX - rect.left, clientY - rect.top, 24);
     },
   });
+  // [night-75a] D-330 (PLAN-NOWY-KIERUNEK.md T3): the DEV `?skin=board` preview's bay of hub flight strips over the
+  // console; a strip opens the full strip (the hub board). No slot in a release.
+  const strips = stripSkin.current?.mount(layer, { open: (id) => openHubBoard(id) }) ?? null;
+  const hubStrips: StripHub[] = [];
   const upgradeHost = document.createElement('div');
   upgradeHost.className = 'airway-upgrade-host';
   layer.append(upgradeHost);
@@ -423,6 +429,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     // reads the seat load of the hubs only.
     world.setHubLoad(cities.map((city) => ({ id: city.id, used: Math.min(city.waiting.length, city.capacity),
       cap: Math.max(1, city.capacity), jam01: jamArcShare(city.jamTicksLeft, CONGESTION_GRACE_TICKS, SIM_TICKS_PER_SECOND, reducedMotion()) })));
+    hubStrips.length = 0;
     for (const city of cities) {
       if (!knownAirports.has(city.id)) {
         knownAirports.add(city.id);
@@ -441,9 +448,12 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       const seconds = city.jamTicksLeft === null ? null : Math.ceil(city.jamTicksLeft / SIM_TICKS_PER_SECOND);
       if (jamKeys.get(city.id) !== seconds) { jamKeys.set(city.id, seconds); overlay.setJamCountdown(city.id, seconds); }
       jamHaptics.setJammed(city.id, city.jamTicksLeft !== null);
+      if (strips && (city.hub || seconds !== null)) hubStrips.push({ id: city.id, code: airportLabel(city.id, 'code'),
+        name: airportLabel(city.id, 'name'), hub: city.hub, waiting: city.waiting, capacity: city.capacity, jamSeconds: seconds });
       overlay.setSlotHold(city.id, city.slotHeld, city.nextSlotMinutes); // [task-38] deduplicated inside
       overlay.setFillTrend(city.id, fillReadings.trend(city.id, city.waiting.length, city.capacity)); // [night-11af] deduplicated inside
     }
+    strips?.update(hubStrips); // [night-75a] D-330
     // [night-10g] The curfew barrier: rebuilt only when the set of closed airports changes.
     const curfewKey = cities.filter((city) => city.curfewClosed).map((city) => city.id).join(',');
     // [night-11p] R6a: the first hub at 70 % of its waiting places, and the first curfew night.
@@ -791,6 +801,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       routeMenu.dispose();
       handles.dispose();
       hubBoard.dispose(); // [night-11ag]
+      strips?.dispose(); // [night-75a]
       atc.dispose();
       slotHint.dispose();
       firstTime.dispose();

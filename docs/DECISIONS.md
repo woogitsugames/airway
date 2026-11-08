@@ -3885,3 +3885,50 @@ plumbing; no earth shader in it). `perf:scene` (SwiftShader, 412×915, 45 s, `--
 R2 borders, whose thousands of instances SwiftShader ran one by one); the plane quad grows 56 → 72 px for the shadow,
 one extra SDF fetch per fragment.
 **Status:** preview; the owner sees it with T2 (plan §7 gate).
+
+## D-330 — UI-A hub flight strips in a bay over the console, the full strip and the ATC strip as a controller's strip, behind the DEV `?skin=board` preview (2026-11-08, Claude, night 75a)
+Step T3 of `docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md` (D-323; UI-A-SPEC.md §3 "Pasek lotu"). Nothing the release
+ships changes.
+**Slot.** The session mounts the bay through a third slot, `src/ui/strip-skin.ts` (`stripSkin.current`, null in a
+release), which the DEV `?skin=board` branch of `src/main.ts` fills with `src/ui/skin/board-strips.ts` (lazy chunk,
+type-only imports; i18n and the D-08 glyph builder handed in). After every sync the session hands it one read-only row per
+hub (code, city, queue, places, jam seconds); a tap on a strip calls the session's existing `openHubBoard`. The run, the
+sim and its hash are untouched (D-13); `src/game/hubBoard.ts` is unchanged.
+**Strip.** A paper strip (`--board-paper`) in a coloured holder carrying the hub's asterisk: **blue** = in order, **red** =
+jammed; columns ruled like a controller's strip in Chivo Mono: HUB (code, city), QUEUE ("Kolejka · 3 kierunki"; one D-08
+glyph per passenger at the theme's glyph floor 16 px / 21 px enhanced, a row per direction for one or two directions,
+past that the first row and glyph + count pairs, "+n" where a row is full), SEATS ("36/36") and CLOSES (the jam's `m:ss`
+in red pencil inside a hand-drawn red ring, else "brak"/"none" in words). The whole strip is one button (≥ 48 px) with one
+spoken label; its insides are aria-hidden. The seats and closes columns take the width of the longest figure any strip
+prints, so every strip's queue column lines up. **Deviation from the plan's "one strip per hub":** an ordinary airport
+that is jammed gets a strip too while the jam lasts (label "Lotn."/"Airport", a plain point instead of the asterisk), since
+a jam ends the run and the bay would otherwise show calm hubs while a city jams; question in the PR.
+**Bay.** At most two strips one above the other, the most urgent first (a jam by its time left, then the fullest; a strip
+on show keeps its place until another hub is fuller by 15 % of its seats, so they do not swap at every passenger); the
+rest fold into a "+N paski" tile (dashed frame) that unfolds them in a list (Escape folds it). One strip at text ≥ 130 %
+and when two would leave the map less than 300 px. Layout, first that fits: side by side with the tile beside; side by side
+with the tile as a row under the strips; stacked (the queue on its own row; always at ≥ 130 %, queue as glyph + count).
+Portrait and foldable: on the console (foldable centred, ≤ 560 px). **Landscape (915×412): the right column beside the
+console, level with the split-flap board** (two one-line strips and the tile row stay within 45 % of the height); where the
+board leaves less than 260 px (e.g. 844×390 with a notch) one strip over the map's lower left.
+**Obstacle.** The bay is a camera inset like the dock (`GAME_PANELS` in `src/game/world.ts`; panels are now observed while
+hidden too, so a bay that appears later re-frames the globe), a margin of the notes and direction signs
+(`linorytMargins`/`linorytFrameStart`: the bottom margin in portrait, the top or bottom edge band in landscape) and the
+board slot's box for the notes (`hubBoard.box ?? strips.box`). In a release no element matches, so nothing moves.
+**Full strip.** The long press (and a tap at ≥ 70 % full, and now a tap on a strip) still opens the hub cause board
+(`src/ui/hubBoard.ts`, unchanged); board.css "T3" draws it as the hub's strip pulled out long over the bay, on the bay's
+lines (red holder for a jam), paper and mono type, close ≥ 48 px.
+**ATC strip.** The route hints, range warning and D-321's refused-Undo notice (`src/ui/atcStrip.ts`, unchanged) are a
+controller's strip in an enamel holder over the lower chrome (bay or console; landscape: left of the console); the reason
+in heavy print behind a no-entry octagon (shape, and no red: red is a jam). The first-time cards and the slot hint keep
+their slip but stand on the same line.
+**Motion.** Nothing slides, swaps or blinks; the strip's 1 px press uses the console's 60 ms and is off under "Reduce
+motion" (D-88).
+**Budgets.** Release CSS 129.0 → 129.0 kB (byte-identical file); main JS 1,062.9 → 1,065.2 kB raw (gzip 319.4 →
+319.9; the PL/EN strip strings, the slot call and the panel/margin lines); `dist/` 2,009.4 → 2,011.7 kB. The strip
+code and its CSS are DEV-only.
+**Tests.** `test:board` (+9: order, queue, place, layout, columns, texts, slot), `test:render-layers` (+3: the bay as a
+camera inset), `test:contrast` (+3 strip pairs, paper ground), `test:cvd` (strip glyph outline), `test:e2e:board:stub` (bay
+audit on all 24 screens; on 412×915 and 915×412 the full strip, the tile's list and the ATC warning/notice), shots
+`docs/shots/t3/` (`npm run shots:board:t3`).
+**Status:** preview; the owner sees it with T2+R3 (plan §7 gate).

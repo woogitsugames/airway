@@ -28,7 +28,8 @@ function devGlobeLook(): GlobeLook | undefined {
 }
 
 // [task-34] HTML panels the globe must stay clear of. Their boxes become camera insets (D-47).
-const GAME_PANELS = ['.airway-pass', '.airway-dock'];
+// [night-75a] D-330: the UI-A preview's hub strip bay is one too (present only in a DEV `?skin=board` build).
+const GAME_PANELS = ['.airway-pass', '.airway-dock', '.airway-strip-bay'];
 const MENU_SIGN = '.airway-sign';
 const MENU_BOARD = '.airway-board';
 
@@ -118,9 +119,10 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
   const observed = new Set<Element>();
   const boxOf = (element: Element | null, origin: DOMRect): LayoutRect | null => {
     if (!element) return null;
+    // [night-75a] D-330: observed while hidden too, so a panel that appears later (the strip bay) re-frames the globe.
+    if (!observed.has(element)) { observed.add(element); panelObserver?.observe(element); }
     const r = element.getBoundingClientRect();
     if (r.width < 1 || r.height < 1) return null;
-    if (!observed.has(element)) { observed.add(element); panelObserver?.observe(element); }
     return { left: r.left - origin.left, top: r.top - origin.top, right: r.right - origin.left, bottom: r.bottom - origin.top };
   };
   /** Union of the visible boxes of `elements` (layer coordinates). */

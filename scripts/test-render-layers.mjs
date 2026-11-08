@@ -110,6 +110,14 @@ try {
     'portrait: dock -> bottom inset, larger safe-area top kept ' + JSON.stringify(port));
   check(JSON.stringify(insetsFromLayout(412, 915, [{ left: 0, top: 0, right: 0, bottom: 0 }])) ===
     JSON.stringify({ top: 0, right: 0, bottom: 0, left: 0 }), 'hidden (empty) panels add no inset');
+  // [night-75a] D-330 (T3): the UI-A preview's hub strip bay is a game panel like the dock: on the console in portrait
+  // it lifts the bottom inset to its own top; beside the console in landscape (level with the board) it is a top band.
+  const bayPort = insetsFromLayout(412, 915, [{ left: 12, top: 10, right: 400, bottom: 70 },
+    { left: 0, top: 830, right: 412, bottom: 915 }, { left: 8, top: 706, right: 404, bottom: 826 }]);
+  check(bayPort.bottom === 915 - 706 + 8 && bayPort.top === 78, 'portrait: strip bay over the dock -> bottom inset ' + JSON.stringify(bayPort));
+  const bayLand = insetsFromLayout(915, 412, [pass, rail, { left: 488, top: 6, right: 775, bottom: 130 }]);
+  check(bayLand.top === 138 && bayLand.right === 106 && bayLand.bottom === 0, 'landscape: strip bay beside the console -> top inset ' + JSON.stringify(bayLand));
+  check(readFileSync(new URL('../src/game/world.ts', import.meta.url), 'utf8').includes("'.airway-strip-bay'"), 'world.ts measures the strip bay');
   const fold = insetsFromLayout(904, 1000, [rail.left === 817 ? { left: 790, top: 0, right: 904, bottom: 1000 } : rail]);
   check(fold.right === 122 && fold.top === 0, 'foldable side rail -> right inset');
 
