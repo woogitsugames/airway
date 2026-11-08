@@ -12,7 +12,7 @@
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
-import { withBrowser, newGamePage, waitForScreen, assert, clickTestId, saveDiagnostics, ROOT } from './browser.mjs';
+import { withBrowser, newGamePage, waitForScreen, assert, clickTestId, saveDiagnostics, ROOT, waitForBoardModels } from './browser.mjs';
 import { E2E_SEEDS } from './seeds.mjs';
 
 // [night-12ac] Seed from e2e/seeds.mjs, replayed headless by test:e2e-seeds (in test:fast).
@@ -52,7 +52,7 @@ async function unserved(page, language) {
   for (let i = 0; i < 200; i++) {
     const screen = await page.evaluate(() => window.aw.state().screen);
     if (screen === 'gameover') break;
-    if (screen === 'upgrade') { await clickTestId(page, 'upgrade-option-0'); await waitForScreen(page, 'game'); continue; }
+    if (screen === 'upgrade') { await waitForBoardModels(page); await clickTestId(page, 'upgrade-option-0'); await waitForScreen(page, 'game'); continue; }
     await page.evaluate(() => window.aw.advanceTicks(600));
   }
   await waitForScreen(page, 'gameover');
@@ -92,6 +92,7 @@ async function served(page) {
     if (s.screen === 'upgrade') {
       const offers = await page.evaluate(() => [...document.querySelectorAll('[data-testid^="upgrade-option-"]')].map((n) => n.dataset.upgrade));
       const plane = offers.findIndex((o) => o === 'turboprop' || o === 'widebody');
+      await waitForBoardModels(page); // [night-47a] crate-model frame first (N45a)
       await clickTestId(page, `upgrade-option-${Math.max(0, plane)}`);
       await waitForScreen(page, 'game');
     }
@@ -119,6 +120,7 @@ async function noSpare(page, language) {
     if (s.screen === 'upgrade') {
       const offers = await page.evaluate(() => [...document.querySelectorAll('[data-testid^="upgrade-option-"]')].map((n) => n.dataset.upgrade));
       const plane = offers.findIndex((o) => o === 'turboprop' || o === 'widebody');
+      await waitForBoardModels(page); // [night-47a] crate-model frame first (N45a)
       await clickTestId(page, `upgrade-option-${Math.max(0, plane)}`);
       await waitForScreen(page, 'game');
     }

@@ -5,7 +5,7 @@
 // airports leave the screen) and every 2 h for 12 h after that (until the run closes), every visible chip is checked against the run's waiting count and capacity.
 import { performance } from 'node:perf_hooks';
 import {
-  withBrowser, newGamePage, gameUrl, SKIN, RENDER, assertRender, waitForScreen, assert, clickTestId, saveDiagnostics,
+  withBrowser, newGamePage, gameUrl, SKIN, RENDER, assertRender, waitForScreen, assert, clickTestId, saveDiagnostics, waitForBoardModels,
 } from './browser.mjs';
 // [night-44a] `test:e2e:edge-chip-fill:stub` (--render=stub): chips are DOM placed from the real camera/projection and
 // the wheel zoom goes to the same orbit camera, so the stub world (D-254) gives the same audit; time already passes
@@ -77,6 +77,7 @@ async function journey(page, seed, width, height) {
   assert(s.screen === 'upgrade', `expected the week-1 board, saw ${s.screen}`);
   const offers = await page.evaluate(() => [...document.querySelectorAll('[data-testid^="upgrade-option-"]')].map((n) => n.dataset.upgrade));
   const plane = offers.findIndex((o) => o === 'turboprop' || o === 'widebody');
+  await waitForBoardModels(page); // [night-47a] crate-model frame first (N45a)
   await clickTestId(page, `upgrade-option-${Math.max(0, plane)}`);
   await waitForScreen(page, 'game');
   const total = { chips: 0, filled: 0, high: 0 };

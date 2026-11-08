@@ -11,7 +11,7 @@ import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { withBrowser, newGamePage, waitForScreen, clickTestId, state, assert, saveDiagnostics, ROOT, SKIN, RENDER,
-  gameUrl, skinUrl, skinShotsDir } from './browser.mjs';
+  gameUrl, skinUrl, skinShotsDir, waitForBoardModels } from './browser.mjs';
 
 const SEED = 0xA1A1;
 const started = performance.now();
@@ -120,6 +120,7 @@ try {
         if (s.screen === 'upgrade') {
           const enabled = await page.evaluate(() =>
             [...document.querySelectorAll('[data-testid^="upgrade-option-"]')].map((n) => !n.disabled && !['hub-expansion', 'departure-slots'].includes(n.dataset.upgrade)));
+          await waitForBoardModels(page); // [night-47a] crate-model frame first (N45a)
           await clickTestId(page, `upgrade-option-${enabled.indexOf(true)}`);
           await waitForScreen(page, 'game');
           s = await state(page);

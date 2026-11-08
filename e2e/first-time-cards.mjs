@@ -9,7 +9,7 @@
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
-import { withBrowser, newGamePage, waitForScreen, clickTestId, assert, saveDiagnostics, ROOT } from './browser.mjs';
+import { withBrowser, newGamePage, waitForScreen, clickTestId, assert, saveDiagnostics, ROOT, waitForBoardModels } from './browser.mjs';
 import { E2E_SEEDS } from './seeds.mjs';
 
 const SEED = E2E_SEEDS['first-time-cards'].seeds[0]; // [night-12ac] e2e/seeds.mjs (0xA1A2): reaches week 4 under rules v6: its network has a hub over 70 %, a far airport and curfew nights
@@ -48,6 +48,7 @@ async function play(page, language, viewport, { shots }) {
       const list = await page.evaluate(() =>
         [...document.querySelectorAll('[data-testid^="upgrade-option-"]')].map((node) => node.dataset.upgrade));
       const plain = list.findIndex((item) => item !== 'hub-expansion' && item !== 'departure-slots');
+      await waitForBoardModels(page); // [night-47a] crate-model frame first (N45a)
       await clickTestId(page, `upgrade-option-${plain < 0 ? 0 : plain}`);
       await page.waitForTimeout(150);
       continue;

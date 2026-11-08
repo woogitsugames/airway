@@ -3,7 +3,7 @@
 import { performance } from 'node:perf_hooks';
 import {
   withBrowser, newGamePage, waitForScreen, dragGesture, state, assert, clickTestId, saveDiagnostics,
-  RENDER, gameUrl, assertRender,
+  RENDER, gameUrl, assertRender, waitForBoardModels,
 } from './browser.mjs';
 import { E2E_SEEDS } from './seeds.mjs';
 
@@ -75,6 +75,7 @@ const steps = [
     const board = await page.evaluate(() => [...document.querySelectorAll('[data-testid^="upgrade-option-"]')]
       .map((card) => `${card.dataset.upgrade}${card.disabled ? '(disabled)' : ''}`).join(', '));
     assert(option, `No weekly card completes without a globe tap: [${board}]`);
+    await waitForBoardModels(page); // [night-47a] crate-model frame first (N45a)
     await clickTestId(page, option);
     await waitForScreen(page, 'game');
   }],

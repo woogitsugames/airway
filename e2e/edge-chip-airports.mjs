@@ -7,7 +7,7 @@ import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import {
-  withBrowser, newGamePage, gameUrl, shotsDir, waitForScreen, assert, clickTestId, saveDiagnostics, ROOT, RENDER, assertRender,
+  withBrowser, newGamePage, gameUrl, shotsDir, waitForScreen, assert, clickTestId, saveDiagnostics, ROOT, RENDER, assertRender, waitForBoardModels,
 } from './browser.mjs';
 import { E2E_SEEDS } from './seeds.mjs';
 
@@ -28,6 +28,7 @@ async function reachSlotsBoard(page) {
     const slots = offers.indexOf('departure-slots');
     if (slots >= 0) return slots;
     const plane = offers.findIndex((o) => o === 'turboprop' || o === 'widebody');
+    await waitForBoardModels(page); // [night-47a] crate-model frame first (N45a)
     await clickTestId(page, `upgrade-option-${Math.max(0, plane)}`);
     await waitForScreen(page, 'game');
   }
@@ -46,6 +47,7 @@ async function journey(page, language, width, height) {
   await page.waitForTimeout(700);
   await page.setViewportSize({ width, height });
   await page.waitForTimeout(700);
+  await waitForBoardModels(page); // [night-47a] crate-model frame first (N45a)
   await clickTestId(page, `upgrade-option-${index}`);
   await page.locator('.airway-upgrade-open.is-picking-hub').waitFor({ timeout: 5000 });
   await page.waitForTimeout(1200);
