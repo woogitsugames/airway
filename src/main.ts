@@ -10,7 +10,7 @@ import './ui/game.css';
 import { bootAudio, audioSettingsFromToggles } from './audio';
 import { createFlapRattle } from './game/flapSound'; // [night-07e]
 import { audioClockTick } from './game/audioCues'; // [night-12t] D-153
-import { onSplitFlapAnimate } from './ui/flap'; // [night-07e]
+import { onSplitFlapAnimate, SplitFlap } from './ui/flap'; // [night-07e]; [night-69a] D-324 the board preview's flaps
 import { dailyKey, dailySeedForKey } from './core/daily';
 import { PUZZLES } from './data/puzzles';
 import { registerDevGameAdapter, type AwDevState, type AwScreen } from './game/devHandle';
@@ -40,14 +40,16 @@ import { nativeGameLoopPort, readGameLoop, type GameLoopBridge } from './platfor
 import { configureHaptics, nativeAppCheckPort, createDefaultStorage, createNativeInstallMarker, forgetIdentityOnNewInstall, GameLifecycle, shareDailyResult, type KeyValueStorage } from './platform';
 import { initializeAccessibility, presetTextScaleFromSystem } from './ui/a11y';
 import { systemTextScale } from './platform/textScale'; // [night-11ap] R1g
-import { initializeMotion } from './ui/motion';
+import { initializeMotion, reducedMotion } from './ui/motion';
+import { hudSkin } from './ui/hud/skin'; // [night-69a] D-324: the DEV `?skin=board` preview's HUD slot
+import { BOARD_CELLS } from './i18n/limits'; // [night-69a] D-324
 import { mountUnsupported } from './ui/unsupported'; // [night-11h]
 import { gpuRendererString, webgl2Available } from './render/contextGuard'; // [night-11h]
 import { readBestRecord } from './ui/gameover/storage';
 import { mountPuzzleSelector, readPuzzleProgress } from './ui/puzzles';
 import { onSettingsChange, readSettings } from './ui/settings/settings';
 import { applyAirlineColour, onAirlineColour, readAirlineColour } from './ui/airlineColour';
-import { TICKS_PER_WEEK } from './sim/clock'; // [task-31] single week length (D-40)
+import { DAYS_PER_WEEK, TICKS_PER_WEEK } from './sim/clock'; // [task-31] single week length (D-40)
 import { NOVEMBER_SUBSOLAR_LATITUDE_DEG } from './render/sun'; // [task-40] store `game` scene light
 // [night-46a] D-301: the Linoryt structure after every component stylesheet (its rules are scoped to
 // <html data-skin="linoryt">, set by index.html; a release build writes the scope as `:root:root`).
@@ -70,6 +72,23 @@ const devWeatherFront = import.meta.env.DEV && query.get('weather') === 'front';
 // [night-46a] D-301 (PLAN-LINORYT.md step U5): Linoryt is the shipped UI skin; Róża and the DEV `?skin=` previews
 // (the Diorama comparison, the Linoryt preview) are gone.
 startLinoryt({ t, localNumber });
+/**
+ * [night-69a] D-324 (PLAN-NOWY-KIERUNEK.md step T1): the UI-A preview "Lotniskowa tablica i paski lotu" in a DEV build
+ * with `?skin=board`: <html data-skin="board">, the split-flap board and the controller's console in the HUD
+ * (src/ui/skin/board.{ts,css}), and the Linoryt structure re-scoped to the board for every screen a later stage
+ * restyles. A release build folds this branch away (no board CSS, JS or fonts in dist/, D-297 budget untouched).
+ */
+const devBoard: Promise<void> | null = import.meta.env.DEV && query.get('skin') === 'board' ? startBoardPreview() : null;
+async function startBoardPreview(): Promise<void> {
+  const [board, twin] = await Promise.all([import('./ui/skin/board'), import('./ui/skin/linoryt.css?raw')]);
+  const style = document.createElement('style');
+  style.dataset.skinTwin = 'board';
+  style.textContent = board.boardTwin(twin.default);
+  document.head.append(style);
+  await import('./ui/skin/board.css');
+  board.startBoard();
+  hudSkin.current = board.createBoardSkin({ t, localNumber, Flap: SplitFlap, reducedMotion, cells: BOARD_CELLS, daysPerWeek: DAYS_PER_WEEK });
+}
 /** [task-36] Ticks of autoplay before a store scene is lit (game, night, failure). */
 const STORE_SHOT_PLAY_TICKS = 1500;
 /**
@@ -98,6 +117,7 @@ const SAVE_NOTICE_KEY = { corrupt: 'save.error.corrupt', unsupported: 'save.erro
 interface SavedSummary { readonly mode: RunMode; readonly week: number; readonly passengers: number }
 
 async function boot(): Promise<void> {
+  if (devBoard) await devBoard; // [night-69a] D-324: the board preview is in place before the HUD mounts
   configureHaptics({ isEnabled: () => readSettings().haptics });
   const { audio } = bootAudio({ toggles: readSettings() });
   // [night-12t] D-153: read-only audio health for device checks over chrome://inspect / Safari Web Inspector

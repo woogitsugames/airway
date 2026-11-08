@@ -4,6 +4,7 @@ import { iconSvg } from './icons';
 import { DAYS_PER_WEEK } from '../../sim/clock';
 import { ARIA_KEYSHORTCUTS } from '../../input/keyboard';
 import { linoryt, linorytIcon, linorytPass } from '../skin/linoryt'; // [night-28a] D-284; [night-46a] D-301: the shipped skin
+import { hudSkin } from './skin'; // [night-69a] D-324: the DEV `?skin=board` preview paints the top band
 
 // [task-31] D-40: a game week has DAYS_PER_WEEK (3) days; the bar shows one square per day and the
 // day is a number ("2/3"), since weekday names no longer fit a 3-day week.
@@ -30,7 +31,7 @@ export function createBoardingPass(root: HTMLElement, onTogglePause?: () => void
       <div class="airway-pass__perf" aria-hidden="true"></div>
       <div class="airway-pass__field airway-pass__passengers"><span data-label="passengers" class="airway-pass__label"></span><strong data-value="passengers"></strong></div>
     </div>
-    <button type="button" class="airway-pass__pause" data-hud-action="pause">${linoryt.on ? linorytIcon('pause') : iconSvg('pause')}</button>
+    <button type="button" class="airway-pass__pause" data-hud-action="pause">${hudSkin.current ? hudSkin.current.pauseFace(false) : linoryt.on ? linorytIcon('pause') : iconSvg('pause')}</button>
   `;
   root.appendChild(section);
   const field = (name: string): Element => {
@@ -73,7 +74,8 @@ export function createBoardingPass(root: HTMLElement, onTogglePause?: () => void
       const passengerCount = integer(state.passengers, 0, Number.MAX_SAFE_INTEGER);
       // [night-28a] D-284: the Linoryt clock, week line and day bar on the paper margin (the old ticket fields stay in the
       // DOM, hidden by linoryt.css).
-      if (linoryt.on) linorytPass(section, minute, integer(state.week, 1, 999), dayNumber, DAYS_PER_WEEK, passengerCount);
+      if (hudSkin.current) hudSkin.current.pass(section, state); // [night-69a] D-324: the split-flap board instead
+      else if (linoryt.on) linorytPass(section, minute, integer(state.week, 1, 999), dayNumber, DAYS_PER_WEEK, passengerCount);
       if (lastPassengers !== passengerCount || lastDay === undefined) {
         updateText(passengers, localNumber(passengerCount));
         lastPassengers = passengerCount;
@@ -91,7 +93,8 @@ export function createBoardingPass(root: HTMLElement, onTogglePause?: () => void
         if (pause.getAttribute('aria-label') !== nextLabel) pause.setAttribute('aria-label', nextLabel);
         const nextIcon = state.paused ? 'resume' : 'pause';
         if (pause.dataset.icon !== nextIcon) {
-          pause.innerHTML = linoryt.on ? linorytIcon(nextIcon) : iconSvg(nextIcon); // [night-28a] D-284 cut symbol
+          pause.innerHTML = hudSkin.current ? hudSkin.current.pauseFace(!!state.paused)
+            : linoryt.on ? linorytIcon(nextIcon) : iconSvg(nextIcon); // [night-28a] D-284 cut symbol
           pause.dataset.icon = nextIcon;
         }
         pause.setAttribute('aria-pressed', String(!!state.paused)); // [night-59a] D-322: never "undefined"

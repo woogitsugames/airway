@@ -6,6 +6,9 @@
 //     jumps to the hour's start; with full motion it follows the minute;
 //   - no CSS animation runs on the game screen (no pulsing chip, no sliding cut) while the planes fly.
 // PL 412×915 on a reduce-motion system, EN 915×412 with full motion.
+// [night-69a] D-324 (PLAN-NOWY-KIERUNEK.md step T1): the same two cases on the UI-A preview (`?skin=board`): the board's
+// white "now" mark steps like the Linoryt cut, and its flap tiles change without a flip under reduce motion (no fold
+// node ever appears, no animation runs), while with full motion a changed figure flips.
 import { performance } from 'node:perf_hooks';
 import { withBrowser, newGamePage, waitForScreen, assert, clickTestId, dragGesture, saveDiagnostics, gameUrl, assertRender, SEED } from './browser.mjs';
 
@@ -13,14 +16,19 @@ const started = performance.now();
 const CASES = [
   { language: 'pl', width: 412, height: 915, system: 'reduce' },
   { language: 'en', width: 915, height: 412, system: 'no-preference' },
+  { language: 'pl', width: 412, height: 915, system: 'reduce', skin: 'board' }, // [night-69a] D-324
+  { language: 'en', width: 915, height: 412, system: 'no-preference', skin: 'board' },
 ];
 const results = [];
 
 async function reading(page) {
   return await page.evaluate(() => {
-    const clock = document.querySelector('.lin-clock')?.textContent ?? '';
+    const board = document.documentElement.dataset.skin === 'board';
+    const clock = board
+      ? [...document.querySelectorAll('.bd-cell--clock .split-flap')].map((f) => f.dataset.value).join('')
+      : document.querySelector('.lin-clock')?.textContent ?? '';
     const [h, m] = clock.split(':').map(Number);
-    const at = Number(document.querySelector('.lin-day__now')?.style.getPropertyValue('--at'));
+    const at = Number(document.querySelector(board ? '.bd-hours__now' : '.lin-day__now')?.style.getPropertyValue('--at'));
     const running = document.getAnimations().filter((a) => a.playState === 'running')
       .map((a) => `${a.animationName ?? a.transitionProperty ?? 'animation'} on ${a.effect?.target?.className?.baseVal ?? a.effect?.target?.className ?? '?'}`);
     return { clock, minute: h * 60 + m, at, attr: document.documentElement.dataset.airwayMotion ?? null, running };
@@ -30,10 +38,12 @@ async function reading(page) {
 let fatal = null;
 try {
   await withBrowser(async ({ browser, url }) => {
-    for (const { language, width, height, system } of CASES) {
-      const label = `${language} ${width}×${height} system=${system}`;
+    for (const { language, width, height, system, skin } of CASES) {
+      const label = `${language} ${width}×${height} system=${system}${skin ? ' skin=' + skin : ''}`;
       const reduce = system === 'reduce';
-      const { page, errors } = await newGamePage(browser, gameUrl(url), language, { width, height }, { reducedMotion: system });
+      const target = new URL(gameUrl(url));
+      if (skin) target.searchParams.set('skin', skin);
+      const { page, errors } = await newGamePage(browser, target.href, language, { width, height }, { reducedMotion: system });
       try {
         await assertRender(page);
         await waitForScreen(page, 'menu');
@@ -49,8 +59,23 @@ try {
         const a = await reading(page);
         await page.evaluate(() => window.aw.advanceTicks(20));
         const b = await reading(page);
+        // [night-69a] D-324: watch the board's flap tiles while the hour figure changes (up to 400 ms of frames).
+        const folds = page.evaluate(() => new Promise((done) => {
+          const end = performance.now() + 400;
+          let seen = 0;
+          const look = () => {
+            seen += document.querySelectorAll('.bd-flaps .flap-fold-out, .bd-flaps .flap-fold-in').length;
+            if (performance.now() < end) requestAnimationFrame(look); else done(seen);
+          };
+          look();
+        }));
         await page.evaluate((n) => window.aw.advanceTicks(n), 60 - (b.minute % 60) + 5);
+        const folded = await folds;
         const c = await reading(page);
+        if (skin === 'board') {
+          assert(/^\d\d:\d\d$/.test(c.clock), `board clock "${c.clock}"`);
+          assert(reduce ? folded === 0 : folded > 0, `flap folds seen while the hour changed: ${folded} (reduce=${reduce})`);
+        }
         const hourAt = (minute) => Math.floor(minute / 60) / 24;
         for (const [name, r] of Object.entries({ a, b, c })) {
           const want = reduce ? hourAt(r.minute) : r.minute / 1440;
@@ -65,7 +90,7 @@ try {
         }
         if (reduce) assert(c.running.length === 0, `animations running: ${c.running.slice(0, 4).join(' | ')}`);
         assert(!errors.length, `browser errors: ${errors.join('; ')}`);
-        results.push({ label: `${label} ${a.clock}→${b.clock}→${c.clock} cut ${a.at}→${b.at}→${c.at}`, status: 'PASS' });
+        results.push({ label: `${label} ${a.clock}→${b.clock}→${c.clock} cut ${a.at}→${b.at}→${c.at}${skin ? ` folds ${folded}` : ''}`, status: 'PASS' });
       } catch (error) {
         const shot = await saveDiagnostics(page, `reduce-motion-game-${results.length + 1}`);
         results.push({ label, status: 'FAIL', why: String(error?.message ?? error).split('\n')[0] + (shot ? ` (${shot})` : '') });

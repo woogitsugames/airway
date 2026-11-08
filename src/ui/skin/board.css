@@ -1,0 +1,295 @@
+/* [night-69a] D-324 (docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md step T1; D-323): UI skin "UI-A — Lotniskowa
+   tablica i paski lotu" (mockups and spec: docs/styles/kierunki-2026-11c/makiety/ui-a/UI-A-SPEC.md). DEV-only preview
+   until the flip (T6): src/main.ts imports this file only in a DEV build with `?skin=board`, after the Linoryt structure
+   re-scoped to the board (boardTwin, src/ui/skin/board.ts), so a release build has none of it.
+   Part 1 is the one token block: every colour, face and duration of the skin (values from the mockup's ui.css; the
+   text pairs reach D-47 4.5:1, `test:skin-tokens`). Part 2 is the structure, scoped to :root[data-skin="board"] and
+   written only with those tokens: the HUD top band as a split-flap board on black enamel and the dock as a controller's
+   console (round push button = instant action, enamel plate = an aircraft to place, octagon = something to build,
+   rotary selector = a setting). No glow, blur, glass or soft gradient; the only repeating pattern is the hard-edged
+   hatching of an unavailable control (a shape cue next to the wait in words).
+   Faces: Archivo (600 at normal width; 700 and 800 at 80 % width) and Chivo Mono (500–800), SIL OFL, WOFF2 subsets in
+   public/fonts/ kept out of dist/ until T6 by PREVIEW_FONTS (scripts/vite-font-files.mjs). Their missing glyphs
+   (U+202F in both, U+2192 in Chivo Mono) come from the shipped faces after them in the stacks (`test:glyphs`). */
+@font-face { font-family: 'Archivo'; font-weight: 600; font-stretch: 100%; font-display: swap; src: url('/fonts/Archivo-600.woff2') format('woff2'); }
+@font-face { font-family: 'Archivo'; font-weight: 700; font-stretch: 80%; font-display: swap; src: url('/fonts/Archivo-80-700.woff2') format('woff2'); }
+@font-face { font-family: 'Archivo'; font-weight: 800; font-stretch: 80%; font-display: swap; src: url('/fonts/Archivo-80-800.woff2') format('woff2'); }
+@font-face { font-family: 'Chivo Mono'; font-weight: 500 800; font-display: swap; src: url('/fonts/ChivoMono-VF.woff2') format('woff2'); }
+
+/* ---- Part 1: tokens ----------------------------------------------------------------------------------------------- */
+:root[data-skin="board"] {
+  --board-black: #000000; /* the band behind the board (the status bar runs on it) */
+  --board-enamel: #0E0F0F; /* board and plates */
+  --board-enamel-edge: #2B2C2A;
+  --board-panel: #171818; /* strip bay (T3) */
+  --board-console: #2A2E2B; /* the controller's console (dock, pause) */
+  --board-console-2: #343935;
+  --board-console-shade: #1E211F;
+  --board-console-well: #1B1D1C;
+  --board-console-ring: #4A4F4A;
+  --board-flap-a: #232423; /* upper flap */
+  --board-flap-b: #1A1B1A; /* lower flap */
+  --board-hinge: #050505;
+  --board-cream: #EFE7D3; /* figures, codes, symbols */
+  --board-cream-2: #B9B2A2; /* board labels */
+  --board-dim: #6F6B62; /* non-text only: plate inner frame, an empty symbol */
+  --board-engrave: #C9C3B2; /* console captions */
+  --board-white: #FFFFFF; /* the "now" mark, a chosen key's caption */
+  --board-lamp: #FFF1C9; /* the lit lamp of the chosen plate */
+  --board-lamp-off: #3A3D39;
+  --board-screw: #6B6E68;
+  --board-hatch-a: #151615; /* unavailable: hatching */
+  --board-hatch-b: #202220;
+  --board-hour: #3A3933; /* 24-hour bar: day hour ahead */
+  --board-hour-past: #8C877A;
+  --board-hour-night: #1F2430;
+  --board-hour-night-past: #4B556A;
+  /* Yellow means only "where to / what next" (spec §2): the route being drawn, its distance, the edge direction sign
+     and one main button. Not used by T1 (no yellow on the board or the console). */
+  --board-sign: #F3C317;
+  --board-sign-ink: #0B0B0B;
+  /* Red is a jam only (white on red, red pencil on a strip). The mockup's #C9251C gave red text on strip paper 4.36:1;
+     #C0231B reaches 4.70:1 there and carries white text at 6.0:1 (D-47). */
+  --board-red: #C0231B;
+  --board-paper: #EDE3C8; /* flight strips, the wait tag, the print-out */
+  --board-rule: #A89A78;
+  --board-print: #2A2620;
+  --board-blue: #3B5F8C; /* a hub strip's holder in normal operation (T3) */
+  --board-face: 'Archivo', 'Atkinson Hyperlegible Next', 'Overpass', sans-serif;
+  --board-mono: 'Chivo Mono', 'Atkinson Hyperlegible Next', 'Overpass', monospace;
+  --board-flip: 120ms; /* one flap cell (BOARD_FLIP_MS in board.ts) */
+  --board-press: 60ms; /* a key going down 1 px */
+  --board-select: 90ms; /* a plate turning over, the speed knob turning */
+  --board-ease: cubic-bezier(.2, 0, 0, 1);
+}
+
+/* ---- Part 2: structure -------------------------------------------------------------------------------------------- */
+/* The top band: a black strip under the status bar carrying the board and the pause key. */
+:root[data-skin="board"] .airway-hud { color: var(--board-cream); }
+:root[data-skin="board"] .airway-hud button:focus-visible { outline: 3px solid var(--board-cream); outline-offset: 2px; }
+:root[data-skin="board"] .airway-pass {
+  gap: 8px; align-items: stretch; background: var(--board-black); border-bottom: 0;
+  padding: calc(var(--hud-safe-top) + 6px) calc(var(--hud-safe-right) + 8px) 6px calc(var(--hud-safe-left) + 8px);
+}
+:root[data-skin="board"] .airway-pass__ticket { display: flex; }
+:root[data-skin="board"] .bd-board {
+  container-type: inline-size; flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; justify-content: space-between;
+  gap: 8px; padding: 7px 10px 8px; background: var(--board-enamel); border: 1px solid var(--board-enamel-edge); border-radius: 3px;
+  font-family: var(--board-face);
+}
+:root[data-skin="board"] .bd-row {
+  --bd-cw: clamp(16px, 7.6cqw, 25px); --bd-sw: clamp(12px, 5.2cqw, 17px);
+  display: flex; align-items: flex-end; gap: clamp(6px, 3.6cqw, 14px); min-width: 0;
+}
+:root[data-skin="board"] .bd-cell { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+:root[data-skin="board"] .bd-label {
+  font: 600 8.5px/1 var(--board-face); letter-spacing: clamp(.5px, .42cqw, 1.4px); text-transform: uppercase;
+  color: var(--board-cream-2); white-space: nowrap;
+}
+/* Flap tiles: an upper and a lower half on a black hinge; a change folds the upper half down (src/ui/flap.ts). */
+:root[data-skin="board"] .bd-flaps { display: inline-flex; gap: 2px; --bd-tw: var(--bd-sw); }
+:root[data-skin="board"] .bd-flaps--clock { --bd-tw: var(--bd-cw); }
+:root[data-skin="board"] .bd-flaps--count { --bd-tw: 13px; position: absolute; top: 4px; right: 4px; }
+:root[data-skin="board"] .bd-flaps .split-flap { display: inline-flex; }
+:root[data-skin="board"] .bd-flaps .flap-tile {
+  position: relative; display: inline-block; width: var(--bd-tw); height: calc(var(--bd-tw) * 1.56); perspective: 160px;
+}
+:root[data-skin="board"] .bd-flaps .flap-half {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden;
+  font: 700 calc(var(--bd-tw) * 1.3)/1 var(--board-face); font-stretch: 80%; color: var(--board-cream);
+  font-variant-numeric: tabular-nums; backface-visibility: hidden;
+}
+:root[data-skin="board"] .bd-flaps .flap-half--top,
+:root[data-skin="board"] .bd-flaps .flap-fold-out { background: var(--board-flap-a); clip-path: inset(0 0 50% 0); border-radius: 2px 2px 0 0; }
+:root[data-skin="board"] .bd-flaps .flap-half--bottom,
+:root[data-skin="board"] .bd-flaps .flap-fold-in { background: var(--board-flap-b); clip-path: inset(50% 0 0 0); border-radius: 0 0 2px 2px; }
+:root[data-skin="board"] .bd-flaps .flap-fold-out,
+:root[data-skin="board"] .bd-flaps .flap-fold-in { z-index: 1; transform-origin: 50% 50%; }
+:root[data-skin="board"] .bd-flaps .flap-fold-in { transform: rotateX(90deg); }
+:root[data-skin="board"] .bd-flaps .flap-fold-out--active { animation: bd-fold-out calc(var(--board-flip) / 2) linear forwards; }
+:root[data-skin="board"] .bd-flaps .flap-fold-in--active { animation: bd-fold-in calc(var(--board-flip) / 2) linear calc(var(--board-flip) / 2) forwards; }
+:root[data-skin="board"] .bd-flaps .flap-tile::after {
+  content: ''; position: absolute; z-index: 2; left: 0; right: 0; top: calc(50% - .5px); height: 1px; background: var(--board-hinge);
+}
+/* The ":" of the clock and the "/" of the day are printed on the board, not on a flap. */
+:root[data-skin="board"] .bd-flaps .bd-flap--sign .flap-tile { width: calc(var(--bd-tw) * .45); }
+:root[data-skin="board"] .bd-flaps .bd-flap--sign .flap-half { background: var(--board-enamel); }
+:root[data-skin="board"] .bd-flaps .bd-flap--sign .flap-tile::after { display: none; }
+@keyframes bd-fold-out { from { transform: rotateX(0deg); } to { transform: rotateX(-90deg); } }
+@keyframes bd-fold-in { from { transform: rotateX(90deg); } to { transform: rotateX(0deg); } }
+
+/* The 24-hour bar: night hours (20–06) lower and darker, flown hours lighter, the white "now" mark. */
+:root[data-skin="board"] .bd-hours { position: relative; display: flex; align-items: flex-end; gap: 1px; height: 9px; }
+:root[data-skin="board"] .bd-hours i { flex: 1 1 0; min-width: 0; height: 100%; background: var(--board-hour); }
+:root[data-skin="board"] .bd-hours i.is-past { background: var(--board-hour-past); }
+:root[data-skin="board"] .bd-hours i.is-night { height: 55%; background: var(--board-hour-night); }
+:root[data-skin="board"] .bd-hours i.is-night.is-past { background: var(--board-hour-night-past); }
+:root[data-skin="board"] .bd-hours__now {
+  position: absolute; top: -4px; bottom: -4px; left: calc(var(--at, 0) * 100% - 1.5px); width: 3px;
+  background: var(--board-white); outline: 1px solid var(--board-enamel);
+}
+
+/* Pause: a round push button on its own console block beside the board, its caption engraved under it. */
+:root[data-skin="board"] .airway-pass__pause {
+  flex: 0 0 64px; width: 64px; height: auto; min-height: 48px; margin-top: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 5px; padding: 6px 0; color: var(--board-cream);
+  background: var(--board-console); border: 1px solid var(--board-console-shade) !important; border-radius: 3px;
+}
+:root[data-skin="board"] .airway-pass__pause[aria-pressed="true"] { background: var(--board-console); color: var(--board-cream); box-shadow: none; }
+
+/* Console keys: the face says what a control is (shape), the caption under it what it does (words). */
+:root[data-skin="board"] .bd-face { position: relative; display: flex; align-items: center; justify-content: center; flex: none; transition: transform var(--board-press) var(--board-ease); }
+:root[data-skin="board"] .bd-icon { display: block; width: 22px; height: 22px; fill: currentColor; }
+:root[data-skin="board"] .bd-cap { display: flex; align-items: center; justify-content: center; }
+:root[data-skin="board"] .bd-face--round {
+  width: var(--bd-key, 56px); height: var(--bd-key, 56px); border-radius: 50%;
+  background: var(--board-console-well); border: 2px solid var(--board-console-ring);
+}
+:root[data-skin="board"] .bd-face--round .bd-cap {
+  width: calc(var(--bd-key, 56px) - 16px); height: calc(var(--bd-key, 56px) - 16px); border-radius: 50%;
+  background: var(--board-enamel); border: 1.5px solid var(--board-black); box-shadow: 0 2px 0 var(--board-black);
+}
+:root[data-skin="board"] .airway-pass__pause .bd-face--round { --bd-key: 46px; }
+:root[data-skin="board"] .airway-pass__pause .bd-icon { width: 17px; height: 17px; }
+:root[data-skin="board"] .airway-pass__pause[aria-pressed="true"] .bd-cap { background: var(--board-cream); color: var(--board-enamel); box-shadow: none; transform: translateY(1px); }
+:root[data-skin="board"] .bd-eng {
+  display: block; max-width: 100%; font: 700 9.5px/1 var(--board-face); font-stretch: 80%; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--board-engrave); white-space: nowrap;
+}
+:root[data-skin="board"] .bd-short { display: none; }
+
+/* The dock: the console panel along the bottom. */
+:root[data-skin="board"] .airway-dock {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 1.5fr) minmax(0, 1.05fr) minmax(0, 1fr); gap: 4px;
+  padding: 9px calc(var(--hud-safe-right) + 8px) calc(var(--hud-safe-bottom) + 10px) calc(var(--hud-safe-left) + 8px);
+  background: var(--board-console); border-top: 2px solid var(--board-console-2); box-shadow: inset 0 3px 0 var(--board-console-shade);
+}
+:root[data-skin="board"] .airway-dock::before { display: none; }
+:root[data-skin="board"] .airway-dock__holder { display: flex; justify-content: center; padding: 0; }
+:root[data-skin="board"] .airway-dock__tag {
+  position: relative; width: 100%; height: auto; min-height: 48px; justify-content: flex-start; align-items: center; gap: 5px;
+  padding: 0; background: transparent; color: var(--board-cream); font: 700 9.5px/1 var(--board-face) !important;
+}
+:root[data-skin="board"] .airway-dock__count,
+:root[data-skin="board"] .airway-dock__eyelet,
+:root[data-skin="board"] .lin-caption,
+:root[data-skin="board"] .lin-wait { display: none !important; }
+:root[data-skin="board"] .airway-dock__tag.is-selected,
+:root[data-skin="board"] .airway-dock__tag.is-empty { background: transparent; color: var(--board-cream); }
+:root[data-skin="board"] .airway-dock__tag:active:not(:disabled) .bd-face { transform: translateY(1px); }
+/* Plate: an aircraft to place; its route line printed on it, the count on a flap, a lamp, two screws. */
+:root[data-skin="board"] .bd-face--plate {
+  width: min(100%, 92px); height: 58px; flex-direction: column; gap: 4px; padding-top: 2px; background: var(--board-enamel);
+  border: 1.5px solid var(--board-black); border-radius: 2px;
+  box-shadow: inset 0 0 0 2px var(--board-enamel), inset 0 0 0 3.2px var(--board-dim), 0 2px 0 var(--board-black);
+  transition: transform var(--board-press) var(--board-ease), background-color var(--board-select) var(--board-ease);
+}
+:root[data-skin="board"] .bd-face--plate .bd-icon { width: 26px; height: 26px; }
+:root[data-skin="board"] .bd-line { display: block; width: min(46px, 60%); height: 4px; overflow: visible; }
+:root[data-skin="board"] .bd-line path { stroke: currentColor; stroke-width: 3; fill: none; }
+:root[data-skin="board"] .bd-screw { position: absolute; bottom: 5px; width: 6px; height: 6px; }
+:root[data-skin="board"] .bd-screw:first-child { left: 5px; }
+:root[data-skin="board"] .bd-screw:nth-child(2) { right: 5px; }
+:root[data-skin="board"] .bd-screw circle { fill: var(--board-screw); stroke: var(--board-console-shade); stroke-width: 1; }
+:root[data-skin="board"] .bd-screw path { stroke: var(--board-console-shade); stroke-width: 1.2; }
+:root[data-skin="board"] .bd-lamp {
+  position: absolute; left: 6px; top: 6px; width: 7px; height: 7px; border-radius: 50%; background: var(--board-lamp-off);
+  border: 1px solid var(--board-black);
+}
+/* The chosen plate turns over to cream, goes down 1 px, its lamp lights, its caption turns white (not yellow). */
+:root[data-skin="board"] .airway-dock__tag.is-selected .bd-face--plate {
+  background: var(--board-cream); color: var(--board-sign-ink); transform: translateY(1px);
+  box-shadow: inset 0 0 0 2px var(--board-cream), inset 0 0 0 3.2px var(--board-sign-ink), 0 1px 0 var(--board-black);
+}
+:root[data-skin="board"] .airway-dock__tag.is-selected .bd-lamp { background: var(--board-lamp); border-color: var(--board-sign-ink); box-shadow: 0 0 0 2px var(--board-sign-ink); }
+:root[data-skin="board"] .airway-dock__tag.is-selected .bd-eng { color: var(--board-white); }
+/* Octagon: something to build (Hub). */
+:root[data-skin="board"] .bd-face--oct {
+  width: 60px; height: 58px; background: var(--board-console-ring);
+  clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%);
+}
+:root[data-skin="board"] .bd-face--oct .bd-cap {
+  width: 56px; height: 54px; background: var(--board-enamel);
+  clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%);
+}
+:root[data-skin="board"] .airway-dock__tag[data-hud-action="hub"] > .bd-flaps--count { top: 0; right: calc(50% - 38px); }
+/* Rotary selector: a setting (Speed), the pointer on the stop of the current speed. */
+:root[data-skin="board"] .bd-face--rotary { width: 60px; height: 58px; }
+:root[data-skin="board"] .bd-dial { width: 60px; height: 60px; overflow: visible; }
+:root[data-skin="board"] .bd-dial__ticks { stroke: var(--board-engrave); stroke-width: 1.6; }
+:root[data-skin="board"] .bd-dial text { font: 700 9px var(--board-face); fill: var(--board-engrave); }
+:root[data-skin="board"] .bd-dial__knob { transform-origin: 30px 31px; transform: rotate(var(--bd-dial, -135deg)); transition: transform var(--board-select) var(--board-ease); }
+:root[data-skin="board"] .bd-dial__knob circle { fill: var(--board-enamel); stroke: var(--board-console-ring); stroke-width: 2; }
+:root[data-skin="board"] .bd-dial__knob path { stroke: var(--board-cream); stroke-width: 3.2; stroke-linecap: round; }
+/* Unavailable (no aircraft, no hub, nothing to undo): hatched face, dim symbol, and the wait in words on a paper tag. */
+:root[data-skin="board"] .airway-dock__tag.is-empty .bd-face--plate,
+:root[data-skin="board"] .airway-dock__tag.is-empty .bd-face--oct .bd-cap,
+:root[data-skin="board"] .airway-dock__tag.is-empty .bd-face--round .bd-cap {
+  background: repeating-linear-gradient(135deg, var(--board-hatch-a) 0 5px, var(--board-hatch-b) 5px 10px); color: var(--board-dim);
+}
+:root[data-skin="board"] .airway-dock__tag.is-empty .bd-flaps--count { display: none; } /* the wait says it */
+:root[data-skin="board"] .bd-wait {
+  position: absolute; left: 50%; top: 36px; z-index: 1; transform: translateX(-50%) rotate(-3deg); padding: 3px 5px;
+  background: var(--board-paper); color: var(--board-print); border: 1px solid var(--board-black);
+  font: 700 9.5px/1 var(--board-mono); white-space: nowrap;
+}
+:root[data-skin="board"] .bd-wait[hidden] { display: none; }
+
+/* Narrow phones (≤ 369 px): smaller keys and the short captions. */
+@media (max-width: 369px) {
+  :root[data-skin="board"] .airway-pass { gap: 6px; padding-left: calc(var(--hud-safe-left) + 6px); padding-right: calc(var(--hud-safe-right) + 6px); }
+  :root[data-skin="board"] .airway-pass__pause { flex-basis: 56px; width: 56px; }
+  :root[data-skin="board"] .bd-board { padding: 6px 7px 7px; }
+  :root[data-skin="board"] .airway-dock { gap: 3px; padding-left: calc(var(--hud-safe-left) + 6px); padding-right: calc(var(--hud-safe-right) + 6px); }
+  :root[data-skin="board"] .airway-dock__tag { --bd-key: 48px; }
+  :root[data-skin="board"] .bd-face--oct { width: 52px; height: 50px; }
+  :root[data-skin="board"] .bd-face--oct .bd-cap { width: 48px; height: 46px; }
+  :root[data-skin="board"] .airway-dock__tag .bd-long { display: none; }
+  :root[data-skin="board"] .airway-dock__tag .bd-short { display: inline; }
+}
+/* Text 130 % and more (spec §5): bigger labels and captions, the short caption forms. */
+:root[data-skin="board"][data-airway-text-scale="130"] .bd-label,
+:root[data-skin="board"][data-airway-text-scale="150"] .bd-label { font-size: 10px; letter-spacing: clamp(.3px, .3cqw, 1px); color: var(--board-cream); }
+:root[data-skin="board"][data-airway-text-scale="130"] .bd-eng,
+:root[data-skin="board"][data-airway-text-scale="150"] .bd-eng { font-size: 11.5px; letter-spacing: .06em; color: var(--board-white); }
+:root[data-skin="board"][data-airway-text-scale="130"] .bd-wait,
+:root[data-skin="board"][data-airway-text-scale="150"] .bd-wait { font-size: 11px; }
+:root[data-skin="board"][data-airway-text-scale="130"] .airway-dock__tag .bd-long,
+:root[data-skin="board"][data-airway-text-scale="150"] .airway-dock__tag .bd-long { display: none; }
+:root[data-skin="board"][data-airway-text-scale="130"] .airway-dock__tag .bd-short,
+:root[data-skin="board"][data-airway-text-scale="150"] .airway-dock__tag .bd-short { display: inline; }
+
+/* Landscape phone: the board in the top-left corner, the console a column down the right edge, captions beside the faces. */
+:root[data-skin="board"] .airway-hud[data-layout='landscape'] .airway-pass { border-right: 0; }
+:root[data-skin="board"] .airway-hud[data-layout='landscape'] .airway-dock {
+  border-top: 0; border-left: 2px solid var(--board-console-2); box-shadow: inset 3px 0 0 var(--board-console-shade);
+  padding: calc(var(--hud-safe-top) + 6px) calc(var(--hud-safe-right) + 6px) calc(var(--hud-safe-bottom) + 6px) 10px; gap: 2px;
+}
+:root[data-skin="board"] .airway-hud[data-layout='landscape'] .airway-dock__holder { justify-content: stretch; }
+:root[data-skin="board"] .airway-hud[data-layout='landscape'] .airway-dock__tag {
+  --bd-key: 44px; flex-direction: row; flex-wrap: nowrap; justify-content: flex-start; gap: 6px; padding: 0 2px;
+}
+:root[data-skin="board"] .airway-hud[data-layout='landscape'] .bd-face--plate { width: 58px; height: 44px; gap: 3px; }
+:root[data-skin="board"] .airway-hud[data-layout='landscape'] .bd-face--plate .bd-icon { width: 20px; height: 20px; }
+:root[data-skin="board"] .airway-hud[data-layout='landscape'] .bd-face--oct { width: 46px; height: 44px; }
+:root[data-skin="board"] .airway-hud[data-layout='landscape'] .bd-face--oct .bd-cap { width: 42px; height: 40px; }
+:root[data-skin="board"] .airway-hud[data-layout='landscape'] .bd-face--rotary { width: 46px; height: 44px; }
+:root[data-skin="board"] .airway-hud[data-layout='landscape'] .bd-dial { width: 46px; height: 46px; }
+:root[data-skin="board"] .airway-hud[data-layout='landscape'] .bd-flaps--count { --bd-tw: 11px; top: 3px; right: 3px; }
+:root[data-skin="board"] .airway-hud[data-layout='landscape'] .airway-dock__tag[data-hud-action="hub"] > .bd-flaps--count { top: -2px; right: auto; left: 36px; }
+:root[data-skin="board"] .airway-hud[data-layout='landscape'] .bd-wait { top: auto; bottom: 0; left: 8px; transform: rotate(-3deg); }
+:root[data-skin="board"] .airway-hud[data-layout='landscape'] .bd-eng { letter-spacing: .04em; }
+:root[data-skin="board"][data-airway-text-scale="130"] .airway-hud[data-layout='landscape'] .bd-eng,
+:root[data-skin="board"][data-airway-text-scale="150"] .airway-hud[data-layout='landscape'] .bd-eng { font-size: 10.5px; letter-spacing: .02em; }
+:root[data-skin="board"] .airway-hud[data-layout='landscape'] .airway-dock__tag .bd-long { display: none; }
+:root[data-skin="board"] .airway-hud[data-layout='landscape'] .airway-dock__tag .bd-short { display: inline; }
+
+/* Foldables and tablets: the board at its phone size, the console's five keys centred along the bottom. */
+:root[data-skin="board"] .airway-hud[data-layout='foldable'] .airway-pass__ticket { flex: 0 1 440px; }
+:root[data-skin="board"] .airway-hud[data-layout='foldable'] .airway-dock {
+  grid-template-columns: 76px 100px 100px 80px 76px; border-left: 0; border-top: 2px solid var(--board-console-2);
+}
+
+/* D-88 "Reduce motion": no flap, no key travel, no knob turn (the HUD's own rule already stops every animation). */
+:root[data-skin="board"][data-airway-motion="reduce"] .bd-face,
+:root[data-skin="board"][data-airway-motion="reduce"] .bd-dial__knob { transition: none; }

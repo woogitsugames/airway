@@ -10,6 +10,10 @@ import type { TranslationKey, TranslationParams } from './index';
  *  used to allow 20/10, which a 320–412 px phone hid behind the column edge without the "…" cell. */
 export const FLAP_CELLS = { title: 15, half: 10, status: 8, gate: 2 } as const;
 
+/** [night-69a] D-324: cells of the UI-A HUD board (`?skin=board`): the clock "19:05", the week (1–999), the day "2/3", the
+ *  passengers (padded to 3 digits, at most 5; more shows the "…" cell) and an aircraft count on a console plate. */
+export const BOARD_CELLS = { clock: 5, week: 3, day: 3, passengers: 5, count: 2 } as const;
+
 export interface LengthBudget {
   /** Longest allowed text in code points. */
   readonly max: number;
@@ -30,6 +34,9 @@ const selectOption = { max: 14, where: 'settings: option of a select (320 px wid
 const regionCell = { max: 10, where: 'departures board: home-region select in the Endless status cell' };
 // [night-12bc] R2h: the licence stamp select in the Endless row's gate cell (46 px at 320 px).
 const licenceStamp = { max: 3, where: 'departures board: licence class stamp in the Endless gate cell' };
+const boardLabel = { max: 6, where: 'UI-A board: label over a figure (abbreviated, full text in board.label)' };
+const consoleLong = { max: 12, where: 'UI-A console: caption under an aircraft plate (92 px)' };
+const consoleShort = { max: 7, where: 'UI-A console: caption under a key (52 px at 320 px), also the short plate form' };
 const logbookShort = { max: 4, where: 'logbook: narrow number column head' };
 const logbookWide = { max: 6, where: 'logbook: column head' };
 
@@ -69,6 +76,21 @@ export const LENGTH_BUDGETS: Partial<Record<TranslationKey, LengthBudget>> = {
   'dock.speed': { max: 10, where: 'dock: caption under a symbol (a 52 px cell at 320 px)', sample: { speed: 4 } },
   'dock.in': { max: 12, where: 'dock: wait for the next crates under an empty symbol', sample: { when: '2 godz.' } },
   'menu.tagline': { max: 40, where: 'menu: tagline under the title' },
+  // [night-69a] D-324: the UI-A board labels over the flaps (Archivo 8.5 px caps) and the console captions (Archivo 9.5 px
+  // caps under a 92 px plate; the short forms under a 52 px key at 320 px or at text ≥ 120 %).
+  'board.localTime': { max: 14, where: 'UI-A board: label over the clock flaps' },
+  'board.week': boardLabel,
+  'board.day': boardLabel,
+  'board.passengers': boardLabel,
+  'board.stop': { max: 6, where: 'UI-A board: caption under the pause key' },
+  'board.go': { max: 6, where: 'UI-A board: caption under the pause key' },
+  'board.dock.undo': consoleShort,
+  'board.dock.turboprop': consoleLong,
+  'board.dock.turbopropShort': consoleShort,
+  'board.dock.widebody': consoleLong,
+  'board.dock.widebodyShort': consoleShort,
+  'board.dock.hub': consoleShort,
+  'board.dock.speed': consoleShort,
   'hud.week': passLabel,
   'hud.day': passLabel,
   'hud.time': passLabel,

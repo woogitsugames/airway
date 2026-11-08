@@ -87,16 +87,24 @@ export const RENDER = renderChoice;
  * Linoryt is the shipped skin and the game has no `?skin=` any more, so the flag is refused. [night-49a] The no-op
  * helpers it left (`SKIN`, `skinUrl`, `skinShotsDir`) are gone from the suites too.
  */
-if (process.argv.some((arg) => arg.startsWith('--skin=')) || process.env.AW_SKIN) {
-  throw new Error('--skin / AW_SKIN: there is no skin preview any more (Linoryt ships, D-301); drop the flag');
-}
+/**
+ * [night-69a] D-324 (PLAN-NOWY-KIERUNEK.md step T1): `--skin=board` (or `AW_SKIN=board`) loads the DEV-only UI-A preview
+ * (`?skin=board`) in every URL gameUrl() builds, e.g. `npm run ui:matrix:stub -- --skin=board`; unset = the shipped
+ * skin. Any other value is refused.
+ */
+const skinArg = process.argv.find((arg) => arg.startsWith('--skin='))?.slice('--skin='.length);
+export const SKIN = skinArg ?? process.env.AW_SKIN ?? '';
+if (!['', 'board'].includes(SKIN)) throw new Error(`--skin / AW_SKIN must be "board" or unset, got "${SKIN}"`);
 
-/** The game URL for the current `RENDER` mode (unchanged on the real renderer). */
+/** The game URL for the current `RENDER` mode (unchanged on the real renderer) and the `--skin` preview. */
 export function gameUrl(url) {
-  if (RENDER !== 'stub') return url;
+  if (RENDER !== 'stub' && !SKIN) return url;
   const target = new URL(url);
-  target.searchParams.set('render', 'stub');
-  target.searchParams.set('clock', 'frozen');
+  if (RENDER === 'stub') {
+    target.searchParams.set('render', 'stub');
+    target.searchParams.set('clock', 'frozen');
+  }
+  if (SKIN) target.searchParams.set('skin', SKIN); // [night-69a] D-324
   return target.href;
 }
 
@@ -106,6 +114,8 @@ export function gameUrl(url) {
  * (tracked shots untouched). Unchanged on the real renderer.
  */
 export function shotsDir(dir) {
+  // [night-69a] D-324: shots of the `--skin` preview never overwrite the tracked shots of the shipped skin.
+  if (SKIN) return resolve(ARTIFACTS, `skin-${SKIN}`, dir.split('/').filter(Boolean).at(-1));
   if (RENDER !== 'stub') return dir;
   return resolve(ARTIFACTS, 'stub', dir.split('/').filter(Boolean).at(-1));
 }

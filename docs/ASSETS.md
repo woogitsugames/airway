@@ -24,6 +24,8 @@ from Google Fonts (static TTF per weight) on 2026-11-02 by `mockups/fetch-fonts.
 | Atkinson Hyperlegible Mono | 400, 700 | UI direction mockups 2026-11 "Kokpit" | yes |
 | Besley | 800, 900 | [N27a] direction A "Linoryt" frames; [N28a] Linoryt preview skin (D-284), static WOFF2 subsets in `public/fonts/`; [N46a] shipped (D-301) | yes |
 | Schibsted Grotesk | 500–700 (variable) | [N27a] directions A and C frames; [N28a] Linoryt preview skin (D-284), WOFF2 subset in `public/fonts/`; [N46a] shipped (D-301) | yes |
+| Archivo | 600 (wdth 100); 700, 800 (wdth 80) | [N66a] UI-A mockups (`docs/styles/kierunki-2026-11c/makiety/ui-a/fonts/`); [N69a] UI-A preview skin (D-324), static WOFF2 subsets in `public/fonts/`, kept out of `dist/` until T6 | yes |
+| Chivo Mono | 500–800 (variable) | [N66a] UI-A mockups; [N69a] UI-A preview skin (D-324), WOFF2 subset in `public/fonts/`, kept out of `dist/` until T6 | yes |
 
 [N11au] D-256: the DEV-only KARTA preview skin (`src/ui/skin/karta.css`, `?skin=karta`) loads Barlow Condensed and IBM
 Plex Mono straight from `mockups/fonts/` through the Vite dev server (licences `mockups/fonts/OFL-BarlowCondensed.txt`,
@@ -229,6 +231,20 @@ reuses the K2 globe (`makiety/src/globe.js`, same NASA textures in the git-ignor
 |---|---|---|---|
 | Archivo (Copyright 2020 The Archivo Project Authors) | wdth 62–125, wght 100–900 | split-flap board, airfield signs, labels, keys | `OFL-Archivo.txt` |
 | Chivo Mono (Copyright 2019 The Chivo Project Authors) | wght 100–900 | flight strips, teleprinter report | `OFL-ChivoMono.txt` |
+
+[night-69a] D-324 (PLAN-NOWY-KIERUNEK.md step T1): the game's DEV-only UI-A preview (`?skin=board`,
+`src/ui/skin/board.css`) loads WOFF2 subsets of those two TTFs from `public/fonts/`, with the licences copied next to them
+(`public/fonts/OFL-Archivo.txt`, `public/fonts/OFL-ChivoMono.txt`). Archivo ships as static instances of the used widths
+and weights only (the full variable file is 659 kB): `Archivo-600.woff2` (wght 600, wdth 100; 14.0 kB),
+`Archivo-80-700.woff2` (wght 700, wdth 80; 15.2 kB) and `Archivo-80-800.woff2` (wght 800, wdth 80; 15.1 kB), made with
+`fonttools varLib.instancer Archivo-VF.ttf wght=W wdth=D`; `ChivoMono-VF.woff2` (18.8 kB) is the variable font limited to
+`wght=500:800`. All four are subset with the Alegreya command above (same `--unicodes` and `--layout-features`,
+`--flavor=woff2`). Neither licence declares a Reserved Font Name, so the subsets keep their names. Gaps: U+202F in all,
+U+2192 in Chivo Mono; the `--board-face` / `--board-mono` stacks (`'Archivo'|'Chivo Mono', 'Atkinson Hyperlegible Next',
+'Overpass', …`) draw them with the shipped faces (`npm run test:glyphs`). Until the flip (T6) the six files are listed in
+`PREVIEW_FONTS` (`scripts/vite-font-files.mjs`), so `dist/` and the apps do not carry them and Settings → Licences does
+not list them yet; T6 ships them (and adds the licence entries). The source TTFs stay in `makiety/ui-a/fonts/`
+(the mockup renderer reads them there).
 
 Globe imagery (downloaded 2026-11-08 by `src/fetch-textures.sh` from assets.science.nasa.gov into the git-ignored
 `makiety/.tex/`; **not committed, not shipped**): NASA Blue Marble Next Generation, June 2004, topography + bathymetry
