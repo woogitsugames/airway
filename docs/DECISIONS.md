@@ -3491,3 +3491,12 @@ from half a device px inside it (the sky band carries the ring outward), so the 
 Effect on SwiftShader: medium 11.9 → 20.7 fps, high 5.4 → 12.2 fps; saver/low unchanged. The disc's interior is
 pixel-identical; the limb ring is ≤ 1 device px wider inward. Rejected: fewer terrain triangles or a lower DPR cap on
 high (both change the look above low). **Status: in force.**
+
+## D-316 — The high preset uses medium's terrain meshes (2026-11-08, Claude, ext session)
+Context: the follow-up from D-315 ("fewer terrain triangles on high"), on the condition that the look must not change
+at the default zoom. Measured on `dev/globe.html` (two views, zoom 1 / 2 / 3.3, DPR 1 and 2): at zoom 2 (the game's
+default) the images are pixel-identical; at zoom 1 / DPR 1 and zoom 3.3 / DPR 2 0.7–1.8 % of pixels change by 1 px
+shifts of relief and coast fragments, invisible side by side, because the print shades from the sphere's direction and
+not the facets. Decision: `TERRAIN_LOD_LEVELS.high = ['medium', 'low']`; high keeps its DPR cap of 2. Effect: up to
+−84 % terrain triangles (zoom 1, DPR 1), −31 % zoomed in at DPR 2, the globe ready 0.7 s sooner on high (the finest
+mesh is not built). **Status: in force.**

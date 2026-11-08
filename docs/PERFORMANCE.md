@@ -176,6 +176,7 @@ first frame; an explicit graphics choice forgets them.
 | saver / low | 26 k / 20 k / 11 k (≤ 35 k) | ≤ 50 | 30 / display |
 | medium | 26 k / 125 k / 71 k (≤ 160 k) | ≤ 50 | display |
 | high | 157 k / 125 k / 71 k (≤ 200 k; the high mesh only from ~zoom 4) | ≤ 50 | display |
+| high since D-316 (Linoryt) | medium's terrain: 24 k / 119 k / 68 k at DPR 1, 148 k / 119 k / 68 k at DPR 2 | ≤ 50 | display |
 
 ### Measured 2026-11-03 (dev/world.html `?frozen&clean`, DPR 1.5 where the preset allows)
 
@@ -326,6 +327,23 @@ module and only warns (the old dynamic `import('@capacitor/core')` in `platform/
 Not done: WOFF2 fonts (about −40 % of the 624 kB TTF; OFL allows the conversion, `docs/ASSETS.md` would need the
 entry) — a size win only, no parse-time effect.
 
+
+## Linoryt high preset — medium's terrain (2026-11-08, D-316)
+The print shades from the direction of the sphere (`normalize(vAwWorld)`), not from the facets, so the finest terrain
+mesh only moved relief fragments by a pixel. `high` now uses the `medium` / `low` meshes (`TERRAIN_LOD_LEVELS`) and
+keeps its DPR cap of 2. `dev/globe.html?quality=high&look=linoryt`, 412×915, two views (Atlantic −18°/40° and
+Asia 85°/30°), DPR 1 and 2, before → after:
+
+| Zoom | DPR 1: terrain triangles / changed pixels | DPR 2: terrain triangles / changed pixels |
+| --- | --- | --- |
+| 1 | 147.5 k → **23.8 k** / 0.7–0.9 % (1 px shifts of coast and relief fragments) | 147.5 k → 147.5 k / identical |
+| 2 (the game's default) | 118.8 k → 118.8 k / identical | 118.8 k → 118.8 k / identical |
+| 3.3 | 68.1 k → 68.1 k / identical | 98.6 k → **68.1 k** / 1.7–1.8 % (same kind of 1 px shifts) |
+
+No difference is visible side by side (`docs/shots/ext-04-high/`: before | after | changed pixels, 2× crops). The globe
+loads faster on high because the finest mesh is no longer built: `__globeReady` 2.19 → 1.53 s (mean of 4, SwiftShader).
+`perf:scene --preset high` (60 s; its camera sits at zoom 1, DPR 1): 175,096 → 38,766 triangles, 12.2 → 22.2 fps
+idle (now the same scene as medium).
 
 ## Linoryt presets — no MSAA, no shadow map (2026-11-08, D-315)
 On the same 38,766 triangles medium rendered half the frames of low: the only difference left between them in the
