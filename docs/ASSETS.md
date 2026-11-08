@@ -200,6 +200,18 @@ present; U+2192 is missing in Newsreader (the mockups set arrows in Hanken Grote
 | Manrope | 400–800 | K2 labels, UI text, title | `OFL-Manrope.txt` |
 | Sofia Sans Condensed | 500–800 | K2 clock and numbers | `OFL-SofiaSansCondensed.txt` |
 
+### UI-A "Lotniskowa tablica i paski lotu" (night 66a; not shipped)
+`docs/styles/kierunki-2026-11c/makiety/ui-a/fonts/` holds two SIL OFL 1.1 variable TTFs fetched 2026-11-08 from
+github.com/google/fonts (`ofl/archivo/Archivo[wdth,wght].ttf`, `ofl/chivomono/ChivoMono[wght].ttf`), licences saved
+next to them. Polish glyphs (ą ć ę ł ń ó ś ź ż and capitals) checked with fontTools: all present in both; U+2192 is
+missing in Chivo Mono (browser fallback; the mockup draws its arrows as SVG). Used only by `makiety/ui-a/src/`, which
+reuses the K2 globe (`makiety/src/globe.js`, same NASA textures in the git-ignored `makiety/.tex/`).
+
+| Family | Axes | Used in | Licence file |
+|---|---|---|---|
+| Archivo (Copyright 2020 The Archivo Project Authors) | wdth 62–125, wght 100–900 | split-flap board, airfield signs, labels, keys | `OFL-Archivo.txt` |
+| Chivo Mono (Copyright 2019 The Chivo Project Authors) | wght 100–900 | flight strips, teleprinter report | `OFL-ChivoMono.txt` |
+
 Globe imagery (downloaded 2026-11-08 by `src/fetch-textures.sh` from assets.science.nasa.gov into the git-ignored
 `makiety/.tex/`; **not committed, not shipped**): NASA Blue Marble Next Generation, June 2004, topography + bathymetry
 (`world.topo.bathy.200406.3x5400x2700.jpg` and the 500 m/px tile `…3x21600x21600.C1.jpg`, cropped to 0–64°E,
