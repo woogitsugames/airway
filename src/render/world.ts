@@ -25,9 +25,8 @@ import { measureLayerContrast, sampleLuminance, type LayerContrast, type PixelRe
 import type { UpgradeKind } from '../sim/upgrades';
 // [ext-04 E2/E3] D-283: Linoryt stamps, ribbons and silhouettes (drawn when the look is `linoryt`).
 import type { LinorytObjects, PlaneLayerLike, RouteLayerLike } from './linoryt-objects';
-import { STAMP_SIZE_PX } from './globe/linoryt';
+import { SKY_COLOUR, STAMP_SIZE_PX } from './globe/linoryt';
 
-export const DIORAMA_SKY = '#8CC3D8';
 /** Airport tap radius in CSS px (dp); matches the route tool's start radius. */
 export const CITY_PICK_RADIUS_DP = 28;
 
@@ -195,7 +194,8 @@ export function createWorldRenderer(
   applyQualityProfile(renderer, quality);
   const element = renderer.domElement;
   const scene = new Scene();
-  scene.background = new Color(DIORAMA_SKY);
+  // [ext-04] The paper sky from the first frame (the print chunk loads lazily; no blue flash before it, U6 note).
+  scene.background = new Color(SKY_COLOUR);
   const camera = new PerspectiveCamera(30, 1, 0.05, 30);
   const orbit = new GlobeOrbitCamera(camera, opts.camera);
 

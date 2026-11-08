@@ -39,7 +39,8 @@ export async function withBrowser(callback, { fixture = false, softwareCompositi
 }
 
 /** `options.deviceScaleFactor`: [night-12u] DPR (ui:matrix renders the unfolded foldable at 2).
- *  `options.reducedMotion`: the emulated system setting ('reduce' by default; night-11g e2e uses 'no-preference'). */
+ *  `options.reducedMotion`: the emulated system setting ('reduce' by default; night-11g e2e uses 'no-preference').
+ *  `options.textScale`: [night-49a] the stored Settings text size in % (130, 150), set before the game loads. */
 export async function newGamePage(browser, url, language, viewport = { width: 412, height: 915 }, options = {}) {
   const page = await browser.newPage({
     viewport, deviceScaleFactor: options.deviceScaleFactor ?? 1, hasTouch: options.hasTouch ?? true, // [night-11ai] desktop pages: false
@@ -51,6 +52,14 @@ export async function newGamePage(browser, url, language, viewport = { width: 41
   // daily world (e2e/seeds.mjs `dates`).
   if (options.fixedTime) await pinDate(page, options.fixedTime);
   await presetLanguage(page, language, { clear: true });
+  if (options.textScale) {
+    await page.addInitScript((textScale) => {
+      try {
+        const value = JSON.parse(localStorage.getItem('airway.settings') || '{}');
+        localStorage.setItem('airway.settings', JSON.stringify({ ...value, textScale }));
+      } catch { /* storage can be blocked */ }
+    }, options.textScale);
+  }
   await page.goto(url, { waitUntil: 'load' });
   await page.locator('#app').waitFor({ timeout: 12000 });
   await page.waitForFunction(() => typeof window.aw === 'object', null, { timeout: 12000 })
@@ -75,17 +84,11 @@ if (!['stub', 'real'].includes(renderChoice)) {
 export const RENDER = renderChoice;
 /**
  * [night-28a] D-284: `--skin=linoryt` loaded the DEV-only Linoryt preview. [night-46a] D-301 (PLAN-LINORYT.md step U5):
- * Linoryt is the shipped skin and the game has no `?skin=` any more, so the flag is refused; `SKIN` stays '' and
- * `skinUrl` / `skinShotsDir` return their input (kept so the suites that still call them need no edit).
+ * Linoryt is the shipped skin and the game has no `?skin=` any more, so the flag is refused. [night-49a] The no-op
+ * helpers it left (`SKIN`, `skinUrl`, `skinShotsDir`) are gone from the suites too.
  */
 if (process.argv.some((arg) => arg.startsWith('--skin=')) || process.env.AW_SKIN) {
   throw new Error('--skin / AW_SKIN: there is no skin preview any more (Linoryt ships, D-301); drop the flag');
-}
-export const SKIN = '';
-
-/** [night-29a] The URL unchanged ([night-46a] D-301: no skin preview any more). */
-export function skinUrl(url) {
-  return url;
 }
 
 /** The game URL for the current `RENDER` mode (unchanged on the real renderer). */
@@ -95,11 +98,6 @@ export function gameUrl(url) {
   target.searchParams.set('render', 'stub');
   target.searchParams.set('clock', 'frozen');
   return target.href;
-}
-
-/** [night-29b] D-284 U4: the shots folder unchanged ([night-46a] D-301: no skin preview any more). */
-export function skinShotsDir(dir) {
-  return dir;
 }
 
 /**

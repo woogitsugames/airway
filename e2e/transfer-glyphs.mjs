@@ -17,7 +17,7 @@ const SEED = E2E_SEEDS['transfer-glyphs'].seeds[0];
 
 const STEPS = 2;
 const started = performance.now();
-const SHOTS = shotsDir(resolve(ROOT, 'docs/shots/n10i')); // [night-30a] --skin / [night-45a] --render=stub: .e2e/…, tracked shots untouched
+const SHOTS = shotsDir(resolve(ROOT, 'docs/shots/n10i')); // [night-45a] --render=stub: .e2e/…, tracked shots untouched
 const results = [];
 const frames = (page, n) => page.evaluate((count) => new Promise((done) => {
   let left = count; const step = () => (--left <= 0 ? done() : requestAnimationFrame(step)); requestAnimationFrame(step);

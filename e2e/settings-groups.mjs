@@ -6,10 +6,10 @@
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
-import { gameUrl, skinShotsDir, withBrowser, newGamePage, waitForScreen, clickTestId, assert, saveDiagnostics, ROOT, SEED, SKIN } from './browser.mjs';
+import { gameUrl, withBrowser, newGamePage, waitForScreen, clickTestId, assert, saveDiagnostics, ROOT, SEED } from './browser.mjs';
 
 const started = performance.now();
-const SHOTS = skinShotsDir(resolve(ROOT, 'docs/shots/n10k')); // [night-29b] U4: --skin=linoryt keeps them out of docs/
+const SHOTS = resolve(ROOT, 'docs/shots/n10k');
 const results = [];
 const cases = [
   ['pl', 412, 915, 1], ['en', 915, 412, 2], ['pl', 1000, 904, 2], ['en', 320, 568, 1],
@@ -77,7 +77,7 @@ try {
   if (fatal) console.error('FAIL harness: ' + fatal);
   const passed = results.filter((item) => item.status === 'PASS').length;
   const failedCount = results.length - passed + (fatal ? 1 : 0);
-  console.log(`SUMMARY test:e2e:settings-groups${SKIN ? ' skin=' + SKIN : ''} seed=0x${SEED.toString(16).toUpperCase()} steps=${results.length} ` +
+  console.log(`SUMMARY test:e2e:settings-groups seed=0x${SEED.toString(16).toUpperCase()} steps=${results.length} ` +
     `passed=${passed} failed=${failedCount} durationMs=${Math.round(performance.now() - started)}`);
   if (failedCount || results.length !== cases.length) process.exitCode = 1;
 }

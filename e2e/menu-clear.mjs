@@ -3,7 +3,7 @@
 // shot menu-phone (PL 360×640) had Dakar under "Ustawienia". PL/EN on the store phone, a short phone, a tall phone, a
 // foldable and landscape. No PNG is kept (failures leave a diagnostic screenshot in .e2e/).
 import { performance } from 'node:perf_hooks';
-import { gameUrl, withBrowser, newGamePage, waitForScreen, assert, saveDiagnostics, SEED, SKIN } from './browser.mjs';
+import { gameUrl, withBrowser, newGamePage, waitForScreen, assert, saveDiagnostics, SEED } from './browser.mjs';
 
 const started = performance.now();
 const results = [];
@@ -50,7 +50,7 @@ try {
   if (fatal) console.error('FAIL harness: ' + fatal);
   const passed = results.filter((item) => item.status === 'PASS').length;
   const failedCount = results.length - passed + (fatal ? 1 : 0);
-  console.log(`SUMMARY test:e2e:menu-clear${SKIN ? ' skin=' + SKIN : ''} seed=0x${SEED.toString(16).toUpperCase()} steps=${results.length} ` +
+  console.log(`SUMMARY test:e2e:menu-clear seed=0x${SEED.toString(16).toUpperCase()} steps=${results.length} ` +
     `passed=${passed} failed=${failedCount} durationMs=${Math.round(performance.now() - started)}`);
   if (failedCount || results.length !== cases.length) process.exitCode = 1;
 }

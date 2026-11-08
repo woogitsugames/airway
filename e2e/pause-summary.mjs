@@ -24,7 +24,18 @@ const cases = [
   ['pl', { width: 915, height: 412 }],
   ['pl', { width: 360, height: 640 }],
   ['en', { width: 320, height: 568 }],
+  // [night-49a] N47a: the landscape phone that lost Save/Menu, in EN too, and the short landscape phone.
+  ['en', { width: 915, height: 412 }],
+  ['pl', { width: 640, height: 360 }],
 ];
+
+// [night-49a] N47a: a week with a demand surge and a weather front adds two more rows (six in all). The bot's seed has
+// neither in week 2, so the sheet gets the two rows in the player's language (the strings of pauseSummary at their
+// longest) and is measured again: inside the viewport, and Resume, Save and Menu whole, visible and pressable.
+const EXTRA_ROWS = {
+  en: [['surge', 'Passenger surge', 'HEL +18, 06:00–09:00 local'], ['front', 'Weather front', 'AMM, BGW: front until 14:30 local']],
+  pl: [['surge', 'Szczyt ruchu', 'HEL +18, 06:00–09:00 czasu lok.'], ['front', 'Front atmosferyczny', 'AMM, BGW: front do 14:30 czasu lok.']],
+};
 
 const WORDS = {
   en: { network: /^\d+ routes? · \d+ aircraft(, \d+\sspare)?$/, hub: /^(\S.* \d+\/\d+|none yet)$/, board: /^in \d+ (days?|h) /u },
@@ -78,6 +89,33 @@ try {
         assert(!m.clipped, 'summary text clipped');
         assert(m.buttons.length === 3 && m.buttons.every((b) => b.width >= 47.5 && b.height >= 47.5), `buttons ${JSON.stringify(m.buttons)}`);
         await page.screenshot({ path: resolve(SHOTS, `pause-${language}-${viewport.width}x${viewport.height}.png`) });
+        const six = await page.evaluate((extra) => {
+          const list = document.querySelector('[data-testid="pause-summary"]');
+          for (const [key, label, value] of extra) {
+            const term = document.createElement('dt');
+            term.textContent = label;
+            const dd = document.createElement('dd');
+            dd.textContent = value;
+            dd.dataset.row = key;
+            list.append(term, dd);
+          }
+          const node = document.querySelector('.airway-pause');
+          const sheet = node.getBoundingClientRect();
+          const buttons = [...node.querySelectorAll('button')].map((b) => {
+            const r = b.getBoundingClientRect();
+            const hit = b.contains(document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2));
+            return { name: b.textContent, top: r.top, bottom: r.bottom, width: r.width, height: r.height, hit,
+              inside: r.top >= sheet.top - 0.5 && r.bottom <= sheet.bottom + 0.5 };
+          });
+          return { rows: list.querySelectorAll('dd').length, hidden: Math.max(0, list.scrollHeight - list.clientHeight), shown: getComputedStyle(list).display !== 'none',
+            sheet: { top: sheet.top, bottom: sheet.bottom }, scrolls: node.scrollHeight > node.clientHeight + 1, buttons };
+        }, EXTRA_ROWS[language]);
+        console.log('six rows', JSON.stringify({ shown: six.shown, sheet: six.sheet, scrolls: six.scrolls, summaryHidden: six.hidden }));
+        assert(six.rows >= 6, `rows ${six.rows}`);
+        assert(six.sheet.top >= -0.5 && six.sheet.bottom <= viewport.height + 0.5, `six rows: sheet outside the viewport ${JSON.stringify(six.sheet)}`);
+        assert(six.buttons.length === 3 && six.buttons.every((b) => b.inside && b.hit && b.width >= 47.5 && b.height >= 47.5),
+          `six rows: actions not reachable ${JSON.stringify(six.buttons)}`);
+        await page.screenshot({ path: resolve(SHOTS, `pause-six-${language}-${viewport.width}x${viewport.height}.png`) });
         if (errors.length) throw new Error(`Browser errors: ${errors.join('; ')}`);
         results.push({ label, status: 'PASS' });
       } catch (error) {
