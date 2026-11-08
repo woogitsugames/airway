@@ -83,6 +83,16 @@ airport's page coordinates for real `page.mouse` taps and presses on the canvas.
   rastered on emulated GL: at 904×1088@2 the weekly board ran at 3.5 rAF/s and one `page.screenshot` took 18–28 s, which
   is what hit the 30 s limit under load. The real renderer keeps the old arguments.
 
+[night-45a] A third: the weekly board draws each crate's 3D model in the frame after it opens (`src/game/session.ts`
+`onPreviewModel`: shader compile and a synchronous `readPixels` on the shared WebGL context). On SwiftShader that one
+frame holds the page's main thread for 1.4–3.2 s on an idle host (first board in a browser; the profile is ~1.25 s in
+`readRenderTargetPixels`) and past the 20 s click budget while other browsers share the CPU: Playwright cannot even
+run its "attached" / "visible" / "stable" check for `upgrade-option-N` until it ends. `test:e2e:transfer-glyphs` failed
+5 of 36 runs that way (6 copies at once beside 4 busy-loop processes; 20/20 with the busy loops alone). The session now
+sets `data-model="drawn"|"none"` on each crate when its draw is over, and `waitForBoardModels(page)` (`e2e/browser.mjs`,
+up to 120 s, polling on a timer) waits for every crate before the click. Other suites that click a crate of a freshly
+opened board on the real renderer can call it the same way.
+
 ## Commands
 
 ```sh
@@ -100,6 +110,7 @@ npm run test:e2e:linoryt:stub        # DEV-only Linoryt preview (?skin=linoryt) 
 # [night-44a] 13 more bot-driven/overlay suites as `npm run test:e2e:<suite>:stub` (PNGs of a stub run go to .e2e/stub/<task>/
 # through `shotsDir()`, never docs/shots/): new-airport, pause-summary, run-timeline, edge-chip-airports, edge-chip-fill,
 # board-short, upgrade-picks, undo-after-upgrade, home-region, licence-classes, fill-trend, surge-tag, hub-board
+# [night-45a] and transfer-glyphs (`npm run test:e2e:transfer-glyphs:stub`)
 # Harness-only validation; does NOT test the shipped game:
 npm run test:e2e:fixture   # = node e2e/smoke.mjs --fixture && node scripts/ui-matrix.mjs --fixture
 ```

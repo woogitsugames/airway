@@ -2,10 +2,14 @@
 // hub's luggage tag and named in its screen-reader label; they fill in once the connection time runs out. The bot
 // plays Endless on the fixed seed to the week-1 board, one pick puts it into week 2 (hubs with transfers), then the game is stepped one minute at a time.
 // Real game at 412×915 (EN) and 915×412 (PL); fails closed; shots docs/shots/n10i/.
+// [night-45a] `--render=stub` (`test:e2e:transfer-glyphs:stub`) plays the same journey on the stub world with a frozen
+// clock (D-254; shots in .e2e/stub/n10i/). Before the crate click the suite waits for the board's crate models
+// (waitForBoardModels): under load the frame that draws them held the page past the click budget.
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
-import { withBrowser, newGamePage, gameUrl, skinShotsDir, waitForScreen, clickTestId, state, assert, saveDiagnostics, ROOT } from './browser.mjs';
+import { withBrowser, newGamePage, gameUrl, shotsDir, waitForScreen, waitForBoardModels, clickTestId, state, assert, assertRender,
+  saveDiagnostics, RENDER, ROOT } from './browser.mjs';
 import { E2E_SEEDS } from './seeds.mjs';
 
 // [night-12ac] Seed from e2e/seeds.mjs, replayed headless by test:e2e-seeds (in test:fast).
@@ -13,7 +17,7 @@ const SEED = E2E_SEEDS['transfer-glyphs'].seeds[0];
 
 const STEPS = 2;
 const started = performance.now();
-const SHOTS = skinShotsDir(resolve(ROOT, 'docs/shots/n10i')); // [night-30a] with --skin: .e2e/skin-linoryt/, tracked shots untouched
+const SHOTS = shotsDir(resolve(ROOT, 'docs/shots/n10i')); // [night-30a] --skin / [night-45a] --render=stub: .e2e/…, tracked shots untouched
 const results = [];
 const frames = (page, n) => page.evaluate((count) => new Promise((done) => {
   let left = count; const step = () => (--left <= 0 ? done() : requestAnimationFrame(step)); requestAnimationFrame(step);
@@ -23,6 +27,7 @@ const frames = (page, n) => page.evaluate((count) => new Promise((done) => {
 const hollowTags = (page) => page.evaluate(() => [...document.querySelectorAll('.airport-bubble')].map((bubble) => {
   const box = bubble.getBoundingClientRect();
   return {
+    id: bubble.dataset.airport ?? '',
     label: bubble.getAttribute('aria-label') ?? '',
     hollow: bubble.querySelectorAll('.airport-region-glyph--connecting').length,
     filled: bubble.querySelectorAll('.airport-region-glyph:not(.airport-region-glyph--connecting)').length,
@@ -48,6 +53,7 @@ try {
       if (results.some((item) => item.status !== 'PASS')) { results.push({ label, status: 'SKIP' }); continue; }
       const { page, errors } = await newGamePage(browser, gameUrl(url), language, viewport);
       try {
+        await assertRender(page);
         await waitForScreen(page, 'menu');
         await page.evaluate((seed) => window.aw.prepareSeed(seed), SEED);
         await clickTestId(page, 'menu-endless');
@@ -56,6 +62,7 @@ try {
         // N11j) the bot plays to the week-1 board and one pick (not a hub or slot upgrade) puts it into week 2.
         const atBoard = await page.evaluate(() => window.aw.autoplay(1));
         assert(atBoard.screen === 'upgrade', `bot did not reach the week-1 board: ${atBoard.screen}`);
+        await waitForBoardModels(page); // [night-45a] the crate-model frame first, then the click's whole budget
         // An extra aircraft keeps the bot's network growing; any card that needs no airport pick will do.
         const list = await page.evaluate(() =>
           [...document.querySelectorAll('[data-testid^="upgrade-option-"]')].map((node) => node.dataset.upgrade));
@@ -91,13 +98,18 @@ try {
         });
         // The connection time is 25 minutes (15 after a hub upgrade): within it the hollow glyphs must clear at
         // some tag that had them, unless another plane keeps landing; allow two windows.
-        const code = /\b([A-Z]{3}):/.exec(found.label)?.[1] ?? '';
-        assert(code, `no airport code in ${found.label}`);
+        // [night-45a] The same airport by its id (not a code read from the label); its tag must still be there and the
+        // game still running, so a vanished tag or a game over no longer counts as "filled in".
+        const code = found.id;
+        assert(code, `no airport id on the tag ${found.label}`);
         let cleared = false;
         for (let minute = 0; minute < 50 && !cleared; minute++) {
           await step(page);
-          const now = (await hollowTags(page)).find((tag) => tag.label.includes(code + ':'));
-          cleared = !now || now.hollow === 0;
+          s = await state(page);
+          assert(s.screen === 'game', `${code}: left the game (${s.screen}) before its hollow glyphs filled in`);
+          const now = (await hollowTags(page)).find((tag) => tag.id === code);
+          assert(now, `${code}: its tag disappeared before its hollow glyphs filled in`);
+          cleared = now.hollow === 0;
         }
         assert(cleared, `${code}: hollow glyphs never filled in within 50 minutes`);
         if (errors.length) throw new Error(`Browser errors: ${errors.join('; ')}`);
@@ -116,7 +128,7 @@ try {
   if (fatal) console.error('FAIL harness: ' + fatal);
   const passed = results.filter((item) => item.status === 'PASS').length;
   const failedCount = results.length - passed + (fatal ? 1 : 0);
-  console.log(`SUMMARY test:e2e:transfer-glyphs seed=0x${SEED.toString(16).toUpperCase()} steps=${results.length} ` +
+  console.log(`SUMMARY test:e2e:transfer-glyphs seed=0x${SEED.toString(16).toUpperCase()}${RENDER === 'stub' ? ' render=stub' : ''} steps=${results.length} ` +
     `passed=${passed} failed=${failedCount} durationMs=${Math.round(performance.now() - started)}`);
   if (failedCount || results.length !== STEPS) process.exitCode = 1;
 }

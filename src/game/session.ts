@@ -203,6 +203,9 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     onPreviewModel: (container, kind) => {
       // The real low-poly model, rendered through the shared WebGL context into a 2D canvas.
       // Measured on the next frame, once the board is in the document.
+      // [night-45a] The draw compiles the model shaders and reads the pixels back synchronously: on SwiftShader the
+      // frame that draws a board's crates holds the page for 1–3 s (tens of seconds under CPU load). `data-model`
+      // ("drawn" / "none") marks the attempt as finished, so e2e suites wait for it before they click a crate.
       requestAnimationFrame(() => {
         if (!container.isConnected) return;
         const canvas = document.createElement('canvas');
@@ -210,8 +213,10 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
         canvas.width = Math.round(Math.max(64, container.clientWidth) * dpr);
         canvas.height = Math.round(Math.max(64, container.clientHeight) * dpr);
         container.append(canvas);
-        if (world.renderer.drawModelPreview(kind, canvas)) container.classList.add('has-model');
+        const drawn = world.renderer.drawModelPreview(kind, canvas);
+        if (drawn) container.classList.add('has-model');
         else canvas.remove();
+        container.dataset.model = drawn ? 'drawn' : 'none';
       });
     },
     onHubSelectionMode: (active, hubIds) => { hubSelection = active ? hubIds : []; layer.classList.toggle('is-selecting-hub', active); },

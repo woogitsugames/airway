@@ -152,6 +152,30 @@ export async function waitForScreen(page, screen, timeout = 8000) {
  */
 export const CLICK_TIMEOUT_MS = 20000;
 
+/**
+ * [night-45a] The weekly board draws each crate's 3D model in the frame after it opens (src/game/session.ts
+ * onPreviewModel): shader compile plus a synchronous pixel read-back. On SwiftShader that one frame holds the page's
+ * main thread for 1–3 s on an idle host (the first board in a browser) and for 20 s or more while other browsers share
+ * the CPU; a crate click started then spends `CLICK_TIMEOUT_MS` before the page answers one actionability check.
+ * Wait until every crate carries `data-model` ("drawn" / "none": the attempt is over); the click then gets its whole
+ * budget on a page that renders again. A board whose crates never finish still fails, after `timeout`.
+ */
+export const BOARD_MODELS_TIMEOUT_MS = 120000;
+const BOARD_CRATES = '[data-testid^="upgrade-option-"] .airway-upgrade-model';
+
+export async function waitForBoardModels(page, timeout = BOARD_MODELS_TIMEOUT_MS) {
+  try {
+    await page.waitForFunction((selector) => {
+      const crates = [...document.querySelectorAll(selector)];
+      return crates.length > 0 && crates.every((node) => node.dataset.model);
+    }, BOARD_CRATES, { timeout, polling: 250 });
+  } catch {
+    const seen = await page.evaluate((selector) => [...document.querySelectorAll(selector)]
+      .map((node) => node.dataset.model ?? 'pending').join(', '), BOARD_CRATES).catch(() => 'page did not answer');
+    throw new Error(`weekly board crates not drawn within ${timeout} ms: [${seen}]`);
+  }
+}
+
 /** Playwright's first error line plus the last lines of its call log (what the actionability checks saw). */
 function playwrightError(error) {
   const text = error instanceof Error ? error.message : String(error);
