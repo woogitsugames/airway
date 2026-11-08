@@ -3,10 +3,10 @@
 // speak in codes. At the gameplay zoom the run opens with, every on-screen airport carries a code plate on its tag;
 // zoomed out to the whole network only hubs and the airports the UI names (jam, NEW, slot hold, curfew) keep one. Plates never overlap each other, their text is not clipped, they keep clear of the
 // boarding pass and the dock. EN 412×915, PL 915×412, EN 320×568, PL 904×1088; shots docs/shots/n11m/.
-// [night-23a] Róża (D-257) names every airport twice over: the name (or code) along its rose's ring and the code plate
-// on the note beside it, and its notes give way in a crowd (D-262: a note hides, the name still reads). So there the
-// opening zoom must name every rose in view (a name on the ring or a plated note, counted), every shown note keeps its
-// plate at both zooms, and the zoomed-out thinning of D-128 (Diorama) does not apply.
+// [night-46a] D-301: Linoryt prints each airport as a stamp on the globe (WebGL; the overlay's DEV probe counts them)
+// and a paper note beside it whose first line is the airport's name (the compact note: its code). There the plate is
+// that shown line: the opening zoom must stamp ≥ 3 airports with ≥ 3 named notes, every shown note keeps its line at
+// both zooms, and the zoomed-out thinning of D-128 (the Diorama plates) does not apply.
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
@@ -31,19 +31,19 @@ const plates = (page) => page.evaluate(() => {
   return {
     hubs: [...hubs],
     tags: tags.map((tag) => {
-      const plate = tag.querySelector('.airport-bubble__plate');
+      const visible = (el) => el && getComputedStyle(el).display !== 'none' && el.getBoundingClientRect().width > 0;
+      const plate = [tag.querySelector('.airport-bubble__plate'), tag.querySelector('.lin-name'), tag.querySelector('.lin-code')]
+        .find((el) => visible(el) && (el.textContent ?? '').trim().length >= 3) ?? null;
       return {
-        id: tag.dataset.airport, plate: plate?.textContent ?? null, rect: rect(tag),
+        id: tag.dataset.airport, plate: plate?.textContent?.trim() ?? null, rect: rect(tag),
         clipped: plate ? plate.scrollWidth > plate.clientWidth + 1 : false,
         named: tag.classList.contains('airport-bubble--jam') || tag.classList.contains('airport-bubble--new') ||
           !!tag.querySelector('.airport-bubble__curfew:not([hidden])'),
         glyphs: tag.querySelectorAll('svg').length,
       };
     }),
-    roza: document.documentElement.dataset.skin === 'roza',
-    roses: [...document.querySelectorAll('.roza-rose')].filter((rose) => rose.style.display !== 'none').length,
-    roseNames: [...document.querySelectorAll('.roza-rose')].filter((rose) => rose.style.display !== 'none' &&
-      (rose.querySelector('.roza-rose__name')?.textContent ?? '').trim().length >= 3).length,
+    linoryt: document.documentElement.dataset.skin === 'linoryt',
+    stamps: (globalThis.__awLinoryt?.stamps() ?? []).filter((stamp) => stamp.visible && stamp.half > 0).length,
     slotIds: [...document.querySelectorAll('.airport-slot')].filter(shown).map((slot) => slot.previousElementSibling?.dataset.airport),
     panels,
   };
@@ -76,9 +76,9 @@ try {
         const opening = await plates(page);
         assert(opening.tags.every((tag) => tag.plate && tag.plate.length >= 3),
           `${label}: opening zoom, tags without a plate ${JSON.stringify(opening.tags.map((tag) => [tag.id, tag.plate]))}`);
-        if (opening.roza) {
-          assert(opening.roses >= 3 && opening.tags.length >= 1 && opening.roseNames + opening.tags.length >= opening.roses,
-            `${label}: opening zoom, ${opening.roses} roses but ${opening.roseNames} names and ${opening.tags.length} notes`);
+        if (opening.linoryt) {
+          assert(opening.stamps >= 3 && opening.tags.length >= 3,
+            `${label}: opening zoom, ${opening.stamps} stamps and ${opening.tags.length} named notes`);
         } else assert(opening.tags.length >= 3, `${label}: opening zoom, ${opening.tags.length} tags`);
         checkCommon(opening, `${label} opening`);
         await page.screenshot({ path: resolve(SHOTS, `plates-${language}-${width}x${height}.png`) });
@@ -87,7 +87,7 @@ try {
         for (let i = 0; i < 4; i++) { await page.mouse.wheel(0, 150); await page.waitForTimeout(60); }
         await page.waitForTimeout(500);
         const wide = await plates(page);
-        if (wide.roza) {
+        if (wide.linoryt) {
           assert(wide.tags.every((tag) => tag.plate && tag.plate.length >= 3), `${label}: zoomed out, a note without its plate`);
         } else {
           for (const tag of wide.tags) {

@@ -89,9 +89,9 @@ function snapshot(page, sheet) {
     const node = which === 'pause' ? document.querySelector('.airway-pause') : document.querySelector('[data-testid="hub-board"]');
     const open = Boolean(node && !node.hidden && shown(node));
     const targets = open ? [...node.querySelectorAll('button')].filter(shown).map((b) => ({ name: name(b), ...rect(b), hit: hit(b) })) : [];
-    const hud = [...document.querySelectorAll('.airway-hud button, .airway-pass, .roza-pass')].filter(shown).map((el) => ({ name: name(el), ...rect(el) }));
-    const dock = [...document.querySelectorAll('.airway-dock button, .airway-dock .roza-caption, .roza-dial')].filter(shown).map((el) => ({ name: name(el), ...rect(el) }));
-    const week = document.querySelector('.roza-pass');
+    const hud = [...document.querySelectorAll('.airway-hud button, .airway-pass')].filter(shown).map((el) => ({ name: name(el), ...rect(el) }));
+    const dock = [...document.querySelectorAll('.airway-dock button, .airway-dock .lin-caption, .airway-dock .lin-wait')].filter(shown).map((el) => ({ name: name(el), ...rect(el) }));
+    const week = document.querySelector('.lin-week');
     return {
       hash: snapshotHash, tick, screen, camera,
       w: innerWidth, h: innerHeight, layout: document.querySelector('.airway-hud')?.dataset.layout,

@@ -568,7 +568,8 @@
   :root[data-skin="linoryt"] .airway-upgrade-open:not(.is-picking-hub) {
     --upgrade-win: clamp(48px, calc(100vh - var(--lin-top) - 264px - var(--aw-safe-bottom)), 230px);
   }
-  :root[data-skin="linoryt"] .airway-upgrade-tag { padding-bottom: 14px; }
+  :root[data-skin="linoryt"] .airway-upgrade-tag { padding-bottom: 8px; }
+  :root[data-skin="linoryt"] .airway-upgrade:not([data-crates="4"]) .airway-upgrade-tag:has(.airway-upgrade-stamp) { padding-bottom: 14px; }
   :root[data-skin="linoryt"] .airway-upgrade[data-crates="4"] .airway-upgrade-grid { grid-template-columns: minmax(0, 1fr); gap: 0; }
   :root[data-skin="linoryt"] .airway-upgrade[data-crates="4"] .airway-upgrade-value { margin-bottom: 2px; }
   :root[data-skin="linoryt"] .airway-upgrade[data-crates="4"] .airway-upgrade-heading { font-size: calc(11px * var(--airway-text-scale)); gap: 4px; }
@@ -739,6 +740,11 @@
 :root[data-skin="linoryt"] .airway-hub-board__close:focus-visible { outline: 3px solid var(--lin-red); }
 :root[data-skin="linoryt"] .airway-hub-board__rows { padding: 0 6px; }
 :root[data-skin="linoryt"] .airway-hub-board__row { border-bottom: 1px solid var(--lin-ink-dim); font-weight: 600; }
+/* A short portrait phone: the top margin is ~40 px taller than the old pass, so the rows close up to keep a full board
+   (8 regions) without scrolling at 360 × 640. */
+@media (orientation: portrait) and (max-height: 700px) {
+  :root[data-skin="linoryt"] .airway-hub-board__row { padding: 3px 0; }
+}
 :root[data-skin="linoryt"] .airway-hub-board__count { font-weight: 700; font-variant-numeric: tabular-nums; }
 :root[data-skin="linoryt"] .airway-hub-board__mark { color: var(--lin-ink); }
 :root[data-skin="linoryt"] .airway-hub-board__row[data-cause='none'] :is(.airway-hub-board__mark, .airway-hub-board__text) { color: var(--lin-ink-dim); }

@@ -3254,6 +3254,14 @@ board screens differ only by the removed globe tag, the two 915×412 tutorial sc
 channel difference 1); computed styles differ only in the display stack (Alegreya out, Overpass in) and on elements the
 structure hides (the pruner drops their dead declarations). `test:e2e:text-scale-150` (red on dev at 915×412 for the
 Róża crate) passes 120/120 on the Linoryt board. Store shots are stale until U7 (D-296).
+**Found by the suites that ran on Róża until now.** The Linoryt weekly board on a landscape phone (720+ × ≤ 520 px) ran
+4 px past the bottom of a 412 px screen: its sign takes a row of its own under the top margin, so the model window now
+gives that height back (`100vh − --lin-top − 264 px`, floor 48 px as D-209; `test:hud-targets` asks ≥ 80 px there) and
+the crates keep 14 px under the tilted hub stamp. The rule that prints the cargo's cut symbol instead of the 3D model
+lost to the base `#app canvas { display: block }` in the game (`:is(#app, body)` now outweighs it), so the game showed
+the small 3D models in Linoryt's frames. The e2e suites written for Róża read the Linoryt parts instead (`.lin-week`,
+`.lin-caption`/`.lin-wait`, `.lin-name`/`.lin-code`, the overlay's stamp probe); `hub-board` lets the margin's
+ResizeObserver run before it measures, `edge-dock` zooms one wheel step in while fewer than 3 edge buttons show.
 Rejected: keeping `?skin=linoryt` as a no-op alias (dead code; the e2e harness now refuses `--skin`), removing
 `setGlobeMode` from `src/render` here (ext session, E4), folding the `:root[data-skin="linoryt"]` prefix out of the
 source (the scope keeps the structure file auditable and the pruner's selector match unchanged). **Status: in force.**
