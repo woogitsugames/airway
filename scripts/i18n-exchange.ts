@@ -9,7 +9,7 @@ import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { LANGUAGE_ENTRIES, PLANNED_LANGUAGE_ENTRIES } from '../src/i18n/languages.ts';
 import {
-  buildExport, parseExchange, readCatalogSource, renderCatalog, toCsv, validateImport, type ExchangeFile, type TargetLanguage,
+  buildExport, limitsFromModule, parseExchange, readCatalogSource, renderCatalog, toCsv, validateImport, type ExchangeFile, type TargetLanguage,
 } from './lib/i18n-exchange.ts';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -36,18 +36,9 @@ const pl = catalog('pl');
 /** R7h's length budgets, when `src/i18n/limits.ts` exists: any exported `Record<key, number>` (or `{ max }`). */
 async function lengthLimits(): Promise<Map<string, number>> {
   const file = resolve(ROOT, 'src/i18n/limits.ts');
-  const limits = new Map<string, number>();
-  if (!existsSync(file)) return limits;
+  if (!existsSync(file)) return new Map();
   const module: Record<string, unknown> = await import(pathToFileURL(file).href);
-  const keys = new Set(en.map((entry) => entry.key));
-  for (const value of Object.values(module)) {
-    if (!value || typeof value !== 'object' || Array.isArray(value)) continue;
-    for (const [key, limit] of Object.entries(value as Record<string, unknown>)) {
-      const max = typeof limit === 'number' ? limit : (limit as { max?: unknown } | null)?.max;
-      if (keys.has(key) && typeof max === 'number') limits.set(key, Math.min(max, limits.get(key) ?? Infinity));
-    }
-  }
-  return limits;
+  return limitsFromModule(module, new Set(en.map((entry) => entry.key)));
 }
 
 const limits = await lengthLimits();
