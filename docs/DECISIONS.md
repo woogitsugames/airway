@@ -3759,3 +3759,46 @@ mask, and the most "ours" (hub and passenger glyph are the game's own vocabulary
 I-2 (noisy at small sizes), I-3 (heavy), II-1…II-3 (airport-sign wordmarks; kept as a store-art spare for II-1). The
 release icons and splash screens (Android adaptive icon with safe area, iOS) are a separate task (plan step Z).
 **Status: in force (owner, 8.11).**
+
+## D-327 — Country borders on the NASA globe, `projectLonLat` and the atlas label list (2026-11-08, Claude, night 72a)
+Step R2 of `docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md` (D-323), done by an agent with the owner's consent (no
+ext session). Only the DEV `?look=earth` preview changes; nothing the release ships changes.
+**Borders.** Natural Earth 1:50m land borders (arcs shared by two countries in `world-atlas` `countries-50m.json`;
+coasts get no line, the photo shows them), simplified at 0.02° and quantised to 0.01° by `scripts/build-borders.mjs`
+into `public/data/borders-50m.json` (172 lines, 8,294 points, 51.7 kB, 18.7 kB gzip; `test:borders` checks the
+committed copy). `src/render/globe/borders.ts` draws them in the earth chunk as **one draw**: a quad per segment
+(segments longer than 1° split along lon/lat, so straight borders keep their parallel), both ends projected in the
+vertex shader and pushed sideways by **0.8 CSS px × pixel ratio**; a line under one device pixel is drawn 1 px wide
+at proportionally lower alpha with coverage anti-aliasing (no sub-pixel dropout, so no flicker on cheap GPUs). No
+depth test (the relief would bite into it): the shader hides everything past the horizon (p·c > |p|²), fades the last
+few degrees before the limb and collapses a segment wholly behind it; ends are lifted onto the same terrain heights as
+the mesh. Colour per vertex by the terminator, as the mockup (`makiety/ui-a/src/ui.css`): night #C9CED6 at 22 %, day
+white at 38 %, switched over ±6° of sun elevation. renderOrder 5: after the globe, under every map object.
+**Not instanced.** The first build used one instanced quad per segment; SwiftShader runs instances one by one and
+`perf:scene` (earth, low) fell from 24 to 6 fps. A plain batch of four vertices per segment (≈ 1.2 MB of vertex data)
+costs what its triangles cost; some cheap Android drivers behave like SwiftShader here.
+**Left out on purpose.** world-atlas 2.0.2 (Natural Earth 4.1) assigns Crimea to Russia; the line across the Crimean
+isthmus is not drawn, nor the lines cutting off Northern Cyprus and Somaliland. Lines through the Caspian and border
+lakes stay (atlases draw them). The game makes no border claim; the list is the owner's to change (question in the PR).
+**Contrast (D-177).** A 1–2 px line has no interior, so the probe's "core" term measures the photo under the line
+(city lights: 1.7–4.8), not the line; the gate in `npm run shots:r2` reads the per-pixel median of the line against the
+globe: **1.2–2:1** (it shows, and stays quieter than routes and signs, which gate at ≥ 3:1). Measured (412×915 /
+915×412, SwiftShader): day 1.45 / 1.31, dusk 1.46 / 1.33, night 1.27 / 1.29 (medium and low alike).
+**`projectLonLat(lon, lat, out)`** (Render API, required on `WorldRenderer`, also on the DEV stub world): any surface
+point into `{x, y, visible}`, `visible` = in front of the horizon, no allocation. One projection for `project`, `pick`,
+`projectAirport` and `projectLonLat` (`src/render/projection.ts`), all at `SURFACE_ANCHOR_ALTITUDE` = 1.01, so a label
+and a stamp at the same lon/lat land on the same pixel (checked in the browser for 10 airports, the far-side ones not
+visible).
+**Atlas labels.** `src/data/atlasLabels.ts`: 119 anchors (82 countries, 30 seas and bays, 7 ocean anchors for 5
+oceans), names as i18n keys `atlas.country.<iso2>` / `atlas.sea.<name>` (PL after the KSNG short forms, EN
+conventional), each with a `weight` 1–4: `atlasLabelEligible(label, frameSpanKm)` shows weight 1 always, 2 up to
+9,000 km, 3 up to 5,000 km and 4 up to 2,500 km across the frame. Anchors are where a cartographer would letter the
+name (countries on land, seas on water, `test:atlas-labels`); no labels for disputed areas or the smallest states.
+Drawing, collision with airport signs and the hiding order are T2's (UI-A spec §6).
+**Budgets.** Release unchanged: the border file is left out of `dist/` (`PREVIEW_DATA_FILES`, `test:bundle`) and the
+shader sits in the DEV-only earth chunk; the PL/EN names add ≈ 5 kB to the main JS (catalogs are bundled). At the flip
+`dist/` gains the 51.7 kB file. Draw calls +1 (earth low/medium/high 13/14/15 → 14/15/16 at most, budget 50). `perf:scene` (SwiftShader, 412×915, 45 s, earth, run back to back
+with `dev`; never compared with devices): render CPU p95 1.1–1.4 ms on both, triangles +16.8k (two per segment),
+delivered fps low 20.5 → 22.8, medium 23.7 → 21.1, high 22.0 → 17.9 (the CPU rasteriser pays the extra fill; run-to-run
+noise is ±10 %). The Linoryt default draws no borders.
+**Status:** preview; the owner sees it with T2.

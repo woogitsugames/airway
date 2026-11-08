@@ -15,12 +15,13 @@ import {
   ShaderMaterial, SphereGeometry, Texture, UnsignedByteType, Vector3,
 } from 'three';
 import type { QualityProfile } from '../quality';
+import { BORDERS_FILE, createBorderLayer, loadBorders } from './borders';
 import { EARTH_LOOK, EARTH_TEXTURES, earthPreset, type EarthPreset } from './earth';
 import { elevationSampler, loadElevationBytes } from './elevation';
 import type { GlobeInstance } from './index';
 import type { LandMask } from './land-mask';
 import { chunkTerrain, createTerrainLod, TERRAIN_LOD_LEVELS } from './lod';
-import { buildTerrainArrays, type TerrainStyle } from './terrain';
+import { buildTerrainArrays, createSample, sampleAt, type TerrainStyle } from './terrain';
 
 const DEG = Math.PI / 180;
 
@@ -230,16 +231,20 @@ export interface EarthGlobeOptions {
   readonly sunDirection: Vector3;
   readonly signal?: AbortSignal;
   readonly baseUrl?: string;
+  /** [night-72a R2] Border file URL (default `data/borders-50m.json`). */
+  readonly bordersUrl?: string;
 }
 
 /** The NASA globe: terrain mesh (same triangles as the print), photo material, optional shell and stars. */
 export async function createEarthGlobe(scene: Scene, mask: LandMask, opts: EarthGlobeOptions): Promise<GlobeInstance> {
   const base = opts.baseUrl ?? `${import.meta.env.BASE_URL}data/globe/`;
   const preset = earthPreset(opts.quality);
-  const [elevation, day, night] = await Promise.all([
+  const [elevation, day, night, borderSegments] = await Promise.all([
     loadElevationBytes(base + 'elevation-2048.png', opts.signal),
     loadBitmap(base + EARTH_TEXTURES.day[preset.startDay], opts.signal),
     loadBitmap(base + EARTH_TEXTURES.night[preset.startNight], opts.signal),
+    // [night-72a R2] D-327: country borders (data/, beside the land mask); a missing file only leaves them out.
+    loadBorders(opts.bordersUrl ?? `${import.meta.env.BASE_URL}data/${BORDERS_FILE}`, opts.signal),
   ]);
   if (opts.signal?.aborted) {
     day.bitmap.close(); night.bitmap.close();
@@ -274,6 +279,12 @@ export async function createEarthGlobe(scene: Scene, mask: LandMask, opts: Earth
   if (stars) group.add(stars);
   group.add(lod.group);
   if (shell) group.add(shell);
+  // [night-72a R2] D-327: one draw (a plain quad batch) of screen-width border lines, lifted onto the same relief as the mesh.
+  const surface = createSample();
+  const borders = borderSegments
+    ? createBorderLayer(borderSegments, opts.sunDirection, (lon, lat) => sampleAt(lon, lat, mask, surface, style).height)
+    : null;
+  if (borders) group.add(borders.mesh);
   let bitmaps: ImageBitmap[] = [day.bitmap, night.bitmap];
   group.userData['lookBytes'] = elevation.size + day.bytes + night.bytes;
   group.userData['earthTextures'] = `${preset.startDay}/${preset.startNight}`;
@@ -309,6 +320,7 @@ export async function createEarthGlobe(scene: Scene, mask: LandMask, opts: Earth
     group, quality: opts.quality, lod,
     decor: { drawn: 0, total: 0, repacks: 0 },
     surfaceLook: 'earth',
+    borders: borders?.mesh ?? null,
     update(camera, pixelsPerDegree) {
       lod.update(camera, pixelsPerDegree);
       if (upgrade === 'pending') setTimeout(() => { if (!disposed && upgrade === 'pending') startUpgrade(); }, 0);
@@ -327,6 +339,7 @@ export async function createEarthGlobe(scene: Scene, mask: LandMask, opts: Earth
       for (const bitmap of bitmaps) bitmap.close();
       material.dispose();
       if (shell) { shell.geometry.dispose(); (shell.material as ShaderMaterial).dispose(); }
+      borders?.dispose();
       if (stars) { stars.geometry.dispose(); (stars.material as PointsMaterial).dispose(); }
       group.clear();
     },

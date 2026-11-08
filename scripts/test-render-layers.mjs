@@ -18,7 +18,8 @@ try {
   writeFileSync(join(folder, 'package.json'), JSON.stringify({ type: 'module' }));
   for (const path of ['globe/geo-math.ts', 'routes.ts', 'planes.ts', 'routePreview.ts', 'airports.ts',
     'camera.ts', 'framing.ts', 'contrast.ts', 'menuNetwork.ts', 'sun.ts', /* [task-34] */
-    'globe/linoryt.ts', 'linoryt-objects.ts', /* [ext-04 E2] */ 'globe/earth.ts'] /* [night-70a R1] */) {
+    'globe/linoryt.ts', 'linoryt-objects.ts', /* [ext-04 E2] */ 'globe/earth.ts', /* [night-70a R1] */
+    'globe/borders.ts', 'projection.ts'] /* [night-72a R2] */) {
     const file = resolve(ROOT, 'src/render', path);
     const target = join(folder, path.replace(/\.ts$/, '.js'));
     mkdirSync(dirname(target), { recursive: true });
@@ -301,6 +302,71 @@ try {
     check(earth.earthNightWeight(sunCos(noon)) === 0 && earth.earthDuskWeight(sunCos(six)) > 0.5 && earth.earthNightWeight(sunCos(midnight)) === 1,
       '[R1] the terminator moves with the game clock (day at 12:00, dusk at 18:00, night at 00:00 over 0°/0°)');
   }
+  // [night-72a R2] D-327: country borders (one instanced draw, screen-pixel width, hidden past the horizon, day/night
+  // colour) and projectLonLat (same projection and altitude as projectAirport, no allocation).
+  {
+    const bordersModule = await load('globe/borders.js');
+    const data = JSON.parse(readFileSync(resolve(ROOT, 'public/data', bordersModule.BORDERS_FILE), 'utf8'));
+    const segments = bordersModule.decodeBorders(data);
+    const sun = new three.Vector3(0, 0, 1);
+    const layer = bordersModule.createBorderLayer(segments, sun);
+    const { mesh } = layer;
+    check(mesh.isMesh && mesh.children.length === 0 && !mesh.geometry.isInstancedBufferGeometry && layer.segments === segments.length / 4 &&
+      mesh.geometry.index.count === 6 * layer.segments && mesh.geometry.getAttribute('position').count === 4 * layer.segments &&
+      mesh.geometry.groups.length === 0, '[R2] borders: one mesh, one quad per segment in one plain (not instanced) batch: one draw call for every border');
+    check(mesh.material.transparent && !mesh.material.depthTest && !mesh.material.depthWrite && mesh.renderOrder === 5 &&
+      mesh.renderOrder < 10 && mesh.frustumCulled === false, '[R2] borders: translucent, after the globe, before the map objects (renderOrder 5 < 10)');
+    const vs = mesh.material.vertexShader;
+    check(/float core = max\(awWidth, 1\.0\)/.test(vs) && /\* min\(awWidth, 1\.0\)/.test(vs) &&
+      /clamp\(vAwHalf \+ 0\.5 - abs\(vAwAcross\), 0\.0, 1\.0\)/.test(mesh.material.fragmentShader),
+      '[R2] borders: width in device px, a hairline is 1 px at lower alpha, coverage anti-aliasing (no sub-pixel dropout)');
+    const viewport = mesh.material.uniforms.awViewport.value;
+    mesh.onBeforeRender({ getDrawingBufferSize: (v) => v.set(824, 1830), getPixelRatio: () => 2 });
+    check(viewport.x === 824 && viewport.y === 1830 && Math.abs(mesh.material.uniforms.awWidth.value - 1.6) < 1e-9,
+      '[R2] borders: 0.8 CSS px × pixel ratio, drawing-buffer viewport set before each draw');
+    // Horizon: camera at 3 radii on +z. A point is visible while p·c > |p|² (cosine margin > 0), faded in near the limb.
+    const h = (x, y, z) => bordersModule.borderHorizon(x, y, z, 0, 0, 3);
+    const limbZ = 1 / 3, limbX = Math.sqrt(1 - limbZ * limbZ);
+    check(h(0, 0, 1) === 1 && h(0, 0, -1) === 0 && h(1, 0, 0) === 0 && h(limbX, 0, limbZ) === 0 &&
+      h(Math.sqrt(1 - 0.36 * 0.36), 0, 0.36) > 0 && h(Math.sqrt(1 - 0.36 * 0.36), 0, 0.36) < 1,
+      '[R2] borders: hidden behind the horizon (back side and limb 0, near side 1, a short fade before the limb)');
+    check(/\(dot\(p, cameraPosition\) - r2\) \/ \(sqrt\(r2\) \* length\(cameraPosition\)\)/.test(vs) &&
+      /if \(awHorizon\(aStart\) <= 0\.0 && awHorizon\(aEnd\) <= 0\.0\) clip = vec4\(2\.0, 2\.0, 2\.0, 1\.0\)/.test(vs),
+      '[R2] borders: the shader uses the same horizon margin and collapses a segment wholly past it');
+    check(bordersModule.borderDaylight(1) === 1 && bordersModule.borderDaylight(-1) === 0 && bordersModule.borderDaylight(0) === 0.5 &&
+      bordersModule.BORDER_STYLE.night === '#C9CED6' && bordersModule.BORDER_STYLE.nightAlpha < bordersModule.BORDER_STYLE.dayAlpha,
+      '[R2] borders: cool grey and fainter by night, white by day (mockup .border / .day .border), switched at the terminator');
+    layer.dispose();
+    const earthGlobeSrc = readFileSync(resolve(ROOT, 'src/render/globe/earth-globe.ts'), 'utf8');
+    check((earthGlobeSrc.match(/createBorderLayer\(/g) ?? []).length === 1 && /group\.add\(borders\.mesh\)/.test(earthGlobeSrc) &&
+      /borders\?\.dispose\(\)/.test(earthGlobeSrc), '[R2] the earth globe adds the one border layer and disposes it');
+    // projectLonLat: the projection behind project/pick/projectAirport/projectLonLat, at the shared anchor altitude.
+    const projection = await load('projection.js');
+    const { GlobeOrbitCamera: Orbit } = await load('camera.js');
+    const cam3 = new three.PerspectiveCamera(30, 1, 0.05, 30);
+    const orbit3 = new Orbit(cam3, { zoom: 1, longitude: 25, latitude: 45 });
+    orbit3.setViewport(412, 915);
+    orbit3.update(0);
+    cam3.updateMatrixWorld();
+    const out = { x: 0, y: 0, visible: false };
+    const scratch = new three.Vector3(), toCam = new three.Vector3();
+    const at = (lon, lat) => projection.projectToScreen(cam3, 412, 915, lon, lat, projection.SURFACE_ANCHOR_ALTITUDE, scratch, toCam, { ...out });
+    const near = [[21, 52.2], [28.8, 41.3], [31.4, 30.1], [23.9, 37.9]].map(([lon, lat]) => at(lon, lat));
+    const far = [[151.2, -33.9], [-118.4, 33.9], [-157.9, 21.3]].map(([lon, lat]) => at(lon, lat));
+    check(near.every((p) => p.visible && p.x > 0 && p.x < 412 && p.y > 0 && p.y < 915) && far.every((p) => !p.visible),
+      '[R2] projectLonLat: near-side airports on screen and visible, far-side ones behind the horizon');
+    const centre = at(25, 45);
+    check(Math.abs(centre.x - 206) < 30 && projection.SURFACE_ANCHOR_ALTITUDE === 1.01, '[R2] the camera target projects near the viewport centre; anchors at r = 1.01');
+    const worldR2 = readFileSync(resolve(ROOT, 'src/render/world.ts'), 'utf8');
+    const lonLatBody = worldR2.slice(worldR2.indexOf('projectLonLat(lon, lat, out) {'), worldR2.indexOf('resize,', worldR2.indexOf('projectLonLat(lon, lat, out) {')));
+    const airportBody = worldR2.slice(worldR2.indexOf('world.projectAirport = '), worldR2.indexOf('return world;'));
+    check(/return project\(lon, lat, SURFACE_ANCHOR_ALTITUDE, out\)/.test(lonLatBody) &&
+      /project\(city\.lon, city\.lat, SURFACE_ANCHOR_ALTITUDE, point\)/.test(airportBody) && !/new |\[\]|=> \(\{/.test(lonLatBody) &&
+      /projectToScreen\(camera, orbit\.viewportWidth, orbit\.viewportHeight/.test(worldR2),
+      '[R2] projectLonLat = projectAirport\'s projection and altitude for the same lon/lat, writes into out (no allocation)');
+    const projSrc = readFileSync(resolve(ROOT, 'src/render/projection.ts'), 'utf8');
+    check(!/new |\[\]/.test(projSrc.slice(projSrc.indexOf('export function projectToScreen'))), '[R2] projectToScreen allocates nothing');
+  }
   const worldSrcE3 = readFileSync(resolve(ROOT, 'src/render/world.ts'), 'utf8');
   check(!/import\.meta\.env\.DEV/.test(worldSrcE3) && !/createAirports\(|new RouteLayer\(|new PlaneLayer\(|createRoutePreview\(/.test(worldSrcE3),
     '[E4] world renderer draws only the Linoryt layers (no medallions, tubes or plane models)');
@@ -363,8 +429,8 @@ try {
     check(!previewMesh.visible, 'route preview hides on null');
     const worldSrc = readFileSync(resolve(ROOT, 'src/render/world.ts'), 'utf8');
     const body = worldSrc.slice(worldSrc.indexOf('world.projectAirport = '), worldSrc.indexOf('return world;'));
-    check(/project\(city\.lon, city\.lat, 1\.01, point\)/.test(body) && /project\(city\.lon, city\.lat, 1\.01, point\)/.test(worldSrc.slice(worldSrc.indexOf('pick(x, y)'))),
-      'projectAirport measures the same point as pick() (altitude 1.01)');
+    check(/project\(city\.lon, city\.lat, SURFACE_ANCHOR_ALTITUDE, point\)/.test(body) && /project\(city\.lon, city\.lat, SURFACE_ANCHOR_ALTITUDE, point\)/.test(worldSrc.slice(worldSrc.indexOf('pick(x, y)'))),
+      'projectAirport measures the same point as pick() (altitude SURFACE_ANCHOR_ALTITUDE = 1.01)');
     check(!/new |\[\]|=> \(\{/.test(body), 'projectAirport allocates nothing (writes into out)');
     stamps.dispose(); routes2.dispose(); preview2.dispose();
   }
