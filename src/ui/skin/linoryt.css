@@ -379,18 +379,28 @@
 
 /* ---- Pause: a paper sheet with the neatline; Resume the one ink block, Save and Menu printed outlines ------------- */
 :root[data-skin="linoryt"] .airway-pause {
-  top: var(--lin-top); height: fit-content; align-self: safe end;
-  padding: 16px 18px 14px; border-left: 0; background: var(--lin-paper); color: var(--lin-ink); box-shadow: var(--lin-neatline);
+  --lin-pause-bottom: calc(var(--aw-safe-bottom) + 104px);
+  top: var(--lin-top); height: fit-content; align-self: safe end; bottom: var(--lin-pause-bottom);
+  /* [night-49a] Last resort, after the compact layouts below: never past the screen; the sheet scrolls instead. */
+  max-height: calc(100% - var(--lin-top) - var(--lin-pause-bottom)); overflow-y: auto; overscroll-behavior: contain;
+  /* A column whose summary gives way first: where five or six rows do not fit a short portrait phone, the summary
+     scrolls inside the sheet and Resume, Save and Menu stay whole on screen. */
+  flex-direction: column;
+  padding: 14px 18px 12px; border-left: 0; background: var(--lin-paper); color: var(--lin-ink); box-shadow: var(--lin-neatline);
   font-family: var(--skin-face-text);
 }
-:root[data-skin="linoryt"] .airway-pause h2 { font: 800 var(--airway-font-title) / 1.1 var(--skin-face-display); }
-:root[data-skin="linoryt"] .airway-pause__summary { border-top: 1.5px solid var(--lin-ink); }
+:root[data-skin="linoryt"] .airway-pause:not([hidden]) { display: flex; }
+:root[data-skin="linoryt"] .airway-pause h2 { margin-bottom: 0; font: 800 var(--airway-font-title) / 1.1 var(--skin-face-display); }
+:root[data-skin="linoryt"] .airway-pause > * { flex: none; }
+:root[data-skin="linoryt"] .airway-pause__summary {
+  border-top: 1.5px solid var(--lin-ink); flex: 0 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+}
 :root[data-skin="linoryt"] .airway-pause__summary dt,
-:root[data-skin="linoryt"] .airway-pause__summary dd { border-bottom: 1px solid var(--lin-ink-dim); }
+:root[data-skin="linoryt"] .airway-pause__summary dd { padding: 3px 0; border-bottom: 1px solid var(--lin-ink-dim); }
 :root[data-skin="linoryt"] .airway-pause__summary dt { color: var(--lin-ink-dim); font-weight: 600; }
 :root[data-skin="linoryt"] .airway-pause__summary dd { font: 700 var(--airway-font-body) / 1.3 var(--skin-face-text); }
 :root[data-skin="linoryt"] .airway-pause__button {
-  border: 2px solid var(--lin-ink); background: var(--lin-paper); color: var(--lin-ink);
+  padding: 10px; border: 2px solid var(--lin-ink); background: var(--lin-paper); color: var(--lin-ink);
   font: 800 var(--airway-font-body) / 1.15 var(--skin-face-display);
 }
 :root[data-skin="linoryt"] .airway-pause__button:active { background: var(--lin-paper-deep); }
@@ -398,15 +408,34 @@
 :root[data-skin="linoryt"] .airway-pause__button--primary:active { background: var(--lin-ink); color: var(--lin-paper); }
 :root[data-skin="linoryt"] .airway-pause__button:focus-visible { outline: 3px solid var(--lin-red); outline-offset: 2px; }
 :root[data-skin="linoryt"] .airway-pause__status { color: var(--lin-ink-dim); }
+/* [night-49a] No empty line kept for the save note: it takes its line when Save answers. */
+:root[data-skin="linoryt"] .airway-pause__status:empty { display: none; }
 /* Landscape phone: under the top-left margin, left of the dock column (132 px + its 4 px rule). */
 :root[data-skin="linoryt"]:has(.airway-hud[data-layout='landscape']) .airway-pause {
   left: calc(var(--aw-safe-left) + 12px); right: calc(var(--aw-safe-right) + 148px); width: auto; max-width: 420px; margin: 0;
-  bottom: calc(var(--aw-safe-bottom) + 12px);
+  --lin-pause-bottom: calc(var(--aw-safe-bottom) + 12px);
 }
 /* Foldables and tablets keep the dock along the bottom: the sheet stands above it, centred. */
 :root[data-skin="linoryt"]:has(.airway-hud[data-layout='foldable']) .airway-pause {
   left: calc(var(--aw-safe-left) + 12px); right: calc(var(--aw-safe-right) + 12px); width: auto; margin: 0 auto;
-  bottom: calc(var(--aw-safe-bottom) + 112px);
+  --lin-pause-bottom: calc(var(--aw-safe-bottom) + 112px);
+}
+/* [night-49a] Landscape phone (the HUD's landscape layout: under 600 px tall) with the summary shown (400 px and taller,
+   text under 130 %): the stacked sheet with five or six summary rows ran 5 px past a 412 px screen. The summary stands
+   on the left and the three actions in a column on the right, next to the dock and the right thumb, so the sheet is
+   only as tall as its summary. */
+@media (orientation: landscape) and (min-height: 400px) and (max-height: 599px) {
+  :root[data-skin="linoryt"]:not([data-airway-text-scale="130"], [data-airway-text-scale="150"]) .airway-pause:not([hidden]) {
+    display: grid; max-width: 640px; column-gap: 14px; align-items: start;
+    grid-template-columns: minmax(0, 1fr) minmax(136px, 172px);
+    grid-template-areas: 'title title' 'summary resume' 'summary row' 'status status';
+    grid-template-rows: auto auto 1fr auto;
+  }
+  :root[data-skin="linoryt"]:not([data-airway-text-scale="130"], [data-airway-text-scale="150"]) .airway-pause > h2 { grid-area: title; }
+  :root[data-skin="linoryt"]:not([data-airway-text-scale="130"], [data-airway-text-scale="150"]) .airway-pause__summary { grid-area: summary; }
+  :root[data-skin="linoryt"]:not([data-airway-text-scale="130"], [data-airway-text-scale="150"]) .airway-pause__button--primary { grid-area: resume; }
+  :root[data-skin="linoryt"]:not([data-airway-text-scale="130"], [data-airway-text-scale="150"]) .airway-pause__row { grid-area: row; grid-template-columns: 1fr; }
+  :root[data-skin="linoryt"]:not([data-airway-text-scale="130"], [data-airway-text-scale="150"]) .airway-pause__status { grid-area: status; }
 }
 /* Where the band is short the summary gives way (the top margin and the notes still show it): a landscape phone under
    400 px, and short screens at the large text steps. */
