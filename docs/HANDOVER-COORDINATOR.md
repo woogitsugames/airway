@@ -197,6 +197,8 @@ commitach.
 - 8.11 ~06:40: scalone #323 (ext: ograniczony ruch w renderze), #324 (ext: papierowe niebo od 1. klatki), #326 (49a: pauza mieści się wszędzie, tablica otwiera się na górze, sprzątnięte `--skin`; gameover-contracts 17/17), #325 (GPT-12 fala DE, D-306, `test:i18n-drafts`, 117 kroków fast). dev = main = 15308a1.
 - Agenci: 51a (GPT-13 + GPT-14: FR i ES na wzór DE), 52a (run-timeline:stub 1 px przy kartach; `coverage:fast` pod V8; raport 640×360; pełny test:ci). Dalej: GPT-15 (PT-BR), U7 po telefonie właściciela, Q-92 (rekomendacja A) czeka na właściciela.
 
+- 8.11 ~07:30: scalone #327 (ext: rzeźba jako ton grawerski, D-307) i #328 (GPT-13/14 FR+ES, przenumerowane D-307 → D-308). dev = main = 026340e. Agenci: 52a (w toku), 53a (GPT-15 PT-BR). Pytanie z #328: FR „vous” (rekomendacja: zostawić). Po 53a: U7 (po telefonie), ewentualnie Q-92 A, jeśli brak odpowiedzi.
+
 ## Kolejka
 - Najpierw: PR-y od GPT (jeśli są), potem zadania z paczki GPT, których GPT nie wziął (te same opisy nadają się dla
   agentów Claude), w kolejności z pliku (01, 02, 05, 06, 20, potem 03, 04, 08, 09, 11…).
