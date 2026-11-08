@@ -310,7 +310,9 @@
 :root[data-skin="linoryt"] .lin-br + .airport-bubble__front { margin-left: 4px; }
 :root[data-skin="linoryt"] .airport-bubble__surge,
 :root[data-skin="linoryt"] .airport-bubble__front { --aw-surge-ink: var(--lin-ink); --aw-surge-paper: var(--lin-paper); --aw-front-ink: var(--lin-ink); --aw-front-paper: var(--lin-paper); font-family: var(--skin-face-text); }
-:root[data-skin="linoryt"] .airport-bubble__front[data-phase="under"] { background-color: var(--lin-ink); }
+/* [night-58a] A running surge is filled like a front overhead (it printed paper on paper: an empty box, N58a). */
+:root[data-skin="linoryt"] .airport-bubble__front[data-phase="under"],
+:root[data-skin="linoryt"] .airport-bubble__surge[data-phase="active"] { background-color: var(--lin-ink); }
 /* A jam: the note in red (glyphs keep their D-08 colours), the red jam block under it. */
 :root[data-skin="linoryt"] .airport-bubble--jam { background: transparent; color: var(--lin-red); }
 :root[data-skin="linoryt"] .lin-jam {
