@@ -43,6 +43,17 @@ async function mountUpgrade(page, language, variant) {
       import('/src/ui/upgrade/index.ts'), import('/src/i18n/index.ts'), import(threeUrl), import('/src/render/modelPreview.ts')]);
     setLanguage(language);
     document.querySelector('.test-upgrade-host')?.remove();
+    // [night-46a] D-287/D-301: the Linoryt board is a paper page under the HUD's top margin (its bottom edge, measured by
+    // linoryt.ts), so the board is mounted over a paused HUD as in the game, not over the bare menu.
+    if (!document.querySelector('.test-upgrade-hud')) {
+      const { mountHud } = await import('/src/ui/hud/index.ts');
+      const hudHost = document.createElement('div');
+      hudHost.className = 'test-upgrade-hud';
+      hudHost.style.cssText = 'position:fixed;inset:0;pointer-events:none';
+      document.body.prepend(hudHost);
+      mountHud(hudHost, {}).render({ week: 7, day: 3, timeMinutes: 642, passengers: 1284, paused: true, speed: 1, canUndo: true,
+        selectedPlane: 'turboprop', stock: { turboprop: 2, widebody: 0, hub: 0 }, minutesToBoard: 6 * 24 * 60 + 300 });
+    }
     const host = document.createElement('div');
     host.className = 'test-upgrade-host';
     document.body.append(host);

@@ -134,8 +134,9 @@ async function audit(page, screen) {
       if (red.length !== 1) problems.push(`red entries ${red.length}`);
       document.querySelectorAll('.lin-title').forEach((el) => clipped(el, 'entry title'));
     } else {
+      // [night-46a] D-285 L1 / D-301: pause + five dock tags (the globe-view tag went).
       const buttons = [...document.querySelectorAll('.airway-hud button')].filter(shown);
-      if (buttons.length !== 7) problems.push(`HUD buttons ${buttons.length}`);
+      if (buttons.length !== 6) problems.push(`HUD buttons ${buttons.length}`);
       buttons.forEach(target);
       const tags = [...document.querySelectorAll('.airway-dock__tag')];
       const pass = document.querySelector('.airway-pass');

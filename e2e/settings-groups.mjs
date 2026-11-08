@@ -16,9 +16,9 @@ const cases = [
 ];
 const GROUPS = [
   ['settings-group-game', { en: 'Game', pl: 'Gra' }, ['select', 'select', '[data-testid="settings-airline"] select']],
-  // [night-11ai] G8 (D-172) added the globe-view select to Display: three selects (globe view, graphics, text size).
-  // [night-29b] D-283/D-285 U4: the Linoryt preview (--skin=linoryt) has no globe view (Satelita and Mapa leave): two.
-  ['settings-group-display', { en: 'Display', pl: 'Obraz' }, [...(SKIN ? [] : ['select']), 'select', 'select', '[data-testid="settings-colorblind"]', '[data-testid="settings-reduce-motion"]']],
+  // [night-11ai] G8 (D-172) added the globe-view select to Display; [night-46a] D-283/D-285, D-301: it went with
+  // Satelita and Mapa, so two selects (graphics, text size).
+  ['settings-group-display', { en: 'Display', pl: 'Obraz' }, ['select', 'select', '[data-testid="settings-colorblind"]', '[data-testid="settings-reduce-motion"]']],
   ['settings-group-sound', { en: 'Sound and touch', pl: 'Dźwięk i dotyk' },
     ['[data-testid="settings-sound"]', '[data-testid="settings-music"]', '[data-testid="settings-haptics"]']],
   ['settings-group-help', { en: 'Help', pl: 'Pomoc' }, ['[data-testid="settings-tutorial-replay"]', '[data-testid="settings-solar-time"]', '[data-testid="settings-licenses"]', '[data-testid="settings-privacy"]', '[data-testid="settings-terms"]', '[data-testid="settings-publisher"]']],
