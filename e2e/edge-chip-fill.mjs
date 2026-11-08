@@ -5,7 +5,7 @@
 // airports leave the screen) and every 2 h for 12 h after that (until the run closes), every visible chip is checked against the run's waiting count and capacity.
 import { performance } from 'node:perf_hooks';
 import {
-  withBrowser, newGamePage, gameUrl, SKIN, RENDER, assertRender, waitForScreen, assert, clickTestId, saveDiagnostics, waitForBoardModels,
+  withBrowser, newGamePage, gameUrl, RENDER, assertRender, waitForScreen, assert, clickTestId, saveDiagnostics, waitForBoardModels,
 } from './browser.mjs';
 // [night-44a] `test:e2e:edge-chip-fill:stub` (--render=stub): chips are DOM placed from the real camera/projection and
 // the wheel zoom goes to the same orbit camera, so the stub world (D-254) gives the same audit; time already passes
@@ -63,7 +63,7 @@ async function audit(page) {
       if (!aria.includes(String(domCap)) || !aria.includes(String(domTaken))) problems.push(`chip ${code}: label "${aria}" misses ${domTaken}/${domCap}`);
     }
     return { chips, filled, high, problems };
-  }, SKIN === 'linoryt' ? 'rgb(179, 56, 35)' : 'rgb(200, 53, 42)');
+  }, 'rgb(179, 56, 35)'); // [night-49a] Linoryt red (--lin-red), the only skin since D-301
 }
 
 async function journey(page, seed, width, height) {

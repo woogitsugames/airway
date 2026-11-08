@@ -3,8 +3,8 @@
 // the week-1 and week-2 boards (week 2 carries the tall hub-expansion label) in PL/EN: at 360×640 nothing scrolls
 // and all three labels lie inside the viewport below the boarding pass; [night-08e] the same at 320×568.
 import { performance } from 'node:perf_hooks';
-// [night-29a] --skin=linoryt; [night-44a] --render=stub (`test:e2e:board-short:stub`): the board is DOM over the HUD, so
-// the stub world (D-254) measures the same layout. gameUrl() is skinUrl() on the real renderer.
+// [night-44a] --render=stub (`test:e2e:board-short:stub`): the board is DOM over the HUD, so the stub world (D-254)
+// measures the same layout.
 import { withBrowser, newGamePage, waitForScreen, assert, clickTestId, saveDiagnostics, gameUrl, assertRender, RENDER, waitForBoardModels } from './browser.mjs';
 import { E2E_SEEDS } from './seeds.mjs';
 

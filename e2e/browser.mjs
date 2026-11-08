@@ -75,17 +75,11 @@ if (!['stub', 'real'].includes(renderChoice)) {
 export const RENDER = renderChoice;
 /**
  * [night-28a] D-284: `--skin=linoryt` loaded the DEV-only Linoryt preview. [night-46a] D-301 (PLAN-LINORYT.md step U5):
- * Linoryt is the shipped skin and the game has no `?skin=` any more, so the flag is refused; `SKIN` stays '' and
- * `skinUrl` / `skinShotsDir` return their input (kept so the suites that still call them need no edit).
+ * Linoryt is the shipped skin and the game has no `?skin=` any more, so the flag is refused. [night-49a] The no-op
+ * helpers it left (`SKIN`, `skinUrl`, `skinShotsDir`) are gone from the suites too.
  */
 if (process.argv.some((arg) => arg.startsWith('--skin=')) || process.env.AW_SKIN) {
   throw new Error('--skin / AW_SKIN: there is no skin preview any more (Linoryt ships, D-301); drop the flag');
-}
-export const SKIN = '';
-
-/** [night-29a] The URL unchanged ([night-46a] D-301: no skin preview any more). */
-export function skinUrl(url) {
-  return url;
 }
 
 /** The game URL for the current `RENDER` mode (unchanged on the real renderer). */
@@ -95,11 +89,6 @@ export function gameUrl(url) {
   target.searchParams.set('render', 'stub');
   target.searchParams.set('clock', 'frozen');
   return target.href;
-}
-
-/** [night-29b] D-284 U4: the shots folder unchanged ([night-46a] D-301: no skin preview any more). */
-export function skinShotsDir(dir) {
-  return dir;
 }
 
 /**

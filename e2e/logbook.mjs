@@ -5,7 +5,7 @@
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
-import { gameUrl, skinShotsDir, withBrowser, newGamePage, waitForScreen, clickTestId, assert, saveDiagnostics, ROOT, waitForBoardModels } from './browser.mjs';
+import { gameUrl, withBrowser, newGamePage, waitForScreen, clickTestId, assert, saveDiagnostics, ROOT, waitForBoardModels } from './browser.mjs';
 import { E2E_SEEDS } from './seeds.mjs';
 
 // [night-12ac] Seed from e2e/seeds.mjs, replayed headless by test:e2e-seeds (in test:fast).
@@ -13,7 +13,7 @@ const SEED = E2E_SEEDS['logbook'].seeds[0];
 
 const STEPS = 4;
 const started = performance.now();
-const SHOTS = skinShotsDir(resolve(ROOT, 'docs/shots/n10n')); // [night-29b] U4: --skin=linoryt keeps them out of docs/
+const SHOTS = resolve(ROOT, 'docs/shots/n10n');
 const results = [];
 
 /** Service row: both halves inside the viewport, ≥ 48 px, apart, titles not clipped. [night-23a] Róża (D-257) sets the

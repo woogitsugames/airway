@@ -10,7 +10,7 @@
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
-import { withBrowser, saveDiagnostics, ARTIFACTS, skinUrl } from './browser.mjs'; // [night-29a] --skin=linoryt
+import { withBrowser, saveDiagnostics, ARTIFACTS } from './browser.mjs';
 import { presetLanguage } from '../scripts/lib/harness.mjs';
 import { SCREENS as SHARED_SCREENS, auditScreen, mountScreen } from './screen-fixtures.mjs'; // [night-11ap] shared with text-scale-150
 
@@ -154,7 +154,7 @@ try {
       page.on('pageerror', (error) => errors.push(error.message));
       try {
         await presetLanguage(page, language, { clear: true });
-        await page.goto(skinUrl(url + '?perf=scene'), { waitUntil: 'networkidle' });
+        await page.goto(url + '?perf=scene', { waitUntil: 'networkidle' });
         if (SHARED_SCREENS.includes(screen)) await mountScreen(page, screen, language, { pseudo: false, textScale: SCALE });
         else await mountGameSheet(page, screen, language, SCALE);
         const { problems, seen } = await auditScreen(page, { pseudo: false });
