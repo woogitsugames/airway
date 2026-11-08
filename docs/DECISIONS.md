@@ -3531,3 +3531,27 @@ C "Trasa": a paper route from an airport stamp to the aircraft (too much for 48 
 and `ios/` are untouched. **Status: proposed — the owner picks a variant (or none); the release assets are a separate
 task.**
 
+## D-318 — A release after a stalled frame keeps a due long press; Linoryt's tall Endless slab and paper pages pass their checks (2026-11-08, night 55a)
+**Long press.** `test:e2e:hub-board` failed its 915 × 412 and 412 × 915 map cases (7/9, `locator.waitFor` 3000 ms)
+on the full `test:ci`. Long-animation-frame entries showed one ~440 ms frame with no script and no blocking time
+(SwiftShader presentation) right after the test's `pointerdown`; the 450 ms hold's `pointerup` arrived before the
+next frame, and `advanceTime()` on that up applied the night-08d late-frame deferral ("give queued moves one frame"),
+so the hold was taken as a tap and the board never opened. A release is itself the queued input that deferral waits
+for: `GestureRecognizer` now judges a due long press on a pointer-up at the up's own time (a still finger held past
+350 ms and lifted during a stalled frame opens the board/route menu as on a smooth device; a shorter press stays a
+tap; moves keep the deferral). Two `test:gestures` cases; the e2e suite passed 4 of 4 runs after (4 of 6 runs failed before).
+Rejected: a longer timeout or hold in the test (the board would still be lost on a slow phone).
+**Menu checks.** In Linoryt the Endless entry is the menu's prominent red slab (60 px against 48–52 px for Puzzles;
+mockup `docs/styles/kierunki-2026-11b/png/a-menu.png`), so the night-23a assertion "Endless no taller than Puzzles"
+failed `test:e2e:home-region` and `test:e2e:licence-classes` (real and stub) 0/4. The checks now ask what matters to
+the player: both entries ≥ 48 px and the Endless entry inside the viewport; the home-region line may exceed entry +
+select by less than half a 48 px row (Linoryt keeps 4 px under the slab; an extra row of controls still fails). Menu
+CSS unchanged.
+**Store shots.** `store:shots` stopped at `pl/upgrade-phone: empty frame (dominant 0.83, luma std 70.5, colours 39)`.
+The frame is a full, legible weekly board (waybill + three crates) on Linoryt's opaque paper page (D-301): two inks on
+one paper give 37–47 colours and a dominant share of 0.83–0.94 on 24 of the 60 shots, below the Róża-era limits
+(colours < 60, dominant > 0.85). `checkPixels` now calls a frame empty when its luminance barely varies (std < 8), it
+has under 24 colours, or two of its three horizontal thirds are one flat colour (> 98 %); a page printed only at
+the top or a blank paper frame with its neatline fails, all 60 fresh Linoryt shots and the committed ones pass.
+Noted for U7 (not changed here): on tablet/iPad the weekly board and the game-over report leave their bottom third
+blank paper (bottom third 0.984–0.988 one colour), which a store shot shows as empty space. **Status: in force.**
