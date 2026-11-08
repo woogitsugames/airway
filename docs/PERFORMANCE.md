@@ -289,7 +289,7 @@ page, ≥ 3 per 1.2 s on the menu and in a game.
 | --- | --- | --- | --- | --- | --- |
 | Main JS chunk (largest `dist/assets/*.js`), raw | 1,180 kB (D-252; 1,150 before) | 1,033.8 kB | 1,150.4 kB (1,181.6 before D-252) | 1,132.8 kB (1,157.5 on dev before) | +4.2 % |
 | Main JS chunk, gzip (level 9) | 360 kB (D-252; 340 before) | 306.2 kB | 347.8 kB (353.1 before) | 338.9 kB (350.0 before) | +6.2 % |
-| All CSS | 109 kB (D-258; 90 before) | 70.2 kB | 88.8 kB (105.0 before) | 89.5 kB (unchanged) | +0.6 % |
+| All CSS | 132 kB (D-301 at the Linoryt flip = 129.0 kB + 3 kB, D-297; 109 kB D-258; 90 before) | 70.2 kB | 88.8 kB (105.0 before) | 89.5 kB (unchanged); 129.0 kB at U5 (105.3 before) | +2.3 % |
 | Everything under `dist/` (fonts, land mask, licences, globe textures) | 4,300 kB (D-171) | 3,597.7 kB with G1 globe textures (1,804.8 kB before) | 4,264.1 kB (4,311.5 before) | 4,272.3 kB (4,271.9 before) | +0.6 % |
 
 [night-11ar] D-252: release CSS carries the UI skin values, not the tokens (`scripts/vite-skin-inline.mjs`; `npm run
@@ -308,6 +308,13 @@ release (defined once on `:root` by the kept skin; `REFERENCED_TOKENS` in `scrip
 `roza.css` 22.6 kB, `upgrade.css` 14.5, `gameover.css` 13.4, `menu.css` 10.7, `puzzles/board.css` 9.1, `tutorial.css`
 8.3, `overlay.css` 6.1, `logbook.css` 5.4, `hud.css` 4.8, the rest 14.1. U5 (Linoryt default) projects ~135 kB with
 today's `linoryt.css` (Q-91).
+[night-46a] D-301 (PLAN-LINORYT.md step U5): Linoryt is the shipped skin; `roza.css` and the Diorama comparison are gone
+and the pruner (`scripts/vite-skin-prune.mjs`) works against `linoryt.css`, whose scope is written `:root:root` and
+whose inks (`--lin-*`, one plain `:root`) are constants written out inside the token values. Release CSS **129.0 kB**
+(105.3 before; D-294 projected ~135); the CSS budget becomes 132 kB (measurement + 3 kB, owner D-297). Main JS
+1,167.6 kB raw / 352.2 kB gzip (1,168.8 / 352.2 before: `roza.ts` left, the Linoryt helpers that were DEV-only arrived);
+`dist/` 4,099.5 kB (4,009.0 before: + Besley 800/900 and Schibsted Grotesk WOFF2 with licences, − Alegreya). Next lever:
+`linoryt.css` still names its inks as `var(--lin-*)` in its own rules (~3 kB of references; writing them out is U6).
 
 The app is one chunk on purpose (three.js is about 494 kB of it; splitting puzzles, logbook, leaderboard and
 tutorial would save < 40 kB, R5). Files come from disk in the Capacitor app, so size is not a download cost; the

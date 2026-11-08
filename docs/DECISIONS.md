@@ -3221,3 +3221,39 @@ preset (the relief and night hatches keep 4 px): at zoom 2 the denser sea compet
 (Bay of Biscay, coordinator's review of #312); one constant, no cost. Rejected: lowering the sea contrast only under
 stamps (the terrain shader would need every stamp position), a bigger JS budget. **Status: in force; U5 flips the
 constant.**
+
+## D-301 — The Linoryt flip (U5): Linoryt is the shipped skin and globe; Róża, the Diorama comparison and the globe-view setting go; CSS budget 132 kB (2026-11-08, Claude, night 46a)
+Step U5 of `docs/styles/kierunki-2026-11b/PLAN-LINORYT.md` (D-283, D-284, D-285 L1–L4).
+**What changed.** `index.html` sets `<html data-skin="linoryt">` (theme colour paper `#ECE3CC`); `src/main.ts` calls
+`startLinoryt` on every boot and imports `linoryt.css` last; `?skin=` is gone (both DEV previews: `current` = Diorama,
+`linoryt`). `src/ui/skin/current.css` holds the Linoryt token values (the preview's overrides folded in, the Róża
+palette re-ink written as `--lin-*` inks; two tokens only the Diorama skin read are dropped); `linoryt.css` keeps its
+`:root[data-skin="linoryt"]` scope in source (a release writes it `:root:root`), its inks move to one plain `:root`
+(palette constants, written out in the token values), and it is the structure file of the pruner. Deleted: `roza.css`,
+`roza.ts`, `diorama.css`, Alegreya (font + licence, Settings → Licences now lists Besley and Schibsted Grotesk),
+`test:roza-names` (its fixtures live in `test:note-layout`), the Róża-only tools `e2e/roza-contrast-live.mjs`,
+`e2e/skin-roza-shots.mjs`; `test:e2e:roza-contrast` → `test:e2e:skin-contrast` (Linoryt only). `PREVIEW_FONTS` is
+empty: Besley 800/900 and Schibsted Grotesk ship; their missing glyphs (Besley U+2192/U+202F, Schibsted U+2009/U+202F)
+come from the `--skin-face-*` stacks (`'Besley', 'Atkinson Hyperlegible Next', 'Overpass', serif`), checked by
+`test:glyphs`, so no extra `unicode-range` face is needed. i18n: `roza.*` → `hud.weekLine`, `hud.passengerLine`,
+`hud.dayOf`, `note.fill`, `note.jam`, `dock.undo|turboprop|widebody|hub|speed|in`, `menu.tagline` (PL/EN, limits);
+`roza.weekDay`, `roza.dial`, the satellite/map captions, `hud.globeMode` and `settings.globeMode*` are removed.
+**Globe.** `DEFAULT_GLOBE_LOOK = 'linoryt'` (the one render line, D-300). The globe-view setting (D-172) and the dock's
+globe tag go (D-285 L1: five dock symbols); the UI no longer calls `setGlobeMode` (it stays in `src/render` as a no-op
+for E4 to remove with the textures), a stored `globeMode` is ignored. The notes stand beside the world's own stamp:
+the session hands the overlay `projectAirport` (E2), and `LINORYT_STAMP_PX` is replaced by E2's `STAMP_SIZE_PX` for the
+fallback (an airport the renderer does not know yet).
+**Budgets.** Release CSS 105.3 → **129.0 kB** (D-294 projected ~135); per the owner's D-297 the CSS budget becomes
+**132 kB** (measurement + 3 kB). Main JS 1,168.8 → 1,167.6 kB raw (gzip 352.2 → 352.2): `roza.ts` left and the
+formerly DEV-only Linoryt helpers arrived, so the JS budget (1,180 / 360 kB) is unchanged. `dist/` 4,009.0 →
+4,099.5 kB (fonts in, Alegreya out; budget 4,300 kB; E4 removes ~1.9 MB of photo textures). `test:bundle` keeps its
+"≥ 6 font files named, all present" check (8 are named now).
+**Evidence.** `skin:pixels` (base: origin/dev with the DEV `?skin=linoryt` preview; new: this tree with
+`AW_SKIN_INLINE=1`, i.e. inlined and pruned like a release): 94 of 120 screens pixel-identical; the 24 HUD/pause/weekly-
+board screens differ only by the removed globe tag, the two 915×412 tutorial screens by one-level anti-aliasing (max
+channel difference 1); computed styles differ only in the display stack (Alegreya out, Overpass in) and on elements the
+structure hides (the pruner drops their dead declarations). `test:e2e:text-scale-150` (red on dev at 915×412 for the
+Róża crate) passes 120/120 on the Linoryt board. Store shots are stale until U7 (D-296).
+Rejected: keeping `?skin=linoryt` as a no-op alias (dead code; the e2e harness now refuses `--skin`), removing
+`setGlobeMode` from `src/render` here (ext session, E4), folding the `:root[data-skin="linoryt"]` prefix out of the
+source (the scope keeps the structure file auditable and the pruner's selector match unchanged). **Status: in force.**
