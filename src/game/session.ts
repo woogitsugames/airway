@@ -607,6 +607,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       const contracts = run.mode === 'endless' ? contractsSummary(run.sim.world.contract, run.sim.world.contractHistory) : null;
       void gameOver.show({
         seed: run.seed, initialHash: '', hubId: failure.cityId, hubCode: airportLabel(failure.cityId),
+        hubIsHub: run.sim.world.cities().find((city) => city.id === failure.cityId)?.isHub ?? true, // [night-54a] D-312
         delivered: run.passengers, completedWeeks: Math.floor(failure.tick / TICKS_PER_WEEK),
         ledger: failure.ledger, departures: flights, ...(extra ? { extra } : {}), ...(share ? { share } : {}),
         ...(run.mode === 'puzzle' ? {} : { timeline: runTimelineLoader(run) }), ...(tip ? { tip } : {}),

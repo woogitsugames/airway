@@ -81,7 +81,8 @@
   border-top: 0 !important;
 }
 :root[data-skin="linoryt"] .airway-pass__pause .airway-hud__icon { width: 30px; height: 30px; }
-:root[data-skin="linoryt"] .airway-pass__pause[aria-pressed="true"] { background: var(--lin-red); }
+/* [night-54a] D-312: paused prints as the outline of the block with an ink triangle: red belongs to a jam alone. */
+:root[data-skin="linoryt"] .airway-pass__pause[aria-pressed="true"] { background: var(--lin-paper); color: var(--lin-ink); box-shadow: var(--lin-frame); }
 
 /* ---- Part 3: the dock, a paper margin behind a double print rule ---------------------------------------------------- */
 :root[data-skin="linoryt"] .airway-dock {
@@ -180,9 +181,14 @@
   padding: 14px calc(var(--aw-safe-right) + 20px) calc(var(--aw-safe-bottom) + 10px) calc(var(--aw-safe-left) + 20px);
 }
 /* The double print rule over the index. */
-:root[data-skin="linoryt"] .airway-board::before {
-  content: ''; display: block; height: 4px; margin-bottom: 3px; background: var(--lin-ink); box-shadow: 0 6px 0 -4.5px var(--lin-ink);
+/* [night-54a] D-312: thick line, paper gap, thin line (the shadow it had was spread away: the thin line never printed).
+   When Endless leads the index (`lin-lead`, no saved run) its choice prints over the rule and the red entry under it. */
+:root[data-skin="linoryt"] :is(.airway-board, .lin-lead)::before {
+  content: ''; display: block; height: 0; padding-top: 2.5px; margin: 0 0 4px; border-top: 4px solid; border-bottom: 1.5px solid;
 }
+:root[data-skin="linoryt"] .lin-lead::before { grid-area: 2 / 1 / 3 / -1; margin-top: 2px; }
+:root[data-skin="linoryt"] .lin-lead.lin-lead > .airway-flight { grid-row: 3; }
+@media (orientation: portrait) { :root[data-skin="linoryt"] .airway-board:has(> .lin-lead)::before { display: none; } }
 :root[data-skin="linoryt"] .airway-board__header { display: none; }
 :root[data-skin="linoryt"] .airway-flight {
   display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 52px; padding: 6px 0;
@@ -221,6 +227,9 @@
   font: 700 calc(14px * var(--airway-text-scale-dense))/1.2 var(--skin-face-text); text-align: right;
 }
 :root[data-skin="linoryt"] .airway-flight__licence { border: var(--lin-rule) solid var(--lin-ink); padding: 0 22px 0 8px; }
+:root[data-skin="linoryt"] .airway-flight__region-cell { align-items: center; gap: 4px; }
+:root[data-skin="linoryt"] .airway-flight__region-cell > .airway-flight__region { field-sizing: content; padding-left: 4px; }
+:root[data-skin="linoryt"] .lin-choice { text-align: right; font: 600 calc(14px * var(--airway-text-scale-dense))/1.2 var(--skin-face-text); }
 /* Settings and the logbook share the last line of the index; on a narrow screen or at large text they stack. */
 :root[data-skin="linoryt"] .airway-board__service { border-top: 0; column-gap: 0; grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); }
 :root[data-skin="linoryt"] .airway-board__service .lin-title { max-width: none; }
@@ -236,7 +245,9 @@
     padding: calc(var(--aw-safe-top) + 8px) calc(var(--aw-safe-right) + 16px) calc(var(--aw-safe-bottom) + 8px) 16px;
     border-left: 4px solid var(--lin-ink); overflow-y: auto;
   }
-  :root[data-skin="linoryt"] .airway-board::before { display: none; }
+  /* The column's edge is the double rule: the thick border, a paper gap, the thin line. */
+  :root[data-skin="linoryt"] .lin-lead::before { display: none; }
+  :root[data-skin="linoryt"] .airway-board::before { position: absolute; inset: 0 auto 0 3px; height: auto; padding: 0; margin: 0; border: 0; border-left: 1.5px solid; }
   :root[data-skin="linoryt"] .airway-flight { min-height: 48px; padding: 4px 0; }
 }
 :root[data-airway-motion="reduce"][data-skin="linoryt"] .lin-day__now { transition: none; }
@@ -636,11 +647,12 @@
   background: var(--lin-red); color: var(--lin-paper); font: 900 calc(18px * var(--airway-text-scale-title))/1 var(--skin-face-display);
   font-variant-numeric: tabular-nums;
 }
-/* A jam glyph cut out of the block: the octagon of a hub (shape, not only the red). */
+/* A jam glyph cut out of the block: the failing airport's stamp, a hub's octagon or a square (shape, not only the red). */
 :root[data-skin="linoryt"] .lin-hub::before {
   content: ''; width: 14px; height: 14px; flex: none; background: currentColor;
   clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%);
 }
+:root[data-skin="linoryt"] .lin-hub--airport::before { width: 12px; height: 12px; clip-path: none; }
 :root[data-skin="linoryt"] .airway-go-map { border: 2px solid var(--lin-ink); background: var(--lin-paper); color: var(--lin-ink); font-weight: 800; }
 :root[data-skin="linoryt"] :is(.airway-go-map, .airway-go-mapback):focus-visible { outline: 3px solid var(--lin-red); }
 :root[data-skin="linoryt"] .airway-go-board,

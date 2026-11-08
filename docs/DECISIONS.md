@@ -3426,3 +3426,25 @@ lists review notes per field of `docs/store/pt-br.md` (unchanged), incl. the sta
 Róża alt texts that U7 rewrites from the new EN (D-296; the order predates D-301, so the notes read Linoryt as
 shipped); it writes no final store copy. Rejected: a `pt-br.json` file name (a second code for one language), the
 store's loanword "widebody" in the catalog (left to the reviewer). **Status: in force (texts await native review).**
+
+## D-312 — Linoryt UI audit against the frames: the index's double rule, the labelled home-region choice over it, no red on the paused control, the report's stamp follows the airport (2026-11-08, Claude, night 54a)
+The shipped DOM UI (D-301, D-305) compared with the owner-approved frames `docs/styles/kierunki-2026-11b/png/a-game.png`
+and `a-menu.png` on the real renderer and the stub screen audit (HUD top, dock, notes, edge chips, menu, sheets, weekly
+board, pause, report, settings, logbook, puzzles). **Fixed (UI side).** (1) The menu index's double print rule printed
+as one thick line: its thin line was a box shadow whose negative spread was larger than the 4 px rule, so it never
+showed. Now a border pair (4 px, 2.5 px paper, 1.5 px); in landscape the index column's left edge is the same double
+rule (thick border, gap, thin line), like the dock column. (2) As in the frame ("Tryb: losowy świat ▾" over the rule),
+the Endless choice prints **above** the double rule and the red entry under it when Endless leads the index (no saved
+run; with Continue the rule stays on top), and the bare "Losowy ▾" gets its printed label (`menu.homeRegion`, existing
+key, aria-hidden: the select keeps its aria-label; the select is sized to its value with `field-sizing: content`, wider
+where a WebView lacks it). (3) The paused HUD control was a red block: red belongs to a jam alone (KIERUNKI.md A, the
+screen audit's "red only on danger"). Paused now prints as the block's outline with the ink triangle (state by shape
+and fill). (4) The report's red block cut a hub octagon for every failing airport, which at 14 px read as a dot and
+named a non-hub a hub; it now cuts the failing airport's stamp of the map (octagon for a hub, square otherwise;
+`GameOverSnapshot.hubIsHub`, set in `src/game/session.ts`). **Kept on purpose (not drifts):** note names on a paper
+ground and passenger glyphs in their D-08 colours (PLAN-LINORYT.md U2/U6: contrast and CVD on ochre and the hatch), five
+dock cells (globe-view slot removed in D-301), the ink rule under the HUD top margin (it separates the margin from a
+paper sky in landscape). **Left for the render session** (listed in the PR): relief hatching reads as long uniform
+diagonal strokes over all land instead of tone on the slopes away from the light; sea lines on the menu disc are wide
+paper bands; small paper diamonds beside stamps that the frame does not have. Shots `docs/shots/n54a/` (before/after,
+real renderer, PL 412×915 and 915×412). **Status: in force.**
