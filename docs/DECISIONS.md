@@ -3714,3 +3714,12 @@ the PL/EN board strings and the HUD slot); `dist/` 1,997.3 → 1,998.5 kB. The C
 `test:e2e:board:stub` (new, ci: 12 sizes × PL/EN incl. notch and 150 %), `test:e2e:reduce-motion-game:stub` (+2 board
 cases: no flap fold under reduce motion), shots `docs/shots/t1/` (`npm run shots:board`, real renderer).
 **Status:** preview; the owner sees it with T1+R1 (plan §7 gate) before T2.
+
+## D-326 — App mark: I-1 "Węzeł" (double hub ring + yellow D-08 bow-tie glyph) (owner, 2026-11-08)
+The owner rejected the earlier marks (D-317 proposals A/B/C, 2026-11b) and chose, from the six 2026-11c sketches
+(`docs/styles/kierunki-2026-11c/znak/`, ZNAK-2026-11c.md), the variant **I-1 Węzeł**: the hub's double ring in paper
+cream with one yellow D-08 glyph inside, on near-black. Reasons: the most legible at 48 px and in the Android circular
+mask, and the most "ours" (hub and passenger glyph are the game's own vocabulary, no globe or plane clipart). Rejected:
+I-2 (noisy at small sizes), I-3 (heavy), II-1…II-3 (airport-sign wordmarks; kept as a store-art spare for II-1). The
+release icons and splash screens (Android adaptive icon with safe area, iOS) are a separate task (plan step Z).
+**Status: in force (owner, 8.11).**
