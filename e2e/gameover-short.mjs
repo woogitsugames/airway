@@ -51,12 +51,15 @@ try {
         await checkActions(page, label + ' (3 departures)', width, height, 3);
         await page.screenshot({ path: resolve(SHOTS, `gameover-4-${language}-${width}x${height}.png`) });
         // [night-58a] N58a: an Endless run with a home region and licence class III adds two fact lines; at 360×640 PL
-        // the report opened scrolled (13 of 46 px) with the sign cut off. (320×568 still scrolls 15 px: left open.)
-        if (width >= 360) {
-          await page.goto(url + '?preview=gameover&region=EUS&licence=3&contracts=00', { waitUntil: 'load' });
+        // the report opened scrolled (13 of 46 px) with the sign cut off. [night-60a] 320×568 too (it scrolled 15 of
+        // 35 px PL, 12 of 19 EN), with two and with six contracts (the contracts row then wraps under the milestones).
+        for (const contracts of ['00', '110100']) {
+          await page.goto(url + `?preview=gameover&region=EUS&licence=3&contracts=${contracts}`, { waitUntil: 'load' });
           await page.getByTestId('game-over').waitFor({ timeout: 8000 });
           await page.waitForTimeout(800);
-          await checkActions(page, label + ' (3 departures, region, class III)', width, height, 3);
+          await checkActions(page, label + ` (3 departures, region, class III, ${contracts.length} contracts)`, width, height, 3);
+          const over = await page.evaluate(() => { const o = document.querySelector('.airway-go-overlay'); return o.scrollHeight - o.clientHeight; });
+          assert(over <= 0, `report scrolls ${over} px with region, class III and ${contracts.length} contracts`);
         }
         if (errors.length) throw new Error(`Browser errors: ${errors.join('; ')}`);
         results.push({ label, status: 'PASS' });

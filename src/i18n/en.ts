@@ -41,6 +41,7 @@ export const en = {
   'route.atc.distance': '{distance} km · {from} → {to}',
   'route.atc.overRange': 'Too far for {aircraft}',
   'route.atc.stopover': 'Choose a city along the way',
+  'route.atc.undoRefused': 'Can’t undo — {code} would jam at {time}', // [night-60a] D-321
   'route.menu.label': 'Route actions',
   'route.menu.remove': 'Remove',
   'route.menu.shorten': 'Shorten',

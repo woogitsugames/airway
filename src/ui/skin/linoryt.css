@@ -852,6 +852,7 @@
   :root[data-skin="linoryt"] .airway-atc-strip:not(.airway-first-time) .airway-atc-field { border-right: 0; border-bottom: 1px solid var(--lin-ink-dim); }
   :root[data-skin="linoryt"] .airway-atc-strip:not(.airway-first-time) .airway-atc-field:last-child { border-bottom: 0; }
 }
+:root[data-skin="linoryt"] .airway-atc-strip[data-notice] .airway-atc-field { border: 0; } /* [night-60a] D-321: one-field notice */
 :root[data-skin="linoryt"] .airway-first-time__ok {
   border-left: 0; background: var(--lin-ink); color: var(--lin-paper); font-weight: 800; margin: 2px 2px 2px auto; min-height: 48px;
 }

@@ -445,6 +445,19 @@
       "translation": "Wähle eine Stadt auf dem Weg"
     },
     {
+      "key": "route.atc.undoRefused",
+      "en": "Can’t undo — {code} would jam at {time}",
+      "pl": "Nie da się cofnąć — {code} zapchałoby się o {time}",
+      "context": "Route drawing, airport-paper ATC hint and route actions. — D-321",
+      "maxLength": 52,
+      "placeholders": [
+        "code",
+        "time"
+      ],
+      "pluralParams": [],
+      "translation": ""
+    },
+    {
       "key": "route.menu.label",
       "en": "Route actions",
       "pl": "Działania na trasie",

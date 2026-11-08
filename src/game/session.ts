@@ -34,7 +34,7 @@ import { airportLabel } from '../ui/airportLabel'; // [night-05] D-68
 import { AudioCueMapper, cueRun } from './audioCues'; // [night-03]
 import { FillReadings } from './fillTrend'; // [night-11af] R4c
 import { localClock, surgeKey, surgeMark } from './surge'; // [night-12bb] R2i
-import { frontKey, frontMarks, frontSummary } from './weather'; // [night-12bd] R2j
+import { frontKey, frontMarks, frontSummary, localClockMinute } from './weather'; // [night-12bd] R2j; [night-60a] the refused-Undo time
 import { HubDepartureLog, boardOpensOnTap } from './hubBoard'; // [night-11ag] R4d
 import { mountHubBoard } from '../ui/hubBoard';
 import type { World, ScreenPoint } from './world';
@@ -308,8 +308,14 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       return accepted;
     },
     undo: () => {
-      const previous = run.undo();
+      const previous = run.tryUndo();
       if (!previous) return;
+      if (!(previous instanceof EndlessRun)) {
+        // [night-60a] D-321 (Q-93 → A): the re-simulation would end the run, so the tap is refused and the run is
+        // exactly as before; the strip says which airport would jam and when (the HUD's home clock).
+        atc.notice(t('route.atc.undoRefused', { code: previous.cityId, time: localClockMinute(previous.localMinute) }));
+        return;
+      }
       run = previous;
       previousPlanes = [];
       fillReadings.hourly(run); // [night-11af] an undo across the hour boundary starts the trend history over
@@ -318,7 +324,8 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       syncHubBoard();
       syncUpgrade(true); // [night-07x] if the world is back on an open weekly board, show it (never a frozen clock)
       // [night-58a] An Undo whose re-simulation ends the run (Q-93) shows the report at once. Before, the game screen
-      // stayed up over a finished run until the clock stepped again: on a frozen clock, for good.
+      // stayed up over a finished run until the clock stepped again: on a frozen clock, for good. [night-60a] Since
+      // D-321 the Sim refuses such an Undo; this stays as the safety net should a rule change let one through.
       if (run.failed) afterTicks();
     },
     preview: (model) => world.preview(model),

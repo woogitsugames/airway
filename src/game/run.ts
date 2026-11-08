@@ -20,6 +20,8 @@ import { surgesSummary } from './surgesSummary'; // [night-37a] D-295
 import { MilestoneTracker, milestoneView, type MilestoneId, type MilestoneView } from './milestones'; // [night-12ax] R1n
 
 export type AircraftType = 'turboprop' | 'widebody';
+/** [night-60a] D-321: an Undo refused because its re-simulation jams `cityId` at `localMinute` (home clock), `tick`. */
+export interface UndoRefusal { readonly cityId: string; readonly localMinute: number; readonly tick: number }
 /** [night-12ap] Longest single frame counted as real play time (seconds). */
 const MAX_PLAY_FRAME_S = 0.5;
 /** [night-12ba] R2k, D-247: new Endless runs carry the weekly contract (one switch, should the owner hold it back). */
@@ -193,11 +195,24 @@ export class EndlessRun {
     if (this.sim.world.status === 'upgrade' && this.sim.schedulingSpeed !== 0) this.sim.tick();
   }
 
-  /** Undo in place; returns this run (or null when nothing can be undone). */
+  /** Undo in place; returns this run (or null when nothing can be undone, or the Undo was refused). */
   undo(): EndlessRun | null {
-    if (!this.sim.undo()) return null;
-    this.revisionValue++;
-    return this;
+    const result = this.tryUndo();
+    return result instanceof EndlessRun ? result : null;
+  }
+
+  /**
+   * [night-60a] D-321 (Q-93 → A): undo() that also says why a tap changed nothing because it would end the run: the
+   * airport that would jam and when, on the home clock the HUD shows. The run is then exactly as before the tap.
+   */
+  tryUndo(): EndlessRun | UndoRefusal | null {
+    const result = this.sim.tryUndo();
+    if (result.done) {
+      this.revisionValue++;
+      return this;
+    }
+    if (result.reason !== 'jam') return null;
+    return { cityId: result.cityId, tick: result.tick, localMinute: result.minute + this.homeOffsetMinutes };
   }
 
   drainEvents(): RunEvent[] {
