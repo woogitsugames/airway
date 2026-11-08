@@ -126,7 +126,9 @@ export function mountRouteHandles(host: HTMLElement): {
         element.hidden = false;
         element.style.left = handle.x + 'px';
         element.style.top = handle.y + 'px';
-        // [night-11q] R5c: quiet hollow marker at rest; the full yellow diamond only on the route in hand.
+        // [night-57a] D-319: the printed tail points away from the airport, along the route it continues.
+        element.style.setProperty('--aw-handle-turn', handle.angle.toFixed(3) + 'rad');
+        // [night-11q] R5c: quiet at rest; the bold end bar only on the route in hand (D-319).
         const active = handle.routeId === activeRouteId;
         if (element.classList.contains('airway-route-handle--active') !== active) element.classList.toggle('airway-route-handle--active', active);
       }
