@@ -297,8 +297,10 @@ function reportTabs(causesList: HTMLElement, load: NonNullable<GameOverSnapshot[
   let loaded = false;
   const select = (showTimeline: boolean): void => {
     if (showTimeline && !timeline.hidden) return;
-    // Same height for both panels: the report and its actions never move when switching.
-    const height = Math.max(causesList.offsetHeight, timeline.offsetHeight);
+    // Same height for both panels: the report and its actions never move when switching. [night-52a] Fractional
+    // layout heights (getBoundingClientRect), not offsetHeight: offsetHeight rounds to whole pixels, so a 140.4 px
+    // causes panel became a 140 px timeline and the actions below moved by 1 px at 412×915 and 360×640.
+    const height = Math.max(causesList.getBoundingClientRect().height, timeline.getBoundingClientRect().height);
     causesTab.setAttribute('aria-selected', String(!showTimeline));
     timelineTab.setAttribute('aria-selected', String(showTimeline));
     causesList.hidden = showTimeline;
