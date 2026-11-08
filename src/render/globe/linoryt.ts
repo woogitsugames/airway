@@ -23,6 +23,16 @@ export const HATCH_BASE_PERIOD_DEG = 22.5;
 /** §2 Screen spacing of the finer octave in CSS px: [min, 2·min). `saver` keeps the lines wider (one octave less). */
 export const HATCH_MIN_SPACING_PX = 4;
 export const HATCH_SAVER_MIN_SPACING_PX = 6;
+/**
+ * D-307: the relief hatch is set on the device grid (closer to the engraving of the frame): its finer octave keeps at
+ * least this many device pixels and CSS pixels (4 device px at DPR 1, 2.5 CSS px = 5–7.5 device px at DPR 2–3).
+ */
+export const HATCH_RELIEF_MIN_DEVICE_PX = 4;
+export const HATCH_RELIEF_MIN_CSS_PX = 2.5;
+/** Minimum CSS spacing of the relief hatch at a DPR (the `hatchOctaves` argument mirroring `awHatchTone`). */
+export function reliefMinSpacingCss(dpr: number): number {
+  return Math.max(HATCH_RELIEF_MIN_DEVICE_PX / dpr, HATCH_RELIEF_MIN_CSS_PX);
+}
 /** [ext-04 E3] D-300: open-sea parallels are one step sparser on every preset (they competed with stamps and notes). */
 export const HATCH_SEA_MIN_SPACING_PX = 6;
 /** §9 No line pattern may reach the screen with a period below this many device pixels (it fades to its mean). */
