@@ -4,6 +4,7 @@ import { crateCountdown } from './crate-countdown';
 import type { HudActions, HudState, PlaneType } from './types';
 import { ARIA_KEYSHORTCUTS } from '../../input/keyboard';
 import { linoryt, linorytDockLabel, linorytIcon } from '../skin/linoryt'; // [night-28a] D-284; [night-46a] D-301: cut symbols
+import { setClass } from '../classes'; // [night-59a] D-321
 
 type TagId = 'undo' | PlaneType | 'hub' | 'speed';
 // [night-46a] D-285 L1, D-301: five symbols; the globe-view tag (G8, D-172) left with Satelita and Mapa.
@@ -133,11 +134,11 @@ export function createTagDock(root: HTMLElement, actions: HudActions): { render(
         const waiting = disabled && (isPlane || name === 'hub') && countdown !== null;
         const shown = waiting ? countdown.short : nextCount;
         if (count && count.textContent !== shown) count.textContent = shown;
-        if (button.classList.contains('is-countdown') !== waiting) button.classList.toggle('is-countdown', waiting);
+        if (button.classList.contains('is-countdown') !== waiting) setClass(button, 'is-countdown', waiting);
         if (button.disabled !== disabled) button.disabled = disabled;
-        if (button.classList.contains('is-empty') !== disabled) button.classList.toggle('is-empty', disabled);
+        if (button.classList.contains('is-empty') !== disabled) setClass(button, 'is-empty', disabled);
         const chosen = isPlane && !disabled && name === state.selectedPlane;
-        if (button.classList.contains('is-selected') !== chosen) button.classList.toggle('is-selected', chosen);
+        if (button.classList.contains('is-selected') !== chosen) setClass(button, 'is-selected', chosen);
         if (isPlane && button.getAttribute('aria-pressed') !== String(chosen)) button.setAttribute('aria-pressed', String(chosen));
         let label = name === 'undo' ? t('hud.undo')
           : name === 'hub' ? t('hud.hubCount', { count: nextCount })

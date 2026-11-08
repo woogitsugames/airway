@@ -12,6 +12,7 @@ import { gameOverMilestones } from '../milestones'; // [night-12ax] R1n
 import type { MilestoneId } from '../../game/milestones';
 import type { ContractsSummary } from '../../game/contractsSummary'; // [night-33a] D-271
 import { linoryt, linorytReportHub } from '../skin/linoryt'; // [night-29a] D-284 U3: Linoryt preview (DEV only)
+import { setClass, setFlagAttribute } from '../classes'; // [night-59a] D-321
 
 export type { WorldIdentity } from './seed';
 export type { GameOverBest, BestStorage } from './storage';
@@ -337,7 +338,7 @@ function reportTabs(causesList: HTMLElement, load: NonNullable<GameOverSnapshot[
  */
 const REPORT_ATTRIBUTE = 'data-gameover-report';
 function markReport(host: Element | null, open: boolean): void {
-  host?.toggleAttribute(REPORT_ATTRIBUTE, open);
+  if (host) setFlagAttribute(host, REPORT_ATTRIBUTE, open);
 }
 
 function buildDialog(
@@ -466,7 +467,7 @@ function buildDialog(
   mapBack.dataset.testid = 'gameover-map-back';
   mapBar.append(element('span', 'airway-go-mapbar-hub', t('gameover.mapHub', { hub: snapshot.hubCode })), mapBack);
   const setMap = (open: boolean): void => {
-    overlay.classList.toggle('is-map', open);
+    setClass(overlay, 'is-map', open);
     markReport(overlay.parentElement, !open); // [night-11k] the map view brings edge chips and the dock back
     content.hidden = open;
     mapBar.hidden = !open;

@@ -8,6 +8,7 @@ import { HUB_BOARD_CAUSE_KEYS, type HubBoardCause, type HubBoardModel } from '..
 import { CURFEW_END_HOUR } from '../sim/params';
 import './skin/current.css'; // [night-11aq] skin tokens read by hubBoard.css
 import './hubBoard.css';
+import { setClass } from './classes'; // [night-59a] D-321
 
 const SVG = 'http://www.w3.org/2000/svg';
 
@@ -133,7 +134,7 @@ export function mountHubBoard(host: HTMLElement, callbacks: { close(): void }): 
         fill.textContent = t('hubBoard.fill', { waiting: model.waiting, capacity: model.capacity });
         sheet.setAttribute('aria-label', t('hubBoard.label', { code: model.code }));
         close.setAttribute('aria-label', t('hubBoard.close'));
-        sheet.classList.toggle('airway-hub-board--jammed', model.jammed);
+        setClass(sheet, 'airway-hub-board--jammed', model.jammed);
         list.replaceChildren(...model.rows.map((row) => {
           const item = document.createElement('li');
           item.className = 'airway-hub-board__row';

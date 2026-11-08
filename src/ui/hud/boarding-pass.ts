@@ -94,7 +94,7 @@ export function createBoardingPass(root: HTMLElement, onTogglePause?: () => void
           pause.innerHTML = linoryt.on ? linorytIcon(nextIcon) : iconSvg(nextIcon); // [night-28a] D-284 cut symbol
           pause.dataset.icon = nextIcon;
         }
-        pause.setAttribute('aria-pressed', String(state.paused));
+        pause.setAttribute('aria-pressed', String(!!state.paused)); // [night-59a] D-321: never "undefined"
         pause.dataset.locale = locale;
       }
     },

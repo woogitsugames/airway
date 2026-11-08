@@ -39,6 +39,7 @@ import { HubDepartureLog, boardOpensOnTap } from './hubBoard'; // [night-11ag] R
 import { mountHubBoard } from '../ui/hubBoard';
 import type { World, ScreenPoint } from './world';
 import { NewAirportMarks } from './newAirports'; // [night-10a]
+import { setClass } from '../ui/classes'; // [night-59a] D-321
 
 /**
  * [night-11m] D-128: at the gameplay zoom and closer (the run opens at 3 of [1, 4]) every on-screen airport carries
@@ -219,7 +220,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
         container.dataset.model = drawn ? 'drawn' : 'none';
       });
     },
-    onHubSelectionMode: (active, hubIds) => { hubSelection = active ? hubIds : []; layer.classList.toggle('is-selecting-hub', active); },
+    onHubSelectionMode: (active, hubIds) => { hubSelection = active ? hubIds : []; setClass(layer, 'is-selecting-hub', active); },
   });
   let upgradeWeek = 0;
 
