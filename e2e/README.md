@@ -23,8 +23,11 @@ import; release bundles must not expose the handle.
 Adapter methods:
 
 - `state()`: `{screen,seed,tick,nextWeekTick,routeCount,aircraftAssignments,snapshotHash}`
-  with an authoritative deterministic hash **independent of view-only state**.
-- `prepareSeed(seed)`: sets the seed **before** the user clicks New Game.
+  with an authoritative deterministic hash **independent of view-only state**, plus optional fields that suites read
+  (`homeRegion`, `licenceClass`, `upgrades`, `curfewClosed`, `curfewDrawn`, `airports`, and the view-only `camera`,
+  which is not in the hash).
+- `prepareSeed(seed, { firstTime? })`: sets the seed **before** the user clicks New Game; `firstTime: true` keeps the
+  first-time cards on in a seeded run (off by default).
 - `advanceTicks(ticks)`: advances real fixed-step simulation and awaits UI settling.
 - `gesture('route'|'plane')`: returns actual viewport pixel points for
   draggable airport-to-airport and dock-to-route interactions; coordinates must
@@ -33,6 +36,10 @@ Adapter methods:
   board for `untilWeek` opens (or the run ends); resolves to `state()`. Used to reach the upgrade screen honestly.
 - `forceHubOverload()`: test-scenario action to trigger the real game-over flow,
   with a real cause report; not a replacement for simulation loss detection.
+- `botStep()` (optional): queues at most one bot decision on the visible run without advancing time, for long
+  real-time play-throughs (`ui:long-play`); resolves to the queued command type or `null`.
+
+`window.aw` itself adds `version: 1` and `ready`; every suite waits for `ready` before calling it.
 
 Stable `data-testid` attributes required on real UI:
 
@@ -91,12 +98,15 @@ opened board on the real renderer can call it the same way.
 ```sh
 npm run test:e2e:smoke
 npm run ui:matrix
-npm run test:e2e:session-stub   # real session on the WebGL-free stub world (~25 s)
+npm run test:e2e:session-stub   # real session on the WebGL-free stub world (~10 s on 4 vCPU, 7 Nov 2026)
 # [night-12bf] the same suites on the stub world (UI/flow only; the plain scripts stay on the real renderer):
 npm run test:e2e:smoke:stub          # = node e2e/smoke.mjs --render=stub (or AW_RENDER=stub)
 npm run ui:matrix:stub               # PNGs to the git-ignored .e2e/matrix-stub/, never docs/shots/matrix/
 npm run test:e2e:edge-chip-tags:stub
 npm run test:e2e:resize:stub         # [night-15b] R4f resize mid-run with a sheet open (stub only: needs the frozen clock)
+npm run test:e2e:pause-reach:stub    # [night-14b] pause sheet reach (stub in test:ci; the plain script uses the real globe)
+npm run test:e2e:gameover-contracts:stub
+npm run test:e2e:linoryt:stub        # DEV-only Linoryt preview (?skin=linoryt) on the stub world
 # [night-44a] 13 more bot-driven/overlay suites as `npm run test:e2e:<suite>:stub` (PNGs of a stub run go to .e2e/stub/<task>/
 # through `shotsDir()`, never docs/shots/): new-airport, pause-summary, run-timeline, edge-chip-airports, edge-chip-fill,
 # board-short, upgrade-picks, undo-after-upgrade, home-region, licence-classes, fill-trend, surge-tag, hub-board

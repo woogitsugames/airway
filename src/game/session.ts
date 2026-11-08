@@ -12,7 +12,7 @@ import {
   type ProjectedCity, type RouteToolCommand,
 } from '../input/routeTool';
 import { createJamHaptics, hapticCommand, hapticNetworkClosed, routeHaptics } from '../platform';
-import { PLANE_TYPES, SIM_TICKS_PER_SECOND } from '../sim/params';
+import { CONGESTION_GRACE_TICKS, PLANE_TYPES, SIM_TICKS_PER_SECOND } from '../sim/params';
 import { TICKS_PER_WEEK } from '../sim/upgrades';
 import { calendarDayAt, calendarWeekAt } from '../sim/clock'; // [task-31]
 import type { PlaneView as PlaneRenderSnapshot } from '../render';
@@ -408,8 +408,10 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       lastHubKey = hubKey;
       world.setCities(cities.map((city) => ({ id: city.id, lon: city.lon, lat: city.lat, hub: city.hub })));
     }
-    world.setHubLoad(cities.filter((city) => city.hub)
-      .map((city) => ({ id: city.id, used: Math.min(city.waiting.length, city.capacity), cap: city.capacity })));
+    // [ext-04 E2/E3] Every airport with the share of its jam grace left (the Linoryt jam zone); the satellite renderer
+    // reads the seat load of the hubs only.
+    world.setHubLoad(cities.map((city) => ({ id: city.id, used: Math.min(city.waiting.length, city.capacity),
+      cap: Math.max(1, city.capacity), jam01: city.jamTicksLeft === null ? null : city.jamTicksLeft / CONGESTION_GRACE_TICKS })));
     for (const city of cities) {
       if (!knownAirports.has(city.id)) {
         knownAirports.add(city.id);

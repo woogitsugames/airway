@@ -829,8 +829,9 @@ Plan: `docs/styles/kierunki-2026-11b/PLAN-LINORYT.md` (one PR per step; ext = gl
       coastline, paper sky, night cross-hatch), `test:hatch-alias`, flicker strip, `perf:scene`; coast field baked at
       load (no PNG), rhumb-line hatches, per-pixel octaves (D-298); shots `docs/shots/ext-04/`, `look-linoryt*/` —
       ext/04-linoryt-e1-globe
-- [ ] **E2 (ext)** stamps (square / octagon / outline / red jam zone + arc), double-line routes, cut plane silhouettes,
-      `projectAirport`, `STAMP_SIZE_PX`, `LINORYT_INKS`
+- [x] **E2 (ext)** stamps (square / octagon / outline / red jam zone + arc), double-line routes, cut plane silhouettes,
+      `projectAirport`, `STAMP_SIZE_PX`, `LINORYT_INKS`; screen-constant quads, one route ribbon, plane SDF atlas
+      drawn at load, `HubLoadView.jam01` (D-299); shots `docs/shots/ext-04-e2/` — ext/04-linoryt-e2-stamps
 - [x] **U2 (agent)** airport notes (Besley name, cut fill ticks, glyph chips, NOWE, jam block), edge chips; D-262…D-268 and
       D-281 behaviour on stamp boxes (`STAMP_SIZE_PX` fallback until E2's `projectAirport`, D-288); `test:note-layout`,
       notes audit in `test:e2e:linoryt:stub`, `--skin=linoryt` for fill-trend, transfer-glyphs, edge-chip-airports /
@@ -851,7 +852,7 @@ Plan: `docs/styles/kierunki-2026-11b/PLAN-LINORYT.md` (one PR per step; ext = gl
       failures of text-scale-150 at 915×412. Passing `pendingHub: false` fixes those but exposes a shipped Róża overflow
       (pseudo-320 crates 12..327 px at 320, nowrap crate heading) → fix with the U5 flip (Róża goes) or a release PR.
       The `tnum` fix also covers the U2 notes and edge chips ("12 , 270 km" → "12,270 km"; shots `docs/shots/31a/u2/`).
-- [ ] **E3 (ext)** the Linoryt look in release builds behind `DEFAULT_GLOBE_LOOK` (still satellite)
+- [x] **E3 (ext)** the Linoryt look in release builds behind `DEFAULT_GLOBE_LOOK` (still satellite); lazy chunks `linoryt-globe` + `linoryt-objects`, main JS +3 kB, open-sea parallels ≥ 6 px (D-300) — ext/04-linoryt-e3-ship
 - [ ] **U5 (agent)** the flip: Linoryt default skin + look; delete Róża and `?skin=current`; i18n renames; CSS budget back
 - [ ] **E4 (ext)** remove Satelita (and Mapa if the owner agrees: open question L2 of PR #285) and the photo textures (−1.9 MB)
 - [ ] **U6 (agent)** D-47 / `test:cvd` on the inks, reduce motion, text scale, notch, `ui:matrix` on the real renderer

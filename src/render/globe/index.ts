@@ -24,6 +24,7 @@ export type { QualityLevel } from './terrain';
 export type { TerrainLodStats } from './lod';
 export type { DecorCullStats } from './decor-cull';
 export type { GlobeLook } from './look';
+export { DEFAULT_GLOBE_LOOK } from './look'; // [ext-04 E3]
 /** [night-04] Decorations thinned by `setDecorDensity` (clouds stay: they carry the sky). */
 const THINNED = new Set(['Conifers', 'BroadleafTrees', 'Rocks']);
 
@@ -143,8 +144,8 @@ export async function createGlobe(scene: Scene, opts: GlobeOptions): Promise<Glo
   const landUrl = opts.landUrl ?? `${import.meta.env.BASE_URL}data/land-50m.json`;
   const mask = await loadLandMask(landUrl, opts.signal);
   if (opts.signal?.aborted) throw new DOMException('Aborted', 'AbortError');
-  // [ext-04 E1] D-283: the Linoryt print (DEV `?look=linoryt` until E3; a release build folds this branch away).
-  if (import.meta.env.DEV && opts.look === 'linoryt') {
+  // [ext-04 E1/E3] D-283: the Linoryt print, in its own chunk (loaded only when this look is drawn).
+  if (opts.look === 'linoryt') {
     const { createLinorytGlobe } = await import('./linoryt-globe');
     return createLinorytGlobe(scene, mask, { quality: opts.quality, sunDirection: opts.sunDirection, signal: opts.signal });
   }

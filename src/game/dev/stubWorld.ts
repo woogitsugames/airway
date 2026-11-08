@@ -7,7 +7,7 @@
 // dots and lines for failure screenshots. main.ts loads this module only behind `import.meta.env.DEV`, so release
 // bundles never contain it (`test:bundle` looks for STUB_WORLD_MARK in dist/).
 import { PerspectiveCamera, Vector3 } from 'three';
-import { GlobeOrbitCamera, type CityView, type QualityPreference, type RouteView, type SafeAreaInsets, type ScreenPoint, type WorldRenderer } from '../../render';
+import { GlobeOrbitCamera, STAMP_SIZE_PX, type AirportScreenBox, type CityView, type QualityPreference, type RouteView, type SafeAreaInsets, type ScreenPoint, type WorldRenderer } from '../../render';
 import { pickSphereNdc, setLatLonVec3 } from '../../render/globe/geo-math';
 import type { FrameState, World } from '../world';
 
@@ -146,6 +146,14 @@ export function createStubWorld(host: HTMLElement, label: string, options: StubW
     canvas, camera, orbit, ready: Promise.resolve(),
     quality: { preset: 'low', pixelRatio: 1, shadowEnabled: false, shadowMapSize: 0, decorDensity: 0 },
     project, pickGlobe,
+    // [ext-04 E2] Spec §8: the stamp box through the same projection; half = STAMP_SIZE_PX / 2.
+    projectAirport(id: string, out: AirportScreenBox): AirportScreenBox {
+      const city = cities.find((item) => item.id === id);
+      if (!city) { out.visible = false; out.half = 0; return out; }
+      project(city.lon, city.lat, 1.01, out);
+      out.half = (city.hub ? STAMP_SIZE_PX.hub : STAMP_SIZE_PX.airport) / 2;
+      return out;
+    },
     drawModelPreview: () => false,
     stats: () => ({ adaptations: [] as string[], curfewAirports: curfew.length }),
     contextLost: () => false,

@@ -3184,3 +3184,40 @@ guards against moiré bands, not against GPU-specific shimmer; the Test Lab game
 for budget phones. Rejected: the spec's PNG + build script (bytes, a second coast source), a global zoom-driven octave
 (lines crowd at 60° N and near the limb), `lon·cos lat` hatches (Pacific seam). **Status: in force for the DEV look;
 E3 lifts the DEV guard.**
+
+## D-299 — Linoryt objects (E2): screen-constant stamps and sprites without depth test, routes as one screen ribbon, the plane atlas drawn at load (2026-11-08, Claude, ext session E2)
+Step E2 of PLAN-LINORYT.md (spec §5–§8), `src/render/linoryt-objects.ts`, picked by `createWorldRenderer` for
+`look: 'linoryt'` behind `import.meta.env.DEV` (release `dist/` byte-identical until E3).
+**Choice.** (1) **Stamps, the jam zone and planes are screen-aligned quads** sized in CSS px in the vertex shader
+(stamps 22 / 30 px, jam zone r = 3 × half, planes 22 / 26 px), drawn **without the depth test** after the routes and
+hidden when the centre is behind the horizon (the same front-facing test as `project()`/`pick()`): at zoom 1 a 30 px
+stamp spans ~4° of ground, so a quad tangent to the sphere would cut into the relief, and a print stamp reads as
+printed on the sheet anyway. Draw order: routes 10, preview 12, planes 15, jam zone 20, stamps 21. (2) **Routes are
+one screen-space ribbon** (ink outer line, paper core; turboprop 5/2 px, widebody 6.5/2.5 px; the horizon test per
+fragment) instead of the tubes with an ink outline and a horizon ghost: one draw for all routes instead of up to six,
+sharp at every zoom, and the width stays constant on screen. New routes draw themselves in 200 ms (instant with
+reduce motion). (3) **The finger-drawn route** is 3 px ink dashed 5/4 px along the arc; the part beyond the plane's
+range is printed as 2 px dots every 8 px instead of red (red is for a jam only, D-283/L5). (4) **Plane silhouettes**
+come from the two icon paths of the skin (`icons.js`), rasterised with `Path2D` and turned into a signed-distance
+atlas (exact EDT, 256×128 R8, mipmaps) when the layer is built: no new asset, the same shapes as the dock symbols.
+The load is a 2 px ink bar under the silhouette (load/capacity × 18 px), no red. (5) **Jam data:** `HubLoadView.jam01`
+(share of `CONGESTION_GRACE_TICKS` left) for every airport; the DEV session sends all airports, a release build keeps
+sending hubs only. (6) **`projectAirport(id, out)`** (spec §8) is an optional method of `WorldRenderer`, assigned in DEV
+builds until E3 (the stub world has it too); it measures the point `pick()` measures and allocates nothing.
+Rejected: tangent stamps with depth test (relief cuts them), keeping the tubes (two techniques in one print), red
+for the out-of-range preview, a shipped PNG atlas. **Status: in force for the DEV look; E3 lifts the DEV guards.**
+
+## D-300 — Linoryt ships behind `DEFAULT_GLOBE_LOOK` (E3): the print loads as two lazy chunks, open-sea parallels one step sparser (2026-11-08, Claude, ext session E3)
+Step E3 of PLAN-LINORYT.md: the Linoryt look is part of the release build, nothing selects it yet.
+**Choice.** (1) **`DEFAULT_GLOBE_LOOK`** (`src/render/globe/look.ts`, exported from `src/render/globe`) is `'satellite'`;
+`createWorldRenderer` draws `opts.look ?? (DEFAULT_GLOBE_LOOK === 'linoryt' ? 'linoryt' : globeMode)`, so U5 flips one
+constant. The DEV guards of E1/E2 are gone (`projectAirport` is always there, the session always sends `jam01` for
+every airport; the satellite renderer still reads hub loads only). (2) **The print is loaded on demand:** the globe
+material (`linoryt-globe`, 12.6 kB) and the object layers (`linoryt-objects`, 20.9 kB) are dynamic imports in their own
+chunks; until the layers arrive, record-only stand-ins keep the airport set and the last routes, planes, hub loads and
+preview are replayed into the real layers (no medallion flashes in between; `ready` waits for both). The main chunk
+grows by 3 kB instead of 22 kB (budget 1,180 kB, D-252). (3) **Open-sea parallels print at ≥ 6 px spacing** on every
+preset (the relief and night hatches keep 4 px): at zoom 2 the denser sea competed with stamps and the notes' glyphs
+(Bay of Biscay, coordinator's review of #312); one constant, no cost. Rejected: lowering the sea contrast only under
+stamps (the terrain shader would need every stamp position), a bigger JS budget. **Status: in force; U5 flips the
+constant.**

@@ -7,11 +7,11 @@
  * Screen coordinates (`pick`, `project`, `resize`) are CSS pixels relative to the
  * canvas' top-left corner, matching `GlobeOrbitCamera` and the gesture recognizer.
  */
-import { Color, PerspectiveCamera, Scene, Vector3, WebGLRenderer } from 'three';
+import { Color, Group, PerspectiveCamera, Scene, Vector3, WebGLRenderer } from 'three';
 import { createContextGuard } from './contextGuard'; // [night-11h]
 import { createAirports, type AirportsLayer, type AirportStyle } from './airports';
 import { GlobeOrbitCamera, type OrbitCameraOptions, type SafeAreaInsets } from './camera';
-import { createGlobe, createSunLights, type GlobeInstance, type GlobeLook } from './globe';
+import { createGlobe, createSunLights, DEFAULT_GLOBE_LOOK, type GlobeInstance, type GlobeLook } from './globe';
 import { pickSphereNdc, setLatLonVec3, type LonLat } from './globe/geo-math';
 import { createModelPreviewRenderer, type ModelPreviewRenderer } from './modelPreview';
 import { PlaneLayer, type PlaneRenderSnapshot } from './planes';
@@ -19,11 +19,14 @@ import {
   AdaptiveQualityMonitor, adaptiveSteps, applyAdaptiveSteps, applyQualityProfile, frameDue, resolveQualityProfile,
   SAVER_DECOR_DENSITY, type AdaptiveStep, type QualityPreference, type QualityProfile,
 } from './quality';
-import { createRoutePreview, type RoutePreviewView } from './routePreview';
+import { createRoutePreview, type RoutePreviewLayer, type RoutePreviewView } from './routePreview';
 import { RouteLayer, type AircraftKind, type GeoWaypoint, type RouteRenderSpec } from './routes';
 import { createSunController, type SunController } from './sun';
 import { measureLayerContrast, sampleLuminance, type LayerContrast, type PixelRect } from './contrast';
 import type { UpgradeKind } from '../sim/upgrades';
+// [ext-04 E2/E3] D-283: Linoryt stamps, ribbons and silhouettes (drawn when the look is `linoryt`).
+import type { LinorytObjects, PlaneLayerLike, RouteLayerLike } from './linoryt-objects';
+import { STAMP_SIZE_PX } from './globe/linoryt';
 
 export const DIORAMA_SKY = '#8CC3D8';
 /** Airport tap radius in CSS px (dp); matches the route tool's start radius. */
@@ -39,6 +42,15 @@ export interface HubLoadView {
   readonly id: string;
   readonly used: number;
   readonly cap: number;
+  /** [ext-04 E2] Linoryt: share of the jam grace period left (0..1), null/absent = not jammed; any airport. */
+  readonly jam01?: number | null;
+}
+/** [ext-04 E2] Spec §8: an airport stamp on screen (CSS px): centre, half the side, on the visible hemisphere. */
+export interface AirportScreenBox {
+  x: number;
+  y: number;
+  half: number;
+  visible: boolean;
 }
 export interface RouteView {
   readonly id: string;
@@ -91,7 +103,10 @@ export interface WorldRendererOptions {
   /** Decorative (non-simulation) seed for trees, rocks, clouds and lights. */
   readonly seed?: number;
   readonly landUrl?: string;
-  /** [ext-03] Globe look override (DEV comparisons, docs/mockups/globe-2026-11/); default from `globeMode`. */
+  /**
+   * [ext-03] Globe look override (DEV comparisons, docs/mockups/globe-2026-11/); default: `DEFAULT_GLOBE_LOOK`
+   * ([ext-04 E3] `linoryt` after the flip), otherwise the player's `globeMode`.
+   */
   readonly look?: GlobeLook;
   /** [G8] D-172: the player's globe mode, Satelita (default) or Mapa; change it later with `setGlobeMode`. */
   readonly globeMode?: GlobeMode;
@@ -141,6 +156,11 @@ export interface WorldRenderer {
   setTime(tick: number, fraction?: number): void;
   setCities(cities: readonly CityView[]): void;
   setHubLoad(loads: readonly HubLoadView[]): void;
+  /**
+   * [ext-04 E2] Spec §8: the stamp of airport `id` on screen, written into `out` without allocating (DEV builds until
+   * E3; the UI calls it as `projectAirport?.(id, out)`). Unknown id → `visible: false`.
+   */
+  projectAirport?(id: string, out: AirportScreenBox): AirportScreenBox;
   /** Complete set of airports whose curfew barrier is closed. */
   setCurfew(closedIds: readonly string[]): void;
   /** Rebuilds route tubes only when `revision` changes (or is omitted). */
@@ -194,20 +214,49 @@ export function createWorldRenderer(
   scene.add(lights.group);
   const sun: SunController = createSunController(lights, renderer);
   const airportStyle: AirportStyle = opts.airportStyle ?? 'medal';
-  const airports: AirportsLayer = createAirports(scene, {
-    style: airportStyle,
-    maxAirports: opts.maxAirports ?? 64, maxHubSeats: opts.maxHubSeats ?? 48,
-  });
-  // [ext-03 G9] D-178: route tubes carry a dark ink outline unless the pre-D-178 `current` style is asked for.
-  const routes = airportStyle === 'current' ? new RouteLayer()
-    : new RouteLayer({ outline: true, turboprop: airportStyle === 'apron' ? '#F39A2E' : undefined });
+  // [ext-04 E2] The Linoryt look draws stamps, double-line ribbons, a dashed preview and cut silhouettes instead.
+  // [ext-04 E3] The look this renderer draws: the override, else the default look when that is the print.
+  const look: GlobeLook | undefined = opts.look ?? (DEFAULT_GLOBE_LOOK === 'linoryt' ? 'linoryt' : undefined);
+  // The Linoryt layers live in their own chunk (with the print globe); until it arrives, record-only stand-ins keep
+  // the airport set and the last routes, planes, loads and preview are replayed into the real layers (D-300).
+  let linorytObjects: LinorytObjects | null = null;
+  let airports: AirportsLayer;
+  let routes: RouteLayerLike;
+  let planes: PlaneLayerLike;
+  let preview: RoutePreviewLayer;
+  if (look === 'linoryt') {
+    const known = new Map<string, boolean>();
+    airports = {
+      group: new Group(), addAirport: (def) => { known.set(def.id, def.hub === true); }, setHubLoad() { /* replayed */ },
+      setCurfew() { /* replayed */ }, setZoom() { /* screen-constant */ }, getPosition: () => null, has: (id) => known.has(id),
+      isHub: (id) => known.get(id) === true, clear: () => known.clear(), update() { /* nothing drawn yet */ }, dispose() { known.clear(); },
+    };
+    routes = { group: new Group(), getRoute: () => undefined, setRoutes() { /* replayed */ }, dispose() { /* nothing yet */ },
+      stats: { routes: 0, segments: 0, drawCalls: 0, triangles: 0, rebuilds: 0 } };
+    planes = { group: new Group(), setSnapshots() { /* replayed */ }, update() { /* nothing yet */ }, setDaylight() { /* print */ },
+      dispose() { /* nothing yet */ }, stats: { planes: 0, turboprops: 0, widebodies: 0, mainPassCalls: 0, triangles: 0, droppedPlanes: 0 } };
+    preview = { object: new Group(), update() { /* replayed */ }, dispose() { /* nothing yet */ } };
+  } else {
+    airports = createAirports(scene, {
+      style: airportStyle,
+      maxAirports: opts.maxAirports ?? 64, maxHubSeats: opts.maxHubSeats ?? 48,
+    });
+    // [ext-03 G9] D-178: route tubes carry a dark ink outline unless the pre-D-178 `current` style is asked for.
+    const tubes = airportStyle === 'current' ? new RouteLayer()
+      : new RouteLayer({ outline: true, turboprop: airportStyle === 'apron' ? '#F39A2E' : undefined });
+    routes = tubes;
+    planes = new PlaneLayer(tubes, { maxPlanes: opts.maxPlanes ?? 120, progressScale: opts.progressScale });
+    preview = createRoutePreview();
+  }
   scene.add(routes.group);
-  const planes = new PlaneLayer(routes, {
-    maxPlanes: opts.maxPlanes ?? 120, progressScale: opts.progressScale,
-  });
   scene.add(planes.group);
-  const preview = createRoutePreview();
   scene.add(preview.object);
+  // [ext-04 E3] Last inputs, for the Linoryt replay.
+  let lastSpecs: RouteRenderSpec[] = [];
+  let lastRevision: number | string | undefined;
+  let lastPlanes: readonly [readonly PlaneView[], readonly PlaneView[]] = [[], []];
+  let lastPreview: RoutePreviewView | null = null;
+  let lastLoads: readonly HubLoadView[] = [];
   let models: ModelPreviewRenderer | null = null;
 
   const cities = new Map<string, CityView>();
@@ -235,13 +284,13 @@ export function createWorldRenderer(
     const mine = ++globeEpoch;
     const next = await createGlobe(scene, {
       quality, seed: opts.seed ?? 0xA1A1, landUrl: opts.landUrl, sunDirection: lights.direction,
-      look: opts.look ?? globeMode,
+      look: look ?? globeMode,
     });
     if (disposed || mine !== globeEpoch) { next.dispose(); return; }
     globe?.dispose();
     globe = next;
     // [G8] The mode may have changed while the globe was loading.
-    if (!opts.look && globe.surfaceLook !== 'diorama' && globe.surfaceLook !== globeMode) void globe.setSurfaceLook(globeMode);
+    if (!look && globe.surfaceLook !== 'diorama' && globe.surfaceLook !== globeMode) void globe.setSurfaceLook(globeMode);
     globe.setDecorDensity(quality.decorDensity);
     globe.lod.forceLevel(forcedLevel);
   };
@@ -274,7 +323,23 @@ export function createWorldRenderer(
     lastPaintAt = 0;
     pendingDt = 0;
   });
-  const ready = loadGlobe();
+  const linorytReady = look === 'linoryt' ? import('./linoryt-objects').then((module) => {
+    if (disposed) return;
+    const next = module.createLinorytObjects(scene,
+      { maxAirports: opts.maxAirports, maxPlanes: opts.maxPlanes, progressScale: opts.progressScale });
+    for (const old of [routes.group, planes.group, preview.object]) scene.remove(old);
+    linorytObjects = next;
+    airports = next.airports; routes = next.routes; planes = next.planes; preview = next.preview;
+    scene.add(routes.group, planes.group, preview.object);
+    for (const city of cityList) airports.addAirport({ id: city.id, lon: city.lon, lat: city.lat, hub: city.hub });
+    for (const id of closed) if (airports.has(id)) airports.setCurfew(id, true);
+    world.setHubLoad(lastLoads);
+    routes.setRoutes(lastSpecs, lastRevision);
+    planes.setSnapshots(lastPlanes[0], lastPlanes[1]);
+    preview.update(lastPreview);
+    lastZoom = -1;
+  }) : null;
+  const ready = linorytReady ? Promise.all([loadGlobe(), linorytReady]).then(() => undefined) : loadGlobe();
   ready.catch(() => { /* surfaced to the caller through `ready` */ });
 
   function project(lon: number, lat: number, altitude: number, out: ScreenPoint): ScreenPoint {
@@ -332,7 +397,7 @@ export function createWorldRenderer(
       if (mode === globeMode) return;
       globeMode = mode;
       // A DEV look override pins the surface; otherwise swap the textures of the globe already in the scene.
-      if (!opts.look && globe) void globe.setSurfaceLook(mode);
+      if (!look && globe) void globe.setSurfaceLook(mode);
     },
     setTime(tick, fraction = 0) {
       sun.setViewCenter(orbit.longitudeDeg, orbit.latitudeDeg);
@@ -361,7 +426,11 @@ export function createWorldRenderer(
       if (reset) for (const id of closed) if (cities.has(id)) airports.setCurfew(id, true);
     },
     setHubLoad(loads) {
+      lastLoads = loads;
       for (const load of loads) if (airports.isHub(load.id)) airports.setHubLoad(load.id, load.used, load.cap);
+      if (linorytObjects) {
+        for (const load of loads) linorytObjects.airports.setJam(load.id, load.jam01 ?? null);
+      }
     },
     setCurfew(closedIds) {
       const next = new Set(closedIds);
@@ -381,10 +450,11 @@ export function createWorldRenderer(
         }
         if (waypoints.length >= 2) specs.push({ id: view.id, type: view.aircraft, waypoints });
       }
+      lastSpecs = specs; lastRevision = revision;
       routes.setRoutes(specs, revision);
     },
-    setRoutePreview: (model) => preview.update(model),
-    setPlanes: (previous, current) => planes.setSnapshots(previous, current),
+    setRoutePreview(model) { lastPreview = model; preview.update(model); },
+    setPlanes(previous, current) { lastPlanes = [previous, current]; planes.setSnapshots(previous, current); },
     render(alpha, dtSeconds) {
       if (disposed || guard.lost()) return false;
       const now = performance.now();
@@ -493,5 +563,18 @@ export function createWorldRenderer(
       if (!canvas) element.remove();
     },
   };
+  // [ext-04 E2/E3] Spec §8: stamp boxes for the overlay; the centre is the same point `pick()` measures.
+  {
+    world.projectAirport = (id, out) => {
+      const city = cities.get(id);
+      if (!city) { out.visible = false; out.half = 0; return out; }
+      camera.updateMatrixWorld();
+      project(city.lon, city.lat, 1.01, point);
+      out.x = point.x; out.y = point.y; out.visible = point.visible;
+      out.half = linorytObjects ? linorytObjects.airports.halfSize(id)
+        : (city.hub ? STAMP_SIZE_PX.hub : STAMP_SIZE_PX.airport) / 2;
+      return out;
+    };
+  }
   return world;
 }

@@ -19,7 +19,7 @@ import { chunkTerrain, createTerrainLod, TERRAIN_LOD_LEVELS } from './lod';
 import { buildTerrainArrays, type TerrainStyle } from './terrain';
 import {
   ATMOSPHERE_LINES, COAST_FIELD_RANGE_DEG, coastWidthCss, HATCH_ALIAS_FLOOR_DEVICE_PX, HATCH_BASE_PERIOD_DEG,
-  HATCH_MIN_SPACING_PX, HATCH_MIN_WIDTH_DEVICE_PX, HATCH_SAVER_MIN_SPACING_PX, LIMB_RING_PX, LINORYT_INKS,
+  HATCH_MIN_SPACING_PX, HATCH_MIN_WIDTH_DEVICE_PX, HATCH_SAVER_MIN_SPACING_PX, HATCH_SEA_MIN_SPACING_PX, LIMB_RING_PX, LINORYT_INKS,
   NIGHT_FULL_SUN_DEG, SKY_COLOUR, WATER_LINES_PX, waterLineScale,
 } from './linoryt';
 import type { GlobeInstance } from './index';
@@ -245,8 +245,8 @@ float awLines(float u, float g, float hw) {
   return clamp(hw + 0.5 - d, 0.0, 1.0);
 }
 // u0, g0: the pattern in base periods (${HATCH_BASE_PERIOD_DEG}°). wCss: line width in CSS px. extra: fine-octave cap.
-float awHatch(float u0, float g0, float wCss, float extra) {
-  float minPx = ${f(minSpacingPx)} * awDpr;
+float awHatchMin(float u0, float g0, float wCss, float extra, float minCss) {
+  float minPx = minCss * awDpr;
   float s0 = 1.0 / max(g0, 1e-7);
   float halvings = max(0.0, floor(log2(s0 / minPx)));
   float k = exp2(halvings);
@@ -258,7 +258,8 @@ float awHatch(float u0, float g0, float wCss, float extra) {
   float lines = mix(coarse, fine, wf);
   float mean = min(1.0, 2.0 * hw / (2.0 * sf));
   return mix(mean, lines, smoothstep(${f(HATCH_ALIAS_FLOOR_DEVICE_PX)}, ${f(HATCH_ALIAS_FLOOR_DEVICE_PX * 2)}, 2.0 * sf));
-}`;
+}
+float awHatch(float u0, float g0, float wCss, float extra) { return awHatchMin(u0, g0, wCss, extra, ${f(minSpacingPx)}); }`;
 }
 
 function terrainFragment(saver: boolean): string {
@@ -329,7 +330,8 @@ void main() {
     float open = clamp((dist - min(${f(w2 + 3)} * scale, ${f(COAST_FIELD_RANGE_DEG - 0.15)})) / coastGrad + 0.5, 0.0, 1.0);
     float u = phi * AW_TO_BASE;
     float g = length(dPhi) * AW_TO_BASE;
-    float parallels = awHatch(u, g, mix(0.8, 2.2, day), 1.0);
+    // D-300: the open-sea parallels print one step sparser (≥ 6 px) so stamps and notes stay on top of the sea.
+    float parallels = awHatchMin(u, g, mix(0.8, 2.2, day), 1.0, ${f(HATCH_SEA_MIN_SPACING_PX)});
     colour = mix(colour, awPaper, max(water * (1.0 - open), parallels * open));
   }
   // Printed coast: an ink line centred on the shore, constant on screen.
