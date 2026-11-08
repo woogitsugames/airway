@@ -205,6 +205,8 @@ commitach.
 
 - 8.11 ~08:30: #332 scalony (54a przegląd UI względem a-game/a-menu, D-312: podwójna linia, wybór regionu nad linią, pauza bez czerwieni, stempel w raporcie; CSS 129,9/130 kB). dev = main = 6df7ca5. Uwagi do renderu wysłane ext. Agenci: 55a (czerwone test:ci; powiadomiony o zmianie menu), 56a (Q-92 → A tymczasowo, D-313 + osobny PR 56b odchudzenie CSS ≥ 3 kB). Pytania z #332 do właściciela: notki (zostawić kolory D-08), pauza kontur (zostawić).
 
+- 8.11 ~08:55: #333 scalony (ext: poprawki renderu z audytu 54a, D-314). dev = main = c8cee49. Ext dostał: perf:scene Linorytu (D-315+). Do kolejki UI: papierowe romby uchwytów tras (`.airway-route-handle::before` w src/ui/atcStrip.css) — w kadrze ich nie ma; zrobić po 56b (budżet CSS).
+
 ## Kolejka
 - Najpierw: PR-y od GPT (jeśli są), potem zadania z paczki GPT, których GPT nie wziął (te same opisy nadają się dla
   agentów Claude), w kolejności z pliku (01, 02, 05, 06, 20, potem 03, 04, 08, 09, 11…).
