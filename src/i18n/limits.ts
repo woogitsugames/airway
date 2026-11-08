@@ -91,6 +91,17 @@ export const LENGTH_BUDGETS: Partial<Record<TranslationKey, LengthBudget>> = {
   'board.dock.widebodyShort': consoleShort,
   'board.dock.hub': consoleShort,
   'board.dock.speed': consoleShort,
+  // [night-76a] D-331: the UI-A weekly sheet: the word on the large title tiles, the labels over the figures, the
+  // "chosen" clip and the captions of a strip's quantity column (64 px wide, Chivo Mono 9.5 px caps).
+  'board.sheet.week': { max: 5, where: 'UI-A weekly sheet: the word on the large tiles before the week number' },
+  'board.sheet.passengers': { max: 12, where: 'UI-A weekly sheet: label over a figure' },
+  'board.sheet.routes': { max: 12, where: 'UI-A weekly sheet: label over a figure' },
+  'board.sheet.aircraft': { max: 12, where: 'UI-A weekly sheet: label over a figure' },
+  'board.sheet.transfers': { max: 12, where: 'UI-A weekly sheet: label over a figure' },
+  'board.sheet.chosen': { max: 10, where: 'UI-A weekly sheet: clip over the chosen strip' },
+  'board.sheet.qty.aircraft': { max: 9, where: 'UI-A weekly sheet: caption under a strip quantity', sample: { count: 2 } },
+  'board.sheet.qty.seats': { max: 9, where: 'UI-A weekly sheet: caption under a strip quantity', sample: { count: 6 } },
+  'board.sheet.qty.departures': { max: 9, where: 'UI-A weekly sheet: caption under a strip quantity', sample: { count: 2 } },
   'hud.week': passLabel,
   'hud.day': passLabel,
   'hud.time': passLabel,

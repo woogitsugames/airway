@@ -55,6 +55,12 @@
   --board-rule: #A89A78;
   --board-print: #2A2620;
   --board-blue: #3B5F8C; /* a hub strip's holder in normal operation (T3) */
+  /* [night-76a] D-331 (T4): the weekly sheet's strip holders (the symbol on them is white, ≥ 6:1) and the strip's second
+     ink (descriptions, the contract text) on strip paper. The widebody holder is --board-blue. */
+  --board-holder-prop: #6B5A3A;
+  --board-holder-hub: #2F5A3A;
+  --board-holder-slots: #5A6068;
+  --board-print-2: #4A4234;
   /* [night-73a] D-328 (T2): atlas labels on the photo globe. Cream capitals for countries, pale water blue for seas, each
      on a dark cartographic halo (a 2 px shadow in the photo's own night, not a glow): the halo is the ground the letters
      are read against (test:contrast), the photo only shows round it. */

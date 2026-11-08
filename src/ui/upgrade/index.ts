@@ -2,10 +2,11 @@ import type { HubPressure, UpgradeCommand, UpgradeKind, WeeklyUpgradeState } fro
 import '../skin/current.css'; // [night-11aq] skin tokens read by upgrade.css
 import './upgrade.css';
 import { t, type TranslationKey } from '../../i18n';
-import { cardModel, upgradeFacts, type CardModel, type ContractBoard, type SlotPressure } from './cards';
+import { cardModel, upgradeFacts, type CardModel, type ContractBoard, type SlotPressure, type WeekFigures } from './cards';
 import { setClass } from '../classes'; // [night-59a] D-322
+import { upgradeSkin } from './skin'; // [night-76a] D-331: the DEV `?skin=board` preview's sheet slot
 
-export { cardModel, upgradeFacts, mostSlotStarved, type CardModel, type ContractBoard, type UpgradeFacts, type SlotPressure } from './cards';
+export { cardModel, upgradeFacts, mostSlotStarved, type CardModel, type ContractBoard, type UpgradeFacts, type SlotPressure, type WeekFigures } from './cards';
 
 export interface UpgradeUIOptions {
   onCommand: (command: UpgradeCommand) => void;
@@ -138,8 +139,9 @@ export class WeeklyUpgradeView {
   constructor(root: HTMLElement, options: UpgradeUIOptions) { this.root = root; this.options = options; }
   /** `airports` (task 32): every active airport, for the "+2 slots" stamp and airport pick. */
   /** [night-12ba] R2k: `contract` = the weekly contract waybill (Endless runs with the contract only). */
+  /** [night-76a] D-331: `figures` = the closed week's figures (read only by the UI-A preview sheet). */
   render(state: WeeklyUpgradeState | null, hubs: readonly HubPressure[], airports: readonly SlotPressure[] = [],
-    contract: ContractBoard | null = null): void {
+    contract: ContractBoard | null = null, figures: WeekFigures | null = null): void {
     this.state = state;
     this.hubs = hubs;
     this.airports = airports;
@@ -155,6 +157,8 @@ export class WeeklyUpgradeView {
     this.shown = shown;
     if (reset) this.root.scrollTop = 0;
     if (!state?.paused) { this.options.onHubSelectionMode?.(false, []); return; }
+    const skin = upgradeSkin.current;
+    if (skin) { this.renderSkin(skin, state, contract, figures, pickingSlots, reset); return; } // [night-76a] D-331
     const week = t('notice.week', { week: state.week });
     const wrap = document.createElement('section');
     wrap.className = 'airway-upgrade';
@@ -204,6 +208,30 @@ export class WeeklyUpgradeView {
     });
     wrap.append(cards);
     this.root.append(wrap);
+    if (reset) this.root.scrollTop = 0;
+  }
+  /**
+   * [night-76a] D-331: the preview skin's sheet. Same commands, airport-pick mode and scroll reset as the shipped board;
+   * no model windows (D-302 (1): no 3D crates on the board).
+   */
+  private renderSkin(skin: NonNullable<typeof upgradeSkin.current>, state: WeeklyUpgradeState, contract: ContractBoard | null,
+    figures: WeekFigures | null, pickingSlots: boolean, reset: boolean): void {
+    const total = state.offers.length;
+    const models = state.offers.map((offer, i) => cardModel(offer.id, i, total, this.hubs, upgradeFacts(), this.airports));
+    const extra = contract?.extraCrate && contract.extraCrate === state.extraCrate ? state.extraCrate : null;
+    const onCancel = this.options.onCancelPick;
+    const sheet = skin.sheet({
+      state, models, facts: upgradeFacts(), extraCrate: extra, contract, figures,
+      mode: !state.pendingHub ? 'crates' : pickingSlots ? 'pick-airport' : 'pick-hub',
+      take: (upgrade) => this.options.onCommand({ type: 'ChooseUpgrade', week: state.week, upgrade }),
+      back: onCancel ? () => onCancel(state.week) : null,
+    });
+    if (state.pendingHub) {
+      this.options.onHubSelectionMode?.(true, pickingSlots ? this.airports.map(a => a.cityId) : this.hubs.map(h => h.hubId));
+    } else {
+      this.options.onHubSelectionMode?.(false, []);
+    }
+    this.root.append(sheet);
     if (reset) this.root.scrollTop = 0;
   }
   /** Called by the globe hit-test when the hub highlight mode is active. */
