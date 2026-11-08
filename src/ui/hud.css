@@ -51,20 +51,9 @@
     radial-gradient(circle 7px at var(--cut) 100%, transparent 98%, #000) bottom / 100% 51% no-repeat;
 }
 .airway-pass__band { width: 7px; flex: 0 0 7px; background: var(--airway-airline, var(--hud-teal)); } /* [night-09c] D-80 */
-.airway-pass__field { min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 3px; padding: 0 6px; }
-.airway-pass__label { font-size: 9px; font-weight: var(--skin-weight-bold); letter-spacing: .075em; text-transform: uppercase; color: var(--skin-pass-label-ink); }
-/* [night-10q] a label longer than its field wraps to a second line inside the ticket; the mask would cut it. */
-.airway-pass__label { white-space: normal; overflow-wrap: anywhere; line-height: 1.05; }
-.airway-pass__field strong { overflow: hidden; text-overflow: clip; font: var(--skin-weight-heavy) 17px/1 var(--skin-face-display); }
-.airway-pass__week { min-width: 48px; flex: 0 0 auto; } /* [task-40] grows to fit the PL label "TYDZIEŃ" */
-.airway-pass__day { flex: 1 1 76px; min-width: 54px; }
-.airway-pass__time { flex: 0 0 60px; }
-.airway-pass__days { display: flex; gap: 3px; }
-.airway-pass__days i { display: block; width: 6px; height: 6px; background: var(--hud-perf); }
-.airway-pass__days i.is-past { background: var(--hud-ink); }
-.airway-pass__days i.is-current { background: var(--hud-red); }
+/* [night-56b] The Diorama ticket fields (.airway-pass__field and the week/day/time/passengers labels, figures and day
+   squares inside) went: Linoryt hides every field (linoryt.css) and prints its own margin (.lin-pass). */
 .airway-pass__perf { border-left: 2px dashed var(--hud-perf); margin: 9px 0 9px auto; flex: 0 0 2px; }
-.airway-pass__passengers { flex: 0 0 94px; padding: 0 8px; }
 .airway-pass__pause { flex: 0 0 56px; width: 56px; height: 60px; display: flex; align-items: center; justify-content: center; background: var(--hud-pass); border-top: 6px solid var(--hud-teal) !important; }
 .airway-pass__pause .airway-hud__icon { width: var(--skin-pass-pause-icon-size); height: var(--skin-pass-pause-icon-size); }
 
@@ -207,12 +196,6 @@
 }
 @media (max-width: 369px) {
   .airway-pass { width: calc(100% - var(--hud-safe-left) - var(--hud-safe-right) - 12px); left: calc(var(--hud-safe-left) + 6px); gap: 4px; }
-  .airway-pass__week { min-width: 39px; } /* [task-40] auto width: never narrower than its label */
-  .airway-pass__time { flex-basis: 47px; }
-  .airway-pass__passengers { flex-basis: 74px; padding: 0 3px; }
-  .airway-pass__field { padding-left: 3px; padding-right: 3px; }
-  .airway-pass__field strong { font-size: 14px; }
-  .airway-pass__label { font-size: 8px; }
   .airway-pass__pause { flex-basis: 52px; width: 52px; }
   .airway-dock { left: calc(var(--hud-safe-left) + 6px); right: calc(var(--hud-safe-right) + 6px); gap: 3px; } /* [G8] six tags ≥ 48 px at 320 */
   .airway-dock__tag { gap: 0; }

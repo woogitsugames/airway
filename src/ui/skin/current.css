@@ -25,7 +25,6 @@
   --skin-motion-panel-in: 140ms;
   --skin-motion-stamp: 120ms;
   --skin-motion-sheet-in: .16s;
-  --skin-motion-flap: 38ms;
   --skin-motion-flip: 90ms;
   --skin-motion-flip-stagger-1: 65ms;
   --skin-motion-flip-stagger-2: 120ms;
@@ -59,7 +58,6 @@
   --skin-hud-tag-bg: transparent;
   --skin-hud-eyelet-ring: transparent;
   --skin-hud-alert: var(--lin-red);
-  --skin-pass-label-ink: var(--lin-ink-dim);
   --skin-dock-eyelet-hole: transparent;
   --skin-dock-tag-empty-bg: transparent;
   --skin-dock-tag-empty-ink: var(--lin-ink);
@@ -205,11 +203,6 @@
   --skin-menu-select-ink: var(--lin-ink);
   --skin-menu-option-ink: var(--lin-paper);
   --skin-menu-option-bg: var(--lin-ink);
-  --skin-menu-flap-ink: var(--lin-ink);
-  --skin-menu-flap-highlight-ink: var(--lin-ink);
-  --skin-menu-flap-top-edge: transparent;
-  --skin-menu-flap-bottom-bg: transparent;
-  --skin-menu-flap-bottom-edge: transparent;
   --skin-menu-notice-bg: var(--lin-paper);
   --skin-menu-notice-margin: var(--lin-red);
   --skin-menu-notice-ink: var(--lin-ink);

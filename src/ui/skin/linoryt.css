@@ -58,7 +58,7 @@
   font: 900 46px/.9 var(--skin-face-display); white-space: nowrap;
 }
 :root[data-skin="linoryt"] .lin-lines { min-width: 0; }
-:root[data-skin="linoryt"] .lin-week { font: 800 20px/1.1 var(--skin-face-display); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+:root[data-skin="linoryt"] .lin-week { font: 800 20px/1.1 var(--skin-face-display); } /* wraps: see the long-words rule below */
 :root[data-skin="linoryt"] .lin-sub { margin-top: 2px; white-space: normal; font: 600 14px/1.25 var(--skin-face-text); overflow-wrap: anywhere; }
 /* The day bar: 24 carved hours; night solid ink, flown hours blue, the hour now and the rest hollow; a red cut = now. */
 :root[data-skin="linoryt"] .lin-day { grid-column: 1 / -1; min-width: 0; }
@@ -201,7 +201,7 @@
 :root[data-skin="linoryt"] .airway-flight__status:not(.airway-flight__region-cell) { display: none; }
 :root[data-skin="linoryt"] .lin-title { flex: 0 1 auto; max-width: 72%; min-width: 0; font: 800 calc(clamp(18px, 5.4vw, 22px) * var(--airway-text-scale-title))/1.1 var(--skin-face-display); overflow-wrap: break-word; }
 :root[data-skin="linoryt"] .airway-flight__sub {
-  flex: 1 1 0; min-width: 0; text-align: right; color: var(--lin-ink); font: 600 calc(13px * var(--airway-text-scale-dense))/1.2 var(--skin-face-text);
+  min-width: 0; text-align: right; color: var(--lin-ink); font: 600 calc(13px * var(--airway-text-scale-dense))/1.2 var(--skin-face-text);
 }
 /* The run-starting entry (the row the menu marks hot: Continue, else Endless): the one red block, paper letters. */
 :root[data-skin="linoryt"] .airway-flight:has(.split-flap--highlight) {
