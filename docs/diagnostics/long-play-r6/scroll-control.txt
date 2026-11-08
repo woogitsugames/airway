@@ -1,0 +1,36 @@
+[4s] INFO stub world http://127.0.0.1:52281/?render=stub&clock=frozen text-scale=1 weeks=3
+[5s] RUN started seed=42704 region=random class=1
+[5s] UI plane drag
+[9s] UI hub board THR waiting=6
+[11s] ROTATE 915x412
+[12s] ROTATE back
+[14s] SCREEN game -> upgrade tick=4320 week=2 routes=4 planes=4
+[14s] UI Tydzień 1: offers=hub-expansion,widebody,turboprop take turboprop
+[14s] SCREEN upgrade -> game tick=4321 week=2 routes=4 planes=4
+[15s] UI plane drag
+[17s] UI Undo walk after turboprop: 1 taps for 1 edits, barrier held
+[17s] SAVE tick=5221 hash=296df6c6
+[17s] LOAD tick=5221 hash=296df6c6 screen=game region=random class=1
+[18s] UI first-time card hub-full -> OK
+[20s] UI hub board BGW waiting=7
+[20s] UI first-time card out-of-range -> OK
+[21s] ROTATE 915x412
+[22s] ROTATE back
+[25s] SCREEN game -> upgrade tick=8640 week=3 routes=5 planes=5
+[25s] UI Tydzień 2: offers=hub-expansion,turboprop,widebody take widebody
+[25s] SCREEN upgrade -> game tick=8641 week=3 routes=5 planes=5
+[25s] INFO game w3 d7 01h: Obróć globus do ADL Zajęte miejsca w poczekalni: under the first-time card
+[25s] UI first-time card weekly-board -> OK
+[26s] UI first-time card curfew -> OK
+[26s] UI first-time card surge -> OK
+[28s] SCREEN game -> gameover tick=9807 week=3 routes=6 planes=6
+[29s] ISSUE sheet opened scrolled :: game over; game-over scrollTop=16
+[29s] GAMEOVER week=3 tick=9807 :: Sieć zamknięta BGW Mapa Odloty · BGW Lot / cel Bramka Status AW101 · TLV A1 Odwołany AW102 · THR B2 Odwołany AW103 · DOH C3 Odwołany AW104 · TAS D4 Odwołany AW105 · JED E5 Odwołany AW106 · BOS F6 Odwołany Raport zdarzenia ATC Dowiezieni pas
+[29s] UI new world
+[30s] INFO tutorial shown -> skip
+[31s] RUN run #2
+[31s] UI plane drag
+[32s] UI plane drag
+[34s] UI hub board RUH waiting=6
+[35s] ROTATE 915x412
+[35s] INFO done pauses=9 hubBoards=3 rotations=3 continues=1 undos=1 boards=2 barriers=2 undoWalks=1 undoRefusals=0

@@ -82,6 +82,35 @@ await ctx.addInitScript(({ l, text, licence }) => {
     localStorage.setItem('airway.settings', JSON.stringify({ ...v, language: l }));
   } catch {}
 }, { l: lang, text: TEXT, licence: LICENCE });
+// Record only scrolls actually caused by focusing a control. A report can animate after focus, so measuring the
+// control's final rectangle alone can no longer tell whether it was off screen when the browser scrolled it into view.
+await ctx.addInitScript(() => {
+  const focus = HTMLElement.prototype.focus;
+  const focusScrolls = new WeakMap();
+  window.__longPlayFocusScrolls = focusScrolls;
+  HTMLElement.prototype.focus = function (...args) {
+    const ancestors = [];
+    for (let n = this.parentElement; n; n = n.parentElement) ancestors.push([n, n.scrollTop]);
+    const result = focus.apply(this, args);
+    for (const [n, before] of ancestors) {
+      if (before <= 1 && n.scrollTop > 1) focusScrolls.set(n, { control: this, top: n.scrollTop });
+    }
+    return result;
+  };
+});
+// Diagnostic negative control: after focus has settled, deliberately scroll the game-over report by another 4 px.
+// The audit must report it; normal runs do not enable this flag.
+if (flag('probe-scroll', '0') === '1') await ctx.addInitScript(() => {
+  const focus = HTMLElement.prototype.focus;
+  HTMLElement.prototype.focus = function (...args) {
+    const result = focus.apply(this, args);
+    if (this.dataset.testid === 'gameover-same') {
+      const report = this.closest('[data-testid="game-over"]');
+      setTimeout(() => { if (report) report.scrollTop += 4; }, 100);
+    }
+    return result;
+  };
+});
 const page = await ctx.newPage();
 page.on('pageerror', (e) => note('PAGEERROR', e.message));
 page.on('console', (m) => { if (m.type() === 'error' || m.type() === 'warning') note('CONSOLE-' + m.type(), m.text().slice(0, 300)); });
@@ -301,7 +330,9 @@ async function audit(label) {
       // Only a scroll that the focused control needs counts as that (in view now, out of view at the top).
       const f = document.activeElement;
       const nr = n.getBoundingClientRect(), fr = f && f !== document.body && n.contains(f) ? f.getBoundingClientRect() : null;
-      const focused = !!fr && fr.top >= nr.top - 1 && fr.bottom <= nr.bottom + 1 && fr.bottom + n.scrollTop > nr.bottom + 1;
+      const recorded = window.__longPlayFocusScrolls?.get(n);
+      const focused = (recorded?.control === f && Math.abs(recorded.top - n.scrollTop) <= 1)
+        || (!!fr && fr.top >= nr.top - 1 && fr.bottom <= nr.bottom + 1 && fr.bottom + n.scrollTop > nr.bottom + 1);
       if (n.scrollTop > 1 && !focused) out.push(['sheet opened scrolled', `${name(n)} scrollTop=${Math.round(n.scrollTop)}`]);
       if (/(auto|scroll)/.test(st.overflowX) && n.scrollWidth > n.clientWidth + 1) out.push(['sheet scrolls sideways', `${name(n)} ${n.scrollWidth}>${n.clientWidth}`]);
     }
