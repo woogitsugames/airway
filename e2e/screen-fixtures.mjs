@@ -4,6 +4,11 @@
 // horizontal page scroll, no split-flap row cut to "..."). Moved from e2e/pseudo-320.mjs (night-11ac, R7h).
 
 export const SCREENS = ['menu', 'settings', 'logbook', 'puzzles', 'upgrade', 'gameover', 'hud', 'first-time'];
+/**
+ * [night-59a] D-321: the weekly board's airport pick (a hub crate chosen, only the sign with its back tile over the
+ * globe). Not in SCREENS (e2e/skin-pixels.mjs keeps its baseline set); pseudo-320 and text-scale-150 add it.
+ */
+export const UPGRADE_PICK = 'upgrade-pick';
 
 export async function mountScreen(page, screen, language, { pseudo = true, textScale = 100 } = {}) {
   await page.evaluate(async ({ screen, language, pseudo, textScale }) => {
@@ -30,17 +35,22 @@ export async function mountScreen(page, screen, language, { pseudo = true, textS
     } else if (screen === 'puzzles') {
       const { mountPuzzleSelector } = await import('/src/ui/puzzles/index.ts');
       mountPuzzleSelector(host, () => {});
-    } else if (screen === 'upgrade' || screen === 'hud') {
+    } else if (screen === 'upgrade' || screen === 'upgrade-pick' || screen === 'hud') {
+      const board = screen !== 'hud';
       const hudHost = document.createElement('div');
       hudHost.style.cssText = 'position:fixed;inset:0;pointer-events:none';
-      if (screen === 'upgrade') document.body.prepend(hudHost); else host.append(hudHost);
+      if (board) document.body.prepend(hudHost); else host.append(hudHost);
       const { mountHud } = await import('/src/ui/hud/index.ts');
-      mountHud(hudHost, {}).render({ week: 7, day: 3, timeMinutes: 642, passengers: 1284, paused: screen === 'upgrade', speed: 1, canUndo: true,
+      mountHud(hudHost, {}).render({ week: 7, day: 3, timeMinutes: 642, passengers: 1284, paused: board, speed: 1, canUndo: true,
         selectedPlane: 'turboprop', stock: { turboprop: 2, widebody: 0, hub: 0 }, minutesToBoard: 6 * 24 * 60 + 300 });
-      if (screen === 'upgrade') {
+      if (board) {
         const { WeeklyUpgradeView } = await import('/src/ui/upgrade/index.ts');
         const view = new WeeklyUpgradeView(host, { onCommand: () => {}, onCancelPick: () => {}, onPreviewModel: () => {} });
-        view.render({ week: 7, paused: true, offers: ['turboprop', 'widebody', 'hub-expansion'].map((id) => ({ id, week: 7 })) },
+        // [night-59a] D-321: the state the sim really hands over. Without `pendingHub` the board used to toggle
+        // `is-picking-hub` ON (classList.toggle(name, undefined) flips) and these suites audited the pick layout.
+        const pick = screen === 'upgrade-pick';
+        view.render({ week: 7, paused: true, pendingHub: pick, ...(pick ? { selected: 'hub-expansion' } : {}),
+          offers: ['turboprop', 'widebody', 'hub-expansion'].map((id) => ({ id, week: 7 })) },
           [{ hubId: 'LON', waiting: 11, capacity: 12, label: 'LON' }]);
       }
     } else if (screen === 'gameover') {
@@ -66,6 +76,32 @@ export async function mountScreen(page, screen, language, { pseudo = true, textS
     new Promise((done) => setTimeout(done, 5000)),
   ]));
   await page.waitForTimeout(150);
+}
+
+/**
+ * [night-59a] D-321: the fixture shows the screen it names. `upgrade` = the crate board (three crates visible, no
+ * `is-picking-hub`); `upgrade-pick` = the airport pick (`is-picking-hub`, the back tile, no crate). Other screens: [].
+ */
+export function fixtureStateAudit(page, screen) {
+  if (screen !== 'upgrade' && screen !== UPGRADE_PICK) return Promise.resolve([]);
+  return page.evaluate((screen) => {
+    const problems = [];
+    const root = document.getElementById('app'); // the board's host
+    const shown = (el) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0 && getComputedStyle(el).visibility !== 'hidden'; };
+    const crates = [...document.querySelectorAll('#app [data-testid^="upgrade-option-"]')].filter(shown).length;
+    const picking = root.classList.contains('is-picking-hub');
+    const back = [...document.querySelectorAll('#app [data-testid="upgrade-pick-back"]')].filter(shown).length;
+    if (!root.classList.contains('airway-upgrade-open')) problems.push('weekly board not open');
+    if (screen === 'upgrade') {
+      if (picking) problems.push('crate board shown in airport-pick mode (is-picking-hub)');
+      if (crates !== 3) problems.push(`${crates} crates visible, not 3`);
+    } else {
+      if (!picking) problems.push('airport pick without is-picking-hub');
+      if (crates) problems.push(`${crates} crates visible during the airport pick`);
+      if (back !== 1) problems.push('airport pick without its back tile');
+    }
+    return problems;
+  }, screen);
 }
 
 /** The e2e/pseudo-locale.mjs audit over #app, plus split-flap rows that had to cut their text. */

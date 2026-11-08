@@ -12,9 +12,11 @@ import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { withBrowser, saveDiagnostics, ARTIFACTS } from './browser.mjs';
 import { presetLanguage } from '../scripts/lib/harness.mjs';
-import { SCREENS as SHARED_SCREENS, auditScreen, mountScreen } from './screen-fixtures.mjs'; // [night-11ap] shared with text-scale-150
+import { SCREENS as SHARED_SCREENS, UPGRADE_PICK, auditScreen, fixtureStateAudit, mountScreen } from './screen-fixtures.mjs'; // [night-11ap] shared with text-scale-150
 
-const SCREENS = [...SHARED_SCREENS, 'hub-board', 'pause'];
+// [night-59a] D-321: the weekly board's airport pick is a case of its own; `upgrade` is the crate board.
+const FIXTURE_SCREENS = [...SHARED_SCREENS, UPGRADE_PICK];
+const SCREENS = [...FIXTURE_SCREENS, 'hub-board', 'pause'];
 
 const started = performance.now();
 const SHOTS = resolve(ARTIFACTS, 'text-scale-150');
@@ -22,7 +24,7 @@ const SIZES = [{ width: 320, height: 568 }, { width: 412, height: 915 }, { width
 const SCALES = process.env.AW_TEXT_SCALE ? [Number(process.env.AW_TEXT_SCALE)] : [130, 150]; // AW_TEXT_SCALE=100 for a baseline run
 /** One reading-text element per screen and its size at 100 %; the HUD and first-time card keep in-world sizes. */
 const PROBES = {
-  menu: null, settings: ['.airway-setting', 14], logbook: ['.airway-logbook__records dt', 13], puzzles: null, upgrade: null,
+  menu: null, settings: ['.airway-setting', 14], logbook: ['.airway-logbook__records dt', 13], puzzles: null, upgrade: null, 'upgrade-pick': null,
   gameover: null, hud: null, 'first-time': null, 'hub-board': ['.airway-hub-board__text', 13], pause: ['.airway-pause__button', 16],
 };
 
@@ -155,10 +157,10 @@ try {
       try {
         await presetLanguage(page, language, { clear: true });
         await page.goto(url + '?perf=scene', { waitUntil: 'networkidle' });
-        if (SHARED_SCREENS.includes(screen)) await mountScreen(page, screen, language, { pseudo: false, textScale: SCALE });
+        if (FIXTURE_SCREENS.includes(screen)) await mountScreen(page, screen, language, { pseudo: false, textScale: SCALE });
         else await mountGameSheet(page, screen, language, SCALE);
         const { problems, seen } = await auditScreen(page, { pseudo: false });
-        problems.push(...await largeTextAudit(page), ...await sheetAudit(page, screen));
+        problems.push(...await largeTextAudit(page), ...await sheetAudit(page, screen), ...await fixtureStateAudit(page, screen));
         const scale = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--airway-text-scale').trim());
         if (scale !== String(SCALE / 100)) problems.push(`root text scale ${scale}`);
         const probe = PROBES[screen];
