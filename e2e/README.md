@@ -90,8 +90,10 @@ frame holds the page's main thread for 1.4–3.2 s on an idle host (first board 
 run its "attached" / "visible" / "stable" check for `upgrade-option-N` until it ends. `test:e2e:transfer-glyphs` failed
 5 of 36 runs that way (6 copies at once beside 4 busy-loop processes; 20/20 with the busy loops alone). The session now
 sets `data-model="drawn"|"none"` on each crate when its draw is over, and `waitForBoardModels(page)` (`e2e/browser.mjs`,
-up to 120 s, polling on a timer) waits for every crate before the click. Other suites that click a crate of a freshly
-opened board on the real renderer can call it the same way.
+up to 120 s, polling on a timer) waits for every crate before the click. [night-47a] Every suite that clicks a crate of a
+freshly opened board calls it before that click (board-short, continue-framing, edge-chip-airports, edge-chip-fill,
+edge-chip-tags, edge-dock, first-time-cards, gameover-contracts, -map, -short, -tip, -unserved, logbook, pause-summary,
+pick-sign, run-timeline, smoke, undo-after-upgrade, upgrade-picks); on the stub world it returns at once (`data-model="none"`).
 
 ## Commands
 

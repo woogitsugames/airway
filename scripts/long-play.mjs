@@ -246,9 +246,11 @@ async function runReal() {
 
 // ---------------------------------------------------------------------------------------------------------------
 // [night-47a] GPT-19: the stub-world play-through (`--render=stub`). One loop step = one game hour.
-const WEEK_TICKS = 3 * 1440; // src/sim/params.ts SIM_MINUTES_PER_WEEK (3 days of 1,440 one-minute ticks)
-const DAY_TICKS = 1440;
+// One tick is one game minute; the day and week lengths come from src/sim/params.ts through Vite (runStub), never a
+// second literal here (test:week-source).
+let WEEK_TICKS = 0, DAY_TICKS = 0;
 let playedTicks = 0, hours = 0;
+const done = { pauses: 0, hubBoards: 0, rotations: 0, continues: 0, undos: 0, boards: 0 };
 const issueCounts = new Map();
 const infoSeen = new Set();
 /** One ISSUE line per distinct problem (later repeats are counted and summed up at the end). */
@@ -275,14 +277,21 @@ async function audit(label) {
     const root = document.scrollingElement || document.documentElement;
     if (root.scrollTop || root.scrollLeft || window.scrollX || window.scrollY) out.push(['page scrolled', `${window.scrollX},${window.scrollY}`]);
     if (root.scrollWidth > innerWidth + 1) out.push(['horizontal overflow', `${root.scrollWidth} > ${innerWidth}`]);
-    const name = (n) => (n.dataset.testid || n.dataset.hudAction || n.getAttribute('aria-label') || n.className || n.tagName).toString().trim().slice(0, 40);
+    // A stable name per control (counts and times in aria labels are blanked, so one problem is one key).
+    const name = (n) => (n.dataset?.testid || n.dataset?.hudAction || (n.dataset?.airport ? `${n.getAttribute('class')?.split(' ')[0]}[${n.dataset.airport}]` : '')
+      || n.getAttribute('aria-label')?.replace(/\d+([:.]\d+)?/g, '#') || n.getAttribute('class') || n.tagName).toString().trim().slice(0, 48);
     const shown = (n) => n.checkVisibility?.({ opacityProperty: true, visibilityProperty: true }) ?? !!n.offsetParent;
     for (const n of document.querySelectorAll('body *')) {
       if (!(n instanceof HTMLElement) || !n.clientHeight) continue;
       const st = getComputedStyle(n);
       if (!/(auto|scroll)/.test(st.overflowY + st.overflowX)) continue;
       if (!shown(n)) continue;
-      if (n.scrollTop > 1) out.push(['sheet scrolled by itself', `${name(n)} scrollTop=${Math.round(n.scrollTop)}`]);
+      // Focus moved into view (the report's first action) is the browser's doing on purpose, not a stale scroll.
+      // Only a scroll that the focused control needs counts as that (in view now, out of view at the top).
+      const f = document.activeElement;
+      const nr = n.getBoundingClientRect(), fr = f && f !== document.body && n.contains(f) ? f.getBoundingClientRect() : null;
+      const focused = !!fr && fr.top >= nr.top - 1 && fr.bottom <= nr.bottom + 1 && fr.bottom + n.scrollTop > nr.bottom + 1;
+      if (n.scrollTop > 1 && !focused) out.push(['sheet opened scrolled', `${name(n)} scrollTop=${Math.round(n.scrollTop)}`]);
       if (/(auto|scroll)/.test(st.overflowX) && n.scrollWidth > n.clientWidth + 1) out.push(['sheet scrolls sideways', `${name(n)} ${n.scrollWidth}>${n.clientWidth}`]);
     }
     const scrollable = [...document.querySelectorAll('body *')].filter((n) => n instanceof HTMLElement && shown(n)
@@ -298,6 +307,14 @@ async function audit(label) {
       const r = n.getBoundingClientRect();
       if (r.width < 1 || r.height < 1) continue;
       if (r.right <= 0 || r.bottom <= 0 || r.left >= innerWidth || r.top >= innerHeight) continue; // not on screen at all
+      // Inside a sheet that scrolls (the board or report at 150 %), a control below the fold or under the sheet's
+      // sticky actions is reached by scrolling: only its size counts.
+      let scroller = n.parentElement;
+      while (scroller && !(scroller.scrollHeight > scroller.clientHeight + 1 && /(auto|scroll)/.test(getComputedStyle(scroller).overflowY))) scroller = scroller.parentElement;
+      if (scroller && scroller !== document.documentElement && scroller !== document.body) {
+        if (r.width < 47.5 || r.height < 47.5) out.push([`target < 48 px: ${name(n)}`, `${r.width.toFixed(1)}x${r.height.toFixed(1)}`]);
+        continue;
+      }
       if (r.left < -1 || r.top < -1 || r.right > innerWidth + 1 || r.bottom > innerHeight + 1) {
         out.push(['control partly off screen', `${name(n)} ${Math.round(r.left)},${Math.round(r.top)},${Math.round(r.right)},${Math.round(r.bottom)}`]);
         continue;
@@ -313,7 +330,9 @@ async function audit(label) {
     }
     return { problems: out, scrollable, info };
   });
-  for (const [key, detail] of found.problems) issue(`${key}`, `${label}; ${detail}`);
+  for (const [key, detail] of found.problems) {
+    if (issue(key, `${label}; ${detail}`)) await shot(page, 'issue-' + key.replace(/[^a-z0-9]+/gi, '-').slice(0, 40));
+  }
   for (const line of found.info) if (!infoSeen.has(line)) { infoSeen.add(line); note('INFO', `${label}: ${line}`); }
   return found.scrollable;
 }
@@ -381,7 +400,7 @@ async function pauseResume(viaKey) {
   if (mid.tick !== before.tick) issue('clock moved while paused', `${before.tick} -> ${mid.tick}`);
   await page.getByTestId('action-resume').click({ timeout: 4000 }).catch((e) => issue('resume click failed', e.message.split('\n')[0]));
   const closed = await page.getByTestId('action-resume').waitFor({ state: 'hidden', timeout: 4000 }).then(() => true, () => false);
-  if (!closed) { issue('pause sheet did not close on Resume'); await shot(page, 'pause-stuck'); }
+  if (!closed) { issue('pause sheet did not close on Resume'); await shot(page, 'pause-stuck'); } else done.pauses++;
 }
 
 /** Long press on the airport with the most waiting passengers that is on screen; audit the hub board; close it. */
@@ -403,7 +422,7 @@ async function hubBoard() {
     await page.getByTestId('hub-board-close').click({ timeout: 4000 }).catch((e) => issue('hub board close failed', e.message.split('\n')[0]));
     if (!(await board.waitFor({ state: 'hidden', timeout: 3000 }).then(() => true, () => false))) issue('hub board did not close');
     if (await isPaused()) issue('closing the hub board left the game paused');
-    note('UI', `hub board ${airport.id} waiting=${airport.waiting}`);
+    note('UI', `hub board ${airport.id} waiting=${airport.waiting}`); done.hubBoards++;
     return;
   }
   note('INFO', 'hub board: no airport free to press on screen');
@@ -426,7 +445,7 @@ async function saveContinue() {
   if (after.tick !== before.tick) issue('Continue tick differs', `${after.tick} != ${before.tick}`);
   if (after.snapshotHash !== before.snapshotHash) issue('Continue hash differs', `${after.snapshotHash} != ${before.snapshotHash}`);
   if ((after.homeRegion ?? null) !== (before.homeRegion ?? null) || (after.licenceClass ?? 1) !== (before.licenceClass ?? 1)) issue('Continue lost region/class');
-  await audit('after Continue');
+  await audit('after Continue'); done.continues++;
   if (await isPaused()) await page.getByTestId('action-resume').click().catch(() => {});
   return true;
 }
@@ -456,6 +475,7 @@ async function board() {
     return;
   }
   if (!info.offers.length) { issue('upgrade screen with no offers and no pick'); await shot(page, 'upgrade-empty'); return; }
+  done.boards++;
   const scroll = await audit(`board ${info.week}`);
   if (scroll.length) note('INFO', `board ${info.week} scrollable: ${scroll.join(', ')}`);
   await shot(page, `board-w${weekOf(s.tick - 1)}`);
@@ -476,6 +496,7 @@ async function board() {
   await undo.click();
   await page.waitForTimeout(300);
   const back = await S();
+  done.undos++;
   note('UI', `Undo after ${info.offers[i]}: screen=${back.screen} upgrades=${(back.upgrades ?? []).length}`);
   if ((back.upgrades ?? []).length !== taken + 1) issue('Undo after the weekly pick lost the choice', JSON.stringify(back.upgrades));
   if (back.screen !== 'game') issue('Undo after the weekly pick left the game screen', back.screen);
@@ -508,14 +529,19 @@ async function gameOver() {
 
 async function runStub() {
   await boot();
+  ({ WEEK_TICKS, DAY_TICKS } = await page.evaluate(async () => {
+    const params = await import('/src/sim/params.ts');
+    return { WEEK_TICKS: params.SIM_MINUTES_PER_WEEK, DAY_TICKS: params.SIM_MINUTES_PER_DAY };
+  }));
   const scale = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--airway-text-scale').trim());
   note('INFO', `stub world ${PAGE_URL} text-scale=${scale || '1'} weeks=${WEEKS}`);
   await startStubRun(0xA1A1 + w + h);
   const end = t0 + minutes * 60_000;
   let lastScreen = 'game';
   let rotatedHours = 0;
-  let nextSaveWeek = 2; // Save -> Continue in week 2, then every second week
-  let hubWeek = 0, rotateWeek = 0, pauseDay = -1;
+  // Per run: Save -> Continue in week 2, then every second week; one hub board and one rotation each week.
+  let nextSaveWeek = 2, hubWeek = 0, rotateWeek = 0, pauseDay = -1;
+  const newRun = () => { nextSaveWeek = 2; hubWeek = 0; rotateWeek = 0; pauseDay = -1; };
   while (Date.now() < end && playedTicks < WEEKS * WEEK_TICKS) {
     const s = await S();
     if (s.screen !== lastScreen) { note('SCREEN', `${lastScreen} -> ${s.screen} tick=${s.tick} week=${weekOf(s.tick)} routes=${s.routeCount} planes=${s.aircraftAssignments}`); lastScreen = s.screen; }
@@ -530,7 +556,7 @@ async function runStub() {
       if (day !== pauseDay && hourOfDay >= 9) { pauseDay = day; await pauseResume(day % 2 === 1); }
       else if (week !== hubWeek && s.tick % WEEK_TICKS >= DAY_TICKS + 600) { hubWeek = week; await hubBoard(); }
       else if (week !== rotateWeek && s.tick % WEEK_TICKS >= 2 * DAY_TICKS) {
-        rotateWeek = week; rotatedHours = 6;
+        rotateWeek = week; rotatedHours = 6; done.rotations++;
         await page.setViewportSize({ width: h, height: w }); note('ROTATE', `${h}x${w}`); await page.waitForTimeout(300);
         await audit('rotated'); await shot(page, 'rotated');
       } else if (week >= nextSaveWeek && s.tick % WEEK_TICKS >= 900) {
@@ -553,14 +579,15 @@ async function runStub() {
     } else if (s.screen === 'gameover') {
       if (rotatedHours > 0) { rotatedHours = 0; await page.setViewportSize({ width: w, height: h }); }
       await gameOver();
-      undoNext = true;
+      undoNext = true; newRun();
       lastScreen = 'game';
     } else if (s.screen === 'menu') {
-      issue('unexpected menu'); await shot(page, 'menu'); await startStubRun(0xA1A1 + w + h + ++runs);
+      issue('unexpected menu'); await shot(page, 'menu'); await startStubRun(0xA1A1 + w + h + ++runs); newRun();
     } else { issue(`unexpected screen ${s.screen}`); await page.keyboard.press('Escape'); }
   }
   if (Date.now() >= end) note('INFO', `stopped by the ${minutes}-minute cap after ${(playedTicks / WEEK_TICKS).toFixed(1)} game weeks`);
   for (const [key, n] of issueCounts) if (n > 1) note('INFO', `x${n} ${key}`);
+  note('INFO', `done ${Object.entries(done).map(([k, v]) => `${k}=${v}`).join(' ')}`);
 }
 
 if (STUB) await runStub(); else await runReal();
