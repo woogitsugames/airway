@@ -204,6 +204,41 @@ The globe in every frame is drawn by our own code (`src/globe.js`) from Natural 
 "Production globe textures"); no photo texture is used. Icons, glyph layouts and all PNGs: own work (CC0). Games and
 print references in `RESEARCH.md` are links only; no third-party image is committed.
 
+## Art-direction mockups 2026-11c, K1 "Atlas satelitarny" / K2 "Nawigacja nocna" (night 64a; not shipped)
+`docs/styles/kierunki-2026-11c/makiety/fonts/` holds static SIL OFL 1.1 TTFs fetched 2026-11-08 with
+`mockups/fetch-fonts.sh` (Google Fonts CSS API; licence from github.com/google/fonts `ofl/<dir>/OFL.txt`, saved as
+`OFL-<Family>.txt` next to the fonts). Polish glyphs (ą ć ę ł ń ó ś ź ż and capitals) checked with fontTools: all
+present; U+2192 is missing in Newsreader (the mockups set arrows in Hanken Grotesk). Used only by
+`docs/styles/kierunki-2026-11c/makiety/src/`; nothing reaches `public/`, `dist/` or the apps.
+
+| Family | Weights | Used in | Licence file |
+|---|---|---|---|
+| Newsreader (+ Italic 500) | 400–700 | K1 city/country/sea labels, headings, title | `OFL-Newsreader.txt` |
+| Hanken Grotesk | 400–700 | K1 UI text and numbers (tabular) | `OFL-HankenGrotesk.txt` |
+| Manrope | 400–800 | K2 labels, UI text, title | `OFL-Manrope.txt` |
+| Sofia Sans Condensed | 500–800 | K2 clock and numbers | `OFL-SofiaSansCondensed.txt` |
+
+### UI-A "Lotniskowa tablica i paski lotu" (night 66a; not shipped)
+`docs/styles/kierunki-2026-11c/makiety/ui-a/fonts/` holds two SIL OFL 1.1 variable TTFs fetched 2026-11-08 from
+github.com/google/fonts (`ofl/archivo/Archivo[wdth,wght].ttf`, `ofl/chivomono/ChivoMono[wght].ttf`), licences saved
+next to them. Polish glyphs (ą ć ę ł ń ó ś ź ż and capitals) checked with fontTools: all present in both; U+2192 is
+missing in Chivo Mono (browser fallback; the mockup draws its arrows as SVG). Used only by `makiety/ui-a/src/`, which
+reuses the K2 globe (`makiety/src/globe.js`, same NASA textures in the git-ignored `makiety/.tex/`).
+
+| Family | Axes | Used in | Licence file |
+|---|---|---|---|
+| Archivo (Copyright 2020 The Archivo Project Authors) | wdth 62–125, wght 100–900 | split-flap board, airfield signs, labels, keys | `OFL-Archivo.txt` |
+| Chivo Mono (Copyright 2019 The Chivo Project Authors) | wght 100–900 | flight strips, teleprinter report | `OFL-ChivoMono.txt` |
+
+Globe imagery (downloaded 2026-11-08 by `src/fetch-textures.sh` from assets.science.nasa.gov into the git-ignored
+`makiety/.tex/`; **not committed, not shipped**): NASA Blue Marble Next Generation, June 2004, topography + bathymetry
+(`world.topo.bathy.200406.3x5400x2700.jpg` and the 500 m/px tile `…3x21600x21600.C1.jpg`, cropped to 0–64°E,
+18–66°N) and NASA Black Marble 2016 colour (`BlackMarble_2016_3km.jpg`, 13500×6750, resized to 8192×4096). NASA
+imagery is not copyrighted in the US (public domain; NASA logos/insignia excluded, none used); credit "NASA Earth
+Observatory". It appears baked into the committed mockup PNGs only. Borders: Natural Earth via `world-atlas`
+(public domain / ISC). Shader, atmosphere, routes, labels, HUD, aircraft silhouettes (from 2026-11b `icons.js`) and
+D-08 glyphs: own work (CC0).
+
 ## Reference material — real aeronautical charts (task 12bl, not shipped)
 `docs/references/charts/` holds 16 JPEG crops (each < 1 MB, ≈ 3.5 MB total) and a contact sheet `plansza.png` used
 only to choose the UI direction (KARTA). Nothing there is imported by the app, the site or the store builds. All
