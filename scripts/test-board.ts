@@ -2,10 +2,17 @@
 // the figures the split-flap board shows for a HUD state and their cell budgets (src/i18n/limits.ts BOARD_CELLS), the
 // night band of the 24-hour bar (D-285 L3), the flap timing of the spec (UI-A-SPEC.md §3), the speed selector's stops,
 // the Linoryt structure re-scoped to the preview, and the main.ts branch that loads the preview only in a DEV build.
+// [night-73a] D-328 (step T2): the airport signs' metrics, queue and level of detail, the atlas label placement and the
+// yellow budget of the direction signs (src/ui/skin/board-notes.ts), and the release overlay's empty sign slot.
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { BOARD_FLIP_MS, BOARD_NIGHT, BOARD_REFLIP_MS, BOARD_STAGGER_MS, boardFigures, boardTwin, isBoardNight, SPEED_ANGLE } from '../src/ui/skin/board.ts';
 import { BOARD_CELLS } from '../src/i18n/limits.ts';
+import {
+  atlasLabelWidth, codeWidth, CITY_ROW, DENSE_SIGNS, FRESH_ROW, LOD1_GLYPHS, LOD1_MAX_SPAN_KM, placeAtlas, showsCity, SIGN_ROW, signClock,
+  signLod, signQueue, signSize, textWidth, yellowSigns, type AtlasPlaced, type SignShape,
+} from '../src/ui/skin/board-notes.ts';
+import { ATLAS_LABELS, atlasLabelKey } from '../src/data/atlasLabels.ts';
 import { en } from '../src/i18n/en.ts';
 import { pl } from '../src/i18n/pl.ts';
 
@@ -82,6 +89,112 @@ test('src/main.ts loads the preview only in a DEV build with ?skin=board, before
   assert.equal(/^import [^;]*skin\/board/m.test(main), false, 'board.ts or board.css imported statically');
   const html = readFileSync('index.html', 'utf8');
   assert.match(html, /<html[^>]*data-skin="linoryt"/);
+});
+
+// ---- T2: airport signs (D-328) -----------------------------------------------------------------------------------------
+const shape = (o: Partial<SignShape>): SignShape => ({ label: 'AMM', name: 'Amman', hub: false, lod: 1, glyphs: 0, count: '', stubs: 0, fresh: null,
+  jamSeconds: null, ...o });
+test('sign metrics: code plate, queue, city strip under it, NOWE over it; the sign row is level with the pin', () => {
+  const plain = signSize(shape({}));
+  assert.equal(plain.height, SIGN_ROW + CITY_ROW, 'level 1: the sign and its city strip');
+  assert.equal(plain.lineMid, SIGN_ROW / 2);
+  assert.equal(plain.compactHeight, SIGN_ROW, 'compact: the code alone, one row');
+  const queued = signSize(shape({ glyphs: 5 }));
+  assert.equal(queued.width - plain.width >= 5 * 18, true, 'every glyph cell adds its width');
+  const fresh = signSize(shape({ fresh: 'NOWE' }));
+  assert.equal(fresh.height, FRESH_ROW + SIGN_ROW + CITY_ROW);
+  assert.equal(fresh.lineMid, FRESH_ROW + SIGN_ROW / 2, 'the sign row stays level with the pin under the NOWE tag');
+  const hub = signSize(shape({ hub: true }));
+  assert(hub.compactWidth > plain.compactWidth + 17, 'a hub plate: larger code, double frame, hub mark');
+  const jam = signSize(shape({ jamSeconds: 42 }));
+  assert(jam.compactWidth >= plain.compactWidth + codeWidth('0:42', 15), 'a jam keeps its countdown in the compact form');
+  assert.equal(signClock(42), '0:42');
+  assert.equal(signClock(61.2), '1:02');
+});
+test('sign metrics: Archivo advances cover the printed text (Chromium measurements)', () => {
+  // canvas measureText at 100 px: Archivo 800/80 % "AMM" 2.195 em, "LCA·BEY" 3.755 em; Archivo 600 "Karaczi 2 408 km" 7.735 em.
+  assert(codeWidth('AMM', 15) >= 2.195 * 15 && codeWidth('AMM', 15) <= 2.195 * 15 + 3);
+  assert(codeWidth('LCA·BEY', 15) >= 3.755 * 15);
+  assert(textWidth('Karaczi 2 408 km', 11.5) >= 7.735 * 11.5);
+  assert(textWidth('Santa Cruz de la Sierra', 11.5) >= 10.363 * 11.5);
+});
+test('city strip: level 1 under every sign, level 2 only under hubs, never when the sign already shows the city', () => {
+  assert(showsCity({ lod: 1, hub: false, label: 'AMM', name: 'Amman' }));
+  assert(!showsCity({ lod: 2, hub: false, label: 'AMM', name: 'Amman' }));
+  assert(showsCity({ lod: 2, hub: true, label: 'AMM', name: 'Amman' }));
+  assert(!showsCity({ lod: 1, hub: false, label: 'Amman', name: 'Amman' }), 'D-68 name plates');
+});
+test('queue level 1: one glyph per passenger, 7 then "+n", connecting ones hollow (at most half when it overflows)', () => {
+  const q = signQueue(['EUN', 'EUN', 'ME'], 1, 1);
+  assert.deepEqual(q.glyphs.map((g) => `${g.region}${g.hollow ? '~' : ''}`), ['EUN', 'EUN', 'ME~']);
+  assert.equal(q.count, '');
+  const many = signQueue(Array.from({ length: 12 }, (_, i) => (i % 2 ? 'EUS' : 'AFR')), 10, 1);
+  assert.equal(many.glyphs.length, LOD1_GLYPHS);
+  assert.equal(many.count, '+5');
+  assert.equal(many.glyphs.filter((g) => g.hollow).length, 4, 'half of the 7 (rounded up) hollow');
+});
+test('queue level 2: one glyph per direction, most numerous first, then the total', () => {
+  const q = signQueue(['ME', 'EUN', 'EUN', 'AFR', 'EUN', 'ME'], 1, 2);
+  assert.deepEqual(q.glyphs.map((g) => g.region), ['EUN', 'ME', 'AFR']);
+  assert.equal(q.count, '6');
+  assert.deepEqual(q.glyphs.map((g) => g.hollow), [false, false, false], 'a direction with a ready passenger is filled');
+  assert.equal(signQueue(['EUN', 'ME'], 1, 2).glyphs[1].hollow, true, 'only connecting: hollow');
+  assert.deepEqual(signQueue([], 0, 2), { glyphs: [], count: '' });
+});
+test('level of detail: level 1 at the opening framing, level 2 wide, at 130 % text or dense; hysteresis; zoom shows more', () => {
+  assert.equal(signLod(4400, 100, 6, 1), 1);
+  assert.equal(signLod(LOD1_MAX_SPAN_KM + 1, 100, 3, 1), 2);
+  assert.equal(signLod(4400, 130, 3, 1), 2);
+  assert.equal(signLod(4400, 100, DENSE_SIGNS + 1, 1), 2);
+  assert.equal(signLod(4400, 100, DENSE_SIGNS - 1, 2), 2, 'stays at 2 until two fewer');
+  assert.equal(signLod(4400, 100, DENSE_SIGNS - 2, 2), 1);
+  assert.equal(signLod(3300, 100, DENSE_SIGNS + 4, 1), 1, 'the closest zoom allows twice the density');
+});
+test('atlas labels: lighter weight and seas first, never over an obstacle or another label, inside the band', () => {
+  const out: AtlasPlaced[] = [];
+  const cands = [
+    { id: 'country-gr', kind: 'country' as const, weight: 3, x: 100, y: 100, width: 60 },
+    { id: 'sea-mediterranean', kind: 'sea' as const, weight: 2, x: 110, y: 104, width: 120 },
+    { id: 'country-tr', kind: 'country' as const, weight: 2, x: 300, y: 100, width: 50 },
+    { id: 'country-eg', kind: 'country' as const, weight: 2, x: 200, y: 300, width: 50 },
+    { id: 'sea-edge', kind: 'sea' as const, weight: 1, x: 8, y: 200, width: 60 },
+  ];
+  placeAtlas(cands, [{ l: 180, t: 290, r: 260, b: 320 }], { l: 4, t: 60, r: 396, b: 600 }, out);
+  assert.deepEqual(out.map((p) => p.id), ['sea-mediterranean', 'country-tr'], 'Greece yields to the sea, Egypt to a sign, the edge label to the band');
+  const again: AtlasPlaced[] = [];
+  placeAtlas([...cands].reverse(), [{ l: 180, t: 290, r: 260, b: 320 }], { l: 4, t: 60, r: 396, b: 600 }, again);
+  assert.deepEqual(again, out, 'deterministic');
+});
+test('atlas labels: every PL/EN name has a width; countries print in spaced capitals', () => {
+  for (const catalog of [pl, en]) {
+    for (const label of ATLAS_LABELS) {
+      const name = (catalog as Record<string, string>)[atlasLabelKey(label)];
+      assert(name, `${atlasLabelKey(label)} missing`);
+      assert(atlasLabelWidth(name, label.kind) > 0 && atlasLabelWidth(name, label.kind) < 360, `${name} ${atlasLabelWidth(name, label.kind)} px`);
+    }
+  }
+  assert(atlasLabelWidth('Polska', 'country') > atlasLabelWidth('Polska', 'sea'), 'capitals tracked .3 em');
+});
+test('direction signs: at most two yellow (new first, then the fuller), a jam is red and never counts', () => {
+  const keep = yellowSigns([{ jam: false, fresh: false, fill: .2 }, { jam: true, fresh: false, fill: 1 }, { jam: false, fresh: false, fill: .9 },
+    { jam: false, fresh: true, fill: 0 }, { jam: false, fresh: false, fill: .5 }]);
+  assert.deepEqual(keep, [false, false, true, true, false]);
+});
+test('boardTwin leaves Linoryt\'s note rules (U2) out: the board prints its own signs', () => {
+  const real = boardTwin(readFileSync('src/ui/skin/linoryt.css', 'utf8'));
+  assert.equal(real.includes('.lin-jam'), false);
+  assert.equal(real.includes('.airport-edge'), false);
+  assert.equal(real.includes('.lin-pass'), true, 'the rest of the twin stays');
+});
+test('the release overlay reaches the signs only through the empty slot (no static import of the preview)', () => {
+  const overlay = readFileSync('src/ui/overlay.ts', 'utf8');
+  assert.match(overlay, /from '\.\/overlay-skin'/);
+  assert.doesNotMatch(overlay, /board-notes|skin\/board/);
+  const slot = readFileSync('src/ui/overlay-skin.ts', 'utf8');
+  assert.match(slot, /export const noteSkin: \{ current: NoteSkin \| null \} = \{ current: null \}/);
+  const main = readFileSync('src/main.ts', 'utf8');
+  assert.match(main, /import\('\.\/ui\/skin\/board-notes'\)/);
+  assert.match(main, /noteSkin\.current = notes\.createBoardNotes/);
 });
 
 console.log(`SUMMARY test:board seed=0xA1A1 passed=${passed} failed=${failed}`);

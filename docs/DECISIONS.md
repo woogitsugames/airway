@@ -3802,3 +3802,45 @@ with `dev`; never compared with devices): render CPU p95 1.1–1.4 ms on both, t
 delivered fps low 20.5 → 22.8, medium 23.7 → 21.1, high 22.0 → 17.9 (the CPU rasteriser pays the extra fill; run-to-run
 noise is ±10 %). The Linoryt default draws no borders.
 **Status:** preview; the owner sees it with T2.
+
+## D-328 — UI-A airport signs, the jam sign, direction signs and atlas labels behind the DEV `?skin=board` preview (2026-11-08, Claude, night 73a)
+Step T2 of `docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md` (D-323; UI-A-SPEC.md §3, §6). Nothing the release ships
+changes.
+**Slot.** The overlay (`src/ui/overlay.ts`) asks a new slot `src/ui/overlay-skin.ts` (`noteSkin.current`, null in a
+release) for its notes' children and sizes, the edge chip and an after-layout hook; the DEV `?skin=board` branch of
+`src/main.ts` fills it with `src/ui/skin/board-notes.ts` (lazy chunk, type-only imports) and R2's `ATLAS_LABELS`. The
+layout engine is untouched: priority jam > new > hub > fuller, never over a pin or another note, at home, clearly its own,
+the hub board as an obstacle, compact form before hiding (D-262…D-268, D-280, D-281). Two opt-in parameters in
+`linoryt.ts` (defaults = shipped behaviour): `lineMid` (the sign row, not the name line, is level with the pin) and
+`keepLine` in the compact passes (the compact sign keeps its row level with the pin). `boardTwin` leaves Linoryt's U2
+note rules out, so only the base `overlay.css` and board.css "T2" style the signs.
+**Airport sign.** Enamel, cream: the IATA code in a cream inner frame (D-68: the city name when the player chose names),
+the waiting queue on the same enamel as D-08 glyphs with a **cream outline** (the dark Africa keyhole would vanish on
+black otherwise; hollow = still connecting), the city on its own enamel strip under the sign, a cream "NOWE" tag over its
+top edge. A **hub** sign has a double frame, a 17 px code and the hub mark (asterisk in a ring, the pin's shape); its
+spoken label starts "Hub ABC." (`board.sign.hubAria`). A **jam** turns the plate white on red with the countdown "AMM 0:42"
+(the only red on the map). Every text row has its own opaque ground, so contrast does not depend on the photo (day, dusk,
+night: `test:contrast`). Widths are computed from Archivo advances measured in Chromium (no DOM measuring).
+**Levels of detail** (spec §6): 1 = a glyph per passenger (7, then "+n") and the city under every sign; 2 = a glyph per
+direction (most numerous first) and the total, the city only under hubs, no country names; the compact form is the code
+alone (with NOWE and a jam's countdown). Level 2 when the frame spans > 5,200 km across the shorter side, text ≥ 120 %, or
+more than 10 airports on screen (back at 8; twice that at the closest zoom, so zooming in shows more). The spec's
+"< 1,500 km" is closer than the camera goes (opening framing ≈ 4,400 km on 412×915, closest ≈ 3,300 km), so the opening
+framing is level 1 and density decides the rest.
+**Direction sign** (replaces the edge chip): black on yellow, code over "Karaczi 2 408 km", the SVG arrow on its side, the
+fill gauge as a short bar under the arrow; ≥ 48 px tall. Yellow means "where to" only, so at most **two** direction signs
+are yellow (new airports first, then the fuller); the rest are enamel with cream letters, a jam's is white on red.
+**Atlas labels**: R2's 119 anchors via `projectLonLat` (the overlay's projection at `SURFACE_ANCHOR_ALTITUDE`), weight
+gate `atlasLabelEligible`, placed greedily after the signs (lighter weight and seas first) and dropped where they would
+meet a sign, a pin, the board/margins, a direction sign or another label (spec §6.6); countries letter-spaced capitals,
+seas spaced lower case, on a 2 px dark halo (cartographic legibility on the photo, not a glow). aria-hidden (the map's
+decoration; airports carry the spoken labels).
+**Budgets.** Release CSS 129.0 → 129.0 kB; main JS 1,062.5 → 1,062.8 kB raw (gzip 319.3 → 319.3; the slot calls and the
+PL/EN hub label); `dist/` 2,007.4 → 2,007.8 kB. The sign code and its CSS are DEV-only.
+**Tests.** `test:board` (+11), `test:note-layout` (the fixtures again with sign sizes, +9), `test:contrast` (+18 pairs),
+`test:cvd` (glyphs on enamel and paper), `test:skin-tokens` (atlas pairs), `test:e2e:board:stub` (sign audit + a live jam
+on 412×915 and 915×412), shots `docs/shots/t2/` (`npm run shots:board:t2`).
+**Open.** Many off-screen airports still give many direction signs (the edge-chip placement is unchanged); whether to cap
+them is for the owner (question in the PR). A sign beside Athens can still cover the Peloponnese when its right side is
+taken: the engine knows pins and signs, not land.
+**Status:** preview; the owner sees it with R3 (plan §7 gate).

@@ -19,8 +19,11 @@ import {
 } from './skin/linoryt'; // [night-30a] D-284 U2; [night-46a] D-301: the shipped skin's notes
 import './overlay.css';
 import { setClass } from './classes'; // [night-59a] D-322
+import { noteSkin, type NoteSkinFrame } from './overlay-skin'; // [night-73a] D-328: the DEV `?skin=board` signs
+import { SURFACE_ANCHOR_ALTITUDE } from '../render/projection'; // [night-73a] D-328: projectLonLat's altitude (R2)
 
 const DEG = Math.PI / 180;
+const EARTH_KM = 6371;
 const MAX_GLYPHS = 6;
 const SVG = 'http://www.w3.org/2000/svg';
 
@@ -322,6 +325,12 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
   const layer = document.createElement('div');
   layer.className = 'airport-overlay';
   host.appendChild(layer);
+  // [night-73a] D-328: the UI-A preview's airport signs, direction signs and atlas labels (null in a release build).
+  const skin = linoryt.on ? noteSkin.current : null;
+  skin?.mount(layer);
+  let visibleCount = 0;
+  const shownEdges: { el: HTMLElement; box: { x: number; y: number; width: number; height: number }; jam: boolean; fresh: boolean; fill: number }[] = [];
+  const edgeBoxes: { x: number; y: number; width: number; height: number }[] = [];
   const entries: BubbleEntry[] = [];
   const slots: TagSlot[] = [];
   // [night-11az] D-257: the tags plus one fixed obstacle per airport stamp ([night-30a] D-288), so a note never covers one.
@@ -417,7 +426,18 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
     if (trendNode && entry.waiting.length > 0) want.push(trendNode);
     want.push(entry.timer);
     // [night-30a] D-284 U2: the Linoryt printed note (name, fill bar of cut ticks, glyphs with counts, jam block).
-    if (linoryt.on) {
+    if (skin) {
+      usedKinds.clear();
+      skin.children(bubble, want, {
+        code: entry.airport.code, label: entry.airport.label ?? entry.airport.code, name: entry.airport.name ?? '',
+        hub: entry.hub, waiting: entry.waiting, connecting: entry.connecting, capacity: entry.capacity, jamSeconds: entry.jamSeconds,
+        isNew: entry.isNew,
+        stubs: [...(entry.closed ? [entry.barrier] : []), ...(entry.surge ? [entry.surgeStub] : []), ...(entry.front ? [entry.frontStub] : [])],
+        stubsWidth: (entry.closed ? BARRIER_WIDTH : 0) + (entry.surge ? entry.surgeWidth : 0) + (entry.front ? entry.frontWidth : 0),
+        trend: trendNode, trendWidth: TREND_WIDTH, timer: entry.timer,
+        glyph: (region, hollowGlyph) => pooledGlyph(entry, region, hollowGlyph, usedKinds),
+      });
+    } else if (linoryt.on) {
       usedKinds.clear();
       linorytNoteChildren(bubble, want, {
         name: entry.airport.name ?? entry.airport.code, code: entry.airport.code, hub: entry.hub, waiting: entry.waiting,
@@ -458,7 +478,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
         (plated ? entry.plateWidth - (plateOnly ? 8 : 0) : 0)) : 0;
     // [night-30a] D-284 U2: every airport prints its note (name and fill bar at least); an empty one is placed last.
     if (linoryt.on) {
-      entry.mainWidth = linorytNoteSize(bubble).width;
+      entry.mainWidth = skin ? skin.size(bubble).width : linorytNoteSize(bubble).width;
       entry.tag.minor = !(entry.waiting.length > 0 || jammed || entry.isNew || entry.closed || surged || fronted);
     }
     setClass(bubble, 'airport-bubble--new', entry.isNew);
@@ -484,7 +504,8 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       entry.timer.textContent = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
     }
     const label = jammed ? t('airport.jammed', { code: entry.airport.code, seconds: Math.ceil(entry.jamSeconds ?? 0) }) : t('airport.waiting', { code: entry.airport.code, count: entry.waiting.length });
-    const aria = (entry.isNew ? t('airport.newAria', { code: entry.airport.code }) + ' ' : '') +
+    const aria = (skin && entry.hub ? t('board.sign.hubAria', { code: entry.airport.code }) + ' ' : '') +
+      (entry.isNew ? t('airport.newAria', { code: entry.airport.code }) + ' ' : '') +
       (entry.closed ? t('airport.curfewAria', { code: entry.airport.code }) + ' ' : '') +
       (surgeAria ? surgeAria + ' ' : '') + (frontAria ? frontAria + ' ' : '') + label +
       (entry.connecting > 0 ? ' ' + t('airport.connectingAria', { count: entry.connecting }) : '') +
@@ -517,9 +538,27 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
     sizeTagGroup(entry.tag, entry.mainWidth, entry.slotRect);
     // [night-30a] D-284 U2: the printed note's own height, the slot tag hung under it.
     if (linoryt.on && entry.mainWidth > 0) {
-      entry.tag.height = linorytNoteSize(entry.bubble).height + (entry.slotRect.width > 0 ? SLOT_TAG_GAP + SLOT_TAG_HEIGHT : 0);
+      entry.tag.height = (skin ? skin.size(entry.bubble) : linorytNoteSize(entry.bubble)).height +
+        (entry.slotRect.width > 0 ? SLOT_TAG_GAP + SLOT_TAG_HEIGHT : 0);
     }
   }
+
+  /**
+   * [night-73a] D-328: ground distance (km) across the screen's shorter side at the globe's centre, from the camera's
+   * height over the surface and its field of view (a perspective camera; Infinity otherwise).
+   */
+  function frameSpanKm(): number {
+    const fov = (camera as Camera & { fov?: number }).fov;
+    if (typeof fov !== 'number') return Infinity;
+    const distance = cameraPosition.setFromMatrixPosition(camera.matrixWorld).length();
+    const across = 2 * Math.max(0, distance - radius) * Math.tan(fov * DEG / 2) * Math.min(1, width / height);
+    return across / radius * EARTH_KM;
+  }
+  const skinFrame: { -readonly [K in keyof NoteSkinFrame]: NoteSkinFrame[K] } = {
+    layer, bounds, spanKm: Infinity, slots: layoutSlots, edges: shownEdges,
+    project: options.project && !options.globeTransform
+      ? (lon, lat, out) => options.project!(lon, lat, SURFACE_ANCHOR_ALTITUDE, out) : null,
+  };
 
   /** [task-38] Rebuild the slot tag text only when the held count or the countdown changes. */
   function rebuildSlot(entry: BubbleEntry): void {
@@ -786,6 +825,9 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       }
       // [night-30a] D-284 U2: the Linoryt paper margins (top margin, dock) bound the notes and the edge chips.
       if (linoryt.on) linorytFrameStart(host, width, height, bounds, edgeBounds);
+      // [night-73a] D-328: the signs' level of detail (zoom, text size, density); a change rebuilds every sign.
+      if (skin && skin.frame({ spanKm: frameSpanKm(), visible: visibleCount })) for (const entry of entries) rebuildBubble(entry);
+      visibleCount = 0;
       for (const entry of entries) {
         marker.copy(entry.anchor);
         transformedNormal.copy(entry.normal);
@@ -811,6 +853,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
         }
         // Only the viewport edge hides a tag; HUD clearance is handled by layoutTags(bounds).
         const inView = front && x >= 10 && x <= width - 10 && y >= 10 && y <= height - 10;
+        if (inView) visibleCount++;
         // [night-21a] D-268: an airport under the open hub board shows no note (the board is drawn over it).
         const underBoard = board !== null && inView && x > board.l - 2 && x < board.r + 2 && y > board.t - 2 && y < board.b + 2;
         entry.tag.active = inView && !underBoard && (entry.mainWidth > 0 || entry.slotRect.width > 0); // [task-38]
@@ -830,8 +873,9 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
           }
           sizeGroup(entry);
           linorytNoteFrame(entry.tag, { code: entry.airport.code, hub: entry.hub, jam: entry.jamSeconds !== null, fresh: entry.isNew,
-            fill: entry.capacity > 0 ? Math.min(1, entry.waiting.length / entry.capacity) : 0, size: linorytNoteSize(entry.bubble),
-            viewWidth: bounds.width, board });
+            fill: entry.capacity > 0 ? Math.min(1, entry.waiting.length / entry.capacity) : 0,
+            size: skin ? skin.size(entry.bubble) : linorytNoteSize(entry.bubble), viewWidth: bounds.width, board,
+            ...(skin ? { lineMid: skin.lineMid(entry.bubble) } : {}) });
         }
         const chip = entry.chip;
         chip.offscreen = !inView;
@@ -841,7 +885,12 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
           const dy = -(transformedNormal.x * cam[4] + transformedNormal.y * cam[5] + transformedNormal.z * cam[6]);
           projectEdgeChip(chip, dx, dy, entry.airport.lon, edgeBounds);
           // [night-30a] D-284 U2: the printed chip "Karaczi → / 2 408 km · 8 z 12", as wide as its lines.
-          if (linoryt.on) {
+          if (skin) {
+            const length = Math.hypot(cameraPosition.x, cameraPosition.y, cameraPosition.z) || 1;
+            const cos = Math.max(-1, Math.min(1, transformedNormal.dot(cameraPosition) / length));
+            chip.width = skin.edge(entry.edge, { code: entry.airport.code, name: entry.airport.name ?? entry.airport.code,
+              km: Math.acos(cos) * EARTH_KM, taken: Math.min(entry.waiting.length, entry.capacity), capacity: entry.capacity });
+          } else if (linoryt.on) {
             chip.width = linorytEdge(entry.edge, entry.airport.name ?? entry.airport.code, entry.airport.code, transformedNormal, cameraPosition,
               Math.min(entry.waiting.length, entry.capacity), entry.capacity);
           }
@@ -850,9 +899,10 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       if (linoryt.on) linorytFrameEnd(); // [night-30a] U2: the busiest hub's note must show
       layoutTags(layoutSlots, bounds);
       // [night-30a] D-284 U2: a note with no room takes its one-line compact form (layout again); chips of their own width.
-      if (linoryt.on) linorytCompactPasses(layoutSlots, bounds, layoutTags);
+      if (linoryt.on) linorytCompactPasses(layoutSlots, bounds, layoutTags, skin !== null);
       if (linoryt.on) placeSizedEdgeChips(chips, slots, edgeBounds, linorytMarkers(slots));
       else placeEdgeChips(chips, slots, edgeBounds);
+      let edgeCount = 0;
       for (const entry of entries) {
         const tag = entry.tag;
         const showBubble = tag.placed && entry.mainWidth > 0; // [task-38] the box may hold only a slot tag
@@ -896,11 +946,30 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
           entry.lastEdgeX = entry.chip.x;
           entry.lastEdgeY = entry.chip.y;
         }
+        if (skin && showEdge) {
+          const box = edgeBoxes[edgeCount] ??= { x: 0, y: 0, width: 0, height: 0 };
+          box.x = chip.x;
+          box.y = chip.y;
+          box.width = chip.width ?? EDGE_CHIP_WIDTH;
+          box.height = EDGE_CHIP_HEIGHT;
+          const item = shownEdges[edgeCount] ??= { el: entry.edge, box, jam: false, fresh: false, fill: 0 };
+          item.el = entry.edge;
+          item.box = box;
+          item.jam = chip.jammed;
+          item.fresh = entry.isNew;
+          item.fill = entry.capacity > 0 ? Math.min(1, entry.waiting.length / entry.capacity) : 0;
+          edgeCount++;
+        }
         if (showEdge && entry.lastEdgeSide !== entry.chip.side) {
           const icon = entry.edge.firstElementChild as SVGElement | null;
           if (icon) icon.style.transform = `rotate(${entry.chip.side === 0 ? 180 : entry.chip.side === 1 ? 0 : entry.chip.side === 2 ? -90 : 90}deg)`;
           entry.lastEdgeSide = entry.chip.side;
         }
+      }
+      if (skin) {
+        shownEdges.length = edgeCount;
+        skinFrame.spanKm = frameSpanKm();
+        skin.frameEnd(skinFrame);
       }
     },
     getPoolStats() {

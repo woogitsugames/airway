@@ -90,6 +90,7 @@ export const en = {
   'board.dock.widebodyShort': 'Wide',
   'board.dock.hub': 'Hub',
   'board.dock.speed': 'Speed',
+  'board.sign.hubAria': 'Hub {code}.', // [night-73a] D-328: spoken before a hub sign's label (UI-A preview)
   'menu.tagline': 'An airline network on the whole globe',
   'hud.crates.next': 'Next crates {when}',
   'hud.speed': 'Game speed: {speed}×. Change speed',

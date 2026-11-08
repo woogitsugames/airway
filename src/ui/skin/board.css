@@ -55,6 +55,13 @@
   --board-rule: #A89A78;
   --board-print: #2A2620;
   --board-blue: #3B5F8C; /* a hub strip's holder in normal operation (T3) */
+  /* [night-73a] D-328 (T2): atlas labels on the photo globe. Cream capitals for countries, pale water blue for seas, each
+     on a dark cartographic halo (a 2 px shadow in the photo's own night, not a glow): the halo is the ground the letters
+     are read against (test:contrast), the photo only shows round it. */
+  --board-atlas-country: #DCD5C3;
+  --board-atlas-sea: #A9C3D8;
+  --board-atlas-halo: #050607;
+  --board-atlas-halo-soft: rgba(5, 6, 7, .72);
   --board-face: 'Archivo', 'Atkinson Hyperlegible Next', 'Overpass', sans-serif;
   --board-mono: 'Chivo Mono', 'Atkinson Hyperlegible Next', 'Overpass', monospace;
   --board-flip: 120ms; /* one flap cell (BOARD_FLIP_MS in board.ts) */
@@ -289,6 +296,112 @@
 :root[data-skin="board"] .airway-hud[data-layout='foldable'] .airway-dock {
   grid-template-columns: 76px 100px 100px 80px 76px; border-left: 0; border-top: 2px solid var(--board-console-2);
 }
+
+/* T2 */
+/* ---- T2: airport signs, the jam sign, direction signs, atlas labels ----------------------------------------------
+   [night-73a] D-328 (PLAN-NOWY-KIERUNEK.md step T2; UI-A-SPEC.md §3, §6). The overlay layer carries `.bd-notes` (src/ui/
+   skin/board-notes.ts), whose builder writes each note's children flat: [NOWE tag, break] code plate [jam countdown]
+   [stubs, queue glyphs, count, trend] [break, city strip]. Every row stands on its own opaque enamel, so its letters
+   read the same over the day, dusk and night photo; nothing is translucent, rounded, glowing or shadowed. Sizes are CSS
+   px fixed in the world (D-267) and match the metrics of board-notes.ts (signSize). Linoryt's own note rules are left
+   out of the twin (boardTwin), so only the base overlay.css and these rules apply. */
+:root[data-skin="board"] .bd-notes { color: var(--board-cream); font-family: var(--board-face); }
+:root[data-skin="board"] .bd-notes .airport-bubble {
+  box-sizing: border-box; display: flex; flex-wrap: wrap; align-items: flex-start; align-content: flex-start; gap: 0;
+  height: auto; padding: 0; clip-path: none; background: transparent; color: var(--board-cream); white-space: nowrap;
+  font: 700 14px/24px var(--board-face); font-stretch: 80%;
+}
+:root[data-skin="board"] .bd-notes .airport-bubble::before,
+:root[data-skin="board"] .bd-notes .airport-bubble__plate { display: none; }
+:root[data-skin="board"] .bd-notes .airport-bubble--compact { width: var(--bd-compact-w) !important; }
+:root[data-skin="board"] .bd-notes .airport-bubble--compact > :not(.bd-plate, .bd-new, .bd-br, .airport-bubble__timer) { display: none; }
+:root[data-skin="board"] .bd-notes .bd-br { flex: 0 0 100%; height: 0; }
+/* NOWE: a cream tag hung over the sign's top edge (spec §3), ink capitals; no stamp animation (no bounce). */
+:root[data-skin="board"] .bd-notes .bd-new {
+  box-sizing: border-box; flex: none; height: 13px; min-width: 0; margin: 0 0 1px; padding: 0 4px; background: var(--board-cream);
+  color: var(--board-sign-ink); font: 700 9.5px/13px var(--board-face); letter-spacing: .08em; text-transform: uppercase; animation: none;
+}
+/* The code plate: enamel, a cream frame inside it round the code (a hub's double, with the hub mark). */
+:root[data-skin="board"] .bd-notes .bd-plate {
+  box-sizing: border-box; flex: none; display: inline-flex; align-items: center; gap: 3px; height: 24px; padding: 2px;
+  background: var(--board-enamel); color: var(--board-cream);
+}
+:root[data-skin="board"] .bd-notes .bd-code {
+  box-sizing: border-box; display: block; height: 20px; padding: 0 4px; border: 1.5px solid currentColor;
+  font: 800 15px/17px var(--board-face); font-stretch: 80%; letter-spacing: .01em;
+}
+:root[data-skin="board"] .bd-notes .bd-sign--hub .bd-code { border: 3px double currentColor; font-size: 17px; line-height: 14px; }
+:root[data-skin="board"] .bd-notes .bd-hubmark { flex: none; display: block; width: 14px; height: 14px; }
+/* A jam (spec §2: the only red on the map): the plate and the countdown white on red. */
+:root[data-skin="board"] .bd-notes .airport-bubble--jam { background: transparent; color: var(--board-cream); }
+:root[data-skin="board"] .bd-notes .airport-bubble--jam .bd-plate { background: var(--board-red); color: var(--board-white); }
+:root[data-skin="board"] .bd-notes .airport-bubble__timer {
+  box-sizing: border-box; flex: none; height: 24px; margin: 0; padding: 0 6px; background: var(--board-red); color: var(--board-white);
+  font: 800 15px/24px var(--board-face); font-stretch: 80%; font-variant-numeric: tabular-nums;
+}
+/* The queue on the sign's enamel: stubs, the D-08 glyphs (cream outline, so every fill reads on black by its shape;
+   a passenger still connecting is the same shape hollow), the count, the trend chevron. */
+:root[data-skin="board"] .bd-notes .airport-bubble > :is(.airport-region-glyph, .bd-count, .airport-bubble__trend, .airport-bubble__curfew, .airport-bubble__surge, .airport-bubble__front) {
+  flex: none; height: 24px; margin: 0; background-color: var(--board-enamel);
+}
+/* The glyph keeps the theme's D-08 size (16 px, 21 px with enhanced glyphs) and stroke; 1 px of enamel each side. */
+:root[data-skin="board"] .bd-notes .airport-bubble > .airport-region-glyph { box-sizing: content-box; height: var(--airway-glyph-size); padding: 4px 1px; }
+:root[data-skin="board"][data-airway-cvd="enhanced"] .bd-notes .airport-bubble > .airport-region-glyph { padding: 1.5px 1px; }
+:root[data-skin="board"] .bd-notes .airport-region-glyph path { stroke: var(--board-cream) !important; }
+:root[data-skin="board"] .bd-notes .airport-region-glyph--connecting path { fill: var(--board-enamel) !important; stroke-width: 1.6px; }
+:root[data-skin="board"] .bd-notes .bd-count { box-sizing: border-box; padding: 0 2px 0 3px; font: 700 14px/24px var(--board-face); font-stretch: 80%; }
+:root[data-skin="board"] .bd-notes .airport-bubble > .airport-bubble__trend { box-sizing: border-box; width: 17px; padding: 0 3px 0 4px; border-left: 0; animation: none; }
+:root[data-skin="board"] .bd-notes .airport-bubble > .airport-bubble__curfew { box-sizing: border-box; width: 32px; align-items: center; justify-content: center; }
+:root[data-skin="board"] .bd-notes .airport-bubble > :is(.airport-bubble__surge, .airport-bubble__front) { height: 20px; margin: 2px 0; }
+:root[data-skin="board"] .bd-notes .airport-bubble > :is(.bd-plate, .airport-bubble__timer) + :is(.airport-region-glyph, .bd-count, .airport-bubble__trend, .airport-bubble__curfew, .airport-bubble__surge, .airport-bubble__front) {
+  border-left: 4px solid var(--board-enamel);
+}
+:root[data-skin="board"] .bd-notes .airport-bubble > :is(.airport-region-glyph, .bd-count, .airport-bubble__trend, .airport-bubble__curfew, .airport-bubble__surge, .airport-bubble__front):is(:last-child, :has(+ .bd-br)) {
+  border-right: 4px solid var(--board-enamel);
+}
+/* The city on its own enamel strip under the sign (spec: Archivo 600, 11 pt). */
+:root[data-skin="board"] .bd-notes .bd-city {
+  box-sizing: border-box; flex: none; height: 16px; margin-top: 1px; padding: 0 4px; background: var(--board-enamel);
+  color: var(--board-cream); font: 600 11.5px/16px var(--board-face);
+}
+/* The departure-slot tag hung under the sign: enamel, cream. */
+:root[data-skin="board"] .bd-notes .airport-slot { border-color: var(--board-cream); background: var(--board-enamel); color: var(--board-cream); clip-path: none; font-family: var(--board-face); }
+:root[data-skin="board"] .bd-notes .airport-slot__stub { background: var(--board-cream); color: var(--board-sign-ink); }
+:root[data-skin="board"] .bd-notes :is(.airport-slot__label, .airport-slot__time, .airport-slot__count) { font-family: var(--board-face); }
+/* Direction sign (replaces the edge chip): black on yellow, code over "city 2 408 km", the arrow on the side it points
+   to; the code stays the button's (unprinted) text, its accessible name says the rest. Past the yellow budget the sign is
+   enamel with cream letters; a jam's is white on red. */
+:root[data-skin="board"] .bd-notes .airport-edge {
+  display: block; box-sizing: border-box; height: 48px; min-width: 64px; padding: 3px 28px 0 10px; border: 0; border-radius: 2px;
+  background: var(--board-sign); color: var(--board-sign-ink); box-shadow: none; font-size: 0; line-height: 0; letter-spacing: 0;
+  text-align: left; white-space: nowrap; animation: none;
+}
+:root[data-skin="board"] .bd-notes .airport-edge::before {
+  content: attr(data-bd-code); display: block; overflow: hidden; font: 800 15px/17px var(--board-face); font-stretch: 80%; letter-spacing: .02em;
+}
+:root[data-skin="board"] .bd-notes .airport-edge::after {
+  content: attr(data-bd-line); display: block; overflow: hidden; font: 600 11.5px/13px var(--board-face);
+}
+:root[data-skin="board"] .bd-notes .airport-edge > svg:first-child { position: absolute; top: 15px; right: 6px; width: 18px; height: 18px; }
+:root[data-skin="board"] .bd-notes .airport-edge--gauge { padding-bottom: 0; }
+/* The fill gauge: a short bar under the arrow (under the text it read as an underline). */
+:root[data-skin="board"] .bd-notes .airport-edge__gauge { left: auto; right: 6px; width: 18px; bottom: 7px; height: 5px; border-width: 1px; }
+:root[data-skin="board"] .bd-notes .airport-edge__gauge--high .airport-edge__fill { background: var(--board-red); }
+:root[data-skin="board"] .bd-notes .airport-edge--new { border: 0; background: var(--board-sign); color: var(--board-sign-ink); box-shadow: none; }
+:root[data-skin="board"] .bd-notes .airport-edge--curfew:not(.airport-edge--jam) { background-image: none; }
+:root[data-skin="board"] .bd-notes .airport-edge.bd-edge--quiet { background: var(--board-enamel); color: var(--board-cream); outline: 1px solid var(--board-cream-2); outline-offset: -1px; }
+:root[data-skin="board"] .bd-notes .airport-edge--jam { background: var(--board-red); color: var(--board-white); animation: none; }
+:root[data-skin="board"] .bd-notes .airport-edge--jam .airport-edge__gauge--high .airport-edge__fill { background: currentColor; }
+:root[data-skin="board"] .bd-notes .airport-edge:focus-visible { outline: 3px solid var(--board-cream); outline-offset: 2px; }
+/* Atlas labels (R2 anchors): letter-spaced capitals for countries, spaced lower case for seas; under every sign. */
+:root[data-skin="board"] .bd-atlas { position: absolute; inset: 0; pointer-events: none; }
+:root[data-skin="board"] .bd-atlas__label {
+  position: absolute; left: 0; top: 0; height: 16px; white-space: nowrap; color: var(--board-atlas-country);
+  font: 600 10.5px/16px var(--board-face); letter-spacing: .3em; text-transform: uppercase;
+  text-shadow: 0 0 2px var(--board-atlas-halo), 0 1px 2px var(--board-atlas-halo-soft);
+}
+:root[data-skin="board"] .bd-atlas__label--sea { color: var(--board-atlas-sea); font-size: 12px; letter-spacing: .12em; text-transform: none; }
+/* end T2 */
 
 /* D-88 "Reduce motion": no flap, no key travel, no knob turn (the HUD's own rule already stops every animation). */
 :root[data-skin="board"][data-airway-motion="reduce"] .bd-face,

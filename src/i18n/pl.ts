@@ -90,6 +90,7 @@ export const pl = {
   'board.dock.widebodyShort': 'Szeroki',
   'board.dock.hub': 'Hub',
   'board.dock.speed': 'Tempo',
+  'board.sign.hubAria': 'Hub {code}.', // [night-73a] D-328: spoken before a hub sign's label (UI-A preview)
   'menu.tagline': 'Sieć lotnicza na całym globie',
   'hud.crates.next': 'Następne skrzynie {when}',
   'hud.speed': 'Prędkość gry: {speed}×. Zmień prędkość',

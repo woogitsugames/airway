@@ -11,16 +11,24 @@
 //     Hub an octagon, Speed a rotary selector); each caption inside its key and unclipped; no yellow anywhere in the HUD
 //     (yellow is "where to / what next" only, spec §2); choosing an aircraft turns its plate cream with the lamp lit;
 //   - no horizontal overflow, no page error.
+//   - [night-73a] D-328 (step T2) the airport signs: every shown sign one row (nothing wraps or spills), in Archivo,
+//     beside its own pin (never on a pin, within 60 px of its own), no two signs overlap; the level of detail follows the
+//     text size (level 2 from 130 %); atlas labels never meet a sign or a pin; at most two yellow direction signs; on
+//     412×915 and 915×412 the run is played on to a live jam: the jam's sign (or its direction sign) is white on red with
+//     a "m:ss" countdown, and the jammed airport's own sign is checked after the camera turns to it.
 // `--shots` writes PL/EN 412×915, 915×412 and 320×568 (plus a 150 % and a chosen-plate frame) to docs/shots/t1/;
-// otherwise PNGs go to .e2e/board/. Inspect every PNG.
+// `--shots=t2` writes the T2 set to docs/shots/t2/ (the same frames, the jam turned to, a network of ten airports on
+// screen and the same at the closest zoom); otherwise PNGs go to .e2e/board/. Inspect every PNG.
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { withBrowser, newGamePage, waitForScreen, clickTestId, ROOT, ARTIFACTS, SEED, gameUrl, assertRender, RENDER } from './browser.mjs';
 
 const started = performance.now();
-const SHOTS = process.argv.includes('--shots');
-const OUT = SHOTS ? resolve(ROOT, 'docs/shots/t1') : resolve(ARTIFACTS, 'board');
+const SHOTS_ARG = process.argv.find((arg) => arg === '--shots' || arg.startsWith('--shots='));
+const SHOTS = SHOTS_ARG !== undefined;
+const T2 = SHOTS_ARG === '--shots=t2';
+const OUT = SHOTS ? resolve(ROOT, T2 ? 'docs/shots/t2' : 'docs/shots/t1') : resolve(ARTIFACTS, 'board');
 const notch = { top: 47, bottom: 34, side: 47 };
 /** [width, height, text scale, notch?] */
 const CASES = SHOTS
@@ -124,7 +132,93 @@ async function audit(page) {
       return [s.color, s.backgroundColor, s.fill, s.stroke, s.borderTopColor].includes('rgb(243, 195, 23)');
     });
     if (yellow.length) problems.push(`yellow in the HUD: ${yellow.slice(0, 3).map(name).join(', ')}`);
-    return problems;
+    return [...problems, ...signProblems()];
+
+    // [night-73a] D-328 (T2): the airport signs, direction signs and atlas labels.
+    function signProblems() {
+      const out = [];
+      const layer = document.querySelector('.airport-overlay.bd-notes');
+      if (!layer) return ['the overlay has no board signs (.bd-notes)'];
+      const origin = layer.getBoundingClientRect();
+      const stamps = (window.__awLinoryt?.stamps?.() ?? []).filter((s) => s.visible && s.half > 0)
+        .map((s) => ({ ...s, x: s.x + origin.left, y: s.y + origin.top }));
+      const probe = window.__awBoardSigns;
+      const scale = Number(root.dataset.airwayTextScale ?? 100);
+      if (!probe) out.push('no sign probe');
+      else if (scale >= 130 && probe.lod !== 2) out.push(`level of detail ${probe.lod} at ${scale} % text`);
+      const signs = [...layer.querySelectorAll('.airport-bubble.bd-sign')].filter((b) => !b.hidden && shown(b));
+      if (signs.length === 0) out.push('no airport sign shown');
+      const rects = signs.map((b) => box(b));
+      signs.forEach((sign, i) => {
+        const id = sign.dataset.airport;
+        const r = rects[i];
+        const plate = sign.querySelector('.bd-plate');
+        if (!plate || !shown(plate)) { out.push(`${id}: no code plate`); return; }
+        const top = box(plate).top;
+        for (const child of sign.children) {
+          if (!shown(child) || child.matches('.bd-br, .bd-city, .bd-new')) continue;
+          if (Math.abs(box(child).top - top) > 1) out.push(`${id}: ${child.getAttribute('class')} wrapped off the sign row`);
+          if (box(child).right > r.right + 1) out.push(`${id}: ${child.getAttribute('class')} spills out of the sign`);
+        }
+        if (sign.scrollHeight > r.height + 1) out.push(`${id}: sign taller than its box`);
+        const face = getComputedStyle(sign.querySelector('.bd-code')).fontFamily;
+        if (!/^["']?Archivo/.test(face)) out.push(`${id}: code face ${face}`);
+        const own = stamps.find((s) => s.id === id);
+        if (own) {
+          const dx = Math.max(r.left - own.x, 0, own.x - r.right), dy = Math.max(r.top - own.y, 0, own.y - r.bottom);
+          if (Math.hypot(dx, dy) > 60) out.push(`${id}: sign ${Math.round(Math.hypot(dx, dy))} px from its pin`);
+        }
+        for (const s of stamps) {
+          const h = s.half * .7;
+          if (s.x + h > r.left && s.x - h < r.right && s.y + h > r.top && s.y - h < r.bottom) out.push(`${id}: sign on ${s.id}'s pin`);
+        }
+        for (let j = i + 1; j < signs.length; j++) if (meet(r, rects[j])) out.push(`${id}: sign overlaps ${signs[j].dataset.airport}'s`);
+      });
+      for (const label of [...layer.querySelectorAll('.bd-atlas__label')].filter((el) => !el.hidden)) {
+        const r = box(label);
+        if (rects.some((s) => meet(r, s))) out.push(`atlas label "${label.textContent}" over a sign`);
+        if (stamps.some((s) => s.x + s.half > r.left && s.x - s.half < r.right && s.y + s.half > r.top && s.y - s.half < r.bottom)) {
+          out.push(`atlas label "${label.textContent}" over a pin`);
+        }
+      }
+      const edges = [...layer.querySelectorAll('.airport-edge')].filter((el) => !el.hidden && shown(el));
+      const yellowSigns = edges.filter((el) => getComputedStyle(el).backgroundColor === 'rgb(243, 195, 23)');
+      if (yellowSigns.length > 2) out.push(`${yellowSigns.length} yellow direction signs (at most 2)`);
+      for (const el of edges) if (box(el).height < 47.5) out.push(`direction sign ${el.textContent} ${box(el).height} px tall`);
+      return out;
+    }
+  });
+}
+
+/** [night-73a] D-328: plays on (answering weekly boards) until a jam shows; the jam's sign or direction sign is checked. */
+async function jamProblems(page) {
+  for (let i = 0; i < 3000; i++) {
+    const screen = await page.evaluate(() => window.aw.state().screen);
+    if (screen === 'upgrade') {
+      await page.evaluate(() => document.querySelector('[data-testid^="upgrade-option-"]:not([data-upgrade="hub-expansion"]):not([data-upgrade="departure-slots"])')?.click());
+      await page.waitForTimeout(100);
+      continue;
+    }
+    if (screen !== 'game') return [`no live jam before the screen "${screen}"`];
+    await page.evaluate(() => window.aw.advanceTicks(5));
+    if (await page.evaluate(() => !!document.querySelector('.bd-notes :is(.airport-bubble--jam, .airport-edge--jam):not([hidden])'))) break;
+  }
+  // Turn to the jammed airport (its direction sign navigates there), then check its sign.
+  await page.evaluate(() => document.querySelector('.bd-notes .airport-edge--jam:not([hidden])')?.click());
+  await page.waitForTimeout(1200);
+  return await page.evaluate(() => {
+    const out = [];
+    const jam = document.querySelector('.bd-notes .airport-bubble--jam:not([hidden])');
+    const edge = document.querySelector('.bd-notes .airport-edge--jam:not([hidden])');
+    if (!jam && !edge) return ['no jam sign after playing on'];
+    if (jam) {
+      const plate = getComputedStyle(jam.querySelector('.bd-plate'));
+      const timer = jam.querySelector('.airport-bubble__timer');
+      if (plate.backgroundColor !== 'rgb(192, 35, 27)' || plate.color !== 'rgb(255, 255, 255)') out.push(`jam plate ${plate.color} on ${plate.backgroundColor}`);
+      if (!timer || timer.hidden || !/^\d+:\d\d$/.test(timer.textContent ?? '')) out.push(`jam countdown "${timer?.textContent}"`);
+      if (!/\d/.test(jam.getAttribute('aria-label') ?? '')) out.push(`jam label "${jam.getAttribute('aria-label')}"`);
+    } else if (getComputedStyle(edge).backgroundColor !== 'rgb(192, 35, 27)') out.push(`jam direction sign ${getComputedStyle(edge).backgroundColor}`);
+    return out;
   });
 }
 
@@ -194,6 +288,15 @@ try {
           if (problems.length) failedScreens.add(tag);
           await page.screenshot({ path: resolve(OUT, `game-${tag}.png`), animations: 'disabled' });
           shots++;
+          // [night-73a] D-328: a live jam on the phone and the landscape phone.
+          if (scale === 100 && !profile && ((width === 412 && height === 915) || (width === 915 && height === 412))) {
+            const jam = await jamProblems(page);
+            const later = [...jam, ...await audit(page)];
+            for (const problem of later) failures.push(`${tag} jam: ${problem}`);
+            if (later.length) failedScreens.add(tag);
+            problems.push(...later);
+            if (T2) { await page.screenshot({ path: resolve(OUT, `game-${tag}-jam.png`), animations: 'disabled' }); shots++; }
+          }
           console.log(`${problems.length ? 'FAIL' : 'PASS'} game ${tag}${problems.length ? ': ' + problems.join(' | ') : ''}`);
         } catch (error) {
           failures.push(`${tag}: ${String(error?.message ?? error).split('\n')[0]}`);
@@ -201,6 +304,46 @@ try {
           console.log(`FAIL game ${tag}: ${String(error?.message ?? error).split('\n')[0]}`);
         } finally {
           await page?.close();
+        }
+      }
+    }
+    // [night-73a] D-328: a grown network (ten airports on screen) and the same at the closest zoom, PL and EN.
+    if (T2) {
+      for (const language of ['pl', 'en']) {
+        const { page } = await newGamePage(browser, boardUrl(url), language, { width: 412, height: 915 });
+        try {
+          await waitForScreen(page, 'menu');
+          // 0xA1A2 lives longest under the bot (the harness seed ends in week 2): an hour a step, boards answered, until
+          // ten airports are on screen with no jam.
+          await page.evaluate((seed) => window.aw.prepareSeed(seed), 0xA1A2);
+          await clickTestId(page, 'menu-endless');
+          await waitForScreen(page, 'game');
+          for (let hour = 0; hour < 400; hour++) {
+            const screen = await page.evaluate(() => window.aw.state().screen);
+            if (screen === 'upgrade') {
+              await page.evaluate(() => document.querySelector('[data-testid^="upgrade-option-"]:not([data-upgrade="hub-expansion"]):not([data-upgrade="departure-slots"])')?.click());
+              await page.waitForTimeout(100);
+              continue;
+            }
+            if (screen !== 'game') break;
+            await page.evaluate(() => window.aw.botStep?.());
+            await page.evaluate(() => window.aw.advanceTicks(60));
+            if (await page.evaluate(() => (window.__awBoardSigns?.visible ?? 0) >= 10 && !document.querySelector('.bd-notes :is(.airport-bubble--jam, .airport-edge--jam):not([hidden])'))) break;
+          }
+          await page.waitForTimeout(600);
+          const dense = await audit(page);
+          const lod = await page.evaluate(() => window.__awBoardSigns);
+          console.log(`${dense.length ? 'FAIL' : 'PASS'} dense ${language} ${JSON.stringify(lod)}${dense.length ? ': ' + dense.join(' | ') : ''}`);
+          await page.screenshot({ path: resolve(OUT, `game-${language}-412x915-dense.png`), animations: 'disabled' });
+          await page.mouse.move(206, 470);
+          await page.mouse.wheel(0, -600);
+          await page.waitForTimeout(900);
+          const zoomed = await audit(page);
+          console.log(`${zoomed.length ? 'FAIL' : 'PASS'} zoom ${language} ${JSON.stringify(await page.evaluate(() => window.__awBoardSigns))}${zoomed.length ? ': ' + zoomed.join(' | ') : ''}`);
+          await page.screenshot({ path: resolve(OUT, `game-${language}-412x915-zoom.png`), animations: 'disabled' });
+          shots += 2;
+        } finally {
+          await page.close();
         }
       }
     }

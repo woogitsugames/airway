@@ -74,7 +74,12 @@ export function boardFigures(state: Pick<HudState, 'timeMinutes' | 'week' | 'day
  * its own stage (T2–T5). DEV only (src/main.ts reads linoryt.css as text); the release never sees it.
  */
 export function boardTwin(linorytCss: string): string {
-  return linorytCss.split('[data-skin="linoryt"]').join('[data-skin="board"]');
+  // [night-73a] D-328 (T2): the airport notes, edge chips and slot tags are the board's own signs (board.css "T2"), so
+  // Linoryt's U2 section (between its `U2 notes` and `end U2` markers) is left out of the twin.
+  const from = linorytCss.indexOf('/* U2 notes */');
+  const to = linorytCss.indexOf('/* end U2 */');
+  const css = from >= 0 && to > from ? linorytCss.slice(0, from) + linorytCss.slice(to) : linorytCss;
+  return css.split('[data-skin="linoryt"]').join('[data-skin="board"]');
 }
 
 // ---- Flap rows -----------------------------------------------------------------------------------------------------
