@@ -20,7 +20,7 @@ import { buildTerrainArrays, type TerrainStyle } from './terrain';
 import {
   ATMOSPHERE_LINES, COAST_FIELD_RANGE_DEG, coastWidthCss, HATCH_ALIAS_FLOOR_DEVICE_PX, HATCH_BASE_PERIOD_DEG,
   HATCH_MIN_SPACING_PX, HATCH_MIN_WIDTH_DEVICE_PX, HATCH_SAVER_MIN_SPACING_PX, HATCH_SEA_MIN_SPACING_PX, LIMB_RING_PX, LINORYT_INKS,
-  NIGHT_FULL_SUN_DEG, SKY_COLOUR, WATER_LINES_PX, waterLineScale,
+  NIGHT_FULL_SUN_DEG, WATER_LINES_PX, waterLineScale,
 } from './linoryt';
 import type { GlobeInstance } from './index';
 
@@ -469,8 +469,6 @@ export async function createLinorytGlobe(scene: Scene, mask: LandMask, opts: Lin
   group.userData['lookBytes'] = elevation.size;
   group.userData['fieldMs'] = field.buildMs;
   scene.add(group);
-  const previousBackground = scene.background;
-  scene.background = new Color(SKY_COLOUR);
   let disposed = false;
   return {
     group, quality: opts.quality, lod,
@@ -482,9 +480,6 @@ export async function createLinorytGlobe(scene: Scene, mask: LandMask, opts: Lin
       if (disposed) return;
       disposed = true;
       scene.remove(group);
-      if (scene.background instanceof Color && scene.background.getHexString() === SKY_COLOUR.slice(1).toLowerCase()) {
-        scene.background = previousBackground;
-      }
       lod.dispose();
       uniforms.awField.value.dispose();
       sky.geometry.dispose();
