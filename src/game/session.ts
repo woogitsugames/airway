@@ -317,6 +317,9 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       syncWorld(true);
       syncHubBoard();
       syncUpgrade(true); // [night-07x] if the world is back on an open weekly board, show it (never a frozen clock)
+      // [night-58a] An Undo whose re-simulation ends the run (Q-93) shows the report at once. Before, the game screen
+      // stayed up over a finished run until the clock stepped again: on a frozen clock, for good.
+      if (run.failed) afterTicks();
     },
     preview: (model) => world.preview(model),
     warning: (info) => atc.show(info),
