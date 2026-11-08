@@ -3980,3 +3980,21 @@ pairs), `test:e2e:board-week:stub` (new, ci: 14 sizes × PL/EN incl. notch, tabl
 aircraft on 412×915 and 915×412), `test:e2e:board:stub` (the jam pass and T2's dense run take their strip through the main action), shots
 `docs/shots/t4/` (`npm run shots:board:t4`, real renderer).
 **Status:** preview; the owner sees it with T3 (plan §7 gate).
+## D-333 — Release icons and launch screens from the mark I-1 "Węzeł" (2026-11-08, Claude, night 78a)
+Step Z of `docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md`, implementing D-326. One definition, `scripts/icon-assets.mjs`
+(the double hub ring `r 262/176`, strokes 44/16, in cream `#EFE7D3`, the D-08 bow-tie in `#F3C317`, on enamel `#0E0F0F`; the
+geometry of `znak-i-1.svg`), writes the source SVGs (`resources/icon.svg`, `icon-foreground.svg`, new `icon-monochrome.svg`,
+`splash.svg`, the `ios/Brand/` copies, `site/assets/favicon.svg`) and rasterizes every PNG with the dependency-free,
+byte-deterministic rasterizer of task 24 (extended with rings and an opaque RGB output). `npm run icons` writes the
+committed files, `npm run android:assets` the git-ignored Android ones, `npm run test:icons` fails on any stale file.
+**Android:** adaptive icon on `@color/airway_enamel` with a foreground (108 dp, the whole mark inside the 66/108 safe circle,
+outer ring 568 of 1024) and a `<monochrome>` layer for Android 13 themed icons; legacy square and round mipmaps; splash
+drawable 1152 px, the mark 0.317 of the tile so it sits inside the system's 192/288 circle; `windowSplashScreenBackground` =
+enamel. **Store:** `docs/store/icon-512.png` (opaque). **iOS:** one 1024 universal icon (the project's convention, no size
+set) plus dark and tinted (grey) variants, all RGB without alpha; launch image 2732 on enamel in the three slots.
+**Web:** `site/assets/favicon.svg` and the press-kit icon are the mark. **Not done (T6):** system bars, `windowBackground`,
+`theme-color` and the iOS light appearance stay paper, so a paper frame can show between the dark launch screen and the
+first frame until T6 switches the theme. `brand/wayfinding.svg` (the wordmark sign, yellow plane) is unchanged: the plan
+asks for an Archivo wordmark, a separate task. The Play feature graphic (`store:feature`) still carries it.
+**Status: in force (implements D-326); owner reviews the PR.** (D-332 is reserved for T5.)
+
