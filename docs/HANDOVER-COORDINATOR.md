@@ -215,6 +215,8 @@ commitach.
 
 - 8.11 ~11:50: #340 scalony (57a: uchwyty tras jako belka końcowa D-319; tablety — powiększony druk planszy i raportu D-320; CSS 128,3/129,8). dev = main = 803db97. Pytania z #340: uchwyt widoczny w spoczynku (rek. tak, cicha belka), powiększony druk jako wygląd U7 na tabletach (rek. tak). Agenci: 58a (długie przejścia r5), 59a (classList.toggle(x, undefined) — fixture upgrade pokazywał wybór huba; strażnik).
 
+- 8.11 ~12:30: #341 scalony (58a runda 5: D-313 trzyma 110/110; Cofnij kończące bieg pokazuje raport od razu; proporczyk szczytu w tuszu; raport 360×640 PL bez przewijania; Q-93). dev = main = 9033996. Agenci: 59a (toggle undefined), 60a (Q-93 → A wstępnie: Cofnij, które zapycha lotnisko, jest odrzucane; D-321+).
+
 ## Kolejka
 - Najpierw: PR-y od GPT (jeśli są), potem zadania z paczki GPT, których GPT nie wziął (te same opisy nadają się dla
   agentów Claude), w kolejności z pliku (01, 02, 05, 06, 20, potem 03, 04, 08, 09, 11…).
