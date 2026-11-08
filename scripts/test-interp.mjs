@@ -47,7 +47,7 @@ try {
   const { prepareRoute, sampleGreatCircleArc, sampleRouteDistance } = routes;
   const { planeProgressDistance, interpolatePlaneDistance } = planes;
   const lino = await import(pathToFileURL(join(folder, 'linoryt-objects.js')).href);
-  const shared = { uViewport: { value: { x: 412, y: 915 } }, uDpr: { value: 1 }, uTime: { value: 0 }, uPxPerRad: { value: 200 },
+  const shared = { uViewport: { value: { x: 412, y: 915 } }, uDpr: { value: 1 }, uTime: { value: 0 }, uPxPerRad: { value: 200 }, uScale: { value: 1 },
     uPaper: { value: new three.Color() }, uInk: { value: new three.Color() }, uRed: { value: new three.Color() } };
   const RouteLayer = class extends lino.LinorytRouteLayer { constructor() { super(shared); } };
   const PlaneLayer = class extends lino.LinorytPlaneLayer { constructor(routeLayer, options) { super(routeLayer, shared, options); } };

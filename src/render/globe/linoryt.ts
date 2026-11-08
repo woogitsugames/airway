@@ -145,3 +145,26 @@ export function jamArcShare(ticksLeft: number | null, graceTicks: number, ticksP
   const left = reduced ? Math.ceil(ticksLeft / ticksPerSecond) * ticksPerSecond : ticksLeft;
   return Math.max(0, Math.min(1, left / graceTicks));
 }
+
+/**
+ * [ext-04] D-309: stamps, the jam zone and planes keep their CSS size on the game globe and shrink with a small disc
+ * (the menu's ~100 px globe in `png/a-menu.png` carries ~12 px stamps): scale = disc radius / 320 px, 0.55…1.
+ */
+export const OBJECT_SCALE_FULL_RADIUS_PX = 320;
+export const OBJECT_SCALE_MIN = 0.55;
+export function objectScale(discRadiusCss: number): number {
+  return Math.max(OBJECT_SCALE_MIN, Math.min(1, discRadiusCss / OBJECT_SCALE_FULL_RADIUS_PX));
+}
+
+/**
+ * [ext-04] D-309: the open-sea parallels print at ≥ 6 CSS px on the game globe (D-300) and on the relief's device grid
+ * on a small disc (the menu), blended between 160 and 320 px of disc radius; their width is a tone of the period.
+ */
+export function seaMinSpacingCss(discRadiusCss: number, dpr: number): number {
+  const t = Math.max(0, Math.min(1, (discRadiusCss - 160) / 160));
+  return reliefMinSpacingCss(dpr) + (HATCH_SEA_MIN_SPACING_PX - reliefMinSpacingCss(dpr)) * t;
+}
+/** Sea line tone (share of the period): 0.13 on the night side → 0.37 under the sun (0.8 → 2.2 px at 6 px spacing). */
+export function seaLineTone(sunCos: number): number {
+  return 0.13 + (0.37 - 0.13) * Math.max(0, Math.min(1, sunCos));
+}

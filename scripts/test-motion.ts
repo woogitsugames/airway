@@ -124,7 +124,7 @@ await test('reduced motion: a new route appears at once, no draw-on', async () =
   (globalThis as Record<string, unknown>).document = { documentElement: root };
   const { LinorytRouteLayer } = await import('../src/render/linoryt-objects.ts');
   const { Color } = await import('three');
-  const shared = { uViewport: { value: { x: 412, y: 915 } }, uDpr: { value: 1 }, uTime: { value: 0 }, uPxPerRad: { value: 200 },
+  const shared = { uViewport: { value: { x: 412, y: 915 } }, uDpr: { value: 1 }, uTime: { value: 0 }, uPxPerRad: { value: 200 }, uScale: { value: 1 },
     uPaper: { value: new Color() }, uInk: { value: new Color() }, uRed: { value: new Color() } };
   const first = { id: 'A', type: 'turboprop' as const, waypoints: [{ lon: 0, lat: 50 }, { lon: 10, lat: 52 }] };
   const second = { id: 'B', type: 'widebody' as const, waypoints: [{ lon: 0, lat: 50 }, { lon: -40, lat: 45 }] };
