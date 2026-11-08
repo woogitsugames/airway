@@ -117,6 +117,48 @@ for (const [id, hex] of airline) {
     failed++;
   }
 }
-console.log('SUMMARY test:cvd seed=' + SEED + ' modes=3 colours=' + entries.length + ' airline=' + airline.length +
+// [night-48a] U6 (D-08, D-47, PLAN-LINORYT): the glyphs in the Linoryt print. Each glyph is a silhouette with an ink
+// outline (`--skin-glyph-outline` -> --lin-ink) on the note's paper ground. Shape stays the carrier: in every simulation
+// the outline reaches the non-text 3:1 on paper and on ochre, and each fill stays apart from paper (ΔE76 ≥ 15). On bare
+// ochre several fills would sink (EUS crescent ΔE ~11 under tritan), so the glyph cell must keep its paper ground.
+const linCss = readFileSync(new URL('../src/ui/skin/linoryt.css', import.meta.url), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+const skinCss = readFileSync(new URL('../src/ui/skin/current.css', import.meta.url), 'utf8');
+const inks = Object.fromEntries([...linCss.matchAll(/--lin-([a-z-]+)\s*:\s*(#[0-9a-fA-F]{6})/g)].map((m) => [m[1], m[2]]));
+const glyphs = [...readFileSync(new URL('../src/data/regions.ts', import.meta.url), 'utf8')
+  .matchAll(/^\s*([A-Z]+):\s*\{\s*glyph:\s*'[a-z]+',\s*color:\s*'(#[0-9A-Fa-f]{6})'[^}]*?(provisional: true)?\s*\}/gm)]
+  .map((m) => ({ id: m[1], hex: m[2], provisional: Boolean(m[3]) }));
+const relative = (l) => { const [r, g, b] = l.map((c) => Math.min(1, Math.max(0, c))); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+const simLinear = (hex, matrix) => { const c = rgb(hex).map(linear); return matrix.map((row) => row.reduce((sum, k, i) => sum + k * c[i], 0)); };
+const ratio = (a, b) => { const [x, y] = [relative(a), relative(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+const official = glyphs.filter((glyph) => !glyph.provisional);
+if (official.length !== 6 || official.some((glyph) => palette[glyph.id]?.toLowerCase() !== glyph.hex.toLowerCase())) {
+  console.error('FAIL regions.ts glyph colours differ from the tested D-08 palette');
+  failed++;
+}
+if (!/--skin-glyph-outline:\s*var\(--lin-ink\)/.test(skinCss) || !inks.paper || !inks.ochre || !inks.ink) {
+  console.error('FAIL the glyph outline is not the Linoryt ink, or an ink is missing');
+  failed++;
+}
+if (!/\.airport-region-glyph\s*\{[^}]*background:\s*var\(--lin-paper\)/.test(linCss)) {
+  console.error('FAIL the note glyph cell lost its paper ground (fills would sit on bare ochre)');
+  failed++;
+}
+let linoryt = 0;
+for (const [name, matrix] of Object.entries({ normal: IDENTITY, ...MATRICES })) {
+  for (const ground of ['paper', 'ochre']) {
+    const outline = ratio(simLinear(inks.ink, matrix), simLinear(inks[ground], matrix));
+    linoryt++;
+    if (!(outline >= 3)) { console.error(`FAIL ${name} glyph outline on ${ground}: ${outline.toFixed(2)}`); failed++; }
+    let minimum = Number.POSITIVE_INFINITY; let worst = '';
+    for (const glyph of official) {
+      const distance = deltaE(simulate(glyph.hex, matrix), simulate(inks[ground], matrix));
+      comparisons++;
+      if (distance < minimum) { minimum = distance; worst = glyph.id; }
+    }
+    console.log(`linoryt ${name} on ${ground}: outline ${outline.toFixed(2)}:1, min fill DeltaE76=${minimum.toFixed(2)} (${worst})`);
+    if (ground === 'paper' && !(minimum >= MIN_DELTA_E)) { console.error(`FAIL linoryt ${name} fill on paper below ${MIN_DELTA_E}`); failed++; }
+  }
+}
+console.log('SUMMARY test:cvd seed=' + SEED + ' modes=3 colours=' + entries.length + ' airline=' + airline.length + ' linoryt=' + linoryt +
   ' comparisons=' + comparisons + ' passed=' + (failed ? 0 : 1) + ' failed=' + failed);
 if (failed) process.exitCode = 1;

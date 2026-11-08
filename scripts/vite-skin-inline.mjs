@@ -175,7 +175,21 @@ export function skinBuild(root) {
     inline: referencedValues(tokens, refs, constants),
     keep: new Set(scripts.flatMap(tokensInScript)),
     refs,
+    inks: linorytInks(constants),
   };
+}
+
+/** [night-48a] U6 (D-294 mechanism): the Linoryt inks (`--lin-*` palette constants: one plain :root definition, var-free,
+ *  never named by a script) are written out in place of their `var(--lin-x)` references (~3 kB of release CSS). The
+ *  definitions stay on :root, so a DEV probe or a later rule that names the ink still resolves; inks whose value holds a
+ *  var() (`--lin-neatline`, `--lin-top`) or that a script sets (`--lin-pass-bottom`, `--lin-jam-w`) stay references. */
+export function linorytInks(constants) {
+  return new Map([...constants].filter(([name]) => name.startsWith('lin-')));
+}
+
+/** `css` with every `var(--lin-x)` of an ink in `inks` replaced by its value (a fallback form is left alone). */
+export function inlineInks(css, inks) {
+  return css.replace(/var\(\s*--(lin-[a-z0-9-]+)\s*\)/g, (whole, name) => inks.get(name) ?? whole);
 }
 
 /** Vite plugin: on in `vite build`, and in `vite` (dev) only with AW_SKIN_INLINE=1. */
@@ -198,9 +212,9 @@ export function skinInline() {
     transform(code, id) {
       const file = normal(id);
       if (!enabled || !file.endsWith('.css') || !file.startsWith(normal(resolve(root, 'src')) + '/')) return null;
-      const { resolved, inline, keep, refs } = build ? (cache ??= skinBuild(root)) : skinBuild(root);
+      const { resolved, inline, keep, refs, inks } = build ? (cache ??= skinBuild(root)) : skinBuild(root);
       if (file === normal(resolve(root, SKIN_FILE))) return { code: keptSkin(resolved, new Set([...keep, ...refs])), map: null };
-      const inlined = inlineSkin(code, inline, file.slice(root.length + 1));
+      const inlined = inlineInks(inlineSkin(code, inline, file.slice(root.length + 1)), inks);
       // [night-11ax] D-257: a release always has <html data-skin="linoryt">, so its scope is written `:root:root` (same
       // specificity, 0-2-0; ~15 bytes less per selector). Dev (AW_SKIN_INLINE=1) keeps it as written.
       if (file === normal(resolve(root, SKIN_STRUCTURE_FILE))) return { code: build ? inlined.split(SKIN_SCOPE).join(':root:root') : inlined, map: null };

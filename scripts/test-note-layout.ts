@@ -260,7 +260,7 @@ test('jam (D-262): a jammed airport goes first, its note keeps the jam block; th
   assertClear(f, PHONE);
 });
 
-// The landscape game screen of test:e2e:linoryt:stub (PL 915×412, seed 0xA1A1 after the bot's afternoon; stamps read with
+// The landscape game screen of test:e2e:screen-audit:stub (PL 915×412, seed 0xA1A1 after the bot's afternoon; stamps read with
 // the DEV probe): the dock a column from x 783, the top margin a block in the top-left corner. Before the compact runs
 // Wenecja and Ankara hid (their full notes had no room and the one-line compact form was never tried at its height).
 const LANDSCAPE_GAME: Airport[] = [

@@ -224,7 +224,7 @@ owner prefers the curfew 23:00–06:00). City lights become paper dots cut out o
 ## i18n
 U1 reuses existing keys (`roza.*`, `menu.*`). U5 renames the Róża keys to skin-neutral ones in PL and EN with length
 budgets in `src/i18n/limits.ts` (dock captions ≤ 10 characters: at 320 px a dock cell is 52 px wide and a caption
-at 10.5 px Schibsted Grotesk Bold fits 9–10 characters, checked by `test:e2e:linoryt:stub`).
+at 10.5 px Schibsted Grotesk Bold fits 9–10 characters, checked by `test:e2e:screen-audit:stub`, formerly `test:e2e:linoryt:stub`).
 
 ## Risks
 1. **Hatching shimmer** on budget GPUs and low-density screens (E1 check above; fallback in `saver`).
