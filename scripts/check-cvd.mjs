@@ -159,6 +159,33 @@ for (const [name, matrix] of Object.entries({ normal: IDENTITY, ...MATRICES })) 
     if (ground === 'paper' && !(minimum >= MIN_DELTA_E)) { console.error(`FAIL linoryt ${name} fill on paper below ${MIN_DELTA_E}`); failed++; }
   }
 }
-console.log('SUMMARY test:cvd seed=' + SEED + ' modes=3 colours=' + entries.length + ' airline=' + airline.length + ' linoryt=' + linoryt +
+// [night-73a] D-328 (PLAN-NOWY-KIERUNEK.md step T2): the glyphs in the UI-A preview (src/ui/skin/board.css). On an airport
+// sign they stand on black enamel with a cream outline (the Africa keyhole's fill #13302E sinks into enamel, so the
+// outline carries the shape there: in every simulation the outline reaches the non-text 3:1 on enamel); on the flight
+// strips' paper (T3) the fills stay apart from paper (ΔE76 ≥ 15) and the print outline reaches 3:1, as in Linoryt.
+const boardCss = readFileSync(new URL('../src/ui/skin/board.css', import.meta.url), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+const board = Object.fromEntries([...boardCss.matchAll(/--board-([a-z0-9-]+)\s*:\s*(#[0-9a-fA-F]{6})/g)].map((m) => [m[1], m[2]]));
+if (!board.enamel || !board.cream || !board.paper || !board.print) { console.error('FAIL a board token is missing'); failed++; }
+if (!/\.bd-notes \.airport-region-glyph path\s*\{[^}]*stroke:\s*var\(--board-cream\)/.test(boardCss)) {
+  console.error('FAIL the sign glyphs lost their cream outline (the dark fills would sink into the enamel)');
+  failed++;
+}
+let boardChecks = 0;
+for (const [name, matrix] of Object.entries({ normal: IDENTITY, ...MATRICES })) {
+  const enamelOutline = ratio(simLinear(board.cream, matrix), simLinear(board.enamel, matrix));
+  const paperOutline = ratio(simLinear(board.print, matrix), simLinear(board.paper, matrix));
+  boardChecks += 2;
+  if (!(enamelOutline >= 3)) { console.error(`FAIL board ${name} glyph outline on enamel: ${enamelOutline.toFixed(2)}`); failed++; }
+  if (!(paperOutline >= 3)) { console.error(`FAIL board ${name} glyph outline on paper: ${paperOutline.toFixed(2)}`); failed++; }
+  let minimum = Number.POSITIVE_INFINITY; let worst = '';
+  for (const glyph of official) {
+    const distance = deltaE(simulate(glyph.hex, matrix), simulate(board.paper, matrix));
+    comparisons++;
+    if (distance < minimum) { minimum = distance; worst = glyph.id; }
+  }
+  console.log(`board ${name}: outline on enamel ${enamelOutline.toFixed(2)}:1, on paper ${paperOutline.toFixed(2)}:1, min fill on paper DeltaE76=${minimum.toFixed(2)} (${worst})`);
+  if (!(minimum >= MIN_DELTA_E)) { console.error(`FAIL board ${name} fill on paper below ${MIN_DELTA_E}`); failed++; }
+}
+console.log('SUMMARY test:cvd seed=' + SEED + ' modes=3 colours=' + entries.length + ' airline=' + airline.length + ' linoryt=' + linoryt + ' board=' + boardChecks +
   ' comparisons=' + comparisons + ' passed=' + (failed ? 0 : 1) + ' failed=' + failed);
 if (failed) process.exitCode = 1;

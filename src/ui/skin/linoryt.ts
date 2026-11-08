@@ -277,7 +277,8 @@ export function linorytStampObstacle(slot: TagSlot, stamp: StampBox, hub: boolea
  * within `linorytHomeReach` of its stamp (a jam's: 160 px, as D-263), else it tries the compact form, then hides.
  * `tag.width`/`height` are the full note's.
  */
-export function linorytNotePlaces(tag: TagSlot, stamp: StampBox, hub: boolean, jam: boolean, code: string, viewWidth: number): void {
+export function linorytNotePlaces(tag: TagSlot, stamp: StampBox, hub: boolean, jam: boolean, code: string, viewWidth: number,
+  lineMid = NAME_LINE / 2): void {
   const { x, y, half } = stamp;
   const reach = stampReach(half, hub) + NOTE_GAP;
   const side = reach;
@@ -287,7 +288,8 @@ export function linorytNotePlaces(tag: TagSlot, stamp: StampBox, hub: boolean, j
   tag.altAnchorX = rightFirst ? left : right;
   tag.maxShift = jam ? 160 : tag.height + 6;
   // layoutTags puts a tag's top at anchorY − height − 11: the name line's middle level with the stamp's centre.
-  tag.anchorY = y - NAME_LINE / 2 + tag.height + 11;
+  // [night-73a] D-328: `lineMid` is that line's middle under the note's top (the UI-A sign row under its NOWE tag).
+  tag.anchorY = y - lineMid + tag.height + 11;
   const below = Math.ceil(y + reach), above = Math.floor(y - reach);
   tag.belowX = x;
   tag.belowY = below;
@@ -643,6 +645,8 @@ export interface NoteFrameInput {
   size: NoteSize; viewWidth: number;
   /** D-268: the open hub board's box (null while closed): a note whose stamp it covers steps back. */
   board?: { readonly l: number; readonly t: number; readonly r: number; readonly b: number } | null;
+  /** [night-73a] D-328: the line level with the stamp, from the note's top (default: the name line's middle). */
+  lineMid?: number;
 }
 /** D-268: the board covers the stamp (its disc, with a 2 px margin): the airport's note steps back while it is open. */
 export function linorytBoardCovers(stamp: StampBox, hub: boolean, board: { l: number; t: number; r: number; b: number }): boolean {
@@ -668,7 +672,7 @@ export function linorytNoteFrame(tag: TagSlot, input: NoteFrameInput): void {
   tag.rank = rank;
   tag.must = linorytNoteMust(input);
   tag.compactWidth = undefined; // the compact form is laid out by linorytCompactPasses (it is lower, not only narrower)
-  linorytNotePlaces(tag, frame.box, input.hub, input.jam, input.code, input.viewWidth);
+  linorytNotePlaces(tag, frame.box, input.hub, input.jam, input.code, input.viewWidth, input.lineMid);
   if (input.hub && tag.active && (!busiest || (tag.rank ?? 0) > (busiest.rank ?? 0))) busiest = tag;
 }
 /** Ends the frame's setup: the busiest hub in view always shows at least its code and fill (D-262). */
@@ -683,13 +687,19 @@ export function linorytFrameEnd(): void { if (busiest) busiest.must = true; }
  * in the next run; at most three runs. Allocation-free; `layout` is the overlay's layoutTags (no runtime import here).
  */
 export function linorytCompactPasses(slots: readonly TagSlot[], bounds: TagBounds,
-  layout: (slots: readonly TagSlot[], bounds: TagBounds) => number): void {
+  layout: (slots: readonly TagSlot[], bounds: TagBounds) => number, keepLine = false): void {
   for (let run = 0; run < 3; run++) {
     let changed = false;
     for (const slot of slots) {
       const frame = slot.fixed ? undefined : frames.get(slot);
       if (!frame || frame.compact || !slot.active || slot.placed) continue;
       frame.compact = true;
+      // [night-73a] D-328: the UI-A sign keeps its sign row level with the pin in the compact form too (the full note's
+      // first place puts its top at anchorY − height − 11; Linoryt keeps its shipped places).
+      if (keepLine) {
+        slot.anchorY -= slot.height - frame.compactHeight;
+        if (slot.besideY !== undefined) slot.besideY -= (slot.height - frame.compactHeight) / 2;
+      }
       slot.width = frame.compactWidth;
       slot.height = frame.compactHeight;
       changed = true;

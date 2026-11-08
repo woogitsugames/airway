@@ -326,7 +326,7 @@ check('linoryt: src/main.ts starts the helpers on every boot (not behind a DEV b
     .map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4)).reduce((sum, c, i) => sum + c * [0.2126, 0.7152, 0.0722][i], 0);
   const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
   const textPairs = [['cream', 'flap-a'], ['cream', 'flap-b'], ['cream', 'enamel'], ['cream-2', 'enamel'], ['engrave', 'console'],
-    ['white', 'console'], ['sign-ink', 'cream'], ['print', 'paper'], ['sign-ink', 'sign'], ['white', 'red'], ['red', 'paper'], ['cream', 'console']];
+    ['white', 'console'], ['sign-ink', 'cream'], ['print', 'paper'], ['sign-ink', 'sign'], ['white', 'red'], ['red', 'paper'], ['cream', 'console'], ['atlas-country', 'atlas-halo'], ['atlas-sea', 'atlas-halo']];
   const weakBoard = textPairs.filter(([fg, bg]) => !hexOf[fg] || !hexOf[bg] || ratio(hexOf[fg], hexOf[bg]) < 4.5)
     .map(([fg, bg]) => `${fg}/${bg} ${hexOf[fg] && hexOf[bg] ? ratio(hexOf[fg], hexOf[bg]).toFixed(2) : 'missing'}`);
   check('board: text pairs reach 4.5:1 (D-47: cream on flaps and enamel, captions on the console, white on red, red and print on paper, ink on yellow)',

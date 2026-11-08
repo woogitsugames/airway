@@ -236,6 +236,7 @@
     "test:e2e:reduce-motion-game:stub": "node e2e/reduce-motion-game.mjs --render=stub",
     "test:e2e:board:stub": "node e2e/board.mjs --render=stub",
     "shots:board": "node e2e/board.mjs --shots",
+    "shots:board:t2": "node e2e/board.mjs --shots=t2",
     "shots:r2": "node scripts/shots.mjs r2-day r2-dusk r2-night r2-night-low",
     "test:e2e:linoryt-contrast": "node e2e/linoryt-contrast.mjs",
     "shots:linoryt": "node e2e/screen-audit.mjs --render=stub --no-sheets --out=docs/shots/28a",

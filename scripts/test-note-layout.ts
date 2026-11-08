@@ -6,6 +6,9 @@
 // (768×1024), the hub board open in landscape (915×412) and portrait (360×640). The HUD bands are the Linoryt paper
 // margins measured on the preview (`?skin=linoryt`, stub world): top margin and dock. [night-46a] D-301: Róża and
 // test:roza-names are gone (U5); this is the note layout's fixture suite.
+// [night-73a] D-328 (PLAN-NOWY-KIERUNEK.md step T2): the same fixtures re-run with the UI-A airport signs' sizes
+// (src/ui/skin/board-notes.ts signSize: code plate, queue, city strip, NOWE tag; the sign row level with the pin), so the
+// engine's promises hold for the new geometry too.
 import assert from 'node:assert/strict';
 import { layoutTags, NOTE_GAP_X, NOTE_GAP_Y, OWN_MARGIN, type TagBounds, type TagSlot } from '../src/ui/overlay-layout.ts';
 import {
@@ -14,6 +17,7 @@ import {
   noteSize, stampReach, type NoteSize,
 } from '../src/ui/skin/linoryt.ts';
 import { STAMP_SIZE_PX } from '../src/render/globe/linoryt.ts';
+import { LOD1_GLYPHS, signSize, SIGN_ROW, FRESH_ROW } from '../src/ui/skin/board-notes.ts';
 
 let passed = 0;
 let failed = 0;
@@ -39,6 +43,14 @@ const sizeOf = (a: Airport, language: 'pl' | 'en' = 'pl'): NoteSize => noteSize(
   stubs: 0, trend: 0, fresh: a.fresh ? (language === 'pl' ? 'NOWE' : 'NEW') : null, jamSeconds: a.jam ?? null,
   jamHead: language === 'pl' ? 'Zator za' : 'Jam in', fillText: `${taken(a)} ${language === 'pl' ? 'z' : 'of'} ${capacity(a)}`,
 });
+/** [night-73a] D-328: the UI-A sign of the airport at level 1 (one glyph per passenger, 7 then "+n", city under it). */
+const signOf = (a: Airport, language: 'pl' | 'en' = 'pl') => {
+  const total = taken(a);
+  return signSize({ label: a.code, name: a.name, hub: a.hub === true, lod: 1, glyphs: Math.min(LOD1_GLYPHS, total),
+    count: total > LOD1_GLYPHS ? '+' + (total - LOD1_GLYPHS) : '', stubs: 0, fresh: a.fresh ? (language === 'pl' ? 'NOWE' : 'NEW') : null,
+    jamSeconds: a.jam ?? null });
+};
+let signs = false; // the fixtures below run with the Linoryt notes, then again with the signs
 const half = (a: Airport): number => (a.hub ? STAMP_SIZE_PX.hub : STAMP_SIZE_PX.airport) / 2;
 const fakeHost = { querySelector: () => null } as unknown as HTMLElement; // no HUD: the fixture's view is the band
 const edge = { width: 0, height: 0, top: 0, bottom: 0, right: 0 };
@@ -56,7 +68,8 @@ function frame(airports: Airport[], view: View, opts: { board?: Box; fixed?: Box
   const tags = airports.map((a, i) => {
     const tag: TagSlot = opts.last?.tags[i] ?? { id: a.code, anchorX: 0, anchorY: 0, width: 0, height: 0, active: true, jammed: false,
       x: 0, y: 0, placed: false };
-    const size = sizeOf(a);
+    const sign = signs ? signOf(a) : null;
+    const size = sign ?? sizeOf(a);
     tag.width = size.width;
     tag.height = size.height;
     tag.active = !(opts.board && a.x > opts.board.l - 2 && a.x < opts.board.r + 2 && a.y > opts.board.t - 2 && a.y < opts.board.b + 2);
@@ -64,7 +77,7 @@ function frame(airports: Airport[], view: View, opts: { board?: Box; fixed?: Box
     tag.minor = taken(a) === 0 && !a.fresh && a.jam === undefined;
     linorytStampFallback(linorytStampBox(tag), a.x, a.y, half(a), true);
     linorytNoteFrame(tag, { code: a.code, hub: a.hub === true, jam: a.jam !== undefined, fresh: a.fresh === true,
-      fill: taken(a) / capacity(a), size, viewWidth: view.width, board: opts.board ?? null });
+      fill: taken(a) / capacity(a), size, viewWidth: view.width, board: opts.board ?? null, ...(sign ? { lineMid: sign.lineMid } : {}) });
     slots.push(tag, linorytStampSlot(tag));
     return tag;
   });
@@ -72,7 +85,7 @@ function frame(airports: Airport[], view: View, opts: { board?: Box; fixed?: Box
   for (const box of opts.fixed ?? []) slots.push(fixedBox('margin', box));
   linorytFrameEnd();
   layoutTags(slots, bounds);
-  linorytCompactPasses(slots, bounds, layoutTags);
+  linorytCompactPasses(slots, bounds, layoutTags, signs);
   return { tags, slots, airports };
 }
 const fixedBox = (id: string, b: Box): TagSlot => ({ id, anchorX: 0, anchorY: 0, width: b.r - b.l, height: b.b - b.t, active: true,
@@ -375,6 +388,76 @@ test('hub board open (D-268): a stamp the board covers steps back; a stamp besid
   assert(closed.tags[0].placed && closed.tags[1].placed, `with the board closed Stambuł and Ryga show (${placedCodes(closed)})`);
   assertClear(closed, LANDSCAPE, [LANDSCAPE_PASS]);
 });
+
+// ---- [night-73a] D-328: the same promises with the UI-A airport signs ------------------------------------------------
+signs = true;
+test('signs: a lone sign takes its first place right of the pin, its sign row level with the pin; compact keeps the row level', () => {
+  const f = frame([{ code: 'RIX', name: 'Ryga', x: 180, y: 300, groups: [1] }], PHONE);
+  const [tag] = f.tags;
+  assert(tag.placed && tag.lastPick === 0 && !tag.compact, 'right of the pin');
+  assert(Math.abs(tag.y + SIGN_ROW / 2 - 300) <= 1, `sign row level with the pin (${tag.y + SIGN_ROW / 2})`);
+  const fresh = frame([{ code: 'RIX', name: 'Ryga', x: 180, y: 300, fresh: true }], PHONE);
+  assert(Math.abs(fresh.tags[0].y + FRESH_ROW + SIGN_ROW / 2 - 300) <= 1, 'under its NOWE tag too');
+  // Boxed in left and right: the sign takes its compact form with the row still level with the pin.
+  const tight = frame([{ code: 'RIX', name: 'Ryga', x: 180, y: 300, groups: [5] }], PHONE,
+    { fixed: [{ l: 235, t: 280, r: 360, b: 340 }, { l: 0, t: 280, r: 125, b: 340 }, { l: 0, t: 316, r: 360, b: 360 }, { l: 0, t: 200, r: 360, b: 285 }] });
+  if (tight.tags[0].placed && tight.tags[0].compact) assert(Math.abs(tight.tags[0].y + SIGN_ROW / 2 - 300) <= 1, `compact row level (${tight.tags[0].y})`);
+});
+test('signs, store shot game-phone: the busiest hub keeps its sign; clear, at home, its own, apart; stable', () => {
+  const f = frame(LEVANT, PHONE);
+  assert(f.tags[4].placed, `Amman has a sign (${placedCodes(f)})`);
+  assert(shownTags(f).length >= 4, `only ${placedCodes(f)}`);
+  for (const g of [f, frame(LEVANT, PHONE, { last: f })]) { assertClear(g, PHONE); assertAtHome(g); assertOwned(g); assertApart(g); }
+  assert.equal(snap(frame(LEVANT, PHONE, { last: f })), snap(f));
+});
+test('signs, new airport (D-281) and jam (D-262): a new airport\'s sign shows; a jam goes first', () => {
+  for (const code of ['BGW', 'VCE', 'ANK']) {
+    const at = LEVANT.findIndex((a) => a.code === code);
+    const f = frame(LEVANT.map((a) => (a.code === code ? { ...a, fresh: true, groups: [] } : a)), PHONE);
+    assert(f.tags[at].placed, `the new ${code}'s sign shows (${placedCodes(f)})`);
+    assertClear(f, PHONE);
+    assertAtHome(f);
+    assertOwned(f);
+  }
+  const at = LEVANT.findIndex((a) => a.code === 'BGW');
+  const jam = frame(LEVANT.map((a) => (a.code === 'BGW' ? { ...a, groups: [12, 8, 4], jam: 42 } : a)), PHONE);
+  assert(jam.tags[at].placed, `the jam's sign shows (${placedCodes(jam)})`);
+  assertClear(jam, PHONE);
+});
+test('signs, landscape game: every airport shows a sign (full or the code alone), clear, at home, its own, apart', () => {
+  const view: View = { width: 783, height: 412, top: 0, bottom: 0, gap: 4 };
+  const pass: Box = { l: 0, t: 0, r: 480, b: 90 };
+  const f = frame(LANDSCAPE_GAME, view, { fixed: [pass] });
+  assert(shownTags(f).length >= 6, placedCodes(f));
+  assertClear(f, view, [pass]);
+  assertAtHome(f);
+  assertOwned(f);
+  assertApart(f);
+  assert.equal(snap(frame(LANDSCAPE_GAME, view, { fixed: [pass], last: f })), snap(f), 'stable on the next frame');
+});
+for (const [id, scene, view] of [['game-iphone', GAME_IPHONE, IPHONE], ['night-iphone', NIGHT_IPHONE, IPHONE],
+  ['game-tablet', tablet([[2], [1], [2, 1], [2], [1], []]), TABLET]] as const) {
+  test(`signs, store shot ${id}: clear, at home, its own, apart; both hubs keep their signs`, () => {
+    const f = frame(scene, view);
+    assertClear(f, view);
+    assertAtHome(f);
+    assertOwned(f);
+    assertApart(f);
+    assert(f.tags[0].placed && f.tags[2].placed, `Ateny and Amman (${placedCodes(f)})`);
+  });
+}
+for (const [id, scene, board, view, fixed] of [
+  ['landscape 915×412', LANDSCAPE_SCENE, LANDSCAPE_BOARD, LANDSCAPE, [LANDSCAPE_PASS]],
+  ['portrait 360×640', PORTRAIT_SCENE, PORTRAIT_BOARD, PHONE, []],
+] as const) {
+  test(`signs, hub board open ${id} (D-268): no sign on the board; the board's hub steps back`, () => {
+    const f = frame([...scene], view, { board, fixed: [...fixed] });
+    assertClear(f, view, [board, ...fixed]);
+    assertAtHome(f);
+    assertOwned(f);
+    assert(!f.tags[0].placed, 'the board\'s own hub shows no sign');
+  });
+}
 
 console.log(`SUMMARY test:note-layout passed=${passed} failed=${failed}`);
 if (failed) process.exitCode = 1;

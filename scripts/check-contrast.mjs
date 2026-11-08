@@ -107,6 +107,27 @@ for (const [where, inks] of Object.entries(grounds)) {
     if (best < NON_TEXT) failures.push(`linoryt ${stamp} stamp on ${where}: edge ${edge.toFixed(2)} core ${core.toFixed(2)}`);
   }
 }
+// [night-73a] D-328 (PLAN-NOWY-KIERUNEK.md step T2): the UI-A preview's signs (src/ui/skin/board.css). Every sign prints
+// its letters on its own opaque ground, so a sign reads the same on the day, dusk and night photo: cream on enamel (code,
+// queue count, city strip, a direction sign past the yellow budget), white on red (a jam), ink on the sign yellow (a
+// direction sign), ink on cream (the NOWE tag). Atlas labels (countries cream, seas water blue) are read against their
+// dark halo, which is drawn round every letter; the photos themselves are measured in T7.
+const boardCss = readFileSync(new URL('../src/ui/skin/board.css', import.meta.url), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+const board = Object.fromEntries([...boardCss.matchAll(/--board-([a-z0-9-]+)\s*:\s*(#[0-9a-fA-F]{6})/g)].map((m) => [m[1], m[2]]));
+const BOARD_SIGN_TEXT = [['cream', 'enamel'], ['white', 'red'], ['sign-ink', 'sign'], ['sign-ink', 'cream'],
+  ['atlas-country', 'atlas-halo'], ['atlas-sea', 'atlas-halo']];
+let boardPairs = 0;
+for (const ground of ['day photo', 'dusk photo', 'night photo']) {
+  for (const [fg, bg] of BOARD_SIGN_TEXT) {
+    boardPairs++;
+    if (!board[fg] || !board[bg]) { failures.push(`board ${fg}/${bg}: missing token`); continue; }
+    const value = contrast(board[fg], board[bg]);
+    if (value < THRESHOLD) failures.push(`board ${fg} on ${bg} (on the ${ground}): ${value.toFixed(2)}`);
+  }
+}
+if (!/\.bd-notes \.bd-city\s*\{[^}]*background:\s*var\(--board-enamel\)/.test(boardCss)) failures.push('board: the city strip lost its enamel ground');
+if (!/\.bd-atlas__label\s*\{[^}]*text-shadow:[^;]*var\(--board-atlas-halo\)/.test(boardCss)) failures.push('board: atlas labels lost their halo');
+linorytPairs += boardPairs;
 for (const message of failures) console.error('FAIL ' + message);
 console.log('SUMMARY test:contrast seed=' + SEED + ' pairs=' + ((tokens.textPairs?.length ?? 0) + 2 + linorytPairs) +
   ' threshold=' + THRESHOLD + ' passed=' + (failures.length ? 0 : 1) + ' failed=' + failures.length);
