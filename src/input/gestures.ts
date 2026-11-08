@@ -128,7 +128,9 @@ export class GestureRecognizer {
     pointer.timeMs = sample.timeMs;
     // [night-08d] Judge the long press at the sample's own position: a move that waited behind a long frame
     // past the 350 ms deadline is a drag, not a hold.
-    this.advanceTime(sample.timeMs);
+    // [night-55a] D-318: a release is itself the queued input the late-frame deferral waits for, so it is judged
+    // at once: a finger held still past the deadline and lifted during a stalled frame still opens the long press.
+    this.advanceTime(sample.timeMs, sample.type === 'up');
     if (sample.type === 'cancel') {
       this.cancelAll();
       return;
@@ -185,8 +187,11 @@ export class GestureRecognizer {
     }
   }
 
-  /** Drive with requestAnimationFrame while a pointer is down, or with fixed test times. */
-  advanceTime(nowMs: number): void {
+  /**
+   * Drive with requestAnimationFrame while a pointer is down, or with fixed test times. `release` judges a due long
+   * press without the late-frame deferral (the sample is a pointer-up: no further input can be queued behind it).
+   */
+  advanceTime(nowMs: number, release = false): void {
     if (!Number.isFinite(nowMs)) return;
     const gap = nowMs - this.lastAdvanceMs;
     const elapsed = clamp(gap, 0, MAX_EDGE_TICK_MS);
@@ -198,7 +203,7 @@ export class GestureRecognizer {
         nowMs - this.pressSinceMs >= LONG_PRESS_MS &&
         separationSquared(pointer.x, pointer.y, this.startX, this.startY) <= DRAG_THRESHOLD_DP ** 2) {
       // [night-08d] After a late frame, give queued moves one frame to arrive (once: a slow device still opens it).
-      if (gap > LONG_PRESS_LATE_FRAME_MS && !this.longPressDeferred) {
+      if (gap > LONG_PRESS_LATE_FRAME_MS && !this.longPressDeferred && !release) {
         this.longPressDeferred = true;
         return;
       }

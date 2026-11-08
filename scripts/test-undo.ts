@@ -3,6 +3,8 @@ import { Sim } from '../src/sim/sim.ts';
 import { CHECKPOINT_EVERY_TICKS } from '../src/sim/undo.ts';
 import { createBalanceSession } from './balance-game-adapter.ts';
 import { chooseBotAction } from '../src/game/dev/bot-policy.ts';
+import { EndlessRun } from '../src/game/run.ts';
+import { AUTOPLAY_ACTION_INTERVAL, nextAutoplayCommand } from '../src/game/dev/autoplay.ts';
 
 const SEED = 0xa1a1;
 let passed = 0;
@@ -90,8 +92,10 @@ check('undo still works after bounded checkpoint ring eviction', () => {
   assert.equal(sim.hash(), reference.hash());
 });
 // [night-07x] Undo right after a weekly choice popped the choice itself: the world went back to the board the UI
-// had already closed and the clock froze with nothing on screen. The choice must stay; the newest network edit goes.
-check('undo after a weekly choice keeps the choice and the clock running', () => {
+// had already closed and the clock froze with nothing on screen. The choice must stay.
+// [night-56a] D-313 (Q-92 → A): nor may Undo reach past it. A closed week is a barrier; network commands made
+// after the pick are still undone one by one, the choice and everything before it stay.
+check('undo after a weekly choice stops at the closed week; later edits still undo', () => {
   const session = createBalanceSession(SEED);
   for (let i = 0; i < 2000 && session.snapshot().status !== 'upgrade'; i++) {
     const decision = chooseBotAction(session.snapshot());
@@ -104,17 +108,61 @@ check('undo after a weekly choice keeps the choice and the clock running', () =>
   sim.apply({ type: 'ChooseUpgrade', week: sim.world.offer!.week, upgrade: offer.id });
   skip(sim, 40);
   const journal = sim.getCommandLog();
-  let removed = journal.length - 1;
-  while (removed >= 0 && journal[removed][1].type === 'ChooseUpgrade') removed--;
-  assert.ok(removed >= 0 && removed < journal.length - 1, 'the choice is newer than the last network command');
-  const expected = journal.filter((_, i) => i !== removed);
+  assert.equal(journal[journal.length - 1][1].type, 'ChooseUpgrade');
+  assert.ok(journal.some(([, command]) => command.type !== 'ChooseUpgrade'), 'network commands before the pick');
+  const hash = sim.hash();
+  assert.equal(sim.canUndo, false, 'nothing undoable right after the pick');
+  assert.equal(sim.undo(), false);
+  assert.equal(sim.hash(), hash, 'a refused Undo changes nothing');
+  assert.equal(JSON.stringify(sim.getCommandLog()), JSON.stringify(journal));
+  // A network edit after the pick: queued, it is undone in place; journaled, it is undone with an exact replay.
+  sim.apply(route('after-pick-queued'));
+  assert.equal(sim.canUndo, true);
   assert.equal(sim.undo(), true);
-  assert.equal(sim.world.status, 'running');
+  assert.equal(sim.pendingCount, 0);
+  const reference = Sim.fromSnapshot(sim.snapshot());
+  sim.apply(route('after-pick')); sim.tick(); reference.tick();
+  skip(sim, 20); skip(reference, 20);
+  assert.equal(sim.undo(), true);
+  assert.equal(sim.hash(), reference.hash());
   assert.equal(sim.world.upgrades.length, 1, 'the weekly choice survives Undo');
-  assert.equal(JSON.stringify(sim.getCommandLog()), JSON.stringify(expected), 'only the newest network command is gone');
+  assert.equal(sim.undo(), false, 'the barrier holds after the later edit is gone');
   const minute = sim.world.minute;
   skip(sim, 10);
   assert.ok(sim.world.minute > minute, 'the clock keeps running after Undo');
+});
+// [night-56a] Q-92 repro (N47a): before D-313 Undo removed the ExtendRoute from tick 2161, the re-simulation jammed
+// KHI at tick 4124 (before the week-1 board at 4320) and the run ended in the past with the turboprop pick gone.
+check('Q-92: Undo right after the week-1 pick never ends the run in the past (seed 42704 ASI class II)', () => {
+  const run = EndlessRun.create(42704, 'endless', 'ASI', 2);
+  for (let i = 0; i < 20_000 && run.sim.world.status === 'running'; i++) {
+    if (run.tick % AUTOPLAY_ACTION_INTERVAL === 0) {
+      const command = nextAutoplayCommand(run.sim);
+      if (command) run.queue(command);
+    }
+    run.step();
+  }
+  assert.equal(run.sim.world.status, 'upgrade', 'bot reached the week-1 board');
+  assert.equal(run.tick, 4320);
+  assert.ok(run.queue({ type: 'ChooseUpgrade', week: run.sim.world.offer!.week, upgrade: 'turboprop' }));
+  run.step();
+  const tick = run.tick;
+  const hash = run.sim.hash();
+  assert.equal(run.networkUndoable, false, 'the HUD shows Undo disabled');
+  assert.equal(run.undo(), null);
+  assert.equal(run.sim.world.status, 'running');
+  assert.equal(run.failed, null);
+  assert.equal(run.tick, tick);
+  assert.equal(run.sim.hash(), hash);
+  assert.deepEqual(run.sim.world.upgrades, [{ week: 1, upgrade: 'turboprop' }]);
+});
+check('a queued weekly choice is a barrier too', () => {
+  const sim = new Sim(SEED);
+  sim.apply(route('before'));
+  sim.apply({ type: 'ChooseUpgrade', week: 1, upgrade: 'turboprop' });
+  assert.equal(sim.canUndo, false);
+  assert.equal(sim.undo(), false);
+  assert.equal(sim.pendingCount, 2);
 });
 check('undo never removes a lone weekly choice', () => {
   const sim = new Sim(SEED);

@@ -212,6 +212,7 @@ sim.world;               // WorldView (read-only): minute, status, score, failur
 sim.clock;               // calendar of the world minute (frozen while an upgrade is pending)
 sim.seed; sim.config; sim.tickCount; sim.getCommandLog(); sim.getCommandOutcomes(); // journal + per-entry { minute, accepted }
 sim.hash(); sim.snapshot(); sim.restore(json); Sim.fromSnapshot(json); sim.undo();
+sim.canUndo;             // false when the newest command is a weekly choice: a closed week is a barrier (D-313)
 Sim.replay(seed, journal, ticks, config?, stopAtEnd?); // stopAtEnd: stop on the game-over tick (server verification, D-97)
 ```
 

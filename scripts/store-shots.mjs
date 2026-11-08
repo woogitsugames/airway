@@ -370,12 +370,18 @@ export function checkFeatureGraphic(file) {
   return { ...centre, darkShare, bytes: header.bytes };
 }
 
-/** Pixel statistics on a 4-px grid: luminance spread, white share, dominant colour share, colour count. */
+/**
+ * Pixel statistics on a 4-px grid: luminance spread, white share, dominant colour share, colour count, and
+ * [night-55a] D-318 the dominant colour share of each horizontal third (top, middle, bottom).
+ */
 export function pngStats(file) {
   const { width, height, pixels } = readPng(file);
   let n = 0, sum = 0, sq = 0, white = 0;
   const buckets = new Map();
+  const thirds = [new Map(), new Map(), new Map()];
+  const thirdCounts = [0, 0, 0];
   for (let y = 0; y < height; y += 4) {
+    const third = Math.min(2, Math.floor(y * 3 / height));
     for (let x = 0; x < width; x += 4) {
       const i = (y * width + x) * 4;
       const r = pixels[i], g = pixels[i + 1], b = pixels[i + 2];
@@ -384,10 +390,13 @@ export function pngStats(file) {
       if (r > 245 && g > 245 && b > 245) white++;
       const key = (r >> 4) << 8 | (g >> 4) << 4 | (b >> 4);
       buckets.set(key, (buckets.get(key) ?? 0) + 1);
+      thirds[third].set(key, (thirds[third].get(key) ?? 0) + 1);
+      thirdCounts[third]++;
     }
   }
   const mean = sum / n;
   return {
+    bandDominant: thirds.map((map, index) => Math.round(Math.max(0, ...map.values()) / Math.max(1, thirdCounts[index]) * 1000) / 1000),
     width, height,
     meanLuma: Math.round(mean * 10) / 10,
     lumaStd: Math.round(Math.sqrt(Math.max(0, sq / n - mean * mean)) * 10) / 10,
@@ -408,9 +417,15 @@ function checkPixels(file, device, where) {
       device.w * device.dpr + 'x' + device.h * device.dpr);
   }
   if (stats.whiteShare > 0.6) throw new Error(where + ': white frame (' + stats.whiteShare + ' white)');
-  if (stats.dominantShare > 0.85 || stats.lumaStd < 8 || stats.colours < 60) {
-    throw new Error(where + ': empty frame (dominant ' + stats.dominantShare + ', luma std ' + stats.lumaStd +
-      ', colours ' + stats.colours + ')');
+  // [night-55a] D-318: Linoryt (D-301) prints two inks on one paper, and its weekly board and game-over report are
+  // opaque paper pages: a full, legible board measured dominant 0.83–0.94 and 37–47 colours, which the Róża-era
+  // limits (dominant > 0.85, colours < 60) called empty. A frame is empty when it barely varies, has almost no
+  // colours, or when two of its three horizontal thirds are one flat colour (> 98 %: a page printed only at the top;
+  // a tablet board's empty bottom third alone measured 0.984–0.988).
+  const flatThirds = stats.bandDominant.filter((share) => share > 0.98).length;
+  if (stats.lumaStd < 8 || stats.colours < 24 || flatThirds >= 2) {
+    throw new Error(where + ': empty frame (dominant ' + stats.dominantShare + ', thirds ' + stats.bandDominant.join('/') +
+      ', luma std ' + stats.lumaStd + ', colours ' + stats.colours + ')');
   }
   return stats;
 }

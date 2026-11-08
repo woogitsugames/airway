@@ -197,6 +197,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       audioCues?.command('ChooseUpgrade'); // [night-03]
       run.resolveBoundary();
       syncUpgrade(true);
+      renderHud(); // [night-56a] D-313: Undo greys out at once after the pick, also on a paused or frozen clock
     },
     onCancelPick: (week) => cancelPick(week), // [task-39]
     onPreviewModel: (container, kind) => {
