@@ -211,6 +211,8 @@ commitach.
 
 - 8.11 ~10:05: #336 (high = siatki medium, D-316) i #337 (szkice znaku aplikacji A/B/C, D-317 „proposed”, docs/styles/kierunki-2026-11b/znak/) scalone. dev = main = 2678d2d. Pytanie do właściciela: wariant znaku (rekomendacja A „Odbitka”) → osobne zadanie ikon i ekranów startowych (U7).
 
+- 8.11 ~11:20: scalone #334 (56a: Q-92 → A wstępnie, D-313), #339 squashem (55a: test:ci 96/96; long press po zaciętej klatce, próg pustej klatki store:shots, testy menu; przenumerowane D-313 → D-318), #338 (56b: CSS 129,9 → 126,8 kB, budżet 129,8). dev = main = 686d9f9. Agenci: 57a (uchwyty tras bez papierowych rombów; tablet/iPad — pusta dolna tercja tablicy i raportu; wpisy N56a/b w backlogu), 58a (długie przejścia, runda 5, po wszystkich zmianach).
+
 ## Kolejka
 - Najpierw: PR-y od GPT (jeśli są), potem zadania z paczki GPT, których GPT nie wziął (te same opisy nadają się dla
   agentów Claude), w kolejności z pliku (01, 02, 05, 06, 20, potem 03, 04, 08, 09, 11…).
