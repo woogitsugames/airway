@@ -199,6 +199,8 @@ commitach.
 
 - 8.11 ~07:30: scalone #327 (ext: rzeźba jako ton grawerski, D-307) i #328 (GPT-13/14 FR+ES, przenumerowane D-307 → D-308). dev = main = 026340e. Agenci: 52a (w toku), 53a (GPT-15 PT-BR). Pytanie z #328: FR „vous” (rekomendacja: zostawić). Po 53a: U7 (po telefonie), ewentualnie Q-92 A, jeśli brak odpowiedzi.
 
+- 8.11 ~07:55: scalone #329 (ext: globus w menu, symbole skalowane z dyskiem, D-309) i #330 (GPT-15 PT-BR, przenumerowane D-309 → D-310). dev = main = 084979f. Fale językowe DE/FR/ES/PT-BR gotowe (szkice, nie w grze). Agenci: 52a (w toku), 54a (przegląd UI Linorytu względem a-game/a-menu). Kolejka GPT wyczerpana (21 = Róża, nieaktualne). Po 54a: Q-92 A (jeśli dalej brak odpowiedzi — odwracalne), U7 po telefonie.
+
 ## Kolejka
 - Najpierw: PR-y od GPT (jeśli są), potem zadania z paczki GPT, których GPT nie wziął (te same opisy nadają się dla
   agentów Claude), w kolejności z pliku (01, 02, 05, 06, 20, potem 03, 04, 08, 09, 11…).
