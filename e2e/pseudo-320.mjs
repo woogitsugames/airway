@@ -3,7 +3,7 @@
 // i.e. the longest translation the catalogs allow. Each screen is mounted alone through its public API on
 // ?perf=scene (no game, no globe: the globe suites are slow under SwiftShader, G7) at 320×568 in PL and EN:
 // departures menu, settings, logbook (with flights), puzzle board, weekly upgrade board over the HUD, game over,
-// in-game HUD and a first-time card; [night-59a] D-321 also the board's airport pick (`upgrade-pick`), and both board
+// in-game HUD and a first-time card; [night-59a] D-322 also the board's airport pick (`upgrade-pick`), and both board
 // fixtures must show the state they name (crates vs pick). Audit (as e2e/pseudo-locale.mjs): buttons ≥ 48 px, no own text clipped by an
 // overflow/ellipsis box or wider than its box, nothing outside the viewport, no template token, no horizontal page
 // scroll, pseudo text present; plus: no split-flap cell ends in "…" (a budgeted title, status or half-row title
@@ -15,7 +15,7 @@ import { gameUrl, withBrowser, saveDiagnostics, ARTIFACTS } from './browser.mjs'
 import { presetLanguage } from '../scripts/lib/harness.mjs';
 import { SCREENS as SHARED_SCREENS, UPGRADE_PICK, auditScreen, fixtureStateAudit, mountScreen } from './screen-fixtures.mjs'; // [night-11ap] shared with text-scale-150
 
-/** [night-59a] D-321: plus the weekly board's airport pick, a case of its own (`upgrade` is the crate board). */
+/** [night-59a] D-322: plus the weekly board's airport pick, a case of its own (`upgrade` is the crate board). */
 const SCREENS = [...SHARED_SCREENS, UPGRADE_PICK];
 
 const started = performance.now();

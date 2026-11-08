@@ -41,6 +41,7 @@ export const pl = {
   'route.atc.distance': '{distance} km · {from} → {to}',
   'route.atc.overRange': 'Za daleko dla {aircraft}',
   'route.atc.stopover': 'Wskaż miasto po drodze',
+  'route.atc.undoRefused': 'Nie da się cofnąć — {code} zapchałoby się o {time}', // [night-60a] D-321
   'route.menu.label': 'Działania na trasie',
   'route.menu.remove': 'Usuń',
   'route.menu.shorten': 'Skróć',

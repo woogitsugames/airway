@@ -14,7 +14,7 @@ import { withBrowser, saveDiagnostics, ARTIFACTS } from './browser.mjs';
 import { presetLanguage } from '../scripts/lib/harness.mjs';
 import { SCREENS as SHARED_SCREENS, UPGRADE_PICK, auditScreen, fixtureStateAudit, mountScreen } from './screen-fixtures.mjs'; // [night-11ap] shared with text-scale-150
 
-// [night-59a] D-321: the weekly board's airport pick is a case of its own; `upgrade` is the crate board.
+// [night-59a] D-322: the weekly board's airport pick is a case of its own; `upgrade` is the crate board.
 const FIXTURE_SCREENS = [...SHARED_SCREENS, UPGRADE_PICK];
 const SCREENS = [...FIXTURE_SCREENS, 'hub-board', 'pause'];
 

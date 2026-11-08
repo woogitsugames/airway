@@ -12,7 +12,7 @@ import { gameOverMilestones } from '../milestones'; // [night-12ax] R1n
 import type { MilestoneId } from '../../game/milestones';
 import type { ContractsSummary } from '../../game/contractsSummary'; // [night-33a] D-271
 import { linoryt, linorytReportHub } from '../skin/linoryt'; // [night-29a] D-284 U3: Linoryt preview (DEV only)
-import { setClass, setFlagAttribute } from '../classes'; // [night-59a] D-321
+import { setClass, setFlagAttribute } from '../classes'; // [night-59a] D-322
 
 export type { WorldIdentity } from './seed';
 export type { GameOverBest, BestStorage } from './storage';

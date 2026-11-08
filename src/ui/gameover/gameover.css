@@ -308,6 +308,12 @@
   .airway-go-contracts ~ .airway-go-causes li + li + li { display: none; }
   /* [night-33a] D-293: here the contracts row wraps under the milestones as the second line of their ruled block. */
   section.airway-go-contracts { margin-top: 1px; padding: 0; border: 0; }
+  /* [night-58a] N58a: an Endless run's home-region and licence lines (PL wraps one fact per line) made the report
+     scroll 24 / 46 px at 360×640, so it opened with the sign cut off: tighter fact lines, and beside them the
+     departures list shows 1¼ rows as on 320×568. */
+  .airway-go-score-row { row-gap: 1px; }
+  .airway-go-score, .airway-go-weeks, .airway-go-home { line-height: 1.25; }
+  .airway-go-content:has(.airway-go-home) .airway-go-flight-list { max-height: 50px; }
 }
 /* [night-10m] 320×568: one and a half departure rows before the list scrolls, a tighter sign and board. */
 @media (max-height: 600px) and (max-width: 619px) {
@@ -454,6 +460,12 @@
 @media (max-height: 600px) and (max-width: 619px) {
   .airway-go-milestones { margin-top: 3px; padding-top: 2px; }
   .airway-go-milestones-title { line-height: 1.1; }
+  /* [night-60a] N58a: with the home-region and licence lines 320×568 still scrolled 19 / 35 px (EN / PL). The strip
+     title and the departures' column heads stay for screen readers only (the sign names the page; flight, gate and
+     stamp read without them), the milestones and contracts share a line where they fit, the fact lines tighten. */
+  .airway-go-content:has(.airway-go-home) :is(.airway-go-strip-title, .airway-go-board-head) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .airway-go-content:has(.airway-go-home) section.airway-go-milestones { display: inline-flex; margin-right: 12px; }
+  .airway-go-content:has(.airway-go-home) :is(.airway-go-score, .airway-go-weeks, .airway-go-home) { line-height: 1.15; }
 }
 /* [night-33a] D-271, D-293: the weekly contracts row reuses the milestone row (count, filled/hollow squares); its
    squares wrap in a long run. */

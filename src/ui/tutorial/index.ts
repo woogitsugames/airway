@@ -13,7 +13,7 @@ import { airportLabel } from '../airportLabel';
 import '../skin/current.css'; // [night-11aq] skin tokens read by overlay.css
 import '../overlay.css'; // [night-11p] D-129: the vignette uses the game's own luggage tag
 import './tutorial.css';
-import { setClass } from '../classes'; // [night-59a] D-321
+import { setClass } from '../classes'; // [night-59a] D-322
 
 const SVG = `
 <svg class="aw-world-art" viewBox="0 0 412 520" preserveAspectRatio="xMidYMid meet" aria-hidden="true">

@@ -3,7 +3,7 @@
 // globe frame rate (G7) does not matter. Checks: the pennant stub sits right after the code plate (in Linoryt, after the
 // code's fill and tick bar; night-46a) and inside the tag
 // (no clipping), hollow pennant + "+12 14:00" while announced, filled pennant + "+12 to/do 20:00" while running (the
-// state is told by shape and words, not colour), the tag aria names the surge (PL/EN), an off-screen airport's edge
+// state is told by shape and words, not colour; [night-58a] both stand off the stub at >= 4.5:1), the tag aria names the surge (PL/EN), an off-screen airport's edge
 // chip carries the same pennant and aria, null removes both, an invalid mark is refused. Writes one PNG per case to
 // docs/shots/n12bb/ (inspected before committing).
 import { performance } from 'node:perf_hooks';
@@ -53,6 +53,14 @@ try {
           overlay.setPassengers('FRA', ['EUN', 'NAM', 'ASI']);
           overlay.setPassengers('MAD', ['AFR']);
           overlay.setPassengers('SYD', ['ASI', 'ASI']);
+          const luminance = (rgb) => rgb.match(/[\d.]+/g).slice(0, 3).map((v) => Number(v) / 255)
+            .map((v) => v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)
+            .reduce((sum, v, i) => sum + v * [0.2126, 0.7152, 0.0722][i], 0);
+          const contrastOf = (stub) => {
+            const style = getComputedStyle(stub);
+            const a = luminance(style.color), b = luminance(style.backgroundColor);
+            return +((Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05)).toFixed(2);
+          };
           const read = (id) => {
             overlay.update();
             const tag = host.querySelector(`.airport-bubble[data-airport="${id}"]`);
@@ -76,6 +84,9 @@ try {
               })() : null,
               inside: s ? s.left >= r.left - 0.5 && s.right <= r.right + 0.5 && s.top >= r.top - 0.5 && s.bottom <= r.bottom + 0.5 : null,
               stubScroll: stub ? stub.scrollWidth - stub.clientWidth : null,
+              // [night-58a] N58a: the running pennant printed paper on paper in Linoryt (an empty box); the words and the
+              // pennant must stand off their stub's own background.
+              contrast: stub ? contrastOf(stub) : null,
             };
           };
           const edge = (id) => {
@@ -120,6 +131,7 @@ try {
         assert(m.fraActive.fill === 'currentColor', `${label}: running pennant is not filled (${m.fraActive.fill})`);
         assert(m.fraActive.aria.startsWith(text.activeAria), `${label}: active aria "${m.fraActive.aria}"`);
         for (const key of ['soon', 'active', 'fraActive']) {
+          assert(m[key].contrast >= 4.5, `${label}: ${key} stub text on its own background ${m[key].contrast}:1 (< 4.5)`);
           assert(m[key].afterPlate === true, `${label}: ${key} stub is not right after the code plate`);
           assert(m[key].inside === true, `${label}: ${key} stub outside its tag`);
           assert(m[key].scroll <= 0 && m[key].stubScroll <= 0, `${label}: ${key} clipped (${m[key].scroll}/${m[key].stubScroll} px)`);

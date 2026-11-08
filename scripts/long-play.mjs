@@ -17,6 +17,13 @@
 // Each game day a pause/resume (pause ring or Escape), each week a hub board (long press), a rotation for six game
 // hours, Save -> reload -> Continue (tick and hash kept), and on alternate boards Undo right after the pick. An open
 // weekly board must hold the clock (`advanceTicks` steps nothing). The positional `<minutes>` caps real time.
+//
+// [night-58a] D-313 (Q-92 → A) in play: after every completed weekly pick the dock's Undo must be disabled at once
+// (the closed week is a barrier). On alternate picks the run then plays at least three game hours, until two network
+// edits (bot decisions, plane drags) or twelve hours, and taps Undo until it greys out: every tap must keep the game
+// screen (a run that ends in the past is an ISSUE), the pick and the clock, and the taps may never outnumber the edits
+// made since the pick (Undo reaching past the barrier). A tablet is just another size (`1024 1366`); `--seed=N` sets
+// the first run's seed for a repro.
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { ROOT, startVite, launchChromium } from './lib/harness.mjs';
@@ -32,10 +39,12 @@ const REGION = flag('region', 'random');
 const LICENCE = +flag('licence', '1');
 const WEATHER = flag('weather', '');
 const TEXT = +flag('text', '100');
+// [night-58a] `--seed=N` (stub): the first run's seed instead of 0xA1A1 + w + h (later runs count on from it), for repros.
+const SEED0 = flag('seed', null);
 const [lang = 'pl', W = '412', H = '915', SPEED = '1', MINUTES = STUB ? '30' : '20'] = args;
 const w = +W, h = +H, speed = +SPEED, minutes = +MINUTES;
 const TAG = args[5] ?? (STUB
-  ? `stub-${lang}-${w}x${h}-${REGION}-c${LICENCE}${WEATHER ? '-' + WEATHER : ''}${TEXT !== 100 ? '-t' + TEXT : ''}`
+  ? `stub-${lang}-${w}x${h}-${REGION}-c${LICENCE}${WEATHER ? '-' + WEATHER : ''}${TEXT !== 100 ? '-t' + TEXT : ''}${SEED0 !== null ? '-s' + SEED0 : ''}`
   : `${lang}-${w}x${h}-${speed}x`);
 const OUT = resolve(ROOT, '.e2e/long-play', TAG);
 rmSync(OUT, { recursive: true, force: true }); // [night-47a] no PNGs of an earlier run under the same tag
@@ -250,7 +259,9 @@ async function runReal() {
 // second literal here (test:week-source).
 let WEEK_TICKS = 0, DAY_TICKS = 0;
 let playedTicks = 0, hours = 0;
-const done = { pauses: 0, hubBoards: 0, rotations: 0, continues: 0, undos: 0, boards: 0 };
+const done = { pauses: 0, hubBoards: 0, rotations: 0, continues: 0, undos: 0, boards: 0, barriers: 0, undoWalks: 0, undoRefusals: 0 };
+/** [night-58a] An Undo walk to the weekly barrier waiting for its post-pick edits (null when none is due). */
+let undoWalk = null;
 const issueCounts = new Map();
 const infoSeen = new Set();
 /** One ISSUE line per distinct problem (later repeats are counted and summed up at the end). */
@@ -328,6 +339,24 @@ async function audit(label) {
         else out.push([`control covered: ${name(n)}`, `under ${name(top)}`]);
       }
     }
+    // [night-58a] N58a: a running surge pennant printed paper on paper (an empty box). Text must stand off the nearest
+    // painted background of its own box or an ancestor (>= 3:1); text straight over the map (no painted box up to
+    // the page) is left to the ink suites, as are the D-08 glyphs (SVG).
+    const lum = (rgb) => (rgb.match(/[\d.]+/g) ?? []).slice(0, 3).map((v) => Number(v) / 255)
+      .map((v) => v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4).reduce((sum, v, i) => sum + v * [0.2126, 0.7152, 0.0722][i], 0);
+    const painted = (bg) => bg && bg !== 'transparent' && !/rgba\([^)]*,\s*0(\.0+)?\)$/.test(bg);
+    for (const n of document.querySelectorAll('body *')) {
+      if (!(n instanceof HTMLElement) || ![...n.childNodes].some((c) => c.nodeType === 3 && c.textContent.trim())) continue;
+      if (!shown(n) || n.closest('[hidden]')) continue; // aria-hidden stubs are seen all the same
+      const r = n.getBoundingClientRect();
+      if (r.width < 1 || r.height < 1 || r.right <= 0 || r.bottom <= 0 || r.left >= innerWidth || r.top >= innerHeight) continue;
+      let box = n, bg = null;
+      for (; box && box !== document.body; box = box.parentElement) { const b = getComputedStyle(box).backgroundColor; if (painted(b)) { bg = b; break; } }
+      if (!bg) continue;
+      const a = lum(getComputedStyle(n).color), b = lum(bg);
+      const ratio = (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+      if (ratio < 3) out.push([`text on its background < 3:1: ${(name(n.closest('[data-airport]') ?? box) + ' ' + (n.getAttribute('class') || n.tagName)).slice(0, 80)}`, `${ratio.toFixed(2)}:1 "${n.textContent.trim().slice(0, 24)}"`]);
+    }
     return { problems: out, scrollable, info };
   });
   for (const [key, detail] of found.problems) {
@@ -337,6 +366,7 @@ async function audit(label) {
   return found.scrollable;
 }
 
+const stubSeed = () => (SEED0 !== null ? +SEED0 : 0xA1A1 + w + h);
 async function startStubRun(seed) {
   if (await skipTutorialIfShown()) {
     const st = await S();
@@ -369,9 +399,11 @@ async function playHour() {
         await page.mouse.move(g.from.x, g.from.y); await page.mouse.down();
         for (let i = 1; i <= 8; i++) await page.mouse.move(g.from.x + (g.to.x - g.from.x) * i / 8, g.from.y + (g.to.y - g.from.y) * i / 8);
         await page.mouse.up(); note('UI', 'plane drag');
+        if (undoWalk) undoWalk.edits++;
       }
     } else {
-      await page.evaluate(() => window.aw.botStep()).catch((e) => note('ERROR', 'botStep ' + e.message));
+      const cmd = await page.evaluate(() => window.aw.botStep()).catch((e) => { note('ERROR', 'botStep ' + e.message); return null; });
+      if (cmd && undoWalk) undoWalk.edits++;
     }
     await advance(30);
     if ((await S()).screen !== 'game') break;
@@ -471,7 +503,11 @@ async function board() {
     await page.mouse.click(g.from.x, g.from.y); await page.waitForTimeout(400);
     if (await page.evaluate(() => !!document.querySelector('.airway-upgrade-open.is-picking-hub'))) {
       issue('pick tap did not complete'); await shot(page, 'pick-stuck'); await page.getByTestId('upgrade-pick-back').click().catch(() => {});
-    } else note('UI', 'pick tap');
+    } else {
+      note('UI', 'pick tap');
+      const after = await S();
+      if (after.screen === 'game') await afterPick(after, (after.upgrades ?? []).length, 'airport pick');
+    }
     return;
   }
   if (!info.offers.length) { issue('upgrade screen with no offers and no pick'); await shot(page, 'upgrade-empty'); return; }
@@ -488,18 +524,69 @@ async function board() {
   await page.waitForTimeout(300);
   const after = await S();
   if (after.screen !== 'game') return; // an airport pick follows on the board
+  await afterPick(after, taken + 1, info.offers[i]);
+}
+
+/**
+ * [night-58a] D-313 (Q-92 → A): right after a completed pick (crate or airport) Undo is disabled; a tap on it changes
+ * nothing. Every second pick also schedules an Undo walk after three game hours of edits (undoToBarrier).
+ */
+async function afterPick(after, upgradesNow, what) {
+  const undo = page.locator('[data-hud-action="undo"]');
+  done.barriers++;
+  if (await undo.isEnabled().catch(() => false)) {
+    if (issue('Undo enabled right after the weekly pick (D-313)', `${what} tick=${after.tick}`)) await shot(page, 'undo-enabled-after-pick');
+    // N7x/Q-92: what a tap does then must still keep the choice and the run.
+    await undo.click({ force: true }).catch(() => {});
+    await page.waitForTimeout(300);
+    const back = await S();
+    done.undos++;
+    if ((back.upgrades ?? []).length !== upgradesNow) issue('Undo after the weekly pick lost the choice', JSON.stringify(back.upgrades));
+    if (back.screen !== 'game') { issue('Undo after the weekly pick ended the run in the past', `${back.screen} tick=${back.tick}`); await shot(page, 'undo-past'); }
+    return;
+  }
   undoNext = !undoNext; // every second completed pick
   if (undoNext) return;
-  // N7x soft lock: Undo right after a weekly pick must keep the choice and the clock running, never reopen the board.
+  undoWalk = { what, tick: after.tick, upgrades: upgradesNow, edits: 0, hours: 3 };
+}
+
+/** [night-58a] Tap Undo until it greys out: the post-pick edits go one by one, never the pick, never the run. */
+async function undoToBarrier() {
+  const walk = undoWalk; undoWalk = null;
   const undo = page.locator('[data-hud-action="undo"]');
-  if (!(await undo.isEnabled().catch(() => false))) { note('INFO', 'Undo disabled right after the pick'); return; }
-  await undo.click();
-  await page.waitForTimeout(300);
-  const back = await S();
-  done.undos++;
-  note('UI', `Undo after ${info.offers[i]}: screen=${back.screen} upgrades=${(back.upgrades ?? []).length}`);
-  if ((back.upgrades ?? []).length !== taken + 1) issue('Undo after the weekly pick lost the choice', JSON.stringify(back.upgrades));
-  if (back.screen !== 'game') issue('Undo after the weekly pick left the game screen', back.screen);
+  let taps = 0;
+  for (; taps <= walk.edits + 2; taps++) {
+    // A queued edit reaches the HUD with the next frame; a zero-length wait lets it repaint.
+    await page.waitForTimeout(50);
+    if (!(await undo.isEnabled().catch(() => false))) break;
+    const before = await S();
+    await undo.click({ timeout: 4000 }).catch((e) => issue('Undo click failed', e.message.split('\n')[0]));
+    await page.waitForTimeout(150);
+    const back = await S();
+    done.undos++;
+    if (back.screen !== 'game') {
+      if (issue('Undo ended the run in the past', `${walk.what} picked at tick ${walk.tick}; tap ${taps + 1} of ${walk.edits} edits -> ${back.screen} tick=${back.tick} (Q-93)`)) {
+        await shot(page, 'undo-past'); // the HUD clock already reads the minute the re-simulated run ended
+      }
+      return;
+    }
+    if ((back.upgrades ?? []).length !== walk.upgrades) issue('Undo walk lost the weekly choice', JSON.stringify(back.upgrades));
+    if (back.tick !== before.tick) issue('Undo moved the clock', `${before.tick} -> ${back.tick}`);
+    // [night-60a] D-321 (Q-93 → A): an Undo whose re-simulation would end the run is refused. The run stays exactly as
+    // it was (an accepted Undo always changes the hash: the journal is one command shorter) and the strip says why.
+    if (back.snapshotHash === before.snapshotHash) {
+      const notice = await page.locator('.airway-atc-strip[data-notice]').textContent({ timeout: 1000 }).catch(() => null);
+      if (!notice) { issue('Undo tap changed nothing and said nothing (D-321)', `tap ${taps + 1} of ${walk.edits} edits`); await shot(page, 'undo-silent'); }
+      done.undoRefusals++;
+      done.undoWalks++;
+      note('UI', `Undo walk after ${walk.what}: tap ${taps + 1} of ${walk.edits} edits refused (D-321): "${notice}"`);
+      return;
+    }
+  }
+  done.undoWalks++;
+  if (taps > walk.edits) issue('Undo reached past the weekly pick', `${taps} taps > ${walk.edits} edits since ${walk.what}`);
+  else if (await undo.isEnabled().catch(() => false)) issue('Undo still enabled after undoing every post-pick edit', `${taps} taps, ${walk.edits} edits`);
+  note('UI', `Undo walk after ${walk.what}: ${taps} taps for ${walk.edits} edits, barrier held`);
 }
 
 async function gameOver() {
@@ -518,7 +605,7 @@ async function gameOver() {
   await skipTutorialIfShown();
   const s2 = await S();
   runs++;
-  if (s2.screen === 'menu') await startStubRun(0xA1A1 + w + h + runs);
+  if (s2.screen === 'menu') await startStubRun(stubSeed() + runs);
   else {
     const n = await S();
     if ((n.licenceClass ?? 1) !== LICENCE) issue('restart changed the licence class', `${n.licenceClass}`);
@@ -535,7 +622,7 @@ async function runStub() {
   }));
   const scale = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--airway-text-scale').trim());
   note('INFO', `stub world ${PAGE_URL} text-scale=${scale || '1'} weeks=${WEEKS}`);
-  await startStubRun(0xA1A1 + w + h);
+  await startStubRun(stubSeed());
   const end = t0 + minutes * 60_000;
   let lastScreen = 'game';
   let rotatedHours = 0;
@@ -565,6 +652,7 @@ async function runStub() {
         await saveContinue();
       }
       const after = await playHour();
+      if (undoWalk && after.screen === 'game' && --undoWalk.hours <= 0 && (undoWalk.edits >= 2 || undoWalk.hours <= -9)) await undoToBarrier();
       if (after.screen === 'game') {
         await audit(`game w${weekOf(after.tick)} d${Math.floor(after.tick / DAY_TICKS) + 1} ${String(Math.floor((after.tick % DAY_TICKS) / 60)).padStart(2, '0')}h`);
         // The R6a first-time card hides itself after a few real seconds; a stub hour takes ~0.1 s, so tap OK like a player.
@@ -579,10 +667,10 @@ async function runStub() {
     } else if (s.screen === 'gameover') {
       if (rotatedHours > 0) { rotatedHours = 0; await page.setViewportSize({ width: w, height: h }); }
       await gameOver();
-      undoNext = true; newRun();
+      undoNext = true; undoWalk = null; newRun();
       lastScreen = 'game';
     } else if (s.screen === 'menu') {
-      issue('unexpected menu'); await shot(page, 'menu'); await startStubRun(0xA1A1 + w + h + ++runs); newRun();
+      issue('unexpected menu'); await shot(page, 'menu'); await startStubRun(stubSeed() + ++runs); newRun(); undoWalk = null;
     } else { issue(`unexpected screen ${s.screen}`); await page.keyboard.press('Escape'); }
   }
   if (Date.now() >= end) note('INFO', `stopped by the ${minutes}-minute cap after ${(playedTicks / WEEK_TICKS).toFixed(1)} game weeks`);

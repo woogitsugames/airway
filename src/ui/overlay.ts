@@ -18,7 +18,7 @@ import {
   linorytMarkers, linorytNoteSize, linorytProbe, linorytStampBox, linorytStampFallback, linorytStampProbe, linorytStampSlot, type StampBox,
 } from './skin/linoryt'; // [night-30a] D-284 U2; [night-46a] D-301: the shipped skin's notes
 import './overlay.css';
-import { setClass } from './classes'; // [night-59a] D-321
+import { setClass } from './classes'; // [night-59a] D-322
 
 const DEG = Math.PI / 180;
 const MAX_GLYPHS = 6;

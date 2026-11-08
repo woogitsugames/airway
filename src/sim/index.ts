@@ -2,7 +2,7 @@
 import { Sim } from './sim.ts';
 import type { GameConfig } from './state.ts';
 
-export { Sim } from './sim.ts';
+export { Sim, type UndoResult } from './sim.ts';
 export type { CommandOutcome } from './sim.ts';
 export type { Command, CommandEntry, CommandCheck, RejectReason, RouteEnd } from './commands.ts';
 export type { GameConfig, SimState } from './state.ts';

@@ -8,7 +8,7 @@ import { HUB_BOARD_CAUSE_KEYS, type HubBoardCause, type HubBoardModel } from '..
 import { CURFEW_END_HOUR } from '../sim/params';
 import './skin/current.css'; // [night-11aq] skin tokens read by hubBoard.css
 import './hubBoard.css';
-import { setClass } from './classes'; // [night-59a] D-321
+import { setClass } from './classes'; // [night-59a] D-322
 
 const SVG = 'http://www.w3.org/2000/svg';
 

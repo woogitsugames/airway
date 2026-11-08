@@ -5,7 +5,7 @@
 
 export const SCREENS = ['menu', 'settings', 'logbook', 'puzzles', 'upgrade', 'gameover', 'hud', 'first-time'];
 /**
- * [night-59a] D-321: the weekly board's airport pick (a hub crate chosen, only the sign with its back tile over the
+ * [night-59a] D-322: the weekly board's airport pick (a hub crate chosen, only the sign with its back tile over the
  * globe). Not in SCREENS (e2e/skin-pixels.mjs keeps its baseline set); pseudo-320 and text-scale-150 add it.
  */
 export const UPGRADE_PICK = 'upgrade-pick';
@@ -46,7 +46,7 @@ export async function mountScreen(page, screen, language, { pseudo = true, textS
       if (board) {
         const { WeeklyUpgradeView } = await import('/src/ui/upgrade/index.ts');
         const view = new WeeklyUpgradeView(host, { onCommand: () => {}, onCancelPick: () => {}, onPreviewModel: () => {} });
-        // [night-59a] D-321: the state the sim really hands over. Without `pendingHub` the board used to toggle
+        // [night-59a] D-322: the state the sim really hands over. Without `pendingHub` the board used to toggle
         // `is-picking-hub` ON (classList.toggle(name, undefined) flips) and these suites audited the pick layout.
         const pick = screen === 'upgrade-pick';
         view.render({ week: 7, paused: true, pendingHub: pick, ...(pick ? { selected: 'hub-expansion' } : {}),
@@ -79,7 +79,7 @@ export async function mountScreen(page, screen, language, { pseudo = true, textS
 }
 
 /**
- * [night-59a] D-321: the fixture shows the screen it names. `upgrade` = the crate board (three crates visible, no
+ * [night-59a] D-322: the fixture shows the screen it names. `upgrade` = the crate board (three crates visible, no
  * `is-picking-hub`); `upgrade-pick` = the airport pick (`is-picking-hub`, the back tile, no crate). Other screens: [].
  */
 export function fixtureStateAudit(page, screen) {

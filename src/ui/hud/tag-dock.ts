@@ -4,7 +4,7 @@ import { crateCountdown } from './crate-countdown';
 import type { HudActions, HudState, PlaneType } from './types';
 import { ARIA_KEYSHORTCUTS } from '../../input/keyboard';
 import { linoryt, linorytDockLabel, linorytIcon } from '../skin/linoryt'; // [night-28a] D-284; [night-46a] D-301: cut symbols
-import { setClass } from '../classes'; // [night-59a] D-321
+import { setClass } from '../classes'; // [night-59a] D-322
 
 type TagId = 'undo' | PlaneType | 'hub' | 'speed';
 // [night-46a] D-285 L1, D-301: five symbols; the globe-view tag (G8, D-172) left with Satelita and Mapa.

@@ -3588,7 +3588,34 @@ column centred on paper (the empty paper only moves to the sides), larger type t
 the CSS budget). Shots `docs/shots/n57a/{upgrade,failure}-*`.
 **Status: in force (N57a).**
 
-## D-321 — Conditional classes go through `setClass`, which never flips; the board fixtures show the state they name (2026-11-08, night 59a)
+## D-321 — Q-93 → A, provisional: an Undo whose re-simulation would end the run is refused (2026-11-08, night 60a)
+**Owner may reverse** (Q-93 is not answered yet; the coordinator took the recommendation because it is reversible).
+D-313 stops Undo at the last weekly choice, but the network edits made after it still undo exactly (D-19), and the
+re-simulation without them could jam an airport hours back: one tap showed the game-over report with the clock wound
+back (N58a: 25 of 791 headless Undo walks, 1 of 21 long sessions; seed 42041 `ASI` class I, week-1 turboprop, 24 game
+hours of bot edits, the second Undo ended the run at tick 5692 on DEL with the clock at 5761). **Rule:** an Undo whose
+re-simulation ends the run (an airport jams at or before the current tick while the run is still going) is refused.
+`Sim.tryUndo()` runs the same re-simulation loop as an accepted Undo (one loop, no second path), stops at the jam, and
+puts back the very objects it held before the tap (kernel, RNG streams, world, journal, outcomes, the checkpoint
+ring's entries; `CheckpointRing.keep/putBack`), so the hash, journal, outcomes and undo history are unchanged and no
+re-simulated event leaks. It returns `{ done: false, reason: 'jam', cityId, minute, tick }`; `Sim.undo()` stays the
+boolean wrapper. `EndlessRun.tryUndo()` turns the world minute into the home clock the HUD shows, and the session puts
+one line on the ATC strip for 4 s (`route.atc.undoRefused`, PL „Nie da się cofnąć — {code} zapchałoby się o {time}”,
+EN “Can’t undo — {code} would jam at {time}”, budget 52; the red reason field alone, `atcStrip.notice`).
+`canUndo` does not pre-simulate (no cost per HUD render): the button stays enabled and the tap is refused with the
+line. **Cost:** a refused Undo costs at most what the accepted one would (it stops earlier) plus a slice of ≤ 64
+references; the repro re-simulates 1,492 ticks (checkpoint 4200 → jam 5692) in about 20–26 ms on the dev container,
+57 ms per game week against the 600 ms replay-cost budget (`test:undo`). **Unchanged:** Undo only decides which
+commands stay in the journal, so replays, saves and Daily verification are untouched (`test:replay`, `test:daily`,
+`test:net-server` green with the same hashes). The N58a safety net (the session shows the report at once when an Undo
+leaves a finished run) stays: it is now reachable only for a run that had already ended in the same frame or under a
+future rule change, and costs one `if`. Tests: `test:undo` 14 (the refusal with an identical snapshot, outcomes and no
+events; the refused run plays on exactly like one never tapped and replays to the same hash; the cost budget),
+`test:e2e:undo-refused-jam:stub` (renamed from `undo-ends-run:stub`: the strip line, the game screen, the hash, tick
+and pick kept, Undo still enabled). Options B (Undo reaches back 2 game hours) and C (exact time travel) stay open.
+**Status: in force (provisional, Q-93).**
+
+## D-322 — Conditional classes go through `setClass`, which never flips; the board fixtures show the state they name (2026-11-08, night 59a)
 `classList.toggle(name, force)` and `toggleAttribute(name, force)` flip the token when `force` is `undefined` instead of
 clearing it. `WeeklyUpgradeView` set `is-picking-hub` with `!!state?.paused && state.pendingHub`; the shared `upgrade`
 fixture (`e2e/screen-fixtures.mjs`) left `pendingHub` out, so the class went ON and `test:e2e:text-scale-150` and

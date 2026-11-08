@@ -1,4 +1,4 @@
-// [night-59a] D-321: `classList.toggle(name, force)` and `toggleAttribute(name, force)` FLIP the token when `force` is
+// [night-59a] D-322: `classList.toggle(name, force)` and `toggleAttribute(name, force)` FLIP the token when `force` is
 // `undefined` (the weekly board opened in airport-pick mode for `pendingHub` missing from an e2e fixture). Every
 // conditional class or flag attribute in src/ goes through `setClass` / `setFlagAttribute` (src/ui/classes.ts), which
 // coerce. This TS-AST guard fails on any two-argument `.toggle(...)` or `.toggleAttribute(...)` call in src/ outside

@@ -213,6 +213,9 @@ sim.clock;               // calendar of the world minute (frozen while an upgrad
 sim.seed; sim.config; sim.tickCount; sim.getCommandLog(); sim.getCommandOutcomes(); // journal + per-entry { minute, accepted }
 sim.hash(); sim.snapshot(); sim.restore(json); Sim.fromSnapshot(json); sim.undo();
 sim.canUndo;             // false when the newest command is a weekly choice: a closed week is a barrier (D-313)
+sim.tryUndo();           // undo() with the reason: { done: true } | { done: false, reason: 'none' } |
+                         //   { done: false, reason: 'jam', cityId, minute, tick }: refused, the re-simulation would end
+                         //   the run (D-321); state, journal and checkpoints unchanged. canUndo does not pre-simulate
 Sim.replay(seed, journal, ticks, config?, stopAtEnd?); // stopAtEnd: stop on the game-over tick (server verification, D-97)
 ```
 

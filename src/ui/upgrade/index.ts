@@ -3,7 +3,7 @@ import '../skin/current.css'; // [night-11aq] skin tokens read by upgrade.css
 import './upgrade.css';
 import { t, type TranslationKey } from '../../i18n';
 import { cardModel, upgradeFacts, type CardModel, type ContractBoard, type SlotPressure } from './cards';
-import { setClass } from '../classes'; // [night-59a] D-321
+import { setClass } from '../classes'; // [night-59a] D-322
 
 export { cardModel, upgradeFacts, mostSlotStarved, type CardModel, type ContractBoard, type UpgradeFacts, type SlotPressure } from './cards';
 
@@ -146,7 +146,7 @@ export class WeeklyUpgradeView {
     const pickingSlots = !!state?.pendingHub && state.selected === 'departure-slots';
     this.root.replaceChildren();
     setClass(this.root, 'airway-upgrade-open', !!state?.paused);
-    setClass(this.root, 'is-picking-hub', !!state?.paused && !!state.pendingHub); // [night-59a] D-321
+    setClass(this.root, 'is-picking-hub', !!state?.paused && !!state.pendingHub); // [night-59a] D-322
     // [night-49a] N47a: the host element outlives the board, and so did its scroll position: at 150 % text the next
     // week's board opened where the last one was left (week sign and contract result out of sight). Every time the
     // board opens, or turns between the crates and the airport pick, it starts at the top.

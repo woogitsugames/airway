@@ -1,4 +1,4 @@
-// [night-59a] D-321: the one place that sets or clears a class or a flag attribute on a condition.
+// [night-59a] D-322: the one place that sets or clears a class or a flag attribute on a condition.
 // `classList.toggle(name, force)` and `toggleAttribute(name, force)` FLIP the token when `force` is `undefined`
 // instead of clearing it. A typed `boolean` field can still arrive as `undefined` from untyped data (an e2e fixture,
 // the DEV adapter, an old save), and the screen then silently shows the opposite state (the weekly board opened in

@@ -44,6 +44,17 @@ export function undoable(command: Command): boolean {
   return command.type !== 'ChooseUpgrade' && command.type !== 'CancelUpgradePick';
 }
 
+/**
+ * [night-60a] D-321: what an Undo tap did. `none`: nothing undoable (empty, or a weekly choice is next, D-313).
+ * `jam`: refused, the re-simulation without the command jams `cityId` at world `minute` (sim `tick`) before now.
+ */
+export type UndoResult =
+  | { readonly done: true }
+  | { readonly done: false; readonly reason: 'none' }
+  | { readonly done: false; readonly reason: 'jam'; readonly cityId: string; readonly minute: number; readonly tick: number };
+const UNDONE: UndoResult = { done: true };
+const NOTHING_TO_UNDO: UndoResult = { done: false, reason: 'none' };
+
 function copyCommand(value: unknown): Command {
   if (!object(value) || !isCommandType(value.type)) throw new TypeError('unknown command type');
   return normalizeCommand(JSON.parse(canonicalJson(value)));
@@ -358,15 +369,33 @@ export class Sim {
    * [night-07x] Weekly choices (ChooseUpgrade, CancelUpgradePick) are never undone: popping a
    * week's choice left the world back on that week's board after the UI had closed it, so the clock froze with
    * no board on screen (soft lock). [night-56a] D-313: nor does Undo reach past one (see undoTarget).
+   * [night-60a] D-321: nor does Undo end the run (see tryUndo); true only when a command was removed.
    */
-  undo(): boolean {
+  undo(): boolean { return this.tryUndo().done; }
+
+  /**
+   * [night-60a] D-321 (Q-93 → A): undo() with the reason when nothing changed. An Undo whose exact re-simulation ends
+   * the run (an airport jams at or before the current tick, while the run is still going now) is refused: the
+   * re-simulation is the same loop as an accepted Undo, it only stops at the jam, and then the Sim is put back to the
+   * very objects it held before the tap (state, journal, outcomes, queue, checkpoint ring), so the hash, the journal
+   * and the undo history are unchanged. Undo still only ever drops commands from the log: replay and Daily
+   * verification are unaffected.
+   */
+  tryUndo(): UndoResult {
     const target = this.undoTarget();
-    if (!target) return false;
+    if (!target) return NOTHING_TO_UNDO;
     if (target.pending) {
       this.pending.splice(target.index, 1);
-      return true;
+      return UNDONE;
     }
     const removedIndex = target.index;
+    // Everything below is replaced, never changed in place (loadState builds a new world and streams), except the
+    // queue, which is empty when the target is journaled, and the checkpoint ring, kept by reference.
+    const before = {
+      kernel: this.kernel, streams: this.streams, world: this.worldValue,
+      journal: this.journal, outcomes: this.outcomes, checkpoints: this.checkpoints.keep(),
+    };
+    const endsRunNow = this.worldValue.status === 'over';
 
     const targetTick = this.kernel.tick;
     const removedTick = this.journal[removedIndex][0];
@@ -381,6 +410,7 @@ export class Sim {
 
     let index = checkpoint.commandCount;
     while (this.kernel.tick < targetTick) {
+      if (!endsRunNow && this.worldValue.status === 'over') break;
       const nextTick = this.kernel.tick + 1;
       while (index < retained.length && retained[index][0] === nextTick) {
         this.pending.push(copyCommand(retained[index][1]));
@@ -388,9 +418,23 @@ export class Sim {
       }
       this.tick();
     }
+    const failure = this.worldValue.failure;
+    if (!endsRunNow && this.worldValue.status === 'over' && failure) {
+      const refused: UndoResult = {
+        done: false, reason: 'jam', cityId: failure.cityId, minute: this.worldValue.minute, tick: this.kernel.tick,
+      };
+      this.kernel = before.kernel;
+      this.streams = before.streams;
+      this.worldValue = before.world;
+      this.journal = before.journal;
+      this.outcomes = before.outcomes;
+      this.pending.length = 0;
+      this.checkpoints.putBack(before.checkpoints);
+      return refused;
+    }
     // Re-simulated ticks must not replay notifications the player has already seen.
     this.worldValue.clearEvents();
-    return true;
+    return UNDONE;
   }
 
   private syncStreams(): void {

@@ -1,5 +1,5 @@
 // [task-15] Deterministic visual fixture until task 08 and the world renderer are merged.
-import { createGameOverController } from './index';
+import { createGameOverController, type GameOverSnapshot } from './index';
 
 export function mountGameOverPreview(host: HTMLElement): void {
   const query = new URLSearchParams(location.search);
@@ -10,6 +10,11 @@ export function mountGameOverPreview(host: HTMLElement): void {
   const marksParam = query.get('contracts') ?? '101101';
   const marks = /^[01]{1,40}$/.test(marksParam) ? [...marksParam].map((mark) => mark === '1') : [];
   const contracts = marks.length ? { met: marks.filter(Boolean).length, offered: marks.length, marks } : null;
+  // [night-58a] `&region=EUS` adds the home-region row, `&licence=2|3` the licence row (N58a: the 360×640 PL fit).
+  const region = query.get('region');
+  const homeRegion = region && /^[A-Z]{3}$/.test(region) ? region as NonNullable<GameOverSnapshot['homeRegion']> : null;
+  const licence = query.get('licence');
+  const licenceClass = licence === '2' ? 2 : licence === '3' ? 3 : null;
   const reset = (nextSeed: number): void => {
     location.search = '?preview=gameover&seed=' + nextSeed;
   };
@@ -29,6 +34,7 @@ export function mountGameOverPreview(host: HTMLElement): void {
     delivered: 1184, completedWeeks: 6, tip: true, // [night-11f] worst case: three causes and a tip
     // [night-12ax] R1n: Endless milestones, two of them reached for the first time (stamps shown).
     ...(contracts ? { contracts } : {}), // [night-33a] D-271
+    ...(homeRegion ? { homeRegion } : {}), ...(licenceClass ? { licenceClass } : {}), // [night-58a]
     milestones: { reached: ['first-hub', 'all-regions', 'week-2', 'week-3', 'week-4', 'passengers-500', 'passengers-750'], first: ['week-4', 'passengers-750'] },
     ledger: {
       waiting: 100, capacity: 100, waitingByRegion: { NAM: 62, EUN: 18, AFR: 20 },
