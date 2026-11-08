@@ -395,6 +395,12 @@ void main() {
     // City lights: paper dots cut out of the night hatch.
     colour = mix(colour, awPaper, smoothstep(0.35, 0.75, field.b) * smoothstep(0.3, 0.6, night));
   }
+  // D-315: the inked limb starts half a device px inside the silhouette, so the edge of the terrain polygons meets
+  // ink on both sides and needs no multisampling (the sky band carries the ring outward).
+  vec3 awRay = normalize(vAwWorld - cameraPosition);
+  float awD = length(cross(cameraPosition, awRay));
+  float awDg = max(length(vec2(dFdx(awD), dFdy(awD))), 1e-7);
+  colour = mix(colour, awInk, clamp((awD - 1.0) / awDg + 1.5, 0.0, 1.0));
   gl_FragColor = vec4(colour, 1.0);
   #include <colorspace_fragment>
 }`;

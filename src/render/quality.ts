@@ -127,10 +127,12 @@ export function resolveQualityProfile(
   if (preset === 'low') {
     return { ...common, preset, antialias: false, shadowEnabled: false, shadowMapSize: 0, maxOverlayItems: 40 };
   }
+  // [ext-04] D-315: the Linoryt print anti-aliases every line in its shaders (hatch, SDF stamps/planes, ribbon, inked
+  // limb), lights nothing and casts no shadows, so no preset pays for multisampling or a shadow map.
   if (preset === 'high') {
-    return { ...common, preset, antialias: true, shadowEnabled: true, shadowMapSize: 2048, maxOverlayItems: 80 };
+    return { ...common, preset, antialias: false, shadowEnabled: false, shadowMapSize: 0, maxOverlayItems: 80 };
   }
-  return { ...common, preset, antialias: true, shadowEnabled: false, shadowMapSize: 0, maxOverlayItems: 60 };
+  return { ...common, preset, antialias: false, shadowEnabled: false, shadowMapSize: 0, maxOverlayItems: 60 };
 }
 
 /**
