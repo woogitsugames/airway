@@ -1,5 +1,5 @@
-// [night-70a R1] D-323: the realistic NASA globe (`?look=earth`; DEV-only preview until the flip, loaded with a dynamic
-// import that a release build folds away). One fragment shader on the terrain mesh, after the K1/K2 mockup shader
+// [night-70a R1] D-323: the realistic NASA globe (`?look=earth`), loaded with a dynamic import as a chunk of its own
+// ([night-79a R4] D-334: the release build carries it and its textures, unused until R5 flips DEFAULT_GLOBE_LOOK). One fragment shader on the terrain mesh, after the K1/K2 mockup shader
 // (docs/styles/kierunki-2026-11c/makiety/src/globe.js):
 //   - Blue Marble NG July 2004 (D-176) day image with our own grading (less saturation, lifted mids, cooler deep water);
 //   - Black Marble 2016 at night, the city lights split from its blue base (lights keep their sodium colour);

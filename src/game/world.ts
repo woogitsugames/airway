@@ -7,9 +7,10 @@ import {
 import type { RoutePreviewModel } from '../input/routeTool';
 import {
   contrastRatio, relativeLuminance, insetsFromLayout, menuFraming, solveZoomForRadius, menuSpinRate, type LayoutRect,
-} from '../render'; // [task-34] [task-39] menuSpinRate
+  globeFrameFraming, menuSunTick, DEFAULT_GLOBE_LOOK,
+} from '../render'; // [task-34] [task-39] menuSpinRate; [night-79a R4] globeFrameFraming, menuSunTick
 import { cityByCode } from '../data'; // [task-34]
-import { indexFraming, menuNetworkClashes, menuTilt, type ClearRect } from './menu-clear'; // [night-16a] D-262; [night-29b] U4
+import { frameTilt, indexFraming, menuNetworkClashes, menuTilt, type ClearRect } from './menu-clear'; // [night-16a] D-262; [night-29b] U4; [night-79a R4]
 import { t } from '../i18n'; // [night-11h]
 import { forgetAdaptiveSteps, readAdaptiveSteps, writeAdaptiveSteps } from './adaptiveMemory'; // [night-07b]
 import { reducedMotion } from '../ui/motion'; // [night-11g] D-88
@@ -32,6 +33,8 @@ function devGlobeLook(): GlobeLook | undefined {
 const GAME_PANELS = ['.airway-pass', '.airway-dock', '.airway-strip-bay'];
 const MENU_SIGN = '.airway-sign';
 const MENU_BOARD = '.airway-board';
+/** [night-79a R4] D-334: the UI-A menu's globe box (src/ui/skin/board-sheets.ts); the night globe is framed to it. */
+const MENU_GLOBE_FRAME = '[data-globe-frame="menu"]';
 
 export type { ScreenPoint } from '../render';
 
@@ -85,6 +88,9 @@ const MENU_HOLD_MS = 1500;
 
 export function createWorld(host: HTMLElement, label: string, quality: QualityPreference): World {
   let insets: SafeAreaInsets = {};
+  // [night-79a R4] D-334: the look drawn (DEV preview or the shipped default); the earth look's menu shows the K2 night.
+  const devLook = import.meta.env.DEV ? devGlobeLook() : undefined;
+  const nightMenu = (devLook ?? DEFAULT_GLOBE_LOOK) === 'earth';
   // [task-39] Insets last applied by the framing; the renderer's own resize observer reuses them
   // instead of falling back to the bare safe-area insets between two measurements.
   let appliedInsets: SafeAreaInsets = {};
@@ -93,7 +99,7 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
     quality, seed: 0xA1A1, autoResize: host, insets: () => appliedInsets,
     camera: { longitude: -18, latitude: 40, zoom: 2 }, maxAirports: 64, maxPlanes: 120,
     // [ext-03] DEV-only experimental globe look (`?globeLook=refined|satellite|painted`); production: diorama.
-    look: import.meta.env.DEV ? devGlobeLook() : undefined, // [night-46a] D-301: release = DEFAULT_GLOBE_LOOK (Linoryt)
+    look: devLook, // [night-46a] D-301: release = DEFAULT_GLOBE_LOOK (Linoryt)
     // [night-07b] D-74: a slow device starts where its last session ended up.
     adaptedSteps: quality === 'auto' ? readAdaptiveSteps() : [],
     onAdapt: (steps) => writeAdaptiveSteps(steps),
@@ -155,8 +161,12 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
     if (menuActive) {
       const sign = boxOf(host.querySelector(MENU_SIGN), origin);
       const board = boxOf(host.querySelector(MENU_BOARD), origin);
-      menuShown = sign !== null; // [task-39]
-      if (sign && board) menuFramed = true;
+      // [night-79a R4] D-334: the UI-A menu has no sign (its title is the flap row) but a globe frame; it counts as shown
+      // (so the D-62 spin runs) and as framed once the frame and the board are laid out.
+      const frame = boxOf(host.querySelector(MENU_GLOBE_FRAME), origin);
+      menuShown = sign !== null || frame !== null; // [task-39]
+      if ((sign || frame) && board) menuFramed = true;
+      if (frame && board) { frameMenu(w, h, frame, board); return; }
       let framing = menuFraming(w, h, sign, board, insets);
       // [night-14b] D-259: the entries' box (the printed index rows).
       const entries = unionBox(host.querySelectorAll(MENU_ENTRIES), origin);
@@ -221,6 +231,36 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
     appliedInsets = gameInsets; // [task-39]
     renderer.resize(w, h, gameInsets);
   };
+  /**
+   * [night-79a R4] D-334 (replaces D-286's indexFraming for the UI-A menu): the globe in the board's frame, centred on
+   * its column, the limb under the tagline, at most 30 % behind the opaque board (portrait) or the bottom edge
+   * (landscape: the board is beside the frame); the demo network in the middle of the visible part. The spin keeps
+   * the tilt (camera latitude); the outline never moves.
+   */
+  function frameMenu(w: number, h: number, frame: LayoutRect, board: LayoutRect): void {
+    const below = board.top >= frame.bottom - 1 && board.left < frame.right && frame.left < board.right;
+    const framing = globeFrameFraming(w, h, frame, below ? board : null, insets);
+    const key = `menu-frame ${w} ${h} ${demoCities.length} ${JSON.stringify(framing)}`;
+    if (key === lastFrame) return;
+    lastFrame = key;
+    appliedInsets = framing.insets; // [task-39]
+    renderer.resize(w, h, framing.insets);
+    const orbit = renderer.orbit;
+    orbit.setViewShift(0, 0);
+    orbit.setZoom(solveZoomForRadius((z) => { orbit.setZoom(z); return orbit.getScreenDisc()?.radius ?? 0; }, framing.radius));
+    const disc = orbit.getScreenDisc();
+    if (disc) orbit.setViewShift(0, framing.horizonY - (disc.y - disc.radius));
+    const longitude = orbit.getState().longitude;
+    const point: ScreenPoint = { x: 0, y: 0, visible: false };
+    const tilt = frameTilt((next) => {
+      orbit.setTarget(longitude, MENU_TARGET.lat - next);
+      renderer.camera.updateMatrixWorld();
+      renderer.project(longitude, MENU_TARGET.lat, 1.01, point);
+      return point.visible ? point.y : null;
+    }, framing.anchorY);
+    orbit.setTarget(longitude, MENU_TARGET.lat - tilt);
+    menuTiltNow = tilt;
+  }
   function scheduleMeasure(): void {
     if (!measureRaf && !disposed) measureRaf = requestAnimationFrame(measure);
   }
@@ -288,9 +328,9 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
     const demoAlpha = frameCallback ? null : demo.frame(dt); // [task-34] menu planes
     if (frame) renderer.setTime(frame.tick, Math.max(0, Math.min(1, frame.alpha)));
     else {
-      // Without a run, keep the sun just ahead of the view so the menu backdrop is daylit.
-      const lon = renderer.orbit.getState().longitude + 25;
-      renderer.setTime(Math.round(((180 - lon) * 4 % 1440 + 1440) % 1440), 0);
+      // Without a run, keep the sun just ahead of the view so the menu backdrop is daylit; [night-79a R4] D-323/D-334:
+      // the earth look shows the K2 night with the dusk band instead (presentation only, the run's clock is untouched).
+      renderer.setTime(menuSunTick(renderer.orbit.getState().longitude, nightMenu), 0);
     }
     if (menuActive && firstMenuFrame === null) firstMenuFrame = framingKey(); // [task-39]
     renderer.render(frame ? frame.alpha : demoAlpha ?? 1, dt);

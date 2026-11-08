@@ -149,18 +149,23 @@ if (!STATIC_ONLY) {
       const breach = breaches.find((b) => b.startsWith(key + ' '));
       check(!breach, 'budget: ' + breach);
     }
-    // [night-70a R1] D-323: the NASA globe preview (`?look=earth`) never ships before the flip: no preview texture in
-    // dist/ (scripts/vite-globe-preview.mjs) and no chunk with its shader (the import is behind import.meta.env.DEV).
+    // [night-70a R1] D-323: the NASA globe preview (`?look=earth`) never shipped before R4 (scripts/vite-globe-preview.mjs).
+    // [night-79a R4] D-334: the earth look is in the release build behind DEFAULT_GLOBE_LOOK, like the print in E3 (D-300):
+    // its four textures and the borders are in dist/, its shader and object style are lazy chunks, never the main chunk.
     const { PREVIEW_GLOBE_FILES, PREVIEW_DATA_FILES } = await import('./vite-globe-preview.mjs');
-    const previewTextures = PREVIEW_GLOBE_FILES.filter((name) => existsSync(join(dist, 'data', 'globe', name)));
-    check(previewTextures.length === 0, 'NASA globe preview textures in dist/: ' + previewTextures.join(' '));
-    // [night-72a R2] D-327: nor the border data of the preview.
-    const previewData = PREVIEW_DATA_FILES.filter((name) => existsSync(join(dist, 'data', name)));
-    check(previewData.length === 0, 'NASA globe preview data in dist/: ' + previewData.join(' '));
+    check(PREVIEW_GLOBE_FILES.length === 0 && PREVIEW_DATA_FILES.length === 0,
+      'the release leaves out earth files: ' + [...PREVIEW_GLOBE_FILES, ...PREVIEW_DATA_FILES].join(' '));
+    const earthFiles = ['data/globe/day-4096.webp', 'data/globe/day-2048.webp', 'data/globe/night-2048.webp',
+      'data/globe/night-1024.webp', 'data/borders-50m.json'];
+    const missingEarth = earthFiles.filter((path) => !existsSync(join(dist, path)));
+    check(missingEarth.length === 0, 'earth look files missing from dist/: ' + missingEarth.join(' '));
     const earthChunks = files(join(dist, 'assets'), (path) => extname(path) === '.js')
-      .filter((path) => /EarthGlobe|awNightGain|EarthBorders/.test(readFileSync(path, 'utf8')));
-    check(PREVIEW_GLOBE_FILES.length === 0 || earthChunks.length === 0,
-      'NASA globe preview shader in the release bundle: ' + earthChunks.map((path) => relative(dist, path)).join(', '));
+      .filter((path) => /awNightGain|EarthBorders/.test(readFileSync(path, 'utf8'))); // the shader and the border material
+    check(earthChunks.length >= 1 && !earthChunks.some((path) => relative(dist, path) === report.mainJs),
+      'the earth shader is a lazy chunk of the release, not in the main chunk: ' + earthChunks.map((path) => relative(dist, path)).join(', '));
+    const earthBytes = earthFiles.filter((path) => existsSync(join(dist, path))).reduce((sum, path) => sum + statSync(join(dist, path)).size, 0) +
+      earthChunks.reduce((sum, path) => sum + statSync(path).size, 0);
+    console.log(`earth look ${kb(earthBytes)} kB (textures, borders, ${earthChunks.length} chunk(s))`);
     // [night-12be] D-254: the DEV stub world (`?render=stub`, src/game/dev/stubWorld.ts) never ships.
     const leaked = files(join(dist, 'assets'), (path) => extname(path) === '.js')
       .filter((path) => /airway-stub-world|__awStub/.test(readFileSync(path, 'utf8')));

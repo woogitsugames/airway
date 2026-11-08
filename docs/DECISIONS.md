@@ -4046,3 +4046,40 @@ set) plus dark and tinted (grey) variants, all RGB without alpha; launch image 2
 first frame until T6 switches the theme. `brand/wayfinding.svg` (the wordmark sign, yellow plane) is unchanged: the plan
 asks for an Archivo wordmark, a separate task. The Play feature graphic (`store:feature`) still carries it.
 **Status: in force (implements D-326); owner reviews the PR.** (D-332 is reserved for T5.)
+
+## D-334 — R4: the UI-A menu frames the night globe to the departures board's globe box; the earth look ships behind `DEFAULT_GLOBE_LOOK` (2026-11-08, Claude, night 79a)
+Step R4 of `docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md` (D-323), done by an agent with the owner's consent (render
+work in `src/render/**`). The shipped look does not change: `DEFAULT_GLOBE_LOOK` stays `'linoryt'` (the flip is R5, after
+the owner accepts the preview); the menu of a release keeps its daylit print.
+**Framing (replaces D-286's `indexFraming` for the UI-A menu).** `globeFrameFraming` (`src/render/framing.ts`, pure) frames
+the globe to the T5 box `[data-globe-frame="menu"]` (`src/ui/skin/board-sheets.ts`), measured by `src/game/world.ts` like
+the other menu boxes: the disc is centred on the frame's column and never wider than it (the board's edges in portrait),
+its limb 8 px under the tagline; at most 30 % of its diameter may stand behind the opaque board (mockup `ui-a-menu.png`:
+~20 %) or, in landscape (board beside the frame), behind the screen's bottom edge; the part under the board's top always
+stays inside the board's width and above its foot (no sliver of globe beside or under the board, the T5 fault at
+320×568). A frame too short for a 72 px disc (320×568: 52 px, 360×640: 41 px) shows the **horizon** of a disc as wide
+as the board (r 150 at 320×568) instead of a tiny disc. The view's latitude is chosen so the menu target (40° N) sits in
+the middle of the visible part (`frameTilt`, `src/game/menu-clear.ts`, searched on the real projection: the camera's
+oblique tilt at zoom > 1 makes a formula wrong); the D-262 clash search is not used here, because the board is opaque
+and a demo airport behind it is simply hidden (that search had pushed the network off the globe, 32° at 320×568).
+Radii: 412×915 142 → 196 px, 390×844 111 → 172, 768×1024 190 → 296, 915×412 171 → 224, 640×360 119 → 134; 320×568
+and 360×640 the horizon. The release menu (Linoryt) keeps `indexFraming` until T6 removes it.
+**Night.** Without a run the menu sun is presentation only (`menuSunTick`, `src/render/sun.ts`): the print keeps the sun
+25° east of the view (the old daylit backdrop); the earth look puts it 82° west, so with the November declination the
+terminator crosses the disc left of centre: ~40 % lit on the left, the Atlantic and West Africa in the dusk band, Europe
+at night with its city lights (K2, D-323). The sun follows the menu spin, so the terminator stands still on screen while
+the Earth turns. The run's start time, the sim and every hash are untouched (P1: night is the look, not the clock).
+**Spin (D-62).** The UI-A menu has no `.airway-sign`, so on `dev` it never counted as shown and its globe stood still;
+the globe frame now counts (`menuShown`), 1.2°/s, 0 under "Reduce motion" or while hidden (`menuSpinRate` unchanged).
+**Release build.** The DEV guards before the earth globe and object style imports are gone (`src/render/globe/index.ts`,
+`src/render/objects.ts`): both are lazy chunks of the release (earth-globe 14.2 kB, objects-earth 8.5 kB; the shared
+terrain code moved to a `terrain` chunk), loaded only for the earth look, as the print was in E3 (D-300). The four
+WebP textures and `data/borders-50m.json` ship in `dist/` (`PREVIEW_GLOBE_FILES` / `PREVIEW_DATA_FILES` empty;
+`test:bundle` checks they are there and that the earth shader is not in the main chunk). Settings → Licences gains the
+NASA credit at T6, when the images are drawn (public domain). **Budgets:** CSS 129.0 → 129.0 kB; main JS 1,073.5 →
+1,084.3 kB raw (gzip 322.0 → 324.9; the three.js classes the earth chunks use stay in the main chunk, plus the framing),
+inside 1,180 / 360; `dist/` 2,020.0 → 2,883.8 kB (+864 kB), inside `total` 4,300 kB: no budget changes.
+**Tests.** `test:render-layers` (the framing on 7 measured frames through the real orbit camera, the menu sun, the
+release imports), `test:menu-clear` (+1 `frameTilt`), `test:globe-assets`, `test:bundle`, new manual
+`test:e2e:menu-globe` / `shots:r4` (real renderer, `docs/shots/r4/`).
+**Status:** preview; the owner sees it with T5 (plan §7 gate before the flip). R5 sets `DEFAULT_GLOBE_LOOK = 'earth'`.

@@ -181,11 +181,12 @@ q78–80 778 kB, no visible difference at the game zoom; WebP decodes in every s
 The 500 m/px Blue Marble tiles (`…3x21600x21600.{A1…D2}.jpg`) are not used: the 4096 level comes from the 5400 image
 (an option for `high` only after a memory measurement on a device).
 
-**Preview, not shipped yet.** The NASA globe (`?look=earth`) is a DEV preview until the flip (PLAN-NOWY-KIERUNEK.md R5),
-so a release build leaves the four photo textures out of `dist/` (`PREVIEW_GLOBE_FILES` in
-`scripts/vite-globe-preview.mjs`, checked by `npm run test:bundle`) and the apps do not carry them; Settings → Licences
-regains "NASA Earth Observatory (Blue Marble, Black Marble)" (key `licenses.nasaEarth`, PL and EN) in the PR that ships
-them (the flip). The Linoryt print (D-283) still draws everything from the elevation raster and the Natural Earth land
+**In the release, not drawn yet.** [night-79a R4] D-334: the NASA globe is in the release build behind
+`DEFAULT_GLOBE_LOOK` (still the print until the flip, PLAN-NOWY-KIERUNEK.md R5), so `dist/` and the apps carry the four
+photo textures and `data/borders-50m.json` (`PREVIEW_GLOBE_FILES` / `PREVIEW_DATA_FILES` in
+`scripts/vite-globe-preview.mjs` are empty; `npm run test:bundle` checks they are in `dist/`). Nothing in a release
+loads them before the flip. Settings → Licences regains "NASA Earth Observatory (Blue Marble, Black Marble)" (key
+`licenses.nasaEarth`, PL and EN) at the flip (T6), when they are drawn (the images are public domain). The Linoryt print (D-283) still draws everything from the elevation raster and the Natural Earth land
 raster at load: the coast distance field and the Imhof shadow (D-298), the plane silhouettes from the skin's own icon
 paths (D-299).
 **Removed in E4 (ext/04, D-285) and still forbidden:** `map-{4096,2048}` (Mapa, D-172), `clouds-2048.png`

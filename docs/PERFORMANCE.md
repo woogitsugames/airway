@@ -337,6 +337,18 @@ Not done: WOFF2 fonts (about −40 % of the 624 kB TTF; OFL allows the conversio
 entry) — a size win only, no parse-time effect.
 
 
+## R4 — menu night globe framed to the board; the earth look in the release build (2026-11-08, D-334)
+The earth globe and its object style are lazy chunks of the release (earth-globe 14.2 kB, objects-earth 8.5 kB; the
+terrain code shared with the print moved into a `terrain` chunk, 20.3 kB, out of `linoryt-globe`), loaded only when the
+earth look is drawn; `DEFAULT_GLOBE_LOOK` is still the print. The four WebP textures (778 kB) and the borders (52 kB)
+are in `dist/`. Main JS 1,073.5 → 1,084.3 kB raw (gzip 322.0 → 324.9: the three.js classes the earth chunks use stay in
+the main chunk, plus the framing), CSS 129.0 kB unchanged, `dist/` 2,020.0 → 2,883.8 kB: inside every budget.
+`npm run perf:scene` (SwiftShader, 412×915, medium, 60 s at 4×, against `dev` on the same machine; the game scene does
+not draw the menu, so this only shows that nothing regressed): print 13 → 14 draw calls, render CPU p95 1.7 → 0.9 ms,
+delivered fps 29.9/30.1 → 30.3/32.0; `--look earth` 15 → 15 draw calls, p95 1.2 → 1.1 ms, 21.2/20.8 → 21.9/22.0 fps
+(noise). The menu framing is measured once per layout change (one zoom bisection and a 61-step tilt search), not per
+frame; the menu sun is one `setTime` per frame as before.
+
 ## R1 — NASA globe preview `?look=earth` (2026-11-08, D-325)
 DEV-only until the flip; the release is unchanged (main JS 1,054.9 kB, CSS 129.0 kB, `dist/` 1,998.5 → 1,999.8 kB:
 the longer `manifest.json`). Presets: low/saver day 2048 + night 1024, no glint, no shell, no stars; medium starts on
