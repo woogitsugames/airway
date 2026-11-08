@@ -18,7 +18,7 @@ try {
   writeFileSync(join(folder, 'package.json'), JSON.stringify({ type: 'module' }));
   for (const path of ['globe/geo-math.ts', 'routes.ts', 'planes.ts', 'routePreview.ts', 'airports.ts',
     'camera.ts', 'framing.ts', 'contrast.ts', 'menuNetwork.ts', 'sun.ts', /* [task-34] */
-    'globe/linoryt.ts', 'linoryt-objects.ts', /* [ext-04 E2] */ 'globe/earth.ts', /* [night-70a R1] */
+    'globe/linoryt.ts', 'objects.ts', 'objects-earth.ts', /* [ext-04 E2] */ 'globe/earth.ts', /* [night-70a R1] */
     'globe/borders.ts', 'projection.ts'] /* [night-72a R2] */) {
     const file = resolve(ROOT, 'src/render', path);
     const target = join(folder, path.replace(/\.ts$/, '.js'));
@@ -31,7 +31,7 @@ try {
   const three = await import('three');
   const load = (name) => import(pathToFileURL(join(folder, name)).href);
   const { sampleGreatCircleArc, makeGreatCircleArc } = await load('routes.js');
-  const linoE5 = await load('linoryt-objects.js'); // [ext-04] the print layers replace the satellite ones (D-302)
+  const linoE5 = await load('objects.js'); // [ext-04] the print layers replace the satellite ones (D-302)
 
   // [ext-04] D-302: the Linoryt layers (stamps, ribbon, dashed preview, sprites) replace the satellite ones.
   const sharedE5 = { uViewport: { value: { x: 412, y: 915 } }, uDpr: { value: 1 }, uTime: { value: 0 }, uPxPerRad: { value: 200 }, uScale: { value: 1 },
@@ -373,7 +373,7 @@ try {
 
   // [ext-04 E2] D-283 spec §5–§8: Linoryt stamps by shape, curfew outline, jam zone + countdown arc, palette, routes.
   {
-    const lino = await load('linoryt-objects.js');
+    const lino = await load('objects.js');
     const inksModule = await load('globe/linoryt.js');
     check(inksModule.STAMP_SIZE_PX.airport === 22 && inksModule.STAMP_SIZE_PX.hub === 30, 'STAMP_SIZE_PX = { airport: 22, hub: 30 }');
     const scene2 = new three.Scene();
@@ -433,6 +433,74 @@ try {
       'projectAirport measures the same point as pick() (altitude SURFACE_ANCHOR_ALTITUDE = 1.01)');
     check(!/new |\[\]|=> \(\{/.test(body), 'projectAirport allocates nothing (writes into out)');
     stamps.dispose(); routes2.dispose(); preview2.dispose();
+  }
+  // [night-74a R3] D-329: the NASA-globe object style (DEV `?look=earth`): shapes, line patterns, red only for a jam,
+  // the same layers and draws as the print, the earth style a DEV-only chunk.
+  {
+    const objectsR3 = await load('objects.js');
+    const earthR3 = await load('objects-earth.js');
+    const style = earthR3.earthObjectStyle({ atlasSdf: objectsR3.ATLAS_SDF_GLSL, revealMs: objectsR3.ROUTE_REVEAL_MS });
+    const sceneR3 = new three.Scene();
+    const made = objectsR3.createObjects(sceneR3, { maxAirports: 8, maxPlanes: 10 }, style);
+    check(made.style === 'earth' && objectsR3.createObjects(new three.Scene(), {}).style === 'linoryt',
+      '[R3] createObjects: earth style on request, the print by default');
+    const { airports: pts, routes: rts, planes: pls, preview: pv } = made;
+    pts.addAirport({ id: 'BEG', lon: 20.5, lat: 44.8 });
+    pts.addAirport({ id: 'AMM', lon: 35.9, lat: 31.9, hub: true });
+    pts.update();
+    const [jamR3, pointR3] = pts.group.children;
+    check(pointR3.geometry.instanceCount === 2 && pts.group.children.length === 2, '[R3] points + jam zone: two instanced draws');
+    check(pts.halfSize('BEG') === 6.5 && pts.halfSize('AMM') === 13.6, '[R3] point half size 6.5 px (dot), 13.6 px (hub ring)');
+    const pf = pointR3.material.fragmentShader;
+    check(/lightPart = cover\(r - 11\.4, aa\) \* \(1\.0 - cover\(r - 9\.0, aa\)\)/.test(pf) && /outer = cover\(r - 6\.5, aa\)/.test(pf),
+      '[R3] point: dot with a dark outline; hub = a light ring around a dark core (shape, not colour)');
+    check(/sdBox\(vPx, vec2\(4\.2, 1\.2\)\)/.test(pf) && /sdBox\(vPx, vec2\(6\.4, 1\.5\)\)/.test(pf),
+      '[R3] curfew: a barrier bar across the point and across the hub core (a shape)');
+    check(/vec3 light = jam \? vec3\(1\.0\) : uPaper;/.test(pf) && /vec3 dark = jam \? uRed : uInk;/.test(pf) &&
+      (pf.match(/uRed/g) ?? []).length === 2, '[R3] point red only when jammed');
+    pts.setJam('AMM', 0.47); pts.update();
+    const jamArr = jamR3.geometry.getAttribute('aJam').array;
+    check(jamR3.visible && Math.abs(jamArr[0] - 21.1) < 1e-6 && Math.abs(jamArr[1] - 0.47) < 1e-6,
+      '[R3] jam ring at r = 21.1 px around a hub (mockup 21), arc = share left');
+    const jf = jamR3.material.fragmentShader;
+    check(/atan\(vPx\.x, vPx\.y\)/.test(jf) && /vJam\.y \* 6\.2831853/.test(jf) && /mix\(mix\(uInk, uPaper, rim\), uRed, red\)/.test(jf),
+      '[R3] jam: countdown arc (12 o\'clock, clockwise) on a light rim in a dark edge around the red-ringed point');
+    rts.setRoutes([{ id: 'w', type: 'widebody', waypoints: [{ lon: 23.7, lat: 38 }, { lon: 35.9, lat: 31.9 }] },
+      { id: 't', type: 'turboprop', waypoints: [{ lon: 20.5, lat: 44.8 }, { lon: 23.7, lat: 38 }] }], 1);
+    const ribR3 = rts.group.children[0];
+    const wR3 = ribR3.geometry.getAttribute('aWidth').array;
+    const pairsR3 = new Set(); for (let i = 0; i < wR3.length; i += 2) pairsR3.add(wR3[i] + '/' + wR3[i + 1]);
+    check(rts.stats.drawCalls === 1 && pairsR3.has('3.5/' + Math.fround(1.6)) && pairsR3.has('3/' + Math.fround(-1.6)),
+      '[R3] routes: one ribbon draw; casing 7 / 6 px, core 3.2 px (negative = the dashed turboprop core)');
+    const rf = ribR3.material.fragmentShader;
+    check(/if \(vWidth\.y < 0\.0\)/.test(rf) && /mod\(along, 12\.0\)/.test(rf) && /mix\(uInk, uPaper, core\)/.test(rf) && !/uRed/.test(rf),
+      '[R3] routes: dark casing, light core, widebody solid, turboprop dashed 7/5 px; no red');
+    check(/mix\(uInk, uSign, core\)/.test(rf) && /length\(vec2\(mod\(along, 8\.0\) - 4\.0, px\)\)/.test(rf),
+      '[R3] route being drawn: yellow grease pencil in a dark casing, round dots past the range');
+    pv.update({ points: [{ lon: 32.9, lat: 39.9 }, { lon: 35.9, lat: 31.9 }], legDistancesKm: [973], rangeKm: 560, aircraft: 'turboprop' });
+    const pvMesh = pv.object.children[0];
+    const pvW = pvMesh.geometry.getAttribute('aWidth').array;
+    check(pvMesh.visible && pvW[0] === 3.25 && pvW[1] === Math.fround(1.7) && pvMesh.material.uniforms.uDash.value === 1,
+      '[R3] route being drawn: 6.5 px casing, 3.4 px yellow core');
+    const plf = pls.material.fragmentShader;
+    check(/31\.0/.test(plf) && /38\.0/.test(plf) && /awPlaneSdf/.test(plf) && /uShadow/.test(plf) && !/uRed|E8382E|3FD07A/i.test(plf) && !/barY/.test(plf),
+      '[R3] planes: 31 / 38 px silhouettes from the shared atlas, dark outline, shadow, no navigation lights, no load bar');
+    pls.setDaylight(1);
+    const dayShadow = pls.uniforms.uShadow.value;
+    pls.setDaylight(0);
+    check(Math.abs(dayShadow - 0.38) < 1e-9 && pls.uniforms.uShadow.value < dayShadow && pls.uniforms.uShadow.value > 0,
+      '[R3] plane shadow 0.38 by day, fainter by night');
+    const printPlanes = objectsR3.createObjects(new three.Scene(), {}).planes;
+    printPlanes.setDaylight(1);
+    check(printPlanes.uniforms.uShadow.value === 0, '[R3] the print keeps no shadow');
+    const objSrc = readFileSync(resolve(ROOT, 'src/render/objects.ts'), 'utf8');
+    check(/if \(import\.meta\.env\.DEV && opts\.look === 'earth'\) \{\s*const \{ earthObjectStyle \} = await import\('\.\/objects-earth'\)/.test(objSrc),
+      '[R3] the earth object style is a DEV-only dynamic import (a release build folds it away)');
+    const staticObjEarth = execGrep("from '(\\./|\\.\\./)*objects-earth'");
+    check(staticObjEarth === '', '[R3] nothing imports objects-earth statically (got ' + staticObjEarth + ')');
+    check(execGrep('linoryt-objects') === 'src/render/objects.ts\nsrc/render/world.ts' || !/import\('\.\/linoryt-objects'\)/.test(readFileSync(resolve(ROOT, 'src/render/world.ts'), 'utf8')),
+      '[R3] linoryt-objects.ts renamed to objects.ts');
+    pts.dispose(); rts.dispose(); pls.dispose(); pv.dispose();
   }
 } catch (error) {
   failed++;

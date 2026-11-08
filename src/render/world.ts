@@ -24,8 +24,9 @@ import type { AircraftKind, GeoWaypoint, RouteRenderSpec } from './routes';
 import { createSunController, type SunController } from './sun';
 import { measureLayerContrast, sampleLuminance, type LayerContrast, type PixelRect } from './contrast';
 import type { UpgradeKind } from '../sim/upgrades';
-// [ext-04 E2/E3] D-283: Linoryt stamps, ribbons and silhouettes (drawn when the look is `linoryt`).
-import type { LinorytObjects, PlaneLayerLike, RouteLayerLike } from './linoryt-objects';
+// [ext-04 E2/E3] D-283: Linoryt stamps, ribbons and silhouettes; [night-74a R3] D-329: the same layers in the NASA-globe
+// style for the DEV `?look=earth` preview (`objects.ts`, formerly `linoryt-objects.ts`).
+import type { LinorytObjects, PlaneLayerLike, RouteLayerLike } from './objects';
 import { SKY_COLOUR, STAMP_SIZE_PX } from './globe/linoryt';
 
 /** Airport tap radius in CSS px (dp); matches the route tool's start radius. */
@@ -303,10 +304,14 @@ export function createWorldRenderer(
     lastPaintAt = 0;
     pendingDt = 0;
   });
-  const linorytReady = import('./linoryt-objects').then((module) => {
+  const linorytReady = import('./objects').then(async (module) => {
     if (disposed) return;
-    const next = module.createLinorytObjects(scene,
-      { maxAirports: opts.maxAirports, maxPlanes: opts.maxPlanes, progressScale: opts.progressScale });
+    const next = await module.createWorldObjects(scene,
+      { maxAirports: opts.maxAirports, maxPlanes: opts.maxPlanes, progressScale: opts.progressScale, look });
+    if (disposed) {
+      next.preview.dispose(); next.planes.dispose(); next.routes.dispose(); next.airports.dispose();
+      return;
+    }
     for (const old of [routes.group, planes.group, preview.object]) scene.remove(old);
     linorytObjects = next;
     airports = next.airports; routes = next.routes; planes = next.planes; preview = next.preview;
@@ -316,6 +321,7 @@ export function createWorldRenderer(
     world.setHubLoad(lastLoads);
     routes.setRoutes(lastSpecs, lastRevision);
     planes.setSnapshots(lastPlanes[0], lastPlanes[1]);
+    planes.setDaylight(sun.daylight);
     preview.update(lastPreview);
     lastZoom = -1;
   });

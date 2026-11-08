@@ -3844,3 +3844,44 @@ on 412×915 and 915×412), shots `docs/shots/t2/` (`npm run shots:board:t2`).
 them is for the owner (question in the PR). A sign beside Athens can still cover the Peloponnese when its right side is
 taken: the engine knows pins and signs, not land.
 **Status:** preview; the owner sees it with R3 (plan §7 gate).
+
+## D-329 — World objects on the NASA globe: airport points, cased routes, grease-pencil preview, outlined planes, jam countdown on a light rim (2026-11-08, Claude, night 74a)
+Step R3 of `docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md` (D-323), done by an agent with the owner's consent (no
+ext session). Only the DEV `?look=earth` preview changes; the release (Linoryt) draws exactly what it drew.
+**Module.** `src/render/linoryt-objects.ts` is renamed `src/render/objects.ts` (plan §3 R3). Its layers (points + jam
+zone, route ribbon, route preview, plane sprites) take an `ObjectStyle`: shaders (functions), point half sizes, the jam
+radius, route widths, inks and an optional plane shadow. `LINORYT_STYLE` is the print, unchanged until R6;
+`createWorldObjects(scene, { look })` loads `objects-earth.ts` behind `import.meta.env.DEV && look === 'earth'` (a release
+build emits no chunk for it; the earth module takes the atlas lookup and the draw-on time as arguments, so `objects.ts`
+is never both a static and a dynamic import). Same draws as the print: one each for points, jam zone, routes, preview
+and planes. `projectAirport` keeps its API; its `half` is the drawn point (6.5 px airport, 13.6 px hub).
+**Look (UI-A mockups, `ui.js`/`ui.css`).** Airport: a cream dot (r 4.3) in a 2.2 px enamel-black outline. Hub: a cream
+ring (r 9…11.4) in a black outline around a black core with the three-bar hub mark. Curfew (night closure) is a shape:
+a barrier bar across the point (a dark disc with a light rim and a light bar, a no-entry sign) or across the hub core
+instead of its mark. Jammed: the same point in white and red (`#C0231B`, the board red of D-324); around it the jam
+zone: a 7 px light rim in a 1 px dark edge at r = half + 7.5 (21 px for a hub, as in the mockup) carrying the red
+countdown arc (4.5 px, from 12 o'clock clockwise, the share of the grace period left); static, no pulse (the spec's
+1 Hz blink in the last 10 s is left out: D-88 and the "nothing pulses" test). Routes: one screen ribbon, enamel-black
+casing at 90 % (widebody 7 px, turboprop 6 px) and a cream 3.2 px core, solid for the widebody and dashed 7/5 px for the
+turboprop (the casing shows between the dashes; a negative core width in the vertex data marks it); drawn on in 200 ms as
+before (instant under reduce motion). The route being drawn: a yellow (`#F3C317`, the sign yellow: "where to") 3.4 px
+grease-pencil core in a 6.5 px casing at 70 %, its width breathing ±10 % along the stroke (moves with the line, not with
+time); past the plane's range round yellow dots (r 2 in a dark ring) every 8 px. Planes: the project's own silhouettes
+(the same SDF atlas as the print) at 31 px (turboprop) and 38 px (widebody), cream with a 2 px dark outline, a soft black
+shadow offset 2 px right and 7 px down on the globe (38 % by day, fading to 11 % at night by the sun at the view
+centre); no navigation lights, no glow. The print's load bar under the plane is not drawn: the mockups have none and at
+31–38 px it read as a stray dash (owner question in the PR).
+**Contrast (D-177, `npm run shots:r3`, gated).** Dev world `?scene=r3` (the mockup network: ATH and AMM hubs, AMM
+jammed, Kyiv closed, BEG–ATH and AMM–BGW–DXB turboprops, ATH–AMM and ATH–CAI widebodies, ANK→AMM being drawn past its
+range), 412×915 and 915×412 at 2×, SwiftShader: core against casing — routes 15.4–15.8, points 16.0–18.3, planes 16.0,
+jam 12.2–12.4 by day and 4.9 at dusk and night (red on the light rim) — every layer ≥ 3:1 and routes ≥ 4.5:1, by day,
+at dusk and by night (medium and low). The outer edge against the photo is 1.2–2.1 (the black casing on night ground),
+which is the separation band, as for the print (D-303). Draw calls 14–16 in the frame (budget 50).
+**Budgets.** Release main JS 1,062.6 kB, CSS 129.0 kB unchanged; the lazy objects chunk 23.4 → 24.9 kB (the style
+plumbing; no earth shader in it). `perf:scene` (SwiftShader, 412×915, 45 s, `--look earth`, run back to back with
+`dev`; never compared with devices): draw calls low/medium/high 14/15/16 → 13/14/16, render CPU p95 1.1/1.2/1.5 →
+1.1/1.1/1.2 ms, delivered fps (idle/active) low 22.2/23.0 → 22.2/22.7 (a first run read 18.2 idle: noise), medium
+21.7/23.0 → 21.1/22.3, high 19.7/20.7 → 18.8/19.5. Points, jams and planes stay instanced (≤ 100 instances, unlike the
+R2 borders, whose thousands of instances SwiftShader ran one by one); the plane quad grows 56 → 72 px for the shadow,
+one extra SDF fetch per fragment.
+**Status:** preview; the owner sees it with T2 (plan §7 gate).

@@ -94,6 +94,18 @@ const TARGETS = [
       note: `NASA globe + country borders, ${file} (${quality})`,
       check: (page) => bordersCheck(page),
     })),
+  // [night-74a R3] D-329: the world objects on the NASA globe (points, cased routes, the yellow route being drawn,
+  // plane silhouettes, the jam zone), the UI-A mockup network over the eastern Mediterranean, by day, at dusk and by
+  // night, without the DOM signs (T2). The check runs the D-177 probe on every object layer (gated) and the draw budget.
+  ...[['day', 600, 'high'], ['dusk', 905, 'high'], ['night', 1290, 'medium'], ['night-low', 1290, 'low'], ['linoryt', 600, 'medium']]
+    .map(([file, tick, quality]) => ({
+      id: `r3-${file}`, dir: 'r3', file: `objects-${file}`,
+      path: `dev/world.html?frozen&clean&nooverlay&scene=r3&look=${file === 'linoryt' ? 'linoryt' : 'earth'}&quality=${quality}` +
+        `&zoom=4&lon=31&lat=37&tick=${tick}`,
+      ready: { fn: 'window.__ready && window.__worldMetrics' }, timeout: 120000, settle: 2500,
+      note: `world objects on the ${file === 'linoryt' ? 'Linoryt print (unchanged)' : 'NASA globe'}, ${file} (${quality})`,
+      check: (page) => objectsCheck(page, file !== 'linoryt'),
+    })),
   // [night-07d] Curfew airports marked on the puzzle strips (barrier mark + hours line).
   ...[['08', 'pl'], ['30', 'en']].map(([level, lang]) => ({
     id: `puzzle-curfew-${level}`, dir: 'night-07d', file: `puzzle${level}-${lang}`, path: '', lang,
@@ -146,6 +158,28 @@ async function bordersCheck(page) {
   const m = await page.evaluate(() => window.__globeMetrics);
   return `calls=${m.drawCalls} borders median=${c.median} (D-177 edge=${c.edge} core=${c.core}) px=${c.pixels} ` +
     `projectLonLat=projectAirport ${r.rows.length}/${r.rows.length}`;
+}
+
+/**
+ * [night-74a R3] D-329, D-177: every object layer's core reads against its own casing (≥ 3:1) and the routes stand off
+ * the globe (better of edge and core ≥ 4.5:1), by day and by night; draw calls ≤ 50.
+ */
+export const OBJECT_PROBE = { core: 3, routes: 4.5, drawCalls: 50 };
+async function objectsCheck(page, gate) {
+  const r = await page.evaluate(() => window.__world.measureLayerContrast());
+  const m = await page.evaluate(() => window.__worldMetrics);
+  const parts = [`calls=${m.drawCalls}`];
+  const bad = [];
+  if (!(m.drawCalls <= OBJECT_PROBE.drawCalls)) bad.push(`draw calls ${m.drawCalls}`);
+  for (const name of ['routes', 'airports', 'jam', 'planes']) {
+    const c = r[name];
+    if (!c) { bad.push(`${name}: nothing measured`); continue; }
+    parts.push(`${name} ratio=${c.ratio} edge=${c.edge} core=${c.core}`);
+    if (gate && !(c.core >= OBJECT_PROBE.core)) bad.push(`${name} core ${c.core}:1 < ${OBJECT_PROBE.core}`);
+  }
+  if (gate && r.routes && !(r.routes.ratio >= OBJECT_PROBE.routes)) bad.push(`routes ${r.routes.ratio}:1 < ${OBJECT_PROBE.routes}`);
+  if (bad.length) throw new Error(bad.join('; ') + ' — ' + parts.join(' '));
+  return parts.join(' ');
 }
 
 const args = process.argv.slice(2);

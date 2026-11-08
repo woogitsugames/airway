@@ -1,7 +1,7 @@
 // [night-48a] PLAN-LINORYT.md U6, D-88: reduce motion inside a Linoryt run, UI side. On the DEV stub world
 // (`?render=stub&clock=frozen`, D-254: game time passes only through window.aw, so every reading is exact):
 //   - the root carries `data-airway-motion="reduce"`, the one switch the renderer reads for the route line-draw and the
-//     jam arc (src/render/linoryt-objects.ts; their drawing is checked by the ext session);
+//     jam arc (src/render/objects.ts; their drawing is checked by the ext session);
 //   - the red "now" cut of the day bar steps once per game hour: within one hour it does not move, at the next hour it
 //     jumps to the hour's start; with full motion it follows the minute;
 //   - no CSS animation runs on the game screen (no pulsing chip, no sliding cut) while the planes fly.
