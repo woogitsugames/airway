@@ -67,6 +67,22 @@ const TARGETS = [
   { id: 'linoryt-motion', dir: 'ext-04', file: 'linoryt-motion', path: 'dev/globe.html?quality=low&look=linoryt&clean&zoom=2.2&lon=24&lat=38&sun=-10,-18',
     ready: { fn: 'window.__globeReady && window.__globeMetrics' }, timeout: 120000, settle: 700,
     note: 'Linoryt motion strip + flicker score (spec §9)', motion: true },
+  // [night-70a R1] D-323: the NASA globe preview (`?look=earth`, DEV only) by day, at dusk and by night on each preset,
+  // and the game's menu globe with it (sun fixed: day over the Mediterranean, the terminator through it, night).
+  ...[['day', '30,-18', 'high'], ['dusk', '-58,-18', 'high'], ['night', '-150,-18', 'medium'], ['night-low', '-150,-18', 'low']]
+    .map(([file, sun, quality]) => ({
+      id: `earth-${file}`, dir: 'r1', file: `earth-${file}`,
+      path: `dev/globe.html?quality=${quality}&look=earth&clean&zoom=2.2&lon=24&lat=38&sun=${sun}`,
+      ready: { fn: 'window.__globeReady && window.__globeMetrics' }, timeout: 120000, settle: 2500,
+      note: `NASA globe preview, ${file} (${quality})`,
+      check: async (page) => {
+        const m = await page.evaluate(() => window.__globeMetrics);
+        if (!m || m.drawCalls > 50) throw new Error('Earth globe over the draw-call budget: ' + JSON.stringify(m));
+        return `calls=${m.drawCalls} triangles=${m.triangles}`;
+      },
+    })),
+  { id: 'earth-menu', dir: 'r1', file: 'earth-menu', path: '?look=earth', lang: 'pl',
+    ready: { selector: '.airway-board .airway-flight' }, settle: 3000, note: 'menu over the NASA globe preview' },
   // [night-07d] Curfew airports marked on the puzzle strips (barrier mark + hours line).
   ...[['08', 'pl'], ['30', 'en']].map(([level, lang]) => ({
     id: `puzzle-curfew-${level}`, dir: 'night-07d', file: `puzzle${level}-${lang}`, path: '', lang,

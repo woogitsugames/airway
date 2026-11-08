@@ -149,6 +149,15 @@ if (!STATIC_ONLY) {
       const breach = breaches.find((b) => b.startsWith(key + ' '));
       check(!breach, 'budget: ' + breach);
     }
+    // [night-70a R1] D-323: the NASA globe preview (`?look=earth`) never ships before the flip: no preview texture in
+    // dist/ (scripts/vite-globe-preview.mjs) and no chunk with its shader (the import is behind import.meta.env.DEV).
+    const { PREVIEW_GLOBE_FILES } = await import('./vite-globe-preview.mjs');
+    const previewTextures = PREVIEW_GLOBE_FILES.filter((name) => existsSync(join(dist, 'data', 'globe', name)));
+    check(previewTextures.length === 0, 'NASA globe preview textures in dist/: ' + previewTextures.join(' '));
+    const earthChunks = files(join(dist, 'assets'), (path) => extname(path) === '.js')
+      .filter((path) => /EarthGlobe|awNightGain/.test(readFileSync(path, 'utf8')));
+    check(PREVIEW_GLOBE_FILES.length === 0 || earthChunks.length === 0,
+      'NASA globe preview shader in the release bundle: ' + earthChunks.map((path) => relative(dist, path)).join(', '));
     // [night-12be] D-254: the DEV stub world (`?render=stub`, src/game/dev/stubWorld.ts) never ships.
     const leaked = files(join(dist, 'assets'), (path) => extname(path) === '.js')
       .filter((path) => /airway-stub-world|__awStub/.test(readFileSync(path, 'utf8')));

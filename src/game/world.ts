@@ -15,9 +15,16 @@ import { forgetAdaptiveSteps, readAdaptiveSteps, writeAdaptiveSteps } from './ad
 import { reducedMotion } from '../ui/motion'; // [night-11g] D-88
 import type { GlobeLook } from '../render/globe';
 
-/** [ext-04 E4] D-285: the Linoryt print is the only globe look; `?look=linoryt` is accepted for old links. */
+/**
+ * [ext-04 E4] D-285: the Linoryt print is the shipped look; `?look=linoryt` is accepted for old links.
+ * [night-70a R1] D-323/D-325: `?look=earth` previews the NASA globe, and so does the UI-A preview `?skin=board` unless
+ * `?look=linoryt` asks for the print (DEV only; the caller passes nothing in a release).
+ */
 function devGlobeLook(): GlobeLook | undefined {
-  return new URLSearchParams(location.search).get('look') === 'linoryt' ? 'linoryt' : undefined;
+  const query = new URLSearchParams(location.search);
+  const look = query.get('look');
+  if (look === 'linoryt' || look === 'earth') return look;
+  return import.meta.env.DEV && query.get('skin') === 'board' ? 'earth' : undefined;
 }
 
 // [task-34] HTML panels the globe must stay clear of. Their boxes become camera insets (D-47).

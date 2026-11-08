@@ -1,7 +1,23 @@
 {
   "format": "airway-globe-assets-v1",
-  "bake": "python3 -I dev/globe-look/bake.py",
+  "bake": "python3 -I dev/globe-look/bake.py (elevation); python3 -I dev/globe-look/bake-earth.py (day, night)",
   "files": {
+    "day-2048.webp": {
+      "bytes": 171618,
+      "sha256": "b5a08b7997c6f410cc6034697d981aced583d4d35ff4451a917a651b9201eebc",
+      "format": "webp",
+      "width": 2048,
+      "height": 1024,
+      "source": "NASA Blue Marble NG July 2004 (world.topo.bathy.200407.3x5400x2700), resized; public domain"
+    },
+    "day-4096.webp": {
+      "bytes": 529126,
+      "sha256": "59ddf51dd2df06b44229fc0217136615f05535c7a7f9888030c669b1b9f50a90",
+      "format": "webp",
+      "width": 4096,
+      "height": 2048,
+      "source": "NASA Blue Marble NG July 2004 (world.topo.bathy.200407.3x5400x2700), resized; public domain"
+    },
     "elevation-2048.png": {
       "bytes": 303161,
       "sha256": "6064d3eedd810874b6df6c7f19c844c6107f33e1a97203feccf7de22bc3b2545",
@@ -9,6 +25,22 @@
       "width": 2048,
       "height": 1024,
       "source": "NOAA ETOPO5 land elevation, sqrt-encoded 8 bit (m = (v/255)^2 * 8000); public domain"
+    },
+    "night-1024.webp": {
+      "bytes": 17756,
+      "sha256": "783003c4baebd759f561b7816fda81fd22b7e1cc8181fc80a46d3299276186f2",
+      "format": "webp",
+      "width": 1024,
+      "height": 512,
+      "source": "NASA Black Marble 2016 colour (BlackMarble_2016_3km), resized; public domain"
+    },
+    "night-2048.webp": {
+      "bytes": 59776,
+      "sha256": "2e1414710280428c84a90da1c29bda9a5804e042ecf37ef6f17c82945dcf19b5",
+      "format": "webp",
+      "width": 2048,
+      "height": 1024,
+      "source": "NASA Black Marble 2016 colour (BlackMarble_2016_3km), resized; public domain"
     }
   }
 }

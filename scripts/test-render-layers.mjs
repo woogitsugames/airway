@@ -4,6 +4,7 @@ import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import ts from 'typescript';
+import { execSync } from 'node:child_process';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const SEED = 0xA1A1;
@@ -11,12 +12,13 @@ let passed = 0;
 let failed = 0;
 const failures = [];
 const check = (condition, label) => { if (condition) passed++; else { failed++; failures.push(label); } };
+const execGrep = (pattern) => execSync(`git grep -lE ${JSON.stringify(pattern)} -- src || true`, { cwd: ROOT, encoding: 'utf8' }).trim();
 const folder = mkdtempSync(resolve(ROOT, 'node_modules/.render-layers-'));
 try {
   writeFileSync(join(folder, 'package.json'), JSON.stringify({ type: 'module' }));
   for (const path of ['globe/geo-math.ts', 'routes.ts', 'planes.ts', 'routePreview.ts', 'airports.ts',
     'camera.ts', 'framing.ts', 'contrast.ts', 'menuNetwork.ts', 'sun.ts', /* [task-34] */
-    'globe/linoryt.ts', 'linoryt-objects.ts'] /* [ext-04 E2] */) {
+    'globe/linoryt.ts', 'linoryt-objects.ts', /* [ext-04 E2] */ 'globe/earth.ts'] /* [night-70a R1] */) {
     const file = resolve(ROOT, 'src/render', path);
     const target = join(folder, path.replace(/\.ts$/, '.js'));
     mkdirSync(dirname(target), { recursive: true });
@@ -253,8 +255,52 @@ try {
   check(/await import\('\.\/linoryt-globe'\)/.test(globeIndex) && !/createTexturedTerrainMaterial|loadLookAssets|createDecorations|createAtmosphere/.test(globeIndex),
     '[E4] createGlobe builds only the Linoryt print (lazy chunk); no texture looks, decorations or atmosphere shell');
   const lookSrc = readFileSync(resolve(ROOT, 'src/render/globe/look.ts'), 'utf8');
-  check(/export type GlobeLook = 'linoryt';/.test(lookSrc) && !/satellite|painted|refined|diorama'/.test(lookSrc.replace(/^\/\/.*$/gm, '')),
-    '[E4] GlobeLook is the print only (Satelita, Mapa and the comparisons removed, D-285)');
+  check(/export type GlobeLook = 'linoryt' \| 'earth';/.test(lookSrc) && /DEFAULT_GLOBE_LOOK: GlobeLook = 'linoryt'/.test(lookSrc) &&
+    !/satellite|painted|refined|diorama'/.test(lookSrc.replace(/^\/\/.*$/gm, '')),
+    '[E4/R1] GlobeLook is the print (default) and the NASA preview only (Satelita, Mapa and the comparisons removed, D-285)');
+
+  // [night-70a R1] D-323: the NASA globe preview: DEV-only lazy chunk, presets, terminator from the game clock.
+  {
+    const earthGlobe = readFileSync(resolve(ROOT, 'src/render/globe/earth-globe.ts'), 'utf8');
+    check(/if \(import\.meta\.env\.DEV && opts\.look === 'earth'\) \{\s*const \{ createEarthGlobe \} = await import\('\.\/earth-globe'\)/.test(globeIndex),
+      '[R1] the earth globe is a DEV-only dynamic import (a release build folds the chunk away)');
+    const staticEarth = execGrep("from '(\\./|\\.\\./)*(globe/)?earth-globe'");
+    check(staticEarth === '', '[R1] nothing imports earth-globe statically (got ' + staticEarth + ')');
+    check(!/TextureLoader/.test(earthGlobe) && /createImageBitmap\(blob/.test(earthGlobe),
+      '[R1] earth textures are decoded off the render thread (createImageBitmap), no TextureLoader');
+    check(/awSunDirection: \{ value: opts\.sunDirection \}/.test(earthGlobe),
+      '[R1] the terminator follows the shared sun direction (SunLights.direction, moved by the game clock)');
+    check(!/gl_FragColor = vec4\([^;]*\+ *glow/i.test(earthGlobe) && /ifdef AW_GLINT/.test(earthGlobe),
+      '[R1] glint only behind AW_GLINT (high), no glow term');
+    const earth = await load('globe/earth.js');
+    const low = earth.earthPreset({ preset: 'low', batterySaver: false });
+    const saver = earth.earthPreset({ preset: 'medium', batterySaver: true });
+    const medium = earth.earthPreset({ preset: 'medium', batterySaver: false });
+    const high = earth.earthPreset({ preset: 'high', batterySaver: false });
+    check(low.day === 2048 && low.night === 1024 && !low.glint && !low.shell && JSON.stringify(saver) === JSON.stringify(low),
+      '[R1] low/saver: day 2048, night 1024, no glint, no shell');
+    check(medium.startDay === 2048 && medium.day === 4096 && medium.night === 2048 && !medium.glint && !medium.shell,
+      '[R1] medium: starts 2048/1024, upgrades to 4096/2048, no glint or shell');
+    check(high.day === 4096 && high.night === 2048 && high.glint && high.shell, '[R1] high: medium + glint + shell');
+    check(earth.earthNightWeight(1) === 0 && earth.earthNightWeight(-1) === 1 && earth.earthNightWeight(0) > 0.1 && earth.earthNightWeight(0) < 0.5,
+      '[R1] night lights: none under the sun, full past the terminator, partial on it');
+    check(earth.earthDuskWeight(1) === 0 && earth.earthDuskWeight(-1) === 0 && earth.earthDuskWeight(-0.01) > 0.9 && earth.earthDuskWeight(0.2) === 0,
+      '[R1] dusk band is narrow (≈ −11° … +9°) and peaks at the terminator');
+    check(earth.earthDayLight(-0.5) === 0 && earth.earthDayLight(1) === 1, '[R1] direct light: 0 at night, 1 at noon');
+    check(/space: '#010306'/.test(readFileSync(resolve(ROOT, 'src/render/globe/earth.ts'), 'utf8')), '[R1] K2 space colour');
+    // Terminator from the game clock: the subsolar longitude for three game hours (UTC noon over 0°, 18:00 over 90°W).
+    const sunModule = await load('sun.js');
+    const subsolar = (tick) => { let got = null; sunModule.createSunController({ setSun(lon, lat) { got = [lon, lat]; } }).update(tick); return got; };
+    const [noon, six, midnight] = [720, 1080, 0].map(subsolar);
+    check(Math.abs(noon[0]) < 1e-9 && Math.abs(six[0] + 90) < 1e-9 && Math.abs(Math.abs(midnight[0]) - 180) < 1e-9 && noon[1] === -18.5,
+      '[R1] sun for 12:00, 18:00, 00:00 game time: 0°, 90°W, 180° at the November declination');
+    // A point at 0°N 0°E: noon = day (no lights), 18:00 = on the terminator (dusk), 00:00 = night (lights).
+    const sunCos = ([lon, lat]) => { const s = new three.Vector3(); const p = new three.Vector3(0, 0, 1);
+      s.set(Math.sin(lon * Math.PI / 180) * Math.cos(lat * Math.PI / 180), Math.sin(lat * Math.PI / 180), Math.cos(lon * Math.PI / 180) * Math.cos(lat * Math.PI / 180));
+      return p.dot(s); };
+    check(earth.earthNightWeight(sunCos(noon)) === 0 && earth.earthDuskWeight(sunCos(six)) > 0.5 && earth.earthNightWeight(sunCos(midnight)) === 1,
+      '[R1] the terminator moves with the game clock (day at 12:00, dusk at 18:00, night at 00:00 over 0°/0°)');
+  }
   const worldSrcE3 = readFileSync(resolve(ROOT, 'src/render/world.ts'), 'utf8');
   check(!/import\.meta\.env\.DEV/.test(worldSrcE3) && !/createAirports\(|new RouteLayer\(|new PlaneLayer\(|createRoutePreview\(/.test(worldSrcE3),
     '[E4] world renderer draws only the Linoryt layers (no medallions, tubes or plane models)');
