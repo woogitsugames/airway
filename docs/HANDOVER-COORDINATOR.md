@@ -213,6 +213,8 @@ commitach.
 
 - 8.11 ~11:20: scalone #334 (56a: Q-92 → A wstępnie, D-313), #339 squashem (55a: test:ci 96/96; long press po zaciętej klatce, próg pustej klatki store:shots, testy menu; przenumerowane D-313 → D-318), #338 (56b: CSS 129,9 → 126,8 kB, budżet 129,8). dev = main = 686d9f9. Agenci: 57a (uchwyty tras bez papierowych rombów; tablet/iPad — pusta dolna tercja tablicy i raportu; wpisy N56a/b w backlogu), 58a (długie przejścia, runda 5, po wszystkich zmianach).
 
+- 8.11 ~11:50: #340 scalony (57a: uchwyty tras jako belka końcowa D-319; tablety — powiększony druk planszy i raportu D-320; CSS 128,3/129,8). dev = main = 803db97. Pytania z #340: uchwyt widoczny w spoczynku (rek. tak, cicha belka), powiększony druk jako wygląd U7 na tabletach (rek. tak). Agenci: 58a (długie przejścia r5), 59a (classList.toggle(x, undefined) — fixture upgrade pokazywał wybór huba; strażnik).
+
 ## Kolejka
 - Najpierw: PR-y od GPT (jeśli są), potem zadania z paczki GPT, których GPT nie wziął (te same opisy nadają się dla
   agentów Claude), w kolejności z pliku (01, 02, 05, 06, 20, potem 03, 04, 08, 09, 11…).
