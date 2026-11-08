@@ -33,21 +33,8 @@
 .airway-flight-line--licence { grid-template-columns:minmax(0,1fr) 48px 95px; }
 .airway-flight-line > .airway-flight--with-region.airway-flight--with-licence { grid-template-columns:minmax(0,1fr); }
 .airway-flight__licence { padding:0 12px 0 0; text-align:center; text-align-last:center; border:3px double var(--skin-menu-select-ink); }
-.split-flap { display:inline-flex; align-items:center; gap:1px; max-width:100%; overflow:hidden; color:var(--skin-menu-flap-ink); }
-.split-flap--highlight { color:var(--skin-menu-flap-highlight-ink); }
-.flap-tile { width:var(--flap-w, 11px); height:25px; display:inline-block; flex:none; position:relative; perspective:140px; font:var(--skin-weight-bold) var(--flap-font, 12px)/25px var(--skin-face-mono); text-align:center; color:inherit; }
-.flap-half { position:absolute; left:0; width:100%; height:12.5px; overflow:hidden; background:var(--skin-menu-flap-bg); backface-visibility:hidden; }
-.flap-ink { position:absolute; top:0; left:0; width:100%; height:25px; line-height:25px; text-align:center; }
-.flap-half--top, .flap-fold-out { top:0; border-bottom:1px solid var(--skin-menu-flap-top-edge); transform-origin:bottom; }
-.flap-half--bottom, .flap-fold-in { bottom:0; background:var(--skin-menu-flap-bottom-bg); border-top:1px solid var(--skin-menu-flap-bottom-edge); transform-origin:top; }
-.flap-half--bottom .flap-ink, .flap-fold-in .flap-ink { top:-12.5px; }
-.flap-fold-out { z-index:3; }
-.flap-fold-in { z-index:2; transform:rotateX(90deg); }
-.flap-fold-out--active { animation:flap-top var(--skin-motion-flap) ease-in forwards; }
-.flap-fold-in--active { animation:flap-bottom var(--skin-motion-flap) ease-out var(--skin-motion-flap) forwards; }
-@keyframes flap-top { to { transform:rotateX(-90deg); } }
-@keyframes flap-bottom { to { transform:rotateX(0deg); } }
-:root[data-airway-motion="reduce"] .flap-fold-out--active, :root[data-airway-motion="reduce"] .flap-fold-in--active { animation:none!important; } /* [night-11g] D-88 */
+/* [night-56b] The split-flap cells (.split-flap, .flap-*) and their keyframes went: Linoryt prints the menu as an index and
+   hides every SplitFlap of the departures rows (linoryt.css), so no cell is ever on screen. */
 .airway-notice { position:absolute; top:calc(var(--aw-safe-top) + 108px); left:calc(var(--aw-safe-left) + 16px); right:calc(var(--aw-safe-right) + 16px); background:var(--skin-menu-notice-bg); border-left:7px solid var(--skin-menu-notice-margin); color:var(--skin-menu-notice-ink); padding:12px; max-width:500px; font:var(--skin-weight-bold) calc(14px * var(--airway-text-scale))/1.3 var(--skin-face-text); }
 .airway-settings { background:var(--skin-settings-backdrop); overflow:auto; padding:calc(var(--aw-safe-top) + 14px) calc(var(--aw-safe-right) + 12px) calc(var(--aw-safe-bottom) + 16px) calc(var(--aw-safe-left) + 12px); }
 .airway-settings__paper { max-width:570px; margin:0 auto; background:var(--skin-settings-paper); color:var(--skin-settings-ink); border-top:9px solid var(--skin-settings-accent); padding:14px; }
@@ -90,7 +77,7 @@
 .airway-unsupported__gpu { margin:12px 0 6px; padding:8px 10px; border-left:6px solid var(--skin-settings-accent); background:var(--skin-settings-note-bg); font:var(--skin-weight-bold) calc(13px * var(--airway-text-scale))/1.4 var(--skin-face-mono); overflow-wrap:anywhere; }
 .airway-privacy__date { margin:12px 0 2px; font:var(--skin-weight-regular) calc(12px * var(--airway-text-scale))/1.4 var(--skin-face-mono); color:var(--skin-settings-dim-ink); }
 @media (orientation:landscape) { .airway-sign { top:calc(var(--aw-safe-top) + 12px); left:calc(var(--aw-safe-left) + 16px); } .airway-sign__pictogram {width:42px;height:42px;} .airway-sign__title {font-size:39px;} .airway-board { left:calc(var(--aw-safe-left) + 16px); bottom:calc(var(--aw-safe-bottom) + 7px); right:auto; width:min(410px, calc(100% - var(--aw-safe-left) - var(--aw-safe-right) - 30px)); padding:8px 9px; } .airway-flight {min-height:59px;padding:5px 0;} .airway-notice {top:calc(var(--aw-safe-top) + 76px);left:auto;right:calc(var(--aw-safe-right) + 20px);} .airway-settings__paper {max-width:730px;} }
-@media (max-width:370px) { .airway-board {left:4px;right:4px;padding:6px;} .flap-tile{--flap-w:9px;--flap-font:11px;} .airway-board__header, .airway-flight { grid-template-columns:minmax(0,1fr) 46px 80px;gap:6px;} .airway-flight-line { grid-template-columns:minmax(0,1fr) 80px; } .airway-flight-line--licence { grid-template-columns:minmax(0,1fr) 48px 80px; } /* [night-12bc] 48 px touch target */ .airway-flight-line > .airway-flight--with-region { grid-template-columns:minmax(0,1fr) 46px; } .airway-flight__region { font-size: calc(10px * var(--airway-text-scale)); } /* [task-37] BRAMKA (≈42px) needs ≥8px before STATUS */ }
+@media (max-width:370px) { .airway-board {left:4px;right:4px;padding:6px;} .airway-board__header, .airway-flight { grid-template-columns:minmax(0,1fr) 46px 80px;gap:6px;} .airway-flight-line { grid-template-columns:minmax(0,1fr) 80px; } .airway-flight-line--licence { grid-template-columns:minmax(0,1fr) 48px 80px; } /* [night-12bc] 48 px touch target */ .airway-flight-line > .airway-flight--with-region { grid-template-columns:minmax(0,1fr) 46px; } .airway-flight__region { font-size: calc(10px * var(--airway-text-scale)); } /* [task-37] BRAMKA (≈42px) needs ≥8px before STATUS */ }
 @media (max-height:470px) and (orientation:landscape) { .airway-flight{min-height:58px;} .airway-board__header{min-height:19px;} .airway-sign__subtitle{font-size:9px;} }
 /* [night-11p] D-129 glyph legend in settings → help: glyph and region name per row, two columns where they fit. */
 .airway-glyph-legend { margin-top:14px; }
