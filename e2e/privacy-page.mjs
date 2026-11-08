@@ -5,11 +5,11 @@
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
-import { gameUrl, skinShotsDir, withBrowser, newGamePage, waitForScreen, clickTestId, assert, saveDiagnostics, state, ROOT, SEED } from './browser.mjs';
+import { gameUrl, withBrowser, newGamePage, waitForScreen, clickTestId, assert, saveDiagnostics, state, ROOT, SEED } from './browser.mjs';
 import { translations } from '../site/i18n.js';
 
 const started = performance.now();
-const SHOTS = skinShotsDir(resolve(ROOT, 'docs/shots/n11e')); // [night-29b] U4: --skin=linoryt keeps them out of docs/
+const SHOTS = resolve(ROOT, 'docs/shots/n11e');
 const results = [];
 const cases = [['pl', 412, 915], ['en', 915, 412], ['en', 412, 915], ['pl', 320, 568]];
 

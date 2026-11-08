@@ -11,8 +11,8 @@ import {
 } from './browser.mjs';
 import { E2E_SEEDS } from './seeds.mjs';
 
-// [night-30a] with --skin: .e2e/skin-linoryt/; [night-44a] with --render=stub (`test:e2e:edge-chip-airports:stub`; chips,
-// the pick and its tap are DOM and the real camera/projection, D-254): .e2e/stub/. Tracked shots untouched either way.
+// [night-44a] with --render=stub (`test:e2e:edge-chip-airports:stub`; chips, the pick and its tap are DOM and the real
+// camera/projection, D-254): .e2e/stub/, tracked shots untouched.
 const SHOTS = shotsDir(resolve(ROOT, 'docs/shots/n10v'));
 
 const started = performance.now();

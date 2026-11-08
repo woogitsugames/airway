@@ -2,7 +2,7 @@
 // 915×412 in PL and EN. Every visible button/select is a ≥ 48 px target inside the viewport and shows its whole
 // text (no clipped label, a select wide enough for its longest option). ui:matrix covers menu/game/upgrade/gameover.
 import { performance } from 'node:perf_hooks';
-import { withBrowser, newGamePage, waitForScreen, assert, clickTestId, saveDiagnostics, SEED, skinUrl } from './browser.mjs'; // [night-29a] --skin=linoryt
+import { withBrowser, newGamePage, waitForScreen, assert, clickTestId, saveDiagnostics, SEED } from './browser.mjs';
 
 const started = performance.now();
 const SIZES = [[360, 640], [412, 915], [915, 412]];
@@ -58,7 +58,7 @@ try {
       let page;
       try {
         let errors;
-        ({ page, errors } = await newGamePage(browser, skinUrl(url), lang, { width, height }));
+        ({ page, errors } = await newGamePage(browser, url, lang, { width, height }));
         await waitForScreen(page, 'menu');
         const root = await open(page);
         await page.waitForTimeout(300);

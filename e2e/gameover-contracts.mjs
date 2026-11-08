@@ -6,16 +6,16 @@
 // short landscape screen when both fit) and above whatever follows it, every action stays on screen ≥ 48 px. Then none met (0/6), all met (6/6), a long run (11 squares
 // at 320×568, 14 at 360×640 and 915×412) and `contracts=none` (no row). Session part: a real Endless run (bot to the week-3 board or an earlier jam, then a forced jam)
 // prints the row from the run's contracts, consistent with its marks; `--render=stub` plays it on the DEV stub world.
-// `--skin=linoryt` runs the same checks on the Linoryt preview (shots to .e2e/). Shots docs/shots/gpt01/.
+// Shots docs/shots/gpt01/.
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
-import { withBrowser, newGamePage, waitForScreen, clickTestId, state, assert, saveDiagnostics, ROOT, SKIN, RENDER,
-  gameUrl, skinUrl, skinShotsDir, waitForBoardModels } from './browser.mjs';
+import { withBrowser, newGamePage, waitForScreen, clickTestId, state, assert, saveDiagnostics, ROOT, RENDER,
+  gameUrl, waitForBoardModels } from './browser.mjs';
 
 const SEED = 0xA1A1;
 const started = performance.now();
-const SHOTS = skinShotsDir(resolve(ROOT, 'docs/shots/gpt01'));
+const SHOTS = resolve(ROOT, 'docs/shots/gpt01');
 const results = [];
 const sizes = [['pl', 412, 915], ['en', 412, 915], ['pl', 360, 640], ['en', 360, 640], ['pl', 320, 568], ['en', 320, 568],
   ['pl', 915, 412], ['en', 915, 412]];
@@ -28,7 +28,7 @@ const TITLE = { pl: (met, n) => `Kontrakty: ${met} z ${n}`, en: (met, n) => `Con
 const LABEL = { pl: (met, n) => `Spełnione kontrakty tygodnia: ${met} z ${n}`, en: (met, n) => `Weekly contracts met: ${met} of ${n}` };
 
 async function openPreview(page, url, marks) {
-  await page.goto(skinUrl(url + '?preview=gameover&contracts=' + marks), { waitUntil: 'load' });
+  await page.goto(url + '?preview=gameover&contracts=' + marks, { waitUntil: 'load' });
   await page.getByTestId('game-over').waitFor({ timeout: 8000 });
   await page.waitForTimeout(600);
 }
@@ -135,7 +135,7 @@ try {
         assert(f.marks.length >= 1 && f.marks.length <= 3, `${f.marks.length} contracts after three boards`);
         assert(f.title === TITLE.pl(met, f.marks.length), `title ${f.title} vs ${met}/${f.marks.length} squares`);
         console.log(`  session: ${f.title}`);
-        await page.screenshot({ path: resolve(SKIN || RENDER === 'stub' ? resolve(ROOT, '.e2e') : SHOTS, `gameover-contracts-session-pl-360x640.png`) });
+        await page.screenshot({ path: resolve(RENDER === 'stub' ? resolve(ROOT, '.e2e') : SHOTS, `gameover-contracts-session-pl-360x640.png`) });
       } });
     for (const item of cases) {
       const { page, errors } = await newGamePage(browser, url, item.language, item.viewport);
@@ -158,7 +158,7 @@ try {
   const passed = results.filter((item) => item.status === 'PASS').length;
   const failedCount = results.length - passed + (fatal ? 1 : 0);
   const steps = sizes.length + states.length + 2;
-  console.log(`SUMMARY test:e2e:gameover-contracts seed=0x${SEED.toString(16).toUpperCase()} render=${RENDER}${SKIN ? ' skin=' + SKIN : ''} ` +
+  console.log(`SUMMARY test:e2e:gameover-contracts seed=0x${SEED.toString(16).toUpperCase()} render=${RENDER} ` +
     `steps=${results.length} passed=${passed} failed=${failedCount} durationMs=${Math.round(performance.now() - started)}`);
   if (failedCount || results.length !== steps) process.exitCode = 1;
 }

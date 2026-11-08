@@ -170,6 +170,19 @@ Gate (on a fresh worktree from origin/dev with your branch merged): `npm ci`, `n
       chips also sat on the dock arc (360×640, 841×673) and on each other; none in the 9 Linoryt sessions. Shots
       `docs/shots/n47a/`. Also: every e2e suite that clicks a fresh board's crate now calls `waitForBoardModels` (N45a),
       each run real + stub green.
+- [x] N49a **Pause sheet fit, board scroll reset, `--skin` helpers removed** (N47a findings) — (1) the Linoryt pause
+      sheet with five or six summary rows ran 5 px below 915×412 and did not scroll: on a landscape phone 400–599 px
+      tall the summary now stands left and Resume/Save/Menu in a column on the right; everywhere the sheet is a column
+      whose summary scrolls inside it first (only at 320×568 with six rows, 60 px), never past the screen (max-height
+      + scroll as the last resort); empty save note no longer keeps a line, buttons 10 px padding. `pause-summary`
+      checks EN 915×412 and PL 640×360 too, and every case again with two more rows (surge, front): 6/6 real + stub
+      (3/4 failed on dev). (2) The weekly board host kept `scrollTop` between weeks: `WeeklyUpgradeView` resets it each
+      time the board opens or turns to the airport pick; `board-short` +1 case (EN 360×640, 150 % text, scrolled week-1
+      board → week-2 board at the top; failed with `scrollTop` 288 before). (3) `SKIN`, `skinUrl()`, `skinShotsDir()`
+      gone from `e2e/browser.mjs`, 15 suites and `ui-matrix` (the `--skin=` refusal stays); `edge-chip-fill` now
+      compares with the Linoryt red. (4) Short landscape report: the departures list ends where the two action rows
+      fit (`gameover-contracts:stub` 17/17, 12/17 on dev at 915×412); the worst-case fixture at 640×360 still scrolls
+      36–58 px (right column), the real run 0 px — left open.
 - [ ] N7 When the queue is empty: pick the most valuable next improvement from `docs/HANDOVER*.md`, PR "Known issues"
       sections and the forbidden list review of current screenshots; add it here first, then do it.
 
@@ -1603,3 +1616,4 @@ Evidence: `docs/RESEARCH.md` "R6 — …".
 - 2026-11-05 · N12bi menu sign "HUB 1" + site "failure" scene (D-223 note, no new D) · night/12bi-glossary-site-failure · test:i18n 1/1 (fails on the old sign: "pl: banned synonym "TERMINAL" in menu.sign"; self-check now covers "TERMINAL 1" in PL and EN and stale allowlist entries), test:site 650/650 (620 before: failure copy keys, phone and landscape JPEGs per language, press shots; card count = SITE_SHOTS.scenes), site:assets 22 files (4 new failure JPEGs, others byte-identical), build:site pressKit=26, shots:site preview/press re-shot and inspected, test:fast 107/107 (473.5 s), build ok, test:bundle 12/12. Not done: store:shots not re-run (30 min); the next run shows "HUB 1" on the menu scene
 - 2026-11-06 · N22b owner decisions Q-81…Q-89 accepted as recommended (D-270…D-278; D-269 reserved for the video decision) · night/22b-owner-q81-89 · milestones week 4 / 750 (`test:milestones` week-4 9/50, passengers-750 1/50, median 17.51 min, legacy logbook ids mapped), `LICENCE_UNLOCK_WEEK` 5 → 4 (`balance:licences` 200 seeds: week 4 reached I 30 / II 20 / III 12, medians unchanged), notes in store wave-1 files, RELEASE RL-19/20, legal register; follow-ups in "Owner decisions 2026-11-06"
 - 2026-11-08 · N47a long play-throughs round 4 on the stub world (GPT-19, no new D; Q-92) · night/47a-long-stub-runs · `ui:long-play:stub` 9 sessions × 8 game weeks, 1.6–1.8 min each on the Linoryt tree, issues: Undo after a pick game over (Q-92) ×2 sessions, pause Save/Menu 5 px off screen at 915×412 ×2; 5 sessions 0 issues; board reopens scrolled at 150 % (repro) · waitForBoardModels in 19 more suites, 19 real + 11 stub runs green · test:fast, build
+- 2026-11-08 · N49a pause sheet fit + board scroll reset + `--skin` helpers removed (no new D) · night/49a-pause-board-fit · pause-summary 6/6 real + stub, board-short 5/5 real + stub, gameover-contracts:stub 17/17, screen-audit:stub 432/432, test:fast, build, test:bundle (CSS 128.9 kB)
