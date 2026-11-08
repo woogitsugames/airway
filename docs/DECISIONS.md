@@ -3468,3 +3468,16 @@ paper bands; small paper diamonds beside stamps that the frame does not have. Sh
 real renderer, PL 412×915 and 915×412). **Budget:** with D-311 the CSS stood at 130.1 kB of 130 kB; two Linoryt dock
 rules that the general dock-cell rules already outweigh (countdown cell padding/gap and icon size) were removed and the
 licence line's duplicate selector merged: 129.9 kB. **Status: in force.**
+
+## D-314 — Linoryt hatches below the line floor print lighter, night as tone, a quieter print on a small disc (2026-11-08, Claude, ext session)
+Notes for render from the UI audit against the frames (#332, D-312). (1) "Long even slanted strokes over all land":
+the −45° night hatch (and the faint ends of the relief tone) were widened to the 1.5 device px floor, so a faint tone
+printed as full, even strokes the moment it began. (2) On the menu globe the relief closed into black blotches and the
+coastal water lines read as thick waves. **Choice.** (1) A tone line thinner than the floor is drawn at the floor width
+but proportionally lighter (same mean ink): faint stays faint. (2) Night is a tone too: 0 at the terminator → 45 % ink
+at −12° (smoothstep), so dusk darkens gradually; full night still hatches the whole night side (spec §4: night is
+hatch density). (3) Relief from a shadow of 0.12 (was 0.06): flat and gently lit land stays clean ochre. (4) On a small
+disc (radius ≤ 160 px → game globe ≥ 320 px) the relief tone tops out at 50 % (80 % on the game globe), the sea lines'
+tone is 0.6×, and the water lines appear only when ≥ 5 device px apart (full from 9). The paper diamonds at the route
+ends are the DOM route handles (`src/ui/atcStrip.css`, R5c), not render: handed to the UI. On presets that render at
+DPR 1 the menu's sea cannot print finer than 4 device px (the alias floor). **Status: in force.**
