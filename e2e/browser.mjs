@@ -39,7 +39,8 @@ export async function withBrowser(callback, { fixture = false, softwareCompositi
 }
 
 /** `options.deviceScaleFactor`: [night-12u] DPR (ui:matrix renders the unfolded foldable at 2).
- *  `options.reducedMotion`: the emulated system setting ('reduce' by default; night-11g e2e uses 'no-preference'). */
+ *  `options.reducedMotion`: the emulated system setting ('reduce' by default; night-11g e2e uses 'no-preference').
+ *  `options.textScale`: [night-49a] the stored Settings text size in % (130, 150), set before the game loads. */
 export async function newGamePage(browser, url, language, viewport = { width: 412, height: 915 }, options = {}) {
   const page = await browser.newPage({
     viewport, deviceScaleFactor: options.deviceScaleFactor ?? 1, hasTouch: options.hasTouch ?? true, // [night-11ai] desktop pages: false
@@ -51,6 +52,14 @@ export async function newGamePage(browser, url, language, viewport = { width: 41
   // daily world (e2e/seeds.mjs `dates`).
   if (options.fixedTime) await pinDate(page, options.fixedTime);
   await presetLanguage(page, language, { clear: true });
+  if (options.textScale) {
+    await page.addInitScript((textScale) => {
+      try {
+        const value = JSON.parse(localStorage.getItem('airway.settings') || '{}');
+        localStorage.setItem('airway.settings', JSON.stringify({ ...value, textScale }));
+      } catch { /* storage can be blocked */ }
+    }, options.textScale);
+  }
   await page.goto(url, { waitUntil: 'load' });
   await page.locator('#app').waitFor({ timeout: 12000 });
   await page.waitForFunction(() => typeof window.aw === 'object', null, { timeout: 12000 })

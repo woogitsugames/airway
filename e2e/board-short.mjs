@@ -2,6 +2,9 @@
 // (the overlay scrolled 51–111 px; 190–232 px at 320×568). Short portrait phones now get a compact board. Checks
 // the week-1 and week-2 boards (week 2 carries the tall hub-expansion label) in PL/EN: at 360×640 nothing scrolls
 // and all three labels lie inside the viewport below the boarding pass; [night-08e] the same at 320×568.
+// [night-49a] N47a: at 150 % text (EN 360×640) the board scrolls, and the next week's board opened where the player had
+// left the last one (scrollTop 148 of 148: week sign and contract result hidden). The week-1 board is scrolled to its
+// end before the pick; the week-2 board must open at the top, its sign inside the screen.
 import { performance } from 'node:perf_hooks';
 // [night-44a] --render=stub (`test:e2e:board-short:stub`): the board is DOM over the HUD, so the stub world (D-254)
 // measures the same layout.
@@ -16,6 +19,8 @@ const results = [];
 // [width, height, allowed overlay scroll in px]
 const SIZES = [[360, 640, 0], [320, 568, 0]]; // [night-08e] 320×568 fits too (was ≤ 24 px)
 const LANGUAGES = ['pl', 'en'];
+// [night-49a] [language, width, height, text scale %]: the board may scroll here; it must open at the top each week.
+const SCROLLED = [['en', 360, 640, 150]];
 
 async function measure(page) {
   return page.evaluate(() => {
@@ -31,7 +36,7 @@ async function measure(page) {
   });
 }
 
-async function boards(page, allowed, language, width, height) {
+async function boards(page, allowed, language, width, height, textScale = 100) {
   await assertRender(page);
   assert(await page.evaluate(() => window.aw?.ready), 'window.aw.ready=false: no AwDevAdapter registered');
   await waitForScreen(page, 'menu');
@@ -43,9 +48,26 @@ async function boards(page, allowed, language, width, height) {
     assert(s.screen === 'upgrade', `week ${week}: run ended on ${s.screen}`);
     await page.waitForTimeout(250);
     const m = await measure(page);
-    const tag = `${language} ${width}x${height} week ${week}`;
+    const tag = `${language} ${width}x${height}${textScale !== 100 ? ` ${textScale}%` : ''} week ${week}`;
     assert(m.tags.length === 3, `${tag}: ${m.tags.length} labels`);
     assert(m.scroll <= allowed, `${tag}: board scrolls ${m.scroll} px (allowed ${allowed})`);
+    if (textScale !== 100) {
+      // [night-49a] Every board opens at the top: scrollTop 0, the week sign inside the screen.
+      const open = await page.evaluate(() => ({
+        top: document.querySelector('.airway-upgrade-open').scrollTop,
+        sign: document.querySelector('.airway-upgrade-sign')?.getBoundingClientRect().top ?? -1,
+      }));
+      assert(open.top === 0 && open.sign >= 0, `${tag}: board opened scrolled (scrollTop ${open.top}, sign top ${Math.round(open.sign)})`);
+      if (week === 1) {
+        assert(m.scroll > 0, `${tag}: the board does not scroll at ${textScale} % (the check needs it to)`);
+        const left = await page.evaluate(() => {
+          const overlay = document.querySelector('.airway-upgrade-open');
+          overlay.scrollTop = overlay.scrollHeight;
+          return overlay.scrollTop;
+        });
+        assert(left > 0, `${tag}: could not scroll the board`);
+      }
+    }
     if (allowed === 0) {
       for (const [i, r] of m.tags.entries()) {
         assert(r.top >= m.passBottom - 0.5, `${tag}: label ${i + 1} top ${Math.round(r.top)} under the pass (${Math.round(m.passBottom)})`);
@@ -64,13 +86,16 @@ async function boards(page, allowed, language, width, height) {
 let fatal = null;
 try {
   await withBrowser(async ({ browser, url }) => {
-    for (const language of LANGUAGES) for (const [width, height, allowed] of SIZES) {
-      const label = `${language} ${width}x${height} weekly board fits a short phone`;
+    const cases = [...LANGUAGES.flatMap((language) => SIZES.map(([width, height, allowed]) => [language, width, height, allowed, 100])),
+      ...SCROLLED.map(([language, width, height, textScale]) => [language, width, height, Infinity, textScale])];
+    for (const [language, width, height, allowed, textScale] of cases) {
+      const label = textScale === 100 ? `${language} ${width}x${height} weekly board fits a short phone`
+        : `${language} ${width}x${height} ${textScale} % text: every weekly board opens at the top`;
       let page;
       try {
         let errors;
-        ({ page, errors } = await newGamePage(browser, gameUrl(url), language, { width, height }));
-        await boards(page, allowed, language, width, height);
+        ({ page, errors } = await newGamePage(browser, gameUrl(url), language, { width, height }, { textScale }));
+        await boards(page, allowed, language, width, height, textScale);
         if (errors.length) throw new Error(`Browser errors: ${errors.join('; ')}`);
         results.push({ label, status: 'PASS' });
       } catch (error) {
@@ -89,7 +114,7 @@ try {
     if (status === 'FAIL') console.error(line); else console.log(line);
   }
   if (fatal) console.error('FAIL harness: ' + fatal);
-  const total = LANGUAGES.length * SIZES.length;
+  const total = LANGUAGES.length * SIZES.length + SCROLLED.length;
   const passed = results.filter((item) => item.status === 'PASS').length;
   const failed = results.filter((item) => item.status === 'FAIL').length + (fatal ? 1 : 0);
   console.log(`SUMMARY test:e2e:board-short seed=0x${SEED.toString(16).toUpperCase()}${RENDER === 'stub' ? ' render=stub' : ''} steps=${total} passed=${passed} failed=${failed} durationMs=${Math.round(performance.now() - started)}`);

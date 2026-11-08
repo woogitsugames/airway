@@ -132,6 +132,8 @@ export class WeeklyUpgradeView {
   private state: WeeklyUpgradeState | null = null;
   private hubs: readonly HubPressure[] = [];
   private airports: readonly SlotPressure[] = [];
+  /** [night-49a] N47a: the board view last shown ("week:crates" / "week:pick"), null while closed. */
+  private shown: string | null = null;
   constructor(root: HTMLElement, options: UpgradeUIOptions) { this.root = root; this.options = options; }
   /** `airports` (task 32): every active airport, for the "+2 slots" stamp and airport pick. */
   /** [night-12ba] R2k: `contract` = the weekly contract waybill (Endless runs with the contract only). */
@@ -144,6 +146,13 @@ export class WeeklyUpgradeView {
     this.root.replaceChildren();
     this.root.classList.toggle('airway-upgrade-open', !!state?.paused);
     this.root.classList.toggle('is-picking-hub', !!state?.paused && state.pendingHub);
+    // [night-49a] N47a: the host element outlives the board, and so did its scroll position: at 150 % text the next
+    // week's board opened where the last one was left (week sign and contract result out of sight). Every time the
+    // board opens, or turns between the crates and the airport pick, it starts at the top.
+    const shown = state?.paused ? `${state.week}:${state.pendingHub ? 'pick' : 'crates'}` : null;
+    const reset = shown !== this.shown;
+    this.shown = shown;
+    if (reset) this.root.scrollTop = 0;
     if (!state?.paused) { this.options.onHubSelectionMode?.(false, []); return; }
     const week = t('notice.week', { week: state.week });
     const wrap = document.createElement('section');
@@ -169,6 +178,7 @@ export class WeeklyUpgradeView {
       if (this.options.onCancelPick) sign.prepend(backTile(() => this.options.onCancelPick?.(state.week))); // [task-39]
       this.options.onHubSelectionMode?.(true, pickingSlots ? this.airports.map(a => a.cityId) : this.hubs.map(h => h.hubId));
       this.root.append(wrap);
+      if (reset) this.root.scrollTop = 0;
       return;
     }
     this.options.onHubSelectionMode?.(false, []);
@@ -193,6 +203,7 @@ export class WeeklyUpgradeView {
     });
     wrap.append(cards);
     this.root.append(wrap);
+    if (reset) this.root.scrollTop = 0;
   }
   /** Called by the globe hit-test when the hub highlight mode is active. */
   selectHub(hubId: string): void {
