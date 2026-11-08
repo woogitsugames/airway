@@ -52,6 +52,15 @@ check('release-16k-alignment', buildScript.includes("from './native-align.mjs'")
 check('owner-application-id', hasAll(appGradle, ["namespace = 'pl.samsufi.airway'", "applicationId = 'pl.samsufi.airway'"]));
 check('edge-to-edge', hasAll(theme, ['android:statusBarColor', 'android:navigationBarColor', '@android:color/transparent']) && !/windowOptOutEdgeToEdgeEnforcement/.test(manifest + theme));
 check('splash', theme.includes('windowSplashScreenAnimatedIcon') && existsSync(join(ROOT, 'resources/splash.svg')));
+// [night-48a] PLAN-LINORYT U6 (D-301): the shipped skin is light paper, so dark system-bar icons and a paper window and
+// launch background (the same colour as index.html's theme-color and --lin-paper), not task 24's black sign.
+const colours = read('android/app/src/main/res/values/colors.xml');
+const paper = read('src/ui/skin/linoryt.css').match(/--lin-paper:\s*(#[0-9A-Fa-f]{6})/)?.[1]?.toLowerCase();
+check('linoryt-system-bars', hasAll(theme, ['<item name="android:windowLightStatusBar">true</item>',
+  '<item name="android:windowLightNavigationBar">true</item>', '<item name="android:windowBackground">@color/airway_paper</item>',
+  '<item name="windowSplashScreenBackground">@color/airway_paper</item>']) && !!paper &&
+  colours.match(/<color name="airway_paper">(#[0-9A-Fa-f]{6})<\/color>/)?.[1]?.toLowerCase() === paper &&
+  new RegExp(`<meta name="theme-color" content="${paper}"`, 'i').test(read('index.html')));
 check('back-dispatch', hasAll(nativeBack, ['OnBackPressedCallback', 'getOnBackPressedDispatcher', 'airway:android-back']) && jsBack.includes("'airway:android-back'"));
 check('release-env-only', hasAll(appGradle, ["System.getenv('AW_KEYSTORE')", "System.getenv('AW_KEYSTORE_PASS')", 'signingConfigs.release']) && hasAll(buildScript, ['validateSigning()', 'AW_KEYSTORE']));
 check('procedural-assets', ['icon.svg', 'icon-foreground.svg', 'splash.svg'].every((file) => existsSync(join(ROOT, 'resources', file))));

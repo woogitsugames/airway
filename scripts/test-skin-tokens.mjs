@@ -10,7 +10,7 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { resolve, dirname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { constantProperties, inlineSkin, keptSkin, referencedValues, REFERENCED_TOKENS, resolveTokens, skinBuild, skinTokens, withConstants } from './vite-skin-inline.mjs';
+import { constantProperties, inlineInks, inlineSkin, keptSkin, linorytInks, referencedValues, REFERENCED_TOKENS, resolveTokens, skinBuild, skinTokens, withConstants } from './vite-skin-inline.mjs';
 import { skinOverrides, pruneOverridden } from './vite-skin-prune.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -232,6 +232,15 @@ check('linoryt: src/main.ts starts the helpers on every boot (not behind a DEV b
   const inks = ['paper', 'paper-deep', 'paper-pressed', 'ink', 'ink-dim', 'rule-ink', 'blue', 'ochre', 'red'];
   check('linoryt: the inks are palette constants (written out in the token values)', inks.every((name) => constants.has('lin-' + name)) &&
     ![...real.resolved.values()].some((value) => /var\(--lin-/.test(value)), inks.filter((name) => !constants.has('lin-' + name)).join(' '));
+  // [night-48a] U6: the release writes the ink constants in place (D-294 mechanism); vars that a script sets or whose value
+  // holds a var() stay references, a fallback form is left alone.
+  const inkMap = linorytInks(constantProperties([lin, read(SKIN)], [read('src/ui/skin/linoryt.ts')]));
+  const printed = inlineInks(inlineSkin(read(LIN), real.inline, LIN), inkMap);
+  const leftInks = [...new Set([...printed.matchAll(/var\(--(lin-[a-z0-9-]+)\)/g)].map((m) => m[1]))].filter((name) => inkMap.has(name));
+  check('linoryt: the release writes the inks in place (var(--lin-ink) -> #1E1C1F), script-set and var() inks stay',
+    inkMap.size >= 9 && leftInks.length === 0 && /var\(--lin-top\)/.test(printed) && !inkMap.has('lin-pass-bottom') &&
+    inlineInks('a{color:var(--lin-ink);b:var(--lin-ink, red);c:var(--lin-x)}', new Map([['lin-ink', '#1E1C1F']])) ===
+      'a{color:#1E1C1F;b:var(--lin-ink, red);c:var(--lin-x)}', leftInks.join(' '));
   // D-47: every text pair of the inks reaches 4.5:1 (paper letters on the red block included, D-284).
   const ink = Object.fromEntries([...lin.matchAll(/--lin-([a-z-]+):\s*(#[0-9A-Fa-f]{6})/g)].map((m) => [m[1], m[2]]));
   const lum = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)

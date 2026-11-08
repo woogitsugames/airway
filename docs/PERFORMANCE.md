@@ -289,7 +289,7 @@ page, ≥ 3 per 1.2 s on the menu and in a game.
 | --- | --- | --- | --- | --- | --- |
 | Main JS chunk (largest `dist/assets/*.js`), raw | 1,180 kB (D-252; 1,150 before) | 1,033.8 kB | 1,150.4 kB (1,181.6 before D-252) | 1,132.8 kB (1,157.5 on dev before) | +4.2 % |
 | Main JS chunk, gzip (level 9) | 360 kB (D-252; 340 before) | 306.2 kB | 347.8 kB (353.1 before) | 338.9 kB (350.0 before) | +6.2 % |
-| All CSS | 132 kB (D-301 at the Linoryt flip = 129.0 kB + 3 kB, D-297; 109 kB D-258; 90 before) | 70.2 kB | 88.8 kB (105.0 before) | 89.5 kB (unchanged); 129.0 kB at U5 (105.3 before) | +2.3 % |
+| All CSS | 130 kB (D-305 after U6 = 127.4 kB + ~3 kB; 132 kB D-301 at the Linoryt flip = 129.0 kB + 3 kB, D-297; 109 kB D-258; 90 before) | 70.2 kB | 88.8 kB (105.0 before) | 89.5 kB (unchanged); 129.0 kB at U5 (105.3 before); 127.4 kB at U6 | +2.3 % |
 | Everything under `dist/` (fonts, land mask, licences, globe textures) | 4,300 kB (D-171) | 3,597.7 kB with G1 globe textures (1,804.8 kB before) | 4,264.1 kB (4,311.5 before) | 4,272.3 kB (4,271.9 before) | +0.6 % |
 
 [night-11ar] D-252: release CSS carries the UI skin values, not the tokens (`scripts/vite-skin-inline.mjs`; `npm run
@@ -326,6 +326,24 @@ module and only warns (the old dynamic `import('@capacitor/core')` in `platform/
 Not done: WOFF2 fonts (about −40 % of the 624 kB TTF; OFL allows the conversion, `docs/ASSETS.md` would need the
 entry) — a size win only, no parse-time effect.
 
+
+## Linoryt review (2026-11-08, D-302/D-304)
+The shipped look after E4 and the object cleanup. `perf:scene` (SwiftShader, 412×915, DPR 1, 120 samples):
+low 13 draw calls / 38,930 triangles / 20.7 fps / render CPU 0.57 ms (p95 1.5 ms) / JS heap max 21.4 MB; medium
+14 / 38,766 / 10.6 fps / 0.66 ms (p95 1.4 ms) / 28.7 MB. Real game (`node dev/linoryt-frames.mjs`: Endless seed
+0xA1A1 at 1× speed, rAF intervals, 8 s of play, then the first 3 s of the week-1 board), Chrome CPU throttle 1× and
+4× (the "budget phone" profile; SwiftShader itself runs on the throttled CPU, so 4× is pessimistic for a real GPU):
+
+| Throttle | Play: frames / p50 / p95 / max ms / fps | Board open: p50 / p95 / max ms |
+| --- | --- | --- |
+| 1× | 185 / 33.4 / 83.3 / 116.7 / 23.1 | 33.4 / 83.3 / 149.9 |
+| 4× | 148 / 50.0 / 116.6 / 166.6 / 18.5 | 50.0 / 83.3 / 100.0 |
+
+The weekly board's first frame no longer stalls (it held the page 1.4–3.2 s on SwiftShader while it compiled and read
+back the crate models, #315; D-302 removed them). Nothing in the print is CPU-bound per frame: plane sprites write two
+attributes per plane, the route ribbon rebuilds only on a network change, stamps only on an airport/curfew/jam change.
+The SwiftShader frame time is fill: the terrain shader (one texture fetch, four derivatives) over the whole disc. The
+real budget-phone check stays the Test Lab game loop (D-245), not run yet with the print.
 
 ## E4 — Satelita, Mapa and the photo textures removed (2026-11-08, D-285, D-302)
 `test:bundle` on `dev` after U5 → E4: main JS **1,167.7 → 1,051.3 kB** raw (gzip 352.2 → 313.6 kB), `dist/`

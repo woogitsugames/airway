@@ -2,4 +2,6 @@
 <resources>
     <color name="airway_sign_yellow">#FFC72C</color>
     <color name="airway_sign_black">#1C1E20</color>
+    <!-- [night-48a] U6: the Linoryt paper (--lin-paper, index.html theme-color). -->
+    <color name="airway_paper">#ECE3CC</color>
 </resources>

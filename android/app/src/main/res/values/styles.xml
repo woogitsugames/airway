@@ -1,15 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- [task-24] Transparent system bars: Android 15+ is edge-to-edge by default.
-         Capacitor 8 SystemBars supplies WebView safe-area inset values. -->
+         Capacitor 8 SystemBars supplies WebView safe-area inset values.
+         [night-48a] U6 (D-301): the game is printed on light paper (#ECE3CC), so the bar icons are dark and the window
+         and the launch screen are paper too (no black flash before the first frame). -->
     <style name="AppTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
-        <item name="android:windowLightStatusBar">false</item>
-        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
         <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
         <item name="android:windowActionModeOverlay">true</item>
-        <item name="android:windowBackground">@color/airway_sign_black</item>
+        <item name="android:windowBackground">@color/airway_paper</item>
     </style>
 
     <!-- BridgeActivity switches to this exact style in onCreate(). -->
@@ -20,7 +22,7 @@
     </style>
 
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">@color/airway_sign_black</item>
+        <item name="windowSplashScreenBackground">@color/airway_paper</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/splash</item>
         <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
     </style>

@@ -216,7 +216,6 @@ export const en = {
   'licenses.schibsted': 'Schibsted Grotesk typeface',
   'licenses.naturalEarth': 'Natural Earth geography',
   'licenses.worldAtlas': 'world-atlas map dataset',
-  'licenses.nasaEarth': 'Earth imagery: NASA Earth Observatory (Blue Marble, Black Marble)',
   'licenses.noaaRelief': 'Relief: NOAA ETOPO5',
   'licenses.three': 'three.js 3D renderer',
   'licenses.ofl': 'SIL Open Font License 1.1',

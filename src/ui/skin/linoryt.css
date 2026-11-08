@@ -351,7 +351,9 @@
    or the game-over report is open (the world is frozen), so the top margin folds its day bar away and fits that space
    (`npm run ui:matrix:stub -- --skin=linoryt` checks overlap and scroll); U3 lays the sheets out for the margin. */
 :root[data-skin="linoryt"]:has(.airway-upgrade-open, .airway-go-overlay) .lin-day { display: none; }
-:root[data-skin="linoryt"]:has(.airway-upgrade-open, .airway-go-overlay) .airway-hud[data-layout='landscape'] .airway-pass { width: auto; max-width: 400px; }
+/* [night-48a] U6: not while the player picks an airport (or views the report's map): the pause and the day line come back
+   there, and at 400 px the week broke inside its word ("Tydzie|ń 7", 852 × 393). */
+:root[data-skin="linoryt"]:has(.airway-upgrade-open:not(.is-picking-hub), .airway-go-overlay:not(.is-map)) .airway-hud[data-layout='landscape'] .airway-pass { width: auto; max-width: 400px; }
 
 /* U3 sheets */
 /* [night-29a] PLAN-LINORYT.md step U3 (D-283, D-284): the sheets in print — pause, weekly board (crates as printed slips,
@@ -568,11 +570,22 @@
   :root[data-skin="linoryt"] .airway-upgrade-open:not(.is-picking-hub) {
     --upgrade-win: clamp(48px, calc(100vh - var(--lin-top) - 264px - var(--aw-safe-bottom)), 230px);
   }
+  /* [night-48a] U6: with the contract slip (one printed line here) the window gives up only that line; the base board's
+     slip rule (100vh − 372 px) left 40 px windows and ~45 px of empty paper under the crates at 915 × 412. */
+  :root[data-skin="linoryt"] .airway-upgrade-open:not(.is-picking-hub) .airway-upgrade:has(.airway-upgrade-waybill) {
+    --upgrade-win: clamp(48px, calc(100vh - var(--lin-top) - 292px - var(--aw-safe-bottom)), 230px);
+  }
   :root[data-skin="linoryt"] .airway-upgrade-tag { padding-bottom: 8px; }
   :root[data-skin="linoryt"] .airway-upgrade:not([data-crates="4"]) .airway-upgrade-tag:has(.airway-upgrade-stamp) { padding-bottom: 14px; }
   :root[data-skin="linoryt"] .airway-upgrade[data-crates="4"] .airway-upgrade-grid { grid-template-columns: minmax(0, 1fr); gap: 0; }
   :root[data-skin="linoryt"] .airway-upgrade[data-crates="4"] .airway-upgrade-value { margin-bottom: 2px; }
   :root[data-skin="linoryt"] .airway-upgrade[data-crates="4"] .airway-upgrade-heading { font-size: calc(11px * var(--airway-text-scale)); gap: 4px; }
+}
+/* [night-48a] U6: a portrait page prints from its top under the margin (the base centred the board and the report and
+   left an empty band above the sign); what the page does not need stays as paper at its foot. */
+@media (orientation: portrait) {
+  :root[data-skin="linoryt"] .airway-upgrade-open:not(.is-picking-hub) { align-items: flex-start; }
+  :root[data-skin="linoryt"] .airway-go-overlay:not(.is-map) { align-items: start; }
 }
 /* While the crates are on screen the map's notes and edge flags step back (as in Róża, D-259). */
 :root[data-skin="linoryt"]:has(.airway-upgrade-tag) .airport-overlay { visibility: hidden; }
@@ -681,7 +694,15 @@
   :root[data-skin="linoryt"] .airway-go-sign { grid-area: sign; }
   :root[data-skin="linoryt"] .airway-go-board { grid-area: board; }
   :root[data-skin="linoryt"] .airway-go-strip { grid-area: strip; }
-  :root[data-skin="linoryt"] .airway-go-actions { grid-area: actions; align-self: end; grid-template-columns: 1.5fr 1fr .9fr; gap: 6px; }
+  /* [night-48a] U6: "Again · same world" spans its own row over "New world" and "Menu", so it stays one line (in three
+     columns of the left page it broke in two at 915 × 412). */
+  :root[data-skin="linoryt"] .airway-go-actions { grid-area: actions; align-self: end; grid-template-columns: 1fr 1fr; gap: 6px; }
+  :root[data-skin="linoryt"] .airway-go-same { grid-column: 1 / -1; white-space: nowrap; }
+  @media (max-height: 400px) {
+    /* No height for a second row under 400 px (640 × 360): the three stay in one row as before. */
+    :root[data-skin="linoryt"] .airway-go-actions { grid-template-columns: 1.5fr 1fr .9fr; }
+    :root[data-skin="linoryt"] .airway-go-same { grid-column: auto; white-space: normal; }
+  }
   :root[data-skin="linoryt"] .airway-go-button { padding: 4px 6px; }
   :root[data-skin="linoryt"] .airway-go-overlay:not(.is-map) { padding-top: 10px; }
   :root[data-skin="linoryt"] .airway-go-sign { margin-bottom: 4px; }
