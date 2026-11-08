@@ -244,7 +244,7 @@ try {
   check(/opts\.look === 'linoryt'[\s\S]{0,120}await import\('\.\/linoryt-globe'\)/.test(globeIndex) && !/import\.meta\.env\.DEV && opts\.look === 'linoryt'/.test(globeIndex),
     '[E3] linoryt globe ships as a dynamic import (own chunk), no DEV guard');
   const lookSrc = readFileSync(resolve(ROOT, 'src/render/globe/look.ts'), 'utf8');
-  check(/export const DEFAULT_GLOBE_LOOK = 'satellite' as 'satellite' \| 'linoryt'/.test(lookSrc), '[E3] DEFAULT_GLOBE_LOOK is still satellite (U5 flips it)');
+  check(/export const DEFAULT_GLOBE_LOOK = 'linoryt' as 'satellite' \| 'linoryt'/.test(lookSrc), '[E3] [night-46a] D-301: DEFAULT_GLOBE_LOOK is linoryt (U5 flipped it)');
   const worldSrcE3 = readFileSync(resolve(ROOT, 'src/render/world.ts'), 'utf8');
   check(!/import\.meta\.env\.DEV/.test(worldSrcE3) && /opts\.look \?\? \(DEFAULT_GLOBE_LOOK === 'linoryt'/.test(worldSrcE3),
     '[E3] world renderer: Linoryt layers and projectAirport without DEV guards, default look from DEFAULT_GLOBE_LOOK');
