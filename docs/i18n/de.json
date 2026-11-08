@@ -455,7 +455,7 @@
         "time"
       ],
       "pluralParams": [],
-      "translation": ""
+      "translation": "R?ckg?ngig nicht m?glich ? {code} staut sich um {time}"
     },
     {
       "key": "route.menu.label",
@@ -783,10 +783,158 @@
       "translation": "in {when}"
     },
     {
+      "key": "board.label",
+      "en": "{time}, week {week}, day {day} of {days}, {count} {count|passenger|passengers}",
+      "pl": "{time}, tydzień {week}, dzień {day} z {days}, {count} {count|pasażer|pasażerów|pasażerów}",
+      "context": "D-324 (UI-A preview, `?skin=board`): split-flap board labels (abbreviated as on an airport board; the board's spoken label is `board.label`), the pause key caption and the controller-console captions (long and short).",
+      "maxLength": null,
+      "placeholders": [
+        "count",
+        "day",
+        "days",
+        "time",
+        "week"
+      ],
+      "pluralParams": [
+        "count"
+      ],
+      "translation": "{time}, Woche {week}, Tag {day} von {days}, {count} {count|Passagier|Passagiere}"
+    },
+    {
+      "key": "board.localTime",
+      "en": "Local time",
+      "pl": "Czas lokalny",
+      "context": "D-324 (UI-A preview, `?skin=board`): split-flap board labels (abbreviated as on an airport board; the board's spoken label is `board.label`), the pause key caption and the controller-console captions (long and short).",
+      "maxLength": 14,
+      "placeholders": [],
+      "pluralParams": [],
+      "translation": "Ortszeit"
+    },
+    {
+      "key": "board.week",
+      "en": "Wk",
+      "pl": "Tydz.",
+      "context": "D-324 (UI-A preview, `?skin=board`): split-flap board labels (abbreviated as on an airport board; the board's spoken label is `board.label`), the pause key caption and the controller-console captions (long and short).",
+      "maxLength": 6,
+      "placeholders": [],
+      "pluralParams": [],
+      "translation": "Wo."
+    },
+    {
+      "key": "board.day",
+      "en": "Day",
+      "pl": "Dzień",
+      "context": "D-324 (UI-A preview, `?skin=board`): split-flap board labels (abbreviated as on an airport board; the board's spoken label is `board.label`), the pause key caption and the controller-console captions (long and short).",
+      "maxLength": 6,
+      "placeholders": [],
+      "pluralParams": [],
+      "translation": "Tag"
+    },
+    {
+      "key": "board.passengers",
+      "en": "Pax",
+      "pl": "Pasaż.",
+      "context": "D-324 (UI-A preview, `?skin=board`): split-flap board labels (abbreviated as on an airport board; the board's spoken label is `board.label`), the pause key caption and the controller-console captions (long and short).",
+      "maxLength": 6,
+      "placeholders": [],
+      "pluralParams": [],
+      "translation": "Pax"
+    },
+    {
+      "key": "board.stop",
+      "en": "Stop",
+      "pl": "Stop",
+      "context": "D-324 (UI-A preview, `?skin=board`): split-flap board labels (abbreviated as on an airport board; the board's spoken label is `board.label`), the pause key caption and the controller-console captions (long and short).",
+      "maxLength": 6,
+      "placeholders": [],
+      "pluralParams": [],
+      "translation": "Stopp"
+    },
+    {
+      "key": "board.go",
+      "en": "Go",
+      "pl": "Start",
+      "context": "D-324 (UI-A preview, `?skin=board`): split-flap board labels (abbreviated as on an airport board; the board's spoken label is `board.label`), the pause key caption and the controller-console captions (long and short).",
+      "maxLength": 6,
+      "placeholders": [],
+      "pluralParams": [],
+      "translation": "Start"
+    },
+    {
+      "key": "board.dock.undo",
+      "en": "Undo",
+      "pl": "Cofnij",
+      "context": "D-324 (UI-A preview, `?skin=board`): split-flap board labels (abbreviated as on an airport board; the board's spoken label is `board.label`), the pause key caption and the controller-console captions (long and short).",
+      "maxLength": 7,
+      "placeholders": [],
+      "pluralParams": [],
+      "translation": "Zur?ck"
+    },
+    {
+      "key": "board.dock.turboprop",
+      "en": "Turboprop",
+      "pl": "Turbośmigł.",
+      "context": "D-324 (UI-A preview, `?skin=board`): split-flap board labels (abbreviated as on an airport board; the board's spoken label is `board.label`), the pause key caption and the controller-console captions (long and short).",
+      "maxLength": 12,
+      "placeholders": [],
+      "pluralParams": [],
+      "translation": "Turboprop"
+    },
+    {
+      "key": "board.dock.turbopropShort",
+      "en": "Turbo",
+      "pl": "Turbo",
+      "context": "D-324 (UI-A preview, `?skin=board`): split-flap board labels (abbreviated as on an airport board; the board's spoken label is `board.label`), the pause key caption and the controller-console captions (long and short).",
+      "maxLength": 7,
+      "placeholders": [],
+      "pluralParams": [],
+      "translation": "Turbo"
+    },
+    {
+      "key": "board.dock.widebody",
+      "en": "Widebody",
+      "pl": "Szerokokadł.",
+      "context": "D-324 (UI-A preview, `?skin=board`): split-flap board labels (abbreviated as on an airport board; the board's spoken label is `board.label`), the pause key caption and the controller-console captions (long and short).",
+      "maxLength": 12,
+      "placeholders": [],
+      "pluralParams": [],
+      "translation": "Gro?raum"
+    },
+    {
+      "key": "board.dock.widebodyShort",
+      "en": "Wide",
+      "pl": "Szeroki",
+      "context": "D-324 (UI-A preview, `?skin=board`): split-flap board labels (abbreviated as on an airport board; the board's spoken label is `board.label`), the pause key caption and the controller-console captions (long and short).",
+      "maxLength": 7,
+      "placeholders": [],
+      "pluralParams": [],
+      "translation": "Gro?"
+    },
+    {
+      "key": "board.dock.hub",
+      "en": "Hub",
+      "pl": "Hub",
+      "context": "D-324 (UI-A preview, `?skin=board`): split-flap board labels (abbreviated as on an airport board; the board's spoken label is `board.label`), the pause key caption and the controller-console captions (long and short).",
+      "maxLength": 7,
+      "placeholders": [],
+      "pluralParams": [],
+      "translation": "Hub"
+    },
+    {
+      "key": "board.dock.speed",
+      "en": "Speed",
+      "pl": "Tempo",
+      "context": "D-324 (UI-A preview, `?skin=board`): split-flap board labels (abbreviated as on an airport board; the board's spoken label is `board.label`), the pause key caption and the controller-console captions (long and short).",
+      "maxLength": 7,
+      "placeholders": [],
+      "pluralParams": [],
+      "translation": "Tempo"
+    },
+    {
       "key": "menu.tagline",
       "en": "An airline network on the whole globe",
       "pl": "Sieć lotnicza na całym globie",
-      "context": "D-257; [night-46a] D-301: the Linoryt HUD margin, dock captions, airport note and menu tagline.",
+      "context": "D-324 (UI-A preview, `?skin=board`): split-flap board labels (abbreviated as on an airport board; the board's spoken label is `board.label`), the pause key caption and the controller-console captions (long and short).",
       "maxLength": 40,
       "placeholders": [],
       "pluralParams": [],
@@ -796,7 +944,7 @@
       "key": "hud.crates.next",
       "en": "Next crates {when}",
       "pl": "Następne skrzynie {when}",
-      "context": "D-257; [night-46a] D-301: the Linoryt HUD margin, dock captions, airport note and menu tagline.",
+      "context": "D-324 (UI-A preview, `?skin=board`): split-flap board labels (abbreviated as on an airport board; the board's spoken label is `board.label`), the pause key caption and the controller-console captions (long and short).",
       "maxLength": null,
       "placeholders": [
         "when"
@@ -808,7 +956,7 @@
       "key": "hud.speed",
       "en": "Game speed: {speed}×. Change speed",
       "pl": "Prędkość gry: {speed}×. Zmień prędkość",
-      "context": "D-257; [night-46a] D-301: the Linoryt HUD margin, dock captions, airport note and menu tagline.",
+      "context": "D-324 (UI-A preview, `?skin=board`): split-flap board labels (abbreviated as on an airport board; the board's spoken label is `board.label`), the pause key caption and the controller-console captions (long and short).",
       "maxLength": null,
       "placeholders": [
         "speed"

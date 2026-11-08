@@ -7,10 +7,10 @@ reviewed catalog is imported (`npm run i18n:import -- <code>`) and the language 
 
 | File | Status |
 |---|---|
-| `de.json` | Complete draft, 582 rows, needs native review (night 50a, GPT-12) |
-| `fr.json` | Complete draft, 582 rows, needs native review (night 51a, GPT-13) |
-| `es.json` | Complete draft, 582 rows, needs native review (night 51a, GPT-14) |
-| `pt.json` | Complete draft (Brazilian Portuguese, code `pt`, locale pt-BR), 582 rows, needs native review (night 53a, GPT-15) |
+| `de.json` | Complete draft, 597 rows, needs native review (night 50a, GPT-12) |
+| `fr.json` | Complete draft, 597 rows, needs native review (night 51a, GPT-13) |
+| `es.json` | Complete draft, 597 rows, needs native review (night 51a, GPT-14) |
+| `pt.json` | Complete draft (Brazilian Portuguese, code `pt`, locale pt-BR), 597 rows, needs native review (night 53a, GPT-15) |
 
 ## Working on a draft
 
