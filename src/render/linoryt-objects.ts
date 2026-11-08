@@ -10,7 +10,7 @@ import {
   type WebGLRenderer,
 } from 'three';
 import { setLatLonVec3 } from './globe/geo-math';
-import { LINORYT_INKS, STAMP_SIZE_PX } from './globe/linoryt';
+import { LINORYT_INKS, objectScale, STAMP_SIZE_PX } from './globe/linoryt';
 import type { AirportDefinition, AirportsLayer } from './airports';
 import { interpolatePlaneDistance, planeProgressDistance, type PlaneRenderSnapshot, type PlaneRenderStats } from './planes';
 import type { RoutePreviewLayer, RoutePreviewView } from './routePreview';
@@ -56,6 +56,7 @@ interface SharedUniforms {
   uDpr: { value: number };
   uTime: { value: number };
   uPxPerRad: { value: number };
+  uScale: { value: number };
   uPaper: { value: Color };
   uInk: { value: Color };
   uRed: { value: Color };
@@ -64,6 +65,7 @@ interface SharedUniforms {
 const COMMON = /* glsl */ `
 uniform vec2 uViewport;
 uniform float uDpr;
+uniform float uScale; // D-309: object scale from the disc radius (1 on the game globe)
 vec4 awOffset(vec4 clip, vec2 px) { clip.xy += px * 2.0 / uViewport * clip.w; return clip; }
 bool awFacing(vec3 p) { return dot(cameraPosition - p, p) > 0.0; }
 // The segment camera → p passes through the globe (radius 1): p is behind the horizon.
@@ -78,7 +80,7 @@ vec2 awRot(vec2 p, float a) { float c = cos(a), s = sin(a); return vec2(c * p.x 
 
 function sharedUniforms(): SharedUniforms {
   return {
-    uViewport: { value: { x: 412, y: 915 } }, uDpr: { value: 1 }, uTime: { value: 0 }, uPxPerRad: { value: 200 },
+    uViewport: { value: { x: 412, y: 915 } }, uDpr: { value: 1 }, uTime: { value: 0 }, uPxPerRad: { value: 200 }, uScale: { value: 1 },
     uPaper: { value: new Color(LINORYT_INKS.paper) }, uInk: { value: new Color(LINORYT_INKS.ink) },
     uRed: { value: new Color(LINORYT_INKS.red) },
   };
@@ -98,6 +100,7 @@ function feed(mesh: Mesh, uniforms: SharedUniforms): void {
     const distance = camera.position.length();
     if (fov && distance > 1) {
       uniforms.uPxPerRad.value = viewport.y / (2 * Math.tan(fov * Math.PI / 360)) / Math.sqrt(distance * distance - 1);
+      uniforms.uScale.value = objectScale(uniforms.uPxPerRad.value);
     }
   };
 }
@@ -125,7 +128,7 @@ void main() {
   vPx = position.xy * (halfSide + 5.0) * 2.0;
   vShape = aShape;
   if (!awFacing(aCenter)) { gl_Position = vec4(2.0, 2.0, 2.0, 1.0); return; }
-  gl_Position = awOffset(projectionMatrix * viewMatrix * vec4(aCenter, 1.0), vPx);
+  gl_Position = awOffset(projectionMatrix * viewMatrix * vec4(aCenter, 1.0), vPx * uScale);
 }`;
 
 // A function, not a constant: interpolated values would keep this module in a release build.
@@ -177,7 +180,7 @@ void main() {
   vPx = position.xy * (aJam.x + 12.0) * 2.0;
   vJam = aJam;
   if (!awFacing(aCenter)) { gl_Position = vec4(2.0, 2.0, 2.0, 1.0); return; }
-  gl_Position = awOffset(projectionMatrix * viewMatrix * vec4(aCenter, 1.0), vPx);
+  gl_Position = awOffset(projectionMatrix * viewMatrix * vec4(aCenter, 1.0), vPx * uScale);
 }`;
 
 // A function, not a constant: interpolated values would keep this module in a release build.
@@ -224,7 +227,7 @@ interface StampRecord {
 export interface StampLayer extends AirportsLayer {
   /** Share of the jam grace period left (0..1), or null when the airport is not jammed. */
   setJam(id: string, share: number | null): void;
-  /** Half the stamp's side in CSS px (constant on screen), or 0 for an unknown airport. */
+  /** Half the stamp's side in CSS px as drawn now (× the disc-radius scale, D-309), or 0 for an unknown airport. */
   halfSize(id: string): number;
   readonly stats: { readonly stamps: number; readonly jams: number };
   /** The stamp and jam-zone meshes, measured separately by the D-177 contrast probe (D-303). */
@@ -330,7 +333,7 @@ export function createStampLayer(scene: Scene, uniforms: SharedUniforms, maxAirp
     },
     halfSize(id) {
       const record = records.get(id);
-      return record ? (record.hub ? STAMP_SIZE_PX.hub : STAMP_SIZE_PX.airport) / 2 : 0;
+      return record ? (record.hub ? STAMP_SIZE_PX.hub : STAMP_SIZE_PX.airport) / 2 * uniforms.uScale.value : 0;
     },
     has: (id) => records.has(id),
     isHub: (id) => records.get(id)?.hub === true,
@@ -709,7 +712,7 @@ void main() {
   vMeta = aMeta;
   vPx = position.xy * 56.0;
   if (!awFacing(aPos)) { gl_Position = vec4(2.0, 2.0, 2.0, 1.0); return; }
-  gl_Position = awOffset(c, vPx);
+  gl_Position = awOffset(c, vPx * uScale);
 }`;
 
 // A function, not a constant: interpolated values would keep this module in a release build.

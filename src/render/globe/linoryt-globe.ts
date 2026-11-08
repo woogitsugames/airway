@@ -20,7 +20,7 @@ import { buildTerrainArrays, type TerrainStyle } from './terrain';
 import {
   ATMOSPHERE_LINES, COAST_FIELD_RANGE_DEG, coastWidthCss, HATCH_ALIAS_FLOOR_DEVICE_PX, HATCH_BASE_PERIOD_DEG,
   HATCH_MIN_SPACING_PX, HATCH_MIN_WIDTH_DEVICE_PX, HATCH_RELIEF_MIN_CSS_PX, HATCH_RELIEF_MIN_DEVICE_PX, HATCH_SAVER_MIN_SPACING_PX, HATCH_SEA_MIN_SPACING_PX, LIMB_RING_PX, LINORYT_INKS,
-  NIGHT_FULL_SUN_DEG, WATER_LINES_PX, waterLineScale,
+  NIGHT_FULL_SUN_DEG, seaMinSpacingCss, WATER_LINES_PX, waterLineScale,
 } from './linoryt';
 import type { GlobeInstance } from './index';
 
@@ -238,6 +238,7 @@ export interface LinorytUniforms {
   awDpr: { value: number };
   awWaterScale: { value: number };
   awCoastWidth: { value: number };
+  awSeaMin: { value: number };
   awPaper: { value: Color };
   awInk: { value: Color };
   awBlue: { value: Color };
@@ -279,9 +280,7 @@ float awHatchMin(float u0, float g0, float wCss, float extra, float minCss) {
 float awHatch(float u0, float g0, float wCss, float extra) { return awHatchMin(u0, g0, wCss, extra, ${f(minSpacingPx)}); }
 // D-307: an engraver's tone: the line width is a share of its own period (tone 0..1), so the mean ink is the tone at
 // every zoom (the coarse octave's lines are as thick as two fine ones), never thinner than the device floor.
-float awHatchTone(float u0, float g0, float tone) {
-  // Relief spacing is set on the device grid: ≥ ${HATCH_RELIEF_MIN_DEVICE_PX} device px and ≥ ${HATCH_RELIEF_MIN_CSS_PX} CSS px.
-  float minPx = max(${f(HATCH_RELIEF_MIN_DEVICE_PX)}, ${f(HATCH_RELIEF_MIN_CSS_PX)} * awDpr);
+float awHatchToneMin(float u0, float g0, float tone, float minPx) {
   float s0 = 1.0 / max(g0, 1e-7);
   float halvings = max(0.0, floor(log2(s0 / minPx)));
   float k = exp2(halvings);
@@ -292,6 +291,10 @@ float awHatchTone(float u0, float g0, float tone) {
   float coarse = awLines(u0 * k * 0.5, g0 * k * 0.5, max(floorHalf, tone * sf));
   float lines = mix(coarse, fine, wf);
   return mix(tone, lines, smoothstep(${f(HATCH_ALIAS_FLOOR_DEVICE_PX)}, ${f(HATCH_ALIAS_FLOOR_DEVICE_PX * 2)}, 2.0 * sf));
+}
+// Relief spacing is set on the device grid: ≥ ${HATCH_RELIEF_MIN_DEVICE_PX} device px and ≥ ${HATCH_RELIEF_MIN_CSS_PX} CSS px.
+float awHatchTone(float u0, float g0, float tone) {
+  return awHatchToneMin(u0, g0, tone, max(${f(HATCH_RELIEF_MIN_DEVICE_PX)}, ${f(HATCH_RELIEF_MIN_CSS_PX)} * awDpr));
 }`;
 }
 
@@ -302,6 +305,7 @@ uniform sampler2D awField;
 uniform vec3 awSunDirection;
 uniform float awWaterScale;
 uniform float awCoastWidth;
+uniform float awSeaMin; // D-309: open-sea spacing, CSS px (6 on the game globe, the relief's grid on a small disc)
 uniform vec3 awPaper;
 uniform vec3 awInk;
 uniform vec3 awBlue;
@@ -365,7 +369,7 @@ void main() {
     float u = phi * AW_TO_BASE;
     float g = length(dPhi) * AW_TO_BASE;
     // D-300: the open-sea parallels print one step sparser (≥ 6 px) so stamps and notes stay on top of the sea.
-    float parallels = awHatchMin(u, g, mix(0.8, 2.2, day), 1.0, ${f(HATCH_SEA_MIN_SPACING_PX)});
+    float parallels = awHatchToneMin(u, g, mix(0.13, 0.37, day), awSeaMin * awDpr);
     colour = mix(colour, awPaper, max(water * (1.0 - open), parallels * open));
   }
   // Printed coast: an ink line centred on the shore, constant on screen.
@@ -425,7 +429,7 @@ export function createLinorytUniforms(field: LinorytField, sunDirection: Vector3
   texture.needsUpdate = true;
   return {
     awField: { value: texture }, awSunDirection: { value: sunDirection }, awDpr: { value: 1 },
-    awWaterScale: { value: waterLineScale(6) }, awCoastWidth: { value: 1.5 },
+    awWaterScale: { value: waterLineScale(6) }, awCoastWidth: { value: 1.5 }, awSeaMin: { value: HATCH_SEA_MIN_SPACING_PX },
     awPaper: { value: new Color(LINORYT_INKS.paper) }, awInk: { value: new Color(LINORYT_INKS.ink) },
     awBlue: { value: new Color(LINORYT_INKS.blue) }, awOchre: { value: new Color(LINORYT_INKS.ochre) },
   };
@@ -467,6 +471,7 @@ export function createLinorytSky(uniforms: LinorytUniforms): Mesh {
     if (perspective.fov && distance > 1) {
       const radiusPx = size.y / (2 * Math.tan(perspective.fov * DEG / 2)) / Math.sqrt(distance * distance - 1);
       uniforms.awWaterScale.value = waterLineScale(radiusPx * DEG);
+      uniforms.awSeaMin.value = seaMinSpacingCss(radiusPx, dpr);
       // Zoom ≥ 3 ⇔ the disc radius past ~3× the fitted one; the CSS radius at zoom 3 on a phone is ~520 px.
       uniforms.awCoastWidth.value = coastWidthCss(radiusPx * DEG >= 9 ? 3 : 1);
     }

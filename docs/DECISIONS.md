@@ -3392,3 +3392,15 @@ diorama" paragraph and the Róża alt texts that U7 rewrites from the new EN (D-
 notes read Linoryt as shipped); they write no final store copy. Rejected: "tu" in French against the store listing
 (left to the reviewer), "Turbohélice" cut to "Turbohél." on the dock tag. **Status: in force (texts await native
 review).**
+
+## D-309 — Linoryt objects shrink with a small disc; open-sea parallels follow the disc size (2026-11-08, Claude, ext session)
+Spec §10 L1 for the menu (`png/a-menu.png`). On the ~100 px menu globe the 22 / 30 px stamps (constant on screen,
+§5) stood over each other and over most of the North Atlantic; the frame prints them at ~12 px. The open-sea parallels
+kept the game globe's 6 px spacing (D-300) and read as wide bands on the small disc. **Choice.** (1) Stamps, the jam
+zone and planes are scaled by `objectScale` = disc radius / 320 px, between 0.55 and 1 (1 on the game globe at every
+zoom the player uses); `projectAirport` returns the drawn half size, so the notes follow. (2) The open-sea spacing
+blends from the relief's device grid (D-307) on a disc of ≤ 160 px to 6 CSS px (D-300) from 320 px; the line width is
+a tone of its period (0.13 at night → 0.37 under the sun, which is 0.8 → 2.2 px at 6 px spacing, spec §2). On the
+menu the finer lines show only on presets that render above DPR 1 (`low` renders at DPR 1, where 4 device px is the
+floor). The globe's size on the menu stays the UI's framing (D-286). Rejected: smaller stamps everywhere (touch
+targets and notes in the game), a separate menu shader. **Status: in force.**
