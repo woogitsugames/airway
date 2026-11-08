@@ -221,6 +221,7 @@
     "test:e2e:board-short:stub": "node e2e/board-short.mjs --render=stub",
     "test:e2e:edge-dock": "node e2e/edge-dock.mjs",
     "ui:long-play": "node scripts/long-play.mjs",
+    "ui:long-play:stub": "node scripts/long-play.mjs --render=stub",
     "test:e2e:fixture": "node e2e/smoke.mjs --fixture && node scripts/ui-matrix.mjs --fixture",
     "ui:matrix": "node scripts/ui-matrix.mjs",
     "ui:matrix:stub": "node scripts/ui-matrix.mjs --render=stub",

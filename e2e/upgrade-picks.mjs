@@ -6,7 +6,7 @@
 import { performance } from 'node:perf_hooks';
 // [night-44a] `test:e2e:upgrade-picks:stub` (--render=stub): the pick tap is hit-tested through the real camera and
 // projection maths on the stub world (D-254), so the same journey runs without the globe.
-import { withBrowser, newGamePage, waitForScreen, state, assert, clickTestId, saveDiagnostics, gameUrl, assertRender, RENDER } from './browser.mjs';
+import { withBrowser, newGamePage, waitForScreen, state, assert, clickTestId, saveDiagnostics, gameUrl, assertRender, RENDER, waitForBoardModels } from './browser.mjs';
 import { E2E_SEEDS } from './seeds.mjs';
 
 // [night-12aa] Per-suite seed, replayed headless by test:e2e-seeds (rules v6: no "+2 slots" on 0xA1A1 before the end).
@@ -22,6 +22,7 @@ const offers = (page) => page.evaluate(() =>
 async function choose(page, kind) {
   const index = (await offers(page)).indexOf(kind);
   assert(index >= 0, `no ${kind} card on the board`);
+  await waitForBoardModels(page); // [night-47a] crate-model frame first (N45a)
   await clickTestId(page, `upgrade-option-${index}`);
   await page.locator('.airway-upgrade-open.is-picking-hub').waitFor({ timeout: 5000 });
   assert((await offers(page)).length === 0, 'the crates stay on screen during the airport pick');
@@ -49,6 +50,7 @@ async function boardOffering(page, kind, fromWeek) {
     const list = await offers(page);
     if (list.includes(kind)) return week;
     const plain = list.findIndex((item) => item !== 'hub-expansion' && item !== 'departure-slots');
+    await waitForBoardModels(page); // [night-47a] crate-model frame first (N45a)
     await clickTestId(page, `upgrade-option-${plain}`);
     await waitForScreen(page, 'game');
   }

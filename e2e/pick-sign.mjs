@@ -5,7 +5,7 @@
 // width, the Back tile stays a 48 px target, and beside the pass (≥ 844 px landscape) the sign is no taller than
 // the pass. Fixed seed, fails closed.
 import { performance } from 'node:perf_hooks';
-import { withBrowser, newGamePage, waitForScreen, assert, clickTestId, saveDiagnostics } from './browser.mjs';
+import { withBrowser, newGamePage, waitForScreen, assert, clickTestId, saveDiagnostics, waitForBoardModels } from './browser.mjs';
 import { E2E_SEEDS } from './seeds.mjs';
 
 // [night-12ac] Seed from e2e/seeds.mjs, replayed headless by test:e2e-seeds (in test:fast).
@@ -34,10 +34,12 @@ async function openPick(page) {
     const list = await offers(page);
     const pick = list.findIndex((item) => item === 'departure-slots' || item === 'hub-expansion');
     if (pick >= 0) {
+      await waitForBoardModels(page); // [night-47a] crate-model frame first (N45a)
       await clickTestId(page, `upgrade-option-${pick}`);
       await page.locator('.airway-upgrade-open.is-picking-hub').waitFor({ timeout: 5000 });
       return;
     }
+    await waitForBoardModels(page); // [night-47a] crate-model frame first (N45a)
     await clickTestId(page, 'upgrade-option-0');
     await waitForScreen(page, 'game');
   }

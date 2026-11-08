@@ -5,7 +5,7 @@
 // a day later each: every visible chip must be clear of every visible tag (main tag and slot tag).
 import { performance } from 'node:perf_hooks';
 import {
-  withBrowser, newGamePage, waitForScreen, assert, clickTestId, saveDiagnostics, RENDER, gameUrl, assertRender,
+  withBrowser, newGamePage, waitForScreen, assert, clickTestId, saveDiagnostics, RENDER, gameUrl, assertRender, waitForBoardModels,
 } from './browser.mjs';
 import { E2E_SEEDS } from './seeds.mjs';
 
@@ -46,6 +46,7 @@ async function journey(page, seed) {
     if (s.screen !== 'upgrade') break; // the run may close early: what was sampled still counts
     const offers = await page.evaluate(() => [...document.querySelectorAll('[data-testid^="upgrade-option-"]')].map((n) => n.dataset.upgrade));
     const plane = offers.findIndex((o) => o === 'turboprop' || o === 'widebody');
+    await waitForBoardModels(page); // [night-47a] crate-model frame first (N45a)
     await clickTestId(page, `upgrade-option-${Math.max(0, plane)}`);
     await waitForScreen(page, 'game');
     for (let sample = 0; sample < 2; sample++) {

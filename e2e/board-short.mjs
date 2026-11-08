@@ -5,7 +5,7 @@
 import { performance } from 'node:perf_hooks';
 // [night-29a] --skin=linoryt; [night-44a] --render=stub (`test:e2e:board-short:stub`): the board is DOM over the HUD, so
 // the stub world (D-254) measures the same layout. gameUrl() is skinUrl() on the real renderer.
-import { withBrowser, newGamePage, waitForScreen, assert, clickTestId, saveDiagnostics, gameUrl, assertRender, RENDER } from './browser.mjs';
+import { withBrowser, newGamePage, waitForScreen, assert, clickTestId, saveDiagnostics, gameUrl, assertRender, RENDER, waitForBoardModels } from './browser.mjs';
 import { E2E_SEEDS } from './seeds.mjs';
 
 // [night-12aa] Per-suite seed, replayed headless by test:e2e-seeds (rules v6 ended 0xA1A1 in week 2).
@@ -55,6 +55,7 @@ async function boards(page, allowed, language, width, height) {
     }
     const plain = await page.evaluate(() => [...document.querySelectorAll('[data-testid^="upgrade-option-"]')]
       .findIndex((node) => node.dataset.upgrade !== 'hub-expansion' && node.dataset.upgrade !== 'departure-slots'));
+    await waitForBoardModels(page); // [night-47a] crate-model frame first (N45a)
     await clickTestId(page, `upgrade-option-${Math.max(0, plain)}`);
     await waitForScreen(page, 'game');
   }

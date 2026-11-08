@@ -6,7 +6,7 @@
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
-import { withBrowser, newGamePage, waitForScreen, clickTestId, assert, saveDiagnostics, ROOT } from './browser.mjs';
+import { withBrowser, newGamePage, waitForScreen, clickTestId, assert, saveDiagnostics, ROOT, waitForBoardModels } from './browser.mjs';
 import { E2E_SEEDS } from './seeds.mjs';
 
 const started = performance.now();
@@ -30,6 +30,7 @@ async function playToGameOver(page) {
   if (s.screen === 'upgrade') {
     const index = await page.evaluate(() => [...document.querySelectorAll('[data-testid^="upgrade-option-"]')]
       .findIndex((n) => !n.disabled && ['turboprop', 'widebody'].includes(n.dataset.upgrade)));
+    await waitForBoardModels(page); // [night-47a] crate-model frame first (N45a)
     await clickTestId(page, `upgrade-option-${Math.max(0, index)}`);
     await waitForScreen(page, 'game');
   }

@@ -7,7 +7,7 @@ import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import {
-  withBrowser, newGamePage, waitForScreen, clickTestId, state, assert, saveDiagnostics, ROOT, RENDER, gameUrl, assertRender, shotsDir,
+  withBrowser, newGamePage, waitForScreen, clickTestId, state, assert, saveDiagnostics, ROOT, RENDER, gameUrl, assertRender, shotsDir, waitForBoardModels,
 } from './browser.mjs';
 import { E2E_SEEDS } from './seeds.mjs';
 
@@ -47,6 +47,7 @@ try {
           return { index, upgrade: options[index]?.dataset.upgrade };
         });
         assert(picked.index >= 0, 'no aircraft crate on the week-2 board');
+        await waitForBoardModels(page); // [night-47a] crate-model frame first (N45a)
         await clickTestId(page, `upgrade-option-${picked.index}`);
         await waitForScreen(page, 'game');
         const upgrades = (await state(page)).upgrades ?? [];
