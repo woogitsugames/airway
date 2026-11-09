@@ -1,5 +1,5 @@
-// Shared by the globe looks (Linoryt print, [night-70a R1] NASA earth): the 8-bit sqrt-encoded elevation raster
-// (public/data/globe/elevation-2048.png, NOAA ETOPO5, m = (v/255)^2 * 8000), its decode, sampler and resampler.
+// Used by the NASA globe ([night-70a R1]; [night-82a R6] D-337: the D-283 print is gone): the 8-bit sqrt-encoded
+// elevation raster (public/data/globe/elevation-2048.png, NOAA ETOPO5, m = (v/255)^2 * 8000), its decode and sampler.
 
 /** 8-bit elevation raster → R channel bytes (the PNG is grey). */
 export async function loadElevationBytes(url: string, signal?: AbortSignal): Promise<{ bytes: Uint8Array; width: number; height: number; size: number }> {
@@ -33,15 +33,4 @@ export function elevationSampler(bytes: Uint8Array, width: number, height: numbe
     const bottom = metres[y1 * width + xa] * (1 - fx) + metres[y1 * width + xb] * fx;
     return top * (1 - fy) + bottom * fy;
   };
-}
-
-/** Resample a raster to the mask grid (nearest) when the sizes differ. */
-export function resample(bytes: Uint8Array, sw: number, sh: number, width: number, height: number): Uint8Array {
-  if (sw === width && sh === height) return bytes;
-  const out = new Uint8Array(width * height);
-  for (let y = 0; y < height; y++) {
-    const sy = Math.min(sh - 1, Math.floor((y + 0.5) * sh / height));
-    for (let x = 0; x < width; x++) out[y * width + x] = bytes[sy * sw + Math.min(sw - 1, Math.floor((x + 0.5) * sw / width))];
-  }
-  return out;
 }

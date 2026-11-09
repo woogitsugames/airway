@@ -139,20 +139,6 @@ try {
   presenter.sync(22 * 60, puzzle);
   check('barrier opens at daytime', barriers.length === 2 && !barriers[1][1]);
   presenter.dispose();
-  // [ext-04 E1] D-283 Linoryt: night is hatch density, 0 by day and at the terminator, rising monotonically to full at
-  // −12° (the shader mirrors nightCoverage); the line width follows (1 → 2 px), never under the 1.5 device px floor.
-  const lino = await import('../src/render/globe/linoryt.ts');
-  let monotonic = true, previousCover = -1;
-  for (let deg = 30; deg >= -40; deg -= 0.5) {
-    const cover = lino.nightCoverage(Math.sin(deg * Math.PI / 180));
-    if (cover < previousCover - 1e-12) monotonic = false;
-    previousCover = cover;
-  }
-  check('linoryt night density monotonic past the terminator', monotonic);
-  check('linoryt day has no night hatch', lino.nightCoverage(Math.sin(0.1 * Math.PI / 180)) === 0 && lino.nightCoverage(0) === 0);
-  check('linoryt night full at -12 deg', Math.abs(lino.nightCoverage(Math.sin(-12 * Math.PI / 180)) - 1) < 1e-9);
-  check('linoryt night half way at about -6 deg', Math.abs(lino.nightCoverage(Math.sin(-6 * Math.PI / 180)) - 0.5) < 0.01);
-  check('linoryt night width 1 to 2 px', lino.nightLineWidthCss(0) === 1 && lino.nightLineWidthCss(1) === 2);
 } catch (error) {
   failed++;
   failures.push(error instanceof Error ? error.stack ?? error.message : String(error));

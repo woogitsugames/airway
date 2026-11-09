@@ -1,5 +1,8 @@
 # Linoryt w renderze: specyfikacja dla sesji ext (globus)
 
+> **Archiwum, zastąpione przez D-323.** Globus Linoryt został usunięty z kodu w kroku R6 (D-337, 2026-11-09);
+> gra ma jeden globus (NASA). Plik zostaje jako zapis decyzji D-283…D-316.
+
 Night 28a, 2026-11-07, dla sesji ext (właściciel `src/render/**`, `dev/`). Właściciel wybrał kierunek **A „Linoryt”**
 (D-283): świat i UI to jeden druk z linoleum w trzech farbach na papierze. Plan etapów i podział pracy:
 `docs/styles/kierunki-2026-11b/PLAN-LINORYT.md` (kroki ext: **E1, E2, E3, E4**). Prompt startowy:

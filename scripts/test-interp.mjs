@@ -26,9 +26,9 @@ function near(a, b, tolerance = 1e-7) { return Math.abs(a - b) <= tolerance; }
 const folder = mkdtempSync(resolve(ROOT, 'node_modules/.interp-'));
 try {
   writeFileSync(join(folder, 'package.json'), JSON.stringify({ type: 'module' }));
-  // [ext-04] D-302: the Linoryt ribbon and sprite layers replace the route tubes and plane models.
+  // [ext-04] D-302: the ribbon and sprite layers replace the route tubes and plane models.
   for (const path of ['src/render/globe/geo-math.ts', 'src/render/routes.ts', 'src/render/planes.ts', 'src/render/routePreview.ts',
-    'src/render/airports.ts', 'src/render/globe/linoryt.ts', 'src/render/objects.ts']) {
+    'src/render/airports.ts', 'src/render/marks.ts', 'src/render/objects.ts', 'src/render/objects-earth.ts']) {
     const file = resolve(ROOT, path);
     const target = join(folder, path.slice('src/render/'.length).replace(/\.ts$/, '.js'));
     mkdirSync(dirname(target), { recursive: true });
@@ -49,8 +49,8 @@ try {
   const lino = await import(pathToFileURL(join(folder, 'objects.js')).href);
   const shared = { uViewport: { value: { x: 412, y: 915 } }, uDpr: { value: 1 }, uTime: { value: 0 }, uPxPerRad: { value: 200 }, uScale: { value: 1 },
     uPaper: { value: new three.Color() }, uInk: { value: new three.Color() }, uRed: { value: new three.Color() } };
-  const RouteLayer = class extends lino.LinorytRouteLayer { constructor() { super(shared); } };
-  const PlaneLayer = class extends lino.LinorytPlaneLayer { constructor(routeLayer, options) { super(routeLayer, shared, options); } };
+  const RouteLayer = class extends lino.RouteRibbonLayer { constructor() { super(shared); } };
+  const PlaneLayer = class extends lino.PlaneSpriteLayer { constructor(routeLayer, options) { super(routeLayer, shared, options); } };
   const lonLat = [
     { lon: -9.14, lat: 38.72 }, { lon: -0.13, lat: 51.5 }, { lon: 31.23, lat: 30.04 },
   ];

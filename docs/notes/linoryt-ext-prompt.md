@@ -1,5 +1,8 @@
 # Prompt startowy dla sesji ext: Linoryt w renderze
 
+> **Archiwum, zastąpione przez D-323.** Globus Linoryt został usunięty z kodu w kroku R6 (D-337, 2026-11-09);
+> gra ma jeden globus (NASA). Plik zostaje jako zapis decyzji D-283…D-316.
+
 Do wklejenia jako pierwsza wiadomość sesji ext. Specyfikacja: `docs/notes/linoryt-render-spec.md`; plan:
 `docs/styles/kierunki-2026-11b/PLAN-LINORYT.md` (kroki ext E1–E4).
 

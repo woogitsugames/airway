@@ -1,17 +1,17 @@
-// [night-74a R3] D-323/D-329: the world objects of the NASA globe preview (`?look=earth`), after the UI-A mockups
+// [night-74a R3] D-323/D-329: the world objects on the NASA globe, after the UI-A mockups
 // (docs/styles/kierunki-2026-11c/makiety/ui-a/, `ui.js` pinOf/routeLayer/drawPlane, `ui.css` .pin/.casing/.core/
 // .planned/.plane/.jam-*): airport points (light dot with a dark outline; hub = a ring around a dark core with the
 // hub mark; curfew = a barrier bar across, a shape), routes as a screen ribbon with a dark casing and a light core
 // (widebody solid, turboprop dashed), the route being drawn as a yellow grease pencil with dots past the range, plane
 // silhouettes 31 / 38 px with a dark outline and a shadow on the globe (no navigation lights), and the jam zone as a
-// red ring with the countdown arc on a light rim. Only the shaders and sizes differ from the print: the layers, the
-// draws (one each) and the buffers are the ones in `objects.ts`. A lazy chunk: `createWorldObjects` imports this module
-// for the earth look ([night-79a R4] D-334: in the release build too, unused until DEFAULT_GLOBE_LOOK selects it, R5).
+// red ring with the countdown arc on a light rim. The shaders and sizes live here; the layers, the draws (one each)
+// and the buffers are the ones in `objects.ts`, which imports this module (one lazy chunk; [night-82a R6] D-337: the
+// only object style since the old print went).
 import type { ObjectStyle } from './objects';
 
 /**
- * What the earth shaders take from `objects.ts` (passed in, not imported: a value import would make `objects.ts` both
- * a static and a dynamic import, which `test:bundle:static` refuses): the atlas SDF lookup and the draw-on time.
+ * What the earth shaders take from `objects.ts` (passed in, not imported: the two modules would import each other's
+ * values): the atlas SDF lookup and the draw-on time.
  */
 export interface EarthStyleShared {
   readonly atlasSdf: () => string;

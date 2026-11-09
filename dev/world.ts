@@ -8,7 +8,6 @@ import { createWorldRenderer, AdaptiveFrameScheduler, type PlaneView, type Route
 import { createAirportOverlay } from '../src/ui/overlay';
 import { initializeMotion } from '../src/ui/motion'; // [night-11g] D-88: same motion attribute as the game
 import type { DestinationRegion } from '../src/ui/glyphs';
-import type { GlobeLook } from '../src/render/globe';
 initializeMotion();
 
 declare global {
@@ -69,14 +68,12 @@ const world = createWorldRenderer(undefined, {
   insets: () => (host.clientWidth > host.clientHeight ? { top: 64, right: 96 } : { top: 96, bottom: 96 }),
   camera: { longitude: Number(params.get('lon') ?? 7), latitude: Number(params.get('lat') ?? 35),
     zoom: Number(params.get('zoom')) || 3.3 },
-  // [ext-04 E1] `?look=linoryt` (D-283), or any `?globeLook=` comparison.
-  look: (params.get('look') ?? params.get('globeLook') ?? undefined) as GlobeLook | undefined,
 });
 host.appendChild(world.canvas);
 (window as unknown as { __world: unknown }).__world = world; // probes (perf, LOD tests)
 world.setCities(cities);
 world.setRoutes(ROUTES, 1);
-// [ext-04 E2] The Linoryt jam zone reads the share of the 45 s grace left (LON: 42 s).
+// [ext-04 E2] The jam zone reads the share of the 45 s grace left (LON: 42 s).
 world.setHubLoad(Object.entries(HUBS).map(([id, hub]) => ({ id, used: hub.waiting.length, cap: hub.cap,
   jam01: hub.jam === undefined ? null : hub.jam / 45 })));
 world.setCurfew(R3 ? ['KIV'] : ['CAI', 'KIV']);

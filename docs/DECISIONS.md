@@ -4192,6 +4192,45 @@ the budget becomes the measurement + 3 kB, **199.7 kB** (D-297; T7 lowers it). M
 1,180 / 360. `dist/` 2,883.8 → 2,979.7 kB (the CSS, the board chunks, Archivo and Chivo Mono in place of Besley and Schibsted Grotesk), inside 4,300 kB.
 **Status: in force (owner's acceptance of 9.11); the owner reviews the PR.**
 
+## D-337 — R6: the Linoryt globe is removed from `src/render`; one look, the NASA globe (2026-11-09, Claude, night 82a)
+Step R6 of `docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md` (D-323), after the flip T6 + R5 (D-336) left the print
+reachable only by the DEV `?look=linoryt`. Render work (`src/render/**`) by an agent with the owner's consent. The
+simulation, every hash and the shipped picture are untouched; the `lin-*` / `--lin-*` names in `src/ui` and `board.css`
+are T7's (in parallel) and stay.
+**Removed.** `src/render/globe/linoryt-globe.ts` (print material, hatching, the coast field baked at load, the paper sky
+band), `src/render/globe/linoryt.ts` (inks `LINORYT_INKS`, `SKY_COLOUR`, the hatch octave rules) and
+`src/render/globe/look.ts` (`GlobeLook`, `DEFAULT_GLOBE_LOOK`); the `look` option of `createGlobe`, `createWorldRenderer`
+and the perf fixture; `devGlobeLook()` and `nightMenu` in `src/game/world.ts`; the print's stamp, jam, ribbon and plane
+shaders and `LINORYT_STYLE` in `objects.ts` (with `JAM_ZONE_FACTOR`, `ROUTE_WIDTH_PX`, `PLANE_SIZE_PX`, `PLANE_RIM_PX`,
+`PLANE_LOAD_BAR_PX`); the menu's daylit print sun (`MENU_DAY_SUN_OFFSET_DEG`, `menuSunTick(lon)` has no `night` flag);
+the unused `resample` of `elevation.ts`; `dev/linoryt-frames.mjs`, `dev/linoryt-motion.mjs`, the `linoryt-motion` and
+`r3-linoryt` shot targets, `shots --look=` and `perf:scene --look`; `?look=` in `dev/globe.html`, `dev/world.html` and
+`e2e/menu-globe.mjs` (old links ignore it). No texture or data file goes: the print used only the land mask and
+`elevation-2048.png`, both kept for the NASA globe (D-336 manifest unchanged, `test:globe-assets` 50/50).
+**Kept, moved or renamed.** `src/render/marks.ts` holds what the overlay, the session and the objects still share:
+`STAMP_SIZE_PX` (22/30 px, the overlay's fallback box before the object chunk reports the drawn half size, and the stub
+world's box), `jamArcShare` (D-88) and `objectScale` (D-309); `src/render/index.ts` re-exports the first two from there
+(`src/ui/overlay.ts` changes one import line). `objects.ts` imports `objects-earth.ts` statically (one lazy chunk; the
+earth style is the default of every layer); the layers are `RouteRibbonLayer`, `PlaneSpriteLayer`,
+`createRoutePreviewRibbon` and `WorldObjects`, composed by `createObjects` (`createWorldObjects` is gone). The renderer
+starts on `EARTH_LOOK.space` instead of the paper sky, so `earth-globe.ts` no longer swaps the background.
+`docs/notes/linoryt-*.md` carry the note "archiwum, zastąpione przez D-323". Nothing in `src/` outside `src/ui` (and
+`src/data/puzzles`) names Linoryt any more (`test:render-layers` checks it).
+**Tests.** `test:hatch-alias` is retired (the hatch rules are gone; its object-scale case moved to
+`test:render-layers`), so `test:fast` 122 → 121 steps. `test:render-layers` 191 → 165 checks (the print's cases out, R6
+cases in: the deleted modules, no `GlobeLook`, the space background, the static earth style, `marks.ts`);
+`test:motion` 12 → 11 cases (the print shaders' no-clock case; the earth one stays); `test:daynight` drops the night-hatch
+checks; `test:contrast` drops the print's world inks and its stamps on the world grounds (65 documented, 77 real → 67
+pairs); `test:interp`, `test:note-layout` read the renamed layers and `marks.ts`. `shots:r3` 5 → 4 targets.
+**Measured.** `npm run build` + `test:bundle`: `dist/` 2,979.7 → **2,955.6 kB** (−24.1 kB: the print chunk 14.3 kB and
+the print shaders; the terrain/LOD code the two globes shared now sits in the `earth-globe` chunk, 14.7 → 34.0 kB, and
+`objects` + `objects-earth` 25.2 + 8.5 → 25.5 kB), main JS 1,090.7 → 1,090.0 kB raw (gzip 327.3 → 327.0), CSS 197.0 kB
+unchanged. `perf:scene` (SwiftShader 412×915, medium, same machine, `origin/dev` measured just before; never compared
+with devices): 16.1 / 14.0 → 16.5 / 18.1 fps idle/active, render CPU p95 1.3 → 1.1 ms, 15 → 15 draws, 55.7 k triangles:
+no regression (the shipped frame draws the same globe and layers; the difference is SwiftShader noise). `shots -- r3-night`
+gives the D-336 probe values (routes 15.6, airports/planes 15.97, jam 4.87; reverted, no PNG committed).
+**Status: in force (R6 of the plan the owner accepted, D-323); the owner reviews the PR.**
+
 ## D-338 — T7: the shipped UI-A polished — the week sheet fits the shortest phones, the dead Linoryt margin goes, `lin-*` becomes `base-*`, atlas labels outlined, CSS budget 198.4 kB (2026-11-09, Claude, night 82b)
 Step T7 of `docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md`, the items D-336 left open. `src/render/**` (R6, D-337,
 in parallel) and `src/data/puzzles/**` are untouched; the simulation and every hash too.

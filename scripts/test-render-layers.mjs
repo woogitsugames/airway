@@ -1,6 +1,6 @@
 // [render] Headless checks of render layers that need no WebGL context: route preview
 // range split, airport marker batching/clear, and allocation-free plane track pooling.
-import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import ts from 'typescript';
@@ -18,7 +18,7 @@ try {
   writeFileSync(join(folder, 'package.json'), JSON.stringify({ type: 'module' }));
   for (const path of ['globe/geo-math.ts', 'routes.ts', 'planes.ts', 'routePreview.ts', 'airports.ts',
     'camera.ts', 'framing.ts', 'contrast.ts', 'menuNetwork.ts', 'sun.ts', /* [task-34] */
-    'globe/linoryt.ts', 'objects.ts', 'objects-earth.ts', /* [ext-04 E2] */ 'globe/earth.ts', /* [night-70a R1] */
+    'marks.ts', 'objects.ts', 'objects-earth.ts', /* [ext-04 E2]; [night-82a R6] marks.ts */ 'globe/earth.ts', /* [night-70a R1] */
     'globe/borders.ts', 'projection.ts'] /* [night-72a R2] */) {
     const file = resolve(ROOT, 'src/render', path);
     const target = join(folder, path.replace(/\.ts$/, '.js'));
@@ -31,13 +31,13 @@ try {
   const three = await import('three');
   const load = (name) => import(pathToFileURL(join(folder, name)).href);
   const { sampleGreatCircleArc, makeGreatCircleArc } = await load('routes.js');
-  const linoE5 = await load('objects.js'); // [ext-04] the print layers replace the satellite ones (D-302)
+  const linoE5 = await load('objects.js'); // [ext-04] the object layers replace the satellite ones (D-302)
 
-  // [ext-04] D-302: the Linoryt layers (stamps, ribbon, dashed preview, sprites) replace the satellite ones.
+  // [ext-04] D-302: the object layers (points, ribbon, preview, sprites) replace the satellite ones.
   const sharedE5 = { uViewport: { value: { x: 412, y: 915 } }, uDpr: { value: 1 }, uTime: { value: 0 }, uPxPerRad: { value: 200 }, uScale: { value: 1 },
     uPaper: { value: new three.Color('#ECE3CC') }, uInk: { value: new three.Color('#1E1C1F') }, uRed: { value: new three.Color('#B33823') } };
   // Route preview: the part beyond the range is marked, and the ribbon lies on the committed (lifted) arc.
-  const preview = linoE5.createLinorytRoutePreview(sharedE5);
+  const preview = linoE5.createRoutePreviewRibbon(sharedE5);
   const LIS = { lon: -9.1, lat: 38.7 }, ACC = { lon: -0.2, lat: 5.6 };
   preview.update({ points: [LIS, ACC], legDistancesKm: [3788], rangeKm: 2500, aircraft: 'widebody' });
   const ribbonMesh = preview.object.children[0];
@@ -78,9 +78,9 @@ try {
   airports.dispose();
 
   // Planes: tick-boundary snapshots reuse pooled tracks.
-  const routes = new linoE5.LinorytRouteLayer(sharedE5);
+  const routes = new linoE5.RouteRibbonLayer(sharedE5);
   routes.setRoutes([{ id: 'R', type: 'turboprop', waypoints: [LIS, { lon: -0.1, lat: 51.5 }] }], 1);
-  const planes = new linoE5.LinorytPlaneLayer(routes, sharedE5, { maxPlanes: 10 });
+  const planes = new linoE5.PlaneSpriteLayer(routes, sharedE5, { maxPlanes: 10 });
   const snap = (p) => Array.from({ length: 10 }, (_, i) => ({ id: 'P' + i, routeId: 'R', segment: 0, progress01: (p + i * 900) % 10000, load: i }));
   planes.setSnapshots(snap(0), snap(10));
   const firstTrack = planes.tracks[0];
@@ -211,27 +211,27 @@ try {
     check(world.includes(`'[data-globe-frame="menu"]'`) && /globeFrameFraming\(w, h, frame/.test(world) && /frameTilt\(/.test(world),
       '[R4] world.ts frames the menu globe to the board skin\'s [data-globe-frame="menu"] box');
     check(/menuShown = sign !== null \|\| frame !== null/.test(world), '[R4] the framed UI-A menu counts as shown: the D-62 spin runs there too');
-    // Menu sun: the print keeps the daylit backdrop (+25° ahead of the view), the earth look the K2 night (sun 105° west).
+    // Menu sun: the K2 night (sun 82° west of the view); [night-82a R6] D-337: the print's daylit menu is gone.
     const sunR4 = await load('sun.js');
     const lonOf = (tick) => sunR4.subsolarLongitudeAt(tick);
     const wrap = (v) => ((v + 180) % 360 + 360) % 360 - 180;
-    check(Math.abs(wrap(lonOf(sunR4.menuSunTick(-16, false)) - 9)) <= 0.25 && Math.abs(wrap(lonOf(sunR4.menuSunTick(-16, true)) - (-98))) <= 0.25,
-      '[R4] menu sun: the print 25° east of the view (day), the earth look 82° west (night, the dusk band left of centre)');
+    check(Math.abs(wrap(lonOf(sunR4.menuSunTick(-16)) - (-98))) <= 0.25 && !('MENU_DAY_SUN_OFFSET_DEG' in sunR4),
+      '[R4/R6] menu sun 82° west of the view (night, the dusk band left of centre); no daylit print menu');
     for (const lon of [-180, -16, 0, 97.3, 179.9]) {
-      const tick = sunR4.menuSunTick(lon, true);
+      const tick = sunR4.menuSunTick(lon);
       check(Number.isInteger(tick) && tick >= 0 && tick < 1440, `[R4] menu sun tick for ${lon}° in [0, 1440) (got ${tick})`);
     }
     // Under the menu sun (view at 16°W) London is at night and New York in daylight: the terminator crosses the network.
     const daylightAt = (lon, lat) => {
       const ctl = sunR4.createSunController({ setSun() {} });
       ctl.setViewCenter(lon, lat);
-      ctl.update(sunR4.menuSunTick(-16, true));
+      ctl.update(sunR4.menuSunTick(-16));
       return ctl.daylight;
     };
     check(daylightAt(-0.1, 51.5) === 0 && daylightAt(-74, 40.7) > 0.9,
       `[R4] menu night: London dark (${daylightAt(-0.1, 51.5)}), New York lit (${daylightAt(-74, 40.7).toFixed(2)})`);
-    check(/menuSunTick\(renderer\.orbit\.getState\(\)\.longitude, nightMenu\)/.test(world) && /nightMenu = \(devLook \?\? DEFAULT_GLOBE_LOOK\) === 'earth'/.test(world),
-      '[R4] world.ts: the menu is night only on the earth look (the shipped print keeps its daylit menu until R5)');
+    check(/menuSunTick\(renderer\.orbit\.getState\(\)\.longitude\)/.test(world) && !/nightMenu|devGlobeLook|DEFAULT_GLOBE_LOOK/.test(world),
+      '[R4/R6] world.ts: the menu always shows the night (one globe, no look switch)');
   }
 
   // [task-39] D-62 menu rotation: ~1.2°/s on the shown menu, 0 with reduced motion, hidden menu or in a run.
@@ -320,36 +320,35 @@ try {
   sunCtl.update(0);
   check(noon === 1 && sunCtl.daylight === 0, 'view-centre daylight drives night-only behaviour');
 
-  // [ext-04 E1] D-283 Linoryt look: spec §1 inks, no photo textures, no clouds/ocean/haze shells, DEV-only until E3.
-  const linoryt = readFileSync(resolve(ROOT, 'src/render/globe/linoryt.ts'), 'utf8');
-  const linorytGlobe = readFileSync(resolve(ROOT, 'src/render/globe/linoryt-globe.ts'), 'utf8');
+  // [night-82a R6] D-337: one globe, the NASA one: the D-283 print, its `?look=` switch and `GlobeLook` are gone.
   const globeIndex = readFileSync(resolve(ROOT, 'src/render/globe/index.ts'), 'utf8');
   const renderIndex = readFileSync(resolve(ROOT, 'src/render/index.ts'), 'utf8');
-  const inks = { paper: '#ECE3CC', ink: '#1E1C1F', blue: '#2B4A66', ochre: '#D29C47', red: '#B33823' };
-  for (const [name, hex] of Object.entries(inks)) check(linoryt.includes(`${name}: '${hex}'`), `linoryt ink ${name} = ${hex}`);
-  check(/SKY_COLOUR = LINORYT_INKS\.paper/.test(linoryt), 'linoryt sky is paper');
-  check(/scene\.background = new Color\(SKY_COLOUR\)/.test(readFileSync(resolve(ROOT, 'src/render/world.ts'), 'utf8')) &&
-    !/DIORAMA_SKY/.test(readFileSync(resolve(ROOT, 'src/render/world.ts'), 'utf8')),
-    'the scene starts on the paper sky (no blue frame before the print chunk loads)');
-  check(/LINORYT_INKS/.test(renderIndex) && /SKY_COLOUR/.test(renderIndex), 'render index exports LINORYT_INKS and SKY_COLOUR');
-  check(!/\b(day|night|map|clouds)-\d+\.(jpg|png)/.test(linorytGlobe) && !/TextureLoader/.test(linorytGlobe),
-    'linoryt look loads no photo textures (only elevation-2048.png)');
-  check(!/createCloudShell|createOceanShell|createScatterAtmosphere/.test(linorytGlobe), 'linoryt look has no cloud, ocean or haze shell');
-  check(!/awRed|LINORYT_INKS\.red/.test(linorytGlobe), 'linoryt globe material has no red (red is for a jam only, E2)');
-  check(/await import\('\.\/linoryt-globe'\)/.test(globeIndex) && !/createTexturedTerrainMaterial|loadLookAssets|createDecorations|createAtmosphere/.test(globeIndex),
-    '[E4] createGlobe builds only the Linoryt print (lazy chunk); no texture looks, decorations or atmosphere shell');
-  const lookSrc = readFileSync(resolve(ROOT, 'src/render/globe/look.ts'), 'utf8');
-  // [night-81a R5] D-336: the NASA globe is the shipped look; the print stays a DEV `?look=linoryt` exception until R6.
-  check(/export type GlobeLook = 'linoryt' \| 'earth';/.test(lookSrc) && /DEFAULT_GLOBE_LOOK: GlobeLook = 'earth'/.test(lookSrc) &&
-    !/satellite|painted|refined|diorama'/.test(lookSrc.replace(/^\/\/.*$/gm, '')),
-    '[E4/R1/R5] GlobeLook is the NASA globe (default since R5) and the print only (Satelita, Mapa and the comparisons removed, D-285)');
+  {
+    const gone = ['src/render/globe/linoryt.ts', 'src/render/globe/linoryt-globe.ts', 'src/render/globe/look.ts']
+      .filter((path) => existsSync(resolve(ROOT, path)));
+    check(gone.length === 0, '[R6] the print modules and look.ts are deleted (left: ' + gone.join(', ') + ')');
+    const linorytRefs = execGrep('[Ll]inoryt|LINORYT').split('\n').filter((path) => path && !path.startsWith('src/ui/') && !path.startsWith('src/data/puzzles/'));
+    check(linorytRefs.length === 0, '[R6] nothing in src/ outside src/ui names the print (got ' + linorytRefs.join(', ') + ')');
+    const lookRefs = execGrep('GlobeLook|DEFAULT_GLOBE_LOOK|devGlobeLook');
+    check(lookRefs === '', '[R6] no GlobeLook / DEFAULT_GLOBE_LOOK left in src/ (got ' + lookRefs + ')');
+    check(!/LINORYT_INKS|SKY_COLOUR/.test(renderIndex) && /STAMP_SIZE_PX, jamArcShare \} from '\.\/marks'/.test(renderIndex),
+      '[R6] render index exports STAMP_SIZE_PX and jamArcShare from marks.ts, no print inks or paper sky');
+    const worldR6 = readFileSync(resolve(ROOT, 'src/render/world.ts'), 'utf8');
+    check(/scene\.background = new Color\(EARTH_LOOK\.space\)/.test(worldR6) && !/DIORAMA_SKY|SKY_COLOUR/.test(worldR6),
+      '[R6] the scene starts on the globe\'s space (no paper or blue frame before the globe chunk loads)');
+    check(!/createTexturedTerrainMaterial|loadLookAssets|createDecorations|createAtmosphere|opts\.look/.test(globeIndex),
+      '[E4/R6] createGlobe builds only the NASA globe (no look switch, texture looks or decorations)');
+    const marks = await load('marks.js');
+    check(marks.objectScale(320) === 1 && marks.objectScale(1000) === 1 && marks.objectScale(100) === 0.55 && Math.abs(marks.objectScale(240) - 0.75) < 1e-9,
+      '[R6] object scale 0.55…1 by disc radius (D-309, was test:hatch-alias)');
+    check(marks.STAMP_SIZE_PX.airport === 22 && marks.STAMP_SIZE_PX.hub === 30, '[R6] STAMP_SIZE_PX (the overlay\'s fallback box) = { airport: 22, hub: 30 }');
+  }
 
   // [night-70a R1] D-323: the NASA globe preview: DEV-only lazy chunk, presets, terminator from the game clock.
   {
     const earthGlobe = readFileSync(resolve(ROOT, 'src/render/globe/earth-globe.ts'), 'utf8');
     // [night-79a R4] D-334: no DEV guard any more: the release build carries the chunk, DEFAULT_GLOBE_LOOK selects it.
-    check(/if \(opts\.look === 'earth'\) \{\s*const \{ createEarthGlobe \} = await import\('\.\/earth-globe'\)/.test(globeIndex) &&
-      !/import\.meta\.env\.DEV && opts\.look === 'earth'/.test(globeIndex),
+    check(/const \{ createEarthGlobe \} = await import\('\.\/earth-globe'\)/.test(globeIndex) && !/import\.meta\.env\.DEV/.test(globeIndex),
       '[R1/R4] the earth globe is a dynamic import (its own chunk), in the release build too');
     const staticEarth = execGrep("from '(\\./|\\.\\./)*(globe/)?earth-globe'");
     check(staticEarth === '', '[R1] nothing imports earth-globe statically (got ' + staticEarth + ')');
@@ -464,81 +463,26 @@ try {
   }
   const worldSrcE3 = readFileSync(resolve(ROOT, 'src/render/world.ts'), 'utf8');
   check(!/import\.meta\.env\.DEV/.test(worldSrcE3) && !/createAirports\(|new RouteLayer\(|new PlaneLayer\(|createRoutePreview\(/.test(worldSrcE3),
-    '[E4] world renderer draws only the Linoryt layers (no medallions, tubes or plane models)');
+    '[E4] world renderer draws only the object layers (no medallions, tubes or plane models)');
 
-  // [ext-04 E2] D-283 spec §5–§8: Linoryt stamps by shape, curfew outline, jam zone + countdown arc, palette, routes.
+  // [ext-04 E2] The overlay's airport boxes.
   {
-    const lino = await load('objects.js');
-    const inksModule = await load('globe/linoryt.js');
-    check(inksModule.STAMP_SIZE_PX.airport === 22 && inksModule.STAMP_SIZE_PX.hub === 30, 'STAMP_SIZE_PX = { airport: 22, hub: 30 }');
-    const scene2 = new three.Scene();
-    const objects = { uViewport: { value: { x: 412, y: 915 } }, uDpr: { value: 1 }, uTime: { value: 0 }, uPxPerRad: { value: 200 }, uScale: { value: 1 },
-      uPaper: { value: new three.Color('#ECE3CC') }, uInk: { value: new three.Color('#1E1C1F') }, uRed: { value: new three.Color('#B33823') } };
-    const stamps = lino.createStampLayer(scene2, objects, 8);
-    stamps.addAirport({ id: 'WAW', lon: 21, lat: 52.2 });
-    stamps.addAirport({ id: 'IST', lon: 28.9, lat: 41, hub: true });
-    stamps.update();
-    const [jamMesh, stampMesh] = stamps.group.children;
-    const shape = stampMesh.geometry.getAttribute('aShape').array;
-    check(stampMesh.geometry.instanceCount === 2 && shape[0] === 0 && shape[4] === 1,
-      'stamps: regular airport = square kind 0, hub = octagon kind 1 (shape, not colour)');
-    check(stamps.halfSize('WAW') === 11 && stamps.halfSize('IST') === 15 && stamps.halfSize('XXX') === 0, 'stamp half size 11 / 15 px');
-    stamps.setCurfew('WAW', true); stamps.update();
-    check(stampMesh.geometry.getAttribute('aShape').array[1] === 1, 'curfew: the stamp is drawn as an outline (closed flag)');
-    check(!jamMesh.visible && jamMesh.geometry.instanceCount === 0, 'no jam zone without a jam');
-    stamps.setJam('IST', 0.4); stamps.update();
-    const jam = jamMesh.geometry.getAttribute('aJam').array;
-    check(jamMesh.visible && jamMesh.geometry.instanceCount === 1 && jam[0] === 45 && Math.abs(jam[1] - 0.4) < 1e-6 &&
-      stampMesh.geometry.getAttribute('aShape').array[6] === 1, 'jam: zone r = 3 × half (45 px for a hub), arc = share left, stamp in red');
-    stamps.setJam('IST', 7); stamps.update();
-    check(Math.abs(jamMesh.geometry.getAttribute('aJam').array[1] - 1) < 1e-6, 'jam share clamped to 1');
-    stamps.setJam('IST', null); stamps.update();
-    check(!jamMesh.visible, 'jam cleared → zone gone');
-    check(stamps.group.children.length === 2, 'stamps + jam zone: two instanced draws');
-    const stampFrag = stampMesh.material.fragmentShader, jamFrag = jamMesh.material.fragmentShader;
-    check(/vShape\.z > 0\.5 \? uRed : uInk/.test(stampFrag), 'stamp red only when jammed');
-    check(/sdOctagon/.test(stampFrag) && /sdBox/.test(stampFrag) && /abs\(outer \+ 1\.25\) - 1\.25/.test(stampFrag),
-      'stamp SDF: octagon hub, square airport, 2.5 px outline when closed');
-    check(/atan\(vPx\.x, vPx\.y\)/.test(jamFrag) && /vJam\.y \* 6\.2831853/.test(jamFrag), 'jam arc from 12 o\'clock, clockwise, length = share');
-    check(/mix\(uPaper, uRed, red\)/.test(jamFrag), 'jam ring and arc sit on a paper rim (D-303)');
-    // Palette (L5): the route ribbon, the preview and the planes never use red.
-    const routes2 = new lino.LinorytRouteLayer(objects);
-    routes2.setRoutes([{ id: 'r', type: 'widebody', waypoints: [{ lon: -0.1, lat: 51.5 }, { lon: -74, lat: 40.7 }] },
-      { id: 't', type: 'turboprop', waypoints: [{ lon: 21, lat: 52.2 }, { lon: 28.9, lat: 41 }, { lon: 31.2, lat: 30 }] }], 1);
-    const ribbon = routes2.group.children[0];
-    check(routes2.stats.routes === 2 && routes2.stats.drawCalls === 1 && ribbon.renderOrder === 10, 'routes: one ribbon draw for every route');
-    const widths = ribbon.geometry.getAttribute('aWidth').array;
-    const pairs = new Set(); for (let i = 0; i < widths.length; i += 2) pairs.add(widths[i] + '/' + widths[i + 1]);
-    check(pairs.has('3.25/1.25') && pairs.has('2.5/1'), 'double line: widebody 6.5/2.5 px, turboprop 5/2 px (outer/core)');
-    check(!/uRed/.test(ribbon.material.fragmentShader), 'routes: no red');
-    check(routes2.getRoute('t')?.arcs.length === 2, 'ribbon routes keep the prepared arcs for the planes');
-    const preview2 = lino.createLinorytRoutePreview(objects);
-    preview2.update({ points: [{ lon: -9.1, lat: 38.7 }, { lon: -0.2, lat: 5.6 }], legDistancesKm: [3788], rangeKm: 2500, aircraft: 'turboprop' });
-    const previewMesh = preview2.object.children[0];
-    check(previewMesh.visible && previewMesh.geometry.drawRange.count > 0 && previewMesh.material.uniforms.uDash.value === 1 &&
-      !/uRed/.test(previewMesh.material.fragmentShader), 'route preview: dashed ink, no red (beyond the range: dots)');
-    const beyond = previewMesh.geometry.getAttribute('aTrack').array;
-    let flagged = 0; for (let i = 1; i < beyond.length; i += 3) if (beyond[i] === 1) flagged++;
-    check(flagged > 0, 'route preview marks the part beyond the range');
-    preview2.update(null);
-    check(!previewMesh.visible, 'route preview hides on null');
     const worldSrc = readFileSync(resolve(ROOT, 'src/render/world.ts'), 'utf8');
     const body = worldSrc.slice(worldSrc.indexOf('world.projectAirport = '), worldSrc.indexOf('return world;'));
     check(/project\(city\.lon, city\.lat, SURFACE_ANCHOR_ALTITUDE, point\)/.test(body) && /project\(city\.lon, city\.lat, SURFACE_ANCHOR_ALTITUDE, point\)/.test(worldSrc.slice(worldSrc.indexOf('pick(x, y)'))),
       'projectAirport measures the same point as pick() (altitude SURFACE_ANCHOR_ALTITUDE = 1.01)');
     check(!/new |\[\]|=> \(\{/.test(body), 'projectAirport allocates nothing (writes into out)');
-    stamps.dispose(); routes2.dispose(); preview2.dispose();
   }
-  // [night-74a R3] D-329: the NASA-globe object style (DEV `?look=earth`): shapes, line patterns, red only for a jam,
-  // the same layers and draws as the print, the earth style a DEV-only chunk.
+  // [night-74a R3] D-329: the NASA-globe object style: shapes, line patterns, red only for a jam, one draw per layer;
+  // [night-82a R6] D-337: the only style (the print's shaders are gone), in the objects chunk.
   {
     const objectsR3 = await load('objects.js');
     const earthR3 = await load('objects-earth.js');
     const style = earthR3.earthObjectStyle({ atlasSdf: objectsR3.ATLAS_SDF_GLSL, revealMs: objectsR3.ROUTE_REVEAL_MS });
     const sceneR3 = new three.Scene();
     const made = objectsR3.createObjects(sceneR3, { maxAirports: 8, maxPlanes: 10 }, style);
-    check(made.style === 'earth' && objectsR3.createObjects(new three.Scene(), {}).style === 'linoryt',
-      '[R3] createObjects: earth style on request, the print by default');
+    check(made.style === 'earth' && objectsR3.createObjects(new three.Scene(), {}).style === 'earth' && !('LINORYT_STYLE' in objectsR3),
+      '[R3/R6] createObjects: the earth style, also by default; no print style');
     const { airports: pts, routes: rts, planes: pls, preview: pv } = made;
     pts.addAirport({ id: 'BEG', lon: 20.5, lat: 44.8 });
     pts.addAirport({ id: 'AMM', lon: 35.9, lat: 31.9, hub: true });
@@ -585,16 +529,13 @@ try {
     pls.setDaylight(0);
     check(Math.abs(dayShadow - 0.38) < 1e-9 && pls.uniforms.uShadow.value < dayShadow && pls.uniforms.uShadow.value > 0,
       '[R3] plane shadow 0.38 by day, fainter by night');
-    const printPlanes = objectsR3.createObjects(new three.Scene(), {}).planes;
-    printPlanes.setDaylight(1);
-    check(printPlanes.uniforms.uShadow.value === 0, '[R3] the print keeps no shadow');
     const objSrc = readFileSync(resolve(ROOT, 'src/render/objects.ts'), 'utf8');
-    check(/if \(opts\.look === 'earth'\) \{[^\n]*\n\s*const \{ earthObjectStyle \} = await import\('\.\/objects-earth'\)/.test(objSrc),
-      '[R3/R4] the earth object style is a dynamic import (its own chunk), in the release build too');
-    const staticObjEarth = execGrep("from '(\\./|\\.\\./)*objects-earth'");
-    check(staticObjEarth === '', '[R3] nothing imports objects-earth statically (got ' + staticObjEarth + ')');
-    check(execGrep('linoryt-objects') === 'src/render/objects.ts\nsrc/render/world.ts' || !/import\('\.\/linoryt-objects'\)/.test(readFileSync(resolve(ROOT, 'src/render/world.ts'), 'utf8')),
-      '[R3] linoryt-objects.ts renamed to objects.ts');
+    check(/import \{ EARTH_OBJECT_INKS, earthObjectStyle \} from '\.\/objects-earth'/.test(objSrc) && !/opts\.look/.test(objSrc),
+      '[R6] objects.ts takes the earth style statically (one chunk with the layers), no look switch');
+    const objEarthUsers = execGrep("from '(\\./|\\.\\./)*objects-earth'");
+    check(objEarthUsers === 'src/render/objects.ts', '[R6] only objects.ts imports objects-earth (got ' + objEarthUsers + ')');
+    const objectsUsers = execGrep("import\\('\\./objects'\\)|^import [^t].* from '(\\./|\\.\\./)*objects'"); // type imports aside
+    check(objectsUsers === 'src/render/world.ts', '[R6] objects.ts is reached only through world.ts (got ' + objectsUsers + ')');
     pts.dispose(); rts.dispose(); pls.dispose(); pv.dispose();
   }
 } catch (error) {

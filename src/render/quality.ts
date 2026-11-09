@@ -127,7 +127,7 @@ export function resolveQualityProfile(
   if (preset === 'low') {
     return { ...common, preset, antialias: false, shadowEnabled: false, shadowMapSize: 0, maxOverlayItems: 40 };
   }
-  // [ext-04] D-315: the Linoryt print anti-aliases every line in its shaders (hatch, SDF stamps/planes, ribbon, inked
+  // [ext-04] D-315: the globe and the world objects anti-alias every line in their shaders (SDF points/planes, ribbon,
   // limb), lights nothing and casts no shadows, so no preset pays for multisampling or a shadow map.
   if (preset === 'high') {
     return { ...common, preset, antialias: false, shadowEnabled: false, shadowMapSize: 0, maxOverlayItems: 80 };

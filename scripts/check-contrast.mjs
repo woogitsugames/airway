@@ -68,7 +68,7 @@ for (const [fg, bg] of [['--skin-go-flap-ink', '--skin-go-flap-bg'], ['--skin-ed
   catch (error) { failures.push(String(error)); }
 }
 // [night-48a] U6 (D-47, D-177, PLAN-LINORYT): the Linoryt inks. UI text pairs (formerly only in test:skin-tokens) at
-// 4.5:1; the world inks (`LINORYT_INKS`, src/render/globe/linoryt.ts, read only) equal the UI inks; every airport note
+// 4.5:1 ([night-82a R6] D-337: the print's world inks went with its globe, so they are no longer compared); every airport note
 // prints its text on its own paper ground, so a label reads the same over ochre land, blue sea and the night cross-hatch
 // (the ground is paper, never the world); stamps (ink, 2 px paper outline, render spec §5) reach the D-177 non-text 3:1
 // against every world ground through the better of their two boundaries (outline against the ground, ink core against
@@ -77,8 +77,6 @@ const LINORYT_TEXT = [['ink', 'paper'], ['ink-dim', 'paper'], ['blue', 'paper'],
   ['blue', 'paper-deep'], ['paper', 'ink'], ['ink', 'paper-pressed'], ['paper', 'red'], ['paper', 'blue']];
 const NON_TEXT = 3;
 const lin = Object.fromEntries([...root(inkCss).matchAll(/--base-([a-z-]+)\s*:\s*(#[0-9a-fA-F]{6})/g)].map((m) => [m[1], m[2]]));
-const world = Object.fromEntries([...readFileSync(new URL('../src/render/globe/linoryt.ts', import.meta.url), 'utf8')
-  .match(/LINORYT_INKS\s*=\s*\{([^}]*)\}/)?.[1].matchAll(/(\w+):\s*'(#[0-9a-fA-F]{6})'/g) ?? []].map((m) => [m[1], m[2]]));
 let linorytPairs = 0;
 for (const [fg, bg] of LINORYT_TEXT) {
   linorytPairs++;
@@ -86,27 +84,16 @@ for (const [fg, bg] of LINORYT_TEXT) {
   const value = contrast(lin[fg], lin[bg]);
   if (value < THRESHOLD) failures.push(`linoryt ${fg} on ${bg}: ${value.toFixed(2)}`);
 }
-for (const name of ['paper', 'ink', 'blue', 'ochre', 'red']) {
-  if (!world[name] || world[name].toLowerCase() !== lin[name]?.toLowerCase()) failures.push(`LINORYT_INKS.${name} ${world[name]} differs from --base-${name} ${lin[name]}`);
-}
-// The world grounds a note or a stamp can stand on; the night cross-hatch is ink lines over ochre or blue, so both of its
-// inks count as ground.
+// The world grounds a note can stand on (its text sits on its own paper whatever lies behind). [night-82a R6] D-337: the
+// print's stamps on those grounds are gone with its globe, so only the note text is checked.
 const grounds = { 'ochre land': ['ochre'], 'blue sea': ['blue'], 'night hatch on land': ['ochre', 'ink'], 'night hatch on sea': ['blue', 'ink'],
   'paper sky': ['paper'] };
 const noteGround = lin['paper'];
-for (const [where, inks] of Object.entries(grounds)) {
+for (const where of Object.keys(grounds)) {
   linorytPairs++;
   // Text on a note: ink on the note's own paper, whatever lies behind the note.
   const text = contrast(lin['ink'], noteGround);
   if (text < THRESHOLD) failures.push(`linoryt note text on ${where}: ${text.toFixed(2)}`);
-  for (const stamp of ['ink', 'red']) {
-    linorytPairs++;
-    const core = contrast(world[stamp] ?? '#000000', world['paper'] ?? '#000000');
-    const edge = Math.min(...inks.map((ink) => contrast(world['paper'] ?? '#000000', world[ink] ?? '#000000')));
-    // The outline alone may vanish on ink hatch lines, the core alone on ochre: D-177 takes the better boundary.
-    const best = Math.max(core, edge);
-    if (best < NON_TEXT) failures.push(`linoryt ${stamp} stamp on ${where}: edge ${edge.toFixed(2)} core ${core.toFixed(2)}`);
-  }
 }
 // [night-73a] D-328 (PLAN-NOWY-KIERUNEK.md step T2): the UI-A preview's signs (src/ui/skin/board.css). Every sign prints
 // its letters on its own opaque ground, so a sign reads the same on the day, dusk and night photo: cream on enamel (code,

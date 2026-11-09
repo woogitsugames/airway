@@ -164,7 +164,7 @@ const srgb = (hex: string): Color => new Color().setRGB(
 
 /**
  * The border mesh: one `BufferGeometry` (a quad per segment) and one transparent material, drawn after the
- * globe and before the map objects (`renderOrder` 5; the Linoryt objects start at 10). `heightAt(lon, lat)` lifts each
+ * globe and before the map objects (`renderOrder` 5; the world objects start at 10). `heightAt(lon, lat)` lifts each
  * end onto the terrain (default: the unit sphere).
  */
 export function createBorderLayer(

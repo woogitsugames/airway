@@ -58,7 +58,7 @@ export function menuTilt(clashesAt: (tilt: number) => number, base = MENU_TILT_B
   return best;
 }
 
-// [night-29b] D-286 `indexFraming` (the Linoryt index's printed globe) is gone with Linoryt ([night-81a] D-336, T6): the
+// [night-29b] D-286 `indexFraming` (the print skin's index globe) is gone with that skin ([night-81a] D-336, T6): the
 // UI-A menu frames the globe to its departures board's frame (src/render/framing.ts globeFrameFraming, D-334).
 
 /** [night-79a R4] D-334: the most the framed menu view may look south of the menu target (the cap on short phones). */
