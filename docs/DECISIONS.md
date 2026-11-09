@@ -4451,3 +4451,17 @@ controls, six tags in order, the Network tap), new `test:e2e:camera-network` (+ 
 915×412, 320×568 + an eased case). Shots `docs/shots/86b/`.
 **Budget.** Release CSS 195.7 → **196.6 kB** (+0.9 kB, inside +1.5 kB; budget 198.4 kB unchanged).
 **Status: in force; the owner reviews the PR.**
+
+## D-345 — The speed key names the speed; the weekly table says it lists gains (2026-11-09, Claude, night 88a)
+**Fixes for P-5 and P-6 of `docs/PLAYTEST-2026-11-09.md` (UI/i18n only; no sim change, no puzzle data).**
+(1) **P-5.** The dock's speed key caption now reads the current speed: „Tempo 2×” / “Speed 2×” (`board.dock.speed` + the speed), and the
+short form „2×” where the keys are 48 px (≤ 369 px, text 130 %+, landscape). The dial, its angle and
+the 48 dp target are unchanged; the key's accessible name already carried the value (`hud.speed`: „Prędkość gry: 2×. Zmień
+prędkość”), and the visible caption is `aria-hidden`, so a screen reader hears it once. `aria-valuetext` was not added: a
+button has no value role, the label is the right carrier.
+(2) **P-6.** The table's columns are weekly gains (the row's aria-label already said „nowe trasy”). Headers are now „+Trasy” /
+„+Samol.” (“+Routes” / “+Planes”) and a one-line legend sits under the heading (`board.report.weeksLegend`: gains in the week,
+„—” means none).
+**Tests.** `test:board`, `test:i18n`, `test:hud-targets`, `ui:matrix:stub`, `test:e2e:screens-fit-320`. Shots `docs/shots/88a/`.
+**Budget.** Release CSS +0.1 kB (one rule).
+**Status: in force; the owner reviews the PR.**

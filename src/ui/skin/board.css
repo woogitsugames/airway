@@ -1175,6 +1175,7 @@
 :root[data-skin="board"] .bd-print__table td:nth-child(-n+3) { min-width: 2ch; overflow-wrap: normal; } /* [night-81a] figures never break */
 :root[data-skin="board"] .bd-print__table :is(th, td):last-child { padding-right: 0; }
 :root[data-skin="board"] .bd-print__table tr:last-child td:last-child { font-weight: 800; }
+:root[data-skin="board"] .bd-print__legend { margin: 0 0 4px; color: var(--board-print-dim); font: 500 calc(11px * var(--airway-text-scale))/1.35 var(--board-mono); }
 :root[data-skin="board"] .bd-print__note { color: var(--board-print-dim); }
 /* The moved sections of the shipped report, set in print. */
 :root[data-skin="board"] .bd-print :is(.airway-go-causes, .airway-go-causes-panel) { margin: 0; padding: 0 0 0 2.2em; color: var(--board-print); background: transparent; border: 0; height: auto; overflow: visible; }
