@@ -8,7 +8,7 @@ const source = readFileSync(new URL('../src/ui/overlay-layout.ts', import.meta.u
 const js = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText;
 const { layoutTags, sizeTagGroup, attachSlotTag, slotCountdownText, MAIN_TAG_HEIGHT, SLOT_TAG_HEIGHT, SLOT_TAG_GAP,
   placeEdgeChips, projectEdgeChip, EDGE_CHIP_WIDTH: EW, EDGE_CHIP_HEIGHT: EH, EDGE_CHIP_PAD, EDGE_CHIP_CLEAR,
-  placeSizedEdgeChips } = await import('data:text/javascript;charset=utf-8,' + encodeURIComponent(js));
+  placeSizedEdgeChips, MAX_EDGE_CHIPS } = await import('data:text/javascript;charset=utf-8,' + encodeURIComponent(js));
 let passed = 0;
 let failed = 0;
 const assert = (name, ok) => { if (ok) passed++; else { failed++; console.error('FAIL ' + name); } };
@@ -508,6 +508,7 @@ assert('out-of-range label suppressed', layoutTags([{ ...crowd[0], width: 500 }]
     const placed = s.chips.filter((c) => c.offscreen && c.placed);
     shown += placed.length;
     let ok = true;
+    if (placed.length > MAX_EDGE_CHIPS) { ok = false; problems.push(`scene ${k}: ${placed.length} chips`); }
     for (const c of placed) {
       if (c.x < EDGE_CHIP_PAD || c.x + c.width > b.width - b.right - EDGE_CHIP_PAD || c.y < b.top + EDGE_CHIP_PAD ||
         c.y + EH > b.height - b.bottom - EDGE_CHIP_PAD) { ok = false; problems.push(`scene ${k}: chip outside the band`); }
@@ -523,7 +524,20 @@ assert('out-of-range label suppressed', layoutTags([{ ...crowd[0], width: 500 }]
     if (ok) clean++;
   }
   assert(`sized edge chips: 200 scenes, no chip meets another, leaves the band or covers an airport (${clean}/200; ${problems[0] ?? ''})`, clean === 200);
-  assert(`sized edge chips: most chips find a place (${shown})`, shown > 1500);
+  assert(`sized edge chips: most scenes fill the ${MAX_EDGE_CHIPS} signs (${shown})`, shown > 600);
+  {
+    // [night-85a] never more than MAX_EDGE_CHIPS at once: the jammed airports first, then the nearest ones.
+    const mk = (i, jammed, near) => ({ offscreen: true, jammed, side: 3, x: 20 + i * 60, y: 300, placed: false, near });
+    const tags = (n) => Array.from({ length: n }, (_, i) => ({ id: 't' + i, anchorX: -100, anchorY: -100, width: 0, height: 0, active: false, jammed: false, x: 0, y: 0, placed: false }));
+    const six = [mk(0, false, 0.9), mk(1, false, 0.2), mk(2, false, 0.5), mk(3, true, 1.4), mk(4, false, 0.3), mk(5, false, 0.1)];
+    placeSizedEdgeChips(six, tags(6), eb);
+    assert('sized edge chips: six off-screen airports show four signs', six.filter((c) => c.placed).length === MAX_EDGE_CHIPS);
+    assert('sized edge chips: the jammed airport keeps its sign, then the three nearest (0.1, 0.2, 0.3)',
+      [3, 5, 1, 4].every((i) => six[i].placed) && !six[0].placed && !six[2].placed);
+    const three = six.slice(0, 3).map((c) => ({ ...c, placed: false }));
+    placeSizedEdgeChips(three, tags(3), eb);
+    assert('sized edge chips: three off-screen airports show all three', three.every((c) => c.placed));
+  }
   {
     const crowd = Array.from({ length: 30 }, (_, i) => ({ offscreen: true, jammed: i === 29, side: 1, x: 412 - 7 - EW, y: 400, placed: false, width: 120 }));
     const tags = crowd.map((_, i) => ({ id: 'c' + i, anchorX: -100, anchorY: -100, width: 30, height: 30, active: false, jammed: false, x: 0, y: 0, placed: false }));

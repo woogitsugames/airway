@@ -6,7 +6,7 @@
 //     jumps to the hour's start; with full motion it follows the minute;
 //   - no CSS animation runs on the game screen (no pulsing chip, no sliding cut) while the planes fly.
 // PL 412×915 on a reduce-motion system, EN 915×412 with full motion.
-// [night-69a] D-324 (PLAN-NOWY-KIERUNEK.md step T1): the same two cases on the UI-A preview (`?skin=board`): the board's
+// [night-69a] D-324 (PLAN-NOWY-KIERUNEK.md step T1): the same two cases on the UI-A skin: the board's
 // white "now" mark steps like the Linoryt cut, and its flap tiles change without a flip under reduce motion (no fold
 // node ever appears, no animation runs), while with full motion a changed figure flips.
 import { performance } from 'node:perf_hooks';

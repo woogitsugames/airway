@@ -205,7 +205,7 @@ The 500 m/px Blue Marble tiles (`…3x21600x21600.{A1…D2}.jpg`) are not used: 
 (`PREVIEW_GLOBE_FILES` / `PREVIEW_DATA_FILES` in `scripts/vite-globe-preview.mjs` are empty; `npm run test:bundle` checks
 they are in `dist/`). [night-81a] D-336 (the flip, R5): `DEFAULT_GLOBE_LOOK = 'earth'`, the release draws them, and
 Settings → Licences lists "NASA Earth Observatory (Blue Marble, Black Marble)" again (key `licenses.nasaEarth`, PL and
-EN; public domain). Until R6 the print below is reachable only by the DEV-only `?look=linoryt`. The Linoryt print (D-283) still draws everything from the elevation raster and the Natural Earth land
+EN; public domain). The Linoryt print (D-283) was removed with R6 (D-337); it drew everything from the elevation raster and the Natural Earth land
 raster at load: the coast distance field and the Imhof shadow (D-298), the plane silhouettes from the skin's own icon
 paths (D-299).
 **Removed in E4 (ext/04, D-285) and still forbidden:** `map-{4096,2048}` (Mapa, D-172), `clouds-2048.png`
@@ -263,8 +263,8 @@ reuses the K2 globe (`makiety/src/globe.js`, same NASA textures in the git-ignor
 | Archivo (Copyright 2020 The Archivo Project Authors) | wdth 62–125, wght 100–900 | split-flap board, airfield signs, labels, keys | `OFL-Archivo.txt` |
 | Chivo Mono (Copyright 2019 The Chivo Project Authors) | wght 100–900 | flight strips, teleprinter report | `OFL-ChivoMono.txt` |
 
-[night-69a] D-324 (PLAN-NOWY-KIERUNEK.md step T1): the game's DEV-only UI-A preview (`?skin=board`,
-`src/ui/skin/board.css`) loads WOFF2 subsets of those two TTFs from `public/fonts/`, with the licences copied next to them
+[night-69a] D-324 (PLAN-NOWY-KIERUNEK.md step T1): the game's UI-A skin
+(`src/ui/skin/board.css`) loads WOFF2 subsets of those two TTFs from `public/fonts/`, with the licences copied next to them
 (`public/fonts/OFL-Archivo.txt`, `public/fonts/OFL-ChivoMono.txt`). Archivo ships as static instances of the used widths
 and weights only (the full variable file is 659 kB): `Archivo-600.woff2` (wght 600, wdth 100; 14.0 kB),
 `Archivo-80-700.woff2` (wght 700, wdth 80; 15.2 kB) and `Archivo-80-800.woff2` (wght 800, wdth 80; 15.1 kB), made with

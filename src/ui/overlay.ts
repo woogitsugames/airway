@@ -19,7 +19,7 @@ import {
 } from './skin/base'; // [night-30a] D-284 U2; [night-46a] D-301: the shipped skin's notes
 import './overlay.css';
 import { setClass } from './classes'; // [night-59a] D-322
-import { noteSkin, type NoteSkinFrame } from './overlay-skin'; // [night-73a] D-328: the DEV `?skin=board` signs
+import { noteSkin, type NoteSkinFrame } from './overlay-skin'; // [night-73a] D-328: the UI-A signs
 import { SURFACE_ANCHOR_ALTITUDE } from '../render/projection'; // [night-73a] D-328: projectLonLat's altitude (R2)
 
 const DEG = Math.PI / 180;
@@ -325,7 +325,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
   const layer = document.createElement('div');
   layer.className = 'airport-overlay';
   host.appendChild(layer);
-  // [night-73a] D-328: the UI-A preview's airport signs, direction signs and atlas labels (null in a release build).
+  // [night-73a] D-328: the UI-A's airport signs, direction signs and atlas labels.
   const skin = skinBase.on ? noteSkin.current : null;
   skin?.mount(layer);
   let visibleCount = 0;
@@ -884,6 +884,8 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
           const dx = transformedNormal.x * cam[0] + transformedNormal.y * cam[1] + transformedNormal.z * cam[2];
           const dy = -(transformedNormal.x * cam[4] + transformedNormal.y * cam[5] + transformedNormal.z * cam[6]);
           projectEdgeChip(chip, dx, dy, entry.airport.lon, edgeBounds);
+          // [night-85a] ranks the chips when more than MAX_EDGE_CHIPS airports are off screen.
+          chip.near = Math.acos(Math.max(-1, Math.min(1, transformedNormal.dot(cameraPosition) / (Math.hypot(cameraPosition.x, cameraPosition.y, cameraPosition.z) || 1))));
           // [night-30a] D-284 U2: the printed chip "Karaczi → / 2 408 km · 8 z 12", as wide as its lines.
           if (skin) {
             const length = Math.hypot(cameraPosition.x, cameraPosition.y, cameraPosition.z) || 1;

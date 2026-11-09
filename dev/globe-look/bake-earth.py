@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""[night-70a R1] D-323: bake the NASA textures of the realistic globe (`?look=earth`) into public/data/globe/.
+"""[night-70a R1] D-323: bake the NASA textures of the realistic globe (the NASA globe) into public/data/globe/.
 
 Not part of the build. Run once after a deliberate change, then `node scripts/test-globe-assets.mjs --write`:
 

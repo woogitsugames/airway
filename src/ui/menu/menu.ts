@@ -6,7 +6,7 @@ import type { LicenceClass } from '../../sim';
 import '../skin/current.css'; // [night-11aq] skin tokens read by menu.css
 import './menu.css';
 import { skinBase } from '../skin/base'; // [night-28a] D-284; [night-46a] D-301: the shipped skin
-import { sheetSkin } from '../sheet-skin'; // [night-77a] D-332: the DEV `?skin=board` preview's departures board (null in a release)
+import { sheetSkin } from '../sheet-skin'; // [night-77a] D-332: UI-A's departures board
 
 export type MenuMode = 'continue' | 'endless' | 'puzzles' | 'daily';
 export interface MenuData {

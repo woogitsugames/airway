@@ -1,5 +1,5 @@
 // [night-76a] D-331 (docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md step T4): the UI-A preview's weekly sheet
-// (`?skin=board`, src/ui/skin/board-week.{ts,css}) on the real session (the stub world with --render=stub, D-254). The DEV
+// (UI-A, src/ui/skin/board-week.{ts,css}) on the real session (the stub world with --render=stub, D-254). The DEV
 // bot plays the seeded run to the week-1 board (`aw.autoplay(1)`), then on phone, landscape, foldable and tablet sizes,
 // PL and EN, at 100 % and 150 % text and with a notch profile:
 //   - the sheet replaces the HUD (top band and console hidden, the airport signs hidden): the "TYDZ 1" board with the

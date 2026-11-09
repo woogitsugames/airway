@@ -1,4 +1,4 @@
-// [night-72a R2] D-327: country borders for the NASA globe (`?look=earth`), from Natural Earth 1:50m admin-0 via
+// [night-72a R2] D-327: country borders for the NASA globe (the NASA globe), from Natural Earth 1:50m admin-0 via
 // world-atlas (ISC; data public domain). Land borders only: the TopoJSON mesh of arcs shared by two different
 // countries (coasts are not drawn; the photo shows them). Douglas–Peucker at 0.02° (~2 km, below one screen pixel at
 // the closest game zoom), quantised to 0.01° and delta-encoded per line, so the file stays ~50 kB.
@@ -25,6 +25,8 @@ const TOLERANCE_DEG = 0.02;
 const DROPPED_PAIRS = [['N. Cyprus', 'Cyprus'], ['Somaliland', 'Somalia']];
 /** The Russia–Ukraine line inside this box is the Crimean isthmus (lon/lat). */
 const CRIMEA = { west: 32.4, east: 36.7, south: 44.3, north: 46.3 };
+
+const inCrimeaBox = (lon, lat) => lon >= CRIMEA.west && lon <= CRIMEA.east && lat >= CRIMEA.south && lat <= CRIMEA.north;
 
 function simplify(points, tolerance) {
   if (points.length < 3) return points;
@@ -87,6 +89,16 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     if (check) {
       if (readFileSync(BORDERS_DEST, 'utf8') !== contents) { failed++; console.error('FAIL public/data/borders-50m.json is stale (npm run build:borders)'); }
       if (stats.droppedCrimea !== 1) { failed++; console.error('FAIL expected exactly one Crimean isthmus line, got ' + stats.droppedCrimea); }
+      // [night-85a] D-340 (provisional, owner may change): no border vertex anywhere across the Perekop isthmus / Crimea box.
+      const inBox = data.lines.some((line) => {
+        let x = 0, y = 0;
+        for (let k = 0; k < line.length; k += 2) {
+          x += line[k]; y += line[k + 1];
+          if (inCrimeaBox(x / BORDERS_SCALE, y / BORDERS_SCALE)) return true;
+        }
+        return false;
+      });
+      if (inBox) { failed++; console.error('FAIL a border line crosses the Perekop isthmus (D-340)'); }
       if (Buffer.byteLength(contents) > 60_000) { failed++; console.error('FAIL borders file over 60 kB'); }
     } else {
       mkdirSync(dirname(BORDERS_DEST), { recursive: true });

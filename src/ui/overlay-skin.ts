@@ -1,8 +1,7 @@
 /**
  * [night-73a] D-328 (docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md step T2): the slot through which a preview skin
- * draws the airport notes, the edge chips and the atlas labels of the overlay (src/ui/overlay.ts). Empty in every release
- * build: src/main.ts fills it only in a DEV build with `?skin=board` (UI-A airport signs of src/ui/skin/board-notes.ts),
- * so the sign code stays out of the release bundle and the shipped Linoryt notes are untouched. The overlay keeps its
+ * draws the airport notes, the edge chips and the atlas labels of the overlay (src/ui/overlay.ts). src/main.ts fills it at
+ * boot with the UI-A airport signs of src/ui/skin/board-notes.ts. The overlay keeps its
  * DOM, layout engine (D-262…D-268, D-280, D-281), events and accessible names; the skin only builds the note's children,
  * reports its size, prints the edge chip and places the atlas labels after the notes.
  */

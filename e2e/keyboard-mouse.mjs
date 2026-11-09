@@ -138,12 +138,33 @@ async function journey(page, language, size) {
       if (!from) await page.keyboard.press('Equal');
     }
     assert(from, 'no two actionable airports on screen');
-    await page.mouse.move(from.x, from.y);
-    const over = await page.evaluate(() => {
-      const canvas = document.querySelector('canvas.airway-world');
-      return { hover: canvas.dataset.hover ?? null, cursor: getComputedStyle(canvas).cursor,
-        tag: document.querySelectorAll('.airport-bubble.is-hover').length };
-    });
+    // [night-85a] Flake fix (pl 915x412 under load: hover null): the zoom keys above ease the camera, so the airport moved
+    // between reading `from` and the pointer event. Wait until the airport's screen point holds still, then move the mouse
+    // onto it and poll (a pointer move is hit-tested against the last drawn frame, which may lag on a loaded machine).
+    let over = null;
+    for (let attempt = 0; attempt < 6; attempt++) {
+      let still = 0;
+      let last = null;
+      for (let sample = 0; sample < 40 && still < 3; sample++) {
+        const now = await page.evaluate(() => { try { const f = window.aw.gesture('route').from; return { x: f.x, y: f.y }; } catch { return null; } });
+        if (now && last && Math.hypot(now.x - last.x, now.y - last.y) < 0.5) still++; else still = 0;
+        last = now ?? last;
+        await page.waitForTimeout(60);
+      }
+      from = last ?? from;
+      await page.mouse.move(from.x + 40, from.y + 40);
+      await page.mouse.move(from.x, from.y, { steps: 3 });
+      for (let poll = 0; poll < 10; poll++) {
+        over = await page.evaluate(() => {
+          const canvas = document.querySelector('canvas.airway-world');
+          return { hover: canvas.dataset.hover ?? null, cursor: getComputedStyle(canvas).cursor,
+            tag: document.querySelectorAll('.airport-bubble.is-hover').length };
+        });
+        if (over.hover === 'city') break;
+        await page.waitForTimeout(80);
+      }
+      if (over.hover === 'city') break;
+    }
     assert(over.hover === 'city' && over.cursor === 'pointer', `over an airport: ${JSON.stringify(over)}`);
     assert(over.tag === 1, `${over.tag} airport tags marked`);
     const disc = await page.evaluate(() => window.__awWorld.disc());

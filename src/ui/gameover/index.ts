@@ -12,7 +12,7 @@ import { gameOverMilestones } from '../milestones'; // [night-12ax] R1n
 import type { MilestoneId } from '../../game/milestones';
 import type { ContractsSummary } from '../../game/contractsSummary'; // [night-33a] D-271
 import { setClass, setFlagAttribute } from '../classes'; // [night-59a] D-322
-import { sheetSkin } from '../sheet-skin'; // [night-77a] D-332: the DEV `?skin=board` preview's print-out (null in a release)
+import { sheetSkin } from '../sheet-skin'; // [night-77a] D-332: UI-A's print-out
 
 export type { WorldIdentity } from './seed';
 export type { GameOverBest, BestStorage } from './storage';

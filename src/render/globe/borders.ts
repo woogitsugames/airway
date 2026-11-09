@@ -1,4 +1,4 @@
-// [night-72a R2] D-327: country borders on the NASA globe (`?look=earth`; PLAN-NOWY-KIERUNEK.md R2, UI-A spec §5).
+// [night-72a R2] D-327: country borders on the NASA globe (the NASA globe; PLAN-NOWY-KIERUNEK.md R2, UI-A spec §5).
 // Natural Earth 1:50m land borders (`public/data/borders-50m.json`, built by scripts/build-borders.mjs from world-atlas)
 // drawn as thin, translucent lines whose width is set in screen pixels, not degrees, so they neither swell when the
 // camera zooms in nor break up into flickering dashes when it zooms out:

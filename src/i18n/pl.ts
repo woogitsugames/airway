@@ -74,7 +74,7 @@ export const pl = {
   'dock.hub': 'Hub',
   'dock.speed': 'Tempo {speed}×',
   'dock.in': 'za {when}',
-  // [night-69a] D-324 (podgląd UI-A, `?skin=board`): etykiety tablicy split-flap (skróty jak na tablicy lotniska; pełną
+  // [night-69a] D-324 (UI-A): etykiety tablicy split-flap (skróty jak na tablicy lotniska; pełną
   // treść czyta czytnik z `board.label`), podpis klawisza pauzy i podpisy pulpitu kontrolera (długie i krótkie).
   'board.label': '{time}, tydzień {week}, dzień {day} z {days}, {count} {count|pasażer|pasażerów|pasażerów}',
   'board.localTime': 'Czas lokalny',
@@ -90,8 +90,8 @@ export const pl = {
   'board.dock.widebodyShort': 'Szeroki',
   'board.dock.hub': 'Hub',
   'board.dock.speed': 'Tempo',
-  'board.sign.hubAria': 'Hub {code}.', // [night-73a] D-328: spoken before a hub sign's label (UI-A preview)
-  // [night-76a] D-331: the UI-A preview's weekly sheet (T4)
+  'board.sign.hubAria': 'Hub {code}.', // [night-73a] D-328: spoken before a hub sign's label (UI-A skin)
+  // [night-76a] D-331: the UI-A's weekly sheet (T4)
   'board.sheet.kicker': 'Koniec tygodnia',
   'board.sheet.week': 'Tydz',
   'board.sheet.passengers': 'Pasażerowie',
@@ -120,9 +120,9 @@ export const pl = {
   'board.sheet.thenHub': 'Potem wskaż hub na globusie',
   'board.sheet.thenAirport': 'Potem wskaż lotnisko na globusie',
   'board.sheet.none': 'Nic do wzięcia',
-  // [night-75a] D-330 (podgląd UI-A, `?skin=board`): paski lotu hubów nad pulpitem (nagłówki kolumn skrócone jak na pasku
+  // [night-75a] D-330 (UI-A): paski lotu hubów nad pulpitem (nagłówki kolumn skrócone jak na pasku
   // kontrolera; każdy pasek czyta czytnik z `board.strip.aria`/`ariaJam`).
-  // [night-77a] D-332 (T5): the menu as a departures board and the report as a teleprinter print-out (DEV `?skin=board`).
+  // [night-77a] D-332 (T5): the menu as a departures board and the report as a teleprinter print-out (UI-A).
   'board.menu.tagline': 'Sieć lotnicza na prawdziwej Ziemi',
   'board.menu.list': 'Odloty',
   'board.menu.choose': 'Wybierz',

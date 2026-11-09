@@ -37,7 +37,7 @@ import { localClock, surgeKey, surgeMark } from './surge'; // [night-12bb] R2i
 import { frontKey, frontMarks, frontSummary, localClockMinute } from './weather'; // [night-12bd] R2j; [night-60a] the refused-Undo time
 import { HubDepartureLog, boardOpensOnTap } from './hubBoard'; // [night-11ag] R4d
 import { mountHubBoard } from '../ui/hubBoard';
-import { stripSkin, type StripHub } from '../ui/strip-skin'; // [night-75a] D-330: the UI-A preview's hub strip bay
+import { stripSkin, type StripHub } from '../ui/strip-skin'; // [night-75a] D-330: the UI-A's hub strip bay
 import type { World, ScreenPoint } from './world';
 import { NewAirportMarks } from './newAirports'; // [night-10a]
 import { setClass } from '../ui/classes'; // [night-59a] D-322
@@ -151,7 +151,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
   // ---- presentation layers -------------------------------------------------------------
   const overlay: AirportOverlay = createAirportOverlay(layer, world.camera, {
     reserved: () => overlayReserved,
-    // [night-75a] D-330: and off the UI-A preview's strip bay (null in a release)
+    // [night-75a] D-330: and off the UI-A's strip bay
     board: () => hubBoard.box ?? strips?.box ?? null, // [night-21a] D-268: notes and roses keep off the open hub board
     project: (lon, lat, altitude, out) => world.renderer.project(lon, lat, altitude, out),
     // [night-46a] D-301 (U5): the notes stand beside the world's own stamp (E2 spec §8); an airport the renderer does not
@@ -189,8 +189,8 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       return hitTestRouteSegments(networkRoutes(), projectedCities(), clientX - rect.left, clientY - rect.top, 24);
     },
   });
-  // [night-75a] D-330 (PLAN-NOWY-KIERUNEK.md T3): the DEV `?skin=board` preview's bay of hub flight strips over the
-  // console; a strip opens the full strip (the hub board). No slot in a release.
+  // [night-75a] D-330 (PLAN-NOWY-KIERUNEK.md T3): UI-A's bay of hub flight strips over the
+  // console; a strip opens the full strip (the hub board).
   const strips = stripSkin.current?.mount(layer, { open: (id) => openHubBoard(id) }) ?? null;
   const hubStrips: StripHub[] = [];
   const upgradeHost = document.createElement('div');
@@ -549,7 +549,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     if (state && (force || state.week !== upgradeWeek || state.pendingHub)) {
       upgradeWeek = state.week;
       upgrade.render(state, run.hubPressure(), run.slotPressure(), run.contractBoard(), // [task-32] airports for "+2 slots"; [night-12ba] R2k contract
-        run.weekFigures()); // [night-76a] D-331: the week's figures (the UI-A preview's "TYDZ. N" sheet)
+        run.weekFigures()); // [night-76a] D-331: the week's figures (the UI-A's "TYDZ. N" sheet)
       setScreen('upgrade');
     } else if (!state && screen === 'upgrade') {
       upgrade.render(null, []);
@@ -639,7 +639,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
         ...(run.mode === 'endless' && run.licenceClass !== 1 ? { licenceClass: run.licenceClass } : {}), // [night-12bc] R2h
         ...(run.mode === 'endless' ? { milestones: { reached: run.milestones(), first: callbacks.failureMilestones?.() ?? [] } } : {}), // [night-12ax] R1n
         ...(contracts ? { contracts } : {}), // [night-33a] D-271
-        // [night-77a] D-332: plain facts for the DEV board preview's print-out (the shipped report does not read them).
+        // [night-77a] D-332: plain facts for the board's print-out (the shipped report does not read them).
         facts: { hubName: airportLabel(failure.cityId, 'name'), mode: run.mode,
           clock: { week: calendarWeekAt(run.clockMinute), day: calendarDayAt(run.clockMinute), minute: ((run.localMinute % 1440) + 1440) % 1440 },
           network: { routes: run.routeList().length, aircraft: run.assignments,

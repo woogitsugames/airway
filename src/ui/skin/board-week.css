@@ -1,6 +1,6 @@
 /* [night-76a] D-331 (docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md step T4; UI-A-SPEC.md; mockup
-   makiety/ui-a/ui-a-koniec-tygodnia.png): the weekly sheet of the UI-A preview, "take one strip" (src/ui/skin/board-week.ts).
-   DEV-only, loaded with board.css by the `?skin=board` branch of src/main.ts. Same contract as board.css (test:skin-tokens):
+   makiety/ui-a/ui-a-koniec-tygodnia.png): the weekly sheet of the UI-A skin, "take one strip" (src/ui/skin/board-week.ts).
+   Loaded with board.css by src/main.ts. Same contract as board.css (test:skin-tokens):
    every rule scoped to :root[data-skin="board"], only --board-* tokens from board.css's token block and local --bd-* sizes,
    no colour, face or duration literal. No glow, blur, glass or soft gradient: the flap tiles are two hard halves, the
    unavailable holder the console's hard hatching. Yellow appears once: the main action (or, during the airport pick, the

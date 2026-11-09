@@ -1,8 +1,7 @@
 /**
- * [night-69a] D-324 (PLAN-NOWY-KIERUNEK.md step T1): the slot through which a preview skin draws the HUD's top band and
- * dock faces. Empty in every release build: src/main.ts fills it only in a DEV build with `?skin=board` (UI-A, the
- * split-flap board and the controller's console of src/ui/skin/board.ts), so the board helpers stay out of the release
- * bundle and the shipped Linoryt HUD is untouched. The HUD keeps its DOM, events, accessible names and state; the skin
+ * [night-69a] D-324 (PLAN-NOWY-KIERUNEK.md step T1): the slot through which the skin draws the HUD's top band and
+ * dock faces. src/main.ts fills it at boot with the UI-A split-flap board and the
+ * controller's console of src/ui/skin/board.ts. The HUD keeps its DOM, events, accessible names and state; the skin
  * only paints inside the elements it is handed.
  */
 import type { HudState } from './types';

@@ -4317,3 +4317,27 @@ i18n: `hero.shot.alt/.caption`, `about.p2` (D-296's text, "satellite imagery" fo
 for the new shots (week strip, departures-board menu, teleprinter report), `meta.ogimage`, `press.logo.*`; `press.long`
 = the store description. `test:site` checks the hero lockup copy and the hero shot. `docs/shots/29/` re-shot.
 **Status: in force; the owner reviews the PR (and uploads the videos to the Drive).**
+
+## D-340 — No border line across the Perekop isthmus (Crimea), provisional; stale `?skin=`/`?look=`/Linoryt references cleaned up (2026-11-09, Claude, night 85a)
+**Owner decision (9.11, provisional; the owner may change it):** the NASA globe draws **no border line through the
+Perekop isthmus** (the Crimea land bridge). world-atlas 2.0.2 assigns Crimea to Russia, so the Russia–Ukraine mesh line
+there would state a claim the game does not want to make (D-327 already left it out; the game makes no border claims).
+**State found:** `scripts/build-borders.mjs` already drops that single line (`droppedCrimea === 1`), and the committed
+`public/data/borders-50m.json` has no vertex in the Crimea box (32.4–36.7° E, 44.3–46.3° N). **Change:** `test:borders`
+now also decodes the output and fails if any border vertex lies in that box, so a data refresh cannot bring the line
+back by accident. To restore it: remove the `russiaUkraine` exclusion and the `inBox` check, and re-run
+`npm run build:borders`. **Status: in force, provisional.**
+**Cleanup in the same change.** CLAUDE.md states one look (the NASA globe under UI-A on enamel; Linoryt removed; no flag
+skins, no `?skin=`/`?look=`) and the real step counts (`test:fast` 121, `test:ci` 99, verified by `test:doc-ids`).
+Comments in `src/**`, `scripts/**`, `e2e/**` and `docs/{ARCHITECTURE,TESTING,ASSETS}.md` that described UI-A as a DEV
+`?skin=board` preview, or the skin slots as "empty in a release", now match the code (the slots are filled at every boot,
+D-336). Untouched: `docs/notes/**`, `src/data/puzzles/**`, historical decision texts and per-night performance history.
+
+## D-341 — At most four off-screen direction signs at once (2026-11-09, Claude, night 85a)
+Before, every airport outside the frame got a sign (edge chip) while it found room; on a wide network that is a row of
+signs along each edge. `placeSizedEdgeChips` now places at most `MAX_EDGE_CHIPS = 4`: jammed airports first (a jam must
+stay visible), then the airports nearest to the view (great-circle angle `EdgeChip.near`, set per frame in
+`overlay.ts`), ties by order. `test:overlay-layout` covers the cap, the priority and "three airports show three". **E2E
+note:** `test:e2e:keyboard-mouse` hover step waited for nothing after the zoom keys (the camera eases, the airport moved
+away from the read point: hover null on pl 915×412 under load); it now waits for the airport's screen point to hold
+still and polls the hover state. **Status: in force.**

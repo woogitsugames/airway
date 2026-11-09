@@ -1,7 +1,6 @@
 /**
  * [night-75a] D-330 (docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md step T3; UI-A-SPEC.md §3 "Pasek lotu"): the bay
- * of hub flight strips of the UI-A preview. DEV only until the flip (T6): src/main.ts loads this module with
- * `?skin=board` and hands it to the session through `stripSkin` (src/ui/strip-skin.ts); a release has none of it.
+ * of hub flight strips of the UI-A skin. src/main.ts loads this module at boot and hands it to the session through `stripSkin` (src/ui/strip-skin.ts).
  *
  * - **Strip** (one per hub, a controller's paper flight-progress strip in its holder): the holder's colour says the state
  *   (blue = in order, red = jammed) and carries the hub mark (the asterisk of the hub's pin); then the columns HUB (code,
@@ -269,7 +268,7 @@ function pencilRing(): SVGSVGElement {
 
 interface StripEl { el: HTMLButtonElement; key: string }
 
-/** Creates the UI-A strip skin (DEV only, `?skin=board`). */
+/** Creates the UI-A strip skin (UI-A). */
 export function createBoardStrips(deps: BoardStripsDeps): StripSkin {
   const { t, localNumber } = deps;
   return {
