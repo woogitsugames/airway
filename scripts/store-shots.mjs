@@ -14,6 +14,7 @@ import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { STORE_HOME_REGION, presetStoreSettings } from './lib/harness.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = resolve(ROOT, 'docs/store/shots');
@@ -38,7 +39,11 @@ const SCENES = ['night', 'game', 'upgrade', 'failure', 'menu'];
 // [task-40] D-63 warmth gate for the `game` scene: share of golden pixels on the globe (see globeWarmth).
 // Measured on seed 0xA1A1, phone: noon 0.005, mid-afternoon 0.029, old −95° shot 0.015, golden 0.079.
 const WARM_SCENE = 'game';
-const GOLD_MIN = 0.045;
+// [night-84a] D-339: recalibrated for the NASA globe (D-336), whose dusk is a narrow warm band tinting the lit colour
+// (earth-globe.ts) and whose night side carries orange city lights. Seed 0xA1A1 from Northern Europe, measured at
+// 960×540: sun dot 0.05 (the fixture) 0.014–0.015 (portrait sizes 0.047–0.049), dot 0.0 0.013, mid-afternoon
+// dot 0.15 0.002, dot 0.30 0.008. The old 0.045 (Diorama/satellite, golden 0.079) failed every landscape frame.
+const GOLD_MIN = 0.012;
 const CONTRAST_MIN = 4.5; // D-47
 // [N12o] D-123: the three original profiles plus the exact console sizes. Apple needs iPhone 6.9" (1320×2868) and
 // iPad 13" (2064×2752) screenshots; Play's large-screen / promotion slots take only 9:16 or 16:9 (the foldable 4:5 and
@@ -66,12 +71,22 @@ const outArg = args.find((arg) => arg.startsWith('--out='))?.slice('--out='.leng
 const MANIFEST = resolve(OUT, 'manifest.json');
 const CONTACT = resolve(ROOT, 'docs/store/contact-sheet.png');
 // [N12n] D-117: Google Play feature graphic, rendered from the real `game` scene in a wide landscape viewport
-// at DPR 2 and downscaled, the wayfinding wordmark (brand/wayfinding.svg) on the left third, saved without alpha.
+// at DPR 2 and downscaled, the wordmark on the left third, saved without alpha. [night-84a] D-339: the lockup of the
+// mark I-1 "Węzeł" (D-326) and AIRWAY in Archivo (brand/src/wordmark.py) replaces the old wayfinding sign.
 const FEATURE = resolve(ROOT, 'docs/store/feature-graphic.png');
+const FEATURE_WORDMARK = 'brand/wordmark.svg';
+const FEATURE_PANEL = 34; // % of the width
 const FEATURE_SIZE = { w: 1024, h: 500 };
-// Disc centre at 62 % of the width and 0.45 radius below the middle: the network (northern half) is centred,
-// the limb shows at the top and the sky stays free for the wordmark.
-const FEATURE_VIEW = { cx: 0.62, dy: 0.45, zoom: 1.6 };
+// [night-84a] D-339: the NASA globe's space is near black and its night side dark, so (Play: no dark fields) the frame
+// is daylight (sun dot 0.4 over the network, about noon in November) and the globe fills the right two thirds: disc
+// centre at 68 % of the width, 0.22 radius below the middle, zoom 3.1. The knobs `--feature-cx/-dy/-zoom/-dot` exist
+// for re-framing only (preview with `--out`).
+const FEATURE_VIEW = {
+  cx: Number(args.find((a) => a.startsWith('--feature-cx='))?.split('=')[1] ?? 0.68),
+  dy: Number(args.find((a) => a.startsWith('--feature-dy='))?.split('=')[1] ?? 0.22),
+  zoom: Number(args.find((a) => a.startsWith('--feature-zoom='))?.split('=')[1] ?? 3.1),
+};
+const FEATURE_SUN_DOT = args.find((a) => a.startsWith('--feature-dot='))?.split('=')[1] ?? '0.4';
 const FEATURE_MAX_BYTES = 15 * 1024 * 1024; // Play: JPEG or 24-bit PNG, ≤ 15 MB
 // Google: no pure black/dark grey backgrounds. Share of dark, unsaturated pixels allowed in the whole image.
 const FEATURE_DARK_MAX = 0.2;
@@ -466,13 +481,7 @@ async function capture(page, baseUrl, lang, scene, destination) {
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
   // Use real app i18n settings, not translated HTML injected by this script.
-  await page.addInitScript((language) => {
-    try {
-      const key = 'airway.settings';
-      const value = JSON.parse(localStorage.getItem(key) || '{}');
-      localStorage.setItem(key, JSON.stringify({ ...value, language }));
-    } catch { /* Browser privacy mode can block storage. */ }
-  }, lang);
+  await presetStoreSettings(page, lang);
   await page.goto(url.href, { waitUntil: 'networkidle', timeout: 30000 });
   // Never treat the empty sky scaffold or a static mockup as a store screenshot.
   await page.waitForFunction(({ id, seed }) =>
@@ -534,9 +543,17 @@ async function capture(page, baseUrl, lang, scene, destination) {
   const offscreen = await page.evaluate(() => {
     const parts = document.querySelectorAll('.airway-upgrade-tag, .airway-upgrade-tag *, .airway-go-content, '
       + '.airway-go-content *');
+    // [night-84a] D-339: UI-A's report is a print roll in a scroller (`.bd-print`, D-332): what lies inside a scrolling
+    // box is reached by scrolling it, so only the scroller itself has to stay on screen.
+    const scrolls = (node) => /^(auto|scroll)$/.test(getComputedStyle(node).overflowY);
+    const inScroller = (node) => {
+      for (let up = node.parentElement; up && up !== document.body; up = up.parentElement) if (scrolls(up)) return true;
+      return false;
+    };
     for (const part of parts) {
       const r = part.getBoundingClientRect();
       if (!r.width || !r.height || getComputedStyle(part).visibility === 'hidden') continue;
+      if (inScroller(part)) continue;
       if (r.bottom > innerHeight + 0.5 || r.right > innerWidth + 0.5 || r.top < -0.5 || r.left < -0.5) {
         return part.className + ' ' + Math.round(r.left) + ',' + Math.round(r.top) + '..' + Math.round(r.right) + ','
           + Math.round(r.bottom) + ' outside ' + innerWidth + 'x' + innerHeight;
@@ -616,13 +633,14 @@ async function renderContactSheet(browser, dir, target) {
         '</figcaption></figure>').join('') +
       '</div>').join('')).join('');
     await page.setContent('<!doctype html><meta charset="utf-8"><style>' +
-      '@font-face{font-family:Overpass;src:url(http://store.local/fonts/Overpass-800.ttf);font-weight:800}' +
-      '@font-face{font-family:OverpassMono;src:url(http://store.local/fonts/OverpassMono-700.ttf)}' +
-      'body{margin:0;padding:' + gap + 'px 28px;background:#1d2b2a;color:#f3ead8;font-family:OverpassMono,monospace;width:max-content}' +
-      'h1{font:800 30px Overpass;margin:0 0 4px;letter-spacing:.02em}h2{font:800 22px Overpass;margin:' + gap + 'px 0 8px;color:#f2c230}' +
+      // [night-84a] D-339: the UI-A faces and inks (enamel, cream, direction yellow).
+      '@font-face{font-family:Archivo;src:url(http://store.local/fonts/Archivo-80-800.woff2);font-weight:800}' +
+      '@font-face{font-family:ChivoMono;src:url(http://store.local/fonts/ChivoMono-VF.woff2)}' +
+      'body{margin:0;padding:' + gap + 'px 28px;background:#0E0F0F;color:#EFE7D3;font-family:ChivoMono,monospace;width:max-content}' +
+      'h1{font:800 30px Archivo;margin:0 0 4px;letter-spacing:.02em}h2{font:800 22px Archivo;margin:' + gap + 'px 0 8px;color:#F3C317}' +
       '.row{display:flex;gap:' + gap + 'px;align-items:flex-start;margin-bottom:' + gap + 'px}' +
       '.dev{width:90px;font-size:14px;text-transform:uppercase}small{opacity:.7;font-size:11px}' +
-      'figure{margin:0}img{height:' + thumbH + 'px;display:block;border:1px solid #0b1312;object-fit:contain}' +
+      'figure{margin:0}img{height:' + thumbH + 'px;display:block;border:1px solid #3A3B38;object-fit:contain}' +
       'figcaption{font-size:12px;margin-top:4px;text-transform:uppercase;letter-spacing:.06em}</style>' +
       '<h1>Airway — store screenshots (' + EXPECTED + ')</h1>' + blocks, { waitUntil: 'load' });
     await page.evaluate(() => Promise.all([document.fonts.ready,
@@ -635,8 +653,8 @@ async function renderContactSheet(browser, dir, target) {
 
 /**
  * [N12n] D-117: the Play feature graphic from the real `game` scene (seed 0xA1A1, English page; the image has no
- * words but the wordmark). The DOM HUD is hidden, only the globe canvas stays, and the original wayfinding sign
- * (brand/wayfinding.svg, Overpass 800) sits on the left third, clear of the centre where Play draws the video
+ * words but the wordmark). The DOM HUD is hidden, only the globe canvas stays, and the wordmark (D-339: the mark I-1
+ * and AIRWAY, brand/wordmark.svg) sits on a cream panel over the left third, clear of the centre where Play draws the video
  * play button. Captured at 1024×500 @2, downscaled in Chromium to @1 and written as opaque RGB.
  */
 async function renderFeatureGraphic(browser, baseUrl, target) {
@@ -647,10 +665,12 @@ async function renderFeatureGraphic(browser, baseUrl, target) {
   try {
     const errors = [];
     page.on('pageerror', (error) => errors.push(error.message));
+    await presetStoreSettings(page, 'en');
     const url = new URL(baseUrl);
     url.searchParams.set('storeShot', WARM_SCENE);
     url.searchParams.set('seed', String(SEED));
     url.searchParams.set('lang', 'en');
+    if (FEATURE_SUN_DOT !== null) url.searchParams.set('storeSunDot', FEATURE_SUN_DOT);
     await page.goto(url.href, { waitUntil: 'networkidle', timeout: 30000 });
     await page.waitForFunction((id) => document.documentElement.dataset.storeShotReady === id, WARM_SCENE,
       { timeout: 120000 }).catch(() => { throw new Error('feature graphic: scene "' + WARM_SCENE + '" never became ready'); });
@@ -666,29 +686,34 @@ async function renderFeatureGraphic(browser, baseUrl, target) {
     }, FEATURE_VIEW);
     if (!framed) throw new Error('feature graphic: DEV world probe has no featureView/disc');
     await page.evaluate(() => new Promise((done) => { let n = 20; const step = () => (--n ? requestAnimationFrame(step) : done()); requestAnimationFrame(step); }));
-    const sign = readFileSync(resolve(ROOT, 'brand/wayfinding.svg'), 'utf8').replace(/<!--[\s\S]*?-->/g, '');
+    // [night-84a] D-339: the lockup of the mark I-1 and AIRWAY (Archivo 800 as outlines, no font to load), on its enamel plate.
+    const sign = readFileSync(resolve(ROOT, FEATURE_WORDMARK), 'utf8').replace(/<!--[\s\S]*?-->/g, '');
     await page.addStyleTag({ content: '#app *:not(canvas){visibility:hidden!important}' +
+      // [night-84a] D-339: the lockup sits on a cream paper panel (UI-A's strip paper), so the left third is not dark.
+      '#aw-feature-panel{position:fixed;left:0;top:0;bottom:0;width:' + FEATURE_PANEL + '%;background:#EFE7D3;z-index:8;' +
+      'border-right:6px solid #0E0F0F}' +
       '#aw-feature-sign{position:fixed;left:4%;top:50%;width:28%;transform:translateY(-50%);z-index:9;' +
       'pointer-events:none}#aw-feature-sign svg{display:block;width:100%;height:auto}' });
     state = await page.evaluate(async (markup) => {
       const holder = document.createElement('div');
       holder.id = 'aw-feature-sign';
+      document.body.append(Object.assign(document.createElement('div'), { id: 'aw-feature-panel' }));
       holder.innerHTML = markup;
       document.body.append(holder);
-      await document.fonts.load('800 126px Overpass');
-      await document.fonts.ready;
       const box = holder.getBoundingClientRect();
-      return { overpass: document.fonts.check('800 126px Overpass'), signRight: box.right,
+      return { outlined: !holder.querySelector('text'), signRight: box.right,
         sun: document.documentElement.dataset.storeShotSun ?? null,
         canvas: [...document.querySelectorAll('#app canvas')].some((c) => c.getBoundingClientRect().width > 500) };
     }, sign);
-    if (!state.overpass) throw new Error('feature graphic: Overpass 800 not loaded for the wordmark');
+    if (!state.outlined) throw new Error('feature graphic: the wordmark has live text (it must be outlines)');
     if (!state.canvas) throw new Error('feature graphic: no globe canvas');
     const disc = await page.evaluate(() => window.__awWorld?.disc?.() ?? null);
-    if (!disc || disc.y - disc.radius < 0 || disc.x - disc.radius < FEATURE_SIZE.w / 3 - 120) {
-      throw new Error('feature graphic: globe limb not in the frame or under the wordmark (' + JSON.stringify(disc) + ')');
+    // The globe covers the frame's centre (where Play draws the play button) and lies right of the wordmark.
+    const covers = disc && Math.hypot(FEATURE_SIZE.w / 2 - disc.x, FEATURE_SIZE.h / 2 - disc.y) < disc.radius;
+    if (!covers || disc.x < FEATURE_SIZE.w / 2) {
+      throw new Error('feature graphic: globe off the frame centre or under the wordmark (' + JSON.stringify(disc) + ')');
     }
-    if (state.signRight > FEATURE_SIZE.w / 3 + 1) throw new Error('feature graphic: wordmark leaves the left third');
+    if (state.signRight > FEATURE_SIZE.w * FEATURE_PANEL / 100) throw new Error('feature graphic: wordmark leaves the cream panel');
     if (errors.length) throw new Error('feature graphic: browser errors: ' + errors.join('; '));
     await page.screenshot({ path: hi, animations: 'disabled', fullPage: false });
   } finally { await page.close(); }
@@ -711,6 +736,11 @@ function validateShots(dir = OUT, manifestFile = MANIFEST, contactFile = CONTACT
   if (!existsSync(manifestFile)) throw new Error('Missing ' + manifestFile + '; run npm run store:shots');
   const manifest = JSON.parse(readFileSync(manifestFile, 'utf8'));
   if (manifest.shots?.length !== EXPECTED) throw new Error('Manifest lists ' + manifest.shots?.length + '/' + EXPECTED);
+  // [night-84a] D-339: the shots were played from the store home region, itself one of the six D-08 regions.
+  if (manifest.homeRegion !== STORE_HOME_REGION) {
+    throw new Error('Manifest home region ' + manifest.homeRegion + ' is not ' + STORE_HOME_REGION + '; run npm run store:shots');
+  }
+  if (!D08_GLYPHS.includes(regionGlyphs()[STORE_HOME_REGION])) throw new Error('Store home region outside D-08: ' + STORE_HOME_REGION);
   // [task-40] D-63: the manifest follows the store order (language, then SCENES, then DEVICES).
   const order = LANGUAGES.flatMap((lang) => SCENES.flatMap((scene) => DEVICES.map((d) => lang + '/' + scene + '-' + d.id)));
   const listed = manifest.shots.map((shot) => shot.id);
@@ -739,7 +769,7 @@ function validateShots(dir = OUT, manifestFile = MANIFEST, contactFile = CONTACT
 }
 
 try {
-  const unknown = args.filter((arg) => arg !== '--validate' && arg !== '--feature' && arg !== '--merge' && !/^--(base-url|only|out)=/.test(arg));
+  const unknown = args.filter((arg) => arg !== '--validate' && arg !== '--feature' && arg !== '--merge' && !/^--(base-url|only|out|feature-(?:cx|dy|zoom|dot))=/.test(arg));
   if (unknown.length) throw new Error('Unknown options: ' + unknown.join(', '));
   for (const scene of onlyScenes ?? []) if (!SCENES.includes(scene)) throw new Error('Unknown scene: ' + scene);
   if (mergeOnly && (!onlyArg || outArg)) throw new Error('--merge needs --only=<scenes> and no --out');
@@ -835,7 +865,7 @@ try {
     } else if (!onlyArg) {
       writeFileSync(outArg ? resolve(dest, 'manifest.json') : MANIFEST, JSON.stringify({
         note: 'Generated by scripts/store-shots.mjs; checked by npm run test:store-shots.',
-        allowedGlyphs: D08_GLYPHS, shots: records,
+        homeRegion: STORE_HOME_REGION, allowedGlyphs: D08_GLYPHS, shots: records,
       }, null, 1) + '\n');
       await renderContactSheet(browser, dest, outArg ? resolve(dest, 'contact-sheet.png') : CONTACT);
       console.log('contact sheet ' + (outArg ? resolve(dest, 'contact-sheet.png') : CONTACT.slice(ROOT.length + 1)));

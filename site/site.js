@@ -1,5 +1,4 @@
 import { translations } from './i18n.js';
-import { mountGlobe } from './globe.js';
 import { LAUNCH, STORE_BADGES, storeLink } from './launch.js';
 
 const requested = new URLSearchParams(window.location.search).get('lang');
@@ -95,5 +94,3 @@ if (ogDescription && PAGE_META.ogDescription) ogDescription.content = t[PAGE_MET
 document.title = PAGE_META.title();
 const year = document.getElementById('year');
 if (year) year.textContent = String(new Date().getFullYear());
-const globe = document.getElementById('globe');
-if (globe) mountGlobe(globe);

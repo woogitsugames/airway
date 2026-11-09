@@ -19,17 +19,22 @@ Routen-Puzzle auf einem 3D-Globus. Verbinde Städte und halte die Hubs in Gang.
 ## Full description
 Baue ein Flugnetz über einen dreidimensionalen Globus. Verbinde Städte mit Flugrouten, erweitere Flughäfen und plane, wie Passagiere zwischen Flügen umsteigen. Die Flugzeuge fliegen von selbst — du entscheidest, wohin das Netz wächst.
 
-Entdecke eine handgestaltete Diorama-Welt aus Ozeanen, Gebirgen, Wolken und Flughäfen. Während sich die Erde dreht, folgen auf Tageslicht Dämmerung und Nacht, und im Morgengrauen kommen neue Wellen von Reisenden. Jede Verbindung verändert, wie das ganze Netz funktioniert.
+Der Globus dreht sich weiter, und die Nachfrage folgt der Ortszeit jeder Stadt: Nächte sind ruhig, und im Morgengrauen kommen neue Wellen von Reisenden. Jede Verbindung verändert, wie das ganze Netz funktioniert.
+
+Die Erde stammt aus echten Satellitenbildern: Tagsüber siehst du Wüsten, Wälder und Meere, in der Dämmerung zieht ein warmes Lichtband über deine Routen, und nachts leuchten die Städte. Das Spiel spricht die Sprache eines Flughafens: Eine Fallblattanzeige zeigt die Zeit, jeder Hub hat seinen eigenen Flugstreifen, Flughäfen tragen Codeschilder, und ein gelbes Richtungsschild weist zum nächsten neuen Flughafen.
 
 • Zeichne Routen zwischen Städten, ohne jedes Flugzeug zu steuern.
 • Wähle Flugzeugtypen nach Reichweite und Passagierkapazität.
 • Richte Hubs ein, an denen Reisende in ihren nächsten Flug umsteigen.
 • Behalte die Wartebereiche im Blick und handle, bevor ein Hub überläuft.
 • Wähle am Ende jeder Spielwoche ein Upgrade.
-• Löse Routen-Puzzles oder lass dein Netz im Endlosmodus wachsen.
+• Löse Routen-Puzzles oder lass dein Netz im Endlosflug wachsen.
+• Wähle eine Heimatregion für den Endlosflug und erfülle einen Wochenvertrag zwischen zwei Städten, um ein viertes Upgrade zur Auswahl zu bekommen.
+• Mach dich im Endlosflug bereit für Passagierspitzen, die einen Tag vorher angekündigt werden.
+• Schalte die Lizenzklassen II und III des Endlosflugs frei: Nachtflugverbote an Flughäfen und strengere Regeln.
 • Stell dich der Tagesherausforderung mit derselben Startwelt für alle.
 
-Du bist kein Fluglotse. Deine Aufgabe ist ein Netz, das Passagiere ans Ziel bringt und volle Hubs unter Kontrolle hält. Wenn ein Hub überlastet ist, zeigt ein Ursachenbericht, was schiefgelaufen ist, damit du die nächste Runde besser planst.
+Du bist kein Fluglotse. Deine Aufgabe ist ein Netz, das Passagiere ans Ziel bringt und volle Hubs unter Kontrolle hält. Wenn ein Hub überlastet ist, zeigt ein Ursachenbericht, was schiefgelaufen ist, neben den Etappen und Verträgen deiner Runde, damit du die nächste Runde besser planst.
 
 Airway ist ein Strategie-Puzzle über Netze, Verbindungen und den wechselnden Rhythmus eines lebendigen Globus.
 
@@ -39,12 +44,12 @@ Sprache: Das Spiel ist derzeit auf Englisch und Polnisch verfügbar.
 fluggesellschaft,flughafen,flug,flugzeug,netzwerk,umsteigen,strategie,puzzle,logistik,reisen,erde,3d
 
 ## Play feature graphic alt text
-Airway-Schild neben einem 3D-Globus in der Dämmerung, Flugrouten verbinden Flughäfen in Europa und im Nahen Osten.
+Airway-Logo auf cremefarbener Fläche neben einem Satelliten-Globus bei Tag, Flugrouten verbinden Amsterdam mit Oslo, Dublin und Spanien.
 
 ## Play alt text
 Eine Zeile pro Szene für jede Gerätegröße (≤ 140 Zeichen); Bilder aus `shots/en/` (das Spiel ist englischsprachig).
-1. night — Nachtseite eines 3D-Globus: beleuchtete Städte in Europa und Nahost, Flugrouten und Flughafen-Rosen mit Städtenamen und Passagieren.
-2. game — 3D-Globus in tiefer Abendsonne: Routen zwischen Flughäfen in Europa und Nahost, Flugzeuge in der Luft, 24-Stunden-Zifferblatt.
-3. upgrade — Ende einer Spielwoche: drei Frachtkisten bieten Turboprop, Großraumflugzeug und Hub-Ausbau an; eine wird gewählt.
-4. failure — Bildschirm „Network closed“: Ein verstopfter Hub hat die Runde beendet, der Bericht nennt Ursachen und zeitlichen Verlauf.
-5. menu — Hauptmenü unter dem Titel Airway: Endlosflug, Puzzles, Welt des Tages, Logbuch und Einstellungen am Bogen einer Kompassrose.
+1. night — Nachtseite eines Satelliten-Globus: Stadtlichter Europas, Routen vom Hub Amsterdam, Flughafenschilder mit Codes und ein Hub-Flugstreifen.
+2. game — Dämmerung über Europa auf einem Satelliten-Globus: Routen und Flugzeuge, Fallblattuhr, gelbes Schild nach Istanbul, wartende Passagiere.
+3. upgrade — Ende von Woche 1: Abflugtafel, Wochenvertrag und drei Streifen — Turboprop, Großraumflugzeug, Hub-Ausbau — mit gelber Übernahmetaste.
+4. failure — Abschlussbericht auf einer Papierrolle: Netz in Istanbul geschlossen, Warteschlange nach Zielform, Zahlen, Heimatregion und Ursachen.
+5. menu — Hauptmenü: AIRWAY in Fallblattbuchstaben über dem Nachtglobus, eine Abflugtafel mit Today, Puzzles, Logbook, Settings und Endless flight.

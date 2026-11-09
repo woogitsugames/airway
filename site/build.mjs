@@ -11,7 +11,7 @@ import { assertPublisherReady } from './publisher.js';
 if (process.env.AIRWAY_RELEASE === '1') assertPublisherReady(translations, 'build:site (AIRWAY_RELEASE=1)');
 const root = dirname(fileURLToPath(import.meta.url));
 const output = join(root, 'dist');
-const files = ['index.html', 'privacy.html', 'terms.html', 'press.html', '404.html', 'styles.css', 'site.js', 'i18n.js', 'globe.js', 'launch.js'];
+const files = ['index.html', 'privacy.html', 'terms.html', 'press.html', '404.html', 'styles.css', 'site.js', 'i18n.js', 'launch.js'];
 const folders = ['assets', 'fonts'];
 rmSync(output, { recursive: true, force: true });
 mkdirSync(output, { recursive: true });

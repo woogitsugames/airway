@@ -7,7 +7,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
-import { SITE_SHOTS, PRESS_KIT } from './launch.js';
+import { SITE_SHOTS, PRESS_KIT, HERO_WORDMARK } from './launch.js';
 
 const root = dirname(fileURLToPath(import.meta.url));
 const store = resolve(root, '../docs/store/shots');
@@ -41,16 +41,12 @@ try {
     sources[`${language}/${name}`] = createHash('sha256').update(bytes).digest('hex').slice(0, 16);
     written++;
   }
-  // [night-11ae] R2e, D-219: PNG renders of the logo SVGs for the press kit; the wordmark's <text> needs Overpass 800,
-  // so it is drawn here with the site's OFL font instead of trusting a journalist's installed fonts.
-  const font = readFileSync(join(root, 'fonts/Overpass-800.ttf')).toString('base64');
+  // [night-11ae] R2e, D-219: PNG renders of the logo SVGs for the press kit. [night-84a] D-339: the wordmark is outlines.
   for (const logo of PRESS_KIT.logos.filter(item => item.source.endsWith('.png'))) {
     const svgSource = PRESS_KIT.logos.find(item => item.name === logo.name.replace(/\.png$/, '.svg')).source;
     const svg = readFileSync(join(root, svgSource), 'utf8');
     const logoPage = await browser.newPage({ viewport: { width: logo.width, height: logo.height }, deviceScaleFactor: 1 });
-    await logoPage.setContent(`<style>@font-face{font-family:Overpass;font-weight:800;src:url(data:font/ttf;base64,${font})}
-      html,body{margin:0}svg{display:block;width:${logo.width}px;height:${logo.height}px}</style>${svg}`);
-    await logoPage.evaluate(() => document.fonts.load('800 100px Overpass'));
+    await logoPage.setContent(`<style>html,body{margin:0}svg{display:block;width:${logo.width}px;height:${logo.height}px}</style>${svg}`);
     const out = join(root, logo.source);
     mkdirSync(dirname(out), { recursive: true });
     await logoPage.screenshot({ path: out, clip: { x: 0, y: 0, width: logo.width, height: logo.height } });
@@ -58,6 +54,8 @@ try {
     sources[logo.source.replace(/^assets\//, '')] = createHash('sha256').update(svg).digest('hex').slice(0, 16);
     written++;
   }
+  writeFileSync(join(root, HERO_WORDMARK.target), readFileSync(join(root, HERO_WORDMARK.source)));
+  written++;
   // Which store PNG each copy was made from: test:site fails when a store shot changed and the copy did not follow.
   writeFileSync(join(root, 'assets/shots/sources.json'), JSON.stringify(sources, null, 2) + '\n');
 } finally {

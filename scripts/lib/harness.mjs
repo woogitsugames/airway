@@ -11,6 +11,25 @@ import { fileURLToPath } from 'node:url';
 
 export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 export const SEED = 0xa1a1;
+/**
+ * [night-84a] U7, D-339: the home region of every store run (store shots, feature graphic, preview video), set like a
+ * player's menu choice. A Random start on 0xA1A1 lands in the Middle East beside Karachi, which opens on day 2, so the
+ * provisional ASI glyph (D-08) filled the hub signs and strips; from Northern Europe the first four days stay in the
+ * six D-08 regions.
+ */
+export const STORE_HOME_REGION = 'EUN';
+
+/** Presets the store run's settings (language, D-339 home region) before the app reads them. */
+export async function presetStoreSettings(page, language, { clear = false } = {}) {
+  await page.addInitScript(({ language, homeRegion, wipe }) => {
+    try {
+      if (wipe) localStorage.clear();
+      const key = 'airway.settings';
+      const value = JSON.parse(localStorage.getItem(key) || '{}');
+      localStorage.setItem(key, JSON.stringify({ ...value, language, homeRegion }));
+    } catch { /* Browser privacy mode can block storage. */ }
+  }, { language, homeRegion: STORE_HOME_REGION, wipe: clear });
+}
 // SwiftShader WebGL works in headless containers without a GPU. Never compare its FPS with devices.
 export const CHROMIUM_ARGS = ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'];
 

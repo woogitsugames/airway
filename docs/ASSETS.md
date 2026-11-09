@@ -148,8 +148,8 @@ luggage-tag styling. No downloaded imagery, packs, binaries or third-party artwo
 The production three.js world will replace this demo illustration after tasks 07/12/13 merge.
 ## Task 24 — Android launcher and splash
 - `resources/icon.svg`, `resources/icon-foreground.svg`, `resources/splash.svg` — original SVG geometry (yellow `#FFC72C` / black `#1C1E20`) authored for Airway, no third-party licence. Node script `scripts/build-android.mjs` generates Android launcher/splash PNG raster assets; no network graphics are used.
-- `brand/wayfinding.svg` — matching original airport wayfinding sign/wordmark; Overpass 800 (OFL licence already listed above).
-- [N12n] `docs/store/feature-graphic.png` — Google Play feature graphic: our own render of the game scene (globe from Natural Earth data as in the game) with `brand/wayfinding.svg` on the left; no third-party imagery (`npm run store:feature`).
+- `brand/wayfinding.svg` — matching original airport wayfinding sign/wordmark; Overpass 800 (OFL licence already listed above). Superseded for the store, site and press kit by `brand/wordmark.svg` (D-339).
+- [N12n] `docs/store/feature-graphic.png` — Google Play feature graphic: our own render of the game scene (globe from Natural Earth data as in the game) with `brand/wayfinding.svg` on the left; no third-party imagery (`npm run store:feature`). Re-rendered at U7 (D-339, below).
 ## App mark I-1 "Węzeł" — launcher, store and launch art (night 78a, D-333)
 Our own mark (D-326): two circles and two triangles, cream `#EFE7D3` and yellow `#F3C317` on enamel `#0E0F0F`, no font, no
 third-party shape. `resources/icon.svg`, `icon-foreground.svg`, `icon-monochrome.svg`, `splash.svg`, `ios/Brand/*.svg` and
@@ -167,6 +167,22 @@ No external images or fonts were used. Sources match task 24 PR #12 as of this c
 `site/assets/shots/{pl,en}/{night,game,upgrade,menu}.jpg` (N11ad, D-218) are project-made 540×960 JPEG downscales of our own store screenshots `docs/store/shots/<lang>/<scene>-phone.png`, produced by `npm run site:assets` (`site/make-assets.mjs`; source hashes in `site/assets/shots/sources.json`). The stage-0 concept copies `game-p.png`, `upgrade-p.png`, `menu-p.png` were removed from `site/assets/`. The social preview `og-image.png` is a build-time copy of our own `docs/store/feature-graphic.png` (D-117) into `site/dist/` only. No store badge artwork is committed yet: when a store link is set, the official Google Play / App Store badge goes to `site/assets/badges/` with its own entry here (brand rules of Google and Apple). The five `site/fonts/*.ttf` files and three neighboring OFL notices are byte-identical to the existing files in `public/fonts/`. The new SVG favicon, illustrated fallback globe and Canvas 2D globe are project-authored procedural artwork. No external image or font source is loaded by the deployed site.
 
 [N11ae] R2e, D-219: `site/assets/shots/{pl,en}/<scene>-landscape.jpg` are project-made 960×540 JPEG downscales of our own `docs/store/shots/<lang>/<scene>-landscape.png`; `site/assets/press/airway-wordmark.png` (1920×520) and `airway-icon.png` (1024×1024) are PNG renders of our own `brand/wayfinding.svg` (with the OFL Overpass 800 already listed) and `resources/icon.svg`, all made by `npm run site:assets`. The press kit ZIP (`site/dist/airway-press-kit.zip`, built, not committed) contains only these project files and the store PNGs; no third-party image.
+
+## Store and site art after the flip — U7 (night 84a, D-339)
+- `brand/wordmark.svg` — our own lockup: the mark I-1 "Węzeł" (D-326, the geometry
+  of `scripts/icon-assets.mjs`) beside AIRWAY in **Archivo** 800, width 80 (SIL OFL, listed above, `public/fonts/OFL-Archivo.txt`)
+  converted to outlines by `brand/src/wordmark.py` (fontTools, from `docs/styles/kierunki-2026-11c/makiety/ui-a/fonts/Archivo-VF.ttf`),
+  so the SVGs embed no font. Cream `#EFE7D3`, yellow `#F3C317`, enamel `#0E0F0F`. Replaces `brand/wayfinding.svg` (kept as the
+  old sign, no longer used by the store, site or press kit).
+- `docs/store/feature-graphic.png` — our own render of the game scene on the shipped globe with `brand/wordmark.svg` on the
+  left on a cream panel (`npm run store:feature`). The globe's imagery is **NASA Blue Marble / Black Marble** (public domain, "Globe data"
+  below; no NASA logo or insignia), everything else is our own.
+- `docs/store/shots/**`, `docs/store/contact-sheet.png`, `docs/store/video/*/poster-*.jpg` and the git-ignored MP4 previews —
+  real captures of the game (UI-A over the NASA globe), our own work plus the same NASA public-domain imagery.
+- `site/assets/wordmark.svg` — byte copy of `brand/wordmark.svg` (`npm run site:assets`); `site/assets/press/airway-wordmark.png`
+  is now rendered from `brand/wordmark.svg` (outlines, no font). `site/fonts/` swaps Overpass / Overpass Mono for
+  `Archivo-80-800.woff2`, `Archivo-600.woff2` and `ChivoMono-VF.woff2` (copies of `public/fonts/`, with `OFL-Archivo.txt` and
+  `OFL-ChivoMono.txt` beside them); `site/globe.js` and `site/assets/globe-fallback.svg` (our drawn Diorama globe) are deleted.
 
 ## Globe data (D-170 → E4, D-285 → D-323, D-325)
 `public/data/globe/` holds five files, checked by `npm run test:globe-assets` against `manifest.json` (SHA-256, size,

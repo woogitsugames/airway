@@ -4271,3 +4271,49 @@ measurement + 3 kB: 199.7 → **198.4 kB** (D-297). Main JS 1,087.5 kB raw (gzip
 --sizes=320x568,360x640,412x915,915x412`): the week sheet, day and report, PL/EN, 24 PNGs. Each was checked against the
 CLAUDE.md forbidden list.
 **Status: in force; the owner reviews the PR.**
+
+## D-339 — U7: store shots, feature graphic, preview video, site and store copy for the shipped look; store runs start in Northern Europe (2026-11-09, Claude, night 84a)
+Step U7 of `docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md` (D-323), after T6 + R5 (D-336), R6 (D-337), T7 (D-338)
+and the mark I-1 (D-326, D-333); it also applies D-296 (the new store and site copy waits for U7). `src/**` is untouched:
+the simulation, every hash and the shipped game are unchanged; only the store/site tooling, art and copy change.
+**The provisional Asia glyph (D-336's open item).** `store:shots` refused the night frame: Asia-bound passengers filled
+AMM's hub sign and T3's strip bay with the provisional ASI wing (D-08 allows only the six approved glyphs in store art).
+Cause: the store runs started a Random Endless run on 0xA1A1, whose start cluster is in the Middle East beside Karachi;
+Karachi opens on day 2 (tick 2130) and the bot connects it. The old Róża frames showed the same wing too, but in an
+element the glyph probe did not count. A headless scan of the bot's first four days from every home region on 0xA1A1
+found no ASI/OCE airport from NAM, SAM, EUN, EUS and AFR (ME opens Karachi at tick 0, ASI is Asia). **Choice: every
+store run (shots, feature graphic, video) starts in the home region Northern Europe**, preset in `airway.settings`
+like the player's menu choice (`STORE_HOME_REGION`, `presetStoreSettings` in `scripts/lib/harness.mjs`), recorded in
+both manifests and checked by `test:store-shots` / `test:store-video`. The network is Amsterdam with Oslo, Dublin,
+Milan, Porto, Valencia and Istanbul; the report says "Home region: Northern Europe", which is true. Rejected: changing
+the seed (also changes every other suite's store fixture), hiding glyphs in the fixture (a staged frame), a bot rule.
+**Store checks adapted to UI-A / NASA.** (1) The `game` scene's golden-pixel gate (D-63) 0.045 → **0.012**: the NASA
+globe's dusk is a narrow warm band (`earth-globe.ts`), so the 960×540 frame measured 0.014–0.015 (portrait 0.047–0.061)
+at the fixture's sun dot 0.05, 0.013 at dot 0.0, 0.002 at mid-afternoon (dot 0.15), 0.008 at dot 0.30 (orange city
+lights on the night side). (2) The "cut off by the screen edge" check skips parts inside a scrolling box: UI-A's report
+is a print roll in a scroller (`.bd-print`, D-332) whose roll is taller than a 360×640 screen by design; the scroller
+itself must stay on screen. **60 store PNGs** (`docs/store/shots/`, PL/EN × night, game, upgrade, failure, menu × six
+sizes) and the contact sheet (now in UI-A inks and faces) re-recorded, each looked at and checked against the CLAUDE.md
+forbidden list: no gradients, glass, neon, emoji, stock icons; routes/airports/planes 15.8/16.0/16.0:1 (D-47).
+**Logo and feature graphic.** `brand/wordmark.svg`: the mark I-1 beside AIRWAY in Archivo 800 width 80, outlined by
+`brand/src/wordmark.py` (no font needed), cream and yellow on enamel; it replaces the yellow wayfinding sign (Overpass,
+top-down plane) in the feature graphic, site hero and press kit (`brand/wayfinding.svg` stays as the old sign). The
+feature graphic (1024×500): the NASA globe's space and night side are near black and failed the "no dark field" check
+(0.81 at dusk), so it is a daylight frame (sun dot 0.4 over the network), zoom 3.1 with the globe filling the right two
+thirds, the lockup on a 34 % cream panel; dark share 0.15, the globe under the frame centre (new check, replacing
+"limb visible"). Knobs `--feature-cx/-dy/-zoom/-dot` for re-framing.
+**Preview video.** `store:video` used the T4 week sheet as a crate board (a tap chose nothing since D-331): shot 3 now
+chooses a strip at 2 s and presses the yellow main action `upgrade-take` at 3.5 s. Re-filmed from Northern Europe; the
+MP4 files stay on the owner's Drive (D-269): **upload the six new files** (`manifest.json` names them).
+**Store copy (D-296 applied).** `docs/store/{en,pl}.md`: the night-38a mechanics-only description plus one paragraph on
+the look written from the new shots (real satellite imagery by day, the dusk band, city lights at night; the airport's
+language: split-flap board, hub flight strips, code signs, the yellow direction sign); no other game named, no price.
+New feature-graphic and Play alt texts for every scene. Wave 1 (DE/FR/ES/PT-BR) translated from the new EN (diorama
+paragraph gone), still "needs native review".
+**Site.** The drawn Diorama globe (`site/globe.js`, `globe-fallback.svg`) is gone; the hero is the lockup and the real
+night store shot over Europe (per language), the page takes UI-A's inks (cream `#EFE7D3`, enamel `#0E0F0F`, yellow
+`#F3C317`, board blue `#3B5F8C`) and faces (Archivo, Chivo Mono; Atkinson body), Overpass leaves `site/fonts/`. New
+i18n: `hero.shot.alt/.caption`, `about.p2` (D-296's text, "satellite imagery" for "3D"), `preview.*` alts and captions
+for the new shots (week strip, departures-board menu, teleprinter report), `meta.ogimage`, `press.logo.*`; `press.long`
+= the store description. `test:site` checks the hero lockup copy and the hero shot. `docs/shots/29/` re-shot.
+**Status: in force; the owner reviews the PR (and uploads the videos to the Drive).**

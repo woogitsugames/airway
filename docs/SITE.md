@@ -6,8 +6,8 @@
 
 The standalone, framework-free site lives in `site/`. It is deliberately separate
 from the Capacitor game and does not import `src/` or require a backend. All assets
-are local: real game screenshots (from `docs/store/shots/`), hand-drawn SVG, a procedural Canvas 2D
-globe and the project's existing SIL OFL font binaries and license notices. There
+are local: real game screenshots (from `docs/store/shots/`), the Airway lockup (`brand/wordmark.svg`, D-339) and the
+project's existing SIL OFL font binaries and license notices. There
 are no scripts, trackers, external resources, forms or runtime requests to third
 parties.
 
@@ -48,17 +48,17 @@ npm run build            # game build; does NOT deploy the site
 (`site-404-p.png` 412x915, `site-404-l.png` 1280x800), the screenshot/store
 section (`site-preview-p.png`, `site-preview-l.png`) and the whole press page (`site-press-p.png` PL 412 wide,
 `site-press-l.png` EN 1280 wide). Review every image for
-typography, visible globe, horizontal overflow and forbidden "template UI".
-Also check 673x841, 904x1000, English copy, keyboard navigation, reduced motion
-and Canvas fallback manually. Without Playwright, the screenshot task reports a
+typography, the hero shot, horizontal overflow and forbidden "template UI".
+Also check 673x841, 904x1000, English copy, keyboard navigation and reduced motion manually. Without Playwright, the screenshot task reports a
 nonzero exit code instead of claiming to have captured images.
 
-The globe uses a Canvas 2D texture with an orthographic spherical projection and
-seeded, reproducible geography. It keeps rendering when WebGL is disabled. If
-Canvas 2D is unavailable or JavaScript is disabled, `globe-fallback.svg` remains
-visible. On browsers that prefer reduced motion, the globe is stationary but
-can be turned manually. When off screen or in a background tab, its animation
-pauses. Device pixel ratio is capped at 2.
+[night-84a] U7, D-339: the site follows the shipped look (UI-A over the NASA globe, D-336). The drawn Canvas 2D
+globe (`globe.js`, `globe-fallback.svg`) is gone: the hero shows the real night store shot over Europe
+(`assets/shots/<lang>/night-landscape.jpg`, swapped per language like the previews) under an enamel caption, next to
+the lockup of the mark I-1 "Węzeł" and AIRWAY (`assets/wordmark.svg`, a copy of `brand/wordmark.svg` made by
+`site:assets`). Inks and faces are UI-A's: cream paper `#EFE7D3`, enamel `#0E0F0F`, direction yellow `#F3C317`, board
+blue `#3B5F8C`; Archivo (800 width 80, 600) and Chivo Mono replace Overpass and Overpass Mono; Atkinson Hyperlegible
+Next stays the body face.
 
 ## Deployment options (not executed)
 
@@ -83,7 +83,7 @@ pauses. Device pixel ratio is capped at 2.
 - The four phone previews (night globe, live game, weekly upgrade, menu) are **real game screenshots**: 540×960 JPEG
   copies in `site/assets/shots/{pl,en}/` of the store PNGs in `docs/store/shots/<lang>/<scene>-phone.png` (D-218).
   `site.js` swaps in the visitor's language. The stage-0 concept mockups are no longer used anywhere on the site.
-- The website reuses `public/fonts/` copies of **Overpass**, **Overpass Mono**
+- The website reuses `public/fonts/` copies of **Archivo**, **Chivo Mono** (D-339)
   and **Atkinson Hyperlegible Next**. All have SIL OFL licenses copied alongside
   them in `site/fonts/`; see `docs/ASSETS.md`.
 - Confirm `contact@airway.games` exists and receives mail; until then it is a
@@ -150,8 +150,8 @@ pauses. Device pixel ratio is capped at 2.
 - **One config:** `PRESS_KIT` in `site/launch.js` (ZIP name, contact, formats, logos, video). The scenes are
   `SITE_SHOTS.scenes`, so page and ZIP list the same five scenes (N12bi added "failure").
 - **Thumbnails and logo PNGs:** `npm run site:assets` also writes `site/assets/shots/<lang>/<scene>-landscape.jpg`
-  (960×540) and renders `brand/wayfinding.svg` / `resources/icon.svg` to `site/assets/press/airway-wordmark.png`
-  (1920×520, with the site's Overpass 800, since the SVG wordmark is live text) and `airway-icon.png` (1024×1024).
+  (960×540) and renders `brand/wordmark.svg` / `resources/icon.svg` to `site/assets/press/airway-wordmark.png`
+  (1920×520; D-339: the wordmark is outlines, no font needed) and `airway-icon.png` (1024×1024).
   `sources.json` holds their source hashes.
 - **Video:** `PRESS_KIT.video` is empty until R2b (`npm run store:video`) produces a file; the page shows
   `press.video.pending`. Once set (path relative to `site/`), switch the paragraph to `press.video.ready`: `test:site`
