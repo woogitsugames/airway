@@ -1,3 +1,10 @@
+# STAN NA 9.11 (po T6+R5, R6, T7)
+
+- dev = main = 0b878c4 (PR #374 T6+R5 D-336, #375 R6 D-337, #376 T7 D-338). Nowy wygląd (globus NASA + UI-A, emalia) jest domyślny; Linoryt usunięty. test:fast 121 kroków, test:ci 99, CSS 195,4 kB (budżet 198,4).
+- Pełny test:ci po T6 nie był powtórzony po poprawkach: uruchomić przed wydaniem. `store:shots` pada (glif Azji na nocnej klatce) -> U7.
+- CLAUDE.md na dev mówi "117 steps"/"93 steps": poprawić w następnym PR (nie pushuję do dev).
+- Zostało: U7 (zrzuty sklepu, film, strona, opisy wg D-296, nowe logo na feature graphic), test na tanim telefonie (D-245), pytania właściciela (Krym/granice, limit znaków kierunku, Q-52, Q-01, Q-07, Q-49/50/56/67, data wydania, konsultacja prawna, App Check). Paczka GPT: docs/gpt/ZLECENIA-2026-11-08.md.
+
 # Przekazanie koordynatora Airway
 
 Ostatnia aktualizacja: **2026-11-08, ok. 11:45 UTC**. Sesja koordynatora kończy pracę (limit tygodniowy właściciela).
