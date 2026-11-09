@@ -56,7 +56,13 @@ try {
     mkdirSync(SHOTS, { recursive: true });
     for (const [label, language, viewport] of cases) {
       if (results.some((item) => item.status !== 'PASS')) { results.push({ label, status: 'SKIP' }); continue; }
-      const { page, errors } = await newGamePage(browser, url, language, viewport);
+      // [night-89a] D-346: a still camera (`?follow=off`, DEV), as before D-344. With the camera following the network
+      // (D-344) the PL landscape frame zooms out to the whole network and the closed airport's tag loses the D-262 room
+      // contest, so no curfew sign shows although the barrier ring is drawn; this suite audits the curfew signs, the
+      // follow itself is test:e2e:camera-network's.
+      const still = new URL(url);
+      still.searchParams.set('follow', 'off');
+      const { page, errors } = await newGamePage(browser, still.href, language, viewport);
       try {
         await waitForScreen(page, 'menu');
         const s = await playIntoCurfew(page);

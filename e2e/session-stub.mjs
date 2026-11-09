@@ -356,9 +356,12 @@ async function daily(browser, url) {
       }));
       assert(!dom.waybill && !dom.surge && dom.crates === 3, JSON.stringify(dom));
       const bare = await page.evaluate(async ({ seed, week }) => {
-        const { createGame } = await import('/src/sim/index.ts');
+        const { Sim } = await import('/src/sim/index.ts');
+        const { DAILY_CONFIG } = await import('/src/net/submission.ts');
         const { nextAutoplayCommand, AUTOPLAY_ACTION_INTERVAL } = await import('/src/game/dev/autoplay.ts');
-        const sim = createGame(seed, 'daily');
+        // [night-89a] D-346: the bare Daily is the shipped Daily config (D-343: the morning start, the leaderboard's
+        // replay config), not a midnight `createGame(seed, 'daily')`; the check below pins that config exactly.
+        const sim = new Sim(seed >>> 0, DAILY_CONFIG);
         for (let guard = 0; guard < 200_000; guard++) {
           if (sim.world.status === 'over') break;
           const offer = sim.world.status === 'upgrade' ? sim.world.offer : null;
@@ -370,9 +373,11 @@ async function daily(browser, url) {
             sim.tick();
           }
         }
-        return { hash: sim.hash(), tick: sim.tickCount, contract: sim.world.contract, surge: sim.world.surge };
+        return { hash: sim.hash(), tick: sim.tickCount, contract: sim.world.contract, surge: sim.world.surge,
+          config: JSON.stringify(sim.config) };
       }, { seed: s.seed, week: 1 });
       assert(bare.contract === null && bare.surge === null, `daily sim has ${JSON.stringify(bare)}`);
+      assert(bare.config === JSON.stringify({ mode: 'daily', morningStart: true }), `daily config ${bare.config}`);
       assert(bare.hash === s.snapshotHash && bare.tick === s.tick,
         `session ${s.snapshotHash}@${s.tick} vs bare daily ${bare.hash}@${bare.tick}`);
       return `seed ${s.seed} ${s.snapshotHash}@${s.tick}`;

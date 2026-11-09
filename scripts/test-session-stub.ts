@@ -12,7 +12,8 @@ import { EndlessRun } from '../src/game/run.ts';
 import { AUTOPLAY_ACTION_INTERVAL, nextAutoplayCommand } from '../src/game/dev/autoplay.ts';
 import { FillReadings } from '../src/game/fillTrend.ts';
 import { frontMarks } from '../src/game/weather.ts';
-import { createGame } from '../src/sim/index.ts';
+import { Sim } from '../src/sim/index.ts';
+import { DAILY_CONFIG } from '../src/net/submission.ts';
 import type { RegionId } from '../src/data/regions.ts';
 import { SESSION_STUB } from '../e2e/seeds.mjs';
 
@@ -127,9 +128,12 @@ for (const problem of holds(plan)) check(false, `SESSION_STUB 0x${plan.seed.toSt
 check(true, 'plan replayed');
 
 // 2. Daily stays free of tonight's Endless knobs (the journey compares hashes; here the rules themselves).
-const daily = createGame(plan.seed, 'daily');
+// [night-89a] D-346: the shipped Daily config (D-343 morning start), as the browser step and the leaderboard replay.
+const daily = new Sim(plan.seed >>> 0, DAILY_CONFIG);
 check(daily.world.contract === null && daily.world.surge === null && !daily.config.homeRegion && (daily.config.licenceClass ?? 1) === 1,
   'a daily run has no contract, surge, home region or licence class');
+check(JSON.stringify(daily.config) === JSON.stringify({ mode: 'daily', morningStart: true }),
+  `the daily config is exactly { mode: 'daily', morningStart: true } (${JSON.stringify(daily.config)})`);
 
 // 2b. R2j (DEV `?weather=front`): the same seed with the weather front shows a forecast at `front` in week 3 (the
 // browser answers both boards with a plain crate and lets the bot play on).
