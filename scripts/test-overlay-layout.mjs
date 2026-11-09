@@ -539,6 +539,14 @@ assert('out-of-range label suppressed', layoutTags([{ ...crowd[0], width: 500 }]
     assert('sized edge chips: three off-screen airports show all three', three.every((c) => c.placed));
   }
   {
+    // [night-86b] D-344: a sign the player tapped open (city, distance) keeps its place among the four, even when farthest.
+    const mk = (i, near, opened) => ({ offscreen: true, jammed: false, side: 3, x: 20 + i * 60, y: 300, placed: false, near, opened });
+    const tags = Array.from({ length: 6 }, (_, i) => ({ id: 'o' + i, anchorX: -100, anchorY: -100, width: 0, height: 0, active: false, jammed: false, x: 0, y: 0, placed: false }));
+    const six = [mk(0, 0.1, false), mk(1, 0.2, false), mk(2, 0.3, false), mk(3, 0.4, false), mk(4, 0.5, false), mk(5, 1.9, true)];
+    placeSizedEdgeChips(six, tags, eb);
+    assert('sized edge chips: the tapped-open sign stays shown although it is the farthest', six[5].placed && six.filter((c) => c.placed).length === MAX_EDGE_CHIPS);
+  }
+  {
     const crowd = Array.from({ length: 30 }, (_, i) => ({ offscreen: true, jammed: i === 29, side: 1, x: 412 - 7 - EW, y: 400, placed: false, width: 120 }));
     const tags = crowd.map((_, i) => ({ id: 'c' + i, anchorX: -100, anchorY: -100, width: 30, height: 30, active: false, jammed: false, x: 0, y: 0, placed: false }));
     placeSizedEdgeChips(crowd, tags, eb);

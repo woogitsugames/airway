@@ -77,6 +77,8 @@ const query = new URLSearchParams(location.search);
  * for new Endless runs in a DEV build only (production folds this to false).
  */
 const devWeatherFront = import.meta.env.DEV && query.get('weather') === 'front';
+/** [night-86b] D-344: `?follow=off` (DEV only) keeps the camera from following the network, for suites that need a still camera. */
+const devFollowOff = import.meta.env.DEV && query.get('follow') === 'off';
 // [night-81a] D-336 (PLAN-NOWY-KIERUNEK.md step T6): UI-A "Lotniskowa tablica i paski lotu" is the shipped skin (the
 // D-283 print skin and the UI-A skin flag are gone): <html data-skin="board"> (index.html), the base helpers,
 // then the board's modules as lazy chunks (type-only imports; i18n and the shared classes are handed in) filling the
@@ -318,6 +320,7 @@ async function boot(): Promise<void> {
     session = startSession(app, world, run, {
       mode,
       firstTimeCards: devFirstTimeCards,
+      ...(devFollowOff ? { followNetwork: false } : {}), // [night-86b] D-344
       onScreen: (next: SessionScreen) => { screenName = next; },
       onMenu: () => screens.show('menu'),
       // [night-10e] Daily: "same world" is a practice of the same day's world (menu once the day changed),

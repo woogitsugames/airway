@@ -239,7 +239,8 @@ async function geometry(page) {
     }
     // [N11w] The dock tags sit on the dock's own row (portrait) or column (landscape/foldable rail), in DOM order along it,
     // so they stay in thumb reach. [night-46a] D-285 L1 / D-301: five tags (the G8 globe-view tag went with Satelita).
-    const dockIds = ['undo', 'turboprop', 'widebody', 'hub', 'speed'];
+    // [night-86b] D-344: six, the "Network" key before the speed dial.
+    const dockIds = ['undo', 'turboprop', 'widebody', 'hub', 'network', 'speed'];
     const dock = dockIds.map((id) => controls.find((c) => c.id === id));
     let dockPlacement = 'missing';
     if (dock.every(Boolean)) {
@@ -287,6 +288,7 @@ try {
           onUndo: () => window.__hudEvents.push('undo'),
           onTogglePause: () => window.__hudEvents.push('pause'),
           onCycleSpeed: () => window.__hudEvents.push('speed'),
+          onFrameNetwork: () => window.__hudEvents.push('network'), // [night-86b] D-344
           onSelectPlane: (type) => window.__hudEvents.push('select:' + type),
           onUpgradeHub: () => window.__hudEvents.push('hub'),
           onAssignPlane: (type, id) => window.__hudEvents.push('assign:' + type + ':' + id),
@@ -301,9 +303,10 @@ try {
       await page.waitForFunction(() => document.querySelector('.airway-hud')?.dataset.layout !== undefined);
       const bounds = await geometry(page);
       // [N11w] Pause + the dock tags; [night-46a] D-285 L1 / D-301: five (undo, turboprop, widebody, hub, speed), no globe view.
-      check(bounds.count === 6, `${view.label}: six accessible controls (${bounds.count})`);
+      // [night-86b] D-344: + the Network key (seven).
+      check(bounds.count === 7, `${view.label}: seven accessible controls (${bounds.count})`);
       check(bounds.globe === null, `${view.label}: no globe-view tag (Satelita and Mapa are gone)`);
-      check(bounds.dockPlacement === 'ok', `${view.label}: the five dock tags in DOM order along the dock (${bounds.dockPlacement})`);
+      check(bounds.dockPlacement === 'ok', `${view.label}: the six dock tags in DOM order along the dock (${bounds.dockPlacement})`);
       check(bounds.violations.length === 0, `${view.label}: ≥48px targets, no overlap or safe-area violations (${bounds.violations.join(', ')})`);
       check(!bounds.horizontalOverflow, `${view.label}: no horizontal overflow`);
       check(bounds.layout === (view.w >= 600 && view.h >= 600 ? 'foldable' : view.w > view.h ? 'landscape' : 'portrait'), `${view.label}: responsive layout`);
@@ -314,6 +317,8 @@ try {
       if (view.label === 'portrait-412x915') {
         await page.getByRole('button', { name: /Pauza|Pause/ }).click();
         check(await page.evaluate(() => window.__hudEvents.includes('pause')), 'pause callback');
+        await page.locator('[data-hud-action="network"]').click(); // [night-86b] D-344
+        check(await page.evaluate(() => window.__hudEvents.includes('network')), 'Network key emits the whole-network intent');
         const plane = page.locator('[data-hud-action="turboprop"]');
         const start = await plane.boundingBox();
         const target = await page.locator('[data-route-id="test-route-11"]').boundingBox();
@@ -336,7 +341,7 @@ try {
         await page.waitForFunction(() => document.querySelector('.airway-hud')?.dataset.layout === 'landscape');
         const rotated = await geometry(page);
         check(rotated.violations.length === 0 && !rotated.horizontalOverflow, 'live orientation change keeps targets and safe areas');
-        check(rotated.count === 6 && rotated.dockPlacement === 'ok', `live orientation change keeps the dock tags in line (${rotated.dockPlacement})`);
+        check(rotated.count === 7 && rotated.dockPlacement === 'ok', `live orientation change keeps the dock tags in line (${rotated.dockPlacement})`);
       }
     } finally { await page.close(); }
   }

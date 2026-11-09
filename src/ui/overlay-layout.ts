@@ -422,6 +422,11 @@ export interface EdgeChip {
   width?: number;
   /** Great-circle angle (rad) from the view centre to the airport; ranks the chips when more than MAX_EDGE_CHIPS are off screen. Missing = farthest. */
   near?: number;
+  /**
+   * [night-86b] D-344: a sign the player just tapped open (city and distance): placed like a jam's (first, and under a
+   * note when the edge is full) so the tap never makes it vanish. Read only by `placeSizedEdgeChips`.
+   */
+  opened?: boolean;
 }
 
 /** [night-85a] At most this many off-screen direction signs at once: jammed airports first, then the nearest ones. */
@@ -603,7 +608,9 @@ export function placeSizedEdgeChips(chips: readonly EdgeChip[], tags: readonly T
       if (!c.offscreen || allowedScratch.includes(i)) continue;
       if (best < 0) { best = i; continue; }
       const b = chips[best];
-      if (c.jammed !== b.jammed ? c.jammed : (c.near ?? Infinity) < (b.near ?? Infinity)) best = i;
+      const cu = c.jammed || c.opened === true;
+      const bu = b.jammed || b.opened === true;
+      if (cu !== bu ? cu : (c.near ?? Infinity) < (b.near ?? Infinity)) best = i;
     }
     if (best < 0) break;
     allowedScratch.push(best);
@@ -611,7 +618,8 @@ export function placeSizedEdgeChips(chips: readonly EdgeChip[], tags: readonly T
   let placed = 0;
   for (let pass = 1; pass >= 0; pass--) for (let i = 0; i < chips.length; i++) {
     const chip = chips[i];
-    if (!chip.offscreen || Number(chip.jammed) !== pass || !allowedScratch.includes(i)) continue;
+    const urgent = chip.jammed || chip.opened === true; // [night-86b] D-344
+    if (!chip.offscreen || Number(urgent) !== pass || !allowedScratch.includes(i)) continue;
     const w = chipWidth(chip);
     const vertical = chip.side < 2;
     const start = vertical ? chip.y : chip.x;
@@ -639,7 +647,7 @@ export function placeSizedEdgeChips(chips: readonly EdgeChip[], tags: readonly T
     const fine = vertical ? 1 : 3;
     // A printed chip over a note reads as one block with it, so only a jam's chip may sit under a note when the edge is
     // full (the off-screen jam must stay visible); any other chip without a place clear of the notes hides.
-    for (let avoidTags = 1; avoidTags >= (chip.jammed ? 0 : 1) && !chip.placed; avoidTags--)
+    for (let avoidTags = 1; avoidTags >= (urgent ? 0 : 1) && !chip.placed; avoidTags--)
     for (let offset = 0; ; offset++) {
       const shift = Math.ceil(offset / 2) * step / fine;
       if (shift > reach) break;

@@ -14,6 +14,8 @@ const paths = {
   hub: `<circle r="15" ${S} stroke-width="2.4"/><path d="M-5-10 3 10M3-10 11 6M-10 4 9-4" ${S} stroke-width="3.4"/>`,
   satellite: `<path d="M-16 16V-16H16" ${S} stroke-width="3"/><path d="M-16 4Q0-2 16 4M-16-6Q0-11 16-6M-6-16Q-9 0-6 16M5-16Q2 0 5 16" ${S} stroke-width="1.8"/>`,
   map: `<path d="M-16 16V-16H16" ${S} stroke-width="3"/><path d="M-16 4H16M-16-6H16M-6-16V16M5-16V16" ${S} stroke-width="1.8"/>`,
+  // [night-86b] D-344: the whole network: a viewfinder's four corners round three joined airports.
+  network: `<path d="M-16-9V-16H-9M9-16H16V-9M16 9V16H9M-9 16H-16V9" ${S} stroke-width="3"/><path d="M-7 5-1-6 7 3Z" ${S} stroke-width="2"/><circle cx="-7" cy="5" r="2.6"/><circle cx="-1" cy="-6" r="2.6"/><circle cx="7" cy="3" r="2.6"/>`,
   speed: `<path d="M-16 0H15M8-6 15 0 8 6" ${S} stroke-width="3"/>`,
   pause: `<path d="M-6-12V12M6-12V12" ${S} stroke-width="4.5"/>`,
   resume: '<path d="M-7-13 12 0-7 13z" fill="currentColor"/>',

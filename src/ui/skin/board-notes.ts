@@ -13,7 +13,8 @@
  *   compact form is level 3, the code alone (with NOWE and a jam's countdown). Level 2 when the frame spans more than
  *   `LOD1_MAX_SPAN_KM`, the text is at 130 % or more, or more than `DENSE_SIGNS` airports are on screen (hysteresis).
  * - **Direction sign** for an off-screen airport (replaces the edge chip): black on yellow, code over "city 2 408 km",
- *   the SVG arrow on the side it points to; yellow means "where to" only, so at most `YELLOW_SIGNS` signs are yellow at a
+ *   the SVG arrow on the side it points to ([night-86b] D-344: on a portrait phone a 48 × 48 key, the code over the
+ *   arrow; the city and distance after a tap, a jam's sign always full); yellow means "where to" only, so at most `YELLOW_SIGNS` signs are yellow at a
  *   time (a jam's is red, the rest are enamel with cream letters).
  * - **Atlas labels** (R2's `ATLAS_LABELS`, i18n PL/EN): letter-spaced capitals for countries, spaced lower case for seas,
  *   projected with `projectLonLat`, placed after the signs and never over a sign, a pin, the chrome or each other
@@ -385,6 +386,15 @@ export function createBoardNotes(deps: BoardNotesDeps): NoteSkin & { readonly lo
     size(bubble) { return parts.get(bubble)?.size ?? { width: 0, height: 0, compactWidth: 0, compactHeight: 0 }; },
     lineMid(bubble) { return parts.get(bubble)?.size.lineMid ?? SIGN_ROW / 2; },
     edge(edge, input) {
+      // [night-86b] D-344 (P-2): the compact sign of a portrait phone, the code over the arrow in one 48 × 48 key.
+      toggle(edge, 'bd-edge--compact', input.compact === true);
+      if (input.compact) {
+        if (edge.dataset.bdCode !== input.code) edge.dataset.bdCode = input.code;
+        if (edge.dataset.bdLine !== '') edge.dataset.bdLine = '';
+        const css = EDGE_COMPACT + 'px';
+        if (edge.style.width !== css) edge.style.width = css;
+        return EDGE_COMPACT;
+      }
       const km = deps.t('upgrade.value.km', { km: deps.localNumber(Math.round(input.km / 10) * 10) });
       let line = `${input.name} ${km}`;
       const arrow = 26;
@@ -457,5 +467,7 @@ function collectObstacle(slot: TagSlot, out: Box[]): void {
 /** Direction sign width bounds (px); its height is the edge chip's 48. */
 const EDGE_MIN = 64;
 const EDGE_MAX = 168;
+/** [night-86b] D-344: the compact direction sign is one 48 × 48 key (the touch target). */
+export const EDGE_COMPACT = 48;
 
 export type { NoteSkinBox };

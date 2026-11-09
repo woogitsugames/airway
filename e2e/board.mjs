@@ -6,7 +6,7 @@
 //   - the board: clock, week, day and passengers on flap tiles that match its one spoken label (role="img"), the flaps
 //     aria-hidden; every cell inside the board (no row overflow), 24 hour cells with the 10 night hours (20–06) drawn
 //     lower than the day hours, the "now" mark inside the bar; the pause key beside the board, not over it;
-//   - the console: pause + five keys, each ≥ 48 × 48 CSS px inside the safe rectangle and apart from each other and the
+//   - the console: pause + six keys ([night-86b] D-344: + Network), each ≥ 48 × 48 CSS px inside the safe rectangle and apart from each other and the
 //     top band; the shape says the kind (Undo a round key, the aircraft enamel plates with a dashed / solid route line,
 //     Hub an octagon, Speed a rotary selector); each caption inside its key and unclipped; no yellow anywhere in the HUD
 //     (yellow is "where to / what next" only, spec §2); choosing an aircraft turns its plate cream with the lamp lit;
@@ -108,7 +108,7 @@ async function audit(page) {
     if (!now || !bar || box(now).left < box(bar).left - 2 || box(now).right > box(bar).right + 2) problems.push('"now" mark outside the bar');
     // The console.
     const buttons = [...document.querySelectorAll('.airway-hud button')].filter(shown);
-    if (buttons.length !== 6) problems.push(`HUD buttons ${buttons.length}`);
+    if (buttons.length !== 7) problems.push(`HUD buttons ${buttons.length}`); // [night-86b] D-344: + Network
     for (const el of buttons) {
       const r = box(el);
       if (r.width < 47.5 || r.height < 47.5) problems.push(`${name(el)} ${r.width.toFixed(1)}×${r.height.toFixed(1)} < 48`);
@@ -118,7 +118,7 @@ async function audit(page) {
     if (pause && meet(box(pause), inner)) problems.push('pause key over the board');
     const pass = document.querySelector('.airway-pass');
     const keys = [...document.querySelectorAll('.airway-dock__tag')];
-    const shape = { undo: 'round', turboprop: 'plate', widebody: 'plate', hub: 'oct', speed: 'rotary' };
+    const shape = { undo: 'round', turboprop: 'plate', widebody: 'plate', hub: 'oct', network: 'round', speed: 'rotary' };
     for (let i = 0; i < keys.length; i++) {
       const key = keys[i];
       for (let j = i + 1; j < keys.length; j++) if (meet(box(key), box(keys[j]))) problems.push(`${name(key)} meets ${name(keys[j])}`);

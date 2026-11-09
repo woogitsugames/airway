@@ -7,9 +7,10 @@ import { skinBase, baseIcon } from '../skin/base'; // [night-28a] D-284; [night-
 import { setClass } from '../classes'; // [night-59a] D-322
 import { hudSkin } from './skin'; // [night-69a] D-324: UI-A paints the console faces
 
-type TagId = 'undo' | PlaneType | 'hub' | 'speed';
+type TagId = 'undo' | PlaneType | 'hub' | 'network' | 'speed';
 // [night-46a] D-285 L1, D-301: five symbols; the globe-view tag (G8, D-172) left with Satelita and Mapa.
-const TAGS: readonly TagId[] = ['undo', 'turboprop', 'widebody', 'hub', 'speed'];
+// [night-86b] D-344 (P-1): a sixth, "Network", frames the whole network (a camera key, next to the speed setting).
+const TAGS: readonly TagId[] = ['undo', 'turboprop', 'widebody', 'hub', 'network', 'speed'];
 const DRAG_THRESHOLD_SQUARED = 64;
 
 interface DragState {
@@ -70,6 +71,7 @@ export function createTagDock(root: HTMLElement, actions: HudActions): { render(
     if (name === 'undo') button.addEventListener('click', () => actions.onUndo?.());
     else if (name === 'hub') button.addEventListener('click', () => actions.onUpgradeHub?.());
     else if (name === 'speed') button.addEventListener('click', () => actions.onCycleSpeed?.());
+    else if (name === 'network') button.addEventListener('click', () => actions.onFrameNetwork?.());
     else {
       const plane: PlaneType = name;
       button.addEventListener('click', (event) => {
@@ -128,7 +130,7 @@ export function createTagDock(root: HTMLElement, actions: HudActions): { render(
           : name === 'widebody' ? state.stock.widebody
           : name === 'hub' ? state.stock.hub : 0;
         const count = button.querySelector('.airway-dock__count');
-        const nextCount = name === 'speed' ? `${state.speed}×` : name === 'undo' ? '' : formatCount(stock);
+        const nextCount = name === 'speed' ? `${state.speed}×` : name === 'undo' || name === 'network' ? '' : formatCount(stock);
         const disabled = (name === 'undo' && !state.canUndo)
           || ((isPlane || name === 'hub') && (!Number.isFinite(stock) || stock <= 0));
         // [night-11s] R6c: an empty aircraft/hub tag reads the wait for the next crates instead of a bare "0".
@@ -142,6 +144,7 @@ export function createTagDock(root: HTMLElement, actions: HudActions): { render(
         if (button.classList.contains('is-selected') !== chosen) setClass(button, 'is-selected', chosen);
         if (isPlane && button.getAttribute('aria-pressed') !== String(chosen)) button.setAttribute('aria-pressed', String(chosen));
         let label = name === 'undo' ? t('hud.undo')
+          : name === 'network' ? t('hud.network')
           : name === 'hub' ? t('hud.hubCount', { count: nextCount })
           : name === 'turboprop' ? t('hud.turbopropCount', { count: nextCount })
           : name === 'widebody' ? t('hud.widebodyCount', { count: nextCount })

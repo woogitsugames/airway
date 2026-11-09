@@ -6,6 +6,7 @@ import { contractsSummary } from './contractsSummary'; // [night-33a] D-271
 import { pauseSummary } from './pauseSummary';
 import { t } from '../i18n';
 import { framingPoints } from './framing';
+import { AUTO_FRAME_EDGE_PX, AUTO_FRAME_SECONDS, AutoFrameGate, NETWORK_FRAME_MAX_ZOOM, framingReason, gameDay, planNetworkFrame, type FrameRect } from './autoFrame'; // [night-86b] D-344
 import { cameraGestureCallbacks, attachPointerGestures, attachKeyboardShortcuts, shortcutAllowed, KEY_ZOOM_STEP, type AttachedGestures, type GestureHit, type ShortcutAction } from '../input';
 import {
   RouteTool, hitTestRouteSegments, nearestCity, routeHandles,
@@ -70,6 +71,8 @@ export interface SessionCallbacks {
   onTick?(run: EndlessRun, speed: number): void;
   /** [night-11p] R6a: one-time cards in this run (default true; DEV seeded e2e runs turn them off). */
   readonly firstTimeCards?: boolean;
+  /** [night-86b] D-344: the camera follows the network by itself (default true; DEV `?follow=off` for still-camera suites). */
+  readonly followNetwork?: boolean;
   cue?(cue: AudioCue): void;
 }
 
@@ -116,6 +119,12 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
   let lastRun: EndlessRun | null = null;
   let previousPlanes: PlaneRenderSnapshot[] = [];
   const knownAirports = new Set<string>();
+  // [night-86b] D-344 (P-1): airports opened since the camera last framed the network, and the once-a-day gate.
+  const freshAirports = new Set<string>();
+  const autoFrame = new AutoFrameGate(initial.clockMinute);
+  delete world.canvas.dataset.autoFrameDays; // a new run starts the e2e mark over
+  let gestureActive = false;
+  let autoFrameCheck = 0;
   const newMarks = new NewAirportMarks(); // [night-10a]
   const audioCues = callbacks.cue ? new AudioCueMapper(callbacks.cue) : null; // [night-03]
   const fillReadings = new FillReadings(); // [night-11af] R4c: hourly waiting counts → trend chevron
@@ -163,6 +172,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     onNavigate: (id) => {
       const city = run.cityList().find((item) => item.id === id);
       if (city) world.orbit.setTarget(city.lon, city.lat);
+      autoFrame.noteUserCamera(performance.now()); // [night-86b] D-344: the player chose this view
     },
   });
   const atc = mountAtcStrip(layer);
@@ -179,6 +189,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     onUndo: () => { if (screen !== 'gameover') tool.undo(); }, // [night-11c] the map view leaves the dock reachable
     onTogglePause: () => setPaused(!paused),
     onCycleSpeed: () => { speed = speed === 1 ? 2 : speed === 2 ? 4 : 1; renderHud(); },
+    onFrameNetwork: () => frameNetwork(), // [night-86b] D-344: the dock's whole-network key
     onSelectPlane: (type) => { selectedPlane = type; renderHud(); },
     onAssignPlane: (type, routeId) => {
       if (screen === 'gameover') return; // [night-11c]
@@ -324,6 +335,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
         return;
       }
       run = previous;
+      autoFrame.rewind(run.clockMinute); // [night-86b] D-344
       previousPlanes = [];
       fillReadings.hourly(run); // [night-11af] an undo across the hour boundary starts the trend history over
       hubLog.observe(run); // [night-11ag] the clock went back: the rolling view starts over
@@ -359,6 +371,11 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     onRouteMove: (x, y) => tool.pointerMove(ROUTE_POINTER, x, y),
     onRouteEnd: (x, y) => { tool.pointerUp(ROUTE_POINTER, x, y); },
     onRouteCancel: () => tool.pointerCancel(ROUTE_POINTER),
+    // [night-86b] D-344: the player's own camera moves hold the automatic framing off; a held finger blocks it.
+    onRotate: () => autoFrame.noteUserCamera(performance.now()),
+    onZoom: () => autoFrame.noteUserCamera(performance.now()),
+    onEdgeRotate: () => autoFrame.noteUserCamera(performance.now()),
+    onInteractionChange: (active) => { gestureActive = active; },
     onContextMenu: (hit, x, y) => {
       // [night-11ag] R4d: a long press on an airport opens its cause board; elsewhere it is the route menu.
       if (hit.kind === 'city' && screen === 'game' && !paused) { openHubBoard(hit.id); return; }
@@ -385,6 +402,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       return true;
     }
     world.orbit.zoomBy(action.direction > 0 ? KEY_ZOOM_STEP : 1 / KEY_ZOOM_STEP);
+    autoFrame.noteUserCamera(performance.now()); // [night-86b] D-344
     return true;
   };
   const detachKeys = attachKeyboardShortcuts(window, keyAction);
@@ -432,6 +450,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     hubStrips.length = 0;
     for (const city of cities) {
       if (!knownAirports.has(city.id)) {
+        if (knownAirports.size > 0) freshAirports.add(city.id); // [night-86b] D-344: opened during the run
         knownAirports.add(city.id);
         // D-68: the 58 px edge chip has no room for a city name, so it always shows the code.
         overlay.addAirport({ id: city.id, code: airportLabel(city.id, 'code'), lon: city.lon, lat: city.lat, hub: city.hub,
@@ -700,11 +719,78 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       accumulator = Math.min(accumulator - ticks, 1);
       if (ticks > 0) advance(ticks);
     }
+    if (!disposed && !paused && screen === 'game' && callbacks.followNetwork !== false) maybeAutoFrame(dt); // [night-86b] D-344 (P-1)
     overlay.setZoomedIn(world.orbit.zoomLevel >= PLATES_ALL_ZOOM); // [night-11m] D-128; deduplicated inside
     overlay.update();
     if (tool.drawing || screen === 'game') tool.refreshHandles();
     return { tick: run.clockMinute, alpha: Math.max(0, Math.min(1, accumulator)) };
   });
+  // ---- [night-86b] D-344: the camera follows the network (P-1) and the dock's whole-network key -----------------------
+  /** The free frame the camera centres the globe in (the HUD bands, the dock and the strip bay are its insets). */
+  function freeFrame(): FrameRect {
+    const orbit = world.orbit;
+    return { left: orbit.insetLeft, top: orbit.insetTop, right: orbit.viewportWidth - orbit.insetRight,
+      bottom: orbit.viewportHeight - orbit.insetBottom };
+  }
+  /** Tries centres and zooms on the real camera, then puts it back exactly where it was. */
+  function planFrame(points: readonly { lon: number; lat: number; hub?: boolean }[], maxZoom: number, cluster: boolean) {
+    const orbit = world.orbit;
+    const before = orbit.getState();
+    const rect = freeFrame();
+    const margin = AUTO_FRAME_EDGE_PX;
+    const target = planNetworkFrame(points, maxZoom, {
+      fits(lon, lat, zoom, framed) {
+        orbit.setTarget(lon, lat);
+        orbit.setZoom(zoom);
+        world.camera.updateMatrixWorld();
+        return framed.every((p) => {
+          world.project(p.lon, p.lat, point);
+          return point.visible && point.x >= rect.left + margin && point.x <= rect.right - margin &&
+            point.y >= rect.top + margin && point.y <= rect.bottom - margin;
+        });
+      },
+    }, cluster);
+    orbit.setTarget(before.longitude, before.latitude);
+    orbit.setZoom(before.zoom);
+    world.camera.updateMatrixWorld();
+    return target;
+  }
+  function frameNetwork(): void {
+    if (disposed) return;
+    const points = run.cityList().map((city) => ({ lon: city.lon, lat: city.lat, hub: city.hub }));
+    const target = planFrame(points, NETWORK_FRAME_MAX_ZOOM, false);
+    autoFrame.noteUserCamera(performance.now());
+    freshAirports.clear();
+    if (target) world.orbit.glideTo(target.lon, target.lat, target.zoom, reducedMotion() ? 0 : AUTO_FRAME_SECONDS);
+  }
+  function maybeAutoFrame(dt: number): void {
+    autoFrameCheck += dt;
+    if (autoFrameCheck < 0.5 && dt > 0) return; // twice a second is enough (a frozen clock checks every frame)
+    autoFrameCheck = 0;
+    const busy = gestureActive || tool.drawing || hud.element.querySelector('.airway-dock.is-dragging') !== null;
+    if (world.orbit.gliding || !autoFrame.allowed(run.clockMinute, performance.now(), busy)) return;
+    const cities = run.cityList();
+    const connected = new Set<string>();
+    for (const route of run.routeList()) for (const id of route.cityIds) connected.add(id);
+    const rect = freeFrame();
+    world.camera.updateMatrixWorld();
+    const airports = cities.map((city) => {
+      world.project(city.lon, city.lat, point);
+      const fresh = freshAirports.has(city.id);
+      if (fresh && point.visible && point.x >= rect.left && point.x <= rect.right && point.y >= rect.top && point.y <= rect.bottom) {
+        freshAirports.delete(city.id); // opened in view: nothing to follow
+      }
+      return { x: point.x, y: point.y, visible: point.visible, connected: connected.has(city.id), fresh: freshAirports.has(city.id) };
+    });
+    if (!framingReason(airports, rect)) return;
+    const target = planFrame(cities.map((city) => ({ lon: city.lon, lat: city.lat, hub: city.hub })), world.orbit.zoomLevel, true);
+    autoFrame.fired(run.clockMinute);
+    freshAirports.clear();
+    // View-only marks for the e2e suite (test:e2e:camera-network): which game days the camera framed by itself.
+    world.canvas.dataset.autoFrameDays = `${world.canvas.dataset.autoFrameDays ?? ''}${gameDay(run.clockMinute)},`;
+    if (target) world.orbit.glideTo(target.lon, target.lat, target.zoom, reducedMotion() ? 0 : AUTO_FRAME_SECONDS);
+  }
+
   const cities = run.cityList();
   // [night-07z] Frame the densest cluster when the airports span several continents (never an empty ocean).
   world.orbit.fitNetwork(framingPoints(cities.map((city) => ({ lon: city.lon, lat: city.lat, hub: city.hub }))));

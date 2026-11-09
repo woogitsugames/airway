@@ -68,8 +68,11 @@ export interface NoteSkin {
   size(bubble: HTMLElement): NoteSkinSize;
   /** Distance (px) from the note's top to the middle of the sign row (level with the airport's point). */
   lineMid(bubble: HTMLElement): number;
-  /** Prints an off-screen airport's chip (the direction sign) and returns its width. */
-  edge(edge: HTMLElement, input: { code: string; name: string; km: number; taken: number; capacity: number }): number;
+  /**
+   * Prints an off-screen airport's chip (the direction sign) and returns its width. [night-86b] D-344: `compact` = the
+   * 48 × 48 form (code + arrow) of a portrait phone; the city and distance show after a tap.
+   */
+  edge(edge: HTMLElement, input: { code: string; name: string; km: number; taken: number; capacity: number; compact?: boolean }): number;
   /** After the layout: the atlas labels and the edge signs' yellow budget. */
   frameEnd(frame: NoteSkinFrame): void;
 }
