@@ -89,7 +89,7 @@ try {
                 // ("in 2 days"): that caption must then be shown whole, on screen and next to its symbol.
                 const shown = (node) => node && getComputedStyle(node).display !== 'none' && node.getBoundingClientRect().width > 0;
                 const count = tag.querySelector('.airway-dock__count');
-                const waitTag = tag.querySelector('.bd-wait, .lin-wait'); // [night-81a] D-336: UI-A's paper wait tag (D-324)
+                const waitTag = tag.querySelector('.bd-wait, .base-wait'); // [night-81a] D-336: UI-A's paper wait tag (D-324)
                 // UI-A prints the wait twice (long and short form, one shown by the layout): read the shown one.
                 const caption = waitTag?.classList.contains('bd-wait') ? [...waitTag.children].find(shown) ?? waitTag : waitTag;
                 const text = shown(count) ? count : shown(caption) ? caption : count;

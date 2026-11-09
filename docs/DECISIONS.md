@@ -4230,3 +4230,44 @@ with devices): 16.1 / 14.0 → 16.5 / 18.1 fps idle/active, render CPU p95 1.3 �
 no regression (the shipped frame draws the same globe and layers; the difference is SwiftShader noise). `shots -- r3-night`
 gives the D-336 probe values (routes 15.6, airports/planes 15.97, jam 4.87; reverted, no PNG committed).
 **Status: in force (R6 of the plan the owner accepted, D-323); the owner reviews the PR.**
+
+## D-338 — T7: the shipped UI-A polished — the week sheet fits the shortest phones, the dead Linoryt margin goes, `lin-*` becomes `base-*`, atlas labels outlined, CSS budget 198.4 kB (2026-11-09, Claude, night 82b)
+Step T7 of `docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md`, the items D-336 left open. `src/render/**` (R6, D-337,
+in parallel) and `src/data/puzzles/**` are untouched; the simulation and every hash too.
+**Short phones.** Below 660 px of portrait height (`board-week.css`) the week sheet tightens: a 28 px week title, a denser
+board, strips from 56 px, 6 px gaps, a 54 px main action. Every strip and the main action stay ≥ 48 px. `test:e2e:board-short`
+(320×568 week 2 scrolled 1–32 px) and `test:e2e:weekly-contract` (360×640 with four strips scrolled 16–20 px) pass again
+with no page scroll; 320×568 with four strips is still only reported, as before. **150 % text.** The logbook totals' labels
+take the board face without capitals at 150 % ("Przewiezieni" broke inside the word at 915×412). In the PL strip title
+"Szeroko­kadłubowiec" the break at the soft hyphen we wrote is deliberate. `test:e2e:text-scale-150` no longer counts
+the drawn hyphen, which Chrome reports as a rect of the next word, as a split word (129/132 → 132/132).
+**Dead base code.** The board's HUD slots always replace the base clock, week line, day bar, dock captions, menu index
+titles, tagline and report hub block: `hudSkin`/`noteSkin`/`sheetSkin` are set before the HUD mounts in every page, the
+fixtures included. A probe found none of them visible in the menu, game, week sheet or report. `basePass`,
+`baseDockLabel`, `baseReportHub`, `baseTagline`, `BASE_NIGHT`, `isNightHour` and their call sites go, with section A's rules
+for `.lin-pass/-clock/-lines/-week/-sub/-day*/-caption/-wait/-icon`. **Neutral names.** The rest keeps its look: the base
+inks `--lin-*` → `--base-*` (`baseInks` inlines `base-*` in a release, as before), the note-layout classes `.lin-*` → `.base-*`,
+and the menu's region caption `.lin-choice` → `.bd-choice`. `e2e/menu-clear.mjs` waits for `.bd-menu` instead of the gone
+index titles. `scripts/test-board.ts` checks that section A carries no `.lin-`/`--lin-`. Look unchanged: `skin:pixels`
+compared before and after the rename on 112 shots (the ATC fixture excluded, it fails on `dev` too). The shots are identical
+except the element counts of the menu (−7) and report (−1), which are the removed hidden nodes. The other pixel
+differences (tutorial, logbook, settings, pause) appear identically between two captures of the same tree.
+**Accessibility.** Atlas labels have no ground of their own. They get a hard 1 px outline in eight directions under the
+soft halo. With the blurred halo alone, the edges of letters on the bright day desert met the photo: on a 2 px ring round
+the letters, the brighter quarter read 1.9–2.1:1 for Chad, Libya and Saudi Arabia. With the outline it reads 3.2–3.5:1,
+and further out the ring reaches the bare photo. `test:e2e:board-contrast` adds dusk frames (`storeSunDot=0.05`, PL 412×915
+and EN 915×412; 4 → 6 frames). It measures every atlas label against what lies under its letters, using a second shot with
+the letters transparent (outline and halo over the photo): the letters' median against the brighter quarter of that ground
+must be ≥ 4.5:1. Measured minimum 11.0:1 (52 labels, day/dusk/night). The gate guards the ground under the letters, which
+the old halo also darkened (it passes on the old CSS too). The outline is for the edges, checked by eye in `docs/shots/t7/`. A split-flap row is now one `role="img"` named by
+its text, with its tiles `aria-hidden` (`role="text"` is no ARIA role, and outside WebKit each tile's two half-letters were
+read). The report's print roll, a keyboard scroller, shows a white focus outline. A Tab walk found no other focusable
+without a ≥ 2 px outline on the menu, settings, logbook, puzzles, week sheet and pick, report, HUD and first-time card.
+Reduce motion was already covered (flaps, key travel, the "now" mark stepping per game hour, D-336's backstop):
+`test:e2e:reduce-motion*`, `pseudo-320` and `notch` pass unchanged.
+**Budget.** Release CSS 197.0 → 195.1 kB after the removal, then **195.4 kB** with the new rules. The budget is the
+measurement + 3 kB: 199.7 → **198.4 kB** (D-297). Main JS 1,087.5 kB raw (gzip 326.3); `dist/` 2,974.9 kB.
+**Shots.** `docs/shots/t7/` (`node scripts/shots-t6.mjs --out=docs/shots/t7 --scenes=week,day,report
+--sizes=320x568,360x640,412x915,915x412`): the week sheet, day and report, PL/EN, 24 PNGs. Each was checked against the
+CLAUDE.md forbidden list.
+**Status: in force; the owner reviews the PR.**

@@ -10,7 +10,7 @@ lotu" over the realistic NASA globe (plan `docs/styles/kierunki-2026-11c/PLAN-NO
 
 - **UI:** `index.html` sets `<html data-skin="board">` (theme-color = the enamel `#0E0F0F`); `src/ui/skin/current.css`
   holds the component tokens (UI-A faces Archivo / Chivo Mono); `src/ui/skin/board.css` is the structure (section A:
-  the base structure, Linoryt's until T6, with its `--lin-*` inks; section B: the board's `--board-*` tokens and rules)
+  the base structure, Linoryt's until T6, with its base inks (`--base-*`, `--lin-*` until T7, D-338); section B: the board's `--board-*` tokens and rules)
   plus `board-week.css`, both static imports at the end of `src/main.ts`, inlined and pruned by
   `scripts/vite-skin-inline.mjs` / `vite-skin-prune.mjs`. `src/ui/skin/base.ts` (was `linoryt.ts`) keeps the note
   layout's stamps, frames and margins; the board's modules (`board.ts`, `board-notes.ts`, `board-strips.ts`,

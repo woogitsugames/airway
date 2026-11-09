@@ -71,7 +71,7 @@ async function audit(page) {
     const archivo = [...document.fonts].filter((face) => face.family.replace(/['"]/g, '') === 'Archivo' && face.status === 'loaded');
     if (archivo.length < 2) problems.push(`Archivo faces loaded: ${archivo.length}`);
     if (root.scrollWidth > innerWidth + 1) problems.push(`horizontal overflow ${root.scrollWidth} > ${innerWidth}`);
-    if (document.querySelector('.lin-pass')) problems.push('the Linoryt margin is drawn too');
+    if (document.querySelector('.base-pass')) problems.push('the Linoryt margin is drawn too');
     const box = (el) => el.getBoundingClientRect();
     const shown = (el) => { const r = box(el); return r.width > 0 && r.height > 0 && getComputedStyle(el).visibility !== 'hidden'; };
     const meet = (a, b) => a.left < b.right - .5 && b.left < a.right - .5 && a.top < b.bottom - .5 && b.top < a.bottom - .5;

@@ -32,7 +32,7 @@ const plates = (page) => page.evaluate(() => {
     hubs: [...hubs],
     tags: tags.map((tag) => {
       const visible = (el) => el && getComputedStyle(el).display !== 'none' && el.getBoundingClientRect().width > 0;
-      const plate = [tag.querySelector('.bd-plate'), tag.querySelector('.airport-bubble__plate'), tag.querySelector('.lin-name'), tag.querySelector('.lin-code')]
+      const plate = [tag.querySelector('.bd-plate'), tag.querySelector('.airport-bubble__plate'), tag.querySelector('.base-name'), tag.querySelector('.base-code')]
         .find((el) => visible(el) && (el.textContent ?? '').trim().length >= 3) ?? null;
       return {
         id: tag.dataset.airport, plate: plate?.textContent?.trim() ?? null, rect: rect(tag),

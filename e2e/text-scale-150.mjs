@@ -135,7 +135,11 @@ function largeTextAudit(page) {
         const range = document.createRange();
         range.setStart(node, match.index);
         range.setEnd(node, match.index + match[0].length);
-        const tops = new Set([...range.getClientRects()].filter((r) => r.width > 0).map((r) => Math.round(r.top)));
+        let rects = [...range.getClientRects()].filter((r) => r.width > 0);
+        // [night-82b] T7: a break at a written soft hyphen ("Szeroko­kadłubowiec") is a hyphenation point, not a split
+        // word (the regex already ends the word there); Chrome reports the drawn hyphen as a rect of the next word's range.
+        if (node.textContent[match.index - 1] === '­' && rects.length > 1) rects = rects.slice(1);
+        const tops = new Set(rects.map((r) => Math.round(r.top)));
         if (tops.size > 1) problems.push(`word broken across lines: "${match[0]}" in .${String(node.parentElement.className).split(" ")[0] || node.parentElement.tagName}`);
       }
     }

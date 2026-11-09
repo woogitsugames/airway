@@ -100,7 +100,7 @@ test('[night-81a] D-336: src/main.ts starts the board on every boot (no ?skin= f
   const css = readFileSync('src/ui/skin/board.css', 'utf8');
   const a = css.slice(0, css.indexOf('/* ==== Section B'));
   assert.ok(a.includes('.airway-pause__summary') && a.includes('.aw-tutorial-stage') && a.includes('.airway-upgrade'), 'pause, training flight, weekly board geometry');
-  for (const gone of ['.lin-jam', '.airport-edge', '.lin-title', '.airway-go-sign::after', '.airway-logbook__totals', 'data-skin="linoryt"']) {
+  for (const gone of ['.lin-', '--lin-', '.airport-edge', '.airway-go-sign::after', '.airway-logbook__totals', 'data-skin="linoryt"']) {
     assert.equal(a.includes(gone), false, gone);
   }
 });

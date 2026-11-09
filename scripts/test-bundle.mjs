@@ -27,7 +27,9 @@ export const BUDGET = Object.freeze({
   // task-20 text roles, overridden duplicates; 129.9 -> 126.8 kB measured) + ~3 kB.
   // [night-81a] D-336 (T6, D-297): 129.8 -> 199.7 kB at the UI-A flip: the measured release CSS after it (197.0 kB: the
   // base structure, Linoryt's until T6, plus the board's sections T1–T5 and the week sheet) + 3 kB; T7 lowers it.
-  css: 199.7 * KB, // measured 70.2 kB, all CSS files together; 88.8 kB on 2026-11-05 with the skin inlined (D-252); 107.2 kB with Róża; 129.0 kB with Linoryt (2026-11-08); 127.4 kB after U6; 126.8 kB after N56b; 197.0 kB after the UI-A flip (D-336)
+  // [night-82b] D-338 (T7): 199.7 -> 198.4 kB: the dead Linoryt margin and captions removed (197.0 -> 195.1 kB), the
+  // short-phone week sheet, the atlas outline and the print focus added: measured 195.4 kB + 3 kB.
+  css: 198.4 * KB, // measured 70.2 kB, all CSS files together; 88.8 kB on 2026-11-05 with the skin inlined (D-252); 107.2 kB with Róża; 129.0 kB with Linoryt (2026-11-08); 127.4 kB after U6; 126.8 kB after N56b; 197.0 kB after the UI-A flip (D-336); 195.4 kB after T7 (D-338)
   // [ext-03 G1] D-171: + ~1.8 MB globe textures (public/data/globe/, test:globe-assets) and ~0.55 MB for Mapa (G8).
   total: 4300 * KB, // measured 1,804.8 kB before G1, every file under dist/ (fonts, land mask, licences, globe)
 });

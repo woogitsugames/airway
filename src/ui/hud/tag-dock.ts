@@ -3,7 +3,7 @@ import { iconSvg } from './icons';
 import { crateCountdown } from './crate-countdown';
 import type { HudActions, HudState, PlaneType } from './types';
 import { ARIA_KEYSHORTCUTS } from '../../input/keyboard';
-import { skinBase, baseDockLabel, baseIcon } from '../skin/base'; // [night-28a] D-284; [night-46a] D-301: cut symbols
+import { skinBase, baseIcon } from '../skin/base'; // [night-28a] D-284; [night-46a] D-301: cut symbols (the drag ghost)
 import { setClass } from '../classes'; // [night-59a] D-322
 import { hudSkin } from './skin'; // [night-69a] D-324: the DEV `?skin=board` preview paints the console faces
 
@@ -37,7 +37,7 @@ export function createTagDock(root: HTMLElement, actions: HudActions): { render(
     button.type = 'button';
     button.className = 'airway-dock__tag';
     button.dataset.hudAction = tag;
-    button.innerHTML = `<span class="airway-dock__eyelet" aria-hidden="true"></span>${hudSkin.current ? hudSkin.current.dockFace(tag) : skinBase.on ? baseIcon(tag) : iconSvg(tag)}<span class="airway-dock__count" aria-hidden="true"></span>`;
+    button.innerHTML = `<span class="airway-dock__eyelet" aria-hidden="true"></span>${hudSkin.current ? hudSkin.current.dockFace(tag) : iconSvg(tag)}<span class="airway-dock__count" aria-hidden="true"></span>`;
     holder.appendChild(button);
     dock.appendChild(holder);
     if (tag === 'speed') button.setAttribute('aria-keyshortcuts', ARIA_KEYSHORTCUTS.speed); // [night-11ai] R4g
@@ -148,16 +148,15 @@ export function createTagDock(root: HTMLElement, actions: HudActions): { render(
           : t('hud.speed', { speed: state.speed });
         if (waiting) label = `${label}. ${countdown.spoken}`;
         if (button.getAttribute('aria-label') !== label) button.setAttribute('aria-label', label);
-        // [night-28a] D-284: the Linoryt caption under the symbol, the wait under it in blue.
+        // [night-69a] D-324: the board's key caption and wait ([night-82b] T7: the Linoryt captions are gone).
         if (hudSkin.current) hudSkin.current.dockState(button, name, { count: nextCount, speed: state.speed, wait: waiting ? countdown.short : null, empty: disabled, selected: chosen });
-        else if (skinBase.on) baseDockLabel(button, name, state.speed, waiting ? countdown.short : null);
       }
       if (lastSpeed !== state.speed) {
         lastSpeed = state.speed;
         const tag = controls.get('speed');
         tag?.setAttribute('data-speed', String(state.speed));
         // [night-11az] D-257: the speed symbol's wind barbs count the tempo (one per 1×).
-        if (!hudSkin.current) tag?.querySelector('svg')?.replaceWith(document.createRange().createContextualFragment(skinBase.on ? baseIcon('speed', state.speed) : iconSvg('speed', state.speed)));
+        if (!hudSkin.current) tag?.querySelector('svg')?.replaceWith(document.createRange().createContextualFragment(iconSvg('speed', state.speed)));
       }
       // Invalidate a pending drag when its item is depleted by another command.
       if (active && controls.get(active.type)?.disabled) {

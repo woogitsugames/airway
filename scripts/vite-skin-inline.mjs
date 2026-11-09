@@ -15,7 +15,7 @@ import { SKIN_STRUCTURE_FILES, SKIN_SCOPE, skinOverrides, pruneOverridden } from
 
 export const SKIN_FILE = 'src/ui/skin/current.css';
 // [night-46a] D-301: no DEV-only skins any more; [night-81a] D-336: the UI-A structure (SKIN_STRUCTURE_FILES, board.css
-// and board-week.css) is inlined like any component CSS and the base inks (`--lin-*`, a plain :root in board.css
+// and board-week.css) is inlined like any component CSS and the base inks (`--base-*`, a plain :root in board.css
 // section A) are palette constants written out in place.
 const stripComments = (css) => css.replace(/\/\*[\s\S]*?\*\//g, '');
 const USE = /var\(\s*--skin-([a-z0-9-]+)\s*([,)])/g;
@@ -179,17 +179,17 @@ export function skinBuild(root) {
   };
 }
 
-/** [night-48a] U6 (D-294 mechanism); [night-81a] D-336: the base inks (Linoryt's until T6) (`--lin-*` palette constants: one plain :root definition, var-free,
- *  never named by a script) are written out in place of their `var(--lin-x)` references (~3 kB of release CSS). The
+/** [night-48a] U6 (D-294 mechanism); [night-81a] D-336: the base inks (Linoryt's until T6) (`--base-*` palette constants: one plain :root definition, var-free,
+ *  never named by a script) are written out in place of their `var(--base-x)` references (~3 kB of release CSS). The
  *  definitions stay on :root, so a DEV probe or a later rule that names the ink still resolves; inks whose value holds a
- *  var() (`--lin-neatline`, `--lin-top`) or that a script sets (`--lin-pass-bottom`, `--lin-jam-w`) stay references. */
+ *  var() (`--base-neatline`, `--base-top`) or that a script sets (`--base-pass-bottom`, `--base-jam-w`) stay references. */
 export function baseInks(constants) {
-  return new Map([...constants].filter(([name]) => name.startsWith('lin-')));
+  return new Map([...constants].filter(([name]) => name.startsWith('base-')));
 }
 
-/** `css` with every `var(--lin-x)` of an ink in `inks` replaced by its value (a fallback form is left alone). */
+/** `css` with every `var(--base-x)` of an ink in `inks` replaced by its value (a fallback form is left alone). */
 export function inlineInks(css, inks) {
-  return css.replace(/var\(\s*--(lin-[a-z0-9-]+)\s*\)/g, (whole, name) => inks.get(name) ?? whole);
+  return css.replace(/var\(\s*--(base-[a-z0-9-]+)\s*\)/g, (whole, name) => inks.get(name) ?? whole);
 }
 
 /** Vite plugin: on in `vite build`, and in `vite` (dev) only with AW_SKIN_INLINE=1. */

@@ -27,8 +27,8 @@ try {
         // The framing settles once the entries are laid out on the rose (a frame or two after the screen shows).
         await page.waitForFunction(() => {
           const framing = window.__awWorld?.framing?.();
-          // [night-29b] D-284 U4 / [night-46a] D-301: the Linoryt index rows are the entries.
-          return framing && framing.first !== null && document.querySelector('.lin-title');
+          // [night-82b] T7: the UI-A departures board's rows are the entries (the Linoryt index titles are gone).
+          return framing && framing.first !== null && document.querySelector('.bd-menu');
         }, null, { timeout: 8000 });
         await page.waitForTimeout(400);
         const probe = await page.evaluate(() => window.__awWorld.framing());
