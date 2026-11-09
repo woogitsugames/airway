@@ -124,7 +124,7 @@ centre. Re-render after a visual change of the globe or the `game` scene and ins
 
 ## Store preview video (R2b, D-265)
 
-`npm run store:video` films the same seed 0xA1A1 run the store shots use, played by the DEV autoplay bot through
+`npm run store:video` films the same seed 0xA1A1 run the store shots use (home region Northern Europe, D-339), played by the DEV autoplay bot through
 `window.aw` on the real renderer. Nothing is screen-recorded: Playwright's clock is paused, every video frame is one
 fixed 1/30 s step (`page.clock.runFor`; CSS animations paused and stepped by the same amount) followed by a PNG
 screenshot piped into ffmpeg, so SwiftShader's speed never shows in the video. No text, music or overlay is added; the
@@ -138,7 +138,7 @@ Storyboard, 24 s at 30 fps (cuts between shots, every shot is real play of one r
 | 0–4 s | route | First frame is the game: a finger draws the first route (the pair `aw.gesture('route')` picks for the viewport), the turboprop boards and departs |
 | 4–12 s | dusk | Day 2 from 15:30: the bot's grown network, the evening terminator crosses it; **poster frame at 5 s** |
 | 12–17 s | crates | The week sheet opens with its strips (UI-A, D-331); a strip is chosen at 2 s, the yellow main action takes it at 3.5 s, play resumes in week 2 |
-| 17–24 s | jam | Building stops until an airport is 83 % full; its edge chip is tapped, the camera turns to it and its ring fills (phone: Rio de Janeiro turns red with the jam countdown; iPhone/iPad: Karachi near full). The run is still alive at the end |
+| 17–24 s | jam | Building stops until an airport is 80 % full; its edge chip is tapped and the camera turns to it (D-339, from Northern Europe: Toronto fills to 92 %; on the 360-wide phone the chip is not shown, so the camera stays on Europe). The run is still alive at the end |
 
 | File | Size | Console slot |
 | --- | --- | --- |
