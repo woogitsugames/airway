@@ -43,22 +43,20 @@ export function subsolarLongitudeAt(tick: number, fraction = 0): number {
 
 /**
  * [night-79a R4] D-323/D-334: degrees east of the view centre where the menu puts the subsolar point. The menu has no
- * run, so its sun is a presentation, not game time: the print (Linoryt, still shipped) keeps the daylit backdrop just
- * ahead of the view (+25°, task 34); the NASA globe shows the K2 night with the dusk band, the sun 82° west of the view
- * centre: with the November declination the terminator crosses the disc left of centre (about 40 % lit on the left,
+ * run, so its sun is a presentation, not game time: the NASA globe shows the K2 night with the dusk band, the sun 82°
+ * west of the view centre ([night-82a R6] D-337: the old print's daylit menu, +25°, is gone): with the November declination the terminator crosses the disc left of centre (about 40 % lit on the left,
  * the Atlantic and West Africa at dusk, Europe at night with its city lights; mockup ui-a-menu.png).
  * The sun turns with the menu spin (D-62), so the terminator stays put on screen while the Earth turns under it.
  */
-export const MENU_DAY_SUN_OFFSET_DEG = 25;
 export const MENU_NIGHT_SUN_OFFSET_DEG = -82;
 
 /**
  * [night-79a R4] The render tick whose subsolar longitude (`subsolarLongitudeAt`) is `viewLongitudeDeg + offset`, for
- * the menu backdrop: `night` = the K2 night (the earth look), else the print's daylight. Visual only: no run reads it,
+ * the menu backdrop (the K2 night). Visual only: no run reads it,
  * the game's start time and every hash are untouched (D-323 P1).
  */
-export function menuSunTick(viewLongitudeDeg: number, night: boolean): number {
-  const lon = viewLongitudeDeg + (night ? MENU_NIGHT_SUN_OFFSET_DEG : MENU_DAY_SUN_OFFSET_DEG);
+export function menuSunTick(viewLongitudeDeg: number): number {
+  const lon = viewLongitudeDeg + MENU_NIGHT_SUN_OFFSET_DEG;
   return Math.round(((180 - lon) * 4 % MINUTES_PER_DAY + MINUTES_PER_DAY) % MINUTES_PER_DAY) % MINUTES_PER_DAY;
 }
 

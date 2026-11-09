@@ -21,7 +21,7 @@ try {
       const label = `${language} ${width}×${height}: settings → privacy policy → back`;
       const { page, errors } = await newGamePage(browser, gameUrl(url), language, { width, height });
       const external = [];
-      // [night-11at] blob: URLs are in-memory globe textures (src/render/globe/look.ts), not network; they made this flaky.
+      // [night-11at] blob: URLs are in-memory globe textures (src/render/globe/earth-globe.ts), not network; they made this flaky.
       page.on('request', (request) => {
         const target = request.url();
         if (!target.startsWith('blob:') && !target.startsWith(url.replace(/\/[^/]*$/, ''))) external.push(target);

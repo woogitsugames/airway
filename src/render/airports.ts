@@ -1,5 +1,5 @@
 // Airport layer contract (read-only render state). [ext-04] The medallion pads, hub seat rings and curfew barriers
-// went with the satellite look (D-302); the Linoryt stamps implement this interface in `objects.ts`.
+// went with the satellite look (D-302); the airport points implement this interface in `objects.ts`.
 import type { Group, Vector3 } from 'three';
 
 export interface AirportDefinition {

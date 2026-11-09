@@ -425,7 +425,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       lastHubKey = hubKey;
       world.setCities(cities.map((city) => ({ id: city.id, lon: city.lon, lat: city.lat, hub: city.hub })));
     }
-    // [ext-04 E2/E3] Every airport with the share of its jam grace left (the Linoryt jam zone); the satellite renderer
+    // [ext-04 E2/E3] Every airport with the share of its jam grace left (the jam zone); the satellite renderer
     // reads the seat load of the hubs only.
     world.setHubLoad(cities.map((city) => ({ id: city.id, used: Math.min(city.waiting.length, city.capacity),
       cap: Math.max(1, city.capacity), jam01: jamArcShare(city.jamTicksLeft, CONGESTION_GRACE_TICKS, SIM_TICKS_PER_SECOND, reducedMotion()) })));
@@ -436,7 +436,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
         // D-68: the 58 px edge chip has no room for a city name, so it always shows the code.
         overlay.addAirport({ id: city.id, code: airportLabel(city.id, 'code'), lon: city.lon, lat: city.lat, hub: city.hub,
           label: airportLabel(city.id), // [night-11m] D-128 plate follows the D-68 code/name setting
-          name: airportLabel(city.id, 'name') }); // [night-11az] D-257; [night-46a] the city name on the Linoryt note
+          name: airportLabel(city.id, 'name') }); // [night-11az] D-257; [night-46a] the city name on the airport sign
       }
       overlay.setHub(city.id, city.hub); // [night-11m] D-128 hubs carry their plate; deduplicated inside
       overlay.setCapacity(city.id, city.capacity); // [night-11d] edge-chip gauge; deduplicated inside

@@ -1,6 +1,6 @@
 /**
  * Read-only aircraft snapshot and route-distance interpolation. [ext-04] The 3D plane models went with the satellite
- * look (D-302); the Linoryt silhouettes are drawn by `objects.ts`.
+ * look (D-302); the plane silhouettes are drawn by `objects.ts`.
  */
 import { distanceForSegment, type AircraftKind, type PreparedRoute } from './routes';
 

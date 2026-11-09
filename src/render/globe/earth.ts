@@ -1,6 +1,6 @@
-// [night-70a R1] D-323: the realistic NASA globe (`?look=earth`, DEV only until the flip): pure data and math, so the
+// [night-70a R1] D-323: the realistic NASA globe (the one globe since [night-82a R6] D-337): pure data and math, so the
 // headless tests can check the presets, the texture choice and the terminator without three.js. The material and the
-// lazy texture upgrade live in `earth-globe.ts` (a lazy chunk a release build folds away while the look is a preview).
+// lazy texture upgrade live in `earth-globe.ts` (a lazy chunk); `world.ts` takes the space colour from here.
 import type { QualityProfile } from '../quality';
 
 /** Files under public/data/globe/ (manifest.json, `npm run test:globe-assets`). Baked by dev/globe-look/bake-earth.py. */

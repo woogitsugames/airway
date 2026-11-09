@@ -1,6 +1,6 @@
 /**
  * The renderer's one great-circle arc model (routes, planes, preview). [ext-04] The route tubes went with the
- * satellite look (D-302); the Linoryt ribbon is drawn by `objects.ts`.
+ * satellite look (D-302); the route ribbon is drawn by `objects.ts`.
  */
 import { Vector3 } from 'three';
 import { setLatLonVec3 } from './globe/geo-math';

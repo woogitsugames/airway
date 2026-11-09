@@ -1,10 +1,9 @@
-// [ext-04 E2] D-283 world objects (docs/notes/linoryt-render-spec.md §5–§8): airport stamps and the jam zone
-// (screen-constant SDF quads, one instanced draw each), routes as one screen ribbon draw, the finger-drawn route as a
-// second ribbon, planes as silhouettes from one SDF atlas (one instanced draw). A lazy chunk (D-300).
-// [night-74a R3] D-329: renamed from `linoryt-objects.ts`; the layers take an `ObjectStyle` (shaders, sizes, inks):
-// the Linoryt print below (the shipped default until R5) or the NASA-globe style in `objects-earth.ts` (a lazy chunk
-// `createWorldObjects` imports for the earth look; [night-79a R4] D-334: no DEV guard). No allocation in the frame path; nothing here reads
-// the simulation.
+// [ext-04 E2] D-283 world objects: airport points and the jam zone (screen-constant SDF quads, one instanced draw
+// each), routes as one screen ribbon draw, the finger-drawn route as a second ribbon, planes as silhouettes from one
+// SDF atlas (one instanced draw). A lazy chunk (D-300).
+// [night-74a R3] D-329: the layers take an `ObjectStyle` (shaders, sizes, inks); [night-82a R6] D-337: the old print's
+// style is gone, the NASA-globe style of `objects-earth.ts` (same chunk) is the only one. No allocation in the
+// frame path; nothing here reads the simulation.
 import {
   BufferAttribute, BufferGeometry, ClampToEdgeWrapping, Color, DataTexture, DoubleSide, DynamicDrawUsage, Group,
   InstancedBufferAttribute, InstancedBufferGeometry, LinearFilter, LinearMipmapLinearFilter, Mesh, NoColorSpace,
@@ -12,7 +11,8 @@ import {
   type WebGLRenderer,
 } from 'three';
 import { setLatLonVec3 } from './globe/geo-math';
-import { LINORYT_INKS, objectScale, STAMP_SIZE_PX } from './globe/linoryt';
+import { objectScale } from './marks';
+import { EARTH_OBJECT_INKS, earthObjectStyle } from './objects-earth';
 import type { AirportDefinition, AirportsLayer } from './airports';
 import { interpolatePlaneDistance, planeProgressDistance, type PlaneRenderSnapshot, type PlaneRenderStats } from './planes';
 import type { RoutePreviewLayer, RoutePreviewView } from './routePreview';
@@ -21,24 +21,11 @@ import {
   type MutableGreatCircleArc, type PreparedRoute, type RouteGeometryStats, type RouteRenderSpec,
 } from './routes';
 
-/** Stamps sit on the pads (same altitude as the medallions); `pick()` and `project()` use 1.01. */
+/** Points sit just above the surface; `pick()` and `project()` use 1.01. */
 const STAMP_ALTITUDE = 1.0055;
-/** §5 Jam zone radius = 3 × half the stamp; the countdown arc runs 6 px outside its 3 px ring. */
-export const JAM_ZONE_FACTOR = 3;
-/** §6 Route widths in CSS px: [outer ink, paper core]. */
-export const ROUTE_WIDTH_PX: Readonly<Record<AircraftKind, readonly [number, number]>> = {
-  turboprop: [5, 2], widebody: [6.5, 2.5],
-};
-/**
- * §7 Plane silhouettes, CSS px; load bar length at a full plane. D-304: 28 / 32 px (spec 22 / 26) with a 2.5 px paper rim
- * (spec 1.5): at zoom 2 the smaller cut read as a cross between the route lines on the night hatch.
- */
-export const PLANE_SIZE_PX: Readonly<Record<AircraftKind, number>> = { turboprop: 28, widebody: 32 };
-export const PLANE_RIM_PX = 2.5;
-export const PLANE_LOAD_BAR_PX = 18;
-/** §6 A new route draws itself from start to end in this many ms (instant with reduce motion). */
+/** A new route draws itself from start to end in this many ms (instant with reduce motion). */
 export const ROUTE_REVEAL_MS = 200;
-/** §7 Silhouettes from `docs/styles/kierunki-2026-11b/src/icons.js` (the dock symbols of the Linoryt skin). */
+/** Plane silhouettes (the dock symbols, `docs/styles/kierunki-2026-11b/src/icons.js`), drawn into the SDF atlas. */
 export const PLANE_PATHS: Readonly<Record<AircraftKind, string>> = {
   turboprop: 'M46 8 L54 8 L56 40 L92 44 L92 54 L56 56 L55 80 L68 86 L68 92 L32 92 L32 86 L45 80 L44 56 L8 54 L8 44 L44 40 Z ' +
     'M20 34 L30 34 L30 46 L20 46 Z M70 34 L80 34 L80 46 L70 46 Z',
@@ -68,11 +55,11 @@ interface SharedUniforms {
 }
 
 /**
- * [night-74a R3] D-329: what tells the print from the NASA-globe objects: shaders (functions, so a release build can
- * drop the ones it never calls), point and jam sizes, route widths and inks. Buffers, draws and the API are shared.
+ * [night-74a R3] D-329: the look of the world objects: shaders, point and jam sizes, route widths and inks
+ * (`objects-earth.ts`). Buffers, draws and the API live here.
  */
 export interface ObjectStyle {
-  readonly name: 'linoryt' | 'earth';
+  readonly name: 'earth';
   readonly inks: { readonly paper: string; readonly ink: string; readonly red: string; readonly sign: string };
   readonly stampVertex: () => string;
   readonly stampFragment: () => string;
@@ -85,7 +72,7 @@ export interface ObjectStyle {
   readonly stampHalf: { readonly airport: number; readonly hub: number };
   /** Jam zone radius in CSS px from the point's half size. */
   readonly jamRadius: (half: number) => number;
-  /** Route ribbon [outer, core] widths in CSS px per aircraft (a negative core = dashed core, earth style). */
+  /** Route ribbon [outer, core] widths in CSS px per aircraft (a negative core = dashed core). */
   readonly routeWidth: Readonly<Record<AircraftKind, readonly [number, number]>>;
   /** The route preview's [outer, core] widths in CSS px. */
   readonly previewWidth: readonly [number, number];
@@ -117,12 +104,12 @@ function sharedUniforms(style: ObjectStyle): SharedUniforms {
   };
 }
 
-/** Material name prefix from the style ('Linoryt…', 'Earth…'). */
+/** Material name prefix from the style ('Earth…'). */
 const materialPrefix = (style: ObjectStyle): string => style.name[0].toUpperCase() + style.name.slice(1);
 
 /** Shared uniforms with defaults for the extras (`uSign`, `uShadow`) when a caller (a test) passes an older set. */
 function withExtras(uniforms: SharedUniforms): SharedUniforms {
-  if (!uniforms.uSign) uniforms.uSign = { value: new Color(LINORYT_INKS.ochre) };
+  if (!uniforms.uSign) uniforms.uSign = { value: new Color(EARTH_OBJECT_INKS.sign) };
   if (!uniforms.uShadow) uniforms.uShadow = { value: 0 };
   return uniforms;
 }
@@ -158,102 +145,6 @@ function screenMaterial(uniforms: SharedUniforms, vertexShader: string, fragment
 
 // ---- Stamps and jam zone ----------------------------------------------------------------------------------------
 
-// A function, not a constant: interpolated values would keep this module in a release build.
-const STAMP_VERTEX = (): string => /* glsl */ `
-attribute vec3 aCenter;
-attribute vec4 aShape; // x: hub, y: closed by curfew, z: jam
-varying vec2 vPx;
-varying vec4 vShape;
-void main() {
-  float halfSide = aShape.x > 0.5 ? ${(STAMP_SIZE_PX.hub / 2).toFixed(1)} : ${(STAMP_SIZE_PX.airport / 2).toFixed(1)};
-  vPx = position.xy * (halfSide + 5.0) * 2.0;
-  vShape = aShape;
-  if (!awFacing(aCenter)) { gl_Position = vec4(2.0, 2.0, 2.0, 1.0); return; }
-  gl_Position = awOffset(projectionMatrix * viewMatrix * vec4(aCenter, 1.0), vPx * uScale);
-}`;
-
-// A function, not a constant: interpolated values would keep this module in a release build.
-const STAMP_FRAGMENT = (): string => /* glsl */ `
-uniform vec3 uPaper;
-uniform vec3 uInk;
-uniform vec3 uRed;
-varying vec2 vPx;
-varying vec4 vShape;
-float sdBox(vec2 p, vec2 b) { vec2 d = abs(p) - b; return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0); }
-// Regular octagon with apothem r (flat side up), Inigo Quilez.
-float sdOctagon(vec2 p, float r) {
-  const vec3 k = vec3(-0.9238795325, 0.3826834323, 0.4142135623);
-  p = abs(p);
-  p -= 2.0 * min(dot(vec2(k.x, k.y), p), 0.0) * vec2(k.x, k.y);
-  p -= 2.0 * min(dot(vec2(-k.x, k.y), p), 0.0) * vec2(-k.x, k.y);
-  p -= vec2(clamp(p.x, -k.z * r, k.z * r), r);
-  return length(p) * sign(p.y);
-}
-void main() {
-  float aa = max(fwidth(vPx.x), 1e-4);
-  float outer, cuts;
-  if (vShape.x > 0.5) {
-    // Hub: an octagon around a circle of r = 15 with three cut runways (0°, 60°, 120°), 3.5 px wide.
-    outer = sdOctagon(vPx, ${(STAMP_SIZE_PX.hub / 2).toFixed(1)});
-    vec2 bar = vec2(1.75, 11.0);
-    cuts = min(sdBox(vPx, bar), min(sdBox(awRot(vPx, 1.0471976), bar), sdBox(awRot(vPx, 2.0943951), bar)));
-  } else {
-    // Airport: a 22 px square with one cut runway at 45°, 4 px wide, 70 % of the diagonal.
-    outer = sdBox(vPx, vec2(${(STAMP_SIZE_PX.airport / 2).toFixed(1)}));
-    cuts = sdBox(awRot(vPx, 0.7853982), vec2(2.0, ${(STAMP_SIZE_PX.airport * Math.SQRT2 * 0.35).toFixed(2)}));
-  }
-  // Closed by curfew: the same shape as a 2.5 px outline (it does not fly); otherwise the block with its cuts.
-  float body = vShape.y > 0.5 ? abs(outer + 1.25) - 1.25 : max(outer, -cuts);
-  float ink = clamp(0.5 - body / aa, 0.0, 1.0);
-  float paper = clamp(0.5 - (outer - 2.0) / aa, 0.0, 1.0); // 2 px paper outline (and the cuts)
-  vec3 inkColour = vShape.z > 0.5 ? uRed : uInk;
-  gl_FragColor = vec4(mix(uPaper, inkColour, ink), max(paper, ink));
-  #include <colorspace_fragment>
-}`;
-
-// A function, not a constant: interpolated values would keep this module in a release build.
-const JAM_VERTEX = (): string => /* glsl */ `
-attribute vec3 aCenter;
-attribute vec2 aJam; // x: zone radius px, y: share of the grace period left
-varying vec2 vPx;
-varying vec2 vJam;
-void main() {
-  vPx = position.xy * (aJam.x + 12.0) * 2.0;
-  vJam = aJam;
-  if (!awFacing(aCenter)) { gl_Position = vec4(2.0, 2.0, 2.0, 1.0); return; }
-  gl_Position = awOffset(projectionMatrix * viewMatrix * vec4(aCenter, 1.0), vPx * uScale);
-}`;
-
-// A function, not a constant: interpolated values would keep this module in a release build.
-const JAM_FRAGMENT = (): string => /* glsl */ `
-uniform vec3 uRed;
-uniform vec3 uPaper;
-varying vec2 vPx;
-varying vec2 vJam;
-void main() {
-  float aa = max(fwidth(vPx.x), 1e-4);
-  float r = length(vPx), R = vJam.x;
-  float inside = clamp((R - r) / aa + 0.5, 0.0, 1.0);
-  // Red hatch at 45°: period 6 px, lines 2 px.
-  float u = (vPx.x + vPx.y) * 0.70710678 / 6.0;
-  float hatch = clamp((1.0 - abs(fract(u + 0.5) - 0.5) * 6.0) / aa + 0.5, 0.0, 1.0) * inside;
-  float ring = clamp((1.5 - abs(r - R)) / aa + 0.5, 0.0, 1.0);
-  // Countdown: from 12 o'clock clockwise, the share of the grace period left.
-  float angle = atan(vPx.x, vPx.y);
-  if (angle < 0.0) angle += 6.2831853;
-  float band = clamp((3.0 - abs(r - R - 6.0)) / aa + 0.5, 0.0, 1.0);
-  float arcOn = clamp((vJam.y * 6.2831853 - angle) * r / aa + 0.5, 0.0, 1.0);
-  float arc = band * arcOn;
-  // D-303: the ring and the arc sit on a 1.5 px paper rim (like the stamps), so they read on blue sea and night hatch.
-  float rim = max(clamp((3.0 - abs(r - R)) / aa + 0.5, 0.0, 1.0),
-    clamp((4.5 - abs(r - R - 6.0)) / aa + 0.5, 0.0, 1.0) * arcOn);
-  float red = max(hatch, max(ring, arc));
-  float alpha = max(red, rim);
-  if (alpha <= 0.0) discard;
-  gl_FragColor = vec4(mix(uPaper, uRed, red), alpha);
-  #include <colorspace_fragment>
-}`;
-
 interface StampRecord {
   id: string;
   lon: number;
@@ -264,7 +155,7 @@ interface StampRecord {
   center: Vector3;
 }
 
-/** Airport stamps (§5): the `AirportsLayer` contract plus the jam zone and screen boxes for the overlay (§8). */
+/** Airport points: the `AirportsLayer` contract plus the jam zone and screen boxes for the overlay. */
 export interface StampLayer extends AirportsLayer {
   /** Share of the jam grace period left (0..1), or null when the airport is not jammed. */
   setJam(id: string, share: number | null): void;
@@ -296,10 +187,10 @@ function instancedQuad(maxInstances: number, attributes: Record<string, number>)
 }
 
 export function createStampLayer(scene: Scene, uniforms: SharedUniforms, maxAirports = 64,
-  style: ObjectStyle = LINORYT_STYLE): StampLayer {
+  style: ObjectStyle = defaultStyle()): StampLayer {
   withExtras(uniforms);
   const group = new Group();
-  group.name = 'linoryt-airports';
+  group.name = style.name + '-airports';
   scene.add(group);
   const stamps = instancedQuad(maxAirports, { aCenter: 3, aShape: 4 });
   const jams = instancedQuad(maxAirports, { aCenter: 3, aJam: 2 });
@@ -426,38 +317,6 @@ void main() {
   gl_Position = awOffset(c, normal * aSide * (aWidth.x + 1.0));
 }`;
 
-// A function, not a constant: interpolated values would keep this module in a release build.
-const RIBBON_FRAGMENT = (): string => /* glsl */ `
-uniform vec3 uPaper;
-uniform vec3 uInk;
-uniform float uTime;
-uniform float uPxPerRad;
-uniform float uDash; // 0 = solid double line; 1 = dashed ink (route preview)
-varying float vSide;
-varying vec2 vWidth;
-varying vec3 vTrack;
-varying vec3 vWorld;
-void main() {
-  if (awHidden(vWorld)) discard;
-  if (vTrack.x > (uTime - vTrack.y) * ${(1000 / ROUTE_REVEAL_MS).toFixed(1)}) discard;
-  float aa = 1.0 / uDpr;
-  float px = abs(vSide) * (vWidth.x + 1.0);
-  float alpha = clamp((vWidth.x - px) / aa + 0.5, 0.0, 1.0);
-  float core = clamp((vWidth.y - px) / aa + 0.5, 0.0, 1.0);
-  if (uDash > 0.5) {
-    // 5 px ink, 4 px gap along the arc (beyond the plane's range: 2 px dots every 6 px, no red).
-    float along = vTrack.z * uPxPerRad;
-    float period = vTrack.y > 0.5 ? 8.0 : 9.0;
-    float on = vTrack.y > 0.5 ? 2.0 : 5.0;
-    float f = mod(along, period);
-    alpha *= clamp((on - f) / max(fwidth(along), 1e-4) + 0.5, 0.0, 1.0) * clamp(f / max(fwidth(along), 1e-4) + 0.5, 0.0, 1.0);
-    core = 0.0;
-  }
-  if (alpha <= 0.0) discard;
-  gl_FragColor = vec4(mix(uInk, uPaper, core), alpha);
-  #include <colorspace_fragment>
-}`;
-
 interface RibbonBuffers {
   position: Float32Array; prev: Float32Array; next: Float32Array; side: Float32Array; width: Float32Array;
   track: Float32Array; index: Uint32Array;
@@ -523,8 +382,8 @@ export interface RouteLayerLike {
   dispose(): void;
 }
 
-/** §6 Routes as one screen-constant ribbon: ink outer line, paper core (widebody wider), drawn on in 200 ms. */
-export class LinorytRouteLayer implements RouteLayerLike {
+/** Routes as one screen-constant ribbon: dark casing, light core (turboprop dashed), drawn on in 200 ms. */
+export class RouteRibbonLayer implements RouteLayerLike {
   readonly group = new Group();
   private readonly routes = new Map<string, PreparedRoute>();
   private readonly born = new Map<string, number>();
@@ -537,7 +396,7 @@ export class LinorytRouteLayer implements RouteLayerLike {
   private segments = 0;
   private readonly sample = new Vector3();
 
-  constructor(private readonly uniforms: SharedUniforms, private readonly style: ObjectStyle = LINORYT_STYLE) {
+  constructor(private readonly uniforms: SharedUniforms, private readonly style: ObjectStyle = defaultStyle()) {
     withExtras(uniforms);
     this.group.name = style.name + '-routes';
     this.material = screenMaterial(uniforms, RIBBON_VERTEX(), style.ribbonFragment(), materialPrefix(style) + 'Routes');
@@ -613,8 +472,8 @@ export class LinorytRouteLayer implements RouteLayerLike {
 const PREVIEW_SAMPLES = 64;
 const PREVIEW_LEGS = 32;
 
-/** §6 The finger-drawn route: 3 px ink dashed 5/4 px, no core, no red (past the range: 2 px dots). */
-export function createLinorytRoutePreview(uniforms: SharedUniforms, style: ObjectStyle = LINORYT_STYLE): RoutePreviewLayer {
+/** The finger-drawn route: one ribbon, the part past the range marked for the style's dots. */
+export function createRoutePreviewRibbon(uniforms: SharedUniforms, style: ObjectStyle = defaultStyle()): RoutePreviewLayer {
   withExtras(uniforms);
   const [previewOuter, previewCore] = style.previewWidth;
   // Two ribbons per leg at most (inside / beyond the range), fixed buffers: nothing is allocated per pointer move.
@@ -743,62 +602,6 @@ export function buildPlaneAtlas(): DataTexture {
   return texture;
 }
 
-// A function, not a constant: interpolated values would keep this module in a release build.
-const PLANE_VERTEX = (): string => /* glsl */ `
-attribute vec3 aPos;
-attribute vec3 aFwd;
-attribute vec2 aMeta; // x: widebody, y: load share
-varying vec2 vPx;
-varying vec2 vMeta;
-varying float vAngle;
-void main() {
-  vec4 c = projectionMatrix * viewMatrix * vec4(aPos, 1.0);
-  vec4 f = projectionMatrix * viewMatrix * vec4(aPos + aFwd * 0.01, 1.0);
-  vec2 d = (f.xy / f.w - c.xy / c.w) * uViewport;
-  vAngle = atan(d.y, d.x);
-  vMeta = aMeta;
-  vPx = position.xy * 56.0;
-  if (!awFacing(aPos)) { gl_Position = vec4(2.0, 2.0, 2.0, 1.0); return; }
-  gl_Position = awOffset(c, vPx * uScale);
-}`;
-
-// A function, not a constant: interpolated values would keep this module in a release build.
-const PLANE_FRAGMENT = (): string => /* glsl */ `
-uniform sampler2D uAtlas;
-uniform vec3 uPaper;
-uniform vec3 uInk;
-varying vec2 vPx;
-varying vec2 vMeta;
-varying float vAngle;
-void main() {
-  float aa = max(fwidth(vPx.x), 1e-4);
-  float size = vMeta.x > 0.5 ? ${PLANE_SIZE_PX.widebody.toFixed(1)} : ${PLANE_SIZE_PX.turboprop.toFixed(1)};
-  // The icon's nose points up (+y on screen); turn it onto the course.
-  vec2 q = awRot(vPx, 1.5707963 - vAngle);
-  vec2 icon = vec2(q.x / size * 100.0 + 50.0, 50.0 - q.y / size * 100.0);
-  vec2 texel = icon * ${ATLAS_SCALE.toFixed(4)} + ${(ATLAS_CELL * 0.05).toFixed(2)};
-  float d = 1e3;
-  if (all(greaterThanEqual(texel, vec2(0.0))) && all(lessThanEqual(texel, vec2(${ATLAS_CELL.toFixed(1)})))) {
-    vec2 uv = vec2((texel.x + (vMeta.x > 0.5 ? ${ATLAS_CELL.toFixed(1)} : 0.0)) / ${(ATLAS_CELL * 2).toFixed(1)},
-      texel.y / ${ATLAS_CELL.toFixed(1)});
-    d = (texture2D(uAtlas, uv).r - 0.5) * ${(2 * ATLAS_RANGE).toFixed(1)} * size / ${(100 * ATLAS_SCALE).toFixed(3)};
-  }
-  float ink = clamp(0.5 - d / aa, 0.0, 1.0);
-  float paper = clamp(0.5 - (d - ${PLANE_RIM_PX.toFixed(1)}) / aa, 0.0, 1.0); // paper rim (D-304)
-  // Load: a 2 px ink bar under the silhouette, load/capacity × ${PLANE_LOAD_BAR_PX} px (screen-aligned).
-  float barY = -size * 0.5 - 5.0;
-  float len = vMeta.y * ${PLANE_LOAD_BAR_PX.toFixed(1)};
-  vec2 b = vPx - vec2(-${(PLANE_LOAD_BAR_PX / 2).toFixed(1)} + len * 0.5, barY);
-  vec2 e = abs(b) - vec2(len * 0.5, 1.0);
-  float bar = len > 0.0 ? length(max(e, 0.0)) + min(max(e.x, e.y), 0.0) : 1e3;
-  ink = max(ink, clamp(0.5 - bar / aa, 0.0, 1.0));
-  paper = max(paper, clamp(0.5 - (bar - 1.5) / aa, 0.0, 1.0));
-  float alpha = max(paper, ink);
-  if (alpha <= 0.0) discard;
-  gl_FragColor = vec4(mix(uPaper, uInk, ink), alpha);
-  #include <colorspace_fragment>
-}`;
-
 /** The parts of `PlaneLayer` the world renderer uses. */
 export interface PlaneLayerLike {
   readonly group: Group;
@@ -811,8 +614,8 @@ export interface PlaneLayerLike {
 
 interface SpriteTrack { route: PreparedRoute; type: AircraftKind; from: number; to: number; direction: 1 | -1; load: number }
 
-/** §7 Planes as cut silhouettes: one instanced sprite draw from one SDF atlas, turned along the course, no bobbing. */
-export class LinorytPlaneLayer implements PlaneLayerLike {
+/** Planes as silhouettes: one instanced sprite draw from one SDF atlas, turned along the course, no bobbing. */
+export class PlaneSpriteLayer implements PlaneLayerLike {
   readonly group = new Group();
   private readonly mesh: Mesh;
   private readonly quad: ReturnType<typeof instancedQuad>;
@@ -832,7 +635,7 @@ export class LinorytPlaneLayer implements PlaneLayerLike {
   constructor(private readonly routes: Pick<RouteLayerLike, 'getRoute'>, private readonly uniforms: SharedUniforms,
     private readonly options: { maxPlanes?: number; progressScale?: number; style?: ObjectStyle } = {}) {
     withExtras(uniforms);
-    this.style = options.style ?? LINORYT_STYLE;
+    this.style = options.style ?? defaultStyle();
     const max = Math.max(1, Math.floor(options.maxPlanes ?? 100));
     this.quad = instancedQuad(max, { aPos: 3, aFwd: 3, aMeta: 2 });
     // Headless (tests, no DOM): a blank 1×1 atlas; the browser always rasterises the silhouettes.
@@ -895,7 +698,7 @@ export class LinorytPlaneLayer implements PlaneLayerLike {
     if (this.tracks.length) { this.quad.attrs.aPos.needsUpdate = true; this.quad.attrs.aFwd.needsUpdate = true; }
   }
 
-  /** The print casts no shadow; the earth style's shadow fades with the daylight at the view centre. */
+  /** The plane shadow fades with the daylight at the view centre (a style without `shadow` casts none). */
   setDaylight(daylight: number): void {
     this.uniforms.uShadow.value = this.style.shadow ? this.style.shadow(Number.isFinite(daylight) ? daylight : 1) : 0;
   }
@@ -918,8 +721,8 @@ export class LinorytPlaneLayer implements PlaneLayerLike {
 // ---- Styles and composition -------------------------------------------------------------------------------------
 
 /**
- * [night-74a R3] The plane SDF lookup as GLSL (`awPlaneSdf(q, size, wide)` → signed CSS px, + outside), for styles that
- * draw from the same atlas as the print (`buildPlaneAtlas`). `q` is the screen offset turned onto the icon (nose up).
+ * [night-74a R3] The plane SDF lookup as GLSL (`awPlaneSdf(q, size, wide)` → signed CSS px, + outside) into the atlas
+ * of `buildPlaneAtlas`. `q` is the screen offset turned onto the icon (nose up).
  */
 export const ATLAS_SDF_GLSL = (): string => /* glsl */ `
 float awPlaneSdf(vec2 q, float size, bool wide) {
@@ -930,22 +733,17 @@ float awPlaneSdf(vec2 q, float size, bool wide) {
   return (texture2D(uAtlas, uv).r - 0.5) * ${(2 * ATLAS_RANGE).toFixed(1)} * size / ${(100 * ATLAS_SCALE).toFixed(3)};
 }`;
 
-/** The Linoryt print (D-283 spec §5–§8): the shipped look until the flip (R5) and its removal (R6). */
-export const LINORYT_STYLE: ObjectStyle = {
-  name: 'linoryt',
-  inks: { paper: LINORYT_INKS.paper, ink: LINORYT_INKS.ink, red: LINORYT_INKS.red, sign: LINORYT_INKS.ochre },
-  stampVertex: STAMP_VERTEX, stampFragment: STAMP_FRAGMENT, jamVertex: JAM_VERTEX, jamFragment: JAM_FRAGMENT,
-  ribbonFragment: RIBBON_FRAGMENT, planeVertex: PLANE_VERTEX, planeFragment: PLANE_FRAGMENT,
-  stampHalf: { airport: STAMP_SIZE_PX.airport / 2, hub: STAMP_SIZE_PX.hub / 2 },
-  jamRadius: (half) => half * JAM_ZONE_FACTOR,
-  routeWidth: ROUTE_WIDTH_PX,
-  previewWidth: [3, 0],
-};
+/** The one object style (built on first use: the shaders take the atlas lookup and the draw-on time from here). */
+let earthStyle: ObjectStyle | null = null;
+function defaultStyle(): ObjectStyle {
+  earthStyle ??= earthObjectStyle({ atlasSdf: ATLAS_SDF_GLSL, revealMs: ROUTE_REVEAL_MS });
+  return earthStyle;
+}
 
-export interface LinorytObjects {
+export interface WorldObjects {
   readonly airports: StampLayer;
-  readonly routes: LinorytRouteLayer;
-  readonly planes: LinorytPlaneLayer;
+  readonly routes: RouteRibbonLayer;
+  readonly planes: PlaneSpriteLayer;
   readonly preview: RoutePreviewLayer;
   readonly style: ObjectStyle['name'];
 }
@@ -954,26 +752,14 @@ export interface WorldObjectsOptions {
   maxAirports?: number;
   maxPlanes?: number;
   progressScale?: number;
-  /** The globe look; `earth` draws the NASA-globe style, anything else the print. */
-  look?: 'linoryt' | 'earth';
 }
 
-/** The object layers for a look (the earth style is a lazy chunk, loaded only when the earth look is drawn). */
-export async function createWorldObjects(scene: Scene, opts: WorldObjectsOptions): Promise<LinorytObjects> {
-  let style = LINORYT_STYLE;
-  if (opts.look === 'earth') { // [night-79a R4] D-334: a release chunk too (DEFAULT_GLOBE_LOOK selects it at R5)
-    const { earthObjectStyle } = await import('./objects-earth');
-    style = earthObjectStyle({ atlasSdf: ATLAS_SDF_GLSL, revealMs: ROUTE_REVEAL_MS });
-  }
-  return createObjects(scene, opts, style);
-}
-
-/** Synchronous composition for a known style (tests, `createWorldObjects`). */
-export function createObjects(scene: Scene, opts: WorldObjectsOptions, style: ObjectStyle = LINORYT_STYLE): LinorytObjects {
+/** The world's object layers (points, jam zone, routes, planes, route preview) in one style. */
+export function createObjects(scene: Scene, opts: WorldObjectsOptions, style: ObjectStyle = defaultStyle()): WorldObjects {
   const uniforms = sharedUniforms(style);
   const airports = createStampLayer(scene, uniforms, opts.maxAirports ?? 64, style);
-  const routes = new LinorytRouteLayer(uniforms, style);
-  const planes = new LinorytPlaneLayer(routes, uniforms, { maxPlanes: opts.maxPlanes, progressScale: opts.progressScale, style });
-  const preview = createLinorytRoutePreview(uniforms, style);
+  const routes = new RouteRibbonLayer(uniforms, style);
+  const planes = new PlaneSpriteLayer(routes, uniforms, { maxPlanes: opts.maxPlanes, progressScale: opts.progressScale, style });
+  const preview = createRoutePreviewRibbon(uniforms, style);
   return { airports, routes, planes, preview, style: style.name };
 }

@@ -1,6 +1,5 @@
 // [task-03] Globe-only laboratory on the shared world renderer (no game layers populated).
 import { createWorldRenderer, type QualityPreference, type WorldRenderer } from '../src/render';
-import type { GlobeLook } from '../src/render/globe';
 
 declare global {
   interface Window {
@@ -22,10 +21,9 @@ let world: WorldRenderer | null = null;
 let frameCount = 0, lastStats = performance.now(), frameMs = 0, lastFrame = performance.now();
 let pointerId: number | null = null, lastX = 0, lastY = 0, lastMove = 0;
 
-// [ext-04 E1] `?look=linoryt` (or any `?globeLook=`), `?lon=&lat=&zoom=` camera, `?sun=lon,lat` frozen sun,
-// `?frozen` (no inertia between frames; window.__globeWorld for probes such as the Linoryt motion strip).
+// [ext-04 E1] `?lon=&lat=&zoom=` camera, `?sun=lon,lat` frozen sun, `?frozen` (no inertia between frames;
+// window.__globeWorld for probes). [night-82a R6] D-337: `?look=` is gone (one globe); old links ignore it.
 const params = new URLSearchParams(location.search);
-const look = (params.get('look') ?? params.get('globeLook') ?? undefined) as GlobeLook | undefined;
 const sun = (params.get('sun') ?? '-62,-15').split(',').map(Number);
 if (params.has('clean')) document.getElementById('lab')?.style.setProperty('display', 'none');
 const load = (quality: QualityPreference): void => {
@@ -35,7 +33,7 @@ const load = (quality: QualityPreference): void => {
   // Antialiasing is fixed per WebGL context, so a preset switch recreates the world.
   world?.dispose();
   const next = createWorldRenderer(undefined, {
-    quality, autoResize: root, look,
+    quality, autoResize: root,
     camera: { longitude: Number(params.get('lon') ?? 7), latitude: Number(params.get('lat') ?? 34),
       zoom: Number(params.get('zoom') ?? 1.6) },
   });

@@ -7,24 +7,13 @@ import {
 import type { RoutePreviewModel } from '../input/routeTool';
 import {
   contrastRatio, relativeLuminance, insetsFromLayout, menuFraming, solveZoomForRadius, menuSpinRate, type LayoutRect,
-  globeFrameFraming, menuSunTick, DEFAULT_GLOBE_LOOK,
+  globeFrameFraming, menuSunTick,
 } from '../render'; // [task-34] [task-39] menuSpinRate; [night-79a R4] globeFrameFraming, menuSunTick
 import { cityByCode } from '../data'; // [task-34]
 import { frameTilt, menuNetworkClashes, menuTilt, type ClearRect } from './menu-clear'; // [night-16a] D-262; [night-79a R4]
 import { t } from '../i18n'; // [night-11h]
 import { forgetAdaptiveSteps, readAdaptiveSteps, writeAdaptiveSteps } from './adaptiveMemory'; // [night-07b]
 import { reducedMotion } from '../ui/motion'; // [night-11g] D-88
-import type { GlobeLook } from '../render/globe';
-
-/**
- * [ext-04 E4] D-285; [night-70a R1] D-325; [night-81a] D-336 (R5): the NASA globe (`earth`) is the shipped look
- * (DEFAULT_GLOBE_LOOK). A DEV build still takes `?look=linoryt` for the old print until R6 removes it, and `?look=earth`
- * for old links; the caller passes nothing in a release.
- */
-function devGlobeLook(): GlobeLook | undefined {
-  const look = new URLSearchParams(location.search).get('look');
-  return look === 'linoryt' || look === 'earth' ? look : undefined;
-}
 
 // [task-34] HTML panels the globe must stay clear of. Their boxes become camera insets (D-47).
 // [night-75a] D-330: the UI-A hub strip bay is one too.
@@ -85,9 +74,6 @@ const MENU_HOLD_MS = 1500;
 
 export function createWorld(host: HTMLElement, label: string, quality: QualityPreference): World {
   let insets: SafeAreaInsets = {};
-  // [night-79a R4] D-334: the look drawn (DEV preview or the shipped default); the earth look's menu shows the K2 night.
-  const devLook = import.meta.env.DEV ? devGlobeLook() : undefined;
-  const nightMenu = (devLook ?? DEFAULT_GLOBE_LOOK) === 'earth';
   // [task-39] Insets last applied by the framing; the renderer's own resize observer reuses them
   // instead of falling back to the bare safe-area insets between two measurements.
   let appliedInsets: SafeAreaInsets = {};
@@ -95,8 +81,6 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
   const renderer = createWorldRenderer(undefined, {
     quality, seed: 0xA1A1, autoResize: host, insets: () => appliedInsets,
     camera: { longitude: -18, latitude: 40, zoom: 2 }, maxAirports: 64, maxPlanes: 120,
-    // [ext-03] DEV-only experimental globe look (`?globeLook=refined|satellite|painted`); production: diorama.
-    look: devLook, // [night-46a] D-301: release = DEFAULT_GLOBE_LOOK (Linoryt)
     // [night-07b] D-74: a slow device starts where its last session ended up.
     adaptedSteps: quality === 'auto' ? readAdaptiveSteps() : [],
     onAdapt: (steps) => writeAdaptiveSteps(steps),
@@ -178,7 +162,7 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
           insets: { left, right, top, bottom: insets.bottom ?? 0 },
         };
       }
-      // [night-29b] D-286's printed-index framing went with Linoryt ([night-81a] D-336): the UI-A menu is framed above
+      // [night-29b] D-286's printed-index framing went with the print skin ([night-81a] D-336): the UI-A menu is framed above
       // (frameMenu); this horizon framing only covers a menu without a globe frame (laid out late).
       // The entries' box is part of the key: the tilt below needs them laid out (a first measure may come before).
       const key = `menu ${w} ${h} ${entries ? `${Math.round(entries.left)},${Math.round(entries.top)}` : '-'} ${demoCities.length} ${JSON.stringify(framing)}`;
@@ -324,9 +308,9 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
     const demoAlpha = frameCallback ? null : demo.frame(dt); // [task-34] menu planes
     if (frame) renderer.setTime(frame.tick, Math.max(0, Math.min(1, frame.alpha)));
     else {
-      // Without a run, keep the sun just ahead of the view so the menu backdrop is daylit; [night-79a R4] D-323/D-334:
-      // the earth look shows the K2 night with the dusk band instead (presentation only, the run's clock is untouched).
-      renderer.setTime(menuSunTick(renderer.orbit.getState().longitude, nightMenu), 0);
+      // Without a run, [night-79a R4] D-323/D-334: the menu shows the K2 night with the dusk band, turning with the view
+      // (presentation only, the run's clock is untouched; [night-82a R6] D-337: the print's daylit menu is gone).
+      renderer.setTime(menuSunTick(renderer.orbit.getState().longitude), 0);
     }
     if (menuActive && firstMenuFrame === null) firstMenuFrame = framingKey(); // [task-39]
     renderer.render(frame ? frame.alpha : demoAlpha ?? 1, dt);

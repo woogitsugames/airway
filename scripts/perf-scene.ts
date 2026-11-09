@@ -23,7 +23,6 @@ function parseArgs(argv) {
   const options = {
     durationMs: 120_000,
     preset: 'medium',
-    look: '', // [ext-03] experimental globe look (DEV flag); '' = the shipped diorama
     width: 412,
     height: 915,
     output: resolve(ROOT, '.perf/scene.json'),
@@ -40,9 +39,6 @@ function parseArgs(argv) {
     } else if (flag === '--preset') {
       if (!VALID_PRESETS.has(value)) throw new Error('Invalid quality preset: ' + value);
       options.preset = value;
-    } else if (flag === '--look') {
-      if (!['diorama', 'refined', 'satellite', 'painted', 'map', 'linoryt', 'earth'].includes(value)) throw new Error('Invalid look: ' + value);
-      options.look = value === 'diorama' ? '' : value;
     } else if (flag === '--viewport') {
       const parts = /^(\d{3,4})x(\d{3,4})$/.exec(value);
       if (!parts) throw new Error('Viewport must be WIDTHxHEIGHT');
@@ -121,15 +117,15 @@ try {
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto(url + '?perf=scene', { waitUntil: 'networkidle' });
-  await page.evaluate(async ({ preset, look }) => {
+  await page.evaluate(async ({ preset }) => {
     const module = await import('/src/render/perf-fixture.ts');
     const stage = document.createElement('div');
     stage.id = 'perf-stage';
     stage.style.cssText = 'position:fixed;inset:0;overflow:hidden;background:#8CC3D8';
     document.body.appendChild(stage);
-    window.__airwayPerf = module.mountPerformanceFixture(stage, preset, look || undefined);
+    window.__airwayPerf = module.mountPerformanceFixture(stage, preset); // [night-82a R6] D-337: one globe, no --look
     await window.__airwayPerf.ready;
-  }, { preset: options.preset, look: options.look });
+  }, { preset: options.preset });
   await page.waitForFunction(() => window.__airwayPerf?.read().renderedFrames > 4, null, {
     timeout: 20_000,
   });
@@ -243,8 +239,7 @@ try {
   }
   if (browser) await browser.close();
   if (server && server.exitCode === null) server.kill('SIGTERM');
-  console.log('SUMMARY perf:scene seed=' + SEED + (process.argv.includes('--look') ? ' look=' +
-    process.argv[process.argv.indexOf('--look') + 1] : '') + ' frames=' + frames +
+  console.log('SUMMARY perf:scene seed=' + SEED + ' frames=' + frames +
     ' samples=' + sampleCount + ' failed=' + failed);
   if (failed) process.exitCode = 1;
 }

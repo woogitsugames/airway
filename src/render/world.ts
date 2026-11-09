@@ -11,7 +11,8 @@ import { Color, Group, PerspectiveCamera, Scene, Vector3, WebGLRenderer, type Ob
 import { createContextGuard } from './contextGuard'; // [night-11h]
 import type { AirportsLayer } from './airports';
 import { GlobeOrbitCamera, type OrbitCameraOptions, type SafeAreaInsets } from './camera';
-import { createGlobe, createSunLights, DEFAULT_GLOBE_LOOK, type GlobeInstance, type GlobeLook } from './globe';
+import { createGlobe, createSunLights, type GlobeInstance } from './globe';
+import { EARTH_LOOK } from './globe/earth';
 import { pickSphereNdc, type LonLat } from './globe/geo-math';
 import { projectToScreen, SURFACE_ANCHOR_ALTITUDE } from './projection';
 import type { PlaneRenderSnapshot } from './planes';
@@ -24,10 +25,9 @@ import type { AircraftKind, GeoWaypoint, RouteRenderSpec } from './routes';
 import { createSunController, type SunController } from './sun';
 import { measureLayerContrast, sampleLuminance, type LayerContrast, type PixelRect } from './contrast';
 import type { UpgradeKind } from '../sim/upgrades';
-// [ext-04 E2/E3] D-283: Linoryt stamps, ribbons and silhouettes; [night-74a R3] D-329: the same layers in the NASA-globe
-// style for the DEV `?look=earth` preview (`objects.ts`, formerly `linoryt-objects.ts`).
-import type { LinorytObjects, PlaneLayerLike, RouteLayerLike } from './objects';
-import { SKY_COLOUR, STAMP_SIZE_PX } from './globe/linoryt';
+// [ext-04 E2/E3] D-283 points, ribbons and silhouettes; [night-74a R3] D-329 in the NASA-globe style (`objects.ts`).
+import type { PlaneLayerLike, RouteLayerLike, WorldObjects } from './objects';
+import { STAMP_SIZE_PX } from './marks';
 
 /** Airport tap radius in CSS px (dp); matches the route tool's start radius. */
 export const CITY_PICK_RADIUS_DP = 28;
@@ -42,10 +42,10 @@ export interface HubLoadView {
   readonly id: string;
   readonly used: number;
   readonly cap: number;
-  /** [ext-04 E2] Linoryt: share of the jam grace period left (0..1), null/absent = not jammed; any airport. */
+  /** [ext-04 E2] Share of the jam grace period left (0..1), null/absent = not jammed; any airport. */
   readonly jam01?: number | null;
 }
-/** [ext-04 E2] Spec §8: an airport stamp on screen (CSS px): centre, half the side, on the visible hemisphere. */
+/** [ext-04 E2] An airport point on screen (CSS px): centre, half its size, on the visible hemisphere. */
 export interface AirportScreenBox {
   x: number;
   y: number;
@@ -100,10 +100,6 @@ export interface WorldRendererOptions {
   /** Decorative (non-simulation) seed for trees, rocks, clouds and lights. */
   readonly seed?: number;
   readonly landUrl?: string;
-  /**
-   * [ext-04 E4] The globe look; the Linoryt print is the only one (D-285).
-   */
-  readonly look?: GlobeLook;
   readonly camera?: OrbitCameraOptions;
   readonly maxAirports?: number;
   readonly maxHubSeats?: number;
@@ -202,20 +198,17 @@ export function createWorldRenderer(
   applyQualityProfile(renderer, quality);
   const element = renderer.domElement;
   const scene = new Scene();
-  // [ext-04] The paper sky from the first frame (the print chunk loads lazily; no blue flash before it, U6 note).
-  scene.background = new Color(SKY_COLOUR);
+  // [ext-04] The globe's space from the first frame (the globe chunk loads lazily; no flash before it, U6 note).
+  scene.background = new Color(EARTH_LOOK.space);
   const camera = new PerspectiveCamera(30, 1, 0.05, 30);
   const orbit = new GlobeOrbitCamera(camera, opts.camera);
 
   const lights = createSunLights(quality);
   scene.add(lights.group);
   const sun: SunController = createSunController(lights, renderer);
-  // [ext-04 E2] The Linoryt look draws stamps, double-line ribbons, a dashed preview and cut silhouettes instead.
-  // [ext-04 E3] The look this renderer draws: the override, else the default look when that is the print.
-  const look: GlobeLook = opts.look ?? DEFAULT_GLOBE_LOOK; // [ext-04 E4] always the print
-  // The Linoryt layers live in their own chunk (with the print globe); until it arrives, record-only stand-ins keep
-  // the airport set and the last routes, planes, loads and preview are replayed into the real layers (D-300).
-  let linorytObjects: LinorytObjects | null = null;
+  // The object layers live in their own chunk; until it arrives, record-only stand-ins keep the airport set and the
+  // last routes, planes, loads and preview are replayed into the real layers (D-300).
+  let worldObjects: WorldObjects | null = null;
   let airports: AirportsLayer;
   let routes: RouteLayerLike;
   let planes: PlaneLayerLike;
@@ -229,14 +222,14 @@ export function createWorldRenderer(
   };
   routes = { group: new Group(), getRoute: () => undefined, setRoutes() { /* replayed */ }, dispose() { /* nothing yet */ },
     stats: { routes: 0, segments: 0, drawCalls: 0, triangles: 0, rebuilds: 0 } };
-  planes = { group: new Group(), setSnapshots() { /* replayed */ }, update() { /* nothing yet */ }, setDaylight() { /* print */ },
+  planes = { group: new Group(), setSnapshots() { /* replayed */ }, update() { /* nothing yet */ }, setDaylight() { /* replayed */ },
     dispose() { /* nothing yet */ }, stats: { planes: 0, turboprops: 0, widebodies: 0, mainPassCalls: 0, triangles: 0, droppedPlanes: 0 } };
   preview = { object: new Group(), update() { /* replayed */ }, dispose() { /* nothing yet */ } };
   }
   scene.add(routes.group);
   scene.add(planes.group);
   scene.add(preview.object);
-  // [ext-04 E3] Last inputs, for the Linoryt replay.
+  // [ext-04 E3] Last inputs, replayed into the object layers when their chunk arrives.
   let lastSpecs: RouteRenderSpec[] = [];
   let lastRevision: number | string | undefined;
   let lastPlanes: readonly [readonly PlaneView[], readonly PlaneView[]] = [[], []];
@@ -267,7 +260,6 @@ export function createWorldRenderer(
     const mine = ++globeEpoch;
     const next = await createGlobe(scene, {
       quality, seed: opts.seed ?? 0xA1A1, landUrl: opts.landUrl, sunDirection: lights.direction,
-      look,
     });
     if (disposed || mine !== globeEpoch) { next.dispose(); return; }
     globe?.dispose();
@@ -304,16 +296,16 @@ export function createWorldRenderer(
     lastPaintAt = 0;
     pendingDt = 0;
   });
-  const linorytReady = import('./objects').then(async (module) => {
+  const objectsReady = import('./objects').then((module) => {
     if (disposed) return;
-    const next = await module.createWorldObjects(scene,
-      { maxAirports: opts.maxAirports, maxPlanes: opts.maxPlanes, progressScale: opts.progressScale, look });
+    const next = module.createObjects(scene,
+      { maxAirports: opts.maxAirports, maxPlanes: opts.maxPlanes, progressScale: opts.progressScale });
     if (disposed) {
       next.preview.dispose(); next.planes.dispose(); next.routes.dispose(); next.airports.dispose();
       return;
     }
     for (const old of [routes.group, planes.group, preview.object]) scene.remove(old);
-    linorytObjects = next;
+    worldObjects = next;
     airports = next.airports; routes = next.routes; planes = next.planes; preview = next.preview;
     scene.add(routes.group, planes.group, preview.object);
     for (const city of cityList) airports.addAirport({ id: city.id, lon: city.lon, lat: city.lat, hub: city.hub });
@@ -325,7 +317,7 @@ export function createWorldRenderer(
     preview.update(lastPreview);
     lastZoom = -1;
   });
-  const ready = Promise.all([loadGlobe(), linorytReady]).then(() => undefined);
+  const ready = Promise.all([loadGlobe(), objectsReady]).then(() => undefined);
   ready.catch(() => { /* surfaced to the caller through `ready` */ });
 
   function project(lon: number, lat: number, altitude: number, out: ScreenPoint): ScreenPoint {
@@ -402,8 +394,8 @@ export function createWorldRenderer(
     setHubLoad(loads) {
       lastLoads = loads;
       for (const load of loads) if (airports.isHub(load.id)) airports.setHubLoad(load.id, load.used, load.cap);
-      if (linorytObjects) {
-        for (const load of loads) linorytObjects.airports.setJam(load.id, load.jam01 ?? null);
+      if (worldObjects) {
+        for (const load of loads) worldObjects.airports.setJam(load.id, load.jam01 ?? null);
       }
     },
     setCurfew(closedIds) {
@@ -497,7 +489,7 @@ export function createWorldRenderer(
       if (rebuild) await loadGlobe();
     },
     drawModelPreview() {
-      // [ext-04 E4] The Linoryt crates print their symbol (the model canvas is hidden by the skin), so no 3D model is
+      // [ext-04 E4] The weekly board's strips draw their own symbol (no model canvas), so no 3D model is
       // drawn: no shader compile and no synchronous pixel read-back on the weekly board's first frame (#315).
       return false;
     },
@@ -516,9 +508,9 @@ export function createWorldRenderer(
     },
     measureLayerContrast() {
       camera.updateMatrixWorld();
-      // [ext-04] D-303: stamps and the jam zone apart (the zone is a hatch, not a symbol).
-      const layers: Record<string, Object3D> = linorytObjects
-        ? { routes: routes.group, airports: linorytObjects.airports.stampMesh, jam: linorytObjects.airports.jamMesh, planes: planes.group }
+      // [ext-04] D-303: points and the jam zone apart (the zone is a ring, not a symbol).
+      const layers: Record<string, Object3D> = worldObjects
+        ? { routes: routes.group, airports: worldObjects.airports.stampMesh, jam: worldObjects.airports.jamMesh, planes: planes.group }
         : { routes: routes.group, airports: airports.group, planes: planes.group };
       // [night-72a R2] D-327: the country borders of the earth look, measured like any layer (D-177).
       if (globe?.borders) layers['borders'] = globe.borders;
@@ -545,7 +537,7 @@ export function createWorldRenderer(
       if (!canvas) element.remove();
     },
   };
-  // [ext-04 E2/E3] Spec §8: stamp boxes for the overlay; the centre is the same point `pick()` measures.
+  // [ext-04 E2/E3] Point boxes for the overlay; the centre is the same point `pick()` measures.
   {
     world.projectAirport = (id, out) => {
       const city = cities.get(id);
@@ -553,7 +545,7 @@ export function createWorldRenderer(
       camera.updateMatrixWorld();
       project(city.lon, city.lat, SURFACE_ANCHOR_ALTITUDE, point);
       out.x = point.x; out.y = point.y; out.visible = point.visible;
-      out.half = linorytObjects ? linorytObjects.airports.halfSize(id)
+      out.half = worldObjects ? worldObjects.airports.halfSize(id)
         : (city.hub ? STAMP_SIZE_PX.hub : STAMP_SIZE_PX.airport) / 2;
       return out;
     };

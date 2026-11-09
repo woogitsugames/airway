@@ -5,7 +5,7 @@ import './ui/fonts.css';
 import './ui/base.css';
 import './ui/theme/theme.css';
 import './ui/skin/current.css'; // [night-11aq] UI skin tokens (D-249); [night-81a] D-336: UI-A values
-import { startSkinBase } from './ui/skin/base'; // [night-28a] D-284; [night-81a] D-336: the board's base helpers (was linoryt.ts)
+import { startSkinBase } from './ui/skin/base'; // [night-28a] D-284; [night-81a] D-336: the board's base helpers (formerly the print skin's helpers)
 import './ui/game.css';
 import { bootAudio, audioSettingsFromToggles } from './audio';
 import { createFlapRattle } from './game/flapSound'; // [night-07e]
@@ -78,7 +78,7 @@ const query = new URLSearchParams(location.search);
  */
 const devWeatherFront = import.meta.env.DEV && query.get('weather') === 'front';
 // [night-81a] D-336 (PLAN-NOWY-KIERUNEK.md step T6): UI-A "Lotniskowa tablica i paski lotu" is the shipped skin (the
-// Linoryt print and the DEV `?skin=board` preview flag are gone): <html data-skin="board"> (index.html), the base helpers,
+// D-283 print skin and the DEV `?skin=board` preview flag are gone): <html data-skin="board"> (index.html), the base helpers,
 // then the board's modules as lazy chunks (type-only imports; i18n and the shared classes are handed in) filling the
 // HUD, sign, strip, weekly-sheet and menu/report slots before the HUD mounts.
 startSkinBase({ t, localNumber });

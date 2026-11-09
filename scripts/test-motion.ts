@@ -117,18 +117,18 @@ await test('the menu globe stands still with reduced motion', async () => {
   assert.equal(spin(), 0);
 });
 
-// [ext-04] D-88 in the Linoryt print: a new route is drawn on in 200 ms only with motion; reduced motion shows it at
+// [ext-04] D-88 on the globe's objects: a new route is drawn on in 200 ms only with motion; reduced motion shows it at
 // once (the ribbon reads the root attribute motion.ts sets); the jam arc steps per game second.
 await test('reduced motion: a new route appears at once, no draw-on', async () => {
   const m = await fresh();
   (globalThis as Record<string, unknown>).document = { documentElement: root };
-  const { LinorytRouteLayer } = await import('../src/render/objects.ts');
+  const { RouteRibbonLayer } = await import('../src/render/objects.ts');
   const { Color } = await import('three');
   const shared = { uViewport: { value: { x: 412, y: 915 } }, uDpr: { value: 1 }, uTime: { value: 0 }, uPxPerRad: { value: 200 }, uScale: { value: 1 },
     uPaper: { value: new Color() }, uInk: { value: new Color() }, uRed: { value: new Color() } };
   const first = { id: 'A', type: 'turboprop' as const, waypoints: [{ lon: 0, lat: 50 }, { lon: 10, lat: 52 }] };
   const second = { id: 'B', type: 'widebody' as const, waypoints: [{ lon: 0, lat: 50 }, { lon: -40, lat: 45 }] };
-  const bornOf = (layer: InstanceType<typeof LinorytRouteLayer>): number[] => {
+  const bornOf = (layer: InstanceType<typeof RouteRibbonLayer>): number[] => {
     const mesh = layer.group.children[0] as unknown as { geometry: { getAttribute(n: string): { array: Float32Array } } };
     const track = mesh.geometry.getAttribute('aTrack').array;
     return [track[1], track[track.length - 2]]; // first vertex (route A) and last vertex (route B)
@@ -136,14 +136,14 @@ await test('reduced motion: a new route appears at once, no draw-on', async () =
   setSystem(false);
   m.setReducedMotion(false);
   m.applyMotion(root);
-  const animated = new LinorytRouteLayer(shared);
+  const animated = new RouteRibbonLayer(shared);
   animated.setRoutes([first], 1);
   animated.setRoutes([first, second], 2);
   const [oldBorn, newBorn] = bornOf(animated);
   assert.ok(oldBorn < -1e5 && newBorn > 0, `with motion the new route is born now (${oldBorn}, ${newBorn})`);
   m.setReducedMotion(true);
   m.applyMotion(root);
-  const still = new LinorytRouteLayer(shared);
+  const still = new RouteRibbonLayer(shared);
   still.setRoutes([first], 1);
   still.setRoutes([first, second], 2);
   assert.ok(bornOf(still).every((born) => born < -1e5), 'with reduced motion every route is shown whole at once');
@@ -151,7 +151,7 @@ await test('reduced motion: a new route appears at once, no draw-on', async () =
 });
 
 await test('reduced motion: the jam arc steps once per game second', async () => {
-  const { jamArcShare } = await import('../src/render/globe/linoryt.ts');
+  const { jamArcShare } = await import('../src/render/marks.ts');
   const grace = 450, tps = 10;
   assert.equal(jamArcShare(null, grace, tps, true), null);
   assert.equal(jamArcShare(421, grace, tps, false), 421 / 450);
@@ -164,16 +164,8 @@ await test('reduced motion: the jam arc steps once per game second', async () =>
   assert.match(session, /jamArcShare\(city\.jamTicksLeft, CONGESTION_GRACE_TICKS, SIM_TICKS_PER_SECOND, reducedMotion\(\)\)/);
 });
 
-await test('nothing in the print pulses: stamps, jam zone and planes read no clock', () => {
-  const src = readFileSync(resolve(ROOT, 'src/render/objects.ts'), 'utf8');
-  for (const name of ['STAMP_VERTEX', 'STAMP_FRAGMENT', 'JAM_VERTEX', 'JAM_FRAGMENT', 'PLANE_VERTEX', 'PLANE_FRAGMENT']) {
-    const start = src.indexOf(`const ${name} =`);
-    const body = src.slice(start, src.indexOf('}`;', start));
-    assert.ok(start >= 0 && !/uTime|sin\(|cos\(uTime/.test(body), `${name} has no time-driven motion`);
-  }
-});
-
-// [night-74a R3] D-329: the NASA-globe objects do not pulse either (the jam ring spec's 1 Hz blink is left out).
+// [night-74a R3] D-329: the NASA-globe objects do not pulse (the jam ring spec's 1 Hz blink is left out); [night-82a R6]
+// D-337: the print's shaders, checked the same way before, are gone.
 await test('nothing in the earth objects pulses: points, jam zone and planes read no clock', () => {
   const src = readFileSync(resolve(ROOT, 'src/render/objects-earth.ts'), 'utf8');
   for (const name of ['POINT_VERTEX', 'POINT_FRAGMENT', 'JAM_VERTEX', 'JAM_FRAGMENT', 'PLANE_VERTEX', 'PLANE_FRAGMENT']) {

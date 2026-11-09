@@ -1,5 +1,5 @@
-// [night-70a R1] D-323: the realistic NASA globe (`?look=earth`), loaded with a dynamic import as a chunk of its own
-// ([night-79a R4] D-334: the release build carries it and its textures, unused until R5 flips DEFAULT_GLOBE_LOOK). One fragment shader on the terrain mesh, after the K1/K2 mockup shader
+// [night-70a R1] D-323: the realistic NASA globe, loaded with a dynamic import as a chunk of its own ([night-82a R6]
+// D-337: the one globe since the old print went). One fragment shader on the terrain mesh, after the K1/K2 mockup shader
 // (docs/styles/kierunki-2026-11c/makiety/src/globe.js):
 //   - Blue Marble NG July 2004 (D-176) day image with our own grading (less saturation, lifted mids, cooler deep water);
 //   - Black Marble 2016 at night, the city lights split from its blue base (lights keep their sodium colour);
@@ -241,7 +241,7 @@ export interface EarthGlobeOptions {
   readonly bordersUrl?: string;
 }
 
-/** The NASA globe: terrain mesh (same triangles as the print), photo material, optional shell and stars. */
+/** The NASA globe: terrain mesh (`terrain.ts`, `lod.ts`), photo material, optional shell and stars. */
 export async function createEarthGlobe(scene: Scene, mask: LandMask, opts: EarthGlobeOptions): Promise<GlobeInstance> {
   const base = opts.baseUrl ?? `${import.meta.env.BASE_URL}data/globe/`;
   const preset = earthPreset(opts.quality);
@@ -296,9 +296,7 @@ export async function createEarthGlobe(scene: Scene, mask: LandMask, opts: Earth
   group.userData['lookBytes'] = elevation.size + day.bytes + night.bytes;
   group.userData['earthTextures'] = `${preset.startDay}/${preset.startNight}`;
   scene.add(group);
-  // Space behind the globe (the renderer starts on the paper sky of the print; the preview owns the background).
-  const previousBackground = scene.background;
-  scene.background = new Color(EARTH_LOOK.space);
+  // Space behind the globe: the renderer starts on EARTH_LOOK.space (world.ts), so the background is never swapped here.
 
   let disposed = false;
   let upgrade: 'pending' | 'loading' | 'done' = preset.day !== preset.startDay || preset.night !== preset.startNight ? 'pending' : 'done';
@@ -338,7 +336,6 @@ export async function createEarthGlobe(scene: Scene, mask: LandMask, opts: Earth
       disposed = true;
       upgradeAbort.abort();
       scene.remove(group);
-      scene.background = previousBackground;
       lod.dispose();
       (uniforms['awDay'].value as Texture).dispose();
       (uniforms['awNight'].value as Texture).dispose();

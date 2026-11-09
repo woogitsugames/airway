@@ -16,7 +16,7 @@ import {
   baseHomeReach, baseNoteFrame, baseNoteMust, baseRank, baseStampBox, baseStampFallback, baseStampSlot, NAME_LINE,
   noteSize, stampReach, type NoteSize,
 } from '../src/ui/skin/base.ts';
-import { STAMP_SIZE_PX } from '../src/render/globe/linoryt.ts';
+import { STAMP_SIZE_PX } from '../src/render/marks.ts';
 import { LOD1_GLYPHS, signSize, SIGN_ROW, FRESH_ROW } from '../src/ui/skin/board-notes.ts';
 
 let passed = 0;

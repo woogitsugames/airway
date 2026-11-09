@@ -1,5 +1,5 @@
 // [night-79a R4] D-334 (docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md step R4): the UI-A menu's night globe on the
-// real renderer (`?skin=board&look=earth`). For each language and size, on the menu:
+// real renderer (the shipped board skin and NASA globe; [night-82a R6] D-337: no `?look=`). For each language and size, on the menu:
 //   - the globe is framed to `[data-globe-frame="menu"]` (the DEV world probe's framing key starts with "menu-frame"):
 //     centred on the frame's column, never wider than it, its limb under the tagline;
 //   - portrait: at most 30 % of the disc behind the board, and the part under the board's top inside the board's width
@@ -28,9 +28,7 @@ let checked = 0;
 let shots = 0;
 
 function menuUrl(url) {
-  const target = new URL(url);
-  target.searchParams.set('look', 'earth');
-  return target.href;
+  return new URL(url).href;
 }
 
 async function audit(page) {
