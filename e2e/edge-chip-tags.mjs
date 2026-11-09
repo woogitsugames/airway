@@ -49,6 +49,11 @@ async function journey(page, seed) {
     await waitForBoardModels(page); // [night-47a] crate-model frame first (N45a)
     await clickTestId(page, `upgrade-option-${Math.max(0, plane)}`);
     await waitForScreen(page, 'game');
+    // [night-86b] D-344: the camera now follows the network once a game day, so most airports stay in view; a pinch
+    // (wheel) in puts airports off the screen again so the edge signs are exercised (and holds the follow off).
+    const view = page.viewportSize();
+    await page.mouse.move(view.width / 2, view.height / 2);
+    for (let step = 0; step < 3; step++) { await page.mouse.wheel(0, -150); await page.waitForTimeout(120); }
     for (let sample = 0; sample < 2; sample++) {
       if (sample) await page.evaluate(() => window.aw.advanceTicks(24 * 60));
       await page.waitForTimeout(500);

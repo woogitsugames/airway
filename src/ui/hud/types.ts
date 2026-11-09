@@ -22,6 +22,8 @@ export interface HudActions {
   onUndo?(): void;
   onTogglePause?(): void;
   onCycleSpeed?(): void;
+  /** [night-86b] D-344: frame the whole network (the dock's "Network" key; camera only, no command). */
+  onFrameNetwork?(): void;
   onSelectPlane?(type: PlaneType): void;
   /** Signals an intent to select an airport for a hub upgrade. */
   onUpgradeHub?(): void;

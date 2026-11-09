@@ -4420,3 +4420,34 @@ PL „Zator zwykłego lotniska też kończy grę, więc od 3/4 kolejki {airport}
 plain airport ends the run too, so from three-quarters full {airport} gets its own “Airport” strip.” (step
 "ATC / LOTNISKO" / "ATC / AIRPORT", tag `{airport} · N/M`). `test:first-time` covers the gate and the card; the
 first-time e2e suite expects six cards. **Status: in force; the owner reviews the PR.**
+
+## D-344 — The camera follows the network, compact direction signs on a portrait phone, a "Network" key in the dock (2026-11-09, Claude, night 86b)
+**Owner decision (9.11, all three answers to the D-342 playtest questions P-1/P-2):**
+(1) **P-1, the camera follows the network.** When an airport opens outside the frame, or an airport on a route sits within
+40 px of the free frame's edge (where the overlay fades its sign to 20–40 %), the camera eases out once to the network
+(`src/game/autoFrame.ts`): the centre of the open airports (`framingPoints`' densest cluster when they span continents;
+airports more than 70° from it keep their direction sign instead of forcing zoom 1) at the closest zoom ≤ the current one
+at which every framed airport lies 40 px inside the free frame (the camera insets: board, dock, strip bay). At most once a
+game day (the opening day counts as framed), never while a finger is down, a route or a plane is dragged, and not within
+15 s (wall clock) of the player's own camera move (drag, pinch, wheel, ± keys, a direction sign's turn, the Network key);
+an Undo into an earlier day rewinds the gate. The move is `GlobeOrbitCamera.glideTo` (`src/render/camera.ts`): 1.2 s,
+smoothstep (no overshoot, no spring), the zoom eased in distance, the short way over the date line; any pointer-down,
+drag, zoom or `setTarget`/`setZoom` stops it where it is; "Reduce motion" (D-88) makes it a cut. View only: no command,
+no hash change. The days it framed are marked on the canvas (`data-auto-frame-days`, view-only) for the e2e suite. DEV `?follow=off` keeps the camera still (`test:e2e:edge-chip-fill` needs full airports off the screen); `test:e2e:edge-chip-tags` zooms in after each board.
+(2) **P-2, compact direction signs.** On a portrait phone (HUD layout `portrait`) every direction sign that is not a jam's
+is one 48 × 48 key: the code over the arrow, the fill gauge beside the arrow (`bd-edge--compact`, `EDGE_COMPACT`). The
+first tap shows the full sign (city and distance) for 4 s (`EDGE_OPEN_MS`) without moving the camera; a tap on the full
+sign turns the globe there (as before). Its accessible name says so (`airport.edgeCompactAria`, PL/EN). A jam's sign is
+always full; landscape and foldables keep the full signs; still at most four (D-341).
+(3) **The "Network" key** (`hud.network` „Pokaż całą sieć” / “Show the whole network”, caption `board.dock.network`
+„Sieć” / “Network”): a sixth dock key before the speed dial, a round console key like Undo with our own symbol (a
+viewfinder's four corners round three airports joined by routes, an SVG path in `board.ts` `SYMBOL.network`; the plain
+HUD's `icons.ts` has a stroked twin). It frames every open airport the same way at zoom ≤ 3 (the play zoom), easing as
+above, and counts as the player's camera move. The dock grid takes six columns: round keys and the dial never under
+48 px (52 px keys and a 54 px dial on a portrait phone ≥ 370 px; 48 px keys, a 48 px octagon and dial, 22 px plate
+symbols at ≤ 369 px); at 320×568 every key is ≥ 48 × 48 with no overlap or scroll; the landscape column holds six.
+**Tests.** `test:framing` +4 (reason, gate, plan, glide), `test:board` +1 (compact sign), `test:hud-targets` (seven
+controls, six tags in order, the Network tap), new `test:e2e:camera-network` (+ `:stub` in `test:ci`; PL/EN × 412×915,
+915×412, 320×568 + an eased case). Shots `docs/shots/86b/`.
+**Budget.** Release CSS 195.7 → **196.6 kB** (+0.9 kB, inside +1.5 kB; budget 198.4 kB unchanged).
+**Status: in force; the owner reviews the PR.**

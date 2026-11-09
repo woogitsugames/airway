@@ -20,6 +20,7 @@ export const en = {
   'airport.new': 'NEW', // [night-10a]
   'airport.newAria': 'New airport {code}.',
   'airport.edgeFillAria': '{count} of {capacity} waiting places taken.', // [night-11d]
+  'airport.edgeCompactAria': '{code} {name}, off screen. Tap for the distance, tap again to turn the globe there.', // [night-86b] D-344
   'airport.curfewAria': '{code} closed for the night curfew.', // [night-10h]
   'airport.connectingAria': 'Making a connection: {count}.', // [night-10i]
   'airport.trendFillingAria': 'Filling up over the last game hour.', // [night-11af]
@@ -55,6 +56,7 @@ export const en = {
   'hud.passengers': 'Passengers',
   'hud.dayOfWeek': '{day}/{days}',
   'hud.undo': 'Undo last action',
+  'hud.network': 'Show the whole network', // [night-86b] D-344
   'hud.turbopropCount': 'Turboprop aircraft: {count}. Select or drag onto a route',
   'hud.widebodyCount': 'Widebody aircraft: {count}. Select or drag onto a route',
   'hud.hubCount': 'Hub upgrades available: {count}',
@@ -90,6 +92,8 @@ export const en = {
   'board.dock.widebodyShort': 'Wide',
   'board.dock.hub': 'Hub',
   'board.dock.speed': 'Speed',
+  'board.dock.network': 'Network', // [night-86b] D-344
+  'board.dock.networkShort': 'Net', // [night-86b] D-344: 130 %+ text
   'board.sign.hubAria': 'Hub {code}.', // [night-73a] D-328: spoken before a hub sign's label (UI-A skin)
   // [night-76a] D-331: the UI-A's weekly sheet (T4)
   'board.sheet.kicker': 'End of week',

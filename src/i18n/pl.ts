@@ -21,6 +21,7 @@ export const pl = {
   'airport.new': 'NOWE', // [night-10a]
   'airport.newAria': 'Nowe lotnisko {code}.',
   'airport.edgeFillAria': 'Zajęte miejsca w poczekalni: {count} z {capacity}.', // [night-11d]
+  'airport.edgeCompactAria': '{code} {name}, poza ekranem. Dotknij, by zobaczyć odległość; dotknij ponownie, by obrócić tam globus.', // [night-86b] D-344
   'airport.curfewAria': '{code} zamknięte na ciszę nocną.', // [night-10h]
   'airport.connectingAria': 'W trakcie przesiadki: {count}.', // [night-10i]
   'airport.trendFillingAria': 'Zapełnia się w ostatniej godzinie gry.', // [night-11af]
@@ -55,6 +56,7 @@ export const pl = {
   'hud.passengers': 'Pasażerów',
   'hud.dayOfWeek': '{day}/{days}',
   'hud.undo': 'Cofnij ostatnią akcję',
+  'hud.network': 'Pokaż całą sieć', // [night-86b] D-344
   'hud.turbopropCount': 'Turbośmigłowce: {count}. Wybierz lub przeciągnij na trasę',
   'hud.widebodyCount': 'Szerokokadłubowce: {count}. Wybierz lub przeciągnij na trasę',
   'hud.hubCount': 'Dostępne rozbudowy hubów: {count}',
@@ -90,6 +92,8 @@ export const pl = {
   'board.dock.widebodyShort': 'Szeroki',
   'board.dock.hub': 'Hub',
   'board.dock.speed': 'Tempo',
+  'board.dock.network': 'Sieć', // [night-86b] D-344
+  'board.dock.networkShort': 'Sieć', // [night-86b] D-344: 130 %+ text
   'board.sign.hubAria': 'Hub {code}.', // [night-73a] D-328: spoken before a hub sign's label (UI-A skin)
   // [night-76a] D-331: the UI-A's weekly sheet (T4)
   'board.sheet.kicker': 'Koniec tygodnia',

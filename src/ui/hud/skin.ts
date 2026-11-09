@@ -6,7 +6,7 @@
  */
 import type { HudState } from './types';
 
-export type HudSkinTag = 'undo' | 'turboprop' | 'widebody' | 'hub' | 'speed';
+export type HudSkinTag = 'undo' | 'turboprop' | 'widebody' | 'hub' | 'network' | 'speed'; // [night-86b] D-344 network
 
 export interface HudSkinTagState {
   /** The figure the dock shows: aircraft or hub stock, `2×` for the speed, '' for undo. */

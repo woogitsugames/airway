@@ -20,6 +20,7 @@ import {
 import './overlay.css';
 import { setClass } from './classes'; // [night-59a] D-322
 import { noteSkin, type NoteSkinFrame } from './overlay-skin'; // [night-73a] D-328: the UI-A signs
+import { resolveHudLayout } from './layout'; // [night-86b] D-344: compact direction signs on a portrait phone
 import { SURFACE_ANCHOR_ALTITUDE } from '../render/projection'; // [night-73a] D-328: projectLonLat's altitude (R2)
 
 const DEG = Math.PI / 180;
@@ -144,7 +145,16 @@ interface BubbleEntry {
   screenY: number;
   /** [night-16a] D-262: the note shows its compact form (code and fill) this frame. */
   compact: boolean;
+  /** [night-86b] D-344 (P-2): the direction sign shows its compact form (code + arrow, 48 × 48) this frame. */
+  edgeCompact: boolean;
+  /** [night-86b] D-344: a tapped compact sign shows its name and distance until this time (performance.now, ms). */
+  edgeOpenUntil: number;
+  /** [night-86b] D-344: the sign's accessible name after its first sentence (curfew, surge, front, fill). */
+  edgeAriaTail: string;
 }
+
+/** [night-86b] D-344: how long a tapped compact direction sign shows its city and distance (ms). */
+export const EDGE_OPEN_MS = 4000;
 
 export interface AirportOverlay {
   readonly layer: HTMLDivElement;
@@ -491,11 +501,11 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
     const frontAria = entry.front ? t(entry.front.phase === 'under' ? 'airport.frontUnderAria' : 'airport.frontSoonAria',
       { code: entry.airport.code, minutes: entry.front.minutes, time: entry.front.time }) : ''; // [night-12bd] R2j
     const taken = Math.min(entry.waiting.length, entry.capacity);
-    const edgeAria = t('airport.focus', { code: entry.airport.code }) +
+    entry.edgeAriaTail =
       (entry.closed ? ' ' + t('airport.curfewAria', { code: entry.airport.code }) : '') +
       (surgeAria ? ' ' + surgeAria : '') + (frontAria ? ' ' + frontAria : '') +
       (taken > 0 && entry.capacity > 0 ? ' ' + t('airport.edgeFillAria', { count: taken, capacity: entry.capacity }) : '');
-    if (entry.edge.getAttribute('aria-label') !== edgeAria) entry.edge.setAttribute('aria-label', edgeAria);
+    edgeAria(entry);
     rebuildGauge(entry, taken);
     sizeGroup(entry);
     entry.timer.hidden = !jammed;
@@ -519,6 +529,16 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
    * 45 s of grace). The chip now carries a gauge under the code: its length is the share of waiting places taken
    * (readable without colour); from three quarters full the fill turns signal red. Hidden while nobody waits.
    */
+  /** [night-86b] D-344: the direction sign's accessible name; a compact sign says that a tap shows the rest first. */
+  function edgeAria(entry: BubbleEntry): void {
+    const code = entry.airport.code;
+    const head = entry.edgeCompact
+      ? t('airport.edgeCompactAria', { code, name: entry.airport.name ?? code })
+      : t('airport.focus', { code });
+    const label = head + entry.edgeAriaTail;
+    if (entry.edge.getAttribute('aria-label') !== label) entry.edge.setAttribute('aria-label', label);
+  }
+
   function rebuildGauge(entry: BubbleEntry, taken: number): void {
     const show = taken > 0 && entry.capacity > 0;
     const percent = show ? Math.max(8, Math.round(taken * 100 / entry.capacity)) : 0;
@@ -650,7 +670,17 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       gaugeFill.className = 'airport-edge__fill';
       gauge.appendChild(gaugeFill);
       edge.append(arrow(), document.createTextNode(airport.code), gauge, surgeEdge);
-      edge.addEventListener('click', () => options.onNavigate?.(airport.id));
+      // [night-86b] D-344 (P-2): a compact sign's first tap shows its city and distance; a tap on the full sign turns there.
+      edge.addEventListener('click', () => {
+        if (entry.edgeCompact) {
+          entry.edgeOpenUntil = performance.now() + EDGE_OPEN_MS;
+          entry.edgeCompact = false;
+          edge.dataset.edgeOpen = '1';
+          edgeAria(entry);
+          return;
+        }
+        options.onNavigate?.(airport.id);
+      });
       // [task-38] Slot tag: stub with the clock mark, "SLOT" label, h:mm countdown, optional ×N.
       const slot = document.createElement('div');
       slot.className = 'airport-slot';
@@ -682,7 +712,7 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
         trend: null, trendUp: trendChevron(true), trendDown: trendChevron(false),
         chip, bubbleVisible: false,
         lastBubbleX: NaN, lastBubbleY: NaN, lastEdgeX: NaN, lastEdgeY: NaN, lastEdgeSide: -1, lastOpacity: NaN,
-        screenX: 0, screenY: 0, compact: false,
+        screenX: 0, screenY: 0, compact: false, edgeCompact: false, edgeOpenUntil: 0, edgeAriaTail: '',
       };
       entries.push(entry);
       slots.push(tag);
@@ -828,6 +858,9 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
       // [night-73a] D-328: the signs' level of detail (zoom, text size, density); a change rebuilds every sign.
       if (skin && skin.frame({ spanKm: frameSpanKm(), visible: visibleCount })) for (const entry of entries) rebuildBubble(entry);
       visibleCount = 0;
+      // [night-86b] D-344 (P-2): on a portrait phone the direction signs are code + arrow; a jam's stays full.
+      const compactEdges = skin !== null && resolveHudLayout(width, height) === 'portrait';
+      const now = compactEdges ? performance.now() : 0;
       for (const entry of entries) {
         marker.copy(entry.anchor);
         transformedNormal.copy(entry.normal);
@@ -890,8 +923,13 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
           if (skin) {
             const length = Math.hypot(cameraPosition.x, cameraPosition.y, cameraPosition.z) || 1;
             const cos = Math.max(-1, Math.min(1, transformedNormal.dot(cameraPosition) / length));
+            const open = now < entry.edgeOpenUntil;
+            if (!open && entry.edge.dataset.edgeOpen) delete entry.edge.dataset.edgeOpen;
+            const compact = compactEdges && !chip.jammed && !open;
+            chip.opened = open;
+            if (compact !== entry.edgeCompact) { entry.edgeCompact = compact; edgeAria(entry); }
             chip.width = skin.edge(entry.edge, { code: entry.airport.code, name: entry.airport.name ?? entry.airport.code,
-              km: Math.acos(cos) * EARTH_KM, taken: Math.min(entry.waiting.length, entry.capacity), capacity: entry.capacity });
+              km: Math.acos(cos) * EARTH_KM, taken: Math.min(entry.waiting.length, entry.capacity), capacity: entry.capacity, compact });
           } else if (skinBase.on) {
             chip.width = baseEdge(entry.edge, entry.airport.name ?? entry.airport.code, entry.airport.code, transformedNormal, cameraPosition,
               Math.min(entry.waiting.length, entry.capacity), entry.capacity);
@@ -936,6 +974,8 @@ export function createAirportOverlay(host: HTMLElement, camera: Camera, options:
           }
         }
         const chip = entry.chip;
+        // [night-86b] D-344: an opened sign with no room at all goes back to its key (never a tap that hides it).
+        if (chip.opened && chip.offscreen && !chip.placed) entry.edgeOpenUntil = 0;
         // [night-30a] D-284 U2: the same for a Linoryt chip, measured with its own width.
         if (skinBase.on && board !== null && chip.placed && chip.x < board.r && chip.x + (chip.width ?? EDGE_CHIP_WIDTH) > board.l &&
           chip.y < board.b && chip.y + EDGE_CHIP_HEIGHT > board.t) chip.placed = false;

@@ -106,7 +106,11 @@ try {
   await withBrowser(async ({ browser, url }) => {
     for (const seed of SEEDS) for (const [language, width, height] of SIZES) {
       const label = `seed ${seed} ${language} ${width}×${height}: edge chips draw the waiting area`;
-      const { page, errors } = await newGamePage(browser, gameUrl(url), language, { width, height });
+      // [night-86b] D-344: a still camera (`?follow=off`, DEV): the camera following the network keeps the fuller
+      // airports in view, and this suite needs them off the screen to see red gauges on their signs.
+      const still = new URL(gameUrl(url));
+      still.searchParams.set('follow', 'off');
+      const { page, errors } = await newGamePage(browser, still.href, language, { width, height });
       try {
         const t = await journey(page, seed, width, height);
         sum.chips += t.chips; sum.filled += t.filled; sum.high += t.high;

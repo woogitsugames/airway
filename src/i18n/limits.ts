@@ -92,6 +92,8 @@ export const LENGTH_BUDGETS: Partial<Record<TranslationKey, LengthBudget>> = {
   'board.dock.widebodyShort': consoleShort,
   'board.dock.hub': consoleShort,
   'board.dock.speed': consoleShort,
+  'board.dock.network': consoleShort, // [night-86b] D-344
+  'board.dock.networkShort': { max: 5, where: 'UI-A console: Network caption at 130 %+ text (a 48 px key)' },
   // [night-76a] D-331: the UI-A weekly sheet: the word on the large title tiles, the labels over the figures, the
   // "chosen" clip and the captions of a strip's quantity column (64 px wide, Chivo Mono 9.5 px caps).
   'board.sheet.week': { max: 5, where: 'UI-A weekly sheet: the word on the large tiles before the week number' },

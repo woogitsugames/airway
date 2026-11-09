@@ -750,7 +750,8 @@
 
 /* The dock: the console panel along the bottom. */
 :root[data-skin="board"] .airway-dock {
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 1.5fr) minmax(0, 1.05fr) minmax(0, 1fr); gap: 4px;
+  /* [night-86b] D-344: six keys (Network before Speed); the round and rotary keys never under 48 px. */
+  grid-template-columns: minmax(48px, 1fr) minmax(0, 1.5fr) minmax(0, 1.5fr) minmax(48px, 1.05fr) minmax(48px, 1fr) minmax(48px, 1fr); gap: 4px;
   padding: 9px calc(var(--hud-safe-right) + 8px) calc(var(--hud-safe-bottom) + 10px) calc(var(--hud-safe-left) + 8px);
   background: var(--board-console); border-top: 2px solid var(--board-console-2); box-shadow: inset 0 3px 0 var(--board-console-shade);
 }
@@ -823,6 +824,12 @@
 }
 :root[data-skin="board"] .bd-wait[hidden] { display: none; }
 
+/* [night-86b] D-344: a portrait phone fits six keys: the round keys 52 px, the speed dial 54 px. */
+@media (min-width: 370px) {
+  :root[data-skin="board"] .airway-hud[data-layout='portrait'] .airway-dock__tag { --bd-key: 52px; }
+  :root[data-skin="board"] .airway-hud[data-layout='portrait'] .bd-face--rotary { width: 54px; }
+  :root[data-skin="board"] .airway-hud[data-layout='portrait'] .bd-dial { width: 54px; height: 54px; }
+}
 /* Narrow phones (≤ 369 px): smaller keys and the short captions. */
 @media (max-width: 369px) {
   :root[data-skin="board"] .airway-pass { gap: 6px; padding-left: calc(var(--hud-safe-left) + 6px); padding-right: calc(var(--hud-safe-right) + 6px); }
@@ -830,8 +837,11 @@
   :root[data-skin="board"] .bd-board { padding: 6px 7px 7px; }
   :root[data-skin="board"] .airway-dock { gap: 3px; padding-left: calc(var(--hud-safe-left) + 6px); padding-right: calc(var(--hud-safe-right) + 6px); }
   :root[data-skin="board"] .airway-dock__tag { --bd-key: 48px; }
-  :root[data-skin="board"] .bd-face--oct { width: 52px; height: 50px; }
-  :root[data-skin="board"] .bd-face--oct .bd-cap { width: 48px; height: 46px; }
+  :root[data-skin="board"] .bd-face--oct { width: 48px; height: 48px; }
+  :root[data-skin="board"] .bd-face--oct .bd-cap { width: 44px; height: 44px; }
+  :root[data-skin="board"] .bd-face--rotary { width: 48px; }
+  :root[data-skin="board"] .bd-dial { width: 50px; height: 50px; }
+  :root[data-skin="board"] .bd-face--plate .bd-icon { width: 22px; height: 22px; }
   :root[data-skin="board"] .airway-dock__tag .bd-long { display: none; }
   :root[data-skin="board"] .airway-dock__tag .bd-short { display: inline; }
 }
@@ -875,7 +885,7 @@
 /* Foldables and tablets: the board at its phone size, the console's five keys centred along the bottom. */
 :root[data-skin="board"] .airway-hud[data-layout='foldable'] .airway-pass__ticket { flex: 0 1 440px; }
 :root[data-skin="board"] .airway-hud[data-layout='foldable'] .airway-dock {
-  grid-template-columns: 76px 100px 100px 80px 76px; border-left: 0; border-top: 2px solid var(--board-console-2);
+  grid-template-columns: 76px 100px 100px 80px 76px 76px; border-left: 0; border-top: 2px solid var(--board-console-2);
 }
 
 /* T5 */
@@ -1543,6 +1553,13 @@
 :root[data-skin="board"] .bd-notes .airport-edge--jam { background: var(--board-red); color: var(--board-white); animation: none; }
 :root[data-skin="board"] .bd-notes .airport-edge--jam .airport-edge__gauge--high .airport-edge__fill { background: currentColor; }
 :root[data-skin="board"] .bd-notes .airport-edge:focus-visible { outline: 3px solid var(--board-cream); outline-offset: 2px; }
+/* [night-86b] D-344 (P-2): on a portrait phone a 48 × 48 key, the code over the arrow, the gauge beside the arrow;
+   a tap shows the full sign (city, distance), a jam's sign stays full. */
+:root[data-skin="board"] .bd-notes .airport-edge.bd-edge--compact { min-width: 48px; padding: 0; }
+:root[data-skin="board"] .bd-notes .airport-edge.bd-edge--compact::before { position: absolute; left: 0; right: 0; top: 6px; text-align: center; }
+:root[data-skin="board"] .bd-notes .airport-edge.bd-edge--compact::after { content: none; }
+:root[data-skin="board"] .bd-notes .airport-edge.bd-edge--compact > svg:first-child { top: 26px; right: auto; left: 7px; width: 16px; height: 16px; }
+:root[data-skin="board"] .bd-notes .airport-edge.bd-edge--compact .airport-edge__gauge { right: 6px; width: 14px; bottom: 11px; }
 /* Atlas labels (R2 anchors): letter-spaced capitals for countries, spaced lower case for seas; under every sign. */
 :root[data-skin="board"] .bd-atlas { position: absolute; inset: 0; pointer-events: none; }
 :root[data-skin="board"] .bd-atlas__label {

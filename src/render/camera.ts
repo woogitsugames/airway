@@ -53,6 +53,19 @@ const MAX_FRAME_SECONDS = 0.05;
 const FRICTION_PER_SECOND = 7;
 const NORTH_ALIGN_PER_SECOND = 3.2;
 
+/** [night-86b] D-344: an eased camera move in progress (longitudes unwrapped to the short way round). */
+interface CameraGlide {
+  fromLon: number; fromLat: number; fromZoom: number;
+  toLon: number; toLat: number; toZoom: number;
+  elapsed: number; duration: number;
+}
+
+/** [night-86b] D-344: ease-in-out (cubic smoothstep), no overshoot: a matter-of-fact move, never a spring. */
+export function easeCameraGlide(t: number): number {
+  const x = t <= 0 ? 0 : t >= 1 ? 1 : t;
+  return x * x * (3 - 2 * x);
+}
+
 const clamp = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, v));
 const wrapLongitude = (v: number): number => ((v + 180) % 360 + 360) % 360 - 180;
 
@@ -90,6 +103,8 @@ export class GlobeOrbitCamera {
   private northX = 0;
   private northY = 1;
   private northZ = 0;
+  /** [night-86b] D-344: an eased move to a framing (P-1 auto zoom-out, the dock's whole-network key). */
+  private glide: CameraGlide | null = null;
 
   constructor(camera: PerspectiveCameraPort, options: OrbitCameraOptions = {}) {
     this.camera = camera;
@@ -138,6 +153,7 @@ export class GlobeOrbitCamera {
 
   /** Called on every pointer-down: inertia stops, including when an edit begins. */
   beginInteraction(): void {
+    this.glide = null; // [night-86b] D-344: the player's finger always wins over an eased framing
     this.pointerActive = true;
     this.rotated = false;
     this.yawVelocity = 0;
@@ -166,6 +182,7 @@ export class GlobeOrbitCamera {
     const seconds = Math.max(0.008, Math.min(0.08, elapsedMs / 1000 || 0.016));
     // Limit flick speed so a delayed event does not launch a runaway globe.
     const velocityCap = 480;
+    this.glide = null; // [night-86b] D-344
     this.yawVelocity = clamp(yaw / seconds, -velocityCap, velocityCap);
     this.pitchVelocity = clamp((this.latitude - previousLatitude) / seconds, -velocityCap, velocityCap);
     // A subtle transient roll is straightened gently after release, not sprung.
@@ -177,6 +194,7 @@ export class GlobeOrbitCamera {
   /** Explicit edge-turn while drawing; never adds inertia. The route tool owns the trigger. */
   rotateAtLimb(degrees: number): void {
     if (!Number.isFinite(degrees)) return;
+    this.glide = null; // [night-86b] D-344
     this.longitude = wrapLongitude(this.longitude + clamp(degrees, -4, 4));
     this.yawVelocity = 0;
     this.pitchVelocity = 0;
@@ -190,12 +208,14 @@ export class GlobeOrbitCamera {
 
   setZoom(zoom: number): void {
     if (!Number.isFinite(zoom)) return;
+    this.glide = null; // [night-86b] D-344: any other caller takes the camera over
     this.zoom = clamp(zoom, MIN_ZOOM, MAX_ZOOM);
     this.apply();
   }
 
   setTarget(longitude: number, latitude: number): void {
     if (!Number.isFinite(longitude) || !Number.isFinite(latitude)) return;
+    this.glide = null; // [night-86b] D-344
     this.longitude = wrapLongitude(longitude);
     this.latitude = clamp(latitude, -MAX_LATITUDE, MAX_LATITUDE);
     this.yawVelocity = 0;
@@ -222,16 +242,60 @@ export class GlobeOrbitCamera {
       this.latitude = clamp(Math.atan2(y, Math.hypot(x, z)) * RAD, -MAX_LATITUDE, MAX_LATITUDE);
     }
     this.zoom = 1;
+    this.glide = null;
     this.yawVelocity = 0;
     this.pitchVelocity = 0;
     this.roll = 0;
     this.apply();
   }
 
+  /**
+   * [night-86b] D-344: ease to a centre and zoom over `seconds` (0 or less = at once). Inertia stops; any pointer-down,
+   * drag, zoom or setTarget/setZoom cancels the move where it is. `update` advances it.
+   */
+  glideTo(longitude: number, latitude: number, zoom: number, seconds: number): void {
+    if (!Number.isFinite(longitude) || !Number.isFinite(latitude) || !Number.isFinite(zoom)) return;
+    const toLat = clamp(latitude, -MAX_LATITUDE, MAX_LATITUDE);
+    const toZoom = clamp(zoom, MIN_ZOOM, MAX_ZOOM);
+    this.yawVelocity = 0;
+    this.pitchVelocity = 0;
+    if (!(seconds > 0)) {
+      this.glide = null;
+      this.longitude = wrapLongitude(longitude);
+      this.latitude = toLat;
+      this.zoom = toZoom;
+      this.apply();
+      return;
+    }
+    const delta = wrapLongitude(longitude - this.longitude);
+    this.glide = {
+      fromLon: this.longitude, fromLat: this.latitude, fromZoom: this.zoom,
+      toLon: this.longitude + delta, toLat, toZoom, elapsed: 0, duration: seconds,
+    };
+  }
+
+  /** [night-86b] D-344: true while an eased framing move runs. */
+  get gliding(): boolean { return this.glide !== null; }
+
   /** Invoke once per frame; no heap allocation and no autonomous motion during edits. */
   update(elapsedSeconds: number): void {
     if (this.pointerActive || !Number.isFinite(elapsedSeconds) || elapsedSeconds <= 0) return;
     const dt = Math.min(elapsedSeconds, MAX_FRAME_SECONDS);
+    const glide = this.glide;
+    if (glide) {
+      glide.elapsed += dt;
+      const k = easeCameraGlide(glide.elapsed / glide.duration);
+      this.longitude = wrapLongitude(glide.fromLon + (glide.toLon - glide.fromLon) * k);
+      this.latitude = glide.fromLat + (glide.toLat - glide.fromLat) * k;
+      // Zoom eases in distance, not in the zoom factor, so the pull-back reads even.
+      this.zoom = 1 / (1 / glide.fromZoom + (1 / glide.toZoom - 1 / glide.fromZoom) * k);
+      if (glide.elapsed >= glide.duration) {
+        this.zoom = glide.toZoom;
+        this.glide = null;
+      }
+      this.apply();
+      return;
+    }
     if (Math.abs(this.yawVelocity) > 0.01 || Math.abs(this.pitchVelocity) > 0.01) {
       this.longitude = wrapLongitude(this.longitude + this.yawVelocity * dt);
       this.latitude = clamp(this.latitude + this.pitchVelocity * dt, -MAX_LATITUDE, MAX_LATITUDE);
@@ -313,6 +377,11 @@ export class GlobeOrbitCamera {
   get latitudeDeg(): number { return this.latitude; }
   get viewportWidth(): number { return this.width; }
   get viewportHeight(): number { return this.height; }
+  /** [night-86b] D-344: the applied insets (CSS px): the free frame the camera centres the globe in. */
+  get insetTop(): number { return this.safeTop; }
+  get insetRight(): number { return this.safeRight; }
+  get insetBottom(): number { return this.safeBottom; }
+  get insetLeft(): number { return this.safeLeft; }
 
   getState(): OrbitCameraState {
     return {

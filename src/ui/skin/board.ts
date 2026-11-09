@@ -122,6 +122,10 @@ export const SYMBOL = { // [night-76a] D-331: exported for the weekly sheet (boa
   hub: 'M44 6L56 6 56 94 44 94ZM12 22L18 12 88 78 82 88ZM82 12L88 22 18 88 12 78Z',
   pause: 'M30 20H44V80H30ZM56 20H70V80H56Z',
   resume: 'M32 16L82 50 32 84Z',
+  // [night-86b] D-344: "Network": a viewfinder's four corners round three airports joined by their routes (own drawing).
+  network: 'M4 4H26V12H12V26H4ZM74 4H96V26H88V12H74ZM4 74H12V88H26V96H4ZM88 74H96V96H74V88H88Z' +
+    'M35 67L53 35L47 33L29 65ZM47 36L65 66L71 62L53 32ZM68 61L32 63L32 69L68 67Z' +
+    'M23 66A9 9 0 1 0 41 66A9 9 0 1 0 23 66ZM41 34A9 9 0 1 0 59 34A9 9 0 1 0 41 34ZM59 64A9 9 0 1 0 77 64A9 9 0 1 0 59 64Z',
 } as const;
 type BoardSymbol = keyof typeof SYMBOL;
 
@@ -156,6 +160,7 @@ const CAPTION: Record<HudSkinTag, readonly [TranslationKey, TranslationKey]> = {
   turboprop: ['board.dock.turboprop', 'board.dock.turbopropShort'],
   widebody: ['board.dock.widebody', 'board.dock.widebodyShort'],
   hub: ['board.dock.hub', 'board.dock.hub'],
+  network: ['board.dock.network', 'board.dock.networkShort'], // [night-86b] D-344
   speed: ['board.dock.speed', 'board.dock.speed'],
 };
 
@@ -281,6 +286,7 @@ export function createBoardSkin(deps: BoardDeps): HudSkin {
     },
     dockFace(tag) {
       if (tag === 'undo') return `<span class="bd-face bd-face--round"><span class="bd-cap">${symbol('undo')}</span></span>`;
+      if (tag === 'network') return `<span class="bd-face bd-face--round"><span class="bd-cap">${symbol('network')}</span></span>`;
       if (tag === 'speed') return `<span class="bd-face bd-face--rotary">${DIAL}</span>`;
       if (tag === 'hub') return `<span class="bd-face bd-face--oct"><span class="bd-cap">${symbol('hub')}</span></span>`;
       // The route line the aircraft flies, printed on its plate as on the map: dashed = turboprop, solid = widebody.

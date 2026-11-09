@@ -131,3 +131,10 @@ if Chromium is not discoverable by Playwright. Each real matrix run captures
 96 PNGs: 4 screens × 2 languages × 12 viewport sizes (phones, foldables at DPR 2, [night-15b] R4f tablets 1024×640,
 1280×800, 800×1280, the book foldable 841×701, desktop 1600×900 and a 500×700 window); `--size=WxH` runs only those.
 
+
+## Still camera (`?follow=off`, night-86b, D-344)
+
+Since D-344 the in-run camera eases out to the network by itself (at most once a game day, never within 15 s of the
+player's own camera move). A suite that needs airports to stay off the screen loads the game with `?follow=off` (DEV
+only, `src/main.ts`) or zooms in with the wheel (a player's move holds the follow off). `npm run test:e2e:camera-network`
+checks the follow itself.

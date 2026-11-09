@@ -17,6 +17,7 @@ import { BOARD_CELLS } from '../src/i18n/limits.ts';
 import {
   atlasLabelWidth, codeWidth, CITY_ROW, DENSE_SIGNS, FRESH_ROW, LOD1_GLYPHS, LOD1_MAX_SPAN_KM, placeAtlas, showsCity, SIGN_ROW, signClock,
   signLod, signQueue, signSize, textWidth, yellowSigns, type AtlasPlaced, type SignShape,
+  createBoardNotes, EDGE_COMPACT,
 } from '../src/ui/skin/board-notes.ts';
 import { ATLAS_LABELS, atlasLabelKey } from '../src/data/atlasLabels.ts';
 import { clockText, defaultChoice, figureTiles, SLOTS_SYMBOL, stripQuantity, weekTiles, WEEK_FIGURE_CELLS } from '../src/ui/skin/board-week.ts';
@@ -193,6 +194,26 @@ test('direction signs: at most two yellow (new first, then the fuller), a jam is
   const keep = yellowSigns([{ jam: false, fresh: false, fill: .2 }, { jam: true, fresh: false, fill: 1 }, { jam: false, fresh: false, fill: .9 },
     { jam: false, fresh: true, fill: 0 }, { jam: false, fresh: false, fill: .5 }]);
   assert.deepEqual(keep, [false, false, true, true, false]);
+});
+test('[night-86b] D-344 (P-2): the compact direction sign is one 48 × 48 key (code only); the full one prints city and km', () => {
+  const classes = new Set<string>();
+  const edge = {
+    classList: { contains: (c: string) => classes.has(c), add: (c: string) => classes.add(c), remove: (c: string) => classes.delete(c) },
+    dataset: {} as Record<string, string>, style: { width: '' },
+  } as unknown as HTMLElement;
+  const notes = createBoardNotes({ t: (key, params) => key === 'upgrade.value.km' ? `${params?.km} km` : key, localNumber: (v) => String(v),
+    labels: [], eligible: () => false, labelKey: () => '' });
+  const input = { code: 'HOU', name: 'Houston', km: 1234, taken: 2, capacity: 8 };
+  const compact = notes.edge(edge, { ...input, compact: true });
+  assert.equal(compact, EDGE_COMPACT);
+  assert.equal(EDGE_COMPACT, 48, '48 dp: the touch target');
+  assert.ok(classes.has('bd-edge--compact'));
+  assert.equal(edge.dataset.bdCode, 'HOU');
+  assert.equal(edge.dataset.bdLine, '', 'no city or distance on the compact key');
+  const full = notes.edge(edge, { ...input, compact: false });
+  assert.ok(full > EDGE_COMPACT, `full ${full}`);
+  assert.ok(!classes.has('bd-edge--compact'));
+  assert.match(edge.dataset.bdLine ?? '', /Houston 1230 km/);
 });
 test('the release overlay reaches the signs only through the empty slot (no static import of the preview)', () => {
   const overlay = readFileSync('src/ui/overlay.ts', 'utf8');
