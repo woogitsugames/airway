@@ -34,7 +34,8 @@ async function test(name: string, fn: () => void | Promise<void>): Promise<void>
 /** The balance bot to the end of the run (or `maxTicks`), as test:balance plays it. */
 function botRun(seed: number, mode: 'endless' | 'daily', contract: boolean, licence: 1 | 2 | 3 = 1, maxTicks = 18_000,
     surge = contract) {
-  const session = createBalanceSession(seed, mode, null, contract, surge, licence);
+  // [night-86a] D-343: pinned pre-D-343 bot runs, so the UTC-midnight start (new runs: test:morning-start).
+  const session = createBalanceSession(seed, mode, null, contract, surge, licence, false, false);
   for (let i = 0; i < 2000; i++) {
     const snapshot = session.snapshot();
     if (snapshot.status === 'finished' || snapshot.tick >= maxTicks) break;
@@ -89,9 +90,9 @@ await test('class I = today: Daily, Endless and Endless with contract are bit-fo
       assert.equal(replay.hash(), want.hash, `${key}: server replay`);
     }
   }
-  // A new class I run from the game layer is the same config as before R2h.
+  // A new class I run from the game layer is the same config as before R2h (plus the D-343 morning start).
   const run = EndlessRun.create(41377, 'endless', null, 1);
-  assert.deepEqual(run.sim.config, { mode: 'endless', weeklyContract: true, demandSurge: true });
+  assert.deepEqual(run.sim.config, { mode: 'endless', weeklyContract: true, demandSurge: true, morningStart: true });
   assert.equal(run.licenceClass, 1);
   assert.equal(EndlessRun.create(41377).hash(), run.hash());
 });
@@ -112,7 +113,7 @@ await test('config: class II/III only in Endless; Daily, puzzles, class 1 and un
   assert.deepEqual(createGame(7, 'endless', undefined, 'EUN', false, false, 3).config, { mode: 'endless', homeRegion: 'EUN', licenceClass: 3 });
   assert.deepEqual(createGame(7, 'endless', undefined, null, false, false, 1).config, { mode: 'endless' });
   assert.deepEqual(createGame(7, 'daily', undefined, null, false, false, 3).config, { mode: 'daily' });
-  assert.deepEqual(EndlessRun.create(7, 'daily', null, 3).sim.config, { mode: 'daily' });
+  assert.deepEqual(EndlessRun.create(7, 'daily', null, 3).sim.config, { mode: 'daily', morningStart: true });
   for (const config of [{ mode: 'daily', licenceClass: 2 }, { mode: 'endless', licenceClass: 1 },
     { mode: 'endless', licenceClass: 4 }, { mode: 'endless', licenceClass: '2' }]) {
     assert.throws(() => new Sim(7, config as never), JSON.stringify(config));

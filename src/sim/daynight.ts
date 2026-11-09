@@ -2,7 +2,7 @@
 import {
   CURFEW_ADDITIONAL_CITY_EVERY_WEEKS, CURFEW_END_HOUR, CURFEW_ENDLESS_START_WEEK,
   CURFEW_MAX_CITY_COUNT, CURFEW_START_CITY_COUNT, CURFEW_START_HOUR,
-  DAYNIGHT_MINUTES_PER_DAY, DAYNIGHT_MINUTES_PER_WEEK, DEMAND_HOURLY_WEIGHTS,
+  DAYNIGHT_MINUTES_PER_DAY, DAYNIGHT_MINUTES_PER_WEEK, DEMAND_HOURLY_WEIGHTS, MORNING_START_LOCAL_HOUR,
 } from './params.ts';
 
 export type DayNightMode = 'endless' | 'puzzle';
@@ -54,6 +54,15 @@ export function localMinuteOfDay(tick: number, utcOffsetH: number): number {
   validOffset(utcOffsetH);
   return ((tick % DAYNIGHT_MINUTES_PER_DAY) + utcOffsetH * 60 +
     DAYNIGHT_MINUTES_PER_DAY) % DAYNIGHT_MINUTES_PER_DAY;
+}
+/**
+ * [night-86a] D-343 (P-3): the UTC minute of day at game minute 0 of a morning-start run, so that the clock airport
+ * (UTC offset `utcOffsetH`) reads MORNING_START_LOCAL_HOUR:00. A whole number of hours in [0, 1440). Every local
+ * reading of such a run adds it to the game minute ("clock shift"); weeks and days keep counting game minutes.
+ */
+export function morningStartShift(utcOffsetH: number): number {
+  validOffset(utcOffsetH);
+  return (((MORNING_START_LOCAL_HOUR - utcOffsetH) % 24 + 24) % 24) * 60;
 }
 export function localHourAt(tick: number, utcOffsetH: number): number {
   return Math.floor(localMinuteOfDay(tick, utcOffsetH) / 60);
@@ -116,6 +125,8 @@ export class CurfewPlanner {
   private selectedSet: ReadonlySet<string> = new Set();
   private currentWeek = 0;
   private lastAnnouncedWeek = 0;
+  /** [night-86a] D-343: minutes added to a game minute before reading a local hour (0 = UTC midnight start). */
+  private shift = 0;
 
   constructor(
     private readonly mode: DayNightMode,
@@ -132,6 +143,14 @@ export class CurfewPlanner {
     }
     this.activeIds = Object.freeze([...this.offsets.keys()].sort());
     this.puzzleIds = Object.freeze(sortedUniqueIds(puzzleCurfewCityIds, new Set(this.offsets.keys())));
+  }
+
+  /** [night-86a] D-343: the run's clock shift (`morningStartShift`); set once, before the first check. */
+  setClockShift(minutes: number): void {
+    if (!Number.isSafeInteger(minutes) || minutes < 0 || minutes >= DAYNIGHT_MINUTES_PER_DAY) {
+      throw new RangeError('Clock shift must be a minute of the day');
+    }
+    this.shift = minutes;
   }
 
   /** Call before a week boundary; task 05's spawner supplies currently active city IDs. */
@@ -168,7 +187,7 @@ export class CurfewPlanner {
     if (weekAtTick(tick) !== this.currentWeek) {
       throw new RangeError('Advance the curfew planner to this tick first');
     }
-    return this.selectedSet.has(cityId) && isLocalCurfewHour(tick, offset);
+    return this.selectedSet.has(cityId) && isLocalCurfewHour(tick + this.shift, offset);
   }
   canDepart(cityId: string, tick: number): boolean { return !this.isClosed(cityId, tick); }
   canLand(cityId: string, tick: number): boolean { return !this.isClosed(cityId, tick); }
@@ -186,7 +205,7 @@ export class CurfewPlanner {
       // Puzzle levels have stable curfew cities across week boundaries.
       if (this.mode === 'puzzle') {
         return !this.selectedSet.has(toId) ||
-          !isLocalCurfewHour(arrivalTick, this.offsets.get(toId)!);
+          !isLocalCurfewHour(arrivalTick + this.shift, this.offsets.get(toId)!);
       }
       // Endless city selection may change next week; re-check when landing.
       return true;

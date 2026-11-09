@@ -3,9 +3,17 @@
 // and the Cloud Function (authoritative check), and testable without Firebase.
 import { dailySeedForKey } from '../core/daily.ts';
 import { Sim, TICKS_PER_WEEK } from '../sim/index.ts';
-import { RULES_VERSION } from '../sim/state.ts';
 
 export const SUBMISSION_VERSION = 1 as const;
+/**
+ * [night-86a] D-343: the Daily leaderboard's rules version. It was the kernel's RULES_VERSION (6) until the morning
+ * start: a rules-7 Daily starts at local 07:00 at its first airport (DAILY_CONFIG), so its replay differs from a
+ * rules-6 client's and that client's submission is refused as 'old_rules'. The kernel keeps RULES_VERSION 6 (the start
+ * is a config flag, so saves and hashes of runs without it are unchanged).
+ */
+export const DAILY_RULES_VERSION = 7 as const;
+/** [night-86a] D-343: the config of every rules-7 Daily (src/game/modes/daily.ts and EndlessRun create the same). */
+export const DAILY_CONFIG = Object.freeze({ mode: 'daily', morningStart: true } as const);
 /** Server replay budget: 30 game weeks (D-40: 3-day weeks) — far beyond any run seen in balance tests. */
 export const MAX_REPLAY_TICKS = 30 * TICKS_PER_WEEK;
 export const MAX_JOURNAL_ENTRIES = 5_000;
@@ -34,7 +42,9 @@ export type Verdict =
 /** Build the submission for a finished official daily run. */
 export function buildDailySubmission(sim: Sim, dateKey: string): DailySubmission {
   return {
-    v: SUBMISSION_VERSION, mode: 'daily', dateKey, seed: sim.seed, rulesVersion: RULES_VERSION,
+    v: SUBMISSION_VERSION, mode: 'daily', dateKey, seed: sim.seed,
+    // [night-86a] D-343: a Daily resumed from a pre-D-343 save (no morning start) is a rules-6 run: 'old_rules'.
+    rulesVersion: sim.config.morningStart === true ? DAILY_RULES_VERSION : DAILY_RULES_VERSION - 1,
     endTick: sim.tickCount, claimedScore: sim.world.score,
     journal: sim.getCommandLog() as unknown as JournalEntry[],
   };
@@ -66,14 +76,15 @@ export function parseSubmission(value: unknown): DailySubmission | null {
 export function verifyDailySubmission(input: unknown, allowedDays: readonly string[]): Verdict {
   const submission = parseSubmission(input);
   if (!submission) return { ok: false, reason: 'malformed' };
-  if (submission.rulesVersion !== RULES_VERSION) return { ok: false, reason: 'old_rules' };
+  if (submission.rulesVersion !== DAILY_RULES_VERSION) return { ok: false, reason: 'old_rules' };
   if (!allowedDays.includes(submission.dateKey)) return { ok: false, reason: 'wrong_day' };
   if (submission.seed !== dailySeedForKey(submission.dateKey)) return { ok: false, reason: 'wrong_seed' };
   if (submission.endTick > MAX_REPLAY_TICKS) return { ok: false, reason: 'too_long' };
   if (submission.journal.some(([tick]) => tick > submission.endTick)) return { ok: false, reason: 'malformed' };
   let sim: Sim;
   try {
-    sim = Sim.replay(submission.seed, submission.journal as never, submission.endTick, { mode: 'daily' }, true);
+    // [night-86a] D-343: a rules-7 Daily starts at local 07:00 at its first airport (DAILY_RULES_VERSION).
+    sim = Sim.replay(submission.seed, submission.journal as never, submission.endTick, DAILY_CONFIG, true);
   } catch {
     return { ok: false, reason: 'replay_error' };
   }

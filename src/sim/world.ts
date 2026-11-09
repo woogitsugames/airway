@@ -8,7 +8,7 @@ import type { RegionId } from '../data/regions.ts';
 import { TICKS_PER_WEEK } from './clock.ts';
 import type { Command, CommandCheck, RejectReason } from './commands.ts';
 import {
-  CurfewPlanner, isLocalCurfewHour, localHourAt, localMinuteOfDay, type CurfewSnapshot, type EndlessCurfewRules,
+  CurfewPlanner, isLocalCurfewHour, localHourAt, localMinuteOfDay, morningStartShift, type CurfewSnapshot, type EndlessCurfewRules,
 } from './daynight.ts';
 import type { DemandCity } from './demand.ts';
 import type { HubFailure } from './hubs.ts';
@@ -87,6 +87,11 @@ export interface Scenario {
   readonly licence?: { readonly curfew: EndlessCurfewRules; readonly hubCapacity: number };
   /** [night-12bd] R2j: weekly weather front (Endless with `GameConfig.weatherFront` only; off in shipped Endless). */
   readonly weatherFront?: boolean;
+  /**
+   * [night-86a] D-343 (P-3): the run starts at local MORNING_START_LOCAL_HOUR at its clock airport instead of UTC
+   * midnight (Endless and Daily with `GameConfig.morningStart`; never puzzles).
+   */
+  readonly morningStart?: boolean;
 }
 
 export const ENDLESS_SCENARIO: Scenario = Object.freeze({
@@ -259,6 +264,13 @@ export interface WorldView {
   readonly curfewCityIds: readonly string[];
   readonly totals: Readonly<CauseCounters>;
   readonly scenario: Scenario;
+  /**
+   * [night-86a] D-343: the airport whose local clock the run shows (the first open airport at minute 0), and the UTC
+   * minute of day at game minute 0 (`clockShift`: 0 = the pre-D-343 UTC-midnight start). UTC minute = minute +
+   * clockShift; weeks and days count `minute` alone.
+   */
+  readonly clockCityId: string | null;
+  readonly clockShift: number;
   activeCityIds(): string[];
   cityView(cityId: string): CityView;
   cities(): CityView[];
@@ -327,6 +339,8 @@ export class World implements WorldView {
   private readonly seed: number;
   /** [night-12bd] R2j: derived cache of the week's front (pure function of seed and week; never saved or hashed). */
   private frontCache: { readonly week: number; readonly front: WeatherFront | null } | null = null;
+  readonly clockCityId: string | null;
+  readonly clockShift: number;
 
   constructor(seed: number, readonly scenario: Scenario, streams: Readonly<Record<RngStream, Rng>>) {
     this.streams = streams;
@@ -348,6 +362,12 @@ export class World implements WorldView {
       : new CurfewPlanner(scenario.curfewCityIds ? 'puzzle' : 'endless', CURFEW_CITIES,
         new Rng(seed >>> 0), scenario.curfewCityIds ?? []);
     if (scenario.licence) this.passengers.hubs.hubCapacity = scenario.licence.hubCapacity;
+    // [night-86a] D-343 (P-3): derived from the seed's start cluster (never saved; a restore rebuilds it the same).
+    this.clockCityId = this.activeCityIds()[0] ?? null;
+    this.clockShift = scenario.morningStart && this.clockCityId
+      ? morningStartShift(UTC_OFFSET.get(this.clockCityId) ?? 0) : 0;
+    this.curfew.setClockShift(this.clockShift);
+    this.passengers.setClockShift(this.clockShift);
     this.curfew.setActiveCities(this.activeCityIds());
     this.curfew.advance(0);
     this.fleet = createPlaneFleet(scenario.reserve);
@@ -370,7 +390,7 @@ export class World implements WorldView {
     if (phase !== 'announced' && phase !== 'active') return null;
     return {
       ...current, active: phase === 'active', extra: state.extra,
-      endLocalHour: localHourAt(current.endTick, UTC_OFFSET.get(current.cityId) ?? 0),
+      endLocalHour: localHourAt(current.endTick + this.clockShift, UTC_OFFSET.get(current.cityId) ?? 0),
     };
   }
   get surgeHistory(): readonly SurgeRecord[] { return this.surges?.history ?? []; }
@@ -411,7 +431,7 @@ export class World implements WorldView {
     const closed = closeSurge(this.surges);
     const candidates = this.activeCityIds().filter((id) => this.passengers.network.routesAt(id) > 0)
       .map((cityId) => ({ cityId, utcOffsetH: UTC_OFFSET.get(cityId) ?? 0 }));
-    const drawn = drawSurge(this.seed, week, minute, candidates);
+    const drawn = drawSurge(this.seed, week, minute, candidates, this.clockShift);
     this.surges = drawn ? { ...closed, current: drawn.surge, rngState: drawn.rngState } : closed;
     // The window is at least a notice period away, so the announcement is due at the earliest now.
     if (drawn && drawn.surge.announceTick <= minute) this.surgeMinute(minute);
@@ -441,7 +461,8 @@ export class World implements WorldView {
     const phase = airportFrontPhase(front, over, this.minuteValue);
     if (!over || !phase) return null;
     const offset = UTC_OFFSET.get(cityId) ?? 0;
-    return { ...over, phase, fromLocalMinute: localMinuteOfDay(over.fromTick, offset), toLocalMinute: localMinuteOfDay(over.toTick, offset) };
+    return { ...over, phase, fromLocalMinute: localMinuteOfDay(over.fromTick + this.clockShift, offset),
+      toLocalMinute: localMinuteOfDay(over.toTick + this.clockShift, offset) };
   }
 
   /** [night-12bd] R2j: true while the airport is under the front (departures held, D-291; was one slot fewer). */
@@ -902,8 +923,8 @@ export class World implements WorldView {
       jamTicksRemaining: queue.fullTicks > 0 ? Math.max(0, CONGESTION_GRACE_TICKS - queue.fullTicks) : null,
       waitingByRegion: this.passengers.ledger.waitingRegions(cityId),
       connectingByRegion: this.connectingAt(queue.waiting),
-      localHour: localHourAt(this.minuteValue, offset), curfewCity,
-      curfewClosed: curfewCity && isLocalCurfewHour(this.minuteValue, offset),
+      localHour: localHourAt(this.minuteValue + this.clockShift, offset), curfewCity,
+      curfewClosed: curfewCity && isLocalCurfewHour(this.minuteValue + this.clockShift, offset),
       routes: this.passengers.network.routesAt(cityId),
       departureSlots: this.departureSlotLimit(cityId),
       departuresThisHour: Math.floor(this.minuteValue / GAME_TICKS_PER_HOUR) === this.slotHour

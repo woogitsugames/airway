@@ -163,8 +163,10 @@ check('Q-92: Undo right after the week-1 pick never ends the run in the past (se
 // Seed 42041 ASI class I, week-1 turboprop, 24 game hours of bot edits (AssignPlane 4591, ExtendRoute 5761): before
 // N60a the second Undo ended the run at tick 5692 on DEL with the clock at 5761. [night-60a] D-321 (Q-93 → A): that
 // Undo is refused, with the airport and the tick, and the run is exactly as before the tap.
+// [night-86a] D-343: new runs start at local 07:00, so the repro moved to seed 42022 ASI (found by a scan of the same
+// steps): AssignPlane 4411, ExtendRoute 5041; the second Undo would jam TAS at tick 5600 (clock at 5761).
 const q93 = (): EndlessRun => {
-  const run = EndlessRun.create(42041, 'endless', 'ASI');
+  const run = EndlessRun.create(42022, 'endless', 'ASI');
   const bot = (until: number) => {
     while (run.tick < until && run.sim.world.status === 'running') {
       if (run.tick % AUTOPLAY_ACTION_INTERVAL === 0) {
@@ -182,11 +184,11 @@ const q93 = (): EndlessRun => {
   bot(run.tick + 24 * 60);
   assert.equal(run.tick, 5761);
   assert.deepEqual(run.sim.getCommandLog().slice(-2).map(([tick, command]) => [tick, command.type]),
-    [[4591, 'AssignPlane'], [5761, 'ExtendRoute']]);
+    [[4411, 'AssignPlane'], [5041, 'ExtendRoute']]);
   return run;
 };
 const q93Run = q93();
-check('Q-93 (D-321): an Undo whose re-simulation ends the run is refused, the run unchanged (seed 42041 ASI)', () => {
+check('Q-93 (D-321): an Undo whose re-simulation ends the run is refused, the run unchanged (seed 42022 ASI)', () => {
   const run = q93Run;
   assert.ok(run.undo(), 'first Undo (the ExtendRoute) is fine');
   assert.equal(run.failed, null);
@@ -196,8 +198,8 @@ check('Q-93 (D-321): an Undo whose re-simulation ends the run is refused, the ru
   const revision = run.revision;
   const refusal = run.tryUndo();
   assert.ok(refusal && !(refusal instanceof EndlessRun), 'second Undo refused');
-  assert.equal(refusal.cityId, 'DEL');
-  assert.equal(refusal.tick, 5692, 'the tick the re-simulation jammed at (the run ended there before N60a)');
+  assert.equal(refusal.cityId, 'TAS');
+  assert.equal(refusal.tick, 5600, 'the tick the re-simulation jammed at (the run ended there before N60a)');
   assert.equal(run.undo(), null, 'refused again on a second tap');
   assert.equal(run.sim.world.status, 'running');
   assert.equal(run.failed, null);

@@ -4369,6 +4369,58 @@ America are the weakest fills on enamel).
 **Budget.** Release CSS 195.4 → **195.7 kB** (+0.3 kB, inside +1 kB; budget 198.4 kB unchanged). Main JS 1,087.2 kB.
 **Status: in force; the owner reviews the PR and answers P-1…P-7.**
 
+## D-343 — Runs start at local 07:00 at the first airport; a plain airport shows its strip from 75 % full (2026-11-09, Claude, night 86a)
+**Owner decisions (9.11, answers to P-3 and P-4 of D-342 / `docs/PLAYTEST-2026-11-09.md`).**
+**P-3: morning start.** A run used to start at sim minute 0 = UTC midnight, i.e. ~19:00 in the Americas and ~01:00 in
+Europe, so the first view was the night side. Now every new Endless and Daily run carries `GameConfig.morningStart`
+(`createGame(…, morningStart)`; `EndlessRun.create` sets it through `RUN_MORNING_START`, Daily through `DAILY_CONFIG` in
+`src/net/submission.ts`, which the leaderboard replay uses too). The World derives, from the seed's start cluster, its
+clock airport `clockCityId` (the first open airport at minute 0, the airport whose clock the boarding pass already
+showed) and `clockShift = ((MORNING_START_LOCAL_HOUR − utcOffsetH) mod 24) × 60` (whole hours; `MORNING_START_LOCAL_HOUR`
+7 in `params.ts`, `DAYNIGHT_PARAMS_VERSION` 1 → 2). Neither is saved: a restore rebuilds them from the seed. Every local
+reading of the sim adds the shift to the game minute: the hourly demand profile (`demand.ts`), the curfew hours
+(`CurfewPlanner.setClockShift`), the surge's local start hour (`drawSurge(…, clockShift)`), the weather times and
+`cityView().localHour` / `curfewClosed`. `world.minute` still counts from the run's start, so **weeks and days count
+from the new start hour**: every game day and every week begins at 07:00 at the clock airport (week 3 starts at 07:00,
+not 19:00); the weekly board, contracts, surge notice (one game day), curfew start week (D-17/D-151) and the D-249
+"6-hour window clear of 23–06" all keep their meaning. The game layer: `EndlessRun.clockMinute` = game minute (calendar
+and hourly UI timers, unchanged), new `utcMinute` = minute + shift for the sun and terminator (`session.ts` frame tick,
+the DEV sun helpers in `main.ts`), `localMinute` (home clock) includes the shift. `src/render/**` is untouched.
+**Determinism, saves, replays.** The start is a config flag like D-247/D-249, so the kernel `RULES_VERSION` stays **6**
+and every run without the flag (every older save, every pinned hash, puzzles) is bit-for-bit unchanged; no golden file
+was regenerated (`test:save-golden` unchanged). The flag is part of the config and so of every hash of a new run; the
+save envelope stays v5/v7 (a pre-D-343 build that loads a morning save drops the unknown flag, fails the state hash and
+reports the save as corrupt instead of continuing it with a midnight clock). The D-76 replay of an older-rules save now
+keeps `morningStart` (it would have dropped it: `test:morning-start` covers it). Puzzles never carry the flag (the
+config refuses it): their curfew and demand timing is level design, so `src/data/puzzles/**` is untouched and no
+puzzle depends on the new start.
+**Daily leaderboard.** A Daily's score depends on its start, so the leaderboard has its own **`DAILY_RULES_VERSION` 7**
+(was the kernel's 6): a rules-6 client's submission (midnight journal) is refused as `old_rules` instead of a confusing
+`score_mismatch`, and a Daily resumed from a pre-D-343 save submits as rules 6 for the same reason.
+**Balance (bot, 50 seeds, `npm run test:balance*` all pass; reports in `docs/balance/` re-written with the shipped
+start; `AW_BALANCE_MIDNIGHT=1` measures the old start).** Median 17.41 → **17.67** min (target 10–18), 2nd board
+66 → 74 %; regions NAM 11.71 → 12.65, SAM 11.89 → 12.52, EUN 17.95 → 17.93, EUS 17.26 → 17.06, ME 15.91 → 15.45,
+ASI 10.11 → 10.75, AFR 17.10 → **18.20** (flagged in the report, above the 18-min band by 0.2; the gate does not fail on
+a region); contracts met 51 → 58 %; surges announced/opened 37/26 → 40/28; licences I/II/III 17.67/16.77/15.79; weather
+on 17.68. Curfew reached 66 → 74 % of runs, held by it 97 → 81 %. The run starts in the dawn wave (07:00 weight 190
+of the local profile) instead of the evening/night, which barely moves the length. `docs/PLAYTEST.md` cites the new
+bot numbers.
+**Tests.** New `test:morning-start` (7 cases; `test:fast` 121 → 122 steps). The pinned pre-change bot runs of
+`test:weekly-contract`, `test:demand-surge`, `test:licence-classes`, `test:weather-front` keep their hashes by playing
+the midnight start (the balance adapter takes `morningStart`); their config checks now expect `morningStart: true`.
+`test:replay`, `test:replay-cost`, `test:net` and `test:milestones` replay with the run's config. The Q-93 Undo repro
+(D-321) moved from seed 42041 (DEL) to **42022 ASI** (refused → TAS at tick 5600), in `test:undo` and
+`test:e2e:undo-refused-jam:stub`. `test:e2e-seeds` holds every e2e seed under the new start. The forced-jam layout fixture of `test:e2e:hub-board` keeps the midnight start (with 07:00 BGW jams with 4 regions, and the 4th row scrolls 20 px at 640×360, as the 8-region board may).
+**P-4: plain airport strip.** The jam rule is unchanged (a plain airport's jam still ends the run). The strip bay
+(UI-A hub flight strips, D-330) used to show a plain airport only once it was jammed; `AirportStripGate`
+(`src/game/tutorial/first-time.ts`) now shows its "Lotn." / "Airport" strip from **75 %** of its waiting places
+(18/24) and keeps it down to 60 % (no flicker at the line); hubs and jammed airports as before. One new first-time card
+`airport-full` (no registry version bump, like D-272) at the first plain airport whose strip appears, one sentence:
+PL „Zator zwykłego lotniska też kończy grę, więc od 3/4 kolejki {airport} dostaje własny pasek „Lotn.”.”, EN “A jam at a
+plain airport ends the run too, so from three-quarters full {airport} gets its own “Airport” strip.” (step
+"ATC / LOTNISKO" / "ATC / AIRPORT", tag `{airport} · N/M`). `test:first-time` covers the gate and the card; the
+first-time e2e suite expects six cards. **Status: in force; the owner reviews the PR.**
+
 ## D-344 — The camera follows the network, compact direction signs on a portrait phone, a "Network" key in the dock (2026-11-09, Claude, night 86b)
 **Owner decision (9.11, all three answers to the D-342 playtest questions P-1/P-2):**
 (1) **P-1, the camera follows the network.** When an airport opens outside the frame, or an airport on a route sits within

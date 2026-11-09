@@ -4,7 +4,7 @@ import './ts-test-loader.mjs';
 import assert from 'node:assert/strict';
 const { RULES_VERSION } = await import('../src/sim/state.ts');
 const boards = await import('../src/net/boards.ts');
-const { buildDailySubmission, verifyDailySubmission, MAX_REPLAY_TICKS } = await import('../src/net/submission.ts');
+const { buildDailySubmission, verifyDailySubmission, MAX_REPLAY_TICKS, DAILY_CONFIG, DAILY_RULES_VERSION } = await import('../src/net/submission.ts');
 const { SubmissionQueue, MAX_QUEUED } = await import('../src/net/queue.ts');
 const { createLeaderboards, readNetConfig } = await import('../src/net/index.ts');
 
@@ -53,7 +53,7 @@ await check('a daily saved and restored mid-run submits the uninterrupted journa
   const { Sim } = await import('../src/sim/sim.ts');
   const save = await import('../src/game/save.ts');
   const half = Math.floor(honest.endTick / 2);
-  let sim = Sim.replay(honest.seed, honest.journal.filter(([tick]) => tick <= half), half, { mode: 'daily' });
+  let sim = Sim.replay(honest.seed, honest.journal.filter(([tick]) => tick <= half), half, DAILY_CONFIG);
   const text = JSON.stringify(save.encodeSave(save.saveSourceFromSim(sim)));
   const loaded = save.decodeSave(text);
   assert.equal(loaded.status, 'ok');
@@ -76,7 +76,10 @@ await check('tampering is rejected: score, seed, day, rules, journal, unfinished
   assert.deepEqual(reject({ claimedScore: honest.claimedScore + 1 }), { ok: false, reason: 'score_mismatch' });
   assert.deepEqual(reject({ seed: (honest.seed + 1) >>> 0 }), { ok: false, reason: 'wrong_seed' });
   assert.deepEqual(reject({}, ['2026-11-05']), { ok: false, reason: 'wrong_day' });
-  assert.deepEqual(reject({ rulesVersion: RULES_VERSION - 1 }), { ok: false, reason: 'old_rules' });
+  // [night-86a] D-343: the leaderboard's own rules version (7, the morning start); the kernel's RULES_VERSION (6) is old.
+  assert.equal(honest.rulesVersion, DAILY_RULES_VERSION);
+  assert.deepEqual(reject({ rulesVersion: RULES_VERSION }), { ok: false, reason: 'old_rules' });
+  assert.deepEqual(reject({ rulesVersion: DAILY_RULES_VERSION - 1 }), { ok: false, reason: 'old_rules' });
   assert.deepEqual(reject({ endTick: MAX_REPLAY_TICKS + 1 }), { ok: false, reason: 'too_long' });
   assert.deepEqual(reject({ endTick: Math.floor(honest.endTick / 2) }).ok, false);
   assert.deepEqual(reject({ journal: honest.journal.slice(0, 1) }).ok, false);

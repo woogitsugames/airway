@@ -130,7 +130,7 @@ check('bot-driven run crosses a weekly upgrade and replays exactly', () => {
   const sim = session.simulation;
   assert.ok(sim.world.upgrades.length >= 1, 'a weekly upgrade must have been chosen');
   assert.ok(sim.world.minute > TICKS_PER_WEEK);
-  assert.equal(Sim.replay(UPGRADE_SEED, sim.getCommandLog(), sim.tickCount).hash(), sim.hash());
+  assert.equal(Sim.replay(UPGRADE_SEED, sim.getCommandLog(), sim.tickCount, sim.config).hash(), sim.hash());
   assert.equal(Sim.fromSnapshot(sim.snapshot()).hash(), sim.hash());
   notes.push(`bot${UPGRADE_SEED.toString(16)}:min${sim.world.minute}:upgrades=${sim.world.upgrades.map((u) => u.upgrade).join('+')}`);
 });

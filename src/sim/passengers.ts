@@ -80,6 +80,9 @@ export class PassengerSimulation implements PassengerTransport {
     this.router.rebuild(this.network.routes, this.network.revision);
   }
 
+  /** [night-86a] D-343: the run's clock shift for the local-hour demand profile (World sets it once). */
+  setClockShift(minutes: number): void { this.demand.clockShift = minutes; }
+
   get tick(): number { return this.currentTick; }
   get score(): number { return this.ledger.totals.delivered; }
   get failed(): boolean { return this.currentFailure !== null; }

@@ -164,7 +164,10 @@ try {
           const out = {};
 
           // 1. A forced jam in a real run: no routes, the clock runs until an airport's jam countdown starts.
-          const run = EndlessRun.create(0xA1A1);
+          // [night-86a] D-343: the pre-D-343 UTC-midnight start keeps this layout fixture (BGW, 3 regions); the 07:00
+          // start jams BGW with 4 regions, whose 4th row scrolls 20 px at 640×360 (like the mixed board, which may).
+          const { createGame } = await import('/src/sim/index.ts');
+          const run = new EndlessRun(createGame(0xA1A1, 'endless', undefined, null, true, true, 1, false, true, false));
           const log = new HubDepartureLog();
           let opened = null;
           for (let tick = 0; tick < 20000 && !opened; tick++) {
