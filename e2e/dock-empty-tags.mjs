@@ -20,7 +20,7 @@ const CASES = [['en', 412, 915], ['pl', 915, 412], ['pl', 904, 1088], ['pl', 320
 const COUNTDOWN_SHOTS = resolve(ROOT, 'docs/shots/n11s');
 // [night-23a] The dock caption adds "in" / "za" (dock.in, Linoryt since U5).
 const WAIT = { en: /^(?:in )?(\d+) (day|days|h|min)$/, pl: /^(?:za )?(\d+) (dzień|dni|godz\.|min)$/ };
-const SPOKEN = { en: 'Next crates in ', pl: 'Następne skrzynie za ' };
+const SPOKEN = { en: 'Next allotment in ', pl: 'Następny przydział za ' }; // [night-85b] D-342: UI-A's word
 
 let fatal = null;
 try {

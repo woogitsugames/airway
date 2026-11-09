@@ -448,6 +448,11 @@
 }
 /* A narrow screen stacks the strip's fields, one rule between them (side by side they wrapped under hanging rules). */
 @media (max-width: 599px) {
+  /* [night-85b] D-342: the first-time card on a phone: step and tag on the first row, the hint and OK on the second (the
+     OK used to wrap alone onto a third row under an empty band). The hint cannot share the first row (its basis is the
+     card less the OK) and OK fits beside it. */
+  :root[data-skin="board"] .airway-first-time .airway-atc-error { flex-grow: 1; }
+  :root[data-skin="board"] .airway-first-time .airway-atc-hint { flex: 1 1 calc(100% - 96px); min-width: 0; }
   :root[data-skin="board"] .airway-atc-strip:not(.airway-first-time) { flex-direction: column; }
   :root[data-skin="board"] .airway-atc-strip:not(.airway-first-time) .airway-atc-field { border-right: 0; border-bottom: 1px solid var(--base-ink-dim); }
   :root[data-skin="board"] .airway-atc-strip:not(.airway-first-time) .airway-atc-field:last-child { border-bottom: 0; }
@@ -1486,6 +1491,9 @@
 :root[data-skin="board"][data-airway-cvd="enhanced"] .bd-notes .airport-bubble > .airport-region-glyph { padding: 1.5px 1px; }
 :root[data-skin="board"] .bd-notes .airport-region-glyph path { stroke: var(--board-cream) !important; }
 :root[data-skin="board"] .bd-notes .airport-region-glyph--connecting path { fill: var(--board-enamel) !important; stroke-width: 1.6px; }
+/* [night-85b] D-342: Africa's D-08 fill (#13302E) is near black, so on the enamel sign the keyhole read only by a 0.5 px
+   rim (playtest, 412×915). A wider cream rim gives it its shape on black; the fill and the shape stay D-08's. */
+:root[data-skin="board"] :is(.bd-notes, .aw-tutorial) .airport-region-glyph[data-airway-destination="AFR"] path { stroke-width: 2.4px; }
 :root[data-skin="board"] .bd-notes .bd-count { box-sizing: border-box; padding: 0 2px 0 3px; font: 700 14px/24px var(--board-face); font-stretch: 80%; }
 :root[data-skin="board"] .bd-notes .airport-bubble > .airport-bubble__trend { box-sizing: border-box; width: 17px; padding: 0 3px 0 4px; border-left: 0; animation: none; }
 :root[data-skin="board"] .bd-notes .airport-bubble > .airport-bubble__curfew { box-sizing: border-box; width: 32px; align-items: center; justify-content: center; }
@@ -1590,7 +1598,8 @@
    so every strip's queue column lines up and holds the same glyphs; the city is cut short in the 64 px hub column. */
 :root[data-skin="board"] .bd-strip__lab {
   display: block; overflow: hidden; white-space: nowrap; color: var(--board-print-dim);
-  font: 600 calc(7.5px * var(--airway-text-scale))/1.15 var(--board-mono); letter-spacing: .08em; text-transform: uppercase;
+  /* [night-85b] D-342: 7.5 → 9 px; at 7.5 px the column heads were the smallest letters of the game (playtest). */
+  font: 600 calc(9px * var(--airway-text-scale))/1.15 var(--board-mono); letter-spacing: .06em; text-transform: uppercase;
 }
 :root[data-skin="board"] .bd-strip__code { font: 800 calc(20px * var(--airway-text-scale))/1 var(--board-mono); letter-spacing: -.02em; white-space: nowrap; }
 :root[data-skin="board"] .bd-strip__city { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 600 calc(10.5px * var(--airway-text-scale))/1.15 var(--board-mono); }

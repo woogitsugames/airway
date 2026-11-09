@@ -6,7 +6,7 @@ import { t } from '../../i18n';
 export interface CrateCountdown {
   /** Short line on the tag: "2 days", "5 h", "40 min" / "2 dni", "5 godz.", "40 min". */
   readonly short: string;
-  /** Spoken suffix for the tag's aria-label: "Next crates in 2 days 5 h". */
+  /** Spoken suffix for the tag's aria-label: "Next allotment in 2 days 5 h" ([night-85b] D-342). */
   readonly spoken: string;
 }
 

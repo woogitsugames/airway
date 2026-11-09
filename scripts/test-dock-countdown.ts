@@ -1,5 +1,5 @@
 // [night-11s] R6c: an empty dock tag counts down to the next weekly crates (src/ui/hud/crate-countdown.ts): days with
-// PL plural forms, then hours, then minutes; spoken text "Next crates in 2 days 5 h"; no countdown without a weekly
+// PL plural forms, then hours, then minutes; spoken text "Next allotment in 2 days 5 h" ([night-85b] D-342); no countdown without a weekly
 // board (puzzles), when it is due, or for junk input.
 import assert from 'node:assert/strict';
 import { setLanguage } from '../src/i18n/index.ts';
@@ -20,8 +20,8 @@ test('EN: days, then hours, then minutes', () => {
   assert.equal(short(1440 + 59), '1 day');
   assert.equal(short(5 * 60 + 40), '5 h');
   assert.equal(short(40), '40 min');
-  assert.equal(crateCountdown(2 * 1440 + 5 * 60)?.spoken, 'Next crates in 2 days 5 h');
-  assert.equal(crateCountdown(135)?.spoken, 'Next crates in 2 h 15 min');
+  assert.equal(crateCountdown(2 * 1440 + 5 * 60)?.spoken, 'Next allotment in 2 days 5 h');
+  assert.equal(crateCountdown(135)?.spoken, 'Next allotment in 2 h 15 min');
 });
 test('PL: plural forms and hours', () => {
   setLanguage('pl');
@@ -30,7 +30,7 @@ test('PL: plural forms and hours', () => {
   assert.equal(short(5 * 1440), '5 dni');
   assert.equal(short(3 * 60), '3 godz.');
   assert.equal(short(9), '9 min');
-  assert.equal(crateCountdown(1440 + 60)?.spoken, 'Następne skrzynie za 1 dzień 1 godz.');
+  assert.equal(crateCountdown(1440 + 60)?.spoken, 'Następny przydział za 1 dzień 1 godz.');
   setLanguage('en');
 });
 test('no countdown without a weekly board, when it is due, or for junk', () => {

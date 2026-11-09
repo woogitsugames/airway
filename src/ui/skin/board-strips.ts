@@ -186,8 +186,8 @@ export function stripLayout(bayWidth: number, textScale: number, folded: boolean
 
 /** Chivo Mono advance (em; every glyph of the mono face) and the strip's type sizes at 100 % text (board.css "T3"). */
 const MONO = 0.6;
-const LABEL_PX = 7.5;
-const LABEL_TRACK = 0.08;
+const LABEL_PX = 9; // [night-85b] D-342: was 7.5 (board.css .bd-strip__lab)
+const LABEL_TRACK = 0.06;
 const VALUE_PX = 17;
 const VALUE_TRACK = -0.03;
 const NONE_PX = 13;
@@ -350,7 +350,7 @@ export function createBoardStrips(deps: BoardStripsDeps): StripSkin {
         const hubCol = span('bd-strip__col bd-strip__hub');
         hubCol.append(span('bd-strip__lab', t(hub.hub ? 'board.strip.hub' : 'board.strip.airport')), span('bd-strip__code', hub.code), span('bd-strip__city', hub.name));
         const queueCol = span('bd-strip__col bd-strip__queue');
-        const narrow = perRow < 6;
+        const narrow = perRow < 8; // [night-85b] D-342: the 9 px heading "Queue · N directions" needs ~125 px (was < 6)
         const label = queue.directions === 0 || narrow || compact ? t('board.strip.queueShort') : t('board.strip.queue', { count: queue.directions });
         const rows = span('bd-strip__rows');
         for (const row of queue.rows) {
