@@ -22,10 +22,10 @@ from Google Fonts (static TTF per weight) on 2026-11-02 by `mockups/fetch-fonts.
 | Barlow Condensed | 500, 700 | UI direction mockups 2026-11 "Karta" (`mockups/ui-2026-11/`); [N11au] KARTA preview skin (D-256); [N11ax] KARTA skin WOFF2 subset (draft D-257, not shipped: [N11az] Róża was chosen) | yes |
 | Archivo Narrow | 500, 700 | UI direction mockups 2026-11 "Kokpit" | yes |
 | Atkinson Hyperlegible Mono | 400, 700 | UI direction mockups 2026-11 "Kokpit" | yes |
-| Besley | 800, 900 | [N27a] direction A "Linoryt" frames; [N28a] Linoryt preview skin (D-284), static WOFF2 subsets in `public/fonts/`; [N46a] shipped (D-301) | yes |
-| Schibsted Grotesk | 500–700 (variable) | [N27a] directions A and C frames; [N28a] Linoryt preview skin (D-284), WOFF2 subset in `public/fonts/`; [N46a] shipped (D-301) | yes |
-| Archivo | 600 (wdth 100); 700, 800 (wdth 80) | [N66a] UI-A mockups (`docs/styles/kierunki-2026-11c/makiety/ui-a/fonts/`); [N69a] UI-A preview skin (D-324), static WOFF2 subsets in `public/fonts/`, kept out of `dist/` until T6 | yes |
-| Chivo Mono | 500–800 (variable) | [N66a] UI-A mockups; [N69a] UI-A preview skin (D-324), WOFF2 subset in `public/fonts/`, kept out of `dist/` until T6 | yes |
+| Besley | 800, 900 | [N27a] direction A "Linoryt" frames; [N28a] Linoryt preview skin (D-284), static WOFF2 subsets in `public/fonts/`; [N46a] shipped (D-301); [N81a] removed from the game with Linoryt (D-336) | yes |
+| Schibsted Grotesk | 500–700 (variable) | [N27a] directions A and C frames; [N28a] Linoryt preview skin (D-284), WOFF2 subset in `public/fonts/`; [N46a] shipped (D-301); [N81a] removed from the game with Linoryt (D-336) | yes |
+| Archivo | 600 (wdth 100); 700, 800 (wdth 80) | [N66a] UI-A mockups (`docs/styles/kierunki-2026-11c/makiety/ui-a/fonts/`); [N69a] UI-A preview skin (D-324), static WOFF2 subsets in `public/fonts/`; [N81a] shipped (D-336) | yes |
+| Chivo Mono | 500–800 (variable) | [N66a] UI-A mockups; [N69a] UI-A preview skin (D-324), WOFF2 subset in `public/fonts/`; [N81a] shipped (D-336) | yes |
 
 [N11au] D-256: the DEV-only KARTA preview skin (`src/ui/skin/karta.css`, `?skin=karta`) loads Barlow Condensed and IBM
 Plex Mono straight from `mockups/fonts/` through the Vite dev server (licences `mockups/fonts/OFL-BarlowCondensed.txt`,
@@ -58,7 +58,10 @@ and the apps (`PREVIEW_FONTS` is empty) and Settings → Licences lists both fac
 missing character with the next shipped face that has it (Atkinson for U+2009, Overpass for U+202F and U+2192, as
 Atkinson itself borrows U+2192 from Overpass by `unicode-range` in `src/ui/fonts.css`), so no extra `@font-face` is
 needed; `npm run test:glyphs` checks every catalog string, city name and wave-1 letter against each face with that
-fallback.
+fallback. [night-81a] D-336 (PLAN-NOWY-KIERUNEK.md step T6): Linoryt is gone, so the five files (`Besley-800.woff2`,
+`Besley-900.woff2`, `SchibstedGrotesk-VF.woff2`, `OFL-Besley.txt`, `OFL-SchibstedGrotesk.txt`) are removed from
+`public/fonts/` and Settings → Licences (`licenses.besley` and `licenses.schibsted` are gone); UI-A's Archivo and Chivo
+Mono ship instead (below). The mockup copies in `docs/styles/kierunki-2026-11b/fonts/` stay with the archived frames.
 
 Rejected: **B612 / B612 Mono** (OFL, Airbus cockpit face) — no Polish diacritics (ą ć ę ł ń ś ź ż missing), checked with fontTools.
 
@@ -181,12 +184,12 @@ q78–80 778 kB, no visible difference at the game zoom; WebP decodes in every s
 The 500 m/px Blue Marble tiles (`…3x21600x21600.{A1…D2}.jpg`) are not used: the 4096 level comes from the 5400 image
 (an option for `high` only after a memory measurement on a device).
 
-**In the release, not drawn yet.** [night-79a R4] D-334: the NASA globe is in the release build behind
-`DEFAULT_GLOBE_LOOK` (still the print until the flip, PLAN-NOWY-KIERUNEK.md R5), so `dist/` and the apps carry the four
-photo textures and `data/borders-50m.json` (`PREVIEW_GLOBE_FILES` / `PREVIEW_DATA_FILES` in
-`scripts/vite-globe-preview.mjs` are empty; `npm run test:bundle` checks they are in `dist/`). Nothing in a release
-loads them before the flip. Settings → Licences regains "NASA Earth Observatory (Blue Marble, Black Marble)" (key
-`licenses.nasaEarth`, PL and EN) at the flip (T6), when they are drawn (the images are public domain). The Linoryt print (D-283) still draws everything from the elevation raster and the Natural Earth land
+**In the release and drawn.** [night-79a R4] D-334: the NASA globe is in the release build behind
+`DEFAULT_GLOBE_LOOK`, so `dist/` and the apps carry the four photo textures and `data/borders-50m.json`
+(`PREVIEW_GLOBE_FILES` / `PREVIEW_DATA_FILES` in `scripts/vite-globe-preview.mjs` are empty; `npm run test:bundle` checks
+they are in `dist/`). [night-81a] D-336 (the flip, R5): `DEFAULT_GLOBE_LOOK = 'earth'`, the release draws them, and
+Settings → Licences lists "NASA Earth Observatory (Blue Marble, Black Marble)" again (key `licenses.nasaEarth`, PL and
+EN; public domain). Until R6 the print below is reachable only by the DEV-only `?look=linoryt`. The Linoryt print (D-283) still draws everything from the elevation raster and the Natural Earth land
 raster at load: the coast distance field and the Imhof shadow (D-298), the plane silhouettes from the skin's own icon
 paths (D-299).
 **Removed in E4 (ext/04, D-285) and still forbidden:** `map-{4096,2048}` (Mapa, D-172), `clouds-2048.png`
@@ -253,9 +256,11 @@ and weights only (the full variable file is 659 kB): `Archivo-600.woff2` (wght 6
 `wght=500:800`. All four are subset with the Alegreya command above (same `--unicodes` and `--layout-features`,
 `--flavor=woff2`). Neither licence declares a Reserved Font Name, so the subsets keep their names. Gaps: U+202F in all,
 U+2192 in Chivo Mono; the `--board-face` / `--board-mono` stacks (`'Archivo'|'Chivo Mono', 'Atkinson Hyperlegible Next',
-'Overpass', …`) draw them with the shipped faces (`npm run test:glyphs`). Until the flip (T6) the six files are listed in
-`PREVIEW_FONTS` (`scripts/vite-font-files.mjs`), so `dist/` and the apps do not carry them and Settings → Licences does
-not list them yet; T6 ships them (and adds the licence entries). The source TTFs stay in `makiety/ui-a/fonts/`
+'Overpass', …`) draw them with the shipped faces (`npm run test:glyphs`). Until the flip (T6) the six files were listed in
+`PREVIEW_FONTS` (`scripts/vite-font-files.mjs`), so `dist/` and the apps did not carry them. [night-81a] D-336 (T6): they
+ship (`PREVIEW_FONTS` is empty), Settings → Licences lists "Archivo typeface" and "Chivo Mono typeface" under SIL OFL 1.1
+(`licenses.archivo`, `licenses.chivoMono`), and the `--skin-face-*` tokens of `src/ui/skin/current.css` name them
+(Archivo for text and titles, Chivo Mono for figures). The source TTFs stay in `makiety/ui-a/fonts/`
 (the mockup renderer reads them there).
 
 Globe imagery (downloaded 2026-11-08 by `src/fetch-textures.sh` from assets.science.nasa.gov into the git-ignored

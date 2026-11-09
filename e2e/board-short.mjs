@@ -24,9 +24,12 @@ const SCROLLED = [['en', 360, 640, 150]];
 
 async function measure(page) {
   return page.evaluate(() => {
-    const overlay = document.querySelector('.airway-upgrade-open');
-    const pass = document.querySelector('.airway-pass')?.getBoundingClientRect();
-    const tags = [...document.querySelectorAll('.airway-upgrade-tag')].map((tag) => tag.getBoundingClientRect());
+    // [night-81a] D-336: the shipped UI-A sheet (D-331): `.bw-sheet` scrolls, the strips are the labels, the top band is
+    // hidden while it is open (so nothing to stay under).
+    const overlay = document.querySelector('.bw-sheet') ?? document.querySelector('.airway-upgrade-open');
+    const passEl = document.querySelector('.airway-pass');
+    const pass = passEl?.checkVisibility({ visibilityProperty: true, opacityProperty: true }) ? passEl.getBoundingClientRect() : null;
+    const tags = [...document.querySelectorAll('.bw-strip, .airway-upgrade-tag')].map((tag) => tag.getBoundingClientRect());
     return {
       scroll: overlay ? overlay.scrollHeight - overlay.clientHeight : -1,
       passBottom: pass ? pass.bottom : -1,
@@ -54,14 +57,14 @@ async function boards(page, allowed, language, width, height, textScale = 100) {
     if (textScale !== 100) {
       // [night-49a] Every board opens at the top: scrollTop 0, the week sign inside the screen.
       const open = await page.evaluate(() => ({
-        top: document.querySelector('.airway-upgrade-open').scrollTop,
-        sign: document.querySelector('.airway-upgrade-sign')?.getBoundingClientRect().top ?? -1,
+        top: (document.querySelector('.bw-sheet') ?? document.querySelector('.airway-upgrade-open')).scrollTop,
+        sign: document.querySelector('.bw-board, .airway-upgrade-sign')?.getBoundingClientRect().top ?? -1,
       }));
       assert(open.top === 0 && open.sign >= 0, `${tag}: board opened scrolled (scrollTop ${open.top}, sign top ${Math.round(open.sign)})`);
       if (week === 1) {
         assert(m.scroll > 0, `${tag}: the board does not scroll at ${textScale} % (the check needs it to)`);
         const left = await page.evaluate(() => {
-          const overlay = document.querySelector('.airway-upgrade-open');
+          const overlay = document.querySelector('.bw-sheet') ?? document.querySelector('.airway-upgrade-open');
           overlay.scrollTop = overlay.scrollHeight;
           return overlay.scrollTop;
         });

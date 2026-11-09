@@ -338,8 +338,9 @@ const ASSETS: ReadonlyArray<{name:TranslationKey;license:TranslationKey}>=[
   {name:'licenses.overpass',license:'licenses.ofl'},
   {name:'licenses.overpassMono',license:'licenses.ofl'},
   {name:'licenses.atkinson',license:'licenses.ofl'},
-  {name:'licenses.besley',license:'licenses.ofl'}, // [night-46a] D-301: the Linoryt faces
-  {name:'licenses.schibsted',license:'licenses.ofl'},
+  {name:'licenses.archivo',license:'licenses.ofl'}, // [night-81a] D-336: the UI-A faces (Besley, Schibsted Grotesk went)
+  {name:'licenses.chivoMono',license:'licenses.ofl'},
+  {name:'licenses.nasaEarth',license:'licenses.publicDomain'}, // [night-81a] D-336: Blue Marble NG, Black Marble 2016
   {name:'licenses.naturalEarth',license:'licenses.publicDomain'},
   {name:'licenses.noaaRelief',license:'licenses.publicDomain'},
   {name:'licenses.worldAtlas',license:'licenses.isc'},

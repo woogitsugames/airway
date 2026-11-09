@@ -4,8 +4,8 @@
 import './ui/fonts.css';
 import './ui/base.css';
 import './ui/theme/theme.css';
-import './ui/skin/current.css'; // [night-11aq] UI skin tokens (D-249); [night-46a] D-301: Linoryt values
-import { startLinoryt } from './ui/skin/linoryt'; // [night-28a] D-284; [night-46a] D-301: the shipped skin's helpers
+import './ui/skin/current.css'; // [night-11aq] UI skin tokens (D-249); [night-81a] D-336: UI-A values
+import { startSkinBase } from './ui/skin/base'; // [night-28a] D-284; [night-81a] D-336: the board's base helpers (was linoryt.ts)
 import './ui/game.css';
 import { bootAudio, audioSettingsFromToggles } from './audio';
 import { createFlapRattle } from './game/flapSound'; // [night-07e]
@@ -41,12 +41,12 @@ import { configureHaptics, nativeAppCheckPort, createDefaultStorage, createNativ
 import { initializeAccessibility, presetTextScaleFromSystem } from './ui/a11y';
 import { systemTextScale } from './platform/textScale'; // [night-11ap] R1g
 import { initializeMotion, reducedMotion } from './ui/motion';
-import { hudSkin } from './ui/hud/skin'; // [night-69a] D-324: the DEV `?skin=board` preview's HUD slot
-import { noteSkin } from './ui/overlay-skin'; // [night-73a] D-328: the DEV `?skin=board` preview's sign slot
-import { upgradeSkin } from './ui/upgrade/skin'; // [night-76a] D-331: the DEV `?skin=board` preview's weekly sheet slot
-import { stripSkin } from './ui/strip-skin'; // [night-75a] D-330: the DEV `?skin=board` preview's hub strip bay
-import { sheetSkin } from './ui/sheet-skin'; // [night-77a] D-332: the DEV `?skin=board` preview's menu board and print-out
-import { regionGlyph } from './ui/glyphs'; // [night-75a] D-330: glyphs on the strips (DEV branch only)
+import { hudSkin } from './ui/hud/skin'; // [night-69a] D-324: the board's HUD slot
+import { noteSkin } from './ui/overlay-skin'; // [night-73a] D-328: the board's sign slot
+import { upgradeSkin } from './ui/upgrade/skin'; // [night-76a] D-331: the board's weekly sheet slot
+import { stripSkin } from './ui/strip-skin'; // [night-75a] D-330: the board's hub strip bay
+import { sheetSkin } from './ui/sheet-skin'; // [night-77a] D-332: the board's menu board and print-out
+import { regionGlyph } from './ui/glyphs'; // [night-75a] D-330: glyphs on the strips
 import { REGION_IDS } from './data/regions'; // [night-75a]
 import { ATLAS_LABELS, atlasLabelEligible, atlasLabelKey } from './data/atlasLabels'; // [night-73a] D-328 (R2 data)
 import { BOARD_CELLS } from './i18n/limits'; // [night-69a] D-324
@@ -58,9 +58,10 @@ import { onSettingsChange, readSettings } from './ui/settings/settings';
 import { applyAirlineColour, onAirlineColour, readAirlineColour } from './ui/airlineColour';
 import { DAYS_PER_WEEK, TICKS_PER_WEEK } from './sim/clock'; // [task-31] single week length (D-40)
 import { NOVEMBER_SUBSOLAR_LATITUDE_DEG } from './render/sun'; // [task-40] store `game` scene light
-// [night-46a] D-301: the Linoryt structure after every component stylesheet (its rules are scoped to
-// <html data-skin="linoryt">, set by index.html; a release build writes the scope as `:root:root`).
-import './ui/skin/linoryt.css';
+// [night-81a] D-336 (PLAN-NOWY-KIERUNEK.md step T6): the UI-A structure after every component stylesheet (its rules are
+// scoped to <html data-skin="board">, set by index.html; a release build writes the scope as `:root:root`).
+import './ui/skin/board.css';
+import './ui/skin/board-week.css'; // [night-76a] D-331
 
 const mount = document.getElementById('app');
 if (!mount) throw new Error('Missing #app mount point');
@@ -76,28 +77,18 @@ const query = new URLSearchParams(location.search);
  * for new Endless runs in a DEV build only (production folds this to false).
  */
 const devWeatherFront = import.meta.env.DEV && query.get('weather') === 'front';
-// [night-46a] D-301 (PLAN-LINORYT.md step U5): Linoryt is the shipped UI skin; Róża and the DEV `?skin=` previews
-// (the Diorama comparison, the Linoryt preview) are gone.
-startLinoryt({ t, localNumber });
-/**
- * [night-69a] D-324 (PLAN-NOWY-KIERUNEK.md step T1): the UI-A preview "Lotniskowa tablica i paski lotu" in a DEV build
- * with `?skin=board`: <html data-skin="board">, the split-flap board and the controller's console in the HUD
- * (src/ui/skin/board.{ts,css}), and the Linoryt structure re-scoped to the board for every screen a later stage
- * restyles. A release build folds this branch away (no board CSS, JS or fonts in dist/, D-297 budget untouched).
- */
-const devBoard: Promise<void> | null = import.meta.env.DEV && query.get('skin') === 'board' ? startBoardPreview() : null;
-async function startBoardPreview(): Promise<void> {
-  const [board, twin, notes, strips, week, sheets] = await Promise.all([import('./ui/skin/board'), import('./ui/skin/linoryt.css?raw'),
+// [night-81a] D-336 (PLAN-NOWY-KIERUNEK.md step T6): UI-A "Lotniskowa tablica i paski lotu" is the shipped skin (the
+// Linoryt print and the DEV `?skin=board` preview flag are gone): <html data-skin="board"> (index.html), the base helpers,
+// then the board's modules as lazy chunks (type-only imports; i18n and the shared classes are handed in) filling the
+// HUD, sign, strip, weekly-sheet and menu/report slots before the HUD mounts.
+startSkinBase({ t, localNumber });
+const boardReady: Promise<void> = startBoardSkin();
+async function startBoardSkin(): Promise<void> {
+  const [board, notes, strips, week, sheets] = await Promise.all([import('./ui/skin/board'),
     import('./ui/skin/board-notes'), // [night-73a] D-328: T2 signs (the atlas labels are R2's static data)
     import('./ui/skin/board-strips'), // [night-75a] D-330: T3 hub strips
     import('./ui/skin/board-week'), // [night-76a] D-331: T4 weekly sheet
     import('./ui/skin/board-sheets')]); // [night-77a] D-332: T5 menu board and report print-out
-  const style = document.createElement('style');
-  style.dataset.skinTwin = 'board';
-  style.textContent = board.boardTwin(twin.default);
-  document.head.append(style);
-  await import('./ui/skin/board.css');
-  await import('./ui/skin/board-week.css'); // [night-76a] D-331
   board.startBoard();
   noteSkin.current = notes.createBoardNotes({ t, localNumber, labels: ATLAS_LABELS, eligible: atlasLabelEligible, labelKey: atlasLabelKey });
   upgradeSkin.current = week.createBoardWeek({ t, localNumber, symbols: board.SYMBOL }); // [night-76a] D-331
@@ -120,7 +111,8 @@ if (import.meta.env.DEV && query.has('pseudo')) setPseudoLocale(query.get('pseud
 
 // The airport-model fixture lives in dev/world.html (render agent, shared world renderer).
 if (import.meta.env.DEV && query.get('preview') === 'gameover') {
-  void import('./ui/gameover/preview').then(({ mountGameOverPreview }) => mountGameOverPreview(app));
+  // [night-81a] D-336: after the board's slots are filled (the print-out comes from the sheet slot).
+  void boardReady.then(() => import('./ui/gameover/preview')).then(({ mountGameOverPreview }) => mountGameOverPreview(app));
 } else if (query.get('perf') === 'scene') {
   // scripts/perf-scene.ts mounts its own fixture; the game must not open a second WebGL context.
 } else {
@@ -133,7 +125,7 @@ const SAVE_NOTICE_KEY = { corrupt: 'save.error.corrupt', unsupported: 'save.erro
 interface SavedSummary { readonly mode: RunMode; readonly week: number; readonly passengers: number }
 
 async function boot(): Promise<void> {
-  if (devBoard) await devBoard; // [night-69a] D-324: the board preview is in place before the HUD mounts
+  await boardReady; // [night-69a] D-324; [night-81a] D-336: the board is in place before the HUD mounts
   configureHaptics({ isEnabled: () => readSettings().haptics });
   const { audio } = bootAudio({ toggles: readSettings() });
   // [night-12t] D-153: read-only audio health for device checks over chrome://inspect / Safari Web Inspector

@@ -14,8 +14,7 @@ import { withBrowser, newGamePage, waitForScreen, assert, clickTestId, dragGestu
 
 const started = performance.now();
 const CASES = [
-  { language: 'pl', width: 412, height: 915, system: 'reduce' },
-  { language: 'en', width: 915, height: 412, system: 'no-preference' },
+  // [night-81a] D-336: UI-A is the shipped skin, so the two cases run on it (the Linoryt pair is gone).
   { language: 'pl', width: 412, height: 915, system: 'reduce', skin: 'board' }, // [night-69a] D-324
   { language: 'en', width: 915, height: 412, system: 'no-preference', skin: 'board' },
 ];
@@ -42,7 +41,6 @@ try {
       const label = `${language} ${width}×${height} system=${system}${skin ? ' skin=' + skin : ''}`;
       const reduce = system === 'reduce';
       const target = new URL(gameUrl(url));
-      if (skin) target.searchParams.set('skin', skin);
       const { page, errors } = await newGamePage(browser, target.href, language, { width, height }, { reducedMotion: system });
       try {
         await assertRender(page);

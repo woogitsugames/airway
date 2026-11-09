@@ -95,9 +95,13 @@ function opaquePng(path, width, height) {
 }
 check('opaque 1024x1024 app icon', opaquePng('AppIcon.appiconset/AppIcon-512@2x.png', 1024, 1024));
 check('opaque 2732x2732 splash', opaquePng('Splash.imageset/splash-2732x2732.png', 2732, 2732));
-// [night-48a] PLAN-LINORYT U6 (D-301): the game is printed on light paper, so the app keeps the light appearance (dark
-// status-bar text in Dark Mode too) and the launch image is the mark on the paper (#ECE3CC), not on task 24's black.
-check('light appearance (dark status-bar text on paper)', /<key>UIUserInterfaceStyle<\/key>\s*<string>Light<\/string>/.test(plist));
+// [night-48a] PLAN-LINORYT U6 (D-301) kept the light appearance on paper; [night-81a] T6 (D-336): the game sits on UI-A's
+// dark enamel (board.css --board-enamel, index.html theme-color), so the app keeps the dark appearance (light status-bar
+// text in Light Mode too) and the WebView's ground before the first frame is the enamel (capacitor.config.ts).
+const boardEnamel = read('src/ui/skin/board.css').match(/--board-enamel:\s*(#[0-9A-Fa-f]{6})/)?.[1]?.toLowerCase();
+check('dark appearance (light status-bar text on enamel)', /<key>UIUserInterfaceStyle<\/key>\s*<string>Dark<\/string>/.test(plist) &&
+  !!boardEnamel && new RegExp(`<meta name="theme-color" content="${boardEnamel}"`, 'i').test(read('index.html')) &&
+  new RegExp(`ios:\\s*\\{[^}]*backgroundColor:\\s*'${boardEnamel}'`, 'i').test(read('capacitor.config.ts')));
 function cornerColour(path) {
   try {
     const data = readFileSync(join(IOS, 'Assets.xcassets', path));

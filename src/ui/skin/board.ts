@@ -1,9 +1,8 @@
 /**
  * [night-69a] D-324 (docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md step T1; D-323): helpers of the UI-A skin
- * "Lotniskowa tablica i paski lotu" (mockups and spec: docs/styles/kierunki-2026-11c/makiety/ui-a/). A DEV-only preview
- * until the flip (T6): src/main.ts loads this module and src/ui/skin/board.css only in a DEV build with `?skin=board`,
- * sets <html data-skin="board"> and hands the helpers to the HUD through `hudSkin` (src/ui/hud/skin.ts); a release
- * build folds that branch away, so neither file reaches dist/.
+ * "Lotniskowa tablica i paski lotu" (mockups and spec: docs/styles/kierunki-2026-11c/makiety/ui-a/). [night-81a] D-336
+ * (T6): the shipped skin. src/main.ts loads this module as a lazy chunk on every boot (board.css is a static import),
+ * and hands the helpers to the HUD through `hudSkin` (src/ui/hud/skin.ts). Until T6 it was the DEV `?skin=board` preview.
  *
  * T1 draws two things:
  * - the HUD top band as a split-flap departures board on black enamel: the local time, the week, the day "2/3" and the
@@ -16,7 +15,7 @@
  *   the stops 1/2/4 = a setting (Speed). The chosen plate turns cream with its lamp lit (not yellow: yellow means only
  *   "where to / what next", spec §2); an empty plate or hub is hatched and carries a paper tag with the wait.
  *
- * No runtime imports (as linoryt.ts): src/main.ts hands in i18n and the SplitFlap class. Every text is a catalog key;
+ * No runtime imports (as base.ts): src/main.ts hands in i18n and the SplitFlap class. Every text is a catalog key;
  * the flaps and drawings are aria-hidden, the board carries one spoken label (`board.label`).
  */
 import type { TranslationKey, TranslationParams } from '../../i18n';
@@ -67,36 +66,6 @@ export function boardFigures(state: Pick<HudState, 'timeMinutes' | 'week' | 'day
   const passengers = String(clamp(state.passengers, 0, 10 ** cells.passengers - 1)).padStart(3, '0');
   return { clock: `${pad2(Math.floor(minute / 60))}:${pad2(minute % 60)}`, week, day, passengers, minute };
 }
-
-/**
- * The CSS of the shipped Linoryt structure re-scoped to the board preview: the board draws only the HUD band and the
- * dock in T1, so every other screen (notes, sheets, menu) keeps Linoryt's look under <html data-skin="board"> until
- * its own stage (T2–T5). DEV only (src/main.ts reads linoryt.css as text); the release never sees it.
- */
-export function boardTwin(linorytCss: string): string {
-  let css = linorytCss;
-  for (const [fromMark, toMark] of BOARD_TWIN_CUTS) {
-    const from = css.indexOf(fromMark);
-    const to = css.indexOf(toMark, from);
-    if (from >= 0 && to > from) css = css.slice(0, from) + css.slice(to);
-  }
-  return css.split('[data-skin="linoryt"]').join('[data-skin="board"]');
-}
-
-/**
- * Sections of linoryt.css the twin leaves out (from the first marker up to the second), because a stage prints them in
- * the board's own language (board.css):
- * - [night-73a] D-328 (T2): the airport notes, edge chips and slot tags (U2);
- * - [night-77a] D-332 (T5): the menu index (Part 4), the game-over report and the U4 screens (settings, licences,
- *   privacy and terms, logbook, puzzles, daily ranking). The pause and the training flight keep the twin's geometry
- *   (their fits for short and landscape screens) and take only the board's inks and faces (board.css "T5").
- */
-export const BOARD_TWIN_CUTS: readonly (readonly [string, string])[] = [
-  ['/* ---- Part 4: menu', '/* U2 notes */'],
-  ['/* U2 notes */', '/* end U2 */'],
-  ['/* ---- Game-over report:', '/* ---- Hub cause board:'],
-  ['/* U4 screens */', '/* end U4 */'],
-];
 
 // ---- Flap rows -----------------------------------------------------------------------------------------------------
 
@@ -337,7 +306,7 @@ function publishBoardBottom(section: HTMLElement): void {
   publish();
 }
 
-/** Turns the preview on: <html data-skin="board"> scopes board.css and the re-scoped Linoryt structure. */
+/** Turns the skin on: <html data-skin="board"> scopes board.css (index.html sets it too; [night-81a] D-336). */
 export function startBoard(): void {
   document.documentElement.dataset.skin = 'board';
 }

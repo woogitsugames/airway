@@ -77,10 +77,10 @@ try {
               // (D-301) prints the code (.lin-code) after the name, then the fill, its tick bar (an SVG) and line
               // breaks: only those parts may stand between the code plate and the pennant.
               afterPlate: stub ? (() => {
-                const plateAt = kids.findIndex((kid) => kid.classList.contains('airport-bubble__plate') || kid.classList.contains('lin-code'));
+                const plateAt = kids.findIndex((kid) => kid.classList.contains('airport-bubble__plate') || kid.classList.contains('lin-code') || kid.classList.contains('bd-plate')); // [night-81a] UI-A's plate
                 const between = kids.slice(plateAt + 1, kids.indexOf(stub));
                 return plateAt >= 0 && plateAt < kids.indexOf(stub) && between.every((kid) => kid instanceof SVGElement ||
-                  ['lin-fill', 'lin-br', 'lin-count', 'lin-more', 'airport-bubble__trend'].some((cls) => kid.classList.contains(cls)));
+                  ['lin-fill', 'lin-br', 'lin-count', 'lin-more', 'airport-bubble__trend', 'airport-bubble__timer', 'bd-br'].some((cls) => kid.classList.contains(cls)));
               })() : null,
               inside: s ? s.left >= r.left - 0.5 && s.right <= r.right + 0.5 && s.top >= r.top - 0.5 && s.bottom <= r.bottom + 0.5 : null,
               stubScroll: stub ? stub.scrollWidth - stub.clientWidth : null,

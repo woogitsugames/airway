@@ -52,7 +52,7 @@ try {
         await page.goto(url, { waitUntil: 'load' });
         await page.waitForFunction(() => typeof window.aw === 'object', null, { timeout: 12000 });
         await waitForScreen(page, 'menu');
-        const text = (await page.locator('.airway-board').textContent()) ?? '';
+        const text = (await page.locator('.airway-menu').textContent()) ?? ''; // [night-81a] D-336: UI-A prints the record on the yellow sign beside the board
         assert(!text.includes('{'), `template token on the board: ${text}`);
         for (const want of expected) assert(text.includes(want), `missing "${want}" in: ${text}`);
         if (errors.length) throw new Error(`Browser errors: ${errors.join('; ')}`);

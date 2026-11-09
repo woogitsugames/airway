@@ -25,7 +25,7 @@ const SCALES = process.env.AW_TEXT_SCALE ? [Number(process.env.AW_TEXT_SCALE)] :
 /** One reading-text element per screen and its size at 100 %; the HUD and first-time card keep in-world sizes. */
 const PROBES = {
   menu: null, settings: ['.airway-setting', 14], logbook: ['.airway-logbook__records dt', 13], puzzles: null, upgrade: null, 'upgrade-pick': null,
-  gameover: null, hud: null, 'first-time': null, 'hub-board': ['.airway-hub-board__text', 13], pause: ['.airway-pause__button', 16],
+  gameover: null, hud: null, 'first-time': null, 'hub-board': ['.airway-hub-board__text', 13], pause: ['.airway-pause__summary dd', 14], // [night-81a] D-336: UI-A keys use the bounded title scale (D-332); the summary text scales fully
 };
 
 /** [night-20a] The hub cause board and the pause sheet as the session builds them, over the real HUD. */

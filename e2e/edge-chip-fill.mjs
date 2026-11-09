@@ -45,7 +45,8 @@ async function audit(page) {
       filled++;
       const track = gauge.getBoundingClientRect();
       const fill = gauge.querySelector('.airport-edge__fill').getBoundingClientRect();
-      const inner = track.width - 3; // 1.5 px border each side
+      const gaugeStyle = getComputedStyle(gauge); // [night-81a] D-336: the border as drawn (UI-A's gauge has 1 px, the old one 1.5 px)
+      const inner = track.width - parseFloat(gaugeStyle.borderLeftWidth) - parseFloat(gaugeStyle.borderRightWidth);
       const want = Math.max(0.08, domTaken / domCap);
       if (Math.abs(fill.width / inner - want) > 0.06) problems.push(`chip ${code}: fill ${(fill.width / inner).toFixed(2)} for ${domTaken}/${domCap}`);
       const box = chip.getBoundingClientRect();

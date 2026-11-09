@@ -8,8 +8,11 @@ Instructions for AI coding agents working in this repository.
 - **Visual direction (D-323, owner, 8.11):** a realistic lit globe from NASA Blue Marble (day) and Black Marble
   (night), day and night as game state (terminator from the game clock, default presentation the K2 night), with our
   own map language on it, and UI-A "Lotniskowa tablica i paski lotu" (split-flap board, ICAO/IATA signs, hub flight
-  strips, teleprinter report; Archivo + Chivo Mono). Linoryt is still what ships until the flip; follow the stages of
-  `docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md` (render = ext session `src/render/**`, UI = agents `src/ui/**`).
+  strips, teleprinter report; Archivo + Chivo Mono). **Shipped since the flip T6 + R5 (D-336, owner 9.11):** UI-A
+  (`src/ui/skin/board*.{ts,css}`, `<html data-skin="board">`, no `?skin=` flag) over the NASA globe
+  (`DEFAULT_GLOBE_LOOK = 'earth'`, moonlit night land); Linoryt's skin and faces are gone, its globe stays only as the
+  DEV `?look=linoryt` until R6. Follow the remaining stages of `docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md`
+  (R6, T7, U7; render = ext session `src/render/**`, UI = agents `src/ui/**`).
 - Tasks 01–36 (`docs/tasks/00-INDEX.md`) are merged and integrated on `dev` (PR #30, #33–#37). Decisions are in
   `docs/DECISIONS.md` (renumbering of the first merge: `docs/integration/RENUMBERING.md`).
 - Read `docs/ARCHITECTURE.md` (module map, Sim API, Render API) and `docs/TESTING.md` (every command, runtime, summary).
@@ -61,7 +64,7 @@ the route network, planes fly by themselves; passengers transfer at hubs; you lo
 - `npm run test:fast` — typecheck + every headless unit test, ending with `test:arch` (~1.5–2 min with 4 parallel jobs, 122 steps); one PASS/FAIL line per
   step and a final `SUMMARY`. Run before every push. Add new fast tests to its step list.
 - `npm run test:ci` — `test:fast`, build, HUD/tutorial/E2E smoke, UI matrix, balance, perf scene, all screenshots
-  (~1.5–2 h serial on 4 vCPU, 93 steps; `:stub` variants are the fast path).
+  (~1.5–2 h serial on 4 vCPU, 99 steps; `:stub` variants are the fast path).
 - `npm run test:<name>` — a single suite (list and expected summaries in `docs/TESTING.md`).
 - `npm run test:e2e:smoke` / `npm run ui:matrix` — real-game Playwright journey and the PL/EN × 4-size screen matrix;
   need the DEV-only `window.aw` adapter (`e2e/README.md`). `npm run test:e2e:fixture` self-tests the harness only.

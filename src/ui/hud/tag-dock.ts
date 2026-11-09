@@ -3,7 +3,7 @@ import { iconSvg } from './icons';
 import { crateCountdown } from './crate-countdown';
 import type { HudActions, HudState, PlaneType } from './types';
 import { ARIA_KEYSHORTCUTS } from '../../input/keyboard';
-import { linoryt, linorytDockLabel, linorytIcon } from '../skin/linoryt'; // [night-28a] D-284; [night-46a] D-301: cut symbols
+import { skinBase, baseDockLabel, baseIcon } from '../skin/base'; // [night-28a] D-284; [night-46a] D-301: cut symbols
 import { setClass } from '../classes'; // [night-59a] D-322
 import { hudSkin } from './skin'; // [night-69a] D-324: the DEV `?skin=board` preview paints the console faces
 
@@ -37,7 +37,7 @@ export function createTagDock(root: HTMLElement, actions: HudActions): { render(
     button.type = 'button';
     button.className = 'airway-dock__tag';
     button.dataset.hudAction = tag;
-    button.innerHTML = `<span class="airway-dock__eyelet" aria-hidden="true"></span>${hudSkin.current ? hudSkin.current.dockFace(tag) : linoryt.on ? linorytIcon(tag) : iconSvg(tag)}<span class="airway-dock__count" aria-hidden="true"></span>`;
+    button.innerHTML = `<span class="airway-dock__eyelet" aria-hidden="true"></span>${hudSkin.current ? hudSkin.current.dockFace(tag) : skinBase.on ? baseIcon(tag) : iconSvg(tag)}<span class="airway-dock__count" aria-hidden="true"></span>`;
     holder.appendChild(button);
     dock.appendChild(holder);
     if (tag === 'speed') button.setAttribute('aria-keyshortcuts', ARIA_KEYSHORTCUTS.speed); // [night-11ai] R4g
@@ -88,7 +88,7 @@ export function createTagDock(root: HTMLElement, actions: HudActions): { render(
         const dy = event.clientY - drag.startY;
         if (!drag.moved && dx * dx + dy * dy >= DRAG_THRESHOLD_SQUARED) {
           drag.moved = true;
-          ghost.innerHTML = (linoryt.on ? linorytIcon(drag.type) : iconSvg(drag.type));
+          ghost.innerHTML = (skinBase.on ? baseIcon(drag.type) : iconSvg(drag.type));
           ghost.hidden = false;
           dock.classList.add('is-dragging');
         }
@@ -150,14 +150,14 @@ export function createTagDock(root: HTMLElement, actions: HudActions): { render(
         if (button.getAttribute('aria-label') !== label) button.setAttribute('aria-label', label);
         // [night-28a] D-284: the Linoryt caption under the symbol, the wait under it in blue.
         if (hudSkin.current) hudSkin.current.dockState(button, name, { count: nextCount, speed: state.speed, wait: waiting ? countdown.short : null, empty: disabled, selected: chosen });
-        else if (linoryt.on) linorytDockLabel(button, name, state.speed, waiting ? countdown.short : null);
+        else if (skinBase.on) baseDockLabel(button, name, state.speed, waiting ? countdown.short : null);
       }
       if (lastSpeed !== state.speed) {
         lastSpeed = state.speed;
         const tag = controls.get('speed');
         tag?.setAttribute('data-speed', String(state.speed));
         // [night-11az] D-257: the speed symbol's wind barbs count the tempo (one per 1×).
-        if (!hudSkin.current) tag?.querySelector('svg')?.replaceWith(document.createRange().createContextualFragment(linoryt.on ? linorytIcon('speed', state.speed) : iconSvg('speed', state.speed)));
+        if (!hudSkin.current) tag?.querySelector('svg')?.replaceWith(document.createRange().createContextualFragment(skinBase.on ? baseIcon('speed', state.speed) : iconSvg('speed', state.speed)));
       }
       // Invalidate a pending drag when its item is depleted by another command.
       if (active && controls.get(active.type)?.disabled) {

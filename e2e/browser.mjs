@@ -88,23 +88,19 @@ export const RENDER = renderChoice;
  * helpers it left (`SKIN`, `skinUrl`, `skinShotsDir`) are gone from the suites too.
  */
 /**
- * [night-69a] D-324 (PLAN-NOWY-KIERUNEK.md step T1): `--skin=board` (or `AW_SKIN=board`) loads the DEV-only UI-A preview
- * (`?skin=board`) in every URL gameUrl() builds, e.g. `npm run ui:matrix:stub -- --skin=board`; unset = the shipped
- * skin. Any other value is refused.
+ * [night-69a] D-324: `--skin=board` loaded the DEV-only UI-A preview (`?skin=board`). [night-81a] D-336 (step T6): UI-A is
+ * the shipped skin and the game has no `?skin=` any more, so the flag is refused again (as after D-301).
  */
-const skinArg = process.argv.find((arg) => arg.startsWith('--skin='))?.slice('--skin='.length);
-export const SKIN = skinArg ?? process.env.AW_SKIN ?? '';
-if (!['', 'board'].includes(SKIN)) throw new Error(`--skin / AW_SKIN must be "board" or unset, got "${SKIN}"`);
+if (process.argv.some((arg) => arg.startsWith('--skin=')) || process.env.AW_SKIN) {
+  throw new Error('--skin / AW_SKIN: the game has no skin flag since D-336 (UI-A is the shipped skin)');
+}
 
-/** The game URL for the current `RENDER` mode (unchanged on the real renderer) and the `--skin` preview. */
+/** The game URL for the current `RENDER` mode (unchanged on the real renderer). */
 export function gameUrl(url) {
-  if (RENDER !== 'stub' && !SKIN) return url;
+  if (RENDER !== 'stub') return url;
   const target = new URL(url);
-  if (RENDER === 'stub') {
-    target.searchParams.set('render', 'stub');
-    target.searchParams.set('clock', 'frozen');
-  }
-  if (SKIN) target.searchParams.set('skin', SKIN); // [night-69a] D-324
+  target.searchParams.set('render', 'stub');
+  target.searchParams.set('clock', 'frozen');
   return target.href;
 }
 
@@ -114,8 +110,6 @@ export function gameUrl(url) {
  * (tracked shots untouched). Unchanged on the real renderer.
  */
 export function shotsDir(dir) {
-  // [night-69a] D-324: shots of the `--skin` preview never overwrite the tracked shots of the shipped skin.
-  if (SKIN) return resolve(ARTIFACTS, `skin-${SKIN}`, dir.split('/').filter(Boolean).at(-1));
   if (RENDER !== 'stub') return dir;
   return resolve(ARTIFACTS, 'stub', dir.split('/').filter(Boolean).at(-1));
 }
@@ -166,7 +160,9 @@ export async function waitForBoardModels(page, timeout = BOARD_MODELS_TIMEOUT_MS
   try {
     await page.waitForFunction((selector) => {
       const crates = [...document.querySelectorAll(selector)];
-      return crates.length > 0 && crates.every((node) => node.dataset.model);
+      // [night-81a] D-336: the shipped UI-A sheet (`.bw-sheet`, D-331) draws no crate models: ready once its strips are there.
+    if (document.querySelector('.bw-sheet [data-testid^="upgrade-option-"]')) return true;
+    return crates.length > 0 && crates.every((node) => node.dataset.model);
     }, BOARD_CRATES, { timeout, polling: 250 });
   } catch {
     const seen = await page.evaluate((selector) => [...document.querySelectorAll(selector)]
@@ -207,6 +203,13 @@ export async function clickTestId(page, id, timeout = CLICK_TIMEOUT_MS) {
     }
     phase = 'click';
     await target.click({ timeout: left() });
+    // [night-81a] D-336: on the shipped UI-A weekly sheet a tap on a strip only chooses it (D-331); a suite that clicks
+    // `upgrade-option-N` means the player's whole choice, so the yellow main action `upgrade-take` takes it.
+    if (/^upgrade-option-\d+$/.test(id)) {
+      phase = 'take';
+      const take = page.getByTestId('upgrade-take');
+      if (await take.count()) await take.click({ timeout: left() });
+    }
   } catch (error) {
     const seen = await page.evaluate((testId) => {
       const node = document.querySelector(`[data-testid="${testId}"]`);

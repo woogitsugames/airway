@@ -27,7 +27,7 @@ function audit(page, root) {
       if (el.tagName === 'SELECT') {
         measure.font = style.font;
         const chrome = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight) + parseFloat(style.borderLeftWidth) +
-          parseFloat(style.borderRightWidth) + 18; // the native arrow
+          parseFloat(style.borderRightWidth) + (style.appearance === 'none' ? 0 : 18); // the native arrow ([night-81a] D-336: UI-A draws its own inside the padding)
         const longest = Math.max(...[...el.options].map((option) => measure.measureText(option.textContent).width));
         if (longest + chrome + spare > r.width + 0.5) problems.push(`${name}: select ${Math.round(r.width)} px < ${Math.round(longest + chrome + spare)} px`);
       } else if (el.scrollWidth > el.clientWidth + 1) {

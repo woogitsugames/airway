@@ -50,6 +50,13 @@ export const EARTH_LOOK = {
   nightGain: 1.55,
   /** Moonlight on the night side (share of the day colour). */
   moon: 0.05,
+  /**
+   * [night-81a] D-336 (owner, 9.11: "rozjaśnij ląd nocą"): extra moonlight on land only (share of the day colour, on top
+   * of `moon`), so coasts and continents read on the night side without guessing; the sea keeps `moon` alone.
+   */
+  moonLand: 0.05,
+  /** [night-81a] D-336: a flat moonlit floor on land (sRGB), so the darkest forests do not sink into the sea. */
+  moonLandFloor: 0.045,
   /** Gamma on the day image (< 1 lifts the mid tones). */
   grade: 0.92,
   /** Limb haze (lit side only). */
@@ -77,6 +84,14 @@ export function earthNightWeight(sunCos: number): number {
 }
 export function earthDuskWeight(sunCos: number): number {
   return smooth(-0.2, -0.01, sunCos) * (1 - smooth(-0.01, 0.16, sunCos));
+}
+/**
+ * [night-81a] D-336: the moonlight added on the night side (one channel before the cool tint), for a day-image grey
+ * `grey` (the shader's 0.3/0.55/0.15 mix) and a water weight `water` (0 land … 1 sea). Mirrors the shader.
+ */
+export function earthMoonlight(grey: number, water: number): number {
+  const land = 1 - Math.max(0, Math.min(1, water));
+  return grey * (EARTH_LOOK.moon + EARTH_LOOK.moonLand * land) + EARTH_LOOK.moonLandFloor * land;
 }
 /** Direct light on the day image (0 night … 1 noon), before the relief. */
 export function earthDayLight(sunCos: number): number {

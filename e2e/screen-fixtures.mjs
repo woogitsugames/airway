@@ -112,6 +112,12 @@ export function auditScreen(page, { pseudo = true } = {}) {
     const name = (el) => (el.dataset?.testid || el.getAttribute?.('aria-label') || el.textContent || el.tagName).trim().replace(/\s+/g, ' ').slice(0, 40);
     const scrollsX = (el) => { for (let n = el.parentElement; n; n = n.parentElement) { const o = getComputedStyle(n).overflowX; if (o === 'auto' || o === 'scroll') return true; } return false; };
     let seen = 0;
+    // [night-81a] D-336: UI-A prints names on split-flap tiles and in aria-hidden drawings (the controls carry the spoken
+    // label), so visible text there counts as seen too; the audits below still skip them.
+    for (const el of host.querySelectorAll('.split-flap, [aria-hidden="true"]')) {
+      const r = el.getBoundingClientRect();
+      if (r.width && r.height && el.textContent.trim() && getComputedStyle(el).visibility !== 'hidden' && !el.closest('[hidden]')) seen++;
+    }
     for (const el of host.querySelectorAll('*')) {
       if (el.closest('.split-flap')) continue;
       const style = getComputedStyle(el);

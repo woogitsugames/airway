@@ -51,24 +51,28 @@ async function audit(page, besidePass) {
     const rect = (selector) => {
       const node = document.querySelector(selector);
       if (!node) return null;
+      // [night-81a] D-336: UI-A hides the top band and the console while the week sheet is open (D-331): a hidden part is absent.
+      if (!node.checkVisibility({ visibilityProperty: true, opacityProperty: true })) return null;
       const r = node.getBoundingClientRect();
       return { left: r.left, top: r.top, right: r.right, bottom: r.bottom, width: r.width, height: r.height };
     };
     return {
-      sign: rect('.airway-upgrade-sign'), sub: rect('.airway-upgrade-sub'), back: rect('.airway-upgrade-back'),
+      // [night-81a] D-336: the UI-A pick sign (D-331) or the old crate sign.
+      sign: rect('.bw-pick-sign') ?? rect('.airway-upgrade-sign'), sub: rect('.bw-direction-text') ?? rect('.airway-upgrade-sub'),
+      back: rect('[data-testid="upgrade-pick-back"]'),
       pass: rect('.airway-pass'), dock: rect('.airway-dock'), vw: innerWidth,
     };
   });
   const { sign, sub, back, pass, dock } = box;
-  assert(sign && sub && back && pass, `missing parts ${JSON.stringify(box)}`);
+  assert(sign && sub && back, `missing parts ${JSON.stringify(box)}`);
   const overlaps = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
   const px = (n) => Math.round(n);
-  assert(!overlaps(sign, pass), `sign ${px(sign.left)},${px(sign.top)} covers the pass ..${px(pass.right)},${px(pass.bottom)}`);
+  if (pass) assert(!overlaps(sign, pass), `sign ${px(sign.left)},${px(sign.top)} covers the pass ..${px(pass.right)},${px(pass.bottom)}`);
   if (dock) assert(!overlaps(sign, dock), `sign ..${px(sign.right)} covers the peg rack from ${px(dock.left)}`);
   assert(sign.right <= box.vw, `sign runs off screen to ${px(sign.right)}`);
   assert(sub.width >= MIN_SUB_WIDTH, `instruction squeezed to ${px(sub.width)} px`);
   assert(back.width >= 48 && back.height >= 48, `Back tile ${px(back.width)}×${px(back.height)} below 48 px`);
-  if (besidePass) assert(sign.height <= pass.height + 1, `sign ${px(sign.height)} px taller than the pass ${px(pass.height)} px`);
+  if (besidePass && pass) assert(sign.height <= pass.height + 1, `sign ${px(sign.height)} px taller than the pass ${px(pass.height)} px`);
 }
 
 let fatal = null;

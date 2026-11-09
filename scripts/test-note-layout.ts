@@ -12,10 +12,10 @@
 import assert from 'node:assert/strict';
 import { layoutTags, NOTE_GAP_X, NOTE_GAP_Y, OWN_MARGIN, type TagBounds, type TagSlot } from '../src/ui/overlay-layout.ts';
 import {
-  besleyWidth, figureWidth, freshWidth, linorytBoardCovers, linorytCompactPasses, linorytFrameEnd, linorytFrameStart,
-  linorytHomeReach, linorytNoteFrame, linorytNoteMust, linorytRank, linorytStampBox, linorytStampFallback, linorytStampSlot, NAME_LINE,
+  besleyWidth, figureWidth, freshWidth, baseBoardCovers, baseCompactPasses, baseFrameEnd, baseFrameStart,
+  baseHomeReach, baseNoteFrame, baseNoteMust, baseRank, baseStampBox, baseStampFallback, baseStampSlot, NAME_LINE,
   noteSize, stampReach, type NoteSize,
-} from '../src/ui/skin/linoryt.ts';
+} from '../src/ui/skin/base.ts';
 import { STAMP_SIZE_PX } from '../src/render/globe/linoryt.ts';
 import { LOD1_GLYPHS, signSize, SIGN_ROW, FRESH_ROW } from '../src/ui/skin/board-notes.ts';
 
@@ -63,7 +63,7 @@ interface Frame { tags: TagSlot[]; slots: TagSlot[]; airports: Airport[] }
  */
 function frame(airports: Airport[], view: View, opts: { board?: Box; fixed?: Box[]; last?: Frame } = {}): Frame {
   const bounds = { ...view };
-  linorytFrameStart(fakeHost, view.width, view.height, bounds, edge);
+  baseFrameStart(fakeHost, view.width, view.height, bounds, edge);
   const slots: TagSlot[] = [];
   const tags = airports.map((a, i) => {
     const tag: TagSlot = opts.last?.tags[i] ?? { id: a.code, anchorX: 0, anchorY: 0, width: 0, height: 0, active: true, jammed: false,
@@ -75,17 +75,17 @@ function frame(airports: Airport[], view: View, opts: { board?: Box; fixed?: Box
     tag.active = !(opts.board && a.x > opts.board.l - 2 && a.x < opts.board.r + 2 && a.y > opts.board.t - 2 && a.y < opts.board.b + 2);
     tag.jammed = a.jam !== undefined;
     tag.minor = taken(a) === 0 && !a.fresh && a.jam === undefined;
-    linorytStampFallback(linorytStampBox(tag), a.x, a.y, half(a), true);
-    linorytNoteFrame(tag, { code: a.code, hub: a.hub === true, jam: a.jam !== undefined, fresh: a.fresh === true,
+    baseStampFallback(baseStampBox(tag), a.x, a.y, half(a), true);
+    baseNoteFrame(tag, { code: a.code, hub: a.hub === true, jam: a.jam !== undefined, fresh: a.fresh === true,
       fill: taken(a) / capacity(a), size, viewWidth: view.width, board: opts.board ?? null, ...(sign ? { lineMid: sign.lineMid } : {}) });
-    slots.push(tag, linorytStampSlot(tag));
+    slots.push(tag, baseStampSlot(tag));
     return tag;
   });
   if (opts.board) slots.push(fixedBox('board', opts.board));
   for (const box of opts.fixed ?? []) slots.push(fixedBox('margin', box));
-  linorytFrameEnd();
+  baseFrameEnd();
   layoutTags(slots, bounds);
-  linorytCompactPasses(slots, bounds, layoutTags, signs);
+  baseCompactPasses(slots, bounds, layoutTags, signs);
   return { tags, slots, airports };
 }
 const fixedBox = (id: string, b: Box): TagSlot => ({ id, anchorX: 0, anchorY: 0, width: b.r - b.l, height: b.b - b.t, active: true,
@@ -136,7 +136,7 @@ function assertAtHome(f: Frame): void {
     if (a.jam !== undefined) continue;
     const b = boxOf(tag);
     const dx = Math.max(b.l - a.x, 0, a.x - b.r), dy = Math.max(b.t - a.y, 0, a.y - b.b);
-    assert(Math.hypot(dx, dy) <= linorytHomeReach(half(a), a.hub === true) + 1e-6, `${a.code}'s note floats ${Math.round(Math.hypot(dx, dy))} px off its stamp`);
+    assert(Math.hypot(dx, dy) <= baseHomeReach(half(a), a.hub === true) + 1e-6, `${a.code}'s note floats ${Math.round(Math.hypot(dx, dy))} px off its stamp`);
   }
 }
 /** D-264: every shown note is clearly its own airport's: OWN_MARGIN px nearer its own stamp than any other stamp. */
@@ -204,9 +204,9 @@ test('stamp obstacle: its disc holds the inked square and octagon, the note\'s f
 });
 test('priority (D-262, D-281): jam > new > hub > fuller airport; only a new airport without a jam must show', () => {
   const r = (o: Partial<{ jam: boolean; fresh: boolean; hub: boolean; fill: number }>) =>
-    linorytRank({ jam: false, fresh: false, hub: false, fill: 0, ...o });
+    baseRank({ jam: false, fresh: false, hub: false, fill: 0, ...o });
   assert(r({ jam: true }) > r({ fresh: true, hub: true, fill: 1 }) && r({ fresh: true }) > r({ hub: true, fill: 1 }) && r({ hub: true }) > r({ fill: 1 }));
-  assert(linorytNoteMust({ jam: false, fresh: true }) && !linorytNoteMust({ jam: true, fresh: true }) && !linorytNoteMust({ jam: false, fresh: false }));
+  assert(baseNoteMust({ jam: false, fresh: true }) && !baseNoteMust({ jam: true, fresh: true }) && !baseNoteMust({ jam: false, fresh: false }));
 });
 
 // ---- store shot game-phone: the Levant cluster at 360×640 (stamp centres = the D-262 fixture's rose centres) ---------
@@ -380,7 +380,7 @@ for (const [id, scene, board, view, fixed] of [
 }
 test('hub board open (D-268): a stamp the board covers steps back; a stamp beside it keeps its note left of the board', () => {
   const f = frame([...LANDSCAPE_SCENE], LANDSCAPE, { board: LANDSCAPE_BOARD, fixed: [LANDSCAPE_PASS] });
-  assert(linorytBoardCovers({ x: 400, y: 160, half: 11, visible: true }, false, LANDSCAPE_BOARD), 'Ryga\'s stamp is under the board edge');
+  assert(baseBoardCovers({ x: 400, y: 160, half: 11, visible: true }, false, LANDSCAPE_BOARD), 'Ryga\'s stamp is under the board edge');
   assert(!f.tags[1].placed, 'Ryga steps back');
   assert(f.tags[2].placed && f.tags[2].x + f.tags[2].width <= LANDSCAPE_BOARD.l, `Wilno keeps its note left of the board ${JSON.stringify(f.tags[2])}`);
   assert(f.tags[4].placed, 'Praga keeps its note');

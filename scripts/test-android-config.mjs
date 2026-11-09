@@ -52,16 +52,17 @@ check('release-16k-alignment', buildScript.includes("from './native-align.mjs'")
 check('owner-application-id', hasAll(appGradle, ["namespace = 'pl.samsufi.airway'", "applicationId = 'pl.samsufi.airway'"]));
 check('edge-to-edge', hasAll(theme, ['android:statusBarColor', 'android:navigationBarColor', '@android:color/transparent']) && !/windowOptOutEdgeToEdgeEnforcement/.test(manifest + theme));
 check('splash', theme.includes('windowSplashScreenAnimatedIcon') && existsSync(join(ROOT, 'resources/splash.svg')));
-// [night-48a] PLAN-LINORYT U6 (D-301): the shipped skin is light paper, so dark system-bar icons and a paper window and
-// launch background (the same colour as index.html's theme-color and --lin-paper), not task 24's black sign.
+// [night-48a] PLAN-LINORYT U6 (D-301) paper bars; [night-81a] T6 (D-336): the shipped skin is UI-A on dark enamel, so
+// light system-bar icons and an enamel window (the same colour as index.html's theme-color and board.css --board-enamel).
 const colours = read('android/app/src/main/res/values/colors.xml');
-const paper = read('src/ui/skin/linoryt.css').match(/--lin-paper:\s*(#[0-9A-Fa-f]{6})/)?.[1]?.toLowerCase();
-check('linoryt-system-bars', hasAll(theme, ['<item name="android:windowLightStatusBar">true</item>',
-  '<item name="android:windowLightNavigationBar">true</item>', '<item name="android:windowBackground">@color/airway_paper</item>']) && !!paper &&
-  colours.match(/<color name="airway_paper">(#[0-9A-Fa-f]{6})<\/color>/)?.[1]?.toLowerCase() === paper &&
-  new RegExp(`<meta name="theme-color" content="${paper}"`, 'i').test(read('index.html')));
+const boardEnamel = read('src/ui/skin/board.css').match(/--board-enamel:\s*(#[0-9A-Fa-f]{6})/)?.[1]?.toLowerCase();
+check('enamel-system-bars', hasAll(theme, ['<item name="android:windowLightStatusBar">false</item>',
+  '<item name="android:windowLightNavigationBar">false</item>', '<item name="android:windowBackground">@color/airway_enamel</item>']) && !!boardEnamel &&
+  colours.match(/<color name="airway_enamel">(#[0-9A-Fa-f]{6})<\/color>/)?.[1]?.toLowerCase() === boardEnamel &&
+  !/airway_paper/.test(colours + theme) &&
+  new RegExp(`<meta name="theme-color" content="${boardEnamel}"`, 'i').test(read('index.html')));
 // [night-78a] Z, D-333: the launch screen and the adaptive icon sit on the mark's enamel (znak I-1), with a themed
-// (monochrome) layer; the system bars and the window stay paper until T6.
+// (monochrome) layer; [night-81a] T6: the system bars and the window are enamel too (above).
 const enamel = colours.match(/<color name="airway_enamel">(#[0-9A-Fa-f]{6})<\/color>/)?.[1]?.toUpperCase();
 const markSvg = read('resources/icon.svg');
 check('mark-enamel-splash-and-icon', enamel === '#0E0F0F' && markSvg.includes('fill="' + enamel + '"') &&

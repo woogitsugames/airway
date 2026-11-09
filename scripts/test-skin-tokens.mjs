@@ -10,7 +10,7 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { resolve, dirname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { constantProperties, inlineInks, inlineSkin, keptSkin, linorytInks, referencedValues, REFERENCED_TOKENS, resolveTokens, skinBuild, skinTokens, withConstants } from './vite-skin-inline.mjs';
+import { constantProperties, inlineInks, inlineSkin, keptSkin, baseInks, referencedValues, REFERENCED_TOKENS, resolveTokens, skinBuild, skinTokens, withConstants } from './vite-skin-inline.mjs';
 import { skinOverrides, pruneOverridden } from './vite-skin-prune.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -180,26 +180,29 @@ check('inline: the real skin keeps exactly the tokens of the covered TypeScript'
     setElsewhere.join(' '));
 }
 
-// 6. [night-46a] D-301 (PLAN-LINORYT.md step U5): Linoryt is the shipped skin. current.css holds its token values; the
-// structure and the inks are src/ui/skin/linoryt.css, loaded statically by src/main.ts after every component stylesheet,
-// every rule scoped to :root[data-skin="linoryt"] (index.html sets it; a release writes it `:root:root`), the inks only
-// in a plain :root, inlined with no token left. Róża (roza.css, roza.ts), the Diorama comparison (diorama.css) and the
-// DEV `?skin=` branches are gone; the faces ship (PREVIEW_FONTS empty), Alegreya is gone.
-const LIN = 'src/ui/skin/linoryt.css';
+// 6. [night-46a] D-301 (Linoryt's flip); [night-81a] D-336 (PLAN-NOWY-KIERUNEK.md step T6): UI-A is the shipped skin.
+// current.css holds its token values; the structure is src/ui/skin/board.css (section A: the base structure the board
+// builds on, Linoryt's until T6, with the base inks in a plain :root; section B: the board) and board-week.css, both
+// loaded statically by src/main.ts after every component stylesheet, every rule scoped to :root[data-skin="board"]
+// (index.html sets it; a release writes it `:root:root`), the inks inlined with no token left. Linoryt's skin
+// (linoryt.css, linoryt.ts), its faces and the DEV `?skin=` flag are gone; Róża and the Diorama comparison before them.
+const BOARD_FILE = 'src/ui/skin/board.css';
+const SECTION_B = '/* ==== Section B';
+const LIN = BOARD_FILE; // the base structure lives in board.css section A
+const sectionA = (css) => css.slice(0, css.indexOf(SECTION_B));
 const main = read('src/main.ts');
 const gone = ['src/ui/skin/roza.css', 'src/ui/skin/roza.ts', 'src/ui/skin/diorama.css', 'public/fonts/Alegreya-700.woff2',
-  'public/fonts/OFL-Alegreya.txt'].filter((file) => { try { statSync(resolve(ROOT, file)); return true; } catch { return false; } });
-check('linoryt: Róża, the Diorama comparison skin and Alegreya are gone from the tree', gone.length === 0, gone.join(' '));
-// [night-69a] D-324: the one `?skin=` query left is the DEV-only UI-A preview (`=== 'board'` behind import.meta.env.DEV, part 7).
-const skinRefs = tsFiles.filter((file) => /skin\/(roza|diorama)\b|\bstartRoza\b|dataset\.skin === '(roza|current)'/.test(read(file)) ||
-  [...read(file).matchAll(/query\.get\('skin'\)[^\n]*/g)].some((m) => !/^query\.get\('skin'\) === 'board'/.test(m[0]) ||
-    !/import\.meta\.env\.DEV && query\.get\('skin'\) === 'board'/.test(read(file))));
-check('linoryt: no module reads Róża, the comparison skin or a `?skin=` query (but the DEV board preview)', skinRefs.length === 0, skinRefs.join(' '));
-check('linoryt: index.html sets <html data-skin="linoryt"> for the first paint', /<html[^>]*data-skin="linoryt"/.test(read('index.html')));
-check('linoryt: src/main.ts starts the helpers on every boot (not behind a DEV branch)',
-  /^startLinoryt\(\{ t, localNumber \}\);$/m.test(main));
+  'public/fonts/OFL-Alegreya.txt', 'src/ui/skin/linoryt.css', 'src/ui/skin/linoryt.ts', 'public/fonts/Besley-800.woff2',
+  'public/fonts/Besley-900.woff2', 'public/fonts/OFL-Besley.txt', 'public/fonts/SchibstedGrotesk-VF.woff2', 'public/fonts/OFL-SchibstedGrotesk.txt']
+  .filter((file) => { try { statSync(resolve(ROOT, file)); return true; } catch { return false; } });
+check('base: Linoryt (skin, helpers, Besley, Schibsted Grotesk), Róża, the Diorama comparison and Alegreya are gone from the tree', gone.length === 0, gone.join(' '));
+const skinRefs = tsFiles.filter((file) => /skin\/(roza|diorama|linoryt)\b|\bstartRoza\b|\bstartLinoryt\b|dataset\.skin === '(roza|current|linoryt)'|query\.get\('skin'\)/.test(read(file)));
+check('base: no module reads Linoryt, Róża, the comparison skin or a `?skin=` query', skinRefs.length === 0, skinRefs.join(' '));
+check('base: index.html sets <html data-skin="board"> for the first paint', /<html[^>]*data-skin="board"/.test(read('index.html')));
+check('base: src/main.ts starts the helpers and the board on every boot (not behind a DEV branch)',
+  /^startSkinBase\(\{ t, localNumber \}\);$/m.test(main) && /^const boardReady: Promise<void> = startBoardSkin\(\);$/m.test(main));
 {
-  const lin = stripComments(read(LIN));
+  const lin = stripComments(sectionA(read(LIN)));
   const rules = [];
   let depth = 0;
   let start = 0;
@@ -222,25 +225,26 @@ check('linoryt: src/main.ts starts the helpers on every boot (not behind a DEV b
     return [...parts, sel.slice(from)];
   };
   const loose = rules.filter((sel) => !/^@(media|font-face)\b/.test(sel) && sel !== ':root' &&
-    !splitList(sel).every((part) => /^:root(\[data-airway-motion="reduce"\])?\[data-skin="linoryt"\]/.test(part.trim())));
-  check('linoryt: every structural rule is scoped to :root[data-skin="linoryt"]', rules.length > 40 && loose.length === 0, loose.slice(0, 3).join(' | '));
-  check('linoryt: the structure sets no skin token', !/--skin-[a-z0-9-]+\s*:/.test(lin));
+    !splitList(sel).every((part) => /^:root(\[data-airway-motion="reduce"\])?\[data-skin="board"\]/.test(part.trim())));
+  check('base: every structural rule of section A is scoped to :root[data-skin="board"]', rules.length > 40 && loose.length === 0, loose.slice(0, 3).join(' | '));
+  check('base: the structure sets no skin token', !/--skin-[a-z0-9-]+\s*:/.test(stripComments(read(LIN))));
+  check('base: section A loads no face (the UI-A faces are section B\'s)', !/@font-face/.test(lin));
   const linRoot = [...lin.matchAll(/(?:^|\})\s*:root\s*\{([^{}]*)\}/g)].map((m) => m[1]).join(';');
-  check('linoryt: the plain :root sets only the inks (--lin-*)', linRoot.length > 0 &&
+  check('base: the plain :root sets only the inks (--lin-*)', linRoot.length > 0 &&
     [...linRoot.matchAll(/(--[a-z0-9-]+)\s*:/g)].every((m) => m[1].startsWith('--lin-')));
-  check('linoryt: never redefines the palette or text-scale tokens', !/--airway-[a-z-]+\s*:/.test(lin));
-  check('linoryt: the structure inlines with no token left but the font stacks',
+  check('base: never redefines the palette or text-scale tokens', !/--airway-[a-z-]+\s*:/.test(stripComments(read(LIN))));
+  check('base: the structure inlines with no token left but the font stacks',
     [...inlineSkin(read(LIN), real.inline, LIN).matchAll(/var\(--skin-([a-z0-9-]+)/g)].every((m) => real.refs.has(m[1])));
   const constants = constantProperties([lin], []);
   const inks = ['paper', 'paper-deep', 'paper-pressed', 'ink', 'ink-dim', 'rule-ink', 'blue', 'ochre', 'red'];
-  check('linoryt: the inks are palette constants (written out in the token values)', inks.every((name) => constants.has('lin-' + name)) &&
+  check('base: the inks are palette constants (written out in the token values)', inks.every((name) => constants.has('lin-' + name)) &&
     ![...real.resolved.values()].some((value) => /var\(--lin-/.test(value)), inks.filter((name) => !constants.has('lin-' + name)).join(' '));
   // [night-48a] U6: the release writes the ink constants in place (D-294 mechanism); vars that a script sets or whose value
   // holds a var() stay references, a fallback form is left alone.
-  const inkMap = linorytInks(constantProperties([lin, read(SKIN)], [read('src/ui/skin/linoryt.ts')]));
+  const inkMap = baseInks(constantProperties([read(LIN), read(SKIN)], [read('src/ui/skin/base.ts'), read('src/ui/skin/board.ts')]));
   const printed = inlineInks(inlineSkin(read(LIN), real.inline, LIN), inkMap);
   const leftInks = [...new Set([...printed.matchAll(/var\(--(lin-[a-z0-9-]+)\)/g)].map((m) => m[1]))].filter((name) => inkMap.has(name));
-  check('linoryt: the release writes the inks in place (var(--lin-ink) -> #1E1C1F), script-set and var() inks stay',
+  check('base: the release writes the inks in place (var(--lin-ink) -> #1E1C1F), script-set and var() inks stay',
     inkMap.size >= 9 && leftInks.length === 0 && /var\(--lin-top\)/.test(printed) && !inkMap.has('lin-pass-bottom') &&
     inlineInks('a{color:var(--lin-ink);b:var(--lin-ink, red);c:var(--lin-x)}', new Map([['lin-ink', '#1E1C1F']])) ===
       'a{color:#1E1C1F;b:var(--lin-ink, red);c:var(--lin-x)}', leftInks.join(' '));
@@ -253,41 +257,28 @@ check('linoryt: src/main.ts starts the helpers on every boot (not behind a DEV b
     ['paper', 'ink'], ['ink', 'paper-pressed']];
   const weak = pairs.filter(([fg, bg]) => !ink[fg] || !ink[bg] || ratio(ink[fg], ink[bg]) < 4.5)
     .map(([fg, bg]) => `${fg}/${bg} ${ink[fg] && ink[bg] ? ratio(ink[fg], ink[bg]).toFixed(2) : 'missing'}`);
-  check('linoryt: text inks reach 4.5:1 on paper and paper on the red block (D-47)', weak.length === 0, weak.join(' '));
-  const faces = [...lin.matchAll(/url\('\/fonts\/([^']+)'\)/g)].map((m) => m[1]);
-  const absent = [...faces, 'OFL-Besley.txt', 'OFL-SchibstedGrotesk.txt']
-    .filter((file) => { try { return statSync(resolve(ROOT, 'public/fonts', file)).size === 0; } catch { return true; } });
-  check('linoryt: Besley and Schibsted Grotesk WOFF2 and their OFL licences are in public/fonts/',
-    faces.length === 3 && absent.length === 0, absent.join(' '));
-  const { PREVIEW_FONTS } = await import('./vite-font-files.mjs');
-  check('linoryt: its faces ship (PREVIEW_FONTS names none of them)', faces.every((file) => !PREVIEW_FONTS.includes(file)), PREVIEW_FONTS.join(' '));
-  const linImports = tsFiles.filter((file) => /import\s*\(?\s*'[^']*linoryt\.css'/.test(read(file)));
-  const lastImport = [...main.matchAll(/^import\s[^;]*;/gm)].pop()?.[0] ?? '';
-  check('linoryt: src/main.ts (only) imports the structure, after every other import', linImports.join() === 'src/main.ts' &&
-    lastImport === "import './ui/skin/linoryt.css';", linImports.join(' '));
-  const runtime = [...read('src/ui/skin/linoryt.ts').matchAll(/^import\s+(?!type\b)[^;]*;/gm)].map((m) => m[0]);
-  check('linoryt: the helpers have no runtime import (src/main.ts hands in i18n)', runtime.length === 0, runtime.join(' '));
-  const devOnly = [...tsFiles.filter((file) => file.startsWith('src/'))].filter((file) => /import\.meta\.env\.DEV\s*&&\s*linoryt(\.on|Menu\(\))/.test(read(file)));
-  check('linoryt: no helper call is DEV-only any more', devOnly.length === 0, devOnly.join(' '));
-  // [night-30a] U2: the airport notes' rules stay in one delimited section, print without shadows, radii or gradients,
-  // and keep fixed in-world sizes at every text step (D-267: no text-scale token in the section).
-  const u2 = read(LIN).match(/\/\* U2 notes \*\/([\s\S]*?)\/\* end U2 \*\//);
-  check('linoryt: the U2 notes are one delimited section, in print and in-world sizes (no shadow, radius, gradient, text scale)',
-    !!u2 && !/box-shadow:\s*(?!none\b)[^;\s]|border-radius:\s*[1-9]|gradient\(|--airway-text-scale/.test(stripComments(u2[1])), u2 ? '' : 'section missing');
-  // [night-29b] U4: its screens' rules stay in one delimited section.
-  const u4 = read(LIN).match(/\/\* U4 screens \*\/([\s\S]*?)\/\* end U4 \*\//);
-  check('linoryt: the U4 screens are one delimited section and print without shadows, radii or gradients',
-    !!u4 && !/box-shadow:\s*(?!none\b)[^;\s]|border-radius:\s*[1-9]|gradient\(/.test(stripComments(u4[1])), u4 ? '' : 'section missing');
+  check('base: text inks reach 4.5:1 on paper and paper on the red block (D-47)', weak.length === 0, weak.join(' '));
+  const structureImports = tsFiles.filter((file) => /import\s*\(?\s*'[^']*skin\/board(-week)?\.css(\?raw)?'/.test(read(file)));
+  const staticImports = [...main.matchAll(/^import\s[^;]*;/gm)].map((m) => m[0]);
+  check('base: src/main.ts (only) imports the structure, board.css then board-week.css after every other import',
+    structureImports.join() === 'src/main.ts' && staticImports.at(-2) === "import './ui/skin/board.css';" &&
+    /^import '\.\/ui\/skin\/board-week\.css';/.test(staticImports.at(-1) ?? ''), structureImports.join(' ') + ' | ' + staticImports.slice(-2).join(' '));
+  const runtime = [...read('src/ui/skin/base.ts').matchAll(/^import\s+(?!type\b)[^;]*;/gm)].map((m) => m[0]);
+  check('base: the helpers have no runtime import (src/main.ts hands in i18n)', runtime.length === 0, runtime.join(' '));
+  const devOnly = [...tsFiles.filter((file) => file.startsWith('src/'))].filter((file) => /import\.meta\.env\.DEV\s*&&\s*skinBase\.on/.test(read(file)));
+  check('base: no helper call is DEV-only', devOnly.length === 0, devOnly.join(' '));
+  check('base: Linoryt\'s notes (U2), menu index and U4 pages are not in the structure (the board prints its own)',
+    !/\/\* U2 notes \*\/|\/\* U4 screens \*\/|Part 4: menu/.test(read(LIN)));
 }
-// 7. [night-69a] D-324 (PLAN-NOWY-KIERUNEK.md step T1): the UI-A preview "Lotniskowa tablica i paski lotu",
-// src/ui/skin/board.{css,ts}, loaded only by the DEV branch of src/main.ts (`?skin=board`). Its contract, as Linoryt's:
+// 7. [night-69a] D-324 (PLAN-NOWY-KIERUNEK.md step T1): UI-A "Lotniskowa tablica i paski lotu", src/ui/skin/board.{css,ts}
+// ([night-81a] D-336: shipped since T6; the contract below applies to board.css section B). Its contract:
 // one token block `:root[data-skin="board"] { --board-*: … }` holds every colour, face and duration; every structural rule
 // is scoped to :root[data-skin="board"] and uses no literal; it never sets a --skin-* or palette token; its text pairs reach
 // D-47 4.5:1; its faces (Archivo, Chivo Mono, SIL OFL) are WOFF2 in public/fonts/ with licences and stay out of dist/
 // (PREVIEW_FONTS); the helpers have no runtime import; no module imports the preview statically; index.html is unchanged.
 {
   const BOARD = 'src/ui/skin/board.css';
-  const raw = read(BOARD);
+  const raw = read(BOARD).slice(read(BOARD).indexOf(SECTION_B)); // [night-81a] D-336: section B (section A is part 6's)
   const board = stripComments(raw);
   const blocks = [];
   let depth = 0;
@@ -305,7 +296,7 @@ check('linoryt: src/main.ts starts the helpers on every boot (not behind a DEV b
   check('board: the token block sets only --board-* tokens', declared.length > 30 && declared.every((name) => name.startsWith('--board-')),
     declared.filter((name) => !name.startsWith('--board-')).join(' '));
   const structure = blocks.filter((b) => b !== tokenBlocks[0] && !/^@(font-face|keyframes)\b/.test(b.sel));
-  const nested = (b) => (/^@media\b/.test(b.sel) ? [...b.body.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => ({ sel: m[1].trim(), body: m[2] })) : [b]);
+  const nested = (b) => (/^@(media|container)\b/.test(b.sel) ? [...b.body.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => ({ sel: m[1].trim(), body: m[2] })) : [b]);
   const rules = structure.flatMap(nested);
   const parts = (sel) => { const out = []; let d = 0; let from = 0;
     for (let i = 0; i < sel.length; i++) { if (sel[i] === '(') d++; else if (sel[i] === ')') d--; else if (sel[i] === ',' && d === 0) { out.push(sel.slice(from, i)); from = i + 1; } }
@@ -337,14 +328,12 @@ check('linoryt: src/main.ts starts the helpers on every boot (not behind a DEV b
     .filter((file) => { try { return statSync(resolve(ROOT, 'public/fonts', file)).size === 0; } catch { return true; } });
   check('board: Archivo and Chivo Mono WOFF2 and their OFL licences are in public/fonts/', faceFiles.length === 4 &&
     faceFiles.every((file) => file.endsWith('.woff2')) && absentBoard.length === 0, absentBoard.join(' '));
-  check('board: its faces and licences stay out of dist/ until the flip (PREVIEW_FONTS)',
-    [...faceFiles, 'OFL-Archivo.txt', 'OFL-ChivoMono.txt'].every((file) => PREVIEW_FONTS.includes(file)), PREVIEW_FONTS.join(' '));
+  check('board: its faces and licences ship ([night-81a] D-336: PREVIEW_FONTS is empty)', PREVIEW_FONTS.length === 0, PREVIEW_FONTS.join(' '));
   const boardRuntime = [...read('src/ui/skin/board.ts').matchAll(/^import\s+(?!type\b)[^;]*;/gm)].map((m) => m[0]);
   check('board: the helpers have no runtime import (src/main.ts hands in i18n and the flaps)', boardRuntime.length === 0, boardRuntime.join(' '));
-  const staticBoard = tsFiles.filter((file) => /^import\s[^;]*skin\/board(\.css)?'/m.test(read(file)));
-  check('board: no module imports the preview statically (main.ts loads it in its DEV branch only)', staticBoard.length === 0 &&
-    /import\('\.\/ui\/skin\/board'\)/.test(main) && /import\('\.\/ui\/skin\/board\.css'\)/.test(main), staticBoard.join(' '));
-  check('board: index.html keeps the shipped skin (data-skin="linoryt")', /<html[^>]*data-skin="linoryt"/.test(read('index.html')));
+  const staticBoard = tsFiles.filter((file) => /^import\s[^;]*skin\/board'/m.test(read(file)));
+  check('board: its helpers are a lazy chunk (main.ts imports them dynamically, no module statically)', staticBoard.length === 0 &&
+    /import\('\.\/ui\/skin\/board'\)/.test(main) && !/import\.meta\.env\.DEV && query\.get\('skin'\)/.test(main), staticBoard.join(' '));
   // [night-76a] D-331 (T4): the weekly sheet's stylesheet keeps the same contract with board.css's tokens: no token block
   // of its own, every rule scoped, no literal, only --bd-* local sizes, every --board-* it reads defined; the sheet's
   // helpers have no runtime import and only main.ts's DEV branch loads them.
@@ -373,9 +362,9 @@ check('linoryt: src/main.ts starts the helpers on every boot (not behind a DEV b
     .map(([fg, bg]) => `${fg}/${bg} ${hexOf[fg] && hexOf[bg] ? ratio(hexOf[fg], hexOf[bg]).toFixed(2) : 'missing'}`);
   check('board week sheet: holder symbols and the strip\'s second ink reach 4.5:1', weakWeek.length === 0, weakWeek.join(' '));
   const weekRuntime = [...read('src/ui/skin/board-week.ts').matchAll(/^import\s+(?!type\b)[^;]*;/gm)].map((m) => m[0]);
-  const staticWeek = tsFiles.filter((file) => /^import\s[^;]*skin\/board-week(\.css)?'/m.test(read(file)));
-  check('board week sheet: no runtime import, loaded only by main.ts\'s DEV branch', weekRuntime.length === 0 && staticWeek.length === 0 &&
-    /import\('\.\/ui\/skin\/board-week'\)/.test(main) && /import\('\.\/ui\/skin\/board-week\.css'\)/.test(main), [...weekRuntime, ...staticWeek].join(' '));
+  const staticWeek = tsFiles.filter((file) => /^import\s[^;]*skin\/board-week'/m.test(read(file)));
+  check('board week sheet: no runtime import, a lazy chunk of main.ts (its CSS a static import, part 6)', weekRuntime.length === 0 && staticWeek.length === 0 &&
+    /import\('\.\/ui\/skin\/board-week'\)/.test(main), [...weekRuntime, ...staticWeek].join(' '));
 }
 
 const dropped = ['BarlowCondensed-500.woff2', 'BarlowCondensed-700.woff2', 'AirwayChartMono-400.woff2', 'AirwayChartMono-600.woff2']
@@ -385,8 +374,8 @@ check('the KARTA faces (Barlow Condensed, Airway Chart Mono) are gone from the r
 // [night-11ax] D-257: release CSS drops the component declarations the shipped structure always overrides
 // (scripts/vite-skin-prune.mjs).
 {
-  const over = skinOverrides(':root[data-skin="linoryt"] .a, :root[data-skin="linoryt"] .b::after { color: x; font: 1px y; }\n' +
-    '@media (w) { :root[data-skin="linoryt"] .c { padding: 0; } }\n:root[data-skin="linoryt"]:has(.d) .e { top: 0; }');
+  const over = skinOverrides(':root[data-skin="board"] .a, :root[data-skin="board"] .b::after { color: x; font: 1px y; }\n' +
+    '@media (w) { :root[data-skin="board"] .c { padding: 0; } }\n:root[data-skin="board"]:has(.d) .e { top: 0; }');
   const pruned = pruneOverridden('.a { color: red; margin: 0; }\n.b::after { font-size: 2px; line-height: 1; }\n.a, .z { color: blue; }\n' +
     '.c { padding-left: 1px; }\n@media (w) { .c { padding-top: 1px; } }\n.a { color: green !important; }\n.e { top: 1px; }', over);
   check('prune: overridden declarations go (same selector, shorthand cover, same @media), the rest stays',
@@ -395,16 +384,16 @@ check('the KARTA faces (Barlow Condensed, Airway Chart Mono) are gone from the r
     pruned.css.replace(/\n/g, ' '));
   // [night-11az] D-257: a class (or its ::before/::after) the structure hides outright takes its subtree's rules along,
   // unless another structural rule gives it a display again.
-  const hid = skinOverrides(':root[data-skin="linoryt"] .h { display: none; }\n:root[data-skin="linoryt"] .k { display: none; }\n' +
-    ':root[data-skin="linoryt"] .w .k { display: flex; }\n:root[data-skin="linoryt"] .p::before { display: none; }');
+  const hid = skinOverrides(':root[data-skin="board"] .h { display: none; }\n:root[data-skin="board"] .k { display: none; }\n' +
+    ':root[data-skin="board"] .w .k { display: flex; }\n:root[data-skin="board"] .p::before { display: none; }');
   const gone = pruneOverridden('.h { color: red; }\n.x .h strong { margin: 0; }\n.hx { color: blue; }\n.k { top: 0; }\n' +
     '.y .p::before { left: 0; }\n.p { left: 1px; }\n.h { color: green !important; }', hid);
   check('prune: rules of hidden elements go (subtree, pseudo-element), a re-shown or longer class stays',
     gone.removed === 3 && !/margin/.test(gone.css) && /\.hx \{ color: blue; \}/.test(gone.css) && /\.k \{ top: 0; \}/.test(gone.css) &&
     !/::before/.test(gone.css) && /\.p \{ left: 1px; \}/.test(gone.css) && /green !important/.test(gone.css), gone.css.replace(/\n/g, ' '));
-  const realOver = skinOverrides(read(LIN));
+  const realOver = skinOverrides(read(LIN) + '\n' + read('src/ui/skin/board-week.css'));
   const removed = COVERED.reduce((sum, file) => sum + pruneOverridden(inlineSkin(read(file), real.resolved, file), realOver).removed, 0);
-  check('prune: the real Linoryt structure makes some component declarations dead', removed > 50, `${removed} removed`);
+  check('prune: the real UI-A structure makes some component declarations dead', removed > 50, `${removed} removed`);
 }
 
 for (const { name, ok, why } of results) console[ok ? 'log' : 'error'](`${ok ? 'PASS' : 'FAIL'} ${name}${why && !ok ? ': ' + why : ''}`);

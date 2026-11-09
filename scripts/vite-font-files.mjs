@@ -1,4 +1,4 @@
-// [night-11ax] D-257: the game loads its fonts as WOFF2 (src/ui/fonts.css, [night-46a] src/ui/skin/linoryt.css). public/fonts/ still
+// [night-11ax] D-257: the game loads its fonts as WOFF2 (src/ui/fonts.css, [night-81a] src/ui/skin/board.css). public/fonts/ still
 // holds the TTF each WOFF2 was converted from, because dev pages (dev/globe.html) and the store-shot tool read the TTFs
 // from disk; Vite copies public/ whole, so a release build drops every dist/fonts/*.ttf that has a .woff2 twin (−377 kB
 // of dist/). `npm run test:bundle` fails on any .ttf left in dist/.
@@ -8,10 +8,10 @@ import { join, resolve } from 'node:path';
 /**
  * [night-28a] D-284: font files of public/fonts/ a release build leaves out. It held the Linoryt faces while the skin was
  * a DEV-only preview; [night-46a] D-301 (step U5) ships them. [night-69a] D-324 (PLAN-NOWY-KIERUNEK.md step T1): the
- * UI-A faces of the DEV `?skin=board` preview (Archivo, Chivo Mono) and their licences park here until the flip (T6).
+ * UI-A faces of the DEV `?skin=board` preview (Archivo, Chivo Mono) and their licences parked here until the flip;
+ * [night-81a] D-336 (T6) ships them (the Linoryt faces Besley and Schibsted Grotesk are deleted), so the list is empty.
  */
-export const PREVIEW_FONTS = Object.freeze(['Archivo-600.woff2', 'Archivo-80-700.woff2', 'Archivo-80-800.woff2', 'ChivoMono-VF.woff2',
-  'OFL-Archivo.txt', 'OFL-ChivoMono.txt']);
+export const PREVIEW_FONTS = Object.freeze([]);
 
 /** TTF files of `fontsDir` that have a WOFF2 twin (the ones a release build leaves out). */
 export function replacedFonts(fontsDir) {

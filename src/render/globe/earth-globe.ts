@@ -96,6 +96,8 @@ uniform vec3 awSunDirection;
 uniform vec3 awAtmosphere;
 uniform float awNightGain;
 uniform float awMoon;
+uniform float awMoonLand;
+uniform float awMoonLandFloor;
 uniform float awGrade;
 uniform float awHaze;
 uniform float awReliefGain;
@@ -150,7 +152,11 @@ void main() {
   float lm = smoothstep(0.16, 0.42, nlum);
   vec3 base = vec3(nlum) * vec3(0.62, 0.68, 0.76) * 0.55;
   vec3 lights = mix(base, pow(nightTex, vec3(1.15)) * vec3(1.06, 0.98, 0.86), lm) * awNightGain;
-  colour += nightW * (lights + vec3(dot(day, vec3(0.3, 0.55, 0.15))) * awMoon * vec3(0.70, 0.78, 0.86));
+  // [night-81a] D-336: moonlight, a little stronger on land (and a flat floor there), so continents and coasts read at
+  // night; the sea keeps the old moonlight, the city lights stay far brighter (earthMoonlight in earth.ts).
+  float land = 1.0 - water;
+  float moon = dot(day, vec3(0.3, 0.55, 0.15)) * (awMoon + awMoonLand * land) + awMoonLandFloor * land;
+  colour += nightW * (lights + vec3(moon) * vec3(0.70, 0.78, 0.86));
   // Limb haze, lit side only.
   float fr = pow(1.0 - max(dot(n, V), 0.0), 2.6);
   float hz = fr * awHaze * smoothstep(-0.25, 0.35, ndl);
@@ -266,7 +272,8 @@ export async function createEarthGlobe(scene: Scene, mask: LandMask, opts: Earth
   const uniforms = {
     awDay: { value: photoTexture(day.bitmap) }, awNight: { value: photoTexture(night.bitmap) }, awReliefMap: { value: relief },
     awSunDirection: { value: opts.sunDirection }, awAtmosphere: { value: atmosphere },
-    awNightGain: { value: EARTH_LOOK.nightGain }, awMoon: { value: EARTH_LOOK.moon }, awGrade: { value: EARTH_LOOK.grade },
+    awNightGain: { value: EARTH_LOOK.nightGain }, awMoon: { value: EARTH_LOOK.moon }, awMoonLand: { value: EARTH_LOOK.moonLand },
+    awMoonLandFloor: { value: EARTH_LOOK.moonLandFloor }, awGrade: { value: EARTH_LOOK.grade },
     awHaze: { value: EARTH_LOOK.haze }, awReliefGain: { value: EARTH_LOOK.relief as number },
   } as Record<string, { value: unknown }>;
   const material = createEarthMaterial(uniforms, preset);

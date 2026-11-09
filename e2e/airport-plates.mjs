@@ -32,7 +32,7 @@ const plates = (page) => page.evaluate(() => {
     hubs: [...hubs],
     tags: tags.map((tag) => {
       const visible = (el) => el && getComputedStyle(el).display !== 'none' && el.getBoundingClientRect().width > 0;
-      const plate = [tag.querySelector('.airport-bubble__plate'), tag.querySelector('.lin-name'), tag.querySelector('.lin-code')]
+      const plate = [tag.querySelector('.bd-plate'), tag.querySelector('.airport-bubble__plate'), tag.querySelector('.lin-name'), tag.querySelector('.lin-code')]
         .find((el) => visible(el) && (el.textContent ?? '').trim().length >= 3) ?? null;
       return {
         id: tag.dataset.airport, plate: plate?.textContent?.trim() ?? null, rect: rect(tag),
@@ -42,7 +42,8 @@ const plates = (page) => page.evaluate(() => {
         glyphs: tag.querySelectorAll('svg').length,
       };
     }),
-    linoryt: document.documentElement.dataset.skin === 'linoryt',
+    // [night-81a] D-336: UI-A signs (`.bd-plate`, D-328), like Linoryt's notes, keep their code at every zoom (compact form).
+    linoryt: ['linoryt', 'board'].includes(document.documentElement.dataset.skin),
     stamps: (globalThis.__awLinoryt?.stamps() ?? []).filter((stamp) => stamp.visible && stamp.half > 0).length,
     slotIds: [...document.querySelectorAll('.airport-slot')].filter(shown).map((slot) => slot.previousElementSibling?.dataset.airport),
     panels,

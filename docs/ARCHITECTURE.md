@@ -5,21 +5,25 @@ Status (2026-11-07): production, MVP polish after integration. Tasks 01–36 are
 D-11 (Diorama world), D-12 (Airway), D-13 (deterministic pure simulation), the task decisions D-19…D-37 and
 [Research](RESEARCH.md) sections 3–5.
 
-**The look is in transition (D-282, D-283).** What ships today is the **Róża** UI skin (D-257 and its polish
-D-259…D-268, D-279…D-281) over the **satellite** globe (D-170, with the "Mapa" view D-172). The owner chose **Linoryt**
-(D-283) to replace both; it is built in steps per `docs/styles/kierunki-2026-11b/PLAN-LINORYT.md` (D-284, D-285):
+**The look (D-323, shipped by the flip T6 + R5, D-336, 2026-11-09).** The game ships UI-A "Lotniskowa tablica i paski
+lotu" over the realistic NASA globe (plan `docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md`):
 
-- **Done (UI, DEV preview only):** U1–U4 — `src/ui/skin/linoryt.{ts,css}` behind `?skin=linoryt` in a DEV build
-  (HUD margin and dock, menu index, airport notes, sheets, settings/logbook/puzzles/ranking pages; D-286…D-288). A
-  release build folds every Linoryt branch away and drops its fonts (`PREVIEW_FONTS` in `scripts/vite-font-files.mjs`).
-- **Pending (render session, `src/render/**`, `dev/`):** E1 (Linoryt globe material behind a DEV `?look=linoryt`), E2
-  (stamps, routes, planes and the jam zone in print, `projectAirport`), E3 (the look selectable in release builds), E4
-  (satellite, Mapa and the photo textures removed). None of these exists in the code yet.
-- **Pending (UI):** **U5, the flip** — Linoryt becomes the shipped skin and look; `roza.{ts,css}`, `diorama.css`, the
-  `?skin=` previews, the `roza.*` keys and the dock's globe-view tag go; the CSS budget becomes the measurement + 3 kB
-  (D-297). Then U6 (accessibility pass) and U7 (store shots, video, site copy, D-296).
+- **UI:** `index.html` sets `<html data-skin="board">` (theme-color = the enamel `#0E0F0F`); `src/ui/skin/current.css`
+  holds the component tokens (UI-A faces Archivo / Chivo Mono); `src/ui/skin/board.css` is the structure (section A:
+  the base structure, Linoryt's until T6, with its `--lin-*` inks; section B: the board's `--board-*` tokens and rules)
+  plus `board-week.css`, both static imports at the end of `src/main.ts`, inlined and pruned by
+  `scripts/vite-skin-inline.mjs` / `vite-skin-prune.mjs`. `src/ui/skin/base.ts` (was `linoryt.ts`) keeps the note
+  layout's stamps, frames and margins; the board's modules (`board.ts`, `board-notes.ts`, `board-strips.ts`,
+  `board-week.ts`, `board-sheets.ts`) are lazy chunks that `src/main.ts` loads on every boot into the HUD, sign, strip,
+  weekly-sheet and menu/report slots (`hud/skin.ts`, `overlay-skin.ts`, `strip-skin.ts`, `upgrade/skin.ts`,
+  `sheet-skin.ts`) before the HUD mounts. There is no `?skin=` flag.
+- **World:** `DEFAULT_GLOBE_LOOK = 'earth'` (`src/render/globe/look.ts`): the lazy `globe/earth-globe.ts` and
+  `objects-earth.ts` chunks, Blue Marble / Black Marble WebP textures, borders, the moonlit night land (D-336). The
+  Linoryt print (`globe/linoryt-globe.ts`) stays reachable only by the DEV `?look=linoryt` until R6 removes it.
+- **Next:** R6 (remove the Linoryt globe), T7 (accessibility and polish on UI-A, CSS budget lowered), U7 (store, video,
+  site).
 
-Rows below describe the code as it is; "(U5)" or "(E1–E4)" marks what those steps will change.
+Rows below may still name the older skins (Róża, Linoryt) where they were not rewritten; the paragraph above wins.
 
 ## Module map
 
@@ -41,13 +45,13 @@ Rows below describe the code as it is; "(U5)" or "(E1–E4)" marks what those st
 | `src/platform` | Capacitor bridges: storage/IndexedDB/native dual-slot saves (`storage.ts`), lifecycle + background pause (`lifecycle.ts`), hardware back (`back.ts`), never-backed-up install marker that drops a restored leaderboard identity (`install.ts`, D-92), haptics (`haptics.ts`), share (`share.ts`), native App Check provider by plugin name (`appCheck.ts`, D-246), Firebase Test Lab game loop (`gameLoop.ts`, D-245), system text size on first launch (`textScale.ts`, D-248), no-op ads/store (`ads.ts`, `store.ts`, D-16) | Capacitor APIs; never imported by the simulation |
 | `src/game` | Composition root and orchestration: in-run session (`session.ts`: one run, one world, every in-game layer, the pause sheet), read-model adapter over the Sim (`run.ts`, `EndlessRun`; new Endless runs carry the weekly contract and the demand surge, weather off: `ENDLESS_WEEKLY_CONTRACT`, `ENDLESS_DEMAND_SURGE`, `ENDLESS_WEATHER_FRONT`), frame loop and framing (`world.ts`, `framing.ts`, D-47), screen router (`screens.ts`), modes (`modes/daily.ts`, `modes/puzzle.ts`), save envelope (`save.ts`: v5, a weather run v7, D-291), scores (`scores.ts`), failure causes (`causes.ts`), tutorial controller and the one-time first-time cards (`tutorial/`: `controller.ts` 3 steps, `first-time.ts` registry + triggers incl. the surge card D-292, `first-time-card.ts`, `slot-hint.ts`; D-130). Device choices: home region (`homeRegion.ts`, D-236), licence classes open and chosen (`licence.ts`, D-251/D-273). Pure read-only views for the UI: surge stub (`surge.ts`), weather-front stub (`weather.ts`), hourly fill trend (`fillTrend.ts`, D-221), last-hour hub cause board (`hubBoard.ts`, D-228), milestones (`milestones.ts`, D-242/D-270), contracts summary (`contractsSummary.ts`, D-271), surges summary (`surgesSummary.ts`, D-295), pause summary (`pauseSummary.ts`), new-airport marks (`newAirports.ts`), game-over tip (`gameoverTip.ts`), run timeline (`runTimeline.ts`), menu-entry clearance from the menu network (`menu-clear.ts`, D-262). Records: logbook (`logbook.ts`), playtest `AW1:` line (`playtestRecord.ts`, D-231/D-295), puzzle bests (`puzzleBest.ts`). Daily ranking glue (`dailyRanking.ts`, D-66), daily row (`dailyRow.ts`), audio cues (`audioCues.ts`, `flapSound.ts`), adaptive quality memory (`adaptiveMemory.ts`, D-74), Test Lab game loop (`gameLoop.ts`, D-245), content gate (`gating.ts`). DEV only: E2E handle `window.aw` (`devHandle.ts`), autoplay bot (`dev/autoplay.ts`, `dev/bot-policy.ts`), WebGL-free stub `World` for browser journeys through the real session (`dev/stubWorld.ts`, `?render=stub&clock=frozen`, D-254) | Wires all modules through explicit interfaces |
 | `src/i18n` | Catalogs `en.ts` and `pl.ts` (identical keys and parameters), language table (`languages.ts`: shipped PL/EN, planned wave-1 languages not shipped, D-185/D-212), length budgets of fixed-width text (`limits.ts`, D-211), DEV pseudo-locale (`pseudo.ts`, `?pseudo`); saved language → device language → `en`; the privacy policy and terms bodies in `legal/`, a chunk loaded on demand (`loadLegalText`, D-255). (U5: `roza.*` keys renamed to skin-neutral ones.) | — |
-| `src/main.ts` | Bootstrap: mounts the composition root; picks the skin (Róża by default; DEV `?skin=current` / `?skin=linoryt`), DEV switches (`?render=stub`, `?weather=front`, `?pseudo`, `?preview=gameover`); installs `window.aw` only in DEV | — |
+| `src/main.ts` | Bootstrap: mounts the composition root; starts the UI-A skin (D-336; no `?skin=` flag), DEV switches (`?render=stub`, `?weather=front`, `?pseudo`, `?preview=gameover`); installs `window.aw` only in DEV | — |
 
 Outside `src/`:
 
 | Path | Purpose |
 | --- | --- |
-| `index.html` | App page; sets `<html data-skin="roza">` so the first paint is Róża (U5: `linoryt`) |
+| `index.html` | App page; sets `<html data-skin="board">` so the first paint is UI-A (D-336; `roza` before U5, `linoryt` before T6) |
 | `public/` | Fonts as WOFF2 (+ the TTFs the dev pages read; a release drops TTFs with a WOFF2 twin) with OFL licences, `docs/ASSETS.md`; land mask and the satellite/Mapa globe textures (`public/data/globe/`, E4 removes the photo textures) |
 | `dev/globe.html`, `dev/world.html` | Standalone globe and full-stack pages for visual QA (`npm run shots -- globe`); render-owned |
 | `scripts/` | Generators (`build-distances.mjs`, `build-land.mjs`, `build-puzzles.mjs`), Node unit tests (`test-*.mjs/ts`, TypeScript through `ts-test-loader.mjs`), the bot/balance harness (`bot.ts`, `balance-*.ts`), perf, playtest decoder (`playtest-decode.ts`), Android build, the suite runner `run-suite.mjs` (`test:fast` / `test:ci`; parallel jobs, output in list order, D-289) and the browser tooling: `lib/harness.mjs` (Vite + SwiftShader Chromium), `shots.mjs`, `ui-matrix.mjs`, `store-shots.mjs`, `store-video.mjs` (D-265). Vite plugins: `vite-skin-inline.mjs` (skin tokens written in place, D-252) with `vite-skin-prune.mjs` (drops base declarations the Róża structure always overrides, D-257), `vite-font-files.mjs` (WOFF2 only in `dist/`; Linoryt preview fonts left out until U5) |
@@ -55,7 +59,7 @@ Outside `src/`:
 | `site/` | Framework-free landing page airway.games (`docs/SITE.md`) |
 | `android/`, `ios/`, `resources/`, `fastlane/` | Capacitor native projects and store tooling (`docs/ANDROID.md`, `docs/IOS.md`) |
 | `mockups/` | Stage-0 reference mockups (read-only history) |
-| `docs/` | Decisions, research, styles (`styles/kierunki-2026-11b/PLAN-LINORYT.md` for the look in progress), tasks, testing, store copy, screenshots (`docs/shots/README.md`) |
+| `docs/` | Decisions, research, styles (`styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md` for the shipped look and its remaining stages), tasks, testing, store copy, screenshots (`docs/shots/README.md`) |
 
 No module other than the composition root should orchestrate multiple world and input subsystems.
 `src/sim` MUST NOT import three.js, DOM/browser UI, input, audio, render, net or Capacitor. The

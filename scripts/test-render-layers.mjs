@@ -339,9 +339,10 @@ try {
   check(/await import\('\.\/linoryt-globe'\)/.test(globeIndex) && !/createTexturedTerrainMaterial|loadLookAssets|createDecorations|createAtmosphere/.test(globeIndex),
     '[E4] createGlobe builds only the Linoryt print (lazy chunk); no texture looks, decorations or atmosphere shell');
   const lookSrc = readFileSync(resolve(ROOT, 'src/render/globe/look.ts'), 'utf8');
-  check(/export type GlobeLook = 'linoryt' \| 'earth';/.test(lookSrc) && /DEFAULT_GLOBE_LOOK: GlobeLook = 'linoryt'/.test(lookSrc) &&
+  // [night-81a R5] D-336: the NASA globe is the shipped look; the print stays a DEV `?look=linoryt` exception until R6.
+  check(/export type GlobeLook = 'linoryt' \| 'earth';/.test(lookSrc) && /DEFAULT_GLOBE_LOOK: GlobeLook = 'earth'/.test(lookSrc) &&
     !/satellite|painted|refined|diorama'/.test(lookSrc.replace(/^\/\/.*$/gm, '')),
-    '[E4/R1] GlobeLook is the print (default) and the NASA preview only (Satelita, Mapa and the comparisons removed, D-285)');
+    '[E4/R1/R5] GlobeLook is the NASA globe (default since R5) and the print only (Satelita, Mapa and the comparisons removed, D-285)');
 
   // [night-70a R1] D-323: the NASA globe preview: DEV-only lazy chunk, presets, terminator from the game clock.
   {
@@ -373,6 +374,15 @@ try {
     check(earth.earthDuskWeight(1) === 0 && earth.earthDuskWeight(-1) === 0 && earth.earthDuskWeight(-0.01) > 0.9 && earth.earthDuskWeight(0.2) === 0,
       '[R1] dusk band is narrow (≈ −11° … +9°) and peaks at the terminator');
     check(earth.earthDayLight(-0.5) === 0 && earth.earthDayLight(1) === 1, '[R1] direct light: 0 at night, 1 at noon');
+    // [night-81a] D-336 (owner: brighten the land at night): land gets more moonlight than the sea (and a flat floor), so
+    // coasts read; the sea keeps the old moonlight; even bright desert stays far under the city lights (gain 1.55).
+    {
+      const sea = earth.earthMoonlight(0.2, 1), forest = earth.earthMoonlight(0.2, 0), desert = earth.earthMoonlight(0.6, 0);
+      check(Math.abs(sea - 0.2 * earth.EARTH_LOOK.moon) < 1e-9 && forest > sea + 0.04 && desert < 0.12 &&
+        desert * 4 < earth.EARTH_LOOK.nightGain * 0.42, `[T6/R5] night land lifted above the sea, lights dominant (sea ${sea.toFixed(3)}, forest ${forest.toFixed(3)}, desert ${desert.toFixed(3)})`);
+      const shader = readFileSync(resolve(ROOT, 'src/render/globe/earth-globe.ts'), 'utf8');
+      check(/\(awMoon \+ awMoonLand \* land\) \+ awMoonLandFloor \* land/.test(shader), '[T6/R5] the shader mirrors earthMoonlight');
+    }
     check(/space: '#010306'/.test(readFileSync(resolve(ROOT, 'src/render/globe/earth.ts'), 'utf8')), '[R1] K2 space colour');
     // Terminator from the game clock: the subsolar longitude for three game hours (UTC noon over 0°, 18:00 over 90°W).
     const sunModule = await load('sun.js');

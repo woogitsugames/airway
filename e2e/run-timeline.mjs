@@ -55,31 +55,47 @@ try {
         await waitForScreen(page, 'gameover', 20000);
         await page.getByTestId('game-over').waitFor({ timeout: 5000 });
         await page.waitForTimeout(1000);
-        const before = await actions(page);
-        assert(await page.getByTestId('gameover-tab-causes').getAttribute('aria-selected') === 'true', 'causes not first');
-        await clickTestId(page, 'gameover-tab-timeline');
-        await page.waitForFunction(() => document.querySelector('[data-testid="gameover-timeline"]')?.dataset.state === 'ready', null, { timeout: 15000 });
-        const rows = await page.evaluate(() => [...document.querySelectorAll('.airway-go-timeline-week')].map((li) => li.textContent));
-        const after = await actions(page);
-        const endShown = await page.evaluate(() => {
-          const panel = document.querySelector('[data-testid="gameover-timeline"]').getBoundingClientRect();
-          const end = document.querySelector('.airway-go-timeline-end').getBoundingClientRect();
-          return end.top >= panel.top - 1 && end.bottom <= panel.bottom + 1;
-        });
-        await page.screenshot({ path: resolve(SHOTS, `timeline-${language}-${width}x${height}.png`) });
-        assert(rows.length >= 3, `rows ${rows.length}: ${rows.join(' | ')}`);
-        const [week1, week2] = rows;
-        assert(/^(W|T)1\+\d/.test(week1), `week 1 opens routes: ${week1}`);
-        const names = { pl: { turboprop: 'Turbośmigłowiec', widebody: 'Szerokokadłubowiec' }, en: { turboprop: 'Turboprop', widebody: 'Widebody' } };
-        const want = upgrades.filter((u) => u.week === 1).map((u) => names[language][u.upgrade]).filter(Boolean);
-        for (const name of want) assert(week2.includes(name), `week 2 names the week-1 crate ${name}: ${week2}`);
-        assert(/LIS|[A-Z]{3}/.test(rows.at(-1)) && rows.at(-1).includes(language === 'pl' ? 'zator' : 'jammed'), `closing line: ${rows.at(-1)}`);
-        assert(endShown, 'closing line not visible in the panel');
-        assert(JSON.stringify(before) === JSON.stringify(after), `actions moved: ${JSON.stringify(before)} → ${JSON.stringify(after)}`);
-        assert(after.every((b) => b.top >= 0 && b.bottom <= height), `actions off screen: ${JSON.stringify(after)}`);
-        await clickTestId(page, 'gameover-tab-causes');
-        assert(await page.locator('.airway-go-causes').isVisible(), 'causes not back');
-        assert(!(await page.getByTestId('gameover-timeline').isVisible()), 'timeline still shown');
+        // [night-81a] D-336: UI-A's report (D-332) prints the timeline as the print-out's weeks table (one row per week:
+        // routes, aircraft, the crate taken; the jam on the last line); the shipped report's Timeline tab is gone.
+        if (await page.evaluate(() => !!document.querySelector('[data-testid="board-report-weeks"]'))) {
+          await page.waitForFunction(() => document.querySelector('[data-testid="board-report-weeks"]')?.dataset.state === 'ready', null, { timeout: 15000 });
+          const rows = await page.evaluate(() => [...document.querySelectorAll('[data-testid="board-report-weeks"] tbody tr')].map((tr) => tr.textContent));
+          const after = await actions(page);
+          await page.screenshot({ path: resolve(SHOTS, `timeline-${language}-${width}x${height}.png`) });
+          assert(rows.length >= 2, `rows ${rows.length}: ${rows.join(' | ')}`);
+          const names = { pl: { turboprop: 'turbo', widebody: 'szerok' }, en: { turboprop: 'turbo', widebody: 'wide' } }; // the print-out's short names
+          const want = upgrades.filter((u) => u.week === 1).map((u) => names[language][u.upgrade]).filter(Boolean);
+          const flat = (text) => text.toLocaleLowerCase().replace(/[\u00ad-]/g, '');
+          for (const name of want) assert(flat(rows[1]).includes(name), `week 2 names the week-1 crate ${name}: ${rows[1]}`);
+          assert(/zator|jam/i.test(rows.at(-1)), `closing line: ${rows.at(-1)}`);
+          assert(after.every((b) => b.top >= 0 && b.bottom <= height), `actions off screen: ${JSON.stringify(after)}`);
+        } else {
+          const before = await actions(page);
+          assert(await page.getByTestId('gameover-tab-causes').getAttribute('aria-selected') === 'true', 'causes not first');
+          await clickTestId(page, 'gameover-tab-timeline');
+          await page.waitForFunction(() => document.querySelector('[data-testid="gameover-timeline"]')?.dataset.state === 'ready', null, { timeout: 15000 });
+          const rows = await page.evaluate(() => [...document.querySelectorAll('.airway-go-timeline-week')].map((li) => li.textContent));
+          const after = await actions(page);
+          const endShown = await page.evaluate(() => {
+            const panel = document.querySelector('[data-testid="gameover-timeline"]').getBoundingClientRect();
+            const end = document.querySelector('.airway-go-timeline-end').getBoundingClientRect();
+            return end.top >= panel.top - 1 && end.bottom <= panel.bottom + 1;
+          });
+          await page.screenshot({ path: resolve(SHOTS, `timeline-${language}-${width}x${height}.png`) });
+          assert(rows.length >= 3, `rows ${rows.length}: ${rows.join(' | ')}`);
+          const [week1, week2] = rows;
+          assert(/^(W|T)1\+\d/.test(week1), `week 1 opens routes: ${week1}`);
+          const names = { pl: { turboprop: 'Turbośmigłowiec', widebody: 'Szerokokadłubowiec' }, en: { turboprop: 'Turboprop', widebody: 'Widebody' } };
+          const want = upgrades.filter((u) => u.week === 1).map((u) => names[language][u.upgrade]).filter(Boolean);
+          for (const name of want) assert(week2.includes(name), `week 2 names the week-1 crate ${name}: ${week2}`);
+          assert(/LIS|[A-Z]{3}/.test(rows.at(-1)) && rows.at(-1).includes(language === 'pl' ? 'zator' : 'jammed'), `closing line: ${rows.at(-1)}`);
+          assert(endShown, 'closing line not visible in the panel');
+          assert(JSON.stringify(before) === JSON.stringify(after), `actions moved: ${JSON.stringify(before)} → ${JSON.stringify(after)}`);
+          assert(after.every((b) => b.top >= 0 && b.bottom <= height), `actions off screen: ${JSON.stringify(after)}`);
+          await clickTestId(page, 'gameover-tab-causes');
+          assert(await page.locator('.airway-go-causes').isVisible(), 'causes not back');
+          assert(!(await page.getByTestId('gameover-timeline').isVisible()), 'timeline still shown');
+        }
         if (errors.length) throw new Error(`Browser errors: ${errors.join('; ')}`);
         results.push({ label, status: 'PASS' });
       } catch (error) {

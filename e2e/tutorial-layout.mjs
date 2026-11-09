@@ -60,6 +60,7 @@ async function measure(page, tagId) {
       dockTop: dock?.top ?? null,
       world: world && { top: world.top, bottom: world.bottom }, center: center && { top: center.top, bottom: center.bottom },
       tagShape: tag ? getComputedStyle(tag).clipPath : null,
+      skin: document.documentElement.dataset.skin,
       worldBg: getComputedStyle(document.querySelector('.aw-tutorial-world')).backgroundColor,
       // [night-11p] the planet (first circle of the art) must stay inside the screen sides
       planet: (() => { const r = document.querySelector('.aw-world-art > circle').getBoundingClientRect(); return { left: r.left, right: r.right }; })(),
@@ -82,7 +83,8 @@ function check(m, label) {
   }
   assert(m.world.top >= m.center.top - 0.5 && m.world.bottom <= m.center.bottom + 0.5 && m.strip.bottom <= m.center.bottom + 0.5,
     `${label}: world/card overflow their row ${JSON.stringify({ world: m.world, strip: m.strip.bottom, center: m.center })}`);
-  assert(m.tagShape === TAG_SHAPE, `${label}: tag outline ${m.tagShape}`);
+  // [night-81a] D-336: UI-A prints the action as a plain strip-paper plate like its console (no luggage-tag clip).
+  assert(m.tagShape === (m.skin === 'board' ? 'none' : TAG_SHAPE), `${label}: tag outline ${m.tagShape}`);
   assert(m.planet.left >= -0.5 && m.planet.right <= m.width + 0.5,
     `${label}: planet ${m.planet.left.toFixed(1)}…${m.planet.right.toFixed(1)} crosses the screen sides (0…${m.width})`);
 }

@@ -290,7 +290,7 @@ page, ≥ 3 per 1.2 s on the menu and in a game.
 | --- | --- | --- | --- | --- | --- |
 | Main JS chunk (largest `dist/assets/*.js`), raw | 1,180 kB (D-252; 1,150 before) | 1,033.8 kB | 1,150.4 kB (1,181.6 before D-252) | 1,132.8 kB (1,157.5 on dev before) | +4.2 % |
 | Main JS chunk, gzip (level 9) | 360 kB (D-252; 340 before) | 306.2 kB | 347.8 kB (353.1 before) | 338.9 kB (350.0 before) | +6.2 % |
-| All CSS | 129.8 kB (N56b: 126.8 kB + ~3 kB; 130 kB D-305 after U6 = 127.4 kB + ~3 kB; 132 kB D-301 at the Linoryt flip = 129.0 kB + 3 kB, D-297; 109 kB D-258; 90 before) | 70.2 kB | 88.8 kB (105.0 before) | 89.5 kB (unchanged); 129.0 kB at U5 (105.3 before); 127.4 kB at U6; 126.8 kB at N56b (129.9 before) | +2.4 % |
+| All CSS | 199.7 kB ([night-81a] D-336 at the UI-A flip: 197.0 kB + ~3 kB; 129.8 kB N56b: 126.8 kB + ~3 kB; 130 kB D-305 after U6 = 127.4 kB + ~3 kB; 132 kB D-301 at the Linoryt flip = 129.0 kB + 3 kB, D-297; 109 kB D-258; 90 before) | 70.2 kB | 88.8 kB (105.0 before) | 89.5 kB (unchanged); 129.0 kB at U5 (105.3 before); 127.4 kB at U6; 126.8 kB at N56b (129.9 before); 197.0 kB at the UI-A flip T6 (129.0 before) | +1.5 % |
 | Everything under `dist/` (fonts, land mask, licences, globe textures) | 4,300 kB (D-171) | 3,597.7 kB with G1 globe textures (1,804.8 kB before) | 4,264.1 kB (4,311.5 before) | 4,272.3 kB (4,271.9 before) | +0.6 % |
 
 [night-11ar] D-252: release CSS carries the UI skin values, not the tokens (`scripts/vite-skin-inline.mjs`; `npm run

@@ -62,7 +62,7 @@ export const en = {
   'hud.crates.days': '{days} {days|day|days}',
   'hud.crates.hours': '{hours} h',
   'hud.crates.minutes': '{minutes} min',
-  // [night-11az] D-257; [night-46a] D-301: the Linoryt HUD margin, dock captions, airport note and menu tagline.
+  // [night-11az] D-257; [night-46a] D-301; [night-81a] D-336: the base HUD margin, dock captions, airport note and menu tagline (skin-neutral keys).
   'hud.weekLine': 'Week {week}',
   'hud.passengerLine': '{count} {count|passenger|passengers}',
   'hud.dayOf': 'day {day} of {days}',
@@ -314,10 +314,11 @@ export const en = {
   'licenses.overpass': 'Overpass typeface',
   'licenses.overpassMono': 'Overpass Mono typeface',
   'licenses.atkinson': 'Atkinson Hyperlegible Next typeface',
-  'licenses.besley': 'Besley typeface', // [night-46a] D-301 Linoryt
-  'licenses.schibsted': 'Schibsted Grotesk typeface',
+  'licenses.archivo': 'Archivo typeface', // [night-81a] D-336: the UI-A faces
+  'licenses.chivoMono': 'Chivo Mono typeface',
   'licenses.naturalEarth': 'Natural Earth geography',
   'licenses.worldAtlas': 'world-atlas map dataset',
+  'licenses.nasaEarth': 'Earth imagery: NASA Earth Observatory (Blue Marble, Black Marble)', // [night-81a] D-336: the globe's photo (D-323)
   'licenses.noaaRelief': 'Relief: NOAA ETOPO5',
   'licenses.three': 'three.js 3D renderer',
   'licenses.ofl': 'SIL Open Font License 1.1',

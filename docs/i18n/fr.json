@@ -2201,26 +2201,6 @@
       "translation": "Police Atkinson Hyperlegible Next"
     },
     {
-      "key": "licenses.besley",
-      "en": "Besley typeface",
-      "pl": "Krój pisma Besley",
-      "context": "D-68 airport label setting. — D-301 Linoryt",
-      "maxLength": null,
-      "placeholders": [],
-      "pluralParams": [],
-      "translation": "Police Besley"
-    },
-    {
-      "key": "licenses.schibsted",
-      "en": "Schibsted Grotesk typeface",
-      "pl": "Krój pisma Schibsted Grotesk",
-      "context": "D-68 airport label setting.",
-      "maxLength": null,
-      "placeholders": [],
-      "pluralParams": [],
-      "translation": "Police Schibsted Grotesk"
-    },
-    {
       "key": "licenses.naturalEarth",
       "en": "Natural Earth geography",
       "pl": "Dane geograficzne Natural Earth",

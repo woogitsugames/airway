@@ -33,7 +33,8 @@ try {
         await page.waitForTimeout(400);
         const probe = await page.evaluate(() => window.__awWorld.framing());
         assert(probe.menuClashes === 0, `demo airports touch a menu entry (${probe.menuClashes} samples, tilt ${probe.menuTilt}°)`);
-        assert(probe.menuTilt >= 16 && probe.menuTilt <= 32, `menu tilt ${probe.menuTilt}`);
+        // [night-81a] D-336: the UI-A menu frames its globe to the board's frame (frameTilt, D-334: 0…60°), not D-262's 16…32°.
+        assert(probe.menuTilt >= 0 && probe.menuTilt <= 60, `menu tilt ${probe.menuTilt}`);
         if (errors.length) throw new Error(`Browser errors: ${errors.join('; ')}`);
         results.push({ label, status: 'PASS', note: `tilt=${probe.menuTilt}` });
       } catch (error) {

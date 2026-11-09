@@ -40,7 +40,11 @@ variable syntax; the script selects `gradlew.bat` automatically.
 If you only want to refresh icons/splash without Android SDK, use
 `npm run android:assets`. This generates 5 densities each of legacy launcher,
 round launcher, adaptive foreground and monochrome (themed icon) PNG, plus `drawable-nodpi/splash.png`,
-all from the mark I-1 (D-333, `scripts/icon-assets.mjs`; the adaptive background is `@color/airway_enamel`). Regenerated PNGs are intentionally ignored
+all from the mark I-1 (D-333, `scripts/icon-assets.mjs`; the adaptive background is `@color/airway_enamel`). [night-81a]
+D-336 (T6): the window behind the WebView (`windowBackground`), the transparent system bars' ground and the launch screen
+are the same enamel `#0E0F0F` (UI-A's `--board-enamel`, `index.html` theme-color) with light bar icons
+(`windowLightStatusBar` / `windowLightNavigationBar` false); Linoryt's paper colour (`airway_paper`, D-305) is gone.
+`npm run test:android-config` (`enamel-system-bars`) checks the three places agree. Regenerated PNGs are intentionally ignored
 by Git to avoid keeping duplicate binary assets; **run the npm script before
 opening the native project in Android Studio on a new checkout**.
 

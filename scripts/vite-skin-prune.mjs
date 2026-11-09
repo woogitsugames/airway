@@ -1,17 +1,21 @@
 // [night-11ax] D-257: release CSS without the base ("Diorama") declarations that the shipped skin structure always overrides.
 // [night-46a] D-301: the structure is src/ui/skin/linoryt.css (Róża's roza.css before it, KARTA before that); it restyles
-// the components with rules `:root[data-skin="linoryt"] X { … }`, and a release build always has
-// <html data-skin="linoryt"> (index.html; nothing removes it since the DEV `?skin=` previews went with U5), so such a rule
+// the components with rules `:root[data-skin="board"] X { … }`, and a release build always has
+// <html data-skin="board"> (index.html; nothing removes it since the DEV `?skin=` previews went with U5), so such a rule
 // beats every plain `X` rule (specificity + (0,2,0), and it comes last). A declaration of a component rule is therefore
-// dead in a release when, for every selector X of its rule, a structure rule `:root[data-skin="linoryt"] X` sets the
+// dead in a release when, for every selector X of its rule, a structure rule `:root[data-skin="board"] X` sets the
 // same property (or a shorthand that covers it) in the same @media/@container context or at the top level. Those
 // declarations are dropped (empty rules and at-rules with them); `!important` ones always stay. This runs only where
 // scripts/vite-skin-inline.mjs inlines (release builds; dev with AW_SKIN_INLINE=1, which is how `npm run skin:pixels`
 // proves the result pixel-identical). postcss is Vite's own CSS parser (a dependency of vite).
 import postcss from 'postcss';
 
-export const SKIN_STRUCTURE_FILE = 'src/ui/skin/linoryt.css';
-export const SKIN_SCOPE = ':root[data-skin="linoryt"]';
+// [night-81a] D-336 (PLAN-NOWY-KIERUNEK.md step T6): the structure is UI-A's src/ui/skin/board.css (with the base structure
+// that was Linoryt's, section A) and the weekly sheet's board-week.css; index.html sets <html data-skin="board">. Both
+// files are structure: neither is pruned, and the overrides are read from both.
+export const SKIN_STRUCTURE_FILES = ['src/ui/skin/board.css', 'src/ui/skin/board-week.css'];
+export const SKIN_STRUCTURE_FILE = SKIN_STRUCTURE_FILES[0];
+export const SKIN_SCOPE = ':root[data-skin="board"]';
 const norm = (s) => s.replace(/\s+/g, ' ').replace(/'/g, '"').trim();
 const SHORTHANDS = {
   font: ['font-size', 'font-weight', 'font-family', 'line-height', 'font-style', 'font-variant', 'font-stretch'],

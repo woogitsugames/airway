@@ -25,6 +25,8 @@ async function facts(page) {
   return page.evaluate(() => {
     const box = (el) => { const r = el.getBoundingClientRect(); return { top: r.top, bottom: r.bottom, left: r.left, right: r.right, height: r.height }; };
     const row = document.querySelector('[data-testid="gameover-milestones"]');
+    // [night-81a] D-336: on UI-A's print-out (D-332) the row is printed on the roll, which scrolls inside: bring it into view.
+    if (row?.closest('.bd-print')) row.scrollIntoView({ block: 'nearest' });
     const items = [...(row?.querySelectorAll('.airway-go-milestone') ?? [])].map((li) => {
       const mark = getComputedStyle(li.querySelector('.airway-go-milestone-mark'));
       const stamp = li.querySelector('.airway-go-milestone-first');
@@ -59,7 +61,8 @@ try {
         assert(f.items.filter((item) => item.stamp !== null).every((item) => item.stamp === 'none' || !item.stampShown), 'no stamp motion under reduce');
         for (const b of f.buttons) assert(b.top >= -0.5 && b.bottom <= height + 0.5 && b.height >= 47.5, `action off-screen or small ${JSON.stringify(b)}`);
         assert(f.scrollTop === 0, `report scrolled ${f.scrollTop}`);
-        assert(f.row && f.row.bottom <= Math.min(...f.buttons.map((b) => b.top)) + 0.5, 'milestone row under the actions');
+        // Never under an action ([night-81a] D-336: UI-A's landscape report puts the actions in a column beside the roll).
+        assert(f.row && f.buttons.every((b) => f.row.bottom <= b.top + 0.5 || f.row.right <= b.left + 0.5), 'milestone row under the actions');
         await page.screenshot({ path: resolve(SHOTS, `gameover-milestones-${language}-${width}x${height}.png`) });
       }));
     }
@@ -68,7 +71,9 @@ try {
         await openPreview(page, url);
         const f = await facts(page);
         const stamps = f.items.filter((item) => item.first);
-        assert(stamps.length === 2 && stamps.every((item) => item.stamp === 'airway-go-stamp' && item.stampShown), JSON.stringify(stamps));
+        // [night-81a] D-336: UI-A prints the stamp still (D-332: no hit, no motion on the print-out).
+        const board = await page.evaluate(() => document.documentElement.dataset.skin === 'board');
+        assert(stamps.length === 2 && stamps.every((item) => item.stamp === (board ? 'none' : 'airway-go-stamp') && item.stampShown), JSON.stringify(stamps));
         // An open milestone: hollow square (border, no fill), told apart by shape.
         const open = await page.evaluate(() => {
           const li = document.querySelector('.airway-go-milestone');

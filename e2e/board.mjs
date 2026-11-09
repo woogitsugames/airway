@@ -55,7 +55,6 @@ let shots = 0;
 
 function boardUrl(url) {
   const target = new URL(gameUrl(url));
-  target.searchParams.set('skin', 'board');
   return target.href;
 }
 

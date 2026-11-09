@@ -53,7 +53,10 @@ async function journey(page, language, width, height, startGame) {
   const span = Math.max(entry.y + entry.height, box.y + box.height) - Math.min(entry.y, box.y);
   // [night-55a] D-318: Linoryt spaces the slab off the next rule (4 px at 412×915); an extra row would hold a ≥ 48 px
   // control, so less than half of one is spacing, not a row.
-  assert(line && line.height <= span + 24, `Endless line ${line?.height} taller than its entry and select (${span})`);
+  // [night-81a] D-336: the UI-A menu (D-332) has no Endless line: the entry is the yellow sign and the choices stand on
+  // their own enamel line above it (test:e2e:board-sheets:stub checks that layout); only the overlap test applies.
+  const boardMenu = await page.locator('.bd-menu').count() > 0;
+  if (!boardMenu) assert(line && line.height <= span + 24, `Endless line ${line?.height} taller than its entry and select (${span})`);
   assert(!overlaps(box, entry), `select overlaps the entry ${JSON.stringify(box)} ${JSON.stringify(entry)}`);
   const board = await page.locator('.airway-board').boundingBox();
   assert(board && board.y >= 0 && board.y + board.height <= height + 0.5, `board ${JSON.stringify(board)}`);

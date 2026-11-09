@@ -51,7 +51,8 @@ function measure(page) {
       label: tip?.querySelector('.airway-go-tip-label')?.textContent ?? '',
       text: tip?.textContent ?? '',
       visible: visible(tip),
-      inPanel: !!tip?.closest('[role="tabpanel"]')?.querySelector('.airway-go-causes'),
+      // [night-81a] D-336: UI-A prints the causes and the tip on the report's roll (`.bd-print__causes`, D-332).
+      inPanel: !!(tip?.closest('[role="tabpanel"]')?.querySelector('.airway-go-causes') || tip?.closest('.bd-print__causes')),
       departures: document.querySelectorAll('.airway-go-flight').length,
       actionsOnScreen: actions.every((r) => r.top >= -0.5 && r.bottom <= innerHeight + 0.5),
       scrollTop: document.querySelector('.airway-go-overlay')?.scrollTop ?? 0,
@@ -95,11 +96,14 @@ try {
           assert(m.text.length > m.label.length + 20 && !/[{}]/.test(m.text), `text "${m.text}"`);
           assert(m.actionsOnScreen && m.scrollTop === 0, `actions off screen or report scrolled (${m.scrollTop})`);
           await page.screenshot({ path: resolve(SHOTS, `tip-${language}-${width}x${height}.png`) });
-          await clickTestId(page, 'gameover-tab-timeline');
-          await page.waitForTimeout(300);
-          assert(!(await measure(page)).visible, 'tip still visible on the Timeline tab');
-          await clickTestId(page, 'gameover-tab-causes');
-          assert((await measure(page)).visible, 'tip gone after returning to Causes');
+          // [night-81a] D-336: UI-A's print-out has no tabs (the weeks table and the causes are both printed on the roll).
+          if (await page.getByTestId('gameover-tab-timeline').count()) {
+            await clickTestId(page, 'gameover-tab-timeline');
+            await page.waitForTimeout(300);
+            assert(!(await measure(page)).visible, 'tip still visible on the Timeline tab');
+            await clickTestId(page, 'gameover-tab-causes');
+            assert((await measure(page)).visible, 'tip gone after returning to Causes');
+          }
         }
         console.log(`${label}: departures=${m.departures} tip=${m.kind ?? '-'}`);
         if (errors.length) throw new Error(`Browser errors: ${errors.join('; ')}`);

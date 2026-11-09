@@ -27,12 +27,22 @@ function audit(page, root, { translated = true } = {}) {
     const scrollsX = (el) => { for (let n = el.parentElement; n; n = n.parentElement) { const o = getComputedStyle(n).overflowX; if (o === 'auto' || o === 'scroll') return true; } return false; };
     for (const el of host.querySelectorAll('*')) {
       if (inFlap(el)) continue;
+      // [night-81a] D-336: the UI-A menu prints the brand (app.title, the same word in every language) on one still
+      // tile per letter; the pseudo-locale only lengthens it artificially.
+      if (el.closest('.bd-tiles--title')) continue;
       const style = getComputedStyle(el);
       const r = el.getBoundingClientRect();
       if (r.width === 0 || r.height === 0 || style.visibility === 'hidden') continue;
       // [night-52a] Visually hidden text (1 px box clipped by clip-path, kept for screen readers: the waybill's labels on
       // short landscape boards, the report heading at 640×360) is not clipped player text; screen-audit skips it too.
       if (r.width <= 1 && r.height <= 1 && style.clipPath !== 'none') continue;
+      // [night-81a] D-336: nor is anything inside such a box (UI-A's contract slip keeps its full text that way, D-331).
+      let srOnly = false;
+      for (let n = el.parentElement; n && n !== host && !srOnly; n = n.parentElement) {
+        const b = n.getBoundingClientRect();
+        srOnly = b.width <= 1 && b.height <= 1 && getComputedStyle(n).clipPath !== 'none';
+      }
+      if (srOnly) continue;
       const inScroller = scrollsX(el);
       const ownText = [...el.childNodes].some((node) => node.nodeType === 3 && node.textContent.trim());
       if (el.matches('button')) {
@@ -86,7 +96,7 @@ const SCREENS = [
     await startGame(page);
     const s = await page.evaluate(() => window.aw.autoplay(1));
     assert(s.screen === 'upgrade', `autoplay ended on ${s.screen}`);
-    return '.airway-upgrade';
+    return '.bw-sheet'; // [night-81a] D-336: the UI-A week sheet (D-331)
   }],
   ['game over', async (page) => {
     await startGame(page);

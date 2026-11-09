@@ -58,9 +58,11 @@ If dependencies are stale: `cd ios/App && pod install`. Do not commit `Pods/`, g
 Since night 78a (D-333) the icon is the mark I-1 "Węzeł" (D-326). `scripts/icon-assets.mjs` writes `ios/Brand/app-icon.svg` and
 `splash.svg` (copies of `resources/`) and, with `npm run icons`, the PNGs: one 1024×1024 universal icon (`AppIcon-512@2x.png`,
 the project's single-size convention) plus `AppIcon-dark.png` and the grey `AppIcon-tinted.png` (iOS 18 appearances), all RGB
-without an alpha channel, and the 2732×2732 launch image on enamel `#0E0F0F` in the three identical slots. `Info.plist` keeps
-the light appearance and the bars stay paper until T6, which switches the theme. `npm run test:icons` and
-`test:ios-config` check the files.
+without an alpha channel, and the 2732×2732 launch image on enamel `#0E0F0F` in the three identical slots. [night-81a]
+D-336 (T6): the game is UI-A on the same dark enamel, so `Info.plist` sets `UIUserInterfaceStyle` = **Dark** (light
+status-bar text, also when the phone is in Light Mode) and `capacitor.config.ts` gives the WebView the enamel
+`backgroundColor` (no white or paper flash between the launch image and the first frame; `index.html` theme-color is the
+same `#0E0F0F`). `npm run test:icons` and `test:ios-config` check the files and the colour.
 
 ## TestFlight
 

@@ -2,7 +2,7 @@
 // at any turn of the menu spin; the view looks further south until none does. Headless, with an orthographic globe as
 // the projection; the real renderer is checked by `npm run test:e2e:menu-clear`.
 import assert from 'node:assert/strict';
-import { INDEX_DISC_MIN_PX, INDEX_EDGE_GAP, INDEX_GLOBE_GAP, MENU_CLEAR_PX, MENU_TILT_BASE, MENU_TILT_MAX, indexFraming, menuNetworkClashes, menuTilt, frameTilt, FRAME_TILT_MAX, type ClearPoint, type ClearRect } from '../src/game/menu-clear.ts';
+import { MENU_CLEAR_PX, MENU_TILT_BASE, MENU_TILT_MAX, menuNetworkClashes, menuTilt, frameTilt, FRAME_TILT_MAX, type ClearPoint, type ClearRect } from '../src/game/menu-clear.ts';
 
 let passed = 0;
 let failed = 0;
@@ -68,45 +68,7 @@ test('no tilt clears: the one with the fewest clashes, the lowest of equals', ()
   assert.equal(menuTilt((t) => Math.abs(t - 20) + 1), 20);
   assert.equal(menuTilt(() => 5), MENU_TILT_BASE);
 });
-// [night-29b] D-284, PLAN-LINORYT.md step U4: the Linoryt menu prints the whole globe between the title and the index
-// (the board box), or keeps the horizon when the screen is too short; boxes measured on the preview (docs/shots/29b/).
-const SIGN_412: ClearRect = { left: 0, top: 0, right: 412, bottom: 118 };
-const INDEX_412: ClearRect = { left: 0, top: 612, right: 412, bottom: 915 };
-test('Linoryt 412×915: the whole disc between title and index, the gap kept to both, centred', () => {
-  const f = indexFraming(412, 915, SIGN_412, INDEX_412);
-  assert(f, 'a disc fits');
-  const top = f.horizonY, bottom = f.horizonY + 2 * f.radius;
-  assert(top >= SIGN_412.bottom + INDEX_EDGE_GAP - 0.5, `limb top ${top}`);
-  assert(bottom <= INDEX_412.top - INDEX_GLOBE_GAP + 0.5, `limb bottom ${bottom}`);
-  assert(2 * f.radius <= 412 - 2 * INDEX_EDGE_GAP, 'disc narrower than the screen');
-  assert.deepEqual(f.insets, { top: 118, left: 0, right: 0, bottom: 303 });
-  // With the disc there, a demo airport (anywhere on the disc) never comes within the clearance of an index row.
-  const disc = (lon: number, lat: number, out: ClearPoint) => globe(206, top + f.radius, f.radius, -16, 24)(lon, lat, out);
-  assert.equal(menuNetworkClashes(NETWORK, [{ left: 20, top: INDEX_412.top + 14, right: 392, bottom: 700 }], disc), 0);
-});
-test('Linoryt landscape 915×412: the disc left of the index column, under the title', () => {
-  const f = indexFraming(915, 412, { left: 0, top: 0, right: 300, bottom: 86 }, { left: 475, top: 0, right: 915, bottom: 412 });
-  assert(f, 'a disc fits');
-  assert.equal(f.insets.right, 915 - 475);
-  assert(f.horizonY >= 86 + INDEX_EDGE_GAP - 0.5 && f.horizonY + 2 * f.radius <= 412 - INDEX_EDGE_GAP + 0.5, `disc ${f.horizonY}+${2 * f.radius}`);
-  assert(2 * f.radius <= 475 - 2 * INDEX_GLOBE_GAP);
-});
-test('Linoryt 320×568 with Continue: a smaller disc, never the horizon that rides the index rule; no room or no board → null', () => {
-  const sign = { left: 0, top: 0, right: 320, bottom: 98 }, board = { left: 0, top: 300, right: 320, bottom: 568 };
-  const f = indexFraming(320, 568, sign, board);
-  assert(f && f.radius >= INDEX_DISC_MIN_PX, `radius ${f?.radius}`);
-  assert(f.horizonY + 2 * f.radius <= board.top - INDEX_GLOBE_GAP + 0.5);
-  // The horizon framing it replaces: a 294 px globe whose limb sits 18 % into the band — Dakar's parallel crosses the rule.
-  const horizon = (tilt: number) => globe(160, 98 + 0.18 * 202 + 294, 294, -16, 40 - tilt);
-  const rows = [{ left: 20, top: 300, right: 300, bottom: 360 }];
-  assert(menuNetworkClashes(NETWORK, rows, horizon(MENU_TILT_MAX)) > 0, 'the horizon cannot clear the rule even at the largest tilt');
-  assert.equal(indexFraming(320, 568, sign, { ...board, top: 98 + 2 * INDEX_DISC_MIN_PX }), null);
-  assert.equal(indexFraming(412, 915, SIGN_412, null), null);
-});
-test('Linoryt safe areas: the notch and the home bar push the free paper', () => {
-  const f = indexFraming(390, 844, { left: 0, top: 0, right: 390, bottom: 160 }, { left: 0, top: 540, right: 390, bottom: 844 }, { top: 47, bottom: 34, left: 0, right: 0 });
-  assert(f && f.insets.top === 160 && f.insets.bottom === 304);
-});
+// [night-29b] D-286's Linoryt index framing (indexFraming) and its cases went with Linoryt ([night-81a] D-336, T6).
 // [night-79a R4] D-334: the UI-A menu tilt puts the menu target's latitude at the middle of the globe's visible part.
 test('R4 frame tilt: the network sits in the middle of the visible part (disc and horizon)', () => {
   const ys = (cx: number, cy: number, R: number) => (tilt: number): number | null => {

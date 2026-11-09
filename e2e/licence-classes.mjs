@@ -59,7 +59,8 @@ async function journey(page, language, width, height, startGame) {
       box.y >= 0 && box.y + box.height <= height + 0.5, `${testId} box ${JSON.stringify(box)}`);
   }
   const line = await page.locator('.airway-flight-line').boundingBox();
-  assert(line && lineBefore && line.height <= lineBefore.height + 2,
+  // [night-81a] D-336: the UI-A menu has no Endless line (D-332; its choices line is checked by board-sheets).
+  if (!(await page.locator('.bd-menu').count())) assert(line && lineBefore && line.height <= lineBefore.height + 2,
     `the stamp adds a row: Endless line ${lineBefore?.height} -> ${line?.height}`);
   const [entry, puzzles, stamp, region] = await Promise.all(['menu-endless', 'menu-puzzles', 'menu-licence', 'menu-home-region']
     .map((testId) => page.getByTestId(testId).boundingBox()));
