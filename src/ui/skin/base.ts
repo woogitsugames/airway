@@ -1,9 +1,8 @@
 /**
  * [night-81a] D-336 (PLAN-NOWY-KIERUNEK.md step T6): the skin's base helpers, formerly the Linoryt helpers module (D-283,
  * D-284, D-301). The UI-A board (src/ui/skin/board*.ts) builds on them: the note layout's stamps, frames, margins and
- * compact passes (src/ui/overlay.ts), the edge chip data, the top margin's measured bottom (`--base-pass-bottom`). The
- * HUD margin, dock captions, menu tagline and report block helpers are the base DOM the board slots replace or the
- * base structure (board.css section A) hides; they go with the base HUD in a later clean-up (R6/T7).
+ * compact passes (src/ui/overlay.ts), the edge chip data and the cut symbols of the dock's drag ghost. [night-82b] D-338
+ * (T7): the HUD margin, dock captions, menu tagline and report block helpers went (the board's slots always replace them).
  * History: the Linoryt print's helpers (docs/styles/kierunki-2026-11b/PLAN-LINORYT.md), a relief print in three inks.
  *
  * This module has no runtime imports (only types): src/main.ts hands in what it needs. Player text uses the
