@@ -1,3 +1,9 @@
+# STAN NA 9.11 noc (po #378-#381)
+
+- dev = main = 2d1cdb3. Scalone: #378 porządki (D-340 Krym, D-341 max 4 znaki), #379 playtest (D-342), #380 start 07:00 + pasek lotniska 75% (D-343; DAILY_RULES_VERSION 7), #381 kamera sieci + zwarte znaki + klawisz "Sieć" (D-344). test:fast 122, test:ci 100.
+- Otwarte z docs/PLAYTEST-2026-11-09.md: P-5 (tempo), P-6 (tabela tygodni), P-7 (paleta D-08 pod papier). Słabe miejsce: na 320x568 otwarty znak kierunku na 4 s może przykryć sąsiedni znak/licznik zatoru.
+- Przed wydaniem: pełny test:ci jeszcze raz (ostatni na 0b878c4: 97/99), pomiar na tanim telefonie (D-245), wgranie 6 MP4 na Dysk, native review DE/FR/ES/PT-BR.
+
 # STAN NA 9.11 wieczór (po U7)
 
 - dev = main = be6bb70 (+ #377 U7, D-339: zrzuty/grafika/film/strona/opisy pod nowy wygląd; store:shots naprawione). Pełny test:ci na 0b878c4: 97/99; padły store:shots (naprawione w U7) i test:e2e:keyboard-mouse (hover 915×412 pod obciążeniem; 2x zielony osobno: flaky, obserwować).
