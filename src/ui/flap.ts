@@ -87,7 +87,9 @@ export class SplitFlap {
     this.silent = options.silent ?? false;
     this.element = document.createElement('span');
     this.element.className = 'split-flap' + (options.highlight ? ' split-flap--highlight' : '');
-    this.element.setAttribute('role', 'text');
+    // [night-82b] T7: one image with a text name for screen readers (the board's label), not two letters per tile read
+    // one by one: `role="text"` is no ARIA role and was ignored outside WebKit.
+    this.element.setAttribute('role', 'img');
     this.set(value, false);
     if (options.initialAnimation) this.enter();
   }
@@ -112,6 +114,7 @@ export class SplitFlap {
   private buildTile(letter: string): HTMLSpanElement {
     const tile = document.createElement('span');
     tile.className = 'flap-tile';
+    tile.setAttribute('aria-hidden', 'true');
     tile.append(panel('flap-half flap-half--top', letter), panel('flap-half flap-half--bottom', letter));
     return tile;
   }

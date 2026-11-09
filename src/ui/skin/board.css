@@ -1113,6 +1113,7 @@
 /* [night-81a] D-336: the display above beat the `hidden` attribute, so the map view (D-116) kept the roll over the globe. */
 :root[data-skin="board"] .bd-report .airway-go-content[hidden] { display: none; }
 :root[data-skin="board"] .bd-print { flex: 1 1 auto; min-height: 0; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; }
+:root[data-skin="board"] .bd-print:focus-visible { outline: 3px solid var(--board-white); outline-offset: -3px; } /* [night-82b] T7: the roll scrolls from the keyboard too */
 :root[data-skin="board"] .bd-print__roll {
   position: relative; box-sizing: border-box; min-height: 100%; padding: 26px 36px 20px; background: var(--board-paper); color: var(--board-print);
   font: 500 calc(13px * var(--airway-text-scale))/1.45 var(--board-mono); text-transform: uppercase;
@@ -1540,7 +1541,11 @@
 :root[data-skin="board"] .bd-atlas__label {
   position: absolute; left: 0; top: 0; height: 16px; white-space: nowrap; color: var(--board-atlas-country);
   font: 600 10.5px/16px var(--board-face); letter-spacing: .3em; text-transform: uppercase;
-  text-shadow: 0 0 2px var(--board-atlas-halo), 0 1px 2px var(--board-atlas-halo-soft);
+  /* [night-82b] T7 (D-177): a hard 1 px outline in eight directions, then the soft halo: on the bright day desert the
+     blurred halo alone left the letters at 2:1 (Chad, Libya); the outline keeps them ≥ 4.5:1 on day, dusk and night. */
+  text-shadow: 1px 0 0 var(--board-atlas-halo), -1px 0 0 var(--board-atlas-halo), 0 1px 0 var(--board-atlas-halo),
+    0 -1px 0 var(--board-atlas-halo), 1px 1px 0 var(--board-atlas-halo), -1px -1px 0 var(--board-atlas-halo),
+    1px -1px 0 var(--board-atlas-halo), -1px 1px 0 var(--board-atlas-halo), 0 0 3px var(--board-atlas-halo-soft);
 }
 :root[data-skin="board"] .bd-atlas__label--sea { color: var(--board-atlas-sea); font-size: 12px; letter-spacing: .12em; text-transform: none; }
 /* end T2 */

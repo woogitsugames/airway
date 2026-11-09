@@ -12,6 +12,8 @@
 //     planes and a jam zone core ≥ 3:1 (OBJECT_PROBE of scripts/shots.mjs), the country borders' median against the globe
 //     within 1.2–2:1 (BORDER_PROBE: it shows, and stays quieter than routes and signs) — with the night land lifted by
 //     D-336's moonlight on the night land.
+//   - [night-82b] T7: every atlas label (no ground of its own) on day, dusk (the terminator under the camera) and night:
+//     its letters against what lies under them (a second shot with the letters transparent: their outline over the photo).
 // PNGs to the git-ignored .e2e/board-contrast/. Prints PASS/FAIL lines and `SUMMARY test:e2e:board-contrast …`.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -24,6 +26,9 @@ const OUT = resolve(ARTIFACTS, 'board-contrast');
 const CASES = [
   { light: 'day', scene: 'game', sunDot: 0.6, language: 'pl', width: 412, height: 915 },
   { light: 'day', scene: 'game', sunDot: 0.6, language: 'en', width: 915, height: 412 },
+  // [night-82b] T7: dusk, the terminator under the camera (half the network lit, half in the moonlit night).
+  { light: 'dusk', scene: 'game', sunDot: 0.05, language: 'pl', width: 412, height: 915 },
+  { light: 'dusk', scene: 'game', sunDot: 0.05, language: 'en', width: 915, height: 412 },
   { light: 'night', scene: 'night', language: 'pl', width: 412, height: 915 },
   { light: 'night', scene: 'night', language: 'en', width: 915, height: 412 },
 ];
@@ -85,7 +90,7 @@ function ring(img, cx, cy, r0, r1, square) {
   return out;
 }
 
-let passed = 0, failed = 0, notes = 0, points = 0, layers = 0;
+let passed = 0, failed = 0, notes = 0, points = 0, layers = 0, atlas = 0;
 const lines = [];
 const gate = (ok, line) => { if (ok) passed++; else failed++; lines.push(`${ok ? 'PASS' : 'FAIL'} ${line}`); };
 try {
@@ -113,8 +118,16 @@ try {
           const stamps = (window.__awLinoryt?.stamps() ?? []).filter((s) => s.visible && s.half > 0 &&
             s.x - s.half > 12 && s.y - s.half > 12 && s.x + s.half < innerWidth - 12 && s.y + s.half < innerHeight - 12 &&
             !document.elementsFromPoint(s.x, s.y).some((el) => el.closest('.airport-bubble, .airway-pass, .airway-dock, .airway-strip-bay')));
+          // [night-82b] T7: the atlas labels (no ground of their own: a hard dark outline round cream or blue letters).
+          const atlas = [...document.querySelectorAll('.bd-atlas__label')].filter((el) => {
+            const r = el.getBoundingClientRect(); const s = getComputedStyle(el);
+            return r.width > 8 && s.visibility !== 'hidden' && s.display !== 'none' && Number(s.opacity) > 0.99 && !el.hidden &&
+              r.left >= 2 && r.top >= 2 && r.right <= innerWidth - 2 && r.bottom <= innerHeight - 2 && !covered(r) &&
+              !document.elementsFromPoint(r.left + r.width / 2, r.top + r.height / 2).some((hit) => hit.closest('.airport-bubble'));
+          }).map((el) => { const r = el.getBoundingClientRect(); const c = getComputedStyle(el).color.match(/\d+/g).slice(0, 3).map(Number);
+            return { x: r.left, y: r.top, w: r.width, h: r.height, text: el.textContent, ink: c }; });
           const probe = window.__awWorld;
-          return { bubbles, stamps, skin: document.documentElement.dataset.skin, sun: document.documentElement.dataset.storeShotSun,
+          return { bubbles, stamps, atlas, skin: document.documentElement.dataset.skin, sun: document.documentElement.dataset.storeShotSun,
             world: probe?.layerContrast ? probe.layerContrast() : null, disc: probe?.disc?.() ?? null };
         });
         const png = await page.screenshot({ animations: 'disabled' });
@@ -140,6 +153,28 @@ try {
           notes++;
           gate(textRatio >= TEXT && inkDistance <= 24,
             `${tag} sign ${b.id}: letters ${textRatio.toFixed(2)}:1 on its ${inkDistance <= 24 ? inkName : 'photo (not opaque)'} ground`);
+        }
+        // [night-82b] T7: atlas labels have no ground of their own. The frame is shot again with the letters transparent
+        // (only their outline and halo over the photo): under every letter pixel lies its real background. The letters'
+        // median against the brighter quarter of that background ≥ 4.5:1, on day, dusk and night alike (a quarter, not
+        // the brightest pixels: the planes fly on between the two shots and may pass under a label).
+        if (layout.atlas.length) {
+          await page.addStyleTag({ content: '.bd-atlas__label { color: transparent !important; }' });
+          await page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))));
+          const bare = decodePng(await page.screenshot({ animations: 'disabled' }));
+          for (const a of layout.atlas) {
+            const core = [], under = [];
+            for (let y = Math.ceil(a.y); y < a.y + a.h; y++) for (let x = Math.ceil(a.x); x < a.x + a.w; x++) {
+              const p = img.at(x, y), q = bare.at(x, y);
+              if (Math.hypot(...p.map((v, i) => v - a.ink[i])) > 36 || Math.hypot(...p.map((v, i) => v - q[i])) < 48) continue; // a letter pixel, not the photo's own cream
+              core.push(lum(p));
+              under.push(lum(bare.at(x, y)));
+            }
+            if (core.length < 12) continue;
+            atlas++;
+            const value = ratio(fromLum(median(core)), fromLum(percentile(under, 0.75)));
+            gate(value >= TEXT, `${tag} atlas "${a.text}": letters ${value.toFixed(2)}:1 on their outline (median ground ${ratio(fromLum(median(core)), fromLum(median(under))).toFixed(2)})`);
+          }
         }
         // Airport points: core against outline (D-177 non-text), the outline against the photo reported.
         for (const s of layout.stamps) {
@@ -167,7 +202,7 @@ try {
           const m = borders.median ?? borders.ratio;
           gate(m >= BORDERS.min && m <= BORDERS.max, `${tag} layer borders: median ${m}:1 (edge ${borders.edge ?? '-'}; band ${BORDERS.min}–${BORDERS.max})`);
         }
-        lines.push(`INFO ${tag} sun=${layout.sun} signs=${layout.bubbles.length} points=${layout.stamps.length}`);
+        lines.push(`INFO ${tag} sun=${layout.sun} signs=${layout.bubbles.length} atlas=${layout.atlas.length} points=${layout.stamps.length}`);
       } catch (error) {
         failed++;
         lines.push(`FAIL ${tag}: ${String(error?.message ?? error).split('\n')[0]}`);
@@ -182,6 +217,6 @@ try {
 }
 for (const line of lines) console[line.startsWith('FAIL') ? 'error' : 'log'](line);
 if (!notes) { failed++; console.error('FAIL no sign measured'); }
-console.log(`SUMMARY test:e2e:board-contrast seed=0x${SEED.toString(16).toUpperCase()} frames=${CASES.length} signs=${notes} points=${points} ` +
+console.log(`SUMMARY test:e2e:board-contrast seed=0x${SEED.toString(16).toUpperCase()} frames=${CASES.length} signs=${notes} atlas=${atlas} points=${points} ` +
   `layers=${layers} passed=${passed} failed=${failed} durationMs=${Math.round(performance.now() - started)}`);
 if (failed) process.exitCode = 1;
