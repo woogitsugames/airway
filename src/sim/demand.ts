@@ -36,6 +36,8 @@ export class RegionalDemand {
   private readonly distanceKm: DistanceLookup;
   private readonly active = new Set<string>();
   private readonly rng: DemandRandom;
+  /** [night-86a] D-343: minutes added to the tick before reading a local hour (a morning-start run); 0 = UTC. */
+  clockShift = 0;
 
   constructor(cities: readonly DemandCity[], distanceKm: DistanceLookup, rng: DemandRandom,
       initiallyActive?: readonly string[]) {
@@ -137,7 +139,7 @@ export class RegionalDemand {
       const options = this.choices.get(city.cityId)!;
       if (!options.length) continue;
       // Shared day/night clock (task 11): the dawn wave follows each city's local hour.
-      const hour = localHourAt(tick, city.utcOffsetH);
+      const hour = localHourAt(tick + this.clockShift, city.utcOffsetH);
       let balance = this.credit[city.cityId] +
         city.population * DEMAND_PASSENGERS_PER_MILLION_PER_DAY * DEMAND_RATE_PERCENT * DEMAND_HOURLY_WEIGHTS[hour];
       while (balance >= CREDIT_THRESHOLD) {

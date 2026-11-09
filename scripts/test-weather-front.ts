@@ -43,7 +43,8 @@ async function test(name: string, fn: () => void | Promise<void>): Promise<void>
 /** The balance bot to the end of the run (or `maxTicks`), as test:balance plays it. */
 function botRun(seed: number, mode: 'endless' | 'daily', contract: boolean, surge: boolean, licence: 1 | 2 | 3 = 1,
     weather = false, maxTicks = 18_000) {
-  const session = createBalanceSession(seed, mode, null, contract, surge, licence, weather);
+  // [night-86a] D-343: pinned pre-D-343 bot runs, so the UTC-midnight start (new runs: test:morning-start).
+  const session = createBalanceSession(seed, mode, null, contract, surge, licence, weather, false);
   for (let i = 0; i < 2000; i++) {
     const snapshot = session.snapshot();
     if (snapshot.status === 'finished' || snapshot.tick >= maxTicks) break;
@@ -100,12 +101,12 @@ await test('default flags = origin/dev: Daily, Endless, shipped Endless and clas
 
 await test('switch: shipped Endless leaves the front off; only an explicit flag turns it on, never in Daily or puzzles', () => {
   assert.equal(ENDLESS_WEATHER_FRONT, false);
-  assert.deepEqual(EndlessRun.create(7).sim.config, { mode: 'endless', weeklyContract: true, demandSurge: true });
+  assert.deepEqual(EndlessRun.create(7).sim.config, { mode: 'endless', weeklyContract: true, demandSurge: true, morningStart: true });
   assert.equal(EndlessRun.create(7).weatherFront, false);
   const on = EndlessRun.create(7, 'endless', null, 1, true);
-  assert.deepEqual(on.sim.config, { mode: 'endless', weeklyContract: true, demandSurge: true, weatherFront: true });
+  assert.deepEqual(on.sim.config, { mode: 'endless', weeklyContract: true, demandSurge: true, weatherFront: true, morningStart: true });
   assert.equal(on.weatherFront, true);
-  assert.deepEqual(EndlessRun.create(7, 'daily', null, 1, true).sim.config, { mode: 'daily' });
+  assert.deepEqual(EndlessRun.create(7, 'daily', null, 1, true).sim.config, { mode: 'daily', morningStart: true });
   assert.deepEqual(createGame(7, 'daily', undefined, null, false, false, 1, true).config, { mode: 'daily' });
   for (const config of [{ mode: 'daily', weatherFront: true }, { mode: 'endless', weatherFront: false },
     { mode: 'endless', weatherFront: 1 }, { mode: 'puzzle', puzzleId: 'p01', weatherFront: true }]) {

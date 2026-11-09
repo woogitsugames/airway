@@ -11,6 +11,8 @@ import type { GameMode, WorldSnapshot } from './world.ts';
 // (D-95, D-99, D-105, D-106). Older saves are replayed under the new rules (D-76).
 // [night-12v] 5 -> 6: weekly board draws only cards that can act (R8a, D-150), curfew from week 3 (R8c, D-151).
 // Older saves are replayed under the new rules (D-76).
+// [night-86a] D-343: the morning start is a config flag (`morningStart`), like D-247/D-249, so RULES_VERSION and every
+// hash of a run without it stay as they were; the Daily leaderboard has its own DAILY_RULES_VERSION 7 (src/net).
 export const RULES_VERSION = 6;
 export const SNAPSHOT_VERSION = 2;
 export const INITIAL_COMMAND_DIGEST = 0x811c9dc5;
@@ -55,6 +57,11 @@ export interface GameConfig {
    * bot set it.
    */
   readonly weatherFront?: true;
+  /**
+   * [night-86a] D-343 (P-3): Endless and Daily. The run starts at local 07:00 at its first airport (MORNING_START_LOCAL_HOUR)
+   * instead of UTC midnight. Absent = the UTC-midnight start (every older save and replay); new runs set it. Puzzles never.
+   */
+  readonly morningStart?: true;
 }
 
 /** [night-11aj] Canonical copy of a config: optional fields only when set (they are part of the state hash). */
@@ -68,6 +75,7 @@ export function copyConfig(config: GameConfig): GameConfig {
     ...(config.demandSurge === true ? { demandSurge: true } : {}),
     ...(config.licenceClass === undefined ? {} : { licenceClass: config.licenceClass }),
     ...(config.weatherFront === true ? { weatherFront: true } : {}),
+    ...(config.morningStart === true ? { morningStart: true } : {}),
   };
 }
 

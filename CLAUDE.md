@@ -59,7 +59,7 @@ the route network, planes fly by themselves; passengers transfer at hubs; you lo
 - `npm ci` — install dependencies from the lockfile. Playwright 1.63 + Chromium come from the environment
   (`npm install --no-save playwright@1.63.0`), never from `package.json`.
 - `npm run dev` — Vite dev server. `npm run build` — distance/land generators, `tsc`, Vite production build.
-- `npm run test:fast` — typecheck + every headless unit test, ending with `test:arch` (~1.5–2 min with 4 parallel jobs, 121 steps); one PASS/FAIL line per
+- `npm run test:fast` — typecheck + every headless unit test, ending with `test:arch` (~1.5–2 min with 4 parallel jobs, 122 steps); one PASS/FAIL line per
   step and a final `SUMMARY`. Run before every push. Add new fast tests to its step list.
 - `npm run test:ci` — `test:fast`, build, HUD/tutorial/E2E smoke, UI matrix, balance, perf scene, all screenshots
   (~1.5–2 h serial on 4 vCPU, 99 steps; `:stub` variants are the fast path).

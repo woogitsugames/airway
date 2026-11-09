@@ -11,7 +11,8 @@ export const LEGACY_SLOT_KEY = 'aw-tutorial-slots';
  * [night-35a] D-272: 'surge' joins the list without a version bump: the saved `seen` list keeps every card already
  * shown, and a card id missing from it simply has not been shown yet, so nothing seen comes back.
  */
-export const FIRST_TIME_CARDS = ['slots', 'hub-full', 'out-of-range', 'curfew', 'weekly-board', 'surge'] as const;
+/** [night-86a] D-343 (P-4): 'airport-full' joins the same way (a plain airport's strip appears, AIRPORT_STRIP_SHOW_SHARE). */
+export const FIRST_TIME_CARDS = ['slots', 'hub-full', 'out-of-range', 'curfew', 'weekly-board', 'surge', 'airport-full'] as const;
 export type FirstTimeCard = (typeof FIRST_TIME_CARDS)[number];
 /** A hub at or above this share of its waiting places shows the "hub filling up" card. */
 export const HUB_FULL_SHARE = 0.7;
@@ -79,6 +80,37 @@ export function fillingHub<T extends FirstTimeCity>(cities: readonly T[]): T | n
     if (!city.hub || city.capacity <= 0) continue;
     const share = city.waiting / city.capacity;
     if (share >= bestShare) { best = city; bestShare = share; }
+  }
+  return best;
+}
+
+/**
+ * [night-86a] D-343 (P-4): a plain airport (not a hub) jams the network like a hub does, so it gets its flight strip
+ * ("Lotn." / "Airport") from three quarters of its waiting places, not only once it is jammed; it keeps the strip until
+ * it falls below AIRPORT_STRIP_HIDE_SHARE (so the bay does not flicker at the line). Integer shares (fourths, fifths).
+ */
+export const AIRPORT_STRIP_SHOW_SHARE = 0.75;
+export const AIRPORT_STRIP_HIDE_SHARE = 0.6;
+const showsAt = (waiting: number, capacity: number): boolean => capacity > 0 && waiting * 4 >= capacity * 3;
+const keepsAt = (waiting: number, capacity: number): boolean => capacity > 0 && waiting * 5 >= capacity * 3;
+
+/** Which airports carry a strip in the bay: every hub, every jammed airport, a plain airport filling up (hysteresis). */
+export class AirportStripGate {
+  private readonly open = new Set<string>();
+  shows(city: FirstTimeCity, jammed: boolean): boolean {
+    if (city.hub || jammed) { this.open.delete(city.id); return true; }
+    const on = this.open.has(city.id) ? keepsAt(city.waiting, city.capacity) : showsAt(city.waiting, city.capacity);
+    if (on) this.open.add(city.id); else this.open.delete(city.id);
+    return on;
+  }
+}
+
+/** [night-86a] D-343 (P-4): the fullest plain airport at or above AIRPORT_STRIP_SHOW_SHARE (the strip's first sight). */
+export function fillingAirport<T extends FirstTimeCity>(cities: readonly T[]): T | null {
+  let best: T | null = null;
+  for (const city of cities) {
+    if (city.hub || !showsAt(city.waiting, city.capacity)) continue;
+    if (!best || city.waiting * best.capacity > best.waiting * city.capacity) best = city;
   }
   return best;
 }

@@ -195,7 +195,7 @@ else (UI, render, audio, input, modes, bot) reads views and submits commands; no
 ```ts
 import { createGame, Sim, type Command } from './sim';
 // createGame(seed, mode = 'endless', puzzleId?, homeRegion = null, weeklyContract = false, demandSurge = false,
-//            licenceClass = 1, weatherFront = false, eusClusterV2 = true): Sim
+//            licenceClass = 1, weatherFront = false, eusClusterV2 = true, morningStart = false): Sim
 const sim = createGame(seed, 'endless');      // plain Endless (class I, no contract, surge or weather)
 createGame(seed, 'daily');                    // Daily: every Endless-only argument is ignored
 createGame(level.demandSeed, 'puzzle', level.id); // puzzle scenario (src/sim/puzzles.ts)
@@ -203,6 +203,8 @@ createGame(seed, 'endless', undefined, 'EUN', true, true, 2); // home region (HO
                                               // (D-247), demand surge (D-249), licence class II (D-251)
 // weatherFront = true adds the weekly weather front (D-253/D-291; DEV `?weather=front`, tests and the bot only).
 // eusClusterV2 applies only with homeRegion 'EUS' (D-290); pass false to rebuild an old EUS world.
+// morningStart (Endless and Daily, D-343): the run starts at local 07:00 at its clock airport instead of UTC midnight;
+// every new run sets it (EndlessRun.create, RUN_MORNING_START; Daily = DAILY_CONFIG in src/net/submission.ts).
 // Each flag becomes an optional GameConfig field (src/sim/state.ts), set only when it differs from the default,
 // so older saves, every Daily and the leaderboard replay keep their hashes. A new Endless run comes from
 // EndlessRun.create (src/game/run.ts): contract and surge on, weather off (ENDLESS_* constants there).
@@ -241,7 +243,12 @@ Sim.replay(seed, journal, ticks, config?, stopAtEnd?); // stopAtEnd: stop on the
   `src/data/cities.ts` codes; distances/flight times come from the generated table, never from callers.
   Unknown extra fields (e.g. `legDistancesKm`) are dropped. Rejected commands are journaled too.
 - **Time**: `tick` = kernel step (journal index); `world.minute` = game minute. They differ only if
-  someone ticks while an upgrade offer is pending (the world is frozen then).
+  someone ticks while an upgrade offer is pending (the world is frozen then). [night-86a] D-343: `world.minute` counts
+  from the run's start; UTC = `world.minute + world.clockShift` (0 without `morningStart`; whole hours that put
+  `world.clockCityId`, the first open airport, at 07:00). Every local reading in the sim (demand profile, curfew, surge
+  hours, weather times, `cityView().localHour`) adds the shift; weeks and days count `world.minute` alone, so each game
+  day and week starts at 07:00 there. In `src/game`: `EndlessRun.clockMinute` = game minute (calendar, timers),
+  `utcMinute` = the sun, `localMinute` = the home clock.
 - **Balance and rules versions**: knobs and their `*_PARAMS_VERSION` in `src/sim/params.ts` (licence knobs in
   `src/sim/licence.ts`), the rules version `RULES_VERSION` in `src/sim/state.ts`.
 - **Renderer**: `world.planes[i]` has `routeId, segment, progress01 (0..10000), direction, phase, load`;

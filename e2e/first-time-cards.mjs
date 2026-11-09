@@ -1,8 +1,9 @@
 // [night-11p] R6a / D-130: the one-time "first time" cards in the real game. The DEV bot plays Endless on a fixed
 // seed through real Commands (weekly boards answered on the real board, one plain card), the clock stepped 30 game
 // minutes at a time; every card that appears is checked (strip on screen, aria-live, a 48 px "OK" that hides it) and
-// dismissed. All five cards must appear (hub 70 % full, airport beyond turboprop range, first curfew night, first
-// weekly board, [night-35a] D-272 first announced demand surge). A second run on the same install replays the same
+// dismissed. All six cards must appear (hub 70 % full, airport beyond turboprop range, first curfew night, first
+// weekly board, [night-35a] D-272 first announced demand surge, [night-86a] D-343 a plain airport at 75 %, its strip
+// appears). A second run on the same install replays the same
 // flight and must show none.
 // EN 412×915 and PL 915×412; fails closed; shots docs/shots/n11p/. The surge card is also shot in the other
 // orientation (the viewport turned while it is up, checked inside the screen too) into docs/shots/gpt02/.
@@ -13,7 +14,7 @@ import { withBrowser, newGamePage, waitForScreen, clickTestId, assert, saveDiagn
 import { E2E_SEEDS } from './seeds.mjs';
 
 const SEED = E2E_SEEDS['first-time-cards'].seeds[0]; // [night-12ac] e2e/seeds.mjs (0xA1A2): reaches week 4 under rules v6: its network has a hub over 70 %, a far airport and curfew nights
-const CARDS = ['hub-full', 'out-of-range', 'curfew', 'weekly-board', 'surge'];
+const CARDS = ['hub-full', 'out-of-range', 'curfew', 'weekly-board', 'surge', 'airport-full']; // [night-86a] D-343 (P-4): + airport-full
 const STEP_TICKS = 30;
 const MAX_TICKS = 4 * 4320;
 const started = performance.now();

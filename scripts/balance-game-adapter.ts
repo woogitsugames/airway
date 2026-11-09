@@ -84,11 +84,13 @@ class GameSession {
   private readonly lastUnder = new Map<string, number>();
 
   constructor(seed: number, mode: 'endless' | 'daily' = 'endless', homeRegion: RegionId | null = null, weeklyContract = false,
-      demandSurge = false, licenceClass: LicenceClass = 1, weatherFront = false) {
+      demandSurge = false, licenceClass: LicenceClass = 1, weatherFront = false, morningStart = BALANCE_MORNING_START) {
     // [night-11aj] R2g: per-region balance check. [night-12ba] R2k: with or without the weekly contract.
     // [night-12bb] R2i: with or without the demand surge. [night-12bc] R2h: per licence class (balance:licences).
     // [night-12bd] R2j: with or without the weather front (balance:weather).
-    this.sim = createGame(seed, mode, undefined, homeRegion, weeklyContract, demandSurge, licenceClass, weatherFront);
+    // [night-86a] D-343: the shipped runs start at local 07:00 at the first airport (morningStart), so the bot does too.
+    this.sim = createGame(seed, mode, undefined, homeRegion, weeklyContract, demandSurge, licenceClass, weatherFront, true,
+      morningStart);
     const start = [...this.sim.world.cities()].map((city) => city.id);
     for (const id of start) this.reachAtOpen.set(id, nearestKm(id, start));
   }
@@ -209,8 +211,14 @@ function nearestKm(id: string, others: readonly string[]): number {
   return best;
 }
 
+/**
+ * [night-86a] D-343: every balance run starts like a shipped run, at local 07:00 at its first airport. Set
+ * `AW_BALANCE_MIDNIGHT=1` to measure the pre-D-343 UTC-midnight start for a comparison.
+ */
+const BALANCE_MORNING_START = process.env.AW_BALANCE_MIDNIGHT !== '1';
+
 export function createBalanceSession(seed: number, mode: 'endless' | 'daily' = 'endless',
     homeRegion: RegionId | null = null, weeklyContract = false, demandSurge = false, licenceClass: LicenceClass = 1,
-    weatherFront = false): GameSession {
-  return new GameSession(seed >>> 0, mode, homeRegion, weeklyContract, demandSurge, licenceClass, weatherFront);
+    weatherFront = false, morningStart = BALANCE_MORNING_START): GameSession {
+  return new GameSession(seed >>> 0, mode, homeRegion, weeklyContract, demandSurge, licenceClass, weatherFront, morningStart);
 }

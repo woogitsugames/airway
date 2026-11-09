@@ -35,7 +35,8 @@ async function test(name: string, fn: () => void | Promise<void>): Promise<void>
 
 /** The balance bot to the end of the run (or `maxTicks`), as test:balance plays it. */
 function botRun(seed: number, mode: 'endless' | 'daily', contract: boolean, surge: boolean, maxTicks = 18_000) {
-  const session = createBalanceSession(seed, mode, null, contract, surge);
+  // [night-86a] D-343: pinned pre-D-343 bot runs, so the UTC-midnight start (new runs: test:morning-start).
+  const session = createBalanceSession(seed, mode, null, contract, surge, 1, false, false);
   for (let i = 0; i < 2000; i++) {
     const snapshot = session.snapshot();
     if (snapshot.status === 'finished' || snapshot.tick >= maxTicks) break;
@@ -97,10 +98,10 @@ await test('Daily, flagless and contract-only Endless: bit-for-bit the pre-R2i b
 
 await test('config: new Endless runs carry the surge; Daily, puzzles and bad values refuse it', () => {
   assert.equal(ENDLESS_DEMAND_SURGE, true);
-  assert.deepEqual(EndlessRun.create(1).sim.config, { mode: 'endless', weeklyContract: true, demandSurge: true });
+  assert.deepEqual(EndlessRun.create(1).sim.config, { mode: 'endless', weeklyContract: true, demandSurge: true, morningStart: true });
   assert.deepEqual(EndlessRun.create(1, 'endless', 'EUN').sim.config,
-    { mode: 'endless', homeRegion: 'EUN', weeklyContract: true, demandSurge: true });
-  assert.deepEqual(EndlessRun.create(1, 'daily').sim.config, { mode: 'daily' });
+    { mode: 'endless', homeRegion: 'EUN', weeklyContract: true, demandSurge: true, morningStart: true });
+  assert.deepEqual(EndlessRun.create(1, 'daily').sim.config, { mode: 'daily', morningStart: true });
   assert.deepEqual(createGame(1).config, { mode: 'endless' }, 'the facade keeps the old default');
   assert.deepEqual(createGame(1, 'endless', undefined, null, false, true).config, { mode: 'endless', demandSurge: true });
   assert.deepEqual(createGame(1, 'daily', undefined, null, true, true).config, { mode: 'daily' }, 'the facade drops it for Daily');

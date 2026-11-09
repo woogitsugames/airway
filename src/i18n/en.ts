@@ -636,6 +636,10 @@ export const en = {
   // [night-35a] D-272: the first announced demand surge (pennant on the airport's tag, D-249).
   'firstTime.step.surge': 'ATC / SURGE',
   'firstTime.tag.surge': '{airport} · +{count} {time}',
+  // [night-86a] D-343 (P-4): the first plain airport whose “Airport” strip appears (75 % of its waiting places).
+  'firstTime.step.airportFull': 'ATC / AIRPORT',
+  'firstTime.tag.airportFull': '{airport} · {waiting}/{capacity}',
+  'firstTime.hint.airportFull': 'A jam at a plain airport ends the run too, so from three-quarters full {airport} gets its own “Airport” strip.',
   'firstTime.hint.surge': 'Surge at {airport}: +{count} {count|passenger|passengers} from {time} local. Hollow pennant: announced; filled: under way. Add seats or a plane on its routes.',
   'action.save': 'Save flight',
   'action.menu': 'Main menu',

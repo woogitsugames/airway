@@ -6,17 +6,19 @@
 // tick 5692 in the re-simulation (`test:undo` pins it headless): it must be refused — the ATC strip names the airport
 // and the time, the game screen stays up, the hash, tick and pick are unchanged and Undo stays enabled (canUndo does
 // not pre-simulate). Before N60a the second tap ended the run (the N58a suite `undo-ends-run` checked the report).
+// [night-86a] D-343: runs start at local 07:00 since, so the repro is seed 42022 (Asia): the second tap would jam TAS
+// at tick 5600.
 // Stub only (`test:e2e:undo-refused-jam:stub`): the frozen clock keeps the hash comparable across the tap.
 import { performance } from 'node:perf_hooks';
 import { withBrowser, newGamePage, waitForScreen, state, assert, clickTestId, saveDiagnostics, gameUrl, assertRender, RENDER } from './browser.mjs';
 
-const SEED = 42041;
+const SEED = 42022;
 const REGION = 'ASI';
 const started = performance.now();
 const results = [];
 const CASES = [['en', 412, 915], ['pl', 915, 412]];
 if (RENDER !== 'stub') throw new Error('undo-refused-jam needs --render=stub (a frozen clock); use test:e2e:undo-refused-jam:stub');
-const NOTICE = { en: /^Can’t undo — DEL would jam at \d\d:\d\d$/, pl: /^Nie da się cofnąć — DEL zapchałoby się o \d\d:\d\d$/ };
+const NOTICE = { en: /^Can’t undo — TAS would jam at \d\d:\d\d$/, pl: /^Nie da się cofnąć — TAS zapchałoby się o \d\d:\d\d$/ };
 
 /** The bot at autoplay's cadence (a decision every 30 game minutes) through window.aw until `target` or a board. */
 const play = (page, target) => page.evaluate(async (t) => {

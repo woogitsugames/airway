@@ -6,7 +6,8 @@ import {
   createGame, PLANE_TYPES, TICKS_PER_SECOND_1X, TICKS_PER_WEEK,
   type Command, type CommandEntry, type GameMode, type LicenceClass, type SimEvent, type UpgradeKind, type WeeklyUpgradeState,
 } from '../sim';
-import type { Sim } from '../sim';
+import { Sim } from '../sim';
+import { DAILY_CONFIG } from '../net/submission'; // [night-86a] D-343
 import type { HubPressure } from '../sim/upgrades';
 import type { SlotPressure } from '../ui/upgrade/cards'; // [task-32]
 import type { ContractBoard, WeekFigures } from '../ui/upgrade/cards'; // [night-12ba] R2k; [night-76a] D-331
@@ -33,6 +34,12 @@ export const ENDLESS_DEMAND_SURGE = true;
  * query switch (`?weather=front`, src/main.ts), tests and the balance bot turn it on per run.
  */
 export const ENDLESS_WEATHER_FRONT = false;
+/**
+ * [night-86a] D-343 (P-3): every new Endless and Daily run starts at local 07:00 at its first airport (the sim's
+ * `GameConfig.morningStart`); older saves keep their UTC-midnight start. The Daily leaderboard replay
+ * (src/net/submission.ts `DAILY_CONFIG`) uses the same flag, so it is not a per-run choice.
+ */
+export const RUN_MORNING_START = true;
 export type RunCommand = Command;
 export type JournalEntry = CommandEntry;
 
@@ -116,8 +123,10 @@ export class EndlessRun {
   private closedWeek: { readonly passengers: number; readonly transfers: number } | null = null;
 
   constructor(readonly sim: Sim) {
-    const home = sim.world.activeCityIds()[0];
-    this.homeOffsetMinutes = Math.round((home ? cityByCode(home)?.utcOffsetH ?? 0 : 0) * 60);
+    // [night-86a] D-343: the sim's clock airport (the first open airport at minute 0, stable after a restore) and
+    // its clock shift, so the boarding pass of a morning-start run opens at 07:00.
+    const home = sim.world.clockCityId;
+    this.homeOffsetMinutes = Math.round((home ? cityByCode(home)?.utcOffsetH ?? 0 : 0) * 60) + sim.world.clockShift;
     this.tally = { startScore: sim.world.score, transfers: 0, whole: sim.tickCount === 0 };
   }
 
@@ -142,9 +151,10 @@ export class EndlessRun {
    */
   static create(seed: number, mode: GameMode = 'endless', homeRegion: RegionId | null = null,
       licenceClass: LicenceClass = 1, weatherFront = ENDLESS_WEATHER_FRONT, eusClusterV2 = true): EndlessRun {
-    return mode === 'daily' ? new EndlessRun(createGame(seed, 'daily'))
+    return mode === 'daily'
+      ? new EndlessRun(new Sim(seed >>> 0, DAILY_CONFIG))
       : new EndlessRun(createGame(seed, 'endless', undefined, homeRegion, ENDLESS_WEEKLY_CONTRACT, ENDLESS_DEMAND_SURGE,
-        licenceClass, weatherFront, eusClusterV2));
+        licenceClass, weatherFront, eusClusterV2, RUN_MORNING_START));
   }
 
   get seed(): number { return this.sim.seed; }
@@ -156,8 +166,13 @@ export class EndlessRun {
   /** [night-12bd] R2j: does this run carry the weather front (never in shipped Endless or Daily)? */
   get weatherFront(): boolean { return this.sim.config.weatherFront === true; }
   get tick(): number { return this.sim.tickCount; }
-  /** UTC world minute: drives the sun and terminator. */
+  /**
+   * Game minute since the run began: weeks, days and hourly UI timers count it. Not UTC since D-343: the sun and
+   * terminator read `utcMinute`.
+   */
   get clockMinute(): number { return this.sim.world.minute; }
+  /** [night-86a] D-343: UTC minute (game minute + the run's clock shift): drives the sun and terminator. */
+  get utcMinute(): number { return this.sim.world.minute + this.sim.world.clockShift; }
   /** Wall-clock minute at the home airport, for the boarding pass. */
   get localMinute(): number { return this.sim.world.minute + this.homeOffsetMinutes; }
   /** Authoritative tick at which the next weekly board opens (the calendar stops while it is open). */

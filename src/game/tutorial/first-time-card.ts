@@ -31,6 +31,7 @@ const STEP_KEYS = {
   curfew: 'firstTime.step.curfew',
   'weekly-board': 'firstTime.step.weeklyBoard',
   surge: 'firstTime.step.surge', // [night-35a] D-272
+  'airport-full': 'firstTime.step.airportFull', // [night-86a] D-343 (P-4)
 } as const;
 
 /** [night-35a] D-272: `onShow` runs once when a card appears (the surge card's one-time sound). */

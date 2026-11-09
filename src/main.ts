@@ -626,7 +626,7 @@ async function boot(): Promise<void> {
     const ticksToSun = (hourAngle: number): number => {
       const sunLon = world!.orbit.longitudeDeg + hourAngle;
       const minuteOfDay = ((180 - sunLon) * 4 % 1440 + 1440) % 1440;
-      return Math.round((minuteOfDay - (run.clockMinute % 1440) + 1440) % 1440);
+      return Math.round((minuteOfDay - (run.utcMinute % 1440) + 1440) % 1440);
     };
     /**
      * [task-40] Ticks until the sun elevation over the network centroid (spherical mean of the open airports,
@@ -648,7 +648,7 @@ async function boot(): Promise<void> {
       const hourAngle = -Math.acos(Math.max(-1, Math.min(1, cos))) / DEG;
       const minuteOfDay = ((180 - (lon + hourAngle)) * 4 % 1440 + 1440) % 1440;
       return {
-        ticks: Math.round((minuteOfDay - (run.clockMinute % 1440) + 1440) % 1440),
+        ticks: Math.round((minuteOfDay - (run.utcMinute % 1440) + 1440) % 1440),
         label: `${hourAngle.toFixed(1)}@${lon.toFixed(1)},${(lat / DEG).toFixed(1)}`,
       };
     };

@@ -2,8 +2,10 @@
 import assert from 'node:assert/strict';
 import {
   FIRST_TIME_CARDS, FIRST_TIME_KEY, FIRST_TIME_VERSION, FirstTimeRegistry, LEGACY_SLOT_KEY, beyondRange, curfewAirport,
-  fillingHub, surgeAnnouncement,
+  fillingHub, surgeAnnouncement, AirportStripGate, AIRPORT_STRIP_HIDE_SHARE, AIRPORT_STRIP_SHOW_SHARE, fillingAirport,
 } from '../src/game/tutorial/first-time.ts';
+import { en } from '../src/i18n/en.ts';
+import { pl } from '../src/i18n/pl.ts';
 import { clearFirstTimeCards } from '../src/game/tutorial/first-time.ts';
 import { createBalanceSession } from './balance-game-adapter.ts';
 import { chooseBotAction } from './bot.ts';
@@ -144,6 +146,39 @@ await test('surge trigger in real play: the bot\'s Endless run announces one; th
   assert.ok(endless, 'Endless: a surge is announced within 18 000 ticks');
   assert.equal(endless.announced.active, false);
   assert.equal(play('daily'), null, 'Daily: never');
+});
+// [night-86a] D-343 (P-4): a plain airport's strip from 75 % (kept down to 60 %), and its one-time card.
+await test('airport strip: hubs and jams always; a plain airport from 3/4 of its places, kept until below 60 %', () => {
+  assert.equal(AIRPORT_STRIP_SHOW_SHARE, 0.75);
+  assert.equal(AIRPORT_STRIP_HIDE_SHARE, 0.6);
+  const gate = new AirportStripGate();
+  const at = (waiting: number, hub = false, jammed = false) => gate.shows({ id: 'CHI', hub, waiting, capacity: 24 }, jammed);
+  assert.equal(at(17), false, '17/24 = 71 %: no strip yet');
+  assert.equal(at(18), true, '18/24 = 75 %: the strip appears');
+  assert.equal(at(15), true, '15/24 = 62.5 %: kept (no flicker at the line)');
+  assert.equal(at(14), false, '14/24 = 58 %: gone');
+  assert.equal(at(17), false, 'and back only at 75 %');
+  assert.equal(at(0, true), true, 'a hub always has its strip');
+  assert.equal(at(3, false, true), true, 'a jammed airport always has its strip');
+  assert.equal(gate.shows({ id: 'X', hub: false, waiting: 0, capacity: 0 }, false), false, 'no places: no strip');
+});
+await test('airport card: the fullest plain airport at 75 %, never a hub; a new id, unseen on older installs; PL/EN one sentence', () => {
+  assert.ok((FIRST_TIME_CARDS as readonly string[]).includes('airport-full'));
+  const cities = [
+    { id: 'HUB', hub: true, waiting: 36, capacity: 36 }, { id: 'CHI', hub: false, waiting: 18, capacity: 24 },
+    { id: 'NYC', hub: false, waiting: 20, capacity: 24 }, { id: 'MEX', hub: false, waiting: 17, capacity: 24 },
+  ];
+  assert.equal(fillingAirport(cities)?.id, 'NYC');
+  assert.equal(fillingAirport(cities.filter((c) => c.id !== 'NYC' && c.id !== 'CHI')), null);
+  const old = JSON.stringify({ v: 1, seen: ['hub-full', 'out-of-range', 'curfew', 'weekly-board', 'surge'] });
+  assert.equal(new FirstTimeRegistry(memory({ [FIRST_TIME_KEY]: old })).seen('airport-full'), false);
+  for (const [lang, catalog, label] of [['en', en, '“Airport”'], ['pl', pl, '„Lotn.”']] as const) {
+    const hint = catalog['firstTime.hint.airportFull'];
+    assert.ok(hint.includes('{airport}') && hint.includes(label), `${lang}: names the airport and the strip`);
+    assert.equal(hint.split(/[.!?](\s|$)/).filter((part) => part && part.trim().length > 1).length, 1, `${lang}: one sentence`);
+  }
+  assert.equal(pl['board.strip.airport'], 'Lotn.');
+  assert.equal(en['board.strip.airport'], 'Airport');
 });
 console.log(`SUMMARY test:first-time seed=0xA1A1 passed=${passed} failed=${failed}`);
 if (failed) process.exitCode = 1;
