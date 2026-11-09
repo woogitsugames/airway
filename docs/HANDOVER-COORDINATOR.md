@@ -1,3 +1,9 @@
+# STAN NA 9.11 wieczór (po U7)
+
+- dev = main = be6bb70 (+ #377 U7, D-339: zrzuty/grafika/film/strona/opisy pod nowy wygląd; store:shots naprawione). Pełny test:ci na 0b878c4: 97/99; padły store:shots (naprawione w U7) i test:e2e:keyboard-mouse (hover 915×412 pod obciążeniem; 2x zielony osobno: flaky, obserwować).
+- Do zrobienia przez właściciela: wgrać 6 MP4 (manifest w docs/store/video) na Dysk gry/AirWay; native review opisów DE/FR/ES/PT-BR; Krym = bez linii przez Perekop (tymczasowo; sprawdzić w kodzie borders).
+- CLAUDE.md na dev: liczby kroków (121 / 99) do poprawy w następnym PR.
+
 # STAN NA 9.11 (po T6+R5, R6, T7)
 
 - dev = main = 0b878c4 (PR #374 T6+R5 D-336, #375 R6 D-337, #376 T7 D-338). Nowy wygląd (globus NASA + UI-A, emalia) jest domyślny; Linoryt usunięty. test:fast 121 kroków, test:ci 99, CSS 195,4 kB (budżet 198,4).
