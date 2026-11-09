@@ -11,9 +11,11 @@
   inset: 0; padding: 0; display: block; overflow: hidden; background: none; box-shadow: none;
 }
 :root[data-skin="board"] body .airway-upgrade-host.airway-upgrade-open.is-picking-hub { pointer-events: none; }
-/* The week board takes the HUD's place; the airport signs come back for the pick (the player needs the codes). */
-:root[data-skin="board"]:has(.bw-sheet[data-mode="crates"]) :is(.airway-hud, .airport-overlay),
-:root[data-skin="board"]:has(.bw-sheet[data-mode^="pick"]) .airway-hud { visibility: hidden; }
+/* The week board takes the HUD's place; the airport signs come back for the pick (the player needs the codes).
+   [night-80a] D-335: T3's bay of hub strips is part of that HUD: it sits beside
+   `.airway-hud` on the layer, so it is hidden with it, or it would show through the board and between the strips. */
+:root[data-skin="board"]:has(.bw-sheet[data-mode="crates"]) :is(.airway-hud, .airport-overlay, .airway-strip-bay),
+:root[data-skin="board"]:has(.bw-sheet[data-mode^="pick"]) :is(.airway-hud, .airway-strip-bay) { visibility: hidden; }
 
 :root[data-skin="board"] .bw-sheet {
   --bd-ts: var(--airway-text-scale, 1);

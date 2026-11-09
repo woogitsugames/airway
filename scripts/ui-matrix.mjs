@@ -5,7 +5,7 @@ import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import {
-  withBrowser, newGamePage, waitForScreen, state, assert, clickTestId, ROOT, ARTIFACTS, SEED, RENDER, gameUrl, assertRender,
+  withBrowser, newGamePage, waitForScreen, state, assert, clickTestId, ROOT, ARTIFACTS, SEED, RENDER, SKIN, gameUrl, assertRender,
 } from '../e2e/browser.mjs';
 
 const fixture = process.argv.includes('--fixture');
@@ -31,6 +31,14 @@ const WEEK_SEED = SEED;
 const stub = !fixture && RENDER === 'stub';
 const outdir = resolve(ROOT, fixture ? 'docs/shots/matrix-fixture' : stub ? '.e2e/matrix-stub' : 'docs/shots/matrix');
 const shotLabel = fixture ? 'matrix-fixture' : stub ? '.e2e/matrix-stub' : 'matrix';
+// [night-80a] D-335: the parts of the weekly board and the report checked against the boarding pass, and the element that
+// must not scroll, per skin (`--skin=board`: the UI-A week sheet of D-331, which scrolls only at text 130/150 %).
+const BOARD = SKIN === 'board';
+const MATRIX_PARTS = {
+  upgrade: BOARD ? '.bw-board, .bw-slip, .bw-pick, .bw-take' : '.airway-upgrade-sign, .airway-upgrade-tag',
+  gameover: '.airway-go-sign, .airway-go-board, .airway-go-strip, .airway-go-button',
+};
+const MATRIX_SCROLLER = { upgrade: BOARD ? '.bw-sheet' : '.airway-upgrade-open', gameover: '.airway-go-overlay' };
 const expected = sizes.length * screens.length * 2;
 const failures = [];
 let captured = 0;
@@ -54,6 +62,8 @@ async function enter(page, screen) {
     const option = await page.evaluate(() => document.querySelector(
       '[data-testid^="upgrade-option-"]:not([data-upgrade="hub-expansion"]):not([data-upgrade="departure-slots"])') /* [task-32] targeted picks wait for a globe tap */?.getAttribute('data-testid') ?? 'upgrade-option-0');
     await clickTestId(page, option);
+    // [night-80a] D-335: on the UI-A week sheet (D-331) a tap only chooses the strip; the main action takes it.
+    if (BOARD) await clickTestId(page, 'upgrade-take');
     await waitForScreen(page, 'game');
     await page.evaluate(() => window.aw.forceHubOverload());
   }
@@ -96,22 +106,31 @@ try {
               if (screen === 'upgrade' || screen === 'gameover') {
                 // [night-07n/07p] The weekly board and the game-over report must not cover the boarding pass
                 // (week/day/time/passengers) nor scroll.
+                // [night-80a] D-335: the UI-A week board (`--skin=board`, D-331) takes the HUD's place while it is open
+                // (mockup ui-a-koniec-tygodnia.png): its parts are `.bw-*`, a pass hidden with the whole HUD
+                // (visibility) counts as replaced, not covered, and every HUD panel still on screen (the pass, T3's
+                // bay of hub strips) is checked against every part.
                 const hit = await page.evaluate((selector) => {
-                  const pass = document.querySelector('.airway-pass')?.getBoundingClientRect();
+                  const passEl = document.querySelector('.airway-pass');
                   const parts = [...document.querySelectorAll(selector)];
-                  if (!pass || parts.length < 2) return 'missing .airway-pass or the board';
-                  for (const part of parts) {
-                    const r = part.getBoundingClientRect();
-                    if (r.left < pass.right && pass.left < r.right && r.top < pass.bottom && pass.top < r.bottom) {
-                      return `${part.className} ${Math.round(r.left)},${Math.round(r.top)} covers pass ..${Math.round(pass.right)},${Math.round(pass.bottom)}`;
+                  if (!passEl || parts.length < 2) return `missing .airway-pass or the board (${selector})`;
+                  const shown = (el) => el.checkVisibility({ visibilityProperty: true, opacityProperty: true });
+                  const board = document.documentElement.dataset.skin === 'board';
+                  const panels = board ? [passEl, ...document.querySelectorAll('.airway-strip-bay')].filter(shown) : [passEl];
+                  for (const panel of panels) {
+                    const pass = panel.getBoundingClientRect();
+                    for (const part of parts) {
+                      const r = part.getBoundingClientRect();
+                      if (r.left < pass.right && pass.left < r.right && r.top < pass.bottom && pass.top < r.bottom) {
+                        return `${part.className} ${Math.round(r.left)},${Math.round(r.top)} covers ${panel.className.split(' ')[0]} ..${Math.round(pass.right)},${Math.round(pass.bottom)}`;
+                      }
                     }
                   }
                   return '';
-                }, screen === 'upgrade' ? '.airway-upgrade-sign, .airway-upgrade-tag'
-                  : '.airway-go-sign, .airway-go-board, .airway-go-strip, .airway-go-button');
+                }, MATRIX_PARTS[screen]);
                 assert(!hit, `${screen} overlaps HUD: ${hit}`);
                 const bottom = await page.evaluate((selector) => document.querySelector(selector)?.scrollHeight ?? 0,
-                  screen === 'upgrade' ? '.airway-upgrade-open' : '.airway-go-overlay');
+                  MATRIX_SCROLLER[screen]);
                 assert(bottom <= height + 1, `${screen} scrolls: ${bottom} > ${height}`);
               }
               const filename = `${screen}-${language}-${width}x${height}${dpr > 1 ? '@' + dpr : ''}.png`;

@@ -433,20 +433,31 @@
   font: 600 calc(13px * var(--airway-text-scale))/1.35 var(--board-mono); box-shadow: none;
 }
 :root[data-skin="board"] .bd-menu .airway-notice[hidden] { display: none; }
-/* Short phones: the hints step back where the board would push the sign off the screen. */
-@media (orientation: portrait) and (max-height: 600px) {
-  :root[data-skin="board"] .bd-menu { gap: 8px; padding-top: calc(var(--aw-safe-top) + 10px); }
-  :root[data-skin="board"] .bd-menu .airway-flight.bd-row { min-height: 52px; padding-top: 6px; padding-bottom: 6px; }
+/* Short phones: the hints step back where the board would push the sign off the screen.
+   [night-80a] D-335: up to 700 px tall (360×640, 320×568) the board packs tighter so the night globe keeps a disc
+   between the tagline and the board (frame ≥ 160 px at 360×640, ≥ 110 px at 320×568; R4 framed only a horizon there):
+   compact rows (the hints go, every row still ≥ 48 px), a lower board head, smaller title tiles and gaps, a shorter sign.
+   Up to 600 px the tagline steps back too. Text 130/150 % keeps the sizes in `calc(* scale)`; the menu scrolls there. */
+@media (orientation: portrait) and (max-height: 700px) {
+  :root[data-skin="board"] .bd-menu { gap: 6px; padding-top: calc(var(--aw-safe-top) + 10px); }
+  :root[data-skin="board"] .bd-menu__head { gap: 6px; }
+  :root[data-skin="board"] .bd-menu .airway-flight.bd-row { min-height: 48px; padding-top: 4px; padding-bottom: 4px; }
   :root[data-skin="board"] .bd-row .bd-item__sub { display: none; }
+  :root[data-skin="board"] .bd-list__head { padding-top: 6px; padding-bottom: 6px; }
   :root[data-skin="board"] .bd-menu__title { --bd-th: 46px; --bd-tw: 36px; }
-  :root[data-skin="board"] .bd-go { min-height: 64px; }
+  :root[data-skin="board"] .bd-menu__go { gap: 6px; }
+  :root[data-skin="board"] .airway-flight.bd-go { min-height: 56px; padding-top: 8px; padding-bottom: 8px; }
+}
+@media (orientation: portrait) and (max-height: 600px) {
+  :root[data-skin="board"] .bd-menu__tagline { display: none; }
+  :root[data-skin="board"] .bd-menu__title { --bd-th: 42px; --bd-tw: 33px; }
 }
 /* Landscape (phones, tablets, desktop): title and globe on the left, the board and the sign in a column on the right; the
    choices under the globe at the left thumb. */
 @media (orientation: landscape) {
   :root[data-skin="board"] .airway-menu.bd-menu {
-    display: grid; grid-template-columns: minmax(0, 1fr) min(430px, 54%); grid-template-rows: auto minmax(0, 1fr) auto;
-    grid-template-areas: 'head board' 'globe board' 'options go'; column-gap: 16px; row-gap: 8px;
+    display: grid; grid-template-columns: minmax(0, 1fr) min(430px, 54%); grid-template-rows: auto minmax(0, 1fr) auto auto;
+    grid-template-areas: 'head board' 'globe board' 'globe options' 'globe go'; column-gap: 16px; row-gap: 8px;
     padding-top: calc(var(--aw-safe-top) + 10px); padding-bottom: calc(var(--aw-safe-bottom) + 10px);
   }
   :root[data-skin="board"] .bd-menu__head { grid-area: head; }
@@ -454,7 +465,9 @@
   :root[data-skin="board"] .bd-menu .bd-menu__globe { grid-area: globe; }
   :root[data-skin="board"] .bd-menu .airway-board { grid-area: board; overflow-y: auto; overscroll-behavior: contain; align-self: start; max-height: 100%; }
   :root[data-skin="board"] .bd-menu__go { display: contents; }
-  :root[data-skin="board"] .bd-menu__options { grid-area: options; justify-content: flex-start; align-self: end; justify-self: start; }
+  /* [night-80a] D-335: the home-region and licence choices stand in the right column over the sign (the board's side,
+     at the right thumb), so they no longer cover the foot of the globe, which R4 lets run behind the bottom edge. */
+  :root[data-skin="board"] .bd-menu__options { grid-area: options; justify-content: flex-end; align-self: end; justify-self: end; }
   :root[data-skin="board"] .bd-menu__go > .bd-go { grid-area: go; }
   :root[data-skin="board"] .bd-menu .airway-notice { grid-area: head; align-self: end; }
 }
@@ -467,6 +480,17 @@
 @media (orientation: landscape) and (max-height: 459px) {
   :root[data-skin="board"] .bd-row .bd-item__sub { display: none; }
   :root[data-skin="board"] .bd-menu__tagline { display: none; }
+  /* [night-80a] D-335: compact rows (≥ 48 px) so the choices fit between the board and the sign. */
+  :root[data-skin="board"] .bd-menu .airway-flight.bd-row { min-height: 48px; padding-top: 4px; padding-bottom: 4px; }
+  :root[data-skin="board"] .bd-list__head { padding-top: 6px; padding-bottom: 6px; }
+}
+/* [night-80a] D-335: where even the compact board leaves no room for them in its column (640×360), the choices stand
+   under the title, over the globe's frame (the frame starts under them, so they never cover the disc). */
+@media (orientation: landscape) and (max-height: 379px) {
+  :root[data-skin="board"] .airway-menu.bd-menu {
+    grid-template-rows: auto auto minmax(0, 1fr) auto; grid-template-areas: 'head board' 'options board' 'globe board' 'globe go';
+  }
+  :root[data-skin="board"] .bd-menu__options { align-self: start; justify-self: start; justify-content: flex-start; }
 }
 /* Foldables and tablets: the phone column, centred. */
 @media (orientation: portrait) and (min-width: 600px) {
@@ -508,6 +532,9 @@
 }
 
 /* ---- Report: a teleprinter roll over the frozen map, the actions on the console under it ------------------------------ */
+/* [night-80a] D-335: the roll and the console take the screen; T3's bay of hub strips (a HUD panel on the layer, above the
+   scrim) would show through beside and under the roll, so it is hidden with the report (it comes back on the map view). */
+:root[data-skin="board"]:has(.airway-go-overlay.bd-report:not(.is-map)) .airway-strip-bay { visibility: hidden; }
 :root[data-skin="board"] .airway-go-overlay.bd-report:not(.is-map) {
   display: flex; justify-content: center; align-items: stretch; overflow: hidden; background: var(--board-scrim); box-shadow: none;
   padding: calc(var(--aw-safe-top) + 10px) calc(var(--aw-safe-right) + 8px) calc(var(--aw-safe-bottom) + 8px) calc(var(--aw-safe-left) + 8px);

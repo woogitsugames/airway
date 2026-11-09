@@ -4083,3 +4083,40 @@ inside 1,180 / 360; `dist/` 2,020.0 → 2,883.8 kB (+864 kB), inside `total` 4,3
 release imports), `test:menu-clear` (+1 `frameTilt`), `test:globe-assets`, `test:bundle`, new manual
 `test:e2e:menu-globe` / `shots:r4` (real renderer, `docs/shots/r4/`).
 **Status:** preview; the owner sees it with T5 (plan §7 gate before the flip). R5 sets `DEFAULT_GLOBE_LOOK = 'earth'`.
+
+## D-335 — UI-A preview fixes after T4/T5/R4: the week sheet and the report hide T3's strip bay, a tighter menu board on short phones, the Endless choices off the landscape globe, `ui:matrix:board:stub` in `test:ci` (2026-11-09, Claude, night 80a)
+Follow-up of D-331 (T4), D-332 (T5) and D-334 (R4), seen in the DEV `?skin=board&look=earth` preview. Nothing the release
+ships changes (every rule is scoped to `:root[data-skin="board"]`; release CSS byte-identical).
+**(1) Week sheet "overlaps HUD" (24 failures).** `npm run ui:matrix:stub -- --skin=board` failed all 24 week boards (PL/EN
+× 12 sizes) with "missing .airway-pass or the board": the check looked only for the shipped crate labels
+(`.airway-upgrade-sign/-tag`), which the D-331 sheet replaces, and the run then stopped before the report (48/96 shots).
+With the sheet's own parts (`.bw-board/.bw-slip/.bw-pick/.bw-take`) the check found the real fault: T3's bay of hub
+strips (`.airway-strip-bay`, D-330) sits beside `.airway-hud` on the layer, so hiding the HUD did not hide it, and it
+showed through the board and between the strips on every size (portrait over the strips, landscape behind the board),
+and beside the T5 report roll. Fix: `board-week.css` hides the bay with the HUD while the sheet is open (strips and the
+airport pick), `board.css` hides it under the report (it returns on the report's map view). `scripts/ui-matrix.mjs` with
+`--skin=board`: the sheet's parts; a HUD hidden as a whole counts as replaced (the mockup), every HUD panel still visible
+(the pass, the bay) must clear every part; the sheet `.bw-sheet` must not scroll at 100 %; a strip is taken through the
+main action `upgrade-take` (a tap only chooses, D-331). Result 96/96. New `npm run ui:matrix:board:stub` (~40 s) runs it in
+`test:ci`.
+**(2) Menu on short phones and landscape.** R4 framed only a horizon at 320×568 (frame 52 px) and 360×640 (41 px). Up to
+700 px tall in portrait the board packs tighter: rows without the hints, 48 px tall (the target floor), a lower board
+head, title tiles 46 px, gaps 6 px, the sign 56 px; up to 600 px the tagline steps back and the tiles are 42 px. Frames:
+320×568 52 → 125 px, 360×640 41 → 167 px (130 %: 110–117 and 156; 150 %: 99–109 and 145, the menu does not scroll). The
+board's names, gates and ends, the date and the sign stay; only the hints (the shipped subtitles) go. Landscape: the
+home-region and licence choices move from under the globe (915×412: they covered the disc's foot, which R4 lets run
+behind the bottom edge) to the board's column over the sign, at the right thumb; on landscape pages up to 459 px tall the
+board rows are compact (48 px) so they fit; up to 379 px tall (640×360, 568×320) there is no room in that column, so the
+choices stand under the title, above the globe's frame (R4 frames the disc under them). `test:e2e:board-sheets:stub` now
+asserts the frame (≥ 160 px at 360×640, ≥ 110 px at 320×568, text 100 %) and that the choices never meet the globe's frame
+column in landscape (it fails on dev 31d3e9e: 52 / 41 px, the choices at 10,354 on 915×412). Shots on the real renderer:
+`npm run shots:board:t5b` → `docs/shots/t5b/` (PL/EN 320×568, 360×640, 915×412, 640×360). `docs/shots/t5/` and
+`docs/shots/r4/` keep the old menus until their next run.
+**(3) T2: the Athens sign over the Peloponnese — not done.** A keep-out area around hubs would have to enter the shipped
+layout engine (src/ui/overlay-layout.ts, D-262…D-268, D-280, D-281) as new fixed obstacles: every note's search, the
+"clearly its own" test (D-264) and the compact/hide passes would then see them, so notes near hubs would move, turn
+compact or hide in the preview, and the engine has no notion of "land under a sign" to make such an area small and
+exact. That is a change of the engine's behaviour, which this step was not to make. Left for the owner: either accept
+that a sign covers some coast (the sign is level with its airport by design), or a separate task that gives the engine
+a geographic keep-out with its own tests.
+**Status:** preview; the owner sees it with T4/T5 (plan §7 gate before the flip).

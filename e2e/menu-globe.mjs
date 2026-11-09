@@ -15,9 +15,12 @@ import { performance } from 'node:perf_hooks';
 import { withBrowser, newGamePage, waitForScreen, ROOT, ARTIFACTS, SEED } from './browser.mjs';
 
 const started = performance.now();
-const SHOTS = process.argv.includes('--shots');
-const OUT = SHOTS ? resolve(ROOT, 'docs/shots/r4') : resolve(ARTIFACTS, 'menu-globe');
-const SIZES = SHOTS ? [[320, 568], [412, 915], [915, 412], [768, 1024]]
+// [night-80a] D-335: `--t5b` (`npm run shots:board:t5b`) writes the short phones and landscape of the tighter menu board
+// (PL/EN 320×568, 360×640, 915×412, 640×360) to docs/shots/t5b/.
+const T5B = process.argv.includes('--t5b');
+const SHOTS = T5B || process.argv.includes('--shots');
+const OUT = T5B ? resolve(ROOT, 'docs/shots/t5b') : SHOTS ? resolve(ROOT, 'docs/shots/r4') : resolve(ARTIFACTS, 'menu-globe');
+const SIZES = T5B ? [[320, 568], [360, 640], [915, 412], [640, 360]] : SHOTS ? [[320, 568], [412, 915], [915, 412], [768, 1024]]
   : [[320, 568], [360, 640], [412, 915], [390, 844], [915, 412], [640, 360], [768, 1024]];
 const langs = process.argv.includes('--pl') ? ['pl'] : process.argv.includes('--en') ? ['en'] : ['pl', 'en'];
 const failures = [];
