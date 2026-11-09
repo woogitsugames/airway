@@ -7,7 +7,9 @@
 //   - menu: the title AIRWAY on flap tiles (aria-hidden) with the app title as the heading's name; the board
 //     "ODLOTY · WYBIERZ" with the date and its rows Today, Puzzles, Logbook, Settings in that order; the run-starting row
 //     (Endless) is the one yellow sign, in the lower third (thumb reach), under the board; its home-region choice stays
-//     reachable; the globe frame [data-globe-frame] is there for R4;
+//     reachable; the globe frame [data-globe-frame] is there for R4; [night-80a] D-335: at 100 % the frame is ≥ 160 px
+//     on 360×640 and ≥ 110 px on 320×568 (a disc, not a horizon), and in landscape the Endless choices stand in the
+//     board's column (640×360: under the title, above the frame), never over the globe's frame;
 //   - pause: the console sheet, Resume the yellow sign, the summary on strip paper;
 //   - report: the print-out on paper with the head, the closed hub, the queue glyphs (one per waiting passenger, up to
 //     the per-direction cap), the figures, the weeks table once loaded, the stamp field with "ZATOR"/"JAM" and the hub
@@ -119,6 +121,20 @@ async function menuAudit(page) {
     if (region) {
       const rr = region.getBoundingClientRect();
       if (rr.height < 47.5 || rr.bottom > innerHeight || rr.top < 0) problems.push('home-region choice not reachable');
+    }
+    // [night-80a] D-335: the globe keeps a disc on short phones (R4 showed only a horizon in a 41–52 px frame) and, in
+    // landscape, the Endless choices stay off the globe's frame (the board's column; on 640×360 above the frame).
+    const frame = menu.querySelector('[data-globe-frame="menu"]').getBoundingClientRect();
+    const scale = document.documentElement.dataset.airwayTextScale ?? '100';
+    const portrait = innerHeight > innerWidth;
+    const minFrame = scale !== '100' || !portrait ? 0 : innerWidth <= 330 ? 110 : innerHeight <= 700 ? 160 : 0;
+    if (frame.height < minFrame) problems.push(`globe frame ${frame.height.toFixed(0)} px < ${minFrame}`);
+    const options = menu.querySelector('.bd-menu__options');
+    if (options && innerWidth > innerHeight) {
+      const o = options.getBoundingClientRect();
+      // R4 lets the disc run behind the bottom edge in landscape, so the frame's column counts down to the screen's foot.
+      const meets = o.left < frame.right - 0.5 && frame.left < o.right - 0.5 && o.top < innerHeight - 0.5 && frame.top < o.bottom - 0.5;
+      if (o.width && meets) problems.push(`Endless choices over the globe frame (${o.left.toFixed(0)},${o.top.toFixed(0)})`);
     }
     return problems;
   });
