@@ -29,7 +29,6 @@ let shots = 0;
 
 function menuUrl(url) {
   const target = new URL(url);
-  target.searchParams.set('skin', 'board');
   target.searchParams.set('look', 'earth');
   return target.href;
 }

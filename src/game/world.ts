@@ -10,26 +10,24 @@ import {
   globeFrameFraming, menuSunTick, DEFAULT_GLOBE_LOOK,
 } from '../render'; // [task-34] [task-39] menuSpinRate; [night-79a R4] globeFrameFraming, menuSunTick
 import { cityByCode } from '../data'; // [task-34]
-import { frameTilt, indexFraming, menuNetworkClashes, menuTilt, type ClearRect } from './menu-clear'; // [night-16a] D-262; [night-29b] U4; [night-79a R4]
+import { frameTilt, menuNetworkClashes, menuTilt, type ClearRect } from './menu-clear'; // [night-16a] D-262; [night-79a R4]
 import { t } from '../i18n'; // [night-11h]
 import { forgetAdaptiveSteps, readAdaptiveSteps, writeAdaptiveSteps } from './adaptiveMemory'; // [night-07b]
 import { reducedMotion } from '../ui/motion'; // [night-11g] D-88
 import type { GlobeLook } from '../render/globe';
 
 /**
- * [ext-04 E4] D-285: the Linoryt print is the shipped look; `?look=linoryt` is accepted for old links.
- * [night-70a R1] D-323/D-325: `?look=earth` previews the NASA globe, and so does the UI-A preview `?skin=board` unless
- * `?look=linoryt` asks for the print (DEV only; the caller passes nothing in a release).
+ * [ext-04 E4] D-285; [night-70a R1] D-325; [night-81a] D-336 (R5): the NASA globe (`earth`) is the shipped look
+ * (DEFAULT_GLOBE_LOOK). A DEV build still takes `?look=linoryt` for the old print until R6 removes it, and `?look=earth`
+ * for old links; the caller passes nothing in a release.
  */
 function devGlobeLook(): GlobeLook | undefined {
-  const query = new URLSearchParams(location.search);
-  const look = query.get('look');
-  if (look === 'linoryt' || look === 'earth') return look;
-  return import.meta.env.DEV && query.get('skin') === 'board' ? 'earth' : undefined;
+  const look = new URLSearchParams(location.search).get('look');
+  return look === 'linoryt' || look === 'earth' ? look : undefined;
 }
 
 // [task-34] HTML panels the globe must stay clear of. Their boxes become camera insets (D-47).
-// [night-75a] D-330: the UI-A preview's hub strip bay is one too (present only in a DEV `?skin=board` build).
+// [night-75a] D-330: the UI-A hub strip bay is one too.
 const GAME_PANELS = ['.airway-pass', '.airway-dock', '.airway-strip-bay'];
 const MENU_SIGN = '.airway-sign';
 const MENU_BOARD = '.airway-board';
@@ -78,8 +76,7 @@ const MENU_TARGET = { lon: -16, lat: 40 };
 /**
  * [night-14b] D-259: the menu entries; the view looks south of MENU_TARGET so the demo network rides above them
  * ([night-16a] D-262: as far as it takes for no demo airport to stand on an entry, src/game/menu-clear.ts).
- * [night-29b] D-284 U4 / [night-46a] D-301: the Linoryt menu frames its globe from the printed index (the board box,
- * src/game/menu-clear.ts indexFraming) and clears these rows.
+ * [night-81a] D-336: the UI-A menu frames its globe to the departures board's frame (frameMenu below, D-334).
  */
 const MENU_ENTRIES = '.airway-board .airway-flight, .airway-board .airway-flight__region';
 
@@ -181,9 +178,8 @@ export function createWorld(host: HTMLElement, label: string, quality: QualityPr
           insets: { left, right, top, bottom: insets.bottom ?? 0 },
         };
       }
-      // [night-29b] D-284 U4, D-286: the whole globe printed between the title and the index (or left of the index
-      // column in landscape); a screen too short for it keeps the horizon framing above.
-      framing = indexFraming(w, h, sign, board, insets) ?? framing;
+      // [night-29b] D-286's printed-index framing went with Linoryt ([night-81a] D-336): the UI-A menu is framed above
+      // (frameMenu); this horizon framing only covers a menu without a globe frame (laid out late).
       // The entries' box is part of the key: the tilt below needs them laid out (a first measure may come before).
       const key = `menu ${w} ${h} ${entries ? `${Math.round(entries.left)},${Math.round(entries.top)}` : '-'} ${demoCities.length} ${JSON.stringify(framing)}`;
       if (key === lastFrame) return;
@@ -437,6 +433,8 @@ function installWorldProbe(renderer: WorldRenderer,
       const canvas = renderer.canvas.getBoundingClientRect();
       return { x: disc.x + canvas.left, y: disc.y + canvas.top, radius: disc.radius };
     },
+    /** [night-81a] D-336: the full D-177 probe per layer (ratio, edge, core, median) for test:e2e:board-contrast. */
+    layerContrast: () => renderer.measureLayerContrast(),
     /** Median WCAG contrast per layer; `tags` is the worst luggage tag against the globe under it. */
     nightContrast(selector = '.airport-bubble'): Record<string, number | null> { // [task-38] selector: slot tags too
       const out: Record<string, number | null> = {};

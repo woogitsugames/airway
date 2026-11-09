@@ -42,7 +42,6 @@ let shots = 0;
 
 function boardUrl(url) {
   const target = new URL(gameUrl(url));
-  target.searchParams.set('skin', 'board');
   return target.href;
 }
 
@@ -362,7 +361,6 @@ async function unsupported(browser, url, language, width, height) {
       HTMLCanvasElement.prototype.getContext = function (kind, ...rest) { return kind === 'webgl2' ? null : original.call(this, kind, ...rest); };
     });
     const plain = new URL(url);
-    plain.searchParams.set('skin', 'board'); // the no-WebGL page needs the real renderer's context request (not the stub)
     await page.goto(plain.href, { waitUntil: 'load' });
     await page.getByTestId('gl-unsupported').waitFor({ timeout: 12000 });
     await page.evaluate(() => document.fonts.ready);

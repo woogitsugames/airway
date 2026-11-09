@@ -113,6 +113,7 @@
 :root[data-skin="board"] .bw-title {
   display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 8px; row-gap: 2px; hyphens: manual;
   font: 700 calc(16px * var(--bd-ts))/1.15 var(--board-mono); letter-spacing: -.02em; color: var(--board-print);
+  font-size: min(calc(16px * var(--bd-ts)), max(16px, 4.6vw)); /* [night-81a] D-336: bounded like a title: no mid-word break on phones */
 }
 :root[data-skin="board"] .bw-extra {
   padding: 2px 4px; border: 1.5px solid var(--board-print); font: 700 calc(9.5px * var(--bd-ts))/1 var(--board-mono);
@@ -151,6 +152,7 @@
 :root[data-skin="board"] .bw-take-main {
   font: 800 calc(24px * var(--bd-ts))/1.02 var(--board-face); font-stretch: 80%; text-transform: uppercase;
   hyphens: manual; overflow-wrap: break-word;
+  font-size: min(calc(24px * var(--bd-ts)), 5.6vw, 28px); /* [night-81a] D-336: a title bounded like the title scale: one aircraft name never breaks (D-51) at 130/150 % */
 }
 :root[data-skin="board"] .bw-take-sub { font: 600 calc(13px * var(--bd-ts))/1.25 var(--board-face); }
 :root[data-skin="board"] .bw-arrow { flex: none; width: 46px; height: 36px; fill: currentColor; }
@@ -183,6 +185,7 @@
 :root[data-skin="board"] .bw-direction-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
 :root[data-skin="board"] .bw-direction-kicker {
   font: 600 calc(11px * var(--bd-ts))/1.2 var(--board-face); letter-spacing: .08em; text-transform: uppercase; hyphens: manual;
+  overflow-wrap: anywhere; /* [night-81a] D-336: a long crate name (pseudo-locale at 320 px) wraps inside the sign */
 }
 :root[data-skin="board"] .bw-direction-main {
   font: 800 calc(20px * var(--bd-ts))/1.08 var(--board-face); font-stretch: 80%; text-transform: uppercase; overflow-wrap: break-word;
@@ -195,7 +198,7 @@
   :root[data-skin="board"] .bw-tiles--title { --bd-tw: 21px; --bd-th: 34px; --bd-tf: 28px; }
   :root[data-skin="board"] .bw-symbol { width: 28px; height: 28px; }
   :root[data-skin="board"] .bw-figs { column-gap: 12px; }
-  :root[data-skin="board"] .bw-take-main { font-size: calc(20px * var(--bd-ts)); }
+  :root[data-skin="board"] .bw-take-main { font-size: min(calc(20px * var(--bd-ts)), 5.6vw, 26px); }
 }
 /* ---- Short phones: the strips lose their slack -------------------------------------------------------------------- */
 @media (orientation: portrait) and (max-height: 700px) {
@@ -227,7 +230,7 @@
   :root[data-skin="board"] .bw-tiles--title { --bd-th: 30px; --bd-tw: 21px; --bd-tf: 26px; }
   :root[data-skin="board"] .bw-board { padding: 8px 10px 10px; gap: 4px; }
   :root[data-skin="board"] .bw-take { min-height: 56px; padding-top: 6px; padding-bottom: 6px; }
-  :root[data-skin="board"] .bw-take-main { font-size: calc(20px * var(--bd-ts)); }
+  :root[data-skin="board"] .bw-take-main { font-size: min(calc(20px * var(--bd-ts)), 5.6vw, 26px); }
 }
 
 /* ---- Tablets (D-320): the sheet printed larger, not stretched; text 130/150 % keeps the phone size ------------------ */

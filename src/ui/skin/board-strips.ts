@@ -16,7 +16,7 @@
  *   the right column beside the console, level with the split-flap board; where the board leaves too little room (a
  *   phone under ~860 px wide) one strip over the map's lower left.
  * - The bay is a game panel (src/game/world.ts `GAME_PANELS`, camera insets like the dock) and a margin of the notes and
- *   direction signs (src/ui/skin/linoryt.ts `linorytMargins`; the notes keep off its box through the board slot). It
+ *   direction signs (src/ui/skin/base.ts `baseMargins`; the notes keep off its box through the board slot). It
  *   writes its place on the layer (`--bd-bay-*`, `data-bd-bay`) so the full strip, the ATC strip and the cards stand on it.
  *
  * Nothing moves: no strip slides, swaps or blinks (D-88 "Reduce motion" has nothing to stop). No runtime imports:

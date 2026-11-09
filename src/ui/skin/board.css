@@ -1,4 +1,616 @@
-/* [night-69a] D-324 (docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md step T1; D-323): UI skin "UI-A — Lotniskowa
+/* [night-81a] D-336 (PLAN-NOWY-KIERUNEK.md step T6; D-323): the shipped UI skin "UI-A — Lotniskowa tablica i paski lotu"
+   (mockups and spec: docs/styles/kierunki-2026-11c/makiety/ui-a/UI-A-SPEC.md). src/main.ts imports this file (and
+   board-week.css) after every component stylesheet; index.html sets <html data-skin="board"> and every structural rule
+   is scoped to it (a release build writes the scope as `:root:root`, and scripts/vite-skin-prune.mjs drops the
+   component declarations these rules always override). The token values of the components are src/ui/skin/current.css.
+   Section A, "base structure", is the former Linoryt structure the board builds on (until T6 it was re-scoped from
+   linoryt.css at run time, `boardTwin`; its menu index, notes, report and U4 pages were cut then and are gone): the
+   inks of one plain :root (written out in place by vite-skin-inline) and the geometry of the HUD margin, the dock, the
+   pause, the hub cause board, the ATC strip and the training flight. Section B (from "Part 1: tokens") is the board.
+   Faces: Archivo and Chivo Mono (SIL OFL, public/fonts/, docs/ASSETS.md); --skin-face-* in current.css name them.
+   Sizes: HUD and dock keep in-world sizes at every text step (as D-248/D-267). */
+
+/* ==== Section A: base structure ==================================================================================== */
+/* ---- Part 1: inks (D-283). Constants of a plain :root: the release writes them out in place (vite-skin-inline). ---- */
+:root {
+  --lin-paper: #ECE3CC;
+  --lin-paper-deep: #E0D5B8; /* pressed paper (a second pull of the same ink, no new colour) */
+  --lin-paper-pressed: #D3C7A6; /* a pressed control on paper */
+  --lin-ink: #1E1C1F;
+  --lin-ink-dim: #4F4A44; /* ink at ~75 % on paper, opaque so contrast is measurable (7.2:1) */
+  --lin-rule-ink: #8C826F; /* a hairline rule that must not read as text */
+  --lin-blue: #2B4A66;
+  --lin-ochre: #D29C47;
+  /* One red, slightly deeper than the mockup's #C8412A (3.9:1 under paper letters): #B33823 carries 13 px paper text on
+     the red block and red letters on paper at 4.7:1 (D-47, D-284). */
+  --lin-red: #B33823;
+  --lin-rule: 2px;
+  /* Thick outer line, paper gap, thin inner line: the neatline of a printed sheet (inset, so it takes no room). */
+  --lin-neatline: inset 0 0 0 3px var(--lin-ink), inset 0 0 0 6px var(--lin-paper), inset 0 0 0 7.5px var(--lin-ink);
+  --lin-frame: inset 0 0 0 2px var(--lin-ink);
+  /* The first free line under the HUD's top margin (the base sheets assumed a 70 px boarding pass). */
+  --lin-top: calc(var(--lin-pass-bottom, calc(var(--aw-safe-top) + 72px)) + 8px);
+}
+:root[data-skin="board"] body { background: var(--board-enamel); } /* [night-81a] D-336: the UI-A enamel (was the Linoryt paper) */
+
+/* ---- Part 2: HUD top margin -------------------------------------------------------------------------------------- */
+:root[data-skin="board"] .airway-hud { color: var(--lin-ink); text-shadow: none; }
+:root[data-skin="board"] .airway-hud button:focus-visible { outline: 3px solid var(--lin-red); outline-offset: 2px; }
+:root[data-skin="board"] .airway-pass {
+  top: 0; left: 0; right: 0; width: auto; height: auto; gap: 12px; align-items: flex-start;
+  padding: calc(var(--hud-safe-top) + 8px) calc(var(--hud-safe-right) + 16px) 8px calc(var(--hud-safe-left) + 16px);
+  background: var(--lin-paper); border-bottom: var(--lin-rule) solid var(--lin-ink);
+}
+:root[data-skin="board"] .airway-pass__ticket { flex: 1 1 auto; min-width: 0; background: transparent; -webkit-mask: none; mask: none; }
+:root[data-skin="board"] .airway-pass__band,
+:root[data-skin="board"] .airway-pass__perf,
+:root[data-skin="board"] .airway-pass__field { display: none; }
+:root[data-skin="board"] .lin-pass {
+  flex: 1 1 auto; min-width: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 12px; row-gap: 12px;
+  align-items: center;
+}
+:root[data-skin="board"] .lin-clock {
+  font: 900 46px/.9 var(--skin-face-display); white-space: nowrap;
+}
+:root[data-skin="board"] .lin-lines { min-width: 0; }
+:root[data-skin="board"] .lin-week { font: 800 20px/1.1 var(--skin-face-display); } /* wraps: see the long-words rule below */
+:root[data-skin="board"] .lin-sub { margin-top: 2px; white-space: normal; font: 600 14px/1.25 var(--skin-face-text); overflow-wrap: anywhere; }
+/* The day bar: 24 carved hours; night solid ink, flown hours blue, the hour now and the rest hollow; a red cut = now. */
+:root[data-skin="board"] .lin-day { grid-column: 1 / -1; min-width: 0; }
+:root[data-skin="board"] .lin-day__cells { position: relative; display: flex; gap: 2px; height: 11px; }
+:root[data-skin="board"] .lin-day__cells i { flex: 1 1 0; min-width: 0; box-shadow: inset 0 0 0 1.5px var(--lin-ink); }
+:root[data-skin="board"] .lin-day__cells i.is-night { background: var(--lin-ink); }
+:root[data-skin="board"] .lin-day__cells i.is-past { background: var(--lin-blue); box-shadow: none; }
+:root[data-skin="board"] .lin-day__now {
+  position: absolute; top: -5px; bottom: -3px; left: calc(var(--at, 0) * 100% - 1.5px); width: 3px; background: var(--lin-red);
+}
+:root[data-skin="board"] .lin-day__now::before {
+  content: ''; position: absolute; left: -4.5px; top: -6px; border: 6px solid transparent; border-bottom: 0;
+  border-top: 7px solid var(--lin-red);
+}
+:root[data-skin="board"] .lin-day__hours { position: relative; height: 15px; margin-top: 2px; font: 600 11px/15px var(--skin-face-text); }
+:root[data-skin="board"] .lin-day__hours span { position: absolute; left: calc(var(--h) / 24 * 100%); }
+/* Pause: a solid ink block with paper bars, 48 × 48 (resume: a paper triangle). */
+:root[data-skin="board"] .airway-pass__pause {
+  flex: 0 0 48px; width: 48px; height: 48px; margin-top: 2px; background: var(--lin-ink); color: var(--lin-paper);
+  border-top: 0 !important;
+}
+:root[data-skin="board"] .airway-pass__pause .airway-hud__icon { width: 30px; height: 30px; }
+/* [night-54a] D-312: paused prints as the outline of the block with an ink triangle: red belongs to a jam alone. */
+:root[data-skin="board"] .airway-pass__pause[aria-pressed="true"] { background: var(--lin-paper); color: var(--lin-ink); box-shadow: var(--lin-frame); }
+
+/* ---- Part 3: the dock, a paper margin behind a double print rule ---------------------------------------------------- */
+:root[data-skin="board"] .airway-dock {
+  left: 0; right: 0; bottom: 0; gap: 0; grid-template-columns: repeat(5, minmax(0, 1fr)); justify-content: stretch;
+  padding: 10px calc(var(--hud-safe-right) + 6px) calc(var(--hud-safe-bottom) + 6px) calc(var(--hud-safe-left) + 6px);
+  background: var(--lin-paper); border-top: 4px solid var(--lin-ink);
+}
+:root[data-skin="board"] .airway-dock::before { top: 3px; left: 0; right: 0; height: 1.5px; opacity: 1; background: var(--lin-ink); }
+:root[data-skin="board"] .airway-dock__holder { padding: 0 2px; }
+:root[data-skin="board"] .airway-dock__holder::before,
+:root[data-skin="board"] .airway-dock__eyelet { display: none; }
+:root[data-skin="board"] .airway-dock__tag {
+  flex-direction: column; justify-content: flex-start; gap: 3px; height: auto; min-height: 58px; padding: 6px 0 5px;
+  clip-path: none; background: transparent; color: var(--lin-ink);
+  font: 700 12px/1.1 var(--skin-face-text) !important;
+}
+:root[data-skin="board"] .airway-dock__tag .airway-hud__icon { width: 28px; height: 28px; } /* countdown cells too (it outweighs hud.css) */
+:root[data-skin="board"] .airway-dock__count {
+  position: absolute; top: 3px; left: calc(50% + 14px); min-width: 14px; font: 700 12px/1 var(--skin-face-text);
+}
+:root[data-skin="board"] .airway-dock__tag.is-countdown .airway-dock__count,
+:root[data-skin="board"] .airway-dock__tag[data-hud-action='speed'] .airway-dock__count { display: none; } /* the caption says it */
+:root[data-skin="board"] .lin-caption { max-width: 100%; white-space: nowrap; letter-spacing: -.01em; }
+:root[data-skin="board"] .lin-wait { font: 500 11px/1.1 var(--skin-face-text); color: var(--lin-blue); white-space: nowrap; }
+:root[data-skin="board"] .lin-wait[hidden] { display: none; }
+/* Chosen aircraft: the one solid ink block of the dock, paper symbol and caption. */
+:root[data-skin="board"] .airway-dock__tag.is-selected { background: var(--lin-ink); color: var(--lin-paper); }
+/* Unavailable: the symbol printed as its outline only (shape, not colour, says "none left"). */
+:root[data-skin="board"] .airway-dock__tag.is-empty { background: transparent; color: var(--lin-ink); }
+:root[data-skin="board"] .airway-dock__tag.is-empty::after { display: none; }
+:root[data-skin="board"] .airway-dock__tag.is-empty .lin-icon path { fill: none; stroke: currentColor; stroke-width: 5; }
+:root[data-skin="board"] .airway-dock__ghost { background: var(--lin-paper); color: var(--lin-ink); clip-path: none; box-shadow: inset 0 0 0 2px var(--lin-ink); }
+@media (max-width: 369px) {
+  :root[data-skin="board"] .airway-dock { padding-left: calc(var(--hud-safe-left) + 2px); padding-right: calc(var(--hud-safe-right) + 2px); }
+  :root[data-skin="board"] .airway-dock__holder { padding: 0 1px; }
+  :root[data-skin="board"] .airway-dock__tag { font-size: 10.5px !important; }
+  :root[data-skin="board"] .lin-caption { letter-spacing: -.03em; }
+  :root[data-skin="board"] .lin-wait { font-size: 10px; }
+  :root[data-skin="board"] .lin-clock { font-size: 38px; }
+  :root[data-skin="board"] .lin-week { font-size: 17px; }
+  :root[data-skin="board"] .lin-sub { font-size: 13px; }
+  :root[data-skin="board"] .airway-hud__icon { width: 26px; }
+}
+
+/* Landscape phone: the HUD is a paper block in the top-left corner, the dock a paper column down the right edge with
+   the double rule on its left; captions sit beside the symbol so five 48 px rows fit a 320 px tall screen. */
+:root[data-skin="board"] .airway-hud[data-layout='landscape'] .airway-pass {
+  right: auto; width: min(480px, calc(100% - var(--hud-safe-left) - var(--hud-safe-right) - 160px));
+  padding-top: calc(var(--hud-safe-top) + 6px); padding-bottom: 6px; border-right: var(--lin-rule) solid var(--lin-ink);
+}
+:root[data-skin="board"] .airway-hud[data-layout='landscape'] .lin-clock { font-size: 36px; }
+:root[data-skin="board"] .airway-hud[data-layout='landscape'] .lin-week { font-size: 18px; }
+:root[data-skin="board"] .airway-hud[data-layout='landscape'] .lin-sub { font-size: 13px; }
+:root[data-skin="board"] .airway-hud[data-layout='landscape'] .lin-pass { row-gap: 10px; }
+:root[data-skin="board"] .airway-hud[data-layout='landscape'] .airway-dock {
+  left: auto; top: 0; bottom: 0; right: 0; width: calc(var(--hud-safe-right) + 132px);
+  padding: calc(var(--hud-safe-top) + 4px) calc(var(--hud-safe-right) + 4px) calc(var(--hud-safe-bottom) + 4px) 10px;
+  border-top: 0; border-left: 4px solid var(--lin-ink);
+}
+:root[data-skin="board"] .airway-hud[data-layout='landscape'] .airway-dock::before { top: 0; bottom: 0; left: 3px; right: auto; width: 1.5px; height: auto; }
+:root[data-skin="board"] .airway-hud[data-layout='landscape'] .airway-dock__holder { padding: 1px 0; height: auto; flex: 1 1 0; min-height: 48px; max-height: 64px; }
+:root[data-skin="board"] .airway-hud[data-layout='landscape'] .airway-dock__tag {
+  flex-direction: row; justify-content: flex-start; gap: 6px; height: 100%; min-height: 48px; max-height: none; padding: 0 6px;
+  text-align: left; flex-wrap: wrap; align-content: center; column-gap: 6px; row-gap: 0;
+}
+:root[data-skin="board"] .airway-hud[data-layout='landscape'] .airway-dock__tag .airway-hud__icon { width: 24px; height: 24px; }
+:root[data-skin="board"] .airway-hud[data-layout='landscape'] .airway-dock__count { top: 2px; left: 26px; }
+:root[data-skin="board"] .airway-hud[data-layout='landscape'] .lin-wait { flex-basis: 100%; padding-left: 30px; }
+
+/* Foldables and tablets: the portrait margins, the dock's five cells centred at phone width. */
+:root[data-skin="board"] .airway-hud[data-layout='foldable'] .airway-dock {
+  top: auto; left: 0; right: 0; bottom: 0; width: auto; display: grid; grid-template-columns: repeat(5, minmax(0, 92px));
+  justify-content: center; border-left: 0; border-top: 4px solid var(--lin-ink);
+  padding: 10px calc(var(--hud-safe-right) + 6px) calc(var(--hud-safe-bottom) + 8px) calc(var(--hud-safe-left) + 6px);
+}
+:root[data-skin="board"] .airway-hud[data-layout='foldable'] .airway-dock::before { top: 3px; left: 0; right: 0; width: auto; height: 1.5px; }
+:root[data-skin="board"] .airway-hud[data-layout='foldable'] .airway-dock__holder { height: auto; min-height: 0; }
+:root[data-skin="board"] .airway-hud[data-layout='foldable'] .airway-dock__tag { height: auto; max-height: none; }
+:root[data-skin="board"] .airway-hud[data-layout='foldable'] .airway-pass { width: auto; }
+:root[data-skin="board"] .airway-hud[data-layout='foldable'] .lin-pass { max-width: 560px; }
+
+/* end U2 */
+
+/* ---- Part 5: sheets until U3 redraws them --------------------------------------------------------------------------
+   The weekly board's top padding clears the old 70 px boarding pass (night-07n). Game time stands still while the board
+   or the game-over report is open (the world is frozen), so the top margin folds its day bar away and fits that space
+   (`npm run ui:matrix:stub -- --skin=linoryt` checks overlap and scroll); U3 lays the sheets out for the margin. */
+:root[data-skin="board"]:has(.airway-upgrade-open, .airway-go-overlay) .lin-day { display: none; }
+/* [night-48a] U6: not while the player picks an airport (or views the report's map): the pause and the day line come back
+   there, and at 400 px the week broke inside its word ("Tydzie|ń 7", 852 × 393). */
+:root[data-skin="board"]:has(.airway-upgrade-open:not(.is-picking-hub), .airway-go-overlay:not(.is-map)) .airway-hud[data-layout='landscape'] .airway-pass { width: auto; max-width: 400px; }
+
+/* U3 sheets */
+/* [night-29a] PLAN-LINORYT.md step U3 (D-283, D-284): the sheets in print — pause, weekly board (crates as printed slips,
+   the contract slip and its D-280 one-liner, the airport pick), game-over report, hub cause board, ATC strip and route
+   menu, the first-time card and slot hint, and the training flight. Rule: paper with a double print rule (`--lin-
+   neatline`, inset lines that take no layout room); the only filled blocks are the chosen action (ink) and danger (red);
+   no translucent dark sheets, no shadows, no rounded cards; Besley for headings, Schibsted Grotesk for text and figures;
+   state by shape as well as ink (solid = chosen, outline = available, dashed = unavailable).
+   The weekly board and the report are opaque paper pages under the HUD's top margin (D-287): they start at
+   `--lin-pass-bottom`, the margin's measured bottom edge (linoryt.ts), so the HUD stays readable and nothing of the
+   hatched world shows through a half-transparent pull. Geometry otherwise follows the base sheets, so the fits measured
+   by test:e2e:board-short / gameover-short / pause-reach / text-scale-150 carry over. */
+
+/* While the weekly board or the report is open the top margin keeps the clock and the week only: game time stands still
+   (U1 already folds the day bar), and the pause target goes too — the base sheets covered it with their scrim, and now
+   that the page starts under the margin it must not be pressed into a board that is itself the pause. On a short screen
+   the day line folds as well, so the page keeps the room the base sheets were fitted to. */
+:root[data-skin="board"]:has(.airway-upgrade-open:not(.is-picking-hub), .airway-go-overlay:not(.is-map)) .airway-pass__pause { display: none; }
+@media (max-height: 700px) {
+  :root[data-skin="board"]:has(.airway-upgrade-open:not(.is-picking-hub), .airway-go-overlay:not(.is-map)) .lin-sub { display: none; }
+  :root[data-skin="board"]:has(.airway-upgrade-open:not(.is-picking-hub), .airway-go-overlay:not(.is-map)) .lin-pass { align-items: baseline; }
+}
+
+/* ---- Pause: a paper sheet with the neatline; Resume the one ink block, Save and Menu printed outlines ------------- */
+:root[data-skin="board"] .airway-pause {
+  --lin-pause-bottom: calc(var(--aw-safe-bottom) + 104px);
+  top: var(--lin-top); height: fit-content; align-self: safe end; bottom: var(--lin-pause-bottom);
+  /* [night-49a] Last resort, after the compact layouts below: never past the screen; the sheet scrolls instead. */
+  max-height: calc(100% - var(--lin-top) - var(--lin-pause-bottom)); overflow-y: auto; overscroll-behavior: contain;
+  /* A column whose summary gives way first: where five or six rows do not fit a short portrait phone, the summary
+     scrolls inside the sheet and Resume, Save and Menu stay whole on screen. */
+  flex-direction: column;
+  padding: 14px 18px 12px; border-left: 0; background: var(--lin-paper); color: var(--lin-ink); box-shadow: var(--lin-neatline);
+  font-family: var(--skin-face-text);
+}
+:root[data-skin="board"] .airway-pause:not([hidden]) { display: flex; }
+:root[data-skin="board"] .airway-pause h2 { margin-bottom: 0; font: 800 var(--airway-font-title) / 1.1 var(--skin-face-display); }
+:root[data-skin="board"] .airway-pause > * { flex: none; }
+:root[data-skin="board"] .airway-pause__summary {
+  border-top: 1.5px solid var(--lin-ink); flex: 0 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+}
+:root[data-skin="board"] .airway-pause__summary dt,
+:root[data-skin="board"] .airway-pause__summary dd { padding: 3px 0; border-bottom: 1px solid var(--lin-ink-dim); }
+:root[data-skin="board"] .airway-pause__summary dt { color: var(--lin-ink-dim); font-weight: 600; }
+:root[data-skin="board"] .airway-pause__summary dd { font: 700 var(--airway-font-body) / 1.3 var(--skin-face-text); }
+:root[data-skin="board"] .airway-pause__button {
+  padding: 10px; border: 2px solid var(--lin-ink); background: var(--lin-paper); color: var(--lin-ink);
+  font: 800 var(--airway-font-body) / 1.15 var(--skin-face-display);
+}
+:root[data-skin="board"] .airway-pause__button:active { background: var(--lin-paper-deep); }
+:root[data-skin="board"] .airway-pause__button--primary,
+:root[data-skin="board"] .airway-pause__button--primary:active { background: var(--lin-ink); color: var(--lin-paper); }
+:root[data-skin="board"] .airway-pause__button:focus-visible { outline: 3px solid var(--lin-red); outline-offset: 2px; }
+:root[data-skin="board"] .airway-pause__status { color: var(--lin-ink-dim); }
+/* [night-49a] No empty line kept for the save note: it takes its line when Save answers. */
+:root[data-skin="board"] .airway-pause__status:empty { display: none; }
+/* Landscape phone: under the top-left margin, left of the dock column (132 px + its 4 px rule). */
+:root[data-skin="board"]:has(.airway-hud[data-layout='landscape']) .airway-pause {
+  left: calc(var(--aw-safe-left) + 12px); right: calc(var(--aw-safe-right) + 148px); width: auto; max-width: 420px; margin: 0;
+  --lin-pause-bottom: calc(var(--aw-safe-bottom) + 12px);
+}
+/* Foldables and tablets keep the dock along the bottom: the sheet stands above it, centred. */
+:root[data-skin="board"]:has(.airway-hud[data-layout='foldable']) .airway-pause {
+  left: calc(var(--aw-safe-left) + 12px); right: calc(var(--aw-safe-right) + 12px); width: auto; margin: 0 auto;
+  --lin-pause-bottom: calc(var(--aw-safe-bottom) + 112px);
+}
+/* [night-49a] Landscape phone (the HUD's landscape layout: under 600 px tall) with the summary shown (400 px and taller,
+   text under 130 %): the stacked sheet with five or six summary rows ran 5 px past a 412 px screen. The summary stands
+   on the left and the three actions in a column on the right, next to the dock and the right thumb, so the sheet is
+   only as tall as its summary. */
+@media (orientation: landscape) and (min-height: 400px) and (max-height: 599px) {
+  :root[data-skin="board"]:not([data-airway-text-scale="130"], [data-airway-text-scale="150"]) .airway-pause:not([hidden]) {
+    display: grid; max-width: 640px; column-gap: 14px; align-items: start;
+    grid-template-columns: minmax(0, 1fr) minmax(136px, 172px);
+    grid-template-areas: 'title title' 'summary resume' 'summary row' 'status status';
+    grid-template-rows: auto auto 1fr auto;
+  }
+  :root[data-skin="board"]:not([data-airway-text-scale="130"], [data-airway-text-scale="150"]) .airway-pause > h2 { grid-area: title; }
+  :root[data-skin="board"]:not([data-airway-text-scale="130"], [data-airway-text-scale="150"]) .airway-pause__summary { grid-area: summary; }
+  :root[data-skin="board"]:not([data-airway-text-scale="130"], [data-airway-text-scale="150"]) .airway-pause__button--primary { grid-area: resume; }
+  :root[data-skin="board"]:not([data-airway-text-scale="130"], [data-airway-text-scale="150"]) .airway-pause__row { grid-area: row; grid-template-columns: 1fr; }
+  :root[data-skin="board"]:not([data-airway-text-scale="130"], [data-airway-text-scale="150"]) .airway-pause__status { grid-area: status; }
+}
+/* Where the band is short the summary gives way (the top margin and the notes still show it): a landscape phone under
+   400 px, and short screens at the large text steps. */
+@media (orientation: landscape) and (max-height: 399px) {
+  :root[data-skin="board"] .airway-pause__summary { display: none; }
+}
+@media (orientation: landscape) and (max-height: 599px), (orientation: portrait) and (max-height: 679px) {
+  :root[data-skin="board"]:is([data-airway-text-scale="130"], [data-airway-text-scale="150"]) .airway-pause__summary { display: none; }
+}
+
+/* ---- Weekly board: an opaque paper page under the top margin; the sign printed over a double rule; crates as slips -- */
+:root[data-skin="board"] .airway-upgrade-open:not(.is-picking-hub) {
+  top: calc(var(--lin-top) - 8px); padding-top: 14px; box-shadow: var(--lin-neatline);
+}
+:root[data-skin="board"] .airway-upgrade-open:not(.is-picking-hub) .airway-upgrade-sign {
+  position: relative; margin-bottom: 7px; padding-left: 4px; padding-right: 4px; background: transparent; color: var(--lin-ink);
+  border-bottom: 3px solid var(--lin-ink);
+}
+:root[data-skin="board"] .airway-upgrade-open:not(.is-picking-hub) .airway-upgrade-sign::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: -7.5px; border-bottom: 1.5px solid var(--lin-ink);
+}
+:root[data-skin="board"] .airway-upgrade-week { font-weight: 900; }
+:root[data-skin="board"] .airway-upgrade-sub { font-weight: 600; }
+/* A crate is a printed slip: paper, a 2 px ink frame, no torn edge; the whole slip is the target. */
+:root[data-skin="board"] .airway-upgrade-tag {
+  clip-path: none; background: var(--lin-paper); color: var(--lin-ink); box-shadow: var(--lin-frame);
+  padding-bottom: 12px;
+}
+:root[data-skin="board"] .airway-upgrade-tag:active { background: var(--lin-ink); color: var(--lin-paper); }
+:root[data-skin="board"] .airway-upgrade-tag:active :is(.airway-upgrade-heading, .airway-upgrade-stamp) { border-color: var(--lin-paper); }
+:root[data-skin="board"] .airway-upgrade-tag:active :is(.airway-upgrade-key, .airway-upgrade-stamp) { color: var(--lin-paper); }
+:root[data-skin="board"] .airway-upgrade-tag:focus-visible { outline: 3px solid var(--lin-red); outline-offset: 2px; }
+/* Unavailable: a dashed frame (shape, not only a paler ink); the facts stay readable. */
+:root[data-skin="board"] .airway-upgrade-tag:disabled { background: var(--lin-paper); box-shadow: none; outline: 2px dashed var(--lin-ink); outline-offset: -2px; }
+:root[data-skin="board"] .airway-upgrade-tag:disabled :is(.airway-upgrade-model, .airway-upgrade-title, .airway-upgrade-grid) { opacity: 1; color: var(--lin-ink-dim); }
+:root[data-skin="board"] .airway-upgrade-heading { border-bottom: 1.5px solid var(--lin-ink); font-weight: 700; }
+:root[data-skin="board"] .airway-upgrade-title {
+  font-weight: 800;
+  /* The base fit-to-width assumed Overpass at .6 em a letter; Besley 800 runs to about .7 em. [night-31a] Its floor
+     follows: 13 px (15 x .6 / .7) keeps the base skin's letters per line, so a part between soft hyphens that fits the
+     base fits here too (D-51: no mid-word break; the pseudo-locale at 320 px, test:e2e:pseudo-320 -- --skin=linoryt). */
+  font-size: min(var(--title-size), max(13px, calc(100cqi / (var(--title-chars, 1) * .7))));
+}
+:root[data-skin="board"] .airway-upgrade-key { color: var(--lin-ink-dim); font-weight: 600; }
+:root[data-skin="board"] .airway-upgrade-value { font-weight: 600; }
+:root[data-skin="board"] .airway-upgrade-stamp { border: 2px solid var(--lin-ink); color: var(--lin-ink); }
+/* The model window prints the cut symbol of the cargo (the dock's symbols) instead of the 3D model. */
+:root[data-skin="board"] .airway-upgrade-model { border: 0; background: var(--lin-paper); color: var(--lin-ink); box-shadow: inset 0 0 0 1.5px currentColor; }
+/* :is(#app, body) outweighs the base `#app canvas { display: block }` (the board is mounted inside #app in the game). */
+:root[data-skin="board"] :is(#app, body) .airway-upgrade-model canvas { display: none; }
+:root[data-skin="board"] .airway-upgrade-model::before,
+:root[data-skin="board"] .airway-upgrade-model.has-model::before {
+  display: block; width: 64%; height: 64%; clip-path: none; background: currentColor;
+  -webkit-mask: var(--lin-cargo) center / contain no-repeat; mask: var(--lin-cargo) center / contain no-repeat;
+}
+:root[data-skin="board"] .model-turboprop { --lin-cargo: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M46 8L54 8 56 40 92 44 92 54 56 56 55 80 68 86 68 92 32 92 32 86 45 80 44 56 8 54 8 44 44 40ZM20 34L30 34 30 46 20 46ZM70 34L80 34 80 46 70 46Z'/%3E%3C/svg%3E"); }
+:root[data-skin="board"] .model-widebody { --lin-cargo: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M47 6L53 6 56 36 94 62 94 70 56 56 55 80 70 90 70 95 50 90 30 95 30 90 45 80 44 56 6 70 6 62 44 36ZM16 58L22 55 24 64 18 66ZM30 49L36 46 38 55 32 57ZM64 46L70 49 68 57 62 55ZM78 55L84 58 82 66 76 64Z'/%3E%3C/svg%3E"); }
+:root[data-skin="board"] .model-hub-expansion { --lin-cargo: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M44 6L56 6 56 94 44 94ZM12 22L18 12 88 78 82 88ZM82 12L88 22 18 88 12 78Z'/%3E%3C/svg%3E"); }
+/* Two departure slots: two cut bars and the plus between them. */
+:root[data-skin="board"] .model-departure-slots { --lin-cargo: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M8 14H92V34H8ZM8 66H92V86H8ZM44 38H56V44H62V56H56V62H44V56H38V44H44Z'/%3E%3C/svg%3E"); }
+/* The contract slip: a printed waybill with a 1.5 px frame; last week's square stays filled (met) or hollow (missed). */
+:root[data-skin="board"] .airway-upgrade-waybill {
+  --aw-contract-paper: var(--lin-paper); --aw-contract-ink: var(--lin-ink); --aw-contract-muted: var(--lin-ink-dim); --aw-contract-rule: var(--lin-ink);
+  border-top: 0; box-shadow: inset 0 0 0 1.5px var(--lin-ink); font-family: var(--skin-face-text); font-weight: 500;
+}
+:root[data-skin="board"] .airway-upgrade-waybill-title { font-weight: 700; }
+:root[data-skin="board"] .airway-upgrade-waybill-route,
+:root[data-skin="board"] .airway-upgrade-waybill-short { font-weight: 700; }
+/* The airport pick: only the sign stays, over the live map — a paper slip with the neatline under the top margin; Back
+   is its one ink block. */
+:root[data-skin="board"] .airway-upgrade-open.is-picking-hub { padding-top: var(--lin-top); }
+:root[data-skin="board"] .airway-upgrade-open.is-picking-hub .airway-upgrade-sign {
+  background: var(--lin-paper); color: var(--lin-ink); box-shadow: var(--lin-neatline); padding-top: 12px; padding-bottom: 12px;
+}
+/* The margin above always prints the week, so the pick sign keeps only the instruction beside Back (the week heading
+   stays for screen readers; the base clipped it to 1 px only on narrow landscape boards). */
+:root[data-skin="board"] .airway-upgrade-open.is-picking-hub .airway-upgrade-week {
+  position: absolute; left: 0; top: 0; width: auto; height: auto; overflow: visible; clip-path: none;
+  transform: scale(0); transform-origin: 0 0; white-space: nowrap; pointer-events: none;
+}
+:root[data-skin="board"] .airway-upgrade-open.is-picking-hub .airway-upgrade-sub { grid-row: 1 / span 2; align-self: center; font: 800 calc(15px * var(--airway-text-scale))/1.2 var(--skin-face-display); }
+:root[data-skin="board"] .airway-upgrade-back { margin: -4px 2px -4px -6px; background: var(--lin-ink); color: var(--lin-paper); font-weight: 800; }
+:root[data-skin="board"] .airway-upgrade-back:active { background: var(--lin-ink); }
+:root[data-skin="board"] .airway-upgrade-back:focus-visible { outline: 3px solid var(--lin-red); }
+/* Landscape phone: the sign stands beside the top-left margin (the base geometry assumed a 420 px pass); the board
+   itself starts under the margin like everywhere else, so the sign keeps the full width. */
+@media (min-width: 720px) and (max-height: 520px) {
+  :root[data-skin="board"] .airway-upgrade-open:not(.is-picking-hub) .airway-upgrade-sign { margin-left: 0; max-width: none; min-height: 0; }
+}
+:root[data-skin="board"]:has(.airway-hud[data-layout='landscape']) .airway-upgrade-open.is-picking-hub {
+  align-items: flex-end; padding-right: calc(var(--aw-safe-right) + 148px); padding-bottom: calc(var(--aw-safe-bottom) + 12px);
+}
+:root[data-skin="board"]:has(.airway-hud[data-layout='landscape']) .airway-upgrade-open.is-picking-hub .airway-upgrade-sign { margin-left: 0; max-width: 100%; }
+/* Phones: the margin right above already prints the week, so the sign keeps only its line, set as the page's heading
+   (the week heading stays for screen readers). Wide screens keep the big week over the double rule. */
+@media (max-width: 719px), (max-height: 520px) {
+  :root[data-skin="board"] .airway-upgrade-open:not(.is-picking-hub) .airway-upgrade-week {
+    position: absolute; left: 0; top: 0; transform: scale(0); transform-origin: 0 0; white-space: nowrap; pointer-events: none;
+  }
+  :root[data-skin="board"] .airway-upgrade-open:not(.is-picking-hub) .airway-upgrade-sign { padding-top: 0; padding-bottom: 6px; }
+  :root[data-skin="board"] .airway-upgrade-open:not(.is-picking-hub) .airway-upgrade-sub { font: 800 calc(15px * var(--airway-text-scale))/1.2 var(--skin-face-display); }
+}
+/* A short portrait phone: slips lose the tear's bottom room; four crates drop the "Freight ·" stencil word (the code
+   names the cargo, the aria-label is unchanged). Every crate then fits 320 × 568 without scrolling. */
+@media (max-width: 719px) and (max-height: 600px) {
+  :root[data-skin="board"] .airway-upgrade-open:not(.is-picking-hub) { padding-top: 10px; }
+  :root[data-skin="board"] .airway-upgrade-open:not(.is-picking-hub) .airway-upgrade-sign { padding-bottom: 4px; margin-bottom: 6px; }
+  :root[data-skin="board"] .airway-upgrade-open:not(.is-picking-hub) .airway-upgrade-sign::after { bottom: -6px; }
+  :root[data-skin="board"] .airway-upgrade-open:not(.is-picking-hub) .airway-upgrade-sub { font-size: calc(14px * var(--airway-text-scale)); }
+  :root[data-skin="board"] .airway-upgrade-tag { padding-bottom: 8px; }
+  :root[data-skin="board"] .airway-upgrade[data-crates="4"] .airway-upgrade-code > span:first-child { display: none; }
+  :root[data-skin="board"] .airway-upgrade[data-crates="4"] .airway-upgrade-tag { padding-top: 6px; }
+  :root[data-skin="board"] .airway-upgrade[data-crates="4"] .airway-upgrade-heading { gap: 4px; font-size: calc(11px * var(--airway-text-scale)); }
+  :root[data-skin="board"] .airway-upgrade[data-crates="4"] .airway-upgrade-value { margin-bottom: 1px; }
+}
+@media (max-width: 719px) {
+  :root[data-skin="board"] .airway-upgrade[data-crates="4"] .airway-upgrade-tag { padding-bottom: 8px; }
+}
+/* A landscape phone under 720 px wide (640 × 360): the crates stand side by side as on wider landscape phones, without
+   the model windows, each fact under its key (the base board stacked them and scrolled by ~240 px). */
+@media (orientation: landscape) and (max-width: 719px) and (max-height: 520px) {
+  :root[data-skin="board"] .airway-upgrade-open:not(.is-picking-hub) { padding-top: 10px; padding-bottom: calc(var(--aw-safe-bottom) + 10px); }
+  :root[data-skin="board"] .airway-upgrade-labels,
+  :root[data-skin="board"] .airway-upgrade[data-crates="4"] .airway-upgrade-labels { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }
+  :root[data-skin="board"] .airway-upgrade-model { display: none; }
+  :root[data-skin="board"] .airway-upgrade-tag { padding: 6px 8px 8px; }
+  :root[data-skin="board"] .airway-upgrade-grid { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  :root[data-skin="board"] .airway-upgrade-value { margin-bottom: 2px; font-size: calc(13px * var(--airway-text-scale)); }
+  :root[data-skin="board"] .airway-upgrade-heading { font-size: calc(11px * var(--airway-text-scale)); gap: 4px; }
+  :root[data-skin="board"] .airway-upgrade-code > span:first-child { display: none; }
+  :root[data-skin="board"] .airway-upgrade-waybill { min-width: 0; padding: 3px 8px 4px; font-size: 11.5px; }
+  :root[data-skin="board"] .airway-upgrade-waybill > :not(.airway-upgrade-waybill-line) {
+    position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+  }
+  :root[data-skin="board"] .airway-upgrade-waybill-line { display: flex; flex: 1; gap: 6px; min-width: 0; margin: 0; white-space: nowrap; }
+  :root[data-skin="board"] .airway-upgrade-waybill-short { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  :root[data-skin="board"] :is(.airway-upgrade-waybill-mark, .airway-upgrade-waybill-goal) { flex: none; }
+  :root[data-skin="board"] .airway-upgrade-open:not(.is-picking-hub) .airway-upgrade-sign { margin-bottom: 6px; padding-bottom: 4px; }
+  :root[data-skin="board"] .airway-upgrade-open:not(.is-picking-hub) .airway-upgrade-sign::after { bottom: -6px; }
+}
+/* Wide screens: the sign and its rule run the full width of the page. */
+@media (min-width: 720px) {
+  :root[data-skin="board"] .airway-upgrade-open:not(.is-picking-hub) .airway-upgrade-sign { justify-self: stretch; }
+}
+/* A landscape phone under 520 px: the contract slip prints as the D-280 one line (as on a low portrait screen), the
+   slips lose the tear's room, and four crates stack each fact under its key, so no word breaks in a narrow column. */
+@media (min-width: 720px) and (max-height: 520px) {
+  :root[data-skin="board"] .airway-upgrade-open:not(.is-picking-hub) { padding-top: 10px; padding-bottom: calc(var(--aw-safe-bottom) + 10px); }
+  :root[data-skin="board"] .airway-upgrade-open:not(.is-picking-hub) .airway-upgrade-sign { margin-bottom: 6px; padding-bottom: 4px; }
+  :root[data-skin="board"] .airway-upgrade-open:not(.is-picking-hub) .airway-upgrade-sign::after { bottom: -6px; }
+  :root[data-skin="board"] .airway-upgrade-waybill { min-width: 0; padding: 3px 8px 4px; font-size: 11.5px; }
+  :root[data-skin="board"] .airway-upgrade-waybill > :not(.airway-upgrade-waybill-line) {
+    position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+  }
+  :root[data-skin="board"] .airway-upgrade-waybill-line { display: flex; flex: 1; gap: 6px; min-width: 0; margin: 0; white-space: nowrap; }
+  :root[data-skin="board"] .airway-upgrade-waybill-short { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  :root[data-skin="board"] :is(.airway-upgrade-waybill-mark, .airway-upgrade-waybill-goal) { flex: none; }
+  :root[data-skin="board"] .airway-upgrade-waybill-mark { color: var(--lin-ink-dim); }
+  /* The sign takes a row of its own under the margin: the model window gives that height back (D-209's window assumed
+     the sign beside a 420 px pass), so the three crates end above the bottom inset; 14 px under the tilted stamp. */
+  :root[data-skin="board"] .airway-upgrade-open:not(.is-picking-hub) {
+    --upgrade-win: clamp(48px, calc(100vh - var(--lin-top) - 264px - var(--aw-safe-bottom)), 230px);
+  }
+  /* [night-48a] U6: with the contract slip (one printed line here) the window gives up only that line; the base board's
+     slip rule (100vh − 372 px) left 40 px windows and ~45 px of empty paper under the crates at 915 × 412. */
+  :root[data-skin="board"] .airway-upgrade-open:not(.is-picking-hub) .airway-upgrade:has(.airway-upgrade-waybill) {
+    --upgrade-win: clamp(48px, calc(100vh - var(--lin-top) - 292px - var(--aw-safe-bottom)), 230px);
+  }
+  :root[data-skin="board"] .airway-upgrade-tag { padding-bottom: 8px; }
+  :root[data-skin="board"] .airway-upgrade:not([data-crates="4"]) .airway-upgrade-tag:has(.airway-upgrade-stamp) { padding-bottom: 14px; }
+  :root[data-skin="board"] .airway-upgrade[data-crates="4"] .airway-upgrade-grid { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  :root[data-skin="board"] .airway-upgrade[data-crates="4"] .airway-upgrade-value { margin-bottom: 2px; }
+  :root[data-skin="board"] .airway-upgrade[data-crates="4"] .airway-upgrade-heading { font-size: calc(11px * var(--airway-text-scale)); gap: 4px; }
+}
+/* [night-48a] U6: a portrait page prints from its top under the margin (the base centred the board and the report and
+   left an empty band above the sign); what the page does not need stays as paper at its foot. */
+@media (orientation: portrait) {
+  :root[data-skin="board"] .airway-upgrade-open:not(.is-picking-hub) { align-items: flex-start; }
+  :root[data-skin="board"] .airway-go-overlay:not(.is-map) { align-items: start; }
+}
+/* While the crates are on screen the map's notes and edge flags step back (as in Róża, D-259). */
+:root[data-skin="board"]:has(.airway-upgrade-tag) .airport-overlay { visibility: hidden; }
+
+/* ---- Hub cause board: a paper sheet with the neatline under the top margin; a jammed hub gets the red hatched head --- */
+:root[data-skin="board"] .airway-hub-board {
+  top: var(--lin-top); max-height: calc(100% - var(--lin-top) - var(--aw-safe-bottom) - 104px);
+  padding: 8px; border-top: 0; background: var(--lin-paper); color: var(--lin-ink); box-shadow: var(--lin-neatline);
+}
+:root[data-skin="board"] .airway-hub-board[data-layout='landscape'] {
+  right: calc(var(--aw-safe-right) + 148px); max-height: calc(100% - var(--lin-top) - var(--aw-safe-bottom) - 12px);
+}
+:root[data-skin="board"] .airway-hub-board[data-layout='foldable'] {
+  right: calc(var(--aw-safe-right) + 12px); margin: 0 auto; max-height: calc(100% - var(--lin-top) - var(--aw-safe-bottom) - 112px);
+}
+/* Jammed: a red hatched band across the head (shape and colour), the one red of the sheet. */
+:root[data-skin="board"] .airway-hub-board--jammed { border-image: none; }
+:root[data-skin="board"] .airway-hub-board--jammed .airway-hub-board__head { position: relative; padding-top: 6px; }
+:root[data-skin="board"] .airway-hub-board--jammed .airway-hub-board__head::before {
+  content: ''; position: absolute; left: 0; right: 0; top: 0; height: 6px;
+  background: repeating-linear-gradient(135deg, var(--lin-red) 0 6px, var(--lin-paper) 6px 9px);
+}
+:root[data-skin="board"] .airway-hub-board__head { border-bottom: 1.5px solid var(--lin-ink); padding-left: 6px; }
+:root[data-skin="board"] .airway-hub-board__title { color: var(--lin-ink); font: 800 calc(15px * var(--airway-text-scale))/1.2 var(--skin-face-display); }
+:root[data-skin="board"] .airway-hub-board__fill { color: var(--lin-ink); font-weight: 700; font-variant-numeric: tabular-nums; }
+:root[data-skin="board"] .airway-hub-board__close { border-left: 1.5px solid var(--lin-ink); color: var(--lin-ink); }
+:root[data-skin="board"] .airway-hub-board__close:focus-visible { outline: 3px solid var(--lin-red); }
+:root[data-skin="board"] .airway-hub-board__rows { padding: 0 6px; }
+:root[data-skin="board"] .airway-hub-board__row { border-bottom: 1px solid var(--lin-ink-dim); font-weight: 600; }
+/* A short portrait phone: the top margin is ~40 px taller than the old pass, so the rows close up to keep a full board
+   (8 regions) without scrolling at 360 × 640. */
+@media (orientation: portrait) and (max-height: 700px) {
+  :root[data-skin="board"] .airway-hub-board__row { padding: 3px 0; }
+}
+:root[data-skin="board"] .airway-hub-board__count { font-weight: 700; font-variant-numeric: tabular-nums; }
+:root[data-skin="board"] .airway-hub-board__mark { color: var(--lin-ink); }
+:root[data-skin="board"] .airway-hub-board__row[data-cause='none'] :is(.airway-hub-board__mark, .airway-hub-board__text) { color: var(--lin-ink-dim); }
+:root[data-skin="board"] .airway-hub-board__empty { color: var(--lin-ink-dim); }
+/* A narrow phone at 130/150 %: the waiting count moves under the title, so the airport's name keeps its words whole. */
+@media (max-width: 479px) {
+  :root[data-skin="board"]:is([data-airway-text-scale="130"], [data-airway-text-scale="150"]) .airway-hub-board__head {
+    display: grid; grid-template-columns: minmax(0, 1fr) 48px; column-gap: 8px; padding-top: 4px; padding-bottom: 4px;
+  }
+  :root[data-skin="board"]:is([data-airway-text-scale="130"], [data-airway-text-scale="150"]) .airway-hub-board__fill { grid-column: 1; grid-row: 2; }
+  :root[data-skin="board"]:is([data-airway-text-scale="130"], [data-airway-text-scale="150"]) .airway-hub-board__close { grid-column: 2; grid-row: 1 / span 2; align-self: center; }
+}
+
+/* ---- ATC strip, slot hint and first-time card: a printed slip with a double rule down its left edge ------------------ */
+:root[data-skin="board"] .airway-atc-strip {
+  bottom: calc(var(--aw-safe-bottom) + 100px); border-left: 7px double var(--lin-ink);
+  background: var(--lin-paper); color: var(--lin-ink); box-shadow: var(--lin-frame); font-weight: 600;
+}
+:root[data-skin="board"] .airway-atc-field { border-right: 1px solid var(--lin-ink-dim); }
+:root[data-skin="board"] .airway-atc-flight { font-weight: 700; font-variant-numeric: tabular-nums; }
+:root[data-skin="board"] .airway-atc-error { color: var(--lin-ink); font-weight: 800; }
+/* A route over range is the strip's danger: red letters behind a cut "stop" bar (shape as well as colour). */
+:root[data-skin="board"] .airway-atc-strip:not(.airway-first-time, .airway-slot-hint) .airway-atc-error { color: var(--lin-red); }
+:root[data-skin="board"] .airway-atc-strip:not(.airway-first-time, .airway-slot-hint) .airway-atc-error::before {
+  content: ''; display: inline-block; width: .7em; height: .7em; margin-right: .4em; vertical-align: -.05em; background: currentColor;
+  clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%, 0 40%, 100% 40%, 100% 60%, 0 60%, 0 30%);
+}
+/* A narrow screen stacks the strip's fields, one rule between them (side by side they wrapped under hanging rules). */
+@media (max-width: 599px) {
+  :root[data-skin="board"] .airway-atc-strip:not(.airway-first-time) { flex-direction: column; }
+  :root[data-skin="board"] .airway-atc-strip:not(.airway-first-time) .airway-atc-field { border-right: 0; border-bottom: 1px solid var(--lin-ink-dim); }
+  :root[data-skin="board"] .airway-atc-strip:not(.airway-first-time) .airway-atc-field:last-child { border-bottom: 0; }
+}
+:root[data-skin="board"] .airway-atc-strip[data-notice] .airway-atc-field { border: 0; } /* [night-60a] D-321: one-field notice */
+:root[data-skin="board"] .airway-first-time__ok {
+  border-left: 0; background: var(--lin-ink); color: var(--lin-paper); font-weight: 800; margin: 2px 2px 2px auto; min-height: 48px;
+}
+:root[data-skin="board"] .airway-first-time__ok:focus-visible { outline: 3px solid var(--lin-red); outline-offset: 2px; }
+:root[data-skin="board"]:has(.airway-hud[data-layout='landscape']) .airway-atc-strip {
+  left: calc(var(--aw-safe-left) + 12px); bottom: calc(var(--aw-safe-bottom) + 12px);
+  max-width: calc(100% - 160px - var(--aw-safe-left) - var(--aw-safe-right));
+}
+:root[data-skin="board"]:has(.airway-hud[data-layout='foldable']) .airway-atc-strip { bottom: calc(var(--aw-safe-bottom) + 112px); }
+/* The route menu: a paper slip with a double frame; "Remove" in red behind a cut bar, a disabled entry struck through. */
+:root[data-skin="board"] .airway-route-menu { border: 5px double var(--lin-ink); box-shadow: none; background: var(--lin-paper); color: var(--lin-ink); }
+:root[data-skin="board"] .airway-route-menu button { border-bottom: 1px solid var(--lin-ink-dim); font-weight: 800; }
+:root[data-skin="board"] .airway-route-menu button:last-child { border-bottom: 0; }
+:root[data-skin="board"] .airway-route-menu button:disabled { opacity: 1; color: var(--lin-ink-dim); text-decoration: line-through 1.5px; }
+:root[data-skin="board"] .airway-route-menu button:focus-visible { outline: 3px solid var(--lin-red); outline-offset: -3px; }
+:root[data-skin="board"] .airway-route-menu .airway-route-menu-danger { color: var(--lin-red); }
+
+/* ---- Training flight: the stage on paper, the vignette re-inked (sea blue, land ochre, ink limb), cards as slips ---- */
+:root[data-skin="board"] .aw-tutorial-ticket { border: 0; box-shadow: var(--lin-neatline); padding: 4px; height: auto; min-height: 68px; }
+/* At the large text steps the card keeps its whole text (it shrank to its 64 px floor and the words ran out of it). */
+:root[data-skin="board"] .aw-tutorial-strip { flex-shrink: 0; }
+/* Portrait: the ticket row takes the height its text needs (Besley's capitals wrap the kicker at 320 px and 150 %). */
+@media (min-height: 591px), (max-width: 659px) and (orientation: portrait) {
+  :root[data-skin="board"] .aw-tutorial-stage { grid-template-rows: auto minmax(0, 1fr) auto; }
+  :root[data-skin="board"] .aw-tutorial-ticket-id { gap: 4px; }
+}
+:root[data-skin="board"] .aw-tutorial-kicker { font-weight: 800; font-size: calc(14px * var(--airway-text-scale-title)); }
+/* Headings and labels of the cards grow by the title step, the reading text by the full step (as D-248's titles). */
+:root[data-skin="board"] .aw-tutorial-ticket-id strong { font-size: calc(14px * var(--airway-text-scale-dense)); }
+:root[data-skin="board"] .aw-strip-index { font-size: calc(12px * var(--airway-text-scale-title)); }
+:root[data-skin="board"] .aw-ticket-skip { font-size: calc(14px * var(--airway-text-scale-dense)); }
+:root[data-skin="board"] .aw-ticket-skip { background: transparent; color: var(--lin-ink); font-weight: 700; text-decoration: underline 1.5px; text-underline-offset: 3px; }
+:root[data-skin="board"] .aw-tutorial-strip { border-left: 7px double var(--lin-ink); box-shadow: var(--lin-frame); }
+:root[data-skin="board"] .aw-strip-index { font-weight: 800; line-height: 1.2; }
+:root[data-skin="board"] .aw-strip-copy { font-weight: 600; }
+:root[data-skin="board"] .aw-tutorial-hint { font-weight: 600; }
+:root[data-skin="board"] .aw-tutorial-dock { border-top: 6px double var(--lin-ink); }
+/* The aircraft to drag and "Start flying" are the chosen action: the ink block (the tag outline stays, D-129). */
+:root[data-skin="board"] :is(.aw-plane-tag, .aw-action-tag) { background: var(--lin-ink); color: var(--lin-paper); font-weight: 800; }
+:root[data-skin="board"] .aw-plane-tag svg { color: var(--lin-paper); }
+:root[data-skin="board"] .aw-plane-tag { width: auto; min-width: 120px; padding-left: 16px; padding-right: 16px; }
+:root[data-skin="board"] .aw-plane-tag span { font-weight: 700; white-space: nowrap; }
+:root[data-skin="board"] .aw-settings-sign { border-color: var(--lin-ink); box-shadow: none; }
+:root[data-skin="board"] .aw-settings-dialog { border: 0; box-shadow: var(--lin-neatline); padding: 18px; }
+:root[data-skin="board"] .aw-settings-dialog button { border: 2px solid var(--lin-ink); font-weight: 800; }
+@media (max-height: 590px) and (min-width: 660px), (orientation: landscape) and (max-height: 590px) {
+  :root[data-skin="board"] .aw-tutorial-dock { border-top: 0; border-left: 6px double var(--lin-ink); }
+}
+/* A landscape phone under 660 px wide (640 × 360) takes the three columns of the wider landscape phones; the portrait
+   rows overlapped there (ticket over the world, card over the hint and the dock — in the shipped skin too). */
+@media (orientation: landscape) and (max-height: 590px) and (max-width: 659px) {
+  :root[data-skin="board"] .aw-tutorial-stage { grid-template-columns: minmax(170px, 200px) minmax(200px, 1fr) minmax(150px, 190px); grid-template-rows: minmax(0, 1fr); gap: 7px; padding: calc(var(--aw-safe-top) + 5px) calc(var(--aw-safe-right) + 7px) calc(var(--aw-safe-bottom) + 5px) calc(var(--aw-safe-left) + 7px); }
+  :root[data-skin="board"] .aw-tutorial-ticket { grid-column: 1; flex-direction: column; height: auto; max-height: 168px; align-self: start; }
+  :root[data-skin="board"] .aw-tutorial-ticket-id { min-height: 72px; padding: 10px; gap: 12px; }
+  :root[data-skin="board"] .aw-ticket-perf { height: 1px; width: auto; border-left: 0; border-top: 2px dashed var(--lin-ink-dim); margin: 0 6px; }
+  :root[data-skin="board"] .aw-ticket-skip { min-height: 54px; }
+  :root[data-skin="board"] .aw-tutorial-center { grid-column: 2; grid-row: 1; gap: 3px; }
+  :root[data-skin="board"] .aw-tutorial-strip { min-height: 54px; padding: 5px 8px; }
+  :root[data-skin="board"] .aw-strip-copy { font-size: calc(13px * var(--airway-text-scale)); }
+  :root[data-skin="board"] .aw-tutorial-controls { grid-column: 3; grid-row: 1; align-self: stretch; justify-self: stretch; min-height: 0; justify-content: flex-end; }
+  :root[data-skin="board"] .aw-tutorial-hint { font-size: calc(12px * var(--airway-text-scale)); }
+  :root[data-skin="board"] .aw-tutorial-dock { min-height: 85px; padding: 9px 5px; }
+}
+/* The vignette in the three inks: sea Prussian blue, land ochre, ice and cloud left as paper or dropped; no cast shadow. */
+:root[data-skin="board"] .aw-tutorial-world { filter: none; }
+:root[data-skin="board"] .aw-world-art ellipse[opacity],
+:root[data-skin="board"] .aw-world-art path[opacity],
+:root[data-skin="board"] .aw-world-art g[opacity] { display: none; }
+:root[data-skin="board"] .aw-world-art .aw-planet,
+:root[data-skin="board"] .aw-world-art path[fill="#3c9cb0"] { fill: var(--lin-blue); }
+:root[data-skin="board"] .aw-world-art path:is([fill="#86b35a"], [fill="#b9c16a"], [fill="#6c9e55"], [fill="#759f58"], [fill="#87b15c"], [fill="#b4b56a"], [fill="#568d4e"], [fill="#dcb36e"], [fill="#91b75f"], [fill="#b8b36b"], [fill="#d2b273"], [fill="#3e7c47"], [fill="#4f8a45"]) { fill: var(--lin-ochre); }
+/* The coast: one inked outline round the continent (the inner patches print as one ochre field). */
+:root[data-skin="board"] .aw-world-art path[fill="#86b35a"] { stroke: var(--lin-ink); stroke-width: 2; }
+:root[data-skin="board"] .aw-world-art path:is([fill="#f3f1ea"], [fill="#e4e4d2"]) { fill: var(--lin-paper); stroke: var(--lin-ink); stroke-width: 1.5; }
+:root[data-skin="board"] .aw-world-art circle[stroke="#d5ecdf"] { stroke: var(--lin-ink); stroke-opacity: 1; stroke-width: 3; }
+:root[data-skin="board"] .aw-world-art .aw-aircraft-symbol path { fill: var(--lin-ink); stroke: var(--lin-paper); }
+/* Airports as ink-ringed paper discs with an ink runway (the world stamps are the ext session's, E2). */
+:root[data-skin="board"] .aw-airport > ellipse { display: none; }
+:root[data-skin="board"] .aw-airport > circle:first-of-type { fill: var(--lin-ink); }
+:root[data-skin="board"] .aw-airport > circle:nth-of-type(2) { fill: var(--lin-paper); }
+:root[data-skin="board"] .aw-airport rect { fill: var(--lin-ink); }
+:root[data-skin="board"] .aw-airport .aw-airport-ring path { stroke: var(--lin-paper); }
+:root[data-skin="board"] .aw-airport .aw-airport-ring path[stroke="#FF9A3D"] { stroke: var(--lin-ink); }
+/* end U3 */
+
+/* end U4 */
+/* [night-57a] D-320: tablets (768 × 1024, iPad 13" 1032 × 1376 and their landscape) printed the weekly board and the report
+   at phone size from the top and left the lower third to half as empty paper (98 % one colour in the store shots). On a
+   page at least 720 × 900 the sheet is printed enlarged (zoom: type, rules, slips and 48 dp targets together); a portrait
+   tablet also stacks it like a tall phone (three crates one under the other, window beside; the report in one column).
+   Phones (under 720 px wide or 900 px tall) keep their layout; at 130/150 % text the sheet keeps today's size. A landscape
+   page needs 1000 px (1088 × 904: four crates ran 17 px below the page). */
+@media (min-width: 720px) and (min-height: 1000px), (orientation: portrait) and (min-width: 720px) and (min-height: 900px) {
+  :root[data-skin="board"]:not([data-airway-text-scale="130"], [data-airway-text-scale="150"]) :is(.airway-upgrade-open:not(.is-picking-hub) .airway-upgrade, .airway-go-overlay:not(.is-map) .airway-go-content) { zoom: var(--lin-big, 1.25); }
+}
+@media (orientation: portrait) and (min-width: 720px) and (min-height: 900px) {
+  :root[data-skin="board"] { --lin-big: 1.2; }
+  :root[data-skin="board"] .airway-upgrade:not([data-crates="4"]) { --upgrade-win: 150px; }
+  :root[data-skin="board"] .airway-upgrade:not([data-crates="4"]) .airway-upgrade-labels { grid-auto-flow: row; }
+  :root[data-skin="board"] .airway-upgrade:not([data-crates="4"]) .airway-upgrade-tag { flex-direction: row; padding: 10px 14px 16px 10px; gap: 14px; }
+  :root[data-skin="board"] .airway-upgrade:not([data-crates="4"]) .airway-upgrade-model { width: var(--upgrade-win); }
+  :root[data-skin="board"] .airway-go-content { grid-template-columns: minmax(0, 1fr); }
+  :root[data-skin="board"] :is(.airway-go-board, .airway-go-strip) { min-height: 0; }
+  :root[data-skin="board"] .airway-go-strip { border-left: 0; border-top: 1.5px solid var(--lin-ink); padding-left: 4px; }
+}
+@media (orientation: portrait) and (min-width: 960px) and (min-height: 1200px) {
+  :root[data-skin="board"] { --lin-big: 1.5; }
+  :root[data-skin="board"] .airway-go-content { --lin-big: 1.65; }
+  :root[data-skin="board"] .airway-upgrade:not([data-crates="4"]) { --upgrade-win: 170px; }
+}
+
+/* ==== Section B: the board ========================================================================================= */
+/* [history] [night-69a] D-324 (docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md step T1; D-323): UI skin "UI-A — Lotniskowa
    tablica i paski lotu" (mockups and spec: docs/styles/kierunki-2026-11c/makiety/ui-a/UI-A-SPEC.md). DEV-only preview
    until the flip (T6): src/main.ts imports this file only in a DEV build with `?skin=board`, after the Linoryt structure
    re-scoped to the board (boardTwin, src/ui/skin/board.ts), so a release build has none of it.
@@ -98,6 +710,9 @@
   display: flex; align-items: flex-end; gap: clamp(6px, 3.6cqw, 14px); min-width: 0;
 }
 :root[data-skin="board"] .bd-cell { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+/* [night-81a] D-336: on the narrowest boards (320 px phones) the figures keep their own width when the labels run to their
+   budget (pseudo-locale): the gaps give way first. */
+@container (max-width: 270px) { :root[data-skin="board"] .bd-row { gap: 5px; } }
 :root[data-skin="board"] .bd-label {
   font: 600 8.5px/1 var(--board-face); letter-spacing: clamp(.5px, .42cqw, 1.4px); text-transform: uppercase;
   color: var(--board-cream-2); white-space: nowrap;
@@ -578,13 +1193,16 @@
 :root[data-skin="board"] .bd-print__figures .bd-print__block, :root[data-skin="board"] .bd-print__figure { display: flex; align-items: baseline; gap: 0; min-width: 0; }
 :root[data-skin="board"] .bd-print__label { flex: 1 1 auto; display: flex; align-items: baseline; min-width: 0; font: 500 calc(13px * var(--airway-text-scale))/1.45 var(--board-mono); }
 :root[data-skin="board"] .bd-print__label::after { content: ''; flex: 1 1 12px; min-width: 12px; margin: 0 6px; border-bottom: 2px dotted var(--board-print-dim); transform: translateY(-4px); }
-:root[data-skin="board"] .bd-print__value { flex: 0 1 auto; display: flex; align-items: baseline; gap: 8px; margin: 0; min-width: 0; text-align: right; overflow-wrap: anywhere; font: 700 calc(14px * var(--airway-text-scale))/1.45 var(--board-mono); }
+:root[data-skin="board"] .bd-print__value { flex: 0 1 auto; display: flex; align-items: baseline; gap: 8px; margin: 0; min-width: min-content; text-align: right; overflow-wrap: anywhere; font: 700 calc(14px * var(--airway-text-scale))/1.45 var(--board-mono); }
 :root[data-skin="board"] .bd-print__record { padding: 1px 6px; background: var(--board-print); color: var(--board-paper); font: 800 calc(12px * var(--airway-text-scale))/1.3 var(--board-mono); letter-spacing: .04em; }
 /* The weeks table. */
 :root[data-skin="board"] .bd-print__table { width: 100%; border-collapse: collapse; font: 500 calc(13px * var(--airway-text-scale))/1.4 var(--board-mono); }
 :root[data-skin="board"] .bd-print__table th { text-align: left; padding: 0 8px 3px 0; color: var(--board-print-dim); font: 600 calc(11px * var(--airway-text-scale))/1.3 var(--board-mono); }
-:root[data-skin="board"] .bd-print__table td { padding: 1px 8px 1px 0; vertical-align: top; overflow-wrap: anywhere; }
+:root[data-skin="board"] .bd-print__table td { padding: 1px 8px 1px 0; vertical-align: top; overflow-wrap: break-word; }
+/* [night-81a] D-336: words never break mid-word (D-51); a table too wide for the roll at large text scrolls sideways. */
+:root[data-skin="board"] .bd-print__weeks { overflow-x: auto; }
 :root[data-skin="board"] .bd-print__table :is(th, td):is(:nth-child(2), :nth-child(3)) { text-align: right; padding-right: 14px; }
+:root[data-skin="board"] .bd-print__table td:nth-child(-n+3) { min-width: 2ch; overflow-wrap: normal; } /* [night-81a] figures never break */
 :root[data-skin="board"] .bd-print__table :is(th, td):last-child { padding-right: 0; }
 :root[data-skin="board"] .bd-print__table tr:last-child td:last-child { font-weight: 800; }
 :root[data-skin="board"] .bd-print__note { color: var(--board-print-dim); }
@@ -609,7 +1227,7 @@
 :root[data-skin="board"] .bd-print .airway-go-board { min-height: 0; padding: 0; background: transparent; color: var(--board-print); border-left: 0; border-right: 0; border-bottom: 0; }
 :root[data-skin="board"] .bd-print .airway-go-board.bd-print__block { padding-top: 12px; }
 :root[data-skin="board"] .bd-print .airway-go-board-title { margin: 0 0 6px; color: var(--board-print-dim); font: 700 calc(12px * var(--airway-text-scale))/1.3 var(--board-mono); letter-spacing: .06em; }
-:root[data-skin="board"] .bd-print :is(.airway-go-board-head, .airway-go-flight) { grid-template-columns: minmax(0, 1fr) 40px auto; padding: 1px 0; border: 0; color: var(--board-print); background: transparent; font: 500 calc(13px * var(--airway-text-scale))/1.4 var(--board-mono); min-height: 0; }
+:root[data-skin="board"] .bd-print :is(.airway-go-board-head, .airway-go-flight) { grid-template-columns: minmax(0, 1fr) minmax(40px, max-content) auto; column-gap: 6px; /* [night-81a] the gate head grows at 130/150 % */ padding: 1px 0; border: 0; color: var(--board-print); background: transparent; font: 500 calc(13px * var(--airway-text-scale))/1.4 var(--board-mono); min-height: 0; }
 :root[data-skin="board"] .bd-print .airway-go-board-head { color: var(--board-print-dim); font-size: calc(11px * var(--airway-text-scale)); }
 :root[data-skin="board"] .bd-print .airway-go-flight-list { max-height: none; overflow: visible; }
 :root[data-skin="board"] .bd-print .airway-go-flap { padding: 0 5px; border: 1.5px solid var(--board-print); background: transparent; color: var(--board-print); font: 700 calc(11px * var(--airway-text-scale))/1.4 var(--board-mono); letter-spacing: .04em; }
@@ -758,6 +1376,9 @@
 :root[data-skin="board"] .airway-logbook__records .airway-logbook__cell:last-child { border-bottom: 0; }
 :root[data-skin="board"] .airway-logbook__records dt { color: var(--board-print); font-family: var(--board-face); }
 :root[data-skin="board"] .airway-logbook__records dd { color: var(--board-print); font-family: var(--board-mono); }
+/* [night-81a] D-336: Chivo Mono's figures run wider than the old face: at 130 % the records stack as at 150 % (logbook.css). */
+:root[data-skin="board"][data-airway-text-scale="130"] .airway-logbook__records .airway-logbook__cell { grid-template-columns: 1fr; gap: 3px; }
+:root[data-skin="board"][data-airway-text-scale="130"] .airway-logbook__records dd { text-align: left; }
 :root[data-skin="board"] .airway-logbook__milestones dt::before { border-color: var(--board-print-dim); }
 :root[data-skin="board"] .airway-logbook__milestones [data-reached="true"] dt::before { border-color: var(--board-print); background: var(--board-print); }
 :root[data-skin="board"] .airway-logbook__milestones [data-reached="false"] dd { color: var(--board-print-dim); }
@@ -792,6 +1413,7 @@
   font: 800 16px/1 var(--board-face); font-stretch: 80%;
 }
 :root[data-skin="board"] .puzzle-flap-title { color: var(--board-cream); font: 700 calc(clamp(13px, 2.6vw, 15px) * var(--airway-text-scale))/1.25 var(--board-face); }
+:root[data-skin="board"] .puzzle-flap-title { font-size: min(calc(clamp(13px, 2.6vw, 15px) * var(--airway-text-scale)), 4.4vw); overflow-wrap: break-word; } /* [night-81a] D-336: no mid-word break at 130/150 % (only a word longer than the line) */
 :root[data-skin="board"] :is(.puzzle-flap-gate, .puzzle-flap-stars, .puzzle-flap-best) { color: var(--board-cream-2); font-family: var(--board-mono); }
 :root[data-skin="board"] .puzzle-flap-stars.is-done { color: var(--board-cream); }
 :root[data-skin="board"] .puzzle-board-footer { color: var(--board-cream-2); border: 0; }
@@ -911,6 +1533,11 @@
 :root[data-skin="board"] .bd-notes .airport-bubble > .airport-bubble__trend { box-sizing: border-box; width: 17px; padding: 0 3px 0 4px; border-left: 0; animation: none; }
 :root[data-skin="board"] .bd-notes .airport-bubble > .airport-bubble__curfew { box-sizing: border-box; width: 32px; align-items: center; justify-content: center; }
 :root[data-skin="board"] .bd-notes .airport-bubble > :is(.airport-bubble__surge, .airport-bubble__front) { height: 20px; margin: 2px 0; }
+/* [night-81a] D-336: a running surge and an airport under a weather front print their stub solid (cream, enamel letters);
+   the enamel ground above had turned them dark on dark (1.1:1, test:e2e:weather-board). */
+:root[data-skin="board"] .bd-notes .airport-bubble > :is(.airport-bubble__surge[data-phase="active"], .airport-bubble__front[data-phase="under"]) {
+  background-color: var(--board-cream); color: var(--board-enamel);
+}
 :root[data-skin="board"] .bd-notes .airport-bubble > :is(.bd-plate, .airport-bubble__timer) + :is(.airport-region-glyph, .bd-count, .airport-bubble__trend, .airport-bubble__curfew, .airport-bubble__surge, .airport-bubble__front) {
   border-left: 4px solid var(--board-enamel);
 }
@@ -1075,7 +1702,9 @@
    chrome; the reason in heavy print behind a no-entry mark (shape, and no red: red is a jam). The first-time cards and
    the slot hint keep their Linoryt slip but stand on the same line. */
 :root[data-skin="board"] .airway-game-layer .airway-atc-strip {
-  left: var(--bd-low-l, 8px); right: auto; bottom: var(--bd-low-b, 104px); max-width: calc(100% - var(--bd-low-l, 8px) - var(--bd-low-r, 8px));
+  /* [night-81a] D-336: before the bay has measured (or without one) the fallbacks keep the safe area (notch, landscape). */
+  left: var(--bd-low-l, calc(var(--aw-safe-left) + 8px)); right: auto; bottom: var(--bd-low-b, calc(var(--aw-safe-bottom) + 104px));
+  max-width: calc(100% - var(--bd-low-l, calc(var(--aw-safe-left) + 8px)) - var(--bd-low-r, calc(var(--aw-safe-right) + 8px)));
 }
 :root[data-skin="board"] .airway-game-layer .airway-atc-strip:not(.airway-first-time, .airway-slot-hint) {
   min-height: 48px; box-sizing: border-box; border-left: 22px solid var(--board-enamel); background: var(--board-paper); color: var(--board-print);

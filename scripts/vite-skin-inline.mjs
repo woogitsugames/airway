@@ -11,12 +11,12 @@
 // `var(--skin-` in dist CSS).
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { SKIN_STRUCTURE_FILE, SKIN_SCOPE, skinOverrides, pruneOverridden } from './vite-skin-prune.mjs';
+import { SKIN_STRUCTURE_FILES, SKIN_SCOPE, skinOverrides, pruneOverridden } from './vite-skin-prune.mjs';
 
 export const SKIN_FILE = 'src/ui/skin/current.css';
-// [night-46a] D-301: no DEV-only skins any more (the Diorama comparison and the Linoryt preview went with step U5); the
-// Linoryt structure (SKIN_STRUCTURE_FILE) is inlined like any component CSS and its inks (`--lin-*`, a plain :root) are
-// palette constants written out in place.
+// [night-46a] D-301: no DEV-only skins any more; [night-81a] D-336: the UI-A structure (SKIN_STRUCTURE_FILES, board.css
+// and board-week.css) is inlined like any component CSS and the base inks (`--lin-*`, a plain :root in board.css
+// section A) are palette constants written out in place.
 const stripComments = (css) => css.replace(/\/\*[\s\S]*?\*\//g, '');
 const USE = /var\(\s*--skin-([a-z0-9-]+)\s*([,)])/g;
 
@@ -175,15 +175,15 @@ export function skinBuild(root) {
     inline: referencedValues(tokens, refs, constants),
     keep: new Set(scripts.flatMap(tokensInScript)),
     refs,
-    inks: linorytInks(constants),
+    inks: baseInks(constants),
   };
 }
 
-/** [night-48a] U6 (D-294 mechanism): the Linoryt inks (`--lin-*` palette constants: one plain :root definition, var-free,
+/** [night-48a] U6 (D-294 mechanism); [night-81a] D-336: the base inks (Linoryt's until T6) (`--lin-*` palette constants: one plain :root definition, var-free,
  *  never named by a script) are written out in place of their `var(--lin-x)` references (~3 kB of release CSS). The
  *  definitions stay on :root, so a DEV probe or a later rule that names the ink still resolves; inks whose value holds a
  *  var() (`--lin-neatline`, `--lin-top`) or that a script sets (`--lin-pass-bottom`, `--lin-jam-w`) stay references. */
-export function linorytInks(constants) {
+export function baseInks(constants) {
   return new Map([...constants].filter(([name]) => name.startsWith('lin-')));
 }
 
@@ -215,12 +215,12 @@ export function skinInline() {
       const { resolved, inline, keep, refs, inks } = build ? (cache ??= skinBuild(root)) : skinBuild(root);
       if (file === normal(resolve(root, SKIN_FILE))) return { code: keptSkin(resolved, new Set([...keep, ...refs])), map: null };
       const inlined = inlineInks(inlineSkin(code, inline, file.slice(root.length + 1)), inks);
-      // [night-11ax] D-257: a release always has <html data-skin="linoryt">, so its scope is written `:root:root` (same
-      // specificity, 0-2-0; ~15 bytes less per selector). Dev (AW_SKIN_INLINE=1) keeps it as written.
-      if (file === normal(resolve(root, SKIN_STRUCTURE_FILE))) return { code: build ? inlined.split(SKIN_SCOPE).join(':root:root') : inlined, map: null };
+      // [night-11ax] D-257: a release always has <html data-skin="board"> ([night-81a] D-336; "linoryt" before), so its scope
+      // is written `:root:root` (same specificity, 0-2-0; ~15 bytes less per selector). Dev (AW_SKIN_INLINE=1) keeps it.
+      if (SKIN_STRUCTURE_FILES.some((f) => file === normal(resolve(root, f)))) return { code: build ? inlined.split(SKIN_SCOPE).join(':root:root') : inlined, map: null };
       // [night-11ax] D-257: drop the declarations the skin structure always overrides (scripts/vite-skin-prune.mjs).
-      const over = build ? (overrides ??= skinOverrides(readFileSync(resolve(root, SKIN_STRUCTURE_FILE), 'utf8')))
-        : skinOverrides(readFileSync(resolve(root, SKIN_STRUCTURE_FILE), 'utf8'));
+      const structure = () => skinOverrides(SKIN_STRUCTURE_FILES.map((f) => readFileSync(resolve(root, f), 'utf8')).join('\n'));
+      const over = build ? (overrides ??= structure()) : structure();
       return { code: pruneOverridden(inlined, over).css, map: null };
     },
   };

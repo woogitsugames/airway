@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- [night-78a] Z, D-333: the black enamel of the app mark I-1 (D-326): adaptive icon background and launch screen. -->
+    <!-- [night-78a] Z, D-333: the black enamel of the app mark I-1 (D-326): adaptive icon background and launch screen.
+         [night-81a] T6, D-336: also the window behind the WebView and the system bars (UI-A's board enamel, --board-enamel,
+         index.html theme-color); the Linoryt paper colour is gone. -->
     <color name="airway_enamel">#0E0F0F</color>
-    <!-- [night-48a] U6: the Linoryt paper (--lin-paper, index.html theme-color). -->
-    <color name="airway_paper">#ECE3CC</color>
 </resources>

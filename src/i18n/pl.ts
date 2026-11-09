@@ -62,7 +62,7 @@ export const pl = {
   'hud.crates.days': '{days} {days|dzień|dni|dni}',
   'hud.crates.hours': '{hours} godz.',
   'hud.crates.minutes': '{minutes} min',
-  // [night-11az] D-257; [night-46a] D-301: margines HUD Linorytu, podpisy doku, notka lotniska i podtytuł menu.
+  // [night-11az] D-257; [night-46a] D-301; [night-81a] D-336: margines HUD, podpisy doku, notka lotniska i podtytuł menu (klucze neutralne, po Linorycie).
   'hud.weekLine': 'Tydzień {week}',
   'hud.passengerLine': '{count} {count|pasażer|pasażerów|pasażerów}',
   'hud.dayOf': 'dzień {day} z {days}',
@@ -314,10 +314,11 @@ export const pl = {
   'licenses.overpass': 'Krój pisma Overpass',
   'licenses.overpassMono': 'Krój pisma Overpass Mono',
   'licenses.atkinson': 'Krój pisma Atkinson Hyperlegible Next',
-  'licenses.besley': 'Krój pisma Besley', // [night-46a] D-301 Linoryt
-  'licenses.schibsted': 'Krój pisma Schibsted Grotesk',
+  'licenses.archivo': 'Krój pisma Archivo', // [night-81a] D-336: the UI-A faces
+  'licenses.chivoMono': 'Krój pisma Chivo Mono',
   'licenses.naturalEarth': 'Dane geograficzne Natural Earth',
   'licenses.worldAtlas': 'Zbiór danych world-atlas',
+  'licenses.nasaEarth': 'Obrazy Ziemi: NASA Earth Observatory (Blue Marble, Black Marble)', // [night-81a] D-336: the globe's photo (D-323)
   'licenses.noaaRelief': 'Rzeźba terenu: NOAA ETOPO5',
   'licenses.three': 'Renderer 3D three.js',
   'licenses.ofl': 'SIL Open Font License 1.1',

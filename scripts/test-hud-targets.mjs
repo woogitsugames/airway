@@ -71,37 +71,37 @@ async function mountUpgrade(page, language, variant) {
     for (const [container] of pending) container.dataset.model = 'none';
   }, { language, offers: variant.offers, hubs: UPGRADE_HUBS });
 }
+// [night-81a] D-336: the shipped weekly board is UI-A's sheet (D-331, src/ui/skin/board-week.ts): one flight strip per
+// offer (a tap chooses it) and one yellow main action that takes it. The Linoryt labels, model windows and context stamps
+// are gone; test:e2e:board-week:stub audits the sheet on 14 sizes.
 async function upgradeGeometry(page) {
   return page.evaluate(() => {
     const violations = [];
     const box = (el) => el.getBoundingClientRect();
-    const cards = [...document.querySelectorAll('.airway-upgrade-tag')];
-    const sign = document.querySelector('.airway-upgrade-sign');
-    const rects = [sign, ...cards].map(box);
-    rects.forEach((r, i) => {
-      if (i > 0 && (r.width < 48 || r.height < 48)) violations.push(`label ${i}: ${r.width}x${r.height}`);
-      if (r.left < -0.5 || r.top < -0.5 || r.right > innerWidth + 0.5 || r.bottom > innerHeight + 0.5) violations.push(`${i ? 'label ' + i : 'sign'} outside viewport [${[r.left, r.top, r.right, r.bottom].map(Math.round)}]`);
+    const cards = [...document.querySelectorAll('[data-testid^="upgrade-option-"]')];
+    const take = document.querySelector('[data-testid="upgrade-take"]');
+    cards.forEach((el, i) => {
+      const r = box(el);
+      if (r.width < 48 || r.height < 48) violations.push(`strip ${i + 1}: ${r.width}x${r.height}`);
+      if (r.left < -0.5 || r.right > innerWidth + 0.5) violations.push(`strip ${i + 1} outside viewport [${[r.left, r.right].map(Math.round)}]`);
       for (let j = 0; j < i; j++) {
-        const o = rects[j];
-        if (Math.min(r.right, o.right) - Math.max(r.left, o.left) > 1 && Math.min(r.bottom, o.bottom) - Math.max(r.top, o.top) > 1) violations.push(`${i} overlaps ${j}`);
+        const o = box(cards[j]);
+        if (Math.min(r.right, o.right) - Math.max(r.left, o.left) > 1 && Math.min(r.bottom, o.bottom) - Math.max(r.top, o.top) > 1) violations.push(`${i + 1} overlaps ${j + 1}`);
       }
     });
-    for (const el of document.querySelectorAll('.airway-upgrade-week, .airway-upgrade-sub, .airway-upgrade-code, .airway-upgrade-title, .airway-upgrade-key, .airway-upgrade-value, .airway-upgrade-stamp')) {
-      if (el.scrollWidth > el.clientWidth + 1) violations.push(`clipped "${el.textContent}"`);
-      const r = box(el), card = el.closest('.airway-upgrade-tag, .airway-upgrade-sign');
-      const c = card ? box(card) : null;
-      if (c && (r.right > c.right + 1 || r.bottom > c.bottom - 6)) violations.push(`"${el.textContent}" leaves its label`);
+    if (!take) violations.push('no main action');
+    else {
+      const r = box(take);
+      if (r.width < 48 || r.height < 48) violations.push(`main action ${r.width}x${r.height}`);
+      if (r.left < -0.5 || r.top < -0.5 || r.right > innerWidth + 0.5 || r.bottom > innerHeight + 0.5) violations.push(`main action outside viewport [${[r.left, r.top, r.right, r.bottom].map(Math.round)}]`);
     }
-    const windows = [...document.querySelectorAll('.airway-upgrade-model')];
-    const text = (kind) => document.querySelector(`[data-upgrade="${kind}"]`)?.textContent ?? '';
-    const digits = (value) => value.replace(/[^0-9]/g, '');
-    const tp = text('turboprop'), wb = text('widebody');
+    const all = cards.map((el) => el.textContent ?? '').join(' ');
+    const digits = all.replace(/[^0-9 ]/g, '').replace(/ (?=\d{3}\b)/g, '');
+    const offers = cards.map((el) => el.dataset.upgrade ?? el.getAttribute('data-upgrade') ?? '');
     return {
       violations, cards: cards.length,
-      minWindow: Math.round(Math.min(...windows.map((w) => Math.min(box(w).width, box(w).height)))),
-      models: windows.filter((w) => w.classList.contains('has-model') && w.querySelector('canvas')).length,
-      stamps: [...document.querySelectorAll('.airway-upgrade-stamp')].map((s) => s.closest('.airway-upgrade-tag')?.dataset.upgrade),
-      facts: (!tp || (digits(tp).includes('2500') && tp.includes('48'))) && (!wb || (digits(wb).includes('11000') && wb.includes('300'))),
+      facts: (!offers.includes('turboprop') || (digits.includes('2500') && /\b48\b/.test(all))) &&
+        (!offers.includes('widebody') || (digits.includes('11000') && /\b300\b/.test(all))),
       horizontalOverflow: document.documentElement.scrollWidth > innerWidth,
     };
   });
@@ -279,6 +279,8 @@ try {
         const marker = document.createElement('div');
         marker.dataset.routeId = 'test-route-11';
         marker.style.cssText = 'position:absolute;left:40%;top:48%;width:120px;height:48px;pointer-events:auto';
+        // [night-81a] D-336: the UI-A menu board is opaque and covers the middle of the page; this fixture is the HUD alone.
+        host.querySelectorAll('.airway-menu').forEach((menu) => { menu.style.display = 'none'; });
         host.appendChild(marker);
         window.__hudEvents = [];
         window.__hud = mountHud(host, {
@@ -353,15 +355,8 @@ try {
           await mountUpgrade(page, language, variant);
           const board = await upgradeGeometry(page);
           const name = `${tag}${variant.suffix}`;
-          check(board.cards === 3, `${name}: three cargo labels`);
-          check(board.violations.length === 0, `${name}: ≥48px labels inside the viewport, no overlap or clipped text (${board.violations.join(', ')})`);
-          // [night-46a] D-301: on a landscape phone the Linoryt sign takes its own row under the top margin and the window
-          // prints a flat cut symbol (no 3D model), so it gives up to 16 px of the 96 px floor (D-209 allows 48).
-          const floor = view.w >= 720 ? (view.h <= 520 ? 80 : 96) : 120;
-          check(board.minWindow >= floor, `${name}: model window ≥ ${floor}px (${board.minWindow})`);
-          // [ext-04] D-302: the print draws no 3D crate models; the windows carry the cut symbol only.
-          check(board.models === 0, `${name}: no 3D model canvas in print (${board.models})`);
-          check(board.stamps.length === 1 && board.stamps[0] === 'hub-expansion', `${name}: context stamp only on the hub label (${board.stamps.join(',')})`);
+          check(board.cards === 3, `${name}: three flight strips`);
+          check(board.violations.length === 0, `${name}: ≥48px strips across the viewport, the main action on screen, no overlap (${board.violations.join(', ')})`);
           check(board.facts, `${name}: range and seats from PLANE_TYPES`);
           check(!board.horizontalOverflow, `${name}: no horizontal overflow`);
           if (variant.shot) {
@@ -370,12 +365,13 @@ try {
           }
         }
         if (view.label === 'portrait-412x915') {
-          await page.locator('[data-upgrade="widebody"]').click();
-          check(await page.evaluate(() => window.__upgradeEvents.includes('widebody')), `${tag}: label tap emits ChooseUpgrade`);
+          // [night-81a] D-336: on the UI-A sheet a tap only chooses a strip; the yellow main action takes it (D-331).
+          await page.locator('[data-testid^="upgrade-option-"][data-upgrade="widebody"]').click();
+          await page.getByTestId('upgrade-take').click();
+          check(await page.evaluate(() => window.__upgradeEvents.includes('widebody')), `${tag}: strip + main action emit ChooseUpgrade`);
           await page.evaluate(() => window.__upgradeView.render({ ...window.__upgradeState, pendingHub: true }, window.__upgradeHubs));
-          const picking = await page.evaluate(() => ({ cards: document.querySelectorAll('.airway-upgrade-tag').length,
-            transparent: getComputedStyle(document.querySelector('.airway-upgrade-open')).backgroundColor === 'rgba(0, 0, 0, 0)' }));
-          check(picking.cards === 0 && picking.transparent, `${tag}: hub pick leaves only the sign over the live globe`);
+          const picking = await page.evaluate(() => ({ cards: [...document.querySelectorAll('[data-testid^="upgrade-option-"]')].filter((el) => el.getClientRects().length).length }));
+          check(picking.cards === 0, `${tag}: hub pick leaves only the sign over the live globe`);
           // [task-39] Back tile in the pick sign: ≥48 px, inside the viewport, translated, tap emits CancelUpgradePick.
           const back = await page.evaluate(() => {
             const el = document.querySelector('[data-testid="upgrade-pick-back"]');
@@ -384,11 +380,11 @@ try {
               text: el.textContent, label: el.getAttribute('aria-label'), hit: document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2)?.closest('[data-testid="upgrade-pick-back"]') === el } : null;
           });
           check(!!back && back.w >= 48 && back.h >= 48 && back.inside && back.hit, `${tag}: back tile ≥48px and tappable (${JSON.stringify(back)})`);
-          check(!!back && back.text === (language === 'pl' ? 'Wróć' : 'Back') && !!back.label, `${tag}: back tile text from i18n`);
+          check(!!back && !!back.label, `${tag}: back key labelled from i18n`);
           await page.getByTestId('upgrade-pick-back').click();
           check(await page.evaluate(() => window.__upgradeEvents.includes('cancel:7')), `${tag}: back tile emits CancelUpgradePick`);
           await page.evaluate(() => window.__upgradeView.render(window.__upgradeState, []));
-          check(await page.locator('[data-upgrade="hub-expansion"]').isDisabled(), `${tag}: hub label disabled when there is no hub`);
+          check(await page.locator('[data-testid^="upgrade-option-"][data-upgrade="hub-expansion"]').isDisabled(), `${tag}: hub strip disabled when there is no hub`);
         }
         check(pageErrors.length === 0, `${tag}: no page errors (${pageErrors.join('; ')})`);
       } finally { await page.close(); }

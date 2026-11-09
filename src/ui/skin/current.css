@@ -1,19 +1,19 @@
-/* [night-11az] D-257 / [night-46a] D-301: the shipped UI skin is "Linoryt" (D-283, PLAN-LINORYT.md step U5): a relief
-   print in three inks on paper. Every visual value of the in-game HUD (top margin, dock), airport notes and chips,
-   pause sheet, weekly board, hub cause board, game-over report, main menu / settings, ATC strip / route menu /
-   first-time card, logbook, puzzle board, leaderboard, tutorial and the region glyph outline, as semantic custom
-   properties. Release builds write the values in place (scripts/vite-skin-inline.mjs, D-252); the component CSS reads
-   only these names (test:skin-tokens fails on a colour or font literal there). The inks (--lin-*) and the structure
-   live in src/ui/skin/linoryt.css (Róża and the "Diorama" comparison skin are gone, D-301). Text sizes stay the D-248
-   tokens of theme.css.
-   Faces: Besley 800/900 (names, titles, the clock) and Schibsted Grotesk 500–700 (text and figures); Atkinson
-   Hyperlegible Next lends the glyphs they lack (test:glyphs). */
+/* [night-11az] D-257 / [night-81a] D-336: the shipped UI skin is UI-A "Lotniskowa tablica i paski lotu" (D-323,
+   PLAN-NOWY-KIERUNEK.md step T6). Every visual value the component CSS reads (in-game HUD, airport notes and chips,
+   pause sheet, weekly board, hub cause board, game-over report, menu / settings, ATC strip / route menu / first-time
+   card, logbook, puzzle board, leaderboard, tutorial, the region glyph outline) as semantic custom properties. Release
+   builds write the values in place (scripts/vite-skin-inline.mjs, D-252); the component CSS reads only these names
+   (test:skin-tokens fails on a colour or font literal there). The base inks (--lin-*, Linoryt's paper inks until T6)
+   and the structure live in src/ui/skin/board.css (section A: base structure; section B: the board, whose own
+   --board-* tokens draw every screen UI-A restyles). Text sizes stay the D-248 tokens of theme.css.
+   Faces: Archivo (titles, labels, text; 600 at normal width, 700/800 at 80 % width) and Chivo Mono (figures, strips,
+   print-out), SIL OFL; Atkinson Hyperlegible Next and Overpass lend the glyphs they lack (test:glyphs). */
 :root {
 
   /* Typefaces and weights */
-  --skin-face-text: 'Schibsted Grotesk', 'Atkinson Hyperlegible Next', 'Overpass', sans-serif;
-  --skin-face-display: 'Besley', 'Atkinson Hyperlegible Next', 'Overpass', serif;
-  --skin-face-mono: 'Schibsted Grotesk', 'Atkinson Hyperlegible Next', 'Overpass Mono', sans-serif;
+  --skin-face-text: 'Archivo', 'Atkinson Hyperlegible Next', 'Overpass', sans-serif;
+  --skin-face-display: 'Archivo', 'Atkinson Hyperlegible Next', 'Overpass', sans-serif;
+  --skin-face-mono: 'Chivo Mono', 'Atkinson Hyperlegible Next', 'Overpass Mono', monospace;
   --skin-weight-regular: 400;
   --skin-weight-bold: 700;
   --skin-weight-heavy: 700;

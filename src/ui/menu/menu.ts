@@ -5,7 +5,7 @@ import type { RegionId } from '../../data/regions';
 import type { LicenceClass } from '../../sim';
 import '../skin/current.css'; // [night-11aq] skin tokens read by menu.css
 import './menu.css';
-import { linoryt, linorytTagline } from '../skin/linoryt'; // [night-28a] D-284; [night-46a] D-301: the shipped skin
+import { skinBase, baseTagline } from '../skin/base'; // [night-28a] D-284; [night-46a] D-301: the shipped skin
 import { sheetSkin } from '../sheet-skin'; // [night-77a] D-332: the DEV `?skin=board` preview's departures board (null in a release)
 
 export type MenuMode = 'continue' | 'endless' | 'puzzles' | 'daily';
@@ -162,7 +162,7 @@ function makeSign():HTMLElement {
   titleBox.append(el('div','airway-sign__title',t('app.title')),el('div','airway-sign__subtitle',t('menu.sign')));
   sign.append(symbol,titleBox);
   // [night-28a] D-284: the printed title carries the tagline (the airport sign line is hidden by linoryt.css).
-  if (linoryt.on) titleBox.append(linorytTagline());
+  if (skinBase.on) titleBox.append(baseTagline());
   return sign;
 }
 
@@ -204,7 +204,7 @@ export function createMenu(onFlight:(mode:MenuMode|MenuService)=>void,initial:Me
     main.append(title.element,sub);
     // [night-28a] D-284: the title printed in Besley, an index entry, not in split-flap cells (the button's aria-label
     // names it; linoryt.css hides the flap).
-    if(linoryt.on) main.insertBefore(el('span','lin-title',flight.title),sub).setAttribute('aria-hidden','true');
+    if(skinBase.on) main.insertBefore(el('span','lin-title',flight.title),sub).setAttribute('aria-hidden','true');
     const gateWrap=el('span','airway-flight__gate');gateWrap.append(gate.element);
     const statusWrap=el('span','airway-flight__status');statusWrap.append(status.element);
     const withRegion=flight.id==='endless' && !!initial.homeRegions?.length && !!onHomeRegion;
@@ -223,7 +223,7 @@ export function createMenu(onFlight:(mode:MenuMode|MenuService)=>void,initial:Me
       region=regionSelect(initial.homeRegions!,initial.homeRegion ?? null,(choice)=>onHomeRegion!(choice));
       const cell=el('span','airway-flight__status airway-flight__region-cell');
       // [night-54a] D-312: the print names the choice beside it (frame png/a-menu.png); the select keeps its aria-label.
-      if(linoryt.on){ const label=el('span','lin-choice',t('menu.homeRegion')); label.setAttribute('aria-hidden','true'); cell.append(label); }
+      if(skinBase.on){ const label=el('span','lin-choice',t('menu.homeRegion')); label.setAttribute('aria-hidden','true'); cell.append(label); }
       cell.append(region);
       if(withLicence){
         line.classList.add('airway-flight-line--licence');

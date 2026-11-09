@@ -5,7 +5,7 @@ import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import {
-  withBrowser, newGamePage, waitForScreen, state, assert, clickTestId, ROOT, ARTIFACTS, SEED, RENDER, SKIN, gameUrl, assertRender,
+  withBrowser, newGamePage, waitForScreen, state, assert, clickTestId, ROOT, ARTIFACTS, SEED, RENDER, gameUrl, assertRender,
 } from '../e2e/browser.mjs';
 
 const fixture = process.argv.includes('--fixture');
@@ -33,7 +33,7 @@ const outdir = resolve(ROOT, fixture ? 'docs/shots/matrix-fixture' : stub ? '.e2
 const shotLabel = fixture ? 'matrix-fixture' : stub ? '.e2e/matrix-stub' : 'matrix';
 // [night-80a] D-335: the parts of the weekly board and the report checked against the boarding pass, and the element that
 // must not scroll, per skin (`--skin=board`: the UI-A week sheet of D-331, which scrolls only at text 130/150 %).
-const BOARD = SKIN === 'board';
+const BOARD = true; // [night-81a] D-336: UI-A is the shipped skin (was `--skin=board`, D-335)
 const MATRIX_PARTS = {
   upgrade: BOARD ? '.bw-board, .bw-slip, .bw-pick, .bw-take' : '.airway-upgrade-sign, .airway-upgrade-tag',
   gameover: '.airway-go-sign, .airway-go-board, .airway-go-strip, .airway-go-button',
@@ -63,7 +63,7 @@ async function enter(page, screen) {
       '[data-testid^="upgrade-option-"]:not([data-upgrade="hub-expansion"]):not([data-upgrade="departure-slots"])') /* [task-32] targeted picks wait for a globe tap */?.getAttribute('data-testid') ?? 'upgrade-option-0');
     await clickTestId(page, option);
     // [night-80a] D-335: on the UI-A week sheet (D-331) a tap only chooses the strip; the main action takes it.
-    if (BOARD) await clickTestId(page, 'upgrade-take');
+    // [night-81a] D-336: clickTestId takes a chosen strip through the main action `upgrade-take` (e2e/browser.mjs).
     await waitForScreen(page, 'game');
     await page.evaluate(() => window.aw.forceHubOverload());
   }

@@ -109,7 +109,7 @@ npm run test:e2e:edge-chip-tags:stub
 npm run test:e2e:resize:stub         # [night-15b] R4f resize mid-run with a sheet open (stub only: needs the frozen clock)
 npm run test:e2e:pause-reach:stub    # [night-14b] pause sheet reach (stub in test:ci; the plain script uses the real globe)
 npm run test:e2e:gameover-contracts:stub
-npm run test:e2e:screen-audit:stub   # every screen of the shipped Linoryt skin audited on the stub world
+npm run test:e2e:board:stub          # [night-81a] D-336: the shipped UI-A skin audited on the stub world (screen-audit retired)
 # [night-44a] 13 more bot-driven/overlay suites as `npm run test:e2e:<suite>:stub` (PNGs of a stub run go to .e2e/stub/<task>/
 # through `shotsDir()`, never docs/shots/): new-airport, pause-summary, run-timeline, edge-chip-airports, edge-chip-fill,
 # board-short, upgrade-picks, undo-after-upgrade, home-region, licence-classes, fill-trend, surge-tag, hub-board

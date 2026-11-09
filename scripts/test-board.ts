@@ -10,8 +10,9 @@
 // weeks table (src/ui/skin/board-sheets.ts), the Linoryt sections the twin leaves out, the T5 texts, and the release
 // menu and report's empty sheet slot.
 import assert from 'node:assert/strict';
+// [night-81a] D-336 (step T6): the skin is shipped; the twin is gone (board.css section A), main.ts starts it on every boot.
 import { readFileSync } from 'node:fs';
-import { BOARD_FLIP_MS, BOARD_NIGHT, BOARD_REFLIP_MS, BOARD_STAGGER_MS, boardFigures, boardTwin, isBoardNight, SPEED_ANGLE } from '../src/ui/skin/board.ts';
+import { BOARD_FLIP_MS, BOARD_NIGHT, BOARD_REFLIP_MS, BOARD_STAGGER_MS, boardFigures, isBoardNight, SPEED_ANGLE } from '../src/ui/skin/board.ts';
 import { BOARD_CELLS } from '../src/i18n/limits.ts';
 import {
   atlasLabelWidth, codeWidth, CITY_ROW, DENSE_SIGNS, FRESH_ROW, LOD1_GLYPHS, LOD1_MAX_SPAN_KM, placeAtlas, showsCity, SIGN_ROW, signClock,
@@ -27,7 +28,6 @@ import {
 } from '../src/ui/skin/board-strips.ts';
 import { REGION_IDS, type RegionId } from '../src/data/regions.ts';
 import { boardDate, menuPlan, printClock, printDate, printQueue, printWeeks, PRINT_GLYPHS_PER_REGION } from '../src/ui/skin/board-sheets.ts';
-import { BOARD_TWIN_CUTS } from '../src/ui/skin/board.ts';
 import { en } from '../src/i18n/en.ts';
 import { pl } from '../src/i18n/pl.ts';
 
@@ -78,16 +78,6 @@ test('the board flip duration in board.css equals BOARD_FLIP_MS', () => {
 test('speed selector: 1×, 2× and 4× on three distinct stops', () => {
   assert.deepEqual([SPEED_ANGLE[1], SPEED_ANGLE[2], SPEED_ANGLE[4]], [-135, 0, 135]);
 });
-test('boardTwin re-scopes every Linoryt rule to the preview and leaves the plain :root inks', () => {
-  const css = ':root { --lin-ink: #1E1C1F; }\n:root[data-skin="linoryt"] .a { color: red; }\n' +
-    ':root[data-airway-motion="reduce"][data-skin="linoryt"] .b, :root[data-skin="linoryt"]:has(.c) .d { top: 0; }';
-  const twin = boardTwin(css);
-  assert.equal(twin.includes('[data-skin="linoryt"]'), false);
-  assert.equal(twin.split('[data-skin="board"]').length - 1, 3);
-  assert.ok(twin.startsWith(':root { --lin-ink: #1E1C1F; }'));
-  const real = boardTwin(readFileSync('src/ui/skin/linoryt.css', 'utf8'));
-  assert.equal(real.includes('[data-skin="linoryt"]'), false);
-});
 test('board labels are abbreviated on the board and spoken in full (PL/EN)', () => {
   for (const catalog of [pl, en]) {
     for (const key of ['board.week', 'board.day', 'board.passengers'] as const) assert.ok(catalog[key].length <= 6, `${key} "${catalog[key]}"`);
@@ -96,14 +86,23 @@ test('board labels are abbreviated on the board and spoken in full (PL/EN)', () 
   assert.equal(pl['board.week'], 'Tydz.');
   assert.equal(pl['board.passengers'], 'Pasaż.');
 });
-test('src/main.ts loads the preview only in a DEV build with ?skin=board, before the HUD mounts', () => {
+test('[night-81a] D-336: src/main.ts starts the board on every boot (no ?skin= flag), before the HUD mounts', () => {
   const main = readFileSync('src/main.ts', 'utf8');
-  assert.match(main, /import\.meta\.env\.DEV && query\.get\('skin'\) === 'board' \? startBoardPreview\(\) : null/);
-  assert.match(main, /import\('\.\/ui\/skin\/board\.css'\)/);
-  assert.match(main, /if \(devBoard\) await devBoard;/);
-  assert.equal(/^import [^;]*skin\/board/m.test(main), false, 'board.ts or board.css imported statically');
+  assert.match(main, /^const boardReady: Promise<void> = startBoardSkin\(\);$/m);
+  assert.match(main, /^import '\.\/ui\/skin\/board\.css';$/m);
+  assert.match(main, /await boardReady;/);
+  assert.doesNotMatch(main, /query\.get\('skin'\)|devBoard|linoryt\.css/);
+  assert.equal(/^import [^;]*skin\/board'/m.test(main), false, 'board.ts imported statically');
   const html = readFileSync('index.html', 'utf8');
-  assert.match(html, /<html[^>]*data-skin="linoryt"/);
+  assert.match(html, /<html[^>]*data-skin="board"/);
+  assert.match(html, /<meta name="theme-color" content="#0E0F0F"/);
+  // The base structure (Linoryt's until T6) is section A of board.css; its notes, menu index, report and U4 pages are gone.
+  const css = readFileSync('src/ui/skin/board.css', 'utf8');
+  const a = css.slice(0, css.indexOf('/* ==== Section B'));
+  assert.ok(a.includes('.airway-pause__summary') && a.includes('.aw-tutorial-stage') && a.includes('.airway-upgrade'), 'pause, training flight, weekly board geometry');
+  for (const gone of ['.lin-jam', '.airport-edge', '.lin-title', '.airway-go-sign::after', '.airway-logbook__totals', 'data-skin="linoryt"']) {
+    assert.equal(a.includes(gone), false, gone);
+  }
 });
 
 // ---- T2: airport signs (D-328) -----------------------------------------------------------------------------------------
@@ -195,12 +194,6 @@ test('direction signs: at most two yellow (new first, then the fuller), a jam is
     { jam: false, fresh: true, fill: 0 }, { jam: false, fresh: false, fill: .5 }]);
   assert.deepEqual(keep, [false, false, true, true, false]);
 });
-test('boardTwin leaves Linoryt\'s note rules (U2) out: the board prints its own signs', () => {
-  const real = boardTwin(readFileSync('src/ui/skin/linoryt.css', 'utf8'));
-  assert.equal(real.includes('.lin-jam'), false);
-  assert.equal(real.includes('.airport-edge'), false);
-  assert.equal(real.includes('.lin-pass'), true, 'the rest of the twin stays');
-});
 test('the release overlay reaches the signs only through the empty slot (no static import of the preview)', () => {
   const overlay = readFileSync('src/ui/overlay.ts', 'utf8');
   assert.match(overlay, /from '\.\/overlay-skin'/);
@@ -285,7 +278,7 @@ test('the release board reaches the sheet only through the empty slot (no static
   assert.match(readFileSync('src/ui/upgrade/skin.ts', 'utf8'), /export const upgradeSkin: \{ current: UpgradeSkin \| null \} = \{ current: null \}/);
   const main = readFileSync('src/main.ts', 'utf8');
   assert.match(main, /import\('\.\/ui\/skin\/board-week'\)/);
-  assert.match(main, /import\('\.\/ui\/skin\/board-week\.css'\)/);
+  assert.match(main, /^import '\.\/ui\/skin\/board-week\.css';/m); // [night-81a] D-336: a static import since T6
   assert.match(main, /upgradeSkin\.current = week\.createBoardWeek/);
   const runtime = [...readFileSync('src/ui/skin/board-week.ts', 'utf8').matchAll(/^import\s+(?!type\b)[^;]*;/gm)];
   assert.equal(runtime.length, 0, 'board-week.ts has no runtime import');
@@ -417,17 +410,6 @@ test('print-out: the weeks table carries each crate and the jam on its last line
   assert.deepEqual(rows.map((row) => row.notes), [[], ['turboprop'], ['Hub AMM', 'Zator AMM']]);
   assert.deepEqual(rows.map((row) => [row.week, row.routes, row.aircraft]), [[1, 3, 3], [2, 1, 2], [3, 0, 0]]);
   assert.deepEqual(printWeeks([], () => '', 'x'), []);
-});
-test('boardTwin leaves Linoryt\'s menu, report and U4 pages out, keeps the pause and the training flight', () => {
-  const linoryt = readFileSync('src/ui/skin/linoryt.css', 'utf8');
-  for (const [from, to] of BOARD_TWIN_CUTS) assert.ok(linoryt.includes(from) && linoryt.includes(to), `marker ${from} / ${to}`);
-  const real = boardTwin(linoryt);
-  assert.equal(real.includes('.lin-title'), false, 'menu index');
-  assert.equal(real.includes('.airway-go-sign::after'), false, 'report');
-  assert.equal(real.includes('.airway-logbook__totals'), false, 'U4 pages');
-  assert.equal(real.includes('.airway-pause__summary'), true, 'pause geometry stays');
-  assert.equal(real.includes('.aw-tutorial-stage'), true, 'training flight geometry stays');
-  assert.equal(real.includes('.airway-upgrade'), true, 'weekly board stays (T4)');
 });
 test('T5 texts: PL + EN, the print-out\'s placeholders', () => {
   for (const catalog of [pl, en]) {

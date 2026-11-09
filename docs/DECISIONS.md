@@ -4120,3 +4120,56 @@ exact. That is a change of the engine's behaviour, which this step was not to ma
 that a sign covers some coast (the sign is level with its airport by design), or a separate task that gives the engine
 a geographic keep-out with its own tests.
 **Status:** preview; the owner sees it with T4/T5 (plan §7 gate before the flip).
+
+## D-336 — The flip T6 + R5: UI-A and the NASA globe ship, Linoryt's skin and faces go, the night land is moonlit, CSS budget 199.7 kB (2026-11-09, Claude, night 81a)
+Steps T6 and R5 of `docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md` (D-323) in one PR, the owner having accepted the
+preview (T1–T5, R1–R4, D-324…D-335) on 9.11 and asked to brighten the land at night. Render work (`src/render/**`) by an
+agent with the owner's consent. The simulation and every hash are untouched.
+**UI (T6).** `index.html` sets `<html data-skin="board">` and theme-color `#0E0F0F` (the board enamel); `src/main.ts`
+starts the base helpers and the board on every boot (the board's modules stay lazy chunks loaded before the HUD mounts;
+`?skin=board` is no flag any more, and `e2e/browser.mjs` refuses `--skin` again). The structure is one file,
+`src/ui/skin/board.css`: section A is the base structure the board was built on (Linoryt's `linoryt.css` as the T1
+`boardTwin` re-scoped it at run time, with its cuts: the menu index, the notes, the report and the U4 pages are gone),
+section B the board as before; `board-week.css` stays its own file. Both are static imports at the end of `main.ts`;
+`scripts/vite-skin-prune.mjs` reads both as `SKIN_STRUCTURE_FILES` (scope `:root[data-skin="board"]`, written `:root:root`
+in a release) and `vite-skin-inline.mjs` writes the base inks (`--lin-*`, now `baseInks`) in place as before.
+`src/ui/skin/linoryt.ts` became `src/ui/skin/base.ts` (`skinBase`, `startSkinBase`, `base*` helpers: the note layout's
+stamps, frames, margins and compact passes that the board's signs use); `linoryt.css`, Besley and Schibsted Grotesk (WOFF2
++ OFL) are deleted, Settings → Licences lists Archivo, Chivo Mono and "NASA Earth Observatory (Blue Marble, Black
+Marble)" instead (`licenses.archivo`, `licenses.chivoMono`, `licenses.nasaEarth`, PL/EN; the drafts lose the two old
+keys). `current.css` takes the UI-A faces (`--skin-face-text/-display` Archivo, `--skin-face-mono` Chivo Mono, with the
+shipped fallbacks); the base inks stay as they were (every screen UI-A restyles uses its own `--board-*` tokens, the rest
+is what the owner saw in the preview). The i18n keys the Linoryt HUD used were already skin-neutral (`hud.*`, `dock.*`,
+`note.*`); only their comments and the limits' notes changed. D-286's `indexFraming` is gone (`src/game/menu-clear.ts`,
+`world.ts`): the menu is framed to the departures board's globe box (D-334).
+**Native.** Android: the window (`windowBackground`) and the transparent system bars' ground are `@color/airway_enamel`
+with light bar icons (`windowLightStatusBar/NavigationBar` false); `airway_paper` (D-305) is gone. iOS: `UIUserInterfaceStyle`
+Dark (light status-bar text). `capacitor.config.ts` gives the WebView the enamel `backgroundColor` on both platforms. The
+launch screens were already the mark on enamel (D-333). `test:android-config` (`enamel-system-bars`) and `test:ios-config`
+compare all of them with `--board-enamel` and the theme-color.
+**World (R5).** `DEFAULT_GLOBE_LOOK = 'earth'`; the Linoryt print stays reachable only by the DEV `?look=linoryt` until R6.
+**Night land (owner, 9.11: "rozjaśnij ląd nocą").** The night side added moonlight as 5 % of the day image's grey on land
+and sea alike, so the darker lands (Europe, forests) sank into the sea and coasts had to be guessed. The shader now adds,
+on land only (the water weight it already computes), 5 % more of the grey and a flat moonlit floor of 0.045 (sRGB), with
+the same cool tint (`EARTH_LOOK.moonLand`, `moonLandFloor`, mirrored by `earthMoonlight` in `earth.ts`; `test:render-layers`
+checks sea unchanged, land lifted, lights dominant). No glow, no new colour. Measured on `npm run shots -- r2-night`
+(412×915, SwiftShader; WCAG luminance medians): Europe land 0.0040 → 0.0084, Ukraine 0.0030 → 0.0072, Sahara 0.0152 →
+0.0303, the Black Sea and the Mediterranean unchanged (0.0024, 0.0018); land against sea 1.03 → 1.11 (Europe), 1.26 → 1.55
+(Sahara) — the coasts of the Baltic, the Black Sea and the Caspian now read; city lights (≈ 0.6–1.0) stay far brighter.
+D-177 at night (the probes' gates unchanged): borders median 1.27 → 1.30 (412×915) and 1.29 → 1.32 (915×412), inside
+1.2–2:1 (day 1.45/1.31 unchanged); routes 15.8 → 15.6, airports/planes core ≥ 15.9, jam 4.87 (`shots -- r3-night`).
+**Tests.** `test:e2e:linoryt-contrast` → `test:e2e:board-contrast` (ci): real day (`storeSunDot=0.6`) and night frames, PL
+412×915 and EN 915×412: every airport sign's letters ≥ 4.5:1 on an opaque board ink, every airport point's core against
+its outline ≥ 3:1, the world probe's routes ≥ 4.5:1, airports/planes/jam ≥ 3:1 and borders 1.2–2:1 (new DEV probe
+`__awWorld.layerContrast()`). `test:e2e:weather-linoryt` → `test:e2e:weather-board`; `test:e2e:skin-contrast` reads the
+print-out's flap on the roll paper; `test:e2e:reduce-motion-game:stub` keeps only its two board cases. Retired with
+Linoryt: `test:e2e:screen-audit:stub` (the Linoryt audit; the board's `test:e2e:board:stub`, `board-sheets:stub`,
+`board-week:stub` and `ui:matrix` cover the screens), `e2e/linoryt-notes.mjs`, `shots:linoryt*`, `scripts/shots-30a.mjs`;
+`ui:matrix:board:stub` folds into `ui:matrix:stub` (the board is the only skin). `scripts/shots-u5.mjs` → `shots-t6.mjs`
+(`npm run shots:t6`, `docs/shots/t6/`). `test:skin-tokens`, `test:board`, `test:glyphs`, `test:text-scale`, `test:cvd`,
+`test:contrast` and `test:menu-clear` check the shipped board instead of the twin. `test:ci` 101 → 99 steps.
+**Budgets.** Release CSS 129.0 → **196.7 kB** (the base structure and the board's T1–T5 sections, inlined and pruned);
+the budget becomes the measurement + 3 kB, **199.7 kB** (D-297; T7 lowers it). Main JS 1,084.3 → 1,090.7 kB raw (gzip
+324.9 → 327.3; the board's slots and data now reached in a release, its modules stay lazy chunks of 7–11 kB each), inside
+1,180 / 360. `dist/` 2,883.8 → 2,979.3 kB (the CSS, the board chunks, Archivo and Chivo Mono in place of Besley and Schibsted Grotesk), inside 4,300 kB.
+**Status: in force (owner's acceptance of 9.11); the owner reviews the PR.**

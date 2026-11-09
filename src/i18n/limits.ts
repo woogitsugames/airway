@@ -62,13 +62,13 @@ export const LENGTH_BUDGETS: Partial<Record<TranslationKey, LengthBudget>> = {
     .map((region) => [`region.short.${region}`, regionCell])),
   'menu.status': { max: 10, where: 'departures board: status column head (wraps)' },
   'action.back': { max: 6, where: 'settings, logbook, puzzle board: Back button beside the title' },
-  // [night-11az] D-257; [night-46a] D-301 Linoryt: the HUD's paper margin, the dock captions, the airport note (one line).
-  'hud.weekLine': { max: 14, where: 'HUD margin: week line beside the clock (Besley 20 px)', sample: { week: 999 } },
+  // [night-11az] D-257; [night-46a] D-301; [night-81a] D-336: the base HUD margin, the dock captions, the airport note (one line).
+  'hud.weekLine': { max: 14, where: 'HUD margin: week line beside the clock (20 px display face)', sample: { week: 999 } },
   'hud.passengerLine': { max: 18, where: 'HUD margin: passenger part of the line under the week', sample: { count: '123 456' } },
   'hud.dayOf': { max: 14, where: 'HUD margin: day part of the line under the week', sample: { day: 3, days: 3 } },
   'note.fill': { max: 10, where: 'airport note: taken of capacity', sample: { taken: 120, capacity: 120 } },
   'note.jam': { max: 34, where: 'airport note: jam line under the note (fits a 320 px screen)', sample: { seconds: 45 } },
-  // [night-60a] D-321: a refused Undo on the ATC strip, the red reason field alone (two rows at 320 px, Linoryt stacks).
+  // [night-60a] D-321: a refused Undo on the ATC strip, the red reason field alone (two rows at 320 px, the base structure stacks).
   'route.atc.undoRefused': { max: 52, where: 'ATC strip: refused Undo notice (at most two rows at 320 px)', sample: { code: 'DEL', time: '23:59' } },
   'dock.undo': { max: 10, where: 'dock: caption under a symbol (a 52 px cell at 320 px)' },
   'dock.turboprop': { max: 10, where: 'dock: caption under a symbol (a 52 px cell at 320 px)' },

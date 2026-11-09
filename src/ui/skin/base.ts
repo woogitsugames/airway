@@ -1,14 +1,10 @@
 /**
- * [night-28a] D-283 / D-284: the "Linoryt" skin helpers (docs/styles/kierunki-2026-11b/KIERUNKI.md, direction A; plan
- * docs/styles/kierunki-2026-11b/PLAN-LINORYT.md). A relief print in three inks on paper: the HUD is printed on a
- * paper margin at the top (a big Besley clock, the week, "day 2 of 3 · 34 passengers" and a day bar of 24 carved
- * hours, night hours inked solid, a red cut for "now") and a paper dock at the bottom behind a double print rule (five
- * cut symbols with captions, the chosen aircraft a solid ink block, an empty one only its outline); the menu is a
- * printed index under the title (the run-starting entry on the one red block).
- *
- * [night-46a] D-301 (step U5): the shipped skin. src/main.ts calls startLinoryt() on every boot (index.html sets
- * <html data-skin="linoryt">); the helpers restyle the base ("Diorama") DOM of the HUD, overlay and menu together with
- * linoryt.css. Róża and the DEV `?skin=` previews are gone.
+ * [night-81a] D-336 (PLAN-NOWY-KIERUNEK.md step T6): the skin's base helpers, formerly the Linoryt helpers module (D-283,
+ * D-284, D-301). The UI-A board (src/ui/skin/board*.ts) builds on them: the note layout's stamps, frames, margins and
+ * compact passes (src/ui/overlay.ts), the edge chip data, the top margin's measured bottom (`--lin-pass-bottom`). The
+ * HUD margin, dock captions, menu tagline and report block helpers are the base DOM the board slots replace or the
+ * base structure (board.css section A) hides; they go with the base HUD in a later clean-up (R6/T7).
+ * History: the Linoryt print's helpers (docs/styles/kierunki-2026-11b/PLAN-LINORYT.md), a relief print in three inks.
  *
  * This module has no runtime imports (only types): src/main.ts hands in what it needs. Player text uses the
  * skin-neutral catalog keys (`hud.*`, `dock.*`, `note.*`, `menu.*`).
@@ -17,26 +13,26 @@ import type { TranslationKey, TranslationParams } from '../../i18n';
 import type { DestinationRegion } from '../glyphs';
 import type { EdgeBounds, TagBounds, TagSlot } from '../overlay-layout';
 
-export const linoryt = { on: false };
+export const skinBase = { on: false };
 
 /** What the helpers need from the rest of the app, handed in by src/main.ts. */
-export interface LinorytDeps {
+export interface BaseDeps {
   t(key: TranslationKey, params?: TranslationParams): string;
   localNumber(value: number): string;
 }
-let deps: LinorytDeps = { t: (key) => key, localNumber: String };
-const t: LinorytDeps['t'] = (key, params) => deps.t(key, params);
+let deps: BaseDeps = { t: (key) => key, localNumber: String };
+const t: BaseDeps['t'] = (key, params) => deps.t(key, params);
 
-/** Turns the preview on: <html data-skin="linoryt"> scopes linoryt.css (call before the HUD and menu are mounted). */
-export function startLinoryt(next: LinorytDeps): void {
+/** Turns the skin on: <html data-skin="board"> scopes board.css (call before the HUD and menu are mounted). */
+export function startSkinBase(next: BaseDeps): void {
   deps = next;
-  linoryt.on = true;
-  document.documentElement.dataset.skin = 'linoryt';
+  skinBase.on = true;
+  document.documentElement.dataset.skin = 'board';
 }
 
 /** Night hours of the day bar, inked solid: the same 20:00–06:00 band the Róża dial hatched (quiet demand hours). */
-export const LINORYT_NIGHT = { from: 20, to: 6 } as const;
-export const isNightHour = (hour: number): boolean => hour >= LINORYT_NIGHT.from || hour < LINORYT_NIGHT.to;
+export const BASE_NIGHT = { from: 20, to: 6 } as const;
+export const isNightHour = (hour: number): boolean => hour >= BASE_NIGHT.from || hour < BASE_NIGHT.to;
 
 function setText(el: Element, text: string): void { if (el.textContent !== text) el.textContent = text; }
 const pad2 = (n: number): string => String(n).padStart(2, '0');
@@ -45,7 +41,7 @@ const pad2 = (n: number): string => String(n).padStart(2, '0');
 
 /**
  * Cut symbols drawn for Airway (docs/styles/kierunki-2026-11b/src/icons.js, 100 × 100 boxes): solid ink shapes, as a
- * linocut prints them; linoryt.css draws an empty (unavailable) one as its outline only. The speed arrow carries one
+ * linocut prints them; board.css draws an empty (unavailable) one as its outline only. The speed arrow carries one
  * wind barb per 1× of game speed.
  */
 const SYMBOL = {
@@ -57,10 +53,10 @@ const SYMBOL = {
   pause: 'M30 18H44V82H30ZM56 18H70V82H56Z',
   resume: 'M30 14L82 50 30 86Z',
 } as const;
-export type LinorytSymbol = keyof typeof SYMBOL;
+export type BaseSymbol = keyof typeof SYMBOL;
 
 /** One symbol as inline SVG (same class as the HUD icons, so the base layout sizes it). */
-export function linorytIcon(name: LinorytSymbol, barbs = 1): string {
+export function baseIcon(name: BaseSymbol, barbs = 1): string {
   const extra = name === 'speed'
     ? Array.from({ length: Math.max(1, barbs) }, (_, i) => `M${20 + i * 14} 46L${12 + i * 14} 22 ${22 + i * 14} 22 ${30 + i * 14} 46Z`).join('')
     : '';
@@ -73,12 +69,12 @@ interface PassParts { clock: HTMLElement; week: HTMLElement; sub: HTMLElement; c
 const passParts = new WeakMap<HTMLElement, PassParts>();
 
 /**
- * The top margin of the HUD (inside the boarding pass section, whose old fields linoryt.css hides): the clock, the week
+ * The top margin of the HUD (inside the boarding pass section, whose old fields board.css hides): the clock, the week
  * and "day 2 of 3 · 34 passengers" beside it, and under them the day bar — 24 carved hours, night hours solid ink, the
  * hours already flown today in Prussian blue, the rest hollow, a red cut at "now", figures at 0/6/12/18. The clock is
  * real text (it is the HUD's time); the bar repeats it graphically and is aria-hidden.
  */
-export function linorytPass(section: HTMLElement, minute: number, week: number, day: number, days: number, passengers: number): void {
+export function basePass(section: HTMLElement, minute: number, week: number, day: number, days: number, passengers: number): void {
   let parts = passParts.get(section);
   if (!parts) {
     const box = document.createElement('div');
@@ -167,7 +163,7 @@ function publishPassBottom(section: HTMLElement): void {
  * The caption under a dock symbol, and the wait for the next crates under an empty aircraft or hub ("za 1 dzień", in
  * blue). Captions repeat the button's accessible name, so they are aria-hidden.
  */
-export function linorytDockLabel(button: HTMLElement, name: string, speed: number, wait: string | null): void {
+export function baseDockLabel(button: HTMLElement, name: string, speed: number, wait: string | null): void {
   const text = name === 'undo' ? t('dock.undo')
     : name === 'turboprop' ? t('dock.turboprop')
     : name === 'widebody' ? t('dock.widebody')
@@ -196,7 +192,7 @@ export function linorytDockLabel(button: HTMLElement, name: string, speed: numbe
  * The heading and the "Map" button already name the hub for screen readers, so the block is aria-hidden. [night-54a]
  * D-312: the glyph cut out of the block is the airport's stamp on the map: a hub's octagon, else a square.
  */
-export function linorytReportHub(sign: HTMLElement, hubCode: string, isHub = true): void {
+export function baseReportHub(sign: HTMLElement, hubCode: string, isHub = true): void {
   const block = document.createElement('span');
   block.className = isHub ? 'lin-hub' : 'lin-hub lin-hub--airport'; // [night-54a] D-312: the stamp of the map
   block.setAttribute('aria-hidden', 'true');
@@ -214,7 +210,7 @@ export function linorytReportHub(sign: HTMLElement, hubCode: string, isHub = tru
 // (code + NOWE for a new airport) before it hides, the busiest hub's and a new airport's note must show, never over a
 // stamp and only where it is clearly its own airport's, apart from other notes, fixed in-world sizes at every text step,
 // the open hub board is an obstacle. The stamp replaces the rose ring as the fixed obstacle. All sizes are CSS px and
-// match linoryt.css ("U2 notes" section); widths are computed (no DOM measuring), so the layout box is the printed box.
+// match board.css ("U2 notes" section); widths are computed (no DOM measuring), so the layout box is the printed box.
 
 /**
  * Clearance between the stamp's disc (see stampReach) and a note: the layout's 4 px gap (TagBounds.gap) and 1 px, so a
@@ -230,7 +226,7 @@ export interface StampBox { x: number; y: number; half: number; visible: boolean
  * the projected airport and half the world's stamp side (`STAMP_SIZE_PX` of src/render, spec §5/§8: a 22 px square,
  * a 30 px hub octagon), which the caller passes in (this module has no runtime imports).
  */
-export function linorytStampFallback(out: StampBox, x: number, y: number, half: number, visible: boolean): StampBox {
+export function baseStampFallback(out: StampBox, x: number, y: number, half: number, visible: boolean): StampBox {
   out.x = x;
   out.y = y;
   out.half = half;
@@ -247,18 +243,18 @@ export function linorytStampFallback(out: StampBox, x: number, y: number, half: 
 export const stampReach = (half: number, hub: boolean): number => half * (hub ? 1 / Math.cos(Math.PI / 8) : Math.SQRT2);
 
 /** Priority of a note (D-262, D-281): a jam, then a newly opened airport, then a hub, then the fuller airport. */
-export const linorytRank = (note: { jam: boolean; fresh: boolean; hub: boolean; fill: number }): number =>
+export const baseRank = (note: { jam: boolean; fresh: boolean; hub: boolean; fill: number }): number =>
   (note.jam ? 8 : 0) + (note.fresh ? 4 : 0) + (note.hub ? 2 : 0) + Math.max(0, Math.min(1, note.fill));
 /** D-281: a newly opened airport's note must show (code + NOWE at least) while the mark lasts; a jam goes first anyway. */
-export const linorytNoteMust = (note: { jam: boolean; fresh: boolean }): boolean => note.fresh && !note.jam;
+export const baseNoteMust = (note: { jam: boolean; fresh: boolean }): boolean => note.fresh && !note.jam;
 /** D-263: how far (px from the stamp's centre) a note's nearest edge may lie: its first place and 13 px more. */
-export const linorytHomeReach = (half: number, hub: boolean): number => stampReach(half, hub) + NOTE_GAP + 13;
+export const baseHomeReach = (half: number, hub: boolean): number => stampReach(half, hub) + NOTE_GAP + 13;
 
 /**
  * The stamp as the note layout's fixed obstacle (D-263: never covered, not even by a forced note; D-264: the note's
  * ownership check measures its gap to it). Inactive while the stamp is not drawn.
  */
-export function linorytStampObstacle(slot: TagSlot, stamp: StampBox, hub: boolean, code: string, rank: number): void {
+export function baseStampObstacle(slot: TagSlot, stamp: StampBox, hub: boolean, code: string, rank: number): void {
   const reach = stampReach(stamp.half, hub);
   slot.active = stamp.visible;
   slot.fixed = true;
@@ -274,10 +270,10 @@ export function linorytStampObstacle(slot: TagSlot, stamp: StampBox, hub: boolea
  * The places a note may take, for layoutTags (the Róża places with the stamp for the rose): right of the stamp with
  * the name level with its centre (frame: Ryga, Wenecja, Ankara), else left of it; the other side; under the stamp and
  * over it, centred; under it to the left and to the right (frame: Ateny, Bagdad, Amman), sliding outward. A note stays
- * within `linorytHomeReach` of its stamp (a jam's: 160 px, as D-263), else it tries the compact form, then hides.
+ * within `baseHomeReach` of its stamp (a jam's: 160 px, as D-263), else it tries the compact form, then hides.
  * `tag.width`/`height` are the full note's.
  */
-export function linorytNotePlaces(tag: TagSlot, stamp: StampBox, hub: boolean, jam: boolean, code: string, viewWidth: number,
+export function baseNotePlaces(tag: TagSlot, stamp: StampBox, hub: boolean, jam: boolean, code: string, viewWidth: number,
   lineMid = NAME_LINE / 2): void {
   const { x, y, half } = stamp;
   const reach = stampReach(half, hub) + NOTE_GAP;
@@ -301,7 +297,7 @@ export function linorytNotePlaces(tag: TagSlot, stamp: StampBox, hub: boolean, j
   tag.rose = code; // D-264, D-266: the note's own airport
   tag.homeX = x;
   tag.homeY = y;
-  tag.homeReach = jam ? undefined : linorytHomeReach(half, hub);
+  tag.homeReach = jam ? undefined : baseHomeReach(half, hub);
 }
 
 // Note metrics (px). Besley 800 advances in em (measured in Chromium from public/fonts/Besley-800.woff2, the subset's
@@ -330,7 +326,7 @@ export function figureWidth(text: string, px: number): number {
   return Math.ceil(em * px);
 }
 
-/** Row heights of a note (linoryt.css "U2 notes"): name line, fill bar, glyph row; the jam block and its gap. */
+/** Row heights of a note (board.css "U2 notes"): name line, fill bar, glyph row; the jam block and its gap. */
 export const NAME_LINE = 19;
 const TICK_LINE = 12;
 /** The glyph row: a D-08 glyph at the theme's size (16 px, 21 px with enhanced glyphs) and 2 px of paper over and under it. */
@@ -476,7 +472,7 @@ function drawTicks(parts: NoteParts, taken: number, capacity: number): void {
 }
 
 /** What the overlay hands the note builder (its nodes are reused: the stubs, trend, timer and glyph pool are the entry's). */
-export interface LinorytNoteInput {
+export interface BaseNoteInput {
   name: string; code: string; hub: boolean;
   waiting: readonly DestinationRegion[]; connecting: number; capacity: number; jamSeconds: number | null;
   /** The entry's NOWE stub (its text already set) or null. */
@@ -495,9 +491,9 @@ export interface LinorytNoteInput {
  * Rewrites the note's child list in `want` (flat, so the overlay's diff and the e2e probes read it as before): the name
  * row (NOWE stub, name; code and fill for the compact form), the fill bar, the glyph row (stubs, one glyph per region
  * with its count, "+N", the trend chevron right after the last count, the hidden timer), the jam block. Returns the
- * note's size, also kept for linorytNoteSize().
+ * note's size, also kept for baseNoteSize().
  */
-export function linorytNoteChildren(bubble: HTMLElement, want: Node[], input: LinorytNoteInput): NoteSize {
+export function baseNoteChildren(bubble: HTMLElement, want: Node[], input: BaseNoteInput): NoteSize {
   const parts = noteState(bubble);
   want.length = 0;
   setText(parts.name, input.name);
@@ -564,7 +560,7 @@ export function linorytNoteChildren(bubble: HTMLElement, want: Node[], input: Li
   return size;
 }
 /** The note's size from its last rebuild (zero before the first). */
-export function linorytNoteSize(bubble: HTMLElement): NoteSize {
+export function baseNoteSize(bubble: HTMLElement): NoteSize {
   return noteParts.get(bubble)?.size ?? { width: 0, height: 0, compactWidth: 0, compactHeight: 0 };
 }
 
@@ -578,7 +574,7 @@ interface NoteFrame {
 }
 const frames = new WeakMap<TagSlot, NoteFrame>();
 /** The stamp obstacle of a note's airport (created once; the overlay adds it to its layout slots). */
-export function linorytStampSlot(tag: TagSlot): TagSlot {
+export function baseStampSlot(tag: TagSlot): TagSlot {
   let frame = frames.get(tag);
   if (!frame) {
     frame = {
@@ -590,13 +586,13 @@ export function linorytStampSlot(tag: TagSlot): TagSlot {
   }
   return frame.stamp;
 }
-/** The reused stamp box of a note (filled by AirportOverlayOptions.projectAirport, else linorytStampFallback). */
-export function linorytStampBox(tag: TagSlot): StampBox { linorytStampSlot(tag); return frames.get(tag)!.box; }
+/** The reused stamp box of a note (filled by AirportOverlayOptions.projectAirport, else baseStampFallback). */
+export function baseStampBox(tag: TagSlot): StampBox { baseStampSlot(tag); return frames.get(tag)!.box; }
 
 let busiest: TagSlot | null = null;
 /** The top margin as a fixed obstacle of the note layout, one per overlay host (active where it is a corner block). */
 const marginSlots = new WeakMap<HTMLElement, TagSlot>();
-export function linorytMarginSlot(host: HTMLElement): TagSlot {
+export function baseMarginSlot(host: HTMLElement): TagSlot {
   let slot = marginSlots.get(host);
   if (!slot) {
     slot = { id: 'margin~', anchorX: 0, anchorY: 0, width: 0, height: 0, active: false, jammed: false, fixed: true, rank: Infinity,
@@ -611,10 +607,10 @@ export function linorytMarginSlot(host: HTMLElement): TagSlot {
  * the top margin and the dock. Landscape (the dock a column on the right): notes left of the dock and off the top
  * margin's corner block, chips under the top margin and left of the dock.
  */
-export function linorytFrameStart(host: HTMLElement, width: number, height: number, bounds: TagBounds, edge: EdgeBounds): void {
+export function baseFrameStart(host: HTMLElement, width: number, height: number, bounds: TagBounds, edge: EdgeBounds): void {
   busiest = null;
-  const m = linorytMargins(host);
-  const slot = linorytMarginSlot(host);
+  const m = baseMargins(host);
+  const slot = baseMarginSlot(host);
   slot.active = false;
   if (!m) return;
   edge.top = Math.max(0, m.top);
@@ -656,7 +652,7 @@ export interface NoteFrameInput {
   lineMid?: number;
 }
 /** D-268: the board covers the stamp (its disc, with a 2 px margin): the airport's note steps back while it is open. */
-export function linorytBoardCovers(stamp: StampBox, hub: boolean, board: { l: number; t: number; r: number; b: number }): boolean {
+export function baseBoardCovers(stamp: StampBox, hub: boolean, board: { l: number; t: number; r: number; b: number }): boolean {
   const reach = stampReach(stamp.half, hub) + 2;
   const dx = Math.max(board.l - stamp.x, 0, stamp.x - board.r), dy = Math.max(board.t - stamp.y, 0, stamp.y - board.b);
   return dx * dx + dy * dy < reach * reach;
@@ -666,24 +662,24 @@ export function linorytBoardCovers(stamp: StampBox, hub: boolean, board: { l: nu
  * form, whether it must show. `tag.active` (the overlay's: in view, off the board, something to show) is kept; a note
  * whose stamp is not drawn steps back.
  */
-export function linorytNoteFrame(tag: TagSlot, input: NoteFrameInput): void {
-  linorytStampSlot(tag);
+export function baseNoteFrame(tag: TagSlot, input: NoteFrameInput): void {
+  baseStampSlot(tag);
   const frame = frames.get(tag)!;
-  const rank = linorytRank(input);
+  const rank = baseRank(input);
   frame.hub = input.hub;
   frame.compactWidth = Math.max(input.size.compactWidth, 30);
   frame.compactHeight = input.size.compactHeight + Math.max(0, tag.height - input.size.height); // + the slot tag
   frame.compact = false;
-  linorytStampObstacle(frame.stamp, frame.box, input.hub, input.code, rank);
-  if (!frame.box.visible || (input.board && linorytBoardCovers(frame.box, input.hub, input.board))) tag.active = false;
+  baseStampObstacle(frame.stamp, frame.box, input.hub, input.code, rank);
+  if (!frame.box.visible || (input.board && baseBoardCovers(frame.box, input.hub, input.board))) tag.active = false;
   tag.rank = rank;
-  tag.must = linorytNoteMust(input);
-  tag.compactWidth = undefined; // the compact form is laid out by linorytCompactPasses (it is lower, not only narrower)
-  linorytNotePlaces(tag, frame.box, input.hub, input.jam, input.code, input.viewWidth, input.lineMid);
+  tag.must = baseNoteMust(input);
+  tag.compactWidth = undefined; // the compact form is laid out by baseCompactPasses (it is lower, not only narrower)
+  baseNotePlaces(tag, frame.box, input.hub, input.jam, input.code, input.viewWidth, input.lineMid);
   if (input.hub && tag.active && (!busiest || (tag.rank ?? 0) > (busiest.rank ?? 0))) busiest = tag;
 }
 /** Ends the frame's setup: the busiest hub in view always shows at least its code and fill (D-262). */
-export function linorytFrameEnd(): void { if (busiest) busiest.must = true; }
+export function baseFrameEnd(): void { if (busiest) busiest.must = true; }
 
 /**
  * D-262 compact form, after the layout: the Linoryt note's compact form is one line, so it is lower as well as narrower
@@ -693,7 +689,7 @@ export function linorytFrameEnd(): void { if (busiest) busiest.must = true; }
  * (D-262/D-281: the busiest hub's and a new airport's note too). A note a compact one displaced gets its own compact try
  * in the next run; at most three runs. Allocation-free; `layout` is the overlay's layoutTags (no runtime import here).
  */
-export function linorytCompactPasses(slots: readonly TagSlot[], bounds: TagBounds,
+export function baseCompactPasses(slots: readonly TagSlot[], bounds: TagBounds,
   layout: (slots: readonly TagSlot[], bounds: TagBounds) => number, keepLine = false): void {
   for (let run = 0; run < 3; run++) {
     let changed = false;
@@ -722,9 +718,9 @@ export function linorytCompactPasses(slots: readonly TagSlot[], bounds: TagBound
 
 const markerList: StampBox[] = [];
 /** The stamps of the overlay's airports (parallel to its tags): where the edge chips must not lie (placeSizedEdgeChips). */
-export function linorytMarkers(tags: readonly TagSlot[]): readonly StampBox[] {
+export function baseMarkers(tags: readonly TagSlot[]): readonly StampBox[] {
   markerList.length = tags.length;
-  for (let i = 0; i < tags.length; i++) markerList[i] = linorytStampBox(tags[i]);
+  for (let i = 0; i < tags.length; i++) markerList[i] = baseStampBox(tags[i]);
   return markerList;
 }
 
@@ -734,11 +730,11 @@ export interface StampProbe { id: string; x: number; y: number; half: number; hu
  * DEV probe for the browser audits (e2e/screen-audit.mjs, the U2 shots): `window.__awLinoryt.stamps()` lists where the
  * notes' layout put each stamp this frame, so the audit checks the printed notes against the same stamps.
  */
-export function linorytProbe(stamps: () => StampProbe[]): void {
+export function baseProbe(stamps: () => StampProbe[]): void {
   (globalThis as { __awLinoryt?: { stamps: () => StampProbe[] } }).__awLinoryt = { stamps };
 }
 /** The stamp of a note's airport as the probe reports it. */
-export function linorytStampProbe(tag: TagSlot): StampProbe {
+export function baseStampProbe(tag: TagSlot): StampProbe {
   const frame = frames.get(tag);
   const box = frame?.box ?? { x: 0, y: 0, half: 0, visible: false };
   return { id: tag.id, x: box.x, y: box.y, half: box.half, hub: frame?.hub ?? false, visible: box.visible };
@@ -747,7 +743,7 @@ export function linorytStampProbe(tag: TagSlot): StampProbe {
 // ---- U2: the paper margins as layout bounds ---------------------------------------------------------------------------
 
 /** The HUD's paper margins in the overlay's coordinates, re-measured only when they change size (ResizeObserver). */
-export interface LinorytMargins {
+export interface BaseMargins {
   /** Bottom of the top margin; top of the bottom dock (portrait) or left of the dock column (landscape), px. */
   top: number; dockTop: number; dockLeft: number;
   /** The top margin's box (in landscape a block in the top-left corner). */
@@ -756,9 +752,9 @@ export interface LinorytMargins {
   /** [night-75a] D-330: the UI-A preview's hub strip bay while it shows (null otherwise and in a release). */
   bay: { l: number; t: number; r: number; b: number } | null;
 }
-const margins = new WeakMap<HTMLElement, { value: LinorytMargins; observer: ResizeObserver | null; pass: Element | null; dock: Element | null; bay: Element | null }>();
+const margins = new WeakMap<HTMLElement, { value: BaseMargins; observer: ResizeObserver | null; pass: Element | null; dock: Element | null; bay: Element | null }>();
 /** The paper margins of the HUD mounted in `host` (null until both are there). Reads layout only after a resize. */
-export function linorytMargins(host: HTMLElement): LinorytMargins | null {
+export function baseMargins(host: HTMLElement): BaseMargins | null {
   let entry = margins.get(host);
   const pass = host.querySelector('.airway-pass');
   const dock = host.querySelector('.airway-dock');
@@ -766,7 +762,7 @@ export function linorytMargins(host: HTMLElement): LinorytMargins | null {
   const bay = host.querySelector('.airway-strip-bay');
   if (!entry || entry.pass !== pass || entry.dock !== dock || entry.bay !== bay) {
     entry?.observer?.disconnect();
-    const value: LinorytMargins = { top: 0, dockTop: 0, dockLeft: 0, pass: null, column: false, bay: null };
+    const value: BaseMargins = { top: 0, dockTop: 0, dockLeft: 0, pass: null, column: false, bay: null };
     const measure = (): void => {
       const origin = host.getBoundingClientRect();
       const p = pass.getBoundingClientRect(), d = dock.getBoundingClientRect();
@@ -800,10 +796,10 @@ const EDGE_MAX = 136;
 /**
  * Prints an off-screen airport's chip: the city name in Besley with the arrow, under it the great-circle distance from
  * the view centre and the fill ("2 408 km · 8 z 12"). The code stays the chip's text node (its accessible name and the
- * e2e probes read it); linoryt.css prints the name and the line from data attributes. A name too long for the chip
+ * e2e probes read it); board.css prints the name and the line from data attributes. A name too long for the chip
  * gives way to the code. Returns the chip's width.
  */
-export function linorytEdge(edge: HTMLElement, name: string, code: string, normal: { x: number; y: number; z: number },
+export function baseEdge(edge: HTMLElement, name: string, code: string, normal: { x: number; y: number; z: number },
   camera: { x: number; y: number; z: number }, taken: number, capacity: number): number {
   const length = Math.hypot(camera.x, camera.y, camera.z) || 1;
   const cos = Math.max(-1, Math.min(1, (normal.x * camera.x + normal.y * camera.y + normal.z * camera.z) / length));
@@ -824,7 +820,7 @@ export function linorytEdge(edge: HTMLElement, name: string, code: string, norma
 // ---- Menu ------------------------------------------------------------------------------------------------------------
 
 /** The tagline under the title ("Sieć lotnicza na całym globie"). */
-export function linorytTagline(): HTMLElement {
+export function baseTagline(): HTMLElement {
   const line = document.createElement('div');
   line.className = 'lin-tagline';
   line.textContent = t('menu.tagline');
