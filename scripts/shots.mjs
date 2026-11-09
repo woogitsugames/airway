@@ -5,8 +5,9 @@
 //   npm run shots -- --fold               also foldable 673x841 and 904x1000
 //   npm run shots -- --lang=en --dpr=2    language / device pixel ratio override
 //   npm run shots -- --list               print targets and exit
-//   npm run shots -- globe --look=linoryt  [ext-04] add ?look= (and/or --skin=) to every URL; PNGs go to
-//                                          docs/shots/look-<look>[-skin-<skin>]/<id>-<orientation>.png
+//   npm run shots -- globe --skin=x       [ext-04] add ?skin= to every URL; PNGs go to
+//                                          docs/shots/look-default-skin-<skin>/<id>-<orientation>.png
+//                                          ([night-82a R6] D-337: --look= went with the print; one globe)
 //
 // Output: docs/shots/<dir>/<file>-<orientation>.png (dir = the task that owns the view, see docs/shots/README.md).
 // Targets fail independently; the run exits nonzero if any requested capture failed. A missing
@@ -16,7 +17,6 @@ import { mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { ROOT, SEED, startVite, launchChromium, presetLanguage, errorText } from './lib/harness.mjs';
-import { linorytMotion } from '../dev/linoryt-motion.mjs';
 
 const PORTRAIT = { tag: 'p', width: 412, height: 915 };
 const LANDSCAPE = { tag: 'l', width: 915, height: 412 };
@@ -63,16 +63,12 @@ const TARGETS = [
     ready: { selector: '[data-gameover-state="open"]' }, note: 'game-over board (dev preview)' },
   { id: 'puzzles', dir: '17', file: 'board', path: '', open: ['.airway-board [data-mode="puzzles"]'],
     ready: { selector: '.puzzle-departures .puzzle-flap' }, note: 'puzzle departure board' },
-  // [ext-04 E1] D-283/D-298: the Linoryt globe in motion (8 frames, 0.15°/frame) and its flicker score (≤ 2 %), low preset.
-  { id: 'linoryt-motion', dir: 'ext-04', file: 'linoryt-motion', path: 'dev/globe.html?quality=low&look=linoryt&clean&zoom=2.2&lon=24&lat=38&sun=-10,-18',
-    ready: { fn: 'window.__globeReady && window.__globeMetrics' }, timeout: 120000, settle: 700,
-    note: 'Linoryt motion strip + flicker score (spec §9)', motion: true },
-  // [night-70a R1] D-323: the NASA globe preview (`?look=earth`, DEV only) by day, at dusk and by night on each preset,
+  // [night-70a R1] D-323: the NASA globe by day, at dusk and by night on each preset,
   // and the game's menu globe with it (sun fixed: day over the Mediterranean, the terminator through it, night).
   ...[['day', '30,-18', 'high'], ['dusk', '-58,-18', 'high'], ['night', '-150,-18', 'medium'], ['night-low', '-150,-18', 'low']]
     .map(([file, sun, quality]) => ({
       id: `earth-${file}`, dir: 'r1', file: `earth-${file}`,
-      path: `dev/globe.html?quality=${quality}&look=earth&clean&zoom=2.2&lon=24&lat=38&sun=${sun}`,
+      path: `dev/globe.html?quality=${quality}&clean&zoom=2.2&lon=24&lat=38&sun=${sun}`,
       ready: { fn: 'window.__globeReady && window.__globeMetrics' }, timeout: 120000, settle: 2500,
       note: `NASA globe preview, ${file} (${quality})`,
       check: async (page) => {
@@ -81,7 +77,7 @@ const TARGETS = [
         return `calls=${m.drawCalls} triangles=${m.triangles}`;
       },
     })),
-  { id: 'earth-menu', dir: 'r1', file: 'earth-menu', path: '?look=earth', lang: 'pl',
+  { id: 'earth-menu', dir: 'r1', file: 'earth-menu', path: '', lang: 'pl',
     ready: { selector: '.airway-board .airway-flight' }, settle: 3000, note: 'menu over the NASA globe preview' },
   // [night-72a R2] D-327: country borders on the NASA globe, framed like the K2/UI-A mockups (Black Sea, eastern
   // Mediterranean), by day, at dusk and by night. The check runs the D-177 probe on the border layer (gated: it must
@@ -89,7 +85,7 @@ const TARGETS = [
   ...[['day', '30,-18', 'high'], ['dusk', '-35,-18', 'high'], ['night', '-150,-18', 'medium'], ['night-low', '-150,-18', 'low']]
     .map(([file, sun, quality]) => ({
       id: `r2-${file}`, dir: 'r2', file: `borders-${file}`,
-      path: `dev/globe.html?quality=${quality}&look=earth&clean&zoom=6&lon=31&lat=39&sun=${sun}`,
+      path: `dev/globe.html?quality=${quality}&clean&zoom=6&lon=31&lat=39&sun=${sun}`,
       ready: { fn: 'window.__globeReady && window.__globeMetrics' }, timeout: 120000, settle: 2500,
       note: `NASA globe + country borders, ${file} (${quality})`,
       check: (page) => bordersCheck(page),
@@ -97,14 +93,14 @@ const TARGETS = [
   // [night-74a R3] D-329: the world objects on the NASA globe (points, cased routes, the yellow route being drawn,
   // plane silhouettes, the jam zone), the UI-A mockup network over the eastern Mediterranean, by day, at dusk and by
   // night, without the DOM signs (T2). The check runs the D-177 probe on every object layer (gated) and the draw budget.
-  ...[['day', 600, 'high'], ['dusk', 905, 'high'], ['night', 1290, 'medium'], ['night-low', 1290, 'low'], ['linoryt', 600, 'medium']]
+  ...[['day', 600, 'high'], ['dusk', 905, 'high'], ['night', 1290, 'medium'], ['night-low', 1290, 'low']]
     .map(([file, tick, quality]) => ({
       id: `r3-${file}`, dir: 'r3', file: `objects-${file}`,
-      path: `dev/world.html?frozen&clean&nooverlay&scene=r3&look=${file === 'linoryt' ? 'linoryt' : 'earth'}&quality=${quality}` +
+      path: `dev/world.html?frozen&clean&nooverlay&scene=r3&quality=${quality}` +
         `&zoom=4&lon=31&lat=37&tick=${tick}`,
       ready: { fn: 'window.__ready && window.__worldMetrics' }, timeout: 120000, settle: 2500,
-      note: `world objects on the ${file === 'linoryt' ? 'Linoryt print (unchanged)' : 'NASA globe'}, ${file} (${quality})`,
-      check: (page) => objectsCheck(page, file !== 'linoryt'),
+      note: `world objects on the NASA globe, ${file} (${quality})`,
+      check: (page) => objectsCheck(page),
     })),
   // [night-07d] Curfew airports marked on the puzzle strips (barrier mark + hours line).
   ...[['08', 'pl'], ['30', 'en']].map(([level, lang]) => ({
@@ -165,7 +161,7 @@ async function bordersCheck(page) {
  * the globe (better of edge and core ≥ 4.5:1), by day and by night; draw calls ≤ 50.
  */
 export const OBJECT_PROBE = { core: 3, routes: 4.5, drawCalls: 50 };
-async function objectsCheck(page, gate) {
+async function objectsCheck(page) {
   const r = await page.evaluate(() => window.__world.measureLayerContrast());
   const m = await page.evaluate(() => window.__worldMetrics);
   const parts = [`calls=${m.drawCalls}`];
@@ -175,9 +171,9 @@ async function objectsCheck(page, gate) {
     const c = r[name];
     if (!c) { bad.push(`${name}: nothing measured`); continue; }
     parts.push(`${name} ratio=${c.ratio} edge=${c.edge} core=${c.core}`);
-    if (gate && !(c.core >= OBJECT_PROBE.core)) bad.push(`${name} core ${c.core}:1 < ${OBJECT_PROBE.core}`);
+    if (!(c.core >= OBJECT_PROBE.core)) bad.push(`${name} core ${c.core}:1 < ${OBJECT_PROBE.core}`);
   }
-  if (gate && r.routes && !(r.routes.ratio >= OBJECT_PROBE.routes)) bad.push(`routes ${r.routes.ratio}:1 < ${OBJECT_PROBE.routes}`);
+  if (r.routes && !(r.routes.ratio >= OBJECT_PROBE.routes)) bad.push(`routes ${r.routes.ratio}:1 < ${OBJECT_PROBE.routes}`);
   if (bad.length) throw new Error(bad.join('; ') + ' — ' + parts.join(' '));
   return parts.join(' ');
 }
@@ -187,10 +183,9 @@ const option = (name) => args.find((arg) => arg.startsWith(`--${name}=`))?.split
 const names = args.filter((arg) => !arg.startsWith('--'));
 const dpr = Number(option('dpr') ?? 1);
 const langOverride = option('lang');
-const lookOption = option('look'); // [ext-04]
 const skinOption = option('skin');
 const withQuery = (path) => {
-  const extra = [lookOption && `look=${lookOption}`, skinOption && `skin=${skinOption}`].filter(Boolean).join('&');
+  const extra = [skinOption && `skin=${skinOption}`].filter(Boolean).join('&');
   if (!extra) return path;
   return path + (path.includes('?') ? '&' : '?') + extra;
 };
@@ -237,17 +232,10 @@ async function shoot(target, size, baseUrl) {
     if (target.settle) await page.waitForTimeout(target.settle);
     if (errors.length) throw new Error('Browser errors: ' + errors.join('; '));
     const info = target.check ? ' ' + await target.check(page) : '';
-    const lookDir = lookOption || skinOption
-      ? `look-${lookOption ?? 'default'}${skinOption ? '-skin-' + skinOption : ''}` : null;
+    const lookDir = skinOption ? `look-default-skin-${skinOption}` : null;
     const rel = lookDir ? `docs/shots/${lookDir}/${target.id}-${size.tag}${target.suffix ?? ''}.png`
       : `docs/shots/${target.dir}/${target.file}-${size.tag}${target.suffix ?? ''}.png`;
     mkdirSync(dirname(resolve(ROOT, rel)), { recursive: true });
-    if (target.motion) {
-      const log = await linorytMotion(page, resolve(ROOT, rel));
-      captured++;
-      console.log(`shot ${rel} ${size.width}x${size.height}@${dpr} ${log}`);
-      return;
-    }
     await page.screenshot({ path: resolve(ROOT, rel), animations: 'disabled' });
     captured++;
     console.log(`shot ${rel} ${size.width}x${size.height}@${dpr}${info}`);

@@ -1,4 +1,4 @@
-/** Route preview view model and layer contract; the Linoryt dashed preview lives in `objects.ts` (D-299). */
+/** Route preview view model and layer contract; the preview ribbon lives in `objects.ts` (D-299). */
 import type { Group } from 'three';
 import type { AircraftKind, GeoWaypoint } from './routes';
 

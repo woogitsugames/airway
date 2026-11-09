@@ -1,12 +1,11 @@
-// [ext-04 E4] D-283/D-285: the globe is the Linoryt print only. Satelita, Mapa, the diorama and the DEV comparison
-// looks, their textures, the cloud/ocean/haze shells and the decorations are gone; `linoryt-globe.ts` (a lazy chunk)
-// builds the terrain mesh, the print material and the paper sky band.
+// [ext-04 E4] D-285: one globe look. [night-82a R6] D-337: it is the NASA globe (D-323); the D-283 print, its
+// `?look=` switch and the look type are gone. `earth-globe.ts` (a lazy chunk) builds the terrain mesh, the photo
+// material, the borders and, on high, the atmosphere shell.
 import { Color, DirectionalLight, Group, HemisphereLight, Scene, Vector3, type Camera, type Object3D } from 'three';
 import type { QualityProfile } from '../quality';
 import { setLatLonVec3 } from './geo-math';
 import { loadLandMask } from './land-mask';
 import type { TerrainLod } from './lod';
-import type { GlobeLook } from './look';
 
 export {
   latLonToVec3, setLatLonVec3, vec3ToLatLon, intersectUnitSphere, pickSphereNdc, normalizeLon,
@@ -14,33 +13,29 @@ export {
 export type { LonLat, Vec3Like, MutableVec3 } from './geo-math';
 export type { QualityLevel } from './terrain';
 export type { TerrainLodStats } from './lod';
-export type { GlobeLook } from './look';
-export { DEFAULT_GLOBE_LOOK } from './look';
 
-/** Decorations drawn (always 0 in print; kept for `WorldStats`). */
+/** Decorations drawn (always 0: the globe has none; kept for `WorldStats`). */
 export interface DecorCullStats { drawn: number; total: number; repacks: number }
 
 export interface GlobeOptions {
-  /** Shared profile from `resolveQualityProfile()`; terrain density follows `preset`, `saver` the print's spacing. */
+  /** Shared profile from `resolveQualityProfile()`; terrain density and textures follow `preset` and `saver`. */
   readonly quality: QualityProfile;
   readonly seed?: number;
   readonly landUrl?: string;
   readonly signal?: AbortSignal;
-  /** `SunLights.direction`; drives the night hatch. */
+  /** `SunLights.direction`; drives the terminator. */
   readonly sunDirection: Vector3;
-  /** The print (`linoryt`, default) or the NASA globe (`earth`, [night-70a R1]; in the release chunk set since R4). */
-  readonly look?: GlobeLook;
 }
 export interface GlobeInstance {
   readonly group: Group;
   readonly quality: QualityProfile;
   /** [night-04] Terrain chunks and level for this camera (D-73); call once per rendered frame. */
   update(camera: Camera, pixelsPerDegree: number): void;
-  /** No decorations in print; kept for the adaptive-quality ladder. */
+  /** No decorations; kept for the adaptive-quality ladder. */
   setDecorDensity(density: number): void;
   readonly lod: TerrainLod;
   readonly decor: DecorCullStats;
-  readonly surfaceLook: GlobeLook;
+  readonly surfaceLook: 'earth';
   /** [night-72a R2] D-327: the country-border layer (one draw), when the look draws one; for the contrast probe. */
   readonly borders?: Object3D | null;
   dispose(): void;
@@ -103,17 +98,12 @@ export function createSunLights(profile: QualityProfile): SunLights {
   return lights;
 }
 
-/** The Linoryt globe: land mask, then the print chunk (terrain, material, sky band). */
+/** The globe: land mask, then the NASA-globe chunk (terrain, photo material, borders). */
 export async function createGlobe(scene: Scene, opts: GlobeOptions): Promise<GlobeInstance> {
   const landUrl = opts.landUrl ?? `${import.meta.env.BASE_URL}data/land-50m.json`;
   const mask = await loadLandMask(landUrl, opts.signal);
   if (opts.signal?.aborted) throw new DOMException('Aborted', 'AbortError');
-  // [night-70a R1] D-323: the NASA globe, a lazy chunk of its own. [night-79a R4] D-334: in the release build too (no
-  // DEV guard), so the flip (R5) only changes DEFAULT_GLOBE_LOOK; until then nothing in a release asks for it.
-  if (opts.look === 'earth') {
-    const { createEarthGlobe } = await import('./earth-globe');
-    return createEarthGlobe(scene, mask, { quality: opts.quality, sunDirection: opts.sunDirection, signal: opts.signal });
-  }
-  const { createLinorytGlobe } = await import('./linoryt-globe');
-  return createLinorytGlobe(scene, mask, { quality: opts.quality, sunDirection: opts.sunDirection, signal: opts.signal });
+  // [night-70a R1] D-323: the NASA globe, a lazy chunk of its own (in the release build since R4, D-334).
+  const { createEarthGlobe } = await import('./earth-globe');
+  return createEarthGlobe(scene, mask, { quality: opts.quality, sunDirection: opts.sunDirection, signal: opts.signal });
 }

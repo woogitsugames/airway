@@ -8,7 +8,7 @@ import {
   type EdgeBounds, type EdgeChip, type SlotTagRect, type TagBounds, type TagSlot,
 } from './overlay-layout'; // [task-38] slot tag; [night-11x] R5h edge chips
 import { REGIONS } from '../data/regions';
-import { STAMP_SIZE_PX } from '../render/globe/linoryt'; // [night-46a] D-301: the world's stamp size (E2, spec §8)
+import { STAMP_SIZE_PX } from '../render/marks'; // [night-46a] D-301: the world's stamp size (E2); [night-82a] D-337 module
 import type { FillTrend } from '../game/fillTrend'; // [night-11af] R4c (type only)
 import type { SurgeMark } from '../game/surge'; // [night-12bb] R2i (type only)
 import type { FrontMark } from '../game/weather'; // [night-12bd] R2j (type only)
