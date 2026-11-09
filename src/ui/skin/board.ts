@@ -237,8 +237,9 @@ export function createBoardSkin(deps: BoardDeps): HudSkin {
       dockParts.set(button, parts);
     }
     const [longKey, shortKey] = CAPTION[tag];
-    setText(parts.caption, t(longKey));
-    setText(parts.short, t(shortKey));
+    // [night-88a] D-345 (P-5): the speed key names the current speed in words, not only by the knob's angle.
+    setText(parts.caption, tag === 'speed' ? `${t(longKey)} ${state.speed}×` : t(longKey));
+    setText(parts.short, tag === 'speed' ? `${state.speed}×` : t(shortKey));
     setText(parts.wait, state.wait === null ? '' : t('dock.in', { when: state.wait }));
     setText(parts.waitShort, state.wait ?? '');
     (parts.wait.parentElement as HTMLElement).hidden = state.wait === null;

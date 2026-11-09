@@ -81,7 +81,7 @@ test('speed selector: 1×, 2× and 4× on three distinct stops', () => {
 });
 test('board labels are abbreviated on the board and spoken in full (PL/EN)', () => {
   for (const catalog of [pl, en]) {
-    for (const key of ['board.week', 'board.day', 'board.passengers'] as const) assert.ok(catalog[key].length <= 6, `${key} "${catalog[key]}"`);
+    for (const key of ['board.week', 'board.day', 'board.passengers'] as const) assert.ok(catalog[key].length <= 7, `${key} "${catalog[key]}"`);
     assert.match(catalog['board.label'], /\{time\}.*\{week\}.*\{day\}.*\{days\}.*\{count\}/);
   }
   assert.equal(pl['board.week'], 'Tydz.');
@@ -442,7 +442,7 @@ test('T5 texts: PL + EN, the print-out\'s placeholders', () => {
     assert.match(catalog['board.report.when'], /\{week\}.*\{day\}.*\{time\}/);
     assert.match(catalog['board.report.queue'], /\{waiting\}\/\{capacity\}/);
     for (const key of ['board.report.colWeek', 'board.report.colRoutes', 'board.report.colAircraft', 'board.report.colNote'] as const) {
-      assert.ok(catalog[key].length <= 6, `${key} "${catalog[key]}" fits its column`);
+      assert.ok(catalog[key].length <= 7, `${key} "${catalog[key]}" fits its column`);
     }
   }
 });

@@ -280,6 +280,7 @@ export function createBoardSheets(deps: BoardSheetsDeps): SheetSkin {
     const box = el('section', 'bd-print__block bd-print__weeks');
     box.dataset.testid = 'board-report-weeks';
     const heading = el('h3', 'bd-print__sub', t('board.report.weeksTitle'));
+    const legend = el('p', 'bd-print__legend', t('board.report.weeksLegend'));
     const table = el('table', 'bd-print__table');
     const head = el('tr', '');
     for (const key of ['board.report.colWeek', 'board.report.colRoutes', 'board.report.colAircraft', 'board.report.colNote'] as const) {
@@ -293,7 +294,7 @@ export function createBoardSheets(deps: BoardSheetsDeps): SheetSkin {
     const note = el('p', 'bd-print__note', t('board.report.printing'));
     note.setAttribute('role', 'status');
     table.append(thead, body);
-    box.append(heading, table, note);
+    box.append(heading, legend, table, note);
     box.dataset.state = 'loading';
     const load = report.timeline;
     if (!load) { box.hidden = true; return box; }
