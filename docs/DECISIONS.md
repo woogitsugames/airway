@@ -4465,3 +4465,25 @@ button has no value role, the label is the right carrier.
 **Tests.** `test:board`, `test:i18n`, `test:hud-targets`, `ui:matrix:stub`, `test:e2e:screens-fit-320`. Shots `docs/shots/88a/`.
 **Budget.** Release CSS +0.1 kB (one rule).
 **Status: in force; the owner reviews the PR.**
+
+## D-346 — Two e2e suites follow D-343/D-344: the bare Daily is the shipped Daily config, the curfew audit keeps a still camera (2026-11-09, Claude, night 89a)
+The full `test:ci` on `dev` (ec5b2a9) failed two browser suites; neither is a game bug, both were test assumptions.
+(1) **`test:e2e:session-stub`, "Daily: tonight's features stay out, results unchanged".** The step replays the session's
+Daily headless and compares the state hash. Its bare Daily was `createGame(seed, 'daily')`, i.e. the midnight start, while
+since D-343 every Daily (the menu's `DailyChallengeMode`, `EndlessRun`, the leaderboard replay) runs `DAILY_CONFIG`
+(`{ mode: 'daily', morningStart: true }`, `src/net/submission.ts`). The flag is part of the hash, so the hashes differed
+(session 2f879896@4320 vs bare 836da382@4320) although the session was right. The bare Daily is now `new Sim(seed,
+DAILY_CONFIG)` and the step also pins that config exactly (`{ mode: 'daily', morningStart: true }`): a tonight's feature
+(contract, surge, licence, weather, home region) leaking into the Daily still fails it, and so would a Daily that lost the
+morning start. Hash unchanged: 2f879896@4320 on the pinned date.
+(2) **`test:e2e:curfew-barrier`, "pl 915×412: … no curfew sign visible on screen".** Bisected: it passes on D-343
+(5ac38e4b) and fails from D-344 (2d1cdb30), so the cause is the camera that follows the network, not the 07:00 start (the
+curfew still closes ANK in the same window, tick ~13 800, and the renderer draws its barrier ring). In the 915×412 frame
+the camera eases out to the whole network; ANK is then on screen, so it has no edge sign, and its tag loses the tag room
+contest (D-262: a tag without room hides; only the busiest hub and a new airport are `must`). That is the shipped layout
+rule, not a curfew fault. The suite now opens the game with `?follow=off` (DEV, D-344), like `test:e2e:edge-chip-fill`,
+so it audits the curfew signs under the camera it was written for; every check stays (rings = closures, a barrier stub
+and the curfew words on every closed airport's tag, a striped chip per off-screen one, at least one sign on screen, all
+gone after the night). The follow itself is covered by `test:e2e:camera-network`.
+**Tests.** Both suites 2/2 and 15/15; the headless twin `test:session-stub` builds the same Daily and pins its config (6 → 7 checks); `test:fast`, `build`, `test:bundle`, `test:doc-ids`, `test:e2e:smoke:stub`,
+`test:e2e:daily-*`. No game code, no hash, no shot changed. **Status: in force; the owner reviews the PR.**
