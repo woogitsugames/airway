@@ -159,14 +159,21 @@ try {
         // median against the brighter quarter of that background ≥ 4.5:1, on day, dusk and night alike (a quarter, not
         // the brightest pixels: the planes fly on between the two shots and may pass under a label).
         if (layout.atlas.length) {
-          await page.addStyleTag({ content: '.bd-atlas__label { color: transparent !important; }' });
-          await page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))));
+          const hide = await page.addStyleTag({ content: '.bd-atlas__label { color: transparent !important; }' });
+          const settle = () => page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))));
+          await settle();
           const bare = decodePng(await page.screenshot({ animations: 'disabled' }));
+          // The planes fly on between the shots: a third shot with the letters back, and only pixels that match the
+          // first shot (nothing moved over them) count.
+          await hide.evaluate((node) => node.remove());
+          await settle();
+          const again = decodePng(await page.screenshot({ animations: 'disabled' }));
           for (const a of layout.atlas) {
             const core = [], under = [];
             for (let y = Math.ceil(a.y); y < a.y + a.h; y++) for (let x = Math.ceil(a.x); x < a.x + a.w; x++) {
               const p = img.at(x, y), q = bare.at(x, y);
               if (Math.hypot(...p.map((v, i) => v - a.ink[i])) > 36 || Math.hypot(...p.map((v, i) => v - q[i])) < 48) continue; // a letter pixel, not the photo's own cream
+              if (Math.hypot(...p.map((v, i) => v - again.at(x, y)[i])) > 24) continue; // something moved here
               core.push(lum(p));
               under.push(lum(bare.at(x, y)));
             }
