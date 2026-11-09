@@ -187,8 +187,8 @@ export function stripLayout(bayWidth: number, textScale: number, folded: boolean
 
 /** Chivo Mono advance (em; every glyph of the mono face) and the strip's type sizes at 100 % text (board.css "T3"). */
 const MONO = 0.6;
-const LABEL_PX = 7.5;
-const LABEL_TRACK = 0.08;
+const LABEL_PX = 9; // [night-85b] D-342: was 7.5 (board.css .bd-strip__lab)
+const LABEL_TRACK = 0.06;
 const VALUE_PX = 17;
 const VALUE_TRACK = -0.03;
 const NONE_PX = 13;
