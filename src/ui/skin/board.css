@@ -1373,6 +1373,7 @@
 :root[data-skin="board"] .airway-logbook__totals { border-top: 0; }
 :root[data-skin="board"] .airway-logbook__totals .airway-logbook__cell { border-color: var(--board-rule); }
 :root[data-skin="board"] .airway-logbook__totals dt { color: var(--board-print-dim); font-family: var(--board-mono); text-transform: uppercase; }
+:root[data-skin="board"][data-airway-text-scale="150"] .airway-logbook__totals dt { font-family: var(--board-face); text-transform: none; } /* [night-82b] T7: "Przewiezieni" broke mid-word in the mono capitals (915×412, 150 %) */
 :root[data-skin="board"] .airway-logbook__totals dd { color: var(--board-print); font: 800 calc(24px * var(--airway-text-scale-title))/1.1 var(--board-face); font-stretch: 80%; }
 :root[data-skin="board"] .airway-logbook__records { border-top: 0; }
 :root[data-skin="board"] .airway-logbook__records .airway-logbook__cell { border-bottom: 1px dashed var(--board-rule); }

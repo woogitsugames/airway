@@ -208,6 +208,19 @@
   :root[data-skin="board"] .bw-main { padding-top: 6px; padding-bottom: 6px; }
   :root[data-skin="board"] .bw-take { min-height: 60px; padding-top: 8px; padding-bottom: 8px; }
 }
+/* [night-82b] T7: the shortest phones (360×640 with a met contract's four strips, 320×568 with week 2's slip) fit
+   without a page scroll: a tighter week board and strips; every strip and the main action stay ≥ 48 px. */
+@media (orientation: portrait) and (max-height: 660px) {
+  :root[data-skin="board"] .bw-sheet { --bd-strip: calc(56px * var(--bd-ts)); row-gap: 6px; }
+  :root[data-skin="board"] .bw-board { padding: 7px 10px 9px; gap: 4px; }
+  :root[data-skin="board"] .bw-tiles--title { --bd-th: 28px; --bd-tw: 21px; --bd-tf: 24px; }
+  :root[data-skin="board"] .bw-figs { margin-top: 0; row-gap: 4px; }
+  :root[data-skin="board"] .bw-fig { gap: 3px; }
+  :root[data-skin="board"] .bw-pick { gap: 6px; }
+  :root[data-skin="board"] .bw-strips { gap: 6px; }
+  :root[data-skin="board"] .bw-main { gap: 2px; padding-top: 4px; padding-bottom: 4px; }
+  :root[data-skin="board"] .bw-take { min-height: 54px; margin-top: 2px; padding-top: 6px; padding-bottom: 6px; }
+}
 
 /* ---- Landscape: the board, the slip and the main action on the left, the strips on the right (thumb side) --------- */
 @media (orientation: landscape) {
