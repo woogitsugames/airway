@@ -19,11 +19,15 @@ const cases = [
 /** Root attribute, the menu globe turn rate and whether a split-flap fold would animate. */
 async function motion(page) {
   return await page.evaluate(() => {
+    // [night-81a] D-336: the split-flap fold of UI-A's board (`.bd-flaps`, D-324); the stilled fold reads 'none'.
+    const row = document.createElement('span');
+    row.className = 'bd-flaps';
     const probe = document.createElement('span');
     probe.className = 'flap-fold-out flap-fold-out--active';
-    document.body.append(probe);
-    const flap = getComputedStyle(probe).animationName;
-    probe.remove();
+    row.append(probe);
+    document.body.append(row);
+    const flap = getComputedStyle(probe).animationName === 'none' ? 'none' : 'flap-top';
+    row.remove();
     return {
       attr: document.documentElement.dataset.airwayMotion ?? null,
       spin: window.__awWorld?.framing?.().menuSpin ?? null,

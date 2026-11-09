@@ -4168,8 +4168,26 @@ Linoryt: `test:e2e:screen-audit:stub` (the Linoryt audit; the board's `test:e2e:
 `ui:matrix:board:stub` folds into `ui:matrix:stub` (the board is the only skin). `scripts/shots-u5.mjs` → `shots-t6.mjs`
 (`npm run shots:t6`, `docs/shots/t6/`). `test:skin-tokens`, `test:board`, `test:glyphs`, `test:text-scale`, `test:cvd`,
 `test:contrast` and `test:menu-clear` check the shipped board instead of the twin. `test:ci` 101 → 99 steps.
-**Budgets.** Release CSS 129.0 → **196.7 kB** (the base structure and the board's T1–T5 sections, inlined and pruned);
+**Suites of the shipped skin, adapted.** The first full `test:ci` on the flip (3,687 s) passed 63/99: 36 browser suites
+still read the Linoryt/base DOM. They now read UI-A's own parts (the week sheet's strips and main action, `.bw-pick-sign`,
+the print-out's roll, `.bd-plate`, `.bd-wait`, `.bd-item__title`, the board's flaps), keep their intent, and say where a
+check no longer applies (the board has no luggage-tag clip, no Endless line, no report tabs, no step-in or stamp motion).
+`e2e/browser.mjs` `clickTestId('upgrade-option-N')` takes the chosen strip through the main action `upgrade-take`
+(a tap only chooses, D-331). The suites also found board faults, fixed here: the map view of the report kept the roll
+over the globe (`.airway-go-content[hidden]` lost to a display rule), the ranking-deletion confirmation showed both
+buttons, the ATC strip ignored a notch before the bay measured, the front/surge stub was dark on dark, the record value,
+the weeks table, the settings selects, the logbook figures and the week sheet's titles broke or clipped at 320 px,
+130/150 % or in the pseudo-locale; the report's home-region and licence lines keep their test ids; a CSS backstop stops the
+board's flap fold under reduce motion; the board's base `body` is enamel. **Left for T7 / U7:** `test:e2e:text-scale-150`
+129/132 (the Polish "Szeroko-kadłubowiec" strip title at 320 px 130/150 %, "Przewiezieni" in the logbook at 915×412
+150 %), `test:e2e:board-short` (320×568 week 2 with the contract slip scrolls 1–32 px) and `test:e2e:weekly-contract`
+34/36 (360×640 with four strips scrolls 16–20 px): the sheet's short-phone fit; `store:shots` (U7): the night store frame
+shows a provisional Asia glyph in the hub strip bay, which the store check forbids.
+**Performance** (`perf:scene`, SwiftShader 412×915, the shipped default look; never compared with devices): Linoryt
+(`dev`) 29.0 / 30.9 fps idle/active, render CPU p95 1.1 ms, 14 draws → NASA globe 22.8 / 22.5 fps, 1.0 ms, 15 draws (the
+photo shader's fill on a CPU rasteriser, as D-325 measured; budget 50 draws).
+**Budgets.** Release CSS 129.0 → **197.0 kB** (the base structure and the board's T1–T5 sections, inlined and pruned);
 the budget becomes the measurement + 3 kB, **199.7 kB** (D-297; T7 lowers it). Main JS 1,084.3 → 1,090.7 kB raw (gzip
 324.9 → 327.3; the board's slots and data now reached in a release, its modules stay lazy chunks of 7–11 kB each), inside
-1,180 / 360. `dist/` 2,883.8 → 2,979.3 kB (the CSS, the board chunks, Archivo and Chivo Mono in place of Besley and Schibsted Grotesk), inside 4,300 kB.
+1,180 / 360. `dist/` 2,883.8 → 2,979.7 kB (the CSS, the board chunks, Archivo and Chivo Mono in place of Besley and Schibsted Grotesk), inside 4,300 kB.
 **Status: in force (owner's acceptance of 9.11); the owner reviews the PR.**

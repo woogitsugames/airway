@@ -184,7 +184,10 @@ export function createBoardWeek(deps: BoardWeekDeps): UpgradeSkin {
     const main = el('span', 'bw-main');
     const head = el('span', 'bw-title');
     head.append(el('span', '', model.title));
-    if (input.extraCrate === model.kind) head.append(el('span', 'bw-extra', t('board.sheet.contract')));
+    if (input.extraCrate === model.kind) {
+      head.append(el('span', 'bw-extra', t('board.sheet.contract')));
+      button.dataset.extra = 'contract'; // [night-81a] D-336: as the base view marks the crate a contract added
+    }
     const text = el('span', 'bw-text', describe(model.kind, facts));
     main.append(head, text);
     if (model.stamp) main.append(el('span', 'bw-note', model.stampCaption ? `${model.stampCaption}: ${model.stamp}` : model.stamp));

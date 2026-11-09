@@ -268,8 +268,9 @@ export function createBoardSheets(deps: BoardSheetsDeps): SheetSkin {
     }
   }
 
-  function figure(label: string, value: string, extra?: HTMLElement): HTMLDivElement {
+  function figure(label: string, value: string, extra?: HTMLElement, testid?: string): HTMLDivElement {
     const row = el('div', 'bd-print__figure');
+    if (testid) row.dataset.testid = testid;
     const dt = el('dt', 'bd-print__label', label);
     const dd = el('dd', 'bd-print__value', value);
     if (extra) dd.append(extra);
@@ -364,8 +365,9 @@ export function createBoardSheets(deps: BoardSheetsDeps): SheetSkin {
         figure(t('board.report.aircraft'), localNumber(data.network.aircraft)));
       if (data.network.hubs.length) figures.append(figure(t('board.report.hubs'), data.network.hubs.join(' · ')));
     }
-    if (data.homeRegion) figures.append(figure(t('board.report.region'), data.homeRegion));
-    if (data.licence) figures.append(figure(t('board.report.licence'), data.licence));
+    // [night-81a] D-336: the shipped report's test ids for these two lines (the print-out replaces them).
+    if (data.homeRegion) figures.append(figure(t('board.report.region'), data.homeRegion, undefined, 'gameover-home-region'));
+    if (data.licence) figures.append(figure(t('board.report.licence'), data.licence, undefined, 'gameover-licence'));
     const causes = el('section', 'bd-print__block bd-print__causes');
     const panel = strip.querySelector<HTMLElement>('.airway-go-causes-panel') ?? strip.querySelector<HTMLElement>('.airway-go-causes');
     if (panel) {

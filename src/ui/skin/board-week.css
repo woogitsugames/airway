@@ -71,7 +71,7 @@
   position: relative; flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; padding: 6px 10px 7px;
   font: 500 calc(11.5px * var(--bd-ts))/1.35 var(--board-mono); color: var(--board-print-2);
 }
-:root[data-skin="board"] .bw-slip-route { color: var(--board-print); font-weight: 700; }
+:root[data-skin="board"] .bw-slip-route { color: var(--board-print); font-weight: 700; overflow-wrap: anywhere; } /* [night-81a] long region names (pseudo-locale) */
 :root[data-skin="board"] .bw-slip-last { display: flex; align-items: center; gap: 6px; color: var(--board-print); }
 :root[data-skin="board"] .bw-slip-last::before {
   content: ''; flex: none; width: 9px; height: 9px; box-sizing: border-box; border: 2px solid var(--board-print);

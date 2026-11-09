@@ -55,21 +55,26 @@ async function mount(page, language, board) {
 
 function measure(page) {
   return page.evaluate(() => {
-    const overlay = document.querySelector('.airway-upgrade-open');
+    // [night-81a] D-336: the shipped UI-A sheet (D-331): `.bw-sheet` scrolls, the contract is the paper slip
+    // (`.bw-slip-route`, `.bw-slip-task`, `.bw-slip-last`), the crates are flight strips (a contract one carries a
+    // "Contract" clip and data-extra). The old crate sign's line ("four crates") has no counterpart on the sheet.
+    const boardSheet = document.querySelector('.bw-sheet');
+    const overlay = boardSheet ?? document.querySelector('.airway-upgrade-open');
     const sheet = document.querySelector('[data-testid="upgrade-contract"]');
     const text = (selector) => sheet?.querySelector(selector)?.textContent ?? null;
-    const last = sheet?.querySelector('.airway-upgrade-waybill-last');
+    const last = sheet?.querySelector('.bw-slip-last, .airway-upgrade-waybill-last');
     const mark = last ? getComputedStyle(last, '::before') : null;
-    const tags = [...document.querySelectorAll('.airway-upgrade-tag')].map((tag) => {
+    const tags = [...document.querySelectorAll(boardSheet ? '[data-testid^="upgrade-option-"]' : '.airway-upgrade-tag')].map((tag) => {
       const r = tag.getBoundingClientRect();
-      return { extra: tag.dataset.extra ?? null, aria: tag.getAttribute('aria-label'), code: tag.querySelector('.airway-upgrade-code').textContent,
+      return { extra: tag.dataset.extra ?? null, aria: tag.getAttribute('aria-label') ?? tag.textContent,
+        code: (boardSheet ? tag.textContent : tag.querySelector('.airway-upgrade-code').textContent) ?? '',
         height: r.height, width: r.width, bottom: r.bottom };
     });
     const s = sheet?.getBoundingClientRect();
     return {
-      overflow: overlay.scrollHeight - overlay.clientHeight, innerHeight, innerWidth,
-      sub: document.querySelector('.airway-upgrade-sub').textContent,
-      route: text('.airway-upgrade-waybill-route'), task: text('.airway-upgrade-waybill-task'), last: last?.textContent ?? null,
+      board: !!boardSheet, overflow: overlay.scrollHeight - overlay.clientHeight, innerHeight, innerWidth,
+      sub: document.querySelector('.airway-upgrade-sub')?.textContent ?? null,
+      route: text('.bw-slip-route, .airway-upgrade-waybill-route'), task: text('.bw-slip-task, .airway-upgrade-waybill-task'), last: last?.textContent ?? null,
       markFilled: mark ? mark.backgroundColor !== 'rgba(0, 0, 0, 0)' : null, markBorder: mark ? mark.borderTopWidth : null,
       sheet: s ? { left: s.left, right: s.right, height: s.height } : null, tags,
     };
@@ -95,16 +100,16 @@ try {
         const w = WORDS[language];
         const problems = [];
         if (m.route !== w.route) problems.push(`route "${m.route}"`);
-        if (!w.task.test(m.task ?? '')) problems.push(`task "${m.task}"`);
+        if (m.board ? !/\b24\b/.test(m.task ?? '') : !w.task.test(m.task ?? '')) problems.push(`task "${m.task}"`); // [night-81a] UI-A's slip words the reward as a strip
         if (m.last !== w[board]) problems.push(`last "${m.last}"`);
-        if (m.markFilled !== (board === 'met')) problems.push(`result square ${m.markFilled ? 'filled' : 'hollow'} on a ${board} contract`);
-        if (m.markBorder !== '2px') problems.push(`result square border ${m.markBorder}`);
+        if (!m.board && m.markFilled !== (board === 'met')) problems.push(`result square ${m.markFilled ? 'filled' : 'hollow'} on a ${board} contract`);
+        if (!m.board && m.markBorder !== '2px') problems.push(`result square border ${m.markBorder}`);
         if (!m.sheet || m.sheet.left < 0 || m.sheet.right > m.innerWidth + 0.5) problems.push('waybill outside the screen');
         const extra = m.tags.filter((tag) => tag.extra === 'contract');
         if (board === 'met') {
           if (m.tags.length !== 4) problems.push(`${m.tags.length} crates`);
-          if (m.sub !== w.four) problems.push(`sign "${m.sub}"`);
-          if (extra.length !== 1 || !extra[0].code.includes(w.crate) || !extra[0].aria.endsWith(w.crate)) problems.push('contract crate not marked');
+          if (!m.board && m.sub !== w.four) problems.push(`sign "${m.sub}"`);
+          if (extra.length !== 1 || !extra[0].code.toLocaleLowerCase().includes(w.crate.toLocaleLowerCase()) || (!m.board && !extra[0].aria.endsWith(w.crate))) problems.push('contract crate not marked');
         } else {
           if (m.tags.length !== 3) problems.push(`${m.tags.length} crates`);
           if (extra.length !== 0) problems.push('a crate marked without a met contract');
@@ -114,7 +119,8 @@ try {
         // there the board scrolls by about the slip's height (the overlay scrolls; every crate stays reachable).
         const mustFit = width !== 320;
         if (mustFit && m.overflow > 1) problems.push(`board scrolls ${m.overflow} px`);
-        if (mustFit) for (const tag of m.tags) if (tag.bottom > m.innerHeight + 0.5) problems.push(`crate ends at ${Math.round(tag.bottom)}`);
+        // [night-81a] D-336: on UI-A the strips scroll under the pinned main action by design (D-331); the sheet must not.
+        if (mustFit && !m.board) for (const tag of m.tags) if (tag.bottom > m.innerHeight + 0.5) problems.push(`crate ends at ${Math.round(tag.bottom)}`);
         if (errors.length) problems.push(`page errors: ${errors.join('; ')}`);
         if (problems.length) throw new Error(problems.join('; '));
         results.push({ name, status: 'PASS', why: `${m.tags.length} crates, waybill ${Math.round(m.sheet.height)} px, scroll ${Math.max(0, m.overflow)} px` });

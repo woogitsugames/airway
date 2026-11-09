@@ -90,7 +90,9 @@ async function checkActions(page, label, width, height, flights = null) {
       .map((id) => [id, document.querySelector(`[data-testid="${id}"]`)]).filter(([, el]) => el).map(([id, el]) => ({ id, ...box(el) }));
     const overlay = document.querySelector('.airway-go-overlay');
     return { buttons, scrollTop: overlay?.scrollTop ?? 0, flights: document.querySelectorAll('.airway-go-flight').length,
-      causes: document.querySelectorAll('.airway-go-causes li').length, strip: box(document.querySelector('.airway-go-strip')) };
+      causes: document.querySelectorAll('.airway-go-causes li').length,
+      // [night-81a] D-336: UI-A's report is the teleprinter roll (`.bd-print`, D-332), scrolling inside, the actions under it.
+      strip: box(document.querySelector('.bd-print') ?? document.querySelector('.airway-go-strip')) };
   });
   console.log(`${label}: flights=${m.flights} causes=${m.causes}`);
   assert(m.buttons.length === 3, `${m.buttons.length} action buttons`);

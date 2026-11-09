@@ -37,6 +37,8 @@ async function facts(page) {
   return page.evaluate(() => {
     const box = (el) => { const r = el.getBoundingClientRect(); return { top: r.top, bottom: r.bottom, left: r.left, right: r.right, height: r.height, width: r.width }; };
     const row = document.querySelector('[data-testid="gameover-contracts"]');
+    // [night-81a] D-336: on UI-A's print-out (D-332) the row is printed on the roll, which scrolls inside: bring it into view.
+    if (row?.closest('.bd-print')) row.scrollIntoView({ block: 'nearest' });
     const title = row?.querySelector('.airway-go-milestones-title');
     const marks = [...(row?.querySelectorAll('.airway-go-milestone') ?? [])].map((li) => {
       const mark = li.querySelector('.airway-go-milestone-mark');
@@ -79,7 +81,8 @@ function checkRow(f, language, width, height, marks) {
     `row overlaps the milestones ${JSON.stringify(f.row)} ${JSON.stringify(f.milestones)}`);
   if (f.next) assert(f.next.top >= f.row.bottom - 0.5, `row overlaps ${f.next.cls}`);
   for (const b of f.buttons) assert(b.top >= -0.5 && b.bottom <= height + 0.5 && b.left >= -0.5 && b.right <= width + 0.5 && b.height >= 47.5, `action off-screen or small ${JSON.stringify(b)}`);
-  assert(f.row.bottom <= Math.min(...f.buttons.map((b) => b.top)) + 0.5, 'contracts row under the actions');
+  // Never under an action ([night-81a] D-336: UI-A's landscape report puts the actions in a column beside the roll).
+  assert(f.buttons.every((b) => f.row.bottom <= b.top + 0.5 || f.row.right <= b.left + 0.5), 'contracts row under the actions');
   // Only the overlay's bottom padding (12 px + safe area) may lie past the edge, as without the row (the content fits).
   assert(f.scrollTop === 0 && f.overflow <= 13, `report scrolls (top ${f.scrollTop}, overflow ${f.overflow})`);
   assert(!f.docScroll, 'horizontal scroll');

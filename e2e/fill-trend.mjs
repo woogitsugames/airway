@@ -51,7 +51,7 @@ try {
               inside: c ? c.left >= r.left - 0.5 && c.right <= r.right + 0.5 && c.top >= r.top - 0.5 && c.bottom <= r.bottom + 0.5 : null,
               // [night-11az] D-257: the chevron right after the last count or the occupancy figure ([night-46a] Linoryt: .lin-fill).
               afterCount: chevron ? (kids.indexOf(chevron) === kids.findIndex((el) => el.classList.contains('airport-bubble__timer')) - 1 &&
-                kids[kids.indexOf(chevron) - 1]?.matches('svg, .airport-bubble__count')) || !!kids[kids.indexOf(chevron) - 1]?.matches('.lin-fill') : null,
+                kids[kids.indexOf(chevron) - 1]?.matches('svg, .airport-bubble__count')) || !!kids[kids.indexOf(chevron) - 1]?.matches('.lin-fill, .bd-count, .airport-region-glyph') : null, // [night-81a] UI-A: after the count (.bd-count, D-328)
               stroke: chevron ? getComputedStyle(chevron).color : null, tagColour: getComputedStyle(tag).color,
               animation: chevron ? getComputedStyle(chevron).animationName : null,
               duration: chevron ? getComputedStyle(chevron).animationDuration : null,
@@ -96,7 +96,10 @@ try {
         assert(m.cleared.trend === null && !m.cleared.up && !m.cleared.down, `${label}: null keeps a chevron`);
         assert(!m.cleared.aria.includes(aria.emptying), `${label}: aria keeps the trend after null`);
         assert(m.jam.down && m.jam.stroke === m.jam.tagColour, `${label}: jammed tag chevron not in the tag ink (${m.jam.stroke} vs ${m.jam.tagColour})`);
-        assert(m.filling.animation === 'airport-trend-in' && parseFloat(m.filling.duration) <= 0.2, `${label}: step-in ${m.filling.animation} ${m.filling.duration}`);
+        // [night-81a] D-336: UI-A's signs never move (D-328: nothing slides or blinks), so no step-in there.
+        const board = await page.evaluate(() => document.documentElement.dataset.skin === 'board');
+        if (!board) assert(m.filling.animation === 'airport-trend-in' && parseFloat(m.filling.duration) <= 0.2, `${label}: step-in ${m.filling.animation} ${m.filling.duration}`);
+        else assert(m.filling.animation === 'none', `${label}: the board's chevron animates (${m.filling.animation})`);
         assert(m.reduced.animation === 'none', `${label}: reduce motion still animates (${m.reduced.animation})`);
         assert(m.bad === 'RangeError', `${label}: invalid trend accepted`);
         if (errors.length) throw new Error(`Browser errors: ${errors.join('; ')}`);

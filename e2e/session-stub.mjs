@@ -117,8 +117,9 @@ async function endless(browser, url) {
       assert(s.screen === 'upgrade', `screen ${s.screen}`);
       const bill = await page.evaluate(() => {
         const sheet = document.querySelector('[data-testid="upgrade-contract"]');
-        return sheet ? { regions: sheet.querySelector('.airway-upgrade-waybill-route')?.dataset.regions ?? null,
-          last: !!sheet.querySelector('.airway-upgrade-waybill-last'), text: sheet.textContent } : null;
+        // [night-81a] D-336: the UI-A slip (`.bw-slip-route`, `.bw-slip-last`, D-331) or the old waybill.
+        return sheet ? { regions: sheet.querySelector('.bw-slip-route, .airway-upgrade-waybill-route')?.dataset.regions ?? null,
+          last: !!sheet.querySelector('.bw-slip-last, .airway-upgrade-waybill-last'), text: sheet.textContent } : null;
       });
       assert(bill && bill.regions && !bill.last, `waybill ${JSON.stringify(bill)}`);
       await answerPlain(page);
@@ -128,14 +129,14 @@ async function endless(browser, url) {
       const s = await page.evaluate(() => window.aw.autoplay(2));
       assert(s.screen === 'upgrade', `screen ${s.screen}`);
       const board = await page.evaluate(() => {
-        const last = document.querySelector('[data-testid="upgrade-contract"] .airway-upgrade-waybill-last');
+        const last = document.querySelector('[data-testid="upgrade-contract"] :is(.bw-slip-last, .airway-upgrade-waybill-last)');
         const crates = [...document.querySelectorAll('[data-testid^="upgrade-option-"]')];
         return { last: last?.textContent ?? null, met: last?.dataset.met ?? last?.className ?? null, count: crates.length,
           extra: crates.map((node, i) => [i, node.dataset.extra, node.dataset.upgrade, node.textContent]).filter(([, extra]) => extra === 'contract') };
       });
       assert(board.count === 4, `crates ${board.count}`);
       assert(/met\./.test(board.last ?? '') && !/not met/.test(board.last ?? ''), `last ${board.last}`);
-      assert(board.extra.length === 1 && board.extra[0][2] === 'departure-slots' && /Contract/.test(board.extra[0][3]),
+      assert(board.extra.length === 1 && board.extra[0][2] === 'departure-slots' && /Contract/i.test(board.extra[0][3]),
         `extra ${JSON.stringify(board.extra)}`);
       await clickTestId(page, `upgrade-option-${board.extra[0][0]}`);
       await page.waitForFunction(() => document.querySelector('.airway-game-layer')?.classList.contains('is-selecting-hub'));

@@ -51,12 +51,22 @@ async function journey(page, width, height) {
       dim: getComputedStyle(document.querySelector('.airway-go-overlay')).backgroundColor };
   });
   assert(view.hidden && view.bar && view.bar.bottom <= innerHeightOf(height) + 1, `map view ${JSON.stringify(view)}`);
-  assert(view.under.includes('airway-world'), `the globe is not under the centre in map view: "${view.under}"`);
+  // [night-81a] D-336: or one of the map's own signs (UI-A direction signs stand over the globe), never the report.
+  assert(view.under.includes('airway-world') || /\bairport-/.test(view.under), `the globe is not under the centre in map view: "${view.under}"`);
   assert(view.focus === 'gameover-map-back' && view.tags > 0 && /0\)$|transparent/.test(view.dim), `map view ${JSON.stringify(view)}`);
   // Turn the globe with a drag in the free area.
-  await page.mouse.move(width * 0.5, height * 0.4);
+  // [night-81a] D-336: start on bare globe (the canvas itself, off the signs of the UI-A map view and off the jammed
+  // airport in the middle, where a press is an airport pick, not a turn).
+  const [gx, gy] = await page.evaluate(() => {
+    for (const [fx, fy] of [[0.35, 0.62], [0.3, 0.55], [0.5, 0.65], [0.25, 0.7], [0.5, 0.4]]) {
+      const x = innerWidth * fx, y = innerHeight * fy;
+      if (document.elementFromPoint(x, y)?.classList.contains('airway-world')) return [fx, fy];
+    }
+    return [0.5, 0.4];
+  });
+  await page.mouse.move(width * gx, height * gy);
   await page.mouse.down();
-  for (let i = 1; i <= 8; i++) await page.mouse.move(width * 0.5 - i * 18, height * 0.4, { steps: 2 });
+  for (let i = 1; i <= 8; i++) await page.mouse.move(width * gx - i * 18, height * gy, { steps: 2 });
   await page.mouse.up();
   await page.waitForTimeout(300);
   const turned = await page.evaluate(() => window.__awWorld?.longitude?.());

@@ -1157,6 +1157,8 @@
 :root[data-skin="board"] .bd-report .airway-go-content {
   display: flex; flex-direction: column; gap: 8px; width: min(100%, 520px); max-height: 100%; min-height: 0;
 }
+/* [night-81a] D-336: the display above beat the `hidden` attribute, so the map view (D-116) kept the roll over the globe. */
+:root[data-skin="board"] .bd-report .airway-go-content[hidden] { display: none; }
 :root[data-skin="board"] .bd-print { flex: 1 1 auto; min-height: 0; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; }
 :root[data-skin="board"] .bd-print__roll {
   position: relative; box-sizing: border-box; min-height: 100%; padding: 26px 36px 20px; background: var(--board-paper); color: var(--board-print);
@@ -1333,6 +1335,7 @@
 :root[data-skin="board"] .airway-settings__licenses::after { content: ''; flex: none; width: 22px; height: 22px; background: currentColor; mask: var(--bd-arrow) center / contain no-repeat; -webkit-mask: var(--bd-arrow) center / contain no-repeat; }
 :root[data-skin="board"] .airway-settings__group .airway-settings__licenses:last-child { margin-bottom: 8px; }
 :root[data-skin="board"] .airway-settings__licenses:active { transform: translateY(1px); }
+:root[data-skin="board"] :is(.airway-settings__licenses, .airway-settings__delete-confirm)[hidden] { display: none; } /* [night-81a] D-336: as the base view hides them */
 /* Deleting the ranking data is the one danger of the pages: its confirmation is white on red. */
 :root[data-skin="board"] .airway-settings__delete-confirm .airway-settings__licenses:first-of-type { background: var(--board-red); color: var(--board-white); }
 :root[data-skin="board"] .airway-setting__swatch { box-shadow: inset 0 0 0 1px var(--board-print); }
@@ -1375,7 +1378,7 @@
 :root[data-skin="board"] .airway-logbook__records .airway-logbook__cell { border-bottom: 1px dashed var(--board-rule); }
 :root[data-skin="board"] .airway-logbook__records .airway-logbook__cell:last-child { border-bottom: 0; }
 :root[data-skin="board"] .airway-logbook__records dt { color: var(--board-print); font-family: var(--board-face); }
-:root[data-skin="board"] .airway-logbook__records dd { color: var(--board-print); font-family: var(--board-mono); }
+:root[data-skin="board"] .airway-logbook__records dd { color: var(--board-print); font-family: var(--board-face); font-variant-numeric: tabular-nums; } /* [night-81a] D-336: Archivo, narrower than the mono (915×412 clipped a record line) */
 /* [night-81a] D-336: Chivo Mono's figures run wider than the old face: at 130 % the records stack as at 150 % (logbook.css). */
 :root[data-skin="board"][data-airway-text-scale="130"] .airway-logbook__records .airway-logbook__cell { grid-template-columns: 1fr; gap: 3px; }
 :root[data-skin="board"][data-airway-text-scale="130"] .airway-logbook__records dd { text-align: left; }
@@ -1730,3 +1733,5 @@
 :root[data-skin="board"][data-airway-motion="reduce"] .bd-face,
 :root[data-skin="board"][data-airway-motion="reduce"] .bd-dial__knob,
 :root[data-skin="board"][data-airway-motion="reduce"] .bd-strip__paper { transition: none; }
+/* [night-81a] D-336: a CSS backstop for D-88 (board.ts never starts a fold under reduce motion). */
+:root[data-skin="board"][data-airway-motion="reduce"] .bd-flaps :is(.flap-fold-out--active, .flap-fold-in--active) { animation: none; }
