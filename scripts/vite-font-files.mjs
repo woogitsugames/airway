@@ -8,7 +8,7 @@ import { join, resolve } from 'node:path';
 /**
  * [night-28a] D-284: font files of public/fonts/ a release build leaves out. It held the Linoryt faces while the skin was
  * a DEV-only preview; [night-46a] D-301 (step U5) ships them. [night-69a] D-324 (PLAN-NOWY-KIERUNEK.md step T1): the
- * UI-A faces of the DEV `?skin=board` preview (Archivo, Chivo Mono) and their licences parked here until the flip;
+ * UI-A faces of the UI-A preview (Archivo, Chivo Mono) and their licences parked here until the flip;
  * [night-81a] D-336 (T6) ships them (the Linoryt faces Besley and Schibsted Grotesk are deleted), so the list is empty.
  */
 export const PREVIEW_FONTS = Object.freeze([]);

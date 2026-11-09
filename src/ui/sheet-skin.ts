@@ -1,8 +1,7 @@
 /**
  * [night-77a] D-332 (docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md step T5): the slot through which a preview skin
- * re-sets the main menu and the game-over report in its own language. Empty in every release build: src/main.ts fills it
- * only in a DEV build with `?skin=board` (the departures board and the teleprinter print-out of
- * src/ui/skin/board-sheets.ts), so the preview code stays out of the release bundle and the shipped screens are untouched.
+ * re-sets the main menu and the game-over report in its own language. src/main.ts fills it
+ * at boot with the departures board and the teleprinter print-out of src/ui/skin/board-sheets.ts.
  * The screens hand over their own elements (buttons keep their listeners, test ids and spoken names) and plain read
  * models; the skin may move those elements and add aria-hidden drawing round them, but never acts on the run.
  */

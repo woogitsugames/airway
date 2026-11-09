@@ -1,8 +1,7 @@
 /**
  * [night-75a] D-330 (docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md step T3): the slot through which a preview skin
- * mounts the bay of hub flight strips at the bottom of the game screen. Empty in every release build: src/main.ts fills
- * it only in a DEV build with `?skin=board` (UI-A strips of src/ui/skin/board-strips.ts), so the strip code stays out of
- * the release bundle and the shipped game screen is untouched. The session hands the bay the hubs' read model after every
+ * mounts the bay of hub flight strips at the bottom of the game screen. src/main.ts fills it at boot with the UI-A
+ * strips (src/ui/skin/board-strips.ts). The session hands the bay the hubs' read model after every
  * sync; the bay owns its DOM, its placement over the console and the "+N" tile, and asks the session to open the full
  * strip (the hub cause board, src/ui/hubBoard.ts) for a hub.
  */

@@ -74,7 +74,7 @@ export const en = {
   'dock.hub': 'Hub',
   'dock.speed': 'Speed {speed}×',
   'dock.in': 'in {when}',
-  // [night-69a] D-324 (UI-A preview, `?skin=board`): split-flap board labels (abbreviated as on an airport board; the
+  // [night-69a] D-324 (UI-A): split-flap board labels (abbreviated as on an airport board; the
   // board's spoken label is `board.label`), the pause key caption and the controller-console captions (long and short).
   'board.label': '{time}, week {week}, day {day} of {days}, {count} {count|passenger|passengers}',
   'board.localTime': 'Local time',
@@ -90,8 +90,8 @@ export const en = {
   'board.dock.widebodyShort': 'Wide',
   'board.dock.hub': 'Hub',
   'board.dock.speed': 'Speed',
-  'board.sign.hubAria': 'Hub {code}.', // [night-73a] D-328: spoken before a hub sign's label (UI-A preview)
-  // [night-76a] D-331: the UI-A preview's weekly sheet (T4)
+  'board.sign.hubAria': 'Hub {code}.', // [night-73a] D-328: spoken before a hub sign's label (UI-A skin)
+  // [night-76a] D-331: the UI-A's weekly sheet (T4)
   'board.sheet.kicker': 'End of week',
   'board.sheet.week': 'Week',
   'board.sheet.passengers': 'Passengers',
@@ -120,9 +120,9 @@ export const en = {
   'board.sheet.thenHub': 'Then pick the hub on the globe',
   'board.sheet.thenAirport': 'Then pick the airport on the globe',
   'board.sheet.none': 'Nothing to take',
-  // [night-75a] D-330 (UI-A preview, `?skin=board`): the hub flight strips over the console (column labels abbreviated
+  // [night-75a] D-330 (UI-A): the hub flight strips over the console (column labels abbreviated
   // as on a controller's strip; each strip's spoken label is `board.strip.aria`/`ariaJam`).
-  // [night-77a] D-332 (T5): the menu as a departures board and the report as a teleprinter print-out (DEV `?skin=board`).
+  // [night-77a] D-332 (T5): the menu as a departures board and the report as a teleprinter print-out (UI-A).
   'board.menu.tagline': 'An airline network on the real Earth',
   'board.menu.list': 'Departures',
   'board.menu.choose': 'Choose',

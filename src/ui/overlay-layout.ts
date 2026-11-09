@@ -420,7 +420,12 @@ export interface EdgeChip {
    * city name and "2 408 km · 8 z 12"); read only by `placeSizedEdgeChips`.
    */
   width?: number;
+  /** Great-circle angle (rad) from the view centre to the airport; ranks the chips when more than MAX_EDGE_CHIPS are off screen. Missing = farthest. */
+  near?: number;
 }
+
+/** [night-85a] At most this many off-screen direction signs at once: jammed airports first, then the nearest ones. */
+export const MAX_EDGE_CHIPS = 4;
 
 /** Free screen area for chips: HUD bands at the top/bottom and (landscape dock) on the right. */
 export interface EdgeBounds {
@@ -458,6 +463,7 @@ export function projectEdgeChip(chip: EdgeChip, dx: number, dy: number, lon: num
 
 // Reused between frames: indices of on-screen airports and of the chips placed so far, per side.
 const obstacleScratch: number[] = [];
+const allowedScratch: number[] = [];
 /** Obstacles that can touch the current chip's strip along its edge (its x on a side edge, its y on top/bottom). */
 const nearScratch: number[] = [];
 const sideScratch: [number[], number[], number[], number[]] = [[], [], [], []];
@@ -588,10 +594,24 @@ export function placeSizedEdgeChips(chips: readonly EdgeChip[], tags: readonly T
     if (chip.side === 1) chip.x = Math.round(bounds.width - bounds.right - EDGE_CHIP_PAD - w);
     else if (chip.side >= 2) chip.x = Math.round(clamp(chip.x + (EDGE_CHIP_WIDTH - w) / 2, EDGE_CHIP_PAD, bounds.width - bounds.right - w - EDGE_CHIP_PAD));
   }
+  // [night-85a] Only MAX_EDGE_CHIPS signs are shown: jammed airports first, then the nearest ones (ties by index).
+  allowedScratch.length = 0;
+  for (let n = 0; n < MAX_EDGE_CHIPS; n++) {
+    let best = -1;
+    for (let i = 0; i < chips.length; i++) {
+      const c = chips[i];
+      if (!c.offscreen || allowedScratch.includes(i)) continue;
+      if (best < 0) { best = i; continue; }
+      const b = chips[best];
+      if (c.jammed !== b.jammed ? c.jammed : (c.near ?? Infinity) < (b.near ?? Infinity)) best = i;
+    }
+    if (best < 0) break;
+    allowedScratch.push(best);
+  }
   let placed = 0;
   for (let pass = 1; pass >= 0; pass--) for (let i = 0; i < chips.length; i++) {
     const chip = chips[i];
-    if (!chip.offscreen || Number(chip.jammed) !== pass) continue;
+    if (!chip.offscreen || Number(chip.jammed) !== pass || !allowedScratch.includes(i)) continue;
     const w = chipWidth(chip);
     const vertical = chip.side < 2;
     const start = vertical ? chip.y : chip.x;

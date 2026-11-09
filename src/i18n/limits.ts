@@ -10,7 +10,7 @@ import type { TranslationKey, TranslationParams } from './index';
  *  used to allow 20/10, which a 320–412 px phone hid behind the column edge without the "…" cell. */
 export const FLAP_CELLS = { title: 15, half: 10, status: 8, gate: 2 } as const;
 
-/** [night-69a] D-324: cells of the UI-A HUD board (`?skin=board`): the clock "19:05", the week (1–999), the day "2/3", the
+/** [night-69a] D-324: cells of the UI-A HUD board: the clock "19:05", the week (1–999), the day "2/3", the
  *  passengers (padded to 3 digits, at most 5; more shows the "…" cell) and an aircraft count on a console plate. */
 export const BOARD_CELLS = { clock: 5, week: 3, day: 3, passengers: 5, count: 2 } as const;
 

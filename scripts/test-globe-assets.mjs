@@ -18,7 +18,7 @@ const KB = 1000;
  * clouds) were removed with Satelita and Mapa; nothing may bring them back unnoticed.
  */
 /**
- * [night-70a R1] D-323: the realistic globe brings NASA back as the one look (DEV preview `?look=earth` until the flip):
+ * [night-70a R1] D-323: the realistic globe brings NASA back as the one look (DEV preview the NASA globe until the flip):
  * Blue Marble July 2004 by day, Black Marble 2016 by night, WebP (half the JPEG bytes at the same quality, measured),
  * baked by dev/globe-look/bake-earth.py. A cap per file (~10 % over the bake) instead of the old 350 kB folder total;
  * the folder total is the sum of the caps. Mapa and clouds stay removed (D-285 L2), as do the old JPEG names.

@@ -1,4 +1,4 @@
-// [night-69a] D-324 (docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md step T1): the UI-A preview (`?skin=board`) on the
+// [night-69a] D-324 (docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md step T1): the UI-A skin on the
 // real session (on the stub world with --render=stub, D-254). Plays a short seeded run with the DEV bot so the HUD shows
 // a real afternoon (routes, aircraft used up), then audits the in-game HUD at phone, landscape, foldable and tablet sizes,
 // PL and EN, at 100 % and at the 150 % text step, plus two notch profiles (the `--aw-safe-*` tokens, as e2e/notch.mjs):

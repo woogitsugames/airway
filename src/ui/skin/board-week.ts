@@ -1,7 +1,6 @@
 /**
  * [night-76a] D-331 (docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md step T4; UI-A-SPEC.md; mockup
- * makiety/ui-a/ui-a-koniec-tygodnia.png): the weekly board of the UI-A preview, "take one strip". DEV-only until the
- * flip (T6): src/main.ts loads it only with `?skin=board` and hands it to the board view through `upgradeSkin`
+ * makiety/ui-a/ui-a-koniec-tygodnia.png): the weekly board of the UI-A skin, "take one strip". src/main.ts loads it at boot and hands it to the board view through `upgradeSkin`
  * (src/ui/upgrade/skin.ts); a release build folds that branch away.
  *
  * The sheet:

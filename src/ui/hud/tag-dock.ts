@@ -5,7 +5,7 @@ import type { HudActions, HudState, PlaneType } from './types';
 import { ARIA_KEYSHORTCUTS } from '../../input/keyboard';
 import { skinBase, baseIcon } from '../skin/base'; // [night-28a] D-284; [night-46a] D-301: cut symbols (the drag ghost)
 import { setClass } from '../classes'; // [night-59a] D-322
-import { hudSkin } from './skin'; // [night-69a] D-324: the DEV `?skin=board` preview paints the console faces
+import { hudSkin } from './skin'; // [night-69a] D-324: UI-A paints the console faces
 
 type TagId = 'undo' | PlaneType | 'hub' | 'speed';
 // [night-46a] D-285 L1, D-301: five symbols; the globe-view tag (G8, D-172) left with Satelita and Mapa.
