@@ -322,6 +322,8 @@ export function replaySave(save: GameSaveV1): Sim | null {
       ...(config?.demandSurge === true ? { demandSurge: true } : {}),
       // [night-12bd] R2j: and its weather front flag (absent in every save before R2j and in shipped Endless).
       ...(config?.weatherFront === true ? { weatherFront: true } : {}),
+      // [night-86a] D-343: and its morning start (absent in every save before D-343).
+      ...(config?.morningStart === true ? { morningStart: true } : {}),
     };
     // [night-12bc] R2h: and its licence class (absent = class I, every save before R2h).
     const eus = config?.eusClusterV2 === true ? { eusClusterV2: true } : {};

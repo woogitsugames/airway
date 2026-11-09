@@ -60,10 +60,10 @@ check('honest bot daily runs on 6 seeds verify with the live score, week count a
 
 check('Sim.replay with stopAtEnd stops on the game-over tick; without it the old tick count is kept', () => {
   const { sim, submission } = runs[0];
-  const stopped = Sim.replay(submission.seed, submission.journal, submission.endTick + 500, { mode: 'daily' }, true);
+  const stopped = Sim.replay(submission.seed, submission.journal, submission.endTick + 500, sim.config, true);
   assert.equal(stopped.tickCount, sim.tickCount);
   assert.equal(stopped.hash(), sim.hash());
-  const plain = Sim.replay(submission.seed, submission.journal, submission.endTick + 500, { mode: 'daily' });
+  const plain = Sim.replay(submission.seed, submission.journal, submission.endTick + 500, sim.config);
   assert.equal(plain.tickCount, sim.tickCount + 500, 'default replay semantics unchanged');
 });
 

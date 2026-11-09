@@ -13,7 +13,10 @@ export interface StripHub {
   /** IATA code and the localized city name (D-68 labels). */
   readonly code: string;
   readonly name: string;
-  /** A hub; false for an ordinary airport, which gets a strip only while it is jammed. */
+  /**
+   * A hub; false for an ordinary airport, which gets a strip while it is jammed and, since D-343 (P-4), from 75 % of
+   * its waiting places (src/game/tutorial/first-time.ts AirportStripGate).
+   */
   readonly hub: boolean;
   readonly waiting: readonly RegionId[];
   readonly capacity: number;

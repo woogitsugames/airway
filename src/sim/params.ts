@@ -33,7 +33,8 @@ export const DEMAND_PASSENGERS_PER_MILLION_PER_DAY = 1 as const;
 export const DEMAND_RATE_PERCENT = 130 as const;
 // Dawn is intentionally strongest; this 24-element integer profile is in local time.
 // [task-11] One game tick is one UTC minute; day/night balance is versioned.
-export const DAYNIGHT_PARAMS_VERSION = 1 as const;
+// [night-86a] D-343: v2 adds the morning start below (P-3).
+export const DAYNIGHT_PARAMS_VERSION = 2 as const;
 export const DAYNIGHT_MINUTES_PER_DAY = SIM_MINUTES_PER_DAY;
 // [task-31] Alias of the single week length above (kept for the task-11 day/night module).
 export const DAYNIGHT_MINUTES_PER_WEEK = SIM_MINUTES_PER_WEEK;
@@ -72,6 +73,10 @@ export const INITIAL_PLANE_RESERVE: Readonly<Record<PlaneType, number>> = {
   turboprop: 4,
   widebody: 0,
 };
+// [night-86a] D-343 (P-3): a run with `GameConfig.morningStart` (every new Endless and Daily run) begins at this
+// local hour at its clock airport (the first open airport, `WorldView.clockCityId`) instead of at UTC midnight.
+// Weeks and days still count from the run's first minute, so every game day (and week) starts at this hour there.
+export const MORNING_START_LOCAL_HOUR = 7 as const;
 export const CURFEW_START_HOUR = 23 as const;
 export const CURFEW_END_HOUR = 6 as const;
 // [night-12v] R8c, D-151: week 4 -> 3 (only 15 % of bot runs saw week 4; rules v6). Daily shares it; puzzles set their own.

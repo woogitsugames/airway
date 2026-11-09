@@ -16,21 +16,23 @@ export function scenarioFor(config: GameConfig): Scenario {
   // [night-12bb] R2i: so is the demand surge (D-249).
   // [night-12bc] R2h: a licence class above I (D-251) sets the class's knobs; class I carries no field.
   // [night-12bd] R2j: so is the weather front (off in shipped Endless).
+  // [night-86a] D-343: so is the morning start (Endless and Daily).
   if (config.homeRegion === undefined && config.weeklyContract !== true && config.demandSurge !== true &&
-      config.licenceClass === undefined && config.weatherFront !== true) return ENDLESS_SCENARIO;
+      config.licenceClass === undefined && config.weatherFront !== true && config.morningStart !== true) return ENDLESS_SCENARIO;
   return endlessScenario(config.homeRegion ?? null, config.weeklyContract === true, config.demandSurge === true,
-    config.licenceClass ?? 1, config.weatherFront === true, config.eusClusterV2 === true);
+    config.licenceClass ?? 1, config.weatherFront === true, config.eusClusterV2 === true, config.morningStart === true);
 }
 
 const ENDLESS_VARIANTS = new Map<string, Scenario>();
 function endlessScenario(region: RegionId | null, contract: boolean, surge: boolean, licence: LicenceClass,
-    weather: boolean, eusClusterV2: boolean): Scenario {
-  const key = `${region ?? '-'}/${contract ? 'c' : '-'}/${surge ? 's' : '-'}/${licence}/${weather ? 'w' : '-'}/${eusClusterV2 ? 'v2' : 'v1'}`;
+    weather: boolean, eusClusterV2: boolean, morning: boolean): Scenario {
+  const key = `${region ?? '-'}/${contract ? 'c' : '-'}/${surge ? 's' : '-'}/${licence}/${weather ? 'w' : '-'}/${eusClusterV2 ? 'v2' : 'v1'}/${morning ? 'm' : '-'}`;
   let scenario = ENDLESS_VARIANTS.get(key);
   if (!scenario) {
     scenario = Object.freeze({ ...ENDLESS_SCENARIO, ...(region ? { homeRegionId: region } : {}),
       ...(contract ? { weeklyContract: true } : {}), ...(surge ? { demandSurge: true } : {}),
       ...(weather ? { weatherFront: true } : {}), ...(eusClusterV2 ? { eusClusterV2: true } : {}),
+      ...(morning ? { morningStart: true } : {}),
       ...(licence === 1 ? {} : licenceKnobs(licence)) });
     ENDLESS_VARIANTS.set(key, scenario);
   }

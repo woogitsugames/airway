@@ -1,6 +1,7 @@
 // Daily mode composition: the run is seeded from the Warsaw calendar day, never by the device RNG.
 import { dailyKey, dailySeedForKey } from '../../core/daily.ts';
-import { createGame, type Sim } from '../../sim/index.ts';
+import { Sim } from '../../sim/index.ts';
+import { DAILY_CONFIG } from '../../net/submission.ts';
 import { REGIONS, type RegionGlyph, type RegionId } from '../../data/regions.ts';
 import type { DailyResult, OfficialReservation, ScoreService } from '../scores';
 
@@ -141,5 +142,7 @@ export class DailyChallengeMode<TSimulation extends DailySimulation> {
 
 /** Daily challenge on the real simulation: same Endless rules, the day's seed, mode 'daily'. */
 export function createDailyMode(scores: ScoreService, now?: () => Date): DailyChallengeMode<Sim> {
-  return new DailyChallengeMode(DAILY_SEEDS, scores, (seed) => createGame(seed, 'daily'), now);
+  // [night-86a] D-343: a new Daily starts at local 07:00 at its first airport, exactly the config the leaderboard
+  // replays (DAILY_CONFIG, src/net/submission.ts).
+  return new DailyChallengeMode(DAILY_SEEDS, scores, (seed) => new Sim(seed >>> 0, DAILY_CONFIG), now);
 }

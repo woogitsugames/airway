@@ -57,8 +57,8 @@ export const EMPTY_SURGES: SurgeSnapshot = Object.freeze({
  * before the board. Null before SURGE_FIRST_BOARD_WEEK or without a candidate. `rngState` continues the same fork
  * for the destinations of the extra passengers.
  */
-export function drawSurge(seed: number, week: number, boardTick: number, candidates: readonly SurgeCandidate[]):
-    { surge: DemandSurge; rngState: number } | null {
+export function drawSurge(seed: number, week: number, boardTick: number, candidates: readonly SurgeCandidate[],
+    clockShift = 0): { surge: DemandSurge; rngState: number } | null {
   if (!Number.isSafeInteger(week) || week < 1) throw new RangeError('Invalid week');
   if (!Number.isSafeInteger(boardTick) || boardTick < 0) throw new RangeError('Invalid board tick');
   if (week < SURGE_FIRST_BOARD_WEEK || candidates.length === 0) return null;
@@ -67,7 +67,8 @@ export function drawSurge(seed: number, week: number, boardTick: number, candida
   const city = pool[rng.int(pool.length)]!;
   const startLocalHour = SURGE_START_LOCAL_HOURS[rng.int(SURGE_START_LOCAL_HOURS.length)]!;
   const earliest = boardTick + SURGE_NOTICE_MINUTES;
-  const local = localMinuteOfDay(earliest, city.utcOffsetH);
+  // [night-86a] D-343: a morning-start run reads local time `clockShift` minutes later than its game minute.
+  const local = localMinuteOfDay(earliest + clockShift, city.utcOffsetH);
   const startTick = earliest + (startLocalHour * 60 - local + SIM_MINUTES_PER_DAY) % SIM_MINUTES_PER_DAY;
   return {
     surge: {

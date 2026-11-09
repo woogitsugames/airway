@@ -27,6 +27,7 @@ import { WeeklyUpgradeView } from '../ui/upgrade';
 import { EndlessRun, cityDistanceKm, type RunCommand, type RunEvent } from './run';
 import { mountSlotHint } from './tutorial/slot-hint'; // [task-32]
 import { FirstTimeRegistry, beyondRange, curfewAirport, fillingHub, surgeAnnouncement } from './tutorial/first-time'; // [night-11p] R6a
+import { AirportStripGate, fillingAirport } from './tutorial/first-time'; // [night-86a] D-343 (P-4)
 import { mountFirstTimeCards } from './tutorial/first-time-card';
 import { browserTutorialStorage } from './tutorial/controller';
 import { reducedMotion } from '../ui/motion'; // [ext-04] D-88: the jam arc steps per game second
@@ -193,6 +194,7 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
   // console; a strip opens the full strip (the hub board).
   const strips = stripSkin.current?.mount(layer, { open: (id) => openHubBoard(id) }) ?? null;
   const hubStrips: StripHub[] = [];
+  const airportStrips = new AirportStripGate(); // [night-86a] D-343 (P-4): plain airports from 75 % full
   const upgradeHost = document.createElement('div');
   upgradeHost.className = 'airway-upgrade-host';
   layer.append(upgradeHost);
@@ -448,7 +450,8 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       const seconds = city.jamTicksLeft === null ? null : Math.ceil(city.jamTicksLeft / SIM_TICKS_PER_SECOND);
       if (jamKeys.get(city.id) !== seconds) { jamKeys.set(city.id, seconds); overlay.setJamCountdown(city.id, seconds); }
       jamHaptics.setJammed(city.id, city.jamTicksLeft !== null);
-      if (strips && (city.hub || seconds !== null)) hubStrips.push({ id: city.id, code: airportLabel(city.id, 'code'),
+      if (strips && airportStrips.shows({ id: city.id, hub: city.hub, waiting: city.waiting.length, capacity: city.capacity },
+        seconds !== null)) hubStrips.push({ id: city.id, code: airportLabel(city.id, 'code'),
         name: airportLabel(city.id, 'name'), hub: city.hub, waiting: city.waiting, capacity: city.capacity, jamSeconds: seconds });
       overlay.setSlotHold(city.id, city.slotHeld, city.nextSlotMinutes); // [task-38] deduplicated inside
       overlay.setFillTrend(city.id, fillReadings.trend(city.id, city.waiting.length, city.capacity)); // [night-11af] deduplicated inside
@@ -462,6 +465,14 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
       firstTime.offer('hub-full', () => ({
         tag: t('firstTime.tag.hubFull', { airport: airportLabel(filling.id), waiting: filling.waiting, capacity: filling.capacity }),
         hint: t('firstTime.hint.hubFull', { airport: airportLabel(filling.id) }),
+      }));
+    }
+    // [night-86a] D-343 (P-4): the first plain airport whose strip appears (75 % full): it can end the run too.
+    const fillingPlain = strips ? fillingAirport(cities.map((city) => ({ id: city.id, hub: city.hub, waiting: city.waiting.length, capacity: city.capacity }))) : null;
+    if (fillingPlain) {
+      firstTime.offer('airport-full', () => ({
+        tag: t('firstTime.tag.airportFull', { airport: airportLabel(fillingPlain.id), waiting: fillingPlain.waiting, capacity: fillingPlain.capacity }),
+        hint: t('firstTime.hint.airportFull', { airport: airportLabel(fillingPlain.id) }),
       }));
     }
     if (curfewKey !== lastCurfewKey) {
@@ -703,7 +714,8 @@ export function startSession(host: HTMLElement, world: World, initial: EndlessRu
     overlay.setZoomedIn(world.orbit.zoomLevel >= PLATES_ALL_ZOOM); // [night-11m] D-128; deduplicated inside
     overlay.update();
     if (tool.drawing || screen === 'game') tool.refreshHandles();
-    return { tick: run.clockMinute, alpha: Math.max(0, Math.min(1, accumulator)) };
+    // [night-86a] D-343: the sun reads UTC (a morning-start run is shifted from its game minute).
+    return { tick: run.utcMinute, alpha: Math.max(0, Math.min(1, accumulator)) };
   });
   const cities = run.cityList();
   // [night-07z] Frame the densest cluster when the airports span several continents (never an empty ocean).

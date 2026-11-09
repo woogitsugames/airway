@@ -81,7 +81,9 @@ function readConfig(value: unknown): GameConfig {
       // [night-12bc] R2h: a licence class above I is an Endless choice only (Daily keeps one rule set for everyone).
       (value.licenceClass !== undefined && (value.mode !== 'endless' || (value.licenceClass !== 2 && value.licenceClass !== 3))) ||
       // [night-12bd] R2j: the weather front is an Endless rule only (Daily and its leaderboards stay as they were).
-      (value.weatherFront !== undefined && (value.mode !== 'endless' || value.weatherFront !== true))) {
+      (value.weatherFront !== undefined && (value.mode !== 'endless' || value.weatherFront !== true)) ||
+      // [night-86a] D-343: the morning start belongs to Endless and Daily, never to a puzzle (its levels are timed).
+      (value.morningStart !== undefined && (value.mode === 'puzzle' || value.morningStart !== true))) {
     throw new TypeError('invalid game configuration');
   }
   return copyConfig(value as unknown as GameConfig);

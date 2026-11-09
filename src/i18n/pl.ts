@@ -636,6 +636,10 @@ export const pl = {
   // [night-35a] D-272: the first announced demand surge (pennant on the airport's tag, D-249).
   'firstTime.step.surge': 'ATC / SZCZYT',
   'firstTime.tag.surge': '{airport} · +{count} {time}',
+  // [night-86a] D-343 (P-4): the first plain airport whose "Lotn." strip appears (75 % of its waiting places).
+  'firstTime.step.airportFull': 'ATC / LOTNISKO',
+  'firstTime.tag.airportFull': '{airport} · {waiting}/{capacity}',
+  'firstTime.hint.airportFull': 'Zator zwykłego lotniska też kończy grę, więc od 3/4 kolejki {airport} dostaje własny pasek „Lotn.”.',
   'firstTime.hint.surge': 'Szczyt w {airport}: +{count} {count|pasażer|pasażerów|pasażerów} od {time} czasu lok. Pusty proporczyk: zapowiedź; pełny: trwa. Dodaj miejsca lub samolot na jego trasach.',
   'action.save': 'Zapisz lot',
   'action.menu': 'Menu główne',
