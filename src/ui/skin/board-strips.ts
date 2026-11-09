@@ -350,7 +350,7 @@ export function createBoardStrips(deps: BoardStripsDeps): StripSkin {
         const hubCol = span('bd-strip__col bd-strip__hub');
         hubCol.append(span('bd-strip__lab', t(hub.hub ? 'board.strip.hub' : 'board.strip.airport')), span('bd-strip__code', hub.code), span('bd-strip__city', hub.name));
         const queueCol = span('bd-strip__col bd-strip__queue');
-        const narrow = perRow < 6;
+        const narrow = perRow < 8; // [night-85b] D-342: the 9 px heading "Queue · N directions" needs ~125 px (was < 6)
         const label = queue.directions === 0 || narrow || compact ? t('board.strip.queueShort') : t('board.strip.queue', { count: queue.directions });
         const rows = span('bd-strip__rows');
         for (const row of queue.rows) {

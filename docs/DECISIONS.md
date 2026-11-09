@@ -4341,3 +4341,30 @@ stay visible), then the airports nearest to the view (great-circle angle `EdgeCh
 note:** `test:e2e:keyboard-mouse` hover step waited for nothing after the zoom keys (the camera eases, the airport moved
 away from the read point: hover null on pl 915×412 under load); it now waits for the airport's screen point to hold
 still and polls the hover state. **Status: in force.**
+
+## D-342 — Playtest of the shipped look (NASA globe + UI-A): four UI fixes, seven owner questions (2026-11-09, Claude, night 85b)
+A mobile playtest on the real renderer: the DEV `window.aw` adapter, real route/plane drags, the bot (`botStep`,
+`autoplay`) through weeks 1–3, PL and EN at 412×915 and 915×412 (and 320×568), first-time cards on; key moments shot
+(start, first route, hub queue, weekly sheet, night, pause, jam/report) and a DOM audit per frame (touch targets < 48 dp,
+overlapping signs, clipped text, tiny text). Report in Polish with shots: `docs/PLAYTEST-2026-11-09.md`,
+`docs/shots/playtest-2026-11-09/`. `src/data/puzzles/**`, the simulation and every hash are untouched.
+**Fixed (CSS / UI / copy).** (1) The first-time card on a phone (< 600 px) wrapped OK alone onto a third row under an empty
+band; step and tag now share the first row, hint and OK the second (`board.css`). (2) Africa's D-08 fill (#13302E) on the
+enamel airport sign read only by a 0.5 px rim; on the dark signs (map, tutorial) its cream rim is 2.4 units instead of 1
+(shape and fill stay D-08's). (3) The hub strips' column heads 7.5 → 9 px (`.bd-strip__lab`, tracking .08 → .06 em);
+`stripColumns` (`LABEL_PX`, `LABEL_TRACK`) sizes the seats/closes columns from the new size, and the queue head falls back
+to the short "Queue" below 8 glyphs (was 6), so nothing clips at 320–915 px. (4) UI-A says "allotment · take one strip",
+but the first-time cards, the pause row, the dock's spoken countdown and the pick's back label still said crate
+("skrzynia", "przywieszki"): PL/EN now say allotment/strip ("przydział/pasek"); the weekly card's tag reads "End of week N"
+like the sheet (it said week N while the sheet said "allotment for week N+1"). Translator drafts get "stale" warnings for
+the changed rows. `test:dock-countdown` and `test:e2e:dock-empty-tags` read the new spoken text.
+**Owner questions (not changed; engine, camera, balance or UI-A design):** P-1 the camera frames only the opening airports,
+so later ones sit at the edge and fade (overlay edge fade) — recommend one gentle zoom-out when an airport opens off-frame;
+P-2 direction signs (capped at 4 by D-341) still take 30–40 % of a portrait phone's width — a compact 48 dp variant;
+P-3 a run starts at sim midnight, i.e. ~19:00 in the Americas and ~01:00 in Europe: the first view is the night side —
+start at local morning; P-4 the bot lost in week 3 to a jam at a non-hub airport (CHI) that had no strip before — should
+a plain airport's jam end the run, or show its strip earlier; P-5 the speed dial shows the tempo only by its angle; P-6 the
+report's week table columns are increments without saying so; P-7 the D-08 palette was chosen for paper (Africa, North
+America are the weakest fills on enamel).
+**Budget.** Release CSS 195.4 → **195.7 kB** (+0.3 kB, inside +1 kB; budget 198.4 kB unchanged). Main JS 1,087.2 kB.
+**Status: in force; the owner reviews the PR and answers P-1…P-7.**
