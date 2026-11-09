@@ -17,19 +17,24 @@ Tracez vos lignes aériennes
 Puzzle de routes sur un globe 3D. Reliez les villes et gardez les hubs fluides.
 
 ## Full description
-Construisez un réseau aérien sur un globe en trois dimensions. Reliez les villes par des routes aériennes, agrandissez les aéroports et organisez les correspondances des passagers. Les avions volent tout seuls — c'est vous qui décidez où va le réseau.
+Construisez un réseau aérien sur un globe en trois dimensions. Reliez des villes par des lignes, agrandissez les aéroports et organisez les correspondances des passagers. Les avions volent seuls — c'est vous qui décidez où va le réseau.
 
-Explorez un monde en diorama fait main, avec ses océans, ses montagnes, ses nuages et ses aéroports. Au fil de la rotation de la Terre, le jour laisse place au crépuscule puis à la nuit, et de nouvelles vagues de passagers arrivent à l'aube. Chaque liaison change le fonctionnement de tout le réseau.
+Le globe continue de tourner et la demande suit l'heure locale de chaque ville : les nuits sont calmes et de nouvelles vagues de voyageurs arrivent à l'aube. Chaque liaison change le fonctionnement de tout le réseau.
 
-• Tracez des routes entre les villes sans piloter chaque avion.
-• Choisissez les types d'avions selon leur rayon d'action et leur capacité.
+La Terre vient de vraies images satellite : le jour, on voit les déserts, les forêts et les mers, au crépuscule une bande de lumière chaude passe sur vos lignes, et la nuit les villes s'allument. Le jeu parle la langue d'un aéroport : un tableau à palettes donne l'heure, chaque hub a sa propre bande de vol, les aéroports portent des panneaux à code et un panneau de direction jaune indique le prochain nouvel aéroport.
+
+• Tracez des lignes entre les villes sans piloter chaque avion.
+• Choisissez le type d'avion selon son rayon d'action et sa capacité.
 • Créez des hubs où les voyageurs prennent leur vol suivant.
 • Surveillez les zones d'attente et agissez avant qu'un hub ne déborde.
 • Choisissez une amélioration à la fin de chaque semaine de jeu.
-• Résolvez des puzzles de routes ou développez un réseau en mode Sans fin.
+• Résolvez des puzzles de lignes ou développez un réseau en vol sans fin.
+• Choisissez une région de départ pour le vol sans fin et remplissez un contrat hebdomadaire entre deux villes pour obtenir une quatrième amélioration au choix.
+• En vol sans fin, préparez-vous aux pics de passagers annoncés la veille.
+• Débloquez les classes de licence II et III du vol sans fin : couvre-feux nocturnes dans les aéroports et règles plus strictes.
 • Relevez le défi du jour, avec le même monde de départ pour tous.
 
-Vous n'êtes pas contrôleur aérien. Votre défi : concevoir un réseau qui achemine les passagers tout en gardant les hubs encombrés sous contrôle. Si un hub est débordé, un rapport des causes montre ce qui n'a pas marché pour mieux planifier la prochaine partie.
+Vous n'êtes pas contrôleur aérien. Votre défi : concevoir un réseau qui achemine les passagers tout en gardant les hubs saturés sous contrôle. Si un hub est débordé, un rapport des causes montre ce qui n'a pas marché, à côté des étapes et des contrats de votre partie, pour mieux planifier la suivante.
 
 Airway est un jeu de stratégie et de réflexion sur les réseaux, les correspondances et le rythme changeant d'un globe vivant.
 
@@ -39,12 +44,12 @@ Langue : le jeu est actuellement disponible en anglais et en polonais.
 compagnie,aéroport,vol,avion,réseau,correspondance,stratégie,puzzle,logistique,voyage,terre,3d
 
 ## Play feature graphic alt text
-Enseigne Airway à côté d'un globe 3D au crépuscule, des routes aériennes relient des aéroports d'Europe et du Moyen-Orient.
+Logo Airway sur un panneau crème à côté d'un globe satellite de jour, des lignes relient Amsterdam à Oslo, Dublin et l'Espagne.
 
 ## Play alt text
 Une ligne par scène pour chaque taille d'appareil (≤ 140 caractères) ; images de `shots/en/` (le jeu est en anglais).
-1. night — Face nocturne d'un globe 3D : villes éclairées d'Europe et du Moyen-Orient, routes aériennes et roses d'aéroports avec passagers.
-2. game — Globe 3D sous un soleil couchant : routes entre aéroports d'Europe et du Moyen-Orient, avions en vol, cadran des 24 heures.
-3. upgrade — Fin d'une semaine de jeu : trois caisses de fret proposent un turbopropulseur, un gros-porteur ou l'agrandissement d'un hub.
-4. failure — Écran « Network closed » : un hub saturé a mis fin à la partie, le rapport d'incident liste les causes et leur chronologie.
-5. menu — Menu principal sous le titre Airway : vol sans fin, puzzles, monde du jour, journal et réglages sur l'arc d'une rose des vents.
+1. night — Face nocturne d'un globe satellite : lumières des villes d'Europe, lignes depuis le hub d'Amsterdam, panneaux à code et bande de vol du hub.
+2. game — Crépuscule sur l'Europe, globe satellite : lignes et avions, horloge à palettes, panneau jaune vers Istanbul, passagers en attente.
+3. upgrade — Fin de la semaine 1 : tableau des départs, contrat hebdomadaire et trois bandes — turbopropulseur, gros-porteur, extension du hub.
+4. failure — Rapport final imprimé sur un rouleau : réseau fermé à Istanbul, file par forme de destination, chiffres, région de départ et causes.
+5. menu — Menu principal : AIRWAY en lettres à palettes au-dessus du globe nocturne, tableau des départs avec Today, Puzzles, Logbook et Settings.

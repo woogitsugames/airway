@@ -5,7 +5,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import assert from 'node:assert/strict';
 import { translations } from './i18n.js';
 import { createHash } from 'node:crypto';
-import { LAUNCH, PRESS_KIT, STORE_BADGES, STORE_HOSTS, SITE_SHOTS, storeLink } from './launch.js';
+import { HERO_WORDMARK, LAUNCH, PRESS_KIT, STORE_BADGES, STORE_HOSTS, SITE_SHOTS, storeLink } from './launch.js';
 import { tmpdir } from 'node:os';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { buildPressKit, pressShots, unzip } from './press-kit.mjs';
@@ -61,7 +61,7 @@ const home = readFileSync(join(root, 'index.html'), 'utf8');
 check('Glossary: no "terminal" in site copy or pages', () => !/terminal/i.test(JSON.stringify(translations) +
   pages.map(page => readFileSync(join(root, page), 'utf8')).join('')));
 // [night-11ad] R7k, D-218: real game screenshots, store links, social preview, hreflang, 404.
-const shotTags = [...home.matchAll(/<img\b[^>]*data-shot="([a-z]+)"[^>]*>/g)];
+const shotTags = [...home.matchAll(/<img\b[^>]*data-shot="([a-z]+)"[^>]*>/g)].filter(m => !m[0].includes('class="hero-shot"')); // D-339: the hero shot is separate
 check('One screenshot preview per site scene (five)', () => (home.match(/class="preview-shot"/g)||[]).length === SITE_SHOTS.scenes.length && SITE_SHOTS.scenes.length === 5 &&
   shotTags.map(m => m[1]).join() === SITE_SHOTS.scenes.join());
 check('No stage-0 concept mockups on the site', () => !/game-p\.png|upgrade-p\.png|menu-p\.png|makiet|concept/i.test(home + JSON.stringify(translations)));
@@ -123,15 +123,18 @@ LAUNCH.stores.appStore = 'https://example.com/airway';
 check('store link guard: accepts the store host, rejects others', () => storeLink('googlePlay') !== null && storeLink('appStore') === null);
 Object.assign(LAUNCH.stores, saved);
 check('Store claims not linked yet', () => !/play\.google\.com|apps\.apple\.com/.test(home));
-check('Canvas fallback image', () => /globe-fallback\.svg/.test(home));
+// [night-84a] D-339: the hero is the lockup (a copy of brand/wordmark.svg) and the real night store shot, no drawn globe.
+check('Hero lockup is the current brand/wordmark.svg (npm run site:assets)', () => home.includes(`src="${HERO_WORDMARK.target}"`) &&
+  readFileSync(join(root, HERO_WORDMARK.target), 'utf8') === readFileSync(join(root, HERO_WORDMARK.source), 'utf8'));
+check('Hero shows a real store shot', () => /class="hero-shot"[^>]*data-shot="night"[^>]*data-shot-format="landscape"/.test(home) && !/<canvas|globe\.js/.test(home));
 check('Privacy page linked', () => /href="privacy\.html"/.test(home));
 check('Language links', () => /\?lang=pl/.test(home) && /\?lang=en/.test(home));
-check('Fonts present', () => ['Overpass-800.ttf','Overpass-400.ttf','OverpassMono-700.ttf','AtkinsonHyperlegibleNext-400.ttf','AtkinsonHyperlegibleNext-700.ttf'].every(f=>existsSync(join(root,'fonts',f))));
-check('Font licenses present', () => ['OFL-Overpass.txt','OFL-OverpassMono.txt','OFL-AtkinsonHyperlegibleNext.txt'].every(f=>existsSync(join(root,'fonts',f))));
+check('Fonts present', () => ['Archivo-80-800.woff2','Archivo-600.woff2','ChivoMono-VF.woff2','AtkinsonHyperlegibleNext-400.ttf','AtkinsonHyperlegibleNext-700.ttf'].every(f=>existsSync(join(root,'fonts',f))));
+check('Font licenses present', () => ['OFL-Archivo.txt','OFL-ChivoMono.txt','OFL-AtkinsonHyperlegibleNext.txt'].every(f=>existsSync(join(root,'fonts',f))));
 const css = readFileSync(join(root,'styles.css'),'utf8');
 check('Small screen and reduced motion layouts', () => css.includes('@media(max-width:750px)') && css.includes('prefers-reduced-motion'));
 check('No third-party font loads', () => !/@import|fonts\.googleapis/.test(css));
-check('No analytics or tracking', () => ['site.js','globe.js','launch.js','index.html','privacy.html','terms.html','press.html','404.html'].every(p=>!/gtag\(|google-analytics|googletagmanager|facebook\.com\/tr|document\.cookie|localStorage|sendBeacon|fetch\(/.test(readFileSync(join(root,p),'utf8'))));
+check('No analytics or tracking', () => ['site.js','launch.js','index.html','privacy.html','terms.html','press.html','404.html'].every(p=>!/gtag\(|google-analytics|googletagmanager|facebook\.com\/tr|document\.cookie|localStorage|sendBeacon|fetch\(/.test(readFileSync(join(root,p),'utf8'))));
 const script = readFileSync(join(root,'site.js'),'utf8');
 check('Translation insertion is text-only', () => !script.includes('innerHTML') && script.includes('createTextNode'));
 check('No undisclosed external assets', () => [...home.matchAll(/\b(src|href)="(https?:\/\/[^"]*)"/g)].every(m => m[2].startsWith(LAUNCH.origin + '/') && /rel="(canonical|alternate)"/.test(home.slice(home.lastIndexOf('<', m.index), m.index))));

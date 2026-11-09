@@ -25,6 +25,9 @@ export const SITE_SHOTS = { scenes: ['night', 'game', 'upgrade', 'menu', 'failur
  *  site/dist/<zip> (built, never committed). Paths are relative to site/. Screenshots: every SITE_SHOTS scene in each
  *  store format below, per language, full size from docs/store/shots/<lang>/<scene>-<format>.png (10 per language);
  *  the page shows the site:assets thumbnails (phone: assets/shots/<lang>/<scene>.jpg, landscape: <scene>-landscape.jpg). */
+/** [night-84a] D-339: the hero lockup, a copy of brand/wordmark.svg made by site:assets (test:site checks it). */
+export const HERO_WORDMARK = { source: '../brand/wordmark.svg', target: 'assets/wordmark.svg' };
+
 export const PRESS_KIT = {
   zip: 'airway-press-kit.zip',
   folder: 'airway-press-kit',
@@ -32,9 +35,10 @@ export const PRESS_KIT = {
   formats: ['phone', 'landscape'],
   /** Landscape thumbnail size (the store PNG is 1920×1080). */
   landscape: { width: 960, height: 540 },
-  /** Logo files in the ZIP; the two PNGs are rendered by site:assets with the real Overpass font. */
+  /** Logo files in the ZIP; the two PNGs are rendered by site:assets. [night-84a] D-339: the wordmark is the lockup of the
+   *  mark I-1 and AIRWAY (Archivo as outlines, brand/src/wordmark.py), so no font is needed. */
   logos: [
-    { source: '../brand/wayfinding.svg', name: 'airway-wordmark.svg' },
+    { source: '../brand/wordmark.svg', name: 'airway-wordmark.svg' },
     { source: 'assets/press/airway-wordmark.png', name: 'airway-wordmark.png', width: 1920, height: 520 },
     { source: '../resources/icon.svg', name: 'airway-icon.svg' },
     { source: 'assets/press/airway-icon.png', name: 'airway-icon.png', width: 1024, height: 1024 },

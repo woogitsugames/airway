@@ -1,9 +1,7 @@
 # Airway store deliverables — tasks 26, 36 and 40
 
-> **Stale since the Linoryt flip (D-301, 2026-11-08).** The 60 PNGs in `shots/`, `contact-sheet.png`,
-> `feature-graphic.png`, the store video and the site screenshots still show Róża and the satellite globe. They are
-> re-recorded at step U7 of `docs/styles/kierunki-2026-11b/PLAN-LINORYT.md` together with the new copy (D-296); upload
-> nothing from this folder before then.
+> **Re-recorded at U7 (D-339, 2026-11-09)** for the shipped look: UI-A over the NASA globe (D-336), the mark I-1
+> "Węzeł" (D-326) and the new store copy (D-296). Every store run starts in the home region Northern Europe (D-339).
 
 The Polish and English copy is ready to paste from [pl.md](pl.md) and [en.md](en.md). Verify every described feature against the integrated release build before publishing.
 
@@ -81,8 +79,7 @@ as `SCENES` in `scripts/store-shots.mjs`, the contact-sheet columns, the manifes
    (called `game-dusk` before task 40).
 3. **upgrade**: three weekly freight-label upgrades.
 4. **failure**: overloaded hub, cancelled flights and cause report.
-5. **menu**: the Róża main menu (D-257): "Airway" title on the sky, entries on the western arc of a compass rose
-   over the turning globe.
+5. **menu**: the departures-board main menu (UI-A, D-332) over the night globe.
 
 Each is captured at six viewport sizes ([N12o] D-123 added the last three):
 
@@ -112,20 +109,22 @@ console help pages before each submission, they change with new devices.
 `docs/store/feature-graphic.png` — 1024×500, 24-bit RGB PNG without alpha (Play: JPEG or 24-bit PNG, ≤ 15 MB),
 console slot **Main store listing → Graphics → Feature graphic**; it is also the cover of the preview video once R2b
 exists (Play draws the play button in the centre, so the wordmark stays on the left third). One image for both
-languages: the only words are the "AIRWAY" wayfinding sign (`brand/wayfinding.svg`, Overpass 800). Alt text: field
+languages: the only words are the lockup of the mark I-1 and AIRWAY (`brand/wordmark.svg`, Archivo 800 as
+outlines, D-339; it replaced the old wayfinding sign) on a cream panel over the left third. Alt text: field
 **Play feature graphic alt text** in [pl.md](pl.md) / [en.md](en.md).
 
-`npm run store:feature` renders it from the real `game` scene (seed 0xA1A1, the same autoplay and evening sun as the
-store shot) in a 1024×500 viewport at DPR 2: the DOM HUD is hidden, the DEV probe `featureView` sets zoom 1.6 and
-slides the globe right and down so the network sits in the middle, the sign is added on the left, then Chromium
-downscales to 1024×500 and the script writes opaque RGB. Checks (also in `test:store-shots`): exact size, no alpha,
-≤ 15 MB, middle third not empty, at most 20 % dark unsaturated pixels (Google's "no black/dark-grey fields" rule —
-the night scene is not used), wordmark inside the left third, globe limb visible. Re-render after a visual change
-of the globe or the `game` scene and inspect the PNG before committing.
+`npm run store:feature` renders it from the real `game` scene (seed 0xA1A1, Northern Europe, the same autoplay as the
+store shot, but D-339: in daylight, sun dot 0.4 over the network, because the NASA globe's space and night side are
+dark) in a 1024×500 viewport at DPR 2: the DOM HUD is hidden, the DEV probe `featureView` sets zoom 3.1 and slides
+the globe right (disc centre at 68 %) so it fills the right two thirds with the network in view, the lockup is added
+on a cream panel (34 % of the width), then Chromium downscales to 1024×500 and the script writes opaque RGB. Checks
+(also in `test:store-shots`): exact size, no alpha, ≤ 15 MB, middle third not empty, at most 20 % dark unsaturated
+pixels (Google's "no black/dark-grey fields" rule; measured 0.15), wordmark inside the panel, globe under the frame
+centre. Re-render after a visual change of the globe or the `game` scene and inspect the PNG before committing.
 
 ## Store preview video (R2b, D-265)
 
-`npm run store:video` films the same seed 0xA1A1 run the store shots use, played by the DEV autoplay bot through
+`npm run store:video` films the same seed 0xA1A1 run the store shots use (home region Northern Europe, D-339), played by the DEV autoplay bot through
 `window.aw` on the real renderer. Nothing is screen-recorded: Playwright's clock is paused, every video frame is one
 fixed 1/30 s step (`page.clock.runFor`; CSS animations paused and stepped by the same amount) followed by a PNG
 screenshot piped into ffmpeg, so SwiftShader's speed never shows in the video. No text, music or overlay is added; the
@@ -138,8 +137,8 @@ Storyboard, 24 s at 30 fps (cuts between shots, every shot is real play of one r
 | --- | --- | --- |
 | 0–4 s | route | First frame is the game: a finger draws the first route (the pair `aw.gesture('route')` picks for the viewport), the turboprop boards and departs |
 | 4–12 s | dusk | Day 2 from 15:30: the bot's grown network, the evening terminator crosses it; **poster frame at 5 s** |
-| 12–17 s | crates | The weekly board opens with its three freight crates; a crate is tapped, play resumes in week 2 |
-| 17–24 s | jam | Building stops until an airport is 83 % full; its edge chip is tapped, the camera turns to it and its ring fills (phone: Rio de Janeiro turns red with the jam countdown; iPhone/iPad: Karachi near full). The run is still alive at the end |
+| 12–17 s | crates | The week sheet opens with its strips (UI-A, D-331); a strip is chosen at 2 s, the yellow main action takes it at 3.5 s, play resumes in week 2 |
+| 17–24 s | jam | Building stops until an airport is 80 % full; its edge chip is tapped and the camera turns to it (D-339, from Northern Europe: Toronto fills to 92 %; on the 360-wide phone the chip is not shown, so the camera stays on Europe). The run is still alive at the end |
 
 | File | Size | Console slot |
 | --- | --- | --- |
@@ -192,7 +191,13 @@ board); nothing writes game state directly:
   `data-store-shot-sun` and recorded in the manifest.
 - **upgrade**: autoplay until the first weekly board.
 - **failure**: one game day of autoplay, then the player stops building and real demand jams a hub.
-- **menu**: the real main menu (Róża rose menu since D-257) over the turning globe.
+- **menu**: the real main menu (the departures board, D-332) over the night globe.
+
+[night-84a] D-339: every store run (shots, feature graphic, video) is started from the home region **Northern Europe**,
+preset in the settings like a player's menu choice (`STORE_HOME_REGION`, `presetStoreSettings` in
+`scripts/lib/harness.mjs`; the shots' and the video's manifests record it and `--validate` checks it). A Random start on
+0xA1A1 lands in the Middle East next to Karachi, which opens on day 2: its Asia-bound passengers put the provisional
+ASI glyph into the hub signs and strips of the night frame, which the D-08 check rightly refused.
 
 When the scene is reached the root element gets `data-store-shot-ready` and `data-store-shot-seed`; a scene that is
 not reached (e.g. an early jam) never sets them and the capture fails.
@@ -210,11 +215,13 @@ Preview one scene without publishing: `node scripts/store-shots.mjs --only=night
 [task-40] Light checks, recorded per shot in the manifest (`sun`, `contrast`, `warmth`) and re-checked by
 `--validate`: the manifest must list the shots in store order; in `game` and `night` routes, airports and planes keep
 ≥ 4.5:1 against the globe (D-47 probe, `src/render/contrast.ts` via the DEV `window.__awWorld`); in `game` the globe
-alone (DOM overlay hidden, inside the projected disc) must have a golden-pixel share ≥ 0.045 (R > 1.3 G, G > 1.05 B;
-seed 0xA1A1 phone: noon 0.005, mid-afternoon 0.029, the old −95° shot 0.015, the new golden shot ≈ 0.08).
+alone (DOM overlay hidden, inside the projected disc) must have a golden-pixel share ≥ 0.012 (R > 1.3 G, G > 1.05 B).
+D-339 recalibrated it for the NASA globe, whose dusk is a narrow warm band: from Northern Europe at 960×540 the fixture
+(sun dot 0.05) measures 0.014–0.015 (portrait 0.047–0.049), mid-afternoon (dot 0.15) 0.002; the old 0.045 (satellite
+globe, golden ≈ 0.08) failed every landscape frame.
 A full fresh run can be checked outside the repo: `node scripts/store-shots.mjs --out=/tmp/x` then
 `node scripts/store-shots.mjs --validate --out=/tmp/x`.
 
 ## Publication visual checklist
 
-Review every generated PNG at native size: no flat schematic map, purple-blue glass cards, generic stock art or emoji icons; the globe and UI in the look the release actually ships (Linoryt after the U5 flip, D-283/D-284; until then the satellite globe with the Róża UI, D-170/D-257) — never a mix of the two; passenger identity not colour-only; PL accents and EN translations correct; nonclipped interactive objects and safe areas; the night side readable as night; cause report on failure; no debugging overlay. The listing texts, Play alt texts, feature-graphic alt text and the site `preview.*` captions must describe what the new images show and promise no look the game does not have (App Store 2.3; `copy-review-2026-11.md`). Only mark images accepted in the PR after they have been genuinely captured and inspected.
+Review every generated PNG at native size: no flat schematic map, purple-blue glass cards, generic stock art or emoji icons; the globe and UI in the look the release actually ships (UI-A over the NASA globe, D-336) — never an older look; passenger identity not colour-only; PL accents and EN translations correct; nonclipped interactive objects and safe areas; the night side readable as night; cause report on failure; no debugging overlay. The listing texts, Play alt texts, feature-graphic alt text and the site `preview.*` captions must describe what the new images show and promise no look the game does not have (App Store 2.3; `copy-review-2026-11.md`). Only mark images accepted in the PR after they have been genuinely captured and inspected.

@@ -45,8 +45,9 @@ try {
       await page.goto(base+(view.path??'')+'?lang='+(view.lang??'pl'),{waitUntil:'networkidle'});
       await page.evaluate(()=>document.fonts.ready);
       if (errors.length) throw new Error(errors.join('; '));
-      const ready=await page.evaluate(()=>Boolean(document.querySelector('.hero-visual.globe-ready')));
-      if (!ready && view.globe!==false) throw new Error('Globe was not mounted');
+      // [night-84a] D-339: the hero is a real store shot (no drawn globe); wait until it is decoded.
+      const ready=await page.evaluate(async()=>{const img=document.querySelector('.hero-shot');if(!img)return false;await img.decode().catch(()=>{});return img.naturalWidth>0;});
+      if (!ready && view.globe!==false) throw new Error('Hero shot was not loaded');
       if (view.section) {
         // From the section to the end of the page; lazy images loaded first.
         await page.evaluate(async()=>{for(const img of document.images){img.loading='eager';await img.decode().catch(()=>{});}});

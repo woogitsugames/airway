@@ -19,7 +19,7 @@ import { once } from 'node:events';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, relative, resolve } from 'node:path';
-import { ROOT, SEED, launchChromium, presetLanguage, startVite } from './lib/harness.mjs';
+import { ROOT, SEED, STORE_HOME_REGION, launchChromium, presetStoreSettings, startVite } from './lib/harness.mjs';
 
 const OUT = resolve(ROOT, 'docs/store/video');
 const FPS = 30;
@@ -36,7 +36,7 @@ const LANGUAGES = ['pl', 'en'];
  * Storyboard (frames at 30 fps), cuts between shots; every frame is real play of the same run.
  * 1 `route` 0–4 s: first frame is the game; a finger draws the first route, its plane boards and departs (4×).
  * 2 `dusk` 4–12 s: the bot's grown network on day 2; the evening terminator crosses it (4×). Poster at 5 s.
- * 3 `crates` 12–17 s: the weekly board opens with its freight crates; one is tapped and play resumes.
+ * 3 `crates` 12–17 s: the week sheet opens with its strips; one is chosen, the main action takes it and play resumes.
  * 4 `jam` 17–24 s: the player stops building; a hub fills to its jam warning (the run is still alive at the end).
  */
 export const SHOTS = [
@@ -136,7 +136,7 @@ async function film(page, url, lang, emit, posterFile) {
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.clock.install();
-  await presetLanguage(page, lang, { clear: true });
+  await presetStoreSettings(page, lang, { clear: true }); // [night-84a] D-339: + the store home region
   await page.goto(url, { waitUntil: 'load' });
   await page.waitForFunction(() => window.aw?.ready === true, null, { timeout: 60000 });
   await page.evaluate(() => document.fonts.ready);
@@ -204,19 +204,24 @@ async function film(page, url, lang, emit, posterFile) {
   state = await page.evaluate(() => window.aw.state());
   log.push({ shot: 'dusk', fromTick: duskTick, tick: state.tick, routes: state.routeCount });
 
-  // Shot 3: the weekly board with its crates; a crate that needs no airport pick is tapped after 2.5 s.
+  // Shot 3: the week sheet with its strips (UI-A, D-331): after 2 s a strip that needs no airport pick is chosen
+  // (preferably one not chosen yet, so the choice is seen), 1.5 s later the yellow main action takes it.
   state = await page.evaluate(() => window.aw.autoplay(1));
   if (state.screen !== 'upgrade') throw new Error('Crates shot: autoplay ended on "' + state.screen + '"');
   const boardTick = state.tick;
   let picked = null;
   for (let f = 0; f < SHOTS[2].frames; f++) {
     await frame(async () => {
-      if (f !== 75) return;
-      picked = await page.evaluate(() => document.querySelector('[data-testid^="upgrade-option-"]' +
-        ':not([data-upgrade="hub-expansion"]):not([data-upgrade="departure-slots"]):not(:disabled)')
-        ?.getAttribute('data-upgrade') ?? null);
-      if (!picked) throw new Error('No crate completes without an airport pick');
-      await tap(await centre(page, '[data-upgrade="' + picked + '"]'));
+      if (f === 60) {
+        picked = await page.evaluate(() => {
+          const options = [...document.querySelectorAll('[data-testid^="upgrade-option-"]' +
+            ':not([data-upgrade="hub-expansion"]):not([data-upgrade="departure-slots"]):not(:disabled)')];
+          const option = options.find((node) => node.getAttribute('aria-pressed') !== 'true') ?? options[0];
+          return option?.getAttribute('data-upgrade') ?? null;
+        });
+        if (!picked) throw new Error('No strip completes without an airport pick');
+        await tap(await centre(page, '[data-testid^="upgrade-option-"][data-upgrade="' + picked + '"]'));
+      } else if (f === 105) await tap(await centre(page, '[data-testid="upgrade-take"]'));
     });
   }
   state = await page.evaluate(() => window.aw.state());
@@ -318,6 +323,9 @@ export function validate(dir = OUT) {
     throw new Error('Manifest seed/fps/frames differ from the script');
   }
   if (manifest.posterS !== POSTER_S) throw new Error('Manifest poster time ' + manifest.posterS + ' s');
+  if (manifest.homeRegion !== STORE_HOME_REGION) {
+    throw new Error('Manifest home region ' + manifest.homeRegion + ' is not ' + STORE_HOME_REGION + ' (D-339); run npm run store:video');
+  }
   if (manifest.storage?.url !== DRIVE.url || manifest.storage?.folder !== DRIVE.folder) {
     throw new Error('Manifest storage is not the Drive folder of D-269 (' + DRIVE.url + ')');
   }
@@ -456,7 +464,7 @@ async function main() {
   rmSync(stage, { recursive: true, force: true });
   if (full) {
     const manifest = {
-      generator: 'scripts/store-video.mjs', seed: '0xA1A1', fps: FPS, frames: TOTAL_FRAMES, durationS: TOTAL_FRAMES / FPS,
+      generator: 'scripts/store-video.mjs', seed: '0xA1A1', homeRegion: STORE_HOME_REGION, fps: FPS, frames: TOTAL_FRAMES, durationS: TOTAL_FRAMES / FPS,
       posterS: POSTER_S, storyboard: SHOTS, audio: 'silent stereo AAC (no music, no game audio)',
       note: MANIFEST_NOTE, storage: DRIVE,
       videos,

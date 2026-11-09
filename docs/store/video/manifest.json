@@ -1,6 +1,7 @@
 {
   "generator": "scripts/store-video.mjs",
   "seed": "0xA1A1",
+  "homeRegion": "EUN",
   "fps": 30,
   "frames": 720,
   "durationS": 24,
@@ -37,8 +38,8 @@
       "file": "pl/preview-play.mp4",
       "drive": "airway-preview-pl-play-1080x1920.mp4",
       "poster": "pl/poster-play.jpg",
-      "bytes": 10240474,
-      "sha256": "ee4223345150430c9bc7b9d3ef8725575b0b398eb095af29eec4c2e30fa21928",
+      "bytes": 7685223,
+      "sha256": "1e0d20c2876824e5d0ca18e8397a1748fb47dabe664c59b3782f35fd2ed0a62c",
       "probe": {
         "codec": "h264",
         "profile": "High",
@@ -68,17 +69,17 @@
         {
           "shot": "crates",
           "boardTick": 4320,
-          "picked": "turboprop",
-          "tick": 4419
+          "picked": "widebody",
+          "tick": 4379
         },
         {
           "shot": "jam",
-          "airport": "RIO",
-          "focused": true,
-          "fromTick": 6329,
+          "airport": "YYZ",
+          "focused": false,
+          "fromTick": 7959,
           "fromFill": 0.83,
-          "tick": 6606,
-          "fill": 1.04,
+          "tick": 8237,
+          "fill": 0.92,
           "screen": "game"
         }
       ]
@@ -90,8 +91,8 @@
       "file": "pl/preview-iphone.mp4",
       "drive": "airway-preview-pl-iphone-886x1920.mp4",
       "poster": "pl/poster-iphone.jpg",
-      "bytes": 8128650,
-      "sha256": "d63048392e8911439e65ab145ca33965a82fc337c14d9f5a76d8fd1cfe0bca67",
+      "bytes": 6263388,
+      "sha256": "2fcbaf37fd52d7af69886cc559b80c80ea92c79321c3901b801eb521bb1028da",
       "probe": {
         "codec": "h264",
         "profile": "High",
@@ -109,7 +110,7 @@
       "shots": [
         {
           "shot": "route",
-          "tick": 149,
+          "tick": 152,
           "routes": 1
         },
         {
@@ -121,16 +122,16 @@
         {
           "shot": "crates",
           "boardTick": 4320,
-          "picked": "turboprop",
-          "tick": 4420
+          "picked": "widebody",
+          "tick": 4380
         },
         {
           "shot": "jam",
-          "airport": "KHI",
+          "airport": "YYZ",
           "focused": true,
-          "fromTick": 6170,
+          "fromTick": 7960,
           "fromFill": 0.83,
-          "tick": 6447,
+          "tick": 8237,
           "fill": 0.92,
           "screen": "game"
         }
@@ -143,8 +144,8 @@
       "file": "pl/preview-ipad.mp4",
       "drive": "airway-preview-pl-ipad-1200x1600.mp4",
       "poster": "pl/poster-ipad.jpg",
-      "bytes": 8627920,
-      "sha256": "04e6e70700d1ea0831db94957dac382a714b43792215bc7b13adf11835187ce9",
+      "bytes": 7130047,
+      "sha256": "6d7a2af168a890d77a1a11b86f01bb879e7ee102f4d98ae752a3624e4878ab7e",
       "probe": {
         "codec": "h264",
         "profile": "High",
@@ -162,7 +163,7 @@
       "shots": [
         {
           "shot": "route",
-          "tick": 148,
+          "tick": 151,
           "routes": 1
         },
         {
@@ -174,17 +175,17 @@
         {
           "shot": "crates",
           "boardTick": 4320,
-          "picked": "turboprop",
-          "tick": 4420
+          "picked": "widebody",
+          "tick": 4379
         },
         {
           "shot": "jam",
-          "airport": "KHI",
+          "airport": "YYZ",
           "focused": true,
-          "fromTick": 5320,
+          "fromTick": 7959,
           "fromFill": 0.83,
-          "tick": 5597,
-          "fill": 0.88,
+          "tick": 8237,
+          "fill": 0.92,
           "screen": "game"
         }
       ]
@@ -196,12 +197,65 @@
       "file": "en/preview-play.mp4",
       "drive": "airway-preview-en-play-1080x1920.mp4",
       "poster": "en/poster-play.jpg",
-      "bytes": 10117146,
-      "sha256": "301d6aeed2c48f09fb413515c9719cb3b2d90e09e0cb833f422a102218c05788",
+      "bytes": 7521279,
+      "sha256": "d3df0685dd7ec9e440d453dcf7d2a69a15a49e6ab5043b7614e28be1ec5f0626",
       "probe": {
         "codec": "h264",
         "profile": "High",
         "width": 1080,
+        "height": 1920,
+        "pixFmt": "yuv420p",
+        "fps": 30,
+        "durationS": 24,
+        "audio": {
+          "codec": "aac",
+          "channels": 2,
+          "sampleRate": 48000
+        }
+      },
+      "shots": [
+        {
+          "shot": "route",
+          "tick": 152,
+          "routes": 1
+        },
+        {
+          "shot": "dusk",
+          "fromTick": 2250,
+          "tick": 2567,
+          "routes": 4
+        },
+        {
+          "shot": "crates",
+          "boardTick": 4320,
+          "picked": "widebody",
+          "tick": 4380
+        },
+        {
+          "shot": "jam",
+          "airport": "YYZ",
+          "focused": false,
+          "fromTick": 7960,
+          "fromFill": 0.83,
+          "tick": 8237,
+          "fill": 0.92,
+          "screen": "game"
+        }
+      ]
+    },
+    {
+      "lang": "en",
+      "device": "iphone",
+      "store": "App Store Connect → iPhone 6.9\" app preview",
+      "file": "en/preview-iphone.mp4",
+      "drive": "airway-preview-en-iphone-886x1920.mp4",
+      "poster": "en/poster-iphone.jpg",
+      "bytes": 6144916,
+      "sha256": "9d890c3dfa5dfffb9a5476554d6d4e936c5129906ed77d85ba318dd401c3363c",
+      "probe": {
+        "codec": "h264",
+        "profile": "High",
+        "width": 886,
         "height": 1920,
         "pixFmt": "yuv420p",
         "fps": 30,
@@ -227,35 +281,35 @@
         {
           "shot": "crates",
           "boardTick": 4320,
-          "picked": "turboprop",
-          "tick": 4420
+          "picked": "widebody",
+          "tick": 4381
         },
         {
           "shot": "jam",
-          "airport": "RIO",
+          "airport": "YYZ",
           "focused": true,
-          "fromTick": 6330,
+          "fromTick": 7961,
           "fromFill": 0.83,
-          "tick": 6608,
-          "fill": 1.04,
+          "tick": 8238,
+          "fill": 0.92,
           "screen": "game"
         }
       ]
     },
     {
       "lang": "en",
-      "device": "iphone",
-      "store": "App Store Connect → iPhone 6.9\" app preview",
-      "file": "en/preview-iphone.mp4",
-      "drive": "airway-preview-en-iphone-886x1920.mp4",
-      "poster": "en/poster-iphone.jpg",
-      "bytes": 7964284,
-      "sha256": "31bbd2444e87fa7cbdfa8309a1a58eb6cd652d0088719c521808fdcb9eeb2fdb",
+      "device": "ipad",
+      "store": "App Store Connect → iPad 13\" app preview",
+      "file": "en/preview-ipad.mp4",
+      "drive": "airway-preview-en-ipad-1200x1600.mp4",
+      "poster": "en/poster-ipad.jpg",
+      "bytes": 6993133,
+      "sha256": "f982aeec78a949a5b3bca7175c52d0e1180c62fc56ce8ffd46b905a93dde311a",
       "probe": {
         "codec": "h264",
         "profile": "High",
-        "width": 886,
-        "height": 1920,
+        "width": 1200,
+        "height": 1600,
         "pixFmt": "yuv420p",
         "fps": 30,
         "durationS": 24,
@@ -280,70 +334,17 @@
         {
           "shot": "crates",
           "boardTick": 4320,
-          "picked": "turboprop",
-          "tick": 4419
+          "picked": "widebody",
+          "tick": 4381
         },
         {
           "shot": "jam",
-          "airport": "KHI",
+          "airport": "YYZ",
           "focused": true,
-          "fromTick": 5719,
+          "fromTick": 7961,
           "fromFill": 0.83,
-          "tick": 5997,
-          "fill": 0.71,
-          "screen": "game"
-        }
-      ]
-    },
-    {
-      "lang": "en",
-      "device": "ipad",
-      "store": "App Store Connect → iPad 13\" app preview",
-      "file": "en/preview-ipad.mp4",
-      "drive": "airway-preview-en-ipad-1200x1600.mp4",
-      "poster": "en/poster-ipad.jpg",
-      "bytes": 8575877,
-      "sha256": "f378c22acfe65503b066a7127f507ede63590ac35e520e5aabb5a415cc80ace7",
-      "probe": {
-        "codec": "h264",
-        "profile": "High",
-        "width": 1200,
-        "height": 1600,
-        "pixFmt": "yuv420p",
-        "fps": 30,
-        "durationS": 24,
-        "audio": {
-          "codec": "aac",
-          "channels": 2,
-          "sampleRate": 48000
-        }
-      },
-      "shots": [
-        {
-          "shot": "route",
-          "tick": 148,
-          "routes": 1
-        },
-        {
-          "shot": "dusk",
-          "fromTick": 2250,
-          "tick": 2567,
-          "routes": 4
-        },
-        {
-          "shot": "crates",
-          "boardTick": 4320,
-          "picked": "turboprop",
-          "tick": 4420
-        },
-        {
-          "shot": "jam",
-          "airport": "KHI",
-          "focused": true,
-          "fromTick": 5320,
-          "fromFill": 0.83,
-          "tick": 5597,
-          "fill": 0.88,
+          "tick": 8238,
+          "fill": 0.92,
           "screen": "game"
         }
       ]
