@@ -1,9 +1,7 @@
 /**
  * [night-77a] D-332 (docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md step T5; UI-A-SPEC.md §3 "Wydruk"; mockups
  * `makiety/ui-a/ui-a-menu.png`, `ui-a-raport.png`): the main menu as a departures board and the game-over report as a
- * teleprinter print-out, for the UI-A preview. DEV only until the flip (T6): src/main.ts loads this module with
- * `?skin=board` and hands it to the menu and the report through `sheetSkin` (src/ui/sheet-skin.ts); a release has none
- * of it. The other sheets (pause, settings, licences, privacy and terms, logbook, puzzles, ranking, the training flight
+ * teleprinter print-out, for the UI-A skin. src/main.ts loads this module at boot and hands it to the menu and the report through `sheetSkin` (src/ui/sheet-skin.ts). The other sheets (pause, settings, licences, privacy and terms, logbook, puzzles, ranking, the training flight
  * and the no-WebGL page) keep their DOM and take the same language from board.css "T5" alone.
  *
  * - **Menu = departures board.** The title AIRWAY on flap tiles (the board's own tiles, still: nothing flips on the menu,

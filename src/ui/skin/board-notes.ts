@@ -1,7 +1,6 @@
 /**
  * [night-73a] D-328 (docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md step T2; UI-A-SPEC.md §3, §6): the airport
- * notes of the UI-A preview as airport signs. DEV only until the flip (T6): src/main.ts loads this module with
- * `?skin=board` and hands it to the overlay through `noteSkin` (src/ui/overlay-skin.ts); a release has none of it.
+ * notes of the UI-A skin as airport signs. src/main.ts loads this module at boot and hands it to the overlay through `noteSkin` (src/ui/overlay-skin.ts).
  *
  * - **Airport sign** (enamel, cream letters): the IATA code in a cream inner frame (the D-68 setting may put the city
  *   name there), the waiting queue behind it on the same enamel as D-08 glyphs (shape first, each with a cream outline,
@@ -283,7 +282,7 @@ interface SignParts {
   city: HTMLSpanElement; br: HTMLSpanElement[]; size: NoteSkinSize & { lineMid: number };
 }
 
-/** Creates the UI-A note skin (DEV only, `?skin=board`). */
+/** Creates the UI-A note skin (UI-A). */
 export function createBoardNotes(deps: BoardNotesDeps): NoteSkin & { readonly lod: SignLod } {
   const parts = new WeakMap<HTMLElement, SignParts>();
   let lod: SignLod = 1;

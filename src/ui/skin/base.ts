@@ -606,7 +606,7 @@ export interface BaseMargins {
   /** The top margin's box (in landscape a block in the top-left corner). */
   pass: { l: number; t: number; r: number; b: number } | null;
   column: boolean;
-  /** [night-75a] D-330: the UI-A preview's hub strip bay while it shows (null otherwise and in a release). */
+  /** [night-75a] D-330: the UI-A's hub strip bay while it shows (null otherwise). */
   bay: { l: number; t: number; r: number; b: number } | null;
 }
 const margins = new WeakMap<HTMLElement, { value: BaseMargins; observer: ResizeObserver | null; pass: Element | null; dock: Element | null; bay: Element | null }>();

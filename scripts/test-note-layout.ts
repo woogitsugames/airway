@@ -4,7 +4,7 @@
 // (D-262…D-268, D-281) re-run with stamp boxes:
 // the store shot game-phone Levant cluster (360×640), game-iphone and night-iphone (440×956), game-tablet and night-tablet
 // (768×1024), the hub board open in landscape (915×412) and portrait (360×640). The HUD bands are the Linoryt paper
-// margins measured on the preview (`?skin=linoryt`, stub world): top margin and dock. [night-46a] D-301: Róża and
+// margins measured on the former Linoryt skin (stub world): top margin and dock. [night-46a] D-301: Róża and
 // test:roza-names are gone (U5); this is the note layout's fixture suite.
 // [night-73a] D-328 (PLAN-NOWY-KIERUNEK.md step T2): the same fixtures re-run with the UI-A airport signs' sizes
 // (src/ui/skin/board-notes.ts signSize: code plate, queue, city strip, NOWE tag; the sign row level with the pin), so the

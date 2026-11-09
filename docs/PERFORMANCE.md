@@ -349,7 +349,7 @@ delivered fps 29.9/30.1 → 30.3/32.0; `--look earth` 15 → 15 draw calls, p95 
 (noise). The menu framing is measured once per layout change (one zoom bisection and a 61-step tilt search), not per
 frame; the menu sun is one `setTime` per frame as before.
 
-## R1 — NASA globe preview `?look=earth` (2026-11-08, D-325)
+## R1 — NASA globe preview the NASA globe (2026-11-08, D-325)
 DEV-only until the flip; the release is unchanged (main JS 1,054.9 kB, CSS 129.0 kB, `dist/` 1,998.5 → 1,999.8 kB:
 the longer `manifest.json`). Presets: low/saver day 2048 + night 1024, no glint, no shell, no stars; medium starts on
 2048/1024 and swaps to 4096/2048 after the first frame (`createImageBitmap`, off the render thread); high = medium +

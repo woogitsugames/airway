@@ -4,7 +4,7 @@ import './upgrade.css';
 import { t, type TranslationKey } from '../../i18n';
 import { cardModel, upgradeFacts, type CardModel, type ContractBoard, type SlotPressure, type WeekFigures } from './cards';
 import { setClass } from '../classes'; // [night-59a] D-322
-import { upgradeSkin } from './skin'; // [night-76a] D-331: the DEV `?skin=board` preview's sheet slot
+import { upgradeSkin } from './skin'; // [night-76a] D-331: UI-A's sheet slot
 
 export { cardModel, upgradeFacts, mostSlotStarved, type CardModel, type ContractBoard, type UpgradeFacts, type SlotPressure, type WeekFigures } from './cards';
 
@@ -139,7 +139,7 @@ export class WeeklyUpgradeView {
   constructor(root: HTMLElement, options: UpgradeUIOptions) { this.root = root; this.options = options; }
   /** `airports` (task 32): every active airport, for the "+2 slots" stamp and airport pick. */
   /** [night-12ba] R2k: `contract` = the weekly contract waybill (Endless runs with the contract only). */
-  /** [night-76a] D-331: `figures` = the closed week's figures (read only by the UI-A preview sheet). */
+  /** [night-76a] D-331: `figures` = the closed week's figures (read only by the UI-A skin sheet). */
   render(state: WeeklyUpgradeState | null, hubs: readonly HubPressure[], airports: readonly SlotPressure[] = [],
     contract: ContractBoard | null = null, figures: WeekFigures | null = null): void {
     this.state = state;

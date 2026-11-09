@@ -1,8 +1,7 @@
 /**
  * [night-76a] D-331 (docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md step T4): the slot through which a preview skin
- * draws the weekly board (src/ui/upgrade/index.ts). Empty in every release build: src/main.ts fills it only in a DEV
- * build with `?skin=board` (UI-A "take one strip", src/ui/skin/board-week.ts), so the sheet code stays out of the release
- * bundle and the shipped Linoryt board is untouched. The view keeps the state, the commands, the airport-pick mode and
+ * draws the weekly board (src/ui/upgrade/index.ts). src/main.ts fills it at boot
+ * with UI-A "take one strip" (src/ui/skin/board-week.ts). The view keeps the state, the commands, the airport-pick mode and
  * the scroll reset; the skin only builds the sheet it is handed the facts for.
  */
 import type { UpgradeKind, WeeklyUpgradeState } from '../../sim/upgrades';

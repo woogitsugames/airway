@@ -3,7 +3,7 @@ import type { HudState } from './types';
 import { iconSvg } from './icons';
 import { DAYS_PER_WEEK } from '../../sim/clock';
 import { ARIA_KEYSHORTCUTS } from '../../input/keyboard';
-import { hudSkin } from './skin'; // [night-69a] D-324: the DEV `?skin=board` preview paints the top band
+import { hudSkin } from './skin'; // [night-69a] D-324: UI-A paints the top band
 
 // [task-31] D-40: a game week has DAYS_PER_WEEK (3) days; the bar shows one square per day and the
 // day is a number ("2/3"), since weekday names no longer fit a 3-day week.

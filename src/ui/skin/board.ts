@@ -2,7 +2,7 @@
  * [night-69a] D-324 (docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md step T1; D-323): helpers of the UI-A skin
  * "Lotniskowa tablica i paski lotu" (mockups and spec: docs/styles/kierunki-2026-11c/makiety/ui-a/). [night-81a] D-336
  * (T6): the shipped skin. src/main.ts loads this module as a lazy chunk on every boot (board.css is a static import),
- * and hands the helpers to the HUD through `hudSkin` (src/ui/hud/skin.ts). Until T6 it was the DEV `?skin=board` preview.
+ * and hands the helpers to the HUD through `hudSkin` (src/ui/hud/skin.ts). Until T6 it was the UI-A skin.
  *
  * T1 draws two things:
  * - the HUD top band as a split-flap departures board on black enamel: the local time, the week, the day "2/3" and the

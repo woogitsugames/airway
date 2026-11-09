@@ -153,7 +153,7 @@ if (!STATIC_ONLY) {
       const breach = breaches.find((b) => b.startsWith(key + ' '));
       check(!breach, 'budget: ' + breach);
     }
-    // [night-70a R1] D-323: the NASA globe preview (`?look=earth`) never shipped before R4 (scripts/vite-globe-preview.mjs).
+    // [night-70a R1] D-323: the NASA globe preview (the NASA globe) never shipped before R4 (scripts/vite-globe-preview.mjs).
     // [night-79a R4] D-334: the earth look is in the release build behind DEFAULT_GLOBE_LOOK, like the print in E3 (D-300):
     // its four textures and the borders are in dist/, its shader and object style are lazy chunks, never the main chunk.
     const { PREVIEW_GLOBE_FILES, PREVIEW_DATA_FILES } = await import('./vite-globe-preview.mjs');

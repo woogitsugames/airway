@@ -1,4 +1,4 @@
-// [night-70a R1] D-323: the NASA globe (`?look=earth`) is a DEV-only preview until the flip (R5), so a release build
+// [night-70a R1] D-323: the NASA globe (the NASA globe) is a DEV-only preview until the flip (R5), so a release build
 // leaves its photo textures out of dist/ (Vite copies public/ whole). The flip empties `PREVIEW_GLOBE_FILES`.
 // `npm run test:bundle` fails on any of them left in dist/.
 // [night-79a R4] D-334: the earth look is in the release build behind DEFAULT_GLOBE_LOOK (as the print was in E3), so

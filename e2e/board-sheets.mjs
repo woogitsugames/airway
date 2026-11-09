@@ -1,4 +1,4 @@
-// [night-77a] D-332 (docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md step T5): the UI-A preview (`?skin=board`) of the
+// [night-77a] D-332 (docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md step T5): the UI-A skin of the
 // menu, the sheets and the pages, on the stub world with --render=stub (D-254). For each language and size it opens, in
 // one session: the menu, Settings, Licences, Privacy, the logbook, the puzzle board, the training flight (first Endless
 // on a clean profile, then skipped), the pause sheet and the game-over report, plus the no-WebGL page on its own page.

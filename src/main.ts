@@ -78,7 +78,7 @@ const query = new URLSearchParams(location.search);
  */
 const devWeatherFront = import.meta.env.DEV && query.get('weather') === 'front';
 // [night-81a] D-336 (PLAN-NOWY-KIERUNEK.md step T6): UI-A "Lotniskowa tablica i paski lotu" is the shipped skin (the
-// D-283 print skin and the DEV `?skin=board` preview flag are gone): <html data-skin="board"> (index.html), the base helpers,
+// D-283 print skin and the UI-A skin flag are gone): <html data-skin="board"> (index.html), the base helpers,
 // then the board's modules as lazy chunks (type-only imports; i18n and the shared classes are handed in) filling the
 // HUD, sign, strip, weekly-sheet and menu/report slots before the HUD mounts.
 startSkinBase({ t, localNumber });

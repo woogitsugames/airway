@@ -571,9 +571,8 @@
 
 /* ==== Section B: the board ========================================================================================= */
 /* [history] [night-69a] D-324 (docs/styles/kierunki-2026-11c/PLAN-NOWY-KIERUNEK.md step T1; D-323): UI skin "UI-A — Lotniskowa
-   tablica i paski lotu" (mockups and spec: docs/styles/kierunki-2026-11c/makiety/ui-a/UI-A-SPEC.md). DEV-only preview
-   until the flip (T6): src/main.ts imports this file only in a DEV build with `?skin=board`, after the Linoryt structure
-   re-scoped to the board (boardTwin, src/ui/skin/board.ts), so a release build has none of it.
+   tablica i paski lotu" (mockups and spec: docs/styles/kierunki-2026-11c/makiety/ui-a/UI-A-SPEC.md). Shipped since the flip (T6, D-336): src/main.ts imports this file at boot, after the Linoryt structure
+   re-scoped to the board (boardTwin, src/ui/skin/board.ts), so the board scope is explicit.
    Part 1 is the one token block: every colour, face and duration of the skin (values from the mockup's ui.css; the
    text pairs reach D-47 4.5:1, `test:skin-tokens`). Part 2 is the structure, scoped to :root[data-skin="board"] and
    written only with those tokens: the HUD top band as a split-flap board on black enamel and the dock as a controller's
