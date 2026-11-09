@@ -52,7 +52,7 @@
 }
 .airway-pass__band { width: 7px; flex: 0 0 7px; background: var(--airway-airline, var(--hud-teal)); } /* [night-09c] D-80 */
 /* [night-56b] The Diorama ticket fields (.airway-pass__field and the week/day/time/passengers labels, figures and day
-   squares inside) went: Linoryt hides every field (linoryt.css) and prints its own margin (.lin-pass). */
+   squares inside) went: Linoryt hides every field (linoryt.css) and prints its own margin (.base-pass). */
 .airway-pass__perf { border-left: 2px dashed var(--hud-perf); margin: 9px 0 9px auto; flex: 0 0 2px; }
 .airway-pass__pause { flex: 0 0 56px; width: 56px; height: 60px; display: flex; align-items: center; justify-content: center; background: var(--hud-pass); border-top: 6px solid var(--hud-teal) !important; }
 .airway-pass__pause .airway-hud__icon { width: var(--skin-pass-pause-icon-size); height: var(--skin-pass-pause-icon-size); }

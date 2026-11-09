@@ -48,7 +48,7 @@ if (!Array.isArray(tokens.textPairs) || tokens.textPairs.length < 1) {
 }
 // These semantic pairs are used by the released skin ([night-46a] D-301: Linoryt); resolve the current aliases rather than duplicating colours.
 const skinCss = readFileSync(new URL('../src/ui/skin/current.css', import.meta.url), 'utf8');
-// [night-81a] D-336 (T6): the base inks (--lin-*, Linoryt's) live in board.css section A, the structure the board builds on.
+// [night-81a] D-336 (T6): the base inks (--base-*, Linoryt's) live in board.css section A, the structure the board builds on.
 const inkCss = readFileSync(new URL('../src/ui/skin/board.css', import.meta.url), 'utf8');
 const root = (source) => source.replace(/\/\*[\s\S]*?\*\//g, '').match(/:root\s*\{([^}]*)\}/)?.[1] ?? '';
 const declarations = Object.fromEntries([...`${root(inkCss)};${root(skinCss)}`.matchAll(/(--[\w-]+)\s*:\s*([^;]+);/g)]
@@ -76,7 +76,7 @@ for (const [fg, bg] of [['--skin-go-flap-ink', '--skin-go-flap-bg'], ['--skin-ed
 const LINORYT_TEXT = [['ink', 'paper'], ['ink-dim', 'paper'], ['blue', 'paper'], ['red', 'paper'], ['ink', 'paper-deep'],
   ['blue', 'paper-deep'], ['paper', 'ink'], ['ink', 'paper-pressed'], ['paper', 'red'], ['paper', 'blue']];
 const NON_TEXT = 3;
-const lin = Object.fromEntries([...root(inkCss).matchAll(/--lin-([a-z-]+)\s*:\s*(#[0-9a-fA-F]{6})/g)].map((m) => [m[1], m[2]]));
+const lin = Object.fromEntries([...root(inkCss).matchAll(/--base-([a-z-]+)\s*:\s*(#[0-9a-fA-F]{6})/g)].map((m) => [m[1], m[2]]));
 const world = Object.fromEntries([...readFileSync(new URL('../src/render/globe/linoryt.ts', import.meta.url), 'utf8')
   .match(/LINORYT_INKS\s*=\s*\{([^}]*)\}/)?.[1].matchAll(/(\w+):\s*'(#[0-9a-fA-F]{6})'/g) ?? []].map((m) => [m[1], m[2]]));
 let linorytPairs = 0;
@@ -87,7 +87,7 @@ for (const [fg, bg] of LINORYT_TEXT) {
   if (value < THRESHOLD) failures.push(`linoryt ${fg} on ${bg}: ${value.toFixed(2)}`);
 }
 for (const name of ['paper', 'ink', 'blue', 'ochre', 'red']) {
-  if (!world[name] || world[name].toLowerCase() !== lin[name]?.toLowerCase()) failures.push(`LINORYT_INKS.${name} ${world[name]} differs from --lin-${name} ${lin[name]}`);
+  if (!world[name] || world[name].toLowerCase() !== lin[name]?.toLowerCase()) failures.push(`LINORYT_INKS.${name} ${world[name]} differs from --base-${name} ${lin[name]}`);
 }
 // The world grounds a note or a stamp can stand on; the night cross-hatch is ink lines over ochre or blue, so both of its
 // inks count as ground.

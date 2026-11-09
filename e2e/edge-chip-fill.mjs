@@ -64,7 +64,7 @@ async function audit(page) {
       if (!aria.includes(String(domCap)) || !aria.includes(String(domTaken))) problems.push(`chip ${code}: label "${aria}" misses ${domTaken}/${domCap}`);
     }
     return { chips, filled, high, problems };
-  }, 'rgb(179, 56, 35)'); // [night-49a] Linoryt red (--lin-red), the only skin since D-301
+  }, 'rgb(179, 56, 35)'); // [night-49a] Linoryt red (--base-red), the only skin since D-301
 }
 
 async function journey(page, seed, width, height) {

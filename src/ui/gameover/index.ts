@@ -11,7 +11,6 @@ import { reducedMotion } from '../motion'; // [night-11g] D-88
 import { gameOverMilestones } from '../milestones'; // [night-12ax] R1n
 import type { MilestoneId } from '../../game/milestones';
 import type { ContractsSummary } from '../../game/contractsSummary'; // [night-33a] D-271
-import { skinBase, baseReportHub } from '../skin/base'; // [night-29a] D-284 U3: Linoryt preview (DEV only)
 import { setClass, setFlagAttribute } from '../classes'; // [night-59a] D-322
 import { sheetSkin } from '../sheet-skin'; // [night-77a] D-332: the DEV `?skin=board` preview's print-out (null in a release)
 
@@ -379,7 +378,6 @@ function buildDialog(
   mapButton.dataset.testid = 'gameover-map';
   mapButton.setAttribute('aria-label', t('gameover.mapLabel', { hub: snapshot.hubCode }));
   sign.append(mark, title, mapButton);
-  if (skinBase.on) baseReportHub(sign, snapshot.hubCode, snapshot.hubIsHub ?? true); // [night-29a] U3: the red hub block
 
   const board = element('section', 'airway-go-board');
   board.setAttribute('aria-label', t('gameover.departures', { hub: snapshot.hubCode }));

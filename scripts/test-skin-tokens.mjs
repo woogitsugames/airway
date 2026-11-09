@@ -230,26 +230,26 @@ check('base: src/main.ts starts the helpers and the board on every boot (not beh
   check('base: the structure sets no skin token', !/--skin-[a-z0-9-]+\s*:/.test(stripComments(read(LIN))));
   check('base: section A loads no face (the UI-A faces are section B\'s)', !/@font-face/.test(lin));
   const linRoot = [...lin.matchAll(/(?:^|\})\s*:root\s*\{([^{}]*)\}/g)].map((m) => m[1]).join(';');
-  check('base: the plain :root sets only the inks (--lin-*)', linRoot.length > 0 &&
-    [...linRoot.matchAll(/(--[a-z0-9-]+)\s*:/g)].every((m) => m[1].startsWith('--lin-')));
+  check('base: the plain :root sets only the inks (--base-*)', linRoot.length > 0 &&
+    [...linRoot.matchAll(/(--[a-z0-9-]+)\s*:/g)].every((m) => m[1].startsWith('--base-')));
   check('base: never redefines the palette or text-scale tokens', !/--airway-[a-z-]+\s*:/.test(stripComments(read(LIN))));
   check('base: the structure inlines with no token left but the font stacks',
     [...inlineSkin(read(LIN), real.inline, LIN).matchAll(/var\(--skin-([a-z0-9-]+)/g)].every((m) => real.refs.has(m[1])));
   const constants = constantProperties([lin], []);
   const inks = ['paper', 'paper-deep', 'paper-pressed', 'ink', 'ink-dim', 'rule-ink', 'blue', 'ochre', 'red'];
-  check('base: the inks are palette constants (written out in the token values)', inks.every((name) => constants.has('lin-' + name)) &&
-    ![...real.resolved.values()].some((value) => /var\(--lin-/.test(value)), inks.filter((name) => !constants.has('lin-' + name)).join(' '));
+  check('base: the inks are palette constants (written out in the token values)', inks.every((name) => constants.has('base-' + name)) &&
+    ![...real.resolved.values()].some((value) => /var\(--base-/.test(value)), inks.filter((name) => !constants.has('base-' + name)).join(' '));
   // [night-48a] U6: the release writes the ink constants in place (D-294 mechanism); vars that a script sets or whose value
   // holds a var() stay references, a fallback form is left alone.
   const inkMap = baseInks(constantProperties([read(LIN), read(SKIN)], [read('src/ui/skin/base.ts'), read('src/ui/skin/board.ts')]));
   const printed = inlineInks(inlineSkin(read(LIN), real.inline, LIN), inkMap);
-  const leftInks = [...new Set([...printed.matchAll(/var\(--(lin-[a-z0-9-]+)\)/g)].map((m) => m[1]))].filter((name) => inkMap.has(name));
-  check('base: the release writes the inks in place (var(--lin-ink) -> #1E1C1F), script-set and var() inks stay',
-    inkMap.size >= 9 && leftInks.length === 0 && /var\(--lin-top\)/.test(printed) && !inkMap.has('lin-pass-bottom') &&
-    inlineInks('a{color:var(--lin-ink);b:var(--lin-ink, red);c:var(--lin-x)}', new Map([['lin-ink', '#1E1C1F']])) ===
-      'a{color:#1E1C1F;b:var(--lin-ink, red);c:var(--lin-x)}', leftInks.join(' '));
+  const leftInks = [...new Set([...printed.matchAll(/var\(--(base-[a-z0-9-]+)\)/g)].map((m) => m[1]))].filter((name) => inkMap.has(name));
+  check('base: the release writes the inks in place (var(--base-ink) -> #1E1C1F), script-set and var() inks stay',
+    inkMap.size >= 9 && leftInks.length === 0 && /var\(--base-top\)/.test(printed) && !inkMap.has('base-pass-bottom') &&
+    inlineInks('a{color:var(--base-ink);b:var(--base-ink, red);c:var(--base-x)}', new Map([['base-ink', '#1E1C1F']])) ===
+      'a{color:#1E1C1F;b:var(--base-ink, red);c:var(--base-x)}', leftInks.join(' '));
   // D-47: every text pair of the inks reaches 4.5:1 (paper letters on the red block included, D-284).
-  const ink = Object.fromEntries([...lin.matchAll(/--lin-([a-z-]+):\s*(#[0-9A-Fa-f]{6})/g)].map((m) => [m[1], m[2]]));
+  const ink = Object.fromEntries([...lin.matchAll(/--base-([a-z-]+):\s*(#[0-9A-Fa-f]{6})/g)].map((m) => [m[1], m[2]]));
   const lum = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
     .map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4)).reduce((sum, c, i) => sum + c * [0.2126, 0.7152, 0.0722][i], 0);
   const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };

@@ -49,9 +49,9 @@ try {
               trend: chevron?.dataset.trend ?? null,
               up: !!tag.querySelector('.airport-bubble__trend--up'), down: !!tag.querySelector('.airport-bubble__trend--down'),
               inside: c ? c.left >= r.left - 0.5 && c.right <= r.right + 0.5 && c.top >= r.top - 0.5 && c.bottom <= r.bottom + 0.5 : null,
-              // [night-11az] D-257: the chevron right after the last count or the occupancy figure ([night-46a] Linoryt: .lin-fill).
+              // [night-11az] D-257: the chevron right after the last count or the occupancy figure ([night-46a] Linoryt: .base-fill).
               afterCount: chevron ? (kids.indexOf(chevron) === kids.findIndex((el) => el.classList.contains('airport-bubble__timer')) - 1 &&
-                kids[kids.indexOf(chevron) - 1]?.matches('svg, .airport-bubble__count')) || !!kids[kids.indexOf(chevron) - 1]?.matches('.lin-fill, .bd-count, .airport-region-glyph') : null, // [night-81a] UI-A: after the count (.bd-count, D-328)
+                kids[kids.indexOf(chevron) - 1]?.matches('svg, .airport-bubble__count')) || !!kids[kids.indexOf(chevron) - 1]?.matches('.base-fill, .bd-count, .airport-region-glyph') : null, // [night-81a] UI-A: after the count (.bd-count, D-328)
               stroke: chevron ? getComputedStyle(chevron).color : null, tagColour: getComputedStyle(tag).color,
               animation: chevron ? getComputedStyle(chevron).animationName : null,
               duration: chevron ? getComputedStyle(chevron).animationDuration : null,

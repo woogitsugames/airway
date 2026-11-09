@@ -25,9 +25,9 @@ async function reading(page) {
     const board = document.documentElement.dataset.skin === 'board';
     const clock = board
       ? [...document.querySelectorAll('.bd-cell--clock .split-flap')].map((f) => f.dataset.value).join('')
-      : document.querySelector('.lin-clock')?.textContent ?? '';
+      : document.querySelector('.base-clock')?.textContent ?? '';
     const [h, m] = clock.split(':').map(Number);
-    const at = Number(document.querySelector(board ? '.bd-hours__now' : '.lin-day__now')?.style.getPropertyValue('--at'));
+    const at = Number(document.querySelector(board ? '.bd-hours__now' : '.base-day__now')?.style.getPropertyValue('--at'));
     const running = document.getAnimations().filter((a) => a.playState === 'running')
       .map((a) => `${a.animationName ?? a.transitionProperty ?? 'animation'} on ${a.effect?.target?.className?.baseVal ?? a.effect?.target?.className ?? '?'}`);
     return { clock, minute: h * 60 + m, at, attr: document.documentElement.dataset.airwayMotion ?? null, running };

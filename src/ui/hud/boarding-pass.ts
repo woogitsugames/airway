@@ -3,7 +3,6 @@ import type { HudState } from './types';
 import { iconSvg } from './icons';
 import { DAYS_PER_WEEK } from '../../sim/clock';
 import { ARIA_KEYSHORTCUTS } from '../../input/keyboard';
-import { skinBase, baseIcon, basePass } from '../skin/base'; // [night-28a] D-284; [night-46a] D-301: the shipped skin
 import { hudSkin } from './skin'; // [night-69a] D-324: the DEV `?skin=board` preview paints the top band
 
 // [task-31] D-40: a game week has DAYS_PER_WEEK (3) days; the bar shows one square per day and the
@@ -31,7 +30,7 @@ export function createBoardingPass(root: HTMLElement, onTogglePause?: () => void
       <div class="airway-pass__perf" aria-hidden="true"></div>
       <div class="airway-pass__field airway-pass__passengers"><span data-label="passengers" class="airway-pass__label"></span><strong data-value="passengers"></strong></div>
     </div>
-    <button type="button" class="airway-pass__pause" data-hud-action="pause">${hudSkin.current ? hudSkin.current.pauseFace(false) : skinBase.on ? baseIcon('pause') : iconSvg('pause')}</button>
+    <button type="button" class="airway-pass__pause" data-hud-action="pause">${hudSkin.current ? hudSkin.current.pauseFace(false) : iconSvg('pause')}</button>
   `;
   root.appendChild(section);
   const field = (name: string): Element => {
@@ -72,10 +71,9 @@ export function createBoardingPass(root: HTMLElement, onTogglePause?: () => void
       const minute = integer(state.timeMinutes, 0, 1439);
       updateText(time, `${String(Math.floor(minute / 60)).padStart(2, '0')}:${String(minute % 60).padStart(2, '0')}`);
       const passengerCount = integer(state.passengers, 0, Number.MAX_SAFE_INTEGER);
-      // [night-28a] D-284: the Linoryt clock, week line and day bar on the paper margin (the old ticket fields stay in the
-      // DOM, hidden by linoryt.css).
-      if (hudSkin.current) hudSkin.current.pass(section, state); // [night-69a] D-324: the split-flap board instead
-      else if (skinBase.on) basePass(section, minute, integer(state.week, 1, 999), dayNumber, DAYS_PER_WEEK, passengerCount);
+      // [night-69a] D-324: the split-flap board (the old ticket fields stay in the DOM, hidden by board.css). [night-82b]
+      // T7: the Linoryt margin (basePass) is gone with its CSS.
+      if (hudSkin.current) hudSkin.current.pass(section, state);
       if (lastPassengers !== passengerCount || lastDay === undefined) {
         updateText(passengers, localNumber(passengerCount));
         lastPassengers = passengerCount;
@@ -93,8 +91,7 @@ export function createBoardingPass(root: HTMLElement, onTogglePause?: () => void
         if (pause.getAttribute('aria-label') !== nextLabel) pause.setAttribute('aria-label', nextLabel);
         const nextIcon = state.paused ? 'resume' : 'pause';
         if (pause.dataset.icon !== nextIcon) {
-          pause.innerHTML = hudSkin.current ? hudSkin.current.pauseFace(!!state.paused)
-            : skinBase.on ? baseIcon(nextIcon) : iconSvg(nextIcon); // [night-28a] D-284 cut symbol
+          pause.innerHTML = hudSkin.current ? hudSkin.current.pauseFace(!!state.paused) : iconSvg(nextIcon);
           pause.dataset.icon = nextIcon;
         }
         pause.setAttribute('aria-pressed', String(!!state.paused)); // [night-59a] D-322: never "undefined"

@@ -1,5 +1,5 @@
 /* Fill every screen shape with the empty world; later HUD layers use safe-area insets. [night-48a] U6: the Linoryt paper
-   (--lin-paper, index.html theme-color), not the Diorama sky, so nothing blue shows before the first frame or behind a
+   (--base-paper, index.html theme-color), not the Diorama sky, so nothing blue shows before the first frame or behind a
    screen that does not reach the edge. */
 :root {
   font-family: 'Atkinson Hyperlegible Next', sans-serif;

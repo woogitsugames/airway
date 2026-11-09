@@ -25,9 +25,9 @@ function geometry(page) {
     const shown = (el) => el.offsetParent !== null && getComputedStyle(el).visibility !== 'hidden' && el.getBoundingClientRect().width > 0;
     const hitOk = (el) => { const r = el.getBoundingClientRect(); return el.contains(document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2)); };
     const pause = document.querySelector('.airway-pass__pause');
-    const dock = [...document.querySelectorAll('.airway-dock button, .airway-dock .lin-caption, .airway-dock .lin-wait')].filter(shown)
+    const dock = [...document.querySelectorAll('.airway-dock button, .airway-dock .base-caption, .airway-dock .base-wait')].filter(shown)
       .map((el) => ({ name: (el.getAttribute('aria-label') || el.textContent || el.className.baseVal || el.className).trim().slice(0, 16), ...rect(el) }));
-    const week = document.querySelector('.lin-week');
+    const week = document.querySelector('.base-week');
     const sheet = document.querySelector('.airway-pause');
     const css = getComputedStyle(document.documentElement);
     return {
@@ -63,7 +63,7 @@ try {
         assert(p.hit, 'pause target is covered');
         const [st, sr, sb, sl] = play.safe;
         assert(p.l >= sl - .5 && p.t >= st - .5 && p.r <= width - sr + .5 && p.b <= height - sb + .5, `pause outside the safe area ${JSON.stringify(p)}`);
-        assert(!play.week || !overlap(p, play.week), 'pause overlaps the week line'); // [night-46a] Linoryt: .lin-week
+        assert(!play.week || !overlap(p, play.week), 'pause overlaps the week line'); // [night-46a] Linoryt: .base-week
         const under = play.dock.filter((item) => overlap(p, item)).map((item) => item.name);
         assert(under.length === 0, `pause overlaps the dock: ${under.join(', ')}`);
         await page.getByRole('button', { name: /^(Pauza|Pause)$/ }).click();

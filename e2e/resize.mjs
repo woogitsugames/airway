@@ -90,8 +90,8 @@ function snapshot(page, sheet) {
     const open = Boolean(node && !node.hidden && shown(node));
     const targets = open ? [...node.querySelectorAll('button')].filter(shown).map((b) => ({ name: name(b), ...rect(b), hit: hit(b) })) : [];
     const hud = [...document.querySelectorAll('.airway-hud button, .airway-pass')].filter(shown).map((el) => ({ name: name(el), ...rect(el) }));
-    const dock = [...document.querySelectorAll('.airway-dock button, .airway-dock .lin-caption, .airway-dock .lin-wait')].filter(shown).map((el) => ({ name: name(el), ...rect(el) }));
-    const week = document.querySelector('.lin-week');
+    const dock = [...document.querySelectorAll('.airway-dock button, .airway-dock .base-caption, .airway-dock .base-wait')].filter(shown).map((el) => ({ name: name(el), ...rect(el) }));
+    const week = document.querySelector('.base-week');
     return {
       hash: snapshotHash, tick, screen, camera,
       w: innerWidth, h: innerHeight, layout: document.querySelector('.airway-hud')?.dataset.layout,

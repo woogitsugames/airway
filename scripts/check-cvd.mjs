@@ -118,7 +118,7 @@ for (const [id, hex] of airline) {
   }
 }
 // [night-48a] U6 (D-08, D-47, PLAN-LINORYT): the glyphs in the Linoryt print. Each glyph is a silhouette with an ink
-// outline (`--skin-glyph-outline` -> --lin-ink) on the note's paper ground. Shape stays the carrier: in every simulation
+// outline (`--skin-glyph-outline` -> --base-ink) on the note's paper ground. Shape stays the carrier: in every simulation
 // the outline reaches the non-text 3:1 on paper and on ochre, and each fill stays apart from paper (ΔE76 ≥ 15). On bare
 // ochre several fills would sink (EUS crescent ΔE ~11 under tritan), so the glyph cell must keep its paper ground.
 // [night-81a] D-336 (T6): the inks live on as the base inks of board.css section A (the base structure the board builds
@@ -126,7 +126,7 @@ for (const [id, hex] of airline) {
 // signs are checked below).
 const linCss = readFileSync(new URL('../src/ui/skin/board.css', import.meta.url), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
 const skinCss = readFileSync(new URL('../src/ui/skin/current.css', import.meta.url), 'utf8');
-const inks = Object.fromEntries([...linCss.matchAll(/--lin-([a-z-]+)\s*:\s*(#[0-9a-fA-F]{6})/g)].map((m) => [m[1], m[2]]));
+const inks = Object.fromEntries([...linCss.matchAll(/--base-([a-z-]+)\s*:\s*(#[0-9a-fA-F]{6})/g)].map((m) => [m[1], m[2]]));
 const glyphs = [...readFileSync(new URL('../src/data/regions.ts', import.meta.url), 'utf8')
   .matchAll(/^\s*([A-Z]+):\s*\{\s*glyph:\s*'[a-z]+',\s*color:\s*'(#[0-9A-Fa-f]{6})'[^}]*?(provisional: true)?\s*\}/gm)]
   .map((m) => ({ id: m[1], hex: m[2], provisional: Boolean(m[3]) }));
@@ -138,7 +138,7 @@ if (official.length !== 6 || official.some((glyph) => palette[glyph.id]?.toLower
   console.error('FAIL regions.ts glyph colours differ from the tested D-08 palette');
   failed++;
 }
-if (!/--skin-glyph-outline:\s*var\(--lin-ink\)/.test(skinCss) || !inks.paper || !inks.ochre || !inks.ink) {
+if (!/--skin-glyph-outline:\s*var\(--base-ink\)/.test(skinCss) || !inks.paper || !inks.ochre || !inks.ink) {
   console.error('FAIL the glyph outline is not the Linoryt ink, or an ink is missing');
   failed++;
 }

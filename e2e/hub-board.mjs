@@ -121,7 +121,7 @@ try {
           hud.render({ week: 1, day: 3, timeMinutes: 14 * 60 + 5, passengers: 128, paused: false, speed: 1, canUndo: true,
             selectedPlane: 'turboprop', stock: { turboprop: 1, widebody: 0, hub: 0 }, minutesToBoard: 900 });
           // [night-46a] D-301: the Linoryt sheets start under the top margin, whose bottom edge a ResizeObserver
-          // publishes (--lin-pass-bottom) once the margin is laid out: let it run, as a frame does in the game.
+          // publishes (--base-pass-bottom) once the margin is laid out: let it run, as a frame does in the game.
           await document.fonts.ready;
           await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
           let closed = 0;

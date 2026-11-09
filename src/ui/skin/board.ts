@@ -293,14 +293,14 @@ export function createBoardSkin(deps: BoardDeps): HudSkin {
 
 /**
  * The sheets (pause, hub board, weekly board, report) start under the top band, whose height depends on the screen and
- * the safe area: its bottom edge is published as `--lin-pass-bottom` (the Linoryt sheets read it, D-301) whenever the
+ * the safe area: its bottom edge is published as `--base-pass-bottom` (the Linoryt sheets read it, D-301) whenever the
  * band changes size.
  */
 function publishBoardBottom(section: HTMLElement): void {
   const root = document.documentElement;
   const publish = (): void => {
     const bottom = section.getBoundingClientRect().bottom;
-    if (bottom > 0) root.style.setProperty('--lin-pass-bottom', `${Math.ceil(bottom)}px`);
+    if (bottom > 0) root.style.setProperty('--base-pass-bottom', `${Math.ceil(bottom)}px`);
   };
   if (typeof ResizeObserver === 'function') new ResizeObserver(publish).observe(section);
   publish();

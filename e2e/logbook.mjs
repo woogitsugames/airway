@@ -26,7 +26,7 @@ async function checkServiceRow(page) {
       const node = document.querySelector(`[data-testid="${id}"]`);
       if (!node) return { id, missing: true };
       const box = node.getBoundingClientRect();
-      const title = [node.querySelector('.bd-item__title'), node.querySelector('.lin-title'), node.querySelector('.split-flap')] // [night-81a] UI-A row name first
+      const title = [node.querySelector('.bd-item__title'), node.querySelector('.split-flap')] // [night-81a] UI-A row name first
         .find((el) => el && getComputedStyle(el).display !== 'none' && el.getBoundingClientRect().width > 0);
       const t = title?.getBoundingClientRect();
       return { id, top: box.top, bottom: box.bottom, left: box.left, right: box.right, height: box.height, width: box.width,

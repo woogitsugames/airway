@@ -1,7 +1,7 @@
 /**
  * [night-81a] D-336 (PLAN-NOWY-KIERUNEK.md step T6): the skin's base helpers, formerly the Linoryt helpers module (D-283,
  * D-284, D-301). The UI-A board (src/ui/skin/board*.ts) builds on them: the note layout's stamps, frames, margins and
- * compact passes (src/ui/overlay.ts), the edge chip data, the top margin's measured bottom (`--lin-pass-bottom`). The
+ * compact passes (src/ui/overlay.ts), the edge chip data, the top margin's measured bottom (`--base-pass-bottom`). The
  * HUD margin, dock captions, menu tagline and report block helpers are the base DOM the board slots replace or the
  * base structure (board.css section A) hides; they go with the base HUD in a later clean-up (R6/T7).
  * History: the Linoryt print's helpers (docs/styles/kierunki-2026-11b/PLAN-LINORYT.md), a relief print in three inks.
@@ -30,12 +30,7 @@ export function startSkinBase(next: BaseDeps): void {
   document.documentElement.dataset.skin = 'board';
 }
 
-/** Night hours of the day bar, inked solid: the same 20:00–06:00 band the Róża dial hatched (quiet demand hours). */
-export const BASE_NIGHT = { from: 20, to: 6 } as const;
-export const isNightHour = (hour: number): boolean => hour >= BASE_NIGHT.from || hour < BASE_NIGHT.to;
-
 function setText(el: Element, text: string): void { if (el.textContent !== text) el.textContent = text; }
-const pad2 = (n: number): string => String(n).padStart(2, '0');
 
 // ---- Symbols ---------------------------------------------------------------------------------------------------------
 
@@ -60,144 +55,7 @@ export function baseIcon(name: BaseSymbol, barbs = 1): string {
   const extra = name === 'speed'
     ? Array.from({ length: Math.max(1, barbs) }, (_, i) => `M${20 + i * 14} 46L${12 + i * 14} 22 ${22 + i * 14} 22 ${30 + i * 14} 46Z`).join('')
     : '';
-  return `<svg class="airway-hud__icon lin-icon" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><path d="${SYMBOL[name]}${extra}" fill="currentColor" stroke-linejoin="round"/></svg>`;
-}
-
-// ---- HUD: clock, week, day/passengers, day bar ------------------------------------------------------------------------
-
-interface PassParts { clock: HTMLElement; week: HTMLElement; sub: HTMLElement; cells: HTMLElement[]; now: HTMLElement; bar: HTMLElement; minute: number; at: number }
-const passParts = new WeakMap<HTMLElement, PassParts>();
-
-/**
- * The top margin of the HUD (inside the boarding pass section, whose old fields board.css hides): the clock, the week
- * and "day 2 of 3 · 34 passengers" beside it, and under them the day bar — 24 carved hours, night hours solid ink, the
- * hours already flown today in Prussian blue, the rest hollow, a red cut at "now", figures at 0/6/12/18. The clock is
- * real text (it is the HUD's time); the bar repeats it graphically and is aria-hidden.
- */
-export function basePass(section: HTMLElement, minute: number, week: number, day: number, days: number, passengers: number): void {
-  let parts = passParts.get(section);
-  if (!parts) {
-    const box = document.createElement('div');
-    box.className = 'lin-pass';
-    const clock = document.createElement('div');
-    clock.className = 'lin-clock';
-    const lines = document.createElement('div');
-    lines.className = 'lin-lines';
-    const weekLine = document.createElement('div');
-    weekLine.className = 'lin-week';
-    const sub = document.createElement('div');
-    sub.className = 'lin-sub';
-    lines.append(weekLine, sub);
-    const bar = document.createElement('div');
-    bar.className = 'lin-day';
-    bar.setAttribute('aria-hidden', 'true');
-    const cells: HTMLElement[] = [];
-    const row = document.createElement('div');
-    row.className = 'lin-day__cells';
-    for (let h = 0; h < 24; h++) {
-      const cell = document.createElement('i');
-      if (isNightHour(h)) cell.className = 'is-night';
-      cells.push(cell);
-      row.append(cell);
-    }
-    const now = document.createElement('b');
-    now.className = 'lin-day__now';
-    row.append(now);
-    const figures = document.createElement('div');
-    figures.className = 'lin-day__hours';
-    for (const h of [0, 6, 12, 18]) {
-      const span = document.createElement('span');
-      span.textContent = String(h);
-      span.style.setProperty('--h', String(h));
-      figures.append(span);
-    }
-    bar.append(row, figures);
-    box.append(clock, lines, bar);
-    section.querySelector('.airway-pass__ticket')?.appendChild(box);
-    parts = { clock, week: weekLine, sub, cells, now, bar, minute: -1, at: -1 };
-    passParts.set(section, parts);
-    publishPassBottom(section);
-  }
-  setText(parts.clock, `${pad2(Math.floor(minute / 60))}:${pad2(minute % 60)}`);
-  setText(parts.week, t('hud.weekLine', { week }));
-  const count = t('hud.passengerLine', { count: passengers }).replace(String(passengers), deps.localNumber(passengers));
-  setText(parts.sub, `${t('hud.dayOf', { day, days })} · ${count}`);
-  if (parts.minute !== minute) {
-    const hour = Math.floor(minute / 60);
-    if (Math.floor(parts.minute / 60) !== hour) {
-      parts.cells.forEach((cell, h) => {
-        const next = isNightHour(h) ? 'is-night' : h < hour ? 'is-past' : h === hour ? 'is-now' : '';
-        if (cell.className !== next) cell.className = next;
-      });
-    }
-    parts.minute = minute;
-  }
-  // [night-48a] U6, D-88: with reduce motion the red "now" cut steps once per game hour (to the hour just begun) instead
-  // of creeping every game minute; the switch can change mid-run, so the value is compared, not the minute.
-  const reduce = document.documentElement.dataset['airwayMotion'] === 'reduce';
-  const at = reduce ? Math.floor(minute / 60) * 60 : minute;
-  if (parts.at !== at) {
-    parts.at = at;
-    parts.now.style.setProperty('--at', (at / 1440).toFixed(4));
-  }
-}
-
-/**
- * [night-29a] U3: the sheets (pause, hub board, weekly board, report) start under the top margin, whose height depends on
- * the screen, the safe area and whether the day bar is folded away; its bottom edge is published as `--lin-pass-bottom`
- * on <html> and re-measured whenever the margin changes size.
- */
-function publishPassBottom(section: HTMLElement): void {
-  const root = document.documentElement;
-  const publish = (): void => {
-    const bottom = section.getBoundingClientRect().bottom;
-    if (bottom > 0) root.style.setProperty('--lin-pass-bottom', `${Math.ceil(bottom)}px`);
-  };
-  if (typeof ResizeObserver === 'function') new ResizeObserver(publish).observe(section);
-  publish();
-}
-
-// ---- Dock: captions ----------------------------------------------------------------------------------------------------
-
-/**
- * The caption under a dock symbol, and the wait for the next crates under an empty aircraft or hub ("za 1 dzień", in
- * blue). Captions repeat the button's accessible name, so they are aria-hidden.
- */
-export function baseDockLabel(button: HTMLElement, name: string, speed: number, wait: string | null): void {
-  const text = name === 'undo' ? t('dock.undo')
-    : name === 'turboprop' ? t('dock.turboprop')
-    : name === 'widebody' ? t('dock.widebody')
-    : name === 'hub' ? t('dock.hub')
-    : t('dock.speed', { speed });
-  let caption = button.querySelector<HTMLElement>('.lin-caption');
-  let when = button.querySelector<HTMLElement>('.lin-wait');
-  if (!caption || !when) {
-    caption = document.createElement('span');
-    caption.className = 'lin-caption';
-    caption.setAttribute('aria-hidden', 'true');
-    when = document.createElement('span');
-    when.className = 'lin-wait';
-    when.setAttribute('aria-hidden', 'true');
-    button.append(caption, when);
-  }
-  setText(caption, text);
-  setText(when, wait === null ? '' : t('dock.in', { when: wait }));
-  when.hidden = wait === null;
-}
-
-// ---- Game-over report -----------------------------------------------------------------------------------------------
-
-/**
- * [night-29a] U3: the failing hub's code on the report's one red block, beside the heading (the jam block of the map).
- * The heading and the "Map" button already name the hub for screen readers, so the block is aria-hidden. [night-54a]
- * D-312: the glyph cut out of the block is the airport's stamp on the map: a hub's octagon, else a square.
- */
-export function baseReportHub(sign: HTMLElement, hubCode: string, isHub = true): void {
-  const block = document.createElement('span');
-  block.className = isHub ? 'lin-hub' : 'lin-hub lin-hub--airport'; // [night-54a] D-312: the stamp of the map
-  block.setAttribute('aria-hidden', 'true');
-  block.textContent = hubCode;
-  sign.querySelector('.airway-go-heading')?.after(block);
+  return `<svg class="airway-hud__icon" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><path d="${SYMBOL[name]}${extra}" fill="currentColor" stroke-linejoin="round"/></svg>`;
 }
 
 // ---- U2: airport notes, the jam block, edge chips ------------------------------------------------------------------
@@ -427,22 +285,22 @@ function noteState(bubble: HTMLElement): NoteParts {
       return el;
     };
     const ticks = document.createElementNS(SVG_NS, 'svg');
-    ticks.setAttribute('class', 'lin-ticks');
+    ticks.setAttribute('class', 'base-ticks');
     ticks.setAttribute('aria-hidden', 'true');
     ticks.setAttribute('focusable', 'false');
     const filled = document.createElementNS(SVG_NS, 'path');
-    filled.setAttribute('class', 'lin-ticks__on');
+    filled.setAttribute('class', 'base-ticks__on');
     const empty = document.createElementNS(SVG_NS, 'path');
-    empty.setAttribute('class', 'lin-ticks__off');
+    empty.setAttribute('class', 'base-ticks__off');
     ticks.append(filled, empty);
-    const jam = span('lin-jam');
-    const jamHeadEl = span('lin-jam__head');
-    const jamTime = span('lin-jam__time');
-    const jamFill = span('lin-jam__fill');
+    const jam = span('base-jam');
+    const jamHeadEl = span('base-jam__head');
+    const jamTime = span('base-jam__time');
+    const jamFill = span('base-jam__fill');
     jam.append(jamHeadEl, jamTime, jamFill);
     parts = {
-      name: span('lin-name'), code: span('lin-code'), fill: span('lin-fill'), ticks, filled, empty,
-      br: [span('lin-br'), span('lin-br'), span('lin-br')], counts: new Map(), more: span('lin-count lin-more airport-bubble__count'),
+      name: span('base-name'), code: span('base-code'), fill: span('base-fill'), ticks, filled, empty,
+      br: [span('base-br'), span('base-br'), span('base-br')], counts: new Map(), more: span('base-count base-more airport-bubble__count'),
       jam, jamHead: jamHeadEl, jamTime, jamFill, tickKey: '', size: { width: 0, height: 0, compactWidth: 0, compactHeight: 0 },
     };
     noteParts.set(bubble, parts);
@@ -502,7 +360,7 @@ export function baseNoteChildren(bubble: HTMLElement, want: Node[], input: BaseN
   const fillText = t('note.fill', { taken, capacity: input.capacity });
   setText(parts.fill, input.capacity > 0 ? fillText : '');
   // [night-59a] D-322: add/remove, never a forced toggle (no runtime import here, so not setClass).
-  if (input.hub) parts.name.classList.add('lin-name--hub'); else parts.name.classList.remove('lin-name--hub');
+  if (input.hub) parts.name.classList.add('base-name--hub'); else parts.name.classList.remove('base-name--hub');
   if (input.fresh) want.push(input.fresh);
   want.push(parts.name, parts.code, parts.fill, parts.br[0]);
   if (input.capacity > 0) {
@@ -527,7 +385,7 @@ export function baseNoteChildren(bubble: HTMLElement, want: Node[], input: BaseN
     let span = parts.counts.get(key);
     if (!span) {
       span = document.createElement('span');
-      span.className = 'lin-count airport-bubble__count';
+      span.className = 'base-count airport-bubble__count';
       span.setAttribute('aria-hidden', 'true');
       parts.counts.set(key, span);
     }
@@ -555,8 +413,8 @@ export function baseNoteChildren(bubble: HTMLElement, want: Node[], input: BaseN
   parts.size = size;
   // The paper rows are as wide as the note (a printed label), the jam block keeps its own width.
   bubble.style.width = size.width + 'px';
-  bubble.style.setProperty('--lin-compact-w', size.compactWidth + 'px');
-  bubble.style.setProperty('--lin-jam-w', (input.jamSeconds !== null ? jamWidth(head, jamClock(input.jamSeconds), input.capacity > 0 ? fillText : '') : 0) + 'px');
+  bubble.style.setProperty('--base-compact-w', size.compactWidth + 'px');
+  bubble.style.setProperty('--base-jam-w', (input.jamSeconds !== null ? jamWidth(head, jamClock(input.jamSeconds), input.capacity > 0 ? fillText : '') : 0) + 'px');
   return size;
 }
 /** The note's size from its last rebuild (zero before the first). */
@@ -816,14 +674,3 @@ export function baseEdge(edge: HTMLElement, name: string, code: string, normal: 
   if (edge.style.width !== w) edge.style.width = w;
   return width;
 }
-
-// ---- Menu ------------------------------------------------------------------------------------------------------------
-
-/** The tagline under the title ("Sieć lotnicza na całym globie"). */
-export function baseTagline(): HTMLElement {
-  const line = document.createElement('div');
-  line.className = 'lin-tagline';
-  line.textContent = t('menu.tagline');
-  return line;
-}
-
