@@ -1,0 +1,86 @@
+[26s] INFO stub world http://127.0.0.1:53774/?render=stub&clock=frozen text-scale=1 weeks=8
+[26s] RUN started seed=42704 region=random class=1
+[27s] UI plane drag
+[31s] UI hub board THR waiting=6
+[33s] ROTATE 915x412
+[33s] ROTATE back
+[36s] SCREEN game -> upgrade tick=4320 week=2 routes=4 planes=4
+[36s] UI Tydzień 1: offers=hub-expansion,widebody,turboprop take turboprop
+[36s] SCREEN upgrade -> game tick=4321 week=2 routes=4 planes=4
+[37s] UI plane drag
+[38s] UI Undo walk after turboprop: 1 taps for 1 edits, barrier held
+[38s] SAVE tick=5221 hash=296df6c6
+[39s] LOAD tick=5221 hash=296df6c6 screen=game region=random class=1
+[39s] UI first-time card hub-full -> OK
+[41s] UI hub board BGW waiting=7
+[41s] UI first-time card out-of-range -> OK
+[42s] ROTATE 915x412
+[43s] ROTATE back
+[45s] SCREEN game -> upgrade tick=8640 week=3 routes=5 planes=5
+[45s] UI Tydzień 2: offers=hub-expansion,turboprop,widebody take widebody
+[45s] SCREEN upgrade -> game tick=8641 week=3 routes=5 planes=5
+[45s] INFO game w3 d7 01h: Obróć globus do ADL Zajęte miejsca w poczekalni: under the first-time card
+[45s] UI first-time card weekly-board -> OK
+[46s] UI first-time card curfew -> OK
+[46s] UI first-time card surge -> OK
+[47s] SCREEN game -> gameover tick=9807 week=3 routes=6 planes=6
+[48s] ISSUE sheet opened scrolled :: game over; game-over scrollTop=12
+[48s] GAMEOVER week=3 tick=9807 :: Sieć zamknięta BGW Mapa Odloty · BGW Lot / cel Bramka Status AW101 · TLV A1 Odwołany AW102 · THR B2 Odwołany AW103 · DOH C3 Odwołany AW104 · TAS D4 Odwołany AW105 · JED E5 Odwołany AW106 · BOS F6 Odwołany Raport zdarzenia ATC Dowiezieni pas
+[48s] UI new world
+[49s] INFO tutorial shown -> skip
+[50s] RUN run #2
+[50s] UI plane drag
+[53s] UI hub board ALG waiting=2
+[53s] ROTATE 915x412
+[54s] ROTATE back
+[56s] SCREEN game -> upgrade tick=4320 week=2 routes=3 planes=4
+[56s] UI Tydzień 1: offers=hub-expansion,widebody,turboprop take turboprop
+[56s] SCREEN upgrade -> game tick=4321 week=2 routes=3 planes=4
+[58s] UI Undo walk after turboprop: 1 taps for 1 edits, barrier held
+[58s] UI plane drag
+[58s] SAVE tick=5221 hash=6a2138d0
+[59s] LOAD tick=5221 hash=6a2138d0 screen=game region=random class=1
+[61s] UI hub board WAW waiting=4
+[62s] ROTATE 915x412
+[63s] ROTATE back
+[65s] SCREEN game -> upgrade tick=8640 week=3 routes=5 planes=5
+[65s] UI Tydzień 2: offers=hub-expansion,widebody,turboprop take hub-expansion
+[66s] UI pick tap
+[66s] SCREEN upgrade -> game tick=8642 week=3 routes=5 planes=5
+[71s] UI hub board ATH waiting=18
+[72s] ROTATE 915x412
+[73s] ROTATE back
+[76s] SCREEN game -> upgrade tick=12961 week=4 routes=5 planes=5
+[76s] UI Tydzień 3: offers=turboprop,hub-expansion,widebody take widebody
+[77s] SCREEN upgrade -> game tick=12962 week=4 routes=5 planes=5
+[77s] SCREEN game -> gameover tick=13014 week=4 routes=6 planes=6
+[78s] GAMEOVER week=4 tick=13014 :: Sieć zamknięta DFW Mapa Odloty · DFW Żadna trasa nie obsługiwała DFW: pasażerowie nie mieli czym polecieć. Brak wolnych samolotów: przeciągnij do niego koniec trasy albo usuń mniej obłożoną trasę, żeby zwolnić jej samolot. Raport zdarzenia
+[78s] UI new world
+[78s] RUN run #3
+[79s] UI plane drag
+[83s] UI hub board BLR waiting=34
+[84s] ROTATE 915x412
+[85s] ROTATE back
+[86s] SCREEN game -> gameover tick=3452 week=1 routes=3 planes=4
+[87s] GAMEOVER week=1 tick=3452 :: Sieć zamknięta BLR Mapa Odloty · BLR Lot / cel Bramka Status AW101 · BOM A1 Odwołany AW102 · CCU B2 Odwołany AW103 · MCT C3 Odwołany Raport zdarzenia ATC Dowiezieni pasażerowie: 124 Ukończone tygodnie: 0 Etapy 1/7 Pierwszy hub Każdy region
+[87s] UI same world
+[88s] RUN run #4
+[88s] UI plane drag
+[92s] UI hub board BLR waiting=4
+[93s] ROTATE 915x412
+[94s] ROTATE back
+[95s] SCREEN game -> gameover tick=3603 week=1 routes=3 planes=4
+[96s] GAMEOVER week=1 tick=3603 :: Sieć zamknięta BLR Mapa Odloty · BLR Lot / cel Bramka Status AW101 · BOM A1 Odwołany AW102 · CCU B2 Odwołany AW103 · MCT C3 Odwołany Raport zdarzenia ATC Dowiezieni pasażerowie: 127 Ukończone tygodnie: 0 Etapy 1/7 Pierwszy hub Każdy region
+[96s] UI same world
+[97s] RUN run #5
+[98s] UI plane drag
+[101s] UI hub board BLR waiting=14
+[102s] ROTATE 915x412
+[103s] ROTATE back
+[104s] SCREEN game -> gameover tick=3573 week=1 routes=3 planes=4
+[105s] GAMEOVER week=1 tick=3573 :: Sieć zamknięta BLR Mapa Odloty · BLR Lot / cel Bramka Status AW101 · BOM A1 Odwołany AW102 · CCU B2 Odwołany AW103 · MCT C3 Odwołany Raport zdarzenia ATC Dowiezieni pasażerowie: 125 Ukończone tygodnie: 0 Etapy 1/7 Pierwszy hub Każdy region
+[105s] UI new world
+[106s] RUN run #6
+[106s] UI plane drag
+[106s] UI plane drag
+[107s] INFO done pauses=26 hubBoards=8 rotations=8 continues=2 undos=2 boards=5 barriers=5 undoWalks=2 undoRefusals=0
